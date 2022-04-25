@@ -1,7 +1,7 @@
-import React from "react";
+import { FC } from "react";
 import Head from 'next/head'
 
-export const Header = () => {
+export const Header: FC = () => {
     return(
         <Head>
             <title>Chia WEB</title>

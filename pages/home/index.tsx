@@ -22,7 +22,12 @@ const HomePage: NextPage = () => {
                         },
                         visible: {
                             opacity: 1,
-                            y: 0
+                            y: 0,
+                            transition: {
+                                delay: 0.5,
+                                duration: 0.3,
+                                ease: [0.48, 0.15, 0.25, 0.96]
+                            }
                         }
                     }}
                 >

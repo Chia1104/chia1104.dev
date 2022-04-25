@@ -1,6 +1,6 @@
-import React from "react";
+import { FC } from "react";
 
-export const Footer = () => {
+export const Footer: FC  = () => {
     return(
         <footer className="footer">
             <p>
