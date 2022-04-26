@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { FC } from "react";
 import { useRouter } from "next/router";
+import Button from '@mui/material/Button';
 
 export const AboutMe: FC = () => {
     const router = useRouter()
@@ -30,12 +31,12 @@ export const AboutMe: FC = () => {
                     HOME Page
                 </h1>
             </motion.div>
-            <button type="button" onClick={() => router.push('/post')}>
+            <Button type="button" onClick={() => router.push('/post')}>
                 Post
-            </button>
-            <button type="button" onClick={() => router.push('/result')}>
+            </Button>
+            <Button type="button" onClick={() => router.push('/result')}>
                 Result
-            </button>
+            </Button>
             <article>
                 <h1>Hello Next.js</h1>
                 <p>
