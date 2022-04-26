@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
   return (
+      // SSR will be opacity 0
       <motion.div
           key={router.route}
           initial={{ opacity: 0 }}
@@ -13,6 +14,8 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
       >
         <Component {...pageProps} />
       </motion.div>
+
+      // <Component {...pageProps} />
   )
 }
 

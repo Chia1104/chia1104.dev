@@ -1,11 +1,14 @@
 import type { NextPage } from 'next'
-import { Header } from "../../components/Header";
-import { Footer } from "../../components/Footer";
+import { Header } from "../../components/globals/Header";
+import { Footer } from "../../components/globals/Footer";
 
 const PostPage: NextPage = () => {
     return (
         <div className="c-container">
-            <Header />
+            <Header
+                title="Post"
+                description="Post page"
+            />
 
             <main className="main">
                 <h1 className="title">

@@ -1,10 +1,12 @@
 import { FC } from "react";
 
 export const Footer: FC  = () => {
+    const year = new Date().getFullYear();
+
     return(
         <footer className="footer">
             <p>
-                @copyright 2022 Chia WEB
+                @Copyright {year}, Chia
             </p>
         </footer>
     )
