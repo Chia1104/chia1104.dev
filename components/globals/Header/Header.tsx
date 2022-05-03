@@ -1,13 +1,15 @@
 import Head from 'next/head'
+import { FC } from "react";
 
-export const Header = (
+interface Props {
+    title: string,
+    description: string,
+}
+
+export const Header: FC<Props> = (
     {
         title,
         description,
-    }:
-    {
-        title: string,
-        description: string,
     }
 ) => {
     return(
