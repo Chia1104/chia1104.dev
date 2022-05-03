@@ -31,17 +31,17 @@ export const AboutMe: FC = () => {
                     Yu Chia, Yu
                 </h1>
                 <h2 className="description text-white">
-                    {/* eslint-disable-next-line react/no-unescaped-entities */}
                     WEB DEVELOPER
                 </h2>
             </motion.div>
             <div className="flex justify-center items-center">
                 <Image
-                    src="/me/me.jpg"
+                    src="/me.jpg"
                     alt="Chia1104"
                     width={400}
                     height={300}
                     className="rounded-xl"
+                    priority
                 />
             </div>
         </div>
