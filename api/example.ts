@@ -9,8 +9,9 @@ export const getAllRepos = async (user: string, page: number) => {
                 'Content-Type': 'application/json',
             },
         });
+        const data: object = await res.json();
 
-        return { status: res.status, data: await res.json() }
+        return { status: res.status, data: data }
     } catch (err: any) {
         throw err;
     }

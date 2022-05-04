@@ -1,6 +1,6 @@
-import { takeLatest } from 'redux-saga/effects';
-import {EXAMPLE_ACTION, exampleAction} from '../actions';
+import { takeEvery } from 'redux-saga/effects';
+import { getExampleData } from "../actions";
 
 export const exampleSagas = [
-  // takeLatest(EXAMPLE_ACTION, exampleAction),
+  // takeEvery('example/beginRequestExampleData', getExampleData),
 ];
