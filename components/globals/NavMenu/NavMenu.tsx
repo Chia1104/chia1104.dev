@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { useRouter } from 'next/router'
 
-export const NavBar: FC = () => {
+export const NavMenu: FC = () => {
     const router = useRouter()
 
     return(
@@ -11,10 +11,17 @@ export const NavBar: FC = () => {
                     CHIA WEB
                 </div>
                 <div className="md:flex items-center w-[13%] sm:hidden justify-center">
-                    <button type="button" onClick={() => router.push('/post')}>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/post')}
+                        className="mr-3"
+                    >
                         post
                     </button>
-                    <button type="button" onClick={() => router.push('/result')}>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/result')}
+                    >
                         result
                     </button>
                 </div>
