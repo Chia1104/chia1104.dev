@@ -1,6 +1,8 @@
 import { initializeApp, FirebaseOptions, getApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getStorage } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "@firebase/auth";
 
 const firebaseConfig: FirebaseOptions = {
     apiKey: process.env.NEXT_PUBLIC_API_KEY,
@@ -23,4 +25,6 @@ function createFirebaseApp(config: FirebaseOptions) {
 const app = createFirebaseApp(firebaseConfig);
 
 export const analytics = getAnalytics(app);
-export const storage = getStorage(app, 'gs://chia1104.appspot.com');
+export const storage = (bucketUrl: string) => getStorage(app, bucketUrl);
+export const firestore = getFirestore(app);
+export const auth = getAuth(app);
