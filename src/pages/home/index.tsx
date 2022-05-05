@@ -1,8 +1,9 @@
 import type { NextPage } from 'next'
-import { Header } from "../../components/globals/Header";
-import { Footer } from "../../components/globals/Footer";
+import { Header } from "../../components/globals/Layout/Header";
+import { Footer } from "../../components/globals/Layout/Footer";
 import { AboutMe } from "../../components/pages/home/AboutMe";
-import {SocialIcon} from "../../components/pages/home/SocialIcon";
+import { SocialIcon } from "../../components/pages/home/SocialIcon";
+import { ChiaTimeLine } from "../../components/pages/home/ChiaTimeLine";
 
 const HomePage: NextPage = () => {
     return (
@@ -20,6 +21,11 @@ const HomePage: NextPage = () => {
                     <SocialIcon />
                 </div>
             </main>
+            <article>
+                <div className="c-container">
+                    <ChiaTimeLine />
+                </div>
+            </article>
             <div className="c-container">
                 <Footer />
             </div>
