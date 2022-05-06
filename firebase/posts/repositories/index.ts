@@ -1,1 +1,3 @@
-export {  PostsRepository } from './posts.repository';
+export {
+    dataToJSON,
+} from './posts.repository';

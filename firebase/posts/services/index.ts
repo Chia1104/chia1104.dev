@@ -1,1 +1,3 @@
-export { PostsService } from './posts.service';
+export {
+    queryPosts,
+} from './posts.service';

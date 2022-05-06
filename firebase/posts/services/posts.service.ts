@@ -1,18 +1,14 @@
-import { PostsRepository } from "../repositories";
-import { getDocs, limit } from "@firebase/firestore";
+import { dataToJSON } from "../repositories";
+import {query, where, orderBy, collectionGroup, limit, getDocs} from 'firebase/firestore';
+import { firestore } from '../../config';
 
-export class PostsService {
-    constructor(private readonly postsRepository: PostsRepository) {}
-
-    public async getPosts(Limit: number): Promise<JSON> {
-        const queryPosts = await this.postsRepository
-            .getPosts()
-            .then(posts => {
-                limit(Limit)
-                getDocs(posts)
-                return posts;
-            })
-
-        return await this.postsRepository.dataToJSON(queryPosts);
-    }
+export const queryPosts = async (Limit: number): Promise<any> => {
+    const ref = await collectionGroup(firestore, 'posts');
+    const postsQuery = query(
+        ref,
+        where('published', '==', true),
+        orderBy('createdAt', 'desc'),
+        limit(Limit),
+    )
+    return(await getDocs(postsQuery)).docs.map(dataToJSON);
 }
