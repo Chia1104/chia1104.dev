@@ -36,7 +36,7 @@ export const AboutMe: FC = () => {
             </motion.div>
             <div className="flex justify-center items-center">
                 <Image
-                    src="/me.jpg"
+                    src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/me-images%2Fme.JPG?alt=media&token=dee7b2ae-6625-4d4f-85c9-75d54a2da811"
                     alt="Chia1104"
                     width={400}
                     height={300}
