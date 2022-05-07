@@ -11,35 +11,7 @@ interface Props {
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const post = await queryPosts(10);
 
-    const postExample = [
-        {
-            id: '1',
-            title: 'title1',
-            content: 'content1',
-            createdAt: 1588888888,
-            updatedAt: 1588888888,
-            published: true,
-        },
-        {
-            id: '2',
-            title: 'title2',
-            content: 'content2',
-            createdAt: 1588888888,
-            updatedAt: 1588888888,
-            published: true,
-        },
-        {
-            id: '3',
-            title: 'title3',
-            content: 'content3',
-            createdAt: 1588888888,
-            updatedAt: 1588888888,
-            published: true,
-        }
-    ]
-
-
-    const params = context.params;
+    // const params = context.params;
     return {
         props: {
             posts: post as Post,

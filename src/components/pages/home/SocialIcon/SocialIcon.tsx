@@ -13,7 +13,7 @@ export const SocialIcon: FC = () => {
                     className="hover:text-secondary text-white transition ease-in-out mr-3"
                 />
             </a>
-            <a href="src/components/pages/home/SocialIcon/SocialIcon" target="_blank" rel="noreferrer">
+            <a href="https://www.instagram.com/chia_1104/" target="_blank" rel="noreferrer">
                 <InstagramIcon
                     fontSize="large"
                     className="hover:text-secondary text-white transition ease-in-out mr-3"
