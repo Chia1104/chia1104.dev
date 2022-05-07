@@ -24,7 +24,7 @@ function createFirebaseApp(config: FirebaseOptions) {
 
 const app = createFirebaseApp(firebaseConfig);
 
-export const analytics = getAnalytics(app);
-export const storage = (bucketUrl: string) => getStorage(app, bucketUrl);
+// export const analytics = getAnalytics(app);
+// export const storage = (bucketUrl: string) => getStorage(app, bucketUrl);
 export const firestore = getFirestore(app);
-export const auth = getAuth(app);
+// export const auth = getAuth(app);
