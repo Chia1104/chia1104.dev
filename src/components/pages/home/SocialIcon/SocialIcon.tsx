@@ -10,19 +10,19 @@ export const SocialIcon: FC = () => {
             <a href="https://github.com/Chia1104" target="_blank" rel="noreferrer">
                 <GitHubIcon
                     fontSize="large"
-                    className="hover:text-secondary text-white transition ease-in-out mr-3"
+                    className="hover:text-secondary text-sec-text transition ease-in-out mr-3"
                 />
             </a>
             <a href="https://www.instagram.com/chia_1104/" target="_blank" rel="noreferrer">
                 <InstagramIcon
                     fontSize="large"
-                    className="hover:text-secondary text-white transition ease-in-out mr-3"
+                    className="hover:text-secondary text-sec-text transition ease-in-out mr-3"
                 />
             </a>
             <a href="https://www.facebook.com/profile.php?id=100010013018832" target="_blank" rel="noreferrer">
                 <FacebookOutlinedIcon
                     fontSize="large"
-                    className="hover:text-secondary text-white transition ease-in-out"
+                    className="hover:text-secondary text-sec-text transition ease-in-out"
                 />
             </a>
         </div>
