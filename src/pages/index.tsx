@@ -1,11 +1,11 @@
 import type { NextPage } from 'next'
-import { Header} from "../components/globals/Layout/Header";
+import { Head} from "../components/globals/Layout/Head";
 import { Footer } from "../components/globals/Layout/Footer";
 
 const EntryPage: NextPage = () => {
     return (
         <div className="c-container">
-            <Header
+            <Head
                 title="Chia WEB"
                 description="Yu Yu, Chia, 俞又嘉, WEB developer, UI/UX"
             />

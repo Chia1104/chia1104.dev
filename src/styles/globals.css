@@ -7,6 +7,11 @@
     @apply
     container mx-auto
   }
+
+  .c-hover-link {
+    @apply
+    hover:border-b-2 border-primary transition ease-in-out
+  }
 }
 
 html,

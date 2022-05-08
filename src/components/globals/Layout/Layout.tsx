@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Header } from "./Header";
+import { Head } from "./Head";
 import { Footer } from "./Footer";
 
 interface Props {

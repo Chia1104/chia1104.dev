@@ -14,6 +14,7 @@ module.exports = {
       colors: {
         'primary': '#2B2E4A',
         'secondary': '#ff9b1a',
+        'sec-text': '#444444',
         'success': '#4caf50',
         'info': '#2196f3',
         'warning': '#ff9800',

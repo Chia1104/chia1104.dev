@@ -1,5 +1,5 @@
 import type { GetServerSideProps, NextPage} from 'next'
-import { Header } from "../../components/globals/Layout/Header";
+import { Head } from "../../components/globals/Layout/Head";
 import { Footer } from "../../components/globals/Layout/Footer";
 import { queryPosts } from "../../../firebase/posts/services";
 import { Post } from "../../utils/types";
@@ -24,7 +24,7 @@ const PostPage: NextPage<Props> = (props) => {
     const posts = props.posts;
     return (
         <div className="c-container">
-            <Header
+            <Head
                 title="Post"
                 description="Post page"
             />

@@ -1,11 +1,11 @@
 import type { NextPage } from 'next'
-import { Header } from "../../components/globals/Layout/Header";
+import { Head } from "../../components/globals/Layout/Head";
 import { Footer } from "../../components/globals/Layout/Footer";
 
 const ResultPage: NextPage = () => {
     return (
         <div className="c-container">
-            <Header
+            <Head
                 title="Result"
                 description="This is the result page"
             />
