@@ -7,10 +7,10 @@ import NextLink from "next/link";
 export const NavMenu: FC = () => {
 
     return(
-        <nav className="w-screen flex h-[75px] items-center bg-white/90 top-0 fixed justify-center z-40 border-b-[1px] border-gray-200 backdrop-blur-sm">
+        <nav className="w-screen flex h-[75px] items-center bg-white/90 top-0 fixed justify-center z-40 border-b-[1px] border-gray-200 backdrop-blur-sm dark:bg-dark/90 text-sec-text dark:text-white">
             <div className="flex container w-[100%]">
                 <div className="flex items-center w-[70%] justify-start">
-                    <h1 className="text-2xl ml-3 text-sec-text">
+                    <h1 className="text-2xl ml-3 ">
                         Chia1104
                     </h1>
                 </div>
@@ -19,10 +19,10 @@ export const NavMenu: FC = () => {
                         <a className="flex c-hover-link mr-4">
                             <HomeOutlinedIcon
                                 fontSize={'medium'}
-                                className="mr-1 text-sec-text"
+                                className="mr-1"
                                 aria-label={"Home page"}
                             />
-                            <h2 className="text-sec-text">
+                            <h2>
                                 Home
                             </h2>
                         </a>
@@ -31,10 +31,10 @@ export const NavMenu: FC = () => {
                         <a className="flex c-hover-link mr-4">
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
-                                className="mr-1 text-sec-text"
+                                className="mr-1"
                                 aria-label={"Posts page"}
                             />
-                            <h2 className="text-sec-text">
+                            <h2>
                                 Post
                             </h2>
                         </a>
@@ -43,10 +43,10 @@ export const NavMenu: FC = () => {
                         <a className="flex c-hover-link mr-4">
                             <WorkspacesOutlinedIcon
                                 fontSize={'medium'}
-                                className="mr-1 text-sec-text"
+                                className="mr-1"
                                 aria-label={"Results page"}
                             />
-                            <h2 className="text-sec-text">
+                            <h2>
                                 Result
                             </h2>
                         </a>
@@ -57,7 +57,7 @@ export const NavMenu: FC = () => {
                         <a className="flex c-hover-link mr-4">
                             <HomeOutlinedIcon
                                 fontSize={'large'}
-                                className="mr-1 text-sec-text"
+                                className="mr-1"
                                 aria-label={"Home page"}
                             />
                         </a>
@@ -66,7 +66,7 @@ export const NavMenu: FC = () => {
                         <a className="flex c-hover-link mr-4" >
                             <ArticleOutlinedIcon
                                 fontSize={'large'}
-                                className="mr-1 text-sec-text"
+                                className="mr-1"
                                 aria-label={"Posts page"}
                             />
                         </a>
@@ -75,7 +75,7 @@ export const NavMenu: FC = () => {
                         <a className="flex c-hover-link mr-4">
                             <WorkspacesOutlinedIcon
                                 fontSize={'large'}
-                                className="mr-1 text-sec-text"
+                                className="mr-1"
                                 aria-label={"Results page"}
                             />
                         </a>

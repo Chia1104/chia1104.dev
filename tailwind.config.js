@@ -27,4 +27,10 @@ module.exports = {
     },
   },
   plugins: [],
+  future: {
+    removeDeprecatedGapUtilities: true,
+    purgeLayersByDefault: true
+  },
+  purge: ['./src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class'
 }

@@ -8,7 +8,7 @@ import { FC } from "react";
 export const ActionIcon: FC = () => {
 
     return (
-        <div className="fixed bottom-0 right-0 mr-10 mb-10 bg-white/80 p-3 rounded-xl shadow-2xl backdrop-blur-sm flex flex-col justify-center items-center">
+        <div className="fixed bottom-0 right-0 mr-10 mb-10 bg-white/80 p-3 rounded-xl shadow-2xl backdrop-blur-sm flex flex-col justify-center items-center text-sec-text dark:text-white dark:bg-dark/90">
             <button aria-label={"Open contact"}>
                 <KeyboardArrowUpOutlinedIcon
                     fontSize="small"
@@ -18,7 +18,7 @@ export const ActionIcon: FC = () => {
                 <button aria-label={"Light or Dark"}>
                     <Brightness4OutlinedIcon
                         fontSize="medium"
-                        className="hover:text-secondary text-sec-text transition ease-in-out mr-3"
+                        className="hover:text-secondary transition ease-in-out mr-3"
                         aria-label={"Light or Dark"}
                     />
                 </button>
@@ -31,7 +31,7 @@ export const ActionIcon: FC = () => {
                 >
                     <GitHubIcon
                         fontSize="medium"
-                        className="hover:text-secondary text-sec-text transition ease-in-out mx-3"
+                        className="hover:text-secondary transition ease-in-out mx-3"
                         aria-label={"Open GitHub"}
                     />
                 </a>
@@ -43,7 +43,7 @@ export const ActionIcon: FC = () => {
                 >
                     <InstagramIcon
                         fontSize="medium"
-                        className="hover:text-secondary text-sec-text transition ease-in-out mr-3"
+                        className="hover:text-secondary transition ease-in-out mr-3"
                         aria-label={"Open Instagram"}
                     />
                 </a>
@@ -55,7 +55,7 @@ export const ActionIcon: FC = () => {
                 >
                     <LinkedInIcon
                         fontSize="medium"
-                        className="hover:text-secondary text-sec-text transition ease-in-out"
+                        className="hover:text-secondary transition ease-in-out"
                         aria-label={"Open LinkedIn"}
                     />
                 </a>

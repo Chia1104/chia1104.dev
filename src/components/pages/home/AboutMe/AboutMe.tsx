@@ -15,13 +15,13 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
                         className="title text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
                         Yu Chia, Yu
                     </h1>
-                    <h2 className="description text-sec-text">
+                    <h2 className="description text-sec-text dark:text-white">
                         WEB DEVELOPER
                     </h2>
                 </div>
                 <div className="flex justify-center items-center">
                     <div className="rounded-full w-[200px] h-[200px] overflow-hidden bg-gradient-to-r from-purple-400 to-pink-600 flex justify-center items-center">
-                        <div className="rounded-full w-[195px] h-[195px] bg-white p-3">
+                        <div className="rounded-full w-[195px] h-[195px] bg-white p-3 dark:bg-dark">
                             <Image
                                 src={avatarSrc || '/favicon.ico'}
                                 alt="Chia1104"

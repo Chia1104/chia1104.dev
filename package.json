@@ -20,6 +20,7 @@
     "framer-motion": "^6.3.2",
     "next": "12.1.5",
     "next-seo": "^5.4.0",
+    "next-themes": "^0.2.0",
     "react": "18.0.0",
     "react-dom": "18.0.0",
     "react-redux": "^8.0.1"
