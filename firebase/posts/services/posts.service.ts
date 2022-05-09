@@ -2,7 +2,7 @@ import { dataToJSON } from "../repositories";
 import {query, where, orderBy, collectionGroup, limit, getDocs} from 'firebase/firestore';
 import { firestore } from '../../config';
 
-export const queryPosts = async (Limit: number): Promise<any> => {
+export const queryPosts = async (Limit: number): Promise<Promise<JSON>[]> => {
     const ref = await collectionGroup(firestore, 'posts');
     const postsQuery = query(
         ref,
