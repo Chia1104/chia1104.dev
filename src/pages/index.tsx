@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import { Head} from "../components/globals/Layout/Head";
-import { Footer } from "../components/globals/Layout/Footer";
+import { Footer } from "../components/globals/Footer";
 
 const EntryPage: NextPage = () => {
     return (

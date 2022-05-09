@@ -1,1 +1,0 @@
-export { SocialIcon } from './SocialIcon';

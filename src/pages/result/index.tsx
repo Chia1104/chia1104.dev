@@ -1,23 +1,18 @@
 import type { NextPage } from 'next'
-import { Head } from "../../components/globals/Layout/Head";
-import { Footer } from "../../components/globals/Layout/Footer";
+import {Layout} from "../../components/globals/Layout";
 
 const ResultPage: NextPage = () => {
     return (
-        <div className="c-container">
-            <Head
-                title="Result"
-                description="This is the result page"
-            />
-
-            <main className="main">
+        <Layout
+            title="Result"
+            description="This is the result page"
+        >
+            <main className="main c-container">
                 <h1 className="title">
                     RESULT Page
                 </h1>
             </main>
-
-            <Footer />
-        </div>
+        </Layout>
     )
 }
 

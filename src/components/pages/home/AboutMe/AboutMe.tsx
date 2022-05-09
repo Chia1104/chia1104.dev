@@ -33,21 +33,21 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
                     </div>
                 </div>
             </div>
-            <div className="bg-gray-300 rounded-xl p-5 mt-20 w-[90%] mx-auto">
+            <div className="bg-primary/90 rounded-xl p-5 mt-20 w-[90%] mx-auto text-white backdrop-blur-sm">
                 <ul>
-                    <li className="text-sec-text mb-2">
+                    <li className="mb-2">
                         🔭 I’m currently working on: My personal website with NextJS
                     </li>
-                    <li className="text-sec-text mb-2">
+                    <li className="mb-2">
                         🌱 I’m currently learning: Docker, Next.js, Nest.js, TypeScript, Go
                     </li>
-                    <li className="text-sec-text mb-2">
+                    <li className="mb-2">
                         👯 I’m looking to collaborate on: Intern ship
                     </li>
-                    <li className="text-sec-text mb-2">
+                    <li className="mb-2">
                         📫 How to reach me: yuyuchia7423@gmail.com
                     </li>
-                    <li className="text-sec-text">
+                    <li>
                         ⚡ Fun fact:
                         <a href="https://open.spotify.com/user/21vnijzple4ufn2nzlfjy37py?si=b5f011d11a794ba4&nd=1" target="_blank" rel="noreferrer"> Spotify </a>
                         /

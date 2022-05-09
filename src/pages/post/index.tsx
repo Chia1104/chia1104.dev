@@ -1,8 +1,7 @@
 import type { GetStaticProps, NextPage} from 'next'
-import { Head } from "../../components/globals/Layout/Head";
-import { Footer } from "../../components/globals/Layout/Footer";
 import { queryPosts } from "../../../firebase/posts/services";
 import { Post } from "../../utils/types";
+import {Layout} from "../../components/globals/Layout";
 
 interface Props {
     posts: Post,
@@ -23,13 +22,10 @@ export const getStaticProps: GetStaticProps = async (context) => {
 const PostPage: NextPage<Props> = (props) => {
     const posts = props.posts;
     return (
-        <div className="c-container">
-            <Head
-                title="Post"
-                description="Post page"
-            />
-
-            <main className="main">
+        <Layout
+            title="Post"
+            description="Post page">
+            <main className="main c-container">
                 <h1 className="title">
                     POST Page
                 </h1>
@@ -43,9 +39,7 @@ const PostPage: NextPage<Props> = (props) => {
                     })}
                 </div>
             </main>
-
-            <Footer />
-        </div>
+        </Layout>
     )
 }
 
