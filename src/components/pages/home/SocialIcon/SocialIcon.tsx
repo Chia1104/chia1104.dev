@@ -6,7 +6,7 @@ import { FC } from "react";
 export const SocialIcon: FC = () => {
 
     return (
-        <div className="absolute bottom-0 right-0 mr-10 mb-10 bg-white/20 p-3 rounded-xl shadow-2xl">
+        <div className="absolute bottom-0 right-0 mr-10 mb-10 bg-white/80 p-3 rounded-xl shadow-2xl backdrop-blur-sm">
             <a href="https://github.com/Chia1104" target="_blank" rel="noreferrer">
                 <GitHubIcon
                     fontSize="large"

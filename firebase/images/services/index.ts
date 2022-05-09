@@ -1,1 +1,1 @@
-export { getChiaImage } from "./images.service";
+export { getImage } from "./images.service";

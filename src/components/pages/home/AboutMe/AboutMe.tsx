@@ -1,8 +1,11 @@
-import { motion } from "framer-motion";
 import Image from 'next/image'
 import { FC } from "react";
 
-export const AboutMe: FC = () => {
+interface Props {
+    avatarSrc: string
+}
+
+export const AboutMe: FC<Props> = ({avatarSrc}) => {
 
     return (
         <div className="w-full h-full flex flex-col">
@@ -20,7 +23,7 @@ export const AboutMe: FC = () => {
                     <div className="rounded-full w-[200px] h-[200px] overflow-hidden bg-gradient-to-r from-purple-400 to-pink-600 flex justify-center items-center">
                         <div className="rounded-full w-[195px] h-[195px] bg-white p-3">
                             <Image
-                                src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/me-images%2Fme-memoji.PNG?alt=media&token=7ac17143-80b4-4246-9f42-baa95fd45ce1"
+                                src={avatarSrc || '/favicon.ico'}
                                 alt="Chia1104"
                                 width={200}
                                 height={200}

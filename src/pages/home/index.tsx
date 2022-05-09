@@ -1,11 +1,26 @@
-import type { NextPage } from 'next'
+import type {GetStaticProps, NextPage} from 'next'
 import { Head } from "../../components/globals/Layout/Head";
 import { Footer } from "../../components/globals/Layout/Footer";
 import { AboutMe } from "../../components/pages/home/AboutMe";
 import { SocialIcon } from "../../components/pages/home/SocialIcon";
-import { ChiaTimeLine } from "../../components/pages/home/ChiaTimeLine";
+import { getImage } from "../../../firebase/images/services";
 
-const HomePage: NextPage = () => {
+interface Props {
+    Url: string,
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+    const avatarUrl = await getImage('me-images/me-memoji.PNG');
+
+    return {
+        props: {
+            Url: avatarUrl as string,
+        },
+    }
+}
+
+
+const HomePage: NextPage<Props> = (props) => {
     return (
         <>
             <Head
@@ -18,7 +33,9 @@ const HomePage: NextPage = () => {
                     </h1>
                 </div>
                 <div className="c-container">
-                    <AboutMe />
+                    <AboutMe
+                        avatarSrc={props.Url}
+                    />
                     <SocialIcon />
                 </div>
             </main>

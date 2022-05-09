@@ -1,11 +1,11 @@
 import { storage } from "../../config";
 import { ref, getDownloadURL } from "firebase/storage";
 
-export const getChiaImage = async (imageName: string) => {
+export const getImage = async (imageUrl: string) => {
     try {
-        return await getDownloadURL(ref(storage, `gs://chia1104.appspot.com/me-images/${imageName}`))
+        return await getDownloadURL(ref(storage, `gs://chia1104.appspot.com/${imageUrl}`))
     } catch (e) {
-        console.debug('getChiaImage', e);
+        console.debug('getImage', e);
         return null;
     }
 }

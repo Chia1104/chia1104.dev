@@ -1,4 +1,4 @@
-import type { GetServerSideProps, NextPage} from 'next'
+import type { GetStaticProps, NextPage} from 'next'
 import { Head } from "../../components/globals/Layout/Head";
 import { Footer } from "../../components/globals/Layout/Footer";
 import { queryPosts } from "../../../firebase/posts/services";
@@ -8,7 +8,7 @@ interface Props {
     posts: Post,
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getStaticProps: GetStaticProps = async (context) => {
     const post = await queryPosts(10);
 
     // const params = context.params;

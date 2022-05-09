@@ -26,7 +26,7 @@ export const NavMenu: FC = () => {
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="post">
+                    <NextLink href="/post">
                         <a className="flex c-hover-link mr-4">
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
@@ -58,7 +58,7 @@ export const NavMenu: FC = () => {
                             />
                         </a>
                     </NextLink>
-                    <NextLink href="post">
+                    <NextLink href="/post">
                         <a className="flex c-hover-link mr-4">
                             <ArticleOutlinedIcon
                                 fontSize={'large'}
