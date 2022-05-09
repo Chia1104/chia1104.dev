@@ -20,6 +20,7 @@ export const NavMenu: FC = () => {
                             <HomeOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1 text-sec-text"
+                                aria-label={"Home page"}
                             />
                             <h2 className="text-sec-text">
                                 Home
@@ -31,6 +32,7 @@ export const NavMenu: FC = () => {
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1 text-sec-text"
+                                aria-label={"Posts page"}
                             />
                             <h2 className="text-sec-text">
                                 Post
@@ -42,6 +44,7 @@ export const NavMenu: FC = () => {
                             <WorkspacesOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1 text-sec-text"
+                                aria-label={"Results page"}
                             />
                             <h2 className="text-sec-text">
                                 Result
@@ -55,14 +58,16 @@ export const NavMenu: FC = () => {
                             <HomeOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1 text-sec-text"
+                                aria-label={"Home page"}
                             />
                         </a>
                     </NextLink>
                     <NextLink href="/post">
-                        <a className="flex c-hover-link mr-4">
+                        <a className="flex c-hover-link mr-4" >
                             <ArticleOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1 text-sec-text"
+                                aria-label={"Posts page"}
                             />
                         </a>
                     </NextLink>
@@ -71,6 +76,7 @@ export const NavMenu: FC = () => {
                             <WorkspacesOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1 text-sec-text"
+                                aria-label={"Results page"}
                             />
                         </a>
                     </NextLink>
