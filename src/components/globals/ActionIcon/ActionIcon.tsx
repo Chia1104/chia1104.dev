@@ -36,7 +36,7 @@ export const ActionIcon: FC = () => {
                     />
                 </a>
                 <a
-                    href="src/components/globals/ActionIcon/ActionIcon"
+                    href="https://www.instagram.com/chia_1104/"
                     target="_blank"
                     rel="noreferrer"
                     aria-label={"Open Instagram"}
