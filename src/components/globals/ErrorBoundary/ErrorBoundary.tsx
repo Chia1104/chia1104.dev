@@ -31,7 +31,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         Oops, there is an error!
                     </h1>
                     <Image
-                        src="/_error/error-memoji.PNG"
+                        src="/error/error-memoji.png"
                         alt={"Error Memoji"}
                         width={200}
                         height={200}
