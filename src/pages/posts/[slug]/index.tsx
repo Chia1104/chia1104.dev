@@ -11,7 +11,7 @@ import { getSlugs, getPostFromSlug } from '../../../../lib/mdx/services'
 import { Layout } from "../../../components/globals/Layout";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { Post } from "../../../utils/types";
-// import 'highlight.js/styles/atom-one-dark-reasonable.css'
+import 'highlight.js/styles/atom-one-dark-reasonable.css'
 
 interface Props {
     source: MDXRemoteProps,
@@ -67,13 +67,13 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             title={frontMatter.title}
             description={frontMatter.excerpt}
         >
-            <main className="main c-container">
-                <h1 className="title">{frontMatter.title}</h1>
-                <p className="description">
+            <main className="main c-container mt-5 px-5">
+                <h1 className="title self-start">{frontMatter.title}</h1>
+                <p className="description self-start">
                     {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
                     {frontMatter.readingTime}
                 </p>
-                <div className="">
+                <div className="c-bg-secondary p-5 mt-5 rounded-xl self-start w-[80%] content">
                     <MDXRemote {...source} components={{ Image }} />
                 </div>
             </main>

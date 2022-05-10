@@ -1,15 +1,31 @@
 ---
 id: 2
-title: "This is example 2"
+title: "Example 2"
 createdAt: '2022-05-10'
 tags: ['next', 'next-mdx-remote', 'dev', 'blog']
 excerpt: "Simple tutorial to setup your own dev blog using Next.js and next-mdx-remote."
 ---
 
-## Prerequisites
+<h1 className="description">This is example 2</h1>
 
-Before going any further, I am expecting that you at least have a basic understanding about Next.js and MDX beforehand.
-If you don't, I'll highly recommend you check them out first.
+<Image
+    src="/error/error-memoji.png"
+    alt={"Error Memoji"}
+    width={200}
+    height={200}
+    priority
+    aria-label={"Error Memoji"}
+/>
 
-- [Next.js](https://nextjs.org)
-- [MDX](https://mdxjs.com)
+還記得在2020年底的時候各大學都不幸傳出學生墜樓的意外事件，當中Dcard更是大學生常使用的匿名社群網站，大學生會在上面發布有關於學校、課業、日常等等的相關文章。
+因此學校輔導組希望我們可以透過爬取Dcard上有關長庚大學的文章來及時取得同學們對學校的想法或者是找出情緒不穩定的學生，以利學校的改善並幫助這些學生。
+Dcard每日更新的文章數量非常龐大，再者內文的長度也可能十分冗長，而藏在其中的資訊又十分珍貴。因此，本研究希望透過現代科技，自動取得文章、分析文章，讓繁瑣複雜的內容，轉變為讓使用者能夠方便快速了解，經過分析統整過後產生能夠易於了解的資訊。
+本專題使用Python爬蟲程式將文章內容自動抓取並儲存於資料庫中，並使用MySQL Workbench進行資料庫管理。再透過Snow nlp套件對文章內容進行分析，並將分析結果存入資料庫中。
+我們APP主要透過API的連接來設置資料並完成主要功能，前端包含文章列表、圖表(圓餅圖、長條圖和折線圖)、查詢等主要功能。我們後台是用PHP並以Laravel的框架所撰寫的，最後再把專案部署到Cloud Server上，我們選用Google Cloud Platform(GCP)為我們的雲端伺服器，使用其中的Cloud Run這項服務來建立API。
+而我主要負責的部分為前端Android的開發，但在後來發現我們缺少後端API的提供，於是便自己出來做，並且選用PHP Laravel 來做開發，還記得那時候非常的徬徨自己不但要把前端Android的功能完成，更要學習一個新的框架，我那時候更是不了解MVC的概念，不過好在現今網路上有非常多的文章，並且Laravel的官方文件也寫的淺顯易懂，所以我在兩個禮拜內便寫出了所有前端所會用到的API，不過當然寫的不是很好，那時候把很多工作都全部放在controller中，自己甚至還不知道要分出service等等架構出來的觀念，所以自己在畢業專題結束後更是回來修改過去的程式碼，並且從原先的MySQL轉到MongoDB，除了了解servicec和repository等架構外更是在不同的ORM架構瞭解SQL與No SQL的差別。
+當然這次的畢專也不只讓我學到這些，這也是我第一次使用Docker並且實際部署在GCP上，當中更是了解CI/CD的重要性，於是便回想起，如果一開始就有把相關的自動化流程及測試寫好，那過去便不用花太多時間在自己做除錯和部署。寫完Laravel後自己也嘗試了Spring Boot 和NestJS等後台框架，便發現自己的上手門檻降了非常多，更是少了當時的徬徨感，了解了如 ：
+Model專做資料表存取相關設定。
+Repository撈取屬於自己 Model 不同條件下的資料，並做快取控制，供 Service 存取。
+Service做資料的驗證，並組合不同的 Repository 資料成商業邏輯，供 Controller 或 Concrete 存取。
+及 Controller控制要使用哪些 Service 或 Concrete 的商業邏輯，去組合出使用者請求需要的資料，並做資料的資料交易控制 (transaction) ，並使用 Checker 去檢查任何使用者傳進來的資料，確保資料的正確性。
+
