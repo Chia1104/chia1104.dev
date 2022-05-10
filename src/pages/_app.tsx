@@ -10,8 +10,7 @@ import { ThemeProvider } from 'next-themes'
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
     return (
-        // @ts-ignore
-        <ThemeProvider forcedTheme={Component.theme || undefined} attribute="class">
+        <ThemeProvider enableSystem={true} attribute="class">
             <DefaultSeo {...SEO}/>
             <NavMenu/>
             <ActionIcon/>

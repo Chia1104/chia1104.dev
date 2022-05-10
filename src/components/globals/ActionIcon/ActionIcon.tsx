@@ -3,24 +3,47 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import Brightness4OutlinedIcon from '@mui/icons-material/Brightness4Outlined';
 import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
-import { FC } from "react";
+import Brightness5OutlinedIcon from '@mui/icons-material/Brightness5Outlined';
+import { useTheme } from 'next-themes'
+import { FC, useState, useEffect } from "react";
 
 export const ActionIcon: FC = () => {
+    const { theme, setTheme } = useTheme()
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     return (
-        <div className="fixed bottom-0 right-0 mr-10 mb-10 bg-white/80 p-3 rounded-xl shadow-2xl backdrop-blur-sm flex flex-col justify-center items-center text-sec-text dark:text-white dark:bg-dark/90">
+        <div className="fixed bottom-0 right-0 mr-10 mb-10 p-3 rounded-xl shadow-2xl flex flex-col justify-center items-center c-bg-secondary z-40">
             <button aria-label={"Open contact"}>
                 <KeyboardArrowUpOutlinedIcon
                     fontSize="small"
                 />
             </button>
             <div className="flex">
-                <button aria-label={"Light or Dark"}>
-                    <Brightness4OutlinedIcon
-                        fontSize="medium"
-                        className="hover:text-secondary transition ease-in-out mr-3"
-                        aria-label={"Light or Dark"}
-                    />
+                <button
+                    aria-label={"Light or Dark"}
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                >
+                    {
+                        mounted &&
+                        <>
+                            {
+                                theme === 'dark'
+                                    ? <Brightness4OutlinedIcon
+                                        fontSize="medium"
+                                        className="hover:text-secondary transition ease-in-out mr-3"
+                                        aria-label={"Dark"}
+                                    />
+                                    : <Brightness5OutlinedIcon
+                                        fontSize="medium"
+                                        className="hover:text-secondary transition ease-in-out mr-3"
+                                        aria-label={"Light"}
+                                    />
+                            }
+                        </>
+                    }
                 </button>
                 <div className="border-r"/>
                 <a

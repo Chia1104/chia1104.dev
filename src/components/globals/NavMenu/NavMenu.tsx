@@ -7,7 +7,7 @@ import NextLink from "next/link";
 export const NavMenu: FC = () => {
 
     return(
-        <nav className="w-screen flex h-[75px] items-center bg-white/90 top-0 fixed justify-center z-40 border-b-[1px] border-gray-200 backdrop-blur-sm dark:bg-dark/90 text-sec-text dark:text-white">
+        <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-40 border-b-[1px] c-border-primary c-bg-secondary">
             <div className="flex container w-[100%]">
                 <div className="flex items-center w-[70%] justify-start">
                     <h1 className="text-2xl ml-3 ">

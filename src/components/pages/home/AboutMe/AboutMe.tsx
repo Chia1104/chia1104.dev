@@ -12,10 +12,10 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
             <div className="flex flex-col xl:flex-row px-3 justify-center z-20">
                 <div className="flex flex-col justify-end items-center xl:items-end mb-5 xl:pr-5">
                     <h1
-                        className="title text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                        className="title c-text-purple-to-pink">
                         Yu Chia, Yu
                     </h1>
-                    <h2 className="description text-sec-text dark:text-white">
+                    <h2 className="description c-text-green-to-purple">
                         WEB DEVELOPER
                     </h2>
                 </div>
