@@ -1,6 +1,4 @@
 import type {GetStaticProps, NextPage} from 'next'
-import { Head } from "../../components/globals/Layout/Head";
-import { Footer } from "../../components/globals/Footer";
 import { AboutMe } from "../../components/pages/home/AboutMe";
 import { getImage } from "../../../firebase/images/services";
 import { Layout } from "../../components/globals/Layout";
