@@ -1,25 +1,34 @@
 import type { GetStaticProps, NextPage} from 'next'
-import { queryPosts } from "../../../firebase/posts/services";
 import { Post } from "../../utils/types";
 import {Layout} from "../../components/globals/Layout";
+import { getAllPosts } from "../../../lib/mdx/services";
+import Link from "next/link";
 
 interface Props {
     posts: Post,
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
-    const post = await queryPosts(10);
+    const posts = await getAllPosts();
 
-    // const params = context.params;
+    posts
+        .map((post) => post.data)
+        .sort((foo, bar) => {
+            if (foo.data.createdAt > bar.data.createdAt) return 1
+            if (foo.data.createdAt < bar.data.createdAt) return -1
+
+            return 0
+        })
+
     return {
         props: {
-            posts: post as Post,
+            posts: posts.reverse(),
         },
     };
 };
 
 
-const PostPage: NextPage<Props> = (props) => {
+const PostsPage: NextPage<Props> = (props) => {
     const posts = props.posts;
     return (
         <Layout
@@ -32,9 +41,11 @@ const PostPage: NextPage<Props> = (props) => {
                 <div>
                     {posts.map((post: Post) => {
                         return (
-                            <div key={post.id} >
-                                <h2>{post.title}</h2>
-                            </div>
+                            <Link href={`/posts/${post.slug}`} passHref key={post.id}>
+                                <a >
+                                    <h2>{post.title}</h2>
+                                </a>
+                            </Link>
                         )
                     })}
                 </div>
@@ -43,4 +54,4 @@ const PostPage: NextPage<Props> = (props) => {
     )
 }
 
-export default PostPage
+export default PostsPage

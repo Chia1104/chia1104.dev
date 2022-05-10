@@ -1,9 +1,10 @@
 export interface Post {
-    id: string;
+    slug: string;
+    id: number;
     title: string;
-    content: string;
-    createdAt: number;
-    updatedAt: number;
+    excerpt: string;
+    createdAt: string;
+    readingTime: string;
     published: boolean;
 
     map(element: (post: Post) => JSX.Element): any;

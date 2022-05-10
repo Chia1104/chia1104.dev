@@ -27,7 +27,7 @@ export const NavMenu: FC = () => {
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="/post">
+                    <NextLink href="/posts">
                         <a className="flex c-hover-link mr-4">
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
@@ -35,7 +35,7 @@ export const NavMenu: FC = () => {
                                 aria-label={"Posts page"}
                             />
                             <h2>
-                                Post
+                                Posts
                             </h2>
                         </a>
                     </NextLink>
@@ -62,7 +62,7 @@ export const NavMenu: FC = () => {
                             />
                         </a>
                     </NextLink>
-                    <NextLink href="/post">
+                    <NextLink href="/posts">
                         <a className="flex c-hover-link mr-4" >
                             <ArticleOutlinedIcon
                                 fontSize={'large'}
