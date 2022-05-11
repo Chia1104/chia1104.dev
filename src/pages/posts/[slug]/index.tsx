@@ -73,7 +73,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                     {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
                     {frontMatter.readingTime}
                 </p>
-                <div className="c-bg-secondary p-5 mt-5 rounded-xl self-start w-[80%] content">
+                <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] content w-full self-center">
                     <MDXRemote {...source} components={{ Image }} />
                 </div>
             </div>

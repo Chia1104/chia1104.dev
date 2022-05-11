@@ -3,6 +3,7 @@ import { Post } from "../../../utils/types/interfaces/post";
 import { Layout } from "../../components/globals/Layout";
 import { getAllPosts } from "../../../lib/mdx/services";
 import Link from "next/link";
+import { PostsList } from "../../components/pages/posts/PostsList";
 
 interface Props {
     posts: Post,
@@ -38,16 +39,8 @@ const PostsPage: NextPage<Props> = (props) => {
                 <h1 className="title">
                     POST Page
                 </h1>
-                <div>
-                    {posts.map((post: Post) => {
-                        return (
-                            <Link href={`/posts/${post.slug}`} passHref key={post.id}>
-                                <a >
-                                    <h2>{post.title}</h2>
-                                </a>
-                            </Link>
-                        )
-                    })}
+                <div className="flex flex-col lg:flex-row w-full lg:w-[40%] justify-center items-center">
+                    <PostsList post={posts} />
                 </div>
             </div>
         </Layout>

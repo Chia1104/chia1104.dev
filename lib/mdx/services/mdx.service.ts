@@ -6,7 +6,7 @@ import { sync } from 'glob'
 
 const postsPath = path.join(process.cwd(), 'posts')
 
-export async function getSlugs(): Promise<string[]> {
+export const getSlugs = async (): Promise<string[]> => {
     const paths = sync('posts/*.mdx')
 
     return paths.map((path) => {
@@ -18,7 +18,7 @@ export async function getSlugs(): Promise<string[]> {
     })
 }
 
-export async function getPostFromSlug(slug: string) {
+export const getPostFromSlug = async (slug: string) => {
     const postDir = path.join(postsPath, `${slug}.mdx`)
     const source = fs.readFileSync(postDir)
     const { content, data } = matter(source)
@@ -37,7 +37,7 @@ export async function getPostFromSlug(slug: string) {
     }
 }
 
-export async function getAllPosts() {
+export const getAllPosts = async () => {
     const posts = fs.readdirSync(path.join(process.cwd(), 'posts'))
 
     return posts.reduce((allPosts: any[], postSlug: string) => {

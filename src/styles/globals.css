@@ -15,12 +15,12 @@
 
   .c-bg-primary {
     @apply
-    bg-[#dddddd] text-black dark:text-white dark:bg-black
+    bg-[#dddddd] text-black dark:text-white dark:bg-black transition ease-in-out
   }
 
   .c-bg-secondary {
     @apply
-    bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-sm
+    bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-sm transition ease-in-out
   }
 
   .c-border-primary {
