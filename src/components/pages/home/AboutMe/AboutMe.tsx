@@ -13,7 +13,7 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
                 <div className="flex flex-col justify-end items-center xl:items-end mb-5 xl:pr-5">
                     <h1
                         className="title c-text-purple-to-pink">
-                        Yu Chia, Yu
+                        Chia1104 - 俞又嘉
                     </h1>
                     <h2 className="description c-text-green-to-purple">
                         WEB DEVELOPER

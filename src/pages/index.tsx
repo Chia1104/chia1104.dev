@@ -1,24 +1,42 @@
-import type { NextPage } from 'next'
-import { Head} from "../components/globals/Layout/Head";
-import { Footer } from "../components/globals/Footer";
+import type {GetStaticProps, NextPage} from 'next'
+import { AboutMe } from "../components/pages/home/AboutMe";
+import { getImage } from "../../firebase/images/services";
+import { Layout } from "../components/globals/Layout";
 
-const EntryPage: NextPage = () => {
+interface Props {
+    Url: string,
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+    const avatarUrl = await getImage('me-images/me-memoji.PNG');
+
+    return {
+        props: {
+            Url: avatarUrl as string,
+        },
+    }
+}
+
+
+const HomePage: NextPage<Props> = (props) => {
     return (
-        <div className="c-container">
-            <Head
-                title="Chia WEB"
-                description="Yu Yu, Chia, 俞又嘉, WEB developer, UI/UX"
-            />
-
+        <Layout
+            title="Chia1104 - Web Developer"
+            description="Chia1104, 俞又嘉, WEB developer, UI/UX"
+        >
             <main className="main">
-                <h1 className="title">
-                    CHIA WEB
-                </h1>
+                <div className="c-container">
+                    <AboutMe
+                        avatarSrc={props.Url}
+                    />
+                </div>
             </main>
-
-            <Footer />
-        </div>
+            <article>
+                <div className="c-container">
+                </div>
+            </article>
+        </Layout>
     )
 }
 
-export default EntryPage
+export default HomePage

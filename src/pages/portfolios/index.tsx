@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import {Layout} from "../../components/globals/Layout";
 
-const ResultPage: NextPage = () => {
+const PortfoliosPage: NextPage = () => {
     return (
         <Layout
             title="Result"
@@ -9,11 +9,11 @@ const ResultPage: NextPage = () => {
         >
             <main className="main c-container">
                 <h1 className="title">
-                    RESULT Page
+                    Portfolios Page
                 </h1>
             </main>
         </Layout>
     )
 }
 
-export default ResultPage
+export default PortfoliosPage

@@ -14,8 +14,8 @@ export const Head: FC<Props> = (
 ) => {
     return(
         <NextHead>
-            <title>{ title || 'Chia WEB' }</title>
-            <meta name="description" content={ description || 'Yu Yu, Chia, 俞又嘉, WEB developer, UI/UX' } />
+            <title>{ title || 'Chia1104 - Web Developer' }</title>
+            <meta name="description" content={ description || 'Chia1104, 俞又嘉, WEB developer, UI/UX' } />
             <link rel="icon" href="/favicon.ico" />
         </NextHead>
     )

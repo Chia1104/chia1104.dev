@@ -6,7 +6,7 @@ export const Footer: FC  = () => {
     return(
         <footer className="footer">
             <p>
-                @Copyright {year}, Chia
+                ©{year}, Chia1104
             </p>
         </footer>
     )

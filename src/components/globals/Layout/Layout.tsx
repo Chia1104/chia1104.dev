@@ -20,9 +20,7 @@ export const Layout: FC<Props> = ({children, title,description,}) => {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
             >
-                <main>
-                    {children}
-                </main>
+                {children}
             </motion.main>
         </>
     )
