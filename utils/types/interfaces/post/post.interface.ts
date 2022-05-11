@@ -3,7 +3,9 @@ export interface Post {
     id: number;
     title: string;
     excerpt: string;
+    tags: string[];
     createdAt: string;
+    updateAt: string;
     readingTime: string;
     published: boolean;
 

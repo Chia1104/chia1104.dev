@@ -10,7 +10,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import { getSlugs, getPostFromSlug } from '../../../../lib/mdx/services'
 import { Layout } from "../../../components/globals/Layout";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { Post } from "../../../utils/types";
+import { Post } from "../../../../utils/types/interfaces/post";
 import 'highlight.js/styles/atom-one-dark-reasonable.css'
 
 interface Props {
@@ -67,7 +67,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             title={frontMatter.title}
             description={frontMatter.excerpt}
         >
-            <main className="main c-container mt-5 px-5">
+            <div className="main c-container mt-5 px-5">
                 <h1 className="title self-start">{frontMatter.title}</h1>
                 <p className="description self-start">
                     {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
@@ -76,7 +76,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                 <div className="c-bg-secondary p-5 mt-5 rounded-xl self-start w-[80%] content">
                     <MDXRemote {...source} components={{ Image }} />
                 </div>
-            </main>
+            </div>
         </Layout>
     )
 }

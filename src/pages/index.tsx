@@ -2,6 +2,7 @@ import type {GetStaticProps, NextPage} from 'next'
 import { AboutMe } from "../components/pages/home/AboutMe";
 import { getImage } from "../../firebase/images/services";
 import { Layout } from "../components/globals/Layout";
+import { Chia } from"../../utils/meta/chia"
 
 interface Props {
     Url: string,
@@ -19,10 +20,12 @@ export const getStaticProps: GetStaticProps = async () => {
 
 
 const HomePage: NextPage<Props> = (props) => {
+    const description = Chia.content
+
     return (
         <Layout
             title="Chia1104 - Web Developer"
-            description="Chia1104, 俞又嘉, WEB developer, UI/UX"
+            description={description}
         >
             <main className="main">
                 <div className="c-container">

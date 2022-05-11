@@ -1,7 +1,7 @@
 import { FC } from "react";
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import NextLink from "next/link";
 
 export const NavMenu: FC = () => {
@@ -10,20 +10,22 @@ export const NavMenu: FC = () => {
         <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-40 border-b-[1px] c-border-primary c-bg-secondary">
             <div className="flex container w-[100%]">
                 <div className="flex items-center w-[70%] justify-start">
-                    <h1 className="text-2xl ml-3 ">
-                        Chia1104
-                    </h1>
+                    <NextLink href="/">
+                        <a className="text-2xl ml-3 hover:c-text-green-to-purple transition ease-in-out">
+                            Chia1104
+                        </a>
+                    </NextLink>
                 </div>
                 <div className="md:flex items-center w-[30%] sm:hidden justify-end">
-                    <NextLink href="/">
+                    <NextLink href="/about">
                         <a className="flex c-hover-link mr-4">
-                            <HomeOutlinedIcon
+                            <AccountCircleOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"
-                                aria-label={"Home page"}
+                                aria-label={"About page"}
                             />
                             <h2>
-                                Home
+                                About
                             </h2>
                         </a>
                     </NextLink>
@@ -53,12 +55,12 @@ export const NavMenu: FC = () => {
                     </NextLink>
                 </div>
                 <div className="md:hidden items-center w-[30%] sm:flex justify-end">
-                    <NextLink href="/">
+                    <NextLink href="/about">
                         <a className="flex c-hover-link mr-4">
-                            <HomeOutlinedIcon
+                            <AccountCircleOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1"
-                                aria-label={"Home page"}
+                                aria-label={"About page"}
                             />
                         </a>
                     </NextLink>

@@ -1,6 +1,6 @@
 import type { GetStaticProps, NextPage} from 'next'
-import { Post } from "../../utils/types";
-import {Layout} from "../../components/globals/Layout";
+import { Post } from "../../../utils/types/interfaces/post";
+import { Layout } from "../../components/globals/Layout";
 import { getAllPosts } from "../../../lib/mdx/services";
 import Link from "next/link";
 
@@ -32,9 +32,9 @@ const PostsPage: NextPage<Props> = (props) => {
     const posts = props.posts;
     return (
         <Layout
-            title="Post"
+            title="Chia1104 - Posts"
             description="Post page">
-            <main className="main c-container">
+            <div className="main c-container">
                 <h1 className="title">
                     POST Page
                 </h1>
@@ -49,7 +49,7 @@ const PostsPage: NextPage<Props> = (props) => {
                         )
                     })}
                 </div>
-            </main>
+            </div>
         </Layout>
     )
 }
