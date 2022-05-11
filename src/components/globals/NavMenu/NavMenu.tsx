@@ -44,7 +44,7 @@ export const NavMenu: FC = () => {
                             <WorkspacesOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"
-                                aria-label={"Results page"}
+                                aria-label={"Portfolios page"}
                             />
                             <h2>
                                 Portfolios
@@ -53,7 +53,7 @@ export const NavMenu: FC = () => {
                     </NextLink>
                 </div>
                 <div className="md:hidden items-center w-[30%] sm:flex justify-end">
-                    <NextLink href="/home">
+                    <NextLink href="/">
                         <a className="flex c-hover-link mr-4">
                             <HomeOutlinedIcon
                                 fontSize={'large'}
@@ -71,12 +71,12 @@ export const NavMenu: FC = () => {
                             />
                         </a>
                     </NextLink>
-                    <NextLink href="/result">
+                    <NextLink href="/portfolios">
                         <a className="flex c-hover-link mr-4">
                             <WorkspacesOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1"
-                                aria-label={"Results page"}
+                                aria-label={"Portfolios page"}
                             />
                         </a>
                     </NextLink>
