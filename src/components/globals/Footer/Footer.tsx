@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Chia } from"../../../../utils/meta/chia"
+import { Chia } from"@/utils/meta/chia"
 
 export const Footer: FC  = () => {
     const year = new Date().getFullYear();

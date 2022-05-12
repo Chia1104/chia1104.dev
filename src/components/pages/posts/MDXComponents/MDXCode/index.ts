@@ -1,0 +1,1 @@
+export { MDXCode } from './MDXCode';

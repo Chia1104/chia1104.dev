@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Post } from '../../../../../utils/types/interfaces/post';
+import { Post } from '@/utils/types/interfaces/post';
 import { PostItem } from "./PostItem";
 import Link from "next/link";
 

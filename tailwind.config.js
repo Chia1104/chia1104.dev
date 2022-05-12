@@ -23,6 +23,7 @@ module.exports = {
         'dark': '#212121',
         'white': '#ffffff',
         'black': '#000000',
+        'code': '#24292e',
       },
     },
   },

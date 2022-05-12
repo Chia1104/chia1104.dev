@@ -1,9 +1,8 @@
 import type { GetStaticProps, NextPage} from 'next'
-import { Post } from "../../../utils/types/interfaces/post";
-import { Layout } from "../../components/globals/Layout";
-import { getAllPosts } from "../../../lib/mdx/services";
-import Link from "next/link";
-import { PostsList } from "../../components/pages/posts/PostsList";
+import { Post } from "@/utils/types/interfaces/post";
+import { Layout } from "@/components/globals/Layout";
+import { getAllPosts } from "@/lib/mdx/services";
+import { PostsList } from "@/components/pages/posts/PostsList";
 
 interface Props {
     posts: Post,

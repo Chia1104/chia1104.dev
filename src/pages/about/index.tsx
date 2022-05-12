@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
-import { Layout } from "../../components/globals/Layout";
-import { Chia } from"../../../utils/meta/chia"
+import { Layout } from "@/components/globals/Layout";
+import { Chia } from"@/utils/meta/chia"
 
 const AboutPage: NextPage = () => {
     const description = Chia.content

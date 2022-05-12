@@ -1,17 +1,17 @@
 import dayjs from 'dayjs'
 import React from 'react'
-import Image from 'next/image'
 import rehypeSlug from 'rehype-slug'
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
 import rehypeHighlight from 'rehype-highlight'
 import rehypeCodeTitles from 'rehype-code-titles'
 import { serialize } from 'next-mdx-remote/serialize'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
-import { getSlugs, getPostFromSlug } from '../../../../lib/mdx/services'
-import { Layout } from "../../../components/globals/Layout";
+import { getSlugs, getPostFromSlug } from '@/lib/mdx/services'
+import { Layout } from "@/components/globals/Layout";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { Post } from "../../../../utils/types/interfaces/post";
-import 'highlight.js/styles/atom-one-dark-reasonable.css'
+import { Post } from "@/utils/types/interfaces/post";
+import { MDXComponents } from "@/components/pages/posts/MDXComponents";
+import 'highlight.js/styles/atom-one-dark-reasonable.css' // code syntax highlighting
 
 interface Props {
     source: MDXRemoteProps,
@@ -73,8 +73,8 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                     {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
                     {frontMatter.readingTime}
                 </p>
-                <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] content w-full self-center">
-                    <MDXRemote {...source} components={{ Image }} />
+                <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] content w-full self-center mx-auto lg:ml-2">
+                    <MDXRemote {...source} components={MDXComponents} />
                 </div>
             </div>
         </Layout>

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Post } from '../../../../../../utils/types/interfaces/post';
+import { Post } from '@/utils/types/interfaces/post';
 import dayjs from "dayjs";
 
 interface Props {
