@@ -1,39 +1,73 @@
 import Image from 'next/image'
 import { FC } from "react";
+import { Chia } from "@/utils/meta/chia"
+import NextLink from "next/link";
 
 interface Props {
     avatarSrc: string
 }
 
 export const AboutMe: FC<Props> = ({avatarSrc}) => {
+    const name = Chia.name
+    const chineseName = Chia.chineseName
+    const title = Chia.title
+    const content = Chia.content
 
     return (
         <div className="w-full h-full flex flex-col">
-            <div className="flex flex-col xl:flex-row px-3 justify-center z-20">
+            <div className="flex flex-col xl:flex-row px-3 justify-center z-20 mt-10">
                 <div className="flex flex-col justify-end items-center xl:items-end mb-5 xl:pr-5">
                     <h1
-                        className="title c-text-purple-to-pink">
-                        Chia1104 - 俞又嘉
+                        className="title text-sec-text dark:text-white">
+                        {name} - {chineseName}
                     </h1>
                     <h2 className="description c-text-green-to-purple">
-                        WEB DEVELOPER
+                        {title.toUpperCase()}
                     </h2>
                 </div>
-                <div className="flex justify-center items-center">
-                    <div className="rounded-full w-[200px] h-[200px] overflow-hidden bg-gradient-to-r from-purple-400 to-pink-600 flex justify-center items-center">
-                        <div className="rounded-full w-[195px] h-[195px] bg-white p-3 dark:bg-dark">
-                            <Image
-                                src={avatarSrc || '/favicon.ico'}
-                                alt="Chia1104"
-                                width={200}
-                                height={200}
-                                priority
-                            />
-                        </div>
+                <div className="flex justify-center items-center rounded-full w-[200px] h-[200px] overflow-hidden bg-gradient-to-r from-purple-400 to-pink-600 flex justify-center items-center self-center">
+                    <div className="rounded-full w-[195px] h-[195px] p-3 c-bg-secondary">
+                        <Image
+                            src={avatarSrc || '/favicon.ico'}
+                            alt="Chia1104"
+                            width={195}
+                            height={195}
+                            priority
+                        />
                     </div>
                 </div>
             </div>
-            <div className="bg-primary/90 rounded-xl p-5 mt-20 w-[90%] mx-auto text-white backdrop-blur-sm">
+            <div className="flex flex-col justify-center items-center lg:flex-row mx-auto">
+                <div className="mt-20 lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
+                    <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
+                        <p className="text-xl text-center">
+                            {content}
+                        </p>
+                    </div>
+                    <NextLink
+                        href="/about"
+                    >
+                        <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
+                            MORE
+                        </a>
+                    </NextLink>
+                </div>
+                <div className="mt-20 lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
+                    <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
+                        <p className="text-xl text-center">
+                            This is an example of a blog post.
+                        </p>
+                    </div>
+                    <NextLink
+                        href="/posts/example-post"
+                    >
+                        <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
+                            MORE
+                        </a>
+                    </NextLink>
+                </div>
+            </div>
+            <div className="bg-primary/90 rounded-xl p-5 mt-20 mx-auto text-white backdrop-blur-sm w-[350px] md:w-[75%]">
                 <ul>
                     <li className="mb-2">
                         🔭 I’m currently working on: My personal website with NextJS

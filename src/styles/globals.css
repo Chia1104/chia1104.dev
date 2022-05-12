@@ -13,6 +13,16 @@
     hover:border-b-2 border-primary transition ease-in-out
   }
 
+  .c-text-primary {
+    @apply
+    text-black dark:text-white transition ease-in-out
+  }
+
+  .c-text-secondary {
+    @apply
+    text-sec-text dark:text-white transition ease-in-out
+  }
+
   .c-bg-primary {
     @apply
     bg-[#dddddd] text-black dark:text-white dark:bg-black transition ease-in-out
@@ -28,14 +38,44 @@
     border-gray-200 dark:border-gray-800
   }
 
+  .c-text-purple-to-blue {
+    @apply
+    text-transparent bg-clip-text bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
+  }
+
+  .c-bg-gradient-purple-to-blue {
+    @apply
+    bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
+  }
+
   .c-text-purple-to-pink {
     @apply
     text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600
   }
 
+  .c-bg-gradient-purple-to-pink {
+    @apply
+    bg-gradient-to-r from-purple-400 to-pink-600
+  }
+
   .c-text-green-to-purple {
     @apply
     text-transparent bg-clip-text bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
+  }
+
+  .c-bg-gradient-green-to-purple {
+    @apply
+    bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
+  }
+
+  .c-text-yellow-to-pink {
+    @apply
+    text-transparent bg-clip-text bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
+  }
+
+  .c-bg-gradient-yellow-to-pink {
+    @apply
+    bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
   }
 
   .c-button-primary {
@@ -55,6 +95,7 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  scroll-behavior: smooth;
 }
 
 a {

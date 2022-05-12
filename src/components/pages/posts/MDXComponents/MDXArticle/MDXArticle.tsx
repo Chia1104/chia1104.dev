@@ -2,7 +2,7 @@
 
 export const MDXArticle = (props: any) => {
     return (
-        <h3 className="w-full mb-2" {...props}>
+        <h3 className="w-full mb-2 text-lg" {...props}>
             {props.children}
         </h3>
     );
