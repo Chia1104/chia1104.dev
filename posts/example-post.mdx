@@ -31,3 +31,29 @@ excerpt: "This is an example of a blog post."
 <Article>
     Far far away, behind the word mountains, Quos quia provident consequuntur culpa facere ratione maxime commodi voluptates id repellat velit eaque aspernatur expedita. Possimus itaque adipisci there live the blind texts from the countries Vokalia and Consonantia, there live the blind texts. Quos quia provident consequuntur culpa facere ratione maxime commodi voluptates id repellat velit eaque aspernatur expedita. Possimus itaque adipisci.
 </Article>
+
+<Code>
+```javascript
+const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
+  return (
+    <Layout
+      title={frontMatter.title}
+      description={frontMatter.excerpt}
+    >
+      <div className="main c-container mt-5 px-5">
+        <h1 className="title self-start">{frontMatter.title}</h1>
+        <p className="description self-start">
+          {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
+          {frontMatter.readingTime}
+        </p>
+        <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] content w-full self-center mx-auto lg:ml-2">
+          <MDXRemote {...source} components={MDXComponents} />
+        </div>
+      </div>
+    </Layout>
+  )
+}
+
+export default PostPage
+```
+</Code>
