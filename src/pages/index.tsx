@@ -37,6 +37,7 @@ const HomePage: NextPage<Props> = (props) => {
             <main className="main">
                 <div className="c-container">
                     <AboutMe
+                        newTitle={props.post.title || 'New update'}
                         newUpdate={props.post.excerpt || 'This is an example of a blog post.'}
                         slug={props.post.slug}
                         avatarSrc={props.url}

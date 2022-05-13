@@ -1,15 +1,16 @@
 import Image from 'next/image'
 import { FC } from "react";
 import { Chia } from "@/utils/meta/chia"
-import NextLink from "next/link";
+import {NewsCard} from "@/components/pages/home/NewsCard";
 
 interface Props {
     avatarSrc: string
+    newTitle: string
     newUpdate: string
     slug: string
 }
 
-export const AboutMe: FC<Props> = ({avatarSrc, newUpdate, slug}) => {
+export const AboutMe: FC<Props> = ({avatarSrc, newTitle, newUpdate, slug}) => {
     const name = Chia.name
     const chineseName = Chia.chineseName
     const title = Chia.title
@@ -40,46 +41,24 @@ export const AboutMe: FC<Props> = ({avatarSrc, newUpdate, slug}) => {
                 </div>
             </div>
             <div className="flex flex-col justify-center items-center lg:flex-row mx-auto">
-                <div className="mt-10 flex flex-col justify-center items-center">
-                    <h3 className="title c-text-secondary">
-                        About me
-                    </h3>
-                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px] mt-5">
-                        <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
-                            <p className="text-xl text-center">
-                                {content}
-                            </p>
-                        </div>
-                        <NextLink
-                            href="/about"
-                        >
-                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
-                                MORE
-                            </a>
-                        </NextLink>
-                    </div>
+                <div className="mt-10">
+                    <NewsCard
+                        title={'About me'}
+                        content={content}
+                        subtitle={''}
+                        link={'/about'}
+                    />
                 </div>
-                <div className="mt-10 flex flex-col justify-center items-center">
-                    <h3 className="title c-text-secondary">
-                        New update
-                    </h3>
-                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px] mt-5">
-                        <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
-                            <p className="text-xl text-center">
-                                { newUpdate || 'This is an example of a blog post.'}
-                            </p>
-                        </div>
-                        <NextLink
-                            href={`/posts/${slug}`}
-                        >
-                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
-                                MORE
-                            </a>
-                        </NextLink>
-                    </div>
+                <div className="mt-10">
+                    <NewsCard
+                        title={newTitle}
+                        content={newUpdate}
+                        subtitle={''}
+                        link={`posts/${slug}`}
+                    />
                 </div>
             </div>
-            <div className="bg-primary/90 rounded-xl p-5 mt-20 mx-auto text-white backdrop-blur-sm w-[350px] md:w-[75%]">
+            <div className="bg-primary/90 rounded-xl p-5 mt-20 mx-auto text-white backdrop-blur-sm w-[350px] md:w-[75%] max-w-[740px]">
                 <ul>
                     <li className="mb-2">
                         🔭 I’m currently working on: My personal website with NextJS

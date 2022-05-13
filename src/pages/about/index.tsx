@@ -1,6 +1,7 @@
 import type { NextPage } from 'next'
 import { Layout } from "@/components/globals/Layout";
 import { Chia } from"@/utils/meta/chia"
+import {Resume} from "@/components/pages/about/Resume";
 
 const AboutPage: NextPage = () => {
     const description = Chia.content
@@ -12,9 +13,7 @@ const AboutPage: NextPage = () => {
             description={description}
         >
             <div className="main c-container">
-                <h1 className="title">
-                    About Page
-                </h1>
+                <Resume avatarSrc={'/favicon.ico'} />
             </div>
         </Layout>
     )

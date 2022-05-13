@@ -27,7 +27,7 @@ const PostsPage: NextPage<Props> = (props) => {
             description="Post page">
             <div className="main c-container">
                 <h1 className="title">
-                    POST Page
+                    Blog posts
                 </h1>
                 <div className="flex flex-col lg:flex-row w-full lg:w-[40%] justify-center items-center">
                     <PostsList post={posts} />

@@ -7,12 +7,121 @@ export const Chia = {
     phone: '+886 0970227360',
     content: 'Computer science developer with a passion for frontend web development and data analysis.',
     technologies: {
-        languages: ['Javascript', 'Java', 'PHP', 'TypeScript'],
-        frameworks: ['NextJS', 'React', 'Vue', 'Laravel', 'NestJS'],
-        tools: ['Docker', 'GitHub Action', 'GCP'],
-        databases: ['MySQL', 'MongoDB', 'Firebase'],
+        languages: [
+            {
+                name: 'JavaScript',
+                level: 'Advanced',
+                link: 'https://www.javascript.com/',
+                icon: 'js',
+            },
+            {
+                name: 'TypeScript',
+                level: 'Basic',
+                link: 'https://www.typescriptlang.org/',
+                icon: 'ts',
+            },
+            {
+                name: 'Java',
+                level: 'Advanced',
+                link: 'https://www.java.com/',
+                icon: 'java',
+            },
+            {
+                name: 'Python',
+                level: 'Basic',
+                link: 'https://www.python.org/',
+                icon: 'python',
+            },
+            {
+                name: 'PHP',
+                level: 'Advanced',
+                link: 'https://www.php.net/',
+                icon: 'php',
+            }
+        ],
+        frameworks: [
+            {
+                name: 'React',
+                level: 'Advanced',
+                link: 'https://reactjs.org/',
+                icon: 'react',
+            },
+            {
+                name: 'NextJS',
+                level: 'Basic',
+                link: 'https://nextjs.org/',
+                icon: 'nextjs',
+            },
+            {
+                name: 'Vue',
+                level: 'Basic',
+                link: 'https://vuejs.org/',
+                icon: 'vue',
+            },
+            {
+                name: 'NestJS',
+                level: 'Basic',
+                link: 'https://nestjs.com/',
+                icon: 'nestjs',
+            },
+            {
+                name: 'Laravel',
+                level: 'Advanced',
+                link: 'https://laravel.com/',
+                icon: 'laravel',
+            }
+        ],
+        tools: [
+            {
+                name: 'Docker',
+                level: 'Basic',
+                link: 'https://www.docker.com/',
+                icon: 'docker',
+            },
+            {
+                name: 'GitHub Action',
+                level: 'Advanced',
+                link: 'https://www.github.com',
+                icon: 'github',
+            },
+            {
+                name: 'GCP',
+                level: 'Basic',
+                link: 'https://cloud.google.com/',
+                icon: 'gcp',
+            }
+        ],
+        databases: [
+            {
+                name: 'MySQL',
+                level: 'Basic',
+                link: 'https://www.mysql.com/',
+                icon: 'mysql',
+            },
+            {
+                name: 'MongoDB',
+                level: 'Basic',
+                link: 'https://www.mongodb.com/',
+                icon: 'mongodb',
+            },
+            {
+                name: 'Firebase',
+                level: 'Advanced',
+                link: 'https://firebase.google.com/',
+                icon: 'firebase',
+            }
+        ],
     },
     location: 'Taipei, Taiwan',
     bio: 'Hello there',
     company: 'CGU, IM',
+    resume: [
+        {
+            title: 'Education',
+            company: 'CGU, IM',
+            duration: '2018 - 2022',
+            location: 'Taipei, Taiwan',
+            work: 'Computer science developer with a passion for frontend web development and data analysis.',
+        },
+    ]
 }
