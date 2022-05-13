@@ -74,7 +74,10 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                     {frontMatter.readingTime}
                 </p>
                 <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] content w-full self-center mx-auto lg:ml-2">
-                    <MDXRemote {...source} components={MDXComponents} />
+                    <MDXRemote
+                        {...source}
+                        components={MDXComponents}
+                    />
                 </div>
             </div>
         </Layout>

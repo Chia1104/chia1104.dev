@@ -1,2 +1,1 @@
-export * from './MDXLink';
-export { default } from './MDXLink';
+export { MDXLink } from './MDXLink';

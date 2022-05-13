@@ -1,2 +1,1 @@
-export * from './MDXCode';
-export { default } from './MDXCode';
+export { MDXCode } from './MDXCode';

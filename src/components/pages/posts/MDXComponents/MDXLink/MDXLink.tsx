@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const MDXLink = (props: any) => {
+export const MDXLink = (props: any) => {
     const href = props.href;
     const isInternalLink = href && (href.startsWith('/') || href.startsWith('#'));
 
@@ -15,4 +15,3 @@ const MDXLink = (props: any) => {
     return <a target="_blank" rel="noopener noreferrer" {...props} />;
 }
 
- export default MDXLink;

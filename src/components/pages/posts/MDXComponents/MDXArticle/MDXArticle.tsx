@@ -1,6 +1,6 @@
 
 
-const MDXArticle = (props: any) => {
+export const MDXArticle = (props: any) => {
     return (
         <h3 className="w-full mb-2 text-lg" {...props}>
             {props.children}
@@ -8,4 +8,3 @@ const MDXArticle = (props: any) => {
     );
 }
 
-export default MDXArticle;
