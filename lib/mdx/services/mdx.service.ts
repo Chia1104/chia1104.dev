@@ -1,68 +1,106 @@
 import path from 'path'
-import fs from 'fs'
+import fs from "fs/promises";
 import matter from 'gray-matter'
 import readingTime from 'reading-time'
-import { sync } from 'glob'
+import { PostFrontMatter, PostSource } from "@/utils/types/post";
+import { POSTS_PATH } from "@/utils/constants";
+import { serialize } from "next-mdx-remote/serialize";
+import { minify } from "uglify-js";
+import pMap from "p-map";
 
-const postsPath = path.join(process.cwd(), 'posts')
+// remark/rehype markdown plugins
+import rehypeSlug from "rehype-slug";
+import remarkGfm from "remark-gfm";
+import rehypePrism from "rehype-prism-plus";
+import rehypeHighlight from 'rehype-highlight'
+import rehypeCodeTitles from 'rehype-code-titles'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+
+const postsPath = path.join(process.cwd(), POSTS_PATH)
 
 export const getSlugs = async (): Promise<string[]> => {
-    const paths = sync('posts/*.mdx')
+    const files = await fs.readdir(postsPath);
 
-    return paths.map((path) => {
-        const pathContent = path.split('/')
-        const fileName = pathContent[pathContent.length - 1]
-        const [slugs, _extension] = fileName.split('.')
-
-        return slugs;
-    })
+    return files
+        .filter((file) => /\.mdx$/.test(file))
+        .map((noteFile) => noteFile.replace(/\.mdx$/, ""));
 }
 
-export const getPostFromSlug = async (slug: string) => {
+export const getPostData = async (
+    slug: string
+): Promise<{
+    content: string;
+    frontMatter: PostFrontMatter;
+}> => {
     const postDir = path.join(postsPath, `${slug}.mdx`)
-    const source = fs.readFileSync(postDir, 'utf8')
+    const source = await fs.readFile(postDir, 'utf8')
     const { content, data } = matter(source)
 
     return {
         content,
         frontMatter: {
+            ...(data as Partial<PostFrontMatter>),
             slug,
-            excerpt: data.excerpt,
-            title: data.title,
-            tags: data.tags,
             createdAt: data.createdAt,
-            readingTime: readingTime(source).text,
-            ...data,
+            readingMins: readingTime(source).text,
         },
     }
 }
 
-export const getAllPosts = async () => {
-    const posts = fs.readdirSync(path.join(process.cwd(), 'posts'))
+export const getPost = async (slug: string): Promise<PostSource> => {
+    const { frontMatter, content } = await getPostData(slug);
 
-    const formatPosts = posts.reduce((allPosts: any[], postSlug: string) => {
-        const source = fs.readFileSync(
-            path.join(process.cwd(), 'posts', postSlug),
-            'utf-8'
-        )
-        const { data } = matter(source)
+    const source = await serialize(content, {
+        parseFrontmatter: false,
+        mdxOptions: {
+            remarkPlugins: [[remarkGfm, { singleTilde: false }]],
+            rehypePlugins: [
+                [rehypeSlug],
+                [rehypePrism, { ignoreMissing: true }],
+                [
+                    rehypeAutolinkHeadings,
+                    {
+                        properties: { className: ['anchor'] },
+                    },
+                    { behaviour: 'wrap' },
+                ],
+                rehypeHighlight,
+                rehypeCodeTitles,
+            ],
+        },
+    });
 
-        return [
-            {
-                ...data,
-                slug: postSlug.replace('.mdx', ''),
-                readingTime: readingTime(source).text,
-            },
-            ...allPosts,
-        ]
-    }, [])
+    // HACK: next-mdx-remote v4 doesn't (yet?) minify compiled JSX output, see:
+    // https://github.com/hashicorp/next-mdx-remote/pull/211#issuecomment-1013658514
+    // ...so for now, let's do it manually (and conservatively) with uglify-js when building for production.
+    const compiledSource =
+        process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+            ? minify(source.compiledSource, {
+                toplevel: true,
+                parse: {
+                    bare_returns: true,
+                },
+            }).code
+            : source.compiledSource;
 
-    formatPosts
-        .map((post) => post.data)
-        .sort((a, b) => b.createdAt - a.createdAt)
+    return {
+        frontMatter,
+        source: {
+            compiledSource,
+        },
+    };
+};
 
-    // console.debug(formatPosts)
+export const getAllPosts = async (): Promise<PostFrontMatter[]> => {
+    const slugs = await getSlugs();
 
-    return formatPosts.reverse()
-}
+    const data = await pMap(slugs, async (slug) =>
+        (await getPostData(slug)).frontMatter, {
+        stopOnError: true,
+    });
 
+    data
+        .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
+
+    return data;
+};

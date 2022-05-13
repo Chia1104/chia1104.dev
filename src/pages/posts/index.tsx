@@ -1,11 +1,11 @@
 import type { GetStaticProps, NextPage} from 'next'
-import { Post } from "@/utils/types/interfaces/post";
+import { PostFrontMatter } from "@/utils/types/post";
 import { Layout } from "@/components/globals/Layout";
 import { getAllPosts } from "@/lib/mdx/services";
 import { PostsList } from "@/components/pages/posts/PostsList";
 
 interface Props {
-    posts: Post,
+    posts: PostFrontMatter,
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {

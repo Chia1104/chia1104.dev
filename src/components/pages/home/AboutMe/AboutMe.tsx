@@ -5,11 +5,11 @@ import NextLink from "next/link";
 
 interface Props {
     avatarSrc: string
-    // newUpdate: string
-    // slug: string
+    newUpdate: string
+    slug: string
 }
 
-export const AboutMe: FC<Props> = ({avatarSrc}) => {
+export const AboutMe: FC<Props> = ({avatarSrc, newUpdate, slug}) => {
     const name = Chia.name
     const chineseName = Chia.chineseName
     const title = Chia.title
@@ -41,10 +41,10 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
             </div>
             <div className="flex flex-col justify-center items-center lg:flex-row mx-auto">
                 <div className="mt-10 flex flex-col justify-center items-center">
-                    <h3 className="title c-text-secondary mb-7">
+                    <h3 className="title c-text-secondary">
                         About me
                     </h3>
-                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
+                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px] mt-5">
                         <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
                             <p className="text-xl text-center">
                                 {content}
@@ -53,26 +53,26 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
                         <NextLink
                             href="/about"
                         >
-                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
+                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
                                 MORE
                             </a>
                         </NextLink>
                     </div>
                 </div>
                 <div className="mt-10 flex flex-col justify-center items-center">
-                    <h3 className="title c-text-secondary mb-7">
+                    <h3 className="title c-text-secondary">
                         New update
                     </h3>
-                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
+                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px] mt-5">
                         <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
                             <p className="text-xl text-center">
-                                This is an example of a blog post.
+                                { newUpdate || 'This is an example of a blog post.'}
                             </p>
                         </div>
                         <NextLink
-                            href={`/posts/example-post`}
+                            href={`/posts/${slug}`}
                         >
-                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
+                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
                                 MORE
                             </a>
                         </NextLink>

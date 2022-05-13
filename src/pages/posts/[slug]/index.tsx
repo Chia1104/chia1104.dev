@@ -1,21 +1,16 @@
 import dayjs from 'dayjs'
 import React from 'react'
-import rehypeSlug from 'rehype-slug'
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
-import rehypeHighlight from 'rehype-highlight'
-import rehypeCodeTitles from 'rehype-code-titles'
-import { serialize } from 'next-mdx-remote/serialize'
-import rehypeAutolinkHeadings from 'rehype-autolink-headings'
-import { getSlugs, getPostFromSlug } from '@/lib/mdx/services'
+import { getSlugs, getPost } from '@/lib/mdx/services'
 import { Layout } from "@/components/globals/Layout";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { Post } from "@/utils/types/interfaces/post";
+import { PostFrontMatter } from "@/utils/types/post";
 import { MDXComponents } from "@/components/pages/posts/MDXComponents";
-import 'highlight.js/styles/atom-one-dark-reasonable.css' // code syntax highlighting
+import 'highlight.js/styles/atom-one-dark-reasonable.css'; // code syntax highlighting
 
 interface Props {
     source: MDXRemoteProps,
-    frontMatter: Post,
+    frontMatter: PostFrontMatter,
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -29,33 +24,14 @@ export const getStaticPaths: GetStaticPaths = async () => {
     }
 }
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-
-    const slug = params?.slug
-    // @ts-ignore
-    const { content, frontMatter } = await getPostFromSlug(slug.toString())
-
-    const mdxSource = await serialize(content, {
-        mdxOptions: {
-            rehypePlugins: [
-                rehypeSlug,
-                [
-                    rehypeAutolinkHeadings,
-                    {
-                        properties: { className: ['anchor'] },
-                    },
-                    { behaviour: 'wrap' },
-                ],
-                rehypeHighlight,
-                rehypeCodeTitles,
-            ],
-        },
-    })
+// @ts-ignore
+export const getStaticProps: GetStaticProps = async ({ params }: { params: Pick<PostFrontMatter, "slug"> }) => {
+    const { frontMatter, source } = await getPost(params.slug)
 
     return {
         props: {
-            source: mdxSource,
             frontMatter,
+            source,
         },
     }
 }
@@ -64,16 +40,16 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
     return (
         <Layout
-            title={frontMatter.title}
-            description={frontMatter.excerpt}
+            title={frontMatter.title || 'Post'}
+            description={frontMatter.excerpt || 'Post'}
         >
             <div className="main c-container mt-5 px-5">
                 <h1 className="title self-start">{frontMatter.title}</h1>
                 <p className="description self-start">
                     {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
-                    {frontMatter.readingTime}
+                    {frontMatter.readingMins}
                 </p>
-                <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] content w-full self-center mx-auto lg:ml-2">
+                <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] w-full self-center mx-auto lg:ml-2">
                     <MDXRemote
                         {...source}
                         components={MDXComponents}

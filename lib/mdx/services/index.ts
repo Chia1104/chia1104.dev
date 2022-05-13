@@ -1,5 +1,5 @@
 export {
     getSlugs,
-    getPostFromSlug,
+    getPost,
     getAllPosts,
 } from './mdx.service';

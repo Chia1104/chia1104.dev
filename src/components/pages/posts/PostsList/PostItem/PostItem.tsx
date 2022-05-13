@@ -1,9 +1,9 @@
 import { FC } from 'react';
-import { Post } from '@/utils/types/interfaces/post';
+import { PostFrontMatter } from '@/utils/types/post';
 import dayjs from "dayjs";
 
 interface Props {
-    data: Post;
+    data: PostFrontMatter;
 }
 
 export const PostItem: FC<Props> = ({ data }) => {
@@ -17,7 +17,7 @@ export const PostItem: FC<Props> = ({ data }) => {
             </h3>
             <p>
                 {dayjs(data.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
-                {data.readingTime}
+                {data.readingMins}
             </p>
         </div>
     )

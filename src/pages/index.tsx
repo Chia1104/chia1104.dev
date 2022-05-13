@@ -3,17 +3,22 @@ import { AboutMe } from "@/components/pages/home/AboutMe";
 import { getImage } from "@/firebase/images/services";
 import { Layout } from "@/components/globals/Layout";
 import { Chia } from"@/utils/meta/chia"
+import { PostFrontMatter } from "@/utils/types/post";
+import { getAllPosts } from "@/lib/mdx/services";
 
 interface Props {
-    Url: string,
+    url: string,
+    post: PostFrontMatter,
 }
 
 export const getStaticProps: GetStaticProps = async () => {
     const avatarUrl = await getImage('me-images/me-memoji.PNG');
+    const posts = await getAllPosts()
 
     return {
         props: {
-            Url: avatarUrl as string,
+            url: avatarUrl as string,
+            post: posts[0],
         },
     }
 }
@@ -32,7 +37,9 @@ const HomePage: NextPage<Props> = (props) => {
             <main className="main">
                 <div className="c-container">
                     <AboutMe
-                        avatarSrc={props.Url}
+                        newUpdate={props.post.excerpt || 'This is an example of a blog post.'}
+                        slug={props.post.slug}
+                        avatarSrc={props.url}
                     />
                 </div>
             </main>
