@@ -5,6 +5,8 @@ import NextLink from "next/link";
 
 interface Props {
     avatarSrc: string
+    // newUpdate: string
+    // slug: string
 }
 
 export const AboutMe: FC<Props> = ({avatarSrc}) => {
@@ -38,33 +40,43 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
                 </div>
             </div>
             <div className="flex flex-col justify-center items-center lg:flex-row mx-auto">
-                <div className="mt-20 lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
-                    <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
-                        <p className="text-xl text-center">
-                            {content}
-                        </p>
+                <div className="mt-10 flex flex-col justify-center items-center">
+                    <h3 className="title c-text-secondary mb-7">
+                        About me
+                    </h3>
+                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
+                        <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
+                            <p className="text-xl text-center">
+                                {content}
+                            </p>
+                        </div>
+                        <NextLink
+                            href="/about"
+                        >
+                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
+                                MORE
+                            </a>
+                        </NextLink>
                     </div>
-                    <NextLink
-                        href="/about"
-                    >
-                        <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
-                            MORE
-                        </a>
-                    </NextLink>
                 </div>
-                <div className="mt-20 lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
-                    <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
-                        <p className="text-xl text-center">
-                            This is an example of a blog post.
-                        </p>
+                <div className="mt-10 flex flex-col justify-center items-center">
+                    <h3 className="title c-text-secondary mb-7">
+                        New update
+                    </h3>
+                    <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px]">
+                        <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
+                            <p className="text-xl text-center">
+                                This is an example of a blog post.
+                            </p>
+                        </div>
+                        <NextLink
+                            href={`/posts/example-post`}
+                        >
+                            <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
+                                MORE
+                            </a>
+                        </NextLink>
                     </div>
-                    <NextLink
-                        href="/posts/example-post"
-                    >
-                        <a className="c-bg-gradient-green-to-purple w-[85px] absolute top-[8rem] h-10 rounded-full flex justify-center items-center text-white">
-                            MORE
-                        </a>
-                    </NextLink>
                 </div>
             </div>
             <div className="bg-primary/90 rounded-xl p-5 mt-20 mx-auto text-white backdrop-blur-sm w-[350px] md:w-[75%]">

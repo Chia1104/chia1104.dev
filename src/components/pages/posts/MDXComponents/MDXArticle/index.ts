@@ -1,1 +1,2 @@
-export { MDXArticle } from './MDXArticle';
+export * from './MDXArticle';
+export { default } from './MDXArticle';

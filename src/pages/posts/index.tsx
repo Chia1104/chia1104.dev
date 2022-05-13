@@ -11,18 +11,9 @@ interface Props {
 export const getStaticProps: GetStaticProps = async (context) => {
     const posts = await getAllPosts();
 
-    posts
-        .map((post) => post.data)
-        .sort((foo, bar) => {
-            if (foo.data.createdAt > bar.data.createdAt) return 1
-            if (foo.data.createdAt < bar.data.createdAt) return -1
-
-            return 0
-        })
-
     return {
         props: {
-            posts: posts.reverse(),
+            posts: posts,
         },
     };
 };

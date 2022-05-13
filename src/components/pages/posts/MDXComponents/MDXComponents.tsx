@@ -1,9 +1,11 @@
-import { MDXImage } from "@/components/pages/posts/MDXComponents/MDXImage";
-import { MDXLink } from "@/components/pages/posts/MDXComponents/MDXLink";
-import { MDXCode } from "@/components/pages/posts/MDXComponents/MDXCode";
-import { MDXTitle } from "@/components/pages/posts/MDXComponents/MDXTitle";
-import { MDXArticle } from "@/components/pages/posts/MDXComponents/MDXArticle";
-import { MDXTitle2 } from "@/components/pages/posts/MDXComponents/MDXTitle2";
+import dynamic from "next/dynamic";
+
+const MDXImage = dynamic(() => import("@/components/pages/posts/MDXComponents/MDXImage"));
+const MDXLink = dynamic(() => import("@/components/pages/posts/MDXComponents/MDXLink"));
+const MDXCode = dynamic(() => import("@/components/pages/posts/MDXComponents/MDXCode"));
+const MDXTitle = dynamic(() => import("@/components/pages/posts/MDXComponents/MDXTitle"));
+const MDXArticle = dynamic(() => import("@/components/pages/posts/MDXComponents/MDXArticle"));
+const MDXTitle2 = dynamic(() => import("@/components/pages/posts/MDXComponents/MDXTitle2"));
 
 
 export const MDXComponents = {

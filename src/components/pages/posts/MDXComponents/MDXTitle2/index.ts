@@ -1,1 +1,2 @@
-export { MDXTitle2 } from './MDXTitle2';
+export * from './MDXTitle2';
+export { default } from './MDXTitle2';

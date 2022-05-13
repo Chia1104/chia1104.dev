@@ -20,7 +20,7 @@ export const getSlugs = async (): Promise<string[]> => {
 
 export const getPostFromSlug = async (slug: string) => {
     const postDir = path.join(postsPath, `${slug}.mdx`)
-    const source = fs.readFileSync(postDir)
+    const source = fs.readFileSync(postDir, 'utf8')
     const { content, data } = matter(source)
 
     return {
@@ -31,7 +31,7 @@ export const getPostFromSlug = async (slug: string) => {
             title: data.title,
             tags: data.tags,
             createdAt: data.createdAt,
-            readingTime: readingTime(source.toString()).text,
+            readingTime: readingTime(source).text,
             ...data,
         },
     }
@@ -40,7 +40,7 @@ export const getPostFromSlug = async (slug: string) => {
 export const getAllPosts = async () => {
     const posts = fs.readdirSync(path.join(process.cwd(), 'posts'))
 
-    return posts.reduce((allPosts: any[], postSlug: string) => {
+    const formatPosts = posts.reduce((allPosts: any[], postSlug: string) => {
         const source = fs.readFileSync(
             path.join(process.cwd(), 'posts', postSlug),
             'utf-8'
@@ -56,5 +56,13 @@ export const getAllPosts = async () => {
             ...allPosts,
         ]
     }, [])
+
+    formatPosts
+        .map((post) => post.data)
+        .sort((a, b) => b.createdAt - a.createdAt)
+
+    // console.debug(formatPosts)
+
+    return formatPosts.reverse()
 }
 

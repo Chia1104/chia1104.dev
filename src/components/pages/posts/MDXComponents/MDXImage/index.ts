@@ -1,1 +1,2 @@
-export { MDXImage } from './MDXImage';
+export * from './MDXImage';
+export { default } from './MDXImage';
