@@ -42,6 +42,7 @@ export const getPostData = async (
             ...(data as Partial<PostFrontMatter>),
             slug,
             createdAt: data.createdAt,
+            published: data.published,
             readingMins: readingTime(source).text,
         },
     }
@@ -100,7 +101,7 @@ export const getAllPosts = async (): Promise<PostFrontMatter[]> => {
     });
 
     data
-        .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
+        .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1))
 
-    return data;
+    return data.filter((post) => post.published);
 };

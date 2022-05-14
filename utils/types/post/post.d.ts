@@ -9,7 +9,7 @@ export type PostFrontMatter = {
     createdAt: string;
     updateAt?: string;
     readingMins: string;
-    published?: boolean;
+    published: boolean;
 }
 
 export type PostSource = {

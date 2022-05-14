@@ -23,6 +23,11 @@
     text-sec-text dark:text-white transition ease-in-out
   }
 
+  .c-description {
+    @apply
+    text-lg text-sec-text dark:text-gray-400 transition ease-in-out
+  }
+
   .c-bg-primary {
     @apply
     bg-[#dddddd] text-black dark:text-white dark:bg-black transition ease-in-out
@@ -81,6 +86,11 @@
   .c-button-primary {
     @apply
     bg-primary rounded-full drop-shadow-lg text-white hover:bg-secondary transition ease-in-out flex justify-center items-center px-3 py-1
+  }
+
+  .c-button-secondary {
+    @apply
+    bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-sm transition ease-in-out rounded-lg px-5 py-3 text-2xl hover:scale-[1.05]
   }
 
   .footer {

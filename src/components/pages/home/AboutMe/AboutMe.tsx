@@ -51,7 +51,7 @@ export const AboutMe: FC<Props> = ({avatarSrc, newTitle, newUpdate, slug}) => {
                 </div>
                 <div className="mt-10">
                     <NewsCard
-                        title={newTitle}
+                        title={'New update'}
                         content={newUpdate}
                         subtitle={''}
                         link={`posts/${slug}`}

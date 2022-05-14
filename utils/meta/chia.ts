@@ -117,11 +117,18 @@ export const Chia = {
     company: 'CGU, IM',
     resume: [
         {
+            title: 'Work Experience',
+            company: 'WANIN',
+            duration: '2022 - Now',
+            location: 'Taipei, Taiwan',
+            work: 'Web Development',
+        },
+        {
             title: 'Education',
             company: 'CGU, IM',
             duration: '2018 - 2022',
             location: 'Taipei, Taiwan',
-            work: 'Computer science developer with a passion for frontend web development and data analysis.',
+            work: 'MIS, Java, Python, MySQL, Computer Science, System Design',
         },
     ]
 }
