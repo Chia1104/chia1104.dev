@@ -8,6 +8,11 @@ import { PostFrontMatter } from "@/utils/types/post";
 import { MDXComponents } from "@/components/pages/posts/MDXComponents";
 import 'highlight.js/styles/atom-one-dark-reasonable.css'; // code syntax highlighting
 
+import Giscus from "@giscus/react";
+import type { GiscusProps } from "@giscus/react";
+import { giscusConfig } from "@/utils/config/giscus.config";
+import {useTheme} from "next-themes";
+
 interface Props {
     source: MDXRemoteProps,
     frontMatter: PostFrontMatter,
@@ -38,6 +43,8 @@ export const getStaticProps: GetStaticProps = async ({ params }: { params: Pick<
 
 
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
+    const { theme, setTheme } = useTheme()
+
     return (
         <Layout
             title={frontMatter.title || 'Post'}
@@ -53,6 +60,16 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                     <MDXRemote
                         {...source}
                         components={MDXComponents}
+                    />
+                </div>
+                <div className="mt-20 lg:self-start lg:w-[80%] w-full self-center mx-auto lg:ml-2">
+                    <Giscus
+                        {...(giscusConfig as GiscusProps)}
+                        term={frontMatter.title}
+                        mapping="specific"
+                        reactionsEnabled="1"
+                        emitMetadata="0"
+                        theme={theme === "dark" ? "dark_dimmed" : "light"}
                     />
                 </div>
             </div>
