@@ -18,7 +18,7 @@ export const NavMenu: FC = () => {
                 </div>
                 <div className="md:flex items-center w-[30%] sm:hidden justify-end">
                     <NextLink href="/about">
-                        <a className="flex link link-underline link-underline-black mr-4">
+                        <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <AccountCircleOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"
@@ -30,7 +30,7 @@ export const NavMenu: FC = () => {
                         </a>
                     </NextLink>
                     <NextLink href="/posts">
-                        <a className="flex link link-underline link-underline-black mr-4">
+                        <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"
@@ -42,7 +42,7 @@ export const NavMenu: FC = () => {
                         </a>
                     </NextLink>
                     <NextLink href="/portfolios">
-                        <a className="flex link link-underline link-underline-black mr-4">
+                        <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <WorkspacesOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"
@@ -56,7 +56,7 @@ export const NavMenu: FC = () => {
                 </div>
                 <div className="md:hidden items-center w-[30%] sm:flex justify-end">
                     <NextLink href="/about">
-                        <a className="flex link link-underline link-underline-black mr-4">
+                        <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <AccountCircleOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1"
@@ -65,7 +65,7 @@ export const NavMenu: FC = () => {
                         </a>
                     </NextLink>
                     <NextLink href="/posts">
-                        <a className="flex link link-underline link-underline-black mr-4" >
+                        <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <ArticleOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1"
@@ -74,7 +74,7 @@ export const NavMenu: FC = () => {
                         </a>
                     </NextLink>
                     <NextLink href="/portfolios">
-                        <a className="flex link link-underline link-underline-black mr-4">
+                        <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <WorkspacesOutlinedIcon
                                 fontSize={'large'}
                                 className="mr-1"

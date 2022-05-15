@@ -111,6 +111,32 @@ export const Chia = {
                 icon: 'firebase',
             }
         ],
+        slashis: [
+            {
+                name: 'Photoshop',
+                level: 'Basic',
+                link: 'https://www.adobe.com/tw/products/photoshop.html',
+                icon: 'photoshop',
+            },
+            {
+                name: 'Illustrator',
+                level: 'Basic',
+                link: 'https://www.adobe.com/tw/products/illustrator.html',
+                icon: 'illustrator',
+            },
+            {
+                name: 'InDesign',
+                level: 'Basic',
+                link: 'https://www.adobe.com/tw/products/indesign.html',
+                icon: 'indesign',
+            },
+            {
+                name: 'Premiere Pro',
+                level: 'Basic',
+                link: 'https://www.adobe.com/tw/products/premiere.html',
+                icon: 'premiere',
+            }
+        ],
     },
     location: 'Taipei, Taiwan',
     bio: 'Hello there',
