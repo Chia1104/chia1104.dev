@@ -122,6 +122,7 @@ export const Chia = {
             duration: '2022 - Now',
             location: 'Taipei, Taiwan',
             work: 'Web Development',
+            link: 'https://www.wanin.tw/',
         },
         {
             title: 'Education',
@@ -129,6 +130,7 @@ export const Chia = {
             duration: '2018 - 2022',
             location: 'Taipei, Taiwan',
             work: 'MIS, Java, Python, MySQL, Computer Science, System Design',
+            link: 'https://im.cgu.edu.tw/',
         },
     ]
 }

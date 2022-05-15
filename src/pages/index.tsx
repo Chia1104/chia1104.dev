@@ -44,10 +44,6 @@ const HomePage: NextPage<Props> = (props) => {
                     />
                 </div>
             </main>
-            <article>
-                <div className="c-container">
-                </div>
-            </article>
         </Layout>
     )
 }

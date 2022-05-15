@@ -19,7 +19,12 @@ export const Experience: FC = () => {
                         {experience.work}
                     </h3>
                     <p className="c-description">
-                        {experience.company} . {experience.duration}
+                        <span className="link link-underline link-underline-black text-info">
+                            <a href={experience.link} target="_blank" rel="noreferrer">
+                                {experience.company}
+                            </a>
+                        </span>
+                        . {experience.duration}
                     </p>
                 </div>
             ))}

@@ -29,7 +29,7 @@ const PostsPage: NextPage<Props> = (props) => {
                 <h1 className="title">
                     Blog posts
                 </h1>
-                <div className="flex flex-col lg:flex-row w-full lg:w-[40%] justify-center items-center">
+                <div className="flex flex-col w-full lg:w-[85%] justify-center items-center">
                     <PostsList post={posts} />
                 </div>
             </div>
