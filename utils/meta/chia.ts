@@ -12,34 +12,34 @@ export const Chia = {
                 name: 'JavaScript',
                 level: 'Advanced',
                 link: 'https://www.javascript.com/',
-                icon: 'js',
+                icon: '@/components/globals/icons/Languages/JSIcon',
             },
             {
                 name: 'TypeScript',
                 level: 'Basic',
                 link: 'https://www.typescriptlang.org/',
-                icon: 'ts',
+                icon: '@/components/globals/icons/Languages/TSIcon',
             },
             {
                 name: 'Java',
                 level: 'Advanced',
                 link: 'https://www.java.com/',
-                icon: 'java',
+                icon: '@/components/globals/icons/Languages/JavaIcon',
             },
             {
                 name: 'Python',
                 level: 'Basic',
                 link: 'https://www.python.org/',
-                icon: 'python',
+                icon: '@/components/globals/icons/Languages/PythonIcon',
             },
             {
                 name: 'PHP',
                 level: 'Advanced',
                 link: 'https://www.php.net/',
-                icon: 'php',
+                icon: '@/components/globals/icons/Languages/PHPIcon',
             }
         ],
-        frameworks: [
+        frontend: [
             {
                 name: 'React',
                 level: 'Advanced',
@@ -48,7 +48,7 @@ export const Chia = {
             },
             {
                 name: 'NextJS',
-                level: 'Basic',
+                level: 'Advanced',
                 link: 'https://nextjs.org/',
                 icon: 'nextjs',
             },
@@ -59,16 +59,24 @@ export const Chia = {
                 icon: 'vue',
             },
             {
-                name: 'NestJS',
-                level: 'Basic',
-                link: 'https://nestjs.com/',
-                icon: 'nestjs',
+                name: 'Tailwindcss',
+                level: 'Advanced',
+                link: 'https://tailwindcss.com/',
+                icon: 'tailwindcss',
             },
+        ],
+        backend: [
             {
                 name: 'Laravel',
                 level: 'Advanced',
                 link: 'https://laravel.com/',
                 icon: 'laravel',
+            },
+            {
+                name: 'NestJS',
+                level: 'Advanced',
+                link: 'https://nestjs.com/',
+                icon: 'nestjs',
             }
         ],
         tools: [
