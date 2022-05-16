@@ -28,6 +28,8 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                             width={400}
                             height={300}
                             priority
+                            blurDataURL={'/loader/loader.gif'}
+                            placeholder="blur"
                         />
                     </div>
                 </div>

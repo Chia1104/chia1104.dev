@@ -9,11 +9,17 @@ import { Footer } from "@/components/globals/Footer";
 import { ThemeProvider } from 'next-themes'
 import { ErrorBoundary } from '@/components/globals/ErrorBoundary'
 import { Provider } from 'react-redux'
-import { store } from '@/store/index' //???
+import { store } from '@/src/store'
+import NextNProgress from "nextjs-progressbar";
+import { nextProgressConfig } from "@/utils/config/nextProgress.config";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
     return (
         <ErrorBoundary>
+            <NextNProgress
+                {...nextProgressConfig}
+                options={{ easing: "ease", speed: 500 }}
+            />
             <ThemeProvider enableSystem={true} attribute="class">
                 <Provider store={store}>
                     <DefaultSeo {...SEO}/>
