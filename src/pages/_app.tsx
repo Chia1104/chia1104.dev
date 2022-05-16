@@ -8,18 +8,22 @@ import SEO from '../../next-seo.config';
 import { Footer } from "@/components/globals/Footer";
 import { ThemeProvider } from 'next-themes'
 import { ErrorBoundary } from '@/components/globals/ErrorBoundary'
+import { Provider } from 'react-redux'
+import { store } from '@/store/index' //???
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
     return (
         <ErrorBoundary>
             <ThemeProvider enableSystem={true} attribute="class">
-                <DefaultSeo {...SEO}/>
-                <NavMenu/>
-                <ActionIcon/>
-                <AnimatePresence exitBeforeEnter>
-                    <Component {...pageProps} key={router.route} />
-                </AnimatePresence>
-                <Footer/>
+                <Provider store={store}>
+                    <DefaultSeo {...SEO}/>
+                    <NavMenu/>
+                    <ActionIcon/>
+                    <AnimatePresence exitBeforeEnter>
+                        <Component {...pageProps} key={router.route} />
+                    </AnimatePresence>
+                    <Footer/>
+                </Provider>
             </ThemeProvider>
         </ErrorBoundary>
     )

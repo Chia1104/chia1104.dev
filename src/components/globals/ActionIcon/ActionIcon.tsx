@@ -6,6 +6,7 @@ import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutl
 import Brightness5OutlinedIcon from '@mui/icons-material/Brightness5Outlined';
 import { useTheme } from 'next-themes'
 import { FC, useState, useEffect } from "react";
+import {Contact} from "@/components/globals/ActionIcon/Contact";
 
 export const ActionIcon: FC = () => {
     const { theme, setTheme } = useTheme()
@@ -16,6 +17,7 @@ export const ActionIcon: FC = () => {
 
     return (
         <div className="fixed bottom-0 right-0 mr-10 mb-10 p-3 rounded-xl shadow-2xl flex flex-col justify-center items-center c-bg-secondary z-40">
+            {/*<Contact />*/}
             <button aria-label={"Open contact"}>
                 <KeyboardArrowUpOutlinedIcon
                     fontSize="small"

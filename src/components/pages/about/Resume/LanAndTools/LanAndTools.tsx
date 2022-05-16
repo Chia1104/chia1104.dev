@@ -1,11 +1,9 @@
-import Link from "next/link";
 import { FC } from "react";
 import {
     SiFirebase,
     SiJavascript,
     SiNextdotjs,
     SiPython,
-    SiReact,
     SiJava,
     SiPhp,
     SiMysql,
@@ -22,6 +20,7 @@ import {
     SiAdobepremierepro,
 } from 'react-icons/si'
 import {LATList} from "@/components/pages/about/Resume/LanAndTools/LATList";
+import { LATItem } from "./LATList/LATItem";
 
 export const LanAndTools: FC = () => {
     return (
@@ -30,209 +29,125 @@ export const LanAndTools: FC = () => {
                 Languages and Tools
             </h1>
             <div className="grid grid-cols-1 lg:grid-cols-2 w-full">
-                <LATList
-                    category={'Languages'}
-                >
-                    <Link href="https://www.javascript.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiJavascript className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Javascript
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://www.java.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiJava className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Java
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://www.php.net/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiPhp className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                PHP
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://www.python.org/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiPython className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Python
-                            </div>
-                        </a>
-                    </Link>
+                <LATList category={'Languages'}>
+                    <LATItem
+                        href={'https://www.javascript.com/'}
+                        name={'JavaScript'}
+                    >
+                        <SiJavascript className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://www.java.com/'}
+                        name={'Java'}
+                    >
+                        <SiJava className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://www.php.net/'}
+                        name={'PHP'}
+                    >
+                        <SiPhp className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://www.python.org/'}
+                        name={'Python'}
+                    >
+                        <SiPython className="w-[60px] h-[60px]"/>
+                    </LATItem>
                 </LATList>
                 <LATList category={'Frontend'}>
-                    <Link href="https://reactjs.org/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiReact className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                React.js
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://nextjs.org/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiNextdotjs className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Next.js
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://vuejs.org/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiVuedotjs className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Vue.js
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://tailwindcss.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiTailwindcss className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Tailwindcss
-                            </div>
-                        </a>
-                    </Link>
+                    <LATItem
+                        href={'https://nextjs.org/'}
+                        name={'NextJS'}
+                    >
+                        <SiNextdotjs className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://vuejs.org/'}
+                        name={'VueJS'}
+                    >
+                        <SiVuedotjs className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://tailwindcss.com/'}
+                        name={'Tailwindcss'}
+                    >
+                        <SiTailwindcss className="w-[60px] h-[60px]"/>
+                    </LATItem>
                 </LATList>
                 <LATList category={'Backend'}>
-                    <Link href="https://laravel.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiLaravel className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Laravel
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://nestjs.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiNestjs className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Nest.js
-                            </div>
-                        </a>
-                    </Link>
+                    <LATItem
+                        href={'https://laravel.com/'}
+                        name={'Laravel'}
+                    >
+                        <SiLaravel className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://nestjs.com/'}
+                        name={'NestJS'}
+                    >
+                        <SiNestjs className="w-[60px] h-[60px]"/>
+                    </LATItem>
                 </LATList>
                 <LATList category={'Databases'}>
-                    <Link href="https://www.mysql.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiMysql className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                MySQL
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://www.mongodb.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiMongodb className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                MongoDB
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://firebase.google.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiFirebase className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Firebase
-                            </div>
-                        </a>
-                    </Link>
+                    <LATItem
+                        href={'https://www.mysql.com/'}
+                        name={'MySQL'}
+                    >
+                        <SiMysql className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://www.mongodb.com/'}
+                        name={'MongoDB'}
+                    >
+                        <SiMongodb className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://firebase.google.com/'}
+                        name={'Firebase'}
+                    >
+                        <SiFirebase className="w-[60px] h-[60px]"/>
+                    </LATItem>
                 </LATList>
-                <LATList category={'Tools'}>
-                    <Link href="https://www.docker.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiDocker className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Docker
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://www.github.com">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiGithubactions className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Github Actions
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://cloud.google.com/">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiGooglecloud className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Google Cloud Platform
-                            </div>
-                        </a>
-                    </Link>
+                <LATList category={'DevOps'}>
+                    <LATItem
+                        href={'https://www.docker.com/'}
+                        name={'Docker'}
+                    >
+                        <SiDocker className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://www.github.com'}
+                        name={'GitHub Action'}
+                    >
+                        <SiGithubactions className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://cloud.google.com/'}
+                        name={'GCP'}
+                    >
+                        <SiGooglecloud className="w-[60px] h-[60px]"/>
+                    </LATItem>
                 </LATList>
-                <LATList category={'Slashie'}>
-                    <Link href="https://www.adobe.com/tw/products/photoshop.html">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiAdobephotoshop className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center '>
-                                Photoshop
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://www.adobe.com/tw/products/illustrator.html">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiAdobeillustrator className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Illustrator
-                            </div>
-                        </a>
-                    </Link>
-                    <Link href="https://www.adobe.com/tw/products/premiere.html">
-                        <a target='_blank' rel="noreferrer" className='w-full text-5xl flex justify-center items-center relative group my-5 mx-auto'>
-                            <div className='transform group-hover:scale-110 rounded transition'>
-                                <SiAdobepremierepro className="w-[60px] h-[60px]"/>
-                            </div>
-                            <div className='transform absolute text-sm p-2 c-bg-secondary scale-0 rounded top-16 transition duration-300 group-hover:scale-100 text-center'>
-                                Premiere Pro
-                            </div>
-                        </a>
-                    </Link>
+                <LATList category={'Design'}>
+                    <LATItem
+                        href={'https://www.adobe.com/tw/products/photoshop.html'}
+                        name={'Photoshop'}
+                    >
+                        <SiAdobephotoshop className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://www.adobe.com/tw/products/illustrator.html'}
+                        name={'Illustrator'}
+                    >
+                        <SiAdobeillustrator className="w-[60px] h-[60px]"/>
+                    </LATItem>
+                    <LATItem
+                        href={'https://www.adobe.com/tw/products/premiere.html'}
+                        name={'Premiere Pro'}
+                    >
+                        <SiAdobepremierepro className="w-[60px] h-[60px]"/>
+                    </LATItem>
                 </LATList>
             </div>
         </div>

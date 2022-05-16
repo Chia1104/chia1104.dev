@@ -79,7 +79,7 @@ export const Chia = {
                 icon: 'nestjs',
             }
         ],
-        tools: [
+        devops: [
             {
                 name: 'Docker',
                 level: 'Basic',
@@ -119,7 +119,7 @@ export const Chia = {
                 icon: 'firebase',
             }
         ],
-        slashis: [
+        design: [
             {
                 name: 'Photoshop',
                 level: 'Basic',
