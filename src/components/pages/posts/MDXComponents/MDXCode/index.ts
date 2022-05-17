@@ -1,1 +1,1 @@
-export { MDXCode, MDXPre } from './MDXCode';
+export * from './MDXCode';

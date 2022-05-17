@@ -1,5 +1,5 @@
 export const H1 = (props: any) => {
-    return <h1 {...props} className="text-5xl my-5 pb-3 border-b-2 border-primary font-medium"/>
+    return <h1 {...props} className="text-5xl my-5 pb-3 border-b-2 c-border-primary font-medium"/>
 }
 export const H2 = (props: any) => {
     return <h2 {...props} className="text-4xl my-4 font-medium"/>

@@ -26,12 +26,14 @@ Far far away, behind the word mountains, Quos quia provident consequuntur culpa 
 
 [Next.js](https://nextjs.org/)
 
+`npm install next`
+
 <Image
-    src="/error/error-memoji.png"
+    src="/posts/example-post/example.jpg"
     alt={"Error Memoji"}
-    width={200}
-    height={200}
-    priority
+    loading="lazy"
+    width={600}
+    height={330}
     aria-label={"Error Memoji"}
     blurDataURL={'/loader/loader.gif'}
     placeholder="blur"
@@ -42,14 +44,60 @@ Far far away, behind the word mountains, Quos quia provident consequuntur culpa 
  - List item 3
  - List item 4
 
+<List
+    type={'info'}
+>
+    - List item 1
+    - List item 2
+    - List item 3
+    - List item 4
+</List>
+
+<List
+    type={'tips'}
+>
+    - List item 1
+    - List item 2
+    - List item 3
+    - List item 4
+</List>
+
+<List
+    type={'success'}
+>
+    - List item 1
+    - List item 2
+    - List item 3
+    - List item 4
+</List>
+
+<List
+    type={'warning'}
+>
+    - List item 1
+    - List item 2
+    - List item 3
+    - List item 4
+</List>
+
+<List
+    type={'error'}
+>
+    - List item 1
+    - List item 2
+    - List item 3
+    - List item 4
+</List>
+
+
 | Left    | Right    | Center    |
 | :-----  | ----:    | :---:     |
 | Text    | Text     | Text      |
 | Text    | Text     | Text      |
 
 <Code
-    infoText={'This is a code block'}
-    infoType={'info'}
+    text={'This is a code block'}
+    type={'info'}
 >
     ```
 
@@ -58,8 +106,8 @@ Far far away, behind the word mountains, Quos quia provident consequuntur culpa 
 </Code>
 
 <Code
-    infoText={'This is a warning code block'}
-    infoType={'warning'}
+    text={'This is a success code block'}
+    type={'success'}
 >
     ```
 
@@ -68,8 +116,18 @@ Far far away, behind the word mountains, Quos quia provident consequuntur culpa 
 </Code>
 
 <Code
-    infoText={'This is a error code block'}
-    infoType={'error'}
+    text={'This is a warning code block'}
+    type={'warning'}
+>
+    ```
+
+    This is a code block.
+    ```
+</Code>
+
+<Code
+    text={'This is a error code block'}
+    type={'error'}
 >
     ```
 
