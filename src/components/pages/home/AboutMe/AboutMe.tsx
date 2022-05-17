@@ -36,7 +36,7 @@ export const AboutMe: FC<Props> = ({avatarSrc, newTitle, newUpdate, slug}) => {
                             width={195}
                             height={195}
                             priority
-                            blurDataURL={'/loader/loader.gif'}
+                            blurDataURL={'/loader/skeleton.gif'}
                             placeholder="blur"
                         />
                     </div>
