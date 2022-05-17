@@ -59,6 +59,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                 <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] w-full self-center mx-auto lg:ml-2">
                     <MDXRemote
                         {...source}
+                        // @ts-ignore
                         components={MDXComponents}
                     />
                 </div>
