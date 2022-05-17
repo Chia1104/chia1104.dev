@@ -24,6 +24,8 @@ There live the blind texts far from the countries Vokalia and Consonantia, there
 
 Far far away, behind the word mountains, Quos quia provident consequuntur culpa facere ratione maxime commodi voluptates id repellat velit eaque aspernatur expedita. Possimus itaque adipisci there live the blind texts from the countries Vokalia and Consonantia, there live the blind texts. Quos quia provident consequuntur culpa facere ratione maxime commodi voluptates id repellat velit eaque aspernatur expedita. Possimus itaque adipisci.
 
+[Next.js](https://nextjs.org/)
+
 <Image
     src="/error/error-memoji.png"
     alt={"Error Memoji"}
@@ -35,9 +37,49 @@ Far far away, behind the word mountains, Quos quia provident consequuntur culpa 
     placeholder="blur"
 />
 
-<Code>
+ - List item 1
+ - List item 2
+ - List item 3
+ - List item 4
+
+| Left    | Right    | Center    |
+| :-----  | ----:    | :---:     |
+| Text    | Text     | Text      |
+| Text    | Text     | Text      |
+
+<Code
+    infoText={'This is a code block'}
+    infoType={'info'}
+>
+    ```
+
+    This is a code block.
+    ```
+</Code>
+
+<Code
+    infoText={'This is a warning code block'}
+    infoType={'warning'}
+>
+    ```
+
+    This is a code block.
+    ```
+</Code>
+
+<Code
+    infoText={'This is a error code block'}
+    infoType={'error'}
+>
+    ```
+
+    This is a code block.
+    ```
+</Code>
+
 ```javascript
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
+  // This is an example
   return (
     <Layout
       title={frontMatter.title}
@@ -59,4 +101,3 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
 
 export default PostPage
 ```
-</Code>

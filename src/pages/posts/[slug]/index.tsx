@@ -43,7 +43,7 @@ export const getStaticProps: GetStaticProps = async ({ params }: { params: Pick<
 
 
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
-    const { theme, setTheme } = useTheme()
+    const { theme } = useTheme()
 
     return (
         <Layout
@@ -51,8 +51,8 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             description={frontMatter.excerpt || 'Post'}
         >
             <div className="main c-container mt-5 px-5">
-                <h1 className="title self-start">{frontMatter.title}</h1>
-                <p className="description self-start">
+                <h1 className="title self-start pl-3">{frontMatter.title}</h1>
+                <p className="description self-start pl-3">
                     {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
                     {frontMatter.readingMins}
                 </p>

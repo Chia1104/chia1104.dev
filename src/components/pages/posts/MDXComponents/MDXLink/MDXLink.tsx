@@ -7,11 +7,11 @@ export const MDXLink = (props: any) => {
     if (isInternalLink) {
         return (
             <Link href={href}>
-                <a {...props} className="text-info">{props.children}</a>
+                <a {...props} className="link link-underline link-underline-black text-info">{props.children}</a>
             </Link>
         );
     }
 
-    return <a target="_blank" rel="noopener noreferrer" {...props} />;
+    return <a target="_blank" rel="noopener noreferrer" {...props} className="link link-underline link-underline-black text-info"/>;
 }
 
