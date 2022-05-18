@@ -1,9 +1,0 @@
-# *
-User-agent: *
-Allow: /
-
-# Host
-Host: https://www.chia1104.dev
-
-# Sitemaps
-Sitemap: https://www.chia1104.dev/sitemap.xml
