@@ -5,6 +5,7 @@ import { Layout } from "@/components/globals/Layout";
 import { Chia } from"@/utils/meta/chia"
 import { PostFrontMatter } from "@/utils/types/post";
 import { getAllPosts } from "@/lib/mdx/services";
+import {NewsCard} from "@/components/pages/home/NewsCard";
 
 interface Props {
     url: string,
@@ -34,16 +35,54 @@ const HomePage: NextPage<Props> = (props) => {
             title={`${name} - ${title}`}
             description={description}
         >
-            <main className="main">
-                <div className="c-container">
+            <div className="c-container main">
+                <div className="w-full h-full flex flex-col">
                     <AboutMe
-                        newTitle={props.post.title || 'New update'}
-                        newUpdate={props.post.excerpt || 'This is an example of a blog post.'}
-                        slug={props.post.slug}
                         avatarSrc={props.url}
                     />
+                    <div className="flex flex-col justify-center items-center lg:flex-row mx-auto">
+                        <div className="py-7">
+                            <NewsCard
+                                title={'About me'}
+                                content={description}
+                                subtitle={''}
+                                link={'/about'}
+                            />
+                        </div>
+                        <div className="py-7">
+                            <NewsCard
+                                title={'New update'}
+                                content={props.post.excerpt || 'This is an example of a blog post.'}
+                                subtitle={''}
+                                link={`posts/${props.post.slug}`}
+                            />
+                        </div>
+                    </div>
+                    <div className="bg-primary/90 rounded-xl p-5 mt-10 mx-auto text-white backdrop-blur-sm w-[350px] md:w-[75%] max-w-[740px]">
+                        <ul>
+                            <li className="mb-2">
+                                🔭 I’m currently working on: My personal website with NextJS
+                            </li>
+                            <li className="mb-2">
+                                🌱 I’m currently learning: Docker, Next.js, Nest.js, TypeScript, Go
+                            </li>
+                            <li className="mb-2">
+                                👯 I’m looking to collaborate on: Intern
+                            </li>
+                            <li className="mb-2">
+                                📫 How to reach me: yuyuchia7423@gmail.com
+                            </li>
+                            <li>
+                                ⚡ Fun fact:
+                                <a href="https://open.spotify.com/user/21vnijzple4ufn2nzlfjy37py?si=b5f011d11a794ba4&nd=1" target="_blank" rel="noreferrer" className="link link-underline link-underline-black text-info"> Spotify </a>
+                                /
+                                {/* eslint-disable-next-line react/no-unescaped-entities */}
+                                <a href="https://skyline.github.com/Chia1104/2022" target="_blank" rel="noreferrer" className="link link-underline link-underline-black text-info"> Chia1104's 2022 GitHub Skyline </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </main>
+            </div>
         </Layout>
     )
 }
