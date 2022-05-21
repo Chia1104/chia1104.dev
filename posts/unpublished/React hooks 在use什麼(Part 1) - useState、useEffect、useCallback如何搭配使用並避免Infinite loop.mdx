@@ -1,0 +1,47 @@
+---
+id: 2
+published: false
+title: "React hooks 在use什麼(Part 1) - useState、useEffect、useCallback如何搭配使用並避免Infinite loop"
+createdAt: '2022-05-22'
+updatedAt: '2022-05-22'
+tags: ['React', 'React hooks', 'useState', 'useEffect', 'useCallback']
+excerpt: "React hooks 在use什麼(Part 1) - useState、useEffect、useCallback如何搭配使用並避免Infinite loop, React 自從16.8之後加入了hook這個新功能，而hook的目的就是讓開發者不必寫 class 就能使用 state 以及其他 React 的功能，其實這就跟現在Vue3的Composition API概念一樣，我們只需要import這些API就可以在Function components中做使用，甚至完成life cycle上的工作。"
+---
+
+## 前言
+
+React 自從16.8之後加入了hook這個新功能，而hook的目的就是讓開發者不必寫 class 就能使用 state 以及其他 React 的功能，其實這就跟現在Vue3的Composition API概念一樣，我們只需要import這些API就可以在Function components中做使用，甚至完成life cycle上的工作。
+
+那麼在進入正文中，會希望大家可以對於React 16之後的改動有基本的認識
+
+這裡推薦這篇文章 - [React 開發者一定要知道的底層機制 — React Fiber Reconciler]( https://medium.com/starbugs/react-%E9%96%8B%E7%99%BC%E8%80%85%E4%B8%80%E5%AE%9A%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E5%BA%95%E5%B1%A4%E6%9E%B6%E6%A7%8B-react-fiber-c3ccd3b047a1)
+
+---
+
+## Hook 的規則
+
+其實Hook就是Javascript 的function，而有兩點需要特別注意的是
+
+<Quote
+    type={'warning'}
+>
+    ### 我們只在最上層呼叫 Hook
+
+    **不要在迴圈、條件式或是巢狀的 function 內呼叫 Hook**
+</Quote>
+
+這裡有個錯誤的範例
+
+<Code
+    text={'這是錯的!!'}
+    type={'error'}
+>
+    ```javascript
+
+    if (condition) {
+        useEffect(() => {
+            fetchData()
+        }, []);
+    }
+    ```
+</Code>
