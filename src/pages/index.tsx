@@ -40,7 +40,7 @@ const HomePage: NextPage<Props> = (props) => {
                     <AboutMe
                         avatarSrc={props.url}
                     />
-                    <div className="flex flex-col justify-center items-center lg:flex-row mx-auto">
+                    <div className="flex flex-col justify-center items-center lg:flex-row mx-auto mt-10">
                         <div className="py-7">
                             <NewsCard
                                 title={'About me'}

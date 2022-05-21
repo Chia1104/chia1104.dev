@@ -117,7 +117,7 @@ export const LanAndTools: FC = () => {
                         <SiDocker className="w-[60px] h-[60px]"/>
                     </LATItem>
                     <LATItem
-                        href={'https://www.github.com'}
+                        href={'https://github.com/features/actions'}
                         name={'GitHub Action'}
                     >
                         <SiGithubactions className="w-[60px] h-[60px]"/>

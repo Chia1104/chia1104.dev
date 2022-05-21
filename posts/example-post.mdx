@@ -4,7 +4,7 @@ published: true
 title: "Example 1"
 createdAt: '2022-05-13'
 updatedAt: '2022-05-13'
-tags: []
+tags: ['Example', 'MDX', 'Next.js']
 excerpt: "This is an example of a blog post."
 ---
 
@@ -24,13 +24,26 @@ There live the blind texts far from the countries Vokalia and Consonantia, there
 
 Far far away, behind the word mountains, Quos quia provident consequuntur culpa facere ratione maxime commodi voluptates id repellat velit eaque aspernatur expedita. Possimus itaque adipisci there live the blind texts from the countries Vokalia and Consonantia, there live the blind texts. Quos quia provident consequuntur culpa facere ratione maxime commodi voluptates id repellat velit eaque aspernatur expedita. Possimus itaque adipisci.
 
-[Next.js](https://nextjs.org/)
+[Next.js](https://nextjs.org/) ~~This text is strikethrough~~ **This is a strong emphasis**
+
+---
+
+<Divider text="This is a divider" />
+
+1. This is a list item
+2. This is a list item
+3. This is a list item
+
+## Features
+- [X] Authentication
+- [ ] CI/CD
+- [ ] E2E Testing(with [Cypress](https://www.cypress.io/))
 
 `npm install next`
 
 <Image
     src="/posts/example-post/example.jpg"
-    alt={"Error Memoji"}
+    alt={"Example image"}
     width={976}
     height={549}
 />
@@ -40,54 +53,50 @@ Far far away, behind the word mountains, Quos quia provident consequuntur culpa 
  - List item 3
  - List item 4
 
-<List
+<Quote
     type={'info'}
 >
     - List item 1
     - List item 2
     - List item 3
     - List item 4
-</List>
+</Quote>
 
-<List
+<Quote
     type={'tips'}
 >
-    - List item 1
-    - List item 2
-    - List item 3
-    - List item 4
-</List>
+    1. This is a list item
+    2. This is a list item
+    3. This is a list item
+</Quote>
 
-<List
+<Quote
     type={'success'}
 >
-    - List item 1
-    - List item 2
-    - List item 3
-    - List item 4
-</List>
+    #### This is a quote
+    this is a quote
+</Quote>
 
-<List
+<Quote
     type={'warning'}
 >
-    - List item 1
-    - List item 2
-    - List item 3
-    - List item 4
-</List>
+    #### **This is a quote**
 
-<List
+    this is a quote
+</Quote>
+
+<Quote
     type={'error'}
 >
     - List item 1
     - List item 2
     - List item 3
     - List item 4
-</List>
+</Quote>
 
 
 | Left    | Right    | Center    |
-| :-----  | ----:    | :---:     |
+| :-----  | -----:   | :----:    |
 | Text    | Text     | Text      |
 | Text    | Text     | Text      |
 
