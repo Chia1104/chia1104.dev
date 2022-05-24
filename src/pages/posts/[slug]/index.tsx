@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import React from 'react'
+import Image from 'next/image'
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
 import { getSlugs, getPost } from '@/lib/mdx/services'
 import { Layout } from "@/components/globals/Layout";
@@ -50,12 +51,22 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             title={frontMatter.title || 'Post'}
             description={frontMatter.excerpt || 'Post'}
         >
-            <div className="main c-container mt-5 px-5">
-                <h1 className="title self-start pl-3">{frontMatter.title}</h1>
-                <p className="description self-start pl-3">
-                    {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
-                    {frontMatter.readingMins}
-                </p>
+            <article className="main c-container mt-5 px-5">
+                <div className="pl-3 lg:w-[80%] w-full self-start mb-10">
+                    <h1 className="title">{frontMatter.title}</h1>
+                    <h2 className="text-3xl">{frontMatter.excerpt}</h2>
+                    <span className="description mt-5 flex items-center">
+                        <Image
+                            src="/memoji/contact-memoji.PNG"
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                            alt="Chia1104"
+                        />
+                        {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
+                        {frontMatter.readingMins}
+                    </span>
+                </div>
                 <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] w-full self-center mx-auto lg:ml-2">
                     <MDXRemote
                         {...source}
@@ -73,7 +84,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                         theme={theme === "dark" ? "dark_dimmed" : "light"}
                     />
                 </div>
-            </div>
+            </article>
         </Layout>
     )
 }

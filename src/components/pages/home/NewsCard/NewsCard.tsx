@@ -16,8 +16,11 @@ export const NewsCard: FC<Props> = ({title, content, subtitle, link}) => {
             </h3>
             <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[350px] rounded-xl relative flex justify-center items-center min-h-[150px] mt-5">
                 <div className="w-[343px] h-[143px] c-bg-secondary p-2 rounded-xl">
-                    <p className="text-xl text-center">
+                    <p className="text-xl text-center line-clamp-3">
                         { content }
+                    </p>
+                    <p className="text-base text-left line-clamp-1 c-text-secondary mt-2">
+                        { subtitle }
                     </p>
                 </div>
                 <NextLink

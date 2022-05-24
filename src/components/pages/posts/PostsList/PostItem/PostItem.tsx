@@ -9,10 +9,10 @@ interface Props {
 export const PostItem: FC<Props> = ({ data }) => {
     return (
         <div className="w-full p-3 c-border-primary border-2 rounded-xl flex flex-col c-bg-secondary shadow-lg">
-            <h2 className="text-2xl mb-3">
+            <h2 className="text-3xl mb-3">
                 {data.title}
             </h2>
-            <h3 className="truncate text-xl mb-5">
+            <h3 className="line-clamp-3 text-xl mb-5">
                 {data.excerpt}
             </h3>
             <p>

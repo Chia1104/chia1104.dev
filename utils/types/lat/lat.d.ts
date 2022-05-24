@@ -1,6 +1,8 @@
+import { IconType } from "react-icons";
+
 export type LAT = {
     name: string;
     level: string;
     link: string;
-    icon: string;
+    icon: IconType;
 }

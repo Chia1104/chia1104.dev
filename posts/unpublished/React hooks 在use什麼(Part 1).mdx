@@ -1,11 +1,12 @@
 ---
 id: 2
 published: false
-title: "React hooks 在use什麼(Part 1) - useState、useEffect、useCallback如何搭配使用並避免Infinite loop"
+title: "React hooks 在use什麼(Part 1)"
 createdAt: '2022-05-22'
 updatedAt: '2022-05-22'
 tags: ['React', 'React hooks', 'useState', 'useEffect', 'useCallback']
-excerpt: "React hooks 在use什麼(Part 1) - useState、useEffect、useCallback如何搭配使用並避免Infinite loop, React 自從16.8之後加入了hook這個新功能，而hook的目的就是讓開發者不必寫 class 就能使用 state 以及其他 React 的功能，其實這就跟現在Vue3的Composition API概念一樣，我們只需要import這些API就可以在Function components中做使用，甚至完成life cycle上的工作。"
+headImgimg: '/posts/example-posts/example.jpg'
+excerpt: "useState、useEffect、useCallback如何搭配使用並避免Infinite loop"
 ---
 
 ## 前言
@@ -37,7 +38,6 @@ React 自從16.8之後加入了hook這個新功能，而hook的目的就是讓�
     type={'error'}
 >
     ```javascript
-
     if (condition) {
         useEffect(() => {
             fetchData()

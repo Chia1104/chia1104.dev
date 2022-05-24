@@ -1,3 +1,27 @@
+import {
+    SiFirebase,
+    SiJavascript,
+    SiTypescript,
+    SiNextdotjs,
+    SiPython,
+    SiJava,
+    SiPhp,
+    SiMysql,
+    SiMongodb,
+    SiNestjs,
+    SiLaravel,
+    SiVuedotjs,
+    SiTailwindcss,
+    SiDocker,
+    SiGithubactions,
+    SiGooglecloud,
+    SiAdobephotoshop,
+    SiAdobeillustrator,
+    SiAdobepremierepro,
+    SiReact,
+    SiAdobeindesign
+} from 'react-icons/si'
+
 export const Chia = {
     name: 'Chia1104',
     chineseName: '俞又嘉',
@@ -12,57 +36,57 @@ export const Chia = {
                 name: 'JavaScript',
                 level: 'Advanced',
                 link: 'https://www.javascript.com/',
-                icon: '@/components/globals/icons/Languages/JSIcon',
+                icon: SiJavascript
             },
             {
                 name: 'TypeScript',
                 level: 'Basic',
                 link: 'https://www.typescriptlang.org/',
-                icon: '@/components/globals/icons/Languages/TSIcon',
+                icon: SiTypescript,
             },
             {
                 name: 'Java',
                 level: 'Advanced',
                 link: 'https://www.java.com/',
-                icon: '@/components/globals/icons/Languages/JavaIcon',
-            },
-            {
-                name: 'Python',
-                level: 'Basic',
-                link: 'https://www.python.org/',
-                icon: '@/components/globals/icons/Languages/PythonIcon',
+                icon: SiJava,
             },
             {
                 name: 'PHP',
                 level: 'Advanced',
                 link: 'https://www.php.net/',
-                icon: '@/components/globals/icons/Languages/PHPIcon',
-            }
+                icon: SiPhp,
+            },
+            {
+                name: 'Python',
+                level: 'Basic',
+                link: 'https://www.python.org/',
+                icon: SiPython,
+            },
         ],
         frontend: [
             {
                 name: 'React',
                 level: 'Advanced',
                 link: 'https://reactjs.org/',
-                icon: 'react',
+                icon: SiReact,
             },
             {
                 name: 'NextJS',
                 level: 'Advanced',
                 link: 'https://nextjs.org/',
-                icon: 'nextjs',
+                icon: SiNextdotjs,
             },
             {
                 name: 'Vue',
                 level: 'Basic',
                 link: 'https://vuejs.org/',
-                icon: 'vue',
+                icon: SiVuedotjs,
             },
             {
                 name: 'Tailwindcss',
                 level: 'Advanced',
                 link: 'https://tailwindcss.com/',
-                icon: 'tailwindcss',
+                icon: SiTailwindcss,
             },
         ],
         backend: [
@@ -70,13 +94,13 @@ export const Chia = {
                 name: 'Laravel',
                 level: 'Advanced',
                 link: 'https://laravel.com/',
-                icon: 'laravel',
+                icon: SiLaravel,
             },
             {
                 name: 'NestJS',
                 level: 'Advanced',
                 link: 'https://nestjs.com/',
-                icon: 'nestjs',
+                icon: SiNestjs,
             }
         ],
         devops: [
@@ -84,19 +108,19 @@ export const Chia = {
                 name: 'Docker',
                 level: 'Basic',
                 link: 'https://www.docker.com/',
-                icon: 'docker',
+                icon: SiDocker,
             },
             {
-                name: 'GitHub Action',
+                name: 'GitHub Actions',
                 level: 'Advanced',
-                link: 'https://www.github.com',
-                icon: 'github',
+                link: 'https://github.com/features/actions',
+                icon: SiGithubactions,
             },
             {
                 name: 'GCP',
                 level: 'Basic',
                 link: 'https://cloud.google.com/',
-                icon: 'gcp',
+                icon: SiGooglecloud,
             }
         ],
         databases: [
@@ -104,19 +128,19 @@ export const Chia = {
                 name: 'MySQL',
                 level: 'Basic',
                 link: 'https://www.mysql.com/',
-                icon: 'mysql',
+                icon: SiMysql,
             },
             {
                 name: 'MongoDB',
                 level: 'Basic',
                 link: 'https://www.mongodb.com/',
-                icon: 'mongodb',
+                icon: SiMongodb,
             },
             {
                 name: 'Firebase',
                 level: 'Advanced',
                 link: 'https://firebase.google.com/',
-                icon: 'firebase',
+                icon: SiFirebase,
             }
         ],
         design: [
@@ -124,25 +148,25 @@ export const Chia = {
                 name: 'Photoshop',
                 level: 'Basic',
                 link: 'https://www.adobe.com/tw/products/photoshop.html',
-                icon: 'photoshop',
+                icon: SiAdobephotoshop,
             },
             {
                 name: 'Illustrator',
                 level: 'Basic',
                 link: 'https://www.adobe.com/tw/products/illustrator.html',
-                icon: 'illustrator',
+                icon: SiAdobeillustrator,
             },
             {
                 name: 'InDesign',
                 level: 'Basic',
                 link: 'https://www.adobe.com/tw/products/indesign.html',
-                icon: 'indesign',
+                icon: SiAdobeindesign,
             },
             {
                 name: 'Premiere Pro',
                 level: 'Basic',
                 link: 'https://www.adobe.com/tw/products/premiere.html',
-                icon: 'premiere',
+                icon: SiAdobepremierepro,
             }
         ],
     },

@@ -93,10 +93,10 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                         </li>
                     </ul>
                 </div>
-                <div className="mt-20 w-full">
+                <div className="mt-20 w-full max-w-[1000px]">
                     <LanAndTools/>
                 </div>
-                <div className="mt-20 w-full">
+                <div className="mt-20 w-full max-w-[1000px]">
                     <Experience />
                 </div>
             </div>

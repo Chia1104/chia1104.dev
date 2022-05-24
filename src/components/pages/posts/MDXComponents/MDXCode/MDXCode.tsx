@@ -44,7 +44,7 @@ export const MDXCode: FC<Props> = ({children, text, type}) => {
 
 export const MDXPre: FC<Props> = (props) => {
     return (
-        <pre {...props} className="dark:bg-code bg-[#dddddd] w-full my-7 p-2 rounded-xl dark:text-white text:black overflow-x-auto transition ease-in-out">
+        <pre {...props} className="dark:bg-code bg-[#dddddd] w-full my-7 p-7 pb-4 rounded-xl dark:text-white text:black overflow-x-auto transition ease-in-out">
             {props.children}
         </pre>
     )

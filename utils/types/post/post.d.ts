@@ -6,6 +6,7 @@ export type PostFrontMatter = {
     title?: string;
     excerpt?: string;
     tags?: string[];
+    headImg?: string;
     createdAt: string;
     updateAt?: string;
     readingMins: string;

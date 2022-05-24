@@ -6,6 +6,7 @@ import { Chia } from"@/utils/meta/chia"
 import { PostFrontMatter } from "@/utils/types/post";
 import { getAllPosts } from "@/lib/mdx/services";
 import {NewsCard} from "@/components/pages/home/NewsCard";
+import dayjs from "dayjs";
 
 interface Props {
     url: string,
@@ -30,6 +31,8 @@ const HomePage: NextPage<Props> = (props) => {
     const title = Chia.title;
     const description = Chia.content
 
+    const postSubtitle = dayjs(props.post.createdAt).format('MMMM D, YYYY');
+
     return (
         <Layout
             title={`${name} - ${title}`}
@@ -53,7 +56,7 @@ const HomePage: NextPage<Props> = (props) => {
                             <NewsCard
                                 title={'New update'}
                                 content={props.post.excerpt || 'This is an example of a blog post.'}
-                                subtitle={''}
+                                subtitle={postSubtitle}
                                 link={`posts/${props.post.slug}`}
                             />
                         </div>
