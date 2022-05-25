@@ -6,11 +6,11 @@ interface Props {
 
 export const Chip: FC<Props> = ({ data }) => {
     return (
-        <div className="flex mt-3">
+        <div className="flex mt-3 flex-wrap">
             {
                 data.map((item, index) => (
-                    <div className="rounded-full c-border-primary border-2 c-bg-secondary mx-2" key={index}>
-                        <p className="text-center c-description px-1">
+                    <div className="rounded-full c-border-primary border-2 c-bg-secondary mr-2 my-1" key={index}>
+                        <p className="text-center c-description px-2 text-base">
                             {item || 'Chip'}
                         </p>
                     </div>

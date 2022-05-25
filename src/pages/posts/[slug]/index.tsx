@@ -52,11 +52,11 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             title={frontMatter.title || 'Post'}
             description={frontMatter.excerpt || 'Post'}
         >
-            <article className="main c-container mt-5 px-5">
+            <article className="main c-container mt-10 px-5">
                 <div className="pl-3 lg:w-[70%] w-full mb-7 self-center">
-                    <h1 className="title">{frontMatter.title}</h1>
-                    <h2 className="text-3xl">{frontMatter.excerpt}</h2>
-                    <span className="description mt-5 flex items-center">
+                    <h1 className="title pb-5">{frontMatter.title}</h1>
+                    <h2 className="text-3xl c-description">{frontMatter.excerpt}</h2>
+                    <span className="description mt-5 flex items-center c-description gap-2">
                         <Image
                             src="/memoji/contact-memoji.PNG"
                             width={40}
