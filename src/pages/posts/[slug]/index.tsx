@@ -8,6 +8,7 @@ import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { PostFrontMatter } from "@/utils/types/post";
 import { MDXComponents } from "@/components/pages/posts/MDXComponents";
 import 'highlight.js/styles/atom-one-dark-reasonable.css'; // code syntax highlighting
+import { Chip } from "@/components/pages/posts/Chip";
 
 import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
@@ -52,7 +53,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             description={frontMatter.excerpt || 'Post'}
         >
             <article className="main c-container mt-5 px-5">
-                <div className="pl-3 lg:w-[70%] w-full mb-10 self-center">
+                <div className="pl-3 lg:w-[70%] w-full mb-7 self-center">
                     <h1 className="title">{frontMatter.title}</h1>
                     <h2 className="text-3xl">{frontMatter.excerpt}</h2>
                     <span className="description mt-5 flex items-center">
@@ -66,6 +67,10 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                         {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
                         {frontMatter.readingMins}
                     </span>
+                    <Chip
+                        // @ts-ignore
+                        data={frontMatter.tags}
+                    />
                 </div>
                 <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:w-[70%] w-full self-center mx-auto">
                     <MDXRemote

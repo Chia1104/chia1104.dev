@@ -26,10 +26,10 @@ const PostsPage: NextPage<Props> = (props) => {
             title="Chia1104 - Posts"
             description="Post page">
             <div className="main c-container">
-                <h1 className="title">
+                <h1 className="title py-10">
                     Blog posts
                 </h1>
-                <div className="flex flex-col w-full lg:w-[85%] justify-center items-center">
+                <div className="flex flex-col w-full justify-center items-center">
                     <PostsList post={posts} />
                 </div>
             </div>
