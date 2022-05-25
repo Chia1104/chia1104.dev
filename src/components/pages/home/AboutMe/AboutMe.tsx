@@ -12,8 +12,8 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
     const title = Chia.title
 
     return (
-        <div className="flex flex-col xl:flex-row px-3 justify-center z-20 mt-10">
-            <div className="flex flex-col justify-end items-center xl:items-end mb-5 xl:pr-5">
+        <div className="flex flex-col md:flex-row px-3 justify-center z-20 mt-10">
+            <div className="flex flex-col justify-end items-center md:items-end mb-5 md:pr-5">
                 <h1
                     className="title text-sec-text dark:text-white">
                     {name} - {chineseName}

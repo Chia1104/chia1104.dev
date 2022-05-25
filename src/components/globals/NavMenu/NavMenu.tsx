@@ -16,7 +16,7 @@ export const NavMenu: FC = () => {
                         </a>
                     </NextLink>
                 </div>
-                <div className="md:flex items-center w-[30%] sm:hidden justify-end">
+                <div className="flex items-center w-[30%] justify-end mr-3">
                     <NextLink href="/about">
                         <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <AccountCircleOutlinedIcon
@@ -24,7 +24,7 @@ export const NavMenu: FC = () => {
                                 className="mr-1"
                                 aria-label={"About page"}
                             />
-                            <h2>
+                            <h2 className="hidden md:block">
                                 About
                             </h2>
                         </a>
@@ -36,7 +36,7 @@ export const NavMenu: FC = () => {
                                 className="mr-1"
                                 aria-label={"Posts page"}
                             />
-                            <h2>
+                            <h2 className="hidden md:block">
                                 Posts
                             </h2>
                         </a>
@@ -48,38 +48,9 @@ export const NavMenu: FC = () => {
                                 className="mr-1"
                                 aria-label={"Portfolios page"}
                             />
-                            <h2>
+                            <h2 className="hidden md:block">
                                 Portfolios
                             </h2>
-                        </a>
-                    </NextLink>
-                </div>
-                <div className="md:hidden items-center w-[30%] sm:flex justify-end">
-                    <NextLink href="/about">
-                        <a className="flex link link-underline link-underline-black mr-4 py-3">
-                            <AccountCircleOutlinedIcon
-                                fontSize={'large'}
-                                className="mr-1"
-                                aria-label={"About page"}
-                            />
-                        </a>
-                    </NextLink>
-                    <NextLink href="/posts">
-                        <a className="flex link link-underline link-underline-black mr-4 py-3">
-                            <ArticleOutlinedIcon
-                                fontSize={'large'}
-                                className="mr-1"
-                                aria-label={"Posts page"}
-                            />
-                        </a>
-                    </NextLink>
-                    <NextLink href="/portfolios">
-                        <a className="flex link link-underline link-underline-black mr-4 py-3">
-                            <WorkspacesOutlinedIcon
-                                fontSize={'large'}
-                                className="mr-1"
-                                aria-label={"Portfolios page"}
-                            />
                         </a>
                     </NextLink>
                 </div>

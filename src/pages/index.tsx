@@ -38,13 +38,13 @@ const HomePage: NextPage<Props> = (props) => {
             title={`${name} - ${title}`}
             description={description}
         >
-            <div className="c-container main">
+            <article className="c-container main">
                 <div className="w-full h-full flex flex-col">
                     <AboutMe
                         avatarSrc={props.url}
                     />
-                    <div className="flex flex-col justify-center items-center lg:flex-row mx-auto mt-10">
-                        <div className="py-7">
+                    <div className="flex flex-col justify-center items-center md:flex-row mx-auto mt-10 w-full min:w-[370px] max-w-[740px] w-full">
+                        <div className="py-7 px-3">
                             <NewsCard
                                 title={'About me'}
                                 content={description}
@@ -52,7 +52,7 @@ const HomePage: NextPage<Props> = (props) => {
                                 link={'/about'}
                             />
                         </div>
-                        <div className="py-7">
+                        <div className="py-7 px-3">
                             <NewsCard
                                 title={'New update'}
                                 content={props.post.excerpt || 'This is an example of a blog post.'}
@@ -61,7 +61,7 @@ const HomePage: NextPage<Props> = (props) => {
                             />
                         </div>
                     </div>
-                    <div className="bg-primary/90 rounded-xl p-5 mt-10 mx-auto text-white backdrop-blur-sm w-[350px] md:w-[75%] max-w-[740px]">
+                    <div className="bg-primary/90 rounded-xl p-5 mt-10 mx-auto text-white backdrop-blur-sm min:w-[370px] max-w-[740px] w-full">
                         <ul>
                             <li className="mb-2">
                                 🔭 I’m currently working on: My personal website with NextJS
@@ -85,7 +85,7 @@ const HomePage: NextPage<Props> = (props) => {
                         </ul>
                     </div>
                 </div>
-            </div>
+            </article>
         </Layout>
     )
 }

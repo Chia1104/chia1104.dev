@@ -52,7 +52,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             description={frontMatter.excerpt || 'Post'}
         >
             <article className="main c-container mt-5 px-5">
-                <div className="pl-3 lg:w-[80%] w-full self-start mb-10">
+                <div className="pl-3 lg:w-[70%] w-full mb-10 self-center">
                     <h1 className="title">{frontMatter.title}</h1>
                     <h2 className="text-3xl">{frontMatter.excerpt}</h2>
                     <span className="description mt-5 flex items-center">
@@ -67,14 +67,14 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                         {frontMatter.readingMins}
                     </span>
                 </div>
-                <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] w-full self-center mx-auto lg:ml-2">
+                <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:w-[70%] w-full self-center mx-auto">
                     <MDXRemote
                         {...source}
                         // @ts-ignore
                         components={MDXComponents}
                     />
                 </div>
-                <div className="mt-20 lg:self-start lg:w-[80%] w-full self-center mx-auto lg:ml-2">
+                <div className="mt-20 lg:w-[70%] w-full self-center mx-auto">
                     <Giscus
                         {...(giscusConfig as GiscusProps)}
                         term={frontMatter.title}

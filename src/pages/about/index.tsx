@@ -29,9 +29,9 @@ const AboutPage: NextPage<Props> = ({url}) => {
             title="Chia1104 - About"
             description={description}
         >
-            <div className="main c-container mt-20">
+            <article className="main c-container mt-20">
                 <Resume avatarSrc={url || '/favicon.ico'} />
-            </div>
+            </article>
         </Layout>
     )
 }

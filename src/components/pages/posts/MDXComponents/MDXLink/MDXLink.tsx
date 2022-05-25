@@ -1,12 +1,18 @@
 import Link from 'next/link';
+import {FC, ReactNode} from 'react';
 
-export const MDXLink = (props: any) => {
-    const href = props.href;
-    const isInternalLink = href && (href.startsWith('/') || href.startsWith('#'));
+interface Props {
+    href: string;
+    children: ReactNode
+}
+
+export const MDXLink: FC<Props> = (props) => {
+    const h = props.href;
+    const isInternalLink = h && (h.startsWith('/') || h.startsWith('#'));
 
     if (isInternalLink) {
         return (
-            <Link href={href}>
+            <Link href={h}>
                 <a {...props} className="link link-underline link-underline-black text-info">{props.children}</a>
             </Link>
         );

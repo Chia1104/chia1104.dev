@@ -7,11 +7,11 @@ const PortfoliosPage: NextPage = () => {
             title="Chia1104 - My portfolios"
             description="This is the portfolios page"
         >
-            <div className="main c-container">
+            <article className="main c-container">
                 <h1 className="title">
                     Portfolios Page
                 </h1>
-            </div>
+            </article>
         </Layout>
     )
 }

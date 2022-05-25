@@ -3,13 +3,13 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    screens: {
-      'sm': '350px',
-      'md': '640px',
-      'lg': '768px',
-      'xl': '1024px',
-      '2xl': '1536px',
-    },
+    // screens: {
+    //   'sm': '350px',
+    //   'md': '640px',
+    //   'lg': '768px',
+    //   'xl': '1024px',
+    //   '2xl': '1536px',
+    // },
     extend: {
       colors: {
         'primary': '#2B2E4A',
@@ -44,11 +44,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/line-clamp'),
+    require('@tailwindcss/aspect-ratio'),
   ],
-  // future: {
-  //   removeDeprecatedGapUtilities: true,
-  //   purgeLayersByDefault: true
-  // },
-  // purge: ['./src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class'
 }
