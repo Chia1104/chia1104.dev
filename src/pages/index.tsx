@@ -1,6 +1,6 @@
 import type {GetStaticProps, NextPage} from 'next'
 import { AboutMe } from "@/components/pages/home/AboutMe";
-import { getImage } from "@/firebase/images/services";
+import { getImage } from "@/firebase/files/services";
 import { Layout } from "@/components/globals/Layout";
 import { Chia } from"@/utils/meta/chia"
 import { PostFrontMatter } from "@/utils/types/post";
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-    const avatarUrl = await getImage('me-images/me-memoji.PNG');
+    const avatarUrl = await getImage('me/me-memoji.PNG');
     const posts = await getAllPosts()
 
     return {

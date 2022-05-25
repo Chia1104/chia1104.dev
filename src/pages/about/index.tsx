@@ -3,14 +3,14 @@ import { Layout } from "@/components/globals/Layout";
 import { Chia } from"@/utils/meta/chia"
 import {Resume} from "@/components/pages/about/Resume";
 import {GetStaticProps} from "next";
-import {getImage} from "@/firebase/images/services";
+import {getImage} from "@/firebase/files/services";
 
 interface Props {
     url: string,
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-    const avatarUrl = await getImage('me-images/me.JPG');
+    const avatarUrl = await getImage('me/me.JPG');
 
     return {
         props: {
