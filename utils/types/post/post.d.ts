@@ -11,6 +11,7 @@ export type PostFrontMatter = {
     updateAt?: string;
     readingMins: string;
     published: boolean;
+    content?: string;
 }
 
 export type PostSource = {

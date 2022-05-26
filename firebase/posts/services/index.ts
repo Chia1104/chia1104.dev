@@ -1,3 +1,1 @@
-export {
-    queryPosts,
-} from './posts.service';
+export * from './posts.service';

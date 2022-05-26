@@ -2,6 +2,7 @@ import type { GetStaticProps, NextPage} from 'next'
 import { PostFrontMatter } from "@/utils/types/post";
 import { Layout } from "@/components/globals/Layout";
 import { getAllPosts } from "@/lib/mdx/services";
+// import { queryPosts } from "@/firebase/posts/services";
 import { PostsList } from "@/components/pages/posts/PostsList";
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 
 export const getStaticProps: GetStaticProps = async (context) => {
     const posts = await getAllPosts();
+    // const posts = await queryPosts(20);
 
     return {
         props: {
@@ -25,14 +27,14 @@ const PostsPage: NextPage<Props> = (props) => {
         <Layout
             title="Chia1104 - Posts"
             description="Post page">
-            <div className="main c-container">
+            <article className="main c-container">
                 <h1 className="title py-10">
                     Blog posts
                 </h1>
                 <div className="flex flex-col w-full justify-center items-center">
                     <PostsList post={posts} />
                 </div>
-            </div>
+            </article>
         </Layout>
     )
 }

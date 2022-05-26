@@ -1,3 +1,1 @@
-export {
-    dataToJSON,
-} from './posts.repository';
+export * from './posts.repository';
