@@ -3,7 +3,7 @@ import { Layout } from "@/components/globals/Layout";
 import { Chia } from"@/utils/meta/chia"
 import {Resume} from "@/components/pages/about/Resume";
 import {GetStaticProps} from "next";
-import {getImage} from "@/firebase/files/services";
+import {getImage} from "@/lib/firebase/files/services";
 
 interface Props {
     url: string,

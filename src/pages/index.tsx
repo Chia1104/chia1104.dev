@@ -1,6 +1,6 @@
 import type {GetStaticProps, NextPage} from 'next'
 import { AboutMe } from "@/components/pages/home/AboutMe";
-import { getImage } from "@/firebase/files/services";
+import { getImage } from "@/lib/firebase/files/services";
 import { Layout } from "@/components/globals/Layout";
 import { Chia } from"@/utils/meta/chia"
 import { PostFrontMatter } from "@/utils/types/post";

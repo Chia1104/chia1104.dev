@@ -7,10 +7,8 @@ import { Layout } from "@/components/globals/Layout";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { PostFrontMatter } from "@/utils/types/post";
 import { MDXComponents } from "@/components/pages/posts/MDXComponents";
-import 'highlight.js/styles/atom-one-dark-reasonable.css'; // code syntax highlighting
+import 'highlight.js/styles/atom-one-dark-reasonable.css';
 import { Chip } from "@/components/pages/posts/Chip";
-// import { queryPost } from "@/firebase/posts/services";
-
 import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@/utils/config/giscus.config";

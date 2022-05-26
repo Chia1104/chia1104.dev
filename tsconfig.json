@@ -22,7 +22,6 @@
         "@/store/*": ["src/store/*"],
         "@/utils/*": ["utils/*"],
         "@/lib/*": ["lib/*"],
-        "@/firebase/*": ["firebase/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
