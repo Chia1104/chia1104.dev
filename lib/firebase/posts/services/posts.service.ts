@@ -39,6 +39,7 @@ export const getPostDataFire = async (slug: string): Promise<{
     const j = (await getDocs(postQuery)).docs.map(dataToJSON)[0];
 
     return {
+        // content: (j.content).replaceAll('\\n', '\n'),
         content: j.content,
         frontMatter: {
             ...j,

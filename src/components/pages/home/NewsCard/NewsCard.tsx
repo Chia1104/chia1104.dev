@@ -15,11 +15,11 @@ export const NewsCard: FC<Props> = ({title, content, subtitle, link}) => {
                 {title}
             </h3>
             <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[310px] rounded-xl relative flex justify-center items-center h-[170px] mt-5">
-                <div className="w-[303px] h-[163px] c-bg-secondary p-2 rounded-xl">
+                <div className="w-[303px] h-[163px] c-bg-secondary p-2 rounded-xl flex flex-col">
                     <p className="text-xl text-center line-clamp-3">
                         { content }
                     </p>
-                    <p className="text-base text-left line-clamp-1 c-text-secondary mt-5">
+                    <p className="text-base text-left line-clamp-1 c-text-secondary mt-auto mb-5 pl-1 c-description">
                         { subtitle }
                     </p>
                 </div>

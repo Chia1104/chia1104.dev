@@ -12,6 +12,9 @@ import {
     SiLaravel,
     SiVuedotjs,
     SiTailwindcss,
+    SiVisualstudiocode,
+    SiJetbrains,
+    SiGit,
     SiDocker,
     SiGithubactions,
     SiGooglecloud,
@@ -19,7 +22,8 @@ import {
     SiAdobeillustrator,
     SiAdobepremierepro,
     SiReact,
-    SiAdobeindesign
+    SiAdobeindesign,
+    SiSpringboot
 } from 'react-icons/si'
 
 export const Chia = {
@@ -29,7 +33,7 @@ export const Chia = {
     title: 'Web Developer',
     email: 'yuyuchia7423@gmail.com',
     phone: '+886 0970227360',
-    content: 'Computer science developer with a passion for frontend web development and data analysis.',
+    content: 'Computer science developer with a passion for web development and data analysis.',
     technologies: {
         languages: [
             {
@@ -63,9 +67,9 @@ export const Chia = {
                 icon: SiPython,
             },
         ],
-        frontend: [
+        web_frameworks: [
             {
-                name: 'React',
+                name: 'ReactJS',
                 level: 'Advanced',
                 link: 'https://reactjs.org/',
                 icon: SiReact,
@@ -77,19 +81,17 @@ export const Chia = {
                 icon: SiNextdotjs,
             },
             {
-                name: 'Vue',
+                name: 'VueJS',
                 level: 'Basic',
                 link: 'https://vuejs.org/',
                 icon: SiVuedotjs,
             },
             {
-                name: 'Tailwindcss',
+                name: 'TailwindCSS',
                 level: 'Advanced',
                 link: 'https://tailwindcss.com/',
                 icon: SiTailwindcss,
             },
-        ],
-        backend: [
             {
                 name: 'Laravel',
                 level: 'Advanced',
@@ -101,7 +103,13 @@ export const Chia = {
                 level: 'Advanced',
                 link: 'https://nestjs.com/',
                 icon: SiNestjs,
-            }
+            },
+            // {
+            //     name: 'Spring Boot',
+            //     level: 'Basic',
+            //     link: 'https://spring.io/',
+            //     icon: SiSpringboot,
+            // }
         ],
         devops: [
             {
@@ -168,6 +176,26 @@ export const Chia = {
                 link: 'https://www.adobe.com/tw/products/premiere.html',
                 icon: SiAdobepremierepro,
             }
+        ],
+        other_tools: [
+            {
+                name: 'Git',
+                level: 'Advanced',
+                link: 'https://git-scm.com/',
+                icon: SiGit,
+            },
+            {
+                name: 'VS Code',
+                level: 'Advanced',
+                link: 'https://code.visualstudio.com/',
+                icon: SiVisualstudiocode,
+            },
+            {
+                name: 'JetBrains IDE',
+                level: 'Advanced',
+                link: 'https://www.jetbrains.com/',
+                icon: SiJetbrains,
+            },
         ],
     },
     location: 'Taipei, Taiwan',

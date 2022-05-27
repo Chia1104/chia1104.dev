@@ -17,14 +17,9 @@ export const LanAndTools: FC = () => {
                     data={d.languages}
                 />
                 <LATList
-                    category={'Frontend'}
+                    category={'Web Frameworks'}
                     // @ts-ignore
-                    data={d.frontend}
-                />
-                <LATList
-                    category={'Backend'}
-                    // @ts-ignore
-                    data={d.backend}
+                    data={d.web_frameworks}
                 />
                 <LATList
                     category={'Database'}
@@ -35,6 +30,11 @@ export const LanAndTools: FC = () => {
                     category={'DevOps'}
                     // @ts-ignore
                     data={d.devops}
+                />
+                <LATList
+                    category={'Other Tools'}
+                    // @ts-ignore
+                    data={d.other_tools}
                 />
                 <LATList
                     category={'Design'}
