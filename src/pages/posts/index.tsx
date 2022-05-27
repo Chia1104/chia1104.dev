@@ -3,7 +3,7 @@ import { PostFrontMatter } from "@/utils/types/post";
 import { Layout } from "@/components/globals/Layout";
 import { getAllPosts } from "@/lib/mdx/services";
 import { PostsList } from "@/components/pages/posts/PostsList";
-// import { queryPosts } from "@/lib/firebase/posts/services";
+import { queryPosts } from "@/lib/firebase/posts/services";
 
 interface Props {
     posts: PostFrontMatter,

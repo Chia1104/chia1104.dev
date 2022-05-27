@@ -7,6 +7,7 @@ import {  MDXTable, MDXTh, MDXTd } from "@/components/pages/posts/MDXComponents/
 import { MDXQuote } from "@/components/pages/posts/MDXComponents/MDXQuote"
 import { Typography } from "@mui/material";
 import {MDXDivider, MDXHr} from "@/components/pages/posts/MDXComponents/MDXDivider";
+import { MDXBr } from "@/components/pages/posts/MDXComponents/MDXBr";
 
 export const MDXComponents = {
     Image: MDXImage,
@@ -29,4 +30,5 @@ export const MDXComponents = {
     td: MDXTd,
     code: MDXCodeOrigin,
     Quote: MDXQuote,
+    br: MDXBr
 }

@@ -13,6 +13,7 @@ import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@/utils/config/giscus.config";
 import {useTheme} from "next-themes";
+import { getPostFire, getPostsPath } from "@/lib/firebase/posts/services";
 
 interface Props {
     source: MDXRemoteProps,
@@ -21,6 +22,7 @@ interface Props {
 
 export const getStaticPaths: GetStaticPaths = async () => {
     const slugs = await getSlugs()
+    // const slugs = await getPostsPath()
 
     const paths = slugs.map((slug) => ({ params: { slug } }))
 
@@ -33,6 +35,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 // @ts-ignore
 export const getStaticProps: GetStaticProps = async ({ params }: { params: Pick<PostFrontMatter, "slug"> }) => {
     const { frontMatter, source } = await getPost(params.slug)
+    // const { frontMatter, source } = await getPostFire(params.slug)
 
     return {
         props: {

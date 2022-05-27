@@ -5,6 +5,8 @@ interface Props {
 }
 
 export const Chip: FC<Props> = ({ data }) => {
+    if (!data) return null;
+
     return (
         <div className="flex mt-3 flex-wrap">
             {
