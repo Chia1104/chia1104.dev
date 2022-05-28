@@ -1,24 +1,33 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { exampleInitState } from "./state";
 import { exampleReducer } from "./reducers";
-import {getAllReposAsync} from "@/store/modules/Example/actions";
+import {AppState} from "@/src/store";
+import {getExampleDataAsync} from "@/store/modules/Example/actions";
 
 const exampleSlice = createSlice({
     name: 'example',
-    initialState: exampleInitState,
+    initialState: exampleInitState.example,
     reducers: exampleReducer,
     extraReducers: (builder) => {
         builder
-            .addCase(getAllReposAsync.pending, (state) => {
-                state.example.isLoading = true
+            .addCase(getExampleDataAsync.pending, (state) => {
+                state.loading = 'pending'
             })
-            // .addCase(getAllReposAsync.fulfilled, (state, action) => {
-            //     state.example.isLoading = false
-            //     state.example.data = [...state.example.data, ...action.payload]
-            // })
+            .addCase(getExampleDataAsync.fulfilled, (state, action) => {
+                state.data = action.payload
+                state.loading = 'succeeded'
+            })
+            .addCase(getExampleDataAsync.rejected, (state, action) => {
+                state.error = action.error
+                state.loading = 'failed'
+            })
     },
 });
 
-export const exampleActions = exampleSlice.actions;
+// export const { beginRequestExampleData, succeedRequestExampleData, failRequestExampleData } = exampleSlice.actions;
+
+export const selectExampleData = (state: AppState) => state.example.data;
+export const selectExampleLoading = (state: AppState) => state.example.loading;
+export const selectExampleError = (state: AppState) => state.example.error;
 
 export default exampleSlice.reducer;

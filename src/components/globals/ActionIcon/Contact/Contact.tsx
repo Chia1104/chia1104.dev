@@ -2,12 +2,18 @@ import { FC } from "react";
 import { useForm, ValidationError } from '@formspree/react';
 import Image from "next/image";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import {useAppDispatch} from "@/src/hooks/useAppDispatch";
+import {activeActionIconSheet} from "@/store/modules/ActionSheet/actionSheet.slice";
 
 export const Contact: FC = () => {
+    const dispatch = useAppDispatch()
     const [state, handleSubmit] = useForm("mqknbjgw");
     return (
         <div className="w-[350px] h-[600px] flex flex-col justify-start items-center pb-3 px-3">
-            <button aria-label={"Close contact"}>
+            <button
+                aria-label={"Close contact"}
+                onClick={() => dispatch(activeActionIconSheet())}
+            >
                 <KeyboardArrowDownIcon
                     fontSize="large"
                 />
@@ -44,20 +50,22 @@ export const Contact: FC = () => {
                 <button
                     type="submit"
                     disabled={state.submitting}
-                    className="c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out"
+                    className="self-center c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out"
                 >
                     Send
                 </button>
                 <ValidationError errors={state.errors} className="text-warning mt-2"/>
             </form>
-            <Image
-                src="/memoji/contact-memoji.PNG"
-                alt={"Contact Memoji"}
-                width={180}
-                height={180}
-                priority
-                aria-label={"Contact Memoji"}
-            />
+            <div className="mt-auto mb-5">
+                <Image
+                    src="/memoji/contact-memoji.PNG"
+                    alt={"Contact Memoji"}
+                    width={180}
+                    height={180}
+                    priority
+                    aria-label={"Contact Memoji"}
+                />
+            </div>
         </div>
     )
 }

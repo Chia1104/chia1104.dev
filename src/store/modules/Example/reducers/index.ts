@@ -1,13 +1,13 @@
 export const exampleReducer = {
-    beginRequestExampleData: (state: any) => {
-        state.example.isLoading = true;
-    },
-    successRequestExampleData: (state: any, action: any) => {
-        state.example.isLoading = false;
-        state.example.data = action.payload;
-    },
-    failureRequestExampleData: (state: any) => {
-        state.example.isLoading = false;
-        state.example.isError = true;
-    },
+    // beginRequestExampleData: (state: any) => {
+    //     state.example.loading = 'pending';
+    // },
+    // succeedRequestExampleData: (state: any, action: any) => {
+    //     state.example.data = action.payload;
+    //     state.example.loading = 'succeeded';
+    // },
+    // failRequestExampleData: (state: any, action: any) => {
+    //     state.example.error = action.error;
+    //     state.example.loading = 'failed';
+    // }
 };

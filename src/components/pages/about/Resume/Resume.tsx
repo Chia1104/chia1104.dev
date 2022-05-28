@@ -3,12 +3,15 @@ import Image from "next/image";
 import { Chia } from "@/utils/meta/chia"
 import {Experience} from "@/components/pages/about/Resume/Experience";
 import {LanAndTools} from "@/components/pages/about/Resume/LanAndTools";
+import {useAppDispatch} from "@/src/hooks/useAppDispatch";
+import {activeActionIconSheet} from "@/store/modules/ActionSheet/actionSheet.slice";
 
 interface Props {
     avatarSrc: string
 }
 
 export const Resume: FC<Props> = ({avatarSrc}) => {
+    const dispatch = useAppDispatch()
     const name = Chia.name
     const chineseName = Chia.chineseName
     const title = Chia.title
@@ -54,7 +57,10 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                 </p>
             </div>
             <div className="w-full flex flex-col items-center">
-                <button className="c-button-secondary mb-10">
+                <button
+                    className="c-button-secondary mb-10"
+                    onClick={() => dispatch(activeActionIconSheet())}
+                >
                     Contact me
                 </button>
                 <div className="w-[85%] mt-10 lg:w-[55%]">
