@@ -1,9 +1,10 @@
 import { GITHUB_API } from '@/utils/constants';
 import { Chia } from '@/utils/meta/chia'
 
+const name = Chia.name.toLowerCase();
+const TOKEN = process.env.NEXT_PUBLIC_GH_PUBLIC_TOKEN;
+
 export const getAllRepos = async (user: string, page?: number, per_page?: number, sort?: string): Promise<{data: object, status: number}> => {
-    const name = Chia.name.toLowerCase();
-    const TOKEN = process.env.NEXT_PUBLIC_GH_PUBLIC_TOKEN;
 
     if (!user) user = name;
     if (!page) page = 1;
