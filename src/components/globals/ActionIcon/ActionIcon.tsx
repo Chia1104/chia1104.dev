@@ -8,12 +8,10 @@ import { useTheme } from 'next-themes'
 import { FC, useState, useEffect } from "react";
 import {Contact} from "@/components/globals/ActionIcon/Contact";
 import { useAppDispatch } from "@/src/hooks/useAppDispatch";
-import { useAppSelector } from "@/src/hooks/useAppSelector";
-import {activeActionIconSheet, selectActionIconSheet} from "@/store/modules/ActionSheet/actionSheet.slice";
+import {activeActionIconSheet} from "@/store/modules/ActionSheet/actionSheet.slice";
 
 export const ActionIcon: FC = () => {
     const dispatch = useAppDispatch()
-    const actionIconSheet = useAppSelector(selectActionIconSheet)
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
     useEffect(() => {
@@ -22,9 +20,7 @@ export const ActionIcon: FC = () => {
 
     return (
         <div className="fixed bottom-0 right-0 mr-10 mb-10 p-3 rounded-xl shadow-2xl flex flex-col justify-center items-center c-bg-secondary z-40">
-            {
-                actionIconSheet && <Contact />
-            }
+            <Contact />
             <button
                 aria-label={"Open contact"}
                 onClick={() => dispatch(activeActionIconSheet())}
