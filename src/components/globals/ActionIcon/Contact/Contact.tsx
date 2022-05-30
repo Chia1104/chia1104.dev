@@ -6,7 +6,6 @@ import {useAppDispatch} from "@chia/src/hooks/useAppDispatch";
 import {activeActionIconSheet, selectActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { motion } from "framer-motion"
 import {useAppSelector} from "@chia/src/hooks/useAppSelector";
-import cx from 'classnames'
 
 const outside = {
     open: { opacity: 1, height: '600px', width: '350px' },
@@ -28,7 +27,6 @@ export const Contact: FC = () => {
             initial={'closed'}
             animate={actionIconSheet ? "open" : "closed"}
             variants={outside}
-            // className={cx(actionIconSheet && 'pb-3 px-3')}
         >
             <motion.div
                 animate={actionIconSheet ? "open" : "closed"}

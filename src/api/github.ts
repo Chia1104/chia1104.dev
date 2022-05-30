@@ -11,8 +11,10 @@ export const getAllRepos = async (user: string, page?: number, per_page?: number
     if (!per_page) per_page = 10;
     if (!sort) sort = 'updated';
 
+    const URL = `${GITHUB_API}users/${user}/repos?page=${page}&per_page=${per_page}&sort=${sort}`;
+
     try {
-        const res = await fetch(`${GITHUB_API}users/${user}/repos?page=${page}&per_page=${per_page}&sort=${sort}`, {
+        const res = await fetch(URL, {
             method: 'GET',
             headers: {
                 Accept: 'application/vnd.github.v3+json',

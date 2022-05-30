@@ -1,12 +1,13 @@
-import { GOOGLE_API, YOUTUBE_ID } from "@chia/utils/constants";
+import { GOOGLE_API, YOUTUBE_ID, YOUTUBE_LIST_ID } from "@chia/utils/constants";
 
-const KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+const KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
 
 export const getAllVideos = async (maxResult?: number): Promise<{data: object, status: number}> => {
     if (!maxResult) maxResult = 10;
+    const URL = `${GOOGLE_API}youtube/v3/playlistItems?part=snippet&playlistId=${YOUTUBE_LIST_ID}&key=${KEY}&maxResults=${maxResult}`;
 
     try {
-        const res = await fetch(`${GOOGLE_API}youtube/v3/videos?id=${YOUTUBE_ID}&key=${KEY}&maxResults=${maxResult}`, {
+        const res = await fetch(URL, {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
