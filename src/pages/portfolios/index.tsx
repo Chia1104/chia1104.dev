@@ -1,10 +1,10 @@
 import type { NextPage } from 'next'
-import {Layout} from "@/components/globals/Layout";
-import { useAppDispatch } from "@/src/hooks/useAppDispatch";
-import { useAppSelector } from "@/src/hooks/useAppSelector";
+import {Layout} from "@chia/components/globals/Layout";
+import { useAppDispatch } from "@chia/src/hooks/useAppDispatch";
+import { useAppSelector } from "@chia/src/hooks/useAppSelector";
 import { useEffect } from "react";
-import {selectAllRepos, selectAllReposLoading, selectAllReposError} from "@/store/modules/Github/github.slice";
-import {getAllReposAsync} from "@/store/modules/Github/actions";
+import {selectAllRepos, selectAllReposLoading, selectAllReposError} from "@chia/store/modules/Github/github.slice";
+import {getAllReposAsync} from "@chia/store/modules/Github/actions";
 
 const PortfoliosPage: NextPage = () => {
     const dispatch = useAppDispatch()

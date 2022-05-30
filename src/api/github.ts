@@ -1,5 +1,5 @@
-import { GITHUB_API } from '@/utils/constants';
-import { Chia } from '@/utils/meta/chia'
+import { GITHUB_API } from '@chia/utils/constants';
+import { Chia } from '@chia/utils/meta/chia'
 
 const name = Chia.name.toLowerCase();
 const TOKEN = process.env.NEXT_PUBLIC_GH_PUBLIC_TOKEN;

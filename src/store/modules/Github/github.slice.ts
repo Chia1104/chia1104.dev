@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { githubInitState } from "@/store/modules/Github/state";
-import { githubReducer } from "@/store/modules/Github/reducers";
-import { AppState } from "@/src/store";
-import { getAllReposAsync } from "@/store/modules/Github/actions";
+import { githubInitState } from "@chia/store/modules/Github/state";
+import { githubReducer } from "@chia/store/modules/Github/reducers";
+import { AppState } from "@chia/src/store";
+import { getAllReposAsync } from "@chia/store/modules/Github/actions";
 
 const githubSlice = createSlice({
     name: 'github',

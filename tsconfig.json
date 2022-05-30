@@ -16,12 +16,12 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-        "@/src/*": ["src/*"],
-        "@/components/*": ["src/components/*"],
-        "@/api/*": ["src/api/*"],
-        "@/store/*": ["src/store/*"],
-        "@/utils/*": ["utils/*"],
-        "@/lib/*": ["lib/*"],
+        "@chia/src/*": ["src/*"],
+        "@chia/components/*": ["src/components/*"],
+        "@chia/api/*": ["src/api/*"],
+        "@chia/store/*": ["src/store/*"],
+        "@chia/utils/*": ["utils/*"],
+        "@chia/lib/*": ["lib/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

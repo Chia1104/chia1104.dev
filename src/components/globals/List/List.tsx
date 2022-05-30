@@ -1,5 +1,5 @@
 import { FC, ReactNode } from 'react';
-import { ListItemType } from '@/utils/types/list_item';
+import { ListItemType } from '@chia/utils/types/list_item';
 
 interface Props {
   item: ListItemType;

@@ -1,17 +1,17 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { AnimatePresence } from "framer-motion";
-import { NavMenu } from "@/components/globals/NavMenu";
-import { ActionIcon } from "@/components/globals/ActionIcon";
+import { NavMenu } from "@chia/components/globals/NavMenu";
+import { ActionIcon } from "@chia/components/globals/ActionIcon";
 import { DefaultSeo } from 'next-seo';
 import SEO from '../../next-seo.config';
-import { Footer } from "@/components/globals/Footer";
+import { Footer } from "@chia/components/globals/Footer";
 import { ThemeProvider } from 'next-themes'
-import { ErrorBoundary } from '@/components/globals/ErrorBoundary'
+import { ErrorBoundary } from '@chia/components/globals/ErrorBoundary'
 import { Provider } from 'react-redux'
-import { store } from '@/src/store'
+import { store } from '@chia/src/store'
 import NextNProgress from "nextjs-progressbar";
-import { nextProgressConfig } from "@/utils/config/nextProgress.config";
+import { nextProgressConfig } from "@chia/utils/config/nextProgress.config";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
     return (

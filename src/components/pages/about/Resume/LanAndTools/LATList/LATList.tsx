@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import { LAT } from "@/utils/types/lat";
-import {LATItem} from "@/components/pages/about/Resume/LanAndTools/LATList/LATItem";
+import { LAT } from "@chia/utils/types/lat";
+import {LATItem} from "@chia/components/pages/about/Resume/LanAndTools/LATList/LATItem";
 
 interface Props {
     category: string,

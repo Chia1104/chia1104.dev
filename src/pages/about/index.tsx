@@ -1,9 +1,9 @@
 import type { NextPage } from 'next'
-import { Layout } from "@/components/globals/Layout";
-import { Chia } from"@/utils/meta/chia"
-import {Resume} from "@/components/pages/about/Resume";
+import { Layout } from "@chia/components/globals/Layout";
+import { Chia } from"@chia/utils/meta/chia"
+import {Resume} from "@chia/components/pages/about/Resume";
 import {GetStaticProps} from "next";
-import {getImage} from "@/lib/firebase/files/services";
+import {getImage} from "@chia/lib/firebase/files/services";
 
 interface Props {
     url: string,

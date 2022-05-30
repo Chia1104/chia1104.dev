@@ -1,6 +1,6 @@
 import NextHead from 'next/head'
 import { FC } from "react";
-import { Chia } from"@/utils/meta/chia"
+import { Chia } from"@chia/utils/meta/chia"
 
 interface Props {
     title: string,

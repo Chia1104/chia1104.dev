@@ -1,5 +1,5 @@
 import {createAsyncThunk} from '@reduxjs/toolkit'
-import { getAllVideos } from "@/api/youtube";
+import { getAllVideos } from "@chia/api/youtube";
 
 export const getAllVideosAsync = createAsyncThunk(
     'youtube/getAllVideos',

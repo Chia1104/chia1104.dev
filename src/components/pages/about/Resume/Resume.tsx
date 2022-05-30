@@ -1,10 +1,10 @@
 import { FC } from 'react'
 import Image from "next/image";
-import { Chia } from "@/utils/meta/chia"
-import {Experience} from "@/components/pages/about/Resume/Experience";
-import {LanAndTools} from "@/components/pages/about/Resume/LanAndTools";
-import {useAppDispatch} from "@/src/hooks/useAppDispatch";
-import {activeActionIconSheet} from "@/store/modules/ActionSheet/actionSheet.slice";
+import { Chia } from "@chia/utils/meta/chia"
+import {Experience} from "@chia/components/pages/about/Resume/Experience";
+import {LanAndTools} from "@chia/components/pages/about/Resume/LanAndTools";
+import {useAppDispatch} from "@chia/src/hooks/useAppDispatch";
+import {activeActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
 
 interface Props {
     avatarSrc: string

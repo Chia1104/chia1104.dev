@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Chia } from "@/utils/meta/chia"
+import { Chia } from "@chia/utils/meta/chia"
 
 export const Experience: FC = () => {
     const resume = Chia.resume;

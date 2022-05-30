@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { PostFrontMatter } from '@/utils/types/post';
+import { PostFrontMatter } from '@chia/utils/types/post';
 import { PostItem } from "./PostItem";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -36,10 +36,10 @@ export const PostsList: FC<Props> = ({ post }) => {
                     >
                         <motion.a
                             variants={postCardAnimation}
-                            whileHover={{
-                                scale: 1.03,
-                            }}
-                            whileTap={{ scale: 0.95 }}
+                            // whileHover={{
+                            //     scale: 1.03,
+                            // }}
+                            // whileTap={{ scale: 0.95 }}
                             className={index === 0 ? 'md:col-span-2 w-full' : 'w-full'}>
                             <PostItem data={post} i={index}/>
                         </motion.a>

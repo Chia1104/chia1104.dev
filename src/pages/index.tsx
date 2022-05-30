@@ -1,11 +1,11 @@
 import type {GetStaticProps, NextPage} from 'next'
-import { AboutMe } from "@/components/pages/home/AboutMe";
-import { getImage } from "@/lib/firebase/files/services";
-import { Layout } from "@/components/globals/Layout";
-import { Chia } from"@/utils/meta/chia"
-import { PostFrontMatter } from "@/utils/types/post";
-import { getAllPosts } from "@/lib/mdx/services";
-import {NewsCard} from "@/components/pages/home/NewsCard";
+import { AboutMe } from "@chia/components/pages/home/AboutMe";
+import { getImage } from "@chia/lib/firebase/files/services";
+import { Layout } from "@chia/components/globals/Layout";
+import { Chia } from"@chia/utils/meta/chia"
+import { PostFrontMatter } from "@chia/utils/types/post";
+import { getAllPosts } from "@chia/lib/mdx/services";
+import {NewsCard} from "@chia/components/pages/home/NewsCard";
 import dayjs from "dayjs";
 
 interface Props {

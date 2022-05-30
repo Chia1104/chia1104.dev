@@ -1,5 +1,5 @@
 import {createAsyncThunk} from '@reduxjs/toolkit'
-import {getAllRepos} from '@/api/github'
+import {getAllRepos} from '@chia/api/github'
 
 export const getAllReposAsync = createAsyncThunk(
     'github/getGithubData',

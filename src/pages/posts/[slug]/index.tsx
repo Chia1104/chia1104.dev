@@ -2,18 +2,18 @@ import dayjs from 'dayjs'
 import React from 'react'
 import Image from 'next/image'
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
-import { getSlugs, getPost } from '@/lib/mdx/services'
-import { Layout } from "@/components/globals/Layout";
+import { getSlugs, getPost } from '@chia/lib/mdx/services'
+import { Layout } from "@chia/components/globals/Layout";
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { PostFrontMatter } from "@/utils/types/post";
-import { MDXComponents } from "@/components/pages/posts/MDXComponents";
+import { PostFrontMatter } from "@chia/utils/types/post";
+import { MDXComponents } from "@chia/components/pages/posts/MDXComponents";
 import 'highlight.js/styles/atom-one-dark-reasonable.css';
-import { Chip } from "@/components/pages/posts/Chip";
+import { Chip } from "@chia/components/pages/posts/Chip";
 import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
-import { giscusConfig } from "@/utils/config/giscus.config";
+import { giscusConfig } from "@chia/utils/config/giscus.config";
 import {useTheme} from "next-themes";
-import { getPostFire, getPostsPath } from "@/lib/firebase/posts/services";
+import { getPostFire, getPostsPath } from "@chia/lib/firebase/posts/services";
 
 interface Props {
     source: MDXRemoteProps,

@@ -6,9 +6,9 @@ import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutl
 import Brightness5OutlinedIcon from '@mui/icons-material/Brightness5Outlined';
 import { useTheme } from 'next-themes'
 import { FC, useState, useEffect } from "react";
-import {Contact} from "@/components/globals/ActionIcon/Contact";
-import { useAppDispatch } from "@/src/hooks/useAppDispatch";
-import {activeActionIconSheet} from "@/store/modules/ActionSheet/actionSheet.slice";
+import {Contact} from "@chia/components/globals/ActionIcon/Contact";
+import { useAppDispatch } from "@chia/src/hooks/useAppDispatch";
+import {activeActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
 
 export const ActionIcon: FC = () => {
     const dispatch = useAppDispatch()
@@ -19,11 +19,12 @@ export const ActionIcon: FC = () => {
     }, [])
 
     return (
-        <div className="fixed bottom-0 right-0 mr-10 mb-10 p-3 rounded-xl shadow-2xl flex flex-col justify-center items-center c-bg-secondary z-40">
+        <div className="fixed bottom-0 right-0 mr-10 mb-10 p-3 rounded-xl shadow-2xl flex flex-col justify-center items-center c-bg-secondary z-40 overflow-hidden">
             <Contact />
             <button
                 aria-label={"Open contact"}
                 onClick={() => dispatch(activeActionIconSheet())}
+                className="hover:text-secondary transition ease-in-out"
             >
                 <KeyboardArrowUpOutlinedIcon
                     fontSize="small"
@@ -33,6 +34,7 @@ export const ActionIcon: FC = () => {
                 <button
                     aria-label={"Light or Dark"}
                     onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="hover:text-secondary transition ease-in-out mr-3"
                 >
                     {
                         mounted &&
@@ -41,12 +43,10 @@ export const ActionIcon: FC = () => {
                                 theme === 'dark'
                                     ? <Brightness4OutlinedIcon
                                         fontSize="medium"
-                                        className="hover:text-secondary transition ease-in-out mr-3"
                                         aria-label={"Dark"}
                                     />
                                     : <Brightness5OutlinedIcon
                                         fontSize="medium"
-                                        className="hover:text-secondary transition ease-in-out mr-3"
                                         aria-label={"Light"}
                                     />
                             }
@@ -59,10 +59,10 @@ export const ActionIcon: FC = () => {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={"Open GitHub"}
+                    className="hover:text-secondary transition ease-in-out mx-3"
                 >
                     <GitHubIcon
                         fontSize="medium"
-                        className="hover:text-secondary transition ease-in-out mx-3"
                         aria-label={"Open GitHub"}
                     />
                 </a>
@@ -71,10 +71,10 @@ export const ActionIcon: FC = () => {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={"Open Instagram"}
+                    className="hover:text-secondary transition ease-in-out mr-3"
                 >
                     <InstagramIcon
                         fontSize="medium"
-                        className="hover:text-secondary transition ease-in-out mr-3"
                         aria-label={"Open Instagram"}
                     />
                 </a>
@@ -83,10 +83,10 @@ export const ActionIcon: FC = () => {
                     target="_blank"
                     rel="noreferrer"
                     aria-label={"Open LinkedIn"}
+                    className="hover:text-secondary transition ease-in-out"
                 >
                     <LinkedInIcon
                         fontSize="medium"
-                        className="hover:text-secondary transition ease-in-out"
                         aria-label={"Open LinkedIn"}
                     />
                 </a>

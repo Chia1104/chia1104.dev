@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { FC } from "react";
-import { Chia } from "@/utils/meta/chia"
+import { Chia } from "@chia/utils/meta/chia"
 
 interface Props {
     avatarSrc: string

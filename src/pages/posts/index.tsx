@@ -1,9 +1,9 @@
 import type { GetStaticProps, NextPage} from 'next'
-import { PostFrontMatter } from "@/utils/types/post";
-import { Layout } from "@/components/globals/Layout";
-import { getAllPosts } from "@/lib/mdx/services";
-import { PostsList } from "@/components/pages/posts/PostsList";
-import { queryPosts } from "@/lib/firebase/posts/services";
+import { PostFrontMatter } from "@chia/utils/types/post";
+import { Layout } from "@chia/components/globals/Layout";
+import { getAllPosts } from "@chia/lib/mdx/services";
+import { PostsList } from "@chia/components/pages/posts/PostsList";
+import { queryPosts } from "@chia/lib/firebase/posts/services";
 
 interface Props {
     posts: PostFrontMatter,

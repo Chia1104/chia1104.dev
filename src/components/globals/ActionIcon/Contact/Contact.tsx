@@ -2,15 +2,15 @@ import { FC } from "react";
 import { useForm, ValidationError } from '@formspree/react';
 import Image from "next/image";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import {useAppDispatch} from "@/src/hooks/useAppDispatch";
-import {activeActionIconSheet, selectActionIconSheet} from "@/store/modules/ActionSheet/actionSheet.slice";
+import {useAppDispatch} from "@chia/src/hooks/useAppDispatch";
+import {activeActionIconSheet, selectActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { motion } from "framer-motion"
-import {useAppSelector} from "@/src/hooks/useAppSelector";
+import {useAppSelector} from "@chia/src/hooks/useAppSelector";
 import cx from 'classnames'
 
 const outside = {
     open: { opacity: 1, height: '600px', width: '350px' },
-    closed: { opacity: 0, height: 0, width: 0, transition: { delay: 0.2, easing: 'easeInOut' }},
+    closed: { opacity: 0, height: 0, width: 0, transition: { delay: 0.2 } },
 }
 const inside = {
     open: { opacity: 1, y: 0 },
@@ -28,7 +28,7 @@ export const Contact: FC = () => {
             initial={'closed'}
             animate={actionIconSheet ? "open" : "closed"}
             variants={outside}
-            className={cx(actionIconSheet && 'pb-3 px-3')}
+            // className={cx(actionIconSheet && 'pb-3 px-3')}
         >
             <motion.div
                 animate={actionIconSheet ? "open" : "closed"}
@@ -38,6 +38,7 @@ export const Contact: FC = () => {
                 <button
                     aria-label={"Close contact"}
                     onClick={() => dispatch(activeActionIconSheet())}
+                    className="hover:text-secondary  transition ease-in-out"
                 >
                     <KeyboardArrowDownIcon
                         fontSize="large"

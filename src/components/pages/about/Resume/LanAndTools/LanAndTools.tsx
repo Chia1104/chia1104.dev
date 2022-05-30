@@ -1,6 +1,6 @@
 import { FC } from "react";
-import {LATList} from "@/components/pages/about/Resume/LanAndTools/LATList";
-import { Chia } from "@/utils/meta/chia";
+import {LATList} from "@chia/components/pages/about/Resume/LanAndTools/LATList";
+import { Chia } from "@chia/utils/meta/chia";
 
 export const LanAndTools: FC = () => {
     const d = Chia.technologies
