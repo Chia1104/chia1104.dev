@@ -4,7 +4,7 @@ import {LATItem} from "@chia/components/pages/about/Resume/LanAndTools/LATList/L
 
 interface Props {
     category: string,
-    data: LAT
+    data: LAT[]
 }
 
 export const LATList: FC<Props> = ({category, data}) => {
@@ -15,7 +15,6 @@ export const LATList: FC<Props> = ({category, data}) => {
             </h2>
             <div className="grid grid-cols-3 w-full c-description">
                 {
-                    // @ts-ignore
                     data.map((lat: LAT) => (
                         <LATItem
                             key={lat.name}

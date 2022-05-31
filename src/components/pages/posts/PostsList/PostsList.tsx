@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 interface Props {
-    post: PostFrontMatter;
+    post: PostFrontMatter[];
 }
 
 const postAnimation = {
@@ -27,7 +27,6 @@ export const PostsList: FC<Props> = ({ post }) => {
             animate={'show'}
         >
             {
-                // @ts-ignore
                 post.map((post: PostFrontMatter, index) => (
                     <Link
                         href={`/posts/${post.slug}`}

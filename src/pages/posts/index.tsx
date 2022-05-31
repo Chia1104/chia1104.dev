@@ -6,7 +6,7 @@ import { PostsList } from "@chia/components/pages/posts/PostsList";
 import { queryPosts } from "@chia/lib/firebase/posts/services";
 
 interface Props {
-    posts: PostFrontMatter,
+    posts: PostFrontMatter[],
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {

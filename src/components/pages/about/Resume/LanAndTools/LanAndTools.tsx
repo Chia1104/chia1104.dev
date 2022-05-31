@@ -13,32 +13,26 @@ export const LanAndTools: FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 w-full">
                 <LATList
                     category={'Languages'}
-                    // @ts-ignore
                     data={d.languages}
                 />
                 <LATList
                     category={'Web Frameworks'}
-                    // @ts-ignore
                     data={d.web_frameworks}
                 />
                 <LATList
                     category={'Database'}
-                    // @ts-ignore
                     data={d.databases}
                 />
                 <LATList
                     category={'DevOps'}
-                    // @ts-ignore
                     data={d.devops}
                 />
                 <LATList
                     category={'Other Tools'}
-                    // @ts-ignore
                     data={d.other_tools}
                 />
                 <LATList
                     category={'Design'}
-                    // @ts-ignore
                     data={d.design}
                 />
             </div>

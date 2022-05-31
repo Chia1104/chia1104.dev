@@ -4,7 +4,7 @@ import NextLink from "next/link";
 interface Props {
     title: string
     content: string
-    subtitle: string
+    subtitle?: string
     link: string
 }
 

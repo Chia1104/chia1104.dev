@@ -70,8 +70,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                         {frontMatter.readingMins}
                     </span>
                     <Chip
-                        // @ts-ignore
-                        data={frontMatter.tags}
+                        data={frontMatter.tags || []}
                     />
                 </div>
                 <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:w-[70%] w-full self-center mx-auto">

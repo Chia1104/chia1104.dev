@@ -1,4 +1,4 @@
-interface IActionSheetState {
+export interface IActionSheetState {
     isOpen: boolean;
 }
 
