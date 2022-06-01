@@ -37,8 +37,8 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                     </div>
                 </div>
                 <div className="md:w-[60%] w-full flex flex-col mt-10 md:mt-0">
-                    <h1 className="title text-center md:text-left pb-5 flex flex-col md:flex-row">
-                        {name} - {chineseName}  <span className="animate-waving-hand origin-[70%_70%]">👋</span>
+                    <h1 className="title text-center md:text-left pb-5 flex-wrap">
+                        {name} - {chineseName}  <span className="animate-waving-hand origin-[70%_70%] inline-block">👋</span>
                     </h1>
                     <h2 className="text-lg text-center md:text-left ">
                         {content}
@@ -58,10 +58,12 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
             </div>
             <div className="w-full flex flex-col items-center">
                 <button
-                    className="c-button-secondary mb-10"
+                    className="mb-10 group hover:bg-primary relative inline-flex transition ease-in-out rounded"
                     onClick={() => dispatch(activeActionIconSheet())}
                 >
-                    Contact me
+                    <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1">
+                        Contact me
+                    </span>
                 </button>
                 <div className="w-[85%] mt-10 lg:w-[55%]">
                     <ul className="c-description w-full">

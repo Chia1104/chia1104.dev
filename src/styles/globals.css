@@ -90,7 +90,7 @@
 
   .c-button-secondary {
     @apply
-    bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out rounded-lg px-5 py-3 text-2xl hover:scale-[1.05]
+    bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out rounded px-5 py-3 text-2xl
   }
 
   .footer {
