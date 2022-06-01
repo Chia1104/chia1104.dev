@@ -1,9 +1,12 @@
 import { FC } from 'react';
 import {VideoList} from "@chia/components/pages/portfolios/Youtube/VideoList";
-import type {YoutubeItem} from "@chia/utils/types/youtube";
+import type {Youtube as y} from "@chia/utils/types/youtube";
 
 interface Props {
-    videoData: YoutubeItem[]
+    videoData: {
+        status: number;
+        data: y;
+    }
     loading: 'idle' | 'pending' | 'succeeded' | 'failed';
     error?: string
 }
@@ -21,7 +24,7 @@ export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
                 loading === 'pending' && <p>Pending</p>
             }
             {
-                loading === 'succeeded' && <VideoList videoData={videoData} />
+                loading === 'succeeded' && <VideoList item={videoData.data.items} />
             }
             {
                 error && <p>{error}</p>

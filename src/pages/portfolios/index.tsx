@@ -47,7 +47,7 @@ const PortfoliosPage: NextPage = () => {
             <article className="main c-container">
                 <GitHub repoData={allReposData} loading={allReposLoading} error={allReposError}/>
                 <hr className="my-10 c-border-primary border-t-2 w-full" />
-                {/*<Youtube videoData={allVideosData.data?.items} loading={allVideosLoading} error={allVideosError}/>*/}
+                {/*<Youtube videoData={allVideosData} loading={allVideosLoading} error={allVideosError}/>*/}
             </article>
         </Layout>
     )
