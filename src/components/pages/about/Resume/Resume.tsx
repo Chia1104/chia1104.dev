@@ -38,7 +38,7 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                 </div>
                 <div className="md:w-[60%] w-full flex flex-col mt-10 md:mt-0">
                     <h1 className="title text-center md:text-left pb-5 flex flex-col md:flex-row">
-                        {name} - {chineseName}  <span className="animate-waving-hand">👋</span>
+                        {name} - {chineseName}  <span className="animate-waving-hand origin-[70%_70%]">👋</span>
                     </h1>
                     <h2 className="text-lg text-center md:text-left ">
                         {content}

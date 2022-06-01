@@ -38,7 +38,7 @@ module.exports = {
         },
       },
       animation: {
-        'waving-hand': 'wave 5s ease 1s infinite',
+        'waving-hand': 'wave 3.5s ease 1s infinite',
       },
     },
   },
