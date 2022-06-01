@@ -4,8 +4,8 @@ import Image from 'next/image'
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
 import { getSlugs, getPost } from '@chia/lib/mdx/services'
 import { Layout } from "@chia/components/globals/Layout";
-import { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import { PostFrontMatter } from "@chia/utils/types/post";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
+import type { PostFrontMatter } from "@chia/utils/types/post";
 import { MDXComponents } from "@chia/components/pages/posts/MDXComponents";
 import 'highlight.js/styles/atom-one-dark-reasonable.css';
 import { Chip } from "@chia/components/pages/posts/Chip";

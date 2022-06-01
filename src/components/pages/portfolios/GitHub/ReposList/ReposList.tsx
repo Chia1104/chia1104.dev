@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import { RepoItem } from "@chia/components/pages/portfolios/ReposList/RepoItem";
-import { Repo } from '@chia/utils/types/repo';
+import { RepoItem } from "@chia/components/pages/portfolios/GitHub/ReposList/RepoItem";
+import type { Repo } from '@chia/utils/types/repo';
 
 interface Props {
     repo: Repo[]

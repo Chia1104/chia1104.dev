@@ -2,7 +2,7 @@ import path from 'path'
 import fs from "fs/promises";
 import matter from 'gray-matter'
 import readingTime from 'reading-time'
-import { PostFrontMatter, PostSource } from "@chia/utils/types/post";
+import type { PostFrontMatter, PostSource } from "@chia/utils/types/post";
 import { POSTS_PATH } from "@chia/utils/constants";
 import { serialize } from "next-mdx-remote/serialize";
 import { minify } from "uglify-js";

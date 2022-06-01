@@ -1,5 +1,5 @@
 import type { GetStaticProps, NextPage} from 'next'
-import { PostFrontMatter } from "@chia/utils/types/post";
+import type { PostFrontMatter } from "@chia/utils/types/post";
 import { Layout } from "@chia/components/globals/Layout";
 import { getAllPosts } from "@chia/lib/mdx/services";
 import { PostsList } from "@chia/components/pages/posts/PostsList";

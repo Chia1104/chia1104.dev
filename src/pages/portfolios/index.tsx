@@ -5,23 +5,38 @@ import { useAppSelector } from "@chia/src/hooks/useAppSelector";
 import { useEffect } from "react";
 import {selectAllRepos, selectAllReposLoading, selectAllReposError} from "@chia/store/modules/Github/github.slice";
 import {getAllReposAsync} from "@chia/store/modules/Github/actions";
-import {ReposList} from "@chia/components/pages/portfolios/ReposList";
-import {ReposLoader} from "@chia/components/pages/portfolios/ReposLoader";
-import { Repo } from '@chia/utils/types/repo';
+import type { Repo } from '@chia/utils/types/repo';
+import {GitHub} from "@chia/components/pages/portfolios/GitHub";
+import {Youtube} from "@chia/components/pages/portfolios/Youtube";
+import type { Youtube as y } from '@chia/utils/types/youtube';
+import {getAllVideosAsync} from "@chia/store/modules/Youtube/actions";
 
 interface repo {
     status: number;
     data: Repo[];
 }
 
+interface video {
+    status: number;
+    data: y;
+}
+
 const PortfoliosPage: NextPage = () => {
     const dispatch = useAppDispatch()
+
+    // GitHub Repos
     const allReposData = useAppSelector(selectAllRepos) as repo
     const allReposLoading = useAppSelector(selectAllReposLoading)
     const allReposError = useAppSelector(selectAllReposError)
 
+    // Youtube Videos
+    const allVideosData = useAppSelector(selectAllRepos) as video
+    const allVideosLoading = useAppSelector(selectAllReposLoading)
+    const allVideosError = useAppSelector(selectAllReposError)
+
     useEffect(() => {
         if (!allReposData.data || allReposData.status !== 200) dispatch(getAllReposAsync())
+        // if (!allVideosData.data || allVideosData.status !== 200) dispatch(getAllVideosAsync())
     }, [dispatch])
 
     return (
@@ -30,27 +45,9 @@ const PortfoliosPage: NextPage = () => {
             description="This is the portfolios page"
         >
             <article className="main c-container">
-                <h1 className="title sm:self-start pt-10">
-                    GitHub Repositories
-                </h1>
-                <h2 className="c-description sm:self-start pb-5">
-                    What I currently work on
-                </h2>
-                <div className="w-full mb-20 flex flex-col">
-                    {
-                        allReposLoading === 'succeeded' ? <ReposList repo={allReposData.data} /> : <ReposLoader />
-                    }
-                    <a
-                        href="https://github.com/Chia1104?tab=repositories"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group hover:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"
-                    >
-                        <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base after:content-['_↗']">
-                            More
-                        </span>
-                    </a>
-                </div>
+                <GitHub repoData={allReposData} loading={allReposLoading} error={allReposError}/>
+                <hr className="my-10 c-border-primary border-t-2 w-full" />
+                {/*<Youtube videoData={allVideosData.data?.items} loading={allVideosLoading} error={allVideosError}/>*/}
             </article>
         </Layout>
     )

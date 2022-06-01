@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { PostFrontMatter } from '@chia/utils/types/post';
+import type { PostFrontMatter } from '@chia/utils/types/post';
 import dayjs from "dayjs";
 import Image from 'next/image';
 

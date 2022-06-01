@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { PostFrontMatter } from '@chia/utils/types/post';
+import type { PostFrontMatter } from '@chia/utils/types/post';
 import { PostItem } from "./PostItem";
 import Link from "next/link";
 import { motion } from "framer-motion";
