@@ -10,6 +10,7 @@ import {GitHub} from "@chia/components/pages/portfolios/GitHub";
 import {Youtube} from "@chia/components/pages/portfolios/Youtube";
 import type { Youtube as y } from '@chia/utils/types/youtube';
 import {getAllVideosAsync} from "@chia/store/modules/Youtube/actions";
+import {selectAllVideos, selectAllVideosError, selectAllVideosLoading} from "@chia/store/modules/Youtube/youtube.slice";
 
 interface repo {
     status: number;
@@ -30,13 +31,13 @@ const PortfoliosPage: NextPage = () => {
     const allReposError = useAppSelector(selectAllReposError)
 
     // Youtube Videos
-    const allVideosData = useAppSelector(selectAllRepos) as video
-    const allVideosLoading = useAppSelector(selectAllReposLoading)
-    const allVideosError = useAppSelector(selectAllReposError)
+    const allVideosData = useAppSelector(selectAllVideos) as video
+    const allVideosLoading = useAppSelector(selectAllVideosLoading)
+    const allVideosError = useAppSelector(selectAllVideosError)
 
     useEffect(() => {
         if (!allReposData.data || allReposData.status !== 200) dispatch(getAllReposAsync())
-        // if (!allVideosData.data || allVideosData.status !== 200) dispatch(getAllVideosAsync())
+        if (!allVideosData.data || allVideosData.status !== 200) dispatch(getAllVideosAsync())
     }, [dispatch])
 
     return (
@@ -47,7 +48,7 @@ const PortfoliosPage: NextPage = () => {
             <article className="main c-container">
                 <GitHub repoData={allReposData} loading={allReposLoading} error={allReposError}/>
                 <hr className="my-10 c-border-primary border-t-2 w-full" />
-                {/*<Youtube videoData={allVideosData} loading={allVideosLoading} error={allVideosError}/>*/}
+                <Youtube videoData={allVideosData} loading={allVideosLoading} error={allVideosError}/>
             </article>
         </Layout>
     )
