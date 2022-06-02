@@ -10,13 +10,15 @@ interface Props {
 export const VideoList: FC<Props> = ({ item }) => {
     return (
         <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-3">
-            {
-                item.map((v, i) => (
-                    i === 0 ? <LastestVideo item={v} key={v.id}/> :
+            <LastestVideo item={item[0]} />
+            <div className="my-5">
+                {
+                    item.map((v, i) => (
+                        i !== 0 &&
                         <div key={v.id} className="w-full flex flex-col c-border-primary border-b-2 p-3 h-[130px]">
                             <a
                                 className="mb-3"
-                                href={`https://www.youtube.com/watch?v=${v.id}`}
+                                href={`https://www.youtube.com/watch?v=${v.snippet.resourceId.videoId}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 aria-label={"Open Youtube"}
@@ -33,7 +35,8 @@ export const VideoList: FC<Props> = ({ item }) => {
                             </p>
                         </div>
                     ))
-            }
+                }
+            </div>
         </div>
     )
 }

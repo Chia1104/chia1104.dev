@@ -30,6 +30,16 @@ export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
             {
                 error || videoData.status !== 200 && <p>{error}</p>
             }
+            <a
+                href="https://www.youtube.com/playlist?list=PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group hover:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"
+            >
+                    <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base after:content-['_↗']">
+                        More
+                    </span>
+            </a>
         </>
     )
 }
