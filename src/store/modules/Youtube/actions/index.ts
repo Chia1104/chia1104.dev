@@ -4,6 +4,6 @@ import { getAllVideos } from "@chia/api/youtube";
 export const getAllVideosAsync = createAsyncThunk(
     'youtube/getAllVideos',
     async () => {
-        return await getAllVideos(6)
+        return await getAllVideos(4)
     }
 )

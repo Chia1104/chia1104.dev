@@ -29,7 +29,7 @@ export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
                     loading === 'pending' && <ReposLoader />
                 }
                 {
-                    loading === 'failed' && <p>{error}</p>
+                    loading === 'failed' || repoData.status !== 200 && <p>{error}</p>
                 }
                 <a
                     href="https://github.com/Chia1104?tab=repositories"

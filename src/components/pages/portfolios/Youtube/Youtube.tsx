@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import {VideoList} from "@chia/components/pages/portfolios/Youtube/VideoList";
 import type {Youtube as y} from "@chia/utils/types/youtube";
+import {VideoLoader} from "@chia/components/pages/portfolios/Youtube/VideoLoader";
 
 interface Props {
     videoData: {
@@ -21,13 +22,13 @@ export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
                 I have created a few video for my Youtube channel.
             </h2>
             {
-                loading === 'pending' && <p>Pending</p>
+                loading === 'pending' && <VideoLoader />
             }
             {
                 loading === 'succeeded' && <VideoList item={videoData.data.items} />
             }
             {
-                error && <p>{error}</p>
+                error || videoData.status !== 200 && <p>{error}</p>
             }
         </>
     )
