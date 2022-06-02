@@ -35,6 +35,7 @@ export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group hover:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"
+                aria-label={'Open Youtube'}
             >
                     <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base after:content-['_↗']">
                         More
