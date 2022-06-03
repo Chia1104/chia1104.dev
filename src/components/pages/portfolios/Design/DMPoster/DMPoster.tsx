@@ -18,7 +18,7 @@ export const DMPoster: FC<Props> = ({ url }) => {
                 loading="lazy"
                 objectFit="cover"
                 layout="fill"
-                quality={45}
+                quality={100}
             />
         </div>
     )
