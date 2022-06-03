@@ -22,9 +22,9 @@ export const Design: FC<Props> = ({ data }) => {
                 className="group hover:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"
                 aria-label={'Open Google Photos'}
             >
-                    <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base after:content-['_↗']">
-                        More
-                    </span>
+                <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base after:content-['_↗']">
+                    Google Photos
+                </span>
             </a>
         </>
     )

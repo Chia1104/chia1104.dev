@@ -39,7 +39,7 @@ export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
                     aria-label={'Open GitHub'}
                 >
                     <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base after:content-['_↗']">
-                        More
+                        GitHub
                     </span>
                 </a>
             </div>
