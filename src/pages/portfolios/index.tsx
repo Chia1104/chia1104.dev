@@ -13,6 +13,7 @@ import {getAllVideosAsync} from "@chia/store/modules/Youtube/actions";
 import {selectAllVideos, selectAllVideosError, selectAllVideosLoading} from "@chia/store/modules/Youtube/youtube.slice";
 import {getListImageUrl} from "@chia/lib/firebase/files/services";
 import {Design} from "@chia/components/pages/portfolios/Design";
+import type {GetStaticProps} from "next";
 
 interface repo {
     status: number;
@@ -24,7 +25,21 @@ interface video {
     data: y;
 }
 
-const PortfoliosPage: NextPage = () => {
+interface Props {
+    posterUrl: string[];
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+    const url = await getListImageUrl();
+
+    return {
+        props: {
+            posterUrl: url,
+        },
+    }
+}
+
+const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
     const dispatch = useAppDispatch()
 
     // GitHub Repos
@@ -52,7 +67,7 @@ const PortfoliosPage: NextPage = () => {
                 <hr className="my-10 c-border-primary border-t-2 w-full" />
                 <Youtube videoData={allVideosData} loading={allVideosLoading} error={allVideosError}/>
                 <hr className="my-10 c-border-primary border-t-2 w-full" />
-                <Design />
+                <Design data={posterUrl}/>
             </article>
         </Layout>
     )
