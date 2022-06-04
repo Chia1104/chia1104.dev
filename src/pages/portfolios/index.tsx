@@ -13,7 +13,7 @@ import {getAllVideosAsync} from "@chia/store/modules/Youtube/actions";
 import {selectAllVideos, selectAllVideosError, selectAllVideosLoading} from "@chia/store/modules/Youtube/youtube.slice";
 import {getListImageUrl} from "@chia/lib/firebase/files/services";
 import {Design} from "@chia/components/pages/portfolios/Design";
-import type {GetStaticProps} from "next";
+import type {GetServerSideProps} from "next";
 
 interface repo {
     status: number;
@@ -29,7 +29,7 @@ interface Props {
     posterUrl: string[];
 }
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getServerSideProps: GetServerSideProps = async () => {
     const url = await getListImageUrl();
 
     return {
