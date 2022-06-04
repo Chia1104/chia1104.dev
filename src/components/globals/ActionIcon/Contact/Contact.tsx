@@ -7,6 +7,7 @@ import {activeActionIconSheet, selectActionIconSheet} from "@chia/store/modules/
 import { motion } from "framer-motion"
 import {useAppSelector} from "@chia/src/hooks/useAppSelector";
 import Script from "next/script";
+import cx from "classnames";
 
 const outside = {
     open: { opacity: 1, height: '550px', width: '330px' },
@@ -64,7 +65,7 @@ export const Contact: FC = () => {
                     <h2 className="text-xl pb-2">Message</h2>
                     <textarea
                         name="message"
-                        className="w-full h-full max-h-36 p-2 border-2 border-primary rounded-lg mb-4 overflow-y-auto"
+                        className="w-full max-h-36 p-2 border-2 border-primary rounded-lg mb-4 overflow-y-auto"
                         placeholder={'Your message'}
                         required
                     />
@@ -82,9 +83,10 @@ export const Contact: FC = () => {
                         Send
                     </button>
                     <Script
+                        // g-recaptcha self-center my-3
                         src="https://www.google.com/recaptcha/api.js"
                     />
-                    <div className={actionIconSheet ? "g-recaptcha self-center my-3" : "hidden"} data-sitekey={process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY} />
+                    <div className={cx('g-recaptcha self-center my-3', {hidden: !actionIconSheet})} data-sitekey={process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY} />
                     <ValidationError errors={state.errors} className="text-warning mt-2"/>
                     {
                         state.succeeded && <p className="text-success  mt-2">You have sent the email successfully</p>
