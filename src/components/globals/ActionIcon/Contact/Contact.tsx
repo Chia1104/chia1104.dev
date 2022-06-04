@@ -92,7 +92,10 @@ export const Contact: FC = () => {
                         state.succeeded && <p className="text-success  mt-2">You have sent the email successfully</p>
                     }
                     {
-                        state.errors && <p className="text-warning mt-2">Make sure you have filled in all the fields correctly.</p>
+                        state.errors.length > 0 &&
+                        <p className="text-warning mt-2">
+                            Make sure you have filled all the fields correctly
+                        </p>
                     }
                 </form>
                 {/*<div className="mt-auto mb-5">*/}
