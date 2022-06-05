@@ -1,6 +1,6 @@
 export const BASE_URL = 'https://www.chia1104.dev';
 export const GITHUB_API = 'https://api.github.com/';
-export const POSTS_PATH = process.env.NODE_ENV === 'production' ? './posts/example' : './posts/unpublished';
+export const POSTS_PATH = process.env.NODE_ENV === 'production' ? './posts/examples' : './posts/unpublished';
 export const YOUTUBE_ID = 'UC3k2QizjG1Xp3Qvtuxn1W5A';
 export const YOUTUBE_LIST_ID = 'PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM';
 export const GOOGLE_API = 'https://www.googleapis.com/';
