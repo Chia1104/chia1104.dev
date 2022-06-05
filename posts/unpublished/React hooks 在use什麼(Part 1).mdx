@@ -4,16 +4,21 @@ published: true
 title: "React hooks 在use什麼(Part 1)"
 createdAt: '2022-05-22'
 updatedAt: '2022-05-22'
-tags: ['React', 'React hooks', 'useState', 'useEffect', 'useCallback']
-headImg: '/posts/example-post/example.jpg'
-excerpt: "useState、useEffect、useCallback如何搭配使用並避免Infinite loop"
+tags: ['React', 'React hooks', 'useState', 'useEffect']
+headImg: '/posts/React hooks 在use什麼(Part 1)/react-hook.png'
+excerpt: "useState、useEffect基本用法並避免Infinite loop"
 ---
+
+<Image
+    s="/posts/React hooks 在use什麼(Part 1)/react-hook.png"
+    a="React hooks 在use什麼(Part 1)"
+/>
 
 ## 前言
 
-React 自從16.8之後加入了hook這個新功能，而hook的目的就是讓開發者不必寫 class 就能使用 state 以及其他 React 的功能，其實這就跟現在Vue3的Composition API概念一樣，我們只需要import這些API就可以在Function components中做使用，甚至完成life cycle上的工作。
+React 自從 16.8 之後加入了 hook 這個新功能，而 hook 的目的就是讓開發者不必寫 class 就能使用 state 以及其他 React 的功能，其實這就跟現在 Vue3 的 Composition API 概念一樣，我們只需要 import 這些 API 就可以在 Function components 中做使用，甚至完成 life cycle 上的工作。
 
-那麼在進入正文中，會希望大家可以對於React 16之後的改動有基本的認識
+那麼在進入正文中，會希望大家可以對於 React 16 之後的改動有基本的認識
 
 這裡推薦這篇文章 - [React 開發者一定要知道的底層機制 — React Fiber Reconciler]( https://medium.com/starbugs/react-%E9%96%8B%E7%99%BC%E8%80%85%E4%B8%80%E5%AE%9A%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E5%BA%95%E5%B1%A4%E6%9E%B6%E6%A7%8B-react-fiber-c3ccd3b047a1)
 
@@ -21,14 +26,14 @@ React 自從16.8之後加入了hook這個新功能，而hook的目的就是讓�
 
 ## Hook 的規則
 
-其實Hook就是Javascript 的function，而有兩點需要特別注意的是
+其實 Hook 就是 Javascript 的 function，而有兩點需要特別注意的是
 
 <Quote
     type={'warning'}
 >
     ### 我們只在最上層呼叫 Hook
 
-    **不要在迴圈、條件式或是巢狀的 function 內呼叫 Hook**
+    - **不要在迴圈、條件式或是巢狀的 function 內呼叫 Hook**
 </Quote>
 
 這裡有個錯誤的範例
@@ -39,9 +44,173 @@ React 自從16.8之後加入了hook這個新功能，而hook的目的就是讓�
 >
     ```javascript
     if (condition) {
-        useEffect(() => {
-            fetchData()
-        }, []);
+      useEffect(() => {
+        fetchData()
+      }, []);
     }
     ```
 </Code>
+
+如果我們這樣打的話 React 會直接報錯，那是因為 React 的 Hook 在 render 時被呼叫的順序是一致的，React 可以將一些 local state 和彼此聯繫在一起。
+
+**這時候 React 會因為少了其中一個步驟而發生 bug!!**
+
+<Code
+    text={'這是對的'}
+    type={'success'}
+>
+    ```javascript
+    useEffect(() => {
+      if (condition) fetchData()
+    }, []);
+    ```
+</Code>
+
+<Quote
+    type={'success'}
+>
+    - 在任何 early return 之前，我們可以在 React 的 function component 中的最上層使用 Hook。
+
+    - 藉由遵循這些規則，你可以確保當每次一個 component render 時 Hook 都依照正確的順序被呼叫。
+
+    - React 的官方文件有更清楚的範例，可以參考 [Rules of Hooks](https://reactjs.org/docs/hooks-rules.html)
+</Quote>
+
+那我們首先要先介紹的 hook 為 useState
+
+---
+
+## useState
+
+我們都知道 React 藉由 state 和 props 的更新來觸發re-render，但是如果我們想在 function component 中使用 state 得該怎麼做呢？
+
+過去我們在 React 中使用 class 的話會這樣打
+
+```javascript
+class CounterClass extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      count: 0
+    };
+  }
+
+  render() {
+    return (
+      <>
+        <p>Count: {this.state.count}</p>
+        <button onClick={() => this.setState({ count: this.state.count + 1 })}>
+          Add
+        </button>
+      </>
+    );
+  }
+}
+```
+
+這時候再換到 function component 中，我們可以這樣打
+
+```javascript
+const CounterFC = () => {
+  const [count, setCount] = useState(0)
+
+  return (
+    <>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(prevCount => prevCount + 1)}>
+        Add
+      </button>
+    </>
+  )
+}
+```
+
+<Quote
+    type={'info'}
+>
+    ### 是不是少了很多，看起來也直觀一些了
+
+    - 而且我們也不必寫到 `this` 這個很常讓初學 Javascript 的人感到困惑的東西
+</Quote>
+
+ - 這裡可以看到我打的是 `setCount(prevCount => prevCount + 1)` 而不是 `setCount(count + 1)`
+
+ - 他們的差別在於，如果我在一個 function 中打兩個 `setCount(count + 1)` 的話最後只會加一次，而不會加兩次
+
+ - 如果我在一個 function 中打兩個 `setCount(prevCount => prevCount + 1)` 的話最後會加兩次，而不會加一次
+
+---
+
+## useEffect
+
+React 的 useEffect 可以在 component render 時執行一個 function，這個 function 可以接收一個 callback function，當 component render 完成後，這個 function 會被呼叫。
+
+通常我們會在 useEffect 中執行 side effect，例如 fetch data、設定 subscription、或手動改變 React component 中的 DOM。
+
+<Quote
+    type={'info'}
+>
+     - 在 React class 生命週期中， `componentDidMount`、`componentDidUpdate`、`componentWillUnmount` 其實可以被視為 `useEffect` 的組合。
+</Quote>
+
+```javascript
+const ListExample = () => {
+  const [data, setData] = useState([])
+
+  const fetchData = async () => {
+    const response = await fetch(REST_API);
+    const json = await response.json();
+    setData(json);
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, []); // Only run the effect once (on mount), after that it will be skipped.
+
+  return (
+    <>
+      {
+        data.length === 0 && <p>LOADING...</p>
+      }
+      {
+        data.map((item) => (
+          <p key={item.id}>{item.data}</p>
+        ))
+      }
+    </>
+  )
+}
+```
+
+這是一個簡單的範例，我們在 ListExample 這個 function component render 完成後，並去 call API 來取得資料。
+
+當中我們看到 useEffect 後段的第二個參數是一個 array，在這當中我們可以設置依賴項，其中的值若改變，就會重新執行 useEffect。
+
+如果我們把這個 array 改成 `[]`，那麼就會讓 useEffect 只會執行一次，而不會重新執行。
+
+```javascript
+  useEffect(() => {
+    fetchData(pageNum)
+  }, [pageNum]);
+```
+
+假如我們要不同的 page 取得不同的資料，就可以在這裡改變 pageNum 的值，當 pageNum 改變後，就會重新執行 useEffect。
+
+<Quote
+    type={'warning'}
+>
+    - 這裡要注意我們的依賴項，是不會設置 array 或 object 的。
+    - 在 Javascript 中兩個 object 或 array 就算裡面的值一樣，也會被視為不同的。
+    - `obj1 === obj2` 會回傳 `false`。
+    - 這樣會導致 React 不能正常的執行 useEffect。
+</Quote>
+
+---
+
+最後我們來看如何預防 infinite loop。
+
+不過最重要的是我們要先了解為甚麼會觸發 infinite loop。
+
+## Why Infinite Loop?
+
+
