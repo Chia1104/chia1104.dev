@@ -2,6 +2,7 @@ import { FC } from 'react';
 import {VideoList} from "@chia/components/pages/portfolios/Youtube/VideoList";
 import type {Youtube as y} from "@chia/utils/types/youtube";
 import {VideoLoader} from "@chia/components/pages/portfolios/Youtube/VideoLoader";
+import { Chia } from '@chia/utils/meta/chia';
 
 interface Props {
     videoData: {
@@ -13,6 +14,8 @@ interface Props {
 }
 
 export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
+    const YOUTUBE_URL = Chia.link.youtube_playlist;
+
     return (
         <>
             <h1 className="title sm:self-start">
@@ -31,7 +34,7 @@ export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
                 error || videoData.status !== 200 && <p>{error}</p>
             }
             <a
-                href="https://www.youtube.com/playlist?list=PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM"
+                href={YOUTUBE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group hover:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"

@@ -34,6 +34,13 @@ export const Chia = {
     email: 'yuyuchia7423@gmail.com',
     phone: '+886 0970227360',
     content: 'Computer science developer with a passion for web development and data analysis.',
+    link: {
+        github: 'https://github.com/Chia1104',
+        linkedin: 'https://www.linkedin.com/in/%E5%8F%88%E5%98%89-%E4%BF%9E-889664230',
+        instagram: 'https://www.instagram.com/chia_1104',
+        youtube_playlist: 'https://www.youtube.com/playlist?list=PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM',
+        google_photos: 'https://photos.app.goo.gl/J1FobfgynJKW84Dm6',
+    },
     technologies: {
         languages: [
             {

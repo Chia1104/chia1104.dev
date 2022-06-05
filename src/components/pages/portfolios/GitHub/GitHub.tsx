@@ -2,6 +2,7 @@ import { FC } from 'react';
 import type {Repo} from "@chia/utils/types/repo";
 import {ReposList} from "@chia/components/pages/portfolios/GitHub/ReposList";
 import {ReposLoader} from "@chia/components/pages/portfolios/GitHub/ReposLoader";
+import { Chia } from '@chia/utils/meta/chia';
 
 interface Props {
     repoData: {
@@ -13,6 +14,8 @@ interface Props {
 }
 
 export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
+    const GITHUB_URL = Chia.link.github;
+
     return (
         <>
             <h1 className="title sm:self-start pt-10">
@@ -32,7 +35,7 @@ export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
                     loading === 'failed' || repoData.status !== 200 && <p>{error}</p>
                 }
                 <a
-                    href="https://github.com/Chia1104?tab=repositories"
+                    href={`${GITHUB_URL}?tab=repositories`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group hover:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"

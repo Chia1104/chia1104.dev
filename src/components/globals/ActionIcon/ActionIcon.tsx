@@ -9,11 +9,16 @@ import { FC, useState, useEffect } from "react";
 import {Contact} from "@chia/components/globals/ActionIcon/Contact";
 import { useAppDispatch } from "@chia/src/hooks/useAppDispatch";
 import {activeActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
+import { Chia } from '@chia/utils/meta/chia';
 
 export const ActionIcon: FC = () => {
     const dispatch = useAppDispatch()
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
+    const GITHUB = Chia.link.github
+    const INSTAGRAM = Chia.link.instagram
+    const LINKEDIN = Chia.link.linkedin
+
     useEffect(() => {
         setMounted(true)
     }, [])
@@ -55,7 +60,7 @@ export const ActionIcon: FC = () => {
                 </button>
                 <div className="border-r"/>
                 <a
-                    href="https://github.com/Chia1104"
+                    href={GITHUB}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={"Open GitHub"}
@@ -67,7 +72,7 @@ export const ActionIcon: FC = () => {
                     />
                 </a>
                 <a
-                    href="https://www.instagram.com/chia_1104/"
+                    href={INSTAGRAM}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={"Open Instagram"}
@@ -79,7 +84,7 @@ export const ActionIcon: FC = () => {
                     />
                 </a>
                 <a
-                    href="https://www.linkedin.com/in/%E5%8F%88%E5%98%89-%E4%BF%9E-889664230/"
+                    href={LINKEDIN}
                     target="_blank"
                     rel="noreferrer"
                     aria-label={"Open LinkedIn"}

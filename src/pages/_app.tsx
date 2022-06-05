@@ -12,6 +12,7 @@ import { Provider } from 'react-redux'
 import { store } from '@chia/src/store'
 import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/utils/config/nextProgress.config";
+import { SnackbarProvider } from 'notistack';
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
     return (
@@ -22,13 +23,15 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
             />
             <ThemeProvider enableSystem={true} attribute="class">
                 <Provider store={store}>
-                    <DefaultSeo {...SEO}/>
-                    <NavMenu/>
-                    <ActionIcon/>
-                    <AnimatePresence exitBeforeEnter>
-                        <Component {...pageProps} key={router.route} />
-                    </AnimatePresence>
-                    <Footer/>
+                    <SnackbarProvider maxSnack={3}>
+                        <DefaultSeo {...SEO}/>
+                        <NavMenu/>
+                        <ActionIcon/>
+                        <AnimatePresence exitBeforeEnter>
+                            <Component {...pageProps} key={router.route} />
+                        </AnimatePresence>
+                        <Footer/>
+                    </SnackbarProvider>
                 </Provider>
             </ThemeProvider>
         </ErrorBoundary>
