@@ -1,4 +1,4 @@
-import {FC, useId,  useEffect} from "react";
+import {FC, useId,  useMemo} from "react";
 import { useForm, ValidationError } from '@formspree/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {useAppDispatch} from "@chia/src/hooks/useAppDispatch";
@@ -24,13 +24,13 @@ const RE_CAPTCHA_KEY = process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY as string;
 export const Contact: FC = () => {
     const dispatch = useAppDispatch()
     const actionIconSheet = useAppSelector(selectActionIconSheet)
-    const [state, handleSubmit] = useForm('asd');
+    const [state, handleSubmit] = useForm(FORMSPREE_KEY);
     const { enqueueSnackbar } = useSnackbar();
     const handleSubmitToast = (msg: string, variant: VariantType) => () => {
         enqueueSnackbar(msg, { variant });
     };
 
-    useEffect(() => {
+    useMemo(() => {
         if (state.succeeded) handleSubmitToast("We have received your message", "success")();
     }, [state.succeeded])
 
