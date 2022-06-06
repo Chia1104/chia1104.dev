@@ -52,7 +52,7 @@ export const MDXPre: FC<Props> = (props) => {
 
 export const MDXCodeOrigin: FC<Props> = (props) => {
     return (
-        <code {...props} className="dark:bg-code bg-[#dddddd] rounded dark:text-white text:black overflow-x-auto transition ease-in-out p-1">
+        <code {...props} className="dark:bg-code bg-[#dddddd] rounded dark:text-white text:black overflow-x-auto transition ease-in-out p-0.5">
             {props.children}
         </code>
     )
