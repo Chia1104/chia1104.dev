@@ -310,7 +310,15 @@ const ListExample = () => {
     ```
 </Code>
 
-大家看到這應該很明顯看到，這也會觸發 infinite loop。
+大家應該看到這應該很明顯會觸發 infinite loop。
+
+因為當我們在更新 count 的同時，又會觸發 setCount，這樣就會觸發 infinite loop。
+
+<Quote
+    type={'error'}
+>
+    - state updates → triggers re-render → state updates → triggers re-render → … → infinite loop
+</Quote>
 
 <Quote
     type={'info'}
