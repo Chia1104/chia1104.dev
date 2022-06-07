@@ -6,14 +6,14 @@ import { getSlugs, getPost } from '@chia/lib/mdx/services'
 import { Layout } from "@chia/components/globals/Layout";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import type { PostFrontMatter } from "@chia/utils/types/post";
-import { MDXComponents } from "@chia/components/pages/posts/MDXComponents";
+import * as mdxComponents from "@chia/components/pages/posts/MDXComponents";
 import 'highlight.js/styles/atom-one-dark-reasonable.css';
 import { Chip } from "@chia/components/pages/posts/Chip";
 import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@chia/utils/config/giscus.config";
 import {useTheme} from "next-themes";
-import { getPostFire, getPostsPath } from "@chia/lib/firebase/posts/services";
+// import { getPostFire, getPostsPath } from "@chia/lib/firebase/posts/services";
 
 interface Props {
     source: MDXRemoteProps,
@@ -77,7 +77,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
                     <MDXRemote
                         {...source}
                         // @ts-ignore
-                        components={MDXComponents}
+                        components={{...mdxComponents}}
                     />
                 </div>
                 <div className="mt-20 lg:w-[70%] w-full self-center mx-auto">

@@ -3,7 +3,7 @@ import type { PostFrontMatter } from "@chia/utils/types/post";
 import { Layout } from "@chia/components/globals/Layout";
 import { getAllPosts } from "@chia/lib/mdx/services";
 import { PostsList } from "@chia/components/pages/posts/PostsList";
-import { queryPosts } from "@chia/lib/firebase/posts/services";
+// import { queryPosts } from "@chia/lib/firebase/posts/services";
 
 interface Props {
     posts: PostFrontMatter[],
