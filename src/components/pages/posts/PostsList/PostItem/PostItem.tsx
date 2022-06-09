@@ -32,7 +32,7 @@ export const PostItem: FC<Props> = ({ data, i }) => {
             <h3 className="line-clamp-3 text-xl mb-5">
                 {data.excerpt}
             </h3>
-            <p className="mt-auto text-2xl c-description">
+            <p className="mt-auto text-lg c-description">
                 {dayjs(data.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
                 {data.readingMins}
             </p>
