@@ -26,10 +26,10 @@ export const PostItem: FC<Props> = ({ data, i }) => {
                     quality={100}
                 />
             </div>
-            <h2 className="text-4xl mb-3 group-hover:text-secondary duration-300 transition ease-in-out">
+            <h2 className="text-3xl mb-3 group-hover:text-secondary duration-300 transition ease-in-out line-clamp-2">
                 {data.title}
             </h2>
-            <h3 className="line-clamp-2 text-2xl mb-5">
+            <h3 className="line-clamp-3 text-xl mb-5">
                 {data.excerpt}
             </h3>
             <p className="mt-auto text-2xl c-description">
