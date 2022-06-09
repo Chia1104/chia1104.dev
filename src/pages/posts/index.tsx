@@ -23,10 +23,12 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
 const PostsPage: NextPage<Props> = (props) => {
     const posts = props.posts;
+    const description = posts.map(post => post.excerpt).join(', ');
+
     return (
         <Layout
             title="Chia1104 - Posts"
-            description="Post page">
+            description={description}>
             <article className="main c-container">
                 <h1 className="title py-10">
                     Blog posts

@@ -14,6 +14,7 @@ import {selectAllVideos, selectAllVideosError, selectAllVideosLoading} from "@ch
 import {getListImageUrl} from "@chia/lib/firebase/files/services";
 import {Design} from "@chia/components/pages/portfolios/Design";
 import type {GetServerSideProps} from "next";
+import { Chia } from "@chia/utils/meta/chia";
 
 interface repo {
     status: number;
@@ -60,7 +61,7 @@ const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
     return (
         <Layout
             title="Chia1104 - My portfolios"
-            description="This is the portfolios page"
+            description={`${Chia.content} Welcome to my portfolio page.`}
         >
             <article className="main c-container">
                 <GitHub repoData={allReposData} loading={allReposLoading} error={allReposError}/>
