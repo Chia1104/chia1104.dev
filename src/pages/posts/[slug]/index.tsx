@@ -13,6 +13,9 @@ import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@chia/utils/config/giscus.config";
 import {useTheme} from "next-themes";
+import {NextSeo} from "next-seo";
+import { BASE_URL } from '@chia/utils/constants';
+import { useRouter } from "next/router";
 // import { getPostFire, getPostsPath } from "@chia/lib/firebase/posts/services";
 
 interface Props {
@@ -48,12 +51,33 @@ export const getStaticProps: GetStaticProps = async ({ params }: { params: Pick<
 
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
     const { theme } = useTheme()
+    const router = useRouter()
 
     return (
         <Layout
             title={frontMatter.title || 'Post'}
             description={frontMatter.excerpt || 'Post'}
         >
+            <NextSeo
+                additionalMetaTags={frontMatter.tags?.map((tag) => ({
+                    property: 'article:tag',
+                    content: tag,
+                }))}
+                openGraph={{
+                    type: 'website',
+                    url: `${BASE_URL}${router.asPath}`,
+                    title: `${frontMatter.title}`,
+                    description: `${frontMatter.excerpt}`,
+                    images: [
+                        {
+                            url: `${frontMatter.headImg}`,
+                            width: 800,
+                            height: 400,
+                            alt: `${frontMatter.title}`,
+                        },
+                    ],
+                }}
+            />
             <article className="main c-container mt-10 px-5">
                 <div className="pl-3 lg:w-[70%] w-full mb-7 self-center">
                     <h1 className="title pb-5">{frontMatter.title}</h1>
