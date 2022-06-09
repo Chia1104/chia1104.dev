@@ -30,12 +30,13 @@ const HomePage: NextPage<Props> = (props) => {
     const name = Chia.name;
     const title = Chia.title;
     const description = Chia.content
+    const chinese_name = Chia.chineseName
 
     const postSubtitle = dayjs(props.post.createdAt).format('MMMM D, YYYY');
 
     return (
         <Layout
-            title={`${name} - ${title}`}
+            title={`${name} / ${chinese_name} - ${title}`}
             description={description}
         >
             <article className="c-container main">

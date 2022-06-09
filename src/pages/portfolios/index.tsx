@@ -41,6 +41,11 @@ export const getServerSideProps: GetServerSideProps = async () => {
 }
 
 const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
+    const name = Chia.name;
+    const title = Chia.title;
+    const description = Chia.content
+    const chinese_name = Chia.chineseName
+
     const dispatch = useAppDispatch()
 
     // GitHub Repos
@@ -60,7 +65,7 @@ const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
 
     return (
         <Layout
-            title="Chia1104 - My portfolios"
+            title={`${name} / ${chinese_name} - Portfolios`}
             description={`${Chia.content} Welcome to my portfolio page.`}
         >
             <article className="main c-container">

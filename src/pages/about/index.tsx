@@ -21,12 +21,15 @@ export const getStaticProps: GetStaticProps = async () => {
 
 
 const AboutPage: NextPage<Props> = ({url}) => {
+    const name = Chia.name;
+    const title = Chia.title;
     const description = Chia.content
+    const chinese_name = Chia.chineseName
 
 
     return (
         <Layout
-            title="Chia1104 - About"
+            title={`${name} / ${chinese_name} - About me`}
             description={description}
         >
             <article className="main c-container mt-20">
