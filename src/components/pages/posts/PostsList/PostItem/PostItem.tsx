@@ -2,6 +2,7 @@ import { FC } from 'react';
 import type { PostFrontMatter } from '@chia/utils/types/post';
 import dayjs from "dayjs";
 import Image from 'next/image';
+import cx from 'classnames';
 
 interface Props {
     data: PostFrontMatter;
@@ -11,7 +12,7 @@ interface Props {
 export const PostItem: FC<Props> = ({ data, i }) => {
     return (
         <div className="w-full p-3 rounded flex flex-col c-bg-secondary shadow-lg min-h-[530px] group hover:-translate-y-1.5 duration-300 transition ease-in-out">
-            <div className={i === 0 ? 'aspect-w-4 aspect-h-3 md:aspect-w-3 md:aspect-h-1 w-full overflow-hidden rounded-lg bg-gray-200 mb-3' : 'aspect-w-4 aspect-h-3 w-full overflow-hidden rounded-lg bg-gray-200 mb-3'}>
+            <div className={cx('aspect-w-4 aspect-h-3 w-full overflow-hidden rounded-lg bg-gray-200 mb-3', i === 0 && 'md:aspect-w-3 md:aspect-h-1')}>
                 <Image
                     src={data.headImg || '/posts/example-posts/example.jpg'}
                     alt={data.title}

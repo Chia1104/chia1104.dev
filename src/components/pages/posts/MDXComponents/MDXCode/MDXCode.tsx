@@ -1,4 +1,5 @@
 import { ReactNode, FC } from "react";
+import cx from "classnames";
 
 interface Props {
     children: ReactNode;
@@ -7,36 +8,18 @@ interface Props {
 }
 
 export const MDXCode: FC<Props> = ({children, text, type}) => {
+    if (!type) type = "info";
+
     return (
         <div className="relative mt-10">
-            {
-                type === 'info' && (
-                    <div className="bg-info/70 -top-4 absolute border-2 border-info rounded-full px-3 py-1 c-text-secondary">
-                        {text}
-                    </div>
-                )
-            }
-            {
-                type === 'success' && (
-                    <div className="bg-success/70 -top-4 absolute border-2 border-success rounded-full px-3 py-1 c-text-secondary">
-                        {text}
-                    </div>
-                )
-            }
-            {
-                type === 'warning' && (
-                    <div className="bg-warning/70 -top-4 absolute border-2 border-warning rounded-full px-3 py-1 c-text-secondary">
-                        {text}
-                    </div>
-                )
-            }
-            {
-                type === 'error' && (
-                    <div className="bg-danger/70 -top-4 absolute border-2 border-danger rounded-full px-3 py-1 c-text-secondary">
-                        {text}
-                    </div>
-                )
-            }
+            <div className={cx('-top-4 absolute border-2 rounded-full px-3 py-1 c-text-secondary',
+                type === 'info' && 'bg-info/70 border-info',
+                type === 'warning' && 'bg-warning/70 border-warning',
+                type === 'success' && 'bg-success/70 border-success',
+                type === 'error' && 'bg-danger/70 border-danger'
+            )}>
+                {text || 'Code info'}
+            </div>
             {children}
         </div>
     );

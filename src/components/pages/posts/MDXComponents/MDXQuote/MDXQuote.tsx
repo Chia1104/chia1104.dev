@@ -1,4 +1,5 @@
 import {FC, ReactNode} from 'react';
+import cx from 'classnames';
 
 interface Props {
     children: ReactNode
@@ -6,43 +7,19 @@ interface Props {
 }
 
 export const MDXQuote: FC<Props> = (props) => {
+    if (!props.type) props.type = 'tips';
+
     return (
         <>
-            {
-                props.type === 'tips' && (
-                    <blockquote {...props} className="p-3 border-gray-400 border-l-4 bg-gradient-to-r from-gray-400/70 to-gray-400/40 my-10">
-                        {props.children}
-                    </blockquote>
-                )
-            }
-            {
-                props.type === 'info' && (
-                    <blockquote {...props} className="p-3 border-info border-l-4 bg-gradient-to-r from-info/70 to-info/40 my-10">
-                        {props.children}
-                    </blockquote>
-                )
-            }
-            {
-                props.type === 'success' && (
-                    <blockquote {...props} className="p-3 border-success border-l-4 bg-gradient-to-r from-success/70 to-success/40 my-10">
-                        {props.children}
-                    </blockquote>
-                )
-            }
-            {
-                props.type === 'warning' && (
-                    <blockquote {...props} className="p-3 border-warning border-l-4 bg-gradient-to-r from-warning/70 to-warning/40 my-10">
-                        {props.children}
-                    </blockquote>
-                )
-            }
-            {
-                props.type === 'error' && (
-                    <blockquote {...props} className="p-3 border-danger border-l-4 bg-gradient-to-r from-danger/70 to-danger/40 my-10">
-                        {props.children}
-                    </blockquote>
-                )
-            }
+            <blockquote {...props} className={cx('p-3 border-l-4 bg-gradient-to-r my-10',
+                props.type === 'tips' && 'border-gray-400 from-gray-400/70 to-gray-400/40',
+                props.type === 'info' && 'border-info from-info/70 to-info/40',
+                props.type === 'success' && 'border-success from-success/70 to-success/40',
+                props.type === 'warning' && 'border-warning from-warning/70 to-warning/40',
+                props.type === 'error' && 'border-danger from-danger/70 to-danger/40'
+            )}>
+                {props.children}
+            </blockquote>
         </>
     )
 }

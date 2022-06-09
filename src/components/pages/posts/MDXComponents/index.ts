@@ -10,5 +10,7 @@ export { MDXQuote as Quote } from "@chia/components/pages/posts/MDXComponents/MD
 export { Typography as p } from "@mui/material";
 export {MDXDivider as Divider, MDXHr as hr} from "@chia/components/pages/posts/MDXComponents/MDXDivider";
 export { MDXBr as br} from "@chia/components/pages/posts/MDXComponents/MDXBr";
+export { MDXSpacer as Spacer} from "@chia/components/pages/posts/MDXComponents/MDXSpacer";
 
 export const CodeSandBox = dynamic(() => import("../MDXComponents/MDXCodeSandBox"))
+export const Youtube = dynamic(() => import("../MDXComponents/MDXYoutube"))
