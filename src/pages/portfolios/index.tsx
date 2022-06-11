@@ -65,7 +65,7 @@ const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
 
     return (
         <Layout
-            title={`My portfolios - ${name} / ${chinese_name} `}
+            title={`My Portfolios - ${name} / ${chinese_name} `}
             description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}
         >
             <article className="main c-container">
