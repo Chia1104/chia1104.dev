@@ -58,7 +58,7 @@ const HomePage: NextPage<Props> = (props) => {
                                 title={'New update'}
                                 content={props.post.excerpt || 'This is an example of a blog post.'}
                                 subtitle={postSubtitle}
-                                link={`posts/${props.post.slug}`}
+                                link={`/posts/${props.post.slug}`}
                             />
                         </div>
                     </div>

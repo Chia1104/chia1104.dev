@@ -27,18 +27,19 @@ interface Props {
 export const getStaticPaths: GetStaticPaths = async () => {
     const slugs = await getSlugs()
     // const slugs = await getPostsPath()
+    // const formattedSlugs = slugs.map(slug => (encodeURI(slug)))
 
-    const paths = slugs.map((slug) => ({ params: { slug } }))
+    const paths = slugs.map((slug) => ({ params: { slug: encodeURI(slug) } }))
 
     return {
         paths,
-        fallback: false,
+        fallback: 'blocking',
     }
 }
 
 // @ts-ignore
 export const getStaticProps: GetStaticProps = async ({ params }: { params: Pick<PostFrontMatter, "slug"> }) => {
-    const { frontMatter, source } = await getPost(params.slug)
+    const { frontMatter, source } = await getPost(decodeURI(params.slug))
     // const { frontMatter, source } = await getPostFire(params.slug)
 
     return {
