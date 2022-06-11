@@ -32,11 +32,11 @@ const PostsPage: NextPage<Props> = (props) => {
 
     return (
         <Layout
-            title={`My Blog - ${name} / ${chinese_name} `}
+            title={`My Posts - ${name} / ${chinese_name} `}
             description={description}>
             <article className="main c-container">
-                <h1 className="title py-10">
-                    Blog posts
+                <h1 className="title py-10 self-start">
+                    My Posts
                 </h1>
                 <div className="flex flex-col w-full justify-center items-center">
                     <PostsList post={posts} />
