@@ -5,6 +5,7 @@ export const H1 = (props: DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, 
     const [mount, setMount] = useState(false);
     useEffect(() => {
         setMount(true);
+        return () => setMount(false);
     }, []);
 
     return (
@@ -29,6 +30,7 @@ export const H2 = (props: DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, 
     const [mount, setMount] = useState(false);
     useEffect(() => {
         setMount(true);
+        return () => setMount(false);
     }, []);
 
     return (
@@ -53,6 +55,7 @@ export const H3 = (props: DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, 
     const [mount, setMount] = useState(false);
     useEffect(() => {
         setMount(true);
+        return () => setMount(false);
     }, []);
 
     return (
@@ -77,6 +80,7 @@ export const H4 = (props: DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, 
     const [mount, setMount] = useState(false);
     useEffect(() => {
         setMount(true);
+        return () => setMount(false);
     }, []);
 
     return (
@@ -101,6 +105,7 @@ export const H5 = (props: DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, 
     const [mount, setMount] = useState(false);
     useEffect(() => {
         setMount(true);
+        return () => setMount(false);
     }, []);
 
     return (

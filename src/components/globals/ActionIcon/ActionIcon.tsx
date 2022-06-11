@@ -21,6 +21,7 @@ export const ActionIcon: FC = () => {
 
     useEffect(() => {
         setMounted(true)
+        return () => setMounted(false)
     }, [])
 
     return (

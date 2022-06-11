@@ -65,8 +65,8 @@ const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
 
     return (
         <Layout
-            title={`${name} / ${chinese_name} - Portfolios`}
-            description={`${Chia.content} Welcome to my portfolio page.`}
+            title={`My portfolios - ${name} / ${chinese_name} `}
+            description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}
         >
             <article className="main c-container">
                 <GitHub repoData={allReposData} loading={allReposLoading} error={allReposError}/>

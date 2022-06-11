@@ -16,6 +16,7 @@ import {useTheme} from "next-themes";
 import {NextSeo} from "next-seo";
 import { BASE_URL } from '@chia/utils/constants';
 import { useRouter } from "next/router";
+import {Chia} from "@chia/utils/meta/chia";
 // import { getPostFire, getPostsPath } from "@chia/lib/firebase/posts/services";
 
 interface Props {
@@ -52,11 +53,13 @@ export const getStaticProps: GetStaticProps = async ({ params }: { params: Pick<
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
     const { theme } = useTheme()
     const router = useRouter()
+    const name = Chia.name;
+    const chinese_name = Chia.chineseName
 
     return (
         <Layout
-            title={frontMatter.title || 'Post'}
-            description={frontMatter.excerpt || 'Post'}
+            title={`${frontMatter.title} - ${name} / ${chinese_name}`}
+            description={`${frontMatter.excerpt}`}
         >
             <NextSeo
                 additionalMetaTags={frontMatter.tags?.map((tag) => ({

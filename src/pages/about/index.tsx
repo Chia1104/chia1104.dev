@@ -29,7 +29,7 @@ const AboutPage: NextPage<Props> = ({url}) => {
 
     return (
         <Layout
-            title={`${name} / ${chinese_name} - About me`}
+            title={`About me - ${name} / ${chinese_name} `}
             description={description}
         >
             <article className="main c-container mt-20">
