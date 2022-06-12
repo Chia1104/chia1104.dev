@@ -22,8 +22,9 @@
         "@chia/store/*": ["src/store/*"],
         "@chia/utils/*": ["utils/*"],
         "@chia/lib/*": ["lib/*"],
-    }
+    },
+    "types": ["vitest/globals"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.d.ts", "**/*.spec.ts", "**/*.spec.tsx"],
   "exclude": ["node_modules"]
 }

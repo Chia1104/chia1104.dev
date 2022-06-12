@@ -7,6 +7,7 @@ import { POSTS_PATH } from "@chia/utils/constants";
 import { serialize } from "next-mdx-remote/serialize";
 import { minify } from "uglify-js";
 import pMap from "p-map";
+import glob from "fast-glob";
 
 // remark/rehype markdown plugins
 import rehypeSlug from "rehype-slug";
@@ -19,11 +20,16 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 const postsPath = path.join(process.cwd(), POSTS_PATH)
 
 export const getSlugs = async (): Promise<string[]> => {
-    const files = await fs.readdir(postsPath);
 
-    return files
-        .filter((file) => /\.mdx$/.test(file))
-        .map((noteFile) => noteFile.replace(/\.mdx$/, ""));
+    const mdxFiles = await glob("*.mdx", { cwd: postsPath });
+
+    return mdxFiles.map((fileName) => fileName.replace(/\.mdx$/, ""));
+}
+
+export const getEncodedSlugs = async (): Promise<string[]> => {
+    const mdxFiles = await glob("*.mdx", { cwd: postsPath });
+
+    return mdxFiles.map((fileName) => encodeURI(fileName.replace(/\.mdx$/, "")));
 }
 
 export const getPostData = async (
@@ -32,7 +38,9 @@ export const getPostData = async (
     content: string;
     frontMatter: PostFrontMatter;
 }> => {
-    const postDir = path.join(postsPath, `${slug}.mdx`)
+    const s = decodeURI(slug)
+
+    const postDir = path.join(postsPath, `${s}.mdx`)
     const source = await fs.readFile(postDir, 'utf8')
     const { content, data } = matter(source)
 
@@ -40,7 +48,7 @@ export const getPostData = async (
         content,
         frontMatter: {
             ...(data as Partial<PostFrontMatter>),
-            slug: encodeURI(slug),
+            slug: encodeURI(s),
             createdAt: data.createdAt,
             published: data.published,
             readingMins: readingTime(source).text,
@@ -94,6 +102,7 @@ export const getPost = async (slug: string): Promise<PostSource> => {
 
 export const getAllPosts = async (): Promise<PostFrontMatter[]> => {
     const slugs = await getSlugs();
+    // const encodedSlugs = await getEncodedSlugs();
 
     const data = await pMap(slugs, async (slug) =>
         (await getPostData(slug)).frontMatter, {
