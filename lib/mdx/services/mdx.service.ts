@@ -40,7 +40,7 @@ export const getPostData = async (
         content,
         frontMatter: {
             ...(data as Partial<PostFrontMatter>),
-            slug,
+            slug: encodeURI(slug),
             createdAt: data.createdAt,
             published: data.published,
             readingMins: readingTime(source).text,
