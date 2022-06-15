@@ -5,9 +5,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "develop", "main" ]
+    branches: [ "test" ]
   pull_request:
-    branches: [ "develop", "main" ]
+    branches: [ "test" ]
 
 #env:
 #  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -33,11 +33,11 @@ jobs:
           cache: 'npm'
       - run: npm install -g yarn
       - name: Install dependencies
-        run: npm install
+        run: yarn
       - name: Unit tests - Vitest
-        run: npm run test:vitest
+        run: yarn test:vitest
       - name: Build
-        run: npm run build
+        run: yarn build
       - name: Save build folder
         uses: actions/upload-artifact@v3
         with:
