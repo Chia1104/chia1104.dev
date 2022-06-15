@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import React from 'react'
 import Image from 'next/image'
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
-import {getPost, getEncodedSlugs} from '@chia/lib/mdx/services'
+import {getPost, getEncodedSlugs, getAllPosts} from '@chia/lib/mdx/services'
 import { Layout } from "@chia/components/globals/Layout";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import type { PostFrontMatter } from "@chia/utils/types/post";
@@ -17,7 +17,6 @@ import {NextSeo} from "next-seo";
 import { BASE_URL } from '@chia/utils/constants';
 import { useRouter } from "next/router";
 import {Chia} from "@chia/utils/meta/chia";
-// import { getPostFire, getPostsPath } from "@chia/lib/firebase/posts/services";
 
 interface Props {
     source: MDXRemoteProps,
@@ -25,10 +24,8 @@ interface Props {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    const slugs = await getEncodedSlugs()
-    // const slugs = await getPostsPath()
-
-    const paths = slugs.map((slug) => ({ params: { slug } }))
+    const data = await getAllPosts()
+    const paths = data.map((p) => ({ params: { slug: p.slug } }))
 
     return {
         paths,

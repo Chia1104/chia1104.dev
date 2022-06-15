@@ -4,7 +4,6 @@ import { Layout } from "@chia/components/globals/Layout";
 import { getAllPosts } from "@chia/lib/mdx/services";
 import { PostsList } from "@chia/components/pages/posts/PostsList";
 import {Chia} from "@chia/utils/meta/chia";
-// import { queryPosts } from "@chia/lib/firebase/posts/services";
 
 interface Props {
     posts: PostFrontMatter[],
@@ -12,7 +11,6 @@ interface Props {
 
 export const getStaticProps: GetStaticProps = async (context) => {
     const posts = await getAllPosts();
-    // const posts = await queryPosts(20);
 
     return {
         props: {

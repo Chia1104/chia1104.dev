@@ -1,8 +1,8 @@
 import { FC } from 'react';
 import type { PostFrontMatter } from '@chia/utils/types/post';
 import { PostItem } from "./PostItem";
-import Link from "next/link";
 import { motion } from "framer-motion";
+import cx from 'classnames';
 
 interface Props {
     post: PostFrontMatter[];
@@ -22,30 +22,19 @@ const postCardAnimation = {
 export const PostsList: FC<Props> = ({ post }) => {
     return (
         <motion.div
-            className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10"
+            className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-10"
             variants={postAnimation}
             animate={'show'}
         >
             {
                 post.map((post: PostFrontMatter, index) => (
-                    <Link
-                        href={{
-                            pathname: "/posts/[slug]/",
-                            query: { slug: post.slug },
-                        }}
-                        passHref
+                    <motion.article
                         key={post.id}
-                    >
-                        <motion.a
-                            variants={postCardAnimation}
-                            // whileHover={{
-                            //     scale: 1.03,
-                            // }}
-                            // whileTap={{ scale: 0.95 }}
-                            className={index === 0 ? 'md:col-span-2 w-full' : 'w-full'}>
-                            <PostItem data={post} i={index}/>
-                        </motion.a>
-                    </Link>
+                        variants={postCardAnimation}
+                        className={cx('w-full',
+                            index === 0 && 'lg:col-span-2')}>
+                        <PostItem data={post} i={index}/>
+                    </motion.article>
                 ))
             }
         </motion.div>
