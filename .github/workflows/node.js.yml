@@ -9,6 +9,11 @@ on:
   pull_request:
     branches: [ "develop" ]
 
+#env:
+#  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+#  RUN_REGION: asia-east1
+#  SERVICE_NAME: chia1104
+
 jobs:
   build:
 
@@ -26,5 +31,15 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - run: npm install
-      - run: npm run test:vitest
+      - name: Install dependencies
+        run: yarn
+      - name: Unit tests - Vitest
+        run: yarn test:vitest
+      - name: Build
+        run: yarn build
+      - name: Save build folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          if-no-files-found: error
+          path: build
