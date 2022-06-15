@@ -2,6 +2,6 @@
 
 module.exports = {
     siteUrl: process.env.SITE_URL || 'https://www.chia1104.dev',
-    generateRobotsTxt: true, // (optional)
-    // ...other options
+    generateRobotsTxt: true,
+    changefreq: 'always'
 }
