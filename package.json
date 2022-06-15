@@ -44,6 +44,7 @@
     "uglify-js": "^3.15.5"
   },
   "devDependencies": {
+    "@redux-devtools/extension": "^3.2.2",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.4.0",
     "@types/glob": "^7.2.0",
@@ -58,7 +59,6 @@
     "jsdom": "^19.0.0",
     "next-sitemap": "^2.5.20",
     "postcss": "^8.4.12",
-    "redux-devtools-extension": "^2.13.9",
     "tailwindcss": "^3.0.24",
     "typescript": "4.6.3",
     "vitest": "^0.14.2"
