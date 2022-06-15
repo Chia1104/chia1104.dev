@@ -17,7 +17,7 @@ export const NavMenu: FC = () => {
                     </NextLink>
                 </div>
                 <div className="flex items-center w-[30%] justify-end mr-3">
-                    <NextLink href="/about">
+                    <NextLink href="/about/">
                         <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <AccountCircleOutlinedIcon
                                 fontSize={'medium'}
@@ -29,7 +29,7 @@ export const NavMenu: FC = () => {
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="/posts">
+                    <NextLink href="/posts/">
                         <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
@@ -37,11 +37,11 @@ export const NavMenu: FC = () => {
                                 aria-label={"Posts page"}
                             />
                             <h2 className="hidden md:block">
-                                Posts
+                                Blog
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="/portfolios">
+                    <NextLink href="/portfolio/">
                         <a className="flex link link-underline link-underline-black mr-4 py-3">
                             <WorkspacesOutlinedIcon
                                 fontSize={'medium'}
@@ -49,7 +49,7 @@ export const NavMenu: FC = () => {
                                 aria-label={"Portfolios page"}
                             />
                             <h2 className="hidden md:block">
-                                Portfolios
+                                Portfolio
                             </h2>
                         </a>
                     </NextLink>

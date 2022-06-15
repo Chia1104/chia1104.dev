@@ -38,7 +38,7 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                 </div>
                 <div className="md:w-[60%] w-full flex flex-col mt-10 md:mt-0">
                     <h1 className="title text-center md:text-left pb-5 flex-wrap">
-                        {name} - {chineseName}  <span className="animate-waving-hand origin-[70%_70%] inline-block">👋</span>
+                        <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">{name} {chineseName}  </span><span className="animate-waving-hand origin-[70%_70%] inline-block">👋</span>
                     </h1>
                     <h2 className="text-lg text-center md:text-left ">
                         {content}
@@ -58,7 +58,7 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
             </div>
             <div className="w-full flex flex-col items-center">
                 <button
-                    className="mb-10 group hover:bg-primary relative inline-flex transition ease-in-out rounded"
+                    className="mb-10 group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded"
                     onClick={() => dispatch(activeActionIconSheet())}
                 >
                     <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1">

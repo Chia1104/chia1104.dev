@@ -16,7 +16,7 @@ export const ReposList: FC<Props> = ({repo}) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         key={repo.id}
-                        className="w-full group hover:bg-primary relative inline-flex transition ease-in-out rounded h-[150px]"
+                        className="w-full group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded h-[150px]"
                     >
                         <RepoItem repo={repo} />
                     </a>

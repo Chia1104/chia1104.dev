@@ -1,17 +1,18 @@
 import { FC } from 'react'
 import NextLink from "next/link";
+import {UrlObject} from "url";
 
 interface Props {
     title: string
     content: string
     subtitle?: string
-    link: string
+    link: string | UrlObject
 }
 
 export const NewsCard: FC<Props> = ({title, content, subtitle, link}) => {
     return (
         <div className="flex flex-col justify-center items-center">
-            <h3 className="title c-text-secondary truncate">
+            <h3 className="text-3xl c-text-secondary truncate">
                 {title}
             </h3>
             <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[310px] rounded-xl relative flex justify-center items-center h-[170px] mt-5">

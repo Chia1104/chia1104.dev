@@ -29,7 +29,10 @@ export const PostsList: FC<Props> = ({ post }) => {
             {
                 post.map((post: PostFrontMatter, index) => (
                     <Link
-                        href={`/posts/${post.slug}`}
+                        href={{
+                            pathname: "/posts/[slug]/",
+                            query: { slug: post.slug },
+                        }}
                         passHref
                         key={post.id}
                     >

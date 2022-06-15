@@ -36,7 +36,7 @@ const HomePage: NextPage<Props> = (props) => {
 
     return (
         <Layout
-            title={`${name} / ${chinese_name} - ${title}`}
+            title={`${name} ${chinese_name} | ${title}`}
             description={description}
         >
             <article className="c-container main">
@@ -58,7 +58,10 @@ const HomePage: NextPage<Props> = (props) => {
                                 title={'New update'}
                                 content={props.post.excerpt || 'This is an example of a blog post.'}
                                 subtitle={postSubtitle}
-                                link={`/posts/${props.post.slug}`}
+                                link={{
+                                    pathname: "/posts/[slug]/",
+                                    query: { slug: props.post.slug },
+                                }}
                             />
                         </div>
                     </div>

@@ -16,7 +16,7 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
             <div className="flex flex-col justify-end items-center md:items-end mb-5 md:pr-5">
                 <h1
                     className="title text-sec-text dark:text-white">
-                    {name} - {chineseName}
+                    {name} {chineseName}
                 </h1>
                 <h2 className="description c-text-green-to-purple">
                     {title.toUpperCase()}

@@ -19,7 +19,7 @@ export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
     return (
         <>
             <h1 className="title sm:self-start pt-10">
-                GitHub Repositories
+                <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">GitHub Repositories</span>
             </h1>
             <h2 className="c-description sm:self-start pb-5">
                 What I currently work on
@@ -38,7 +38,7 @@ export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
                     href={`${GITHUB_URL}?tab=repositories`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group hover:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"
+                    className="group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"
                     aria-label={'Open GitHub'}
                 >
                     <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base after:content-['_↗']">

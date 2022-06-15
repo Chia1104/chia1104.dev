@@ -26,17 +26,17 @@ const PostsPage: NextPage<Props> = (props) => {
     const name = Chia.name;
     const title = Chia.title;
     const chinese_name = Chia.chineseName
+    const description = Chia.content
 
     const posts = props.posts;
-    const description = posts.map(post => post.excerpt).join(', ');
 
     return (
         <Layout
-            title={`My Posts - ${name} / ${chinese_name} `}
-            description={description}>
+            title={`Blog | ${name} ${chinese_name} `}
+            description={`${description} Welcome to my blog. I always try to make the best of my time.`}>
             <article className="main c-container">
                 <h1 className="title py-10 self-start">
-                    My Posts
+                    <span>{name}</span> | <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">Blog</span>
                 </h1>
                 <div className="flex flex-col w-full justify-center items-center">
                     <PostsList post={posts} />

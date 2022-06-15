@@ -8,7 +8,7 @@ export const Experience: FC = () => {
     return (
         <div className="w-full flex flex-col">
             <h1 className="title pb-10 text-center">
-                Experience
+                <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">Experience</span>
             </h1>
             {resume.map((experience, index) => (
                 <div key={index} className="w-full flex flex-col c-border-primary border-b-2 p-5">
