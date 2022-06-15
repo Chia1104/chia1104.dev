@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "postbuild": "next-sitemap",
-    "test": "vitest"
+    "test:vitest": "vitest"
   },
   "dependencies": {
     "@emotion/react": "^11.9.0",

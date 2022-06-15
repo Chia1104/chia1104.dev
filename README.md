@@ -33,7 +33,7 @@ This is my personal website.
 - [ ] Dashboard
 - [ ] CI/CD
 - [ ] E2E Testing(with [Cypress](https://www.cypress.io/))
-- [ ] Unit Testing(with [Jest](https://jestjs.io/))
+- [X] Unit Testing(with [Vitest](https://vitest.dev/))
 
 ## Deploy your own
 
@@ -56,6 +56,12 @@ Open http://localhost:3000 to view it in your browser.
 ```bash
 $ yarn
 $ yarn dev
+```
+
+Testing the app.
+
+```bash
+$ yarn test:vitest # <-- test with vitest
 ```
 
 Builds the app for production to the `.next` folder.
