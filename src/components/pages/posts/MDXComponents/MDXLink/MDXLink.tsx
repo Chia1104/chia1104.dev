@@ -13,11 +13,11 @@ export const MDXLink: FC<Props> = (props) => {
     if (isInternalLink) {
         return (
             <Link href={h}>
-                <a {...props} className="link link-underline link-underline-black text-info">{props.children}</a>
+                <a {...props} className="c-link text-info">{props.children}</a>
             </Link>
         );
     }
 
-    return <a target="_blank" rel="noopener noreferrer" {...props} className="link link-underline link-underline-black text-info"/>;
+    return <a target="_blank" rel="noopener noreferrer" {...props} className="c-link text-info"/>;
 }
 

@@ -18,12 +18,12 @@ export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
 
     return (
         <>
-            <h1 className="title sm:self-start pt-10">
+            <header className="title sm:self-start pt-10">
                 <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">GitHub Repositories</span>
-            </h1>
-            <h2 className="c-description sm:self-start pb-5">
+            </header>
+            <p className="c-description sm:self-start pb-7">
                 What I currently work on
-            </h2>
+            </p>
             <div className="w-full flex flex-col">
                 {
                     loading === 'succeeded' && <ReposList repo={repoData.data} />

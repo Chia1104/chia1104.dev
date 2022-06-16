@@ -10,7 +10,7 @@ export const LanAndTools: FC = () => {
             <h1 className="title pb-10 text-center">
                 <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">Languages and Tools</span>
             </h1>
-            <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-5">
                 <LATList
                     category={'Languages'}
                     data={d.languages}

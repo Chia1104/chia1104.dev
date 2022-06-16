@@ -12,7 +12,7 @@ interface Props {
 
 export const PostItem: FC<Props> = ({ data, i }) => {
     return (
-        <div className="w-full p-3 rounded flex flex-col c-bg-secondary shadow-lg min-h-[550px] group hover:-translate-y-1.5 duration-300 transition ease-in-out relative">
+        <div className="w-full p-3 rounded flex flex-col c-bg-secondary shadow-lg min-h-[465px] 2xl:min-h-[520px] group hover:-translate-y-1.5 duration-300 transition ease-in-out relative">
             <div className={cx('aspect-w-16 aspect-h-9 w-full overflow-hidden rounded-lg bg-gray-200 mb-3', i === 0 && 'lg:aspect-w-3 lg:aspect-h-1')}>
                 <Image
                     src={data.headImg || '/posts/example-posts/example.jpg'}
@@ -27,13 +27,13 @@ export const PostItem: FC<Props> = ({ data, i }) => {
                     quality={100}
                 />
             </div>
-            <header className="text-3xl mb-3 group-hover:text-secondary duration-300 transition ease-in-out line-clamp-2 leading-normal mx-2">
+            <header className="subtitle mb-3 group-hover:text-secondary duration-300 transition ease-in-out line-clamp-2 leading-normal mx-2">
                 {data.title}
             </header>
-            <p className="line-clamp-3 text-xl leading-normal mb-3 mx-2">
+            <p className="line-clamp-3 c-description leading-normal mb-3 mx-2">
                 {data.excerpt}
             </p>
-            <footer className="mt-auto text-xl c-description mx-2">
+            <footer className="mt-auto c-description mx-2">
                 {dayjs(data.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
                 {data.readingMins}
             </footer>

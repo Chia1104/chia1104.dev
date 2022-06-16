@@ -11,12 +11,12 @@ export const Design: FC<Props> = ({ data }) => {
 
     return (
         <>
-            <h1 className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
+            <header className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
                 Design
-            </h1>
-            <h2 className="c-description sm:self-start pb-5">
+            </header>
+            <p className="c-description sm:self-start pb-7">
                 Some of my design work
-            </h2>
+            </p>
             <DMPosterList data={data} />
             <a
                 href={POSTER_URL}

@@ -7,19 +7,19 @@ export const Experience: FC = () => {
 
     return (
         <div className="w-full flex flex-col">
-            <h1 className="title pb-10 text-center">
+            <h2 className="title pb-10 text-center">
                 <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">Experience</span>
-            </h1>
+            </h2>
             {resume.map((experience, index) => (
                 <div key={index} className="w-full flex flex-col c-border-primary border-b-2 p-5">
-                    <h2 className="text-3xl pb-5">
+                    <header className="subtitle pb-5">
                         {experience.title}
-                    </h2>
-                    <h3 className="text-xl pb-5">
+                    </header>
+                    <p className="c-description pb-5">
                         {experience.work}
-                    </h3>
+                    </p>
                     <p className="c-description">
-                        <span className="link link-underline link-underline-black text-info">
+                        <span className="c-link text-info">
                             <a href={experience.link} target="_blank" rel="noreferrer">
                                 {experience.company}
                             </a>

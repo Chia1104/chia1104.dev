@@ -9,8 +9,8 @@ interface Props {
 
 export const LATList: FC<Props> = ({category, data}) => {
     return (
-        <div className="flex flex-col justify-center items-center lg:px-10">
-            <h2 className="text-3xl my-10 ">
+        <div className="flex flex-col justify-start items-center lg:px-10">
+            <h2 className="subtitle my-10 ">
                 {category}
             </h2>
             <div className="grid grid-cols-3 w-full c-description">

@@ -13,7 +13,7 @@ export const LastestVideo: FC<Props> = ({ item }) => {
     return (
         <div className="w-full flex flex-col justify-center items-center">
             <a
-                className="text-info text-2xl mb-5 link-underline link-underline-black"
+                className="text-info subtitle mb-5 c-link"
                 href={`https://www.youtube.com/watch?v=${id}`}
                 target="_blank"
                 rel="noreferrer"

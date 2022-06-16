@@ -81,10 +81,10 @@ const HomePage: NextPage<Props> = (props) => {
                             </li>
                             <li>
                                 ⚡ Fun fact:
-                                <a href="https://open.spotify.com/user/21vnijzple4ufn2nzlfjy37py?si=b5f011d11a794ba4&nd=1" target="_blank" rel="noreferrer" className="link link-underline link-underline-black text-info"> Spotify </a>
+                                <a href="https://open.spotify.com/user/21vnijzple4ufn2nzlfjy37py?si=b5f011d11a794ba4&nd=1" target="_blank" rel="noreferrer" className="c-link text-info"> Spotify </a>
                                 /
                                 {/* eslint-disable-next-line react/no-unescaped-entities */}
-                                <a href="https://skyline.github.com/Chia1104/2022" target="_blank" rel="noreferrer" className="link link-underline link-underline-black text-info"> Chia1104's 2022 GitHub Skyline </a>
+                                <a href="https://skyline.github.com/Chia1104/2022" target="_blank" rel="noreferrer" className="c-link text-info"> Chia1104's 2022 GitHub Skyline </a>
                             </li>
                         </ul>
                     </div>

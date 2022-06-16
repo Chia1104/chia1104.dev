@@ -31,7 +31,7 @@ export const PostsList: FC<Props> = ({ post }) => {
                     <motion.article
                         key={post.id}
                         variants={postCardAnimation}
-                        className={cx('w-full',
+                        className={cx('w-full h-auto',
                             index === 0 && 'lg:col-span-2')}>
                         <PostItem data={post} i={index}/>
                     </motion.article>

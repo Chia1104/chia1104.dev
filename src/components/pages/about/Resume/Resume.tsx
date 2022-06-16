@@ -65,7 +65,7 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                         Contact me
                     </span>
                 </button>
-                <div className="w-[85%] mt-10 lg:w-[55%]">
+                <div className="w-[85%] mt-10 lg:w-[50%]">
                     <ul className="c-description w-full">
                         <li className="mb-3 w-full flex">
                             <span className="w-[30%]">

@@ -3,22 +3,25 @@ import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import NextLink from "next/link";
+import cx from "classnames";
+import { useRouter } from 'next/router'
 
 export const NavMenu: FC = () => {
+    const router = useRouter()
 
     return(
         <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-50 border-b-[1px] c-border-primary c-bg-secondary">
             <div className="flex container w-[100%]">
                 <div className="flex items-center w-[70%] justify-start">
-                    <NextLink href="/">
-                        <a className="text-2xl ml-3 hover:c-text-green-to-purple transition ease-in-out">
+                    <NextLink href="/" passHref>
+                        <a className="subtitle ml-3 hover:c-text-green-to-purple transition ease-in-out">
                             Chia1104
                         </a>
                     </NextLink>
                 </div>
                 <div className="flex items-center w-[30%] justify-end mr-3">
-                    <NextLink href="/about/">
-                        <a className="flex link link-underline link-underline-black mr-4 py-3">
+                    <NextLink href="/about/" passHref>
+                        <a className={cx('flex c-link mr-4 py-3', router.asPath.includes('about') && 'c-link-active')}>
                             <AccountCircleOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"
@@ -29,8 +32,8 @@ export const NavMenu: FC = () => {
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="/posts/">
-                        <a className="flex link link-underline link-underline-black mr-4 py-3">
+                    <NextLink href="/posts/" passHref>
+                        <a className={cx('flex c-link mr-4 py-3', router.asPath.includes('posts') && 'c-link-active')}>
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"
@@ -41,8 +44,8 @@ export const NavMenu: FC = () => {
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="/portfolio/">
-                        <a className="flex link link-underline link-underline-black mr-4 py-3">
+                    <NextLink href="/portfolio/" passHref>
+                        <a className={cx('flex c-link mr-4 py-3', router.asPath.includes('portfolio') && 'c-link-active')}>
                             <WorkspacesOutlinedIcon
                                 fontSize={'medium'}
                                 className="mr-1"

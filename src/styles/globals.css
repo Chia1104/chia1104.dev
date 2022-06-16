@@ -130,6 +130,10 @@
     @apply text-4xl my-2
   }
 
+  .subtitle {
+    @apply text-2xl
+  }
+
   .description {
     line-height: 1.5;
     font-size: 1.5rem;
@@ -179,7 +183,20 @@
     margin-left: 0.5rem;
   }
 
-  .link-underline {
+  .c-link {
+    @apply c-link-underline c-link-underline-secondary
+  }
+
+  .c-link-active {
+    border-bottom-width: 0;
+    background-size: 100% 3px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size .2s ease-in-out;
+    background-image: linear-gradient(transparent, transparent), linear-gradient(#ff9b1a, #ff9b1a)
+  }
+
+  .c-link-underline {
     border-bottom-width: 0;
     background-image: linear-gradient(transparent, transparent), linear-gradient(#fff, #fff);
     background-size: 0 3px;
@@ -188,11 +205,11 @@
     transition: background-size .2s ease-in-out;
   }
 
-  .link-underline-black {
+  .c-link-underline-secondary {
     background-image: linear-gradient(transparent, transparent), linear-gradient(#ff9b1a, #ff9b1a)
   }
 
-  .link-underline:hover {
+  .c-link-underline:hover {
     background-size: 100% 3px;
     background-position: 0 100%
   }

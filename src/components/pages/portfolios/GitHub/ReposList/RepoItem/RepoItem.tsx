@@ -11,7 +11,7 @@ interface Props {
 export const RepoItem: FC<Props> = ({repo}) => {
     return (
         <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 w-full h-full flex flex-col">
-            <h1 className="text-2xl line-clamp-1 mb-2 group-hover:c-text-green-to-purple ">{repo.name}</h1>
+            <header className="text-2xl line-clamp-1 mb-2 group-hover:c-text-green-to-purple ">{repo.name}</header>
             <p className="c-description text-base line-clamp-2">{repo.description}</p>
             <div className="c-description mt-auto text-base flex">
                 <span className="mr-5 flex items-center">{repo.language}</span>

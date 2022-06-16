@@ -23,7 +23,7 @@ export const VideoList: FC<Props> = ({ item }) => {
                                 rel="noreferrer"
                                 aria-label={"Open Youtube"}
                             >
-                                <h2 className="text-info text-2xl link-underline link-underline-black line-clamp-1">
+                                <h2 className="text-info subtitle c-link line-clamp-1">
                                     {v.snippet.title}
                                 </h2>
                             </a>

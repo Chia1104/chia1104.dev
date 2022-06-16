@@ -18,12 +18,12 @@ export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
 
     return (
         <>
-            <h1 className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
+            <header className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
                 Youtube Playlists
-            </h1>
-            <h2 className="c-description sm:self-start pb-5">
+            </header>
+            <p className="c-description sm:self-start pb-7">
                 I have created a few video for my Youtube channel.
-            </h2>
+            </p>
             {
                 loading === 'pending' && <VideoLoader />
             }
