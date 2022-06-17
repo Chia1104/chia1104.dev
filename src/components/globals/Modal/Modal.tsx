@@ -1,5 +1,6 @@
 import { FC, ReactNode } from "react";
 import {AnimatePresence, motion} from "framer-motion";
+import useLockedBody from "@chia/src/hooks/useLockedBody";
 
 interface Props {
     isShow: boolean;
@@ -14,9 +15,10 @@ export const Modal: FC<Props> = (props) => {
         closed: { opacity: 0, delay: 300 },
     }
     const iv = {
-        open: { opacity: 1, y: 0 },
+        open: { opacity: 1, y: 0, delay: 3000 },
         closed: { opacity: 0, y: -100 },
     }
+    useLockedBody(props.isShow)
 
     return (
         <AnimatePresence>
@@ -34,7 +36,6 @@ export const Modal: FC<Props> = (props) => {
                             animate={ props.isShow ? 'open' : 'closed' }
                             exit={'closed'}
                             variants={iv}
-                            // className="w-[300px]"
                             {...props}
                         >
                             {props.children}

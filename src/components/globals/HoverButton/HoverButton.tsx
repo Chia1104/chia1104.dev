@@ -23,10 +23,10 @@ export const HoverButton: FC<Props> = (props) => {
             animate={isHover ? 'open' : 'closed'}
             variants={v}
             className="w-full h-full bg-gradient-to-b from-gray-600/70 to-gray-600/0 absolute top-0 left-0 flex justify-center items-center"
-            {...props}
         >
             <button
                 onClick={props.handleClick}
+                {...props}
             >
                 {props.children ||
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

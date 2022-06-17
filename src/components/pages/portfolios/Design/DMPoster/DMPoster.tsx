@@ -16,11 +16,6 @@ export const DMPoster: FC<Props> = ({ url }) => {
 
     const handleClose = () => setIsShow(false)
 
-    const v = {
-        open: { opacity: 1, y: 0 },
-        closed: { opacity: 0, y: -20 },
-    }
-
     return (
         <div className="aspect-w-3 aspect-h-5 w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg relative" ref={r}>
             <Image
@@ -42,7 +37,7 @@ export const DMPoster: FC<Props> = ({ url }) => {
             <Modal
                 isShow={isShow}
                 handleClose={handleClose}
-                className="w-[85%] max-w-[550px]"
+                className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl"
             >
                 <div className="w-full aspect-w-1 aspect-h-1">
                     <Image
