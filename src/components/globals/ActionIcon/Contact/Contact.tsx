@@ -60,8 +60,8 @@ export const Contact: FC = () => {
                     id={id + '-contact-form'}
                     className="w-full flex flex-col mx-auto"
                     onSubmit={handleSubmit}>
-                    <h1 className="text-3xl mb-5">Contact Me</h1>
-                    <h2 className="text-xl pb-2">Email</h2>
+                    <header className="text-3xl mb-5">Contact Me</header>
+                    <p className="text-xl pb-2">Email</p>
                     <div className="w-full mb-4">
                         <input
                             id={id + '-contact-email'}
@@ -78,7 +78,7 @@ export const Contact: FC = () => {
                             className="text-warning mt-2"
                         />
                     </div>
-                    <h2 className="text-xl pb-2">Message</h2>
+                    <p className="text-xl pb-2">Message</p>
                     <div className="w-full mb-4">
                         <textarea
                             id={id + '-contact-message'}
@@ -104,6 +104,8 @@ export const Contact: FC = () => {
                     </button>
                     <Script
                         src="https://www.google.com/recaptcha/api.js"
+                        async
+                        defer
                     />
                     <div
                         className={cx('g-recaptcha self-center my-3', {hidden: !actionIconSheet})}
