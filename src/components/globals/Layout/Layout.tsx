@@ -1,9 +1,9 @@
-import React, { FC } from 'react';
+import { FC, ReactNode } from 'react';
 import { Head } from "./Head";
 import { motion } from 'framer-motion'
 
 interface Props {
-    children: React.ReactNode,
+    children: ReactNode,
     title: string,
     description: string,
 }
