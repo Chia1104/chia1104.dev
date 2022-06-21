@@ -137,13 +137,13 @@ const CounterFC = () => {
 
  - 他們的差別在於，如果我在一個 function 中打兩個 `setCount(count + 1)` 的話最後只會加一次，而不會加兩次
 
- - 如果我在一個 function 中打兩個 `setCount(prevCount => prevCount + 1)` 的話最後會加兩次，而不會加一次
+ - 如果我在一個 function 中打兩個 `setCount(prevCount => prevCount + 1)` 則可以加兩次
 
 ---
 
 ## useEffect
 
-React 的 useEffect 可以在 component render 時執行一個 function，這個 function 可以接收一個 callback function，當 component render 完成後，這個 function 會被呼叫。
+React 的 useEffect 可以在執行一個 function，這個 function 會在 component render 完成之後執行。
 
 通常我們會在 useEffect 中執行 side effect，例如 fetch data、設定 subscription、或手動改變 React component 中的 DOM。
 
@@ -194,14 +194,14 @@ const ListExample = () => {
   }, [pageNum]);
 ```
 
-假如我們要不同的 page 取得不同的資料，就可以在這裡改變 pageNum 的值，當 pageNum 改變後，就會重新執行 useEffect。
+假如我們要不同的 page 取得不同的資料，就可以在這裡改變 pageNum 的值，當 pageNum 改變後，就會重新執行 useEffect 中的 fetchData。
 
 <Quote
     type={'warning'}
 >
     - 這裡要注意我們的依賴項，是不會設置 array 或 object 的。
     - 在 Javascript 中兩個 object 或 array 就算裡面的值一樣，也會被視為不同的。
-    - `obj1 === obj2` 會回傳 `false`。
+    - [ 'a', 'b' ] === [ 'a', 'b' ]` 會回傳 `false`。
     - 這樣會導致 React 不能正常的執行 useEffect。
 </Quote>
 
@@ -263,7 +263,7 @@ const ListExample = () => {
 <Quote
     type={'info'}
 >
-    - 我們可以使用 `useEffect` 來防止 infinite loop。
+    - 我們可以使用 `useEffect` 來防止 infinite loop，藉由 sideEffect 的方式來更新 state。
 </Quote>
 
 我們稍微修正上面的範例
@@ -347,8 +347,8 @@ const ListExample = () => {
 <Quote
     type={'warning'}
 >
-    - 我們一定要在 `onClick` 中設置一個 callBack function，不然會觸發 infinite loop。
-    - 這樣 React 才會知道 `setCount` 是渲染完才接受的 function。
+    - 我們一定要在 `onClick` 中設置一個 function。
+    - 而不是 function 的執行過程，不然這也會觸發 infinite loop。
 </Quote>
 
 ### 第三種錯誤
