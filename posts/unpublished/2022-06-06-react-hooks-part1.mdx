@@ -189,9 +189,9 @@ const ListExample = () => {
 如果我們把這個 array 改成 `[]`，那麼就會讓 useEffect 只會執行一次，而不會重新執行。
 
 ```javascript
-  useEffect(() => {
-    fetchData(pageNum)
-  }, [pageNum]);
+useEffect(() => {
+  fetchData(pageNum)
+}, [pageNum]);
 ```
 
 假如我們要不同的 page 取得不同的資料，就可以在這裡改變 pageNum 的值，當 pageNum 改變後，就會重新執行 useEffect 中的 fetchData。
@@ -201,7 +201,7 @@ const ListExample = () => {
 >
     - 這裡要注意我們的依賴項，是不會設置 array 或 object 的。
     - 在 Javascript 中兩個 object 或 array 就算裡面的值一樣，也會被視為不同的。
-    - [ 'a', 'b' ] === [ 'a', 'b' ]` 會回傳 `false`。
+    - `[ 'a', 'b' ] === [ 'a', 'b' ]` 會回傳 `false`。
     - 這樣會導致 React 不能正常的執行 useEffect。
 </Quote>
 
