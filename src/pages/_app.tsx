@@ -13,8 +13,11 @@ import { store } from '@chia/src/store'
 import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/utils/config/nextProgress.config";
 import { SnackbarProvider } from 'notistack';
+import { BASE_URL } from "@chia/utils/constants";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
+    const canonical = `${BASE_URL}${router.pathname === "/" ? "" : router.pathname}/`;
+
     return (
         <ErrorBoundary>
             <NextNProgress
@@ -24,7 +27,10 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
             <ThemeProvider enableSystem={true} attribute="class">
                 <Provider store={store}>
                     <SnackbarProvider maxSnack={3}>
-                        <DefaultSeo {...SEO}/>
+                        <DefaultSeo
+                            canonical={canonical}
+                            {...SEO}
+                        />
                         <NavMenu/>
                         <ActionIcon/>
                         <AnimatePresence exitBeforeEnter>
