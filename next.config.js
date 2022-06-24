@@ -35,10 +35,7 @@ const nextConfig = {
     }
 
     return config
-  },
-  redirects: async () => [
-    { source: "/posts/:slug/amp.html", destination: "/posts/:slug/", statusCode: 301 },
-  ]
+  }
 }
 
 module.exports = nextConfig
