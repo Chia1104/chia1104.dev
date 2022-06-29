@@ -11,15 +11,19 @@ const nextConfig = {
   //   ]
   // },
   experimental: {
-    outputStandalone: true,
+    output: 'standalone',
+    runtime: 'experimental-edge'
+  },
+  compiler: {
+    removeConsole: true
   },
   images: {
-    domains: ['firebasestorage.googleapis.com'],
+    domains: ['firebasestorage.googleapis.com']
   },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      'react/jsx-runtime.js': require.resolve('react/jsx-runtime'),
+      'react/jsx-runtime.js': require.resolve('react/jsx-runtime')
     }
 
     config.resolve = {
@@ -28,10 +32,8 @@ const nextConfig = {
       fallback: {
         ...config.resolve.fallback,
         child_process: false,
-        fs: false,
-        // 'builtin-modules': false,
-        // worker_threads: false,
-      },
+        fs: false
+      }
     }
 
     return config

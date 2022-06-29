@@ -5,7 +5,7 @@ import useLockedBody from "@chia/src/hooks/useLockedBody";
 interface Props {
     isShow: boolean;
     children: ReactNode;
-    handleClose: () => void;
+    onClick: () => void;
     className?: string;
 }
 
@@ -25,7 +25,7 @@ export const Modal: FC<Props> = (props) => {
             {
                 props.isShow && (
                     <motion.div
-                        onClick={props.handleClose}
+                        onClick={props.onClick}
                         initial={'closed'}
                         animate={ props.isShow ? 'open' : 'closed' }
                         exit={'closed'}

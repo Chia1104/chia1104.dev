@@ -25,6 +25,7 @@ export const LastestVideo: FC<Props> = ({ item }) => {
                 <iframe
                     className="w-full h-full"
                     src={`https://www.youtube.com/embed/${id}`}
+                    loading="lazy"
                     title={name}
                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen

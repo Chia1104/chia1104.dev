@@ -3,10 +3,10 @@ import {motion} from "framer-motion";
 import useHover from "@chia/src/hooks/useHover";
 
 interface Props {
-    handleClick?: () => void;
+    onClick?: () => void;
     children?: ReactNode;
     className?: string;
-    refTarget: RefObject<HTMLElement>;
+    reftarget: RefObject<HTMLElement>;
 }
 
 export const HoverButton: FC<Props> = (props) => {
@@ -15,7 +15,7 @@ export const HoverButton: FC<Props> = (props) => {
         closed: { opacity: 0, y: -20 },
     }
 
-    const isHover = useHover(props.refTarget)
+    const isHover = useHover(props.reftarget)
 
     return (
         <motion.div
@@ -25,7 +25,7 @@ export const HoverButton: FC<Props> = (props) => {
             className="w-full h-full bg-gradient-to-b from-gray-600/70 to-gray-600/0 absolute top-0 left-0 flex justify-center items-center"
         >
             <button
-                onClick={props.handleClick}
+                onClick={props.onClick}
                 {...props}
             >
                 {props.children ||

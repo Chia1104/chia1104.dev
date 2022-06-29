@@ -12,6 +12,7 @@ const MDXYoutube: FC<Props> = ({ ytSrc, ytTitle }) => {
                 className="w-full h-full"
                 src={ytSrc}
                 title={ytTitle}
+                loading="lazy"
                 allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
             />
