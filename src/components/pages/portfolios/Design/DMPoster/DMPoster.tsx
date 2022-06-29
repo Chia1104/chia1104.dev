@@ -1,6 +1,6 @@
 import { FC, useRef, useState } from "react";
 import useHover from "@chia/src/hooks/useHover";
-import Image from "next/image";
+import { Image } from '@chia/components/globals/Image';
 import cx from "classnames";
 import {Modal} from "@chia/components/globals/Modal";
 import {HoverButton} from "@chia/components/globals/HoverButton";
@@ -21,9 +21,6 @@ export const DMPoster: FC<Props> = ({ url }) => {
             <Image
                 src={url || '/posts/example-posts/example.jpg'}
                 alt={'DMPoster'}
-                aria-label={'DMPoster'}
-                blurDataURL={'/loader/skeleton.gif'}
-                placeholder="blur"
                 className={cx('rounded duration-300 transition ease-in-out', isHover && 'scale-[1.1]')}
                 loading="lazy"
                 objectFit="cover"
@@ -43,12 +40,9 @@ export const DMPoster: FC<Props> = ({ url }) => {
                     <Image
                         src={url || '/posts/example-posts/example.jpg'}
                         alt={'DMPoster'}
-                        aria-label={'DMPoster'}
-                        blurDataURL={'/loader/skeleton.gif'}
-                        placeholder="blur"
                         loading="lazy"
-                        layout="fill"
                         objectFit="contain"
+                        layout="fill"
                         quality={100}
                     />
                 </div>

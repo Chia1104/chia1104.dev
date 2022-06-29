@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { Image } from '@chia/components/globals/Image';
 import { FC } from 'react';
 import cx from 'classnames';
 
@@ -31,9 +31,6 @@ export const MDXImage: FC<Props> = (props) => {
                 ratio === '9:16' && 'aspect-w-9 aspect-h-16',
             )}>
                 <Image
-                    aria-label={props.alt}
-                    blurDataURL={'/loader/skeleton.gif'}
-                    placeholder="blur"
                     className="rounded-lg hover:scale-[1.05] duration-300 transition ease-in-out"
                     loading="lazy"
                     objectFit="cover"

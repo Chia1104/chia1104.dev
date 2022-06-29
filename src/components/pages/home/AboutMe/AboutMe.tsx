@@ -1,4 +1,4 @@
-import Image from 'next/image'
+import { Image } from "@chia/components/globals/Image";
 import { FC } from "react";
 import { Chia } from "@chia/utils/meta/chia"
 
@@ -30,8 +30,6 @@ export const AboutMe: FC<Props> = ({avatarSrc}) => {
                         width={195}
                         height={195}
                         priority
-                        blurDataURL={'/loader/skeleton.gif'}
-                        placeholder="blur"
                     />
                 </div>
             </div>

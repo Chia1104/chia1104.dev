@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import React from 'react'
-import Image from 'next/image'
+import { Image } from '@chia/components/globals/Image';
 import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
 import {getPost, getEncodedSlugs, getAllPosts} from '@chia/lib/mdx/services'
 import { Layout } from "@chia/components/globals/Layout";

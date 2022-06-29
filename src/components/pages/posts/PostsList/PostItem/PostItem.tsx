@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import type { PostFrontMatter } from '@chia/utils/types/post';
 import dayjs from "dayjs";
-import Image from 'next/image';
+import { Image } from '@chia/components/globals/Image';
 import cx from 'classnames';
 import Link from "next/link";
 
@@ -17,9 +17,6 @@ export const PostItem: FC<Props> = ({ data, i }) => {
                 <Image
                     src={data.headImg || '/posts/example-posts/example.jpg'}
                     alt={data.title}
-                    aria-label={data.title}
-                    blurDataURL={'/loader/skeleton.gif'}
-                    placeholder="blur"
                     className="rounded group-hover:scale-[1.1] duration-300 transition ease-in-out"
                     loading="lazy"
                     objectFit="cover"

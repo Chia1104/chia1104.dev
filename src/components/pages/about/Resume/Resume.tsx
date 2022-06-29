@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import Image from "next/image";
+import { Image } from '@chia/components/globals/Image';
 import { Chia } from "@chia/utils/meta/chia"
 import {Experience} from "@chia/components/pages/about/Resume/Experience";
 import {LanAndTools} from "@chia/components/pages/about/Resume/LanAndTools";
@@ -31,8 +31,6 @@ export const Resume: FC<Props> = ({avatarSrc}) => {
                             width={400}
                             height={300}
                             priority
-                            blurDataURL={'/loader/skeleton.gif'}
-                            placeholder="blur"
                         />
                     </div>
                 </div>
