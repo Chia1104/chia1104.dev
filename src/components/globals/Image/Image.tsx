@@ -15,6 +15,4 @@ const Image: FC<NextImageProps> = (props) => {
     )
 }
 
-export default memo(Image, (prevProps, nextProps) => {
-    return prevProps.src === nextProps.src;
-});
+export default memo(Image);
