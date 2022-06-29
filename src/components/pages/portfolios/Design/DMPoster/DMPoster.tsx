@@ -32,7 +32,7 @@ export const DMPoster: FC<Props> = ({ url }) => {
                 reftarget={r}
             />
             <Modal
-                isShow={isShow}
+                showed={isShow}
                 onClick={handleClose}
                 className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl"
             >
