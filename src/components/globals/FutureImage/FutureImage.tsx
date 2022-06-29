@@ -13,6 +13,4 @@ const FutureImage: FC<NextFutureImageProps> = (props) => {
     )
 }
 
-export default memo(FutureImage, (prevProps, nextProps) => {
-    return prevProps.src === nextProps.src;
-});
+export default memo(FutureImage);

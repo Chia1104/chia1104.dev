@@ -38,4 +38,6 @@ const HoverButton: FC<Props> = (props) => {
     );
 }
 
-export default memo(HoverButton)
+export default memo(HoverButton, (prev, next) => {
+    return prev.reftarget === next.reftarget;
+});
