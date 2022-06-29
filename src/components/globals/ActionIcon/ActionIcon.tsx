@@ -5,13 +5,13 @@ import Brightness4OutlinedIcon from '@mui/icons-material/Brightness4Outlined';
 import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
 import Brightness5OutlinedIcon from '@mui/icons-material/Brightness5Outlined';
 import { useTheme } from 'next-themes'
-import { FC, useState, useEffect } from "react";
-import {Contact} from "@chia/components/globals/ActionIcon/Contact";
+import { FC, useState, useEffect, memo } from "react";
+import Contact from "@chia/components/globals/ActionIcon/Contact";
 import { useAppDispatch } from "@chia/src/hooks/useAppDispatch";
 import {activeActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { Chia } from '@chia/utils/meta/chia';
 
-export const ActionIcon: FC = () => {
+const ActionIcon: FC = () => {
     const dispatch = useAppDispatch()
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
@@ -100,3 +100,5 @@ export const ActionIcon: FC = () => {
         </div>
     )
 }
+
+export default memo(ActionIcon)

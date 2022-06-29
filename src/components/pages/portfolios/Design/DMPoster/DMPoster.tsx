@@ -1,15 +1,15 @@
-import { FC, useRef, useState } from "react";
+import { FC, useRef, useState, memo } from "react";
 import useHover from "@chia/src/hooks/useHover";
-import { Image } from '@chia/components/globals/Image';
+import Image from '@chia/components/globals/Image';
 import cx from "classnames";
-import {Modal} from "@chia/components/globals/Modal";
-import {HoverButton} from "@chia/components/globals/HoverButton";
+import Modal from "@chia/components/globals/Modal";
+import HoverButton from "@chia/components/globals/HoverButton";
 
 interface Props {
     url: string;
 }
 
-export const DMPoster: FC<Props> = ({ url }) => {
+const DMPoster: FC<Props> = ({ url }) => {
     const r = useRef(null);
     const isHover = useHover(r)
     const [isShow, setIsShow] = useState(false)
@@ -50,3 +50,5 @@ export const DMPoster: FC<Props> = ({ url }) => {
         </div>
     )
 }
+
+export default memo(DMPoster, (prev, next) => prev.url === next.url)

@@ -1,4 +1,4 @@
-import {FC, useId,  useMemo} from "react";
+import {FC, useId, useMemo, memo} from "react";
 import { useForm, ValidationError } from '@formspree/react';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {useAppDispatch} from "@chia/src/hooks/useAppDispatch";
@@ -21,7 +21,7 @@ const inside = {
 const FORMSPREE_KEY = process.env.NEXT_PUBLIC_FORMSPREE_KEY as string;
 const RE_CAPTCHA_KEY = process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY as string;
 
-export const Contact: FC = () => {
+const Contact: FC = () => {
     const dispatch = useAppDispatch()
     const actionIconSheet = useAppSelector(selectActionIconSheet)
     const [state, handleSubmit] = useForm(FORMSPREE_KEY);
@@ -116,3 +116,5 @@ export const Contact: FC = () => {
         </motion.div>
     )
 }
+
+export default memo(Contact);

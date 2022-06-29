@@ -1,4 +1,4 @@
-import { FC, ReactNode, RefObject } from "react";
+import { FC, ReactNode, RefObject, memo } from "react";
 import {motion} from "framer-motion";
 import useHover from "@chia/src/hooks/useHover";
 
@@ -9,7 +9,7 @@ interface Props {
     reftarget: RefObject<HTMLElement>;
 }
 
-export const HoverButton: FC<Props> = (props) => {
+const HoverButton: FC<Props> = (props) => {
     const v = {
         open: { opacity: 1, y: 0 },
         closed: { opacity: 0, y: -20 },
@@ -37,3 +37,5 @@ export const HoverButton: FC<Props> = (props) => {
         </motion.div>
     );
 }
+
+export default memo(HoverButton)

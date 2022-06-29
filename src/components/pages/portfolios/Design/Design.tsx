@@ -1,12 +1,12 @@
-import { FC } from "react";
-import { DMPosterList } from "@chia/components/pages/portfolios/Design/DMPosterList";
+import { FC, memo } from "react";
+import DMPosterList from "@chia/components/pages/portfolios/Design/DMPosterList";
 import { Chia } from '@chia/utils/meta/chia';
 
 interface Props {
     data: string[];
 }
 
-export const Design: FC<Props> = ({ data }) => {
+const Design: FC<Props> = ({ data }) => {
     const POSTER_URL = Chia.link.google_photos;
 
     return (
@@ -32,3 +32,5 @@ export const Design: FC<Props> = ({ data }) => {
         </>
     )
 }
+
+export default memo(Design, (prev, next) => prev.data === next.data)

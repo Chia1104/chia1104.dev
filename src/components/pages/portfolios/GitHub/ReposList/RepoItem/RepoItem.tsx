@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import type { Repo } from '@chia/utils/types/repo'
 import ForkRightOutlinedIcon from '@mui/icons-material/ForkRightOutlined';
 import StarIcon from '@mui/icons-material/Star';
@@ -8,7 +8,7 @@ interface Props {
     repo: Repo
 }
 
-export const RepoItem: FC<Props> = ({repo}) => {
+const RepoItem: FC<Props> = ({repo}) => {
     return (
         <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 w-full h-full flex flex-col">
             <header className="text-2xl line-clamp-1 mb-2 group-hover:c-text-green-to-purple ">{repo.name}</header>
@@ -30,3 +30,5 @@ export const RepoItem: FC<Props> = ({repo}) => {
         </span>
     )
 }
+
+export default memo(RepoItem, (prev, next) => prev.repo.id === next.repo.id)

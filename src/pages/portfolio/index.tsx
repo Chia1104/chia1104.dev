@@ -6,13 +6,13 @@ import { useEffect, useState } from "react";
 import {selectAllRepos, selectAllReposLoading, selectAllReposError} from "@chia/store/modules/Github/github.slice";
 import {getAllReposAsync} from "@chia/store/modules/Github/actions";
 import type { Repo } from '@chia/utils/types/repo';
-import {GitHub} from "@chia/components/pages/portfolios/GitHub";
-import {Youtube} from "@chia/components/pages/portfolios/Youtube";
+import GitHub from "@chia/components/pages/portfolios/GitHub";
+import Youtube from "@chia/components/pages/portfolios/Youtube";
 import type { Youtube as y } from '@chia/utils/types/youtube';
 import {getAllVideosAsync} from "@chia/store/modules/Youtube/actions";
 import {selectAllVideos, selectAllVideosError, selectAllVideosLoading} from "@chia/store/modules/Youtube/youtube.slice";
 import {getListImageUrl} from "@chia/lib/firebase/files/services";
-import {Design} from "@chia/components/pages/portfolios/Design";
+import Design from "@chia/components/pages/portfolios/Design";
 import type {GetServerSideProps} from "next";
 import { Chia } from "@chia/utils/meta/chia";
 

@@ -1,4 +1,4 @@
-import { Image } from '@chia/components/globals/Image';
+import Image from '@chia/components/globals/Image';
 import { FC } from 'react';
 import cx from 'classnames';
 

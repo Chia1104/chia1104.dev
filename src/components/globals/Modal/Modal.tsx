@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, memo } from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import useLockedBody from "@chia/src/hooks/useLockedBody";
 
@@ -9,7 +9,7 @@ interface Props {
     className?: string;
 }
 
-export const Modal: FC<Props> = (props) => {
+const Modal: FC<Props> = (props) => {
     const ov = {
         open: { opacity: 1 },
         closed: { opacity: 0, delay: 300 },
@@ -46,3 +46,5 @@ export const Modal: FC<Props> = (props) => {
         </AnimatePresence>
     )
 }
+
+export default memo(Modal, (prev, next) => prev.showed === next.showed)

@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import type { PostFrontMatter } from '@chia/utils/types/post';
 import dayjs from "dayjs";
-import { Image } from '@chia/components/globals/Image';
+import Image from '@chia/components/globals/Image';
 import cx from 'classnames';
 import Link from "next/link";
 

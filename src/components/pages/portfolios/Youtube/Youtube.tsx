@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import {VideoList} from "@chia/components/pages/portfolios/Youtube/VideoList";
 import type {Youtube as y} from "@chia/utils/types/youtube";
 import {VideoLoader} from "@chia/components/pages/portfolios/Youtube/VideoLoader";
@@ -13,7 +13,7 @@ interface Props {
     error?: string
 }
 
-export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
+const Youtube: FC<Props> = ({ videoData, loading, error }) => {
     const YOUTUBE_URL = Chia.link.youtube_playlist;
 
     return (
@@ -47,3 +47,5 @@ export const Youtube: FC<Props> = ({ videoData, loading, error }) => {
         </>
     )
 }
+
+export default memo(Youtube)

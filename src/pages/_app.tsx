@@ -1,8 +1,8 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { AnimatePresence } from "framer-motion";
-import { NavMenu } from "@chia/components/globals/NavMenu";
-import { ActionIcon } from "@chia/components/globals/ActionIcon";
+import NavMenu from "@chia/components/globals/NavMenu";
+import ActionIcon from "@chia/components/globals/ActionIcon";
 import { DefaultSeo } from 'next-seo';
 import SEO from '../../next-seo.config';
 import { Footer } from "@chia/components/globals/Footer";

@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { Image } from '@chia/components/globals/Image';
+import Image from '@chia/components/globals/Image';
 import { Chia } from "@chia/utils/meta/chia"
 import {Experience} from "@chia/components/pages/about/Resume/Experience";
 import {LanAndTools} from "@chia/components/pages/about/Resume/LanAndTools";

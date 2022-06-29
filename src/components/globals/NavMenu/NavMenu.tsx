@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo } from "react";
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
@@ -6,7 +6,7 @@ import NextLink from "next/link";
 import cx from "classnames";
 import { useRouter } from 'next/router'
 
-export const NavMenu: FC = () => {
+const NavMenu: FC = () => {
     const router = useRouter()
 
     return(
@@ -61,3 +61,5 @@ export const NavMenu: FC = () => {
         </nav>
     )
 }
+
+export default memo(NavMenu)

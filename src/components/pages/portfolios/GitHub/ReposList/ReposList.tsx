@@ -1,12 +1,12 @@
-import { FC } from 'react';
-import { RepoItem } from "@chia/components/pages/portfolios/GitHub/ReposList/RepoItem";
+import { FC, memo } from 'react';
+import RepoItem from "@chia/components/pages/portfolios/GitHub/ReposList/RepoItem";
 import type { Repo } from '@chia/utils/types/repo';
 
 interface Props {
     repo: Repo[]
 }
 
-export const ReposList: FC<Props> = ({repo}) => {
+const ReposList: FC<Props> = ({repo}) => {
     return (
         <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
             {
@@ -25,3 +25,5 @@ export const ReposList: FC<Props> = ({repo}) => {
         </div>
     )
 }
+
+export default memo(ReposList, (prev, next) => prev.repo === next.repo)

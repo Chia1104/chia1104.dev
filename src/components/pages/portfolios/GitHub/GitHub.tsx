@@ -1,6 +1,6 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import type {Repo} from "@chia/utils/types/repo";
-import {ReposList} from "@chia/components/pages/portfolios/GitHub/ReposList";
+import ReposList from "@chia/components/pages/portfolios/GitHub/ReposList";
 import {ReposLoader} from "@chia/components/pages/portfolios/GitHub/ReposLoader";
 import { Chia } from '@chia/utils/meta/chia';
 
@@ -13,7 +13,7 @@ interface Props {
     error?: string
 }
 
-export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
+const GitHub: FC<Props> = ({ repoData, loading, error }) => {
     const GITHUB_URL = Chia.link.github;
 
     return (
@@ -49,3 +49,5 @@ export const GitHub: FC<Props> = ({ repoData, loading, error }) => {
         </>
     )
 }
+
+export default memo(GitHub)
