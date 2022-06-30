@@ -1,15 +1,35 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // async redirects() {
-  //   return [
-  //     {
-  //       source: '/',
-  //       destination: '/home',
-  //       permanent: false,
-  //     },
-  //   ]
-  // },
+  async redirects() {
+    return [
+      {
+        source: '/portfolios',
+        destination: '/portfolio',
+        permanent: false
+      },
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: false
+      },
+      {
+        source: '/post',
+        destination: '/posts',
+        permanent: false
+      },
+      {
+        source: '/post/:id',
+        destination: '/posts/:id',
+        permanent: false
+      },
+      {
+        source: '/login',
+        destination: '/',
+        permanent: false
+      }
+    ]
+  },
   experimental: {
     output: 'standalone',
     runtime: 'experimental-edge'
