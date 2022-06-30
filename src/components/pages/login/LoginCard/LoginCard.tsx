@@ -1,27 +1,41 @@
 import { FC, useState, useEffect, useId, FormEvent, useRef } from 'react';
 import { login } from '@chia/lib/firebase/auth/services';
 import {useSnackbar} from "notistack";
+import { z } from 'zod';
+import { useRouter } from 'next/router'
 
 const LoginCard: FC = () => {
-    const id = useId();
-    const emailRef = useRef<HTMLInputElement>(null);
-    const passwordRef = useRef<HTMLInputElement>(null);
     const localState = {
         errors: {},
         succeeded: false,
         loading: false,
     }
+    const loginSchema = z.object({
+        email: z.string().email(),
+        password: z.string().min(6).max(20),
+    })
+
+    const id = useId();
+    const emailRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
     const [state, setState] = useState(localState);
     const { enqueueSnackbar } = useSnackbar();
+    const router = useRouter()
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setState({ ...state, loading: true });
         const email = emailRef.current?.value;
         const password = passwordRef.current?.value;
+        const isValid = loginSchema.safeParse({ email, password });
         if (!email || !password) {
             setState({ ...state, errors: { message: 'Email and password are required' }, loading: false });
             enqueueSnackbar('Email and password are required', { variant: 'error' });
+            return;
+        }
+        if (!isValid.success) {
+            setState({ ...state, errors: { message: 'Invalid email or password' }, loading: false });
+            enqueueSnackbar('Invalid email or password', { variant: 'error' });
             return;
         }
         try {
@@ -33,6 +47,7 @@ const LoginCard: FC = () => {
             }
             setState({ ...state, succeeded: true, loading: false });
             enqueueSnackbar('Login successful', { variant: 'success' });
+            if (state.succeeded) await router.push('/');
         } catch (e) {
             setState({ ...state, errors: { message: e }, loading: false });
             enqueueSnackbar('Login failed', { variant: 'error' });
