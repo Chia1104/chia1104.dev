@@ -6,7 +6,9 @@ import { useRouter } from 'next/router'
 
 const LoginCard: FC = () => {
     const localState = {
-        errors: {},
+        errors: {
+            message: '',
+        },
         succeeded: false,
         loading: false,
     }
@@ -30,27 +32,27 @@ const LoginCard: FC = () => {
         const isValid = loginSchema.safeParse({ email, password });
         if (!email || !password) {
             setState({ ...state, errors: { message: 'Email and password are required' }, loading: false });
-            enqueueSnackbar('Email and password are required', { variant: 'error' });
+            enqueueSnackbar(state.errors.message, { variant: 'error' });
             return;
         }
         if (!isValid.success) {
             setState({ ...state, errors: { message: 'Invalid email or password' }, loading: false });
-            enqueueSnackbar('Invalid email or password', { variant: 'error' });
+            enqueueSnackbar(state.errors.message, { variant: 'error' });
             return;
         }
         try {
             const user = await login(email, password);
             if (!user) {
                 setState({ ...state, errors: { message: 'Invalid email or password' }, loading: false });
-                enqueueSnackbar('Invalid email or password', { variant: 'error' });
+                enqueueSnackbar(state.errors.message, { variant: 'error' });
                 return;
             }
             setState({ ...state, succeeded: true, loading: false });
-            enqueueSnackbar('Login successful', { variant: 'success' });
+            enqueueSnackbar(state.errors.message, { variant: 'success' });
             if (state.succeeded) await router.push('/');
         } catch (e) {
-            setState({ ...state, errors: { message: e }, loading: false });
-            enqueueSnackbar('Login failed', { variant: 'error' });
+            setState({ ...state, errors: { message: 'Login failed' }, loading: false });
+            enqueueSnackbar(state.errors.message, { variant: 'error' });
         }
     }
 
