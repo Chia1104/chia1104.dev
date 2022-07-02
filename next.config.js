@@ -25,18 +25,8 @@ const securityHeaders = [
 const nextConfig = {
   swcMinify: true,
   reactStrictMode: true,
-  // async redirects() {
-  //   return [
-  //     {
-  //       source: '/',
-  //       destination: '/home',
-  //       permanent: false,
-  //     },
-  //   ]
-  // },
   experimental: {
     output: 'standalone',
-    runtime: 'experimental-edge',
     swcPlugins: [
       // ['plugin', {
       //   [require.resolve('css-variable/swc'), {
