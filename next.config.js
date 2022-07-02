@@ -33,11 +33,6 @@ const nextConfig = {
         permanent: false
       },
       {
-        source: '/dashboard',
-        destination: '/',
-        permanent: false
-      },
-      {
         source: '/post',
         destination: '/posts',
         permanent: false
@@ -46,11 +41,6 @@ const nextConfig = {
         source: '/post/:id',
         destination: '/posts/:id',
         permanent: false
-      },
-      {
-        source: '/login',
-        destination: '/',
-        permanent: false
       }
     ]
   },
@@ -58,12 +48,7 @@ const nextConfig = {
     output: 'standalone',
     runtime: 'experimental-edge',
     swcPlugins: [
-      // ['plugin', {
-      //   [require.resolve('css-variable/swc'), {
-      //     displayName: true,
-      //     basePath: __dirname
-      //   }]
-      // }]
+
     ]
   },
   compiler: {
