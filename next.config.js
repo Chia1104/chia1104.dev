@@ -46,7 +46,6 @@ const nextConfig = {
   },
   experimental: {
     output: 'standalone',
-    runtime: 'experimental-edge',
     swcPlugins: [
 
     ]
