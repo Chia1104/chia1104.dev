@@ -13,14 +13,14 @@ const NavMenu: FC = () => {
         <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-50 border-b-[1px] c-border-primary c-bg-secondary">
             <div className="flex container w-[100%]">
                 <div className="flex items-center w-[70%] justify-start">
-                    <NextLink href="/" passHref>
+                    <NextLink href="/" passHref scroll >
                         <a className="subtitle ml-3 hover:c-text-green-to-purple transition ease-in-out">
                             Chia1104
                         </a>
                     </NextLink>
                 </div>
                 <div className="flex items-center w-[30%] justify-end mr-3">
-                    <NextLink href="/about/" passHref>
+                    <NextLink href="/about/" passHref scroll >
                         <a className={cx('flex c-link mr-4 py-3', router.asPath.includes('about') && 'c-link-active')}>
                             <AccountCircleOutlinedIcon
                                 fontSize={'medium'}
@@ -32,7 +32,7 @@ const NavMenu: FC = () => {
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="/posts/" passHref>
+                    <NextLink href="/posts/" passHref scroll >
                         <a className={cx('flex c-link mr-4 py-3', router.asPath.includes('posts') && 'c-link-active')}>
                             <ArticleOutlinedIcon
                                 fontSize={'medium'}
@@ -44,7 +44,7 @@ const NavMenu: FC = () => {
                             </h2>
                         </a>
                     </NextLink>
-                    <NextLink href="/portfolio/" passHref>
+                    <NextLink href="/portfolio/" passHref scroll >
                         <a className={cx('flex c-link mr-4 py-3', router.asPath.includes('portfolio') && 'c-link-active')}>
                             <WorkspacesOutlinedIcon
                                 fontSize={'medium'}
