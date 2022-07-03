@@ -25,16 +25,13 @@ const securityHeaders = [
 const nextConfig = {
   swcMinify: true,
   reactStrictMode: true,
+  output: 'standalone',
   experimental: {
-    output: 'standalone',
-    swcPlugins: [
-      // ['plugin', {
-      //   [require.resolve('css-variable/swc'), {
-      //     displayName: true,
-      //     basePath: __dirname
-      //   }]
-      // }]
-    ]
+    // swcPlugins: [
+    //   ['plugin', {
+    //
+    //   }]
+    // ]
   },
   compiler: {
     removeConsole: true
