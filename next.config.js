@@ -25,6 +25,14 @@ const securityHeaders = [
 const nextConfig = {
   swcMinify: true,
   reactStrictMode: true,
+  output: 'standalone',
+  experimental: {
+    // swcPlugins: [
+    //   ['plugin', {
+    //
+    //   }]
+    // ]
+  },
   async redirects() {
     return [
       {
@@ -42,12 +50,6 @@ const nextConfig = {
         destination: '/posts/:id',
         permanent: false
       }
-    ]
-  },
-  experimental: {
-    output: 'standalone',
-    swcPlugins: [
-
     ]
   },
   compiler: {
