@@ -21,6 +21,7 @@
     "classnames": "^2.3.1",
     "dayjs": "^1.11.2",
     "firebase": "^9.7.0",
+    "firebase-admin": "^11.0.0",
     "framer-motion": "^6.3.2",
     "gray-matter": "^4.0.3",
     "next": "^12.2.0",

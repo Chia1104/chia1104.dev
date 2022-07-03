@@ -1,6 +1,6 @@
 import { dataToJSON } from "../repositories";
 import {query, where, orderBy, collectionGroup, limit, getDocs, doc, getDoc} from 'firebase/firestore';
-import { firestore } from '../../config';
+import { firestore } from '../../firebase.config';
 import type { PostFrontMatter, PostSource } from "@chia/utils/types/post";
 import readingTime from "reading-time";
 import { serialize } from "next-mdx-remote/serialize";
