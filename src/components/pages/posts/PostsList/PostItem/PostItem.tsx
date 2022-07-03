@@ -3,7 +3,7 @@ import type { PostFrontMatter } from '@chia/utils/types/post';
 import dayjs from "dayjs";
 import Image from '@chia/components/globals/Image';
 import cx from 'classnames';
-import Link from "next/link";
+import Link from "@chia/components/globals/Link"
 
 interface Props {
     data: PostFrontMatter;
@@ -38,7 +38,6 @@ export const PostItem: FC<Props> = ({ data, i }) => {
                     pathname: "/posts/[slug]/",
                     query: { slug: data.slug },
                 }}
-                passHref
             >
                 <a className="absolute top-0 bottom-0 right-0 left-0" />
             </Link>
