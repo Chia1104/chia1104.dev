@@ -26,6 +26,7 @@ const nextConfig = {
   swcMinify: true,
   reactStrictMode: true,
   output: 'standalone',
+  productionBrowserSourceMaps: true,
   experimental: {
     // swcPlugins: [
     //   ['plugin', {
