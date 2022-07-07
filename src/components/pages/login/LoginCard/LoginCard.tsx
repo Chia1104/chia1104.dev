@@ -1,5 +1,5 @@
 import { FC, useState, useEffect, useId, FormEvent, useRef } from 'react';
-import { login } from '@chia/lib/firebase/auth/services';
+import { login } from '@chia/lib/firebase/client/auth/services';
 import {useSnackbar} from "notistack";
 import { z } from 'zod';
 import { useRouter } from 'next/router'
@@ -48,8 +48,8 @@ const LoginCard: FC = () => {
                 return;
             }
             setState({ ...state, succeeded: true, loading: false });
-            enqueueSnackbar(state.errors.message, { variant: 'success' });
-            if (state.succeeded) await router.push('/');
+            enqueueSnackbar('Welcome Chia1104 | 俞又嘉', { variant: 'success' });
+            if (state.succeeded) await router.push('/dashboard');
         } catch (e) {
             setState({ ...state, errors: { message: 'Login failed' }, loading: false });
             enqueueSnackbar(state.errors.message, { variant: 'error' });
@@ -57,26 +57,26 @@ const LoginCard: FC = () => {
     }
 
     return (
-        <main className="rounded-xl shadow-xl flex flex-col justify-center items-center c-bg-secondary">
-            <h1 className="title">Login</h1>
-            <form onSubmit={(e) => handleSubmit(e)}>
-                <div className="">
-                    <label className="">Email</label>
-                    <div className="">
-                        <input className="" type="email" placeholder="Email" ref={emailRef}/>
-                    </div>
+        <main className="rounded-xl shadow-xl flex flex-col justify-center items-center c-bg-secondary w-full max-w-[900px] min-h-[500px] px-10">
+            <h1 className="title mb-10 self-start">Login</h1>
+            <form
+                className="flex flex-col justify-center items-center w-full max-w-[400px]"
+                onSubmit={(e) => handleSubmit(e)}>
+                <div className="w-full mb-5">
+                    <p className="subtitle mb-5">Email</p>
+                    <input className="w-full rounded-lg p-2" type="email" placeholder="Email" ref={emailRef} required/>
                 </div>
-                <div className="">
-                    <label className="">Password</label>
-                    <div className="">
-                        <input className="" type="password" placeholder="Password" ref={passwordRef}/>
-                    </div>
+                <div className="w-full mb-5">
+                    <p className="subtitle mb-5">Password</p>
+                    <input className="w-full rounded-lg p-2" type="password" placeholder="Password" ref={passwordRef} required/>
                 </div>
-                <div className="">
-                    <div className="">
-                        <button className="" type="submit">Login</button>
-                    </div>
-                </div>
+                <button
+                    type="submit"
+                    className="group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded self-center">
+                    <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base">
+                       Login
+                    </span>
+                </button>
             </form>
         </main>
     );

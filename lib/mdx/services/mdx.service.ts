@@ -55,7 +55,7 @@ export const getPost = async (slug: string): Promise<PostSource> => {
     // https://github.com/hashicorp/next-mdx-remote/pull/211#issuecomment-1013658514
     // ...so for now, let's do it manually (and conservatively) with uglify-js when building for production.
     const compiledSource =
-        process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+        process.env.NODE_ENV === "production"
             ? minify(source.compiledSource, {
                 toplevel: true,
                 parse: {

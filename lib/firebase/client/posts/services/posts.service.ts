@@ -1,6 +1,6 @@
 import { dataToJSON } from "../repositories";
-import {query, where, orderBy, collectionGroup, limit, getDocs, doc, getDoc} from 'firebase/firestore';
-import { firestore } from '../../firebase.config';
+import {query, orderBy, limit, getDocs, collection, getDoc, doc, where} from 'firebase/firestore';
+import { firestore } from '../../../firebase.config';
 import type { PostFrontMatter, PostSource } from "@chia/utils/types/post";
 import readingTime from "reading-time";
 import { serialize } from "next-mdx-remote/serialize";
@@ -13,7 +13,7 @@ import rehypeCodeTitles from 'rehype-code-titles'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 
 export const queryPosts = async (Limit: number): Promise<Promise<JSON>[]> => {
-    const ref = await collectionGroup(firestore, 'posts');
+    const ref = await collection(firestore, 'posts');
     const postsQuery = query(
         ref,
         where('published', '==', true),
@@ -23,20 +23,13 @@ export const queryPosts = async (Limit: number): Promise<Promise<JSON>[]> => {
     return(await getDocs(postsQuery)).docs.map(dataToJSON);
 }
 
-export const getPostDataFire = async (slug: string): Promise<{
+export const getPostDataFire = async (id: string, slug?: string): Promise<{
     content: string;
     frontMatter: PostFrontMatter;
 }> => {
-    // const ref = await doc(firestore, 'posts', 'slug', slug);
-    // const j = dataToJSON(await getDoc(ref));
-    const ref = await collectionGroup(firestore, 'posts');
-    const postQuery = query(
-        ref,
-        where('published', '==', true),
-        where('slug', '==', slug),
-        limit(1),
-    )
-    const j = (await getDocs(postQuery)).docs.map(dataToJSON)[0];
+    const ref = doc(firestore, `products/${id}`);
+
+    const j = dataToJSON(await getDoc(ref));
 
     return {
         // content: (j.content).replaceAll('\\n', '\n'),
@@ -48,8 +41,8 @@ export const getPostDataFire = async (slug: string): Promise<{
     }
 }
 
-export const getPostFire = async (slug: string): Promise<PostSource> => {
-    const { frontMatter, content } = await getPostDataFire(slug);
+export const getPostFire = async (id: string, slug?: string): Promise<PostSource> => {
+    const { frontMatter, content } = await getPostDataFire(id);
 
     const s = await serialize(content, {
         parseFrontmatter: false,
@@ -71,7 +64,7 @@ export const getPostFire = async (slug: string): Promise<PostSource> => {
         },
     });
     const compiledSource =
-        process.env.NEXT_PUBLIC_VERCEL_ENV === "production"
+        process.env.NODE_ENV === "production"
             ? minify(s.compiledSource, {
                 toplevel: true,
                 parse: {
@@ -89,7 +82,7 @@ export const getPostFire = async (slug: string): Promise<PostSource> => {
 }
 
 export const getPostsPath = async (): Promise<string[]> => {
-    const ref = await collectionGroup(firestore, 'posts');
+    const ref = await collection(firestore, 'posts');
     const postsQuery = query(
         ref,
         where('published', '==', true),
