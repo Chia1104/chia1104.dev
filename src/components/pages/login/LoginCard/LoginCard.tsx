@@ -26,6 +26,7 @@ const LoginCard: FC = () => {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        // console.log(new FormData(e.currentTarget))
         setState({ ...state, loading: true });
         const email = emailRef.current?.value;
         const password = passwordRef.current?.value;
@@ -49,7 +50,7 @@ const LoginCard: FC = () => {
             }
             setState({ ...state, succeeded: true, loading: false });
             enqueueSnackbar('Welcome Chia1104 | 俞又嘉', { variant: 'success' });
-            if (state.succeeded) await router.push('/dashboard');
+            await router.push('/dashboard');
         } catch (e) {
             setState({ ...state, errors: { message: 'Login failed' }, loading: false });
             enqueueSnackbar(state.errors.message, { variant: 'error' });
