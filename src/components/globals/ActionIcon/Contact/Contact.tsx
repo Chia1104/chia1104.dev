@@ -8,6 +8,7 @@ import {useAppSelector} from "@chia/src/hooks/useAppSelector";
 import Script from "next/script";
 import cx from "classnames";
 import {useSnackbar, VariantType} from "notistack";
+import { useTheme } from 'next-themes'
 
 const outside = {
     open: { opacity: 1, height: '550px', width: '330px' },
@@ -29,6 +30,8 @@ const Contact: FC = () => {
     const handleSubmitToast = (msg: string, variant: VariantType) => () => {
         enqueueSnackbar(msg, { variant });
     };
+
+    const { theme, setTheme } = useTheme()
 
     useMemo(() => {
         if (state.succeeded) handleSubmitToast("We have received your message", "success")();
@@ -108,6 +111,7 @@ const Contact: FC = () => {
                         defer
                     />
                     <div
+                        data-theme={theme === 'dark' ? 'dark' : 'light'}
                         className={cx('g-recaptcha self-center my-3', {hidden: !actionIconSheet})}
                         data-sitekey={RE_CAPTCHA_KEY} />
                     <ValidationError errors={state.errors} className="text-warning mt-2"/>
