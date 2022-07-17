@@ -1,4 +1,8 @@
 # Chia1104 Web Developer
+[![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chias-web-nextjs/production?style=for-the-badge&logo=appveyor)](https://vercel.com/deployments/chia1104)
+[![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chias-web-nextjs/next/main?style=for-the-badge&logo=appveyor)](https://nextjs.org/)
+[![Licensed under MIT](https://img.shields.io/github/license/chia1104/chias-web-nextjs?style=for-the-badge&logo=appveyor)](LICENSE)
+[![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chias-web-nextjs?style=for-the-badge&logo=appveyor)](https://github.com/chia1104/chias-web-nextjs)
 
 This is my personal website.
 
@@ -54,20 +58,20 @@ Runs the app in the development mode.
 Open http://localhost:3000 to view it in your browser.
 
 ```bash
-$ yarn
-$ yarn dev
+$ pnpm install
+$ pnpm dev
 ```
 
 Testing the app.
 
 ```bash
-$ yarn test:vitest # <-- test with vitest
+$ pnpm test:vitest # <-- test with vitest
 ```
 
 Builds the app for production to the `.next` folder.
 
 ```bash
-$ yarn build
+$ pnpm build
 ```
 
 Build the docker image
