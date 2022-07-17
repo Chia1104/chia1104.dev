@@ -1,4 +1,4 @@
 import { useDispatch } from 'react-redux'
-import {AppDispatch} from "@chia/src/store";
+import {type AppDispatch} from "@chia/store";
 
 export const useAppDispatch = () => useDispatch<AppDispatch>()

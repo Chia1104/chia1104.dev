@@ -1,4 +1,4 @@
-import {TypedUseSelectorHook, useSelector} from "react-redux";
-import {AppState} from "@chia/src/store";
+import {type TypedUseSelectorHook, useSelector} from "react-redux";
+import {AppState} from "@chia/store";
 
 export const useAppSelector: TypedUseSelectorHook<AppState> = useSelector
