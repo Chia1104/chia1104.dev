@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { githubInitState } from "@chia/store/modules/Github/state";
 import { githubReducer } from "@chia/store/modules/Github/reducers";
 import { type AppState } from "@chia/store";
-import { getAllReposAsync } from "@chia/store/modules/Github/actions";
+import { getAllReposAsync, getAllReposApi } from "@chia/store/modules/Github/actions";
 
 const githubSlice = createSlice({
     name: 'github',
@@ -18,6 +18,17 @@ const githubSlice = createSlice({
                 state.allRepos.loading = 'succeeded'
             })
             .addCase(getAllReposAsync.rejected, (state, action) => {
+                state.allRepos.error = action.error
+                state.allRepos.loading = 'failed'
+            })
+            .addMatcher(getAllReposApi.endpoints.getAllRepos.matchPending, (state) => {
+                state.allRepos.loading = 'pending'
+            })
+            .addMatcher(getAllReposApi.endpoints.getAllRepos.matchFulfilled, (state, action) => {
+                state.allRepos.data = action.payload
+                state.allRepos.loading = 'succeeded'
+            })
+            .addMatcher(getAllReposApi.endpoints.getAllRepos.matchRejected, (state, action) => {
                 state.allRepos.error = action.error
                 state.allRepos.loading = 'failed'
             })

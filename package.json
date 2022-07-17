@@ -30,6 +30,8 @@
     "firebase": "^9.7.0",
     "firebase-admin": "^11.0.0",
     "framer-motion": "^6.3.2",
+    "graphql": "^16.5.0",
+    "graphql-request": "^4.3.0",
     "gray-matter": "^4.0.3",
     "next": "^12.2.0",
     "next-mdx-remote": "^4.0.3",
