@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useId, FormEvent, useRef } from 'react';
+import { type FC, useState, useId, type FormEvent, useRef } from 'react';
 import { login } from '@chia/lib/firebase/client/auth/services';
 import {useSnackbar} from "notistack";
 import { z } from 'zod';
@@ -26,7 +26,6 @@ const LoginCard: FC = () => {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // console.log(new FormData(e.currentTarget))
         setState({ ...state, loading: true });
         const email = emailRef.current?.value;
         const password = passwordRef.current?.value;

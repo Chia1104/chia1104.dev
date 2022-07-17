@@ -1,5 +1,5 @@
 import { Divider, Chip } from '@mui/material';
-import {FC} from 'react';
+import {type FC} from 'react';
 
 interface Props {
     text: string

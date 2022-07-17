@@ -1,5 +1,5 @@
 import { storage } from "../../../firebase.config";
-import {ref, getDownloadURL, listAll, list} from "firebase/storage";
+import {ref, getDownloadURL, list} from "firebase/storage";
 
 export const getImage = async (imageUrl: string): Promise<string> => {
     try {

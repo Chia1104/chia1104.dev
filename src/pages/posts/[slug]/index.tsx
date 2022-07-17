@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
-import React from 'react'
 import Image from '@chia/components/globals/Image';
-import { MDXRemote, MDXRemoteProps } from 'next-mdx-remote'
+import { MDXRemote, type MDXRemoteProps } from 'next-mdx-remote'
 import {getPost, getAllPosts} from '@chia/lib/mdx/services'
 import { Layout } from "@chia/components/globals/Layout";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";

@@ -1,4 +1,4 @@
-import {PostFrontMatter} from "@chia/utils/types/post";
+import {type PostFrontMatter} from "@chia/utils/types/post";
 import path from "path";
 import fs from "fs/promises";
 import matter from "gray-matter";

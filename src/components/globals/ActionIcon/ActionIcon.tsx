@@ -1,13 +1,8 @@
-import GitHubIcon from '@mui/icons-material/GitHub';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import Brightness4OutlinedIcon from '@mui/icons-material/Brightness4Outlined';
-import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
-import Brightness5OutlinedIcon from '@mui/icons-material/Brightness5Outlined';
+import { SiGithub, SiInstagram, SiLinkedin } from 'react-icons/si';
 import { useTheme } from 'next-themes'
-import { FC, useState, useEffect, memo } from "react";
+import { type FC, useState, useEffect, memo } from "react";
 import Contact from "@chia/components/globals/ActionIcon/Contact";
-import { useAppDispatch } from "@chia/src/hooks/useAppDispatch";
+import { useAppDispatch } from "@chia/hooks/useAppDispatch";
 import {activeActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { Chia } from '@chia/utils/meta/chia';
 
@@ -32,9 +27,9 @@ const ActionIcon: FC = () => {
                 onClick={() => dispatch(activeActionIconSheet())}
                 className="hover:text-secondary transition ease-in-out"
             >
-                <KeyboardArrowUpOutlinedIcon
-                    fontSize="small"
-                />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                </svg>
             </button>
             <div className="flex">
                 <button
@@ -47,14 +42,12 @@ const ActionIcon: FC = () => {
                         <>
                             {
                                 theme === 'dark'
-                                    ? <Brightness4OutlinedIcon
-                                        fontSize="medium"
-                                        aria-label={"Dark"}
-                                    />
-                                    : <Brightness5OutlinedIcon
-                                        fontSize="medium"
-                                        aria-label={"Light"}
-                                    />
+                                    ? <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                    </svg>
+                                    : <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
                             }
                         </>
                     }
@@ -67,10 +60,8 @@ const ActionIcon: FC = () => {
                     aria-label={"Open GitHub"}
                     className="hover:text-secondary transition ease-in-out mx-3"
                 >
-                    <GitHubIcon
-                        fontSize="medium"
-                        aria-label={"Open GitHub"}
-                    />
+                    <SiGithub
+                        className="h-5 w-5"/>
                 </a>
                 <a
                     href={INSTAGRAM}
@@ -79,10 +70,8 @@ const ActionIcon: FC = () => {
                     aria-label={"Open Instagram"}
                     className="hover:text-secondary transition ease-in-out mr-3"
                 >
-                    <InstagramIcon
-                        fontSize="medium"
-                        aria-label={"Open Instagram"}
-                    />
+                    <SiInstagram
+                        className="h-5 w-5"/>
                 </a>
                 <a
                     href={LINKEDIN}
@@ -91,10 +80,8 @@ const ActionIcon: FC = () => {
                     aria-label={"Open LinkedIn"}
                     className="hover:text-secondary transition ease-in-out"
                 >
-                    <LinkedInIcon
-                        fontSize="medium"
-                        aria-label={"Open LinkedIn"}
-                    />
+                    <SiLinkedin
+                        className="h-5 w-5"/>
                 </a>
             </div>
         </div>

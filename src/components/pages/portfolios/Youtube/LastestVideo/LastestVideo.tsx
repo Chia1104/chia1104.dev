@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { type FC } from 'react';
 import type {YoutubeItem} from "@chia/utils/types/youtube";
 
 interface Props {

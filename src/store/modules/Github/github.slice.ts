@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { githubInitState } from "@chia/store/modules/Github/state";
 import { githubReducer } from "@chia/store/modules/Github/reducers";
-import { AppState } from "@chia/src/store";
+import { type AppState } from "@chia/store";
 import { getAllReposAsync } from "@chia/store/modules/Github/actions";
 
 const githubSlice = createSlice({

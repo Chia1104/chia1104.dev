@@ -1,7 +1,14 @@
 {
-  "name": "chias-web-nextjs",
-  "version": "0.1.0",
+  "name": "chia1104.dev",
+  "version": "1.0.0",
   "private": true,
+  "sideEffects": false,
+  "license": "MIT",
+  "author": {
+    "name": "Chia1104",
+    "email": "yuyuchia7423@gmail.com",
+    "url": "https://github.com/chia1104"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,10 +22,10 @@
     "@emotion/styled": "^11.8.1",
     "@formspree/react": "^2.2.5",
     "@giscus/react": "^2.0.3",
-    "@mui/icons-material": "^5.6.2",
     "@mui/material": "^5.6.3",
     "@reduxjs/toolkit": "^1.8.1",
     "classnames": "^2.3.1",
+    "core-js": "^3.23.4",
     "dayjs": "^1.11.2",
     "firebase": "^9.7.0",
     "firebase-admin": "^11.0.0",
@@ -46,6 +53,8 @@
     "zod": "^3.17.3"
   },
   "devDependencies": {
+    "@babel/core": "^7.18.6",
+    "@firebase/app-types": "^0.7.0",
     "@redux-devtools/extension": "^3.2.2",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.4.0",
@@ -61,8 +70,13 @@
     "jsdom": "^19.0.0",
     "next-sitemap": "^2.5.20",
     "postcss": "^8.4.12",
+    "redux": "^4.2.0",
     "tailwindcss": "^3.0.24",
     "typescript": "4.6.3",
     "vitest": "^0.14.2"
-  }
+  },
+  "engines": {
+    "node": ">=16.x"
+  },
+  "packageManager": "pnpm@7.5.1"
 }

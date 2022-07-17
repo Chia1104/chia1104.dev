@@ -1,6 +1,6 @@
-import { FC, ReactNode, memo } from "react";
+import { type FC, type ReactNode, memo } from "react";
 import {AnimatePresence, motion} from "framer-motion";
-import useLockedBody from "@chia/src/hooks/useLockedBody";
+import useLockedBody from "@chia/hooks/useLockedBody";
 
 interface Props {
     showed: boolean;

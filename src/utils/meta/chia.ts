@@ -3,7 +3,6 @@ import {
     SiJavascript,
     SiTypescript,
     SiNextdotjs,
-    SiPython,
     SiJava,
     SiPhp,
     SiMysql,
@@ -23,7 +22,6 @@ import {
     SiAdobepremierepro,
     SiReact,
     SiAdobeindesign,
-    SiSpringboot
 } from 'react-icons/si'
 
 export const Chia = {
@@ -66,13 +64,7 @@ export const Chia = {
                 level: 'Advanced',
                 link: 'https://www.php.net/',
                 icon: SiPhp,
-            },
-            {
-                name: 'Python',
-                level: 'Basic',
-                link: 'https://www.python.org/',
-                icon: SiPython,
-            },
+            }
         ],
         web_frameworks: [
             {
@@ -111,12 +103,6 @@ export const Chia = {
                 link: 'https://nestjs.com/',
                 icon: SiNestjs,
             },
-            // {
-            //     name: 'Spring Boot',
-            //     level: 'Basic',
-            //     link: 'https://spring.io/',
-            //     icon: SiSpringboot,
-            // }
         ],
         devops: [
             {

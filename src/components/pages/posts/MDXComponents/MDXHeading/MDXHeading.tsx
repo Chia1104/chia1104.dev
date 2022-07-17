@@ -1,4 +1,4 @@
-import {DetailedHTMLProps, HTMLAttributes, useRef, useEffect, useState} from 'react';
+import {type DetailedHTMLProps, type HTMLAttributes, useRef, useEffect, useState} from 'react';
 
 export const H1 = (props: DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>) => {
     const r = useRef<HTMLHeadingElement>(null);

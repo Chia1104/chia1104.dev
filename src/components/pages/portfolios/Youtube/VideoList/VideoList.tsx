@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { type FC } from 'react';
 import type {YoutubeItem} from "@chia/utils/types/youtube";
 import {LastestVideo} from "@chia/components/pages/portfolios/Youtube/LastestVideo";
 import dayjs from "dayjs";

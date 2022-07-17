@@ -1,4 +1,4 @@
-import { FC, memo } from 'react';
+import { type FC, memo } from 'react';
 import {VideoList} from "@chia/components/pages/portfolios/Youtube/VideoList";
 import type {Youtube as y} from "@chia/utils/types/youtube";
 import {VideoLoader} from "@chia/components/pages/portfolios/Youtube/VideoLoader";

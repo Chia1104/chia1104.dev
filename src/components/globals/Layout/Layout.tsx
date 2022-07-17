@@ -1,4 +1,4 @@
-import { FC, ReactNode } from 'react';
+import { type FC, type ReactNode } from 'react';
 import { Head } from "./Head";
 import { motion } from 'framer-motion'
 

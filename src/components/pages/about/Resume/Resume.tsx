@@ -1,9 +1,9 @@
-import { FC } from 'react'
+import { type FC } from 'react'
 import Image from '@chia/components/globals/Image';
 import { Chia } from "@chia/utils/meta/chia"
 import {Experience} from "@chia/components/pages/about/Resume/Experience";
 import {LanAndTools} from "@chia/components/pages/about/Resume/LanAndTools";
-import {useAppDispatch} from "@chia/src/hooks/useAppDispatch";
+import {useAppDispatch} from "@chia/hooks/useAppDispatch";
 import {activeActionIconSheet} from "@chia/store/modules/ActionSheet/actionSheet.slice";
 
 interface Props {

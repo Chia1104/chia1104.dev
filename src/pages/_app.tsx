@@ -9,14 +9,14 @@ import { Footer } from "@chia/components/globals/Footer";
 import { ThemeProvider } from 'next-themes'
 import { ErrorBoundary } from '@chia/components/globals/ErrorBoundary'
 import { Provider } from 'react-redux'
-import { store } from '@chia/src/store'
+import { store } from '@chia/store'
 import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/utils/config/nextProgress.config";
 import { SnackbarProvider } from 'notistack';
-// import { BASE_URL } from "@chia/utils/constants";
+import { BASE_URL } from "@chia/utils/constants";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
-    // const canonical = `${BASE_URL}${router.pathname === "/" ? "" : router.pathname}/`;
+    const canonical = `${BASE_URL}${router.pathname === "/" ? "" : router.pathname}/`;
 
     return (
         <ErrorBoundary>
@@ -28,7 +28,7 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
                 <Provider store={store}>
                     <SnackbarProvider maxSnack={3}>
                         <DefaultSeo
-                            // canonical={canonical}
+                            canonical={canonical}
                             {...SEO}
                         />
                         <NavMenu/>

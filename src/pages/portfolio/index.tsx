@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import {Layout} from "@chia/components/globals/Layout";
-import { useAppDispatch } from "@chia/src/hooks/useAppDispatch";
-import { useAppSelector } from "@chia/src/hooks/useAppSelector";
+import { useAppDispatch } from "@chia/hooks/useAppDispatch";
+import { useAppSelector } from "@chia/hooks/useAppSelector";
 import { useEffect } from "react";
 import {selectAllRepos, selectAllReposLoading, selectAllReposError} from "@chia/store/modules/Github/github.slice";
 import {getAllReposAsync} from "@chia/store/modules/Github/actions";

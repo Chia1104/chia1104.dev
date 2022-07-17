@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import {Layout} from "@chia/components/globals/Layout";
-import { Chia } from"@chia/utils/meta/chia"
+import { Chia } from "@chia/utils/meta/chia"
 
 const DashboardPage: NextPage = () => {
     const name = Chia.name;

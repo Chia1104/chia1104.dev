@@ -1,9 +1,9 @@
-import {ReactNode, FC, useRef, useEffect, useState} from "react";
+import {type ReactNode, type FC, useRef, useEffect, useState} from "react";
 import cx from "classnames";
-import useIsMounted from "@chia/src/hooks/useIsMounted";
-import useCopyToClipboard from "@chia/src/hooks/useCopyToClipboard";
+import useIsMounted from "@chia/hooks/useIsMounted";
+import useCopyToClipboard from "@chia/hooks/useCopyToClipboard";
 import {useSnackbar} from "notistack";
-import useHover from "@chia/src/hooks/useHover";
+import useHover from "@chia/hooks/useHover";
 import {motion} from "framer-motion";
 
 interface Props {

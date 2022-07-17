@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { type FC } from "react";
 import {LATList} from "@chia/components/pages/about/Resume/LanAndTools/LATList";
 import { Chia } from "@chia/utils/meta/chia";
 

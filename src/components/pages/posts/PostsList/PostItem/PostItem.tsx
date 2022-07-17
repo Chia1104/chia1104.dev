@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { type FC } from 'react';
 import type { PostFrontMatter } from '@chia/utils/types/post';
 import dayjs from "dayjs";
 import Image from '@chia/components/globals/Image';

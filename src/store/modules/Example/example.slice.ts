@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { exampleInitState } from "./state";
 import { exampleReducer } from "./reducers";
-import {AppState} from "@chia/src/store";
+import {type AppState} from "@chia/store";
 import {getExampleDataAsync} from "@chia/store/modules/Example/actions";
 
 const exampleSlice = createSlice({

@@ -1,6 +1,6 @@
-import { FC, ReactNode, RefObject, memo } from "react";
+import { type FC, ReactNode, RefObject, memo } from "react";
 import {motion} from "framer-motion";
-import useHover from "@chia/src/hooks/useHover";
+import useHover from "@chia/hooks/useHover";
 
 interface Props {
     onClick?: () => void;

@@ -1,5 +1,5 @@
-import { FC, useRef, useState, memo } from "react";
-import useHover from "@chia/src/hooks/useHover";
+import { type FC, useRef, useState, memo } from "react";
+import useHover from "@chia/hooks/useHover";
 import Image from '@chia/components/globals/Image';
 import cx from "classnames";
 import Modal from "@chia/components/globals/Modal";
@@ -25,17 +25,14 @@ const DMPoster: FC<Props> = ({ url }) => {
                 loading="lazy"
                 objectFit="cover"
                 layout="fill"
-                quality={100}
-            />
+                quality={100}/>
             <HoverButton
                 onClick={() => setIsShow(!isShow)}
-                reftarget={r}
-            />
+                reftarget={r}/>
             <Modal
                 showed={isShow}
                 onClick={handleClose}
-                className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl"
-            >
+                className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
                 <div className="w-full aspect-w-1 aspect-h-1">
                     <Image
                         src={url || '/posts/example-posts/example.jpg'}

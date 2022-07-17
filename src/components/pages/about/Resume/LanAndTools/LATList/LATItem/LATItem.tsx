@@ -1,6 +1,6 @@
-import React, { FC } from "react";
+import { type FC } from "react";
 import Link from "next/link";
-import { LAT } from "@chia/utils/types/lat";
+import { type LAT } from "@chia/utils/types/lat";
 
 interface Props {
     lat: LAT

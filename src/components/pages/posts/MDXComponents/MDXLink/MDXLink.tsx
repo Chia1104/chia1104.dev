@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import {FC, ReactNode} from 'react';
+import {type FC, type ReactNode} from 'react';
 
 interface Props {
     href: string;

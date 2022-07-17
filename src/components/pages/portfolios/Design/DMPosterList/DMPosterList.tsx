@@ -1,4 +1,4 @@
-import { FC, memo } from 'react';
+import { type FC, memo } from 'react';
 import DMPoster from "@chia/components/pages/portfolios/Design/DMPoster";
 
 interface Props {

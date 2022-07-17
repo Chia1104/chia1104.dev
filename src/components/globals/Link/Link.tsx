@@ -1,4 +1,4 @@
-import { FC, ReactNode, memo } from 'react';
+import { type FC, type ReactNode, memo } from 'react';
 import NextLink from 'next/link';
 import type { LinkProps as NextLinkProps } from 'next/link';
 

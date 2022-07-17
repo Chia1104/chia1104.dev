@@ -1,5 +1,5 @@
 import Image from '@chia/components/globals/Image';
-import { FC } from 'react';
+import { type FC } from 'react';
 import cx from 'classnames';
 
 interface Props {

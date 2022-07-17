@@ -1,5 +1,5 @@
-import React, { FC } from "react";
-import { LAT } from "@chia/utils/types/lat";
+import { type FC } from "react";
+import { type LAT } from "@chia/utils/types/lat";
 import {LATItem} from "@chia/components/pages/about/Resume/LanAndTools/LATList/LATItem";
 
 interface Props {

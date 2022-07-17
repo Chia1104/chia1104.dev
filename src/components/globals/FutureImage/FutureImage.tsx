@@ -1,4 +1,4 @@
-import {FC, memo} from "react";
+import {type FC, memo} from "react";
 import type { ImageProps as NextFutureImageProps} from "next/future/image";
 import NextFutureImage from "next/future/image";
 import { shimmer, toBase64 } from '@chia/lib/loader/shimmer';

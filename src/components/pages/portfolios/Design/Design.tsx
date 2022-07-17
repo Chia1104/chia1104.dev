@@ -1,4 +1,4 @@
-import { FC, memo } from "react";
+import { type FC, memo } from "react";
 import DMPosterList from "@chia/components/pages/portfolios/Design/DMPosterList";
 import { Chia } from '@chia/utils/meta/chia';
 

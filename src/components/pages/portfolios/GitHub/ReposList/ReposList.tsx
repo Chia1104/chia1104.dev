@@ -1,4 +1,4 @@
-import { FC, memo } from 'react';
+import { type FC, memo } from 'react';
 import RepoItem from "@chia/components/pages/portfolios/GitHub/ReposList/RepoItem";
 import type { Repo } from '@chia/utils/types/repo';
 

@@ -1,6 +1,6 @@
-import { FC } from 'react'
+import { type FC } from 'react'
 import Link from "@chia/components/globals/Link"
-import {UrlObject} from "url";
+import {type UrlObject} from "url";
 
 interface Props {
     title: string
