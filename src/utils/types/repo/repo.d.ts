@@ -14,3 +14,17 @@ export type Repo = {
     forks_count: number;
     topics: Array<string>;
 }
+
+export type RepoGql = {
+    id: number;
+    name: string;
+    url: string;
+    description: string;
+    pushedAt: string;
+    stargazerCount: number;
+    forkCount: number;
+    primaryLanguage: {
+        name: string;
+        color: string;
+    }
+}

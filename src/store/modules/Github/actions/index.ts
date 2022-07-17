@@ -42,7 +42,7 @@ export const getAllReposApi = createApi({
                     },
                 }
             }),
-            transformResponse: (response) => response.edges.node,
+            transformResponse: (response) => response.edges,
         }),
     }),
 })

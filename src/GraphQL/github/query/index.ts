@@ -13,6 +13,7 @@ export const GET_REPOS = gql`
             ) {
                 edges {
                     node {
+                        id
                         name
                         url
                         description
