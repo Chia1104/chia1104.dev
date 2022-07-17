@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { youtubeInitState } from "@chia/store/modules/Youtube/state";
 import { youtubeReducer } from "@chia/store/modules/Youtube/reducers";
-import { AppState } from "@chia/src/store";
+import { AppState } from "@chia/store";
 import { getAllVideosAsync } from "@chia/store/modules/Youtube/actions";
 
 const youtubeSlice = createSlice({
