@@ -16,15 +16,17 @@ export type Repo = {
 }
 
 export type RepoGql = {
-    id: number;
-    name: string;
-    url: string;
-    description: string;
-    pushedAt: string;
-    stargazerCount: number;
-    forkCount: number;
-    primaryLanguage: {
+    node: {
+        id: number;
         name: string;
-        color: string;
+        url: string;
+        description: string;
+        pushedAt: string;
+        stargazerCount: number;
+        forkCount: number;
+        primaryLanguage: {
+            name: string;
+            color: string;
+        }
     }
 }

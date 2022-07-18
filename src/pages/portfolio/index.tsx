@@ -5,7 +5,6 @@ import { useAppSelector } from "@chia/hooks/useAppSelector";
 import { useEffect } from "react";
 import {selectAllRepos, selectAllReposLoading, selectAllReposError} from "@chia/store/modules/Github/github.slice";
 import {getAllReposAsync} from "@chia/store/modules/Github/actions";
-import type { Repo } from '@chia/utils/types/repo';
 import GitHub from "@chia/components/pages/portfolios/GitHub";
 import Youtube from "@chia/components/pages/portfolios/Youtube";
 import type { Youtube as y } from '@chia/utils/types/youtube';
@@ -15,11 +14,7 @@ import {getListImageUrl} from "@chia/lib/firebase/client/files/services";
 import Design from "@chia/components/pages/portfolios/Design";
 import type {GetServerSideProps} from "next";
 import { Chia } from "@chia/utils/meta/chia";
-
-interface repo {
-    status: number;
-    data: Repo[];
-}
+import type {RepoGql} from "@chia/utils/types/repo";
 
 interface video {
     status: number;
@@ -49,7 +44,7 @@ const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
     const dispatch = useAppDispatch()
 
     // GitHub Repos
-    const allReposData = useAppSelector(selectAllRepos) as repo
+    const allReposData = useAppSelector(selectAllRepos) as RepoGql[]
     const allReposLoading = useAppSelector(selectAllReposLoading)
     const allReposError = useAppSelector(selectAllReposError)
 
@@ -59,7 +54,7 @@ const PortfoliosPage: NextPage<Props> = ({posterUrl}) => {
     const allVideosError = useAppSelector(selectAllVideosError)
 
     useEffect(() => {
-        if (!allReposData.data || allReposData.status !== 200) dispatch(getAllReposAsync())
+        if (allReposData.length === 0) dispatch(getAllReposAsync())
         if (!allVideosData.data || allVideosData.status !== 200) dispatch(getAllVideosAsync())
     }, [dispatch])
 

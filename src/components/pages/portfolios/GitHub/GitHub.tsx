@@ -1,14 +1,11 @@
 import { type FC, memo } from 'react';
-import type {Repo} from "@chia/utils/types/repo";
+import type {RepoGql} from "@chia/utils/types/repo";
 import ReposList from "@chia/components/pages/portfolios/GitHub/ReposList";
 import {ReposLoader} from "@chia/components/pages/portfolios/GitHub/ReposLoader";
 import { Chia } from '@chia/utils/meta/chia';
 
 interface Props {
-    repoData: {
-        data: Repo[]
-        status: number
-    }
+    repoData: RepoGql[]
     loading: 'idle' | 'pending' | 'succeeded' | 'failed'
     error?: string
 }
@@ -26,13 +23,13 @@ const GitHub: FC<Props> = ({ repoData, loading, error }) => {
             </p>
             <div className="w-full flex flex-col">
                 {
-                    loading === 'succeeded' && <ReposList repo={repoData.data} />
+                    loading === 'succeeded' && <ReposList repo={repoData} />
                 }
                 {
                     loading === 'pending' && <ReposLoader />
                 }
                 {
-                    loading === 'failed' || repoData.status !== 200 && <p>{error}</p>
+                    loading === 'failed' && <p>{error}</p>
                 }
                 <a
                     href={`${GITHUB_URL}?tab=repositories`}
