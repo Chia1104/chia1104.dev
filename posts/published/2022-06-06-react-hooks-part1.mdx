@@ -145,7 +145,25 @@ const CounterFC = () => {
 
 React 的 useEffect 可以在執行一個 function，這個 function 會在 component render 完成之後執行。
 
-通常我們會在 useEffect 中執行 side effect，例如 fetch data、設定 subscription、或手動改變 React component 中的 DOM。
+通常我們會在 useEffect 中執行 side effect。
+
+### Side Effect
+
+Side Effect 是指一個 function 做了跟本身運算返回值沒有關係的事，可能修改某個全域變數，或是傳入參數的值，其中執行 `console.log()` 也是一種 side effect。
+
+<Quote
+    type={'info'}
+>
+    在 React 中常見的 side effect:
+    - 執行 console.log()
+    - fetch data
+    - 設定 subscription
+    - 動改變 React component 中的 DOM。
+</Quote>
+
+---
+
+再回到剛剛所講的 useEffect:
 
 <Quote
     type={'info'}
