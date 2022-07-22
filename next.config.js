@@ -50,6 +50,10 @@ const nextConfig = {
         source: '/post/:id',
         destination: '/posts/:id',
         permanent: false
+      },
+      { source: "/posts/:slug/amp.html",
+        destination: "/posts/:slug/",
+        statusCode: 301
       }
     ]
   },

@@ -27,6 +27,7 @@
     "classnames": "^2.3.1",
     "core-js": "^3.23.4",
     "dayjs": "^1.11.2",
+    "fast-glob": "^3.2.11",
     "firebase": "^9.7.0",
     "firebase-admin": "^11.0.0",
     "framer-motion": "^6.3.2",
