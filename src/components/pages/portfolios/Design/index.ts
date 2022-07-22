@@ -1,2 +1,2 @@
-export * from './Design';
-export { default } from './Design';
+export * from "./Design";
+export { default } from "./Design";

@@ -1,1 +1,1 @@
-export * from './lat';
+export * from "./lat";

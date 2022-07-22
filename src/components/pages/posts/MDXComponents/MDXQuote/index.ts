@@ -1,1 +1,1 @@
-export * from './MDXQuote';
+export * from "./MDXQuote";

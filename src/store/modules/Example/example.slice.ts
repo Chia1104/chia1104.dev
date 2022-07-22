@@ -1,27 +1,27 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 import { exampleInitState } from "./state";
 import { exampleReducer } from "./reducers";
-import {type AppState} from "@chia/store";
-import {getExampleDataAsync} from "@chia/store/modules/Example/actions";
+import { type AppState } from "@chia/store";
+import { getExampleDataAsync } from "@chia/store/modules/Example/actions";
 
 const exampleSlice = createSlice({
-    name: 'example',
-    initialState: exampleInitState.example,
-    reducers: exampleReducer,
-    extraReducers: (builder) => {
-        builder
-            .addCase(getExampleDataAsync.pending, (state) => {
-                state.loading = 'pending'
-            })
-            .addCase(getExampleDataAsync.fulfilled, (state, action) => {
-                state.data = action.payload
-                state.loading = 'succeeded'
-            })
-            .addCase(getExampleDataAsync.rejected, (state, action) => {
-                state.error = action.error
-                state.loading = 'failed'
-            })
-    },
+  name: "example",
+  initialState: exampleInitState.example,
+  reducers: exampleReducer,
+  extraReducers: (builder) => {
+    builder
+      .addCase(getExampleDataAsync.pending, (state) => {
+        state.loading = "pending";
+      })
+      .addCase(getExampleDataAsync.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.loading = "succeeded";
+      })
+      .addCase(getExampleDataAsync.rejected, (state, action) => {
+        state.error = action.error;
+        state.loading = "failed";
+      });
+  },
 });
 
 // export const { beginRequestExampleData, succeedRequestExampleData, failRequestExampleData } = exampleSlice.actions;

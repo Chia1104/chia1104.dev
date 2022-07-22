@@ -1,11 +1,11 @@
 import { type FC } from "react";
 
 interface Props {
-    h?: number;
+  h?: number;
 }
 
-export const MDXSpacer: FC<Props> = ({ h}) => {
-    if (!h) h = 4;
+export const MDXSpacer: FC<Props> = ({ h }) => {
+  if (!h) h = 4;
 
-    return <div style={{ height: `${h}rem` }} />
-}
+  return <div style={{ height: `${h}rem` }} />;
+};

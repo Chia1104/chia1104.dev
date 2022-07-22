@@ -1,32 +1,32 @@
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
   {
-    key: 'X-DNS-Prefetch-Control',
-    value: 'on'
+    key: "X-DNS-Prefetch-Control",
+    value: "on",
   },
   {
-    key: 'X-XSS-Protection',
-    value: '1; mode=block'
+    key: "X-XSS-Protection",
+    value: "1; mode=block",
   },
   {
-    key: 'X-Frame-Options',
-    value: 'SAMEORIGIN'
+    key: "X-Frame-Options",
+    value: "SAMEORIGIN",
   },
   {
-    key: 'Referrer-Policy',
-    value: 'origin-when-cross-origin'
+    key: "Referrer-Policy",
+    value: "origin-when-cross-origin",
   },
   {
-    key: 'X-Content-Type-Options',
-    value: 'nosniff'
-  }
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
 ];
 
 const nextConfig = {
   swcMinify: true,
   reactStrictMode: true,
   trailingSlash: true,
-  output: 'standalone',
+  output: "standalone",
   experimental: {
     // swcPlugins: [
     //   ['plugin', {
@@ -37,37 +37,34 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/portfolios',
-        destination: '/portfolio',
-        permanent: false
+        source: "/portfolios",
+        destination: "/portfolio",
+        permanent: false,
       },
       {
-        source: '/post',
-        destination: '/posts',
-        permanent: false
+        source: "/post",
+        destination: "/posts",
+        permanent: false,
       },
       {
-        source: '/post/:id',
-        destination: '/posts/:id',
-        permanent: false
+        source: "/post/:id",
+        destination: "/posts/:id",
+        permanent: false,
       },
-      { source: "/posts/:slug/amp.html",
-        destination: "/posts/:slug/",
-        statusCode: 301
-      }
-    ]
+      { source: "/posts/:slug/amp.html", destination: "/posts/:slug/", statusCode: 301 },
+    ];
   },
   compiler: {
-    removeConsole: true
+    removeConsole: true,
   },
   images: {
-    domains: ['firebasestorage.googleapis.com']
+    domains: ["firebasestorage.googleapis.com"],
   },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      'react/jsx-runtime.js': require.resolve('react/jsx-runtime')
-    }
+      "react/jsx-runtime.js": require.resolve("react/jsx-runtime"),
+    };
 
     config.resolve = {
       ...config.resolve,
@@ -75,20 +72,20 @@ const nextConfig = {
       fallback: {
         ...config.resolve.fallback,
         child_process: false,
-        fs: false
-      }
-    }
+        fs: false,
+      },
+    };
 
-    return config
+    return config;
   },
   async headers() {
     return [
       {
-        source: '/:path*',
-        headers: securityHeaders
-      }
-    ]
-  }
-}
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
+  },
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

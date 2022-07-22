@@ -1,1 +1,1 @@
-export { LATItem } from './LATItem';
+export { LATItem } from "./LATItem";

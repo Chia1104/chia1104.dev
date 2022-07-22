@@ -1,1 +1,1 @@
-export * from './MDXCode';
+export * from "./MDXCode";

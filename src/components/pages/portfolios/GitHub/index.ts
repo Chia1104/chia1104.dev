@@ -1,2 +1,2 @@
-export * from './GitHub';
-export { default } from './GitHub';
+export * from "./GitHub";
+export { default } from "./GitHub";

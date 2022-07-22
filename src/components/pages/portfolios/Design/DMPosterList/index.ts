@@ -1,2 +1,2 @@
-export * from './DMPosterList';
-export { default } from './DMPosterList';
+export * from "./DMPosterList";
+export { default } from "./DMPosterList";

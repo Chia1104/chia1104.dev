@@ -1,3 +1,1 @@
-export const youtubeReducer = {
-
-}
+export const youtubeReducer = {};

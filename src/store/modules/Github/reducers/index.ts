@@ -1,3 +1,1 @@
-export const githubReducer = {
-
-}
+export const githubReducer = {};

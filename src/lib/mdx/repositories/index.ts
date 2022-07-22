@@ -1,1 +1,1 @@
-export * from './mdx.repository';
+export * from "./mdx.repository";

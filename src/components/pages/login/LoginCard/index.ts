@@ -1,2 +1,2 @@
-export * from './LoginCard';
-export { default } from './LoginCard';
+export * from "./LoginCard";
+export { default } from "./LoginCard";

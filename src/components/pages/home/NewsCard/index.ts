@@ -1,1 +1,1 @@
-export { NewsCard } from './NewsCard';
+export { NewsCard } from "./NewsCard";

@@ -1,2 +1,2 @@
-export * from './FutureImage';
-export { default } from './FutureImage';
+export * from "./FutureImage";
+export { default } from "./FutureImage";

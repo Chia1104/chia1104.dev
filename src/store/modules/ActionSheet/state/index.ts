@@ -1,9 +1,9 @@
 export interface IActionSheetState {
-    isOpen: boolean;
+  isOpen: boolean;
 }
 
 export const actionSheetInitState = {
-    actionIconSheet: {
-        isOpen: false,
-    } as IActionSheetState,
-}
+  actionIconSheet: {
+    isOpen: false,
+  } as IActionSheetState,
+};
