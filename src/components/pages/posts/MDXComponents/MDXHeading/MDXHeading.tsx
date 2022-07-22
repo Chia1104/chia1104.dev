@@ -21,7 +21,7 @@ export const H1 = (
 
   return (
     <span className="inline-flex items-center group my-5 pb-5 border-b-2 c-border-primary w-full">
-      <h1 {...props} className="text-4xl font-medium mr-2" ref={r} />
+      <h1 {...props} className="text-4xl font-bold mr-2" ref={r} />
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -61,7 +61,7 @@ export const H2 = (
 
   return (
     <span className="inline-flex items-center group my-4 w-full">
-      <h2 {...props} className="text-3xl font-medium mr-2" ref={r} />
+      <h2 {...props} className="text-3xl font-bold mr-2" ref={r} />
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -101,7 +101,7 @@ export const H3 = (
 
   return (
     <span className="inline-flex items-center group my-3 w-full">
-      <h3 {...props} className="text-2xl font-medium mr-2" ref={r} />
+      <h3 {...props} className="text-2xl font-bold mr-2" ref={r} />
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -141,7 +141,7 @@ export const H4 = (
 
   return (
     <span className="inline-flex items-center group my-2 w-full">
-      <h4 {...props} className="text-xl font-medium mr-2" ref={r} />
+      <h4 {...props} className="text-xl font-bold mr-2" ref={r} />
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -181,7 +181,7 @@ export const H5 = (
 
   return (
     <span className="inline-flex items-center group w-full my-2">
-      <h5 {...props} className="text-lg font-medium mr-2" ref={r} />
+      <h5 {...props} className="text-lg font-bold mr-2" ref={r} />
       {mount && (
         <a
           href={`#${r.current?.id}`}

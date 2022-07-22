@@ -222,6 +222,10 @@
     background-image: linear-gradient(transparent 60%, #ff9b1a 55%);
   }
 
+  .c-text-bg-info-half {
+    background-image: linear-gradient(transparent 60%, #8086ba 55%);
+  }
+
   .modal {
     position: fixed;
     top: 0;

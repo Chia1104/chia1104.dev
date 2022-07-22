@@ -16,11 +16,23 @@ excerpt: "useEffect 和 useLayoutEffect 的區別及使用時機。React 自從 
 
 ## 前言 ✨
 
-過去在 [上一篇](/posts/2022-06-06-react-hooks-part1/) 有提過 React Hooks 當中的 useState 和 useEffect 的基本用法，其中有用 useEffect 來實作 call API 的動作。不過這還只是他的基本用法而已，今天主要會說明 useEffect 的 **清除作法** ，及另一個 API useLayoutEffect 的區別和使用時機。
+過去在 [上一篇](/posts/2022-06-06-react-hooks-part1/) 有提過 React Hooks 當中的 `useState` 和 `useEffect` 的基本用法，其中有用 `useEffect` 來實作 call API 的動作。不過這還只是他的基本用法而已，今天主要會說明 `useEffect` 的 **清除作法** ，及另一個 API `useLayoutEffect` 的區別和使用時機。
 
 ---
 
 ## useEffect clean up
 
+`useEffect` 的 clean up 就如同他的名子，他會在 `componentWillUnmount` 時執行，並清除我們的方法或是把相關的 state 回復到初始狀態。
+
+而他最主要的目的就是避免我們的 component 在 unmount 後還有其他不必要的行為，甚至導致 memory leak。
+
+我們通常都會在 React 的 `useEffect` 中執行 [side effect](/posts/2022-06-06-react-hooks-part1/#side-effect)，其中的 Subscription 就是需要做清除動作的，不過我們這裡會先講不需做清除的部分，例如一般 Call API 的動作。
+
+### 無需清除的 Effect
+
+通常像是 Call API 、手動更改 Dom 元件又或是 `console.log` 的動作，都不需要做清除動作，這些在執行完後就會被忘記了。
+
+<CodeSandBox
+  codeSrc={'https://codesandbox.io/embed/vigilant-cori-hvzlp9?fontsize=14&hidenavigation=1&theme=dark'} />
 
 

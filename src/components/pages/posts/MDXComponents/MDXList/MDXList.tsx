@@ -8,7 +8,7 @@ interface Props {
 export const MDXUl: FC<Props> = (props) => {
   return (
     <>
-      <ul {...props} className="p-3 list-disc pl-5">
+      <ul {...props} className="p-3 list-disc pl-5 leading-loose">
         {props.children}
       </ul>
     </>

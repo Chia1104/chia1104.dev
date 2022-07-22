@@ -25,7 +25,10 @@ export {
   MDXTd as td,
 } from "@chia/components/pages/posts/MDXComponents/MDXTable";
 export { MDXQuote as Quote } from "@chia/components/pages/posts/MDXComponents/MDXQuote";
-export { Typography as p } from "@mui/material";
+export {
+  MDXParagraph as p,
+  MDXStrong as strong,
+} from "@chia/components/pages/posts/MDXComponents/MDXText";
 export {
   MDXDivider as Divider,
   MDXHr as hr,
