@@ -36,8 +36,7 @@ const HomePage: NextPage<Props> = (props) => {
   return (
     <Layout
       title={`${name} ${chinese_name} | ${title}`}
-      description={description}
-    >
+      description={description}>
       <article className="c-container main">
         <div className="w-full h-full flex flex-col">
           <AboutMe avatarSrc={props.url} />
@@ -83,8 +82,7 @@ const HomePage: NextPage<Props> = (props) => {
                   href="https://open.spotify.com/user/21vnijzple4ufn2nzlfjy37py?si=b5f011d11a794ba4&nd=1"
                   target="_blank"
                   rel="noreferrer"
-                  className="c-link text-info"
-                >
+                  className="c-link text-info">
                   {" "}
                   Spotify{" "}
                 </a>
@@ -93,8 +91,7 @@ const HomePage: NextPage<Props> = (props) => {
                   href="https://skyline.github.com/Chia1104/2022"
                   target="_blank"
                   rel="noreferrer"
-                  className="c-link text-info"
-                >
+                  className="c-link text-info">
                   {" "}
                   {/* eslint-disable-next-line react/no-unescaped-entities */}
                   Chia1104's 2022 GitHub Skyline{" "}

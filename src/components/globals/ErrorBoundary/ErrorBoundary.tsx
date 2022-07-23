@@ -40,8 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
             type="button"
             onClick={() => this.setState({ hasError: false })}
             className="c-button-primary"
-            aria-label={"Reload page"}
-          >
+            aria-label={"Reload page"}>
             Try again?
           </button>
         </div>

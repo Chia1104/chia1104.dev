@@ -17,15 +17,13 @@ export const VideoList: FC<Props> = ({ item }) => {
             i !== 0 && (
               <div
                 key={v.id}
-                className="w-full flex flex-col c-border-primary border-b-2 p-3 h-[130px]"
-              >
+                className="w-full flex flex-col c-border-primary border-b-2 p-3 h-[130px]">
                 <a
                   className="mb-3 self-start"
                   href={`https://www.youtube.com/watch?v=${v.snippet.resourceId.videoId}`}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label={"Open Youtube"}
-                >
+                  aria-label={"Open Youtube"}>
                   <header className="text-info subtitle c-link line-clamp-1">
                     {v.snippet.title}
                   </header>

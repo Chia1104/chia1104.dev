@@ -29,8 +29,7 @@ const PostsPage: NextPage<Props> = (props) => {
   return (
     <Layout
       title={`Blog | ${name} ${chinese_name} `}
-      description={`${description} Welcome to my blog. I always try to make the best of my time.`}
-    >
+      description={`${description} Welcome to my blog. I always try to make the best of my time.`}>
       <article className="main c-container">
         <h1 className="title py-10 self-start">
           <span>{name}</span> |{" "}

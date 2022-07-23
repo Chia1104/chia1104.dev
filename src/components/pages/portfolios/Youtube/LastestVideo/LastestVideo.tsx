@@ -17,8 +17,7 @@ export const LastestVideo: FC<Props> = ({ item }) => {
         href={`https://www.youtube.com/watch?v=${id}`}
         target="_blank"
         rel="noreferrer"
-        aria-label={"Open Youtube"}
-      >
+        aria-label={"Open Youtube"}>
         {name}
       </a>
       <div className="w-full h-[270px] sm:h-[300px] sm:w-[500px] border-0 rounded-lg shadow-lg overflow-hidden mx-auto">

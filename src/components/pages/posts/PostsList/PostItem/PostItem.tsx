@@ -17,8 +17,7 @@ export const PostItem: FC<Props> = ({ data, i }) => {
         className={cx(
           "aspect-w-16 aspect-h-9 w-full overflow-hidden rounded-t-xl bg-gray-200 mb-3",
           i === 0 && "lg:aspect-w-3 lg:aspect-h-1"
-        )}
-      >
+        )}>
         <Image
           src={data.headImg || "/posts/example-posts/example.jpg"}
           alt={data.title}
@@ -45,8 +44,7 @@ export const PostItem: FC<Props> = ({ data, i }) => {
         href={{
           pathname: "/posts/[slug]/",
           query: { slug: data.slug },
-        }}
-      >
+        }}>
         <a className="absolute top-0 bottom-0 right-0 left-0" />
       </Link>
     </div>

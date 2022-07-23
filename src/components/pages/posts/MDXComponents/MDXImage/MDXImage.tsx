@@ -31,8 +31,7 @@ export const MDXImage: FC<Props> = (props) => {
           ratio === "2:3" && "aspect-w-2 aspect-h-3",
           ratio === "3:4" && "aspect-w-3 aspect-h-4",
           ratio === "9:16" && "aspect-w-9 aspect-h-16"
-        )}
-      >
+        )}>
         <Image
           className="rounded-lg hover:scale-[1.05] duration-300 transition ease-in-out"
           loading="lazy"

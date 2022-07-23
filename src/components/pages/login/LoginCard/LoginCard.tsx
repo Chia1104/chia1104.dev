@@ -77,8 +77,7 @@ const LoginCard: FC = () => {
       <h1 className="title mb-10 self-start">Login</h1>
       <form
         className="flex flex-col justify-center items-center w-full max-w-[400px]"
-        onSubmit={(e) => handleSubmit(e)}
-      >
+        onSubmit={(e) => handleSubmit(e)}>
         <div className="w-full mb-5">
           <p className="subtitle mb-5">Email</p>
           <input
@@ -101,8 +100,7 @@ const LoginCard: FC = () => {
         </div>
         <button
           type="submit"
-          className="group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded self-center"
-        >
+          className="group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded self-center">
           <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base">
             Login
           </span>

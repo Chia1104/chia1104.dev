@@ -24,8 +24,7 @@ export const MDXCode: FC<Props> = ({ children, text, type }) => {
           type === "warning" && "bg-warning/70 border-warning",
           type === "success" && "bg-success/70 border-success",
           type === "error" && "bg-danger/70 border-danger"
-        )}
-      >
+        )}>
         {text || "Code info"}
       </div>
       {children}
@@ -78,8 +77,7 @@ export const MDXPre: FC<Props> = (props) => {
         initial={"closed"}
         animate={isHover ? "open" : "closed"}
         exit={"closed"}
-        variants={variants}
-      >
+        variants={variants}>
         <span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -87,8 +85,7 @@ export const MDXPre: FC<Props> = (props) => {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={1.7}
-          >
+            strokeWidth={1.7}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -102,8 +99,7 @@ export const MDXPre: FC<Props> = (props) => {
       <pre
         {...props}
         className="dark:bg-code bg-[#dddddd] w-full my-7 p-7 pb-4 rounded-xl dark:text-white text:black overflow-x-auto transition ease-in-out"
-        ref={ref}
-      >
+        ref={ref}>
         {props.children}
       </pre>
     </div>
@@ -114,8 +110,7 @@ export const MDXCodeOrigin: FC<Props> = (props) => {
   return (
     <code
       {...props}
-      className="dark:bg-code bg-[#dddddd] rounded dark:text-white text:black overflow-x-auto transition ease-in-out p-0.5"
-    >
+      className="dark:bg-code bg-[#dddddd] rounded dark:text-white text:black overflow-x-auto transition ease-in-out p-0.5">
       {props.children}
     </code>
   );

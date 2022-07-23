@@ -66,8 +66,7 @@ export const Resume: FC<Props> = ({ avatarSrc }) => {
       <div className="w-full flex flex-col items-center">
         <button
           className="mb-10 group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded"
-          onClick={() => dispatch(activeActionIconSheet())}
-        >
+          onClick={() => dispatch(activeActionIconSheet())}>
           <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1">
             Contact me
           </span>

@@ -14,8 +14,7 @@ export const LATItem: FC<Props> = ({ lat }) => {
       <a
         target="_blank"
         rel="noreferrer"
-        className="w-full text-5xl flex justify-center items-center relative group my-5 mx-auto"
-      >
+        className="w-full text-5xl flex justify-center items-center relative group my-5 mx-auto">
         <div className="p-2 group-hover:animate-pulse">
           <LATIcon />
         </div>

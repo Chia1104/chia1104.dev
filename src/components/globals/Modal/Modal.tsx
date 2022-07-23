@@ -29,15 +29,13 @@ const Modal: FC<Props> = (props) => {
           animate={props.showed ? "open" : "closed"}
           exit={"closed"}
           variants={ov}
-          className="modal"
-        >
+          className="modal">
           <motion.div
             initial={"closed"}
             animate={props.showed ? "open" : "closed"}
             exit={"closed"}
             variants={iv}
-            {...props}
-          >
+            {...props}>
             {props.children}
           </motion.div>
         </motion.div>

@@ -9,8 +9,7 @@ export const MDXTable: FC<Props> = (props) => {
     <>
       <table
         {...props}
-        className="table-auto border-collapse border border-slate-500"
-      >
+        className="table-auto border-collapse border border-slate-500">
         {props.children}
       </table>
     </>

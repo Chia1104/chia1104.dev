@@ -47,10 +47,17 @@ Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_mediu
 
 ## Get Started
 
-Generate the .env file, and add your own Firebase credentials, GitHub token, and Google API key.
+Generate the .env file and add your own Firebase credentials, GitHub token, and Google API key.
 
 ```bash
 $ cp .env.example .env
+```
+
+Install the dependencies and enable the `husky`.
+
+```bash
+$ pnpm install
+$ pnpm husky install
 ```
 
 Runs the app in the development mode.
@@ -58,7 +65,6 @@ Runs the app in the development mode.
 Open http://localhost:3000 to view it in your browser.
 
 ```bash
-$ pnpm install
 $ pnpm dev
 ```
 

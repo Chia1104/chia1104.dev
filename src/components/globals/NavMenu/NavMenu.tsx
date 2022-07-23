@@ -22,16 +22,14 @@ const NavMenu: FC = () => {
               className={cx(
                 "flex c-link mr-4 py-3",
                 router.asPath.includes("about") && "c-link-active"
-              )}
-            >
+              )}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 mr-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={2}
-              >
+                strokeWidth={2}>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -46,16 +44,14 @@ const NavMenu: FC = () => {
               className={cx(
                 "flex c-link mr-4 py-3",
                 router.asPath.includes("posts") && "c-link-active"
-              )}
-            >
+              )}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 mr-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={2}
-              >
+                strokeWidth={2}>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -70,16 +66,14 @@ const NavMenu: FC = () => {
               className={cx(
                 "flex c-link mr-4 py-3",
                 router.asPath.includes("portfolio") && "c-link-active"
-              )}
-            >
+              )}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 mr-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={2}
-              >
+                strokeWidth={2}>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

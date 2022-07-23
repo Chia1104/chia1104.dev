@@ -75,6 +75,7 @@
     "eslint-config-next": "^12.2.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
     "jsdom": "^19.0.0",
     "next-sitemap": "^2.5.20",
     "postcss": "^8.4.12",

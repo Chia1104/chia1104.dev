@@ -25,16 +25,14 @@ export const H1 = (
       {mount && (
         <a
           href={`#${r.current?.id}`}
-          className="c-text-secondary font-medium hidden group-hover:block"
-        >
+          className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-7 w-7"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}
-          >
+            strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -65,16 +63,14 @@ export const H2 = (
       {mount && (
         <a
           href={`#${r.current?.id}`}
-          className="c-text-secondary font-medium hidden group-hover:block"
-        >
+          className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}
-          >
+            strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -105,16 +101,14 @@ export const H3 = (
       {mount && (
         <a
           href={`#${r.current?.id}`}
-          className="c-text-secondary font-medium hidden group-hover:block"
-        >
+          className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}
-          >
+            strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -145,16 +139,14 @@ export const H4 = (
       {mount && (
         <a
           href={`#${r.current?.id}`}
-          className="c-text-secondary font-medium hidden group-hover:block"
-        >
+          className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}
-          >
+            strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -185,16 +177,14 @@ export const H5 = (
       {mount && (
         <a
           href={`#${r.current?.id}`}
-          className="c-text-secondary font-medium hidden group-hover:block"
-        >
+          className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}
-          >
+            strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

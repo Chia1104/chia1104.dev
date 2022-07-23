@@ -57,8 +57,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
   return (
     <Layout
       title={`${frontMatter.title} | ${name} ${chinese_name}`}
-      description={`${frontMatter.excerpt}`}
-    >
+      description={`${frontMatter.excerpt}`}>
       <NextSeo
         additionalMetaTags={frontMatter.tags?.map((tag) => ({
           property: "article:tag",

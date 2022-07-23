@@ -14,8 +14,7 @@ export const Experience: FC = () => {
       {resume.map((experience, index) => (
         <div
           key={index}
-          className="w-full flex flex-col c-border-primary border-b-2 p-5"
-        >
+          className="w-full flex flex-col c-border-primary border-b-2 p-5">
           <header className="subtitle pb-5">{experience.title}</header>
           <p className="c-description pb-5">{experience.work}</p>
           <p className="c-description">

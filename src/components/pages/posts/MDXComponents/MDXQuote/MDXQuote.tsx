@@ -23,8 +23,7 @@ export const MDXQuote: FC<Props> = (props) => {
           props.type === "warning" &&
             "border-warning from-warning/70 to-warning/40",
           props.type === "error" && "border-danger from-danger/70 to-danger/40"
-        )}
-      >
+        )}>
         {props.children}
       </blockquote>
     </>

@@ -25,16 +25,14 @@ const ActionIcon: FC = () => {
       <button
         aria-label={"Open contact"}
         onClick={() => dispatch(activeActionIconSheet())}
-        className="hover:text-secondary transition ease-in-out"
-      >
+        className="hover:text-secondary transition ease-in-out">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-5 w-5 mb-2"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          strokeWidth={2}
-        >
+          strokeWidth={2}>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -46,8 +44,7 @@ const ActionIcon: FC = () => {
         <button
           aria-label={"Light or Dark"}
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="hover:text-secondary transition ease-in-out mr-3"
-        >
+          className="hover:text-secondary transition ease-in-out mr-3">
           {mounted && (
             <>
               {theme === "dark" ? (
@@ -57,8 +54,7 @@ const ActionIcon: FC = () => {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  strokeWidth={2}
-                >
+                  strokeWidth={2}>
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -72,8 +68,7 @@ const ActionIcon: FC = () => {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  strokeWidth={2}
-                >
+                  strokeWidth={2}>
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -90,8 +85,7 @@ const ActionIcon: FC = () => {
           target="_blank"
           rel="noreferrer"
           aria-label={"Open GitHub"}
-          className="hover:text-secondary transition ease-in-out mx-3"
-        >
+          className="hover:text-secondary transition ease-in-out mx-3">
           <SiGithub className="h-5 w-5" />
         </a>
         <a
@@ -99,8 +93,7 @@ const ActionIcon: FC = () => {
           target="_blank"
           rel="noreferrer"
           aria-label={"Open Instagram"}
-          className="hover:text-secondary transition ease-in-out mr-3"
-        >
+          className="hover:text-secondary transition ease-in-out mr-3">
           <SiInstagram className="h-5 w-5" />
         </a>
         <a
@@ -108,8 +101,7 @@ const ActionIcon: FC = () => {
           target="_blank"
           rel="noreferrer"
           aria-label={"Open LinkedIn"}
-          className="hover:text-secondary transition ease-in-out"
-        >
+          className="hover:text-secondary transition ease-in-out">
           <SiLinkedin className="h-5 w-5" />
         </a>
       </div>

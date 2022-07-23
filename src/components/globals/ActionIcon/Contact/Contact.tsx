@@ -46,26 +46,22 @@ const Contact: FC = () => {
       initial={"closed"}
       animate={actionIconSheet ? "open" : "closed"}
       variants={outside}
-      className="px-3"
-    >
+      className="px-3">
       <motion.div
         animate={actionIconSheet ? "open" : "closed"}
         variants={inside}
-        className="flex flex-col justify-start items-center w-full h-full"
-      >
+        className="flex flex-col justify-start items-center w-full h-full">
         <button
           aria-label={"Close contact"}
           onClick={() => dispatch(activeActionIconSheet())}
-          className="hover:text-secondary  transition ease-in-out"
-        >
+          className="hover:text-secondary  transition ease-in-out">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            strokeWidth={2}
-          >
+            strokeWidth={2}>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -76,8 +72,7 @@ const Contact: FC = () => {
         <form
           id={id + "-contact-form"}
           className="w-full flex flex-col mx-auto"
-          onSubmit={handleSubmit}
-        >
+          onSubmit={handleSubmit}>
           <header className="text-3xl mb-5">Contact Me</header>
           <p className="text-xl pb-2">Email</p>
           <div className="w-full mb-4">
@@ -116,8 +111,7 @@ const Contact: FC = () => {
             id={id + "-contact-submit"}
             type="submit"
             disabled={state.submitting}
-            className="self-center c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out"
-          >
+            className="self-center c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
             Send
           </button>
           <Script src="https://www.google.com/recaptcha/api.js" async defer />
