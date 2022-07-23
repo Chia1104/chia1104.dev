@@ -16,7 +16,7 @@
     "lint": "next lint",
     "postbuild": "next-sitemap",
     "test:vitest": "vitest run",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\""
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\""
   },
   "dependencies": {
     "@emotion/react": "^11.9.0",
