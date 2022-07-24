@@ -14,6 +14,7 @@ import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/utils/config/nextProgress.config";
 import { SnackbarProvider } from "notistack";
 import { BASE_URL } from "@chia/utils/constants";
+import { Background } from "@chia/components/globals/Background";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
   const canonical = `${BASE_URL}${
@@ -32,6 +33,7 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
             <DefaultSeo canonical={canonical} {...SEO} />
             <NavMenu />
             <ActionIcon />
+            <Background />
             <AnimatePresence exitBeforeEnter>
               <Component {...pageProps} key={router.route} />
             </AnimatePresence>
