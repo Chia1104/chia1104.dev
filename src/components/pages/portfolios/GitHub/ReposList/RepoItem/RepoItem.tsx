@@ -10,21 +10,21 @@ const RepoItem: FC<Props> = ({ repo }) => {
   return (
     <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 w-full h-full flex flex-col">
       <header className="text-2xl line-clamp-1 mb-2 group-hover:c-text-green-to-purple ">
-        {repo.node.name}
+        {repo?.node?.name}
       </header>
       <p className="c-description text-base line-clamp-2">
-        {repo.node.description}
+        {repo?.node?.description}
       </p>
       <div className="c-description mt-auto text-base flex">
         <span
           style={{
-            backgroundImage: `linear-gradient(transparent 85%, ${repo.node.primaryLanguage.color} 55%)`,
+            backgroundImage: `linear-gradient(transparent 85%, ${repo?.node?.primaryLanguage?.color} 55%)`,
           }}
           className="mr-5 flex items-center">
-          {repo.node.primaryLanguage.name}
+          {repo?.node?.primaryLanguage?.name}
         </span>
         <span className="mr-5 flex items-center">
-          {repo.node.stargazerCount > 0 ? (
+          {repo?.node?.stargazerCount > 0 ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5 mr-1 text-secondary"
@@ -47,11 +47,11 @@ const RepoItem: FC<Props> = ({ repo }) => {
               />
             </svg>
           )}
-          {repo.node.stargazerCount}
+          {repo?.node?.stargazerCount}
         </span>
         <span className="flex items-center">
           <VscRepoForked className="w-5 h-5 mr-1" />
-          {repo.node.forkCount}
+          {repo?.node?.forkCount}
         </span>
       </div>
     </span>
@@ -60,5 +60,5 @@ const RepoItem: FC<Props> = ({ repo }) => {
 
 export default memo(
   RepoItem,
-  (prev, next) => prev.repo.node.id === next.repo.node.id
+  (prev, next) => prev.repo?.node?.id === next.repo?.node?.id
 );
