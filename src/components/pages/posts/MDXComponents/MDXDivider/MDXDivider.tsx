@@ -1,24 +1,17 @@
-import { Divider, Chip } from "@mui/material";
-import { type FC } from "react";
+import type { FC, DetailedHTMLProps, HTMLAttributes, ReactNode } from "react";
 
-interface Props {
-  text: string;
+interface MDXHrProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLHRElement>, HTMLHRElement> {
+  children?: ReactNode;
 }
 
-export const MDXHr: FC = (props) => {
+export const MDXHr: FC<MDXHrProps> = (MDXHrProps) => {
+  const { children, ...rest } = MDXHrProps;
   return (
     <>
-      <hr {...props} className="my-10 border-t-2 c-border-primary" />
-    </>
-  );
-};
-
-export const MDXDivider: FC<Props> = ({ text }) => {
-  return (
-    <>
-      <Divider>
-        <Chip label={text || "CHIP"} color={"info"} />
-      </Divider>
+      <hr {...rest} className="my-10 border-t-2 c-border-primary">
+        {children}
+      </hr>
     </>
   );
 };

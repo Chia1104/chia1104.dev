@@ -1,12 +1,12 @@
-import Image from "@chia/components/globals/Image";
-import { type FC } from "react";
-import { Chia } from "@chia/utils/meta/chia";
+import { Image } from "@chia/components/shared";
+import type { FC } from "react";
+import { Chia } from "@chia/shared/meta/chia";
 
 interface Props {
   avatarSrc: string;
 }
 
-export const AboutMe: FC<Props> = ({ avatarSrc }) => {
+const AboutMe: FC<Props> = ({ avatarSrc }) => {
   const name = Chia.name;
   const chineseName = Chia.chineseName;
   const title = Chia.title;
@@ -21,7 +21,7 @@ export const AboutMe: FC<Props> = ({ avatarSrc }) => {
           {title.toUpperCase()}
         </h2>
       </div>
-      <div className="flex justify-center items-center rounded-full w-[200px] h-[200px] overflow-hidden bg-gradient-to-r from-purple-400 to-pink-600 flex justify-center items-center self-center">
+      <div className="flex justify-center items-center rounded-full w-[200px] h-[200px] overflow-hidden bg-gradient-to-r from-purple-400 to-pink-600 self-center">
         <div className="rounded-full w-[195px] h-[195px] p-3 c-bg-secondary">
           <Image
             src={avatarSrc || "/favicon.ico"}
@@ -35,3 +35,5 @@ export const AboutMe: FC<Props> = ({ avatarSrc }) => {
     </div>
   );
 };
+
+export default AboutMe;

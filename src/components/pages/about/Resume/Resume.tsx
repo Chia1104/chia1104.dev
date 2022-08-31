@@ -1,16 +1,16 @@
 import { type FC } from "react";
-import Image from "@chia/components/globals/Image";
-import { Chia } from "@chia/utils/meta/chia";
-import { Experience } from "@chia/components/pages/about/Resume/Experience";
-import { LanAndTools } from "@chia/components/pages/about/Resume/LanAndTools";
-import { useAppDispatch } from "@chia/hooks/useAppDispatch";
+import { Image } from "@chia/components/shared";
+import { Chia } from "@chia/shared/meta/chia";
+import Experience from "./Experience";
+import LanAndTools from "./LanAndTools";
+import { useAppDispatch } from "@chia/hooks";
 import { activeActionIconSheet } from "@chia/store/modules/ActionSheet/actionSheet.slice";
 
 interface Props {
   avatarSrc: string;
 }
 
-export const Resume: FC<Props> = ({ avatarSrc }) => {
+const Resume: FC<Props> = ({ avatarSrc }) => {
   const dispatch = useAppDispatch();
   const name = Chia.name;
   const chineseName = Chia.chineseName;
@@ -103,3 +103,5 @@ export const Resume: FC<Props> = ({ avatarSrc }) => {
     </div>
   );
 };
+
+export default Resume;

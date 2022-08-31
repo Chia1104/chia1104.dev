@@ -1,4 +1,4 @@
-import { IActionSheetState } from "@chia/store/modules/ActionSheet/state";
+import type { IActionSheetState } from "../state";
 
 export const actionSheetReducer = {
   activeActionIconSheet: (state: { actionIconSheet: IActionSheetState }) => {

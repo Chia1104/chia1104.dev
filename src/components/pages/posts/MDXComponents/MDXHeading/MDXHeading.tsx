@@ -1,4 +1,6 @@
 import {
+  type FC,
+  type ReactNode,
   type DetailedHTMLProps,
   type HTMLAttributes,
   useRef,
@@ -6,14 +8,20 @@ import {
   useState,
 } from "react";
 
-export const H1 = (
-  props: DetailedHTMLProps<
+interface MDXHeadingProps
+  extends DetailedHTMLProps<
     HTMLAttributes<HTMLHeadingElement>,
     HTMLHeadingElement
-  >
-) => {
+  > {
+  children?: ReactNode;
+}
+
+export const H1: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+  const { children, ...rest } = MDXHeadingProps;
+
   const r = useRef<HTMLHeadingElement>(null);
   const [mount, setMount] = useState(false);
+
   useEffect(() => {
     setMount(true);
     return () => setMount(false);
@@ -21,7 +29,9 @@ export const H1 = (
 
   return (
     <span className="inline-flex items-center group my-5 pb-5 border-b-2 c-border-primary w-full">
-      <h1 {...props} className="text-4xl font-bold mr-2" ref={r} />
+      <h1 {...rest} className="text-4xl font-bold mr-2" ref={r}>
+        {children}
+      </h1>
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -44,12 +54,9 @@ export const H1 = (
     </span>
   );
 };
-export const H2 = (
-  props: DetailedHTMLProps<
-    HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >
-) => {
+export const H2: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+  const { children, ...rest } = MDXHeadingProps;
+
   const r = useRef<HTMLHeadingElement>(null);
   const [mount, setMount] = useState(false);
   useEffect(() => {
@@ -59,7 +66,9 @@ export const H2 = (
 
   return (
     <span className="inline-flex items-center group my-4 w-full">
-      <h2 {...props} className="text-3xl font-bold mr-2" ref={r} />
+      <h2 {...rest} className="text-3xl font-bold mr-2" ref={r}>
+        {children}
+      </h2>
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -82,12 +91,9 @@ export const H2 = (
     </span>
   );
 };
-export const H3 = (
-  props: DetailedHTMLProps<
-    HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >
-) => {
+export const H3: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+  const { children, ...rest } = MDXHeadingProps;
+
   const r = useRef<HTMLHeadingElement>(null);
   const [mount, setMount] = useState(false);
   useEffect(() => {
@@ -97,7 +103,9 @@ export const H3 = (
 
   return (
     <span className="inline-flex items-center group my-3 w-full">
-      <h3 {...props} className="text-2xl font-bold mr-2" ref={r} />
+      <h3 {...rest} className="text-2xl font-bold mr-2" ref={r}>
+        {children}
+      </h3>
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -120,12 +128,9 @@ export const H3 = (
     </span>
   );
 };
-export const H4 = (
-  props: DetailedHTMLProps<
-    HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >
-) => {
+export const H4: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+  const { children, ...rest } = MDXHeadingProps;
+
   const r = useRef<HTMLHeadingElement>(null);
   const [mount, setMount] = useState(false);
   useEffect(() => {
@@ -135,7 +140,9 @@ export const H4 = (
 
   return (
     <span className="inline-flex items-center group my-2 w-full">
-      <h4 {...props} className="text-xl font-bold mr-2" ref={r} />
+      <h4 {...rest} className="text-xl font-bold mr-2" ref={r}>
+        {children}
+      </h4>
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -158,12 +165,9 @@ export const H4 = (
     </span>
   );
 };
-export const H5 = (
-  props: DetailedHTMLProps<
-    HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >
-) => {
+export const H5: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+  const { children, ...rest } = MDXHeadingProps;
+
   const r = useRef<HTMLHeadingElement>(null);
   const [mount, setMount] = useState(false);
   useEffect(() => {
@@ -173,7 +177,9 @@ export const H5 = (
 
   return (
     <span className="inline-flex items-center group w-full my-2">
-      <h5 {...props} className="text-lg font-bold mr-2" ref={r} />
+      <h5 {...rest} className="text-lg font-bold mr-2" ref={r}>
+        {children}
+      </h5>
       {mount && (
         <a
           href={`#${r.current?.id}`}
@@ -196,11 +202,12 @@ export const H5 = (
     </span>
   );
 };
-export const H6 = (
-  props: DetailedHTMLProps<
-    HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >
-) => {
-  return <h6 {...props} className="text-lg my-2 font-medium" />;
+export const H6: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+  const { children, ...rest } = MDXHeadingProps;
+
+  return (
+    <h6 {...rest} className="text-lg my-2 font-medium">
+      {children}
+    </h6>
+  );
 };

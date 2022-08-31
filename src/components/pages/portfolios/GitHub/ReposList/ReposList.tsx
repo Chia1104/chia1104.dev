@@ -1,6 +1,6 @@
 import { type FC, memo } from "react";
-import RepoItem from "@chia/components/pages/portfolios/GitHub/ReposList/RepoItem";
-import type { RepoGql } from "@chia/utils/types/repo";
+import RepoItem from "./RepoItem";
+import type { RepoGql } from "@chia/shared/types";
 
 interface Props {
   repo: RepoGql[];

@@ -1,9 +1,9 @@
 import type { GetStaticProps, NextPage } from "next";
-import type { PostFrontMatter } from "@chia/utils/types/post";
-import { Layout } from "@chia/components/globals/Layout";
-import { getAllPosts } from "@chia/lib/mdx/services";
-import { PostsList } from "@chia/components/pages/posts/PostsList";
-import { Chia } from "@chia/utils/meta/chia";
+import type { PostFrontMatter } from "@chia/shared/types";
+import { Layout } from "@chia/components/shared";
+import { getAllPosts } from "@chia/helpers/mdx/services";
+import { PostsList } from "@chia/components/pages/posts";
+import { Chia } from "@chia/shared/meta/chia";
 
 interface Props {
   posts: PostFrontMatter[];
@@ -24,7 +24,7 @@ const PostsPage: NextPage<Props> = (props) => {
   const chinese_name = Chia.chineseName;
   const description = Chia.content;
 
-  const posts = props.posts;
+  const { posts } = props;
 
   return (
     <Layout

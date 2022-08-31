@@ -1,19 +1,19 @@
 import Link from "next/link";
-import { type FC, type ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 
-interface Props {
+interface MDXLinkProps {
   href: string;
   children: ReactNode;
 }
 
-export const MDXLink: FC<Props> = (props) => {
-  const h = props.href;
-  const isInternalLink = h && (h.startsWith("/") || h.startsWith("#"));
+export const MDXLink: FC<MDXLinkProps> = (MDXLinkProps) => {
+  const { href, children, ...rest } = MDXLinkProps;
+  const isInternalLink = href.startsWith("/") || href.startsWith("#");
 
   if (isInternalLink) {
     return (
-      <Link prefetch={false} passHref scroll {...props} href={h}>
-        <a className="c-link text-info">{props.children}</a>
+      <Link prefetch={false} passHref scroll {...rest} href={href}>
+        <a className="c-link text-info">{children}</a>
       </Link>
     );
   }
@@ -22,7 +22,7 @@ export const MDXLink: FC<Props> = (props) => {
     <a
       target="_blank"
       rel="noopener noreferrer"
-      {...props}
+      {...rest}
       className="c-link text-info"
     />
   );

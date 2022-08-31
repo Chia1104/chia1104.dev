@@ -1,9 +1,7 @@
 import { type FC, useRef, useState, memo } from "react";
-import useHover from "@chia/hooks/useHover";
-import Image from "@chia/components/globals/Image";
+import { useHover } from "usehooks-ts";
+import { Image, Modal, HoverButton } from "@chia/components/shared";
 import cx from "classnames";
-import Modal from "@chia/components/globals/Modal";
-import HoverButton from "@chia/components/globals/HoverButton";
 
 interface Props {
   url: string;
@@ -32,9 +30,9 @@ const DMPoster: FC<Props> = ({ url }) => {
         layout="fill"
         quality={100}
       />
-      <HoverButton onClick={() => setIsShow(!isShow)} reftarget={r} />
+      <HoverButton onClick={() => setIsShow(!isShow)} refTarget={r} />
       <Modal
-        showed={isShow}
+        isShowed={isShow}
         onClick={handleClose}
         className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
         <div className="w-full aspect-w-1 aspect-h-1">

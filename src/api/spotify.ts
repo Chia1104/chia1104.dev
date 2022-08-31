@@ -2,7 +2,7 @@ import {
   SPOTIFY_NOW_PLAYING_URL,
   SPOTIFY_PLAYLIST_URL,
   SPOTIFY_TOKEN_URL,
-} from "@chia/utils/constants";
+} from "@chia/shared/constants";
 
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;

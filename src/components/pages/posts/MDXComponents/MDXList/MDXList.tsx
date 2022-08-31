@@ -1,33 +1,45 @@
-import { type FC, type ReactNode } from "react";
+import type { FC, ReactNode, HTMLAttributes } from "react";
 
-interface Props {
+interface MDXUlProps extends HTMLAttributes<HTMLUListElement> {
   children: ReactNode;
-  type?: string;
 }
 
-export const MDXUl: FC<Props> = (props) => {
+export const MDXUl: FC<MDXUlProps> = (MDXUlProps) => {
+  const { children, ...rest } = MDXUlProps;
   return (
     <>
-      <ul {...props} className="p-3 list-disc pl-5 leading-loose">
-        {props.children}
+      <ul {...rest} className="p-3 list-disc pl-5 leading-loose">
+        {children}
       </ul>
     </>
   );
 };
 
-export const MDXOl: FC<Props> = (props) => {
+interface MDXOlProps extends HTMLAttributes<HTMLOListElement> {
+  children: ReactNode;
+}
+
+export const MDXOl: FC<MDXOlProps> = (MDXOlProps) => {
+  const { children, ...rest } = MDXOlProps;
   return (
     <>
-      <ol className="p-3 list-decimal pl-5">{props.children}</ol>
+      <ol className="p-3 list-decimal pl-5" {...rest}>
+        {children}
+      </ol>
     </>
   );
 };
 
-export const MDXListItem: FC<Props> = (props) => {
+interface MDXLiProps extends HTMLAttributes<HTMLLIElement> {
+  children: ReactNode;
+}
+
+export const MDXListItem: FC<MDXLiProps> = (MDXLiProps) => {
+  const { children, ...rest } = MDXLiProps;
   return (
     <>
-      <li {...props} className="">
-        {props.children}
+      <li {...rest} className="">
+        {children}
       </li>
     </>
   );

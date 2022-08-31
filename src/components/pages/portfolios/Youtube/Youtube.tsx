@@ -1,8 +1,8 @@
 import { type FC, memo } from "react";
-import { VideoList } from "@chia/components/pages/portfolios/Youtube/VideoList";
-import type { Youtube as y } from "@chia/utils/types/youtube";
-import { VideoLoader } from "@chia/components/pages/portfolios/Youtube/VideoLoader";
-import { Chia } from "@chia/utils/meta/chia";
+import VideoList from "./VideoList";
+import type { Youtube as y } from "@chia/shared/types";
+import VideoLoader from "./VideoLoader";
+import { Chia } from "@chia/shared/meta/chia";
 
 interface Props {
   videoData: {

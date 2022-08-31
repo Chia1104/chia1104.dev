@@ -1,6 +1,6 @@
 import { type FC } from "react";
-import type { PostFrontMatter } from "@chia/utils/types/post";
-import { PostItem } from "./PostItem";
+import type { PostFrontMatter } from "@chia/shared/types";
+import PostItem from "./PostItem";
 import { motion } from "framer-motion";
 import cx from "classnames";
 
@@ -19,7 +19,7 @@ const postCardAnimation = {
   },
 };
 
-export const PostsList: FC<Props> = ({ post }) => {
+const PostsList: FC<Props> = ({ post }) => {
   return (
     <motion.div
       className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-10"
@@ -36,3 +36,5 @@ export const PostsList: FC<Props> = ({ post }) => {
     </motion.div>
   );
 };
+
+export default PostsList;

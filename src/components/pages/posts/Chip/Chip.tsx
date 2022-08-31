@@ -4,7 +4,7 @@ interface Props {
   data: string[];
 }
 
-export const Chip: FC<Props> = ({ data }) => {
+const Chip: FC<Props> = ({ data }) => {
   if (!data) return null;
 
   return (
@@ -21,3 +21,5 @@ export const Chip: FC<Props> = ({ data }) => {
     </div>
   );
 };
+
+export default Chip;

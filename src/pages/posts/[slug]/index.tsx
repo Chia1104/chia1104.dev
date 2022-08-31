@@ -1,21 +1,20 @@
 import dayjs from "dayjs";
-import Image from "@chia/components/globals/Image";
+import { Image, Layout } from "@chia/components/shared";
 import { MDXRemote, type MDXRemoteProps } from "next-mdx-remote";
-import { getPost, getAllPosts } from "@chia/lib/mdx/services";
-import { Layout } from "@chia/components/globals/Layout";
+import { getPost, getAllPosts } from "@chia/helpers/mdx/services";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import type { PostFrontMatter } from "@chia/utils/types/post";
+import type { PostFrontMatter } from "@chia/shared/types";
 import * as mdxComponents from "@chia/components/pages/posts/MDXComponents";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
-import { Chip } from "@chia/components/pages/posts/Chip";
+import { Chip } from "@chia/components/pages/posts";
 import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
-import { giscusConfig } from "@chia/utils/config/giscus.config";
+import { giscusConfig } from "@chia/config/giscus.config";
 import { useTheme } from "next-themes";
 import { NextSeo } from "next-seo";
-import { BASE_URL } from "@chia/utils/constants";
+import { BASE_URL } from "@chia/shared/constants";
 import { useRouter } from "next/router";
-import { Chia } from "@chia/utils/meta/chia";
+import { Chia } from "@chia/shared/meta/chia";
 
 interface Props {
   source: MDXRemoteProps;

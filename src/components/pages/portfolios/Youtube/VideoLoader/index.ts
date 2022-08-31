@@ -1,1 +1,1 @@
-export * from "./VideoLoader";
+export { default } from "./VideoLoader";

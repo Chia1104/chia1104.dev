@@ -1,7 +1,7 @@
-import { type FC } from "react";
-import { Chia } from "@chia/utils/meta/chia";
+import type { FC } from "react";
+import { Chia } from "@chia/shared/meta/chia";
 
-export const Experience: FC = () => {
+const Experience: FC = () => {
   const resume = Chia.resume;
 
   return (
@@ -30,3 +30,5 @@ export const Experience: FC = () => {
     </div>
   );
 };
+
+export default Experience;

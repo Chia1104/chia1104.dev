@@ -1,14 +1,13 @@
 import { type FC } from "react";
-import type { YoutubeItem } from "@chia/utils/types/youtube";
+import type { YoutubeItem } from "@chia/shared/types";
 
 interface Props {
   item: YoutubeItem;
 }
 
-export const LastestVideo: FC<Props> = ({ item }) => {
+const LastestVideo: FC<Props> = ({ item }) => {
   const id = item.snippet.resourceId.videoId;
   const name = item.snippet.title;
-  const description = item.snippet.description;
 
   return (
     <div className="w-full flex flex-col justify-center items-center">
@@ -33,3 +32,5 @@ export const LastestVideo: FC<Props> = ({ item }) => {
     </div>
   );
 };
+
+export default LastestVideo;

@@ -9,35 +9,16 @@ This is my personal website.
 ## Languages and Tools
 
 <div align="center">
-  <a href="https://www.typescriptlang.org/" target="_blank" rel="noreferrer"> 
-    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg" alt="typescript" width="40" height="40"/> 
-  </a>
-  <a href="https://nextjs.org/" target="_blank" rel="noreferrer"> 
-    <img src="https://cdn.worldvectorlogo.com/logos/nextjs-2.svg" alt="nextjs" width="40" height="40"/> 
-  </a> 
-  <a href="https://tailwindcss.com/" target="_blank" rel="noreferrer"> 
-    <img src="https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-icon.svg" alt="tailwind" width="40" height="40"/> 
-  </a>
-  <a href="https://redux.js.org" target="_blank" rel="noreferrer"> 
-    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/redux/redux-original.svg" alt="redux" width="40" height="40"/> 
-  </a>
-  <a href="https://firebase.google.com/" target="_blank" rel="noreferrer"> 
-    <img src="https://www.vectorlogo.zone/logos/firebase/firebase-icon.svg" alt="firebase" width="40" height="40"/> 
-  </a> 
-  <a href="https://www.docker.com/" target="_blank" rel="noreferrer"> 
-    <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original-wordmark.svg" alt="docker" width="40" height="40"/> 
-  </a>
+  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,docker" />
 </div>
 
 ## Features
 - [X] Framer Motion (animation)
 - [X] MDX Blog
-- [ ] Algolia Search
-- [ ] Firebase Authentication
-- [ ] Dashboard
-- [ ] CI/CD
 - [ ] E2E Testing(with [Cypress](https://www.cypress.io/))
 - [X] Unit Testing(with [Vitest](https://vitest.dev/))
+- [ ] Turborepo
+- [ ] tRPC
 
 ## Deploy your own
 

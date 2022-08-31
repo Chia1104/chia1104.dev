@@ -1,19 +1,19 @@
-import { type ReactNode, type FC, useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
+import type { ReactNode, FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import cx from "classnames";
-import useIsMounted from "@chia/hooks/useIsMounted";
-import useCopyToClipboard from "@chia/hooks/useCopyToClipboard";
-import { useSnackbar } from "notistack";
-import useHover from "@chia/hooks/useHover";
+import { useIsMounted, useCopyToClipboard, useHover } from "usehooks-ts";
+import { useToasts } from "@geist-ui/core";
+
 import { motion } from "framer-motion";
 
-interface Props {
+interface MDXCodeProps {
   children: ReactNode;
   text?: string;
   type?: string;
 }
 
-export const MDXCode: FC<Props> = ({ children, text, type }) => {
-  if (!type) type = "info";
+export const MDXCode: FC<MDXCodeProps> = (MDXCodeProps) => {
+  const { children, text, type = "info" } = MDXCodeProps;
 
   return (
     <div className="relative mt-10">
@@ -32,14 +32,20 @@ export const MDXCode: FC<Props> = ({ children, text, type }) => {
   );
 };
 
-export const MDXPre: FC<Props> = (props) => {
+interface MDXPreProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLPreElement>, HTMLPreElement> {
+  children: ReactNode;
+}
+
+export const MDXPre: FC<MDXPreProps> = (MDXPreProps) => {
+  const { children, ...rest } = MDXPreProps;
   const isMounted = useIsMounted();
   const ref = useRef<HTMLPreElement>(null);
   const ref2 = useRef<HTMLDivElement>(null);
   const isHover = useHover(ref2);
   const [value, copy] = useCopyToClipboard();
   const [copyText, setCopyText] = useState("");
-  const { enqueueSnackbar } = useSnackbar();
+  const { setToast } = useToasts({ placement: "bottomLeft" });
 
   useEffect(() => {
     if (isMounted()) {
@@ -49,7 +55,10 @@ export const MDXPre: FC<Props> = (props) => {
   }, [isMounted]);
 
   const handleCopyToast = () => {
-    enqueueSnackbar(`Copied !`, { variant: "success" });
+    setToast({
+      text: "Copied to clipboard",
+      type: "success",
+    });
   };
 
   const handleCopy = () => {
@@ -97,21 +106,27 @@ export const MDXPre: FC<Props> = (props) => {
       </motion.button>
 
       <pre
-        {...props}
+        {...rest}
         className="dark:bg-code bg-[#dddddd] w-full my-7 p-7 pb-4 rounded-xl dark:text-white text:black overflow-x-auto transition ease-in-out"
         ref={ref}>
-        {props.children}
+        {children}
       </pre>
     </div>
   );
 };
 
-export const MDXCodeOrigin: FC<Props> = (props) => {
+interface MDXCodeOrionProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
+  children: ReactNode;
+}
+
+export const MDXCodeOrigin: FC<MDXCodeOrionProps> = (MDXCodeOrionProps) => {
+  const { children, ...rest } = MDXCodeOrionProps;
   return (
     <code
-      {...props}
+      {...rest}
       className="dark:bg-code bg-[#dddddd] rounded dark:text-white text:black overflow-x-auto transition ease-in-out p-0.5">
-      {props.children}
+      {children}
     </code>
   );
 };

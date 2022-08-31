@@ -1,8 +1,8 @@
 import { type FC, memo } from "react";
-import type { RepoGql } from "@chia/utils/types/repo";
-import ReposList from "@chia/components/pages/portfolios/GitHub/ReposList";
-import { ReposLoader } from "@chia/components/pages/portfolios/GitHub/ReposLoader";
-import { Chia } from "@chia/utils/meta/chia";
+import type { RepoGql } from "@chia/shared/types";
+import ReposList from "./ReposList";
+import ReposLoader from "./ReposLoader";
+import { Chia } from "@chia/shared/meta/chia";
 
 interface Props {
   repoData: RepoGql[];

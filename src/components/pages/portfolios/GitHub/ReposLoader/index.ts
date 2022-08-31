@@ -1,1 +1,1 @@
-export * from "./ReposLoader";
+export { default } from "./ReposLoader";

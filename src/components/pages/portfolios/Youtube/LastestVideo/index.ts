@@ -1,1 +1,1 @@
-export * from "./LastestVideo";
+export { default } from "./LastestVideo";

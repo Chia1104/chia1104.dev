@@ -22,8 +22,8 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@formspree/react": "^2.3.3",
+    "@geist-ui/core": "^2.3.8",
     "@giscus/react": "^2.2.0",
-    "@mui/material": "^5.10.3",
     "@reduxjs/toolkit": "^1.8.5",
     "classnames": "^2.3.1",
     "core-js": "^3.25.0",
@@ -39,7 +39,6 @@
     "next-seo": "^5.5.0",
     "next-themes": "^0.2.0",
     "nextjs-progressbar": "^0.0.14",
-    "notistack": "^2.0.5",
     "p-map": "^5.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -53,6 +52,7 @@
     "rehype-slug": "^5.0.1",
     "remark-gfm": "^3.0.1",
     "uglify-js": "^3.17.0",
+    "usehooks-ts": "^2.6.0",
     "zod": "^3.18.0"
   },
   "devDependencies": {

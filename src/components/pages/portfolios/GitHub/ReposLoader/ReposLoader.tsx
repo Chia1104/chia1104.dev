@@ -1,6 +1,6 @@
 import { type FC } from "react";
 
-export const ReposLoader: FC = () => {
+const ReposLoader: FC = () => {
   return (
     <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
       <div className="c-button-secondary w-full rounded h-[150px] flex flex-col">
@@ -60,3 +60,5 @@ export const ReposLoader: FC = () => {
     </div>
   );
 };
+
+export default ReposLoader;

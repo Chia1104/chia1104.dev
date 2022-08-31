@@ -1,5 +1,5 @@
 import { type FC, memo } from "react";
-import DMPoster from "@chia/components/pages/portfolios/Design/DMPoster";
+import DMPoster from "../DMPoster";
 
 interface Props {
   data: string[];

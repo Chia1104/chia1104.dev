@@ -1,4 +1,8 @@
-import { GOOGLE_API, YOUTUBE_ID, YOUTUBE_LIST_ID } from "@chia/utils/constants";
+import {
+  GOOGLE_API,
+  YOUTUBE_ID,
+  YOUTUBE_LIST_ID,
+} from "@chia/shared/constants";
 
 const KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
 

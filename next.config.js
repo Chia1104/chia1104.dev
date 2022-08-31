@@ -51,7 +51,11 @@ const nextConfig = {
         destination: "/posts/:id",
         permanent: false,
       },
-      { source: "/posts/:slug/amp.html", destination: "/posts/:slug/", statusCode: 301 },
+      {
+        source: "/posts/:slug/amp.html",
+        destination: "/posts/:slug/",
+        statusCode: 301,
+      },
     ];
   },
   compiler: {

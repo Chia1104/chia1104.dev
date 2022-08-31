@@ -1,1 +1,1 @@
-export { LanAndTools } from "./LanAndTools";
+export { default } from "./LanAndTools";

@@ -1,8 +1,8 @@
-import { type FC } from "react";
-import { LATList } from "@chia/components/pages/about/Resume/LanAndTools/LATList";
-import { Chia } from "@chia/utils/meta/chia";
+import type { FC } from "react";
+import LATList from "./LATList";
+import { Chia } from "@chia/shared/meta/chia";
 
-export const LanAndTools: FC = () => {
+const LanAndTools: FC = () => {
   const d = Chia.technologies;
 
   return (
@@ -23,3 +23,5 @@ export const LanAndTools: FC = () => {
     </div>
   );
 };
+
+export default LanAndTools;

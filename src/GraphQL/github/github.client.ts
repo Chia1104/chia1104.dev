@@ -1,5 +1,5 @@
 import { GraphQLClient } from "graphql-request";
-import { GITHUB_GRAPHQL_API } from "@chia/utils/constants";
+import { GITHUB_GRAPHQL_API } from "@chia/shared/constants";
 
 const client = new GraphQLClient(GITHUB_GRAPHQL_API, {
   headers: {

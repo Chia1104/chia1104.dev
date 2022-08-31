@@ -1,36 +1,66 @@
-import { type FC, type ReactNode } from "react";
+import type {
+  FC,
+  ReactNode,
+  DetailedHTMLProps,
+  TableHTMLAttributes,
+  ThHTMLAttributes,
+  TdHTMLAttributes,
+} from "react";
 
-interface Props {
+interface MDXTableProps
+  extends DetailedHTMLProps<
+    TableHTMLAttributes<HTMLTableElement>,
+    HTMLTableElement
+  > {
   children: ReactNode;
 }
 
-export const MDXTable: FC<Props> = (props) => {
+export const MDXTable: FC<MDXTableProps> = (MDXTableProps) => {
+  const { children, ...rest } = MDXTableProps;
   return (
     <>
       <table
-        {...props}
+        {...rest}
         className="table-auto border-collapse border border-slate-500">
-        {props.children}
+        {children}
       </table>
     </>
   );
 };
 
-export const MDXTh: FC<Props> = (props) => {
+interface MDXTHProps
+  extends DetailedHTMLProps<
+    ThHTMLAttributes<HTMLTableCellElement>,
+    HTMLTableCellElement
+  > {
+  children: ReactNode;
+}
+
+export const MDXTh: FC<MDXTHProps> = (MDXTHProps) => {
+  const { children, ...rest } = MDXTHProps;
   return (
     <>
-      <th {...props} className="p-2 border border-slate-500">
-        {props.children}
+      <th {...rest} className="p-2 border border-slate-500">
+        {children}
       </th>
     </>
   );
 };
 
-export const MDXTd: FC<Props> = (props) => {
+interface MDXTDProps
+  extends DetailedHTMLProps<
+    TdHTMLAttributes<HTMLTableCellElement>,
+    HTMLTableCellElement
+  > {
+  children: ReactNode;
+}
+
+export const MDXTd: FC<MDXTDProps> = (MDXTDProps) => {
+  const { children, ...rest } = MDXTDProps;
   return (
     <>
-      <td {...props} className="p-2 border border-slate-500">
-        {props.children}
+      <td {...rest} className="p-2 border border-slate-500">
+        {children}
       </td>
     </>
   );

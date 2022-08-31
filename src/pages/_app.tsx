@@ -1,20 +1,22 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { AnimatePresence } from "framer-motion";
-import NavMenu from "@chia/components/globals/NavMenu";
-import ActionIcon from "@chia/components/globals/ActionIcon";
+import {
+  NavMenu,
+  ActionIcon,
+  Footer,
+  ErrorBoundary,
+  Background,
+} from "@chia/components/shared";
 import { DefaultSeo } from "next-seo";
 import SEO from "../../next-seo.config";
-import { Footer } from "@chia/components/globals/Footer";
 import { ThemeProvider } from "next-themes";
-import { ErrorBoundary } from "@chia/components/globals/ErrorBoundary";
 import { Provider } from "react-redux";
 import { store } from "@chia/store";
 import NextNProgress from "nextjs-progressbar";
-import { nextProgressConfig } from "@chia/utils/config/nextProgress.config";
-import { SnackbarProvider } from "notistack";
-import { BASE_URL } from "@chia/utils/constants";
-import { Background } from "@chia/components/globals/Background";
+import { nextProgressConfig } from "@chia/config/nextProgress.config";
+import { BASE_URL } from "@chia/shared/constants";
+import { GeistProvider } from "@geist-ui/core";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
   const canonical = `${BASE_URL}${
@@ -29,7 +31,7 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
       />
       <ThemeProvider enableSystem={true} attribute="class">
         <Provider store={store}>
-          <SnackbarProvider maxSnack={3}>
+          <GeistProvider>
             <DefaultSeo canonical={canonical} {...SEO} />
             <NavMenu />
             <ActionIcon />
@@ -38,7 +40,7 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
               <Component {...pageProps} key={router.route} />
             </AnimatePresence>
             <Footer />
-          </SnackbarProvider>
+          </GeistProvider>
         </Provider>
       </ThemeProvider>
     </ErrorBoundary>

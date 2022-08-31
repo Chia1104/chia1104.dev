@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import githubGraphQLClient from "@chia/GraphQL/github/github.client";
 import { GET_REPOS } from "@chia/GraphQL/github/query";
-import { RepoGql } from "@chia/utils/types/repo";
+import { RepoGql } from "@chia/shared/types/repo";
 
 export const getAllReposAsync = createAsyncThunk(
   "github/getGithubData",

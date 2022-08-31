@@ -1,7 +1,6 @@
 import type { NextPage } from "next";
-import { Layout } from "@chia/components/globals/Layout";
-import { useAppDispatch } from "@chia/hooks/useAppDispatch";
-import { useAppSelector } from "@chia/hooks/useAppSelector";
+import { Layout } from "@chia/components/shared";
+import { useAppDispatch, useAppSelector } from "@chia/hooks";
 import { useEffect } from "react";
 import {
   selectAllRepos,
@@ -11,18 +10,18 @@ import {
 import { getAllReposAsync } from "@chia/store/modules/Github/actions";
 import GitHub from "@chia/components/pages/portfolios/GitHub";
 import Youtube from "@chia/components/pages/portfolios/Youtube";
-import type { Youtube as y } from "@chia/utils/types/youtube";
+import type { Youtube as y } from "@chia/shared/types";
 import { getAllVideosAsync } from "@chia/store/modules/Youtube/actions";
 import {
   selectAllVideos,
   selectAllVideosError,
   selectAllVideosLoading,
 } from "@chia/store/modules/Youtube/youtube.slice";
-import { getListImageUrl } from "@chia/lib/firebase/client/files/services";
-import Design from "@chia/components/pages/portfolios/Design";
+import { getListImageUrl } from "@chia/firebase/client/files/services";
+import { Design } from "@chia/components/pages/portfolios";
 import type { GetServerSideProps } from "next";
-import { Chia } from "@chia/utils/meta/chia";
-import type { RepoGql } from "@chia/utils/types/repo";
+import { Chia } from "@chia/shared/meta/chia";
+import type { RepoGql } from "@chia/shared/types";
 
 interface video {
   status: number;

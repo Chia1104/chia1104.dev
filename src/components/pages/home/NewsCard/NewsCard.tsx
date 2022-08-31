@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import Link from "@chia/components/globals/Link";
+import { Link } from "@chia/components/shared";
 import { type UrlObject } from "url";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
   link: string | UrlObject;
 }
 
-export const NewsCard: FC<Props> = ({ title, content, subtitle, link }) => {
+const NewsCard: FC<Props> = ({ title, content, subtitle, link }) => {
   return (
     <div className="flex flex-col justify-center items-center">
       <header className="subtitle c-text-secondary truncate">{title}</header>
@@ -29,3 +29,5 @@ export const NewsCard: FC<Props> = ({ title, content, subtitle, link }) => {
     </div>
   );
 };
+
+export default NewsCard;
