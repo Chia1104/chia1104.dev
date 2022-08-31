@@ -2,11 +2,13 @@ import {
   SPOTIFY_NOW_PLAYING_URL,
   SPOTIFY_PLAYLIST_URL,
   SPOTIFY_TOKEN_URL,
+  SPOTIFY_CLIENT_ID,
+  SPOTIFY_CLIENT_SECRET,
 } from "@chia/shared/constants";
 
-const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
+const basic = Buffer.from(
+  `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`
+).toString("base64");
 
 const getAccessToken = async () => {
   const URL = `${SPOTIFY_TOKEN_URL}?grant_type=client_credentials`;
