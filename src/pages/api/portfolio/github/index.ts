@@ -14,8 +14,6 @@ export default async function handler(
       limit: 6,
     });
     const repos: RepoGql[] = user.repositories.edges;
-    if (!repos || repos.length === 0)
-      return res.status(404).json({ message: "No repos found" });
     res.status(200).json(repos);
   } catch (error) {
     console.error(error);

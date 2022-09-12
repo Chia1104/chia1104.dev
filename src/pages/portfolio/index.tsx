@@ -11,7 +11,7 @@ import type {
   Youtube as YoutubeType,
   ApiRespond,
 } from "@chia/shared/types";
-import { BASE_URL } from "@chia/shared/constants";
+import { IS_PRODUCTION } from "@chia/shared/constants";
 
 interface Props {
   posterUrl: string[];
@@ -19,9 +19,14 @@ interface Props {
   youtube: ApiRespond<YoutubeType>;
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const github = await fetch(`${BASE_URL}/api/portfolio/github`);
-  const youtube = await fetch(`${BASE_URL}/api/portfolio/youtube`);
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const HTTP = IS_PRODUCTION ? "https" : "http";
+  const github = await fetch(
+    `${HTTP}://${ctx.req.headers.host}/api/portfolio/github`
+  );
+  const youtube = await fetch(
+    `${HTTP}://${ctx.req.headers.host}/api/portfolio/youtube`
+  );
   const url = await getListImageUrl();
 
   return {
