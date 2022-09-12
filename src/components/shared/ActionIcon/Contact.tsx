@@ -112,10 +112,7 @@ const Contact: FC = () => {
             Send
           </button>
           <Script
-            src="https://www.google.com/recaptcha/api.js?render=explicit"
-            async
-            defer
-          />
+            src="https://www.google.com/recaptcha/api.js" async defer />
           <div
             data-theme={theme === "dark" ? "dark" : "light"}
             className={cx("g-recaptcha self-center my-3", {
