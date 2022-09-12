@@ -42,9 +42,15 @@ const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
       title={`Portfolio | ${name} ${chinese_name} `}
       description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}>
       <article className="main c-container">
-        <GitHub repoData={github.data} loading={github.status === 200 ? 'succeeded' : 'failed'} />
+        <GitHub
+          repoData={github.data}
+          loading={github.status === 200 ? "succeeded" : "failed"}
+        />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
-        <Youtube videoData={youtube} loading={youtube.status === 200 ? 'succeeded' : 'failed'} />
+        <Youtube
+          videoData={youtube}
+          loading={youtube.status === 200 ? "succeeded" : "failed"}
+        />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Design data={posterUrl} />
       </article>
