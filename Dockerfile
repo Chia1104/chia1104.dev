@@ -15,6 +15,7 @@ COPY . .
 
 # ENV EXAMPLE example
 
+RUN yarn prisma generate
 RUN yarn build
 
 FROM node:16-alpine AS runner
