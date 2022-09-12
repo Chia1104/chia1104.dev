@@ -15,8 +15,14 @@ import { Provider } from "react-redux";
 import { store } from "@chia/store";
 import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/config/next-progress.config";
-import { BASE_URL } from "@chia/shared/constants";
+import { BASE_URL, IS_PRODUCTION } from "@chia/shared/constants";
 import { GeistProvider } from "@geist-ui/core";
+import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
+import { loggerLink } from "@trpc/client/links/loggerLink";
+import { withTRPC } from "@trpc/next";
+import { AppRouter } from "@chia/server/routers/_app";
+import superjson from "superjson";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
   const canonical = `${BASE_URL}${
@@ -47,4 +53,29 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
   );
 }
 
-export default ChiaWEB;
+export default withTRPC<AppRouter>({
+  config() {
+    return {
+      links: [
+        loggerLink({
+          enabled: (opts) =>
+            !IS_PRODUCTION ||
+            (opts.direction === "down" && opts.result instanceof Error),
+        }),
+        httpBatchLink({
+          url: `${getBaseUrl()}/api/trpc`,
+        }),
+      ],
+      transformer: superjson,
+    };
+  },
+  ssr: true,
+  responseMeta({ clientErrors }) {
+    if (clientErrors.length) {
+      return {
+        status: clientErrors[0].data?.httpStatus ?? 500,
+      };
+    }
+    return {};
+  },
+})(ChiaWEB);

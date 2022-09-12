@@ -8,3 +8,4 @@ export { Layout } from "./Layout";
 export { Link } from "./Link";
 export { Modal } from "./Modal";
 export { NavMenu } from "./NavMenu";
+export { EditModal } from "./EditModal";

@@ -6,39 +6,63 @@
 
 This is my personal website.
 
-## Languages and Tools
+Build with NextJS and using tRPC for data fetching.
+
+Deploy on Railway and running the Docker image.
+
+## 🔨 Languages and Tools
 
 <div align="center">
-  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,docker" />
+  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,prisma,postgres,docker" />
 </div>
 
-## Features
+## 🌐 Deployments
+
+- [Railway](https://chias-web-nextjs-production.up.railway.app/)
+- [Vercel](https://chia-web.vercel.app/)
+
+## ✨ Features
 - [X] Framer Motion (animation)
 - [X] MDX Blog
-- [ ] E2E Testing(with [Cypress](https://www.cypress.io/))
-- [X] Unit Testing(with [Vitest](https://vitest.dev/))
-- [ ] Turborepo
-- [ ] tRPC
+- [X] [Vitest](https://vitest.dev/) Unit Testing
+- [X] tRPC
 
-## Deploy your own
+## 👷 Work in progress
+
+- [ ] [Cypress](https://www.cypress.io/) E2E Testing
+- [ ] [Turborepo](https://turborepo.org/) (A high-performance build system for JavaScript and TypeScript codebases)
+
+## 🌐 Deploy your own
 
 Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/Chia1104/chias-web-nextjs)
 
-## Get Started
+## 🎉 Get Started
 
-Generate the .env file and add your own Firebase credentials, GitHub token, and Google API key.
+Generate the `.env` file and fill in the values.
 
 ```bash
-$ cp .env.example .env
+cp .env.example .env
 ```
 
 Install the dependencies and enable the `husky`.
 
 ```bash
-$ pnpm install
-$ pnpm husky install
+pnpm install
+pnpm husky install
+```
+
+Generate Prisma client
+
+```bash
+pnpm prisma generate
+```
+
+Add some initial dummy data using Prisma Studio. Run the following command:
+
+```bash
+pnpm prisma studio
 ```
 
 Runs the app in the development mode.
@@ -46,24 +70,24 @@ Runs the app in the development mode.
 Open http://localhost:3000 to view it in your browser.
 
 ```bash
-$ pnpm dev
+pnpm dev
 ```
 
 Testing the app.
 
 ```bash
-$ pnpm test:vitest # <-- test with vitest
+pnpm test:vitest # <-- test with vitest
 ```
 
 Builds the app for production to the `.next` folder.
 
 ```bash
-$ pnpm build
+pnpm build
 ```
 
 Build the docker image
 
 ```bash
-$ docker build -t nextjs-portfolio-web:v1 .
-$ docker run -p 8080:8080 nextjs-portfolio-web:v1
+docker build -t nextjs-portfolio-web:v1 .
+docker run -p 8080:8080 nextjs-portfolio-web:v1
 ```
