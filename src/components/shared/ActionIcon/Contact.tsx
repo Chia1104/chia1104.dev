@@ -111,8 +111,7 @@ const Contact: FC = () => {
             className="self-center c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
             Send
           </button>
-          <Script
-            src="https://www.google.com/recaptcha/api.js" async defer />
+          <Script src="https://www.google.com/recaptcha/api.js" async defer />
           <div
             data-theme={theme === "dark" ? "dark" : "light"}
             className={cx("g-recaptcha self-center my-3", {

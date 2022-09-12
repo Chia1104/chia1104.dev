@@ -21,8 +21,12 @@ interface Props {
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const HTTP = IS_PRODUCTION ? "https" : "http";
-  const github = await fetch(`${HTTP}://${ctx.req.headers.host}/api/portfolio/github`);
-  const youtube = await fetch(`${HTTP}://${ctx.req.headers.host}/api/portfolio/youtube`);
+  const github = await fetch(
+    `${HTTP}://${ctx.req.headers.host}/api/portfolio/github`
+  );
+  const youtube = await fetch(
+    `${HTTP}://${ctx.req.headers.host}/api/portfolio/youtube`
+  );
   const url = await getListImageUrl();
 
   return {
