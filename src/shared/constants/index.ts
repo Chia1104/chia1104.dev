@@ -34,5 +34,5 @@ export const MEASUREMENT_ID = process.env.NEXT_PUBLIC_MEASUREMENT_ID;
 export const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 export const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
-export const FORMSPREE_KEY = process.env.FORMSPREE_KEY || "123xyz";
+export const FORMSPREE_KEY = process.env.FORMSPREE_KEY;
 export const RE_CAPTCHA_KEY = process.env.RE_CAPTCHA_KEY;
