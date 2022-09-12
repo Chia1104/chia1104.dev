@@ -14,7 +14,7 @@ import { ThemeProvider } from "next-themes";
 import { Provider } from "react-redux";
 import { store } from "@chia/store";
 import NextNProgress from "nextjs-progressbar";
-import { nextProgressConfig } from "@chia/config/nextProgress.config";
+import { nextProgressConfig } from "@chia/config/next-progress.config";
 import { BASE_URL } from "@chia/shared/constants";
 import { GeistProvider } from "@geist-ui/core";
 

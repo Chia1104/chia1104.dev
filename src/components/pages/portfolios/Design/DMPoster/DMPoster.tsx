@@ -1,6 +1,6 @@
 import { type FC, useRef, useState, memo } from "react";
 import { useHover } from "usehooks-ts";
-import { Image, Modal, HoverButton } from "@chia/components/shared";
+import { Image, Modal } from "@chia/components/shared";
 import cx from "classnames";
 
 interface Props {
@@ -22,15 +22,15 @@ const DMPoster: FC<Props> = ({ url }) => {
         src={url || "/posts/example-posts/example.jpg"}
         alt={"DMPoster"}
         className={cx(
-          "rounded duration-300 transition ease-in-out",
-          isHover && "scale-[1.1]"
+          "rounded duration-300 transition ease-in-out object-cover",
+          isHover && "scale-[1.05] cursor-zoom-in"
         )}
         loading="lazy"
-        objectFit="cover"
-        layout="fill"
+        fill
+        sizes="100vw"
         quality={100}
+        onClick={() => setIsShow(!isShow)}
       />
-      <HoverButton onClick={() => setIsShow(!isShow)} refTarget={r} />
       <Modal
         isShowed={isShow}
         onClick={handleClose}
@@ -40,8 +40,9 @@ const DMPoster: FC<Props> = ({ url }) => {
             src={url || "/posts/example-posts/example.jpg"}
             alt={"DMPoster"}
             loading="lazy"
-            objectFit="contain"
-            layout="fill"
+            className="object-contain"
+            fill
+            sizes="100vw"
             quality={100}
           />
         </div>

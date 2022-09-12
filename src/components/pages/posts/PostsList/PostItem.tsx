@@ -19,11 +19,11 @@ const PostItem: FC<Props> = ({ data, i }) => {
         )}>
         <Image
           src={data.headImg || "/posts/example-posts/example.jpg"}
-          alt={data.title}
-          className="rounded group-hover:scale-[1.1] duration-300 transition ease-in-out"
+          alt={data.title as string}
+          className="object-cover rounded group-hover:scale-[1.05] duration-300 transition ease-in-out"
           loading="lazy"
-          objectFit="cover"
-          layout="fill"
+          fill
+          sizes="100vw"
           quality={100}
         />
       </div>
