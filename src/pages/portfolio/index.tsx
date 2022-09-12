@@ -1,70 +1,46 @@
 import type { NextPage } from "next";
 import { Layout } from "@chia/components/shared";
-import { useAppDispatch, useAppSelector } from "@chia/hooks";
-import { useEffect } from "react";
-import {
-  selectAllRepos,
-  selectAllReposLoading,
-  selectAllReposError,
-} from "@chia/store/modules/Github/github.slice";
-import { getAllReposAsync } from "@chia/store/modules/Github/actions";
 import GitHub from "@chia/components/pages/portfolios/GitHub";
 import Youtube from "@chia/components/pages/portfolios/Youtube";
-import type { Youtube as y } from "@chia/shared/types";
-import { getAllVideosAsync } from "@chia/store/modules/Youtube/actions";
-import {
-  selectAllVideos,
-  selectAllVideosError,
-  selectAllVideosLoading,
-} from "@chia/store/modules/Youtube/youtube.slice";
 import { getListImageUrl } from "@chia/firebase/client/files/services";
 import { Design } from "@chia/components/pages/portfolios";
 import type { GetServerSideProps } from "next";
 import { Chia } from "@chia/shared/meta/chia";
-import type { RepoGql } from "@chia/shared/types";
-
-interface video {
-  status: number;
-  data: y;
-}
+import type {
+  RepoGql,
+  Youtube as YoutubeType,
+  ApiRespond,
+} from "@chia/shared/types";
+import { IS_PRODUCTION } from "@chia/shared/constants";
 
 interface Props {
   posterUrl: string[];
+  github: ApiRespond<RepoGql[]>;
+  youtube: ApiRespond<YoutubeType>;
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const HTTP = IS_PRODUCTION ? "https" : "http";
+  const github = await fetch(
+    `${HTTP}://${ctx.req.headers.host}/api/portfolio/github`
+  );
+  const youtube = await fetch(
+    `${HTTP}://${ctx.req.headers.host}/api/portfolio/youtube`
+  );
   const url = await getListImageUrl();
 
   return {
     props: {
       posterUrl: url,
+      github: { status: github.status, data: await github.json() },
+      youtube: await youtube.json(),
     },
   };
 };
 
-const PortfoliosPage: NextPage<Props> = ({ posterUrl }) => {
+const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
   const name = Chia.name;
-  const title = Chia.title;
-  const description = Chia.content;
   const chinese_name = Chia.chineseName;
-
-  const dispatch = useAppDispatch();
-
-  // GitHub Repos
-  const allReposData = useAppSelector(selectAllRepos) as RepoGql[];
-  const allReposLoading = useAppSelector(selectAllReposLoading);
-  const allReposError = useAppSelector(selectAllReposError);
-
-  // Youtube Videos
-  const allVideosData = useAppSelector(selectAllVideos) as video;
-  const allVideosLoading = useAppSelector(selectAllVideosLoading);
-  const allVideosError = useAppSelector(selectAllVideosError);
-
-  useEffect(() => {
-    if (allReposData.length === 0) dispatch(getAllReposAsync());
-    if (!allVideosData.data || allVideosData.status !== 200)
-      dispatch(getAllVideosAsync());
-  }, [dispatch]);
 
   return (
     <Layout
@@ -72,15 +48,15 @@ const PortfoliosPage: NextPage<Props> = ({ posterUrl }) => {
       description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}>
       <article className="main c-container">
         <GitHub
-          repoData={allReposData}
-          loading={allReposLoading}
-          error={allReposError}
+          repoData={github.data}
+          loading={github.status === 200 ? "succeeded" : "failed"}
+          error={`Something went wrong. Status code: ${github.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Youtube
-          videoData={allVideosData}
-          loading={allVideosLoading}
-          error={allVideosError}
+          videoData={youtube}
+          loading={youtube.status === 200 ? "succeeded" : "failed"}
+          error={`Something went wrong. Status code: ${youtube.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Design data={posterUrl} />

@@ -1,6 +1,6 @@
 import { type FC, memo } from "react";
-import NextImage from "next/image";
-import type { ImageProps as NextImageProps } from "next/image";
+import NextImage from "next/future/image";
+import type { ImageProps as NextImageProps } from "next/future/image";
 import { shimmer, toBase64 } from "@chia/utils/shimmer.util";
 
 const Image: FC<NextImageProps> = (props) => {

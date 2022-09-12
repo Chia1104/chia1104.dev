@@ -1,10 +1,10 @@
 import { GraphQLClient } from "graphql-request";
-import { GITHUB_GRAPHQL_API } from "@chia/shared/constants";
+import { GITHUB_GRAPHQL_API, GH_PUBLIC_TOKEN } from "@chia/shared/constants";
 
 const client = new GraphQLClient(GITHUB_GRAPHQL_API, {
   headers: {
     accept: "application/vnd.github.v3+json",
-    authorization: `token ${process.env.NEXT_PUBLIC_GH_PUBLIC_TOKEN}`,
+    authorization: `token ${GH_PUBLIC_TOKEN}`,
   },
 });
 

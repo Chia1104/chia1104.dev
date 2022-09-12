@@ -39,7 +39,7 @@ const HomePage: NextPage<Props> = (props) => {
       <article className="c-container main">
         <div className="w-full h-full flex flex-col">
           <AboutMe avatarSrc={props.url} />
-          <div className="flex flex-col justify-center items-center md:flex-row mx-auto mt-10 w-full min:w-[370px] max-w-[740px] w-full">
+          <div className="flex flex-col justify-center items-center md:flex-row mx-auto mt-10 w-full min:w-[370px] max-w-[740px]">
             <div className="py-7 px-3">
               <NewsCard
                 title={"About me"}
@@ -80,7 +80,7 @@ const HomePage: NextPage<Props> = (props) => {
                 <a
                   href="https://open.spotify.com/user/21vnijzple4ufn2nzlfjy37py?si=b5f011d11a794ba4&nd=1"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   className="c-link text-info">
                   {" "}
                   Spotify{" "}
@@ -89,7 +89,7 @@ const HomePage: NextPage<Props> = (props) => {
                 <a
                   href="https://skyline.github.com/Chia1104/2022"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   className="c-link text-info">
                   {" "}
                   {/* eslint-disable-next-line react/no-unescaped-entities */}

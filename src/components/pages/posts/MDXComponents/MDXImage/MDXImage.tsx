@@ -1,5 +1,5 @@
 import { Image } from "@chia/components/shared";
-import { type ImageProps } from "next/image";
+import { type ImageProps } from "next/future/image";
 import { type FC } from "react";
 import cx from "classnames";
 
@@ -7,10 +7,17 @@ interface MDXImageProps extends ImageProps {
   alt: string;
   showAlt?: boolean;
   aspectRatio?: string;
+  objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
 }
 
 export const MDXImage: FC<MDXImageProps> = (MDXImageProps) => {
-  const { alt, showAlt = true, aspectRatio = "2:1", ...rest } = MDXImageProps;
+  const {
+    alt,
+    showAlt = true,
+    aspectRatio = "2:1",
+    objectFit = "cover",
+    ...rest
+  } = MDXImageProps;
 
   return (
     <div className="flex flex-col justify-center items-center my-5">
@@ -28,10 +35,13 @@ export const MDXImage: FC<MDXImageProps> = (MDXImageProps) => {
           aspectRatio === "9:16" && "aspect-w-9 aspect-h-16"
         )}>
         <Image
-          className="rounded-lg hover:scale-[1.05] duration-300 transition ease-in-out"
+          className={cx(
+            "rounded-lg hover:scale-[1.03] duration-300 transition ease-in-out",
+            objectFit && `object-${objectFit}`
+          )}
           loading="lazy"
-          objectFit="cover"
-          layout="fill"
+          fill
+          sizes="100vw"
           quality={100}
           {...rest}
           alt={alt}

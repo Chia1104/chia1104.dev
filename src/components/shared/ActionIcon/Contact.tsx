@@ -11,14 +11,12 @@ import Script from "next/script";
 import cx from "classnames";
 import { useToasts } from "@geist-ui/core";
 import { useTheme } from "next-themes";
+import { FORMSPREE_KEY, RE_CAPTCHA_KEY } from "@chia/shared/constants";
 
 const Contact: FC = () => {
-  const FORMSPREE_KEY = process.env.NEXT_PUBLIC_FORMSPREE_KEY as string;
-  const RE_CAPTCHA_KEY = process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY as string;
-
   const dispatch = useAppDispatch();
   const actionIconSheet = useAppSelector(selectActionIconSheet);
-  const [state, handleSubmit] = useForm(FORMSPREE_KEY);
+  const [state, handleSubmit] = useForm(FORMSPREE_KEY as string);
   const { setToast } = useToasts({ placement: "bottomLeft" });
   const { theme } = useTheme();
 
