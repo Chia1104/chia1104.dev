@@ -45,11 +45,13 @@ const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
         <GitHub
           repoData={github.data}
           loading={github.status === 200 ? "succeeded" : "failed"}
+          error={`Something went wrong. Status code: ${github.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Youtube
           videoData={youtube}
           loading={youtube.status === 200 ? "succeeded" : "failed"}
+          error={`Something went wrong. Status code: ${youtube.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Design data={posterUrl} />
