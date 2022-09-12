@@ -15,7 +15,7 @@ import { BASE_URL } from "@chia/shared/constants";
 
 interface Props {
   posterUrl: string[];
-  github: RepoGql[];
+  github: ApiRespond<RepoGql[]>;
   youtube: ApiRespond<YoutubeType>;
 }
 
@@ -27,7 +27,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   return {
     props: {
       posterUrl: url,
-      github: await github.json(),
+      github: { status: github.status, data: await github.json() },
       youtube: await youtube.json(),
     },
   };
@@ -42,9 +42,15 @@ const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
       title={`Portfolio | ${name} ${chinese_name} `}
       description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}>
       <article className="main c-container">
-        <GitHub repoData={github} loading={"succeeded"} />
+        <GitHub
+          repoData={github.data}
+          loading={github.status === 200 ? "succeeded" : "failed"}
+        />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
-        <Youtube videoData={youtube} loading={"succeeded"} />
+        <Youtube
+          videoData={youtube}
+          loading={youtube.status === 200 ? "succeeded" : "failed"}
+        />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Design data={posterUrl} />
       </article>
