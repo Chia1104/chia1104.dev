@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 RUN yarn global add pnpm && \
-    pnpm install
+    pnpm add sharp
 
 FROM node:16-alpine AS builder
 
@@ -15,6 +15,7 @@ COPY . .
 
 # ENV EXAMPLE example
 
+RUN yarn prisma generate
 RUN yarn build
 
 FROM node:16-alpine AS runner
@@ -24,7 +25,7 @@ WORKDIR /app
 ENV NODE_ENV production
 
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 chia1104
+RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
