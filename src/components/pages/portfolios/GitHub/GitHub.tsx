@@ -26,7 +26,7 @@ const GitHub: FC<Props> = ({ repoData, loading, error }) => {
       <div className="w-full flex flex-col">
         {loading === "succeeded" && <ReposList repo={repoData} />}
         {loading === "pending" && <ReposLoader />}
-        {loading === "failed" && <p>{error}</p>}
+        {loading === "failed" && <p className="text-warning">{error}</p>}
         <a
           href={`${GITHUB_URL}?tab=repositories`}
           target="_blank"
