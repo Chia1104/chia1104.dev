@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 RUN yarn global add pnpm && \
-    pnpm install
+    pnpm add sharp
 
 FROM node:16-alpine AS builder
 
@@ -16,7 +16,7 @@ COPY . .
 # ENV EXAMPLE example
 
 RUN yarn prisma generate
-RUN yarn add sharp && yarn build
+RUN yarn build
 
 FROM node:16-alpine AS runner
 
