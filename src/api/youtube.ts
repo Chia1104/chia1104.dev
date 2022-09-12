@@ -8,6 +8,7 @@ import type { ApiRespond, Youtube } from "@chia/shared/types";
 export const getAllVideos = async (
   maxResult = 10
 ): Promise<ApiRespond<Youtube>> => {
+  console.log("getAllVideos", GOOGLE_API, GOOGLE_API_KEY, YOUTUBE_LIST_ID);
   const URL = `${GOOGLE_API}youtube/v3/playlistItems?part=snippet&playlistId=${YOUTUBE_LIST_ID}&key=${GOOGLE_API_KEY}&maxResults=${maxResult}`;
 
   try {
