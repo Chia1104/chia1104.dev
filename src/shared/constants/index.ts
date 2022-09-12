@@ -4,6 +4,9 @@ export const BASE_URL =
   process.env.NODE_ENV === "production"
     ? "https://chia1104.dev"
     : "http://localhost:3000";
+
+export const RAILWAY_URL = process.env.RAILWAY_URL || BASE_URL;
+
 export const GITHUB_API = "https://api.github.com/";
 export const GITHUB_GRAPHQL_API = "https://api.github.com/graphql";
 export const POSTS_PATH =

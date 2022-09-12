@@ -15,7 +15,7 @@ import { Provider } from "react-redux";
 import { store } from "@chia/store";
 import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/config/next-progress.config";
-import { BASE_URL } from "@chia/shared/constants";
+import { BASE_URL, RAILWAY_URL } from "@chia/shared/constants";
 import { GeistProvider } from "@geist-ui/core";
 import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
 import { loggerLink } from "@trpc/client/links/loggerLink";
@@ -53,10 +53,15 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
 }
 
 function getBaseUrl() {
-  if (process.browser) {
+  if (typeof window !== "undefined") {
     return "";
   }
-  return `http://localhost:${process.env.PORT ?? 3000}`;
+
+  if (RAILWAY_URL) {
+    return RAILWAY_URL;
+  }
+
+  return BASE_URL;
 }
 
 export default withTRPC<AppRouter>({
