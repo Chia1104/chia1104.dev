@@ -16,7 +16,7 @@ COPY . .
 # ENV EXAMPLE example
 
 RUN yarn prisma generate
-RUN yarn build
+RUN yarn add sharp && yarn build
 
 FROM node:16-alpine AS runner
 
