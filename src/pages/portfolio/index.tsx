@@ -60,7 +60,7 @@ const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
           error={`Something went wrong. Status code: ${youtube.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
-        <Design data={design.data?.map((image) => image.imageUrl) || []} />
+        <Design data={design.data?.map((image: any) => image.imageUrl) || []} />
       </article>
     </Layout>
   );
