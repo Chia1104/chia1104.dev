@@ -16,7 +16,7 @@ import { FORMSPREE_KEY, RE_CAPTCHA_KEY } from "@chia/shared/constants";
 const Contact: FC = () => {
   const dispatch = useAppDispatch();
   const actionIconSheet = useAppSelector(selectActionIconSheet);
-  const [state, handleSubmit] = useForm(FORMSPREE_KEY);
+  const [state, handleSubmit] = useForm(FORMSPREE_KEY as string);
   const { setToast } = useToasts({ placement: "bottomLeft" });
   const { theme } = useTheme();
 
