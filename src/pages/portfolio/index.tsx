@@ -10,35 +10,33 @@ import type {
   Youtube as YoutubeType,
   ApiRespond,
 } from "@chia/shared/types";
-import { IS_PRODUCTION } from "@chia/shared/constants";
 import { trpc } from "@chia/utils/trpc.util";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 interface Props {
-  posterUrl: string[];
   github: ApiRespond<RepoGql[]>;
   youtube: ApiRespond<YoutubeType>;
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const HTTP = IS_PRODUCTION ? "https" : "http";
-  const github = await fetch(
-    `${HTTP}://${ctx.req.headers.host}/api/portfolio/github`
-  );
-  const youtube = await fetch(
-    `${HTTP}://${ctx.req.headers.host}/api/portfolio/youtube`
-  );
-  // const url = await getListImageUrl();
+type DesignResult = {
+  id: number;
+  name: string;
+  imageUrl: string;
+};
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const github = await fetch(`${getBaseUrl()}/api/portfolio/github`);
+  const youtube = await fetch(`${getBaseUrl()}/api/portfolio/youtube`);
 
   return {
     props: {
-      // posterUrl: url,
       github: { status: github.status, data: await github.json() },
       youtube: await youtube.json(),
     },
   };
 };
 
-const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
+const PortfoliosPage: NextPage<Props> = ({ github, youtube }) => {
   const name = Chia.name;
   const chinese_name = Chia.chineseName;
   const design = trpc.useQuery(["portfolio.all-design"]);
@@ -60,7 +58,9 @@ const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
           error={`Something went wrong. Status code: ${youtube.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
-        <Design data={design.data?.map((image: any) => image.imageUrl) || []} />
+        <Design
+          data={design.data?.map((image: DesignResult) => image.imageUrl) || []}
+        />
       </article>
     </Layout>
   );
