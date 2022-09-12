@@ -2,7 +2,6 @@ import type { NextPage } from "next";
 import { Layout } from "@chia/components/shared";
 import GitHub from "@chia/components/pages/portfolios/GitHub";
 import Youtube from "@chia/components/pages/portfolios/Youtube";
-import { getListImageUrl } from "@chia/firebase/client/files/services";
 import { Design } from "@chia/components/pages/portfolios";
 import type { GetServerSideProps } from "next";
 import { Chia } from "@chia/shared/meta/chia";
@@ -12,6 +11,7 @@ import type {
   ApiRespond,
 } from "@chia/shared/types";
 import { IS_PRODUCTION } from "@chia/shared/constants";
+import { trpc } from "@chia/utils/trpc.util";
 
 interface Props {
   posterUrl: string[];
@@ -27,11 +27,11 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const youtube = await fetch(
     `${HTTP}://${ctx.req.headers.host}/api/portfolio/youtube`
   );
-  const url = await getListImageUrl();
+  // const url = await getListImageUrl();
 
   return {
     props: {
-      posterUrl: url,
+      // posterUrl: url,
       github: { status: github.status, data: await github.json() },
       youtube: await youtube.json(),
     },
@@ -41,6 +41,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
   const name = Chia.name;
   const chinese_name = Chia.chineseName;
+  const design = trpc.useQuery(["portfolio.all-design"]);
 
   return (
     <Layout
@@ -59,7 +60,7 @@ const PortfoliosPage: NextPage<Props> = ({ posterUrl, github, youtube }) => {
           error={`Something went wrong. Status code: ${youtube.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
-        <Design data={posterUrl} />
+        <Design data={design.data?.map((image) => image.imageUrl) || []} />
       </article>
     </Layout>
   );
