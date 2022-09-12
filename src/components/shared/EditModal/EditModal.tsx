@@ -24,6 +24,6 @@ const EditModal: FC<Props> = (props) => {
       <Modal.Action onClick={onSubmit}>Submit</Modal.Action>
     </Modal>
   );
-}
+};
 
 export default EditModal;
