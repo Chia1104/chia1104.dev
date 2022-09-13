@@ -19,7 +19,7 @@ Deploy on Railway and running the Docker image.
 ## 🌐 Deployments
 
 - [Railway](https://chias-web-nextjs-production.up.railway.app/)
-- [Vercel](https://chia-web.vercel.app/)
+- [Vercel](https://chia1104.vercel.app/)
 
 ## ✨ Features
 - [X] Framer Motion (animation)
