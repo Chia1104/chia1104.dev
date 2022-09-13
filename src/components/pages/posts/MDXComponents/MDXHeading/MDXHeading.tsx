@@ -35,6 +35,7 @@ export const H1: FC<MDXHeadingProps> = (MDXHeadingProps) => {
       {mount && (
         <a
           href={`#${r.current?.id}`}
+          aria-label={r.current?.innerText}
           className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -72,6 +73,7 @@ export const H2: FC<MDXHeadingProps> = (MDXHeadingProps) => {
       {mount && (
         <a
           href={`#${r.current?.id}`}
+          aria-label={r.current?.innerText}
           className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -109,6 +111,7 @@ export const H3: FC<MDXHeadingProps> = (MDXHeadingProps) => {
       {mount && (
         <a
           href={`#${r.current?.id}`}
+          aria-label={r.current?.innerText}
           className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -146,6 +149,7 @@ export const H4: FC<MDXHeadingProps> = (MDXHeadingProps) => {
       {mount && (
         <a
           href={`#${r.current?.id}`}
+          aria-label={r.current?.innerText}
           className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -183,6 +187,7 @@ export const H5: FC<MDXHeadingProps> = (MDXHeadingProps) => {
       {mount && (
         <a
           href={`#${r.current?.id}`}
+          aria-label={r.current?.innerText}
           className="c-text-secondary font-medium hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"

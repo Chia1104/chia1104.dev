@@ -22,6 +22,7 @@ export const MDXLink: FC<MDXLinkProps> = (MDXLinkProps) => {
     <a
       target="_blank"
       rel="noopener noreferrer"
+      href={href}
       {...rest}
       className="c-link text-info"
     />
