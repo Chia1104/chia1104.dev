@@ -1,23 +1,20 @@
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import { useTheme } from "next-themes";
-import { type FC, useState, useEffect, memo } from "react";
+import { type FC, memo } from "react";
 import Contact from "./Contact";
-import { useAppDispatch } from "@chia/hooks";
+import { useAppDispatch, useIsMounted, useDarkMode } from "@chia/hooks";
 import { activeActionIconSheet } from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { Chia } from "@chia/shared/meta/chia";
 
 const ActionIcon: FC = () => {
   const dispatch = useAppDispatch();
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const isMounted = useIsMounted();
+  const { isDarkMode, toggle } = useDarkMode();
+
   const GITHUB = Chia.link.github;
   const INSTAGRAM = Chia.link.instagram;
   const LINKEDIN = Chia.link.linkedin;
-
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
 
   return (
     <div className="fixed bottom-0 right-0 mr-10 mb-10 p-3 rounded-xl shadow-2xl flex flex-col justify-center items-center c-bg-secondary z-40 overflow-hidden">
@@ -43,11 +40,11 @@ const ActionIcon: FC = () => {
       <div className="flex">
         <button
           aria-label={"Light or Dark"}
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          onClick={toggle}
           className="hover:text-secondary transition ease-in-out mr-3">
-          {mounted && (
+          {isMounted && (
             <>
-              {theme === "dark" ? (
+              {isDarkMode ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"

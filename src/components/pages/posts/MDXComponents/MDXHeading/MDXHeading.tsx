@@ -4,9 +4,8 @@ import {
   type DetailedHTMLProps,
   type HTMLAttributes,
   useRef,
-  useEffect,
-  useState,
 } from "react";
+import { useIsMounted } from "@chia/hooks";
 
 interface MDXHeadingProps
   extends DetailedHTMLProps<
@@ -20,19 +19,14 @@ export const H1: FC<MDXHeadingProps> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
-  const [mount, setMount] = useState(false);
-
-  useEffect(() => {
-    setMount(true);
-    return () => setMount(false);
-  }, []);
+  const isMounted = useIsMounted();
 
   return (
     <span className="inline-flex items-center group my-5 pb-5 border-b-2 c-border-primary w-full">
       <h1 {...rest} className="text-4xl font-bold mr-2" ref={r}>
         {children}
       </h1>
-      {mount && (
+      {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
@@ -59,18 +53,14 @@ export const H2: FC<MDXHeadingProps> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
-  const [mount, setMount] = useState(false);
-  useEffect(() => {
-    setMount(true);
-    return () => setMount(false);
-  }, []);
+  const isMounted = useIsMounted();
 
   return (
     <span className="inline-flex items-center group my-4 w-full">
       <h2 {...rest} className="text-3xl font-bold mr-2" ref={r}>
         {children}
       </h2>
-      {mount && (
+      {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
@@ -97,18 +87,14 @@ export const H3: FC<MDXHeadingProps> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
-  const [mount, setMount] = useState(false);
-  useEffect(() => {
-    setMount(true);
-    return () => setMount(false);
-  }, []);
+  const isMounted = useIsMounted();
 
   return (
     <span className="inline-flex items-center group my-3 w-full">
       <h3 {...rest} className="text-2xl font-bold mr-2" ref={r}>
         {children}
       </h3>
-      {mount && (
+      {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
@@ -135,18 +121,14 @@ export const H4: FC<MDXHeadingProps> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
-  const [mount, setMount] = useState(false);
-  useEffect(() => {
-    setMount(true);
-    return () => setMount(false);
-  }, []);
+  const isMounted = useIsMounted();
 
   return (
     <span className="inline-flex items-center group my-2 w-full">
       <h4 {...rest} className="text-xl font-bold mr-2" ref={r}>
         {children}
       </h4>
-      {mount && (
+      {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
@@ -173,18 +155,14 @@ export const H5: FC<MDXHeadingProps> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
-  const [mount, setMount] = useState(false);
-  useEffect(() => {
-    setMount(true);
-    return () => setMount(false);
-  }, []);
+  const isMounted = useIsMounted();
 
   return (
     <span className="inline-flex items-center group w-full my-2">
       <h5 {...rest} className="text-lg font-bold mr-2" ref={r}>
         {children}
       </h5>
-      {mount && (
+      {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
