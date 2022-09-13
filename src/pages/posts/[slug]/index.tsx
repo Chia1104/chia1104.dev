@@ -15,7 +15,7 @@ import { NextSeo } from "next-seo";
 import { BASE_URL } from "@chia/shared/constants";
 import { useRouter } from "next/router";
 import { Chia } from "@chia/shared/meta/chia";
-
+import { useIsMounted } from "@chia/hooks";
 interface Props {
   source: MDXRemoteProps;
   frontMatter: PostFrontMatter;
@@ -50,6 +50,8 @@ export const getStaticProps: GetStaticProps = async ({
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
   const { theme } = useTheme();
   const router = useRouter();
+  const isMounted = useIsMounted();
+
   const name = Chia.name;
   const chinese_name = Chia.chineseName;
 
@@ -108,7 +110,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
             mapping="specific"
             reactionsEnabled="1"
             emitMetadata="0"
-            theme={theme === "dark" ? "dark_dimmed" : "light"}
+            theme={isMounted && theme === "dark" ? "dark" : "light"}
           />
         </div>
       </article>

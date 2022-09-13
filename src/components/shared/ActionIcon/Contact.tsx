@@ -6,7 +6,7 @@ import {
   selectActionIconSheet,
 } from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { motion } from "framer-motion";
-import { useAppSelector } from "@chia/hooks/useAppSelector";
+import { useAppSelector, useIsMounted } from "@chia/hooks";
 import Script from "next/script";
 import cx from "classnames";
 import { useToasts } from "@geist-ui/core";
@@ -19,6 +19,15 @@ const Contact: FC = () => {
   const [state, handleSubmit] = useForm(FORMSPREE_KEY as string);
   const { setToast } = useToasts({ placement: "bottomLeft" });
   const { theme } = useTheme();
+  const id = useId();
+  const isMounted = useIsMounted();
+  useMemo(() => {
+    if (state.succeeded)
+      setToast({
+        text: "We have received your message.",
+        type: "success",
+      });
+  }, [state.succeeded]);
 
   const outside = {
     open: { opacity: 1, height: "550px", width: "330px" },
@@ -29,15 +38,6 @@ const Contact: FC = () => {
     closed: { opacity: 0, y: 100 },
   };
 
-  useMemo(() => {
-    if (state.succeeded)
-      setToast({
-        text: "We have received your message.",
-        type: "success",
-      });
-  }, [state.succeeded]);
-
-  const id = useId();
   return (
     <motion.div
       initial={"closed"}
@@ -111,13 +111,18 @@ const Contact: FC = () => {
             className="self-center c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
             Send
           </button>
-          <Script src="https://www.google.com/recaptcha/api.js" async defer />
+          <Script
+            src="https://www.google.com/recaptcha/api.js?render=explicit"
+            async
+            defer
+          />
           <div
-            data-theme={theme === "dark" ? "dark" : "light"}
+            data-theme={isMounted && theme === "dark" ? "dark" : "light"}
             className={cx("g-recaptcha self-center my-3", {
               hidden: !actionIconSheet,
             })}
             data-sitekey={RE_CAPTCHA_KEY}
+            data-callback="onSubmit"
           />
           <ValidationError
             errors={state.errors}

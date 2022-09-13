@@ -15,7 +15,7 @@ import { Provider } from "react-redux";
 import { store } from "@chia/store";
 import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/config/next-progress.config";
-import { BASE_URL, IS_PRODUCTION } from "@chia/shared/constants";
+import { IS_PRODUCTION } from "@chia/shared/constants";
 import { GeistProvider } from "@geist-ui/core";
 import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
 import { loggerLink } from "@trpc/client/links/loggerLink";
@@ -23,9 +23,14 @@ import { withTRPC } from "@trpc/next";
 import { AppRouter } from "@chia/server/routers/_app";
 import superjson from "superjson";
 import { getBaseUrl } from "@chia/utils/getBaseUrl";
+import { useTheme } from "next-themes";
+import { useIsMounted } from "@chia/hooks";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
-  const canonical = `${BASE_URL}${
+  const isMounted = useIsMounted();
+  const { theme } = useTheme();
+
+  const canonical = `${getBaseUrl()}${
     router.pathname === "/" ? "" : router.pathname
   }/`;
 
@@ -37,7 +42,8 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
       />
       <ThemeProvider enableSystem={true} attribute="class">
         <Provider store={store}>
-          <GeistProvider>
+          <GeistProvider
+            themeType={isMounted && theme === "dark" ? "dark" : "light"}>
             <DefaultSeo canonical={canonical} {...SEO} />
             <NavMenu />
             <ActionIcon />
