@@ -25,7 +25,6 @@ const securityHeaders = [
 const nextConfig = {
   swcMinify: true,
   reactStrictMode: true,
-  trailingSlash: true,
   output: "standalone",
   experimental: {
     // swcPlugins: [

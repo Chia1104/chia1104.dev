@@ -29,10 +29,6 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
   const isMounted = useIsMounted();
   const { isDarkMode } = useDarkMode();
 
-  const canonical = `${getBaseUrl()}${
-    router.pathname === "/" ? "" : router.pathname
-  }/`;
-
   return (
     <ErrorBoundary>
       <NextNProgress
@@ -42,7 +38,7 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
       <ThemeProvider enableSystem={true} attribute="class">
         <Provider store={store}>
           <GeistProvider themeType={isMounted && isDarkMode ? "dark" : "light"}>
-            <DefaultSeo canonical={canonical} {...SEO} />
+            <DefaultSeo {...SEO} />
             <NavMenu />
             <ActionIcon />
             <Background />
