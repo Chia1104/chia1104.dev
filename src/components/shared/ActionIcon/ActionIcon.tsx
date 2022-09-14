@@ -1,5 +1,4 @@
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
-import { useTheme } from "next-themes";
 import { type FC, memo } from "react";
 import Contact from "./Contact";
 import { useAppDispatch, useIsMounted, useDarkMode } from "@chia/hooks";
@@ -8,7 +7,6 @@ import { Chia } from "@chia/shared/meta/chia";
 
 const ActionIcon: FC = () => {
   const dispatch = useAppDispatch();
-  const { theme, setTheme } = useTheme();
   const isMounted = useIsMounted();
   const { isDarkMode, toggle } = useDarkMode();
 

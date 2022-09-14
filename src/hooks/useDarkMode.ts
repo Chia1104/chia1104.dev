@@ -1,21 +1,18 @@
-import { useLocalStorage, useMediaQuery, useUpdateEffect } from "usehooks-ts";
+import { useMediaQuery, useUpdateEffect } from "usehooks-ts";
 import { useTheme } from "next-themes";
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
 
 interface UseDarkModeOutput {
   isDarkMode: boolean;
+  theme: string | undefined;
   toggle: () => void;
   enable: () => void;
   disable: () => void;
 }
 
-export default function useDarkMode(defaultValue?: boolean): UseDarkModeOutput {
+export default function useDarkMode(): UseDarkModeOutput {
   const isDarkOS = useMediaQuery(COLOR_SCHEME_QUERY);
-  const [isDarkMode, setDarkMode] = useLocalStorage<boolean>(
-    "usehooks-ts-dark-mode",
-    defaultValue ?? isDarkOS ?? false
-  );
   const { theme, setTheme } = useTheme();
 
   useUpdateEffect(() => {
@@ -24,6 +21,7 @@ export default function useDarkMode(defaultValue?: boolean): UseDarkModeOutput {
 
   return {
     isDarkMode: theme === "dark",
+    theme,
     toggle: () => setTheme(theme === "dark" ? "light" : "dark"),
     enable: () => setTheme("dark"),
     disable: () => setTheme("light"),

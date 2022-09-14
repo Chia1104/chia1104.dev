@@ -6,11 +6,10 @@ import {
   selectActionIconSheet,
 } from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { motion } from "framer-motion";
-import { useAppSelector, useIsMounted } from "@chia/hooks";
+import { useAppSelector, useIsMounted, useDarkMode } from "@chia/hooks";
 import Script from "next/script";
 import cx from "classnames";
 import { useToasts } from "@geist-ui/core";
-import { useTheme } from "next-themes";
 import { FORMSPREE_KEY, RE_CAPTCHA_KEY } from "@chia/shared/constants";
 
 const Contact: FC = () => {
@@ -18,7 +17,7 @@ const Contact: FC = () => {
   const actionIconSheet = useAppSelector(selectActionIconSheet);
   const [state, handleSubmit] = useForm(FORMSPREE_KEY as string);
   const { setToast } = useToasts({ placement: "bottomLeft" });
-  const { theme } = useTheme();
+  const { isDarkMode } = useDarkMode();
   const id = useId();
   const isMounted = useIsMounted();
   useMemo(() => {
@@ -112,12 +111,11 @@ const Contact: FC = () => {
             Send
           </button>
           <Script
-            src="https://www.google.com/recaptcha/api.js?render=explicit"
-            async
-            defer
+            src="https://www.google.com/recaptcha/api.js"
+            strategy="lazyOnload"
           />
           <div
-            data-theme={isMounted && theme === "dark" ? "dark" : "light"}
+            data-theme={isMounted && isDarkMode ? "dark" : "light"}
             className={cx("g-recaptcha self-center my-3", {
               hidden: !actionIconSheet,
             })}

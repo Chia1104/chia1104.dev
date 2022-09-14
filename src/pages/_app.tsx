@@ -23,12 +23,11 @@ import { withTRPC } from "@trpc/next";
 import { AppRouter } from "@chia/server/routers/_app";
 import superjson from "superjson";
 import { getBaseUrl } from "@chia/utils/getBaseUrl";
-import { useTheme } from "next-themes";
-import { useIsMounted } from "@chia/hooks";
+import { useIsMounted, useDarkMode } from "@chia/hooks";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
   const isMounted = useIsMounted();
-  const { theme } = useTheme();
+  const { isDarkMode } = useDarkMode();
 
   const canonical = `${getBaseUrl()}${
     router.pathname === "/" ? "" : router.pathname
@@ -42,8 +41,7 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
       />
       <ThemeProvider enableSystem={true} attribute="class">
         <Provider store={store}>
-          <GeistProvider
-            themeType={isMounted && theme === "dark" ? "dark" : "light"}>
+          <GeistProvider themeType={isMounted && isDarkMode ? "dark" : "light"}>
             <DefaultSeo canonical={canonical} {...SEO} />
             <NavMenu />
             <ActionIcon />
