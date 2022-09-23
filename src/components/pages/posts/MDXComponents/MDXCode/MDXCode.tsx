@@ -32,12 +32,9 @@ export const MDXCode: FC<MDXCodeProps> = (MDXCodeProps) => {
   );
 };
 
-interface MDXPreProps
-  extends DetailedHTMLProps<HTMLAttributes<HTMLPreElement>, HTMLPreElement> {
-  children: ReactNode;
-}
-
-export const MDXPre: FC<MDXPreProps> = (MDXPreProps) => {
+export const MDXPre: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLPreElement>, HTMLPreElement>
+> = (MDXPreProps) => {
   const { children, ...rest } = MDXPreProps;
   const isMounted = useIsMounted();
   const ref = useRef<HTMLPreElement>(null);
@@ -115,12 +112,9 @@ export const MDXPre: FC<MDXPreProps> = (MDXPreProps) => {
   );
 };
 
-interface MDXCodeOrionProps
-  extends DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> {
-  children: ReactNode;
-}
-
-export const MDXCodeOrigin: FC<MDXCodeOrionProps> = (MDXCodeOrionProps) => {
+export const MDXCodeOrigin: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>
+> = (MDXCodeOrionProps) => {
   const { children, ...rest } = MDXCodeOrionProps;
   return (
     <code

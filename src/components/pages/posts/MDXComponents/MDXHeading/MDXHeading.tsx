@@ -1,21 +1,14 @@
 import {
   type FC,
-  type ReactNode,
   type DetailedHTMLProps,
   type HTMLAttributes,
   useRef,
 } from "react";
 import { useIsMounted } from "@chia/hooks";
 
-interface MDXHeadingProps
-  extends DetailedHTMLProps<
-    HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  > {
-  children?: ReactNode;
-}
-
-export const H1: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+export const H1: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>
+> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
@@ -49,7 +42,9 @@ export const H1: FC<MDXHeadingProps> = (MDXHeadingProps) => {
     </span>
   );
 };
-export const H2: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+export const H2: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>
+> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
@@ -83,7 +78,9 @@ export const H2: FC<MDXHeadingProps> = (MDXHeadingProps) => {
     </span>
   );
 };
-export const H3: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+export const H3: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>
+> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
@@ -117,7 +114,9 @@ export const H3: FC<MDXHeadingProps> = (MDXHeadingProps) => {
     </span>
   );
 };
-export const H4: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+export const H4: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>
+> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
@@ -151,7 +150,9 @@ export const H4: FC<MDXHeadingProps> = (MDXHeadingProps) => {
     </span>
   );
 };
-export const H5: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+export const H5: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>
+> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   const r = useRef<HTMLHeadingElement>(null);
@@ -185,7 +186,9 @@ export const H5: FC<MDXHeadingProps> = (MDXHeadingProps) => {
     </span>
   );
 };
-export const H6: FC<MDXHeadingProps> = (MDXHeadingProps) => {
+export const H6: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>
+> = (MDXHeadingProps) => {
   const { children, ...rest } = MDXHeadingProps;
 
   return (

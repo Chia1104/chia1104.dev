@@ -1,11 +1,8 @@
-import type { FC, DetailedHTMLProps, HTMLAttributes, ReactNode } from "react";
+import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 
-interface MDXHrProps
-  extends DetailedHTMLProps<HTMLAttributes<HTMLHRElement>, HTMLHRElement> {
-  children?: ReactNode;
-}
-
-export const MDXHr: FC<MDXHrProps> = (MDXHrProps) => {
+export const MDXHr: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLHRElement>, HTMLHRElement>
+> = (MDXHrProps) => {
   const { children, ...rest } = MDXHrProps;
   return (
     <>
