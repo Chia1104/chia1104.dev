@@ -26,7 +26,7 @@ excerpt: "useEffect 和 useLayoutEffect 的區別及使用時機。React 自從 
 
 而他最主要的目的就是避免我們的 component 在 unmount 後還有其他不必要的行為，甚至導致 memory leak。
 
-我們通常都會在 React 的 `useEffect` 中執行 [side effect](/posts/2022-06-06-react-hooks-part1/#side-effect)，其中的 Subscription 就是需要做清除動作的，不過我們這裡會先講不需做清除的部分，例如一般 Call API 的動作。
+我們通常都會在 React 的 `useEffect` 中執行 [side effect](/posts/2022-06-06-react-hooks-part1/#side-effect)，其中的監聽 Event 就是需要做清除動作的，不過我們這裡會先講不需做清除的部分，例如一般 Call API 的動作。
 
 ### 無需清除的 Effect
 

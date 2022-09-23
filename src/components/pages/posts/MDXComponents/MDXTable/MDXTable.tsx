@@ -1,67 +1,80 @@
 import type {
-  FC,
-  ReactNode,
   DetailedHTMLProps,
+  FC,
+  HTMLAttributes,
   TableHTMLAttributes,
-  ThHTMLAttributes,
   TdHTMLAttributes,
+  ThHTMLAttributes,
 } from "react";
 
-interface MDXTableProps
-  extends DetailedHTMLProps<
-    TableHTMLAttributes<HTMLTableElement>,
-    HTMLTableElement
-  > {
-  children: ReactNode;
-}
-
-export const MDXTable: FC<MDXTableProps> = (MDXTableProps) => {
-  const { children, ...rest } = MDXTableProps;
+export const MDXTable: FC<
+  DetailedHTMLProps<TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>
+> = ({ children, ...rest }) => {
   return (
-    <>
-      <table
-        {...rest}
-        className="table-auto border-collapse border border-slate-500">
-        {children}
-      </table>
-    </>
+    <table {...rest} className="table-auto border-collapse w-full my-5">
+      {children}
+    </table>
   );
 };
 
-interface MDXTHProps
-  extends DetailedHTMLProps<
-    ThHTMLAttributes<HTMLTableCellElement>,
-    HTMLTableCellElement
-  > {
-  children: ReactNode;
-}
-
-export const MDXTh: FC<MDXTHProps> = (MDXTHProps) => {
-  const { children, ...rest } = MDXTHProps;
+export const MDXThead: FC<
+  DetailedHTMLProps<
+    HTMLAttributes<HTMLTableSectionElement>,
+    HTMLTableSectionElement
+  >
+> = ({ children, ...rest }) => {
   return (
-    <>
-      <th {...rest} className="p-2 border border-slate-500">
-        {children}
-      </th>
-    </>
+    <thead {...rest} className="p-2 border">
+      {children}
+    </thead>
   );
 };
 
-interface MDXTDProps
-  extends DetailedHTMLProps<
-    TdHTMLAttributes<HTMLTableCellElement>,
-    HTMLTableCellElement
-  > {
-  children: ReactNode;
-}
-
-export const MDXTd: FC<MDXTDProps> = (MDXTDProps) => {
-  const { children, ...rest } = MDXTDProps;
+export const MDXTBody: FC<
+  DetailedHTMLProps<
+    TableHTMLAttributes<HTMLTableSectionElement>,
+    HTMLTableSectionElement
+  >
+> = ({ children, ...rest }) => {
   return (
-    <>
-      <td {...rest} className="p-2 border border-slate-500">
-        {children}
-      </td>
-    </>
+    <tbody {...rest} className="p-2">
+      {children}
+    </tbody>
+  );
+};
+
+export const MDXTr: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>
+> = ({ children, ...rest }) => {
+  return (
+    <tr {...rest} className="p-2 border-y">
+      {children}
+    </tr>
+  );
+};
+
+export const MDXTh: FC<
+  DetailedHTMLProps<
+    ThHTMLAttributes<HTMLTableHeaderCellElement>,
+    HTMLTableHeaderCellElement
+  >
+> = ({ children, ...rest }) => {
+  return (
+    <th {...rest} className="p-2 text-start">
+      {children}
+    </th>
+  );
+};
+
+export const MDXTd: FC<
+  DetailedHTMLProps<
+    TdHTMLAttributes<HTMLTableDataCellElement>,
+    HTMLTableDataCellElement
+  >
+> = ({ children, ...rest }) => {
+  return (
+    <td {...rest} className="p-2">
+      {children}
+    </td>
   );
 };

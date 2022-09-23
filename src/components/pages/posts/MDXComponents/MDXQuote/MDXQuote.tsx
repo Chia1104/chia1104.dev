@@ -1,12 +1,16 @@
-import type { FC, ReactNode, DetailedHTMLProps, HTMLAttributes } from "react";
+import type {
+  FC,
+  ReactNode,
+  DetailedHTMLProps,
+  BlockquoteHTMLAttributes,
+} from "react";
 import cx from "classnames";
 
 interface Props
   extends DetailedHTMLProps<
-    HTMLAttributes<HTMLQuoteElement>,
+    BlockquoteHTMLAttributes<HTMLQuoteElement>,
     HTMLQuoteElement
   > {
-  children: ReactNode;
   type?: string;
 }
 

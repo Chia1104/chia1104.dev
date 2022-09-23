@@ -9,7 +9,14 @@ export {
 } from "./MDXCode";
 export { h1, h2, h4, h3, h5, h6 } from "./MDXHeading";
 export { MDXOl as ol, MDXUl as ul } from "./MDXList";
-export { MDXTable as table, MDXTh as th, MDXTd as td } from "./MDXTable";
+export {
+  MDXTable as table,
+  MDXTh as th,
+  MDXTd as td,
+  MDXTr as tr,
+  MDXThead as thead,
+  MDXTBody as tbody,
+} from "./MDXTable";
 export { MDXQuote as Quote } from "./MDXQuote";
 export { MDXParagraph as p, MDXStrong as strong } from "./MDXText";
 export { MDXHr as hr } from "./MDXDivider";
