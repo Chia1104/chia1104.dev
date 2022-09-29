@@ -10,9 +10,6 @@ import { Chip } from "@chia/components/pages/posts";
 import Giscus from "@giscus/react";
 import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@chia/config/giscus.config";
-import { NextSeo } from "next-seo";
-import { BASE_URL } from "@chia/shared/constants";
-import { useRouter } from "next/router";
 import { Chia } from "@chia/shared/meta/chia";
 import { useIsMounted, useDarkMode } from "@chia/hooks";
 interface Props {
@@ -48,7 +45,6 @@ export const getStaticProps: GetStaticProps = async ({
 
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
   const { isDarkMode } = useDarkMode();
-  const router = useRouter();
   const isMounted = useIsMounted();
 
   const name = Chia.name;
@@ -57,27 +53,9 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
   return (
     <Layout
       title={`${frontMatter.title} | ${name} ${chinese_name}`}
-      description={`${frontMatter.excerpt}`}>
-      <NextSeo
-        additionalMetaTags={frontMatter.tags?.map((tag) => ({
-          property: "article:tag",
-          content: tag,
-        }))}
-        openGraph={{
-          type: "website",
-          url: `${BASE_URL}${router.asPath}`,
-          title: `${frontMatter.title}`,
-          description: `${frontMatter.excerpt}`,
-          images: [
-            {
-              url: `${frontMatter.headImg}`,
-              width: 800,
-              height: 400,
-              alt: `${frontMatter.title}`,
-            },
-          ],
-        }}
-      />
+      description={`${frontMatter.excerpt}`}
+      keywords={frontMatter.tags}
+      type="article">
       <article className="main c-container mt-10 px-5">
         <div className="pl-3 lg:w-[70%] w-full mb-7 self-center">
           <h1 className="title pb-5">{frontMatter.title}</h1>

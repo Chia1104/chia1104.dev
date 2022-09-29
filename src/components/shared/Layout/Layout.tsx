@@ -6,12 +6,22 @@ interface Props {
   children: ReactNode;
   title: string;
   description: string;
+  canonicalUrl?: string;
+  keywords?: string[];
+  type?: "website" | "article" | "book" | "profile";
 }
 
-const Layout: FC<Props> = ({ children, title, description }) => {
+const Layout: FC<Props> = (props) => {
+  const { children, title, description, canonicalUrl, keywords, type } = props;
   return (
     <>
-      <Head title={title} description={description} />
+      <Head
+        title={title}
+        description={description}
+        canonicalUrl={canonicalUrl}
+        keywords={keywords}
+        type={type}
+      />
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

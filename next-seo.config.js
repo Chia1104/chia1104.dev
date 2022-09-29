@@ -15,7 +15,6 @@ function getBaseUrl() {
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
   openGraph: {
-    type: "website",
     locale: "zh_IE",
     url: getBaseUrl(),
     site_name: "chia1104",

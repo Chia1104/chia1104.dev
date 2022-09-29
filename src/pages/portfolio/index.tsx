@@ -44,7 +44,8 @@ const PortfoliosPage: NextPage<Props> = ({ github, youtube }) => {
   return (
     <Layout
       title={`Portfolio | ${name} ${chinese_name} `}
-      description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}>
+      description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}
+      type="profile">
       <article className="main c-container">
         <GitHub
           repoData={github.data}

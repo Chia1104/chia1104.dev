@@ -1,17 +1,17 @@
 import { memo } from "react";
-import type { FC, ReactNode, HTMLAttributes } from "react";
+import type { FC, ReactNode } from "react";
 import { AnimatePresence, motion, MotionProps } from "framer-motion";
 import { useLockedBody } from "usehooks-ts";
 
 interface Props extends MotionProps {
   isShowed: boolean;
   children: ReactNode;
-  onClick: () => void;
+  activeModal: () => void;
   className?: string;
 }
 
 const Modal: FC<Props> = (props) => {
-  const { isShowed, children, onClick, className, ...rest } = props;
+  const { isShowed, children, activeModal, className, ...rest } = props;
   const ov = {
     open: { opacity: 1 },
     closed: { opacity: 0, delay: 300 },
@@ -26,7 +26,7 @@ const Modal: FC<Props> = (props) => {
     <AnimatePresence>
       {isShowed && (
         <motion.div
-          onClick={onClick}
+          onClick={activeModal}
           initial={"closed"}
           animate={isShowed ? "open" : "closed"}
           exit={"closed"}
