@@ -7,6 +7,7 @@ import {
   Footer,
   ErrorBoundary,
   Background,
+  GeistProvider,
 } from "@chia/components/shared";
 import { DefaultSeo } from "next-seo";
 import SEO from "../../next-seo.config";
@@ -16,29 +17,24 @@ import { store } from "@chia/store";
 import NextNProgress from "nextjs-progressbar";
 import { nextProgressConfig } from "@chia/config/next-progress.config";
 import { IS_PRODUCTION } from "@chia/shared/constants";
-import { GeistProvider } from "@geist-ui/core";
 import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
 import { AppRouter } from "@chia/server/routers/_app";
 import superjson from "superjson";
 import { getBaseUrl } from "@chia/utils/getBaseUrl";
-import { useIsMounted, useDarkMode } from "@chia/hooks";
 
 function ChiaWEB({ Component, pageProps, router }: AppProps) {
-  const isMounted = useIsMounted();
-  const { isDarkMode } = useDarkMode();
-
   return (
     <ErrorBoundary>
+      <DefaultSeo {...SEO} />
       <NextNProgress
         {...nextProgressConfig}
         options={{ easing: "ease", speed: 500 }}
       />
       <ThemeProvider enableSystem={true} attribute="class">
         <Provider store={store}>
-          <GeistProvider themeType={isMounted && isDarkMode ? "dark" : "light"}>
-            <DefaultSeo {...SEO} />
+          <GeistProvider>
             <NavMenu />
             <ActionIcon />
             <Background />

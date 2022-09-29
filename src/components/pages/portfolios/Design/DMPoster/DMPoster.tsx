@@ -33,7 +33,7 @@ const DMPoster: FC<Props> = ({ url }) => {
       />
       <Modal
         isShowed={isShow}
-        onClick={handleClose}
+        activeModal={handleClose}
         className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
         <div className="w-full aspect-w-1 aspect-h-1">
           <Image

@@ -9,7 +9,7 @@ interface Props {
   posts: PostFrontMatter[];
 }
 
-export const getStaticProps: GetStaticProps = async (context) => {
+export const getStaticProps: GetStaticProps = async () => {
   const posts = await getAllPosts();
 
   return {
@@ -29,7 +29,8 @@ const PostsPage: NextPage<Props> = (props) => {
   return (
     <Layout
       title={`Blog | ${name} ${chinese_name} `}
-      description={`${description} Welcome to my blog. I always try to make the best of my time.`}>
+      description={`${description} Welcome to my blog. I always try to make the best of my time.`}
+      type="article">
       <article className="main c-container">
         <h1 className="title py-10 self-start">
           <span>{name}</span> |{" "}
