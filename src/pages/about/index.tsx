@@ -4,6 +4,7 @@ import { Chia } from "@chia/shared/meta/chia";
 import { Resume } from "@chia/components/pages/about";
 import type { GetStaticProps } from "next";
 import { getImage } from "@chia/firebase/client/files/services";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 interface Props {
   url: string;
@@ -26,6 +27,7 @@ const AboutPage: NextPage<Props> = ({ url }) => {
 
   return (
     <Layout
+      canonicalUrl={`${getBaseUrl()}/about`}
       title={`About | ${name} ${chinese_name} `}
       description={description}
       type="profile">

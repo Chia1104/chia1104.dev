@@ -4,6 +4,7 @@ import { Layout } from "@chia/components/shared";
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import { PostsList } from "@chia/components/pages/posts";
 import { Chia } from "@chia/shared/meta/chia";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 interface Props {
   posts: PostFrontMatter[];
@@ -28,6 +29,7 @@ const PostsPage: NextPage<Props> = (props) => {
 
   return (
     <Layout
+      canonicalUrl={`${getBaseUrl()}/posts`}
       title={`Blog | ${name} ${chinese_name} `}
       description={`${description} Welcome to my blog. I always try to make the best of my time.`}
       type="article">

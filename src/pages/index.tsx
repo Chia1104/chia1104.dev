@@ -6,6 +6,7 @@ import { Chia } from "@chia/shared/meta/chia";
 import { PostFrontMatter } from "@chia/shared/types";
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import dayjs from "dayjs";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 interface Props {
   url: string;
@@ -34,6 +35,7 @@ const HomePage: NextPage<Props> = (props) => {
 
   return (
     <Layout
+      canonicalUrl={getBaseUrl()}
       title={`${name} ${chinese_name} | ${title}`}
       description={description}>
       <article className="c-container main">
