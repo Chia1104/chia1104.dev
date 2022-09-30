@@ -43,6 +43,7 @@ const PortfoliosPage: NextPage<Props> = ({ github, youtube }) => {
 
   return (
     <Layout
+      canonicalUrl={`${getBaseUrl()}/portfolio`}
       title={`Portfolio | ${name} ${chinese_name} `}
       description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}
       type="profile">
