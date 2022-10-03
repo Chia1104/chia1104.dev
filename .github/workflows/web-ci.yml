@@ -55,7 +55,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
-          path: build
+          path: .next
       - uses: cypress-io/github-action@v4
         with:
           start: yarn start
@@ -76,7 +76,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
-          path: build
+          path: .next
       - uses: cypress-io/github-action@v4
         with:
           start: yarn start
