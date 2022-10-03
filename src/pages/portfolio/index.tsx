@@ -12,6 +12,7 @@ import type {
 } from "@chia/shared/types";
 import { trpc } from "@chia/utils/trpc.util";
 import { getBaseUrl } from "@chia/utils/getBaseUrl";
+import { BASE_URL } from "@chia/shared/constants";
 
 interface Props {
   github: ApiRespond<RepoGql[]>;
@@ -43,7 +44,7 @@ const PortfoliosPage: NextPage<Props> = ({ github, youtube }) => {
 
   return (
     <Layout
-      canonicalUrl={`${getBaseUrl()}/portfolio`}
+      canonicalUrl={`${BASE_URL}/portfolio`}
       title={`Portfolio | ${name} ${chinese_name} `}
       description={`${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`}
       type="profile">
