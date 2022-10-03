@@ -45,41 +45,41 @@ jobs:
       - name: Build
         run: pnpm build
 
-  e2e-on-chrome:
-    needs: build
-    runs-on: ubuntu-latest
-    name: E2E on Chrome
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download the build folders
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .next
-      - uses: cypress-io/github-action@v4
-        with:
-          start: yarn start
-          wait-on: "http://localhost:3000"
-          wait-on-timeout: 120
-          browser: chrome
-
-  e2e-on-firefox:
-    needs: build
-    runs-on: ubuntu-latest
-    name: E2E on Firefox
-    container:
-      image: cypress/browsers:node16.13.2-chrome100-ff98
-      options: --user 1001
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download the build folders
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .next
-      - uses: cypress-io/github-action@v4
-        with:
-          start: yarn start
-          wait-on: "http://localhost:3000"
-          wait-on-timeout: 120
-          browser: firefox
+#  e2e-on-chrome:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    name: E2E on Chrome
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Download the build folders
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: build
+#          path: .next
+#      - uses: cypress-io/github-action@v4
+#        with:
+#          start: yarn start
+#          wait-on: "http://localhost:3000"
+#          wait-on-timeout: 120
+#          browser: chrome
+#
+#  e2e-on-firefox:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    name: E2E on Firefox
+#    container:
+#      image: cypress/browsers:node16.13.2-chrome100-ff98
+#      options: --user 1001
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Download the build folders
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: build
+#          path: .next
+#      - uses: cypress-io/github-action@v4
+#        with:
+#          start: yarn start
+#          wait-on: "http://localhost:3000"
+#          wait-on-timeout: 120
+#          browser: firefox
