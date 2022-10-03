@@ -65,6 +65,7 @@ specifiers:
   rehype-prism-plus: ^1.5.0
   rehype-slug: ^5.0.1
   remark-gfm: ^3.0.1
+  shell-quote: ^1.7.3
   superjson: ^1.10.0
   tailwind-scrollbar: ^2.0.1
   tailwindcss: ^3.1.8
@@ -145,6 +146,7 @@ devDependencies:
   prettier: 2.7.1
   prisma: 4.4.0
   redux: 4.2.0
+  shell-quote: 1.7.3
   tailwind-scrollbar: 2.0.1_tailwindcss@3.1.8
   tailwindcss: 3.1.8_postcss@8.4.17
   typescript: 4.6.3
@@ -5894,6 +5896,10 @@ packages:
   /shebang-regex/3.0.0:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
+    dev: true
+
+  /shell-quote/1.7.3:
+    resolution: {integrity: sha512-Vpfqwm4EnqGdlsBFNmHhxhElJYrdfcxPThu+ryKS5J8L/fhAwLazFZtq+S+TWZ9ANj2piSQLGj6NQg+lKPmxrw==}
     dev: true
 
   /side-channel/1.0.4:
