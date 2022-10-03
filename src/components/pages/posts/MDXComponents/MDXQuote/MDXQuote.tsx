@@ -1,9 +1,4 @@
-import type {
-  FC,
-  ReactNode,
-  DetailedHTMLProps,
-  BlockquoteHTMLAttributes,
-} from "react";
+import type { FC, DetailedHTMLProps, BlockquoteHTMLAttributes } from "react";
 import cx from "classnames";
 
 interface Props

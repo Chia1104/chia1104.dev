@@ -1,10 +1,14 @@
-import type { FC, ReactNode, HTMLAttributes } from "react";
+import type {
+  FC,
+  LiHTMLAttributes,
+  DetailedHTMLProps,
+  HTMLAttributes,
+  OlHTMLAttributes,
+} from "react";
 
-interface MDXUlProps extends HTMLAttributes<HTMLUListElement> {
-  children: ReactNode;
-}
-
-export const MDXUl: FC<MDXUlProps> = (MDXUlProps) => {
+export const MDXUl: FC<
+  DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement>
+> = (MDXUlProps) => {
   const { children, ...rest } = MDXUlProps;
   return (
     <>
@@ -15,11 +19,9 @@ export const MDXUl: FC<MDXUlProps> = (MDXUlProps) => {
   );
 };
 
-interface MDXOlProps extends HTMLAttributes<HTMLOListElement> {
-  children: ReactNode;
-}
-
-export const MDXOl: FC<MDXOlProps> = (MDXOlProps) => {
+export const MDXOl: FC<
+  DetailedHTMLProps<OlHTMLAttributes<HTMLOListElement>, HTMLOListElement>
+> = (MDXOlProps) => {
   const { children, ...rest } = MDXOlProps;
   return (
     <>
@@ -30,11 +32,9 @@ export const MDXOl: FC<MDXOlProps> = (MDXOlProps) => {
   );
 };
 
-interface MDXLiProps extends HTMLAttributes<HTMLLIElement> {
-  children: ReactNode;
-}
-
-export const MDXListItem: FC<MDXLiProps> = (MDXLiProps) => {
+export const MDXListItem: FC<
+  DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>
+> = (MDXLiProps) => {
   const { children, ...rest } = MDXLiProps;
   return (
     <>

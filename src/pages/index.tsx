@@ -31,7 +31,7 @@ const HomePage: NextPage<Props> = (props) => {
   const description = Chia.content;
   const chinese_name = Chia.chineseName;
 
-  const postSubtitle = dayjs(props.post.createdAt).format("MMMM D, YYYY");
+  const postSubtitle = dayjs(props?.post?.createdAt).format("MMMM D, YYYY");
 
   return (
     <Layout
@@ -40,13 +40,12 @@ const HomePage: NextPage<Props> = (props) => {
       description={description}>
       <article className="c-container main">
         <div className="w-full h-full flex flex-col">
-          <AboutMe avatarSrc={props.url} />
+          <AboutMe avatarSrc={props?.url} />
           <div className="flex flex-col justify-center items-center md:flex-row mx-auto mt-10 w-full min:w-[370px] max-w-[740px]">
             <div className="py-7 px-3">
               <NewsCard
                 title={"About me"}
                 content={description}
-                subtitle={""}
                 link={"/about"}
               />
             </div>
@@ -54,12 +53,12 @@ const HomePage: NextPage<Props> = (props) => {
               <NewsCard
                 title={"New update"}
                 content={
-                  props.post.excerpt || "This is an example of a blog post."
+                  props?.post?.excerpt || "This is an example of a blog post."
                 }
                 subtitle={postSubtitle}
                 link={{
                   pathname: "/posts/[slug]/",
-                  query: { slug: props.post.slug },
+                  query: { slug: props?.post?.slug },
                 }}
               />
             </div>

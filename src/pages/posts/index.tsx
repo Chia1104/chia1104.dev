@@ -15,7 +15,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
   return {
     props: {
-      posts: posts,
+      posts,
     },
   };
 };
@@ -41,7 +41,7 @@ const PostsPage: NextPage<Props> = (props) => {
           </span>
         </h1>
         <div className="flex flex-col w-full justify-center items-center">
-          <PostsList post={posts} />
+          {posts && <PostsList post={posts} />}
         </div>
       </article>
     </Layout>

@@ -27,18 +27,18 @@ const PostItem: FC<Props> = ({ data, i }) => {
           quality={100}
         />
       </div>
-      <header className="subtitle mb-3 group-hover:text-secondary duration-300 transition ease-in-out line-clamp-2 leading-normal mx-5">
+      <h2 className="subtitle mb-3 group-hover:text-secondary duration-300 transition ease-in-out line-clamp-2 leading-normal mx-5">
         {data.title}
-      </header>
+      </h2>
       <p className="line-clamp-3 c-description leading-normal mb-3 mx-5">
         {data.excerpt}
       </p>
-      <footer className="mt-auto c-description mx-5 mb-3 self-start">
+      <p className="mt-auto c-description mx-5 mb-3 self-start">
         {dayjs(data.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
         <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
           {data.readingMins}
         </span>
-      </footer>
+      </p>
       <Link
         href={{
           pathname: "/posts/[slug]/",

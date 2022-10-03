@@ -49,6 +49,8 @@ module.exports = {
   plugins: [
     require("@tailwindcss/line-clamp"),
     require("@tailwindcss/aspect-ratio"),
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("tailwind-scrollbar")({ nocompatible: true }),
   ],
   darkMode: "class",
 };

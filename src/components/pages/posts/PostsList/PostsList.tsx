@@ -21,19 +21,19 @@ const postCardAnimation = {
 
 const PostsList: FC<Props> = ({ post }) => {
   return (
-    <motion.div
+    <motion.article
       className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-10"
       variants={postAnimation}
       animate={"show"}>
       {post.map((post: PostFrontMatter, index) => (
-        <motion.article
+        <motion.div
           key={post.id}
           variants={postCardAnimation}
           className={cx("w-full h-auto", index === 0 && "lg:col-span-2")}>
           <PostItem data={post} i={index} />
-        </motion.article>
+        </motion.div>
       ))}
-    </motion.div>
+    </motion.article>
   );
 };
 

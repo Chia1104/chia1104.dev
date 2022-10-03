@@ -8,7 +8,7 @@ export type PostFrontMatter = {
   tags?: string[];
   headImg?: string;
   createdAt: string;
-  updateAt?: string;
+  updatedAt?: string;
   readingMins: string;
   published: boolean;
   content?: string;

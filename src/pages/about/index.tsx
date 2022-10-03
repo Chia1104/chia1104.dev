@@ -20,7 +20,7 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-const AboutPage: NextPage<Props> = ({ url }) => {
+const AboutPage: NextPage<Props> = (props) => {
   const name = Chia.name;
   const description = Chia.content;
   const chinese_name = Chia.chineseName;
@@ -32,7 +32,7 @@ const AboutPage: NextPage<Props> = ({ url }) => {
       description={description}
       type="profile">
       <article className="main c-container mt-20">
-        <Resume avatarSrc={url || "/favicon.ico"} />
+        <Resume avatarSrc={props?.url || "/favicon.ico"} />
       </article>
     </Layout>
   );
