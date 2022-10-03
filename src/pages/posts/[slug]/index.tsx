@@ -12,7 +12,8 @@ import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@chia/config/giscus.config";
 import { Chia } from "@chia/shared/meta/chia";
 import { useIsMounted, useDarkMode } from "@chia/hooks";
-import { getBaseUrl } from "@chia/utils/getBaseUrl";
+import { BASE_URL } from "@chia/shared/constants";
+
 interface Props {
   source: MDXRemoteProps;
   frontMatter: PostFrontMatter;
@@ -53,7 +54,7 @@ const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
 
   return (
     <Layout
-      canonicalUrl={`${getBaseUrl()}/posts/${frontMatter.slug}`}
+      canonicalUrl={`${BASE_URL}/posts/${frontMatter.slug}`}
       title={`${frontMatter.title} | ${name} ${chinese_name}`}
       description={`${frontMatter.excerpt}`}
       keywords={frontMatter.tags}
