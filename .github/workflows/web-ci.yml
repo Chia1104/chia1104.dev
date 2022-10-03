@@ -46,7 +46,7 @@ jobs:
         run: pnpm build
 
   e2e-on-chrome:
-    needs: [ ci-node ]
+    needs: build
     runs-on: ubuntu-latest
     name: E2E on Chrome
     steps:
@@ -64,7 +64,7 @@ jobs:
           browser: chrome
 
   e2e-on-firefox:
-    needs: [ ci-node ]
+    needs: build
     runs-on: ubuntu-latest
     name: E2E on Firefox
     container:
