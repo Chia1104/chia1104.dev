@@ -35,53 +35,21 @@ jobs:
       - name: Unit tests - Vitest
         run: pnpm test:vitest
 
-      - name: Build
-        run: pnpm build
-
-      - name: Save build folder
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          if-no-files-found: error
-          path: .next
-
-  e2e-on-chrome:
-    name: E2E on Chrome
-    timeout-minutes: 15
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download the build folders
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: build
+      - name: E2E Chrome
       - uses: cypress-io/github-action@v2
         with:
-          start: pnpm start
+          start: pnpm dev
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
           browser: chrome
 
-  e2e-on-firefox:
-    needs: build
-    runs-on: ubuntu-latest
-    name: E2E on Firefox
-    timeout-minutes: 15
-    container:
-      image: cypress/browsers:node16.13.2-chrome100-ff98
-      options: --user 1001
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download the build folders
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: build
+      - name: E2E Firefox
       - uses: cypress-io/github-action@v2
         with:
-          start: pnpm start
+          start: pnpm dev
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
           browser: firefox
+
+      - name: Build
+        run: pnpm build
