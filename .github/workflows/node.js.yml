@@ -1,46 +1,55 @@
-# This workflows will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
-name: Node.js CI
+name: Web CI
 
 on:
   push:
-    branches: [ "test" ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ "test" ]
-
-#env:
-#  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-#  RUN_REGION: asia-east1
-#  SERVICE_NAME: chia1104
+    types: [ opened, synchronize ]
 
 jobs:
   build:
-
+    name: Build and Test
+    timeout-minutes: 15
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
       - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.2
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm install -g yarn
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: yarn
+        run: pnpm install
+
       - name: Unit tests - Vitest
-        run: yarn test:vitest
-      - name: Build
-        run: yarn build
-      - name: Save build folder
-        uses: actions/upload-artifact@v3
+        run: pnpm test:vitest
+
+      - name: E2E Chrome
+      - uses: cypress-io/github-action@v2
         with:
-          name: build
-          if-no-files-found: error
-          path: build
+          start: pnpm dev
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 120
+          browser: chrome
+
+      - name: E2E Firefox
+      - uses: cypress-io/github-action@v2
+        with:
+          start: pnpm dev
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 120
+          browser: firefox
+
+      - name: Build
+        run: pnpm build
