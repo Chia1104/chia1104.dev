@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -43,7 +43,8 @@ jobs:
         with:
           name: build
           if-no-files-found: error
-          path: build
+          path: .next
+
   e2e-on-chrome:
     name: E2E on Chrome
     timeout-minutes: 15
@@ -58,7 +59,7 @@ jobs:
           path: build
       - uses: cypress-io/github-action@v2
         with:
-          start: pnpm dev
+          start: pnpm start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
           browser: chrome
@@ -80,7 +81,7 @@ jobs:
           path: build
       - uses: cypress-io/github-action@v2
         with:
-          start: pnpm dev
+          start: pnpm start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
           browser: firefox
