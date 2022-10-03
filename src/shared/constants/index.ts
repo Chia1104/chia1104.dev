@@ -1,4 +1,5 @@
 export const IS_PRODUCTION = process.env.NODE_ENV === "production";
+export const IS_TEST = process.env.NODE_ENV === "test";
 
 // Site url
 export const BASE_URL =
@@ -14,9 +15,11 @@ export const GITHUB_GRAPHQL_API = "https://api.github.com/graphql";
 export const GH_PUBLIC_TOKEN = process.env.GH_PUBLIC_TOKEN;
 
 // Post path
-export const POSTS_PATH = IS_PRODUCTION
-  ? "./posts/published"
-  : "./posts/unpublished";
+export const POSTS_PATH = !IS_TEST
+  ? IS_PRODUCTION
+    ? "./posts/published"
+    : "./posts/unpublished"
+  : "./posts/examples";
 
 // Youtube config
 export const YOUTUBE_ID = "UC3k2QizjG1Xp3Qvtuxn1W5A";

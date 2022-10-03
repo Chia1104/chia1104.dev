@@ -10,3 +10,7 @@ README.md
 .env
 .env.local
 .idea
+cypress
+.husky
+.github
+schema.docs.graphql
