@@ -1,6 +1,6 @@
 import { Image } from "@chia/components/shared";
 import { type ImageProps } from "next/future/image";
-import { type FC } from "react";
+import { type FC, DetailedHTMLProps, ImgHTMLAttributes } from "react";
 import cx from "classnames";
 
 interface MDXImageProps extends ImageProps {
@@ -10,7 +10,10 @@ interface MDXImageProps extends ImageProps {
   objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
 }
 
-export const MDXImage: FC<MDXImageProps> = (MDXImageProps) => {
+export const MDXImage: FC<
+  MDXImageProps &
+    DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>
+> = (MDXImageProps) => {
   const {
     alt,
     showAlt = true,
@@ -41,7 +44,9 @@ export const MDXImage: FC<MDXImageProps> = (MDXImageProps) => {
           )}
           loading="lazy"
           fill
-          sizes="100vw"
+          sizes="(max-width: 768px) 100vw,
+                 (max-width: 1200px) 50vw,
+                 33vw"
           quality={100}
           {...rest}
           alt={alt}

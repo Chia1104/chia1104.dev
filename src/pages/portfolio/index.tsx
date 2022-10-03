@@ -37,7 +37,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   };
 };
 
-const PortfoliosPage: NextPage<Props> = ({ github, youtube }) => {
+const PortfoliosPage: NextPage<Props> = (props) => {
   const name = Chia.name;
   const chinese_name = Chia.chineseName;
   const design = trpc.useQuery(["portfolio.all-design"]);
@@ -50,19 +50,21 @@ const PortfoliosPage: NextPage<Props> = ({ github, youtube }) => {
       type="profile">
       <article className="main c-container">
         <GitHub
-          repoData={github.data}
-          loading={github.status === 200 ? "succeeded" : "failed"}
-          error={`Something went wrong. Status code: ${github.status}`}
+          repoData={props?.github.data}
+          loading={props?.github.status === 200 ? "succeeded" : "failed"}
+          error={`Something went wrong. Status code: ${props?.github.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Youtube
-          videoData={youtube}
-          loading={youtube.status === 200 ? "succeeded" : "failed"}
-          error={`Something went wrong. Status code: ${youtube.status}`}
+          videoData={props?.youtube}
+          loading={props?.youtube.status === 200 ? "succeeded" : "failed"}
+          error={`Something went wrong. Status code: ${props?.youtube.status}`}
         />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Design
-          data={design.data?.map((image: DesignResult) => image.imageUrl) || []}
+          data={
+            design?.data?.map((image: DesignResult) => image.imageUrl) || []
+          }
         />
       </article>
     </Layout>

@@ -27,7 +27,9 @@ const DMPoster: FC<Props> = ({ url }) => {
         )}
         loading="lazy"
         fill
-        sizes="100vw"
+        sizes="(max-width: 768px) 100vw,
+               (max-width: 1200px) 50vw,
+               33vw"
         quality={100}
         onClick={() => setIsShow(!isShow)}
       />
@@ -42,7 +44,9 @@ const DMPoster: FC<Props> = ({ url }) => {
             loading="lazy"
             className="object-contain"
             fill
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw,
+                   (max-width: 1200px) 50vw,
+                   33vw"
             quality={100}
           />
         </div>

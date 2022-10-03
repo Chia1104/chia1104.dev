@@ -23,7 +23,7 @@ export const H1: FC<
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium hidden group-hover:block">
+          className="c-text-secondary font-medium block md:hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-7 w-7"
@@ -59,7 +59,7 @@ export const H2: FC<
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium hidden group-hover:block">
+          className="c-text-secondary font-medium block md:hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -95,7 +95,7 @@ export const H3: FC<
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium hidden group-hover:block">
+          className="c-text-secondary font-medium block md:hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
@@ -131,7 +131,7 @@ export const H4: FC<
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium hidden group-hover:block">
+          className="c-text-secondary font-medium block md:hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"
@@ -167,7 +167,7 @@ export const H5: FC<
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium hidden group-hover:block">
+          className="c-text-secondary font-medium block md:hidden group-hover:block">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"

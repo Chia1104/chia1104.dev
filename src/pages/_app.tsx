@@ -38,7 +38,7 @@ function ChiaWEB({ Component, pageProps, router }: AppProps) {
             <NavMenu />
             <ActionIcon />
             <Background />
-            <AnimatePresence exitBeforeEnter>
+            <AnimatePresence mode="wait">
               <Component {...pageProps} key={router.route} />
             </AnimatePresence>
             <Footer />

@@ -1,13 +1,13 @@
 import { useRef, useEffect, useState } from "react";
-import type { ReactNode, FC, DetailedHTMLProps, HTMLAttributes } from "react";
+import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import cx from "classnames";
 import { useIsMounted, useCopyToClipboard, useHover } from "usehooks-ts";
 import { useToasts } from "@geist-ui/core";
 
 import { motion } from "framer-motion";
 
-interface MDXCodeProps {
-  children: ReactNode;
+interface MDXCodeProps
+  extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   text?: string;
   type?: string;
 }
@@ -104,7 +104,7 @@ export const MDXPre: FC<
 
       <pre
         {...rest}
-        className="dark:bg-code bg-[#dddddd] w-full my-7 p-7 pb-4 rounded-xl dark:text-white text:black overflow-x-auto transition ease-in-out"
+        className="dark:bg-code bg-[#dddddd] w-full my-7 p-7 pb-4 rounded-xl dark:text-white text:black overflow-x-auto transition ease-in-out scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full"
         ref={ref}>
         {children}
       </pre>
