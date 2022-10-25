@@ -6,6 +6,23 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+env:
+  NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
+  NEXT_PUBLIC_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_AUTH_DOMAIN }}
+  NEXT_PUBLIC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_PROJECT_ID }}
+  NEXT_PUBLIC_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_STORAGE_BUCKET }}
+  NEXT_PUBLIC_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_MESSAGING_SENDER_ID }}
+  NEXT_PUBLIC_APP_ID: ${{ secrets.NEXT_PUBLIC_APP_ID }}
+  NEXT_PUBLIC_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_MEASUREMENT_ID }}
+  NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
+  GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
+  NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  PNPM_VERSION: 7.5.1
+
 jobs:
   build:
     name: Build and Test
@@ -20,7 +37,7 @@ jobs:
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 6.32.2
+          version: ${PNPM_VERSION}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -65,6 +82,21 @@ jobs:
           path: .next
 
       - uses: cypress-io/github-action@v4
+        env:
+          NEXT_PUBLIC_API_KEY: ${NEXT_PUBLIC_API_KEY}
+          NEXT_PUBLIC_AUTH_DOMAIN: ${NEXT_PUBLIC_AUTH_DOMAIN}
+          NEXT_PUBLIC_PROJECT_ID: ${NEXT_PUBLIC_PROJECT_ID}
+          NEXT_PUBLIC_STORAGE_BUCKET: ${NEXT_PUBLIC_STORAGE_BUCKET}
+          NEXT_PUBLIC_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_MESSAGING_SENDER_ID}
+          NEXT_PUBLIC_APP_ID: ${NEXT_PUBLIC_APP_ID}
+          NEXT_PUBLIC_MEASUREMENT_ID: ${NEXT_PUBLIC_MEASUREMENT_ID}
+          NEXT_PUBLIC_FORMSPREE_KEY: ${NEXT_PUBLIC_FORMSPREE_KEY}
+          GH_PUBLIC_TOKEN: ${GH_PUBLIC_TOKEN}
+          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${NEXT_PUBLIC_RE_CAPTCHA_KEY}
+          GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+          SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
+          SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
+          DATABASE_URL: ${DATABASE_URL}
         with:
           start: pnpm start
           wait-on: "http://localhost:3000"
@@ -93,6 +125,21 @@ jobs:
           path: .next
 
       - uses: cypress-io/github-action@v4
+        env:
+          NEXT_PUBLIC_API_KEY: ${NEXT_PUBLIC_API_KEY}
+          NEXT_PUBLIC_AUTH_DOMAIN: ${NEXT_PUBLIC_AUTH_DOMAIN}
+          NEXT_PUBLIC_PROJECT_ID: ${NEXT_PUBLIC_PROJECT_ID}
+          NEXT_PUBLIC_STORAGE_BUCKET: ${NEXT_PUBLIC_STORAGE_BUCKET}
+          NEXT_PUBLIC_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_MESSAGING_SENDER_ID}
+          NEXT_PUBLIC_APP_ID: ${NEXT_PUBLIC_APP_ID}
+          NEXT_PUBLIC_MEASUREMENT_ID: ${NEXT_PUBLIC_MEASUREMENT_ID}
+          NEXT_PUBLIC_FORMSPREE_KEY: ${NEXT_PUBLIC_FORMSPREE_KEY}
+          GH_PUBLIC_TOKEN: ${GH_PUBLIC_TOKEN}
+          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${NEXT_PUBLIC_RE_CAPTCHA_KEY}
+          GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+          SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
+          SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
+          DATABASE_URL: ${DATABASE_URL}
         with:
           start: pnpm start
           wait-on: "http://localhost:3000"
