@@ -1,4 +1,4 @@
-FROM node:18-alpine AS deps
+FROM node:16-alpine AS deps
 RUN apk add --no-cache libc6-compat
 RUN apk update
 
@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml .npmrc ./
 RUN yarn global add pnpm && \
     pnpm add sharp
 
-FROM node:18-alpine AS builder
+FROM node:16-alpine AS builder
 
 RUN apk add --no-cache libc6-compat
 RUN apk update
@@ -53,7 +53,7 @@ ENV \
 RUN yarn prisma generate
 RUN yarn build
 
-FROM node:18-alpine AS runner
+FROM node:16-alpine AS runner
 
 WORKDIR /app
 
