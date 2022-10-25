@@ -2,19 +2,18 @@ name: Web CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, develop, dev/web ]
   pull_request:
-    types: [ opened, synchronize ]
+    types: [opened, synchronize]
 
 jobs:
   build:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node: [ 14.*, 16.*, 18.* ]
 
     steps:
       - uses: actions/checkout@v3
@@ -34,52 +33,69 @@ jobs:
 
       - name: Unit tests - Vitest
         run: pnpm test:vitest
-#
-#      - name: Build
-#        run: pnpm build
-#
-#      - name: Save build folder
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: build
-#          if-no-files-found: error
-#          path: .next
-#
-#  e2e-on-chrome:
-#    needs: build
-#    runs-on: ubuntu-latest
-#    name: E2E on Chrome
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Download the build folders
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: build
-#          path: .next
-#      - uses: cypress-io/github-action@v4
-#        with:
-#          start: yarn start
-#          wait-on: "http://localhost:3000"
-#          wait-on-timeout: 120
-#          browser: chrome
-#
-#  e2e-on-firefox:
-#    needs: build
-#    runs-on: ubuntu-latest
-#    name: E2E on Firefox
-#    container:
-#      image: cypress/browsers:node16.13.2-chrome100-ff98
-#      options: --user 1001
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Download the build folders
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: build
-#          path: .next
-#      - uses: cypress-io/github-action@v4
-#        with:
-#          start: yarn start
-#          wait-on: "http://localhost:3000"
-#          wait-on-timeout: 120
-#          browser: firefox
+
+      - name: Build
+        run: pnpm build
+
+      - name: Save build folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          if-no-files-found: error
+          path: .next
+
+  e2e-on-chrome:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    name: E2E on Chrome
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.2
+
+      - name: Download the build folders
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: .next
+
+      - uses: cypress-io/github-action@v4
+        with:
+          start: pnpm start
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 120
+          browser: chrome
+          command: pnpm e2e:chrome
+
+  e2e-on-edge:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    name: E2E on Edge
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.2
+
+      - name: Download the build folders
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: .next
+
+      - uses: cypress-io/github-action@v4
+        with:
+          start: pnpm start
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 120
+          browser: edge
+          command: pnpm e2e:edge
