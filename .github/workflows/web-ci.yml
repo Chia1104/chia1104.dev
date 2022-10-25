@@ -2,26 +2,42 @@ name: Web CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, develop, dev/web ]
   pull_request:
-    types: [ opened, synchronize ]
+    types: [opened, synchronize]
+
+env:
+  NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
+  NEXT_PUBLIC_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_AUTH_DOMAIN }}
+  NEXT_PUBLIC_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_PROJECT_ID }}
+  NEXT_PUBLIC_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_STORAGE_BUCKET }}
+  NEXT_PUBLIC_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_MESSAGING_SENDER_ID }}
+  NEXT_PUBLIC_APP_ID: ${{ secrets.NEXT_PUBLIC_APP_ID }}
+  NEXT_PUBLIC_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_MEASUREMENT_ID }}
+  NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
+  GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
+  NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  PNPM_VERSION: 7.5.1
 
 jobs:
   build:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node: [ 14.*, 16.*, 18.* ]
 
     steps:
       - uses: actions/checkout@v3
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 6.32.2
+          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -34,52 +50,99 @@ jobs:
 
       - name: Unit tests - Vitest
         run: pnpm test:vitest
-#
-#      - name: Build
-#        run: pnpm build
-#
-#      - name: Save build folder
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: build
-#          if-no-files-found: error
-#          path: .next
-#
-#  e2e-on-chrome:
-#    needs: build
-#    runs-on: ubuntu-latest
-#    name: E2E on Chrome
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Download the build folders
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: build
-#          path: .next
-#      - uses: cypress-io/github-action@v4
-#        with:
-#          start: yarn start
-#          wait-on: "http://localhost:3000"
-#          wait-on-timeout: 120
-#          browser: chrome
-#
-#  e2e-on-firefox:
-#    needs: build
-#    runs-on: ubuntu-latest
-#    name: E2E on Firefox
-#    container:
-#      image: cypress/browsers:node16.13.2-chrome100-ff98
-#      options: --user 1001
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Download the build folders
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: build
-#          path: .next
-#      - uses: cypress-io/github-action@v4
-#        with:
-#          start: yarn start
-#          wait-on: "http://localhost:3000"
-#          wait-on-timeout: 120
-#          browser: firefox
+
+      - name: Build
+        run: pnpm build
+
+      - name: Save build folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          if-no-files-found: error
+          path: .next
+
+  e2e-on-chrome:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    name: E2E on Chrome
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.2
+
+      - name: Download the build folders
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: .next
+
+      - uses: cypress-io/github-action@v4
+        env:
+          NEXT_PUBLIC_API_KEY: ${{ env.NEXT_PUBLIC_API_KEY }}
+          NEXT_PUBLIC_AUTH_DOMAIN: ${{ env.NEXT_PUBLIC_AUTH_DOMAIN }}
+          NEXT_PUBLIC_PROJECT_ID: ${{ env.NEXT_PUBLIC_PROJECT_ID }}
+          NEXT_PUBLIC_STORAGE_BUCKET: ${{ env.NEXT_PUBLIC_STORAGE_BUCKET }}
+          NEXT_PUBLIC_MESSAGING_SENDER_ID: ${{ env.NEXT_PUBLIC_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_APP_ID: ${{ env.NEXT_PUBLIC_APP_ID }}
+          NEXT_PUBLIC_MEASUREMENT_ID: ${{ env.NEXT_PUBLIC_MEASUREMENT_ID }}
+          NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
+          GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
+          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+          GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
+          SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+        with:
+          start: pnpm start
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 120
+          browser: chrome
+          command: pnpm e2e:chrome
+
+  e2e-on-edge:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    name: E2E on Edge
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6.32.2
+
+      - name: Download the build folders
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: .next
+
+      - uses: cypress-io/github-action@v4
+        env:
+          NEXT_PUBLIC_API_KEY: ${{ env.NEXT_PUBLIC_API_KEY }}
+          NEXT_PUBLIC_AUTH_DOMAIN: ${{ env.NEXT_PUBLIC_AUTH_DOMAIN }}
+          NEXT_PUBLIC_PROJECT_ID: ${{ env.NEXT_PUBLIC_PROJECT_ID }}
+          NEXT_PUBLIC_STORAGE_BUCKET: ${{ env.NEXT_PUBLIC_STORAGE_BUCKET }}
+          NEXT_PUBLIC_MESSAGING_SENDER_ID: ${{ env.NEXT_PUBLIC_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_APP_ID: ${{ env.NEXT_PUBLIC_APP_ID }}
+          NEXT_PUBLIC_MEASUREMENT_ID: ${{ env.NEXT_PUBLIC_MEASUREMENT_ID }}
+          NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
+          GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
+          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+          GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
+          SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+        with:
+          start: pnpm start
+          wait-on: "http://localhost:3000"
+          wait-on-timeout: 120
+          browser: edge
+          command: pnpm e2e:edge
