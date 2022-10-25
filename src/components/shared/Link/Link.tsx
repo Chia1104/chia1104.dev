@@ -1,18 +1,21 @@
-import { type FC, type ReactNode, memo } from "react";
+import { type FC, type ReactNode } from "react";
 import NextLink from "next/link";
 import type { LinkProps as NextLinkProps } from "next/link";
 
 interface Props extends NextLinkProps {
   children: ReactNode;
+  className?: string;
 }
 
 const Link: FC<Props> = (props) => {
-  const { children, ...rest } = props;
+  const { children, className, ...rest } = props;
   return (
-    <NextLink passHref scroll prefetch={false} {...rest}>
-      {children}
-    </NextLink>
+    <div className={className}>
+      <NextLink passHref scroll prefetch={false} {...rest}>
+        {children}
+      </NextLink>
+    </div>
   );
 };
 
-export default memo(Link);
+export default Link;

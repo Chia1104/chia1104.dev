@@ -32,6 +32,7 @@ const nextConfig = {
     //
     //   }]
     // ]
+    appDir: true,
   },
   async redirects() {
     return [
