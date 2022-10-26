@@ -12,8 +12,14 @@ export const MDXLink: FC<MDXLinkProps> = (MDXLinkProps) => {
 
   if (isInternalLink) {
     return (
-      <Link prefetch={false} passHref scroll {...rest} href={href}>
-        <a className="c-link text-info">{children}</a>
+      <Link
+        prefetch={false}
+        passHref
+        scroll
+        {...rest}
+        href={href}
+        className="c-link text-info">
+        {children}
       </Link>
     );
   }

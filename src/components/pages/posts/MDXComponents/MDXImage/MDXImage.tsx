@@ -1,5 +1,5 @@
 import { Image } from "@chia/components/shared";
-import { type ImageProps } from "next/future/image";
+import { type ImageProps } from "next/image";
 import { type FC, DetailedHTMLProps, ImgHTMLAttributes } from "react";
 import cx from "classnames";
 
