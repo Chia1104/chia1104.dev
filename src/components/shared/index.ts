@@ -10,3 +10,6 @@ export { Modal } from "./Modal";
 export { NavMenu } from "./NavMenu";
 export { EditModal } from "./EditModal";
 export { default as GeistProvider } from "./GeistProvider";
+export { default as Page } from "./Page";
+export { default as AnimatePresence } from "./AnimatePresence";
+export { default as ReduxProvider } from "./ReduxProvider";

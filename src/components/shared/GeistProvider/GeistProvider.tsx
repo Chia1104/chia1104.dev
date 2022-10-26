@@ -1,3 +1,5 @@
+"use client";
+
 import { GeistProvider as GP } from "@geist-ui/core";
 import type { FC, ReactNode } from "react";
 import { useDarkMode, useIsMounted } from "@chia/hooks";

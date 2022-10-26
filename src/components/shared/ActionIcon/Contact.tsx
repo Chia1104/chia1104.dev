@@ -1,3 +1,5 @@
+"use client";
+
 import { type FC, useId, useMemo, memo } from "react";
 import { useForm, ValidationError } from "@formspree/react";
 import { useAppDispatch } from "@chia/hooks/useAppDispatch";

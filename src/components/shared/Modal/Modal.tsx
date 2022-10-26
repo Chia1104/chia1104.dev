@@ -1,3 +1,5 @@
+"use client";
+
 import { memo } from "react";
 import type { FC, ReactNode } from "react";
 import { AnimatePresence, motion, MotionProps } from "framer-motion";

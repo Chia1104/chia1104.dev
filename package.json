@@ -43,7 +43,7 @@
     "graphql": "^16.6.0",
     "graphql-request": "^4.3.0",
     "gray-matter": "^4.0.3",
-    "next": "12.3.2-canary.40",
+    "next": "^13.0.0",
     "next-mdx-remote": "^4.1.0",
     "next-seo": "^5.8.0",
     "next-themes": "^0.2.1",

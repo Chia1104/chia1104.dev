@@ -1,17 +1,17 @@
 import { type FC, type ReactNode } from "react";
-import NextLink from "next/link";
-import type { LinkProps as NextLinkProps } from "next/link";
+import NextLink, { type LinkProps as NextLinkProps } from "next/link";
 
 interface Props extends NextLinkProps {
   children: ReactNode;
+  outSideStyle?: string;
   className?: string;
 }
 
 const Link: FC<Props> = (props) => {
-  const { children, className, ...rest } = props;
+  const { children, outSideStyle, className, ...rest } = props;
   return (
-    <div className={className}>
-      <NextLink passHref scroll prefetch={false} {...rest}>
+    <div className={outSideStyle}>
+      <NextLink className={className} {...rest}>
         {children}
       </NextLink>
     </div>

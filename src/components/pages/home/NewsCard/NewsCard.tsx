@@ -22,7 +22,7 @@ const NewsCard: FC<Props> = ({ title, content, subtitle, link }) => {
         </div>
         <Link
           href={link}
-          className="c-bg-gradient-green-to-purple w-[85px] absolute top-[9rem] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
+          outSideStyle="c-bg-gradient-green-to-purple w-[85px] absolute top-[9rem] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
           MORE
         </Link>
       </div>

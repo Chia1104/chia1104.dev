@@ -3,15 +3,13 @@ import { Image } from "@chia/components/shared";
 import { Chia } from "@chia/shared/meta/chia";
 import Experience from "./Experience";
 import LanAndTools from "./LanAndTools";
-import { useAppDispatch } from "@chia/hooks";
-import { activeActionIconSheet } from "@chia/store/modules/ActionSheet/actionSheet.slice";
+import { ContactButton } from "@chia/components/shared/ActionIcon";
 
 interface Props {
   avatarSrc: string;
 }
 
 const Resume: FC<Props> = ({ avatarSrc }) => {
-  const dispatch = useAppDispatch();
   const name = Chia.name;
   const chineseName = Chia.chineseName;
   const title = Chia.title;
@@ -64,13 +62,7 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
         </p>
       </div>
       <div className="w-full flex flex-col items-center">
-        <button
-          className="mb-10 group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded"
-          onClick={() => dispatch(activeActionIconSheet())}>
-          <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1">
-            Contact me
-          </span>
-        </button>
+        <ContactButton />
         <div className="w-[85%] mt-10 lg:w-[50%]">
           <ul className="c-description w-full">
             <li className="mb-3 w-full flex">

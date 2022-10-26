@@ -1,46 +1,27 @@
-import type { GetStaticProps, NextPage } from "next";
 import { AboutMe, NewsCard } from "@chia/components/pages/home";
-import { getImage } from "@chia/firebase/client/files/services";
-import { Layout } from "@chia/components/shared";
 import { Chia } from "@chia/shared/meta/chia";
-import { PostFrontMatter } from "@chia/shared/types";
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import dayjs from "dayjs";
-import { BASE_URL } from "@chia/shared/constants";
+import { Page } from "@chia/components/shared";
 
-interface Props {
-  url: string;
-  post: PostFrontMatter;
-}
-
-export const getStaticProps: GetStaticProps = async () => {
-  const avatarUrl = await getImage("me/me-memoji.PNG");
+const getHomePageData = async () => {
   const posts = await getAllPosts();
 
   return {
-    props: {
-      url: avatarUrl as string,
-      post: posts[0],
-    },
+    post: posts[0],
   };
 };
 
-const HomePage: NextPage<Props> = (props) => {
-  const name = Chia.name;
-  const title = Chia.title;
+const HomePage = async () => {
   const description = Chia.content;
-  const chinese_name = Chia.chineseName;
 
-  const postSubtitle = dayjs(props?.post?.createdAt).format("MMMM D, YYYY");
+  const { post } = await getHomePageData();
 
   return (
-    <Layout
-      canonicalUrl={BASE_URL}
-      title={`${name} ${chinese_name} | ${title}`}
-      description={description}>
+    <Page>
       <article className="c-container main">
         <div className="w-full h-full flex flex-col">
-          <AboutMe avatarSrc={props?.url} />
+          <AboutMe avatarSrc={"/me/me-memoji.PNG"} />
           <div className="flex flex-col justify-center items-center md:flex-row mx-auto mt-10 w-full min:w-[370px] max-w-[740px]">
             <div className="py-7 px-3">
               <NewsCard
@@ -52,13 +33,11 @@ const HomePage: NextPage<Props> = (props) => {
             <div className="py-7 px-3">
               <NewsCard
                 title={"New update"}
-                content={
-                  props?.post?.excerpt || "This is an example of a blog post."
-                }
-                subtitle={postSubtitle}
+                content={post?.excerpt || "This is an example of a blog post."}
+                subtitle={dayjs(post?.createdAt).format("MMMM D, YYYY")}
                 link={{
                   pathname: "/posts/[slug]/",
-                  query: { slug: props?.post?.slug },
+                  query: { slug: post?.slug },
                 }}
               />
             </div>
@@ -101,7 +80,7 @@ const HomePage: NextPage<Props> = (props) => {
           </div>
         </div>
       </article>
-    </Layout>
+    </Page>
   );
 };
 

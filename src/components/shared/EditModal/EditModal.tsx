@@ -1,3 +1,5 @@
+"use client";
+
 import { type FC, type ReactNode } from "react";
 import { Modal } from "@geist-ui/core";
 
