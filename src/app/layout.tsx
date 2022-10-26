@@ -7,9 +7,9 @@ import {
   Background,
   AnimatePresence,
   ReduxProvider,
+  NextThemeProvider,
 } from "@chia/components/shared";
 import { type ReactNode } from "react";
-import { ThemeProvider } from "@chia/components/shared/NextTheme";
 
 // import { IS_PRODUCTION } from "@chia/shared/constants";
 // import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
@@ -24,7 +24,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
     <html lang="zh-Hant-TW">
       <body className="c-bg-primary scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full">
         <ErrorBoundary>
-          <ThemeProvider enableSystem={true} attribute="class">
+          <NextThemeProvider>
             <ReduxProvider>
               <NavMenu />
               <ActionIcon />
@@ -32,7 +32,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
               <AnimatePresence mode="wait">{children}</AnimatePresence>
               <Footer />
             </ReduxProvider>
-          </ThemeProvider>
+          </NextThemeProvider>
         </ErrorBoundary>
       </body>
     </html>

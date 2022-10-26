@@ -13,3 +13,4 @@ export { default as GeistProvider } from "./GeistProvider";
 export { default as Page } from "./Page";
 export { default as AnimatePresence } from "./AnimatePresence";
 export { default as ReduxProvider } from "./ReduxProvider";
+export { default as NextThemeProvider } from "./NextThemeProvider";
