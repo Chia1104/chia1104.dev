@@ -59,7 +59,7 @@ const nextConfig = {
     ];
   },
   compiler: {
-    removeConsole: true,
+    removeConsole: false,
   },
   images: {
     domains: ["firebasestorage.googleapis.com"],

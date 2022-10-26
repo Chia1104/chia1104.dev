@@ -3,14 +3,23 @@ import Youtube from "@chia/components/pages/portfolios/Youtube";
 import { Page } from "@chia/components/shared";
 import { getBaseUrl } from "@chia/utils/getBaseUrl";
 import { use } from "react";
+import type { RepoGql } from "@chia/shared/types";
+import { GET_REPOS } from "@chia/GraphQL/github/query";
+import githubGraphQLClient from "@chia/GraphQL/github/github.client";
+import { getAllVideos } from "@chia/api/youtube";
 
 const getPortfoliosData = async () => {
-  const github = await fetch(`${getBaseUrl()}/api/portfolio/github`);
-  const youtube = await fetch(`${getBaseUrl()}/api/portfolio/youtube`);
+  const { user } = await githubGraphQLClient.request(GET_REPOS, {
+    username: "chia1104",
+    sort: "PUSHED_AT",
+    limit: 6,
+  });
+  const repos: RepoGql[] = user.repositories.edges;
+  const _data = await getAllVideos(4);
 
   return {
-    github: { status: github.status, data: await github.json() },
-    youtube: await youtube.json(),
+    github: { status: 418, data: repos },
+    youtube: _data,
   };
 };
 
