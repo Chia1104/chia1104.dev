@@ -1,4 +1,4 @@
-import { type FC, memo } from "react";
+import { type FC } from "react";
 import RepoItem from "./RepoItem";
 import type { RepoGql } from "@chia/shared/types";
 
@@ -23,4 +23,4 @@ const ReposList: FC<Props> = ({ repo }) => {
   );
 };
 
-export default memo(ReposList, (prev, next) => prev.repo === next.repo);
+export default ReposList;

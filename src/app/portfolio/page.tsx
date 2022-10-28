@@ -2,44 +2,30 @@ import GitHub from "@chia/components/pages/portfolios/GitHub";
 import Youtube from "@chia/components/pages/portfolios/Youtube";
 import { Page } from "@chia/components/shared";
 import { getBaseUrl } from "@chia/utils/getBaseUrl";
-import { use } from "react";
-import type { RepoGql } from "@chia/shared/types";
-import { GET_REPOS } from "@chia/GraphQL/github/query";
-import githubGraphQLClient from "@chia/GraphQL/github/github.client";
-import { getAllVideos } from "@chia/api/youtube";
+import type { RepoGql, Youtube as Y } from "@chia/shared/types";
 
 const getPortfoliosData = async () => {
-  const { user } = await githubGraphQLClient.request(GET_REPOS, {
-    username: "chia1104",
-    sort: "PUSHED_AT",
-    limit: 6,
-  });
-  const repos: RepoGql[] = user.repositories.edges;
-  const _data = await getAllVideos(4);
-
+  const github = (await fetch(`${getBaseUrl()}/api/github`).then((res) =>
+    res.json()
+  )) as RepoGql[];
+  const youtube = (await fetch(`${getBaseUrl()}/api/youtube`).then((res) =>
+    res.json()
+  )) as Y;
   return {
-    github: { status: 418, data: repos },
-    youtube: _data,
+    github,
+    youtube,
   };
 };
 
-const PortfoliosPage = () => {
-  const { github, youtube } = use(getPortfoliosData());
-
+const PortfoliosPage = async () => {
+  const { github, youtube } = await getPortfoliosData();
   return (
     <Page>
       <article className="main c-container">
-        <GitHub
-          repoData={github.data}
-          loading={github.status === 200 ? "succeeded" : "failed"}
-          error={`Something went wrong. Status code: ${github.status}`}
-        />
+        <GitHub repoData={github} />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
-        <Youtube
-          videoData={youtube}
-          loading={youtube.status === 200 ? "succeeded" : "failed"}
-          error={`Something went wrong. Status code: ${youtube.status}`}
-        />
+        <Youtube videoData={youtube} />
+        <hr className="my-10 c-border-primary border-t-2 w-full" />
       </article>
     </Page>
   );

@@ -1,19 +1,13 @@
-import { type FC, memo } from "react";
+import { type FC } from "react";
 import VideoList from "./VideoList";
 import type { Youtube as y } from "@chia/shared/types";
-import VideoLoader from "./VideoLoader";
 import { Chia } from "@chia/shared/meta/chia";
 
 interface Props {
-  videoData: {
-    status: number;
-    data: y;
-  };
-  loading: "idle" | "pending" | "succeeded" | "failed";
-  error?: string;
+  videoData: y;
 }
 
-const Youtube: FC<Props> = ({ videoData, loading, error }) => {
+const Youtube: FC<Props> = ({ videoData }) => {
   const YOUTUBE_URL = Chia.link.youtube_playlist;
 
   return (
@@ -25,9 +19,7 @@ const Youtube: FC<Props> = ({ videoData, loading, error }) => {
         I have created a few video for my Youtube channel.
       </p>
       <div className="w-full flex flex-col">
-        {loading === "pending" && <VideoLoader />}
-        {loading === "succeeded" && <VideoList item={videoData.data.items} />}
-        {loading === "failed" && <p className="text-warning">{error}</p>}
+        <VideoList item={videoData.items} />
         <a
           href={YOUTUBE_URL}
           target="_blank"
@@ -43,4 +35,4 @@ const Youtube: FC<Props> = ({ videoData, loading, error }) => {
   );
 };
 
-export default memo(Youtube);
+export default Youtube;
