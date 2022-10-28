@@ -1,14 +1,13 @@
-import { Resume } from "@chia/components/server";
 import { Page } from "@chia/components/client";
 
-const AboutPage = () => {
+const PostDetailPage = () => {
   return (
     <Page>
       <article className="main c-container mt-20">
-        <Resume avatarSrc={"/me/me.JPG"} />
+        <h1>Work in progress</h1>
       </article>
     </Page>
   );
 };
 
-export default AboutPage;
+export default PostDetailPage;

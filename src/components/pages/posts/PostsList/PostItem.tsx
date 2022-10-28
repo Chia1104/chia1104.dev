@@ -1,7 +1,8 @@
 import { type FC } from "react";
 import type { PostFrontMatter } from "@chia/shared/types";
 import dayjs from "dayjs";
-import { Image, Link } from "@chia/components/shared";
+import { Image } from "@chia/components/server";
+import Link from "next/link";
 import cx from "classnames";
 
 interface Props {
@@ -40,12 +41,12 @@ const PostItem: FC<Props> = ({ data, i }) => {
         </span>
       </p>
       <Link
+        className="absolute top-0 bottom-0 right-0 left-0"
         href={{
           pathname: "/posts/[slug]/",
           query: { slug: data.slug },
-        }}>
-        <a className="absolute top-0 bottom-0 right-0 left-0" />
-      </Link>
+        }}
+      />
     </div>
   );
 };

@@ -1,0 +1,15 @@
+export { default as AboutMe } from "./AboutMe";
+export { default as Experience } from "./Experience";
+export { default as GitHub } from "./GitHub";
+export * from "./GitHub";
+export { default as Image } from "./Image";
+export { default as LanAndTools } from "./LanAndTools";
+export * from "./LanAndTools";
+export { default as NewsCard } from "./NewsCard";
+export { default as Resume } from "./Resume";
+export { default as Youtube } from "./Youtube";
+export * from "./Youtube";
+export { default as Head } from "./Head";
+export { default as Chip } from "./Chip";
+export { default as Design } from "./Design";
+export * from "./Design";

@@ -1,8 +1,8 @@
-import GitHub from "@chia/components/pages/portfolios/GitHub";
-import Youtube from "@chia/components/pages/portfolios/Youtube";
-import { Page } from "@chia/components/shared";
+import { GitHub, Youtube, Design } from "@chia/components/server";
+import { Page } from "@chia/components/client";
 import { getBaseUrl } from "@chia/utils/getBaseUrl";
 import type { RepoGql, Youtube as Y } from "@chia/shared/types";
+import { Design as DesignData } from "@chia/shared/meta/design";
 
 const getPortfoliosData = async () => {
   const github = (await fetch(`${getBaseUrl()}/api/github`, {
@@ -26,6 +26,7 @@ const PortfoliosPage = async () => {
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Youtube videoData={youtube} />
         <hr className="my-10 c-border-primary border-t-2 w-full" />
+        <Design data={DesignData} />
       </article>
     </Page>
   );

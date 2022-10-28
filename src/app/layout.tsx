@@ -2,22 +2,12 @@ import "../styles/globals.css";
 import {
   ActionIcon,
   NavMenu,
-  Footer,
   ErrorBoundary,
-  Background,
   AnimatePresence,
   ReduxProvider,
   NextThemeProvider,
-} from "@chia/components/shared";
+} from "@chia/components/client";
 import { type ReactNode } from "react";
-
-// import { IS_PRODUCTION } from "@chia/shared/constants";
-// import { httpBatchLink } from "@trpc/client/links/httpBatchLink";
-// import { loggerLink } from "@trpc/client/links/loggerLink";
-// import { withTRPC } from "@trpc/next";
-// import { AppRouter } from "@chia/server/routers/_app";
-// import superjson from "superjson";
-// import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 const ChiaWEB = ({ children }: { children: ReactNode }) => {
   return (
@@ -28,9 +18,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
             <ReduxProvider>
               <NavMenu />
               <ActionIcon />
-              <Background />
               <AnimatePresence mode="wait">{children}</AnimatePresence>
-              <Footer />
             </ReduxProvider>
           </NextThemeProvider>
         </ErrorBoundary>
@@ -40,30 +28,3 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
 };
 
 export default ChiaWEB;
-
-// export default withTRPC<AppRouter>({
-//   config() {
-//     return {
-//       links: [
-//         loggerLink({
-//           enabled: (opts) =>
-//             !IS_PRODUCTION ||
-//             (opts.direction === "down" && opts.result instanceof Error),
-//         }),
-//         httpBatchLink({
-//           url: `${getBaseUrl()}/api/trpc`,
-//         }),
-//       ],
-//       transformer: superjson,
-//     };
-//   },
-//   ssr: true,
-//   responseMeta({ clientErrors }) {
-//     if (clientErrors.length) {
-//       return {
-//         status: clientErrors[0].data?.httpStatus ?? 500,
-//       };
-//     }
-//     return {};
-//   },
-// })(ChiaWEB);

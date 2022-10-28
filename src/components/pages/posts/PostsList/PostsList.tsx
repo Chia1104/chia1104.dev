@@ -1,3 +1,5 @@
+"use client";
+
 import { type FC } from "react";
 import type { PostFrontMatter } from "@chia/shared/types";
 import PostItem from "./PostItem";

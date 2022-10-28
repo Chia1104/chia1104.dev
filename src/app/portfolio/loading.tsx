@@ -1,6 +1,5 @@
-import { VideoLoader } from "@chia/components/pages/portfolios/Youtube";
-import { ReposLoader } from "@chia/components/pages/portfolios/GitHub";
-import { Page } from "@chia/components/shared";
+import { VideoLoader, ReposLoader } from "@chia/components/server";
+import { Page } from "@chia/components/client";
 
 const Loading = () => {
   return (

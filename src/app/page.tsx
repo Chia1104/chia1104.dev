@@ -1,8 +1,8 @@
-import { AboutMe, NewsCard } from "@chia/components/pages/home";
+import { AboutMe, NewsCard } from "@chia/components/server";
 import { Chia } from "@chia/shared/meta/chia";
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import dayjs from "dayjs";
-import { Page } from "@chia/components/shared";
+import { Page } from "@chia/components/client";
 
 const getHomePageData = async () => {
   const posts = await getAllPosts();
@@ -13,8 +13,6 @@ const getHomePageData = async () => {
 };
 
 const HomePage = async () => {
-  const description = Chia.content;
-
   const { post } = await getHomePageData();
 
   return (
@@ -26,7 +24,7 @@ const HomePage = async () => {
             <div className="py-7 px-3">
               <NewsCard
                 title={"About me"}
-                content={description}
+                content={Chia.content}
                 link={"/about"}
               />
             </div>
