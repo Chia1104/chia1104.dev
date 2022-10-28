@@ -5,12 +5,12 @@ import { getBaseUrl } from "@chia/utils/getBaseUrl";
 import type { RepoGql, Youtube as Y } from "@chia/shared/types";
 
 const getPortfoliosData = async () => {
-  const github = (await fetch(`${getBaseUrl()}/api/github`).then((res) =>
-    res.json()
-  )) as RepoGql[];
-  const youtube = (await fetch(`${getBaseUrl()}/api/youtube`).then((res) =>
-    res.json()
-  )) as Y;
+  const github = (await fetch(`${getBaseUrl()}/api/github`, {
+    cache: "no-store",
+  }).then((res) => res.json())) as RepoGql[];
+  const youtube = (await fetch(`${getBaseUrl()}/api/youtube`, {
+    cache: "no-store",
+  }).then((res) => res.json())) as Y;
   return {
     github,
     youtube,
