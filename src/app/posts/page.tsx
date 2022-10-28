@@ -7,7 +7,7 @@ const PostsPage = async () => {
   const posts = await getAllPosts();
   return (
     <Page>
-      <article className="main c-container mt-20">
+      <article className="main c-container">
         <h1 className="title py-10 self-start">
           <span>{Chia.name}</span> |{" "}
           <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
