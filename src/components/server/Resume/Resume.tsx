@@ -1,9 +1,8 @@
 import { type FC } from "react";
-import { Image } from "@chia/components/server";
 import { Chia } from "@chia/shared/meta/chia";
 import Experience from "../Experience";
 import LanAndTools from "../LanAndTools";
-import { ContactButton } from "@chia/components/client";
+import { ContactButton, Image } from "@chia/components/client";
 
 interface Props {
   avatarSrc: string;

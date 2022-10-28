@@ -2,7 +2,7 @@
 
 import { type FC, useRef, useState, memo } from "react";
 import { useHover } from "usehooks-ts";
-import { Image, Modal } from "@chia/components/shared";
+import { Image, Modal } from "@chia/components/client";
 import cx from "classnames";
 
 interface Props {

@@ -2,7 +2,6 @@ export { default as AboutMe } from "./AboutMe";
 export { default as Experience } from "./Experience";
 export { default as GitHub } from "./GitHub";
 export * from "./GitHub";
-export { default as Image } from "./Image";
 export { default as LanAndTools } from "./LanAndTools";
 export * from "./LanAndTools";
 export { default as NewsCard } from "./NewsCard";

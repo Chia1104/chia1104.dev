@@ -1,4 +1,4 @@
-import { Image } from "@chia/components/server";
+import { Image } from "@chia/components/client";
 import type { FC } from "react";
 import { Chia } from "@chia/shared/meta/chia";
 
