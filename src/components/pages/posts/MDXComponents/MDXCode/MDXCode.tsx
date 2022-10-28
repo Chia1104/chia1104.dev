@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, useEffect, useState } from "react";
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import cx from "classnames";

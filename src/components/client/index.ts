@@ -10,3 +10,4 @@ export { default as Page } from "./Page";
 export { default as ReduxProvider } from "./ReduxProvider";
 export { default as NavMenu } from "./NavMenu";
 export { default as DMPoster } from "./DMPoster";
+export { default as MDXRemote } from "./MDXRemote";

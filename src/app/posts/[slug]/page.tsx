@@ -1,10 +1,38 @@
 import { Page } from "@chia/components/client";
+import { getPost, getAllPosts } from "@chia/helpers/mdx/services";
+import { MDXRemote } from "@chia/components/client";
+import { type ReactNode } from "react";
+// import * as mdxComponents from "@chia/components/pages/posts/MDXComponents";
 
-const PostDetailPage = () => {
+export const generateStaticParams = async () => {
+  const posts = await getAllPosts();
+
+  return posts.map((post) => ({
+    slug: post.slug,
+  }));
+};
+
+const getPostDetail = async (slug: string) => {
+  const { frontMatter, source } = await getPost(slug);
+  return {
+    frontMatter,
+    source,
+  };
+};
+
+const PostDetailPage = async ({
+  params,
+}: {
+  params?: any;
+  children?: ReactNode;
+}) => {
+  const { frontMatter, source } = await getPostDetail(params.slug);
+
   return (
     <Page>
       <article className="main c-container mt-20">
-        <h1>Work in progress</h1>
+        <h1 className="text-3xl mb-10">Work in progress</h1>
+        <MDXRemote {...source} />
       </article>
     </Page>
   );
