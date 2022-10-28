@@ -15,9 +15,9 @@ export default function Error({
   }, [error]);
 
   return (
-    <div>
+    <main className="main c-container">
       <p>Something went wrong!</p>
       <button onClick={() => reset()}>Reset error boundary</button>
-    </div>
+    </main>
   );
 }
