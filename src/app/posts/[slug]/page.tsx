@@ -12,21 +12,13 @@ export const generateStaticParams = async () => {
   }));
 };
 
-const getPostDetail = async (slug: string) => {
-  const { frontMatter, source } = await getPost(slug);
-  return {
-    frontMatter,
-    source,
-  };
-};
-
 const PostDetailPage = async ({
   params,
 }: {
   params?: any;
   children?: ReactNode;
 }) => {
-  const { frontMatter, source } = await getPostDetail(params.slug);
+  const { frontMatter, source } = await getPost(params.slug);
 
   return (
     <Page>
