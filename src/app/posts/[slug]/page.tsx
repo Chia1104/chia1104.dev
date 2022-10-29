@@ -38,11 +38,7 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
             <Chip data={frontMatter?.tags || []} />
           </header>
           <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:w-[70%] w-full self-center mx-auto">
-            <MDXRemote
-              {...source}
-              lazy
-              components={{ ...(mdxComponents as any) }}
-            />
+            <MDXRemote {...source} components={{ ...(mdxComponents as any) }} />
           </div>
           <div className="mt-20 lg:w-[70%] w-full self-center mx-auto">
             <Giscus title={frontMatter?.title || ""} />
