@@ -1,3 +1,5 @@
+"use client";
+
 import { Image } from "@chia/components/client";
 import { type ImageProps } from "next/image";
 import { type FC, DetailedHTMLProps, ImgHTMLAttributes } from "react";

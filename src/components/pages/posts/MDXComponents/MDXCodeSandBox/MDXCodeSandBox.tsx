@@ -1,3 +1,5 @@
+"use client";
+
 import type { FC, DetailedHTMLProps, IframeHTMLAttributes } from "react";
 
 interface Props

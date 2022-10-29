@@ -1,3 +1,5 @@
+"use client";
+
 import type { FC, DetailedHTMLProps, BlockquoteHTMLAttributes } from "react";
 import cx from "classnames";
 

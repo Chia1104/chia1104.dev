@@ -9,13 +9,10 @@ headImg: '/posts/2022-06-06-react-hooks-part1/react-hook.png'
 excerpt: "useEffect 和 useLayoutEffect 的區別及使用時機。React 自從 16.8 之後加入了 hook 這個新功能，而 hook 的目的就是讓開發者不必寫 class 就能使用 state 以及其他 React 的功能，其實這就跟現在 Vue3 的 Composition API 概念一樣，我們只需要 import 這些 API 就可以在 Function components 中做使用，甚至完成 life cycle 上的工作。"
 ---
 
-[//]: # (<Image)
-
-[//]: # (    src="/posts/2022-06-06-react-hooks-part1/react-hook.png")
-
-[//]: # (    alt="React hooks 在use什麼&#40;Part 2&#41;")
-
-[//]: # (/>)
+<Image
+    src="/posts/2022-06-06-react-hooks-part1/react-hook.png"
+    alt="React hooks 在use什麼(Part 2)"
+/>
 
 ## 前言 ✨
 
@@ -35,8 +32,7 @@ excerpt: "useEffect 和 useLayoutEffect 的區別及使用時機。React 自從 
 
 通常像是 Call API 、手動更改 Dom 元件又或是 `console.log` 的動作，都不需要做清除動作，這些在執行完後就會被忘記了。
 
-[//]: # (<CodeSandBox)
-
-[//]: # (  codeSrc={'https://codesandbox.io/embed/vigilant-cori-hvzlp9?fontsize=14&hidenavigation=1&theme=dark'} />)
+<CodeSandBox
+  codeSrc={'https://codesandbox.io/embed/vigilant-cori-hvzlp9?fontsize=14&hidenavigation=1&theme=dark'} />
 
 

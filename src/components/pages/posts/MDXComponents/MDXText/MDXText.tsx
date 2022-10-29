@@ -1,3 +1,5 @@
+"use client";
+
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 
 export const MDXParagraph: FC<
