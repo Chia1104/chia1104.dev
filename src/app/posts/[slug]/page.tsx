@@ -1,5 +1,5 @@
 import { Page } from "@chia/components/client";
-import { getAllPosts } from "@chia/helpers/mdx/services";
+import { getAllPosts, getPost } from "@chia/helpers/mdx/services";
 import { MDXRemote, Image, Giscus } from "@chia/components/client";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import * as mdxComponents from "@chia/components/client/MDXComponents";
@@ -30,7 +30,7 @@ const getPostBySlug = async (slug: string) => {
 
 const PostDetailPage = async ({ params }: { params?: any }) => {
   try {
-    const { frontMatter, source } = await getPostBySlug(params.slug);
+    const { frontMatter, source } = await getPost(params.slug);
     return (
       <Page>
         <article className="main c-container mt-10 px-5">
