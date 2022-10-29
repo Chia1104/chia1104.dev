@@ -1,11 +1,12 @@
 import { Page } from "@chia/components/client";
-import { getPost, getAllPosts } from "@chia/helpers/mdx/services";
+import { getAllPosts } from "@chia/helpers/mdx/services";
 import { MDXRemote, Image, Giscus } from "@chia/components/client";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import * as mdxComponents from "@chia/components/client/MDXComponents";
 import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -15,9 +16,19 @@ export const generateStaticParams = async () => {
   }));
 };
 
+const getPostBySlug = async (slug: string) => {
+  const res = await fetch(`${getBaseUrl()}/api/posts/${slug}`);
+  const json = await res.json();
+
+  return {
+    frontMatter: json.frontMatter,
+    source: json.source,
+  };
+};
+
 const PostDetailPage = async ({ params }: { params?: any }) => {
   try {
-    const { frontMatter, source } = await getPost(params.slug);
+    const { frontMatter, source } = await getPostBySlug(params.slug);
     return (
       <Page>
         <article className="main c-container mt-10 px-5">
