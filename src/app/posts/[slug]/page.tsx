@@ -6,6 +6,7 @@ import * as mdxComponents from "@chia/components/client/MDXComponents";
 import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -16,7 +17,7 @@ export const generateStaticParams = async () => {
 };
 
 const getPostBySlug = async (slug: string) => {
-  const res = await fetch(`/api/posts/${slug}`, {
+  const res = await fetch(`${getBaseUrl()}/api/posts/${slug}`, {
     cache: "no-store",
   });
   const json = await res.json();
