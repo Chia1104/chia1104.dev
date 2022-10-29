@@ -33,7 +33,7 @@ const Loading = () => {
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
             <div
               key={item}
-              className="animate-pulse aspect-w-3 aspect-h-5 w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg relative"
+              className="animate-pulse aspect-w-3 aspect-h-5 w-full overflow-hidden rounded-lg dark:bg-black bg-[#dddddd] shadow-lg relative"
             />
           ))}
         </div>

@@ -3,12 +3,12 @@ import {
   ActionIcon,
   NavMenu,
   ErrorBoundary,
-  AnimatePresence,
   ReduxProvider,
   NextThemeProvider,
   GeistProvider,
 } from "@chia/components/client";
 import { type ReactNode } from "react";
+import { AnimatePresence } from "@chia/lib/framer-motion";
 
 const ChiaWEB = ({ children }: { children: ReactNode }) => {
   return (

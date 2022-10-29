@@ -1,6 +1,5 @@
 export { default as ActionIcon } from "./ActionIcon";
 export * from "./ActionIcon";
-export { default as AnimatePresence } from "./AnimatePresence";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { default as GeistProvider } from "./GeistProvider";
 export { default as HoverButton } from "./HoverButton";

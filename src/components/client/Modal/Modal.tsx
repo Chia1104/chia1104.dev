@@ -24,7 +24,7 @@ const Modal: FC<Props> = (props) => {
   useLockedBody(isShowed);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isShowed && (
         <motion.div
           onClick={activeModal}

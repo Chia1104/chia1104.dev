@@ -1,4 +1,4 @@
-import { getAllVideos } from "@chia/api/youtube";
+import { getAllVideos } from "@chia/helpers/api/youtube";
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { Youtube } from "@chia/shared/types";
 

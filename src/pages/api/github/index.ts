@@ -1,7 +1,7 @@
 import type { RepoGql } from "@chia/shared/types";
-import { GET_REPOS } from "@chia/GraphQL/github/query";
+import { GET_REPOS } from "@chia/helpers/GraphQL/github/query";
 import type { NextApiRequest, NextApiResponse } from "next";
-import githubGraphQLClient from "@chia/GraphQL/github/github.client";
+import githubGraphQLClient from "@chia/helpers/GraphQL/github/github.client";
 
 export default async function handler(
   req: NextApiRequest,
