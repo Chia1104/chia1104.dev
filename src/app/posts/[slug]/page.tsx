@@ -2,7 +2,7 @@ import { Page } from "@chia/components/client";
 import { getPost, getAllPosts } from "@chia/helpers/mdx/services";
 import { MDXRemote } from "@chia/components/client";
 import { type ReactNode } from "react";
-// import * as mdxComponents from "@chia/components/pages/posts/MDXComponents";
+import * as mdxComponents from "@chia/components/pages/posts/MDXComponents";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -24,7 +24,11 @@ const PostDetailPage = async ({
     <Page>
       <article className="main c-container mt-20">
         <h1 className="text-3xl mb-10">Work in progress</h1>
-        <MDXRemote {...source} />
+        <MDXRemote
+          {...source}
+          lazy
+          components={{ ...(mdxComponents as any) }}
+        />
       </article>
     </Page>
   );
