@@ -33,6 +33,7 @@ const nextConfig = {
     //   }]
     // ]
     appDir: true,
+    enableUndici: true,
   },
   async redirects() {
     return [
