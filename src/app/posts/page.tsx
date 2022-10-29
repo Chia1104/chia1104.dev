@@ -1,7 +1,7 @@
 import { Page } from "@chia/components/client";
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import { Chia } from "@chia/shared/meta/chia";
-import { PostsList } from "@chia/components/pages/posts";
+import { PostsList } from "@chia/components/client";
 
 const PostsPage = async () => {
   const posts = await getAllPosts();

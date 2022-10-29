@@ -6,6 +6,7 @@ import {
   AnimatePresence,
   ReduxProvider,
   NextThemeProvider,
+  GeistProvider,
 } from "@chia/components/client";
 import { type ReactNode } from "react";
 
@@ -15,11 +16,13 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
       <body className="c-bg-primary scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full">
         <ErrorBoundary>
           <NextThemeProvider>
-            <ReduxProvider>
-              <NavMenu />
-              <ActionIcon />
-              <AnimatePresence mode="wait">{children}</AnimatePresence>
-            </ReduxProvider>
+            <GeistProvider>
+              <ReduxProvider>
+                <NavMenu />
+                <ActionIcon />
+                <AnimatePresence mode="wait">{children}</AnimatePresence>
+              </ReduxProvider>
+            </GeistProvider>
           </NextThemeProvider>
         </ErrorBoundary>
       </body>

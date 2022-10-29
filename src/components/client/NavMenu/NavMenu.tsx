@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import type { FC } from "react";
-import { Link } from "@chia/components/shared";
+import Link from "next/link";
 import cx from "classnames";
 import { useSelectedLayoutSegments } from "next/navigation";
 
