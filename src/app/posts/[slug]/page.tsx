@@ -16,7 +16,9 @@ export const generateStaticParams = async () => {
 };
 
 const getPostBySlug = async (slug: string) => {
-  const res = await fetch(`/api/posts/${slug}`);
+  const res = await fetch(`/api/posts/${slug}`, {
+    cache: "no-store",
+  });
   const json = await res.json();
 
   return {
