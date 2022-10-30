@@ -22,6 +22,4 @@ const PostsPage = async () => {
   );
 };
 
-export const dynamic = "error";
-
 export default PostsPage;

@@ -60,7 +60,7 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
   );
 };
 
-export const dynamic = "error";
+export const dynamic = "force-static";
 export const dynamicParams = false;
 
 export default PostDetailPage;
