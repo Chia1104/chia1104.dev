@@ -1,5 +1,5 @@
 import { useMediaQuery, useUpdateEffect } from "usehooks-ts";
-import { useTheme } from "next-themes";
+import { useTheme } from "@chia/lib/next-themes";
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
 

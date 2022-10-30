@@ -4,7 +4,6 @@ export { ErrorBoundary } from "./ErrorBoundary";
 export { default as GeistProvider } from "./GeistProvider";
 export { default as HoverButton } from "./HoverButton";
 export { default as Modal } from "./Modal";
-export { default as NextThemeProvider } from "./NextThemeProvider";
 export { default as Page } from "./Page";
 export { default as ReduxProvider } from "./ReduxProvider";
 export { default as NavMenu } from "./NavMenu";
