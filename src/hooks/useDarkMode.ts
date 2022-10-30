@@ -1,3 +1,5 @@
+"use client";
+
 import { useMediaQuery, useUpdateEffect } from "usehooks-ts";
 import { useTheme } from "@chia/lib/next-themes";
 
