@@ -5,7 +5,6 @@ import "highlight.js/styles/atom-one-dark-reasonable.css";
 import * as mdxComponents from "@chia/components/client/MDXComponents";
 import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
-import { notFound } from "next/navigation";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
