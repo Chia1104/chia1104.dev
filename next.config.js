@@ -27,13 +27,7 @@ const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
   experimental: {
-    // swcPlugins: [
-    //   ['plugin', {
-    //
-    //   }]
-    // ]
     appDir: true,
-    enableUndici: true,
   },
   async redirects() {
     return [
