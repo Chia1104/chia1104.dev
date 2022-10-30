@@ -12,3 +12,4 @@ export { default as MDXRemote } from "./MDXRemote";
 export { default as Image } from "./Image";
 export { default as PostsList } from "./PostsList";
 export { default as Giscus } from "./Giscus";
+export { default as Head } from "./Head";

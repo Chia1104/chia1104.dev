@@ -1,5 +1,6 @@
-import { useMediaQuery, useUpdateEffect } from "usehooks-ts";
+import { useMediaQuery } from "usehooks-ts";
 import { useTheme } from "@chia/lib/next-themes";
+import { useEffect } from "react";
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
 
@@ -15,7 +16,7 @@ export default function useDarkMode(): UseDarkModeOutput {
   const isDarkOS = useMediaQuery(COLOR_SCHEME_QUERY);
   const { theme, setTheme } = useTheme();
 
-  useUpdateEffect(() => {
+  useEffect(() => {
     setTheme(isDarkOS ? "dark" : "light");
   }, [isDarkOS]);
 
