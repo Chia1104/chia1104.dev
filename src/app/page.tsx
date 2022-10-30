@@ -82,4 +82,6 @@ const HomePage = async () => {
   );
 };
 
+export const dynamic = "error";
+
 export default HomePage;

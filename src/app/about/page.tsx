@@ -11,4 +11,6 @@ const AboutPage = () => {
   );
 };
 
+export const dynamic = "error";
+
 export default AboutPage;
