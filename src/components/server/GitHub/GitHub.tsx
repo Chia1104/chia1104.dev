@@ -1,27 +1,20 @@
-import { type FC } from "react";
 import type { RepoGql } from "@chia/shared/types";
 import ReposList from "./ReposList";
 import { Chia } from "@chia/shared/meta/chia";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
+import { asyncComponent } from "@chia/utils/asyncComponent.util";
+import { FC } from "react";
 
-interface Props {
-  repoData: RepoGql[];
-}
-
-const GitHub: FC<Props> = ({ repoData }) => {
+const GitHub: FC = asyncComponent(async () => {
   const GITHUB_URL = Chia.link.github;
+  const github = (await fetch(`${getBaseUrl()}/api/github`, {
+    cache: "no-store",
+  }).then((res) => res.json())) as RepoGql[];
 
   return (
     <>
-      <header className="title sm:self-start pt-10">
-        <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
-          GitHub Repositories
-        </span>
-      </header>
-      <p className="c-description sm:self-start pb-7">
-        What I currently work on
-      </p>
       <div className="w-full flex flex-col">
-        <ReposList repo={repoData} />
+        <ReposList repo={github} />
         <a
           href={`${GITHUB_URL}?tab=repositories`}
           target="_blank"
@@ -35,6 +28,6 @@ const GitHub: FC<Props> = ({ repoData }) => {
       </div>
     </>
   );
-};
+});
 
 export default GitHub;

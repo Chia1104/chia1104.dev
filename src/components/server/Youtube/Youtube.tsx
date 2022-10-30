@@ -1,25 +1,21 @@
-import { type FC } from "react";
 import VideoList from "./VideoList";
-import type { Youtube as y } from "@chia/shared/types";
+import type { Youtube as Y } from "@chia/shared/types";
 import { Chia } from "@chia/shared/meta/chia";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
+import { asyncComponent } from "@chia/utils/asyncComponent.util";
+import { FC } from "react";
 
-interface Props {
-  videoData: y;
-}
+const Youtube: FC = asyncComponent(async () => {
+  const youtube = (await fetch(`${getBaseUrl()}/api/youtube`, {
+    cache: "no-store",
+  }).then((res) => res.json())) as Y;
 
-const Youtube: FC<Props> = ({ videoData }) => {
   const YOUTUBE_URL = Chia.link.youtube_playlist;
 
   return (
     <>
-      <header className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
-        Youtube Playlists
-      </header>
-      <p className="c-description sm:self-start pb-7">
-        I have created a few video for my Youtube channel.
-      </p>
       <div className="w-full flex flex-col">
-        <VideoList item={videoData.items} />
+        <VideoList item={youtube.items} />
         <a
           href={YOUTUBE_URL}
           target="_blank"
@@ -33,6 +29,6 @@ const Youtube: FC<Props> = ({ videoData }) => {
       </div>
     </>
   );
-};
+});
 
 export default Youtube;

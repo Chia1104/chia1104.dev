@@ -1,30 +1,39 @@
-import { GitHub, Youtube, Design } from "@chia/components/server";
+import {
+  GitHub,
+  Youtube,
+  Design,
+  VideoLoader,
+  ReposLoader,
+} from "@chia/components/server";
 import { Page } from "@chia/components/client";
-import { getBaseUrl } from "@chia/utils/getBaseUrl";
-import type { RepoGql, Youtube as Y } from "@chia/shared/types";
 import { Design as DesignData } from "@chia/shared/meta/design";
-
-const getPortfoliosData = async () => {
-  const github = (await fetch(`${getBaseUrl()}/api/github`, {
-    cache: "no-store",
-  }).then((res) => res.json())) as RepoGql[];
-  const youtube = (await fetch(`${getBaseUrl()}/api/youtube`, {
-    cache: "no-store",
-  }).then((res) => res.json())) as Y;
-  return {
-    github,
-    youtube,
-  };
-};
+import { Suspense } from "react";
 
 const PortfoliosPage = async () => {
-  const { github, youtube } = await getPortfoliosData();
   return (
     <Page>
       <article className="main c-container">
-        <GitHub repoData={github} />
+        <header className="title sm:self-start pt-10">
+          <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
+            GitHub Repositories
+          </span>
+        </header>
+        <p className="c-description sm:self-start pb-7">
+          What I currently work on
+        </p>
+        <Suspense fallback={<ReposLoader />}>
+          <GitHub />
+        </Suspense>
         <hr className="my-10 c-border-primary border-t-2 w-full" />
-        <Youtube videoData={youtube} />
+        <header className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
+          Youtube Playlists
+        </header>
+        <p className="c-description sm:self-start pb-7">
+          I have created a few video for my Youtube channel.
+        </p>
+        <Suspense fallback={<VideoLoader />}>
+          <Youtube />
+        </Suspense>
         <hr className="my-10 c-border-primary border-t-2 w-full" />
         <Design data={DesignData} />
       </article>
