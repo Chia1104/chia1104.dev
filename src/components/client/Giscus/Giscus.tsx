@@ -12,7 +12,8 @@ interface Props {
 
 const Giscus: FC<Props> = (props) => {
   const { title } = props;
-  const isDarkMode = useDarkMode();
+  const isMounted = useIsMounted();
+  const { isDarkMode } = useDarkMode();
 
   return (
     <G
@@ -21,7 +22,7 @@ const Giscus: FC<Props> = (props) => {
       mapping="specific"
       reactionsEnabled="1"
       emitMetadata="0"
-      theme={isDarkMode ? "dark" : "light"}
+      theme={isMounted && isDarkMode ? "dark" : "light"}
     />
   );
 };

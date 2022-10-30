@@ -3,7 +3,7 @@
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import { type FC, memo } from "react";
 import Contact from "./Contact";
-import { useAppDispatch, useDarkMode } from "@chia/hooks";
+import { useAppDispatch, useDarkMode, useIsMounted } from "@chia/hooks";
 import { activeActionIconSheet } from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { Chia } from "@chia/shared/meta/chia";
 
@@ -11,6 +11,7 @@ const ActionIcon: FC = () => {
   const dispatch = useAppDispatch();
 
   const { isDarkMode, toggle } = useDarkMode();
+  const isMounted = useIsMounted();
 
   const GITHUB = Chia.link.github;
   const INSTAGRAM = Chia.link.instagram;
@@ -42,7 +43,7 @@ const ActionIcon: FC = () => {
           aria-label={"Light or Dark"}
           onClick={toggle}
           className="hover:text-secondary transition ease-in-out mr-3">
-          {isDarkMode ? (
+          {isMounted && isDarkMode ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5"
