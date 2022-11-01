@@ -30,6 +30,6 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const runtime = "node.js";
+export const runtime = "nodejs";
 
 export default ChiaWEB;
