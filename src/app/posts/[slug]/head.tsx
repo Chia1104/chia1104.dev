@@ -1,17 +1,14 @@
 import { Head } from "@chia/components/server";
 import { Chia } from "@chia/shared/meta/chia";
-import { getPost } from "@chia/helpers/mdx/services";
-import { getBaseUrl } from "@chia/utils/getBaseUrl";
+// import { getPost } from "@chia/helpers/mdx/services";
 
 const PostDetailHead = async ({ params }: { params: any }) => {
-  const { frontMatter } = await fetch(
-    `${getBaseUrl()}/api/posts/${params.slug}`
-  ).then((res) => res.json());
+  // const { frontMatter } = await getPost(params.slug);
   return (
     <Head
-      title={`${frontMatter?.title} | ${Chia.name} ${Chia.chineseName}`}
-      description={`${frontMatter?.excerpt}`}
-      keywords={frontMatter?.tags}
+      title={`${params?.slug} | ${Chia.name} ${Chia.chineseName}`}
+      description={`${params?.slug}`}
+      keywords={params?.slug}
       type="article"
     />
   );
