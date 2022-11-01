@@ -1,3 +1,4 @@
+import "server-only";
 import path from "path";
 import type { PostFrontMatter, PostSource } from "@chia/shared/types";
 import { POSTS_PATH } from "@chia/shared/constants";
@@ -11,6 +12,7 @@ import rehypePrism from "rehype-prism-plus";
 import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import { cache } from "react";
 
 const PostsPath = path.join(process.cwd(), POSTS_PATH);
 
@@ -26,7 +28,7 @@ export const getEncodedSlugs = async (): Promise<string[]> => {
   return mdxFiles.map((fileName) => encodeURI(fileName.replace(/\.mdx$/, "")));
 };
 
-export const getPost = async (slug: string): Promise<PostSource> => {
+export const getPost = cache(async (slug: string): Promise<PostSource> => {
   const { frontMatter, content } = await getPostData(slug);
 
   const source = await serialize(content, {
@@ -55,9 +57,9 @@ export const getPost = async (slug: string): Promise<PostSource> => {
       compiledSource: source.compiledSource,
     },
   };
-};
+});
 
-export const getAllPosts = async (): Promise<PostFrontMatter[]> => {
+export const getAllPosts = cache(async (): Promise<PostFrontMatter[]> => {
   const slugs = await getSlugs();
 
   const data = await pMap(
@@ -71,4 +73,4 @@ export const getAllPosts = async (): Promise<PostFrontMatter[]> => {
   data.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
 
   return data.filter((post) => post.published);
-};
+});
