@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 import path from "path";
 import type { PostFrontMatter, PostSource } from "@chia/shared/types";
 import { POSTS_PATH } from "@chia/shared/constants";
