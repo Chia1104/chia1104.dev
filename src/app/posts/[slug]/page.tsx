@@ -14,7 +14,9 @@ export const generateStaticParams = async () => {
 };
 
 const PostDetailPage = async ({ params }: { params?: any }) => {
-  const { frontMatter, source } = await getPost(params.slug);
+  const { frontMatter, source } = await fetch(`/api/posts/${params.slug}`).then(
+    (res) => res.json()
+  );
   return (
     <article className="main c-container mt-10 px-5">
       <header className="pl-3 lg:w-[70%] w-full mb-7 self-center">
@@ -42,7 +44,5 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
     </article>
   );
 };
-
-export const dynamic = "force-static";
 
 export default PostDetailPage;
