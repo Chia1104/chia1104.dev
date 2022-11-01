@@ -30,6 +30,6 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const runtime = "nodejs";
+export const runtime = "experimental-edge";
 
 export default ChiaWEB;
