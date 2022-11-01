@@ -8,7 +8,6 @@ const PostDetailHead = async ({ params }: { params: any }) => {
     <Head
       title={`${params?.slug} | ${Chia.name} ${Chia.chineseName}`}
       description={`${params?.slug}`}
-      keywords={params?.slug}
       type="article"
     />
   );
