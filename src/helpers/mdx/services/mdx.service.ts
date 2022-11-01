@@ -16,6 +16,10 @@ import { cache } from "react";
 
 const PostsPath = path.join(process.cwd(), POSTS_PATH);
 
+export const preload = (slug: string) => {
+  void getPost(slug);
+};
+
 export const getSlugs = async (): Promise<string[]> => {
   const mdxFiles = await glob("*.mdx", { cwd: PostsPath });
 

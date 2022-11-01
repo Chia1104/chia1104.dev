@@ -8,6 +8,7 @@ specifiers:
   '@formspree/react': ^2.4.0
   '@geist-ui/core': ^2.3.8
   '@giscus/react': ^2.2.0
+  '@mdx-js/react': 2.1.5
   '@redux-devtools/extension': ^3.2.3
   '@reduxjs/toolkit': ^1.8.6
   '@tailwindcss/aspect-ratio': ^0.4.2
@@ -72,6 +73,7 @@ dependencies:
   '@formspree/react': 2.4.0_biqbaboplfbrettd7655fr4n2y
   '@geist-ui/core': 2.3.8_biqbaboplfbrettd7655fr4n2y
   '@giscus/react': 2.2.0_biqbaboplfbrettd7655fr4n2y
+  '@mdx-js/react': 2.1.5_react@18.2.0
   '@reduxjs/toolkit': 1.8.6_kuo2ie247izvzll3jejufdtq3q
   classnames: 2.3.2
   core-js: 3.26.0
