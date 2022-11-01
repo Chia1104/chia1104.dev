@@ -24,7 +24,7 @@ const Head: FC<Props> = (props) => {
   const des = Chia.content;
   const chinese_name = Chia.chineseName;
   return (
-    <head>
+    <>
       <title>{title || `${name} / ${chinese_name} - ${c_title}`}</title>
       <meta
         property="og:title"
@@ -52,7 +52,7 @@ const Head: FC<Props> = (props) => {
       <link rel="icon" href="/favicon.ico" />
       <meta name="theme-color" content="#2B2E4A" />
       <meta property="og:image" content={imageUrl || ""} key="image" />
-    </head>
+    </>
   );
 };
 
