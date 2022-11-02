@@ -28,7 +28,6 @@ ENV \
     SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID \
     SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
 
-RUN yarn prisma generate
 RUN yarn build
 
 FROM node:16-alpine AS runner
