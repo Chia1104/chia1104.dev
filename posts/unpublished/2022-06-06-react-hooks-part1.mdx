@@ -32,7 +32,6 @@ React 自從 16.8 之後加入了 hook 這個新功能，而 hook 的目的就�
     type={'warning'}
 >
     ### 我們只在最上層呼叫 Hook
-
     - **不要在迴圈、條件式或是巢狀的 function 內呼叫 Hook**
 </Quote>
 
@@ -44,13 +43,12 @@ React 自從 16.8 之後加入了 hook 這個新功能，而 hook 的目的就�
 >
     ```javascript
     if (condition) {
-      useEffect(() => {
-        fetchData()
-      }, []);
+        useEffect(() => {
+            fetchData()
+        }, []);
     }
     ```
 </Code>
-
 如果我們這樣打的話 React 會直接報錯，那是因為 React 的 Hook 在 render 時被呼叫的順序是一致的，React 可以將一些 local state 和彼此聯繫在一起。
 
 **這時候 React 會因為少了其中一個步驟而發生 bug!!**
@@ -61,16 +59,14 @@ React 自從 16.8 之後加入了 hook 這個新功能，而 hook 的目的就�
 >
     ```javascript
     useEffect(() => {
-      if (condition) fetchData()
+        if (condition) fetchData()
     }, []);
     ```
 </Code>
-
 <Quote
     type={'success'}
 >
     - 在任何 early return 之前，我們可以在 React 的 function component 中的最上層使用 Hook。
-
     - 藉由遵循這些規則，你可以確保當每次一個 component render 時 Hook 都依照正確的順序被呼叫。
 
     - React 的官方文件有更清楚的範例，可以參考 [Rules of Hooks](https://reactjs.org/docs/hooks-rules.html)
@@ -94,7 +90,6 @@ class CounterClass extends React.Component {
       count: 0
     };
   }
-
   render() {
     return (
       <>
@@ -113,7 +108,6 @@ class CounterClass extends React.Component {
 ```javascript
 const CounterFC = () => {
   const [count, setCount] = useState(0) // <-- 我們可以在 useState 中指定初始值
-
   return (
     <>
       <p>Count: {count}</p>
@@ -129,7 +123,6 @@ const CounterFC = () => {
     type={'info'}
 >
     ### 是不是少了很多，看起來也直觀一些了
-
     - 而且我們也不必寫到 `this` 這個很常讓初學 Javascript 的人感到困惑的東西
 </Quote>
 
@@ -160,7 +153,6 @@ Side Effect 是指一個 function 做了跟本身運算返回值沒有關係的�
     - 設定 subscription
     - 動改變 React component 中的 DOM。
 </Quote>
-
 ---
 
 再回到剛剛所講的 useEffect:
@@ -168,23 +160,20 @@ Side Effect 是指一個 function 做了跟本身運算返回值沒有關係的�
 <Quote
     type={'info'}
 >
-     - 在 React class 生命週期中， componentDidMount、componentDidUpdate、componentWillUnmount 其實可以被視為 useEffect 的組合。
+    - 在 React class 生命週期中， componentDidMount、componentDidUpdate、componentWillUnmount 其實可以被視為 useEffect 的組合。
 </Quote>
 
 ```javascript
 const ListExample = () => {
   const [data, setData] = useState([])
-
   const fetchData = async () => {
     const response = await fetch(REST_API);
     const json = await response.json();
     setData(json);
   }
-
   useEffect(() => {
     fetchData()
   }, []); // Only run the effect once (on mount), after that it will be skipped.
-
   return (
     <>
       {
@@ -222,7 +211,6 @@ useEffect(() => {
     - `[ 'a', 'b' ] === [ 'a', 'b' ]` 會回傳 `false`。
     - 這樣會導致 React 不能正常的執行 useEffect。
 </Quote>
-
  - 我們通常會以 object 中的值來作為依賴項。
 
 <Code
@@ -231,11 +219,10 @@ useEffect(() => {
 >
     ```javascript
     useEffect(() => {
-      fetchDataById(data.id)
+        fetchDataById(data.id)
     }, [data.id]);
     ```
 </Code>
-
 ---
 
 最後我們來看如何預防 infinite loop。
@@ -254,18 +241,16 @@ useEffect(() => {
 >
     ```javascript
     const CounterFC = () => {
-      const [count, setCount] = useState(0)
-
-      setCount(count + 1) // infinite loop
-      return (
-        <>
-          <p>Count: {count}</p>
-        </>
-      )
+        const [count, setCount] = useState(0)
+        setCount(count + 1) // infinite loop
+        return (
+            <>
+                <p>Count: {count}</p>
+            </>
+        )
     }
     ```
 </Code>
-
 如果我們直接在渲染方法或功能組件的主體內更新狀態，就會導致 infinite loop。
 
 <Quote
@@ -273,7 +258,6 @@ useEffect(() => {
 >
     - state updates → triggers re-render → state updates → triggers re-render → … → infinite loop
 </Quote>
-
 ---
 
 ## How to Prevent Infinite Loop?
@@ -283,7 +267,6 @@ useEffect(() => {
 >
     - 我們可以使用 `useEffect` 來防止 infinite loop，藉由 sideEffect 的方式來更新 state。
 </Quote>
-
 我們稍微修正上面的範例
 
 <Code
@@ -292,20 +275,18 @@ useEffect(() => {
 >
     ```javascript
     const CounterFC = () => {
-      const [count, setCount] = useState(0)
-      useEffect(() => {
-        setCount(count + 1)
-      }, [])
-
-      return (
-        <>
-          <p>Count: {count}</p>
-        </>
-      )
+        const [count, setCount] = useState(0)
+        useEffect(() => {
+            setCount(count + 1)
+        }, [])
+        return (
+            <>
+                <p>Count: {count}</p>
+            </>
+        )
     }
     ```
 </Code>
-
 ### 第二種錯誤
 
 <Code
@@ -313,21 +294,19 @@ useEffect(() => {
     text={'這是錯的 - infinite loop'}
 >
     ```javascript
-    const CounterFC = () => {
-      const [count, setCount] = useState(0)
-      useEffect(() => {
-        setCount(count + 1) // infinite loop
-      }, [count])
-
-      return (
-        <>
-          <p>Count: {count}</p>
-        </>
-      )
+        const CounterFC = () => {
+        const [count, setCount] = useState(0)
+        useEffect(() => {
+            setCount(count + 1) // infinite loop
+        }, [count])
+        return (
+            <>
+                <p>Count: {count}</p>
+            </>
+        )
     }
     ```
 </Code>
-
 大家應該看到這很明顯會觸發 infinite loop。
 
 因為當我們在更新 count 的同時，又會觸發 setCount，這樣就會觸發 infinite loop。
@@ -337,38 +316,33 @@ useEffect(() => {
 >
     - state updates → triggers re-render → state updates → triggers re-render → … → infinite loop
 </Quote>
-
 <Quote
     type={'info'}
 >
     - 我們可以藉由 event 來觸發。
 </Quote>
-
 <Code
     type={'info'}
     text={'藉由 onClick 來觸發'}
 >
     ```javascript
     const CounterFC = () => {
-      const [count, setCount] = useState(0)
-
-      return (
-        <>
-          <p>Count: {count}</p>
-          <button onClick={() => setCount(1)}>Add</button>
-        </>
-      )
+        const [count, setCount] = useState(0)
+        return (
+            <>
+                <p>Count: {count}</p>
+                <button onClick={() => setCount(1)}>Add</button>
+            </>
+        )
     }
     ```
 </Code>
-
 <Quote
     type={'warning'}
 >
     - 我們一定要在 `onClick` 中設置一個 function。
     - 而不是 function 的執行過程，不然這也會觸發 infinite loop。
 </Quote>
-
 ### 第三種錯誤
 
 <Code
@@ -377,28 +351,25 @@ useEffect(() => {
 >
     ```javascript
     const CounterFC = () => {
-      const [count, setCount] = useState(0)
-
-      return (
+        const [count, setCount] = useState(0)
+        return (
         <>
-          <p>Count: {count}</p>
-          <button
-            // infinite loop
-            onClick={setCount(1)}>
-            Add
-          </button>
+            <p>Count: {count}</p>
+            <button
+                // infinite loop
+                onClick={setCount(1)}>
+                Add
+            </button>
         </>
-      )
+        )
     }
     ```
 </Code>
-
 <Quote
     type={'error'}
 >
     - state updates → triggers re-render → state updates → triggers re-render → … → infinite loop
 </Quote>
-
 **以上三種狀況是我整理出來比較常觸發 infinite loop 的狀況。**
 
 **也是過去自己有遇過的坑，想分享給大家。**
