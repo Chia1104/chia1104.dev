@@ -20,6 +20,4 @@ const PostsPage = async () => {
   );
 };
 
-export const dynamic = "force-static";
-
 export default PostsPage;
