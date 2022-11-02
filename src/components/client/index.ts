@@ -1,3 +1,5 @@
+"use client";
+
 export { default as ActionIcon } from "./ActionIcon";
 export * from "./ActionIcon";
 export { ErrorBoundary } from "./ErrorBoundary";
@@ -13,3 +15,4 @@ export { default as Image } from "./Image";
 export { default as PostsList } from "./PostsList";
 export { default as Giscus } from "./Giscus";
 export { default as Head } from "./Head";
+export { default as DefaultSeo } from "./DefaultSeo";

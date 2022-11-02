@@ -25,6 +25,9 @@ const Head: FC<Props> = (props) => {
   const chinese_name = Chia.chineseName;
   return (
     <>
+      <meta charSet="utf-8" />
+      <meta name="viewport" content="width=device-width" />
+      <meta name="robots" content="index,follow" />
       <title>{title || `${name} / ${chinese_name} - ${c_title}`}</title>
       <meta
         property="og:title"
