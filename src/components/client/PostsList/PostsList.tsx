@@ -5,9 +5,10 @@ import type { PostFrontMatter } from "@chia/shared/types";
 import PostItem from "./PostItem";
 import { motion } from "framer-motion";
 import cx from "classnames";
+import { SerializedResult, useDeserialized } from "@chia/utils/hydration.util";
 
 interface Props {
-  post: PostFrontMatter[];
+  post: SerializedResult<PostFrontMatter[]>;
 }
 
 const postAnimation = {
@@ -21,13 +22,15 @@ const postCardAnimation = {
   },
 };
 
-const PostsList: FC<Props> = ({ post }) => {
+const PostsList: FC<Props> = (props) => {
+  const { post } = props;
+  const _post = useDeserialized(post);
   return (
     <motion.article
       className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-10"
       variants={postAnimation}
       animate={"show"}>
-      {post.map((post: PostFrontMatter, index) => (
+      {_post.map((post: PostFrontMatter, index) => (
         <motion.div
           key={post.id}
           variants={postCardAnimation}

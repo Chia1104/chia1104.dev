@@ -1,6 +1,7 @@
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import { Chia } from "@chia/shared/meta/chia";
 import { PostsList } from "@chia/components/client";
+import { serialize } from "@chia/utils/hydration.util";
 
 const PostsPage = async () => {
   const posts = await getAllPosts();
@@ -13,7 +14,7 @@ const PostsPage = async () => {
         </span>
       </h1>
       <div className="flex flex-col w-full justify-center items-center">
-        {posts && <PostsList post={posts} />}
+        {posts && <PostsList post={serialize(posts)} />}
       </div>
     </article>
   );

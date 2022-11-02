@@ -60,6 +60,7 @@ specifiers:
   remark-gfm: ^3.0.1
   server-only: 0.0.1
   shell-quote: ^1.7.4
+  superjson: 1.11.0
   tailwind-scrollbar: ^2.0.1
   tailwindcss: ^3.2.1
   typescript: 4.6.3
@@ -100,6 +101,7 @@ dependencies:
   rehype-slug: 5.0.1
   remark-gfm: 3.0.1
   server-only: 0.0.1
+  superjson: 1.11.0
   usehooks-ts: 2.9.1_biqbaboplfbrettd7655fr4n2y
   zod: 3.19.1
 
@@ -1862,6 +1864,13 @@ packages:
 
   /convert-source-map/1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
+
+  /copy-anything/3.0.2:
+    resolution: {integrity: sha512-CzATjGXzUQ0EvuvgOCI6A4BGOo2bcVx8B+eC2nF862iv9fopnPQwlrbACakNCHRIJbCSBj+J/9JeDf60k64MkA==}
+    engines: {node: '>=12.13'}
+    dependencies:
+      is-what: 4.1.7
+    dev: false
 
   /core-js-pure/3.26.0:
     resolution: {integrity: sha512-LiN6fylpVBVwT8twhhluD9TzXmZQQsr2I2eIKtWNbZI1XMfBT7CV18itaN6RA7EtQd/SDdRx/wzvAShX2HvhQA==}
@@ -3733,6 +3742,11 @@ packages:
     dependencies:
       call-bind: 1.0.2
     dev: true
+
+  /is-what/4.1.7:
+    resolution: {integrity: sha512-DBVOQNiPKnGMxRMLIYSwERAS5MVY1B7xYiGnpgctsOFvVDz9f9PFXXxMcTOHuoqYp4NK9qFYQaIC1NRRxLMpBQ==}
+    engines: {node: '>=12.13'}
+    dev: false
 
   /isexe/2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
@@ -5809,6 +5823,13 @@ packages:
 
   /stylis/4.1.3:
     resolution: {integrity: sha512-GP6WDNWf+o403jrEp9c5jibKavrtLW+/qYGhFxFrG8maXhwTBI7gLLhiBb0o7uFccWN+EOS9aMO6cGHWAO07OA==}
+    dev: false
+
+  /superjson/1.11.0:
+    resolution: {integrity: sha512-6PfAg1FKhqkwWvPb2uXhH4MkMttdc17eJ91+Aoz4s1XUEDZFmLfFx/xVA3wgkPxAGy5dpozgGdK6V/n20Wj9yg==}
+    engines: {node: '>=10'}
+    dependencies:
+      copy-anything: 3.0.2
     dev: false
 
   /supports-color/5.5.0:

@@ -1,9 +1,9 @@
 import { getAllPosts, getPost } from "@chia/helpers/mdx/services";
 import { MDXRemote, Image, Giscus } from "@chia/components/client";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
-import * as mdxComponents from "@chia/components/client/MDXComponents";
 import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
+import { serialize } from "@chia/utils/hydration.util";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -34,7 +34,7 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
         <Chip data={frontMatter?.tags || []} />
       </header>
       <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:w-[70%] w-full self-center mx-auto">
-        <MDXRemote {...source} components={{ ...(mdxComponents as any) }} />
+        <MDXRemote post={serialize(source)} />
       </div>
       <div className="mt-20 lg:w-[70%] w-full self-center mx-auto">
         <Giscus title={frontMatter?.title || ""} />
