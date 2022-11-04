@@ -14,6 +14,7 @@ const NavMenu: FC = () => {
         <div className="flex items-center w-[70%] justify-start">
           <Link
             href="/"
+            scroll
             className="subtitle ml-3 hover:c-text-green-to-purple transition ease-in-out">
             Chia1104
           </Link>

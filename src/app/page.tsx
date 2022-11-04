@@ -79,6 +79,4 @@ const HomePage = async () => {
   );
 };
 
-export const dynamic = "force-static";
-
 export default HomePage;
