@@ -43,6 +43,7 @@ const PostItem: FC<Props> = ({ data, i }) => {
         </span>
       </p>
       <Link
+        scroll
         className="absolute top-0 bottom-0 right-0 left-0"
         href={`/posts/${data?.slug}`}
       />
