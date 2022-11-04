@@ -6,31 +6,23 @@
 
 This is my personal website.
 
-Build with NextJS and using tRPC for data fetching.
-
-Deploy on Railway and running the Docker image.
+Build with NextJS 13 `appDir` new feature.
 
 ## 🔨 Languages and Tools
 
 <div align="center">
-  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,prisma,postgres,docker" />
+  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,docker" />
 </div>
 
 ## 🌐 Deployments
 
-- [Railway](https://chias-web-nextjs-production.up.railway.app/)
 - [Vercel](https://chia1104.vercel.app/)
 
 ## ✨ Features
 - [X] Framer Motion (animation)
 - [X] MDX Blog
 - [X] [Vitest](https://vitest.dev/) Unit Testing
-- [X] tRPC
-
-## 👷 Work in progress
-
-- [ ] [Cypress](https://www.cypress.io/) E2E Testing
-- [ ] [Turborepo](https://turborepo.org/) (A high-performance build system for JavaScript and TypeScript codebases)
+- [X] [Cypress](https://www.cypress.io/) E2E Testing
 
 ## 🌐 Deploy your own
 
@@ -51,18 +43,6 @@ Install the dependencies and enable the `husky`.
 ```bash
 pnpm install
 pnpm husky install
-```
-
-Generate Prisma client
-
-```bash
-pnpm prisma generate
-```
-
-Add some initial dummy data using Prisma Studio. Run the following command:
-
-```bash
-pnpm prisma studio
 ```
 
 Runs the app in the development mode.
