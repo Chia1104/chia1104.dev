@@ -12,7 +12,7 @@ import { useAppSelector, useIsMounted, useDarkMode } from "@chia/hooks";
 import cx from "classnames";
 import { useToasts } from "@geist-ui/core";
 import { FORMSPREE_KEY, RE_CAPTCHA_KEY } from "@chia/shared/constants";
-import { useScript } from "usehooks-ts";
+import Script from "next/script";
 
 const Contact: FC = () => {
   const dispatch = useAppDispatch();
@@ -29,7 +29,6 @@ const Contact: FC = () => {
         type: "success",
       });
   }, [state.succeeded]);
-  const recaptcha_status = useScript("https://www.google.com/recaptcha/api.js");
 
   const outside = {
     open: { opacity: 1, height: "550px", width: "330px" },
@@ -113,16 +112,15 @@ const Contact: FC = () => {
             className="self-center c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
             Send
           </button>
-          {recaptcha_status === "ready" && (
-            <div
-              data-theme={isMounted && isDarkMode ? "dark" : "light"}
-              className={cx("g-recaptcha self-center my-3", {
-                hidden: !actionIconSheet,
-              })}
-              data-sitekey={RE_CAPTCHA_KEY}
-              data-callback="onSubmit"
-            />
-          )}
+          <div
+            data-theme={isMounted && isDarkMode ? "dark" : "light"}
+            className={cx("g-recaptcha self-center my-3", {
+              hidden: !actionIconSheet,
+            })}
+            data-sitekey={RE_CAPTCHA_KEY}
+            data-callback="onSubmit"
+          />
+          <Script async src="https://www.google.com/recaptcha/api.js" />
 
           <ValidationError
             errors={state.errors}

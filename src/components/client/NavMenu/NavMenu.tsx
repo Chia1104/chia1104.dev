@@ -7,7 +7,7 @@ import cx from "classnames";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 const NavMenu: FC = () => {
-  const [selectedLayoutSegments] = useSelectedLayoutSegments();
+  const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
     <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-50 border-b-[1px] c-border-primary c-bg-secondary">
       <div className="flex container w-[100%]">
@@ -24,7 +24,7 @@ const NavMenu: FC = () => {
             scroll
             className={cx(
               "flex c-link mr-4 py-3",
-              selectedLayoutSegments === "about" && "c-link-active"
+              selectedLayoutSegments[1] === "about" && "c-link-active"
             )}
             href="/about/">
             <svg
@@ -46,7 +46,7 @@ const NavMenu: FC = () => {
             scroll
             className={cx(
               "flex c-link mr-4 py-3",
-              selectedLayoutSegments === "posts" && "c-link-active"
+              selectedLayoutSegments[1] === "posts" && "c-link-active"
             )}
             href="/posts/">
             <svg
@@ -68,7 +68,7 @@ const NavMenu: FC = () => {
             scroll
             className={cx(
               "flex c-link mr-4 py-3",
-              selectedLayoutSegments === "portfolio" && "c-link-active"
+              selectedLayoutSegments[1] === "portfolio" && "c-link-active"
             )}
             href="/portfolio/">
             <svg
