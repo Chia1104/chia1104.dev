@@ -2,7 +2,7 @@ name: Web CI
 
 on:
   push:
-    branches: [ master, main, develop, dev/web ]
+    branches: [ master, main ]
   pull_request:
     types: [opened, synchronize]
 
@@ -46,79 +46,41 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Save build folder
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          if-no-files-found: error
-          path: .next
+#      - name: Save build folder
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: build
+#          if-no-files-found: error
+#          path: .next
 
-  e2e-on-chrome:
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    name: E2E on Chrome
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-
-      - uses: pnpm/action-setup@v2.0.1
-        with:
-          version: 6.32.2
-
-      - name: Download the build folders
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .next
-
-      - uses: cypress-io/github-action@v4
-        env:
-          NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
-          GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
-          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
-          GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
-          SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
+      - name: E2E on Chrome
+        uses: cypress-io/github-action@v4
         with:
           start: pnpm start
-          wait-on: "http://localhost:3000"
+          wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
           browser: chrome
-          command: pnpm e2e:chrome
+          record: false
+          env:
+            NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
+            GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
+            NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+            GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
+            SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
+            SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
 
-  e2e-on-edge:
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    name: E2E on Edge
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-
-      - uses: pnpm/action-setup@v2.0.1
-        with:
-          version: 6.32.2
-
-      - name: Download the build folders
-        uses: actions/download-artifact@v3
-        with:
-          name: build
-          path: .next
-
-      - uses: cypress-io/github-action@v4
-        env:
-          NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
-          GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
-          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
-          GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
-          SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
+      - name: E2E on Edge
+        uses: cypress-io/github-action@v4
         with:
           start: pnpm start
-          wait-on: "http://localhost:3000"
+          wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
           browser: edge
-          command: pnpm e2e:edge
+          record: false
+          env:
+            NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
+            GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
+            NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+            GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
+            SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
+            SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
