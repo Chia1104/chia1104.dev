@@ -1,5 +1,5 @@
 export type Youtube = {
-  items: Array<YoutubeItem>;
+  items: YoutubeItem[];
 };
 
 export type YoutubeItem = {

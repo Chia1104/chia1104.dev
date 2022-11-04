@@ -1,8 +1,8 @@
+// import "server-only";
 import path from "path";
 import type { PostFrontMatter, PostSource } from "@chia/shared/types";
 import { POSTS_PATH } from "@chia/shared/constants";
 import { serialize } from "next-mdx-remote/serialize";
-import { minify } from "uglify-js";
 import pMap from "p-map";
 import glob from "fast-glob";
 import { getPostData } from "../repositories";
@@ -12,8 +12,13 @@ import rehypePrism from "rehype-prism-plus";
 import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import { cache } from "react";
 
 const PostsPath = path.join(process.cwd(), POSTS_PATH);
+
+export const preload = (slug: string) => {
+  void getPost(slug);
+};
 
 export const getSlugs = async (): Promise<string[]> => {
   const mdxFiles = await glob("*.mdx", { cwd: PostsPath });
@@ -27,7 +32,7 @@ export const getEncodedSlugs = async (): Promise<string[]> => {
   return mdxFiles.map((fileName) => encodeURI(fileName.replace(/\.mdx$/, "")));
 };
 
-export const getPost = async (slug: string): Promise<PostSource> => {
+export const getPost = cache(async (slug: string): Promise<PostSource> => {
   const { frontMatter, content } = await getPostData(slug);
 
   const source = await serialize(content, {
@@ -50,28 +55,15 @@ export const getPost = async (slug: string): Promise<PostSource> => {
     },
   });
 
-  // HACK: next-mdx-remote v4 doesn't (yet?) minify compiled JSX output, see:
-  // https://github.com/hashicorp/next-mdx-remote/pull/211#issuecomment-1013658514
-  // ...so for now, let's do it manually (and conservatively) with uglify-js when building for production.
-  const compiledSource =
-    process.env.NODE_ENV === "production"
-      ? minify(source.compiledSource, {
-          toplevel: true,
-          parse: {
-            bare_returns: true,
-          },
-        }).code
-      : source.compiledSource;
-
   return {
     frontMatter,
     source: {
-      compiledSource,
+      compiledSource: source.compiledSource,
     },
   };
-};
+});
 
-export const getAllPosts = async (): Promise<PostFrontMatter[]> => {
+export const getAllPosts = cache(async (): Promise<PostFrontMatter[]> => {
   const slugs = await getSlugs();
 
   const data = await pMap(
@@ -85,4 +77,4 @@ export const getAllPosts = async (): Promise<PostFrontMatter[]> => {
   data.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
 
   return data.filter((post) => post.published);
-};
+});

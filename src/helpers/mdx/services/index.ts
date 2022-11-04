@@ -1,1 +1,1 @@
-export { getSlugs, getPost, getAllPosts, getEncodedSlugs } from "./mdx.service";
+export * from "./mdx.service";
