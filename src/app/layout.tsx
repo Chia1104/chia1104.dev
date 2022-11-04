@@ -5,6 +5,7 @@ import {
   ErrorBoundary,
   ReduxProvider,
   GeistProvider,
+  Analytics,
 } from "@chia/components/client";
 import { type ReactNode } from "react";
 import { AnimatePresence } from "@chia/lib/framer-motion";
@@ -25,6 +26,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
             </GeistProvider>
           </ThemeProvider>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );
