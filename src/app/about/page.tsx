@@ -8,6 +8,4 @@ const AboutPage = () => {
   );
 };
 
-export const dynamic = "force-static";
-
 export default AboutPage;

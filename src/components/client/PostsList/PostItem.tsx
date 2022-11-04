@@ -44,10 +44,7 @@ const PostItem: FC<Props> = ({ data, i }) => {
       </p>
       <Link
         className="absolute top-0 bottom-0 right-0 left-0"
-        href={{
-          pathname: "/posts/[slug]/",
-          query: { slug: data.slug },
-        }}
+        href={`/posts/${data?.slug}`}
       />
     </div>
   );

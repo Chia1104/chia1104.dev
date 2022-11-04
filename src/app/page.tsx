@@ -33,10 +33,7 @@ const HomePage = async () => {
                 title={"New update"}
                 content={post?.excerpt || "This is an example of a blog post."}
                 subtitle={dayjs(post?.createdAt).format("MMMM D, YYYY")}
-                link={{
-                  pathname: "/posts/[slug]/",
-                  query: { slug: post?.slug },
-                }}
+                link={`/posts/${post?.slug}`}
               />
             </div>
           </div>
