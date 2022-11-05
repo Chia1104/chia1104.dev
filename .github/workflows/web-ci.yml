@@ -104,4 +104,5 @@ jobs:
           wait-on: "http://localhost:3000"
           wait-on-timeout: 120
           browser: chrome
+          cache-key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
           command: pnpm e2e:chrome
