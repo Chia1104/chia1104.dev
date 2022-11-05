@@ -20,23 +20,44 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ 16.*, 18.* ]
 
     steps:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - uses: pnpm/action-setup@v2.0.1
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
         with:
           version: ${{ env.PNPM_VERSION }}
+          run_install: false
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
         with:
-          node-version: ${{ matrix.node }}
-          cache: 'pnpm'
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ./node_modules
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
 
       - name: Install dependencies
         run: pnpm install
@@ -50,34 +71,33 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: E2E on Chrome
-        uses: cypress-io/github-action@v4
+  e2e-on-chrome:
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    name: E2E on Chrome
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - uses: actions/cache@v2
+        id: restore-build
+        with:
+          path: |
+            ./node_modules
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - uses: cypress-io/github-action@v4
+        env:
+          NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
+          GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
+          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+          GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
+          SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
         with:
           start: pnpm start
-          wait-on: 'http://localhost:3000'
+          wait-on: "http://localhost:3000"
           wait-on-timeout: 120
           browser: chrome
-          record: false
-        env:
-          GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
-          NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
-          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
-          GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
-          SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
-
-      - name: E2E on Edge
-        uses: cypress-io/github-action@v4
-        with:
-          start: pnpm start
-          wait-on: 'http://localhost:3000'
-          wait-on-timeout: 120
-          browser: edge
-          record: false
-        env:
-          GH_PUBLIC_TOKEN: ${{ env.GH_PUBLIC_TOKEN }}
-          NEXT_PUBLIC_FORMSPREE_KEY: ${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
-          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
-          GOOGLE_API_KEY: ${{ env.GOOGLE_API_KEY }}
-          SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
+          command: pnpm e2e:chrome
