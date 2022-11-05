@@ -59,8 +59,6 @@
     "zod": "^3.19.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.6",
-    "@firebase/app-types": "^0.7.0",
     "@redux-devtools/extension": "^3.2.3",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/line-clamp": "^0.4.2",
