@@ -14,6 +14,7 @@ env:
   SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   PNPM_VERSION: 7.5.1
+  NODE_VERSION: 16.*
 
 jobs:
   build:
@@ -28,7 +29,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: ${{ env.NODE_VERSION }}
 
       - uses: pnpm/action-setup@v2
         name: Install pnpm
@@ -50,6 +51,7 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+
       - uses: actions/cache@v2
         with:
           path: |
@@ -79,13 +81,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - uses: actions/cache@v2
+      - name: Cache
+        uses: actions/cache@v2
         id: restore-build
         with:
           path: |
             ./node_modules
             ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-build-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - uses: cypress-io/github-action@v4
         env:
