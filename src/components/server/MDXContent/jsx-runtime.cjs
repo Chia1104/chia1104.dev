@@ -1,3 +1,3 @@
-const jsxRuntime = require('react/jsx-runtime')
+const jsxRuntime = require("react/jsx-runtime");
 
-module.exports.jsxRuntime = jsxRuntime
+module.exports.jsxRuntime = jsxRuntime;

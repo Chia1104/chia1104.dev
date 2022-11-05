@@ -43,15 +43,11 @@ jobs:
       - name: Unit tests - Vitest
         run: pnpm test:vitest
 
+      - name: ESLint
+        run: pnpm lint
+
       - name: Build
         run: pnpm build
-
-#      - name: Save build folder
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: build
-#          if-no-files-found: error
-#          path: .next
 
       - name: E2E on Chrome
         uses: cypress-io/github-action@v4
