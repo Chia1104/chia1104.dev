@@ -1,6 +1,6 @@
 {
   "name": "chia1104.dev",
-  "version": "2.0.0-alpha0",
+  "version": "2.0.0-alpha",
   "private": true,
   "sideEffects": false,
   "license": "MIT",
@@ -37,7 +37,7 @@
     "graphql": "^16.6.0",
     "graphql-request": "^4.3.0",
     "gray-matter": "^4.0.3",
-    "next": "^13.0.2",
+    "next": "^13.0.3",
     "next-mdx-remote": "^4.1.0",
     "next-seo": "^5.13.0",
     "next-themes": "^0.2.1",
@@ -74,7 +74,7 @@
     "concurrently": "7.5.0",
     "cypress": "^10.11.0",
     "eslint": "^8.26.0",
-    "eslint-config-next": "^13.0.2",
+    "eslint-config-next": "^13.0.3",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
@@ -93,5 +93,5 @@
   "engines": {
     "node": ">=16.x"
   },
-  "packageManager": "pnpm@7.5.1"
+  "packageManager": "pnpm@7.15.0"
 }
