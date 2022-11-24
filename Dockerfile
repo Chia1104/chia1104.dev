@@ -1,6 +1,5 @@
 FROM node:16-alpine AS deps
 RUN apk add --no-cache libc6-compat
-RUN apk update
 
 WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
@@ -9,9 +8,6 @@ RUN yarn global add pnpm && \
     pnpm add sharp
 
 FROM node:16-alpine AS builder
-
-RUN apk add --no-cache libc6-compat
-RUN apk update
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -32,7 +28,6 @@ ENV \
     SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID \
     SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
 
-RUN yarn prisma generate
 RUN yarn build
 
 FROM node:16-alpine AS runner
