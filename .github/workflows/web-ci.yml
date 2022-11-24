@@ -55,6 +55,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Next.js cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
+
       - name: ESLint
         run: pnpm lint
 
@@ -64,7 +70,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - uses: actions/cache@v2
+      - name: Build cache
+        uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/.next
@@ -93,7 +100,7 @@ jobs:
           run_install: false
 
       - name: Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: restore-build
         with:
           path: |
@@ -137,7 +144,7 @@ jobs:
           run_install: false
 
       - name: Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: restore-build
         with:
           path: |
