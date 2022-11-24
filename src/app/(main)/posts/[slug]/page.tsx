@@ -44,7 +44,7 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
       </article>
     );
   } catch (error) {
-    return notFound();
+    notFound();
   }
 };
 

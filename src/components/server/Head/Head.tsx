@@ -2,8 +2,8 @@ import { type FC } from "react";
 import { Chia } from "@chia/shared/meta/chia";
 
 interface Props {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   canonicalUrl?: string;
   keywords?: string[];
   type?: "website" | "article" | "book" | "profile";
