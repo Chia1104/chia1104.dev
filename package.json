@@ -16,7 +16,6 @@
     "start": "next start",
     "lint": "next lint",
     "lint-staged": "lint-staged",
-    "postbuild": "next-sitemap",
     "test:vitest": "vitest run",
     "e2e:chrome": "cypress run --browser chrome",
     "e2e:firefox": "cypress run --browser firefox",
