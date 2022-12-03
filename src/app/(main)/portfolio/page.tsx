@@ -8,7 +8,7 @@ import {
 import { Design as DesignData } from "@chia/shared/meta/design";
 import { Suspense } from "react";
 
-const PortfoliosPage = async () => {
+const PortfoliosPage = () => {
   return (
     <article className="main c-container">
       <header className="title sm:self-start pt-10">
