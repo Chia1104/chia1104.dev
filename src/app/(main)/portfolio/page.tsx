@@ -1,12 +1,5 @@
-import {
-  GitHub,
-  Youtube,
-  Design,
-  VideoLoader,
-  ReposLoader,
-} from "@chia/components/server";
+import { GitHub, Youtube, Design } from "@chia/components/server";
 import { Design as DesignData } from "@chia/shared/meta/design";
-import { Suspense } from "react";
 
 const PortfoliosPage = () => {
   return (
@@ -19,9 +12,7 @@ const PortfoliosPage = () => {
       <p className="c-description sm:self-start pb-7">
         What I currently work on
       </p>
-      <Suspense fallback={<ReposLoader />}>
-        <GitHub />
-      </Suspense>
+      <GitHub />
       <hr className="my-10 c-border-primary border-t-2 w-full" />
       <header className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
         Youtube Playlists
@@ -29,9 +20,7 @@ const PortfoliosPage = () => {
       <p className="c-description sm:self-start pb-7">
         I have created a few video for my Youtube channel.
       </p>
-      <Suspense fallback={<VideoLoader />}>
-        <Youtube />
-      </Suspense>
+      <Youtube />
       <hr className="my-10 c-border-primary border-t-2 w-full" />
       <Design data={DesignData} />
     </article>
