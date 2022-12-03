@@ -3,11 +3,9 @@
 export { default as ActionIcon } from "./ActionIcon";
 export * from "./ActionIcon";
 export { ErrorBoundary } from "./ErrorBoundary";
-export { default as GeistProvider } from "./GeistProvider";
 export { default as HoverButton } from "./HoverButton";
 export { default as Modal } from "./Modal";
 export { default as Page } from "./Page";
-export { default as ReduxProvider } from "./ReduxProvider";
 export { default as NavMenu } from "./NavMenu";
 export { default as DMPoster } from "./DMPoster";
 export { default as MDXRemote } from "./MDXRemote";
@@ -17,3 +15,4 @@ export { default as Giscus } from "./Giscus";
 export { default as Head } from "./Head";
 export { default as DefaultSeo } from "./DefaultSeo";
 export { default as Analytics } from "./Analytics";
+export { default as RootProvider } from "./RootProvider";

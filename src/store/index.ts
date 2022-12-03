@@ -16,3 +16,21 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   unknown,
   Action<string>
 >;
+
+export const newStore = {
+  state: {
+    isActionSheetOpen: false,
+  },
+  setState: (fnOrState: any) => {
+    const newState =
+      typeof fnOrState === "function" ? fnOrState(newStore.state) : fnOrState;
+    newStore.state = { ...newStore.state, ...newState };
+    newState.listeners.forEach((listener: any) => listener(newStore.state));
+  },
+  listeners: new Set(),
+  subscribe: (callback: any) => {
+    newStore.listeners.add(callback);
+    return () => newStore.listeners.delete(callback);
+  },
+  getSnapshot: () => newStore.state,
+};
