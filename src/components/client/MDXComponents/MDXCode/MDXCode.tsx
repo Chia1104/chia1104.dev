@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef } from "react";
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import cx from "classnames";
-import { useIsMounted, useCopyToClipboard, useHover } from "usehooks-ts";
+import { useCopyToClipboard, useHover } from "usehooks-ts";
 import { useToasts } from "@geist-ui/core";
 
 import { motion } from "framer-motion";
@@ -38,20 +38,11 @@ export const MDXPre: FC<
   DetailedHTMLProps<HTMLAttributes<HTMLPreElement>, HTMLPreElement>
 > = (MDXPreProps) => {
   const { children, ...rest } = MDXPreProps;
-  const isMounted = useIsMounted();
   const ref = useRef<HTMLPreElement>(null);
   const ref2 = useRef<HTMLDivElement>(null);
   const isHover = useHover(ref2);
-  const [value, copy] = useCopyToClipboard();
-  const [copyText, setCopyText] = useState("");
+  const [, copy] = useCopyToClipboard();
   const { setToast } = useToasts({ placement: "bottomLeft" });
-
-  useEffect(() => {
-    if (isMounted()) {
-      const source = ref.current?.innerText;
-      setCopyText(source || "");
-    }
-  }, [isMounted]);
 
   const handleCopyToast = () => {
     setToast({
@@ -61,7 +52,8 @@ export const MDXPre: FC<
   };
 
   const handleCopy = () => {
-    copy(copyText).then((r) => {
+    const source = ref.current?.innerText;
+    copy(source ?? "").then((r) => {
       if (r) {
         handleCopyToast();
       }

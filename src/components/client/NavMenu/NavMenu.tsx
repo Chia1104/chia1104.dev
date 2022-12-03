@@ -9,7 +9,7 @@ import { useSelectedLayoutSegments } from "next/navigation";
 const NavMenu: FC = () => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
-    <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-50 border-b-[1px] c-border-primary c-bg-secondary">
+    <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-50 border-b-[1px] c-border-primary c-bg-secondary transition-all ease-in-out">
       <div className="flex container w-[100%]">
         <div className="flex items-center w-[70%] justify-start">
           <Link
