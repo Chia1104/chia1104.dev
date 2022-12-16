@@ -25,8 +25,5 @@ export { MDXHr as hr } from "./MDXDivider";
 export { MDXBr as br } from "./MDXBr";
 export { MDXSpacer as Spacer } from "./MDXSpacer";
 
-export { default as CodeSandBox } from "./MDXCodeSandBox";
-export { default as Youtube } from "./MDXYoutube";
-
-// export const CodeSandBox = dynamic(() => import("./MDXCodeSandBox"));
-// export const Youtube = dynamic(() => import("./MDXYoutube"));
+export const CodeSandBox = dynamic(() => import("./MDXCodeSandBox"));
+export const Youtube = dynamic(() => import("./MDXYoutube"));
