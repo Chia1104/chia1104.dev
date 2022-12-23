@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, MotionProps } from "framer-motion";
 import { useLockedBody } from "usehooks-ts";
 
@@ -23,17 +24,18 @@ const Modal: FC<Props> = (props) => {
   };
   useLockedBody(isShowed);
 
-  return (
-    <AnimatePresence mode="wait">
-      {isShowed && (
+  return isShowed
+    ? createPortal(
         <motion.div
           onClick={activeModal}
+          transition={{ type: "spring" }}
           initial={"closed"}
           animate={isShowed ? "open" : "closed"}
           exit={"closed"}
           variants={ov}
           className="modal">
           <motion.div
+            transition={{ type: "spring" }}
             initial={"closed"}
             animate={isShowed ? "open" : "closed"}
             exit={"closed"}
@@ -42,10 +44,10 @@ const Modal: FC<Props> = (props) => {
             {...rest}>
             {children}
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+        </motion.div>,
+        document.getElementById("__modal_root") as HTMLDivElement
+      )
+    : null;
 };
 
 export default Modal;

@@ -1,8 +1,8 @@
 "use client";
 
-import { Image } from "@chia/components/client";
+import { Image, Modal } from "@chia/components/client";
 import { type ImageProps } from "next/image";
-import { type FC, DetailedHTMLProps, ImgHTMLAttributes } from "react";
+import { type FC, DetailedHTMLProps, ImgHTMLAttributes, useState } from "react";
 import cx from "classnames";
 
 interface MDXImageProps extends ImageProps {
@@ -23,6 +23,8 @@ export const MDXImage: FC<
     objectFit = "cover",
     ...rest
   } = MDXImageProps;
+  const [isShow, setIsShow] = useState(false);
+  const handleClose = () => setIsShow(false);
 
   return (
     <div className="flex flex-col justify-center items-center my-5">
@@ -41,7 +43,7 @@ export const MDXImage: FC<
         )}>
         <Image
           className={cx(
-            "rounded-lg hover:scale-[1.03] duration-300 transition ease-in-out",
+            "rounded-lg hover:scale-[1.03] duration-300 transition ease-in-out hover:cursor-zoom-in",
             objectFit && `object-${objectFit}`
           )}
           loading="lazy"
@@ -52,8 +54,27 @@ export const MDXImage: FC<
           quality={100}
           {...rest}
           alt={alt}
+          onClick={() => setIsShow(!isShow)}
         />
       </div>
+      <Modal
+        isShowed={isShow}
+        activeModal={handleClose}
+        className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
+        <div className="w-full aspect-w-1 aspect-h-1">
+          <Image
+            alt={alt}
+            loading="lazy"
+            className="object-contain"
+            fill
+            sizes="(max-width: 768px) 100vw,
+                   (max-width: 1200px) 50vw,
+                   33vw"
+            quality={100}
+            {...rest}
+          />
+        </div>
+      </Modal>
       {showAlt && <p className="self-center mt-2">{alt}</p>}
     </div>
   );

@@ -2,13 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/*@layer base {*/
-/*  [data-nextjs-scroll-focus-boundary] {*/
-/*    all: inherit;*/
-/*    display: contents;*/
-/*  }*/
-/*}*/
-
 @layer components {
   .c-container {
     @apply
