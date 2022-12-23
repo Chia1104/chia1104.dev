@@ -42,10 +42,12 @@ const Contact: FC = () => {
   return (
     <motion.div
       initial={"closed"}
+      transition={{ duration: 0.7, type: "spring" }}
       animate={actionIconSheet ? "open" : "closed"}
       variants={outside}
       className="px-3">
       <motion.div
+        transition={{ duration: 0.7, type: "spring" }}
         animate={actionIconSheet ? "open" : "closed"}
         variants={inside}
         className="flex flex-col justify-start items-center w-full h-full">

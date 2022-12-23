@@ -18,16 +18,19 @@ const GeistProvider: FC<{ children: ReactNode }> = ({ children }) => {
   );
 };
 
-const RootProvider: FC<{ children: ReactNode }> = ({ children }) => (
-  <ThemeProvider enableSystem={true} attribute="class">
-    <GeistProvider>
-      <Provider store={store}>
-        <NavMenu />
-        <ActionIcon />
-        <AnimatePresence mode="wait">{children}</AnimatePresence>
-      </Provider>
-    </GeistProvider>
-  </ThemeProvider>
-);
+const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  return (
+    <ThemeProvider enableSystem={true} attribute="class">
+      <GeistProvider>
+        <Provider store={store}>
+          <NavMenu />
+          <ActionIcon />
+          <AnimatePresence mode="wait">{children}</AnimatePresence>
+          <div id="__modal_root" />
+        </Provider>
+      </GeistProvider>
+    </ThemeProvider>
+  );
+};
 
 export default RootProvider;

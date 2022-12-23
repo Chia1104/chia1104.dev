@@ -28,11 +28,13 @@ const PostsList: FC<Props> = (props) => {
   return (
     <motion.article
       className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-10"
+      transition={{ duration: 0.3, type: "spring" }}
       variants={postAnimation}
       animate={"show"}>
       {_post.map((post: PostFrontMatter, index) => (
         <motion.div
           key={post.id}
+          transition={{ type: "spring" }}
           variants={postCardAnimation}
           className={cx("w-full h-auto", index === 0 && "lg:col-span-2")}>
           <PostItem data={post} i={index} />

@@ -16,7 +16,7 @@ const Page: FC<Props> = (props) => {
       key={pathname}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}>
+      transition={{ duration: 0.3, type: "spring" }}>
       {children}
     </motion.main>
   );
