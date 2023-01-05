@@ -29,6 +29,7 @@
     "@mdx-js/react": "2.2.1",
     "@reduxjs/toolkit": "^1.9.1",
     "@vercel/analytics": "0.1.6",
+    "@vercel/og": "0.0.21",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.7",
     "fast-glob": "^3.2.12",
