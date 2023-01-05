@@ -26,11 +26,11 @@ export const Chia = {
   name: "Chia1104",
   chineseName: "俞又嘉",
   fullName: "Yu Chia, Yu",
-  title: "Web Developer",
+  title: "Full Stack Engineer",
   email: "yuyuchia7423@gmail.com",
   phone: "+886 0970227360",
   content:
-    "Computer science developer with a passion for web development and data analysis.",
+    "I am Yu Chia, Yu, a full-stack engineer with one year of experience in web development",
   link: {
     github: "https://github.com/Chia1104",
     linkedin:
@@ -44,19 +44,19 @@ export const Chia = {
     languages: [
       {
         name: "TypeScript",
-        level: "Basic",
+        level: "Advanced",
         link: "https://www.typescriptlang.org/",
         icon: SiTypescript,
       },
       {
         name: "Java",
-        level: "Advanced",
+        level: "Basic",
         link: "https://www.java.com/",
         icon: SiJava,
       },
       {
         name: "PHP",
-        level: "Advanced",
+        level: "Basic",
         link: "https://www.php.net/",
         icon: SiPhp,
       },
@@ -76,7 +76,7 @@ export const Chia = {
       },
       {
         name: "VueJS",
-        level: "Basic",
+        level: "Advanced",
         link: "https://vuejs.org/",
         icon: SiVuedotjs,
       },
@@ -108,7 +108,7 @@ export const Chia = {
       },
       {
         name: "GitHub Actions",
-        level: "Advanced",
+        level: "Basic",
         link: "https://github.com/features/actions",
         icon: SiGithubactions,
       },
@@ -182,14 +182,14 @@ export const Chia = {
   },
   location: "Taipei, Taiwan",
   bio: "Hello there",
-  company: "CGU, IM",
+  company: "WANIN",
   resume: [
     {
       title: "Work Experience",
       company: "WANIN",
       duration: "2022 - Now",
       location: "Taipei, Taiwan",
-      work: "Web Development",
+      work: "NextJS, VueJS, TailwindCSS, TypeScript, Turborepo, GCP",
       link: "https://www.wanin.tw/",
     },
     {
