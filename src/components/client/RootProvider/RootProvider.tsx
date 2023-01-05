@@ -26,7 +26,6 @@ const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
           <NavMenu />
           <ActionIcon />
           <AnimatePresence mode="wait">{children}</AnimatePresence>
-          <div id="__modal_root" />
         </Provider>
       </GeistProvider>
     </ThemeProvider>
