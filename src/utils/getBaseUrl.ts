@@ -1,7 +1,13 @@
 import { BASE_URL, RAILWAY_URL, VERCEL_URL } from "@chia/shared/constants";
 
-export const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
+interface Options {
+  isServer?: boolean;
+}
+
+export const getBaseUrl = (options?: Options) => {
+  options ??= {};
+  const { isServer } = options;
+  if (typeof window !== "undefined" && !isServer) {
     return "";
   }
 
