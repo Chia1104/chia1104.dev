@@ -6,12 +6,11 @@ import { asyncComponent } from "@chia/utils/asyncComponent.util";
 import { FC } from "react";
 
 const Youtube: FC = asyncComponent(async () => {
+  const YOUTUBE_URL = Chia.link.youtube_playlist;
   try {
     const youtube = (await fetch(`${getBaseUrl()}/api/youtube`, {
       cache: "no-store",
     }).then((res) => res.json())) as Y;
-
-    const YOUTUBE_URL = Chia.link.youtube_playlist;
 
     return (
       <>
