@@ -13,21 +13,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG \
-    NEXT_PUBLIC_FORMSPREE_KEY \
-    GH_PUBLIC_TOKEN \
-    NEXT_PUBLIC_RE_CAPTCHA_KEY \
-    GOOGLE_API_KEY \
-    SPOTIFY_CLIENT_ID \
-    SPOTIFY_CLIENT_SECRET
-ENV \
-    NEXT_PUBLIC_FORMSPREE_KEY=$NEXT_PUBLIC_FORMSPREE_KEY \
-    GH_PUBLIC_TOKEN=$GH_PUBLIC_TOKEN \
-    NEXT_PUBLIC_RE_CAPTCHA_KEY=$NEXT_PUBLIC_RE_CAPTCHA_KEY \
-    GOOGLE_API_KEY=$GOOGLE_API_KEY \
-    SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID \
-    SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
-
 RUN yarn build
 
 FROM node:16-alpine AS runner
@@ -46,6 +31,21 @@ COPY --from=builder /app/package.json ./package.json
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+ARG \
+    NEXT_PUBLIC_FORMSPREE_KEY \
+    GH_PUBLIC_TOKEN \
+    NEXT_PUBLIC_RE_CAPTCHA_KEY \
+    GOOGLE_API_KEY \
+    SPOTIFY_CLIENT_ID \
+    SPOTIFY_CLIENT_SECRET
+ENV \
+    NEXT_PUBLIC_FORMSPREE_KEY=$NEXT_PUBLIC_FORMSPREE_KEY \
+    GH_PUBLIC_TOKEN=$GH_PUBLIC_TOKEN \
+    NEXT_PUBLIC_RE_CAPTCHA_KEY=$NEXT_PUBLIC_RE_CAPTCHA_KEY \
+    GOOGLE_API_KEY=$GOOGLE_API_KEY \
+    SPOTIFY_CLIENT_ID=$SPOTIFY_CLIENT_ID \
+    SPOTIFY_CLIENT_SECRET=$SPOTIFY_CLIENT_SECRET
 
 USER nextjs
 

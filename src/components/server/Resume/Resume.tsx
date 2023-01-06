@@ -77,6 +77,7 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
           projects. I have contributed to <b>nextjs.tw</b>, a website that
           provides the Chinese version of the NextJS documentation.
         </p>
+        <p className="c-description pb-5 indent-4"></p>
       </div>
       <div className="w-full flex flex-col items-center">
         <ContactButton />
