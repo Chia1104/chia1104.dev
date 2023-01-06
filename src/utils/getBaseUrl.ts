@@ -1,4 +1,9 @@
-import { BASE_URL, RAILWAY_URL, VERCEL_URL } from "@chia/shared/constants";
+import {
+  BASE_URL,
+  RAILWAY_URL,
+  VERCEL_URL,
+  ZEABUR_URL,
+} from "@chia/shared/constants";
 
 interface Options {
   isServer?: boolean;
@@ -17,6 +22,10 @@ export const getBaseUrl = (options?: Options) => {
 
   if (VERCEL_URL) {
     return `https://${VERCEL_URL}`;
+  }
+
+  if (ZEABUR_URL) {
+    return `https://${ZEABUR_URL}`;
   }
 
   return BASE_URL;
