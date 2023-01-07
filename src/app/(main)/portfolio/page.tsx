@@ -1,6 +1,8 @@
 import { GitHub, Youtube, Design } from "@chia/components/server";
 import { Design as DesignData } from "@chia/shared/meta/design";
 
+export const revalidate = 60;
+
 const PortfoliosPage = () => {
   return (
     <article className="main c-container">

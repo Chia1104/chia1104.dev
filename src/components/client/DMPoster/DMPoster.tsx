@@ -41,6 +41,7 @@ const DMPoster: FC<Props> = ({ url }) => {
         className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
         <div className="w-full aspect-w-1 aspect-h-1">
           <Image
+            blur={false}
             src={url || "/posts/example-posts/example.jpg"}
             alt={"DMPoster"}
             loading="lazy"
