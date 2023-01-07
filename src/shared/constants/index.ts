@@ -43,4 +43,4 @@ export const FORMSPREE_KEY = process.env.NEXT_PUBLIC_FORMSPREE_KEY || "123xyz";
 // reCAPTCHA public key
 export const RE_CAPTCHA_KEY = process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY;
 
-export const ZEABUR_URL = process.env.CHIAS_WEB_NEXTJS_HOST;
+export const ZEABUR_URL = process.env.ZEABUR_URL;
