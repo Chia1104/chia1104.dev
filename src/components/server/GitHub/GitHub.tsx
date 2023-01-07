@@ -1,16 +1,20 @@
 import type { RepoGql } from "@chia/shared/types";
 import ReposList from "./ReposList";
 import { Chia } from "@chia/shared/meta/chia";
-import { getBaseUrl } from "@chia/utils/getBaseUrl";
 import { asyncComponent } from "@chia/utils/asyncComponent.util";
 import { FC } from "react";
+import githubGraphQLClient from "@chia/helpers/GraphQL/github/github.client";
+import { GET_REPOS } from "@chia/helpers/GraphQL/github/query";
 
 const GitHub: FC = asyncComponent(async () => {
   const GITHUB_URL = Chia.link.github;
   try {
-    const github = (await fetch(`${getBaseUrl()}/api/github`, {
-      cache: "no-store",
-    }).then((res) => res.json())) as RepoGql[];
+    const { user } = await githubGraphQLClient.request(GET_REPOS, {
+      username: "chia1104",
+      sort: "PUSHED_AT",
+      limit: 6,
+    });
+    const github: RepoGql[] = user.repositories.edges;
 
     return (
       <>
