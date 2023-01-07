@@ -30,6 +30,7 @@ const GitHub: FC = asyncComponent(async () => {
       </>
     );
   } catch (error) {
+    console.error(error);
     return (
       <div className="w-full flex flex-col">
         <p className="c-description pb-5 indent-4">
