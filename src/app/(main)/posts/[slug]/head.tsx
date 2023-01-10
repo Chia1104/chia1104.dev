@@ -1,7 +1,6 @@
 import { Head } from "@chia/components/server";
 import { Chia } from "@chia/shared/meta/chia";
 import { getPost } from "@chia/helpers/mdx/services";
-import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 const PostDetailHead = async ({ params }: { params: any }) => {
   try {
@@ -11,9 +10,7 @@ const PostDetailHead = async ({ params }: { params: any }) => {
         title={`${frontMatter.title} | ${Chia.name} ${Chia.chineseName}`}
         description={`${frontMatter.excerpt}`}
         type="article"
-        imageUrl={`${getBaseUrl({ isServer: true })}/api/og?title=${
-          frontMatter.title
-        }`}
+        imageUrl={`/api/og?title=${frontMatter.title}`}
       />
     );
   } catch (error) {
