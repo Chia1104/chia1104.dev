@@ -7,7 +7,7 @@ const PostHead = () => {
       title={`Blog | ${Chia.name} ${Chia.chineseName} `}
       description={`${Chia.content} Welcome to my blog. I always try to make the best of my time.`}
       type="article"
-      imageUrl={`/api/og?title=Blog`}
+      imageUrl={`/api/og?title=${encodeURIComponent("Blog")}`}
     />
   );
 };

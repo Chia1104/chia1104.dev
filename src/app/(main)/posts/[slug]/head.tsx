@@ -10,7 +10,9 @@ const PostDetailHead = async ({ params }: { params: any }) => {
         title={`${frontMatter.title} | ${Chia.name} ${Chia.chineseName}`}
         description={`${frontMatter.excerpt}`}
         type="article"
-        imageUrl={`/api/og?title=${frontMatter.title}`}
+        imageUrl={`/api/og?title=${encodeURIComponent(
+          frontMatter?.title ?? ""
+        )}`}
       />
     );
   } catch (error) {
