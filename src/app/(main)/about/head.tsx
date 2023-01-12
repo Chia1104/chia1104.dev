@@ -7,7 +7,7 @@ const AboutHead = () => {
       title={`About | ${Chia.name} ${Chia.chineseName} `}
       description={Chia.content}
       type="profile"
-      imageUrl={`/api/og?title=About Me`}
+      imageUrl={`/api/og?title=${encodeURIComponent("About Me")}`}
     />
   );
 };

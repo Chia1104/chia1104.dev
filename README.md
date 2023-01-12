@@ -17,7 +17,8 @@ Build with NextJS 13 `appDir` new feature.
 ## 🌐 Deployments
 
 - [Vercel](https://chia1104.vercel.app/)
-- [Zeabur](https://chia1104.zeabur.app/)
+- [Zeabur](https://chias-web-nextjs.zeabur.app/)
+- [Railway](https://chias-web-nextjs-production.up.railway.app/)
 
 ## ✨ Features
 - [X] Framer Motion (animation)
