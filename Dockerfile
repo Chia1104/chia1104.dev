@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
 
 RUN yarn global add pnpm && \
-    pnpm add sharp
+    pnpm i
 
 FROM node:16-alpine AS builder
 
