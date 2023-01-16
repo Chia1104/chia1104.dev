@@ -14,6 +14,9 @@ export const generateStaticParams = async () => {
   }));
 };
 
+// Global not found page
+// export const dynamicParams = false;
+
 const PostDetailPage = async ({ params }: { params?: any }) => {
   try {
     const { frontMatter, source } = await getPost(params.slug);

@@ -3,6 +3,7 @@ import { Chia } from "@chia/shared/meta/chia";
 import Experience from "../Experience";
 import LanAndTools from "../LanAndTools";
 import { ContactButton, Image } from "@chia/components/client";
+import { MDXLink as Link } from "@chia/components/client/MDXComponents/MDXLink";
 
 interface Props {
   avatarSrc: string;
@@ -50,12 +51,15 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
           production.
         </p>
         <p className="c-description pb-5 indent-4">
-          We are currently working on a project called <b>League Funny</b>,
-          which is a website that provides people to share some posts about any
-          game they like. It is a full-stack project, and I am responsible for
-          the NextJS frontend and some backend services. I am also responsible
-          for the management of the project, including reviewing code, planning
-          features, and testing.
+          We are currently working on a project called{" "}
+          <Link href="https://github.com/Chia1104/league-funny-turbo">
+            <b>League Funny</b>
+          </Link>
+          , which is a website that provides people to share some posts about
+          any game they like. It is a full-stack project, and I am responsible
+          for the NextJS frontend and some backend services. I am also
+          responsible for the management of the project, including reviewing
+          code, planning features, and testing.
         </p>
         <ul className="list-disc pl-5">
           <li className="mb-2">
@@ -74,8 +78,12 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
         <p className="c-description pb-5 indent-4">
           I am also learning other technologies, such as turborepo, sveltekit or
           kubernetes. I also have some experience and interest in open source
-          projects. I have contributed to <b>nextjs.tw</b>, a website that
-          provides the Chinese version of the NextJS documentation.
+          projects. I have contributed to{" "}
+          <Link href="https://github.com/yuaanlin/nextjs.tw">
+            <b>nextjs.tw</b>
+          </Link>
+          , a website that provides the Chinese version of the NextJS
+          documentation.
         </p>
         <p className="c-description pb-5 indent-4"></p>
       </div>
