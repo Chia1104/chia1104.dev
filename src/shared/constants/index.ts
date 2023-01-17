@@ -37,9 +37,6 @@ export const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 export const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 export const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
-// Formspree key
-export const FORMSPREE_KEY = process.env.NEXT_PUBLIC_FORMSPREE_KEY || "123xyz";
-
 // reCAPTCHA public key
 export const RE_CAPTCHA_KEY = process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY;
 

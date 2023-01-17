@@ -23,11 +23,11 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\""
   },
   "dependencies": {
-    "@formspree/react": "^2.4.1",
     "@geist-ui/core": "^2.3.8",
     "@giscus/react": "^2.2.6",
     "@mdx-js/react": "2.2.1",
     "@reduxjs/toolkit": "^1.9.1",
+    "@sendgrid/mail": "7.7.0",
     "@vercel/analytics": "0.1.8",
     "@vercel/og": "0.0.27",
     "classnames": "^2.3.2",

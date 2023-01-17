@@ -16,3 +16,7 @@ export { default as Head } from "./Head";
 export { default as DefaultSeo } from "./DefaultSeo";
 export { default as Analytics } from "./Analytics";
 export { default as RootProvider } from "./RootProvider";
+export { default as Input } from "./Input";
+export * from "./Input";
+export { default as Textarea } from "./Textarea";
+export * from "./Textarea";
