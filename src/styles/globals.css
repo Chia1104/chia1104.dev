@@ -238,10 +238,6 @@
     z-index: 9999;
     @apply bg-white/90 dark:bg-dark/90 backdrop-blur-sm transition ease-in-out
   }
-
-  .c-border-primary {
-    @apply border dark:border-gray-700
-  }
 }
 
 html,
