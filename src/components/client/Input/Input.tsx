@@ -90,7 +90,7 @@ const Input = forwardRef<InputRef, Props>((props, ref) => {
         onFocus={handleFocus}
         onBlur={handleBlur}
         className={cx(
-          "border-[#CBD2D7] w-full rounded-lg c-border-primary transition ease-in-out focus:outline-none c-bg-primary p-1",
+          "border border-[#CBD2D7] w-full rounded-lg c-border-primary transition ease-in-out focus:outline-none c-bg-primary p-1",
           isError &&
             "border-danger hover:cursor-not-allowed dark:border-danger dark:hover:cursor-not-allowed",
           isFocus && !isError && "focus:border-info",
