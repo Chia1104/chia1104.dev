@@ -22,7 +22,6 @@ export const generateMetadata = async ({
 }: {
   params: any;
 }): Promise<Metadata> => {
-  console.log(params);
   try {
     const { frontMatter } = await getPost(params.slug);
     return {

@@ -27,8 +27,8 @@
   "dependencies": {
     "@geist-ui/core": "^2.3.8",
     "@giscus/react": "^2.2.6",
-    "@next/bundle-analyzer": "13.1.6",
     "@mdx-js/react": "2.3.0",
+    "@next/bundle-analyzer": "13.2.1",
     "@reduxjs/toolkit": "^1.9.3",
     "@sendgrid/mail": "7.7.0",
     "@vercel/analytics": "0.1.10",
@@ -37,7 +37,7 @@
     "cross-env": "7.0.3",
     "dayjs": "^1.11.7",
     "fast-glob": "^3.2.12",
-    "framer-motion": "^9.1.6",
+    "framer-motion": "^9.1.7",
     "graphql": "^16.6.0",
     "graphql-request": "^5.1.0",
     "gray-matter": "^4.0.3",
