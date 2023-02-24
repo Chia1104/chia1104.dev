@@ -14,7 +14,7 @@ export const MDXUl: FC<
   const { children, ...rest } = MDXUlProps;
   return (
     <>
-      <ul {...rest} className="p-3 list-disc pl-5 leading-loose">
+      <ul {...rest} className="list-disc p-3 pl-5 leading-loose">
         {children}
       </ul>
     </>
@@ -27,7 +27,7 @@ export const MDXOl: FC<
   const { children, ...rest } = MDXOlProps;
   return (
     <>
-      <ol className="p-3 list-decimal pl-5" {...rest}>
+      <ol className="list-decimal p-3 pl-5" {...rest}>
         {children}
       </ol>
     </>

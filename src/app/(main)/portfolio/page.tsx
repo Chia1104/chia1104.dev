@@ -35,24 +35,24 @@ export const metadata: Metadata = {
 const PortfoliosPage = () => {
   return (
     <article className="main c-container">
-      <header className="title sm:self-start pt-10">
+      <header className="title pt-10 sm:self-start">
         <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
           GitHub Repositories
         </span>
       </header>
-      <p className="c-description sm:self-start pb-7">
+      <p className="c-description pb-7 sm:self-start">
         What I currently work on
       </p>
       <GitHub />
-      <hr className="my-10 c-border-primary border-t-2 w-full" />
-      <header className="title sm:self-start c-text-bg-sec-half dark:c-text-bg-primary-half">
+      <hr className="c-border-primary my-10 w-full border-t-2" />
+      <header className="title c-text-bg-sec-half dark:c-text-bg-primary-half sm:self-start">
         Youtube Playlists
       </header>
-      <p className="c-description sm:self-start pb-7">
+      <p className="c-description pb-7 sm:self-start">
         I have created a few video for my Youtube channel.
       </p>
       <Youtube />
-      <hr className="my-10 c-border-primary border-t-2 w-full" />
+      <hr className="c-border-primary my-10 w-full border-t-2" />
       <Design data={DesignData} />
     </article>
   );

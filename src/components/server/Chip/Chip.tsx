@@ -8,12 +8,12 @@ const Chip: FC<Props> = ({ data }) => {
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="flex mt-3 flex-wrap">
+    <div className="mt-3 flex flex-wrap">
       {data.map((item, index) => (
         <div
-          className="rounded-full c-border-primary border-2 c-bg-secondary mr-2 my-1"
+          className="c-border-primary c-bg-secondary my-1 mr-2 rounded-full border-2"
           key={index}>
-          <p className="text-center c-description px-2 text-base">
+          <p className="c-description px-2 text-center text-base">
             {item || "Chip"}
           </p>
         </div>

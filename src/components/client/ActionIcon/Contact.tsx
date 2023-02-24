@@ -15,7 +15,7 @@ import {
 } from "@chia/store/modules/ActionSheet/actionSheet.slice";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@chia/hooks";
-import cx from "classnames";
+import { cn } from "@chia//utils/cn.util";
 import { useToasts } from "@geist-ui/core";
 import {
   Input,
@@ -103,11 +103,11 @@ const Contact: FC = () => {
         transition={{ duration: 0.7, type: "spring" }}
         animate={actionIconSheet ? "open" : "closed"}
         variants={inside}
-        className="flex flex-col justify-start items-center w-full h-full">
+        className="flex h-full w-full flex-col items-center justify-start">
         <button
           aria-label={"Close contact"}
           onClick={() => dispatch(activeActionIconSheet())}
-          className="hover:text-secondary transition ease-in-out">
+          className="transition ease-in-out hover:text-secondary">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -124,10 +124,10 @@ const Contact: FC = () => {
         </button>
         <form
           id={id + "-contact-form"}
-          className="w-full flex flex-col mx-auto"
+          className="mx-auto flex w-full flex-col"
           onChange={validForm}
           onSubmit={handleSubmit}>
-          <header className="text-3xl mb-5">Contact Me</header>
+          <header className="mb-5 text-3xl">Contact Me</header>
           <div className="mb-3 flex flex-col gap-2">
             <Input
               ref={emailRef}
@@ -143,7 +143,7 @@ const Contact: FC = () => {
           <div className="mb-3 flex flex-col gap-2">
             <Textarea
               ref={messageRef}
-              className="p-3 h-40 max-h-40"
+              className="h-40 max-h-40 p-3"
               title="Message"
               name="message"
               placeholder="Your message"
@@ -155,8 +155,8 @@ const Contact: FC = () => {
             id={id + "-contact-submit"}
             type="submit"
             disabled={!isValidate || isSending}
-            className={cx(
-              "self-center c-bg-gradient-green-to-purple w-[85px] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out",
+            className={cn(
+              "c-bg-gradient-green-to-purple flex h-10 w-[85px] items-center justify-center self-center rounded-full text-white transition ease-in-out hover:scale-[1.05]",
               (!isValidate || isSending) && "cursor-not-allowed"
             )}>
             Send

@@ -11,7 +11,7 @@ const Experience: FC = () => {
   const resume = Chia.resume;
 
   return (
-    <div className="w-full flex flex-col">
+    <div className="flex w-full flex-col">
       <h2 className="title pb-10 text-center">
         <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
           Experience
@@ -20,8 +20,8 @@ const Experience: FC = () => {
       <Accordion type="single" collapsible className="w-full">
         {resume.map((experience, index) => (
           <AccordionItem value={`item-${index}`} key={index}>
-            <AccordionTrigger className="items-start w-full">
-              <div className="w-full flex flex-col c-border-primary border-b-2 p-5">
+            <AccordionTrigger className="w-full items-start">
+              <div className="c-border-primary flex w-full flex-col border-b-2 p-5">
                 <header className="subtitle pb-5 text-start">
                   {experience.title}
                 </header>
@@ -41,7 +41,7 @@ const Experience: FC = () => {
             </AccordionTrigger>
             <AccordionContent>
               {experience.detail ? (
-                <ul className="list-disc list-inside c-description leading-loose list-inside">
+                <ul className="c-description list-inside list-inside list-disc leading-loose">
                   {experience.detail.map((detail, index) => (
                     <li key={index}>{detail}</li>
                   ))}

@@ -8,7 +8,7 @@ export const MDXHr: FC<
   const { children, ...rest } = MDXHrProps;
   return (
     <>
-      <hr {...rest} className="my-10 border-t-2 c-border-primary">
+      <hr {...rest} className="c-border-primary my-10 border-t-2">
         {children}
       </hr>
     </>

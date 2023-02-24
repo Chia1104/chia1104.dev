@@ -23,7 +23,6 @@ specifiers:
   '@vercel/og': 0.1.0
   '@vitejs/plugin-react': ^3.1.0
   autoprefixer: ^10.4.13
-  classnames: ^2.3.2
   clsx: 1.2.1
   concurrently: 7.6.0
   cross-env: 7.0.3
@@ -43,12 +42,12 @@ specifiers:
   lint-staged: ^13.1.2
   next: ^13.2.1
   next-mdx-remote: ^4.3.0
-  next-seo: ^5.15.0
   next-sitemap: ^3.1.52
   next-themes: ^0.2.1
   p-map: ^5.5.0
   postcss: ^8.4.21
   prettier: ^2.8.4
+  prettier-plugin-tailwindcss: 0.2.3
   react: ^18.2.0
   react-dom: ^18.2.0
   react-icons: ^4.7.1
@@ -84,7 +83,6 @@ dependencies:
   '@sendgrid/mail': 7.7.0
   '@vercel/analytics': 0.1.10_react@18.2.0
   '@vercel/og': 0.1.0
-  classnames: 2.3.2
   clsx: 1.2.1
   cross-env: 7.0.3
   dayjs: 1.11.7
@@ -95,7 +93,6 @@ dependencies:
   gray-matter: 4.0.3
   next: 13.2.1_biqbaboplfbrettd7655fr4n2y
   next-mdx-remote: 4.3.0_biqbaboplfbrettd7655fr4n2y
-  next-seo: 5.15.0_qgtcjgzkkjtbiyvnx7d32fl5vu
   next-themes: 0.2.1_qgtcjgzkkjtbiyvnx7d32fl5vu
   p-map: 5.5.0
   react: 18.2.0
@@ -142,6 +139,7 @@ devDependencies:
   next-sitemap: 3.1.52_next@13.2.1
   postcss: 8.4.21
   prettier: 2.8.4
+  prettier-plugin-tailwindcss: 0.2.3_prettier@2.8.4
   redux: 4.2.1
   shell-quote: 1.8.0
   tailwind-scrollbar: 2.1.0_tailwindcss@3.2.7
@@ -2066,10 +2064,6 @@ packages:
     resolution: {integrity: sha512-eXTggHWSooYhq49F2opQhuHWgzucfF2YgODK4e1566GQs5BIfP30B0oenwBJHfWxAs2fyPB1s7Mg949zLf61Yw==}
     engines: {node: '>=8'}
     dev: true
-
-  /classnames/2.3.2:
-    resolution: {integrity: sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==}
-    dev: false
 
   /clean-stack/2.2.0:
     resolution: {integrity: sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==}
@@ -5168,18 +5162,6 @@ packages:
       - supports-color
     dev: false
 
-  /next-seo/5.15.0_qgtcjgzkkjtbiyvnx7d32fl5vu:
-    resolution: {integrity: sha512-LGbcY91yDKGMb7YI+28n3g+RuChUkt6pXNpa8FkfKkEmNiJkeRDEXTnnjVtwT9FmMhG6NH8qwHTelGrlYm9rgg==}
-    peerDependencies:
-      next: ^8.1.1-canary.54 || >=9.0.0
-      react: '>=16.0.0'
-      react-dom: '>=16.0.0'
-    dependencies:
-      next: 13.2.1_biqbaboplfbrettd7655fr4n2y
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    dev: false
-
   /next-sitemap/3.1.52_next@13.2.1:
     resolution: {integrity: sha512-tY469i4QRV1PwM9BoL+HdKYBCJ83IQl3PmUNapG/Hxp0MIYIw1hINU8E+Edf5Kr8vHXfVzPqDoul/Abu2P0vkw==}
     engines: {node: '>=14.18'}
@@ -5696,6 +5678,61 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       fast-diff: 1.2.0
+    dev: true
+
+  /prettier-plugin-tailwindcss/0.2.3_prettier@2.8.4:
+    resolution: {integrity: sha512-s2N5Dh7Ao5KTV1mao5ZBnn8EKtUcDPJEkGViZIjI0Ij9TTI5zgTz4IHOxW33jOdjHKa8CSjM88scelUiC5TNRQ==}
+    engines: {node: '>=12.17.0'}
+    peerDependencies:
+      '@ianvs/prettier-plugin-sort-imports': '*'
+      '@prettier/plugin-php': '*'
+      '@prettier/plugin-pug': '*'
+      '@shopify/prettier-plugin-liquid': '*'
+      '@shufo/prettier-plugin-blade': '*'
+      '@trivago/prettier-plugin-sort-imports': '*'
+      prettier: '>=2.2.0'
+      prettier-plugin-astro: '*'
+      prettier-plugin-css-order: '*'
+      prettier-plugin-import-sort: '*'
+      prettier-plugin-jsdoc: '*'
+      prettier-plugin-organize-attributes: '*'
+      prettier-plugin-organize-imports: '*'
+      prettier-plugin-style-order: '*'
+      prettier-plugin-svelte: '*'
+      prettier-plugin-twig-melody: '*'
+    peerDependenciesMeta:
+      '@ianvs/prettier-plugin-sort-imports':
+        optional: true
+      '@prettier/plugin-php':
+        optional: true
+      '@prettier/plugin-pug':
+        optional: true
+      '@shopify/prettier-plugin-liquid':
+        optional: true
+      '@shufo/prettier-plugin-blade':
+        optional: true
+      '@trivago/prettier-plugin-sort-imports':
+        optional: true
+      prettier-plugin-astro:
+        optional: true
+      prettier-plugin-css-order:
+        optional: true
+      prettier-plugin-import-sort:
+        optional: true
+      prettier-plugin-jsdoc:
+        optional: true
+      prettier-plugin-organize-attributes:
+        optional: true
+      prettier-plugin-organize-imports:
+        optional: true
+      prettier-plugin-style-order:
+        optional: true
+      prettier-plugin-svelte:
+        optional: true
+      prettier-plugin-twig-melody:
+        optional: true
+    dependencies:
+      prettier: 2.8.4
     dev: true
 
   /prettier/2.8.4:

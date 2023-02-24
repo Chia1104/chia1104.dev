@@ -12,8 +12,8 @@ const AboutMe: FC<Props> = ({ avatarSrc }) => {
   const title = Chia.title;
 
   return (
-    <div className="flex flex-col md:flex-row px-3 justify-center z-20 mt-10">
-      <div className="flex flex-col justify-end items-center md:items-end mb-5 md:pr-5">
+    <div className="z-20 mt-10 flex flex-col justify-center px-3 md:flex-row">
+      <div className="mb-5 flex flex-col items-center justify-end md:items-end md:pr-5">
         <h1 className="title text-sec-text dark:text-white">
           {name} {chineseName}
         </h1>
@@ -21,8 +21,8 @@ const AboutMe: FC<Props> = ({ avatarSrc }) => {
           {title.toUpperCase()}
         </h2>
       </div>
-      <div className="flex justify-center items-center rounded-full w-[200px] h-[200px] overflow-hidden bg-gradient-to-r from-purple-400 to-pink-600 self-center">
-        <div className="rounded-full w-[195px] h-[195px] p-3 c-bg-secondary">
+      <div className="flex h-[200px] w-[200px] items-center justify-center self-center overflow-hidden rounded-full bg-gradient-to-r from-purple-400 to-pink-600">
+        <div className="c-bg-secondary h-[195px] w-[195px] rounded-full p-3">
           <Image
             src={avatarSrc || "/favicon.ico"}
             alt="Chia1104"

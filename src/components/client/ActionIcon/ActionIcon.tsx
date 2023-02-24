@@ -18,15 +18,15 @@ const ActionIcon: FC = () => {
   const LINKEDIN = Chia.link.linkedin;
 
   return (
-    <div className="fixed bottom-0 right-0 mr-10 mb-10 p-3 rounded-xl shadow-2xl flex flex-col justify-center items-center c-bg-secondary z-40 overflow-hidden">
+    <div className="c-bg-secondary fixed bottom-0 right-0 z-40 mr-10 mb-10 flex flex-col items-center justify-center overflow-hidden rounded-xl p-3 shadow-2xl">
       <Contact />
       <button
         aria-label={"Open contact"}
         onClick={() => dispatch(activeActionIconSheet())}
-        className="hover:text-secondary transition ease-in-out">
+        className="transition ease-in-out hover:text-secondary">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 mb-2"
+          className="mb-2 h-5 w-5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -42,7 +42,7 @@ const ActionIcon: FC = () => {
         <button
           aria-label={"Light or Dark"}
           onClick={toggle}
-          className="hover:text-secondary transition ease-in-out mr-3">
+          className="mr-3 transition ease-in-out hover:text-secondary">
           {isMounted && isDarkMode ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +79,7 @@ const ActionIcon: FC = () => {
           target="_blank"
           rel="noreferrer"
           aria-label={"Open GitHub"}
-          className="hover:text-secondary transition ease-in-out mx-3">
+          className="mx-3 transition ease-in-out hover:text-secondary">
           <SiGithub className="h-5 w-5" />
         </a>
         <a
@@ -87,7 +87,7 @@ const ActionIcon: FC = () => {
           target="_blank"
           rel="noreferrer"
           aria-label={"Open Instagram"}
-          className="hover:text-secondary transition ease-in-out mr-3">
+          className="mr-3 transition ease-in-out hover:text-secondary">
           <SiInstagram className="h-5 w-5" />
         </a>
         <a
@@ -95,7 +95,7 @@ const ActionIcon: FC = () => {
           target="_blank"
           rel="noreferrer"
           aria-label={"Open LinkedIn"}
-          className="hover:text-secondary transition ease-in-out">
+          className="transition ease-in-out hover:text-secondary">
           <SiLinkedin className="h-5 w-5" />
         </a>
       </div>

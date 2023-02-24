@@ -4,7 +4,7 @@ import { type FC } from "react";
 import type { PostFrontMatter } from "@chia/shared/types";
 import PostItem from "./PostItem";
 import { motion } from "framer-motion";
-import cx from "classnames";
+import { cn } from "@chia//utils/cn.util";
 import { SerializedResult, useDeserialized } from "@chia/utils/hydration.util";
 
 interface Props {
@@ -27,7 +27,7 @@ const PostsList: FC<Props> = (props) => {
   const _post = useDeserialized(post);
   return (
     <motion.article
-      className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-10"
+      className="grid w-full grid-cols-1 gap-10 lg:grid-cols-2 xl:grid-cols-3"
       transition={{ duration: 0.3, type: "spring" }}
       variants={postAnimation}
       animate={"show"}>
@@ -36,7 +36,7 @@ const PostsList: FC<Props> = (props) => {
           key={post.id}
           transition={{ type: "spring" }}
           variants={postCardAnimation}
-          className={cx("w-full h-auto", index === 0 && "lg:col-span-2")}>
+          className={cn("h-auto w-full", index === 0 && "lg:col-span-2")}>
           <PostItem data={post} i={index} />
         </motion.div>
       ))}

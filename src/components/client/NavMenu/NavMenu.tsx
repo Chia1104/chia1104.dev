@@ -3,33 +3,33 @@
 import { memo } from "react";
 import type { FC } from "react";
 import Link from "next/link";
-import cx from "classnames";
+import { cn } from "@chia//utils/cn.util";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 const NavMenu: FC = () => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
-    <nav className="w-screen flex h-[75px] items-center top-0 fixed justify-center z-50 border-b-[1px] c-border-primary c-bg-secondary transition-all ease-in-out">
-      <div className="flex container w-[100%]">
-        <div className="flex items-center w-[70%] justify-start">
+    <nav className="c-border-primary c-bg-secondary fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center border-b-[1px] transition-all ease-in-out">
+      <div className="container flex w-[100%]">
+        <div className="flex w-[70%] items-center justify-start">
           <Link
             href="/"
             scroll
-            className="subtitle ml-3 hover:c-text-green-to-purple transition ease-in-out">
+            className="subtitle hover:c-text-green-to-purple ml-3 transition ease-in-out">
             Chia1104
           </Link>
         </div>
-        <div className="flex items-center w-[30%] justify-end mr-3">
+        <div className="mr-3 flex w-[30%] items-center justify-end">
           <Link
             scroll
-            className={cx(
-              "flex c-link mr-4 py-3",
+            className={cn(
+              "c-link mr-4 flex py-3",
               selectedLayoutSegments[1] === "about" && "c-link-active"
             )}
             href="/about/">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
+              className="mr-1 h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -44,14 +44,14 @@ const NavMenu: FC = () => {
           </Link>
           <Link
             scroll
-            className={cx(
-              "flex c-link mr-4 py-3",
+            className={cn(
+              "c-link mr-4 flex py-3",
               selectedLayoutSegments[1] === "posts" && "c-link-active"
             )}
             href="/posts/">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
+              className="mr-1 h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -66,14 +66,14 @@ const NavMenu: FC = () => {
           </Link>
           <Link
             scroll
-            className={cx(
-              "flex c-link mr-4 py-3",
+            className={cn(
+              "c-link mr-4 flex py-3",
               selectedLayoutSegments[1] === "portfolio" && "c-link-active"
             )}
             href="/portfolio/">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
+              className="mr-1 h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

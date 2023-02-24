@@ -66,10 +66,10 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
     const { frontMatter, source } = await getPost(params.slug);
     return (
       <article className="main c-container mt-10 px-5">
-        <header className="pl-3 lg:w-[70%] w-full mb-7 self-center">
+        <header className="mb-7 w-full self-center pl-3 lg:w-[70%]">
           <h1 className="title pb-5">{frontMatter?.title}</h1>
           <h2 className="c-description">{frontMatter?.excerpt}</h2>
-          <span className="mt-5 flex items-center c-description gap-2">
+          <span className="c-description mt-5 flex items-center gap-2">
             <Image
               src="/memoji/contact-memoji.PNG"
               width={40}
@@ -82,10 +82,10 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
           </span>
           <Chip data={frontMatter?.tags || []} />
         </header>
-        <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:w-[70%] w-full self-center mx-auto">
+        <div className="c-bg-secondary mx-auto mt-5 w-full self-center rounded-xl p-5 lg:w-[70%]">
           <MDXRemote post={source} />
         </div>
-        <div className="mt-20 lg:w-[70%] w-full self-center mx-auto">
+        <div className="mx-auto mt-20 w-full self-center lg:w-[70%]">
           <Giscus title={frontMatter?.title || ""} />
         </div>
       </article>

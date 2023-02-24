@@ -8,14 +8,14 @@ interface Props {
 
 const RepoItem: FC<Props> = ({ repo }) => {
   return (
-    <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 w-full h-full flex flex-col">
-      <header className="text-2xl line-clamp-1 mb-2 group-hover:c-text-green-to-purple ">
+    <span className="c-button-secondary flex h-full w-full transform flex-col group-hover:-translate-x-1 group-hover:-translate-y-1">
+      <header className="group-hover:c-text-green-to-purple mb-2 text-2xl line-clamp-1 ">
         {repo.node?.name || ""}
       </header>
       <p className="c-description text-base line-clamp-2">
         {repo.node?.description || ""}
       </p>
-      <div className="c-description mt-auto text-base flex">
+      <div className="c-description mt-auto flex text-base">
         <span
           style={{
             backgroundImage: `linear-gradient(transparent 85%, ${
@@ -29,7 +29,7 @@ const RepoItem: FC<Props> = ({ repo }) => {
           {repo.node?.stargazerCount || 0 > 0 ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1 text-secondary"
+              className="mr-1 h-5 w-5 text-secondary"
               viewBox="0 0 20 20"
               fill="currentColor">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -37,7 +37,7 @@ const RepoItem: FC<Props> = ({ repo }) => {
           ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-1"
+              className="mr-1 h-5 w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -52,7 +52,7 @@ const RepoItem: FC<Props> = ({ repo }) => {
           {repo.node?.stargazerCount || 0}
         </span>
         <span className="flex items-center">
-          <VscRepoForked className="w-5 h-5 mr-1" />
+          <VscRepoForked className="mr-1 h-5 w-5" />
           {repo.node?.forkCount || 0}
         </span>
       </div>

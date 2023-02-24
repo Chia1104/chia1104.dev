@@ -9,9 +9,9 @@ interface Props {
 
 const LATList: FC<Props> = ({ category, data }) => {
   return (
-    <div className="flex flex-col justify-start items-center lg:px-10">
+    <div className="flex flex-col items-center justify-start lg:px-10">
       <h2 className="subtitle my-10 ">{category}</h2>
-      <div className="grid grid-cols-3 w-full c-description">
+      <div className="c-description grid w-full grid-cols-3">
         {data.map((lat: LAT) => (
           <LATItem key={lat.name} lat={lat} />
         ))}

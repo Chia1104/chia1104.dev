@@ -17,7 +17,7 @@ const MDXCodeSandBox: FC<Props> = (props) => {
       <iframe
         src={codeSrc}
         loading="lazy"
-        className="w-full h-full min-h-[500px] border-0 rounded-lg shadow-lg overflow-hidden my-10"
+        className="my-10 h-full min-h-[500px] w-full overflow-hidden rounded-lg border-0 shadow-lg"
         allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
         sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
         {...rest}

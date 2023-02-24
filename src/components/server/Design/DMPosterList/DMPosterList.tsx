@@ -8,7 +8,7 @@ interface Props {
 
 const DMPosterList: FC<Props> = ({ data }) => {
   return (
-    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-10 px-10">
+    <div className="grid w-full grid-cols-1 gap-10 px-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {data.map((item) => (
         <DMPoster url={item.imgUrl} key={item.id} />
       ))}

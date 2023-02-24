@@ -13,11 +13,11 @@ const LATItem: FC<Props> = ({ lat }) => {
       href={lat.link}
       target="_blank"
       rel="noreferrer"
-      className="w-full text-5xl flex justify-center items-center relative group my-5 mx-auto">
+      className="group relative my-5 mx-auto flex w-full items-center justify-center text-5xl">
       <div className="p-2 group-hover:animate-pulse">
         <LATIcon />
       </div>
-      <div className="absolute text-sm p-2 c-bg-secondary scale-0 rounded top-[4.5rem] transition duration-300 group-hover:scale-100 text-center z-10">
+      <div className="c-bg-secondary absolute top-[4.5rem] z-10 scale-0 rounded p-2 text-center text-sm transition duration-300 group-hover:scale-100">
         {lat.name}
       </div>
     </a>
