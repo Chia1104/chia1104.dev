@@ -20,3 +20,4 @@ export { default as Input } from "./Input";
 export * from "./Input";
 export { default as Textarea } from "./Textarea";
 export * from "./Textarea";
+export * from "./Accordion";

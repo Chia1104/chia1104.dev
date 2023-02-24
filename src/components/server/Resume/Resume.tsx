@@ -41,51 +41,16 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
               👋
             </span>
           </h1>
-          <h2 className="text-lg text-center md:text-left ">{content}</h2>
         </div>
       </div>
       <div className="mb-10 max-w-[800px] self-center">
         <p className="c-description pb-5 indent-4">
-          I am {name}, a full-stack engineer with one year of experience in web
-          development. Including more than once experience in real business
-          production.
+          I am a full-stack engineer with one year of experience in web
+          development, including experience in real business production. My
+          expertise lies in NextJS frontend development and backend services
+          management. I excel in project management, code review, feature
+          planning, and testing.
         </p>
-        <p className="c-description pb-5 indent-4">
-          We are currently working on a project called{" "}
-          <Link href="https://github.com/Chia1104/league-funny-turbo">
-            <b>League Funny</b>
-          </Link>
-          , which is a website that provides people to share some posts about
-          any game they like. It is a full-stack project, and I am responsible
-          for the NextJS frontend and some backend services. I am also
-          responsible for the management of the project, including reviewing
-          code, planning features, and testing.
-        </p>
-        <ul className="list-disc pl-5">
-          <li className="mb-2">
-            Reduce 50% of the development time by using Turborepo to manage more
-            than one repository.
-          </li>
-          <li className="mb-2">
-            Develop some useful hooks to reduce the development time. Such as
-            useS3ImageUpload, useInfiniteScroll, etc.
-          </li>
-          <li className="mb-2">
-            Lead other developers to learn and use the new technology, or the
-            new feature of React.
-          </li>
-        </ul>
-        <p className="c-description pb-5 indent-4">
-          I am also learning other technologies, such as turborepo, sveltekit or
-          kubernetes. I also have some experience and interest in open source
-          projects. I have contributed to{" "}
-          <Link href="https://github.com/yuaanlin/nextjs.tw">
-            <b>nextjs.tw</b>
-          </Link>
-          , a website that provides the Chinese version of the NextJS
-          documentation.
-        </p>
-        <p className="c-description pb-5 indent-4"></p>
       </div>
       <div className="w-full flex flex-col items-center">
         <ContactButton />
