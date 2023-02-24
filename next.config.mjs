@@ -34,7 +34,7 @@ const nextConfig = {
   experimental: {
     appDir: true,
     // mdxRs: true,
-    typedRoutes: true,
+    // typedRoutes: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
