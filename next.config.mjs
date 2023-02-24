@@ -33,7 +33,8 @@ const nextConfig = {
   output: "standalone",
   experimental: {
     appDir: true,
-    mdxRs: true,
+    // mdxRs: true,
+    typedRoutes: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
