@@ -20,7 +20,8 @@
     "e2e:chrome": "cypress run --browser chrome",
     "e2e:firefox": "cypress run --browser firefox",
     "e2e:edge": "cypress run --browser edge",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\""
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@geist-ui/core": "^2.3.8",
