@@ -1,9 +1,7 @@
 import { ImageResponse } from "@vercel/og";
 import { NextRequest, NextResponse } from "next/server";
 
-export const config = {
-  runtime: "edge",
-};
+export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +39,7 @@ export async function GET(request: NextRequest) {
               }}
               tw="w-full"
               alt="og"
-              src="/og-img.png"
+              src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fog-img-1200.png?alt=media"
             />
             <div tw="flex absolute w-full justify-center items-center p-20">
               <div tw="flex flex-col justify-center items-center mr-10">
@@ -51,7 +49,7 @@ export async function GET(request: NextRequest) {
                   }}
                   tw="w-[200px] h-[200px] rounded-full"
                   alt="avatar"
-                  src="/me/me-175.jpg"
+                  src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fme-175.jpg?alt=media"
                 />
                 <h1 tw="text-3xl text-slate-900">Chia1104 - 俞又嘉</h1>
                 <h2 tw="text-xl text-slate-700">https://chia1104.dev</h2>
