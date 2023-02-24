@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC, DetailedHTMLProps, BlockquoteHTMLAttributes } from "react";
-import cx from "classnames";
+import { cn } from "@chia//utils/cn.util";
 
 interface Props
   extends DetailedHTMLProps<
@@ -18,8 +18,8 @@ export const MDXQuote: FC<Props> = (props) => {
     <>
       <blockquote
         {...rest}
-        className={cx(
-          "p-3 border-l-4 bg-gradient-to-r my-10",
+        className={cn(
+          "my-10 border-l-4 bg-gradient-to-r p-3",
           type === "tips" && "border-gray-400 from-gray-400/70 to-gray-400/40",
           type === "info" && "border-info from-info/70 to-info/40",
           type === "success" && "border-success from-success/70 to-success/40",

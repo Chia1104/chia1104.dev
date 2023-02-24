@@ -18,7 +18,7 @@ export const getAllVideos = async (
         "Content-Type": "application/json",
       },
     });
-    const data: Youtube = await res.json();
+    const data: Youtube = (await res.json()) as Youtube;
 
     return { status: res.status, data };
   } catch (err: any) {

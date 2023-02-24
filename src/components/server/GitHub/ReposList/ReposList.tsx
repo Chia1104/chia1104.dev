@@ -8,14 +8,14 @@ interface Props {
 
 const ReposList: FC<Props> = ({ repo }) => {
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+    <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2 xl:grid-cols-3">
       {repo.map((repo: RepoGql) => (
         <a
           href={repo.node.url}
           target="_blank"
           rel="noopener noreferrer"
           key={repo.node.id}
-          className="w-full group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded h-[150px]">
+          className="group relative inline-flex h-[150px] w-full rounded transition ease-in-out hover:bg-secondary hover:dark:bg-primary">
           <RepoItem repo={repo} />
         </a>
       ))}

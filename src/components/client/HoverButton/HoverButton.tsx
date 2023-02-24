@@ -34,7 +34,7 @@ const HoverButton: FC<Props> = (props) => {
       initial={"closed"}
       animate={isHover ? "open" : "closed"}
       variants={v}
-      className="w-full h-full bg-gradient-to-b from-gray-600/70 to-gray-600/0 absolute top-0 left-0 flex justify-center items-center">
+      className="absolute top-0 left-0 flex h-full w-full items-center justify-center bg-gradient-to-b from-gray-600/70 to-gray-600/0">
       <button onClick={onClick} {...rest}>
         {children || (
           <svg

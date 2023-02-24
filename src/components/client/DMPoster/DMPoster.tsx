@@ -3,7 +3,7 @@
 import { type FC, useRef, useState, memo } from "react";
 import { useHover } from "usehooks-ts";
 import { Image, Modal } from "@chia/components/client";
-import cx from "classnames";
+import { cn } from "@chia//utils/cn.util";
 
 interface Props {
   url: string;
@@ -18,13 +18,13 @@ const DMPoster: FC<Props> = ({ url }) => {
 
   return (
     <div
-      className="aspect-w-3 aspect-h-5 w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg relative"
+      className="aspect-w-3 aspect-h-5 relative w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg"
       ref={r}>
       <Image
         src={url || "/posts/example-posts/example.jpg"}
         alt={"DMPoster"}
-        className={cx(
-          "rounded duration-300 transition ease-in-out object-cover",
+        className={cn(
+          "rounded object-cover transition duration-300 ease-in-out",
           isHover && "scale-[1.05] cursor-zoom-in"
         )}
         loading="lazy"
@@ -39,7 +39,7 @@ const DMPoster: FC<Props> = ({ url }) => {
         isShowed={isShow}
         activeModal={handleClose}
         className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
-        <div className="w-full aspect-w-1 aspect-h-1">
+        <div className="aspect-w-1 aspect-h-1 w-full">
           <Image
             blur={false}
             src={url || "/posts/example-posts/example.jpg"}

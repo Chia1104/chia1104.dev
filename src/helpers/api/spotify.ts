@@ -21,7 +21,7 @@ const getAccessToken = async () => {
         Authorization: `Basic ${basic}`,
       },
     });
-    const data: object = await res.json();
+    const data: any = (await res.json()) as any;
 
     return data;
   } catch (err: any) {
@@ -42,7 +42,7 @@ export const getNowPlaying = async () => {
         Authorization: `Bearer ${TOKEN}`,
       },
     });
-    const data: object = await res.json();
+    const data: any = (await res.json()) as any;
 
     return data;
   } catch (err: any) {

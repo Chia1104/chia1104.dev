@@ -13,7 +13,7 @@ export const MDXTable: FC<
   DetailedHTMLProps<TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>
 > = ({ children, ...rest }) => {
   return (
-    <table {...rest} className="table-auto border-collapse w-full my-5">
+    <table {...rest} className="my-5 w-full table-auto border-collapse">
       {children}
     </table>
   );
@@ -26,7 +26,7 @@ export const MDXThead: FC<
   >
 > = ({ children, ...rest }) => {
   return (
-    <thead {...rest} className="p-2 border">
+    <thead {...rest} className="border p-2">
       {children}
     </thead>
   );
@@ -49,7 +49,7 @@ export const MDXTr: FC<
   DetailedHTMLProps<HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>
 > = ({ children, ...rest }) => {
   return (
-    <tr {...rest} className="p-2 border-y">
+    <tr {...rest} className="border-y p-2">
       {children}
     </tr>
   );

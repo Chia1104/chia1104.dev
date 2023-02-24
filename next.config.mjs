@@ -1,35 +1,9 @@
 // @ts-check
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
-// import withMDXImport from "@next/mdx";
-// import remarkGfm from "remark-gfm";
-// import rehypeSlug from "rehype-slug";
-// import rehypePrism from "rehype-prism-plus";
-// import rehypeAutolinkHeadings from "rehype-autolink-headings";
-// import rehypeHighlight from "rehype-highlight";
-// import rehypeCodeTitles from "rehype-code-titles";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
 });
-
-// const withMDX = withMDXImport({
-//   options: {
-//     remarkPlugins: [[remarkGfm, { singleTilde: false }]],
-//     rehypePlugins: [
-//       [rehypeSlug],
-//       [rehypePrism, { ignoreMissing: true }],
-//       [
-//         rehypeAutolinkHeadings,
-//         {
-//           properties: { className: ["anchor"] },
-//         },
-//         { behaviour: "wrap" },
-//       ],
-//       rehypeHighlight,
-//       rehypeCodeTitles,
-//     ],
-//   },
-// });
 
 const securityHeaders = [
   {
@@ -56,7 +30,6 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   output: "standalone",
   experimental: {
     appDir: true,

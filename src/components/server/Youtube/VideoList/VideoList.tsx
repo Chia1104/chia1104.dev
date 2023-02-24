@@ -9,7 +9,7 @@ interface Props {
 
 const VideoList: FC<Props> = ({ item }) => {
   return (
-    <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-3">
+    <div className="grid w-full grid-cols-1 gap-3 xl:grid-cols-2">
       <LastestVideo item={item[0]} />
       <div className="my-5">
         {item.map(
@@ -17,21 +17,21 @@ const VideoList: FC<Props> = ({ item }) => {
             i !== 0 && (
               <div
                 key={v.id}
-                className="w-full flex flex-col c-border-primary border-b-2 p-3 h-[130px]">
+                className="c-border-primary flex h-[130px] w-full flex-col border-b-2 p-3">
                 <a
                   className="mb-3 self-start"
                   href={`https://www.youtube.com/watch?v=${v.snippet.resourceId.videoId}`}
                   target="_blank"
                   rel="noreferrer"
                   aria-label={"Open Youtube"}>
-                  <header className="text-info subtitle c-link line-clamp-1">
+                  <header className="subtitle c-link text-info line-clamp-1">
                     {v.snippet.title}
                   </header>
                 </a>
-                <p className="text-base line-clamp-1 c-description">
+                <p className="c-description text-base line-clamp-1">
                   {v.snippet.description}
                 </p>
-                <p className="text-base mt-auto c-description">
+                <p className="c-description mt-auto text-base">
                   {dayjs(v.snippet.publishedAt).format("MMMM D, YYYY")}
                 </p>
               </div>

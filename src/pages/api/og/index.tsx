@@ -43,7 +43,7 @@ export default function handler(req: NextRequest) {
                   }}
                   tw="w-full"
                   alt="og"
-                  src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fog-img.png?alt=media"
+                  src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fog-img-1200.png?alt=media"
                 />
                 <div tw="flex absolute w-full justify-center items-center p-20">
                   <div tw="flex flex-col justify-center items-center mr-10">
@@ -53,7 +53,7 @@ export default function handler(req: NextRequest) {
                       }}
                       tw="w-[200px] h-[200px] rounded-full"
                       alt="avatar"
-                      src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fme%2Fme.JPG?alt=media"
+                      src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fme-175.jpg?alt=media"
                     />
                     <h1 tw="text-3xl text-slate-900">Chia1104 - 俞又嘉</h1>
                     <h2 tw="text-xl text-slate-700">https://chia1104.dev</h2>
