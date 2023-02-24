@@ -3,7 +3,7 @@
 import { Image, Modal } from "@chia/components/client";
 import { type ImageProps } from "next/image";
 import { type FC, DetailedHTMLProps, ImgHTMLAttributes, useState } from "react";
-import cx from "classnames";
+import { cn } from "@chia//utils/cn.util";
 
 interface MDXImageProps extends ImageProps {
   alt: string;
@@ -27,9 +27,9 @@ export const MDXImage: FC<
   const handleClose = () => setIsShow(false);
 
   return (
-    <div className="flex flex-col justify-center items-center my-5">
+    <div className="my-5 flex flex-col items-center justify-center">
       <div
-        className={cx(
+        className={cn(
           "w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg",
           aspectRatio === "2:1" && "aspect-w-2 aspect-h-1",
           aspectRatio === "3:2" && "aspect-w-3 aspect-h-2",
@@ -42,8 +42,8 @@ export const MDXImage: FC<
           aspectRatio === "9:16" && "aspect-w-9 aspect-h-16"
         )}>
         <Image
-          className={cx(
-            "rounded-lg hover:scale-[1.03] duration-300 transition ease-in-out hover:cursor-zoom-in",
+          className={cn(
+            "rounded-lg transition duration-300 ease-in-out hover:scale-[1.03] hover:cursor-zoom-in",
             objectFit && `object-${objectFit}`
           )}
           loading="lazy"
@@ -61,7 +61,7 @@ export const MDXImage: FC<
         isShowed={isShow}
         activeModal={handleClose}
         className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
-        <div className="w-full aspect-w-1 aspect-h-1">
+        <div className="aspect-w-1 aspect-h-1 w-full">
           <Image
             blur={false}
             alt={alt}
@@ -76,7 +76,7 @@ export const MDXImage: FC<
           />
         </div>
       </Modal>
-      {showAlt && <p className="self-center mt-2">{alt}</p>}
+      {showAlt && <p className="mt-2 self-center">{alt}</p>}
     </div>
   );
 };

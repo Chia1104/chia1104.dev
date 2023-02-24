@@ -10,18 +10,18 @@ const LastestVideo: FC<Props> = ({ item }) => {
   const name = item.snippet.title;
 
   return (
-    <div className="w-full flex flex-col justify-center items-center">
+    <div className="flex w-full flex-col items-center justify-center">
       <a
-        className="text-info subtitle mb-5 c-link"
+        className="subtitle c-link mb-5 text-info"
         href={`https://www.youtube.com/watch?v=${id}`}
         target="_blank"
         rel="noreferrer"
         aria-label={"Open Youtube"}>
         {name}
       </a>
-      <div className="w-full h-[270px] sm:h-[300px] sm:w-[500px] border-0 rounded-lg shadow-lg overflow-hidden mx-auto">
+      <div className="mx-auto h-[270px] w-full overflow-hidden rounded-lg border-0 shadow-lg sm:h-[300px] sm:w-[500px]">
         <iframe
-          className="w-full h-full"
+          className="h-full w-full"
           src={`https://www.youtube.com/embed/${id}`}
           loading="lazy"
           title={name}

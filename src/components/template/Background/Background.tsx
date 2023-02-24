@@ -5,8 +5,8 @@ import type { FC } from "react";
 const Background: FC = () => {
   return (
     <>
-      <div className="w-[600px] h-[600px] fixed -top-20 -right-52 -z-40 blur-3xl rounded-full bg-gradient-to-b from-bgPurple" />
-      <div className="w-[350px] h-[350px] fixed -bottom-10 -left-20 -z-40 blur-3xl rounded-full bg-gradient-to-t from-bgBlue" />
+      <div className="fixed -top-20 -right-52 -z-40 h-[600px] w-[600px] rounded-full bg-gradient-to-b from-bgPurple blur-3xl" />
+      <div className="fixed -bottom-10 -left-20 -z-40 h-[350px] w-[350px] rounded-full bg-gradient-to-t from-bgBlue blur-3xl" />
     </>
   );
 };

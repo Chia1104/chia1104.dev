@@ -10,8 +10,7 @@ import React, {
   useRef,
 } from "react";
 import { ZodType } from "zod";
-import cx from "classnames";
-
+import { cn } from "@chia//utils/cn.util";
 interface Props
   extends DetailedHTMLProps<
     TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -87,8 +86,8 @@ const Textarea = forwardRef<TextAreaRef, Props>((props, ref) => {
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        className={cx(
-          "border border-[#CBD2D7] w-full rounded-lg c-border-primary transition ease-in-out focus:outline-none c-bg-primary p-2",
+        className={cn(
+          "c-border-primary c-bg-primary w-full rounded-lg border border-[#CBD2D7] p-2 transition ease-in-out focus:outline-none",
           isError &&
             "border-danger hover:cursor-not-allowed dark:border-danger dark:hover:cursor-not-allowed",
           isFocus && !isError && "focus:border-info",
@@ -97,7 +96,7 @@ const Textarea = forwardRef<TextAreaRef, Props>((props, ref) => {
         {...rest}
       />
       {isError && (
-        <p className={cx("text-danger", errorClassName)}>{error ?? ""}</p>
+        <p className={cn("text-danger", errorClassName)}>{error ?? ""}</p>
       )}
     </>
   );

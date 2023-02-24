@@ -17,15 +17,15 @@ export const H1: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="inline-flex items-center group my-5 pb-5 border-b-2 c-border-primary w-full">
-      <h1 {...rest} className="text-4xl font-bold mr-2" ref={r}>
+    <span className="c-border-primary group my-5 inline-flex w-full items-center border-b-2 pb-5">
+      <h1 {...rest} className="mr-2 text-4xl font-bold" ref={r}>
         {children}
       </h1>
       {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium block md:hidden group-hover:block">
+          className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-7 w-7"
@@ -53,15 +53,15 @@ export const H2: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="inline-flex items-center group my-4 w-full">
-      <h2 {...rest} className="text-3xl font-bold mr-2" ref={r}>
+    <span className="group my-4 inline-flex w-full items-center">
+      <h2 {...rest} className="mr-2 text-3xl font-bold" ref={r}>
         {children}
       </h2>
       {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium block md:hidden group-hover:block">
+          className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -89,15 +89,15 @@ export const H3: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="inline-flex items-center group my-3 w-full">
-      <h3 {...rest} className="text-2xl font-bold mr-2" ref={r}>
+    <span className="group my-3 inline-flex w-full items-center">
+      <h3 {...rest} className="mr-2 text-2xl font-bold" ref={r}>
         {children}
       </h3>
       {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium block md:hidden group-hover:block">
+          className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
@@ -125,15 +125,15 @@ export const H4: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="inline-flex items-center group my-2 w-full">
-      <h4 {...rest} className="text-xl font-bold mr-2" ref={r}>
+    <span className="group my-2 inline-flex w-full items-center">
+      <h4 {...rest} className="mr-2 text-xl font-bold" ref={r}>
         {children}
       </h4>
       {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium block md:hidden group-hover:block">
+          className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"
@@ -161,15 +161,15 @@ export const H5: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="inline-flex items-center group w-full my-2">
-      <h5 {...rest} className="text-lg font-bold mr-2" ref={r}>
+    <span className="group my-2 inline-flex w-full items-center">
+      <h5 {...rest} className="mr-2 text-lg font-bold" ref={r}>
         {children}
       </h5>
       {isMounted && (
         <a
           href={`#${r.current?.id}`}
           aria-label={r.current?.innerText}
-          className="c-text-secondary font-medium block md:hidden group-hover:block">
+          className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4"
@@ -194,7 +194,7 @@ export const H6: FC<
   const { children, ...rest } = MDXHeadingProps;
 
   return (
-    <h6 {...rest} className="text-lg my-2 font-medium">
+    <h6 {...rest} className="my-2 text-lg font-medium">
       {children}
     </h6>
   );

@@ -8,7 +8,7 @@ export { default as NewsCard } from "./NewsCard";
 export { default as Resume } from "./Resume";
 export { default as Youtube } from "./Youtube";
 export * from "./Youtube";
-export { default as Head } from "./Head";
 export { default as Chip } from "./Chip";
 export { default as Design } from "./Design";
 export * from "./Design";
+export { default as MDXRemote } from "./MDXRemote";

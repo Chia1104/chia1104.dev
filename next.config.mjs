@@ -1,4 +1,10 @@
-/** @type {import('next').NextConfig} */
+// @ts-check
+import withBundleAnalyzerImport from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = withBundleAnalyzerImport({
+  enabled: process.env.ANALYZE === "true",
+});
+
 const securityHeaders = [
   {
     key: "X-DNS-Prefetch-Control",
@@ -22,12 +28,12 @@ const securityHeaders = [
   },
 ];
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  swcMinify: true,
-  reactStrictMode: true,
   output: "standalone",
   experimental: {
     appDir: true,
+    mdxRs: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -72,4 +78,11 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+const plugins = [withBundleAnalyzer];
+
+const nextComposePlugins = plugins.reduce(
+  (acc, plugin) => plugin(acc),
+  nextConfig
+);
+
+export default nextComposePlugins;

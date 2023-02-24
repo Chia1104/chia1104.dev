@@ -23,14 +23,14 @@ import {
 } from "react-icons/si";
 
 export const Chia = {
-  name: "Chia1104",
-  chineseName: "俞又嘉",
-  fullName: "Yu Chia, Yu",
-  title: "Full Stack Engineer",
-  email: "yuyuchia7423@gmail.com",
-  phone: "+886 0970227360",
+  name: "Chia1104" as const,
+  chineseName: "俞又嘉" as const,
+  fullName: "Yu Chia, Yu" as const,
+  title: "Full Stack Engineer" as const,
+  email: "yuyuchia7423@gmail.com" as const,
+  phone: "+886 0970227360" as const,
   content:
-    "I am Yu Chia, Yu, a full-stack engineer with one year of experience in web development",
+    "I am Yu Chia, Yu, a full-stack engineer with one year of experience in web development" as const,
   link: {
     github: "https://github.com/Chia1104",
     linkedin:
@@ -39,7 +39,7 @@ export const Chia = {
     youtube_playlist:
       "https://www.youtube.com/playlist?list=PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM",
     google_photos: "https://photos.app.goo.gl/J1FobfgynJKW84Dm6",
-  },
+  } as const,
   technologies: {
     languages: [
       {
@@ -180,22 +180,37 @@ export const Chia = {
       },
     ],
   },
-  location: "Taipei, Taiwan",
-  bio: "Hello there",
-  company: "WANIN",
+  location: "Taipei, Taiwan" as const,
+  bio: "Hello there" as const,
+  company: "LeadBest" as const,
   resume: [
     {
       title: "Work Experience",
+      company: "LeadBest",
+      duration: "2023-3 - Now",
+      location: "Taipei, Taiwan",
+      work: "ReactJS, NextJS, TypeScript, GCP",
+      link: "https://www.leadbestconsultant.com/",
+    },
+    {
+      title: "Work Experience",
       company: "WANIN",
-      duration: "2022 - Now",
+      duration: "2022-7 - 2023-1",
       location: "Taipei, Taiwan",
       work: "NextJS, VueJS, TailwindCSS, TypeScript, Turborepo, GCP",
       link: "https://www.wanin.tw/",
+      detail: [
+        "Developed a full-stack project, League Funny, which is a website where users can share posts about their favorite games.",
+        "Led the development of the NextJS frontend and backend services, including code review, feature planning, and testing.",
+        "Reduced 50% of the development time by using Turborepo to manage multiple repositories.",
+        "Developed useful hooks such as useS3ImageUpload and useInfiniteScroll to streamline development.",
+        "Led other developers to learn and use new technologies and React features.",
+      ],
     },
     {
       title: "Education",
       company: "CGU, IM",
-      duration: "2018 - 2022",
+      duration: "2018-6 - 2022-6",
       location: "Taipei, Taiwan",
       work: "MIS, Java, Python, MySQL, Computer Science, System Design",
       link: "https://im.cgu.edu.tw/",

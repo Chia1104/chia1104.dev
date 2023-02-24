@@ -12,7 +12,7 @@ export const MDXStrong: FC<
   DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>
 > = ({ children }) => {
   return (
-    <strong className="text-base leading-loose font-bold c-text-bg-info-half">
+    <strong className="c-text-bg-info-half text-base font-bold leading-loose">
       {children}
     </strong>
   );

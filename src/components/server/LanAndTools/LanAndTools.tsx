@@ -6,13 +6,13 @@ const LanAndTools: FC = () => {
   const d = Chia.technologies;
 
   return (
-    <div className="w-full flex flex-col justify-center items-center">
+    <div className="flex w-full flex-col items-center justify-center">
       <h1 className="title pb-10 text-center">
         <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
           Languages and Tools
         </span>
       </h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 w-full gap-5">
+      <div className="grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
         <LATList category={"Languages"} data={d.languages} />
         <LATList category={"Web Frameworks"} data={d.web_frameworks} />
         <LATList category={"Database"} data={d.databases} />

@@ -16,9 +16,9 @@ const HomePage = async () => {
 
   return (
     <article className="c-container main">
-      <div className="w-full h-full flex flex-col">
+      <div className="flex h-full w-full flex-col">
         <AboutMe avatarSrc={"/me/me-memoji.PNG"} />
-        <div className="flex flex-col justify-center items-center md:flex-row mx-auto mt-10 w-full min:w-[370px] max-w-[740px]">
+        <div className="min:w-[370px] mx-auto mt-10 flex w-full max-w-[740px] flex-col items-center justify-center md:flex-row">
           <div className="py-7 px-3">
             <NewsCard
               title={"About me"}
@@ -35,7 +35,7 @@ const HomePage = async () => {
             />
           </div>
         </div>
-        <div className="bg-primary/90 rounded-xl p-5 mt-10 mx-auto text-white backdrop-blur-sm min:w-[370px] max-w-[740px] w-full">
+        <div className="min:w-[370px] mx-auto mt-10 w-full max-w-[740px] rounded-xl bg-primary/90 p-5 text-white backdrop-blur-sm">
           <ul>
             <li className="mb-2">
               🔭 I’m currently working on: My personal website with NextJS

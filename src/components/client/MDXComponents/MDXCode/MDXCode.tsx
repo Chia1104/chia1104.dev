@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
-import cx from "classnames";
+import { cn } from "@chia//utils/cn.util";
 import { useCopyToClipboard, useHover } from "usehooks-ts";
 import { useToasts } from "@geist-ui/core";
 
@@ -20,12 +20,12 @@ export const MDXCode: FC<MDXCodeProps> = (MDXCodeProps) => {
   return (
     <div className="relative mt-10">
       <div
-        className={cx(
-          "-top-4 absolute border-2 rounded-full px-3 py-1 c-text-secondary z-20",
-          type === "info" && "bg-info/70 border-info",
-          type === "warning" && "bg-warning/70 border-warning",
-          type === "success" && "bg-success/70 border-success",
-          type === "error" && "bg-danger/70 border-danger"
+        className={cn(
+          "c-text-secondary absolute -top-4 z-20 rounded-full border-2 px-3 py-1",
+          type === "info" && "border-info bg-info/70",
+          type === "warning" && "border-warning bg-warning/70",
+          type === "success" && "border-success bg-success/70",
+          type === "error" && "border-danger bg-danger/70"
         )}>
         {text || "Code info"}
       </div>
@@ -72,7 +72,7 @@ export const MDXPre: FC<
   return (
     <div className="relative" ref={ref2}>
       <motion.button
-        className="absolute top-0 right-0 mr-3 mt-3 inline-flex p-1 rounded-lg text-sm hover:c-bg-secondary"
+        className="hover:c-bg-secondary absolute top-0 right-0 mr-3 mt-3 inline-flex rounded-lg p-1 text-sm"
         onClick={handleCopy}
         initial={"closed"}
         animate={isHover ? "open" : "closed"}
@@ -93,12 +93,12 @@ export const MDXPre: FC<
             />
           </svg>
         </span>
-        <span className="hidden sm:block sm:ml-1">COPY</span>
+        <span className="hidden sm:ml-1 sm:block">COPY</span>
       </motion.button>
 
       <pre
         {...rest}
-        className="dark:bg-code bg-[#dddddd] w-full my-7 p-7 pb-4 rounded-xl dark:text-white text:black overflow-x-auto transition ease-in-out scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full"
+        className="text:black my-7 w-full overflow-x-auto rounded-xl bg-[#dddddd] p-7 pb-4 transition scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full ease-in-out dark:bg-code dark:text-white"
         ref={ref}>
         {children}
       </pre>
@@ -113,7 +113,7 @@ export const MDXCodeOrigin: FC<
   return (
     <code
       {...rest}
-      className="dark:bg-code bg-[#dddddd] rounded dark:text-white text:black overflow-x-auto transition ease-in-out p-0.5">
+      className="text:black overflow-x-auto rounded bg-[#dddddd] p-0.5 transition ease-in-out dark:bg-code dark:text-white">
       {children}
     </code>
   );

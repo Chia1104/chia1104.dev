@@ -9,9 +9,9 @@ interface Props {
 
 const MDXYoutube: FC<Props> = ({ ytSrc, ytTitle }) => {
   return (
-    <div className="w-full h-[300px] md:h-[400px] lg:h-[430px] max-w-[750px] border-0 rounded-lg shadow-lg overflow-hidden mx-auto my-10">
+    <div className="mx-auto my-10 h-[300px] w-full max-w-[750px] overflow-hidden rounded-lg border-0 shadow-lg md:h-[400px] lg:h-[430px]">
       <iframe
-        className="w-full h-full"
+        className="h-full w-full"
         src={ytSrc}
         title={ytTitle}
         loading="lazy"

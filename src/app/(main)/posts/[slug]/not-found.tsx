@@ -11,9 +11,9 @@ export default function NotFound() {
       </div>
       <Link
         href="/posts"
-        className="group hover:bg-secondary hover:dark:bg-primary relative inline-flex transition ease-in-out rounded mt-7 self-center"
+        className="group relative mt-7 inline-flex self-center rounded transition ease-in-out hover:bg-secondary hover:dark:bg-primary"
         aria-label="Open GitHub">
-        <span className="c-button-secondary transform group-hover:-translate-x-1 group-hover:-translate-y-1 text-base">
+        <span className="c-button-secondary transform text-base group-hover:-translate-x-1 group-hover:-translate-y-1">
           Go back
         </span>
       </Link>

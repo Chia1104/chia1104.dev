@@ -11,19 +11,19 @@ interface Props {
 
 const NewsCard: FC<Props> = ({ title, content, subtitle, link }) => {
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col items-center justify-center">
       <header className="subtitle c-text-secondary truncate">{title}</header>
-      <div className="lg:mx-5 c-bg-gradient-yellow-to-pink w-[310px] rounded-xl relative flex justify-center items-center h-[170px] mt-5">
-        <div className="w-[303px] h-[163px] c-bg-secondary p-2 rounded-xl flex flex-col">
-          <p className="text-lg text-center line-clamp-3">{content}</p>
-          <p className="text-base text-left line-clamp-1 c-text-secondary mt-auto mb-5 pl-1 c-description">
+      <div className="c-bg-gradient-yellow-to-pink relative mt-5 flex h-[170px] w-[310px] items-center justify-center rounded-xl lg:mx-5">
+        <div className="c-bg-secondary flex h-[163px] w-[303px] flex-col rounded-xl p-2">
+          <p className="text-center text-lg line-clamp-3">{content}</p>
+          <p className="c-text-secondary c-description mt-auto mb-5 pl-1 text-left text-base line-clamp-1">
             {subtitle}
           </p>
         </div>
         <Link
           scroll
           href={link}
-          className="c-bg-gradient-green-to-purple w-[85px] absolute top-[9rem] h-10 rounded-full flex justify-center items-center text-white hover:scale-[1.05] transition ease-in-out">
+          className="c-bg-gradient-green-to-purple absolute top-[9rem] flex h-10 w-[85px] items-center justify-center rounded-full text-white transition ease-in-out hover:scale-[1.05]">
           MORE
         </Link>
       </div>
