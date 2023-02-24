@@ -5,6 +5,7 @@ import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
 import { serialize } from "@chia/utils/hydration.util";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -16,6 +17,51 @@ export const generateStaticParams = async () => {
 
 // Global not found page
 // export const dynamicParams = false;
+
+export const generateMetadata = async ({
+  params,
+}: {
+  params: any;
+}): Promise<Metadata> => {
+  console.log(params);
+  try {
+    const { frontMatter } = await getPost(params.slug);
+    return {
+      title: frontMatter?.title,
+      openGraph: {
+        type: "article",
+        locale: "zh_TW",
+        url: `https://chia1104.dev/posts/${params.slug}`,
+        siteName: "Chia",
+        title: frontMatter?.title,
+        description: frontMatter?.excerpt,
+        images: [
+          {
+            url: `https://chia1104.dev/api/og?title=${encodeURIComponent(
+              frontMatter?.title ?? ""
+            )}`,
+            width: 1200,
+            height: 630,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Chia",
+        description: frontMatter?.excerpt,
+        creator: "@chia1104",
+        images: [
+          `https://chia1104.dev/api/og?title=${encodeURIComponent(
+            frontMatter?.title ?? ""
+          )}`,
+        ],
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+};
 
 const PostDetailPage = async ({ params }: { params?: any }) => {
   try {

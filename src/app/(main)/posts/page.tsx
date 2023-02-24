@@ -2,6 +2,33 @@ import { getAllPosts } from "@chia/helpers/mdx/services";
 import { Chia } from "@chia/shared/meta/chia";
 import { PostsList } from "@chia/components/client";
 import { serialize } from "@chia/utils/hydration.util";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Blog",
+  openGraph: {
+    type: "article",
+    locale: "zh_TW",
+    url: "https://chia1104.dev/posts",
+    siteName: Chia.name,
+    title: "Blog",
+    description: Chia.content,
+    images: [
+      {
+        url: "https://chia1104.dev/api/og?title=Blog",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: Chia.name,
+    description: Chia.content,
+    creator: `@${Chia.name.toLowerCase()}`,
+    images: ["https://chia1104.dev/api/og?title=Blog"],
+  },
+};
 
 const PostsPage = async () => {
   const posts = await getAllPosts();

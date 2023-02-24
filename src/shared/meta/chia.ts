@@ -201,4 +201,4 @@ export const Chia = {
       link: "https://im.cgu.edu.tw/",
     },
   ],
-};
+} as const;
