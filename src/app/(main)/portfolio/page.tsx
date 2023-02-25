@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
 };
 
-const PortfoliosPage = async () => {
+const PortfoliosPage = () => {
   return (
     <article className="main c-container">
       <header className="title pt-10 sm:self-start">
