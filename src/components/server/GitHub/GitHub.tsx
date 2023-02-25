@@ -3,18 +3,37 @@ import ReposList from "./ReposList";
 import { Chia } from "@chia/shared/meta/chia";
 import { asyncComponent } from "@chia/utils/asyncComponent.util";
 import { FC } from "react";
+import githubClient from "@chia/helpers/GraphQL/github/github.client";
+import { GET_REPOS } from "@chia/helpers/GraphQL/github/query";
 
 interface Props {
-  repo: RepoGql[];
+  repo?: RepoGql[];
 }
 
 const GitHub: FC<Props> = asyncComponent(async ({ repo }) => {
   const GITHUB_URL = Chia.link.github;
   try {
+    const repos = repo
+      ? repo
+      : (
+          await githubClient.request<
+            {
+              user: { repositories: { edges: RepoGql[] } };
+            },
+            { username: string; sort: string; limit: number }
+          >({
+            document: GET_REPOS,
+            variables: {
+              username: "chia1104",
+              sort: "PUSHED_AT",
+              limit: 6,
+            },
+          })
+        ).user.repositories.edges;
     return (
       <>
         <div className="flex w-full flex-col">
-          <ReposList repo={repo} />
+          <ReposList repo={repos} />
           <a
             href={`${GITHUB_URL}?tab=repositories`}
             target="_blank"

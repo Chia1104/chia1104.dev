@@ -2,10 +2,6 @@ import { GitHub, Youtube, Design } from "@chia/components/server";
 import { Design as DesignData } from "@chia/shared/meta/design";
 import type { Metadata } from "next";
 import { Chia } from "@chia/shared/meta/chia";
-import githubClient from "@chia/helpers/GraphQL/github/github.client";
-import { GET_REPOS } from "@chia/helpers/GraphQL/github/query";
-import { RepoGql } from "@chia/shared/types";
-import { getAllVideos } from "@chia/helpers/api/youtube";
 
 export const revalidate = 60;
 
@@ -36,26 +32,7 @@ export const metadata: Metadata = {
   },
 };
 
-const getRepos = async () => {
-  return await githubClient.request<
-    {
-      user: { repositories: { edges: RepoGql[] } };
-    },
-    { username: string; sort: string; limit: number }
-  >({
-    document: GET_REPOS,
-    variables: {
-      username: "chia1104",
-      sort: "PUSHED_AT",
-      limit: 6,
-    },
-  });
-};
-
 const PortfoliosPage = async () => {
-  const youtubeData = getAllVideos(4);
-  const githubData = getRepos();
-  const [github, youtube] = await Promise.all([githubData, youtubeData]);
   return (
     <article className="main c-container">
       <header className="title pt-10 sm:self-start">
@@ -66,10 +43,7 @@ const PortfoliosPage = async () => {
       <p className="c-description pb-7 sm:self-start">
         What I currently working on.
       </p>
-      {/*<Suspense fallback={<ReposLoader />}>*/}
-      {/*  <GitHub repo={github.user.repositories.edges} />*/}
-      {/*</Suspense>*/}
-      <GitHub repo={github.user.repositories.edges} />
+      <GitHub />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <header className="title c-text-bg-sec-half dark:c-text-bg-primary-half sm:self-start">
         Youtube Playlists
@@ -77,10 +51,7 @@ const PortfoliosPage = async () => {
       <p className="c-description pb-7 sm:self-start">
         I have created a few video for my Youtube channel.
       </p>
-      {/*<Suspense fallback={<VideoLoader />}>*/}
-      {/*  <Youtube status={youtube.status} data={youtube.data} />*/}
-      {/*</Suspense>*/}
-      <Youtube status={youtube.status} data={youtube.data} />
+      <Youtube />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <Design data={DesignData} />
     </article>
