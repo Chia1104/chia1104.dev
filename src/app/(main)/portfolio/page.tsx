@@ -15,8 +15,7 @@ import { getAllVideos } from "@chia/helpers/api/youtube";
 import { cache, Suspense } from "react";
 import dayjs from "dayjs";
 
-export const revalidate = 60,
-  dynamic = "error";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Portfolio",
