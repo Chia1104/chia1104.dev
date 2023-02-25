@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  useEffect,
 } from "react";
 import { useAppDispatch } from "@chia/hooks/useAppDispatch";
 import {
@@ -16,7 +17,6 @@ import {
 import { motion } from "framer-motion";
 import { useAppSelector } from "@chia/hooks";
 import { cn } from "@chia//utils/cn.util";
-import { useToasts } from "@geist-ui/core";
 import {
   Input,
   type InputRef,
@@ -29,16 +29,24 @@ import {
   type IApiResponse,
   ApiResponseStatus,
 } from "@chia/utils/fetcher.util";
+import { toast } from "sonner";
 
 const Contact: FC = () => {
   const dispatch = useAppDispatch();
   const actionIconSheet = useAppSelector(selectActionIconSheet);
   const [isValidate, setIsValidate] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const { setToast } = useToasts({ placement: "bottomLeft" });
   const id = useId();
   const emailRef = useRef<InputRef>(null);
   const messageRef = useRef<TextAreaRef>(null);
+  const signal = useRef<AbortController>(new AbortController());
+
+  useEffect(() => {
+    signal.current = new AbortController();
+    return () => {
+      signal.current.abort();
+    };
+  }, []);
 
   const outside = {
     open: { opacity: 1, height: "470px", width: "330px" },
@@ -65,21 +73,18 @@ const Contact: FC = () => {
           email: emailRef.current?.getNativeInput().value,
           message: messageRef.current?.getNativeInput().value,
         }),
+        signal: signal.current.signal,
       },
     });
     if (status !== ApiResponseStatus.SUCCESS) {
       setIsSending(false);
-      setToast({
-        text: message ?? "Sorry, something went wrong. Please try again later.",
-        type: "warning",
-      });
+      toast.error(
+        message ?? "Sorry, something went wrong. Please try again later."
+      );
       return;
     }
     setIsSending(false);
-    setToast({
-      text: data?.message,
-      type: "success",
-    });
+    toast.success(data?.message ?? "Message sent successfully.");
   };
 
   const validForm = () => {
@@ -138,6 +143,7 @@ const Contact: FC = () => {
               schema={z.string().email()}
               placeholder="Your email"
               error="Please enter a valid email"
+              type="email"
             />
           </div>
           <div className="mb-3 flex flex-col gap-2">

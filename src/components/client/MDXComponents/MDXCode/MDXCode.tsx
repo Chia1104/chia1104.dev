@@ -4,9 +4,8 @@ import { useRef } from "react";
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import { cn } from "@chia//utils/cn.util";
 import { useCopyToClipboard, useHover } from "usehooks-ts";
-import { useToasts } from "@geist-ui/core";
-
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 interface MDXCodeProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
@@ -42,20 +41,12 @@ export const MDXPre: FC<
   const ref2 = useRef<HTMLDivElement>(null);
   const isHover = useHover(ref2);
   const [, copy] = useCopyToClipboard();
-  const { setToast } = useToasts({ placement: "bottomLeft" });
-
-  const handleCopyToast = () => {
-    setToast({
-      text: "Copied to clipboard",
-      type: "success",
-    });
-  };
 
   const handleCopy = () => {
     const source = ref.current?.innerText;
     copy(source ?? "").then((r) => {
       if (r) {
-        handleCopyToast();
+        toast.success("Copied to clipboard.");
       }
     });
   };

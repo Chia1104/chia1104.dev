@@ -4,30 +4,25 @@ import { type FC, type ReactNode } from "react";
 import { Provider } from "react-redux";
 import { store } from "@chia/store";
 import { ThemeProvider } from "next-themes";
-import { GeistProvider as GP } from "@geist-ui/core";
 import { AnimatePresence } from "framer-motion";
 import { ActionIcon, NavMenu } from "@chia/components/client";
-import { useDarkMode, useIsMounted } from "@chia/hooks";
+import { useDarkMode } from "@chia/hooks";
+import { Toaster as ST } from "sonner";
 
-const GeistProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const { isDarkMode } = useDarkMode();
-  const isMounted = useIsMounted();
-
-  return (
-    <GP themeType={isMounted && isDarkMode ? "dark" : "light"}>{children}</GP>
-  );
+const Toaster: FC = () => {
+  const { theme } = useDarkMode();
+  return <ST theme={theme as any} position="bottom-left" />;
 };
 
 const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ThemeProvider enableSystem={true} attribute="class">
-      <GeistProvider>
-        <Provider store={store}>
-          <NavMenu />
-          <ActionIcon />
-          <AnimatePresence mode="wait">{children}</AnimatePresence>
-        </Provider>
-      </GeistProvider>
+      <Provider store={store}>
+        <Toaster />
+        <NavMenu />
+        <ActionIcon />
+        <AnimatePresence mode="wait">{children}</AnimatePresence>
+      </Provider>
     </ThemeProvider>
   );
 };

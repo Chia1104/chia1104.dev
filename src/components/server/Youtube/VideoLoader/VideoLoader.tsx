@@ -10,21 +10,15 @@ const VideoLoader: FC = () => {
         <div className="mx-auto h-[270px] w-full animate-pulse overflow-hidden rounded-lg border-0 bg-white shadow-lg dark:bg-dark sm:h-[300px] sm:w-[500px]" />
       </div>
       <div className="my-5">
-        <div className="c-border-primary flex h-[130px] w-full flex-col border-b-2 p-3">
-          <div className="mb-3 h-5 animate-pulse bg-white dark:bg-dark" />
-          <div className="h-12 animate-pulse bg-white dark:bg-dark" />
-          <div className="mt-auto h-3 w-40 animate-pulse bg-white dark:bg-dark" />
-        </div>
-        <div className="c-border-primary flex h-[130px] w-full flex-col border-b-2 p-3">
-          <div className="mb-3 h-5 animate-pulse bg-white dark:bg-dark" />
-          <div className="h-12 animate-pulse bg-white dark:bg-dark" />
-          <div className="mt-auto h-3 w-40 animate-pulse bg-white dark:bg-dark" />
-        </div>
-        <div className="c-border-primary flex h-[130px] w-full flex-col border-b-2 p-3">
-          <div className="mb-3 h-5 animate-pulse bg-white dark:bg-dark" />
-          <div className="h-12 animate-pulse bg-white dark:bg-dark" />
-          <div className="mt-auto h-3 w-40 animate-pulse bg-white dark:bg-dark" />
-        </div>
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="c-border-primary flex h-[130px] w-full flex-col border-b-2 p-3">
+            <div className="mb-3 h-5 animate-pulse bg-white dark:bg-dark" />
+            <div className="h-12 animate-pulse bg-white dark:bg-dark" />
+            <div className="mt-auto h-3 w-40 animate-pulse bg-white dark:bg-dark" />
+          </div>
+        ))}
       </div>
     </div>
   );

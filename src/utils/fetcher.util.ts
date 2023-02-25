@@ -1,5 +1,5 @@
 import setSearchParams from "./set-search-params.util";
-import { networkConfig, errorConfig } from "@chia/config/network.config";
+import { errorConfig } from "@chia/config/network.config";
 
 export enum ApiResponseStatus {
   SUCCESS = "success",
@@ -39,8 +39,6 @@ const getErrorMessages = (statusCode: number): string => {
 const fetcher = async <T = unknown>(
   options: IFetcherOptions
 ): Promise<IApiResponse<T>> => {
-  const abortController = new AbortController();
-  const signal = abortController.signal;
   const { requestInit = {}, endpoint, params, path } = options;
   const searchParams = setSearchParams({
     searchParams: {
@@ -55,10 +53,8 @@ const fetcher = async <T = unknown>(
         headers: {
           ...requestInit["headers"],
         },
-        signal: signal,
       }
     );
-    setTimeout(() => abortController.abort(), networkConfig["timeout"]);
     if (res.status === 204) {
       return {
         statusCode: 204,
@@ -81,6 +77,7 @@ const fetcher = async <T = unknown>(
       data: _data?.data,
     } satisfies Pick<IApiResponse<T>, "statusCode" | "status" | "data">;
   } catch (e) {
+    console.error(e);
     return {
       statusCode: 500,
       status: ApiResponseStatus.ERROR,
