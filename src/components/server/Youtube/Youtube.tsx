@@ -2,16 +2,24 @@ import VideoList from "./VideoList";
 import { Chia } from "@chia/shared/meta/chia";
 import { asyncComponent } from "@chia/utils/asyncComponent.util";
 import { FC } from "react";
+import type { Youtube as Y } from "@chia/shared/types";
 import { getAllVideos } from "@chia/helpers/api/youtube";
 
-const Youtube: FC = asyncComponent(async () => {
+interface Props {
+  data?: {
+    status: number;
+    data: Y;
+  };
+}
+
+const Youtube: FC<Props> = asyncComponent(async ({ data }) => {
   const YOUTUBE_URL = Chia.link.youtube_playlist;
   try {
-    const { status, data } = await getAllVideos(4);
+    const youtubeData = data ? data : await getAllVideos(4);
     return (
       <div className="flex w-full flex-col">
-        {status === 200 ? (
-          <VideoList item={data.items} />
+        {youtubeData.status === 200 ? (
+          <VideoList item={youtubeData.data.items} />
         ) : (
           <p className="c-description pb-5 indent-4">
             Sorry, I can't get my Youtube videos now. Please try again later.

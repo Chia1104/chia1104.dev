@@ -41,11 +41,8 @@ const PortfoliosPage = () => {
         </span>
       </header>
       <p className="c-description pb-7 sm:self-start">
-        What I currently work on
+        What I currently working on.
       </p>
-      {/*<Suspense fallback={<ReposLoader />}>*/}
-      {/*  <GitHub />*/}
-      {/*</Suspense>*/}
       <GitHub />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <header className="title c-text-bg-sec-half dark:c-text-bg-primary-half sm:self-start">
@@ -54,9 +51,6 @@ const PortfoliosPage = () => {
       <p className="c-description pb-7 sm:self-start">
         I have created a few video for my Youtube channel.
       </p>
-      {/*<Suspense fallback={<VideoLoader />}>*/}
-      {/*  <Youtube />*/}
-      {/*</Suspense>*/}
       <Youtube />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <Design data={DesignData} />
