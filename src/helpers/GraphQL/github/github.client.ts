@@ -6,6 +6,7 @@ const client = new GraphQLClient(GITHUB_GRAPHQL_API, {
     accept: "application/vnd.github.v3+json",
     authorization: `token ${GH_PUBLIC_TOKEN}`,
   },
+  fetch,
 });
 
 export default client;

@@ -2,6 +2,12 @@ import { GitHub, Youtube, Design } from "@chia/components/server";
 import { Design as DesignData } from "@chia/shared/meta/design";
 import type { Metadata } from "next";
 import { Chia } from "@chia/shared/meta/chia";
+import githubClient from "@chia/helpers/GraphQL/github/github.client";
+import { GET_REPOS } from "@chia/helpers/GraphQL/github/query";
+import { RepoGql } from "@chia/shared/types";
+import { getAllVideos } from "@chia/helpers/api/youtube";
+import { cache } from "react";
+import dayjs from "dayjs";
 
 export const revalidate = 60;
 
@@ -32,7 +38,28 @@ export const metadata: Metadata = {
   },
 };
 
-const PortfoliosPage = () => {
+const getRepos = cache(async () => {
+  return await githubClient.request<
+    {
+      user: { repositories: { edges: RepoGql[] } };
+    },
+    { username: string; sort: string; limit: number }
+  >({
+    document: GET_REPOS,
+    variables: {
+      username: "chia1104",
+      sort: "PUSHED_AT",
+      limit: 6,
+    },
+  });
+});
+
+const now = cache(() => dayjs().format("YYYY-MM-DD HH:mm:ss"));
+
+const PortfoliosPage = async () => {
+  const youtubeData = getAllVideos(4);
+  const githubData = getRepos();
+  const [github, youtube] = await Promise.all([githubData, youtubeData]);
   return (
     <article className="main c-container">
       <header className="title pt-10 sm:self-start">
@@ -41,23 +68,24 @@ const PortfoliosPage = () => {
         </span>
       </header>
       <p className="c-description pb-7 sm:self-start">
-        What I currently work on
+        What I currently work on, the data is updated at {now()}.
       </p>
       {/*<Suspense fallback={<ReposLoader />}>*/}
-      {/*  <GitHub />*/}
+      {/*  <GitHub repo={github} />*/}
       {/*</Suspense>*/}
-      <GitHub />
+      <GitHub repo={github.user.repositories.edges} />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <header className="title c-text-bg-sec-half dark:c-text-bg-primary-half sm:self-start">
         Youtube Playlists
       </header>
       <p className="c-description pb-7 sm:self-start">
-        I have created a few video for my Youtube channel.
+        I have created a few video for my Youtube channel, the data is updated
+        at {now()}.
       </p>
       {/*<Suspense fallback={<VideoLoader />}>*/}
-      {/*  <Youtube />*/}
+      {/*  <Youtube status={status} data={data} />*/}
       {/*</Suspense>*/}
-      <Youtube />
+      <Youtube status={youtube.status} data={youtube.data} />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <Design data={DesignData} />
     </article>

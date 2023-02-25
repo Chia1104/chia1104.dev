@@ -2,12 +2,16 @@ import VideoList from "./VideoList";
 import { Chia } from "@chia/shared/meta/chia";
 import { asyncComponent } from "@chia/utils/asyncComponent.util";
 import { FC } from "react";
-import { getAllVideos } from "@chia/helpers/api/youtube";
+import type { Youtube } from "@chia/shared/types";
 
-const Youtube: FC = asyncComponent(async () => {
+interface Props {
+  status: number;
+  data: Youtube;
+}
+
+const Youtube: FC<Props> = asyncComponent(async ({ status, data }) => {
   const YOUTUBE_URL = Chia.link.youtube_playlist;
   try {
-    const { status, data } = await getAllVideos(4);
     return (
       <div className="flex w-full flex-col">
         {status === 200 ? (

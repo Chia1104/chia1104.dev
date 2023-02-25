@@ -17,6 +17,9 @@ export const getAllVideos = async (
         Accept: "application/json",
         "Content-Type": "application/json",
       },
+      next: {
+        revalidate: 60,
+      },
     });
     const data: Youtube = (await res.json()) as Youtube;
 
