@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type ChangeEvent,
+  useEffect,
 } from "react";
 import { useAppDispatch } from "@chia/hooks/useAppDispatch";
 import {
@@ -39,6 +40,14 @@ const Contact: FC = () => {
   const id = useId();
   const emailRef = useRef<InputRef>(null);
   const messageRef = useRef<TextAreaRef>(null);
+  const signal = useRef<AbortController>(new AbortController());
+
+  useEffect(() => {
+    signal.current = new AbortController();
+    return () => {
+      signal.current.abort();
+    };
+  }, []);
 
   const outside = {
     open: { opacity: 1, height: "470px", width: "330px" },
@@ -65,6 +74,7 @@ const Contact: FC = () => {
           email: emailRef.current?.getNativeInput().value,
           message: messageRef.current?.getNativeInput().value,
         }),
+        signal: signal.current.signal,
       },
     });
     if (status !== ApiResponseStatus.SUCCESS) {
