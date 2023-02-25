@@ -1,4 +1,10 @@
-import { GitHub, Youtube, Design } from "@chia/components/server";
+import {
+  GitHub,
+  Youtube,
+  Design,
+  ReposLoader,
+  VideoLoader,
+} from "@chia/components/server";
 import { Design as DesignData } from "@chia/shared/meta/design";
 import type { Metadata } from "next";
 import { Chia } from "@chia/shared/meta/chia";
@@ -6,7 +12,7 @@ import githubClient from "@chia/helpers/GraphQL/github/github.client";
 import { GET_REPOS } from "@chia/helpers/GraphQL/github/query";
 import { RepoGql } from "@chia/shared/types";
 import { getAllVideos } from "@chia/helpers/api/youtube";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import dayjs from "dayjs";
 
 export const revalidate = 60,
@@ -71,10 +77,10 @@ const PortfoliosPage = async () => {
       <p className="c-description pb-7 sm:self-start">
         What I currently work on, the data is updated at {now()}.
       </p>
-      {/*<Suspense fallback={<ReposLoader />}>*/}
-      {/*  <GitHub repo={github} />*/}
-      {/*</Suspense>*/}
-      <GitHub repo={github.user.repositories.edges} />
+      <Suspense fallback={<ReposLoader />}>
+        <GitHub repo={github.user.repositories.edges} />
+      </Suspense>
+      {/*<GitHub repo={github.user.repositories.edges} />*/}
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <header className="title c-text-bg-sec-half dark:c-text-bg-primary-half sm:self-start">
         Youtube Playlists
@@ -83,10 +89,10 @@ const PortfoliosPage = async () => {
         I have created a few video for my Youtube channel, the data is updated
         at {now()}.
       </p>
-      {/*<Suspense fallback={<VideoLoader />}>*/}
-      {/*  <Youtube status={status} data={data} />*/}
-      {/*</Suspense>*/}
-      <Youtube status={youtube.status} data={youtube.data} />
+      <Suspense fallback={<VideoLoader />}>
+        <Youtube status={youtube.status} data={youtube.data} />
+      </Suspense>
+      {/*<Youtube status={youtube.status} data={youtube.data} />*/}
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <Design data={DesignData} />
     </article>
