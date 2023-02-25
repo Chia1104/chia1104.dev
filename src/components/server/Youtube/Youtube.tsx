@@ -2,11 +2,11 @@ import VideoList from "./VideoList";
 import { Chia } from "@chia/shared/meta/chia";
 import { asyncComponent } from "@chia/utils/asyncComponent.util";
 import { FC } from "react";
-import type { Youtube } from "@chia/shared/types";
+import type { Youtube as Y } from "@chia/shared/types";
 
 interface Props {
   status: number;
-  data: Youtube;
+  data: Y;
 }
 
 const Youtube: FC<Props> = asyncComponent(async ({ status, data }) => {
