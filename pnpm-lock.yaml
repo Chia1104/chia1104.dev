@@ -1,7 +1,6 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@geist-ui/core': ^2.3.8
   '@giscus/react': ^2.2.6
   '@mdx-js/react': 2.3.0
   '@next/bundle-analyzer': 13.2.1
@@ -63,6 +62,7 @@ specifiers:
   server-only: 0.0.1
   sharp: 0.31.3
   shell-quote: ^1.8.0
+  sonner: 0.1.1
   superjson: 1.12.2
   tailwind-merge: 1.10.0
   tailwind-scrollbar: ^2.1.0
@@ -74,7 +74,6 @@ specifiers:
   zod: ^3.20.6
 
 dependencies:
-  '@geist-ui/core': 2.3.8_biqbaboplfbrettd7655fr4n2y
   '@giscus/react': 2.2.6_biqbaboplfbrettd7655fr4n2y
   '@mdx-js/react': 2.3.0_react@18.2.0
   '@next/bundle-analyzer': 13.2.1
@@ -108,6 +107,7 @@ dependencies:
   remark-gfm: 3.0.1
   server-only: 0.0.1
   sharp: 0.31.3
+  sonner: 0.1.1_react@18.2.0
   superjson: 1.12.2
   tailwind-merge: 1.10.0
   usehooks-ts: 2.9.1_biqbaboplfbrettd7655fr4n2y
@@ -655,17 +655,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
-
-  /@geist-ui/core/2.3.8_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-OKwGgTA4+fBM41eQbqDoUj4XBycZbYH7Ynrn6LPO5yKX7zeWPu/R7HN3vB4/oHt34VTDQI5sDNb1SirHvNyB5w==}
-    peerDependencies:
-      react: '>=16.9.0'
-      react-dom: '>=16.9.0'
-    dependencies:
-      '@babel/runtime': 7.21.0
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    dev: false
 
   /@giscus/react/2.2.6_biqbaboplfbrettd7655fr4n2y:
     resolution: {integrity: sha512-qGjikDm7euLOCfMPn500d7F3UIl/qI55/dWF4ALC5Fo/7i5qktKCAwy6/zop93PjP0hJL6mi54K6x36SyvaLyQ==}
@@ -6317,6 +6306,14 @@ packages:
       ansi-styles: 6.2.1
       is-fullwidth-code-point: 4.0.0
     dev: true
+
+  /sonner/0.1.1_react@18.2.0:
+    resolution: {integrity: sha512-ZNAqRwfoCbn72wrpyU6fzrrWPvSX7FqiI/4sGdmSBAhDOHN0YUAE/9d948eA1iFmAobGM3FjE1NnxbJ325WTXA==}
+    peerDependencies:
+      react: ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /source-map-js/1.0.2:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}

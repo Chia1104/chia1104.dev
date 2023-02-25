@@ -25,7 +25,6 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@geist-ui/core": "^2.3.8",
     "@giscus/react": "^2.2.6",
     "@mdx-js/react": "2.3.0",
     "@next/bundle-analyzer": "13.2.1",
@@ -59,6 +58,7 @@
     "remark-gfm": "^3.0.1",
     "server-only": "0.0.1",
     "sharp": "0.31.3",
+    "sonner": "0.1.1",
     "superjson": "1.12.2",
     "tailwind-merge": "1.10.0",
     "usehooks-ts": "^2.9.1",
