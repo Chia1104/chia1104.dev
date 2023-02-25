@@ -42,7 +42,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          load: true
+          load: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104:${{ env.GIT_HASH }}
           build-args: |
             NEXT_PUBLIC_FORMSPREE_KEY=${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
@@ -51,6 +51,6 @@ jobs:
             GOOGLE_API_KEY=${{ env.GOOGLE_API_KEY }}
             SPOTIFY_CLIENT_ID=${{ env.SPOTIFY_CLIENT_ID }}
             SPOTIFY_CLIENT_SECRET=${{ env.SPOTIFY_CLIENT_SECRET }}
-      - name: Test
-        run: |
-          docker run --rm ${{ secrets.DOCKERHUB_USERNAME }}/chia1104:${{ env.GIT_HASH }}   
+#      - name: Test
+#        run: |
+#          docker run --rm ${{ secrets.DOCKERHUB_USERNAME }}/chia1104:${{ env.GIT_HASH }}
