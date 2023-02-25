@@ -22,7 +22,6 @@ defaults:
     # change this if your nextjs app does not live at the root of the repo
     working-directory: ./
 
-# test
 jobs:
   analyze:
     runs-on: ubuntu-latest
