@@ -23,15 +23,11 @@ export const metadata: Metadata = {
     "NestJS",
     "Chia1104",
   ],
-  // author: {
-  //   name: Chia.name,
-  //   url: "https://chia1104.dev",
-  // },
   themeColor: "#2B2E4A",
   colorScheme: "dark",
   creator: Chia.name,
   openGraph: {
-    // type: "website",
+    type: "website",
     locale: "zh_TW",
     url: "https://chia1104.dev",
     siteName: Chia.name,
