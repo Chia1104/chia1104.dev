@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
 };
 
-const getRepos = cache(async () => {
+const getRepos = async () => {
   return await githubClient.request<
     {
       user: { repositories: { edges: RepoGql[] } };
@@ -58,7 +58,7 @@ const getRepos = cache(async () => {
       limit: 6,
     },
   });
-});
+};
 
 const now = cache(() => dayjs().format("YYYY-MM-DD HH:mm:ss"));
 
@@ -76,10 +76,10 @@ const PortfoliosPage = async () => {
       <p className="c-description pb-7 sm:self-start">
         What I currently work on, the data is updated at {now()}.
       </p>
-      <Suspense fallback={<ReposLoader />}>
-        <GitHub repo={github.user.repositories.edges} />
-      </Suspense>
-      {/*<GitHub repo={github.user.repositories.edges} />*/}
+      {/*<Suspense fallback={<ReposLoader />}>*/}
+      {/*  <GitHub repo={github.user.repositories.edges} />*/}
+      {/*</Suspense>*/}
+      <GitHub repo={github.user.repositories.edges} />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <header className="title c-text-bg-sec-half dark:c-text-bg-primary-half sm:self-start">
         Youtube Playlists
@@ -88,10 +88,10 @@ const PortfoliosPage = async () => {
         I have created a few video for my Youtube channel, the data is updated
         at {now()}.
       </p>
-      <Suspense fallback={<VideoLoader />}>
-        <Youtube status={youtube.status} data={youtube.data} />
-      </Suspense>
-      {/*<Youtube status={youtube.status} data={youtube.data} />*/}
+      {/*<Suspense fallback={<VideoLoader />}>*/}
+      {/*  <Youtube status={youtube.status} data={youtube.data} />*/}
+      {/*</Suspense>*/}
+      <Youtube status={youtube.status} data={youtube.data} />
       <hr className="c-border-primary my-10 w-full border-t-2" />
       <Design data={DesignData} />
     </article>
