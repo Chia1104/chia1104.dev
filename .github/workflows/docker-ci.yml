@@ -43,7 +43,7 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104:${{ env.GIT_HASH }}
-          secrets: |
+          build-args: |
             NEXT_PUBLIC_FORMSPREE_KEY=${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
             GH_PUBLIC_TOKEN=${{ env.GH_PUBLIC_TOKEN }}
             NEXT_PUBLIC_RE_CAPTCHA_KEY=${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
