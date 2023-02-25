@@ -138,6 +138,7 @@ const Contact: FC = () => {
               schema={z.string().email()}
               placeholder="Your email"
               error="Please enter a valid email"
+              type="email"
             />
           </div>
           <div className="mb-3 flex flex-col gap-2">
