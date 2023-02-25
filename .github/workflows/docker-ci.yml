@@ -42,6 +42,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104:${{ env.GIT_HASH }}
           build-args: |
             NEXT_PUBLIC_FORMSPREE_KEY=${{ env.NEXT_PUBLIC_FORMSPREE_KEY }}
