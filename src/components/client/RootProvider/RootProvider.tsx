@@ -6,12 +6,13 @@ import { store } from "@chia/store";
 import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
 import { ActionIcon, NavMenu } from "@chia/components/client";
-import { useDarkMode } from "@chia/hooks";
+import { useDarkMode, useIsMounted } from "@chia/hooks";
 import { Toaster as ST } from "sonner";
 
 const Toaster: FC = () => {
   const { theme } = useDarkMode();
-  return <ST theme={theme as any} position="bottom-left" />;
+  const isMounted = useIsMounted();
+  return <ST theme={isMounted && (theme as any)} position="bottom-left" />;
 };
 
 const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {

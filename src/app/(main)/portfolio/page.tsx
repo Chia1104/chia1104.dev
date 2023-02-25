@@ -1,10 +1,4 @@
-import {
-  GitHub,
-  Youtube,
-  Design,
-  ReposLoader,
-  VideoLoader,
-} from "@chia/components/server";
+import { GitHub, Youtube, Design } from "@chia/components/server";
 import { Design as DesignData } from "@chia/shared/meta/design";
 import type { Metadata } from "next";
 import { Chia } from "@chia/shared/meta/chia";
@@ -12,8 +6,6 @@ import githubClient from "@chia/helpers/GraphQL/github/github.client";
 import { GET_REPOS } from "@chia/helpers/GraphQL/github/query";
 import { RepoGql } from "@chia/shared/types";
 import { getAllVideos } from "@chia/helpers/api/youtube";
-import { cache, Suspense } from "react";
-import dayjs from "dayjs";
 
 export const revalidate = 60;
 
@@ -60,8 +52,6 @@ const getRepos = async () => {
   });
 };
 
-const now = cache(() => dayjs().format("YYYY-MM-DD HH:mm:ss"));
-
 const PortfoliosPage = async () => {
   const youtubeData = getAllVideos(4);
   const githubData = getRepos();
@@ -74,7 +64,7 @@ const PortfoliosPage = async () => {
         </span>
       </header>
       <p className="c-description pb-7 sm:self-start">
-        What I currently work on, the data is updated at {now()}.
+        What I currently working on.
       </p>
       {/*<Suspense fallback={<ReposLoader />}>*/}
       {/*  <GitHub repo={github.user.repositories.edges} />*/}
@@ -85,8 +75,7 @@ const PortfoliosPage = async () => {
         Youtube Playlists
       </header>
       <p className="c-description pb-7 sm:self-start">
-        I have created a few video for my Youtube channel, the data is updated
-        at {now()}.
+        I have created a few video for my Youtube channel.
       </p>
       {/*<Suspense fallback={<VideoLoader />}>*/}
       {/*  <Youtube status={youtube.status} data={youtube.data} />*/}
