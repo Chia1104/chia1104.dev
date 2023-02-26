@@ -20,7 +20,7 @@ export const MDXCode: FC<MDXCodeProps> = (MDXCodeProps) => {
     <div className="relative mt-10">
       <div
         className={cn(
-          "c-text-secondary absolute -top-4 z-20 rounded-full border-2 px-3 py-1",
+          "c-text-secondary absolute -top-5 z-20 rounded-full border-2 px-3 py-1",
           type === "info" && "border-info bg-info/70",
           type === "warning" && "border-warning bg-warning/70",
           type === "success" && "border-success bg-success/70",
@@ -89,7 +89,7 @@ export const MDXPre: FC<
 
       <pre
         {...rest}
-        className="text:black my-7 w-full overflow-x-auto rounded-xl bg-[#dddddd] p-7 pb-4 transition scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full ease-in-out dark:bg-code dark:text-white"
+        className="text:black my-7 w-full overflow-x-auto rounded-xl bg-[#dddddd] p-4 transition scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full ease-in-out dark:bg-code dark:text-white"
         ref={ref}>
         {children}
       </pre>
