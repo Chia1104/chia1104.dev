@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 export { MDXImage as Image } from "./MDXImage";
+export { MDXImage as img } from "./MDXImage";
 export { MDXLink as a } from "./MDXLink";
 export {
   MDXCode as Code,

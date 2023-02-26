@@ -22,7 +22,9 @@
     "e2e:firefox": "cypress run --browser firefox",
     "e2e:edge": "cypress run --browser edge",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "type:check": "tsc --noEmit"
+    "type:check": "tsc --noEmit",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
+    "format:docs": "prettier --write \"**/*.{md,mdx}\""
   },
   "dependencies": {
     "@giscus/react": "^2.2.6",
@@ -83,6 +85,7 @@
     "eslint": "^8.34.0",
     "eslint-config-next": "^13.2.2-canary.0",
     "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-mdx": "2.0.5",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
     "jsdom": "^21.1.0",
