@@ -64,6 +64,7 @@ export const generateMetadata = async ({
 const PostDetailPage = async ({ params }: { params?: any }) => {
   try {
     const { frontMatter, source } = await getPost(params.slug);
+
     return (
       <article className="main c-container mt-10 px-5">
         <header className="mb-7 w-full self-center pl-3 lg:w-[70%]">

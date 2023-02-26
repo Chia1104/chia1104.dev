@@ -63,6 +63,12 @@ export const getPost = cache(async (slug: string): Promise<PostSource> => {
   };
 });
 
+export const getSource = cache(async (slug: string): Promise<string> => {
+  const { content } = await getPostData(slug);
+
+  return content;
+});
+
 export const getAllPosts = cache(async (): Promise<PostFrontMatter[]> => {
   const slugs = await getSlugs();
 

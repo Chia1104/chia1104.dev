@@ -41,13 +41,13 @@ React 自從 16.8 之後加入了 hook 這個新功能，而 hook 的目的就�
     text={'這是錯的!!'}
     type={'error'}
 >
-    ```javascript
-    if (condition) {
-        useEffect(() => {
-            fetchData()
-        }, []);
-    }
-    ```
+  ```javascript
+  if (condition) {
+    useEffect(() => {
+      fetchData()
+    }, []);
+  }
+  ```
 </Code>
 如果我們這樣打的話 React 會直接報錯，那是因為 React 的 Hook 在 render 時被呼叫的順序是一致的，React 可以將一些 local state 和彼此聯繫在一起。
 
@@ -59,7 +59,7 @@ React 自從 16.8 之後加入了 hook 這個新功能，而 hook 的目的就�
 >
     ```javascript
     useEffect(() => {
-        if (condition) fetchData()
+      if (condition) fetchData()
     }, []);
     ```
 </Code>
@@ -219,7 +219,7 @@ useEffect(() => {
 >
     ```javascript
     useEffect(() => {
-        fetchDataById(data.id)
+      fetchDataById(data.id)
     }, [data.id]);
     ```
 </Code>
@@ -241,13 +241,13 @@ useEffect(() => {
 >
     ```javascript
     const CounterFC = () => {
-        const [count, setCount] = useState(0)
-        setCount(count + 1) // infinite loop
-        return (
-            <>
-                <p>Count: {count}</p>
-            </>
-        )
+      const [count, setCount] = useState(0)
+      setCount(count + 1) // infinite loop
+      return (
+        <>
+          <p>Count: {count}</p>
+        </>
+      )
     }
     ```
 </Code>
@@ -275,15 +275,15 @@ useEffect(() => {
 >
     ```javascript
     const CounterFC = () => {
-        const [count, setCount] = useState(0)
-        useEffect(() => {
-            setCount(count + 1)
-        }, [])
-        return (
-            <>
-                <p>Count: {count}</p>
-            </>
-        )
+      const [count, setCount] = useState(0)
+      useEffect(() => {
+        setCount(count + 1)
+      }, [])
+      return (
+        <>
+          <p>Count: {count}</p>
+        </>
+      )
     }
     ```
 </Code>
@@ -294,16 +294,16 @@ useEffect(() => {
     text={'這是錯的 - infinite loop'}
 >
     ```javascript
-        const CounterFC = () => {
-        const [count, setCount] = useState(0)
-        useEffect(() => {
-            setCount(count + 1) // infinite loop
-        }, [count])
-        return (
-            <>
-                <p>Count: {count}</p>
-            </>
-        )
+    const CounterFC = () => {
+      const [count, setCount] = useState(0)
+      useEffect(() => {
+        setCount(count + 1) // infinite loop
+      }, [count])
+      return (
+        <>
+          <p>Count: {count}</p>
+        </>
+      )
     }
     ```
 </Code>
@@ -327,13 +327,13 @@ useEffect(() => {
 >
     ```javascript
     const CounterFC = () => {
-        const [count, setCount] = useState(0)
-        return (
-            <>
-                <p>Count: {count}</p>
-                <button onClick={() => setCount(1)}>Add</button>
-            </>
-        )
+      const [count, setCount] = useState(0)
+      return (
+        <>
+          <p>Count: {count}</p>
+          <button onClick={() => setCount(1)}>Add</button>
+        </>
+      )
     }
     ```
 </Code>
@@ -351,17 +351,17 @@ useEffect(() => {
 >
     ```javascript
     const CounterFC = () => {
-        const [count, setCount] = useState(0)
-        return (
+      const [count, setCount] = useState(0)
+      return (
         <>
-            <p>Count: {count}</p>
-            <button
-                // infinite loop
-                onClick={setCount(1)}>
-                Add
-            </button>
+          <p>Count: {count}</p>
+          <button
+            // infinite loop
+            onClick={setCount(1)}>
+            Add
+          </button>
         </>
-        )
+      )
     }
     ```
 </Code>
