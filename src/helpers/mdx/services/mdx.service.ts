@@ -112,15 +112,11 @@ export const getSource = cache(async (slug: string): Promise<string> => {
 export const getAllPosts = cache(async (): Promise<PostFrontMatter[]> => {
   const slugs = await getSlugs();
 
-  return await pMap(
-    slugs,
-    async (slug) => (await getPostData(slug)).frontMatter,
-    {
+  return (
+    await pMap(slugs, async (slug) => (await getPostData(slug)).frontMatter, {
       stopOnError: true,
-    }
-  ).then((posts) =>
-    posts
-      .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1))
-      .filter((post) => post.published)
-  );
+    })
+  )
+    .sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1))
+    .filter((post) => post.published);
 });
