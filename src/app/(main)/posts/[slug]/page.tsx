@@ -1,6 +1,5 @@
-import { getAllPosts, getPost, getSource } from "@chia/helpers/mdx/services";
+import { getAllPosts, getPost } from "@chia/helpers/mdx/services";
 import { MDXRemote, Image, Giscus } from "@chia/components/client";
-import { MDXRemote as MDXRServer } from "@chia/components/server";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
@@ -64,16 +63,13 @@ export const generateMetadata = async ({
 
 const PostDetailPage = async ({ params }: { params?: any }) => {
   try {
-    const postPromise = getPost(params.slug);
-    const sourcePromise = getSource(params.slug);
-    const [{ frontMatter: clientFrontmatter, source: clientSource }, source] =
-      await Promise.all([postPromise, sourcePromise]);
+    const { frontMatter, source } = await getPost(params.slug);
 
     return (
       <article className="main c-container mt-10 px-5">
         <header className="mb-7 w-full self-center pl-3 lg:w-[70%]">
-          <h1 className="title pb-5">{clientFrontmatter?.title}</h1>
-          <h2 className="c-description">{clientFrontmatter?.excerpt}</h2>
+          <h1 className="title pb-5">{frontMatter?.title}</h1>
+          <h2 className="c-description">{frontMatter?.excerpt}</h2>
           <span className="c-description mt-5 flex items-center gap-2">
             <Image
               src="/memoji/contact-memoji.PNG"
@@ -82,18 +78,16 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(clientFrontmatter?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
-            {clientFrontmatter?.readingMins}
+            {dayjs(frontMatter?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
+            {frontMatter?.readingMins}
           </span>
-          <Chip data={clientFrontmatter?.tags || []} />
+          <Chip data={frontMatter?.tags || []} />
         </header>
         <div className="c-bg-secondary mx-auto mt-5 w-full self-center rounded-xl p-5 lg:w-[70%]">
-          {/*<MDXRemote post={clientSource} />*/}
-          {/*// @ts-ignore*/}
-          <MDXRServer source={source} />
+          <MDXRemote post={source} />
         </div>
         <div className="mx-auto mt-20 w-full self-center lg:w-[70%]">
-          <Giscus title={clientFrontmatter?.title || ""} />
+          <Giscus title={frontMatter?.title || ""} />
         </div>
       </article>
     );
