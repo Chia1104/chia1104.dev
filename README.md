@@ -1,4 +1,5 @@
 # Chia1104 Web Developer
+
 [![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chias-web-nextjs/production?style=for-the-badge&logo=appveyor)](https://vercel.com/deployments/chia1104)
 [![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chias-web-nextjs/next/main?style=for-the-badge&logo=appveyor)](https://nextjs.org/)
 [![Licensed under MIT](https://img.shields.io/github/license/chia1104/chias-web-nextjs?style=for-the-badge&logo=appveyor)](LICENSE)
@@ -21,10 +22,11 @@ Build with NextJS 13 `appDir` new feature.
 - [Railway](https://chias-web-nextjs-production.up.railway.app/)
 
 ## ✨ Features
-- [X] Framer Motion (animation)
-- [X] MDX Blog
-- [X] [Vitest](https://vitest.dev/) Unit Testing
-- [X] [Cypress](https://www.cypress.io/) E2E Testing
+
+- [x] Framer Motion (animation)
+- [x] MDX Blog
+- [x] [Vitest](https://vitest.dev/) Unit Testing
+- [x] [Cypress](https://www.cypress.io/) E2E Testing
 
 ## 🌐 Deploy your own
 

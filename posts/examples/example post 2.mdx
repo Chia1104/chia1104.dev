@@ -2,10 +2,10 @@
 id: 2
 published: true
 title: "Example 2"
-createdAt: '2022-06-13'
-updatedAt: '2022-06-13'
-tags: ['Example', 'MDX', 'Next.js']
-headImg: '/posts/example-post/example.jpg'
+createdAt: "2022-06-13"
+updatedAt: "2022-06-13"
+tags: ["Example", "MDX", "Next.js"]
+headImg: "/posts/example-post/example.jpg"
 excerpt: "There live the blind texts far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in bookmarksgrove there live the blind texts far from the countries."
 ---
 
@@ -34,126 +34,150 @@ Far far away, behind the word mountains, Quos quia provident consequuntur culpa 
 3. This is a list item
 
 ## Features
-- [X] Authentication
+
+- [x] Authentication
 - [ ] CI/CD
 - [ ] E2E Testing(with [Cypress](https://www.cypress.io/))
 
 `npm install next`
 
-<Image
-    src="/posts/example-post/example.jpg"
-    alt={"Example image"}
-/>
+<Image src="/posts/example-post/example.jpg" alt={"Example image"} />
 
- - List item 1
- - List item 2
- - List item 3
- - List item 4
+- List item 1
+
+- List item 2
+
+- List item 3
+
+- List item 4
 
 <Quote
     type={'info'}
 >
+
     - List item 1
+
     - List item 2
+
     - List item 3
+
     - List item 4
+
 </Quote>
 
 <Quote
     type={'tips'}
 >
+
     1. This is a list item
+
     2. This is a list item
+
     3. This is a list item
+
 </Quote>
 
 <Quote
     type={'success'}
 >
+
     #### This is a quote
+
     this is a quote
+
 </Quote>
 
 <Quote
     type={'warning'}
 >
+
     #### **This is a quote**
 
     this is a quote
+
 </Quote>
 
 <Quote
     type={'error'}
 >
+
     - List item 1
+
     - List item 2
+
     - List item 3
+
     - List item 4
+
 </Quote>
 
-
-| Left    | Right    | Center    |
-| :-----  | -----:   | :----:    |
-| Text    | Text     | Text      |
-| Text    | Text     | Text      |
+| Left | Right | Center |
+| :--- | ----: | :----: |
+| Text |  Text |  Text  |
+| Text |  Text |  Text  |
 
 <Code
     text={'This is a code block'}
     type={'info'}
 >
+
     ```
     This is a code block.
     ```
+
 </Code>
 
 <Code
     text={'This is a success code block'}
     type={'success'}
 >
+
     ```
     This is a code block.
     ```
+
 </Code>
 
 <Code
     text={'This is a warning code block'}
     type={'warning'}
 >
+
     ```
     This is a code block.
     ```
+
 </Code>
 
 <Code
     text={'This is a error code block'}
     type={'error'}
 >
+
     ```
     This is a code block.
     ```
+
 </Code>
 
 ```javascript
 const PostPage: NextPage<Props> = ({ source, frontMatter }) => {
   // This is an example
   return (
-    <Layout
-      title={frontMatter.title}
-      description={frontMatter.excerpt}
-    >
+    <Layout title={frontMatter.title} description={frontMatter.excerpt}>
       <div className="main c-container mt-5 px-5">
         <h1 className="title self-start">{frontMatter.title}</h1>
         <p className="description self-start">
-          {dayjs(frontMatter.createdAt).format('MMMM D, YYYY')} &mdash;{' '}
+          {dayjs(frontMatter.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
           {frontMatter.readingTime}
         </p>
-        <div className="c-bg-secondary p-5 mt-5 rounded-xl lg:self-start lg:w-[80%] content w-full self-center mx-auto lg:ml-2">
+        <div className="c-bg-secondary content mx-auto mt-5 w-full self-center rounded-xl p-5 lg:ml-2 lg:w-[80%] lg:self-start">
           <MDXRemote {...source} components={MDXComponents} />
         </div>
       </div>
     </Layout>
-  )
-}
+  );
+};
 
-export default PostPage
+export default PostPage;
 ```
