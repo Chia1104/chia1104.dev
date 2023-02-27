@@ -1,7 +1,12 @@
 "use client";
 
-import { Textarea, ErrorBoundary, MDXRemote } from "@chia/components/client";
-import { useState, useTransition, type ChangeEvent } from "react";
+import {
+  Textarea,
+  ErrorBoundary,
+  MDXRemote,
+  type TextAreaRef,
+} from "@chia/components/client";
+import { useState, useTransition, type ChangeEvent, useRef } from "react";
 import { serialize } from "next-mdx-remote/serialize";
 import { type MDXRemoteSerializeResult } from "next-mdx-remote";
 import remarkGfm from "remark-gfm";
@@ -10,10 +15,14 @@ import rehypePrism from "rehype-prism-plus";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
+import { toast } from "sonner";
+import { useCopyToClipboard } from "usehooks-ts";
 
 const Editor = () => {
   const [content, setContent] = useState<MDXRemoteSerializeResult | null>(null);
   const [isPending, startTransition] = useTransition();
+  const textAreaRef = useRef<TextAreaRef>(null);
+  const [, copy] = useCopyToClipboard();
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     if (!e.target.value) {
@@ -45,10 +54,40 @@ const Editor = () => {
     });
   };
 
+  const handleCopy = () => {
+    const source = textAreaRef.current?.getNativeInput().value;
+    copy(source ?? "").then((r) => {
+      if (r) {
+        toast.success("Copied to clipboard.");
+      }
+    });
+  };
+
   return (
     <div className="flex grid h-full w-full grid-cols-2">
-      <div className="col-span-1">
+      <div className="relative col-span-1">
+        <button
+          className="hover:c-bg-secondary absolute top-0 right-0 mr-3 mt-3 inline-flex rounded-lg p-1 text-sm"
+          onClick={handleCopy}>
+          <span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.7}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+          </span>
+          <span className="hidden sm:ml-1 sm:block">COPY</span>
+        </button>
         <Textarea
+          ref={textAreaRef}
           style={{
             resize: "none",
           }}
