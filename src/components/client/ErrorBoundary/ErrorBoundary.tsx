@@ -5,6 +5,7 @@ import Image from "next/image";
 
 interface Props {
   children: ReactNode;
+  errorMessage?: string;
 }
 
 interface State {
@@ -28,8 +29,10 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="c-container flex h-screen w-screen flex-col items-center justify-center">
-          <h1 className="title text-warning">Oops, there is an error!</h1>
+        <div className="c-container flex h-full w-full flex-col items-center justify-center">
+          <h1 className="title text-warning">
+            {this.props.errorMessage ?? "Oops, there is an error!"}
+          </h1>
           <Image
             src="/error/error-memoji.png"
             alt={"Error Memoji"}

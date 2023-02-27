@@ -238,6 +238,10 @@
     z-index: 9999;
     @apply bg-white/90 dark:bg-dark/90 backdrop-blur-sm transition ease-in-out
   }
+
+  .c-scroll-bar {
+    @apply scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full
+  }
 }
 
 html,

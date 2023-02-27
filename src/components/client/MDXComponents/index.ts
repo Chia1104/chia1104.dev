@@ -21,6 +21,7 @@ export {
   MDXTBody as tbody,
 } from "./MDXTable";
 export { MDXQuote as Quote } from "./MDXQuote";
+export { MDXQuote as blockquote } from "./MDXQuote";
 export { MDXParagraph as p, MDXStrong as strong } from "./MDXText";
 export { MDXHr as hr } from "./MDXDivider";
 export { MDXBr as br } from "./MDXBr";
