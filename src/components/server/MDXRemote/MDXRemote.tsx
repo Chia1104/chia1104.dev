@@ -41,3 +41,4 @@ const MDXRemote = (props: MDXRemoteProps) => (
 );
 
 export default MDXRemote;
+export { Components };
