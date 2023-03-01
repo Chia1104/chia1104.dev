@@ -6,7 +6,7 @@ interface Props {
   title: string;
   content: string;
   subtitle?: string;
-  link: string | UrlObject;
+  link: string | UrlObject | any;
 }
 
 const NewsCard: FC<Props> = ({ title, content, subtitle, link }) => {
