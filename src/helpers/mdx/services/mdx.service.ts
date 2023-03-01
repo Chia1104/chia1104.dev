@@ -57,9 +57,7 @@ export const getPost = cache(async (slug: string): Promise<PostSource> => {
 
   return {
     frontMatter,
-    source: {
-      compiledSource: source.compiledSource,
-    },
+    source: { ...source },
   };
 });
 
@@ -93,7 +91,6 @@ export const getCompiledSource = cache(
         },
         parseFrontmatter: false,
       },
-      compiledSource: (await serialize(content)).compiledSource,
       components: { ...(Components as any) },
     });
     return {

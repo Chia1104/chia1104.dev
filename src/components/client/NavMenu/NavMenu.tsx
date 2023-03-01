@@ -26,7 +26,7 @@ const NavMenu: FC = () => {
               "c-link mr-4 flex py-3",
               selectedLayoutSegments[1] === "about" && "c-link-active"
             )}
-            href="/about/">
+            href="/about">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="mr-1 h-5 w-5"
@@ -48,7 +48,7 @@ const NavMenu: FC = () => {
               "c-link mr-4 flex py-3",
               selectedLayoutSegments[1] === "posts" && "c-link-active"
             )}
-            href="/posts/">
+            href="/posts">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="mr-1 h-5 w-5"
@@ -70,7 +70,7 @@ const NavMenu: FC = () => {
               "c-link mr-4 flex py-3",
               selectedLayoutSegments[1] === "portfolio" && "c-link-active"
             )}
-            href="/portfolio/">
+            href="/portfolio">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="mr-1 h-5 w-5"

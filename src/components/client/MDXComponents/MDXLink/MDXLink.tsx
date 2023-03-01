@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { FC, ReactNode } from "react";
 
 interface MDXLinkProps {
-  href: string;
+  href: string | any;
   children: ReactNode;
 }
 
