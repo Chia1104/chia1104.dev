@@ -10,9 +10,6 @@ import { useState, useTransition, type ChangeEvent, useRef } from "react";
 import { serialize } from "next-mdx-remote/serialize";
 import { type MDXRemoteSerializeResult } from "next-mdx-remote";
 import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import rehypePrism from "rehype-prism-plus";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
 import { toast } from "sonner";
@@ -34,19 +31,7 @@ const Editor = () => {
         parseFrontmatter: false,
         mdxOptions: {
           remarkPlugins: [[remarkGfm, { singleTilde: false }]],
-          rehypePlugins: [
-            [rehypeSlug],
-            [rehypePrism, { ignoreMissing: true }],
-            [
-              rehypeAutolinkHeadings,
-              {
-                properties: { className: ["anchor"] },
-              },
-              { behaviour: "wrap" },
-            ],
-            rehypeHighlight,
-            rehypeCodeTitles,
-          ],
+          rehypePlugins: [rehypeHighlight, rehypeCodeTitles],
         },
       }).then((mdxSource) => {
         setContent(mdxSource);
