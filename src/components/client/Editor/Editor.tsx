@@ -14,12 +14,15 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
+import { useDarkMode, useIsMounted } from "@chia/hooks";
 
 const Editor = () => {
   const [content, setContent] = useState<MDXRemoteSerializeResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const textAreaRef = useRef<TextAreaRef>(null);
   const [, copy] = useCopyToClipboard();
+  const { isDarkMode, toggle } = useDarkMode();
+  const isMounted = useIsMounted();
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     if (!e.target.value) {
@@ -51,26 +54,62 @@ const Editor = () => {
   return (
     <div className="flex grid h-full w-full grid-cols-2">
       <div className="relative col-span-1">
-        <button
-          className="hover:c-bg-secondary absolute top-0 right-0 mr-3 mt-3 inline-flex rounded-lg p-1 text-sm"
-          onClick={handleCopy}>
-          <span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.7}>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-              />
-            </svg>
-          </span>
-          <span className="hidden sm:ml-1 sm:block">COPY</span>
-        </button>
+        <div className="absolute top-0 right-0 mr-3 mt-3 flex gap-2">
+          <button
+            aria-label={"Light or Dark"}
+            onClick={toggle}
+            className="mr-3 transition ease-in-out hover:text-secondary">
+            {isMounted && isDarkMode ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            )}
+          </button>
+          <button
+            className="hover:c-bg-secondary inline-flex rounded-lg p-1 text-sm"
+            onClick={handleCopy}>
+            <span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.7}>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+            </span>
+            <span className="hidden sm:ml-1 sm:block">COPY</span>
+          </button>
+        </div>
         <Textarea
           ref={textAreaRef}
           style={{
