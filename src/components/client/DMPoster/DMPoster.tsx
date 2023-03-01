@@ -18,14 +18,13 @@ const DMPoster: FC<Props> = ({ url }) => {
 
   return (
     <div
-      className="aspect-w-3 aspect-h-5 relative w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg"
+      className="group aspect-w-3 aspect-h-5 relative w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg"
       ref={r}>
       <Image
         src={url || "/posts/example-posts/example.jpg"}
         alt={"DMPoster"}
         className={cn(
-          "rounded object-cover transition duration-300 ease-in-out",
-          isHover && "scale-[1.05] cursor-zoom-in"
+          "rounded object-cover transition duration-200 ease-in-out group-hover:scale-[1.05] group-hover:cursor-zoom-in"
         )}
         loading="lazy"
         fill

@@ -36,9 +36,7 @@ const nextConfig = {
   experimental: {
     appDir: true,
     mdxRs: true,
-
-    // There is a bug with Next.js 13.2 (#46401)[https://github.com/vercel/next.js/issues/46401]
-    typedRoutes: false,
+    typedRoutes: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
