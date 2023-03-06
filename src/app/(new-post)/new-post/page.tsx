@@ -1,7 +1,7 @@
 import { Editor } from "@chia/components/client";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 
-const EditorPage = () => {
+const NewPostPage = () => {
   return (
     <div className="h-screen w-screen">
       <Editor />
@@ -9,4 +9,4 @@ const EditorPage = () => {
   );
 };
 
-export default EditorPage;
+export default NewPostPage;
