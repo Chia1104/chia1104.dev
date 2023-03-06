@@ -1,5 +1,3 @@
-"use client";
-
 import { Editor } from "@chia/components/client";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 
