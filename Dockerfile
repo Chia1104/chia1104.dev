@@ -1,4 +1,12 @@
-FROM node:16-alpine AS deps
+ARG \
+    GH_PUBLIC_TOKEN \
+    GOOGLE_API_KEY \
+    SPOTIFY_CLIENT_ID \
+    SPOTIFY_CLIENT_SECRET \
+    ZEABUR_URL \
+    SENDGRID_KEY
+
+FROM node:18-alpine AS deps
 RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
@@ -7,18 +15,12 @@ COPY package.json pnpm-lock.yaml .npmrc ./
 RUN yarn global add pnpm && \
     pnpm i
 
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG \
-    GH_PUBLIC_TOKEN \
-    GOOGLE_API_KEY \
-    NEXT_PUBLIC_RE_CAPTCHA_KEY \
-    ZEABUR_URL \
-    SENDGRID_KEY
 ENV \
     GH_PUBLIC_TOKEN=${GH_PUBLIC_TOKEN} \
     GOOGLE_API_KEY=${GOOGLE_API_KEY} \
@@ -28,7 +30,7 @@ ENV \
 
 RUN yarn build
 
-FROM node:16-alpine AS runner
+FROM node:18-alpine AS runner
 
 WORKDIR /app
 
@@ -46,13 +48,6 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-ARG \
-    GH_PUBLIC_TOKEN \
-    GOOGLE_API_KEY \
-    SPOTIFY_CLIENT_ID \
-    SPOTIFY_CLIENT_SECRET \
-    ZEABUR_URL \
-    SENDGRID_KEY
 ENV \
     GH_PUBLIC_TOKEN=${GH_PUBLIC_TOKEN} \
     GOOGLE_API_KEY=${GOOGLE_API_KEY} \
