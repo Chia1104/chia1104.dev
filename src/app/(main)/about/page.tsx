@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     description: Chia.content,
     images: [
       {
-        url: "https://chia1104.dev/api/og?title=About",
+        url: "/api/og?title=About",
         width: 1200,
         height: 630,
       },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: Chia.name,
     description: Chia.content,
     creator: `@${Chia.name.toLowerCase()}`,
-    images: ["https://chia1104.dev/api/og?title=About"],
+    images: ["/api/og?title=About"],
   },
 };
 

@@ -26,6 +26,7 @@ export const generateMetadata = async ({
     const { frontmatter } = await getCompiledSource(params.slug);
     return {
       title: frontmatter?.title,
+      keywords: frontmatter?.tags?.join(",") || undefined,
       openGraph: {
         type: "article",
         locale: "zh_TW",
@@ -35,7 +36,7 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         images: [
           {
-            url: `https://chia1104.dev/api/og?title=${encodeURIComponent(
+            url: `/api/og?title=${encodeURIComponent(
               frontmatter?.title ?? ""
             )}`,
             width: 1200,
@@ -49,7 +50,7 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         creator: "@chia1104",
         images: [
-          `https://chia1104.dev/api/og?title=${encodeURIComponent(
+          `/api/og?title=${encodeURIComponent(
             frontmatter?.title ?? ""
           )}`,
         ],
