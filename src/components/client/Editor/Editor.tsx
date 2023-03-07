@@ -36,7 +36,7 @@ const Editor = () => {
       return;
     }
     startTransition(() => {
-      serialize(e.target.value, {
+      serialize(e.target.value.trim().replace(/\{([^}]+)\}/g, ""), {
         parseFrontmatter: false,
         mdxOptions: {
           remarkPlugins: [[remarkGfm, { singleTilde: false }]],
