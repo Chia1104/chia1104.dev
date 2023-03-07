@@ -1,7 +1,7 @@
 function getBaseUrl() {
-  // if (process.env.BASE_URL) {
-  //   return process.env.BASE_URL;
-  // }
+  if (process.env.BASE_URL) {
+    return process.env.BASE_URL;
+  }
   if (process.env.RAILWAY_STATIC_URL) {
     return `https://${process.env.RAILWAY_STATIC_URL}`;
   }
