@@ -60,6 +60,7 @@ specifiers:
   rehype-prism-plus: ^1.5.1
   rehype-slug: ^5.1.0
   remark-gfm: ^3.0.1
+  schema-dts: 1.1.2
   server-only: 0.0.1
   sharp: 0.31.3
   shell-quote: ^1.8.0
@@ -106,6 +107,7 @@ dependencies:
   rehype-prism-plus: 1.5.1
   rehype-slug: 5.1.0
   remark-gfm: 3.0.1
+  schema-dts: 1.1.2_typescript@4.9.5
   server-only: 0.0.1
   sharp: 0.31.3
   sonner: 0.1.5_react@18.2.0
@@ -6303,6 +6305,14 @@ packages:
     dependencies:
       loose-envify: 1.4.0
 
+  /schema-dts/1.1.2_typescript@4.9.5:
+    resolution: {integrity: sha512-MpNwH0dZJHinVxk9bT8XUdjKTxMYrA5bLtrrGmFA6PTLwlOKnhi67XoRd6/ty+Djt6ZC0slR57qFhZDNMI6DhQ==}
+    peerDependencies:
+      typescript: '>=4.1.0'
+    dependencies:
+      typescript: 4.9.5
+    dev: false
+
   /section-matter/1.0.0:
     resolution: {integrity: sha512-vfD3pmTzGpufjScBh50YHKzEu2lxBWhVEHsNGoEXmCmn2hKGfeNLYMzCJpe8cD7gqX7TJluOVpBkAequ6dgMmA==}
     engines: {node: '>=4'}
@@ -6942,7 +6952,6 @@ packages:
     resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
     engines: {node: '>=4.2.0'}
     hasBin: true
-    dev: true
 
   /ufo/1.1.1:
     resolution: {integrity: sha512-MvlCc4GHrmZdAllBc0iUDowff36Q9Ndw/UzqmEKyrfSzokTd9ZCy1i+IIk5hrYKkjoYVQyNbrw7/F8XJ2rEwTg==}
