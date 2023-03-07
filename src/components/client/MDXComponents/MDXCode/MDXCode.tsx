@@ -1,10 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import { cn } from "@chia//utils/cn.util";
-import { useCopyToClipboard, useHover } from "usehooks-ts";
-import { motion } from "framer-motion";
+import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "sonner";
 
 interface MDXCodeProps
@@ -38,37 +37,26 @@ export const MDXPre: FC<
 > = (MDXPreProps) => {
   const { children, ...rest } = MDXPreProps;
   const ref = useRef<HTMLPreElement>(null);
-  const ref2 = useRef<HTMLDivElement>(null);
-  const isHover = useHover(ref2);
   const [, copy] = useCopyToClipboard();
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     const source = ref.current?.innerText;
-    copy(source ?? "").then((r) => {
-      if (r) {
-        toast.success("Copied to clipboard.");
-      }
-    });
-  };
-
-  const variants = {
-    open: {
-      opacity: 1,
-    },
-    closed: {
-      opacity: 0,
-    },
-  };
+    copy(source ?? "")
+      .then((r) => {
+        if (r) {
+          toast.success("Copied to clipboard.");
+        }
+      })
+      .catch(() => {
+        toast.error("Failed to copy to clipboard.");
+      });
+  }, [copy]);
 
   return (
-    <div className="relative" ref={ref2}>
-      <motion.button
-        className="hover:c-bg-secondary absolute top-0 right-0 mr-3 mt-3 inline-flex rounded-lg p-1 text-sm"
-        onClick={handleCopy}
-        initial={"closed"}
-        animate={isHover ? "open" : "closed"}
-        exit={"closed"}
-        variants={variants}>
+    <div className="group relative">
+      <button
+        className="hover:c-bg-secondary absolute top-0 right-0 mr-3 mt-3 inline-flex rounded-lg p-1 text-sm opacity-0 transition duration-200 ease-in-out group-hover:opacity-100"
+        onClick={handleCopy}>
         <span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -85,7 +73,7 @@ export const MDXPre: FC<
           </svg>
         </span>
         <span className="hidden sm:ml-1 sm:block">COPY</span>
-      </motion.button>
+      </button>
 
       <pre
         {...rest}
