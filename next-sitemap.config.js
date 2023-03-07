@@ -1,6 +1,7 @@
-/** @type {import('next-sitemap').IConfig} */
-
 function getBaseUrl() {
+  if (process.env.BASE_URL) {
+    return process.env.BASE_URL;
+  }
   if (process.env.RAILWAY_STATIC_URL) {
     return `https://${process.env.RAILWAY_STATIC_URL}`;
   }
@@ -14,6 +15,7 @@ function getBaseUrl() {
     : "https://www.chia1104.dev";
 }
 
+/** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: getBaseUrl(),
   generateRobotsTxt: true,

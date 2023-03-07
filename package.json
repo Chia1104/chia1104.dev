@@ -24,7 +24,8 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "type:check": "tsc --noEmit",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
-    "format:docs": "prettier --write \"**/*.{md,mdx}\""
+    "format:docs": "prettier --write \"**/*.{md,mdx}\"",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@giscus/react": "^2.2.8",
