@@ -37,7 +37,7 @@ specifiers:
   graphql: ^16.6.0
   graphql-request: ^5.1.0
   gray-matter: ^4.0.3
-  husky: ^8.0.0
+  husky: ^8.0.3
   jsdom: ^21.1.0
   lint-staged: ^13.1.2
   next: ^13.2.3
