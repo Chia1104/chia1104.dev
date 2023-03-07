@@ -50,9 +50,7 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         creator: "@chia1104",
         images: [
-          `/api/og?title=${encodeURIComponent(
-            frontmatter?.title ?? ""
-          )}`,
+          `/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
         ],
       },
     };
