@@ -7,7 +7,7 @@ import {
 import { type ReactNode } from "react";
 import { Chia } from "@chia/shared/meta/chia";
 import "@total-typescript/ts-reset";
-import type { Metadata } from 'next';
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
