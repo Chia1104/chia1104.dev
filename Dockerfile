@@ -1,13 +1,5 @@
 FROM node:18-alpine AS deps
 
-ARG \
-    GH_PUBLIC_TOKEN \
-    GOOGLE_API_KEY \
-    SPOTIFY_CLIENT_ID \
-    SPOTIFY_CLIENT_SECRET \
-    ZEABUR_URL \
-    SENDGRID_KEY
-
 WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
 
@@ -20,6 +12,13 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+ARG \
+    GH_PUBLIC_TOKEN \
+    GOOGLE_API_KEY \
+    NEXT_PUBLIC_RE_CAPTCHA_KEY \
+    ZEABUR_URL \
+    SENDGRID_KEY
 
 ENV \
     GH_PUBLIC_TOKEN=${GH_PUBLIC_TOKEN} \
@@ -47,6 +46,14 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+ARG \
+    GH_PUBLIC_TOKEN \
+    GOOGLE_API_KEY \
+    SPOTIFY_CLIENT_ID \
+    SPOTIFY_CLIENT_SECRET \
+    ZEABUR_URL \
+    SENDGRID_KEY
 
 ENV \
     GH_PUBLIC_TOKEN=${GH_PUBLIC_TOKEN} \
