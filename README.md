@@ -12,23 +12,25 @@ Build with NextJS 13 `appDir` new feature.
 ## 🔨 Languages and Tools
 
 <div align="center">
-  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,docker" />
+  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,docker" alt="languages and tools" />
 </div>
 
 ## 🌐 Deployments
 
 - [Vercel](https://chia1104.vercel.app/)
-- [Zeabur](https://chias-web-nextjs.zeabur.app/)
-- [Railway](https://chias-web-nextjs-production.up.railway.app/)
+- [Zeabur](https://chia1104.zeabur.app/)
+- [Railway](https://chia1104.up.railway.app/)
 
 ## ✨ Features
 
+- [x] NextJS 13 `appDir`
+- [x] TailwindCSS
 - [x] Framer Motion (animation)
 - [x] MDX Blog
 - [x] [Vitest](https://vitest.dev/) Unit Testing
 - [x] [Cypress](https://www.cypress.io/) E2E Testing
 
-## 🌐 Deploy your own
+## 🚀 Deploy your own
 
 Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example)
 
@@ -42,11 +44,10 @@ Generate the `.env` file and fill in the values.
 cp .env.example .env
 ```
 
-Install the dependencies and enable the `husky`.
+Install the dependencies.
 
 ```bash
 pnpm install
-pnpm husky install
 ```
 
 Runs the app in the development mode.
@@ -72,6 +73,6 @@ pnpm build
 Build the docker image
 
 ```bash
-docker build -t nextjs-portfolio-web:v1 .
-docker run -p 8080:8080 nextjs-portfolio-web:v1
+docker build -t web:v1 .
+docker run -p 8080:8080 web:v1
 ```
