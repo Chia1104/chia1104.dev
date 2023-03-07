@@ -5,6 +5,7 @@ import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import type { WithContext, Blog } from "schema-dts";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -27,6 +28,7 @@ export const generateMetadata = async ({
     return {
       title: frontmatter?.title,
       keywords: frontmatter?.tags?.join(",") || undefined,
+      description: frontmatter?.excerpt,
       openGraph: {
         type: "article",
         locale: "zh_TW",
@@ -63,32 +65,53 @@ export const generateMetadata = async ({
 const PostDetailPage = async ({ params }: { params?: any }) => {
   try {
     const { frontmatter, content } = await getCompiledSource(params.slug);
+    const jsonLd: WithContext<Blog> = {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      headline: frontmatter?.title,
+      datePublished: frontmatter?.createdAt,
+      dateModified: frontmatter?.updatedAt,
+      name: frontmatter?.title,
+      description: frontmatter?.excerpt,
+      image: `/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
+      keywords: frontmatter?.tags?.join(","),
+      author: {
+        "@type": "Person",
+        name: "Chia1104",
+      },
+    };
 
     return (
-      <article className="main c-container mt-10 px-5">
-        <header className="mb-7 w-full self-center pl-3 lg:w-[70%]">
-          <h1 className="title pb-5">{frontmatter?.title}</h1>
-          <h2 className="c-description">{frontmatter?.excerpt}</h2>
-          <span className="c-description mt-5 flex items-center gap-2">
-            <Image
-              src="/memoji/contact-memoji.PNG"
-              width={40}
-              height={40}
-              className="rounded-full"
-              alt="Chia1104"
-            />
-            {dayjs(frontmatter?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
-            {frontmatter?.readingMins}
-          </span>
-          <Chip data={frontmatter?.tags || []} />
-        </header>
-        <div className="c-bg-secondary mx-auto mt-5 w-full self-center rounded-xl p-5 lg:w-[70%]">
-          {content}
-        </div>
-        <div className="mx-auto mt-20 w-full self-center lg:w-[70%]">
-          <Giscus title={frontmatter?.title || ""} />
-        </div>
-      </article>
+      <>
+        <article className="main c-container mt-10 px-5">
+          <header className="mb-7 w-full self-center pl-3 lg:w-[70%]">
+            <h1 className="title pb-5">{frontmatter?.title}</h1>
+            <h2 className="c-description">{frontmatter?.excerpt}</h2>
+            <span className="c-description mt-5 flex items-center gap-2">
+              <Image
+                src="/memoji/contact-memoji.PNG"
+                width={40}
+                height={40}
+                className="rounded-full"
+                alt="Chia1104"
+              />
+              {dayjs(frontmatter?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
+              {frontmatter?.readingMins}
+            </span>
+            <Chip data={frontmatter?.tags || []} />
+          </header>
+          <div className="c-bg-secondary mx-auto mt-5 w-full self-center rounded-xl p-5 lg:w-[70%]">
+            {content}
+          </div>
+          <div className="mx-auto mt-20 w-full self-center lg:w-[70%]">
+            <Giscus title={frontmatter?.title || ""} />
+          </div>
+        </article>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </>
     );
   } catch (error) {
     notFound();
