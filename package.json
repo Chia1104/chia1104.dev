@@ -16,7 +16,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint-staged": "lint-staged",
     "test:vitest": "vitest run",
     "e2e:chrome": "cypress run --browser chrome",
     "e2e:firefox": "cypress run --browser firefox",
@@ -25,6 +24,7 @@
     "type:check": "tsc --noEmit",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "format:docs": "prettier --write \"**/*.{md,mdx}\"",
+    "prepare": "husky install",
     "postbuild": "next-sitemap"
   },
   "dependencies": {
@@ -88,7 +88,7 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-mdx": "2.0.5",
     "eslint-plugin-prettier": "^4.2.1",
-    "husky": "^8.0.3",
+    "husky": "^8.0.0",
     "jsdom": "^21.1.0",
     "lint-staged": "^13.1.2",
     "next-sitemap": "^3.1.55",
