@@ -1,3 +1,5 @@
+FROM node:18-alpine AS deps
+
 ARG \
     GH_PUBLIC_TOKEN \
     GOOGLE_API_KEY \
@@ -6,13 +8,11 @@ ARG \
     ZEABUR_URL \
     SENDGRID_KEY
 
-FROM node:18-alpine AS deps
-RUN apk add --no-cache libc6-compat
-
 WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
 
-RUN yarn global add pnpm && \
+RUN apk add --no-cache libc6-compat &&  \
+    yarn global add pnpm && \
     pnpm i
 
 FROM node:18-alpine AS builder
