@@ -6,7 +6,7 @@ import {
   MDXRemote,
   type TextAreaRef,
 } from "@chia/components/client";
-import { useState, useTransition, type ChangeEvent, useRef } from "react";
+import { useState, useTransition, type ChangeEvent, useRef, useCallback } from "react";
 import { serialize } from "next-mdx-remote/serialize";
 import { type MDXRemoteSerializeResult } from "next-mdx-remote";
 import remarkGfm from "remark-gfm";
@@ -42,14 +42,18 @@ const Editor = () => {
     });
   };
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     const source = textAreaRef.current?.getNativeInput().value;
-    copy(source ?? "").then((r) => {
-      if (r) {
-        toast.success("Copied to clipboard.");
-      }
-    });
-  };
+    copy(source ?? "")
+      .then((r) => {
+        if (r) {
+          toast.success("Copied to clipboard.");
+        }
+      })
+      .catch(() => {
+        toast.error("Failed to copy to clipboard.");
+      });
+  }, [copy]);
 
   return (
     <div className="flex grid h-full w-full grid-cols-2">
