@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, labeled]
 
 env:
   NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}

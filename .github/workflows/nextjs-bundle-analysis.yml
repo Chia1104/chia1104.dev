@@ -2,6 +2,7 @@ name: 'Next.js Bundle Analysis'
 
 on:
   pull_request:
+    types: [opened, synchronize, labeled]
   push:
     branches:
       - main # change this if your default branch is named differently
@@ -25,6 +26,7 @@ defaults:
 jobs:
   analyze:
     runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }}
     steps:
       - uses: actions/checkout@v2
 

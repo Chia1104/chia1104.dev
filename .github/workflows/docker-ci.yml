@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, labeled]
 
 env:
   NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
@@ -22,6 +22,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ contains('docker,enhancement', join(github.event.pull_request.labels.*.name, ',')) }}
     steps:
       -
         name: Checkout
