@@ -9,7 +9,6 @@ import {
 import {
   type ChangeEvent,
   useCallback,
-  useEffect,
   useRef,
   useState,
   useTransition,
@@ -27,18 +26,9 @@ const Editor = () => {
   const [content, setContent] = useState<MDXRemoteSerializeResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const textAreaRef = useRef<TextAreaRef>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [, copy] = useCopyToClipboard();
   const { isDarkMode, toggle } = useDarkMode();
   const isMounted = useIsMounted();
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -47,24 +37,19 @@ const Editor = () => {
         setContent(null);
         return;
       }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
 
-      timeoutRef.current = setTimeout(() => {
-        startTransition(() => {
-          value = value.trim().replace(/\{([^}]+)\}/g, "");
-          serialize(value, {
-            parseFrontmatter: false,
-            mdxOptions: {
-              remarkPlugins: [[remarkGfm, { singleTilde: false }]],
-              rehypePlugins: [rehypeHighlight, rehypeCodeTitles],
-            },
-          }).then((mdxSource) => {
-            setContent(mdxSource);
-          });
+      startTransition(() => {
+        value = value.trim().replace(/\{([^}]+)\}/g, "");
+        serialize(value, {
+          parseFrontmatter: false,
+          mdxOptions: {
+            remarkPlugins: [[remarkGfm, { singleTilde: false }]],
+            rehypePlugins: [rehypeHighlight, rehypeCodeTitles],
+          },
+        }).then((mdxSource) => {
+          setContent(mdxSource);
         });
-      }, 1000);
+      });
     },
     [startTransition]
   );
