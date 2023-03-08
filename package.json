@@ -16,7 +16,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint-staged": "lint-staged",
     "test:vitest": "vitest run",
     "e2e:chrome": "cypress run --browser chrome",
     "e2e:firefox": "cypress run --browser firefox",
