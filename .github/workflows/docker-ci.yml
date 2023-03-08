@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ github.event.pull_request.labels && contains('docker,enhancement', join(github.event.pull_request.labels.*.name, ',')) }}
+    if: ${{ github.event.pull_request.labels ? contains('docker,enhancement', join(github.event.pull_request.labels.*.name, ',')) : false }}
 
     steps:
       -
