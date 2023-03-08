@@ -2,7 +2,7 @@ name: 'Next.js Bundle Analysis'
 
 on:
   pull_request:
-    types: [ labeled ]
+    types: [ labeled, opened ]
     conditions: >
       github.event.action == 'labeled' &&
       github.event.pull_request.state == 'open'
