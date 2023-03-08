@@ -30,6 +30,7 @@ const Components: typeof MDXComponents = {
   CodeSandBox: (props) => <MDXComponents.CodeSandBox {...props} />,
   Youtube: (props) => <MDXComponents.Youtube {...props} />,
   img: (props) => <MDXComponents.Image {...props} />,
+  blockquote: (props) => <MDXComponents.Quote {...props} />,
 };
 
 const MDXRemote = (props: MDXRemoteProps) => (

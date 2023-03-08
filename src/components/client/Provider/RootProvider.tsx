@@ -5,7 +5,6 @@ import { Provider } from "react-redux";
 import { store } from "@chia/store";
 import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
-import { ActionIcon, NavMenu } from "@chia/components/client";
 import { useDarkMode, useIsMounted } from "@chia/hooks";
 import { Toaster as ST } from "sonner";
 
@@ -20,8 +19,6 @@ const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
     <ThemeProvider enableSystem={true} attribute="class">
       <Provider store={store}>
         <Toaster />
-        <NavMenu />
-        <ActionIcon />
         <AnimatePresence mode="wait">{children}</AnimatePresence>
       </Provider>
     </ThemeProvider>
