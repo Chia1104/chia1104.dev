@@ -4,7 +4,10 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [opened, synchronize, labeled]
+    types: [ labeled ]
+    conditions: >
+      github.event.action == 'labeled' &&
+      github.event.pull_request.state == 'open'
 
 env:
   NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
