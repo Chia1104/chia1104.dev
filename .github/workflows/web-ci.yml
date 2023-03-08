@@ -4,10 +4,12 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [ labeled ]
-    conditions: >
-      github.event.action == 'labeled' &&
-      github.event.pull_request.state == 'open'
+    types: [ opened, edited, labeled, unlabeled, ready_for_review ]
+    paths-ignore:
+      - "**.md"
+      - "**.mdx"
+      - "posts/**"
+      - "public/**"
 
 env:
   NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
