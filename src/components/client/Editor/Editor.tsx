@@ -32,7 +32,8 @@ const Editor = () => {
   const isMounted = useIsMounted();
 
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    if (!e.target.value) {
+    let { value } = e.target;
+    if (!value) {
       setContent(null);
       return;
     }
@@ -42,7 +43,8 @@ const Editor = () => {
 
     startTransition(() => {
       timeoutRef.current = setTimeout(() => {
-        serialize(e.target.value.trim().replace(/\{([^}]+)\}/g, ""), {
+        value = value.trim().replace(/\{([^}]+)\}/g, "");
+        serialize(value, {
           parseFrontmatter: false,
           mdxOptions: {
             remarkPlugins: [[remarkGfm, { singleTilde: false }]],
