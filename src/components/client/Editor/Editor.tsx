@@ -9,6 +9,7 @@ import {
 import {
   type ChangeEvent,
   useCallback,
+  useEffect,
   useRef,
   useState,
   useTransition,
@@ -31,31 +32,42 @@ const Editor = () => {
   const { isDarkMode, toggle } = useDarkMode();
   const isMounted = useIsMounted();
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
-    let { value } = e.target;
-    if (!value) {
-      setContent(null);
-      return;
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
-    startTransition(() => {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
+      let { value } = e.target;
+      if (!value) {
+        setContent(null);
+        return;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
       timeoutRef.current = setTimeout(() => {
-        value = value.trim().replace(/\{([^}]+)\}/g, "");
-        serialize(value, {
-          parseFrontmatter: false,
-          mdxOptions: {
-            remarkPlugins: [[remarkGfm, { singleTilde: false }]],
-            rehypePlugins: [rehypeHighlight, rehypeCodeTitles],
-          },
-        }).then((mdxSource) => {
-          setContent(mdxSource);
+        startTransition(() => {
+          value = value.trim().replace(/\{([^}]+)\}/g, "");
+          serialize(value, {
+            parseFrontmatter: false,
+            mdxOptions: {
+              remarkPlugins: [[remarkGfm, { singleTilde: false }]],
+              rehypePlugins: [rehypeHighlight, rehypeCodeTitles],
+            },
+          }).then((mdxSource) => {
+            setContent(mdxSource);
+          });
         });
       }, 1000);
-    });
-  }, []);
+    },
+    [startTransition]
+  );
 
   const handleCopy = useCallback(() => {
     const source = textAreaRef.current?.getNativeInput().value;
