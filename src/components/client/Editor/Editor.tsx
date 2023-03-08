@@ -1,17 +1,17 @@
 "use client";
 
 import {
-  Textarea,
   ErrorBoundary,
   MDXRemote,
+  Textarea,
   type TextAreaRef,
 } from "@chia/components/client";
 import {
+  type ChangeEvent,
+  useCallback,
+  useRef,
   useState,
   useTransition,
-  type ChangeEvent,
-  useRef,
-  useCallback,
 } from "react";
 import { serialize } from "next-mdx-remote/serialize";
 import { type MDXRemoteSerializeResult } from "next-mdx-remote";
@@ -39,8 +39,9 @@ const Editor = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    const timeoutId = setTimeout(() => {
-      startTransition(() => {
+
+    startTransition(() => {
+      timeoutRef.current = setTimeout(() => {
         serialize(e.target.value.trim().replace(/\{([^}]+)\}/g, ""), {
           parseFrontmatter: false,
           mdxOptions: {
@@ -50,9 +51,8 @@ const Editor = () => {
         }).then((mdxSource) => {
           setContent(mdxSource);
         });
-      });
-    }, 1000);
-    timeoutRef.current = timeoutId;
+      }, 1000);
+    });
   }, []);
 
   const handleCopy = useCallback(() => {
