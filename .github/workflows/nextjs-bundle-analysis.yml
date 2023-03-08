@@ -2,7 +2,7 @@ name: 'Next.js Bundle Analysis'
 
 on:
   pull_request:
-    types: [ labeled, opened ]
+    types: [ opened, edited ]
     paths-ignore:
       - "**.md"
       - "**.mdx"
