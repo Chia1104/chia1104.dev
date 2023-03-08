@@ -3,9 +3,6 @@ name: 'Next.js Bundle Analysis'
 on:
   pull_request:
     types: [ labeled, opened ]
-    conditions: >
-      github.event.action == 'labeled' &&
-      github.event.pull_request.state == 'open'
   push:
     branches:
       - main # change this if your default branch is named differently
