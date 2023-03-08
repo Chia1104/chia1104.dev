@@ -26,27 +26,34 @@ const Editor = () => {
   const [content, setContent] = useState<MDXRemoteSerializeResult | null>(null);
   const [isPending, startTransition] = useTransition();
   const textAreaRef = useRef<TextAreaRef>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [, copy] = useCopyToClipboard();
   const { isDarkMode, toggle } = useDarkMode();
   const isMounted = useIsMounted();
 
-  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     if (!e.target.value) {
       setContent(null);
       return;
     }
-    startTransition(() => {
-      serialize(e.target.value.trim().replace(/\{([^}]+)\}/g, ""), {
-        parseFrontmatter: false,
-        mdxOptions: {
-          remarkPlugins: [[remarkGfm, { singleTilde: false }]],
-          rehypePlugins: [rehypeHighlight, rehypeCodeTitles],
-        },
-      }).then((mdxSource) => {
-        setContent(mdxSource);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    const timeoutId = setTimeout(() => {
+      startTransition(() => {
+        serialize(e.target.value.trim().replace(/\{([^}]+)\}/g, ""), {
+          parseFrontmatter: false,
+          mdxOptions: {
+            remarkPlugins: [[remarkGfm, { singleTilde: false }]],
+            rehypePlugins: [rehypeHighlight, rehypeCodeTitles],
+          },
+        }).then((mdxSource) => {
+          setContent(mdxSource);
+        });
       });
-    });
-  };
+    }, 1000);
+    timeoutRef.current = timeoutId;
+  }, []);
 
   const handleCopy = useCallback(() => {
     const source = textAreaRef.current?.getNativeInput().value;
