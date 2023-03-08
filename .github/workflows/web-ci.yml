@@ -4,7 +4,10 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [opened, synchronize]
+    types: [ labeled ]
+    conditions: >
+      github.event.action == 'labeled' &&
+      github.event.pull_request.state == 'open'
 
 env:
   NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
@@ -21,6 +24,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }}
 
     steps:
       - name: Check out code
