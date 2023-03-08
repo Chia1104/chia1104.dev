@@ -4,10 +4,14 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [ labeled ]
-    conditions: >
-      github.event.action == 'labeled' &&
-      github.event.pull_request.state == 'open'
+    types: [ opened, edited, labeled, unlabeled, ready_for_review ]
+    paths-ignore:
+      - "**.md"
+      - "**.mdx"
+      - "posts/**"
+      - "public/**"
+      - "cypress/**"
+      - "**.config.js"
 
 env:
   NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
@@ -25,7 +29,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ contains('docker,enhancement', join(github.event.pull_request.labels.*.name, ',')) }}
+    timeout-minutes: 15
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'docker') || contains(github.event.pull_request.labels.*.name, 'enhancement') }}
+
     steps:
       -
         name: Checkout
