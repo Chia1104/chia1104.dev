@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [ opened, edited, labeled, unlabeled ]
+    types: [ opened, edited, labeled, unlabeled, ready_for_review ]
     paths-ignore:
       - "**.md"
       - "**.mdx"
@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ github.event_name == 'pull_request' && contains('docker,enhancement', join(github.event.pull_request.labels.*.name, ',')) }}
+    if: ${{ contains('docker,enhancement', join(github.event.pull_request.labels.*.name, ',')) }}
 
     steps:
       -

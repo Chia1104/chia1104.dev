@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [ opened, edited, labeled, unlabeled ]
+    types: [ opened, edited, labeled, unlabeled, ready_for_review ]
     paths-ignore:
       - "**.md"
       - "**.mdx"
@@ -26,7 +26,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'enhancement') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }}
 
     steps:
       - name: Check out code
