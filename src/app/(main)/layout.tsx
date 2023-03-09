@@ -5,13 +5,11 @@ import { ReduxProvider } from "@chia/app/components/Provider/RootProvider";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <>
+    <ReduxProvider>
       <NavMenu />
       <ActionIcon />
-      <ReduxProvider>
-        <Page>{children}</Page>
-      </ReduxProvider>
-    </>
+      <Page>{children}</Page>
+    </ReduxProvider>
   );
 };
 
