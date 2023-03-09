@@ -1,4 +1,4 @@
-import { Resume } from "@chia/components/server";
+import { Resume } from "./components";
 import { Chia } from "@chia/shared/meta/chia";
 import type { Metadata } from "next";
 

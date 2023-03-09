@@ -1,4 +1,4 @@
-import { Editor } from "@chia/components/client";
+import { Editor } from "./components";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 
 const NewPostPage = () => {

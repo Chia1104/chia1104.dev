@@ -1,9 +1,6 @@
 import "../styles/globals.css";
-import {
-  ErrorBoundary,
-  RootProvider,
-  Analytics,
-} from "@chia/components/client";
+import { ErrorBoundary } from "@chia/ui";
+import { RootProvider, Analytics } from "@chia/app/components";
 import { type ReactNode } from "react";
 import { Chia } from "@chia/shared/meta/chia";
 import "@total-typescript/ts-reset";

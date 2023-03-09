@@ -1,7 +1,7 @@
 import { getAllPosts, getCompiledSource } from "@chia/helpers/mdx/services";
-import { Image, Giscus } from "@chia/components/client";
+import { Image, Chip } from "@chia/ui";
+import { Giscus } from "./components";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
-import { Chip } from "@chia/components/server";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
