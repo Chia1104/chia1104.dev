@@ -1,7 +1,6 @@
 "use client";
 
-import { type FC, useRef, useState, memo } from "react";
-import { useHover } from "usehooks-ts";
+import { type FC, useState, memo } from "react";
 import { Image, Modal } from "@chia/ui";
 import { cn } from "@chia//utils/cn.util";
 
@@ -10,16 +9,12 @@ interface Props {
 }
 
 const DMPoster: FC<Props> = ({ url }) => {
-  const r = useRef(null);
-  const isHover = useHover(r);
   const [isShow, setIsShow] = useState(false);
 
   const handleClose = () => setIsShow(false);
 
   return (
-    <div
-      className="group aspect-w-3 aspect-h-5 relative w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg"
-      ref={r}>
+    <div className="group aspect-w-3 aspect-h-5 relative w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg">
       <Image
         src={url || "/posts/example-posts/example.jpg"}
         alt={"DMPoster"}
