@@ -17,12 +17,15 @@ const Toaster: FC = () => {
 const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ThemeProvider enableSystem={true} attribute="class">
-      <Provider store={store}>
-        <Toaster />
-        <AnimatePresence mode="wait">{children}</AnimatePresence>
-      </Provider>
+      <Toaster />
+      <AnimatePresence mode="wait">{children}</AnimatePresence>
     </ThemeProvider>
   );
 };
 
+const ReduxProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  return <Provider store={store}>{children}</Provider>;
+};
+
 export default RootProvider;
+export { ReduxProvider };

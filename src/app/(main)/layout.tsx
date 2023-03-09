@@ -1,13 +1,16 @@
 import { ActionIcon, Page } from "@chia/ui";
 import { NavMenu } from "./components";
 import type { ReactNode } from "react";
+import { ReduxProvider } from "@chia/app/components/Provider/RootProvider";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <NavMenu />
       <ActionIcon />
-      <Page>{children}</Page>
+      <ReduxProvider>
+        <Page>{children}</Page>
+      </ReduxProvider>
     </>
   );
 };
