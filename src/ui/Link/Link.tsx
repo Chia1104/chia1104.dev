@@ -1,9 +1,12 @@
-import { type FC, type ComponentProps } from "react";
-import NextLink, { type LinkProps } from "next/link";
+import type { FC, ReactNode } from "react";
+import NextLink, { type LinkProps as NextLinkProps } from "next/link";
 
-const Link: FC<LinkProps<HTMLAnchorElement> & ComponentProps<"a">> = (
-  props
-) => {
+interface LinkProps {
+  href: string | any;
+  children: ReactNode;
+}
+
+const Link: FC<LinkProps & NextLinkProps> = (props) => {
   const { href, children, ...rest } = props;
   const isInternalLink = href.startsWith("/") || href.startsWith("#");
 
