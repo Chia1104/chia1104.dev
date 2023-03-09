@@ -1,4 +1,9 @@
-export * from "./Accordion";
+export {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./Accordion";
 export { default as Chip } from "./Chip";
 export * from ".//ErrorBoundary";
 export { default as HoverButton } from "./HoverButton";

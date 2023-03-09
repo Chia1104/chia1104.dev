@@ -1,5 +1,3 @@
-"use client";
-
 import type { FC } from "react";
 import { Chia } from "@chia/shared/meta/chia";
 import {
