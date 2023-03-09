@@ -1,7 +1,6 @@
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import { Chia } from "@chia/shared/meta/chia";
-import { PostsList } from "@chia/components/client";
-import { serialize } from "@chia/utils/hydration.util";
+import { PostsList } from "./components";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -41,7 +40,7 @@ const PostsPage = async () => {
         </span>
       </h1>
       <div className="flex w-full flex-col items-center justify-center">
-        {posts && <PostsList post={serialize(posts)} />}
+        <PostsList post={posts} />
       </div>
     </article>
   );

@@ -1,4 +1,4 @@
-import { GitHub, Youtube, Design } from "@chia/components/server";
+import { GitHub, Youtube, Design } from "./components";
 import { Design as DesignData } from "@chia/shared/meta/design";
 import type { Metadata } from "next";
 import { Chia } from "@chia/shared/meta/chia";

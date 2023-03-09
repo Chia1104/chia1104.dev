@@ -1,4 +1,4 @@
-import { AboutMe, NewsCard } from "@chia/components/server";
+import { AboutMe, NewsCard } from "./components";
 import { Chia } from "@chia/shared/meta/chia";
 import { getAllPosts } from "@chia/helpers/mdx/services";
 import dayjs from "dayjs";

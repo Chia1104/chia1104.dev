@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Background, Footer } from "@chia/components/template";
+import { Background, Footer } from "./components";
 
 const RootTemplate = ({ children }: { children: ReactNode }) => {
   return (

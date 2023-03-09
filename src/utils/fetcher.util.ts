@@ -15,17 +15,7 @@ interface IApiResponse<T = unknown> {
 
 interface IFetcherOptions {
   requestInit?: RequestInit;
-
-  /**
-   * @description
-   * The endpoint of the API, default is `API_URL`(laravel api)
-   */
   endpoint?: string;
-
-  /**
-   * @description
-   * The search params of the API (query string)
-   */
   params?: Partial<Record<string, string>>;
   path?: string;
 }
@@ -77,7 +67,13 @@ const fetcher = async <T = unknown>(
       data: _data?.data,
     } satisfies Pick<IApiResponse<T>, "statusCode" | "status" | "data">;
   } catch (e) {
-    console.error(e);
+    if (e instanceof AbortSignal) {
+      return {
+        statusCode: 408,
+        status: ApiResponseStatus.ERROR,
+        message: getErrorMessages(408),
+      } satisfies Pick<IApiResponse, "statusCode" | "status" | "message">;
+    }
     return {
       statusCode: 500,
       status: ApiResponseStatus.ERROR,
