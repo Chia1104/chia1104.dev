@@ -1,8 +1,6 @@
 "use client";
 
 import { type FC, type ReactNode } from "react";
-import { Provider } from "react-redux";
-import { store } from "@chia/store";
 import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
 import { useDarkMode, useIsMounted } from "@chia/hooks";
@@ -23,9 +21,4 @@ const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
   );
 };
 
-const ReduxProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  return <Provider store={store}>{children}</Provider>;
-};
-
 export default RootProvider;
-export { ReduxProvider };
