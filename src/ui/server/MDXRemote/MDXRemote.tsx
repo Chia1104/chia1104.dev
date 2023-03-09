@@ -1,5 +1,5 @@
 import { MDXRemote as MDXR, type MDXRemoteProps } from "next-mdx-remote/rsc";
-import * as MDXComponents from "../MDXComponents";
+import * as MDXComponents from "@chia/ui/MDXComponents";
 import { Link } from "@chia/ui";
 
 const Components: typeof MDXComponents = {

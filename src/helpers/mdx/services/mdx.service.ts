@@ -14,7 +14,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { cache } from "react";
-import { Components } from "@chia/ui/MDXRemote";
+import { Components } from "@chia/ui/server/MDXRemote";
 
 const PostsPath = path.join(process.cwd(), POSTS_PATH);
 

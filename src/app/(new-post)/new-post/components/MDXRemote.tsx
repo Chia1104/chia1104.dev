@@ -4,7 +4,7 @@ import {
   MDXRemote as MDXR,
   type MDXRemoteSerializeResult,
 } from "next-mdx-remote";
-import { type FC, useDeferredValue } from "react";
+import { type FC } from "react";
 import * as mdxComponents from "@chia/ui/MDXComponents";
 
 interface Props {
