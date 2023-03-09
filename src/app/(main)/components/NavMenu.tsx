@@ -1,7 +1,6 @@
 "use client";
 
-import { memo } from "react";
-import type { FC } from "react";
+import { type FC, memo } from "react";
 import Link from "next/link";
 import { cn } from "@chia//utils/cn.util";
 import { useSelectedLayoutSegments } from "next/navigation";
@@ -24,7 +23,7 @@ const NavMenu: FC = () => {
             scroll
             className={cn(
               "c-link mr-4 flex py-3",
-              selectedLayoutSegments[1] === "about" && "c-link-active"
+              selectedLayoutSegments[0] === "about" && "c-link-active"
             )}
             href="/about">
             <svg
@@ -46,7 +45,7 @@ const NavMenu: FC = () => {
             scroll
             className={cn(
               "c-link mr-4 flex py-3",
-              selectedLayoutSegments[1] === "posts" && "c-link-active"
+              selectedLayoutSegments[0] === "posts" && "c-link-active"
             )}
             href="/posts">
             <svg
@@ -68,7 +67,7 @@ const NavMenu: FC = () => {
             scroll
             className={cn(
               "c-link mr-4 flex py-3",
-              selectedLayoutSegments[1] === "portfolio" && "c-link-active"
+              selectedLayoutSegments[0] === "portfolio" && "c-link-active"
             )}
             href="/portfolio">
             <svg
