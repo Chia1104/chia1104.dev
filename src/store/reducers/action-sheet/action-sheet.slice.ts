@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { actionSheetInitState } from "@chia/store/modules/ActionSheet/state";
-import { actionSheetReducer } from "@chia/store/modules/ActionSheet/reducers";
-import type { AppState } from "@chia/store";
+import actionSheetInitState from "./action-sheet.state";
+import actionSheetReducer from "./action-sheet.reducer";
+import type { AppState } from "../../type";
 
 const actionSheetSlice = createSlice({
   name: "actionSheet",

@@ -4,7 +4,7 @@ import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import { type FC, memo } from "react";
 import Contact from "./Contact";
 import { useAppDispatch, useDarkMode, useIsMounted } from "@chia/hooks";
-import { activeActionIconSheet } from "@chia/store/modules/ActionSheet/actionSheet.slice";
+import { activeActionIconSheet } from "@chia/store/reducers/action-sheet";
 import { Chia } from "@chia/shared/meta/chia";
 
 const ActionIcon: FC = () => {

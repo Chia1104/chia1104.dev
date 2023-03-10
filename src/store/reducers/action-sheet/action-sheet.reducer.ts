@@ -1,7 +1,9 @@
-import type { IActionSheetState } from "../state";
+import type { IActionSheetState } from "./action-sheet.state";
 
-export const actionSheetReducer = {
+const actionSheetReducer = {
   activeActionIconSheet: (state: { actionIconSheet: IActionSheetState }) => {
     state.actionIconSheet.isOpen = !state.actionIconSheet.isOpen;
   },
 };
+
+export default actionSheetReducer;
