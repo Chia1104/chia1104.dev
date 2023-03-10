@@ -1,4 +1,4 @@
-import { type FC, useSyncExternalStore, useInsertionEffect } from "react";
+import { type FC } from "react";
 import { type LAT } from "@chia/shared/types";
 import { Chia } from "@chia/shared/meta/chia";
 
