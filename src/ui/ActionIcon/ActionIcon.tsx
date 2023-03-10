@@ -3,13 +3,12 @@
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import { type FC, memo } from "react";
 import Contact from "./Contact";
-import { useDarkMode, useIsMounted } from "@chia/hooks";
-import { useAtom } from "jotai";
-import { actionIconAtom } from "./store";
+import { useAppDispatch, useDarkMode, useIsMounted } from "@chia/hooks";
+import { activeActionIconSheet } from "@chia/store/reducers/action-sheet";
 import { Chia } from "@chia/shared/meta/chia";
 
 const ActionIcon: FC = () => {
-  const [{ isOpen }, handleActionSheet] = useAtom(actionIconAtom);
+  const dispatch = useAppDispatch();
 
   const { isDarkMode, toggle } = useDarkMode();
   const isMounted = useIsMounted();
@@ -23,7 +22,7 @@ const ActionIcon: FC = () => {
       <Contact />
       <button
         aria-label={"Open contact"}
-        onClick={() => handleActionSheet({ isOpen: !isOpen })}
+        onClick={() => dispatch(activeActionIconSheet())}
         className="transition ease-in-out hover:text-secondary">
         <svg
           xmlns="http://www.w3.org/2000/svg"

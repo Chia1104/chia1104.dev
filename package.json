@@ -44,7 +44,6 @@
     "graphql": "^16.6.0",
     "graphql-request": "^5.2.0",
     "gray-matter": "^4.0.3",
-    "jotai": "2.0.3",
     "next": "^13.2.4",
     "next-mdx-remote": "^4.4.1",
     "next-themes": "^0.2.1",
