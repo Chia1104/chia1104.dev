@@ -13,7 +13,7 @@ import { useAppDispatch } from "@chia/hooks/useAppDispatch";
 import {
   activeActionIconSheet,
   selectActionIconSheet,
-} from "@chia/store/modules/ActionSheet/actionSheet.slice";
+} from "@chia/store/reducers/action-sheet";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@chia/hooks";
 import { cn } from "@chia//utils/cn.util";

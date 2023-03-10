@@ -2,8 +2,10 @@ export interface IActionSheetState {
   isOpen: boolean;
 }
 
-export const actionSheetInitState = {
+const actionSheetInitState = {
   actionIconSheet: {
     isOpen: false,
-  } as IActionSheetState,
+  } satisfies IActionSheetState,
 };
+
+export default actionSheetInitState;

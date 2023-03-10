@@ -2,7 +2,7 @@
 
 import { type FC } from "react";
 import { useAppDispatch } from "@chia/hooks";
-import { activeActionIconSheet } from "@chia/store/modules/ActionSheet/actionSheet.slice";
+import { activeActionIconSheet } from "@chia/store/reducers/action-sheet";
 
 const ContactButton: FC = () => {
   const dispatch = useAppDispatch();
