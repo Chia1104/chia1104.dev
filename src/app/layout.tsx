@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import { ErrorBoundary } from "@chia/ui";
-import { RootProvider, JotaiProvider } from "@chia/ui/Provider";
+import { RootProvider } from "@chia/ui/Provider";
 import { Analytics } from "@chia/app/components";
 import { type ReactNode } from "react";
 import { Chia } from "@chia/shared/meta/chia";
@@ -84,9 +84,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
     <html lang="zh-Hant-TW">
       <body className="c-bg-primary scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full">
         <ErrorBoundary>
-          <RootProvider>
-            <JotaiProvider>{children}</JotaiProvider>
-          </RootProvider>
+          <RootProvider>{children}</RootProvider>
         </ErrorBoundary>
         <Analytics />
       </body>
