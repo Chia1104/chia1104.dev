@@ -2,7 +2,6 @@ import {
   SiFirebase,
   SiTypescript,
   SiNextdotjs,
-  SiJava,
   SiPhp,
   SiPostgresql,
   SiMongodb,
@@ -21,6 +20,7 @@ import {
   SiAdobepremierepro,
   SiReact,
 } from "react-icons/si";
+import { DiJava } from "react-icons/di";
 
 export const Chia = {
   name: "Chia1104" as const,
@@ -52,7 +52,7 @@ export const Chia = {
         name: "Java",
         level: "Basic",
         link: "https://www.java.com/",
-        icon: SiJava,
+        icon: DiJava,
       },
       {
         name: "PHP",
