@@ -9,13 +9,7 @@ import {
   type ChangeEvent,
   useEffect,
 } from "react";
-import { useAppDispatch } from "@chia/hooks/useAppDispatch";
-import {
-  activeActionIconSheet,
-  selectActionIconSheet,
-} from "@chia/store/reducers/action-sheet";
 import { motion } from "framer-motion";
-import { useAppSelector } from "@chia/hooks";
 import { cn } from "@chia//utils/cn.util";
 import { Input, type InputRef, Textarea, type TextAreaRef } from "@chia/ui";
 import { z } from "zod";
@@ -25,10 +19,11 @@ import {
   ApiResponseStatus,
 } from "@chia/utils/fetcher.util";
 import { toast } from "sonner";
+import { useAtom } from "jotai";
+import { actionIconAtom } from "./store";
 
 const Contact: FC = () => {
-  const dispatch = useAppDispatch();
-  const actionIconSheet = useAppSelector(selectActionIconSheet);
+  const [{ isOpen }, handleActionSheet] = useAtom(actionIconAtom);
   const [isValidate, setIsValidate] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const id = useId();
@@ -96,17 +91,17 @@ const Contact: FC = () => {
     <motion.div
       initial={"closed"}
       transition={{ duration: 0.7, type: "spring" }}
-      animate={actionIconSheet ? "open" : "closed"}
+      animate={isOpen ? "open" : "closed"}
       variants={outside}
       className="px-3">
       <motion.div
         transition={{ duration: 0.7, type: "spring" }}
-        animate={actionIconSheet ? "open" : "closed"}
+        animate={isOpen ? "open" : "closed"}
         variants={inside}
         className="flex h-full w-full flex-col items-center justify-start">
         <button
           aria-label={"Close contact"}
-          onClick={() => dispatch(activeActionIconSheet())}
+          onClick={() => handleActionSheet({ isOpen: !isOpen })}
           className="transition ease-in-out hover:text-secondary">
           <svg
             xmlns="http://www.w3.org/2000/svg"
