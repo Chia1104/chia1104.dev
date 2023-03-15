@@ -1,6 +1,7 @@
 import { Resume } from "./components";
 import { Chia } from "@chia/shared/meta/chia";
 import type { Metadata } from "next";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 export const metadata: Metadata = {
   title: "About",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
     description: Chia.content,
     images: [
       {
-        url: "/api/og?title=About",
+        url: `${getBaseUrl({ isServer: true })}/api/og?title=About`,
         width: 1200,
         height: 630,
       },
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     title: Chia.name,
     description: Chia.content,
     creator: `@${Chia.name.toLowerCase()}`,
-    images: ["/api/og?title=About"],
+    images: [`${getBaseUrl({ isServer: true })}/api/og?title=About`],
   },
 };
 

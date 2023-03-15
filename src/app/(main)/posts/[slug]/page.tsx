@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { WithContext, Blog } from "schema-dts";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -38,9 +39,9 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         images: [
           {
-            url: `/api/og?title=${encodeURIComponent(
-              frontmatter?.title ?? ""
-            )}`,
+            url: `${getBaseUrl({
+              isServer: true,
+            })}/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
             width: 1200,
             height: 630,
           },
@@ -52,7 +53,9 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         creator: "@chia1104",
         images: [
-          `/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
+          `${getBaseUrl({ isServer: true })}/api/og?title=${encodeURIComponent(
+            frontmatter?.title ?? ""
+          )}`,
         ],
       },
     };

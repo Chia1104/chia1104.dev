@@ -2,6 +2,7 @@ import { getAllPosts } from "@chia/helpers/mdx/services";
 import { Chia } from "@chia/shared/meta/chia";
 import { PostsList } from "./components";
 import type { Metadata } from "next";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
     description: Chia.content,
     images: [
       {
-        url: "/api/og?title=Blog",
+        url: `${getBaseUrl({ isServer: true })}/api/og?title=Blog`,
         width: 1200,
         height: 630,
       },
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     title: Chia.name,
     description: Chia.content,
     creator: `@${Chia.name.toLowerCase()}`,
-    images: ["/api/og?title=Blog"],
+    images: [`${getBaseUrl({ isServer: true })}/api/og?title=Blog`],
   },
 };
 

@@ -2,6 +2,7 @@ import { GitHub, Youtube, Design } from "./components";
 import { Design as DesignData } from "@chia/shared/meta/design";
 import type { Metadata } from "next";
 import { Chia } from "@chia/shared/meta/chia";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 export const revalidate = 60;
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     description: Chia.content,
     images: [
       {
-        url: "/api/og?title=Portfolio",
+        url: `${getBaseUrl({ isServer: true })}/api/og?title=Portfolio`,
         width: 1200,
         height: 630,
       },
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     title: Chia.name,
     description: Chia.content,
     creator: `@${Chia.name.toLowerCase()}`,
-    images: ["/api/og?title=Portfolio"],
+    images: [`${getBaseUrl({ isServer: true })}/api/og?title=Portfolio`],
   },
 };
 

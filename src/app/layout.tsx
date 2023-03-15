@@ -5,6 +5,7 @@ import { type ReactNode } from "react";
 import { Chia } from "@chia/shared/meta/chia";
 import "@total-typescript/ts-reset";
 import type { Metadata } from "next";
+import { getBaseUrl } from "@chia/utils/getBaseUrl";
 
 export const metadata: Metadata = {
   title: {
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
     description: Chia.content,
     images: [
       {
-        url: "/api/og",
+        url: `${getBaseUrl({ isServer: true })}/api/og`,
         width: 1200,
         height: 630,
       },
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
     title: Chia.name,
     description: Chia.content,
     creator: `@${Chia.name.toLowerCase()}`,
-    images: ["/api/og"],
+    images: [`${getBaseUrl({ isServer: true })}/api/og`],
   },
   viewport: {
     width: "device-width",

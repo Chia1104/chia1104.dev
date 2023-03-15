@@ -17,16 +17,16 @@ export const getBaseUrl = (options?: Options) => {
   }
 
   if (RAILWAY_URL) {
-    return `https://${RAILWAY_URL}`;
+    return `https://${RAILWAY_URL.replace(/\/$/, "")}`; // remove trailing slash
   }
 
   if (VERCEL_URL) {
-    return `https://${VERCEL_URL}`;
+    return `https://${VERCEL_URL.replace(/\/$/, "")}`;
   }
 
   if (ZEABUR_URL) {
-    return `https://${ZEABUR_URL}`;
+    return `https://${ZEABUR_URL.replace(/\/$/, "")}`;
   }
 
-  return BASE_URL;
+  return BASE_URL.replace(/\/$/, "");
 };
