@@ -2,7 +2,6 @@ name: 'Next.js Bundle Analysis'
 
 on:
   pull_request:
-    types: [ opened, edited, labeled, unlabeled, ready_for_review, synchronize ]
     paths-ignore:
       - "**.md"
       - "**.mdx"
@@ -34,7 +33,7 @@ defaults:
 jobs:
   analyze:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'enhancement') }}
+    if: ${{ github.event.pull_request.labels.*.name != 'docker' || github.event.pull_request.labels.*.name != 'documentation' }}
     steps:
       - uses: actions/checkout@v2
 
