@@ -89,7 +89,7 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
         <article className="main c-container mt-10 px-5">
           <header className="mb-7 w-full self-center pl-3 lg:w-[70%]">
             <h1 className="title pb-5">{frontmatter?.title}</h1>
-            <h2 className="c-description">{frontmatter?.excerpt}</h2>
+            <p className="c-description">{frontmatter?.excerpt}</p>
             <span className="c-description mt-5 flex items-center gap-2">
               <Image
                 src="/memoji/contact-memoji.PNG"
