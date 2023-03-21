@@ -33,8 +33,6 @@ FROM node:18-alpine AS runner
 
 WORKDIR /app
 
-ENV NODE_ENV production
-
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
@@ -46,6 +44,8 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
 
 ARG \
     GH_PUBLIC_TOKEN \
@@ -65,10 +65,9 @@ ENV \
     SENDGRID_KEY=${SENDGRID_KEY} \
     RAILWAY_STATIC_URL=${RAILWAY_STATIC_URL}
 
-USER nextjs
+ENV PORT=8080 \
+    NODE_ENV=production
 
 EXPOSE 8080
-
-ENV PORT 8080
 
 CMD ["node", "server.js"]

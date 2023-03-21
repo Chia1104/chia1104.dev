@@ -76,3 +76,9 @@ Build the docker image
 docker build -t web:v1 .
 docker run -p 8080:8080 web:v1
 ```
+
+or use docker-compose
+
+```bash
+docker-compose up -d
+```
