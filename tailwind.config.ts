@@ -1,13 +1,8 @@
-module.exports = {
+import type { Config } from "tailwindcss";
+
+export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    // screens: {
-    //   'sm': '350px',
-    //   'md': '640px',
-    //   'lg': '768px',
-    //   'xl': '1024px',
-    //   '2xl': '1536px',
-    // },
     extend: {
       colors: {
         primary: "#2B2E4A",
@@ -38,12 +33,12 @@ module.exports = {
           "100%": { transform: "rotate(0.0deg)" },
         },
         "accordion-down": {
-          from: { height: 0 },
+          from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -57,10 +52,9 @@ module.exports = {
     aspectRatio: false,
   },
   plugins: [
-    require("@tailwindcss/line-clamp"),
     require("@tailwindcss/aspect-ratio"),
     require("tailwind-scrollbar")({ nocompatible: true }),
     require("tailwindcss-animate"),
   ],
   darkMode: "class",
-};
+} satisfies Config;
