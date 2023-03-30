@@ -19,14 +19,14 @@ const HomePage = async () => {
       <div className="flex h-full w-full flex-col">
         <AboutMe avatarSrc={"/me/me-memoji.PNG"} />
         <div className="min:w-[370px] mx-auto mt-10 flex w-full max-w-[740px] flex-col items-center justify-center md:flex-row">
-          <div className="py-7 px-3">
+          <div className="px-3 py-7">
             <NewsCard
               title={"About me"}
               content={Chia.content}
               link={"/about"}
             />
           </div>
-          <div className="py-7 px-3">
+          <div className="px-3 py-7">
             <NewsCard
               title={"New update"}
               content={post?.excerpt || "This is an example of a blog post."}

@@ -15,8 +15,8 @@ const NewsCard: FC<Props> = ({ title, content, subtitle, link }) => {
       <header className="subtitle c-text-secondary truncate">{title}</header>
       <div className="c-bg-gradient-yellow-to-pink relative mt-5 flex h-[170px] w-[310px] items-center justify-center rounded-xl lg:mx-5">
         <div className="c-bg-secondary flex h-[163px] w-[303px] flex-col rounded-xl p-2">
-          <p className="text-center text-lg line-clamp-3">{content}</p>
-          <p className="c-text-secondary c-description mt-auto mb-5 pl-1 text-left text-base line-clamp-1">
+          <p className="line-clamp-3 text-center text-lg">{content}</p>
+          <p className="c-text-secondary c-description mb-5 mt-auto line-clamp-1 pl-1 text-left text-base">
             {subtitle}
           </p>
         </div>

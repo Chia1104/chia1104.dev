@@ -13,10 +13,10 @@ interface ReposListProps {
 const RepoItem: FC<RepoItemProps> = ({ repo }) => {
   return (
     <span className="c-button-secondary flex h-full w-full transform flex-col group-hover:-translate-x-1 group-hover:-translate-y-1">
-      <header className="group-hover:c-text-green-to-purple mb-2 text-2xl line-clamp-1 ">
+      <header className="group-hover:c-text-green-to-purple mb-2 line-clamp-1 text-2xl ">
         {repo.node?.name || ""}
       </header>
-      <p className="c-description text-base line-clamp-2">
+      <p className="c-description line-clamp-2 text-base">
         {repo.node?.description || ""}
       </p>
       <div className="c-description mt-auto flex text-base">

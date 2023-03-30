@@ -19,7 +19,7 @@ const LATItem: FC<LATItemProps> = ({ lat }) => {
       href={lat.link}
       target="_blank"
       rel="noreferrer"
-      className="group relative my-5 mx-auto flex w-full items-center justify-center text-5xl">
+      className="group relative mx-auto my-5 flex w-full items-center justify-center text-5xl">
       <div className="p-2 group-hover:animate-pulse">
         <LATIcon />
       </div>

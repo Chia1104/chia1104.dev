@@ -22,8 +22,8 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
     <div className="c-bg-secondary group relative flex min-h-[465px] w-full flex-col rounded-xl shadow-lg transition duration-300 ease-in-out hover:-translate-y-1.5 2xl:min-h-[520px]">
       <div
         className={cn(
-          "aspect-w-16 aspect-h-9 mb-3 w-full overflow-hidden rounded-t-xl bg-gray-200",
-          i === 0 && "lg:aspect-w-3 lg:aspect-h-1"
+          "aspect-h-9 aspect-w-16 mb-3 w-full overflow-hidden rounded-t-xl bg-gray-200",
+          i === 0 && "lg:aspect-h-1 lg:aspect-w-3"
         )}>
         <Image
           src={data.headImg || "/posts/example-posts/example.jpg"}
@@ -35,13 +35,13 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
           quality={100}
         />
       </div>
-      <h2 className="subtitle mx-5 mb-3 leading-normal transition line-clamp-2 duration-300 ease-in-out group-hover:text-secondary">
+      <h2 className="subtitle mx-5 mb-3 line-clamp-2 leading-normal transition duration-300 ease-in-out group-hover:text-secondary">
         {data.title}
       </h2>
-      <p className="c-description mx-5 mb-3 leading-normal line-clamp-3">
+      <p className="c-description mx-5 mb-3 line-clamp-3 leading-normal">
         {data.excerpt}
       </p>
-      <p className="c-description mx-5 mt-auto mb-3 self-start">
+      <p className="c-description mx-5 mb-3 mt-auto self-start">
         {dayjs(data.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
         <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
           {data.readingMins}
@@ -49,7 +49,7 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
       </p>
       <Link
         scroll
-        className="absolute top-0 bottom-0 right-0 left-0"
+        className="absolute bottom-0 left-0 right-0 top-0"
         href={`/posts/${data?.slug}`}
       />
     </div>
