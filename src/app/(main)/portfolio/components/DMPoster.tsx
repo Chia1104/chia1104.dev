@@ -14,7 +14,7 @@ const DMPoster: FC<Props> = ({ url }) => {
   const handleClose = () => setIsShow(false);
 
   return (
-    <div className="group aspect-w-3 aspect-h-5 relative w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg">
+    <div className="group aspect-h-5 aspect-w-3 relative w-full overflow-hidden rounded-lg bg-gray-200 shadow-lg">
       <Image
         src={url || "/posts/example-posts/example.jpg"}
         alt={"DMPoster"}
@@ -33,7 +33,7 @@ const DMPoster: FC<Props> = ({ url }) => {
         isShowed={isShow}
         activeModal={handleClose}
         className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
-        <div className="aspect-w-1 aspect-h-1 w-full">
+        <div className="aspect-h-1 aspect-w-1 w-full">
           <Image
             blur={false}
             src={url || "/posts/example-posts/example.jpg"}

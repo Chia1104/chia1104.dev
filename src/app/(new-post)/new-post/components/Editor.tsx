@@ -66,7 +66,7 @@ const Editor = () => {
   return (
     <div className="flex grid h-full w-full grid-cols-2">
       <div className="relative col-span-1">
-        <div className="absolute top-0 right-0 mr-3 mt-3 flex gap-2">
+        <div className="absolute right-0 top-0 mr-3 mt-3 flex gap-2">
           <button
             aria-label={"Light or Dark"}
             onClick={toggle}
@@ -135,7 +135,7 @@ const Editor = () => {
       <div className="col-span-1 pr-3">
         <div className="c-bg-secondary c-scroll-bar relative h-full max-h-screen w-full overflow-y-scroll rounded-xl p-10">
           {isPending && (
-            <div className="absolute top-0 right-0 mt-5 mr-5">
+            <div className="absolute right-0 top-0 mr-5 mt-5">
               <svg
                 aria-hidden="true"
                 className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"

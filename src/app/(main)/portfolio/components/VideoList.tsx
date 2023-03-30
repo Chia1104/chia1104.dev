@@ -24,11 +24,11 @@ const VideoList: FC<Props> = ({ item }) => {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={"Open Youtube"}>
-                  <header className="subtitle c-link text-info line-clamp-1">
+                  <header className="subtitle c-link line-clamp-1 text-info">
                     {v.snippet.title}
                   </header>
                 </a>
-                <p className="c-description text-base line-clamp-1">
+                <p className="c-description line-clamp-1 text-base">
                   {v.snippet.description}
                 </p>
                 <p className="c-description mt-auto text-base">

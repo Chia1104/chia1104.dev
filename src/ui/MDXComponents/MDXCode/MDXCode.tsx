@@ -55,7 +55,7 @@ export const MDXPre: FC<
   return (
     <div className="group relative">
       <button
-        className="hover:c-bg-secondary absolute top-0 right-0 mr-3 mt-3 inline-flex rounded-lg p-1 text-sm opacity-0 transition duration-200 ease-in-out group-hover:opacity-100"
+        className="hover:c-bg-secondary absolute right-0 top-0 mr-3 mt-3 inline-flex rounded-lg p-1 text-sm opacity-0 transition duration-200 ease-in-out group-hover:opacity-100"
         onClick={handleCopy}>
         <span>
           <svg

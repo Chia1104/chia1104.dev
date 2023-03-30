@@ -18,7 +18,7 @@ const ActionIcon: FC = () => {
   const LINKEDIN = Chia.link.linkedin;
 
   return (
-    <div className="c-bg-secondary fixed bottom-0 right-0 z-40 mr-10 mb-10 flex flex-col items-center justify-center overflow-hidden rounded-xl p-3 shadow-2xl">
+    <div className="c-bg-secondary fixed bottom-0 right-0 z-40 mb-10 mr-10 flex flex-col items-center justify-center overflow-hidden rounded-xl p-3 shadow-2xl">
       <Contact />
       <button
         aria-label={"Open contact"}
