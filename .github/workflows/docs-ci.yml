@@ -4,9 +4,9 @@ on:
   push:
     branches: [ master, main ]
   pull_request:
-    types: [ opened, edited, labeled, unlabeled, ready_for_review, synchronize ]
-    paths-ignore:
-      - "src/**"
+    types: [ opened, labeled, unlabeled, ready_for_review, synchronize ]
+    paths:
+      - "posts/**"
 
 env:
   PNPM_VERSION: 8.1.0
