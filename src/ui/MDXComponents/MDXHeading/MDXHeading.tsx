@@ -17,7 +17,7 @@ export const H1: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="c-border-primary group my-5 inline-flex w-full items-center border-b-2 pb-5">
+    <div className="c-border-primary group my-5 inline-flex w-full items-center border-b-2 pb-5">
       <h1 {...rest} className="mr-2 text-4xl font-bold" ref={r}>
         {children}
       </h1>
@@ -41,7 +41,7 @@ export const H1: FC<
           </svg>
         </a>
       )}
-    </span>
+    </div>
   );
 };
 export const H2: FC<
@@ -53,7 +53,7 @@ export const H2: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="group my-4 inline-flex w-full items-center">
+    <div className="group my-4 inline-flex w-full items-center">
       <h2 {...rest} className="mr-2 text-3xl font-bold" ref={r}>
         {children}
       </h2>
@@ -77,7 +77,7 @@ export const H2: FC<
           </svg>
         </a>
       )}
-    </span>
+    </div>
   );
 };
 export const H3: FC<
@@ -89,7 +89,7 @@ export const H3: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="group my-3 inline-flex w-full items-center">
+    <div className="group my-3 inline-flex w-full items-center">
       <h3 {...rest} className="mr-2 text-2xl font-bold" ref={r}>
         {children}
       </h3>
@@ -113,7 +113,7 @@ export const H3: FC<
           </svg>
         </a>
       )}
-    </span>
+    </div>
   );
 };
 export const H4: FC<
@@ -125,7 +125,7 @@ export const H4: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="group my-2 inline-flex w-full items-center">
+    <div className="group my-2 inline-flex w-full items-center">
       <h4 {...rest} className="mr-2 text-xl font-bold" ref={r}>
         {children}
       </h4>
@@ -149,7 +149,7 @@ export const H4: FC<
           </svg>
         </a>
       )}
-    </span>
+    </div>
   );
 };
 export const H5: FC<
@@ -161,7 +161,7 @@ export const H5: FC<
   const isMounted = useIsMounted();
 
   return (
-    <span className="group my-2 inline-flex w-full items-center">
+    <div className="group my-2 inline-flex w-full items-center">
       <h5 {...rest} className="mr-2 text-lg font-bold" ref={r}>
         {children}
       </h5>
@@ -185,7 +185,7 @@ export const H5: FC<
           </svg>
         </a>
       )}
-    </span>
+    </div>
   );
 };
 export const H6: FC<
