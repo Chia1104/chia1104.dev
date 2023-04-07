@@ -1,12 +1,7 @@
 import { ImageResponse } from "@vercel/og";
 import { NextRequest, NextResponse } from "next/server";
-import { type Metadata } from "next";
 
 export const runtime = "edge";
-
-export const metadata: Metadata = {
-  robots: "none noarchive noimageindex nosnippet notranslate",
-};
 
 export async function GET(request: NextRequest) {
   try {

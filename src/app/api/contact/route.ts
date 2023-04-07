@@ -4,11 +4,6 @@ import { NextResponse, NextRequest } from "next/server";
 import { ApiResponseStatus } from "@chia/utils/fetcher.util";
 import { errorConfig } from "@chia/config/network.config";
 import { z } from "zod";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  robots: "none noarchive noimageindex nosnippet notranslate",
-};
 
 sendgrid.setApiKey(process.env.SENDGRID_KEY ?? "");
 
