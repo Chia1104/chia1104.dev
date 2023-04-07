@@ -2,7 +2,7 @@
 
 import { type FC, useState, memo } from "react";
 import { Image, Modal } from "@chia/ui";
-import { cn } from "@chia//utils/cn.util";
+import { cn } from "@chia/utils/cn.util";
 
 interface Props {
   url: string;
