@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC } from "react";
-import { AnimatePresence, motion, MotionProps } from "framer-motion";
+import { AnimatePresence, motion, type MotionProps } from "framer-motion";
 import { useLockedBody } from "usehooks-ts";
 import { createPortal } from "react-dom";
 import { usePortal } from "@chia/hooks";

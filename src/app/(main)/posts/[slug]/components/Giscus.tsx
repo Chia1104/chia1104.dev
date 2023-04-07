@@ -4,7 +4,7 @@ import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@chia/config/giscus.config";
 import { useIsMounted, useDarkMode } from "@chia/hooks";
 import G from "@giscus/react";
-import { FC } from "react";
+import type { FC } from "react";
 
 interface Props {
   title: string;

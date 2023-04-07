@@ -2,7 +2,7 @@
 
 import { type FC, memo } from "react";
 import Link from "next/link";
-import { cn } from "@chia//utils/cn.util";
+import { cn } from "@chia/utils/cn.util";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 const NavMenu: FC = () => {
