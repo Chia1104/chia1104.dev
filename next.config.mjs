@@ -32,7 +32,7 @@ const securityHeaders = [
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  swcMinify: true,
+  swcMinify: false,
   experimental: {
     appDir: true,
     mdxRs: true,
