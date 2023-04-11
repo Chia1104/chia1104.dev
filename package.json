@@ -36,7 +36,6 @@
     "@reduxjs/toolkit": "^1.9.3",
     "@sendgrid/mail": "7.7.0",
     "@vercel/analytics": "0.1.11",
-    "@vercel/og": "0.5.0",
     "clsx": "1.2.1",
     "cross-env": "7.0.3",
     "dayjs": "^1.11.7",
