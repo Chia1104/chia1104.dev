@@ -17,7 +17,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'documentation') && github.event.pull_request.state == 'open' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'documentation') }}
 
     steps:
       - name: Check out code

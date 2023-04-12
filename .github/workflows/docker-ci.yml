@@ -30,7 +30,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ (contains(github.event.pull_request.labels.*.name, 'docker') || contains(github.event.pull_request.labels.*.name, 'enhancement')) && github.event.pull_request.state == 'open' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'docker') || contains(github.event.pull_request.labels.*.name, 'enhancement') }}
 
     steps:
       -
