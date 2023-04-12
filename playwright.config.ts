@@ -8,6 +8,7 @@ const BASE_URL = `http://localhost:${PORT}`;
 const config: PlaywrightTestConfig = {
   timeout: 30 * 1000,
   testDir: path.join(__dirname, "playwright"),
+  testMatch: "**/*.pw.ts",
   retries: 2,
   outputDir: "coverage",
   webServer: {
