@@ -17,9 +17,9 @@
     "start": "next start",
     "lint": "next lint",
     "test:vitest": "vitest run",
-    "e2e:chrome": "cypress run --browser chrome",
-    "e2e:firefox": "cypress run --browser firefox",
-    "e2e:edge": "cypress run --browser edge",
+    "e2e:chrome": "playwright test --project=desktop-chrome",
+    "e2e:firefox": "playwright test --browser=desktop-firefox",
+    "e2e:safari": "playwright test --browser=desktop-safari",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "type:check": "tsc --noEmit",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
@@ -70,6 +70,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@playwright/test": "1.32.3",
     "@redux-devtools/extension": "^3.2.5",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@testing-library/react": "14.0.0",
