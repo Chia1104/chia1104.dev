@@ -45,6 +45,9 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# ISSUE: https://github.com/vercel/next.js/issues/48077
+COPY --from=deps /app/node_modules/next/dist/compiled/jest-worker ./node_modules/next/dist/compiled/jest-worker
+
 USER nextjs
 
 ARG \
