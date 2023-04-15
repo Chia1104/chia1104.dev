@@ -1,7 +1,7 @@
 import VideoList from "./VideoList";
 import { Chia } from "@chia/shared/meta/chia";
 import { asyncComponent } from "@chia/utils/asyncComponent.util";
-import { FC } from "react";
+import { type FC } from "react";
 import type { Youtube as Y } from "@chia/shared/types";
 import { getAllVideos } from "@chia/helpers/api/youtube";
 

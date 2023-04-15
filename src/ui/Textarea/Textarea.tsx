@@ -10,8 +10,8 @@ import React, {
   useRef,
   type ComponentProps,
 } from "react";
-import { ZodType } from "zod";
-import { cn } from "@chia//utils/cn.util";
+import { type ZodType } from "zod";
+import { cn } from "@chia/utils/cn.util";
 interface Props extends ComponentProps<"textarea"> {
   title?: string;
   error?: string;

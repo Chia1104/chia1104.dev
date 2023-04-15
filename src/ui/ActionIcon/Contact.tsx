@@ -16,7 +16,7 @@ import {
 } from "@chia/store/reducers/action-sheet";
 import { motion } from "framer-motion";
 import { useAppSelector } from "@chia/hooks";
-import { cn } from "@chia//utils/cn.util";
+import { cn } from "@chia/utils/cn.util";
 import { Input, type InputRef, Textarea, type TextAreaRef } from "@chia/ui";
 import { z } from "zod";
 import {

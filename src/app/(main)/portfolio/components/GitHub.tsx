@@ -31,21 +31,19 @@ const GitHub: FC<Props> = asyncComponent(async ({ repo }) => {
           })
         ).user.repositories.edges;
     return (
-      <>
-        <div className="flex w-full flex-col">
-          <ReposList repo={repos} />
-          <a
-            href={`${GITHUB_URL}?tab=repositories`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative mt-7 inline-flex self-center rounded transition ease-in-out hover:bg-secondary hover:dark:bg-primary"
-            aria-label="Open GitHub">
-            <span className="c-button-secondary transform text-base after:content-['_↗'] group-hover:-translate-x-1 group-hover:-translate-y-1">
-              GitHub
-            </span>
-          </a>
-        </div>
-      </>
+      <div className="flex w-full flex-col">
+        <ReposList repo={repos} />
+        <a
+          href={`${GITHUB_URL}?tab=repositories`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative mt-7 inline-flex self-center rounded transition ease-in-out hover:bg-secondary hover:dark:bg-primary"
+          aria-label="Open GitHub">
+          <span className="c-button-secondary transform text-base after:content-['_↗'] group-hover:-translate-x-1 group-hover:-translate-y-1">
+            GitHub
+          </span>
+        </a>
+      </div>
     );
   } catch (error) {
     console.error(error);

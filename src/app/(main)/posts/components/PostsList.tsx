@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { Image } from "@chia/ui";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { cn } from "@chia//utils/cn.util";
+import { cn } from "@chia/utils/cn.util";
 
 interface PostsListProps {
   post: PostFrontMatter[];
@@ -69,7 +69,7 @@ const postCardAnimation = {
 
 const PostsList: FC<PostsListProps> = ({ post }) => {
   return (
-    <motion.article
+    <motion.div
       className="grid w-full grid-cols-1 gap-10 lg:grid-cols-2 xl:grid-cols-3"
       transition={{ duration: 0.3, type: "spring" }}
       variants={postAnimation}
@@ -83,7 +83,7 @@ const PostsList: FC<PostsListProps> = ({ post }) => {
           <PostItem data={post} i={index} />
         </motion.div>
       ))}
-    </motion.article>
+    </motion.div>
   );
 };
 
