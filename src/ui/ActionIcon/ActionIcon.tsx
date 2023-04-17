@@ -4,12 +4,17 @@ import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import { type FC, memo } from "react";
 import Contact from "./Contact";
 import { useAppDispatch, useDarkMode, useIsMounted } from "@chia/hooks";
-import { activeActionIconSheet } from "@chia/store/reducers/action-sheet";
 import { Chia } from "@chia/shared/meta/chia";
+import { cn } from "@chia/utils/cn.util";
+import { useAppSelector } from "@chia/hooks";
+import {
+  activeActionIconSheet,
+  selectActionIconSheet,
+} from "@chia/store/reducers/action-sheet";
 
 const ActionIcon: FC = () => {
   const dispatch = useAppDispatch();
-
+  const actionIconSheet = useAppSelector(selectActionIconSheet);
   const { isDarkMode, toggle } = useDarkMode();
   const isMounted = useIsMounted();
 
@@ -18,7 +23,10 @@ const ActionIcon: FC = () => {
   const LINKEDIN = Chia.link.linkedin;
 
   return (
-    <div className="c-bg-secondary fixed bottom-0 right-0 z-40 mb-10 mr-10 flex flex-col items-center justify-center overflow-hidden rounded-xl p-3 shadow-2xl">
+    <div
+      className={cn(
+        "c-bg-secondary fixed bottom-0 right-0 z-40 mx-2 mb-10 flex flex-col items-center justify-center overflow-hidden rounded-xl p-3 shadow-2xl md:mr-10"
+      )}>
       <Contact />
       <button
         aria-label={"Open contact"}
@@ -38,7 +46,7 @@ const ActionIcon: FC = () => {
           />
         </svg>
       </button>
-      <div className="flex">
+      <div className={cn("hidden md:flex", actionIconSheet && "flex")}>
         <button
           aria-label={"Light or Dark"}
           onClick={toggle}

@@ -21,6 +21,7 @@ import { Input, type InputRef, Textarea, type TextAreaRef } from "@chia/ui";
 import { z } from "zod";
 import { fetcher, type IApiResponse } from "@chia/utils/fetcher.util";
 import { toast } from "sonner";
+import { useMediaQuery } from "usehooks-ts";
 
 const Contact: FC = () => {
   const dispatch = useAppDispatch();
@@ -31,6 +32,7 @@ const Contact: FC = () => {
   const emailRef = useRef<InputRef>(null);
   const messageRef = useRef<TextAreaRef>(null);
   const signal = useRef<AbortController>(new AbortController());
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
     signal.current = new AbortController();
@@ -40,7 +42,7 @@ const Contact: FC = () => {
   }, []);
 
   const outside = {
-    open: { opacity: 1, height: "470px", width: "330px" },
+    open: { opacity: 1, height: "470px", width: isMobile ? "90vw" : "330px" },
     closed: { opacity: 0, height: 0, width: 0, transition: { delay: 0.2 } },
   };
   const inside = {
