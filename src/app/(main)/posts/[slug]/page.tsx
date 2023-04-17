@@ -86,8 +86,8 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
 
     return (
       <>
-        <article className="main c-container mt-10 px-5">
-          <header className="mb-7 w-full self-center pl-3 lg:w-[70%]">
+        <article className="main c-container mt-10">
+          <header className="mb-7 w-full max-w-[900px] self-center pl-3">
             <h1 className="title pb-5">{frontmatter?.title}</h1>
             <p className="c-description">{frontmatter?.excerpt}</p>
             <span className="c-description mt-5 flex items-center gap-2">
@@ -103,10 +103,10 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
             </span>
             <Chip data={frontmatter?.tags || []} />
           </header>
-          <div className="c-bg-secondary mx-auto mt-5 w-full self-center rounded-xl p-5 lg:w-[70%]">
+          <div className="c-bg-secondary mt-5 w-full max-w-[900px] self-center rounded-xl px-3 py-5 md:p-5">
             {content}
           </div>
-          <div className="mx-auto mt-20 w-full self-center lg:w-[70%]">
+          <div className="mx-auto mt-20 w-full max-w-[900px] self-center">
             <Giscus title={frontmatter?.title || ""} />
           </div>
         </article>

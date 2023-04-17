@@ -5,6 +5,7 @@ import { AnimatePresence, motion, type MotionProps } from "framer-motion";
 import { useLockedBody } from "usehooks-ts";
 import { createPortal } from "react-dom";
 import { usePortal } from "@chia/hooks";
+import { cn } from "@chia/utils/cn.util";
 
 interface ModalProps extends MotionProps {
   isShowed: boolean;
@@ -44,7 +45,7 @@ const Modal: FC<ModalProps> = (props) => {
             animate={isShowed ? "open" : "closed"}
             exit={"closed"}
             variants={iv}
-            className={className}
+            className={cn(className, "p-5")}
             {...rest}>
             {children}
           </motion.div>

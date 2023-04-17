@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 const ContactPage = () => {
   return (
-    <article className="main c-container">
+    <article className="main c-container mt-10">
       <Contact />
     </article>
   );
