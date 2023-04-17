@@ -9,6 +9,7 @@ const errorConfig = {
   404: "Not Found",
   405: "Method Not Allowed",
   408: "Request Timeout",
+  429: "Too Many Requests",
   500: "Internal Server Error",
 } as const;
 

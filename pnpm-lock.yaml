@@ -19,6 +19,12 @@ dependencies:
   '@sendgrid/mail':
     specifier: 7.7.0
     version: 7.7.0
+  '@upstash/ratelimit':
+    specifier: 0.4.2
+    version: 0.4.2(@upstash/redis@1.20.3)
+  '@upstash/redis':
+    specifier: 1.20.3
+    version: 1.20.3
   '@vercel/analytics':
     specifier: 0.1.11
     version: 0.1.11(react@18.2.0)
@@ -1554,6 +1560,34 @@ packages:
       '@typescript-eslint/types': 5.57.0
       eslint-visitor-keys: 3.4.0
     dev: true
+
+  /@upstash/core-analytics@0.0.6:
+    resolution: {integrity: sha512-cpPSR0XJAJs4Ddz9nq3tINlPS5aLfWVCqhhtHnXt4p7qr5+/Znlt1Es736poB/9rnl1hAHrOsOvVj46NEXcVqA==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      '@upstash/redis': 1.20.3
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
+  /@upstash/ratelimit@0.4.2(@upstash/redis@1.20.3):
+    resolution: {integrity: sha512-nuuPK2IoPJywAK/8cosNiyM3vlcL6tFPaAwrLes0j2J5b1Hs/W7XDO72/AuC+K+dt89TP50WK9bvDFUwLRuhvw==}
+    peerDependencies:
+      '@upstash/redis': ^1.20.1
+    dependencies:
+      '@upstash/core-analytics': 0.0.6
+      '@upstash/redis': 1.20.3
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
+  /@upstash/redis@1.20.3:
+    resolution: {integrity: sha512-OBQpSQr1XRD1sbW67nxvlJD2FP9VnwzrVAEU6mg/BvXTptvLwWHZe0ot4k6ZrU1NW61J1+Wdoz3/yiNhvIMOGg==}
+    dependencies:
+      isomorphic-fetch: 3.0.0
+    transitivePeerDependencies:
+      - encoding
+    dev: false
 
   /@vercel/analytics@0.1.11(react@18.2.0):
     resolution: {integrity: sha512-mj5CPR02y0BRs1tN3oZcBNAX9a8NxsIUl9vElDPcqxnMfP0RbRc9fI9Ud7+QDg/1Izvt5uMumsr+6YsmVHcyuw==}
@@ -4250,6 +4284,15 @@ packages:
 
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
+
+  /isomorphic-fetch@3.0.0:
+    resolution: {integrity: sha512-qvUtwJ3j6qwsF3jLxkZ72qCgjMysPzDfeV240JHiGZsANBYd+EEuu35v7dfrJ9Up0Ak07D7GGSkGhCHTqg/5wA==}
+    dependencies:
+      node-fetch: 2.6.7
+      whatwg-fetch: 3.6.2
+    transitivePeerDependencies:
+      - encoding
+    dev: false
 
   /isstream@0.1.2:
     resolution: {integrity: sha512-Yljz7ffyPbrLpLngrMtZ7NduUgVvi6wG9RJ9IUcyCd59YQ911PBJphODUcbOVbqYfxe1wuYf/LJ8PauMRwsM/g==}
@@ -7374,6 +7417,10 @@ packages:
     dependencies:
       iconv-lite: 0.6.3
     dev: true
+
+  /whatwg-fetch@3.6.2:
+    resolution: {integrity: sha512-bJlen0FcuU/0EMLrdbJ7zOnW6ITZLrZMIarMUVmdKtsGvZna8vxKYaexICWPfZ8qwf9fzNq+UEIZrnSaApt6RA==}
+    dev: false
 
   /whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
