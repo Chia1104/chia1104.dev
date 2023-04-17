@@ -19,11 +19,7 @@ import { useAppSelector } from "@chia/hooks";
 import { cn } from "@chia/utils/cn.util";
 import { Input, type InputRef, Textarea, type TextAreaRef } from "@chia/ui";
 import { z } from "zod";
-import {
-  fetcher,
-  type IApiResponse,
-  ApiResponseStatus,
-} from "@chia/utils/fetcher.util";
+import { fetcher, type IApiResponse } from "@chia/utils/fetcher.util";
 import { toast } from "sonner";
 
 const Contact: FC = () => {
@@ -55,31 +51,37 @@ const Contact: FC = () => {
   const handleSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSending(true);
-    const { data, status, message } = await fetcher<
-      IApiResponse<{ message: string }>
-    >({
-      path: "/api/contact",
-      requestInit: {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    const promise = () =>
+      fetcher<{ message: string }>({
+        dangerousThrow: true,
+        path: "/api/contact",
+        requestInit: {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: emailRef?.current?.value,
+            message: messageRef.current?.value,
+          }),
+          signal: signal.current.signal,
         },
-        body: JSON.stringify({
-          email: emailRef?.current?.value,
-          message: messageRef.current?.value,
-        }),
-        signal: signal.current.signal,
+      });
+    toast.promise(promise, {
+      loading: "Loading...",
+      success: (
+        data: IApiResponse<{
+          message: string;
+        }>
+      ) => {
+        setIsSending(false);
+        return data?.data?.message ?? "Message sent successfully.";
+      },
+      error: (error: IApiResponse) => {
+        setIsSending(false);
+        return error?.message ?? "Sorry, something went wrong.";
       },
     });
-    if (status !== ApiResponseStatus.SUCCESS) {
-      setIsSending(false);
-      toast.error(
-        message ?? "Sorry, something went wrong. Please try again later."
-      );
-      return;
-    }
-    setIsSending(false);
-    toast.success(data?.message ?? "Message sent successfully.");
   };
 
   const validForm = () => {
