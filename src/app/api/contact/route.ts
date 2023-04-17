@@ -4,13 +4,21 @@ import { NextResponse, NextRequest } from "next/server";
 import { ApiResponseStatus } from "@chia/utils/fetcher.util";
 import { errorConfig } from "@chia/config/network.config";
 import { z } from "zod";
-import type { Metadata } from "next";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-export const metadata: Metadata = {
-  robots: "none noarchive noimageindex nosnippet notranslate",
-};
+const redis = new Redis({
+  url: process.env.REDIS_URL ?? "",
+  token: process.env.UPSTASH_TOKEN ?? "",
+});
 
 sendgrid.setApiKey(process.env.SENDGRID_KEY ?? "");
+
+const ratelimit = new Ratelimit({
+  redis,
+  analytics: true,
+  limiter: Ratelimit.slidingWindow(2, "5s"),
+});
 
 const EmailSchema = z.string().email();
 
@@ -27,6 +35,19 @@ export async function POST(request: NextRequest) {
       email: Email;
       message: string;
     };
+    const id = request.ip ?? "anonymous";
+    const limit = await ratelimit.limit(id ?? "anonymous");
+
+    if (!limit.success) {
+      return NextResponse.json(
+        {
+          statusCode: 429,
+          status: ApiResponseStatus.ERROR,
+          message: errorConfig[429],
+        },
+        { status: 429 }
+      );
+    }
 
     if (!contactSchema.safeParse({ email, message }).success) {
       return NextResponse.json(
