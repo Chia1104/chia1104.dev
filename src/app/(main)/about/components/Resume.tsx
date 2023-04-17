@@ -2,7 +2,7 @@ import { type FC } from "react";
 import { Chia } from "@chia/shared/meta/chia";
 import Experience from "./Experience";
 import LanAndTools from "./LanAndTools";
-import { ContactButton, Image } from "@chia/ui";
+import { Image, Link } from "@chia/ui";
 
 interface Props {
   avatarSrc?: string;
@@ -32,7 +32,7 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
         </div>
         <div className="mt-10 flex w-full flex-col md:mt-0 md:w-[70%]">
           <h1 className="title flex-wrap pb-5 text-center md:text-left">
-            <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
+            <span className="c-text-bg-sec-half dark:c-text-bg-primary-half mr-5">
               {name} {chineseName}{" "}
             </span>
             <span className="inline-block origin-[70%_70%] animate-waving-hand">
@@ -41,7 +41,7 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
           </h1>
         </div>
       </div>
-      <div className="mb-10 max-w-[800px] self-center">
+      <div className="mb-10 max-w-[750px] self-center">
         <p className="c-description pb-5 indent-4">
           I am a full-stack engineer with one year of experience in web
           development, including experience in real business production. My
@@ -51,7 +51,6 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
         </p>
       </div>
       <div className="flex w-full flex-col items-center">
-        <ContactButton />
         <div className="mt-10 w-[85%] lg:w-[50%]">
           <ul className="c-description w-full">
             <li className="mb-3 flex w-full">
@@ -70,7 +69,9 @@ const Resume: FC<Props> = ({ avatarSrc }) => {
             </li>
             <li className="mb-3 flex w-full">
               <span className="w-[30%]">Email:</span>
-              <span className="w-[70%]">{email}</span>
+              <Link href={`mailto:${email}`}>
+                <span className="w-[70%]">{email}</span>
+              </Link>
             </li>
           </ul>
         </div>

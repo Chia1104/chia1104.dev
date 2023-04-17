@@ -41,7 +41,7 @@ const Experience: FC = () => {
             </AccordionTrigger>
             <AccordionContent>
               {experience.detail ? (
-                <ul className="c-description list-inside list-inside list-disc leading-loose">
+                <ul className="c-description list-inside list-disc pl-5 leading-loose">
                   {experience.detail.map((detail, index) => (
                     <li key={index}>{detail}</li>
                   ))}
