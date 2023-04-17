@@ -80,10 +80,10 @@ const Contact: FC = () => {
   };
 
   return (
-    <div className="c-bg-secondary flex w-full max-w-[700px] flex-col items-center justify-start rounded-xl p-10">
+    <div className="c-bg-secondary flex w-full max-w-[700px] flex-col items-center justify-start rounded-xl px-5 py-10 md:p-10">
       <form
         id={id + "-contact-form"}
-        className="mx-auto flex w-full flex-col"
+        className="flex w-full flex-col"
         onChange={validForm}
         onSubmit={handleSubmit}>
         <header className="mb-5 flex gap-3 text-3xl">
