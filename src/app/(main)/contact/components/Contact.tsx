@@ -110,7 +110,9 @@ const Contact: FC = () => {
             name="message"
             placeholder="Your message"
             titleClassName="text-xl"
-            schema={z.string()}
+            schema={z.string().min(1)}
+            error="Please enter a message"
+            required
           />
         </div>
         <button

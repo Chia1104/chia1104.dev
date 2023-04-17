@@ -24,7 +24,7 @@ const EmailSchema = z.string().email();
 
 const contactSchema = z.object({
   email: EmailSchema,
-  message: z.string(),
+  message: z.string().min(1),
 });
 
 type Email = z.infer<typeof EmailSchema>;
