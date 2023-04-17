@@ -9,7 +9,9 @@ import { Toaster as ST } from "sonner";
 const Toaster: FC = () => {
   const { theme } = useDarkMode();
   const isMounted = useIsMounted();
-  return <ST theme={isMounted && (theme as any)} position="bottom-left" />;
+  return (
+    <ST theme={isMounted && (theme as any)} position="bottom-left" richColors />
+  );
 };
 
 const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
