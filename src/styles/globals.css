@@ -99,13 +99,8 @@
   }
 
   .main {
-    min-height: 100vh;
-    padding: 4rem 2rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    @apply
+    flex flex-1 flex-col justify-center items-center min-h-screen py-[4rem] md:px-[2rem] px-[1rem]
   }
 
   .footer a {

@@ -15,5 +15,3 @@ export { default as Modal } from "./Modal";
 export { default as Page } from "./Page";
 export { default as Textarea } from "./Textarea";
 export * from "./Textarea";
-export { default as ActionIcon } from "./ActionIcon";
-export { ContactButton, Contact } from "./ActionIcon";

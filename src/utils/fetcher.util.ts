@@ -18,6 +18,7 @@ interface IFetcherOptions {
   endpoint?: string;
   params?: Partial<Record<string, string>>;
   path?: string;
+  dangerousThrow?: boolean;
 }
 
 const getErrorMessages = (statusCode: number): string => {
@@ -29,7 +30,7 @@ const getErrorMessages = (statusCode: number): string => {
 const fetcher = async <T = unknown>(
   options: IFetcherOptions
 ): Promise<IApiResponse<T>> => {
-  const { requestInit = {}, endpoint, params, path } = options;
+  const { requestInit = {}, endpoint, params, path, dangerousThrow } = options;
   const searchParams = setSearchParams({
     searchParams: {
       ...(params ?? {}),
@@ -40,9 +41,6 @@ const fetcher = async <T = unknown>(
       `${endpoint ?? ""}${path ?? ""}${searchParams && `?${searchParams}`}`,
       {
         ...requestInit,
-        headers: {
-          ...requestInit["headers"],
-        },
       }
     );
     if (res.status === 204) {
@@ -53,6 +51,9 @@ const fetcher = async <T = unknown>(
     }
     const _data = (await res.json()) as IApiResponse<T>;
     if (!res.ok && _data?.status !== ApiResponseStatus.SUCCESS) {
+      if (dangerousThrow) {
+        throw new Error(_data?.message ?? getErrorMessages(res.status));
+      }
       return {
         statusCode: res.status ?? 400,
         status: ApiResponseStatus.ERROR,
@@ -73,6 +74,9 @@ const fetcher = async <T = unknown>(
         status: ApiResponseStatus.ERROR,
         message: getErrorMessages(408),
       } satisfies Pick<IApiResponse, "statusCode" | "status" | "message">;
+    }
+    if (e instanceof Error && dangerousThrow) {
+      throw new Error(e.message);
     }
     return {
       statusCode: 500,
