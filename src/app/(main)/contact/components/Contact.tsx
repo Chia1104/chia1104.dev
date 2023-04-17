@@ -14,6 +14,9 @@ import { Input, type InputRef, Textarea, type TextAreaRef } from "@chia/ui";
 import { z } from "zod";
 import { fetcher, type IApiResponse } from "@chia/utils/fetcher.util";
 import { toast } from "sonner";
+import { RE_CAPTCHA_KEY } from "@chia/shared/constants";
+import Script from "next/script";
+import { useIsMounted, useDarkMode } from "@chia/hooks";
 
 const Contact: FC = () => {
   const [isValidate, setIsValidate] = useState(false);
@@ -22,6 +25,8 @@ const Contact: FC = () => {
   const emailRef = useRef<InputRef>(null);
   const messageRef = useRef<TextAreaRef>(null);
   const signal = useRef<AbortController>(new AbortController());
+  const isMounted = useIsMounted();
+  const { isDarkMode } = useDarkMode();
 
   useEffect(() => {
     signal.current = new AbortController();
@@ -33,6 +38,7 @@ const Contact: FC = () => {
   const handleSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSending(true);
+    const formData = new FormData(e.target);
     const promise = () =>
       fetcher<{ message: string }>({
         dangerousThrow: true,
@@ -40,12 +46,9 @@ const Contact: FC = () => {
         requestInit: {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            Accept: "application/json",
           },
-          body: JSON.stringify({
-            email: emailRef?.current?.value,
-            message: messageRef.current?.value,
-          }),
+          body: formData,
           signal: signal.current.signal,
         },
       });
@@ -115,6 +118,12 @@ const Contact: FC = () => {
             required
           />
         </div>
+        <Script src="https://www.google.com/recaptcha/api.js" async defer />
+        <div
+          className="g-recaptcha mb-5 mt-7 self-center"
+          data-sitekey={RE_CAPTCHA_KEY}
+          data-theme={isMounted && isDarkMode ? "dark" : "light"}
+        />
         <button
           id={id + "-contact-submit"}
           type="submit"
