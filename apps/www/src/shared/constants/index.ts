@@ -17,9 +17,9 @@ export const GH_PUBLIC_TOKEN = process.env.GH_PUBLIC_TOKEN;
 // Post path
 export const POSTS_PATH = !IS_TEST
   ? IS_PRODUCTION
-    ? "./posts/published"
-    : "./posts/unpublished"
-  : "./posts/examples";
+    ? "./apps/www/posts/published"
+    : "./apps/www/posts/unpublished"
+  : "./apps/www/posts/examples";
 
 // Youtube config
 export const YOUTUBE_ID = "UC3k2QizjG1Xp3Qvtuxn1W5A";
