@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "../../Image/index.ts";
-import Modal from "../../Modal/index.ts";
+import Image from "../../Image";
+import Modal from "../../Modal";
 import { type ImageProps } from "next/image";
 import React, {
   type FC,
@@ -9,7 +9,7 @@ import React, {
   ImgHTMLAttributes,
   useState,
 } from "react";
-import { cn } from "../../utils/cn.util.ts";
+import { cn } from "../../utils/cn.util";
 
 interface MDXImageProps extends ImageProps {
   alt: string;

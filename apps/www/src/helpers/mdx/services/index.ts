@@ -1,1 +1,1 @@
-export * from "./mdx.service.ts";
+export * from "./mdx.service";

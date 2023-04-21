@@ -1,1 +1,1 @@
-export { default as Resume } from "./Resume.tsx";
+export { default as Resume } from "./Resume";

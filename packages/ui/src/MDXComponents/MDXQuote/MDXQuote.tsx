@@ -5,7 +5,7 @@ import React, {
   type DetailedHTMLProps,
   type BlockquoteHTMLAttributes,
 } from "react";
-import { cn } from "../../utils/cn.util.ts";
+import { cn } from "../../utils/cn.util";
 
 interface Props
   extends DetailedHTMLProps<

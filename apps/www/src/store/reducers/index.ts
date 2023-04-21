@@ -1,5 +1,5 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import actionSheetReducer from "./action-sheet/index.ts";
+import actionSheetReducer from "./action-sheet";
 
 const reducers = combineReducers({
   actionSheet: actionSheetReducer,

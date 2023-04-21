@@ -1,6 +1,6 @@
 import { type FC } from "react";
-import { type LAT } from "@/shared/types/index.ts";
-import { Chia } from "@/shared/meta/chia.ts";
+import { type LAT } from "@/shared/types";
+import { Chia } from "@/shared/meta/chia";
 
 interface LATItemProps {
   lat: LAT;

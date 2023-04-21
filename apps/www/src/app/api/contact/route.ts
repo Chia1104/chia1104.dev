@@ -1,8 +1,8 @@
 import sendgrid from "@sendgrid/mail";
-import { Chia } from "@/shared/meta/chia.ts";
+import { Chia } from "@/shared/meta/chia";
 import { NextResponse, NextRequest } from "next/server";
-import { ApiResponseStatus } from "@/utils/fetcher.util.ts";
-import { errorConfig } from "@/config/network.config.ts";
+import { ApiResponseStatus } from "@/utils/fetcher.util";
+import { errorConfig } from "@/config/network.config";
 import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";

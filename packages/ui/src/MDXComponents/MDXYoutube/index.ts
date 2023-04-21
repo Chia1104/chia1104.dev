@@ -1,2 +1,2 @@
-export * from "./MDXYoutube.tsx";
-export { default } from "./MDXYoutube.tsx";
+export * from "./MDXYoutube";
+export { default } from "./MDXYoutube";

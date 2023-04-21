@@ -1,6 +1,6 @@
 import { Image } from "ui";
 import type { FC } from "react";
-import { Chia } from "@/shared/meta/chia.ts";
+import { Chia } from "@/shared/meta/chia";
 
 interface Props {
   avatarSrc: string;

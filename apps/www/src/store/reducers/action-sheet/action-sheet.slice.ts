@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import actionSheetInitState from "./action-sheet.state.ts";
-import actionSheetReducer from "./action-sheet.reducer.ts";
+import actionSheetInitState from "./action-sheet.state";
+import actionSheetReducer from "./action-sheet.reducer";
 import type { AppState } from "../../type";
 
 const actionSheetSlice = createSlice({

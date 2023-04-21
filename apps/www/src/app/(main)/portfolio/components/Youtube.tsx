@@ -1,9 +1,9 @@
-import VideoList from "./VideoList.tsx";
-import { Chia } from "@/shared/meta/chia.ts";
-import { asyncComponent } from "@/utils/asyncComponent.util.ts";
+import VideoList from "./VideoList";
+import { Chia } from "@/shared/meta/chia";
+import { asyncComponent } from "@/utils/asyncComponent.util";
 import { type FC } from "react";
-import type { Youtube as Y } from "@/shared/types/index.ts";
-import { getAllVideos } from "@/helpers/api/youtube.ts";
+import type { Youtube as Y } from "@/shared/types";
+import { getAllVideos } from "@/helpers/api/youtube";
 
 interface Props {
   data?: {

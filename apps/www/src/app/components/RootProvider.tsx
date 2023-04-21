@@ -3,7 +3,7 @@
 import { type FC, type ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
 import { AnimatePresence } from "framer-motion";
-import { useDarkMode, useIsMounted } from "@/hooks/index.ts";
+import { useDarkMode, useIsMounted } from "@/hooks";
 import { Toaster as ST } from "sonner";
 
 const Toaster: FC = () => {

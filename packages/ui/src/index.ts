@@ -5,16 +5,16 @@ export {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "./Accordion/index.ts";
-export { default as Chip } from "./Chip/index.ts";
-export * from "./ErrorBoundary/index.ts";
-export { default as Image } from "./Image/index.ts";
-export { default as Input } from "./Input/index.ts";
-export * from "./Input/index.ts";
-export { default as Link } from "./Link/index.ts";
-export { default as Modal } from "./Modal/index.ts";
-export { default as Page } from "./Page/index.ts";
-export { default as Textarea } from "./Textarea/index.ts";
-export * from "./Textarea/index.ts";
-export * from "./MDXComponents/index.ts";
-export * from "./utils/index.ts";
+} from "./Accordion";
+export { default as Chip } from "./Chip";
+export * from "./ErrorBoundary";
+export { default as Image } from "./Image";
+export { default as Input } from "./Input";
+export * from "./Input";
+export { default as Link } from "./Link";
+export { default as Modal } from "./Modal";
+export { default as Page } from "./Page";
+export { default as Textarea } from "./Textarea";
+export * from "./Textarea";
+export * from "./MDXComponents";
+export * from "./utils";

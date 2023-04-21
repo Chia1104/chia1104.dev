@@ -1,8 +1,8 @@
-import { getAllPosts } from "@/helpers/mdx/services/index.ts";
-import { Chia } from "@/shared/meta/chia.ts";
-import { PostsList } from "./components/index.ts";
+import { getAllPosts } from "@/helpers/mdx/services";
+import { Chia } from "@/shared/meta/chia";
+import { PostsList } from "./components";
 import type { Metadata } from "next";
-import { getBaseUrl } from "@/utils/getBaseUrl.ts";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const metadata: Metadata = {
   title: "Blog",

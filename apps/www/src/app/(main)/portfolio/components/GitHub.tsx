@@ -1,10 +1,10 @@
-import type { RepoGql } from "@/shared/types/index.ts";
-import ReposList from "./ReposList.tsx";
-import { Chia } from "@/shared/meta/chia.ts";
-import { asyncComponent } from "@/utils/asyncComponent.util.ts";
+import type { RepoGql } from "@/shared/types";
+import ReposList from "./ReposList";
+import { Chia } from "@/shared/meta/chia";
+import { asyncComponent } from "@/utils/asyncComponent.util";
 import { type FC } from "react";
-import githubClient from "@/helpers/GraphQL/github/github.client.ts";
-import { GET_REPOS } from "@/helpers/GraphQL/github/query/index.ts";
+import githubClient from "@/helpers/GraphQL/github/github.client";
+import { GET_REPOS } from "@/helpers/GraphQL/github/query";
 
 interface Props {
   repo?: RepoGql[];

@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Chia } from "@/shared/meta/chia.ts";
+import { Chia } from "@/shared/meta/chia";
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 
 const Footer: FC = () => {

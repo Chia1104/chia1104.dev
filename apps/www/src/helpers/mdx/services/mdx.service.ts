@@ -1,12 +1,12 @@
 // import "server-only";
 import path from "path";
-import type { PostFrontMatter, PostSource } from "@/shared/types/index.ts";
-import { POSTS_PATH } from "@/shared/constants/index.ts";
+import type { PostFrontMatter, PostSource } from "@/shared/types";
+import { POSTS_PATH } from "@/shared/constants";
 import { serialize } from "next-mdx-remote/serialize";
 import { compileMDX } from "next-mdx-remote/rsc";
 import pMap from "p-map";
 import glob from "fast-glob";
-import { getPostData } from "../repositories/index.ts";
+import { getPostData } from "../repositories";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import rehypePrism from "rehype-prism-plus";
@@ -14,7 +14,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { cache } from "react";
-import { Components } from "./MDXRemote/index.ts";
+import { Components } from "./MDXRemote";
 
 const PostsPath = path.join(process.cwd(), POSTS_PATH);
 

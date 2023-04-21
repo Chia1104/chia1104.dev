@@ -2,10 +2,10 @@
 
 import React, { type FC } from "react";
 import { AnimatePresence, motion, type MotionProps } from "framer-motion";
-import useLockedBody from "../utils/use-locked-body.ts";
+import useLockedBody from "../utils/use-locked-body";
 import { createPortal } from "react-dom";
-import usePortal from "../utils/use-portal.ts";
-import { cn } from "../utils/cn.util.ts";
+import usePortal from "../utils/use-portal";
+import { cn } from "../utils/cn.util";
 
 interface ModalProps extends MotionProps {
   isShowed: boolean;

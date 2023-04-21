@@ -6,7 +6,7 @@ import React, {
   type HTMLAttributes,
   useRef,
 } from "react";
-import useIsMounted from "../../utils/use-is-mounted.ts";
+import useIsMounted from "../../utils/use-is-mounted";
 
 export const H1: FC<
   DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>

@@ -12,11 +12,11 @@ import {
 import { cn } from "ui";
 import { Input, type InputRef, Textarea, type TextAreaRef } from "ui";
 import { z } from "zod";
-import { fetcher, type IApiResponse } from "@/utils/fetcher.util.ts";
+import { fetcher, type IApiResponse } from "@/utils/fetcher.util";
 import { toast } from "sonner";
-import { RE_CAPTCHA_KEY } from "@/shared/constants/index.ts";
+import { RE_CAPTCHA_KEY } from "@/shared/constants";
 import Script from "next/script";
-import { useIsMounted, useDarkMode } from "@/hooks/index.ts";
+import { useIsMounted, useDarkMode } from "@/hooks";
 
 const Contact: FC = () => {
   const [isValidate, setIsValidate] = useState(false);

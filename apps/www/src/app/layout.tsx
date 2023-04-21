@@ -1,11 +1,11 @@
 import "../styles/globals.css";
 import { ErrorBoundary } from "ui";
-import { RootProvider, Analytics } from "@/app/components/index.ts";
+import { RootProvider, Analytics } from "@/app/components";
 import { type ReactNode } from "react";
-import { Chia } from "@/shared/meta/chia.ts";
+import { Chia } from "@/shared/meta/chia";
 import "@total-typescript/ts-reset";
 import type { Metadata } from "next";
-import { getBaseUrl } from "@/utils/getBaseUrl.ts";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const metadata: Metadata = {
   title: {

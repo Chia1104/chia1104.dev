@@ -3,7 +3,7 @@ import {
   RAILWAY_URL,
   VERCEL_URL,
   ZEABUR_URL,
-} from "@/shared/constants/index.ts";
+} from "@/shared/constants";
 
 interface Options {
   isServer?: boolean;

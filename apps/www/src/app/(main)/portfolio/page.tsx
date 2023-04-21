@@ -1,8 +1,8 @@
-import { GitHub, Youtube, Design } from "./components/index.ts";
-import { Design as DesignData } from "@/shared/meta/design.ts";
+import { GitHub, Youtube, Design } from "./components";
+import { Design as DesignData } from "@/shared/meta/design";
 import type { Metadata } from "next";
-import { Chia } from "@/shared/meta/chia.ts";
-import { getBaseUrl } from "@/utils/getBaseUrl.ts";
+import { Chia } from "@/shared/meta/chia";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const revalidate = 60;
 

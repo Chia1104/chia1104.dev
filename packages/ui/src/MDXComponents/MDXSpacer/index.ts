@@ -1,1 +1,1 @@
-export * from "./MDXSpacer.tsx";
+export * from "./MDXSpacer";

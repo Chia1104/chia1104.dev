@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import useSSR from "./use-ssr.ts";
+import useSSR from "./use-ssr";
 
 const createElement = (id: string): HTMLElement => {
   const el = document.createElement("div");

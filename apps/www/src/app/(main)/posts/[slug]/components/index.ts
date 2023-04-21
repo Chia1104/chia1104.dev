@@ -1,1 +1,1 @@
-export { default as Giscus } from "./Giscus.tsx";
+export { default as Giscus } from "./Giscus";

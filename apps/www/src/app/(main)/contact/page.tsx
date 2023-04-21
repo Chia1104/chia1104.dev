@@ -1,7 +1,7 @@
-import { Contact } from "./components/index.ts";
-import { Chia } from "@/shared/meta/chia.ts";
+import { Contact } from "./components";
+import { Chia } from "@/shared/meta/chia";
 import type { Metadata } from "next";
-import { getBaseUrl } from "@/utils/getBaseUrl.ts";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const metadata: Metadata = {
   title: "Contact Me",

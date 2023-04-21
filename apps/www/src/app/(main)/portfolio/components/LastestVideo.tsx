@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import type { YoutubeItem } from "@/shared/types/index.ts";
+import type { YoutubeItem } from "@/shared/types";
 
 interface Props {
   item: YoutubeItem;

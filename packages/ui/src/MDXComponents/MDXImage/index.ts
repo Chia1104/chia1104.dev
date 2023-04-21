@@ -1,1 +1,1 @@
-export { MDXImage } from "./MDXImage.tsx";
+export { MDXImage } from "./MDXImage";

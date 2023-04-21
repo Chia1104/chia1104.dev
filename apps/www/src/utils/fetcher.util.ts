@@ -1,5 +1,5 @@
-import setSearchParams from "./set-search-params.util.ts";
-import { errorConfig } from "@/config/network.config.ts";
+import setSearchParams from "./set-search-params.util";
+import { errorConfig } from "@/config/network.config";
 
 export enum ApiResponseStatus {
   SUCCESS = "success",

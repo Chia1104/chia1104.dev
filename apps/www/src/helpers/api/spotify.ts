@@ -3,7 +3,7 @@ import {
   SPOTIFY_TOKEN_URL,
   SPOTIFY_CLIENT_ID,
   SPOTIFY_CLIENT_SECRET,
-} from "@/shared/constants/index.ts";
+} from "@/shared/constants";
 
 const basic = Buffer.from(
   `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`

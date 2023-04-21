@@ -1,7 +1,7 @@
 import { type FC } from "react";
-import { Chia } from "@/shared/meta/chia.ts";
-import type { Design as D } from "@/shared/types/index.ts";
-import DMPoster from "./DMPoster.tsx";
+import { Chia } from "@/shared/meta/chia";
+import type { Design as D } from "@/shared/types";
+import DMPoster from "./DMPoster";
 
 interface Props {
   data: D[];

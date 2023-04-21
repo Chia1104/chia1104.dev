@@ -1,7 +1,7 @@
 "use client";
 
 import { type FC } from "react";
-import type { PostFrontMatter } from "@/shared/types/index.ts";
+import type { PostFrontMatter } from "@/shared/types";
 import dayjs from "dayjs";
 import { Image, cn } from "ui";
 import Link from "next/link";

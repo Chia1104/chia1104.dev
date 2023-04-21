@@ -1,9 +1,9 @@
-import { type PostFrontMatter } from "@/shared/types/index.ts";
+import { type PostFrontMatter } from "@/shared/types";
 import path from "path";
 import fs from "fs/promises";
 import matter from "gray-matter";
 import readingTime from "reading-time";
-import { POSTS_PATH } from "@/shared/constants/index.ts";
+import { POSTS_PATH } from "@/shared/constants";
 
 const PostsPath = path.join(process.cwd(), POSTS_PATH);
 

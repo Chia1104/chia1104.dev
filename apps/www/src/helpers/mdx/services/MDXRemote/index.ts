@@ -1,2 +1,2 @@
-export { default } from "./MDXRemote.tsx";
-export * from "./MDXRemote.tsx";
+export { default } from "./MDXRemote";
+export * from "./MDXRemote";

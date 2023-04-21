@@ -1,1 +1,1 @@
-export * from "./MDXDivider.tsx";
+export * from "./MDXDivider";

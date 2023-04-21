@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import type { RepoGql } from "@/shared/types/index.ts";
+import type { RepoGql } from "@/shared/types";
 import { VscRepoForked } from "react-icons/vsc";
 
 interface RepoItemProps {

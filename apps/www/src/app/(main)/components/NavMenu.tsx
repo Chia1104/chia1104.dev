@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "ui";
 import { usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
-import { useDarkMode, useIsMounted } from "@/hooks/index.ts";
+import { useDarkMode, useIsMounted } from "@/hooks";
 
 const navItems = {
   "/about": {

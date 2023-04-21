@@ -11,7 +11,7 @@ import React, {
   type ComponentProps,
 } from "react";
 import { type ZodType } from "zod";
-import { cn } from "../utils/cn.util.ts";
+import { cn } from "../utils/cn.util";
 interface Props extends ComponentProps<"textarea"> {
   title?: string;
   error?: string;

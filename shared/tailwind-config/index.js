@@ -1,4 +1,4 @@
-const animation = require("./animation.js");
+const animation = require("./animation");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

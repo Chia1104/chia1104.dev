@@ -5,4 +5,4 @@ export {
   H4 as h4,
   H5 as h5,
   H6 as h6,
-} from "./MDXHeading.tsx";
+} from "./MDXHeading";

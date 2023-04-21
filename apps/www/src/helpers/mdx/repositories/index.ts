@@ -1,1 +1,1 @@
-export * from "./mdx.repository.ts";
+export * from "./mdx.repository";

@@ -1,6 +1,6 @@
 import { type FC } from "react";
-import type { YoutubeItem } from "@/shared/types/index.ts";
-import LastestVideo from "./LastestVideo.tsx";
+import type { YoutubeItem } from "@/shared/types";
+import LastestVideo from "./LastestVideo";
 import dayjs from "dayjs";
 
 interface Props {

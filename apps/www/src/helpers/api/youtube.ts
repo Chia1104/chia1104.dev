@@ -2,8 +2,8 @@ import {
   GOOGLE_API,
   GOOGLE_API_KEY,
   YOUTUBE_LIST_ID,
-} from "@/shared/constants/index.ts";
-import type { ApiRespond, Youtube } from "@/shared/types/index.ts";
+} from "@/shared/constants";
+import type { ApiRespond, Youtube } from "@/shared/types";
 
 export const getAllVideos = async (
   maxResult = 10

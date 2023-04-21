@@ -1,1 +1,1 @@
-export * from "./MDXList.tsx";
+export * from "./MDXList";

@@ -1,6 +1,6 @@
-import { AboutMe, NewsCard } from "./components/index.ts";
-import { Chia } from "@/shared/meta/chia.ts";
-import { getAllPosts } from "@/helpers/mdx/services/index.ts";
+import { AboutMe, NewsCard } from "./components";
+import { Chia } from "@/shared/meta/chia";
+import { getAllPosts } from "@/helpers/mdx/services";
 import dayjs from "dayjs";
 
 const getHomePageData = async () => {

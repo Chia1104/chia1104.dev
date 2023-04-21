@@ -1,15 +1,12 @@
-import {
-  getAllPosts,
-  getCompiledSource,
-} from "@/helpers/mdx/services/index.ts";
+import { getAllPosts, getCompiledSource } from "@/helpers/mdx/services";
 import { Image, Chip } from "ui";
-import { Giscus } from "./components/index.ts";
+import { Giscus } from "./components";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { WithContext, Blog } from "schema-dts";
-import { getBaseUrl } from "@/utils/getBaseUrl.ts";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();

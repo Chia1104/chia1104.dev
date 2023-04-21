@@ -1,2 +1,2 @@
-export * from "./MDXCodeSandBox.tsx";
-export { default } from "./MDXCodeSandBox.tsx";
+export * from "./MDXCodeSandBox";
+export { default } from "./MDXCodeSandBox";

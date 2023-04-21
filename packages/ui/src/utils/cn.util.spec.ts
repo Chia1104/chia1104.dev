@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { cn } from "./cn.util.ts";
+import { cn } from "./cn.util";
 
 describe("cn", () => {
   test("should return empty string", () => {

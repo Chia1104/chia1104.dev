@@ -1,1 +1,1 @@
-export { default as PostsList } from "./PostsList.tsx";
+export { default as PostsList } from "./PostsList";

@@ -1,8 +1,5 @@
 import { GraphQLClient } from "graphql-request";
-import {
-  GITHUB_GRAPHQL_API,
-  GH_PUBLIC_TOKEN,
-} from "@/shared/constants/index.ts";
+import { GITHUB_GRAPHQL_API, GH_PUBLIC_TOKEN } from "@/shared/constants";
 
 async function middleware(request: RequestInit) {
   return {
