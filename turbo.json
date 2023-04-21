@@ -1,0 +1,61 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "www#build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**"],
+      "env": [
+        "SITE_URL",
+        "GH_PUBLIC_TOKEN",
+        "NEXT_PUBLIC_RE_CAPTCHA_KEY",
+        "RE_CAPTCHA_KEY",
+        "GOOGLE_API_KEY",
+        "SPOTIFY_CLIENT_ID",
+        "SPOTIFY_CLIENT_SECRET",
+        "SENDGRID_KEY",
+        "REDIS_URL",
+        "UPSTASH_TOKEN",
+        "ZEABUR_URL",
+        "VERCEL_URL",
+        "RAILWAY_STATIC_URL"
+      ]
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "cache": true
+    },
+    "type:check": {
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "e2e:chrome": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "e2e:edge": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test:watch": {
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "start": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    }
+  },
+  "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE"]
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia-stack/tailwind-config",
+  "types": "index.d.ts",
+  "version": "0.0.1-beta.1",
+  "private": true,
+  "main": "index.js",
+  "devDependencies": {
+    "tailwindcss": "^3.3.1",
+    "tailwindcss-animate": "^1.0.5"
+  }
+}

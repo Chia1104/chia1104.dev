@@ -1,16 +1,46 @@
-Dockerfile
-.dockerignore
-node_modules
-npm-debug.log
-README.md
-.next
-.git
-.vscode
-.DS_Store
-.env
-.env.local
-.idea
-cypress
-.husky
-.github
-schema.docs.graphql
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+**/*/node_modules
+**/*/.pnp
+**/*/.pnp.js
+
+# testing
+**/*/coverage
+**/*/cypress/videos
+**/*/cypress/screenshots
+**/*/cypress/downloads
+
+# next.js
+**/*/.next/
+**/*/out/
+**/*/build
+
+# misc
+**/*/.DS_Store
+**/*/*.pem
+
+# debug
+**/*/npm-debug.log*
+**/*/yarn-debug.log*
+**/*/yarn-error.log*
+**/*/.pnpm-debug.log*
+
+# local env files
+**/*/.env
+**/*/.env.example
+**/*/.env.production
+
+# turbo
+**/*/.turbo
+
+**/*/dist
+**/*/.dist
+
+**/*/vscode
+**/*/.vscode
+**/*/.idea
+
+tests
+**/*/*.md
+**/*/*.mdx
