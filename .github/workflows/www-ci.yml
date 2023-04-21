@@ -1,0 +1,76 @@
+name: www CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+    paths:
+      - "apps/www/**"
+      - "packages/ui/**"
+      - ".github/workflows/www-ci.yml"
+
+env:
+  NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
+  GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
+  NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  PNPM_VERSION: 8.2.0
+  NODE_VERSION: 18.*
+
+jobs:
+  build:
+    name: Build and Test
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Next.js cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/apps/www/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
+
+      - name: ESLint
+        run: pnpm lint --filter www...
+
+      - name: Type checking
+        run: pnpm type:check --filter www...
+
+      - name: Unit tests
+        run: pnpm test --filter www...

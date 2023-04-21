@@ -1,19 +1,25 @@
-# Chia1104 Web Developer
+# Chia1104.dev
 
-[![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chias-web-nextjs/production?style=for-the-badge&logo=appveyor)](https://vercel.com/deployments/chia1104)
-[![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chias-web-nextjs/next/main?style=for-the-badge&logo=appveyor)](https://nextjs.org/)
-[![Licensed under MIT](https://img.shields.io/github/license/chia1104/chias-web-nextjs?style=for-the-badge&logo=appveyor)](LICENSE)
-[![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chias-web-nextjs?style=for-the-badge&logo=appveyor)](https://github.com/chia1104/chias-web-nextjs)
+[![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/production?style=for-the-badge&logo=appveyor)](https://vercel.com/deployments/chia1104)
+[![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chia1104.dev/next/main/apps/www?style=for-the-badge&logo=appveyor)](https://nextjs.org/)
+[![Licensed under MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=for-the-badge&logo=appveyor)](LICENSE)
+[![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chia1104.dev?style=for-the-badge&logo=appveyor)](https://github.com/chia1104/chias-web-nextjs)
 
-This is my personal website.
+This is my personal website, a monorepo managed using Turborepo. The development is based on the app structure of NextJS, with the use of TailwindCSS and Typescript. For backend functionalities, PostgreSQL and Redis are utilized to store articles and limit API traffic.
 
-Build with NextJS 13 `appDir` new feature.
+Finally, the website is deployed to the Zeabur platform using Docker, and GitHub Actions are used for integration testing.
 
 ## 🔨 Languages and Tools
 
-<div align="center">
-  <img src="https://skillicons.dev/icons?i=ts,tailwindcss,next,docker" alt="languages and tools" />
-</div>
+![typescript](https://img.shields.io/badge/-Typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![nextjs](https://img.shields.io/badge/-NextJS-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![turborepo](https://img.shields.io/badge/-Turborepo-FF0080?style=for-the-badge&logo=turborepo&logoColor=white)
+![tailwindcss](https://img.shields.io/badge/-TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![framer-motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+![vitest](https://img.shields.io/badge/-Vitest-2C7A7B?style=for-the-badge&logo=vite&logoColor=white)
+![docker](https://img.shields.io/badge/-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![redis](https://img.shields.io/badge/-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![postgresql](https://img.shields.io/badge/-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 
 ## 🌐 Deployments
 
@@ -21,33 +27,32 @@ Build with NextJS 13 `appDir` new feature.
 - [Zeabur](https://chia1104.zeabur.app/)
 - [Railway](https://chia1104.up.railway.app/)
 
-## ✨ Features
-
-- [x] NextJS 13 `appDir`
-- [x] TailwindCSS
-- [x] Framer Motion (animation)
-- [x] MDX Blog
-- [x] [Vitest](https://vitest.dev/) Unit Testing
-- [x] [Cypress](https://www.cypress.io/) E2E Testing
-
 ## 🚀 Deploy your own
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example)
+WIP
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/Chia1104/chias-web-nextjs)
+## 🏗️ Project Structure
+
+```
+chia1104.dev
+├── apps
+│   ├── dash (WIP)
+│   └── www (NextJS)
+├── packages
+│   ├── ui (shared components)
+│   └── db (WIP)
+├── shared
+│   ├── tailwind-config (tailwind config)
+│   └── tsconfig (base, nextjs, react)
+└── tests (WIP)
+```
 
 ## 🎉 Get Started
 
-Generate the `.env` file and fill in the values.
+You can run the following commands to initialize the project.
 
 ```bash
-cp .env.example .env
-```
-
-Install the dependencies.
-
-```bash
-pnpm install
+make init
 ```
 
 Runs the app in the development mode.
@@ -55,30 +60,18 @@ Runs the app in the development mode.
 Open http://localhost:3000 to view it in your browser.
 
 ```bash
-pnpm dev
+pnpm dev --filter www...
 ```
 
 Testing the app.
 
 ```bash
-pnpm test:vitest # <-- test with vitest
-```
-
-Builds the app for production to the `.next` folder.
-
-```bash
-pnpm build
+pnpm test
 ```
 
 Build the docker image
 
 ```bash
-docker build -t web:v1 .
-docker run -p 8080:8080 web:v1
-```
-
-or use docker-compose
-
-```bash
-docker-compose up -d
+docker build -f ./apps/www/Dockerfile -t web:v2 .
+docker run -p 8080:8080 web:v2
 ```

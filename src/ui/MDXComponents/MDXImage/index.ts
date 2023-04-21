@@ -1,1 +1,0 @@
-export { MDXImage } from "./MDXImage";
