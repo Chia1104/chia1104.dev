@@ -1,12 +1,10 @@
 // import "server-only";
-import path from "path";
 import type { PostFrontMatter, PostSource } from "@/shared/types";
-import { POSTS_PATH } from "@/shared/constants";
 import { serialize } from "next-mdx-remote/serialize";
 import { compileMDX } from "next-mdx-remote/rsc";
 import pMap from "p-map";
 import glob from "fast-glob";
-import { getPostData } from "../repositories";
+import { getPostData, getPostPaths } from "../repositories";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import rehypePrism from "rehype-prism-plus";
@@ -16,19 +14,17 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { cache } from "react";
 import { Components } from "./MDXRemote";
 
-const PostsPath = path.join(process.cwd(), POSTS_PATH);
-
 export const preload = (slug: string) => {
   void getPost(slug);
 };
 
 export const getSlugs = async (): Promise<string[]> =>
-  (await glob("*.mdx", { cwd: PostsPath })).map((fileName) =>
+  (await glob("*.mdx", { cwd: getPostPaths() })).map((fileName) =>
     fileName.replace(/\.mdx$/, "")
   );
 
 export const getEncodedSlugs = async (): Promise<string[]> =>
-  (await glob("*.mdx", { cwd: PostsPath })).map((fileName) =>
+  (await glob("*.mdx", { cwd: getPostPaths() })).map((fileName) =>
     encodeURI(fileName.replace(/\.mdx$/, ""))
   );
 

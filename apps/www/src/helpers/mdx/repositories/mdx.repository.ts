@@ -5,7 +5,7 @@ import matter from "gray-matter";
 import readingTime from "reading-time";
 import { POSTS_PATH } from "@/shared/constants";
 
-const PostsPath = path.join(process.cwd(), POSTS_PATH);
+export const getPostPaths = () => path.join(process.cwd(), POSTS_PATH);
 
 export const getPostData = async (
   slug: string
@@ -15,7 +15,7 @@ export const getPostData = async (
 }> => {
   const s = decodeURI(slug);
 
-  const postDir = path.join(PostsPath, `${s}.mdx`);
+  const postDir = path.join(getPostPaths(), `${s}.mdx`);
   const source = await fs.readFile(postDir, "utf8");
   const { content, data } = matter(source);
 
