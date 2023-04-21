@@ -29,7 +29,31 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ## 🚀 Deploy your own
 
-WIP
+### Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/Chia1104/chia1104.dev)
+
+1. Create a new project on Vercel, select the `apps/www` folder as the root directory:
+
+![Vercel build settings](./.github/public/vercel-deploy2.png)
+
+2. Apply the following settings:
+
+![Vercel build settings](./.github/public/vercel-deploy1.png)
+
+### Railway
+
+[![Deploy with Railway](https://railway.app/button.svg)](https://railway.app/new/template) (WIP)
+
+1. Add the following environment variables:
+
+![Railway environment variables](./.github/public/railway-deploy.png)
+
+### Zeabur
+
+1. Create a new project on Zeabur, override the `build` and `start` commands:
+
+![Zeabur build settings](./.github/public/zeabur-deploy.png)
 
 ## 🏗️ Project Structure
 

@@ -55,10 +55,10 @@ USER nextjs
 
 COPY --from=installer /app/apps/www/next.config.mjs .
 COPY --from=installer /app/apps/www/package.json .
-COPY --from=installer /app/apps/www/public ./apps/web/public
+COPY --from=installer /app/apps/www/public ./apps/www/public
 
 COPY --from=installer --chown=nextjs:nodejs /app/apps/www/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/www/.next/static ./apps/web/.next/static
+COPY --from=installer --chown=nextjs:nodejs /app/apps/www/.next/static ./apps/www/.next/static
 
 ARG GH_PUBLIC_TOKEN \
     GOOGLE_API_KEY \
