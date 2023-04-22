@@ -55,6 +55,9 @@
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
+    },
+    "clean": {
+      "cache": false
     }
   },
   "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE"]

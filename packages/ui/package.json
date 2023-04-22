@@ -6,11 +6,11 @@
   "types": "./src/index.ts",
   "main": "src/index.ts",
   "scripts": {
-    "clean": "rm -rf dist",
     "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
     "type:check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "clean": "git clean -xdf .turbo node_modules"
   },
   "devDependencies": {
     "@radix-ui/react-accordion": "1.1.1",
@@ -25,7 +25,6 @@
     "react-dom": "^18.2.0",
     "sonner": "0.3.0",
     "tailwind-merge": "1.11.0",
-    "tsconfig": "workspace:0.0.0",
-    "tsup": "^6.7.0"
+    "tsconfig": "workspace:*"
   }
 }

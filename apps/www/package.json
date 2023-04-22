@@ -23,7 +23,8 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "format:docs": "prettier --write \"**/*.{md,mdx}\"",
     "docs:check": "prettier --check \"**/*.{md,mdx}\"",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "clean": "git clean -xdf .next .turbo node_modules"
   },
   "dependencies": {
     "@giscus/react": "^2.2.8",
@@ -72,7 +73,6 @@
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@testing-library/react": "14.0.0",
     "@types/glob": "^8.1.0",
-    "@types/node": "^18.15.11",
     "@types/react": "^18.0.38",
     "@types/react-dom": "^18.0.11",
     "@vitejs/plugin-react": "^3.1.0",

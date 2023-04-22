@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "pipeline": {
+    "db": {
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
+    "db:generate": {},
+    "db:push": {},
+    "db:init": {}
+  }
+}
