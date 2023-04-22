@@ -18,3 +18,4 @@ export { default as Textarea } from "./Textarea";
 export * from "./Textarea";
 export * from "./MDXComponents";
 export * from "./utils";
+export { default as ToggleTheme } from "./ToggleTheme";
