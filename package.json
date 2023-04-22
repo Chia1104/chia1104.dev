@@ -17,17 +17,22 @@
     "format": "prettier --write \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue}\"",
     "type:check": "turbo run type:check",
-    "clean": "find chia1104.dev -name node_modules -o -name .next -o -name dist -type d -prune | xargs rm -rf",
+    "clean": "git clean -xdf node_modules",
+    "clean:workspaces": "turbo clean",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
     "test:e2e": "turbo run test:e2e",
     "e2e:chrome": "turbo run e2e:chrome",
     "e2e:firefox": "turbo run e2e:firefox",
-    "e2e:edge": "turbo run e2e:edge"
+    "e2e:edge": "turbo run e2e:edge",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push",
+    "db:init": "turbo run db:init"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "13.3.0",
     "@total-typescript/ts-reset": "0.4.2",
+    "@types/node": "^18.15.13",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "eslint": "^8.38.0",
@@ -50,7 +55,7 @@
   "engines": {
     "node": ">=18.*"
   },
-  "packageManager": "pnpm@8.2.0",
+  "packageManager": "pnpm@8.3.1",
   "dependencies": {
     "zod": "^3.21.4"
   }
