@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -15,22 +15,21 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@next/bundle-analyzer": "^13.3.0",
     "clsx": "^1.2.1",
     "dayjs": "^1.11.7",
-    "next": "13.3.0",
+    "next": "13.3.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "server-only": "^0.0.1",
     "sharp": "^0.32.0",
     "tailwind-merge": "^1.12.0",
-    "zod": "^3.21.4"
+    "ui": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/react": "^14.0.0",
     "@total-typescript/ts-reset": "^0.4.2",
     "@types/node": "18.15.11",
-    "@types/react": "18.0.35",
+    "@types/react": "^18.0.38",
     "@types/react-dom": "18.0.11",
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "10.4.14",

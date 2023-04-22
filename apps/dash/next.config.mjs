@@ -1,5 +1,7 @@
 // @ts-check
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
@@ -33,8 +35,13 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
+  transpilePackages: ["ui"],
   experimental: {
     appDir: true,
+    // outputFileTracingRoot: join(
+    //   dirname(fileURLToPath(import.meta.url)),
+    //   "../.."
+    // ),
   },
   eslint: {
     ignoreDuringBuilds: true,
