@@ -24,6 +24,16 @@
         "RAILWAY_STATIC_URL"
       ]
     },
+    "dash#build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**"],
+      "env": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXTAUTH_URL",
+        "NEXTAUTH_SECRET"
+      ]
+    },
     "lint": {
       "dependsOn": ["^build"],
       "cache": true

@@ -19,3 +19,8 @@ init-db:
 	@echo "Creating db .env file..."
 	@cp ./packages/db/.env.example ./packages/db/.env
 	@echo "Creating db .env file... Done"
+
+init-dash:
+	@echo "Creating dashboard .env file..."
+	@cp ./apps/dash/.env.example ./apps/dash/.env
+	@echo "Creating dashboard .env file... Done"

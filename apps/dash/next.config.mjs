@@ -28,13 +28,10 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
-  transpilePackages: ["ui"],
+  transpilePackages: ["ui", "db"],
   experimental: {
     appDir: true,
-    // outputFileTracingRoot: join(
-    //   dirname(fileURLToPath(import.meta.url)),
-    //   "../.."
-    // ),
+    serverComponentsExternalPackages: ["ui", "db"],
   },
   eslint: {
     ignoreDuringBuilds: true,

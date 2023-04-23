@@ -6,13 +6,12 @@
   "types": "index.ts",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
-    "type:check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate",
     "db:init": "prisma db push --preview-feature --force-reset --skip-generate",
     "dev": "prisma studio --port 5556",
-    "clean": "git clean -xdf .turbo node_modules"
+    "clean": "git clean -xdf .turbo node_modules",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^4.13.0"
