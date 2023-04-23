@@ -1,16 +1,5 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
-  "pipeline": {
-    "dash#build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": [
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET",
-        "NEXTAUTH_URL",
-        "NEXTAUTH_SECRET"
-      ]
-    }
-  }
+  "pipeline": {}
 }
