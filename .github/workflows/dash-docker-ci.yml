@@ -49,7 +49,7 @@ jobs:
           file: ./apps/dash/Dockerfile
           push: false
           load: false
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104:${{ env.GIT_HASH }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-dash:${{ env.GIT_HASH }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
