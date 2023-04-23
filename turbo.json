@@ -7,7 +7,7 @@
     },
     "www#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
+      "outputs": [".next/**"],
       "env": [
         "SITE_URL",
         "GH_PUBLIC_TOKEN",
@@ -26,7 +26,7 @@
     },
     "dash#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
+      "outputs": [".next/**"],
       "env": [
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
