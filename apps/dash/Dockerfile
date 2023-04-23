@@ -33,6 +33,7 @@ RUN apk update && \
     libc6-compat && \
     yarn global add pnpm && \
     pnpm i && \
+    yarn turbo run db:generate && \
     yarn turbo run build --filter=dash...
 
 FROM base AS runner
