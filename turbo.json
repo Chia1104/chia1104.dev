@@ -7,7 +7,7 @@
     },
     "www#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**"],
+      "outputs": [".next/**", "!.next/cache/**"],
       "env": [
         "SITE_URL",
         "GH_PUBLIC_TOKEN",
