@@ -50,3 +50,11 @@ jobs:
           push: false
           load: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104:${{ env.GIT_HASH }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
+            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            TURBO_TEAM=${{ env.TURBO_TEAM }}
+            TURBO_TOKEN=${{ env.TURBO_TOKEN }}
