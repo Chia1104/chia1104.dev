@@ -6,8 +6,6 @@
   "types": "index.ts",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
-    "type:check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate",
     "db:init": "prisma db push --preview-feature --force-reset --skip-generate",
