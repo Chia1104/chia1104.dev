@@ -23,14 +23,10 @@ COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
-    TURBO_TOKEN \
-    ZEABUR_URL \
-    RAILWAY_STATIC_URL
+    TURBO_TOKEN
 
-ENV TURBO_TEAM=$TURBO_TEAM \
-    TURBO_TOKEN=$TURBO_TOKEN \
-    ZEABUR_URL=${ZEABUR_URL} \
-    RAILWAY_STATIC_URL=${RAILWAY_STATIC_URL}
+ENV TURBO_TEAM=${TURBO_TEAM} \
+    TURBO_TOKEN=${TURBO_TOKEN}
 
 RUN apk update && \
     apk add --no-cache \
@@ -54,11 +50,15 @@ COPY --from=installer /app/apps/dash/public ./apps/dash/public
 COPY --from=installer --chown=nextjs:nodejs /app/apps/dash/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/dash/.next/static ./apps/dash/.next/static
 
-ARG ZEABUR_URL \
-    RAILWAY_STATIC_URL
+ARG DATABASE_URL \
+    NEXTAUTH_SECRET \
+    GOOGLE_CLIENT_ID \
+    GOOGLE_CLIENT_SECRET
 
-ENV ZEABUR_URL=${ZEABUR_URL} \
-    RAILWAY_STATIC_URL=${RAILWAY_STATIC_URL} \
+ENV DATABASE_URL=${DATABASE_URL} \
+    NEXTAUTH_SECRET=${NEXTAUTH_SECRET} \
+    GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
+    GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
     PORT=8080 \
     NODE_ENV=production
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "name": "@chia-stack/tailwind-config",
+  "name": "@chiastack/tailwind-config",
   "types": "index.d.ts",
   "version": "0.0.1-beta.1",
   "private": true,

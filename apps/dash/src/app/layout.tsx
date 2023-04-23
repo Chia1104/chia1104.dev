@@ -1,6 +1,9 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 import { Page } from "ui";
+import { getServerSession } from "next-auth";
+import authOptions from "@/server/auth/auth-options";
+import { RootProvider } from "./components";
 
 export const metadata = {
   title: "Next App",
@@ -8,10 +11,13 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const session = getServerSession(authOptions);
   return (
     <html lang="en">
       <body>
-        <Page>{children}</Page>
+        <RootProvider session={session}>
+          <Page>{children}</Page>
+        </RootProvider>
       </body>
     </html>
   );

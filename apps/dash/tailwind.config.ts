@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import basedConfig from "@chiastack/tailwind-config";
 
 export default {
   content: [
@@ -15,5 +16,6 @@ export default {
     },
   },
   plugins: [],
-  // darkMode: "class",
+  darkMode: "class",
+  presets: [basedConfig],
 } satisfies Config;

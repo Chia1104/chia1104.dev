@@ -10,6 +10,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  USER
+}
+
 model Post {
   id          String   @id @default(cuid())
   slug        String   @unique
@@ -60,6 +65,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   profile       Profile[]
+  role          Role      @default(USER)
 }
 
 model VerificationToken {
