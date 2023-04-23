@@ -38,6 +38,7 @@ const nextConfig = {
     appDir: true,
     mdxRs: true,
     typedRoutes: false,
+    serverComponentsExternalPackages: ["ui"],
   },
   eslint: {
     ignoreDuringBuilds: true,
