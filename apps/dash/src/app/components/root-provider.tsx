@@ -11,7 +11,7 @@ import { Toaster as ST } from "sonner";
 import { useDarkMode } from "@/hooks";
 
 interface Props {
-  session: Session;
+  session: Session | null;
   children: ReactNode;
 }
 
