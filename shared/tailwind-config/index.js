@@ -1,4 +1,5 @@
 const animation = require("./animation");
+const plugin = require("tailwindcss/plugin");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -19,6 +20,17 @@ module.exports = {
       },
     },
   },
+  plugins: [
+    plugin(function ({ addComponents }) {
+      addComponents({
+        ".ctw-container": {
+          width: "100%",
+          marginLeft: "auto",
+          marginRight: "auto",
+        },
+      });
+    }),
+  ],
   darkMode: "class",
 };
 

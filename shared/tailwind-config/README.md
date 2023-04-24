@@ -12,22 +12,22 @@ Make sure your tailwind version is at least 3.3.0.
 
 ```ts
 import type { Config } from "tailwindcss";
-import basedConfig, { animation } from "@shared/tailwind-config";
+import baseConfig, { animation } from "@chiastack/tailwind-config";
 
 export default {
   // other config
-  presets: [animation, basedConfig],
+  presets: [animation, baseConfig],
 } satisfies Config;
 ```
 
 ### JavaScript
 
 ```js
-const basedConfig = require("@shared/tailwind-config");
-const animation = require("@shared/tailwind-config");
+const baseConfig = require("@chiastack/tailwind-config");
+const { animation } = require("@chiastack/tailwind-config");
 
 module.exports = {
   // other config
-  presets: [animation, basedConfig],
+  presets: [animation, baseConfig],
 };
 ```
