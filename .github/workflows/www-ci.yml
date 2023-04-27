@@ -9,6 +9,7 @@ on:
       - "apps/www/**"
       - "packages/ui/**"
       - ".github/workflows/www-ci.yml"
+      - "package.json"
 
 env:
   NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
