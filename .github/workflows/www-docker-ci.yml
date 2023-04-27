@@ -9,6 +9,7 @@ on:
       - "apps/www/**"
       - "packages/ui/**"
       - ".github/workflows/www-docker-ci.yml"
+      - "package.json"
 
 env:
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
