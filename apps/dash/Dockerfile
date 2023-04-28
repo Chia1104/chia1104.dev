@@ -28,8 +28,7 @@ ARG TURBO_TEAM \
 ENV TURBO_TEAM=${TURBO_TEAM} \
     TURBO_TOKEN=${TURBO_TOKEN}
 
-RUN --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
-    apk update && \
+RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
     yarn global add pnpm && \
