@@ -38,7 +38,8 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     ZEABUR_URL=${ZEABUR_URL} \
     RAILWAY_STATIC_URL=${RAILWAY_STATIC_URL}
 
-RUN apk update && \
+RUN --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
+    apk update && \
     apk add --no-cache \
     libc6-compat && \
     yarn global add pnpm && \
