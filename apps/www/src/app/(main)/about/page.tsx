@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 const AboutPage = () => {
   return (
     <article className="main c-container mt-20">
-      <Resume avatarSrc="/me/me.JPG" />
+      <Resume test avatarSrc="/me/me.JPG" />
     </article>
   );
 };
