@@ -1,0 +1,23 @@
+name: GPT Review
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  test:
+    if: ${{ contains(github.event.*.labels.*.name, 'reviewer:gpt') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Chinese
+          MODEL:
+          top_p: 1
+          temperature: 1
