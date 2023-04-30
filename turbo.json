@@ -46,14 +46,6 @@
       "outputs": ["coverage/**"],
       "cache": true
     },
-    "e2e:chrome": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
-    "e2e:edge": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
     "test:watch": {
       "outputs": []
     },
