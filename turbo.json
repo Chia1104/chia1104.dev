@@ -62,7 +62,7 @@
     },
     "test:e2e": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"],
+      "outputs": ["coverage/**", "playwright-report/**"],
       "cache": true
     }
   },
