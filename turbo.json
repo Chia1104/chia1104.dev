@@ -55,12 +55,16 @@
     },
     "start": {
       "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true
+      "cache": false
     },
     "clean": {
       "cache": false
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": true
     }
   },
-  "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE"]
+  "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]
 }
