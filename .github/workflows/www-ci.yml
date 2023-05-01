@@ -77,3 +77,6 @@ jobs:
 
       - name: Unit tests
         run: pnpm test --filter www...
+
+      - name: E2E tests
+        run: pnpm e2e:test --filter www-e2e...
