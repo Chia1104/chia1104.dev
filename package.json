@@ -6,13 +6,16 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "shared/*"
+    "shared/*",
+    "tests/*"
   ],
   "scripts": {
     "prepare": "husky install",
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "start": "turbo run start --parallel",
+    "start:www": "pnpm start --filter www",
+    "start:dash": "pnpm start --filter dash",
     "lint": "turbo run lint --parallel",
     "format": "prettier --write \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue}\"",
@@ -23,7 +26,8 @@
     "test:watch": "turbo run test:watch --parallel",
     "db:generate": "turbo run db:generate",
     "db:push": "turbo run db:push",
-    "db:init": "turbo run db:init"
+    "db:init": "turbo run db:init",
+    "test:e2e": "turbo run test:e2e"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "13.3.1",

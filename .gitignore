@@ -42,3 +42,5 @@ dist
 vscode
 .vscode
 .idea
+
+tests/**/*.png

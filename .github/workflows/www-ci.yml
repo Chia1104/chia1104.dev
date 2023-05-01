@@ -77,3 +77,9 @@ jobs:
 
       - name: Unit tests
         run: pnpm test --filter www...
+
+      - name: Playwright install
+        run: pnpx playwright install chromium
+
+      - name: E2E tests
+        run: pnpm test:e2e --filter www-e2e...

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "www-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev:e2e": "playwright test",
+    "start:www": "cd ../../apps/www && PORT=3002 HOST=127.0.0.1 npx next start",
+    "test:e2e": "start-server-and-test start:www http://127.0.0.1:3002 dev:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.33.0",
+    "start-server-and-test": "^2.0.0",
+    "tsconfig": "workspace:*",
+    "www": "workspace:*"
+  }
+}
