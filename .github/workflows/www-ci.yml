@@ -79,7 +79,14 @@ jobs:
         run: pnpm test --filter www...
 
       - name: Playwright install
-        run: pnpx playwright install chromium
+        run: pnpx playwright install --with-deps
 
       - name: E2E tests
         run: pnpm test:e2e --filter www-e2e...
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

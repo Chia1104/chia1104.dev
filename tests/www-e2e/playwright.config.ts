@@ -2,7 +2,8 @@ import { PlaywrightTestConfig, devices } from "@playwright/test";
 import path from "path";
 
 const PORT = process.env.PORT || 3000;
-const BASE_URL = `http://localhost:${PORT}`;
+const HOST = process.env.HOST || "localhost";
+const BASE_URL = `http://${HOST}:${PORT}`;
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
@@ -11,12 +12,6 @@ const config: PlaywrightTestConfig = {
   testMatch: "**/*.pw.ts",
   retries: 2,
   outputDir: "coverage",
-  // webServer: {
-  //   command: "npm run start:www",
-  //   url: BASE_URL,
-  //   timeout: 120 * 1000,
-  //   reuseExistingServer: !process.env.CI,
-  // },
 
   use: {
     baseURL: BASE_URL,
@@ -33,18 +28,18 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Chrome"],
       },
     },
-    // {
-    //   name: "desktop-firefox",
-    //   use: {
-    //     ...devices["Desktop Firefox"],
-    //   },
-    // },
-    // {
-    //   name: "desktop-safari",
-    //   use: {
-    //     ...devices["Desktop Safari"],
-    //   },
-    // },
+    {
+      name: "desktop-firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+      },
+    },
+    {
+      name: "desktop-safari",
+      use: {
+        ...devices["Desktop Safari"],
+      },
+    },
     // Test against mobile viewports.
     {
       name: "mobile-chrome",
@@ -52,10 +47,10 @@ const config: PlaywrightTestConfig = {
         ...devices["Pixel 5"],
       },
     },
-    // {
-    //   name: "mobile-safari",
-    //   use: devices["iPhone 12"],
-    // },
+    {
+      name: "mobile-safari",
+      use: devices["iPhone 12"],
+    },
   ],
 };
 export default config;
