@@ -12,7 +12,7 @@ const config: PlaywrightTestConfig = {
   testMatch: "**/*.pw.ts",
   retries: 2,
   outputDir: "coverage",
-  reporter: "html",
+  reporter: "github",
 
   use: {
     baseURL: BASE_URL,
