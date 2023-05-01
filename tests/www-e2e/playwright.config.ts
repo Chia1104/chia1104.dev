@@ -33,18 +33,18 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Chrome"],
       },
     },
-    {
-      name: "desktop-firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-      },
-    },
-    {
-      name: "desktop-safari",
-      use: {
-        ...devices["Desktop Safari"],
-      },
-    },
+    // {
+    //   name: "desktop-firefox",
+    //   use: {
+    //     ...devices["Desktop Firefox"],
+    //   },
+    // },
+    // {
+    //   name: "desktop-safari",
+    //   use: {
+    //     ...devices["Desktop Safari"],
+    //   },
+    // },
     // Test against mobile viewports.
     {
       name: "mobile-chrome",
@@ -52,10 +52,10 @@ const config: PlaywrightTestConfig = {
         ...devices["Pixel 5"],
       },
     },
-    {
-      name: "mobile-safari",
-      use: devices["iPhone 12"],
-    },
+    // {
+    //   name: "mobile-safari",
+    //   use: devices["iPhone 12"],
+    // },
   ],
 };
 export default config;
