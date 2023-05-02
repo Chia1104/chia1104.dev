@@ -1,4 +1,4 @@
-name: www CI
+name: www E2E tests
 
 on:
   push:
@@ -25,7 +25,7 @@ env:
 
 jobs:
   build:
-    name: Build and Test
+    name: Playwright tests
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
@@ -69,11 +69,16 @@ jobs:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
-      - name: ESLint
-        run: pnpm lint --filter www...
+      - name: Playwright install
+        run: pnpx playwright install --with-deps
 
-      - name: Type checking
-        run: pnpm type:check --filter www...
+      - name: E2E tests
+        run: pnpm test:e2e --filter www-e2e...
 
-      - name: Unit tests
-        run: pnpm test --filter www...
+      - name: Output coverage
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/www-e2e/playwright-report/
+          retention-days: 30
