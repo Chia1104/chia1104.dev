@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import baseConfig, { animation } from "@chiastack/tailwind-config";
 
 export default {
   content: [
@@ -35,19 +36,9 @@ export default {
           "60%": { transform: "rotate(0.0deg)" },
           "100%": { transform: "rotate(0.0deg)" },
         },
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
       },
       animation: {
         "waving-hand": "wave 3.5s ease 1s infinite",
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
@@ -60,4 +51,5 @@ export default {
     require("tailwindcss-animate"),
   ],
   darkMode: "class",
+  presets: [animation, baseConfig],
 } satisfies Config;

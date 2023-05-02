@@ -1,9 +1,9 @@
 # Chia1104.dev
 
-[![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/production?style=for-the-badge&logo=appveyor)](https://vercel.com/deployments/chia1104)
-[![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chia1104.dev/next/main/apps/www?style=for-the-badge&logo=appveyor)](https://nextjs.org/)
-[![Licensed under MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=for-the-badge&logo=appveyor)](LICENSE)
-[![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chia1104.dev?style=for-the-badge&logo=appveyor)](https://github.com/chia1104/chia1104.dev)
+[![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/production?style=for-the-badge&logo=vercel)](https://vercel.com/chia1104/chia1104/deployments)
+[![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chia1104.dev/next/main/apps/www?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
+[![Licensed under MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=for-the-badge&logo=unlicense)](LICENSE)
+[![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chia1104.dev?style=for-the-badge&logo=turborepo)](https://github.com/chia1104/chia1104.dev)
 
 This is my personal website, a monorepo managed using Turborepo. The development is based on the app structure of NextJS, with the use of TailwindCSS and Typescript. For backend functionalities, PostgreSQL and Redis are utilized to store articles and limit API traffic.
 
@@ -17,6 +17,7 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 ![tailwindcss](https://img.shields.io/badge/-TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![framer-motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![vitest](https://img.shields.io/badge/-Vitest-2C7A7B?style=for-the-badge&logo=vite&logoColor=white)
+![playwright](https://img.shields.io/badge/-Playwright-4A154B?style=for-the-badge&logo=playwright&logoColor=white)
 ![docker](https://img.shields.io/badge/-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![redis](https://img.shields.io/badge/-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![postgresql](https://img.shields.io/badge/-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
@@ -41,6 +42,11 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ![Vercel build settings](./.github/public/vercel-deploy1.png)
 
+| Command       | Script                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------- |
+| Build Command | `cd ../.. && npx turbo run build --filter www...`                                      |
+| Start Command | `pnpm --filter \!dash --filter \!"./tests/*" install --store=node_modules/.pnpm-store` |
+
 ### Railway
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/QTqT7m?referralCode=HYbEt0)
@@ -51,24 +57,28 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ### Zeabur
 
-1. Create a new project on Zeabur, override the `build` and `start` commands:
+> Zeabur currently does not support turborepo, but you can still deploy the website using the Dockerfile in the root directory.
 
-![Zeabur build settings](./.github/public/zeabur-deploy.png)
+<!-- 1. Create a new project on Zeabur, override the `build` and `start` commands:
+
+![Zeabur build settings](./.github/public/zeabur-deploy.png) -->
 
 ## 🏗️ Project Structure
 
-```
+```bash
 chia1104.dev
 ├── apps
 │   ├── dash (WIP)
 │   └── www (NextJS)
 ├── packages
 │   ├── ui (shared components)
-│   └── db (WIP)
+│   └── db (prisma orm)
 ├── shared
 │   ├── tailwind-config (tailwind config)
 │   └── tsconfig (base, nextjs, react)
-└── tests (WIP)
+└── tests
+    ├── www-e2e (playwright e2e tests)
+    └── dash-e2e (WIP)
 ```
 
 ## 🎉 Get Started
@@ -81,7 +91,7 @@ make init
 
 Runs the app in the development mode.
 
-Open http://localhost:3000 to view it in your browser.
+Open <http://localhost:3000> to view it in your browser.
 
 ```bash
 pnpm dev --filter www...
@@ -90,7 +100,7 @@ pnpm dev --filter www...
 Testing the app.
 
 ```bash
-pnpm test
+pnpm test && pnpm test:e2e
 ```
 
 Build the docker image

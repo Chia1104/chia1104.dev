@@ -1,12 +1,11 @@
 import type { Config } from "tailwindcss";
-import basedConfig from "@chiastack/tailwind-config";
+import baseConfig from "@chiastack/tailwind-config";
 import { nextui } from "@nextui-org/theme";
 
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/ui/src/**/*.{js,ts,jsx,tsx}",
-    "node_modules/@nextui-org/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -19,5 +18,5 @@ export default {
   },
   plugins: [nextui()],
   darkMode: "class",
-  presets: [basedConfig],
+  presets: [baseConfig],
 } satisfies Config;

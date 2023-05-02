@@ -1,4 +1,4 @@
-name: dash CI
+name: www E2E tests
 
 on:
   push:
@@ -6,15 +6,18 @@ on:
   pull_request:
     types: [ opened, labeled, unlabeled, synchronize ]
     paths:
-      - "apps/dash/**"
+      - "apps/www/**"
       - "packages/ui/**"
-      - ".github/workflows/dash-ci.yml"
+      - ".github/workflows/www-ci.yml"
       - "package.json"
 
 env:
-  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  NEXT_PUBLIC_FORMSPREE_KEY: ${{ secrets.NEXT_PUBLIC_FORMSPREE_KEY }}
+  GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
+  NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.2.0
@@ -22,10 +25,10 @@ env:
 
 jobs:
   build:
-    name: Build and Test
+    name: Playwright tests
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
 
     steps:
       - name: Check out code
@@ -63,14 +66,19 @@ jobs:
       - name: Next.js cache
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/apps/dash/.next/cache
+          path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
-      - name: ESLint
-        run: pnpm lint --filter dash...
+      - name: Playwright install
+        run: pnpx playwright install --with-deps
 
-      - name: Type checking
-        run: pnpm type:check --filter dash...
+      - name: E2E tests
+        run: pnpm test:e2e --filter www-e2e...
 
-      - name: Unit tests
-        run: pnpm test --filter dash...
+      - name: Output coverage
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/www-e2e/playwright-report/
+          retention-days: 30

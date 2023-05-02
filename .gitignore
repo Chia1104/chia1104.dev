@@ -42,3 +42,7 @@ dist
 vscode
 .vscode
 .idea
+
+tests/**/*.png
+
+playwright-report
