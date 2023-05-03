@@ -19,3 +19,4 @@ export * from "./Textarea";
 export * from "./MDXComponents";
 export * from "./utils";
 export { default as ToggleTheme } from "./ToggleTheme";
+export { default as Card } from "./Card";

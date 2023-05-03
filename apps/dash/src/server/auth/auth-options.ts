@@ -20,16 +20,54 @@ declare module "next-auth" {
   }
 }
 
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    role: "ADMIN" | "USER";
+  }
+}
+
 const authOptions: NextAuthOptions = {
   useSecureCookies: process.env.NODE_ENV === "production",
+  session: {
+    strategy: "jwt",
+  },
   pages: {
     signIn: "/login",
   },
   callbacks: {
-    async session({ session, user }) {
-      session.user.id = user.id;
-      session.user.role = user.role;
+    async session({ token, session }) {
+      if (token) {
+        session.user.id = token.id;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.image = token.picture;
+        session.user.role = token.role;
+      }
+
       return session;
+    },
+    async jwt({ token, user }) {
+      const dbUser = await prisma.user.findFirst({
+        where: {
+          email: token.email,
+        },
+      });
+
+      if (!dbUser) {
+        if (user) {
+          token.id = user?.id;
+        }
+        return token;
+      }
+
+      return {
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        picture: dbUser.image,
+        role: dbUser.role,
+      };
     },
   },
   adapter: PrismaAdapter(prisma),

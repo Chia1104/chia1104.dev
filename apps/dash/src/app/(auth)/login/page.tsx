@@ -1,20 +1,9 @@
-"use client";
-
-import { signIn } from "next-auth/react";
+import Form from "./form";
 
 const LoginPage = () => {
   return (
-    <div>
-      <h1>Login</h1>
-      <button
-        onClick={() =>
-          signIn("google", {
-            redirect: true,
-            callbackUrl: "/",
-          })
-        }>
-        Sign in
-      </button>
+    <div className="c-container main">
+      <Form />
     </div>
   );
 };
