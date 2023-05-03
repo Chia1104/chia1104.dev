@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Page } from "ui";
 import { getServerSession } from "next-auth";
 import authOptions from "@/server/auth/auth-options";
-import { RootProvider } from "./components";
+import RootProvider from "./root-provider";
 
 export const metadata = {
   title: "Next App",
