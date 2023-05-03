@@ -6,31 +6,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ctw_primary: "#9200ff",
-        ctw_secondary: "#007aff",
-        ctw_success: "#4caf50",
-        ctw_info: "#2196f3",
-        ctw_warning: "#ff9800",
-        ctw_danger: "#f44336",
-        ctw_light: "#fafafa",
-        ctw_dark: "#212121",
-        ctw_white: "#ffffff",
-        ctw_black: "#000000",
-        ctw_code: "#24292e",
+        primary: "#9200ff",
+        secondary: "#007aff",
+        success: "#4caf50",
+        info: "#2196f3",
+        warning: "#ff9800",
+        danger: "#f44336",
+        light: "#fafafa",
+        dark: "#212121",
+        white: "#ffffff",
+        black: "#000000",
+        code: "#24292e",
       },
     },
   },
-  plugins: [
-    plugin(function ({ addComponents }) {
-      addComponents({
-        ".ctw-container": {
-          width: "100%",
-          marginLeft: "auto",
-          marginRight: "auto",
-        },
-      });
-    }),
-  ],
   darkMode: "class",
 };
 
