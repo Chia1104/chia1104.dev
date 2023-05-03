@@ -18,7 +18,7 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
   return (
     <html lang="en">
-      <body>
+      <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full">
         <RootProvider session={session}>
           <Page>{children}</Page>
         </RootProvider>

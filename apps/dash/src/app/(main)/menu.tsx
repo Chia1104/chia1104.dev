@@ -15,7 +15,7 @@ import {
   Tabs,
   TabItem,
 } from "@nextui-org/react";
-import { ToggleTheme } from "ui";
+import { ToggleTheme, Image } from "ui";
 import { useDarkMode } from "@/hooks";
 import { useSession } from "next-auth/react";
 import { signIn, signOut } from "next-auth/react";
@@ -83,7 +83,13 @@ const Menu = () => {
       isBordered={false}
       shouldHideOnScroll>
       <NavbarBrand>
-        <p className="hidden font-bold text-inherit sm:block">ACME</p>
+        <Image
+          src="/logo.png"
+          alt="chia1104"
+          width={50}
+          height={50}
+          blur={false}
+        />
       </NavbarBrand>
       <NavbarContent className="hidden md:flex" justify="center">
         <Tabs size="md" variant="solid" radius="lg">

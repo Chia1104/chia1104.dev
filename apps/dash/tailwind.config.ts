@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 import baseConfig from "@chiastack/tailwind-config";
 import { nextui } from "@nextui-org/theme";
+import tailwindScrollbar from "tailwind-scrollbar";
 
 export default {
   content: [
@@ -25,7 +26,7 @@ export default {
       },
     },
   },
-  plugins: [nextui()],
+  plugins: [nextui(), tailwindScrollbar({ nocompatible: true })],
   darkMode: "class",
   presets: [baseConfig],
 } satisfies Config;
