@@ -20,6 +20,7 @@ import { useDarkMode } from "@/hooks";
 import { useSession } from "next-auth/react";
 import { signIn, signOut } from "next-auth/react";
 import { useTransition } from "react";
+import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 
 const User = () => {
   const [isPedding, startTransition] = useTransition();
@@ -76,13 +77,15 @@ const User = () => {
 
 const Menu = () => {
   const { isDarkMode, toggle } = useDarkMode();
+  const router = useRouter();
+  const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
     <Navbar
       position="floating"
       maxWidth="full"
       isBordered={false}
       shouldHideOnScroll>
-      <NavbarBrand>
+      <NavbarBrand className="cursor-pointer" onClick={() => router.push("/")}>
         <Image
           src="/logo.png"
           alt="chia1104"
@@ -92,10 +95,22 @@ const Menu = () => {
         />
       </NavbarBrand>
       <NavbarContent className="hidden md:flex" justify="center">
-        <Tabs size="md" variant="solid" radius="lg">
-          <TabItem title="Dashboard" />
-          <TabItem title="Metrics" />
-          <TabItem title="Write" />
+        <Tabs
+          size="md"
+          variant="solid"
+          radius="lg"
+          selectedKey={selectedLayoutSegments[0] ?? "dashboard"}>
+          <TabItem
+            title="Dashboard"
+            key="dashboard"
+            onClick={() => router.push("/")}
+          />
+          <TabItem title="Metrics" key="metrics" />
+          <TabItem
+            title="Write"
+            key="write"
+            onClick={() => router.push("/write")}
+          />
         </Tabs>
       </NavbarContent>
       <NavbarContent justify="end">

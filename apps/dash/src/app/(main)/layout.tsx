@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Menu from "./menu";
+import { Page } from "ui";
 
 export const metadata = {
   title: "Next App",
@@ -10,7 +11,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <>
       <Menu />
-      {children}
+      <Page>{children}</Page>
     </>
   );
 }

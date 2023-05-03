@@ -15,6 +15,7 @@
     "clean": "git clean -xdf .next .turbo node_modules"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.5.0",
     "@next-auth/prisma-adapter": "^1.0.6",
     "@nextui-org/react": "0.0.0-dev-v2-20230501173002",
     "@nextui-org/theme": "0.0.0-dev-v2-20230501173002",
