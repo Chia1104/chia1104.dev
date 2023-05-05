@@ -9,14 +9,15 @@ export default function NotFound() {
           The page you are looking for does not exist.
         </p>
       </div>
-      <Link
+      <a
         href="/"
+        rel="noopener noreferrer"
         className="hover:bg-secondary hover:dark:bg-primary group relative mt-7 inline-flex self-center rounded transition ease-in-out"
-        aria-label="Open GitHub">
+        aria-label="Go back">
         <span className="c-button-secondary transform text-base group-hover:-translate-x-1 group-hover:-translate-y-1">
           Go back
         </span>
-      </Link>
+      </a>
     </main>
   );
 }
