@@ -42,7 +42,7 @@
     "graphql": "^16.6.0",
     "graphql-request": "^6.0.0",
     "gray-matter": "^4.0.3",
-    "next": "^13.4.1",
+    "next": "^13.4.0",
     "next-mdx-remote": "^4.4.1",
     "next-themes": "^0.2.1",
     "p-map": "^6.0.0",
