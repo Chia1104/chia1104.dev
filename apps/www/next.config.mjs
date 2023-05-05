@@ -39,7 +39,6 @@ const nextConfig = {
     mdxRs: true,
     typedRoutes: false,
     serverComponentsExternalPackages: ["ui"],
-    serverActions: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
