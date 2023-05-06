@@ -3,7 +3,6 @@ import { Chia } from "@/shared/meta/chia";
 import { PostsList } from "./components";
 import type { Metadata } from "next";
 import { getBaseUrl } from "@/utils/getBaseUrl";
-import { incrReadCount } from "@/helpers/action/kv.action";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -42,12 +41,7 @@ const PostsPage = async () => {
         </span>
       </h1>
       <div className="flex w-full flex-col items-center justify-center">
-        <PostsList
-          post={posts}
-          serverAction={{
-            incrReadCount,
-          }}
-        />
+        <PostsList post={posts} />
       </div>
     </article>
   );
