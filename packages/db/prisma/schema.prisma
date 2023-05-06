@@ -28,6 +28,8 @@ model Post {
   readingMins String?
   published   Boolean  @default(false)
   content     String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
 }
 
 model Account {
@@ -65,6 +67,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   profile       Profile[]
+  posts         Post[]
   role          Role      @default(USER)
 }
 
