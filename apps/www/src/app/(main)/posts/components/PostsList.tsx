@@ -7,19 +7,22 @@ import { Image, cn } from "ui";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-// use server
-import { incrReadCount } from "@/helpers/action/kv.action";
-
 interface PostsListProps {
   post: PostFrontMatter[];
+  serverAction?: {
+    incrReadCount: (slug: string) => Promise<void>;
+  };
 }
 
 interface PostItemProps {
   data: PostFrontMatter;
   i: number;
+  serverAction?: {
+    incrReadCount: (slug: string) => Promise<void>;
+  };
 }
 
-const PostItem: FC<PostItemProps> = ({ data, i }) => {
+const PostItem: FC<PostItemProps> = ({ data, i, serverAction }) => {
   return (
     <div className="c-bg-secondary group relative flex min-h-[465px] w-full flex-col rounded-xl shadow-lg transition duration-300 ease-in-out hover:-translate-y-1.5 2xl:min-h-[520px]">
       <div
@@ -53,7 +56,7 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
         scroll
         className="absolute inset-0"
         href={`/posts/${data?.slug}`}
-        onClick={() => incrReadCount(data.slug)}
+        onClick={() => serverAction?.incrReadCount(data.slug)}
       />
     </div>
   );
@@ -70,7 +73,7 @@ const postCardAnimation = {
   },
 };
 
-const PostsList: FC<PostsListProps> = ({ post }) => {
+const PostsList: FC<PostsListProps> = ({ post, serverAction }) => {
   return (
     <motion.div
       className="grid w-full grid-cols-1 gap-10 lg:grid-cols-2 xl:grid-cols-3"
@@ -83,7 +86,7 @@ const PostsList: FC<PostsListProps> = ({ post }) => {
           transition={{ type: "spring" }}
           variants={postCardAnimation}
           className={cn("h-auto w-full", index === 0 && "lg:col-span-2")}>
-          <PostItem data={post} i={index} />
+          <PostItem data={post} i={index} serverAction={serverAction} />
         </motion.div>
       ))}
     </motion.div>
