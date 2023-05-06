@@ -8,7 +8,7 @@ const redis = new Redis({
 });
 
 const incrReadCount = async (id: string) => {
-  void redis.incr(id);
+  await redis.incr(id);
 };
 
 export { incrReadCount };

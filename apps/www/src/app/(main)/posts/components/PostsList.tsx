@@ -53,7 +53,7 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
         scroll
         className="absolute inset-0"
         href={`/posts/${data?.slug}`}
-        onClick={() => incrReadCount(data.slug)}
+        onClick={async () => await incrReadCount(data.slug)}
       />
     </div>
   );
