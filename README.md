@@ -42,10 +42,10 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ![Vercel build settings](./.github/public/vercel-deploy1.png)
 
-| Command       | Script                                                                                 |
-| ------------- | -------------------------------------------------------------------------------------- |
-| Build Command | `cd ../.. && npx turbo run build --filter www...`                                      |
-| Start Command | `pnpm --filter \!dash --filter \!"./tests/*" install --store=node_modules/.pnpm-store` |
+| Command         | Script                                                                                 |
+|-----------------| -------------------------------------------------------------------------------------- |
+| Build Command   | `cd ../.. && npx turbo run build --filter www...`                                      |
+| Install Command | `pnpm --filter \!dash --filter \!"./tests/*" install --store=node_modules/.pnpm-store` |
 
 ### Railway
 
@@ -94,7 +94,7 @@ Runs the app in the development mode.
 Open <http://localhost:3000> to view it in your browser.
 
 ```bash
-pnpm dev --filter www...
+pnpm dev:www
 ```
 
 Testing the app.

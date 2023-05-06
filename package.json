@@ -12,7 +12,11 @@
   "scripts": {
     "prepare": "husky install",
     "build": "turbo run build",
+    "build:www": "turbo run build --filter www...",
+    "build:dash": "turbo run build --filter dash...",
     "dev": "turbo run dev --parallel",
+    "dev:www": "turbo run dev --filter www...",
+    "dev:dash": "turbo run dev --filter dash...",
     "start": "turbo run start --parallel",
     "start:www": "pnpm start --filter www",
     "start:dash": "pnpm start --filter dash",
