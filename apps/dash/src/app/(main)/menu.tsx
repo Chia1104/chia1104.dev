@@ -108,6 +108,11 @@ const Menu = () => {
           />
           <TabItem title="Metrics" key="metrics" />
           <TabItem
+            title="Feed"
+            key="feed"
+            onClick={() => router.push("/feed")}
+          />
+          <TabItem
             title="Write"
             key="write"
             onClick={() => router.push("/write")}
