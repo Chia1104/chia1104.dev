@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { WithContext, Blog } from "schema-dts";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -26,34 +27,34 @@ export const generateMetadata = async ({
       title: frontmatter?.title,
       keywords: frontmatter?.tags?.join(",") || undefined,
       description: frontmatter?.excerpt,
-      // openGraph: {
-      //   type: "article",
-      //   locale: "zh_TW",
-      //   url: `https://chia1104.dev/posts/${params.slug}`,
-      //   siteName: "Chia",
-      //   title: frontmatter?.title,
-      //   description: frontmatter?.excerpt,
-      //   images: [
-      //     {
-      //       url: `${getBaseUrl({
-      //         isServer: true,
-      //       })}/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
-      //       width: 1200,
-      //       height: 630,
-      //     },
-      //   ],
-      // },
-      // twitter: {
-      //   card: "summary_large_image",
-      //   title: "Chia",
-      //   description: frontmatter?.excerpt,
-      //   creator: "@chia1104",
-      //   images: [
-      //     `${getBaseUrl({ isServer: true })}/api/og?title=${encodeURIComponent(
-      //       frontmatter?.title ?? ""
-      //     )}`,
-      //   ],
-      // },
+      openGraph: {
+        type: "article",
+        locale: "zh_TW",
+        url: `https://chia1104.dev/posts/${params.slug}`,
+        siteName: "Chia",
+        title: frontmatter?.title,
+        description: frontmatter?.excerpt,
+        images: [
+          {
+            url: `${getBaseUrl({
+              isServer: true,
+            })}/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
+            width: 1200,
+            height: 630,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Chia",
+        description: frontmatter?.excerpt,
+        creator: "@chia1104",
+        images: [
+          `${getBaseUrl({ isServer: true })}/api/og?title=${encodeURIComponent(
+            frontmatter?.title ?? ""
+          )}`,
+        ],
+      },
     };
   } catch (error) {
     console.error(error);
