@@ -1,5 +1,7 @@
 // @ts-check
 
+import "./src/env.mjs";
+
 const securityHeaders = [
   {
     key: "X-DNS-Prefetch-Control",
