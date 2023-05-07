@@ -16,9 +16,6 @@ export const generateStaticParams = async () => {
   }));
 };
 
-// Global not found page
-// export const dynamicParams = false;
-
 export const generateMetadata = async ({
   params,
 }: {

@@ -64,6 +64,10 @@
       "dependsOn": ["^build"],
       "outputs": ["coverage/**", "playwright-report/**"],
       "cache": true
+    },
+    "next-sitemap": {
+      "dependsOn": ["^build"],
+      "cache": true
     }
   },
   "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]

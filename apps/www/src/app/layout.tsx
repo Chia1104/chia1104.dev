@@ -5,7 +5,6 @@ import { type ReactNode } from "react";
 import { Chia } from "@/shared/meta/chia";
 import "@total-typescript/ts-reset";
 import type { Metadata } from "next";
-import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const metadata: Metadata = {
   title: {
@@ -24,45 +23,10 @@ export const metadata: Metadata = {
   themeColor: "#2B2E4A",
   colorScheme: "dark",
   creator: Chia.name,
-  openGraph: {
-    type: "website",
-    locale: "zh_TW",
-    url: "https://chia1104.dev",
-    siteName: Chia.name,
-    title: Chia.name,
-    description: Chia.content,
-    images: [
-      {
-        url: `${getBaseUrl({ isServer: true })}/api/og`,
-        width: 1200,
-        height: 630,
-      },
-    ],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    nocache: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: Chia.name,
-    description: Chia.content,
-    creator: `@${Chia.name.toLowerCase()}`,
-    images: [`${getBaseUrl({ isServer: true })}/api/og`],
   },
   viewport: {
     width: "device-width",
