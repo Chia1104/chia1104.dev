@@ -32,7 +32,6 @@
     "db:push": "turbo run db:push",
     "db:init": "turbo run db:init",
     "test:e2e": "turbo run test:e2e",
-    "www:test:e2e": "turbo run build:www && turbo rub test:e2e --filter www-e2e",
     "next-sitemap": "turbo run next-sitemap --parallel"
   },
   "devDependencies": {
