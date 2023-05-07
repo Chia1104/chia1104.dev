@@ -7,8 +7,8 @@ const redis = new Redis({
   token: process.env.UPSTASH_TOKEN ?? "",
 });
 
-const incrReadCount = async (id: string) => {
-  await redis.incr(id);
+const incrReadCount = (id: string) => {
+  void redis.incr(id);
 };
 
 export { incrReadCount };

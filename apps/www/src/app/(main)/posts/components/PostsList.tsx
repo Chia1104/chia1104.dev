@@ -7,7 +7,7 @@ import { Image, cn } from "ui";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-// use server
+// server action
 import { incrReadCount } from "@/helpers/action/kv.action";
 
 interface PostsListProps {
@@ -53,7 +53,7 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
         scroll
         className="absolute inset-0"
         href={`/posts/${data?.slug}`}
-        onClick={async () => await incrReadCount(data.slug)}
+        onClick={() => incrReadCount(data.slug)}
       />
     </div>
   );
