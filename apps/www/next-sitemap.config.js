@@ -23,6 +23,6 @@ function getBaseUrl() {
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: getBaseUrl(),
-  generateRobotsTxt: true,
+  generateRobotsTxt: false,
   changefreq: "always",
 };
