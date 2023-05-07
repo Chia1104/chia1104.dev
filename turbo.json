@@ -68,7 +68,8 @@
     },
     "next-sitemap": {
       "dependsOn": ["^build"],
-      "cache": false
+      "outputs": ["public/**"],
+      "cache": true
     }
   },
   "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]
