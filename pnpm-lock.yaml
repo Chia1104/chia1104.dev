@@ -95,9 +95,6 @@ importers:
       '@tanstack/react-query':
         specifier: ^4.29.5
         version: 4.29.5(react-dom@18.2.0)(react@18.2.0)
-      api:
-        specifier: workspace:*
-        version: link:../../packages/api
       auth:
         specifier: workspace:*
         version: link:../../packages/auth
@@ -149,7 +146,7 @@ importers:
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: workspace:*
-        version: link:../../shared/tailwind-config
+        version: link:../../config/tailwind-config
       '@testing-library/react':
         specifier: ^14.0.0
         version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
@@ -176,7 +173,7 @@ importers:
         version: 3.3.2
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
 
   apps/www:
     dependencies:
@@ -291,7 +288,7 @@ importers:
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: workspace:*
-        version: link:../../shared/tailwind-config
+        version: link:../../config/tailwind-config
       '@redux-devtools/extension':
         specifier: ^3.2.5
         version: 3.2.5(redux@4.2.1)
@@ -339,7 +336,18 @@ importers:
         version: 1.0.5(tailwindcss@3.3.2)
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
+
+  config/tailwind-config:
+    devDependencies:
+      tailwindcss:
+        specifier: ^3.3.2
+        version: 3.3.2
+      tailwindcss-animate:
+        specifier: ^1.0.5
+        version: 1.0.5(tailwindcss@3.3.2)
+
+  config/tsconfig: {}
 
   packages/api:
     dependencies:
@@ -357,7 +365,7 @@ importers:
         version: link:../db
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
 
   packages/auth:
     dependencies:
@@ -381,7 +389,7 @@ importers:
         version: 18.2.0(react@18.2.0)
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
 
   packages/db:
     dependencies:
@@ -394,7 +402,7 @@ importers:
         version: 4.13.0
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
 
   packages/ui:
     devDependencies:
@@ -436,18 +444,7 @@ importers:
         version: 1.12.0
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
-
-  shared/tailwind-config:
-    devDependencies:
-      tailwindcss:
-        specifier: ^3.3.2
-        version: 3.3.2
-      tailwindcss-animate:
-        specifier: ^1.0.5
-        version: 1.0.5(tailwindcss@3.3.2)
-
-  shared/tsconfig: {}
+        version: link:../../config/tsconfig
 
   tests/www-e2e:
     devDependencies:
@@ -459,7 +456,7 @@ importers:
         version: 2.0.0
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
       www:
         specifier: workspace:*
         version: link:../../apps/www
