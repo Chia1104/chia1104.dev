@@ -1,6 +1,6 @@
 import { prisma } from "db";
 import { NextRequest, NextResponse } from "next/server";
-import getServerSession from "@/server/auth/get-server-session";
+import { getServerSession } from "auth";
 import { errorConfig } from "@/config/network.config";
 
 type Query = {

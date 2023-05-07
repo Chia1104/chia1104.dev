@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { ReactNode } from "react";
-import getServerSession from "@/server/auth/get-server-session";
+import { getServerSession } from "auth";
 import RootProvider from "./root-provider";
 
 export const metadata = {

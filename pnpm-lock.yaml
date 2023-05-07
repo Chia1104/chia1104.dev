@@ -4,6 +4,9 @@ importers:
 
   .:
     dependencies:
+      superjson:
+        specifier: 1.12.3
+        version: 1.12.3
       zod:
         specifier: ^3.21.4
         version: 3.21.4
@@ -92,6 +95,12 @@ importers:
       '@tanstack/react-query':
         specifier: ^4.29.5
         version: 4.29.5(react-dom@18.2.0)(react@18.2.0)
+      api:
+        specifier: workspace:*
+        version: link:../../packages/api
+      auth:
+        specifier: workspace:*
+        version: link:../../packages/auth
       clsx:
         specifier: ^1.2.1
         version: 1.2.1
@@ -328,6 +337,48 @@ importers:
       tailwindcss-animate:
         specifier: 1.0.5
         version: 1.0.5(tailwindcss@3.3.2)
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../shared/tsconfig
+
+  packages/api:
+    dependencies:
+      '@trpc/client':
+        specifier: ^10.25.0
+        version: 10.25.0(@trpc/server@10.25.0)
+      '@trpc/server':
+        specifier: ^10.25.0
+        version: 10.25.0
+      auth:
+        specifier: workspace:*
+        version: link:../auth
+      db:
+        specifier: workspace:*
+        version: link:../db
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../shared/tsconfig
+
+  packages/auth:
+    dependencies:
+      '@next-auth/prisma-adapter':
+        specifier: ^1.0.6
+        version: 1.0.6(@prisma/client@4.13.0)(next-auth@4.22.1)
+      db:
+        specifier: workspace:*
+        version: link:../db
+      next:
+        specifier: ^13.4.1
+        version: 13.4.1(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0)
+      next-auth:
+        specifier: ^4.22.1
+        version: 4.22.1(next@13.4.1)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
       tsconfig:
         specifier: workspace:*
         version: link:../../shared/tsconfig
@@ -3181,6 +3232,18 @@ packages:
   /@total-typescript/ts-reset@0.4.2:
     resolution: {integrity: sha512-vqd7ZUDSrXFVT1n8b2kc3LnklncDQFPvR58yUS1kEP23/nHPAO9l1lMjUfnPrXYYk4Hj54rrLKMW5ipwk7k09A==}
     dev: true
+
+  /@trpc/client@10.25.0(@trpc/server@10.25.0):
+    resolution: {integrity: sha512-XWuzbbACX2fzB9UHVkPJtaaAeFiyPjQSC3YgnRtDwjQx03/nt7OsxTBxvG0kblCN0Z2zZrnLF65aDrMJEP43LQ==}
+    peerDependencies:
+      '@trpc/server': 10.25.0
+    dependencies:
+      '@trpc/server': 10.25.0
+    dev: false
+
+  /@trpc/server@10.25.0:
+    resolution: {integrity: sha512-OKcGw2iZMUV8zCHoS+uLYGVq2tbZhhK0TPbb0pGhT+KTN8oWYPG+oYpTe9He9J1A2y8qcRAoy5u1zdiUUOiFEg==}
+    dev: false
 
   /@types/acorn@4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}
