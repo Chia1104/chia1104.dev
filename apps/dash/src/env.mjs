@@ -3,8 +3,6 @@ import { createEnv } from "@t3-oss/env-nextjs";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string().url(),
-    PORT: z.string().default("3001"),
     NODE_ENV: z.enum(["development", "production"]).default("development"),
     NEXTAUTH_URL: process.env.VERCEL_URL
       ? z.string().url().optional()
@@ -19,8 +17,6 @@ export const env = createEnv({
 
   client: {},
   runtimeEnv: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    PORT: process.env.PORT,
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
