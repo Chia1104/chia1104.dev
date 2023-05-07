@@ -6,7 +6,7 @@
       "outputs": ["dist/**"]
     },
     "www#build": {
-      "dependsOn": ["^build", "next-sitemap"],
+      "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
       "env": [
         "BASE_URL",
