@@ -31,7 +31,8 @@
     "db:generate": "turbo run db:generate",
     "db:push": "turbo run db:push",
     "db:init": "turbo run db:init",
-    "test:e2e": "turbo run test:e2e"
+    "test:e2e": "turbo run test:e2e",
+    "next-sitemap": "turbo run next-sitemap --parallel"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "13.4.1",
