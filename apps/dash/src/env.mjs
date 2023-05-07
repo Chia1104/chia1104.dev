@@ -6,7 +6,9 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     PORT: z.string().default("3001"),
     NODE_ENV: z.enum(["development", "production"]).default("development"),
-    NEXTAUTH_URL: z.string().url(),
+    NEXTAUTH_URL: process.env.VERCEL_URL
+      ? z.string().url().optional()
+      : z.string().url(),
     NEXTAUTH_SECRET:
       process.env.NODE_ENV === "production"
         ? z.string().min(1)
