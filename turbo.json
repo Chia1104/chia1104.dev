@@ -69,7 +69,7 @@
     "next-sitemap": {
       "dependsOn": ["^build"],
       "outputs": ["public/**"],
-      "cache": true
+      "cache": false
     }
   },
   "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]

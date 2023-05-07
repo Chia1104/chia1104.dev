@@ -44,7 +44,7 @@ RUN apk update && \
     yarn global add pnpm && \
     pnpm i && \
     yarn turbo run build --filter=www... && \
-    yarn next-sitemap --filter=www
+    yarn turbo run next-sitemap --filter=www
 
 FROM base AS runner
 WORKDIR /app
