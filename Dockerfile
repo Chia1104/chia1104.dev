@@ -43,7 +43,7 @@ RUN apk update && \
     libc6-compat && \
     yarn global add pnpm && \
     pnpm i && \
-    yarn www:build
+    yarn build:www
 
 FROM base AS runner
 WORKDIR /app
