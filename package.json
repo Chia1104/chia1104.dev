@@ -12,7 +12,7 @@
   "scripts": {
     "prepare": "husky install",
     "build": "turbo run build",
-    "build:www": "turbo run build --filter www... && turbo run next-sitemap --filter www",
+    "build:www": "turbo run build --filter www...",
     "build:dash": "turbo run build --filter dash...",
     "dev": "turbo run dev --parallel",
     "dev:www": "turbo run dev --filter www...",
