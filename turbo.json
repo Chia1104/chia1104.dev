@@ -61,8 +61,8 @@
     "clean": {
       "cache": false
     },
-    "www#test:e2e": {
-      "dependsOn": ["www:build"],
+    "test:e2e": {
+      "dependsOn": ["^build"],
       "outputs": ["coverage/**", "playwright-report/**"],
       "cache": true
     },
