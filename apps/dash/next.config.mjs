@@ -1,5 +1,7 @@
 // @ts-check
 
+import "./src/env.mjs";
+
 const securityHeaders = [
   {
     key: "X-DNS-Prefetch-Control",
@@ -28,7 +30,7 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
-  transpilePackages: ["ui", "db"],
+  transpilePackages: ["ui", "db", "auth"],
   experimental: {
     appDir: true,
     serverComponentsExternalPackages: ["ui", "db"],

@@ -4,6 +4,9 @@ importers:
 
   .:
     dependencies:
+      superjson:
+        specifier: 1.12.3
+        version: 1.12.3
       zod:
         specifier: ^3.21.4
         version: 3.21.4
@@ -86,9 +89,15 @@ importers:
       '@nextui-org/theme':
         specifier: 0.0.0-dev-v2-20230505232443
         version: 0.0.0-dev-v2-20230505232443(tailwindcss@3.3.2)
+      '@t3-oss/env-nextjs':
+        specifier: ^0.3.1
+        version: 0.3.1(typescript@5.0.4)(zod@3.21.4)
       '@tanstack/react-query':
         specifier: ^4.29.5
         version: 4.29.5(react-dom@18.2.0)(react@18.2.0)
+      auth:
+        specifier: workspace:*
+        version: link:../../packages/auth
       clsx:
         specifier: ^1.2.1
         version: 1.2.1
@@ -137,7 +146,7 @@ importers:
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: workspace:*
-        version: link:../../shared/tailwind-config
+        version: link:../../config/tailwind-config
       '@testing-library/react':
         specifier: ^14.0.0
         version: 14.0.0(react-dom@18.2.0)(react@18.2.0)
@@ -164,7 +173,7 @@ importers:
         version: 3.3.2
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
 
   apps/www:
     dependencies:
@@ -279,7 +288,7 @@ importers:
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: workspace:*
-        version: link:../../shared/tailwind-config
+        version: link:../../config/tailwind-config
       '@redux-devtools/extension':
         specifier: ^3.2.5
         version: 3.2.5(redux@4.2.1)
@@ -327,7 +336,60 @@ importers:
         version: 1.0.5(tailwindcss@3.3.2)
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
+
+  config/tailwind-config:
+    devDependencies:
+      tailwindcss:
+        specifier: ^3.3.2
+        version: 3.3.2
+      tailwindcss-animate:
+        specifier: ^1.0.5
+        version: 1.0.5(tailwindcss@3.3.2)
+
+  config/tsconfig: {}
+
+  packages/api:
+    dependencies:
+      '@trpc/client':
+        specifier: ^10.25.0
+        version: 10.25.0(@trpc/server@10.25.0)
+      '@trpc/server':
+        specifier: ^10.25.0
+        version: 10.25.0
+      auth:
+        specifier: workspace:*
+        version: link:../auth
+      db:
+        specifier: workspace:*
+        version: link:../db
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../config/tsconfig
+
+  packages/auth:
+    dependencies:
+      '@next-auth/prisma-adapter':
+        specifier: ^1.0.6
+        version: 1.0.6(@prisma/client@4.13.0)(next-auth@4.22.1)
+      db:
+        specifier: workspace:*
+        version: link:../db
+      next:
+        specifier: ^13.4.1
+        version: 13.4.1(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0)
+      next-auth:
+        specifier: ^4.22.1
+        version: 4.22.1(next@13.4.1)(react-dom@18.2.0)(react@18.2.0)
+      react:
+        specifier: ^18.2.0
+        version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
+      tsconfig:
+        specifier: workspace:*
+        version: link:../../config/tsconfig
 
   packages/db:
     dependencies:
@@ -340,7 +402,7 @@ importers:
         version: 4.13.0
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
 
   packages/ui:
     devDependencies:
@@ -382,18 +444,7 @@ importers:
         version: 1.12.0
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
-
-  shared/tailwind-config:
-    devDependencies:
-      tailwindcss:
-        specifier: ^3.3.2
-        version: 3.3.2
-      tailwindcss-animate:
-        specifier: ^1.0.5
-        version: 1.0.5(tailwindcss@3.3.2)
-
-  shared/tsconfig: {}
+        version: link:../../config/tsconfig
 
   tests/www-e2e:
     devDependencies:
@@ -405,7 +456,7 @@ importers:
         version: 2.0.0
       tsconfig:
         specifier: workspace:*
-        version: link:../../shared/tsconfig
+        version: link:../../config/tsconfig
       www:
         specifier: workspace:*
         version: link:../../apps/www
@@ -3091,6 +3142,27 @@ packages:
     dependencies:
       tslib: 2.5.0
 
+  /@t3-oss/env-core@0.3.1(typescript@5.0.4)(zod@3.21.4):
+    resolution: {integrity: sha512-iEnBuWeSjzqQLDTUw7H+YhstV4OZrGXTkQGL6ZOMxZQoCmwGX7GVS+1KCd5RvCzOtrIAD9jeOItSWNjC7sG4Sg==}
+    peerDependencies:
+      typescript: '>=4.7.2'
+      zod: ^3.0.0
+    dependencies:
+      typescript: 5.0.4
+      zod: 3.21.4
+    dev: false
+
+  /@t3-oss/env-nextjs@0.3.1(typescript@5.0.4)(zod@3.21.4):
+    resolution: {integrity: sha512-W1OgOn5xtpdEGraAQesyLzO2aNLRfSJEyK6qjQFfEUnrPbkvB+WxABX2bPMqfn4KJQ8pziLCSdBFiUN8OagqAg==}
+    peerDependencies:
+      typescript: '>=4.7.2'
+      zod: ^3.0.0
+    dependencies:
+      '@t3-oss/env-core': 0.3.1(typescript@5.0.4)(zod@3.21.4)
+      typescript: 5.0.4
+      zod: 3.21.4
+    dev: false
+
   /@tailwindcss/aspect-ratio@0.4.2(tailwindcss@3.3.2):
     resolution: {integrity: sha512-8QPrypskfBa7QIMuKHg2TA7BqES6vhBrDLOv8Unb6FcFyd3TjKbc6lcmb9UPQHxfl24sXoJ41ux/H7qQQvfaSQ==}
     peerDependencies:
@@ -3157,6 +3229,18 @@ packages:
   /@total-typescript/ts-reset@0.4.2:
     resolution: {integrity: sha512-vqd7ZUDSrXFVT1n8b2kc3LnklncDQFPvR58yUS1kEP23/nHPAO9l1lMjUfnPrXYYk4Hj54rrLKMW5ipwk7k09A==}
     dev: true
+
+  /@trpc/client@10.25.0(@trpc/server@10.25.0):
+    resolution: {integrity: sha512-XWuzbbACX2fzB9UHVkPJtaaAeFiyPjQSC3YgnRtDwjQx03/nt7OsxTBxvG0kblCN0Z2zZrnLF65aDrMJEP43LQ==}
+    peerDependencies:
+      '@trpc/server': 10.25.0
+    dependencies:
+      '@trpc/server': 10.25.0
+    dev: false
+
+  /@trpc/server@10.25.0:
+    resolution: {integrity: sha512-OKcGw2iZMUV8zCHoS+uLYGVq2tbZhhK0TPbb0pGhT+KTN8oWYPG+oYpTe9He9J1A2y8qcRAoy5u1zdiUUOiFEg==}
+    dev: false
 
   /@types/acorn@4.0.6:
     resolution: {integrity: sha512-veQTnWP+1D/xbxVrPC3zHnCZRjSrKfhbMUlEA43iMZLu7EsnTtkJklIuwrCPbOi8YkvDQAiW05VQQFvvz9oieQ==}

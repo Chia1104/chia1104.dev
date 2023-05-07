@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "api",
+  "version": "0.0.0",
+  "private": true,
+  "types": "./src/index.ts",
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
+    "type:check": "tsc --noEmit",
+    "clean": "git clean -xdf .turbo node_modules"
+  },
+  "dependencies": {
+    "@trpc/client": "^10.25.0",
+    "@trpc/server": "^10.25.0",
+    "auth": "workspace:*",
+    "db": "workspace:*",
+    "tsconfig": "workspace:*"
+  }
+}
