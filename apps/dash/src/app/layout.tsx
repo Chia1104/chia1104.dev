@@ -1,7 +1,6 @@
 import "./globals.css";
 import type { ReactNode } from "react";
-import { getServerSession } from "next-auth";
-import authOptions from "@/server/auth/auth-options";
+import { getServerSession } from "auth";
 import RootProvider from "./root-provider";
 
 export const metadata = {
@@ -14,7 +13,7 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   return (
     <html lang="en">
       <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden">

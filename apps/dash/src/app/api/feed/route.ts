@@ -1,7 +1,6 @@
 import { prisma } from "db";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import authOptions from "@/server/auth/auth-options";
+import { getServerSession } from "auth";
 import { errorConfig } from "@/config/network.config";
 
 type Query = {
@@ -12,7 +11,7 @@ type Query = {
 export const GET = async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   const { skip, take } = searchParams as unknown as Query;
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session) {
     return NextResponse.json(

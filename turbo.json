@@ -9,6 +9,7 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
       "env": [
+        "BASE_URL",
         "SITE_URL",
         "GH_PUBLIC_TOKEN",
         "NEXT_PUBLIC_RE_CAPTCHA_KEY",
@@ -64,6 +65,11 @@
       "dependsOn": ["^build"],
       "outputs": ["coverage/**", "playwright-report/**"],
       "cache": true
+    },
+    "next-sitemap": {
+      "dependsOn": ["^build"],
+      "outputs": ["public/**"],
+      "cache": false
     }
   },
   "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]
