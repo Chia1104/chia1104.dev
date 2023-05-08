@@ -1,0 +1,24 @@
+import { prisma } from "db";
+import { faker } from "@faker-js/faker";
+
+async function main() {
+  void (await prisma.post.create({
+    data: {
+      slug: faker.lorem.slug(),
+      title: faker.lorem.sentence(),
+      excerpt: faker.lorem.paragraph(),
+      content: faker.lorem.paragraphs(),
+      published: true,
+      userId: "clgta9og600004a6lesa8xpw7",
+    },
+  }));
+}
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

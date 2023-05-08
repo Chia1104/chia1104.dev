@@ -70,7 +70,8 @@
       "dependsOn": ["^build"],
       "outputs": ["public/**"],
       "cache": false
-    }
+    },
+    "db:seed": {}
   },
   "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]
 }

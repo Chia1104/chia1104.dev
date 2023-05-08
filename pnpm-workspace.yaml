@@ -3,3 +3,4 @@ packages:
   - "packages/*"
   - "config/*"
   - "tests/*"
+  - "scripts/*"
