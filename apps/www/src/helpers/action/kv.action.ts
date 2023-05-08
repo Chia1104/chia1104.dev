@@ -1,13 +1,8 @@
 "use server";
 
-import { Redis } from "@upstash/redis";
 import { z } from "zod";
 import { zact } from "zact/server";
-
-const redis = new Redis({
-  url: process.env.REDIS_URL ?? "",
-  token: process.env.UPSTASH_TOKEN ?? "",
-});
+import redis from "../db/kv.db";
 
 const incrReadCount = (id: string) => {
   void redis.incr(id);

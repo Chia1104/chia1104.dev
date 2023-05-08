@@ -5,12 +5,7 @@ import { ApiResponseStatus } from "@/utils/fetcher.util";
 import { errorConfig } from "@/config/network.config";
 import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-
-const redis = new Redis({
-  url: process.env.REDIS_URL ?? "",
-  token: process.env.UPSTASH_TOKEN ?? "",
-});
+import redis from "@/helpers/db/kv.db";
 
 sendgrid.setApiKey(process.env.SENDGRID_KEY ?? "");
 
@@ -20,15 +15,15 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(2, "5s"),
 });
 
-const EmailSchema = z.string().email();
+const emailSchema = z.string().email();
 
 const contactSchema = z.object({
-  email: EmailSchema,
+  email: emailSchema,
   message: z.string().min(1),
   reCaptchToken: z.string().min(1),
 });
 
-type Email = z.infer<typeof EmailSchema>;
+type Email = z.infer<typeof emailSchema>;
 
 type ReCapthcaResponse = {
   success: boolean;
