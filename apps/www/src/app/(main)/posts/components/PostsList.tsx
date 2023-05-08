@@ -8,7 +8,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 // server action
-import { incrReadCount } from "@/helpers/action/kv.action";
+import { validatedIncrReadCount } from "@/helpers/action/kv.action";
+import { useZact } from "zact/client";
 
 interface PostsListProps {
   post: PostFrontMatter[];
@@ -20,6 +21,7 @@ interface PostItemProps {
 }
 
 const PostItem: FC<PostItemProps> = ({ data, i }) => {
+  const { mutate } = useZact(validatedIncrReadCount);
   return (
     <div className="c-bg-secondary group relative flex min-h-[465px] w-full flex-col rounded-xl shadow-lg transition duration-300 ease-in-out hover:-translate-y-1.5 2xl:min-h-[520px]">
       <div
@@ -53,7 +55,7 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
         scroll
         className="absolute inset-0"
         href={`/posts/${data?.slug}`}
-        onClick={() => incrReadCount(data.slug)}
+        onClick={() => mutate({ slug: data.slug })}
       />
     </div>
   );
