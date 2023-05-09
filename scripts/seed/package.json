@@ -9,7 +9,8 @@
     "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules",
-    "db:seed": "npx prisma db seed"
+    "db:seed": "npx prisma db seed",
+    "tsc:config": "tsc --showConfig"
   },
   "prisma": {
     "seed": "ts-node --transpile-only index.ts"
