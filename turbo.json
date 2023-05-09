@@ -35,6 +35,13 @@
         "NEXTAUTH_SECRET"
       ]
     },
+    "backend#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "env": [
+        "DATABASE_URL"
+      ]
+    },
     "lint": {
       "dependsOn": ["^build"],
       "cache": true
