@@ -1,0 +1,68 @@
+name: backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+    paths:
+      - "apps/backend/**"
+      - "packages/db/**"
+      - ".github/workflows/backend-ci.yml"
+      - "package.json"
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  PNPM_VERSION: 8.2.0
+  NODE_VERSION: 18.*
+
+jobs:
+  build:
+    name: Build and Test
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:backend') || contains(github.event.pull_request.labels.*.name, 'backend:enhancement') }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: ESLint
+        run: pnpm lint --filter backend...
+
+      - name: Type checking
+        run: pnpm type:check --filter backend...
+
+      - name: Unit tests
+        run: pnpm test --filter backend...
