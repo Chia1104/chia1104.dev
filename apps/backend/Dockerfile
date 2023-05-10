@@ -42,10 +42,12 @@ FROM base as runner
 WORKDIR /app
 COPY --from=installer /app/ .
 
+ARG DATABASE_URL
+
 ENV NODE_ENV=production \
     PORT=8080 \
     DATABASE_URL=${DATABASE_URL}
 
 EXPOSE 8080
 
-CMD [ "node", "apps/backend/dist/main.js" ]
+CMD [ "node", "apps/backend/dist/src/main.js" ]
