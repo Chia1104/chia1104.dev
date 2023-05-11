@@ -37,9 +37,20 @@ type ReCapthcaResponse = {
   "error-codes": string[];
 };
 
+function getIP(req: NextRequest) {
+  let ip = req.ip ?? req.headers.get("x-real-ip");
+  const forwardedFor = req.headers.get("x-forwarded-for");
+
+  if (!ip && forwardedFor) {
+    ip = forwardedFor.split(",").at(0) ?? "";
+  }
+
+  return ip;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const id = request.ip ?? "anonymous";
+    const id = getIP(request) ?? "anonymous";
     const limit = await ratelimit.limit(id ?? "anonymous");
 
     if (!limit.success) {
