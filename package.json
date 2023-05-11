@@ -3,6 +3,13 @@
   "name": "chia1104.dev",
   "version": "2.0.0",
   "private": true,
+  "sideEffects": false,
+  "license": "MIT",
+  "author": {
+    "name": "Chia1104",
+    "email": "yuyuchia7423@gmail.com",
+    "url": "https://github.com/chia1104"
+  },
   "workspaces": [
     "apps/*",
     "packages/*",
