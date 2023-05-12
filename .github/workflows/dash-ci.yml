@@ -18,7 +18,7 @@ env:
   NEXTAUTH_URL: http://localhost:3001
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  PNPM_VERSION: 8.2.0
+  PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline --filter \!backend --filter \!"./tests/*" --filter \!www --filter \!"./scripts/*"
 
       - name: Next.js cache
         uses: actions/cache@v3
@@ -67,11 +67,5 @@ jobs:
           path: ${{ github.workspace }}/apps/dash/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
-      - name: ESLint
-        run: pnpm lint --filter dash...
-
-      - name: Type checking
-        run: pnpm type:check --filter dash...
-
-      - name: Unit tests
-        run: pnpm test --filter dash...
+      - name: ESLint, Type checking, Unit tests
+        run: pnpm lint type:check test --filter dash...
