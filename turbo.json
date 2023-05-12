@@ -27,7 +27,7 @@
     },
     "dash#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "backend#build": {
       "dependsOn": ["^build"],
