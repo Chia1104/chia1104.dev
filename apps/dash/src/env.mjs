@@ -23,7 +23,7 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    RAILWAY_URL: process.env.RAILWAY_URL,
+    RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
   },
