@@ -66,7 +66,7 @@
     "prettier-plugin-tailwindcss": "^0.2.8",
     "shell-quote": "^1.8.1",
     "ts-node": "^10.9.1",
-    "turbo": "1.9.4",
+    "turbo": "1.9.3",
     "typescript": "^5.0.4",
     "vitest": "^0.31.0"
   },
