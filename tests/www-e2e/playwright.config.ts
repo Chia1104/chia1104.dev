@@ -29,12 +29,13 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Chrome"],
       },
     },
-    {
-      name: "desktop-firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-      },
-    },
+    // playwright issue #11130 (https://github.com/microsoft/playwright/issues/11130)
+    // {
+    //   name: "desktop-firefox",
+    //   use: {
+    //     ...devices["Desktop Firefox"],
+    //   },
+    // },
     {
       name: "desktop-safari",
       use: {
