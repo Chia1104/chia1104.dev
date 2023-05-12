@@ -23,6 +23,7 @@ env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
+  PLAYWRIGHT_IMAGE_TAG: v1.33.0-jammy
 
 jobs:
   build:
@@ -32,7 +33,7 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
 
     container:
-      image: mcr.microsoft.com/playwright:v1.33.0-jammy
+      image: mcr.microsoft.com/playwright:${{ env.PLAYWRIGHT_IMAGE_TAG }}
 
     steps:
       - name: Check out code
@@ -72,9 +73,6 @@ jobs:
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
-
-#      - name: Playwright install
-#        run: pnpm dlx playwright install --with-deps
 
       - name: E2E tests
         run: pnpm test:e2e --filter www-e2e...
