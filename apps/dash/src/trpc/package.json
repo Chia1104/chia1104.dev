@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "trpc",
+  "typings": "server.ts",
+  "exports": {
+    ".": {
+      "types": "./server.ts",
+      "react-server": "./client.ts",
+      "default": "./client.ts"
+    }
+  }
+}

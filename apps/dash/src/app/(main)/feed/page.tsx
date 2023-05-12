@@ -1,9 +1,13 @@
 import FeedList from "./feed-list";
+import { api } from "trpc-api";
+import { Suspense } from "react";
 
-const FeedPage = () => {
+const FeedPage = async () => {
   return (
     <div className="c-container main">
-      <FeedList />
+      <Suspense fallback={<p>LOADING!!!</p>}>
+        <FeedList />
+      </Suspense>
     </div>
   );
 };

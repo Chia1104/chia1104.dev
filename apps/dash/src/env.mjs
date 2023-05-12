@@ -11,6 +11,9 @@ export const env = createEnv({
         : z.string().optional(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
+    RAILWAY_URL: z.string().optional(),
+    VERCEL_URL: z.string().optional(),
+    ZEABUR_URL: z.string().optional(),
   },
 
   client: {},
@@ -20,5 +23,8 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    RAILWAY_URL: process.env.RAILWAY_URL,
+    VERCEL_URL: process.env.VERCEL_URL,
+    ZEABUR_URL: process.env.ZEABUR_URL,
   },
 });
