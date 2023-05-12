@@ -6,7 +6,7 @@
   "types": "./index.ts",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint index.ts --fix",
+    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules",
     "db:seed": "npx prisma db seed",
