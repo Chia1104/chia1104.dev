@@ -15,7 +15,7 @@ env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  PNPM_VERSION: 8.2.0
+  PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
 
 jobs:
@@ -56,13 +56,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline --filter \!dash --filter \!"./tests/*" --filter \!www --filter \!"./scripts/*"
 
-      - name: ESLint
-        run: pnpm lint --filter backend...
-
-      - name: Type checking
-        run: pnpm type:check --filter backend...
-
-      - name: Unit tests
-        run: pnpm test --filter backend...
+      - name: ESLint, Type checking, Unit tests
+        run: pnpm lint type:check test --filter backend...

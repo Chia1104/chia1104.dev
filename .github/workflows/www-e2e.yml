@@ -8,7 +8,8 @@ on:
     paths:
       - "apps/www/**"
       - "packages/ui/**"
-      - ".github/workflows/www-ci.yml"
+      - ".github/workflows/www-e2e.yml"
+      - "tests/www-e2e/**"
       - "package.json"
 
 env:
@@ -20,7 +21,7 @@ env:
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  PNPM_VERSION: 8.2.0
+  PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
 
 jobs:
@@ -29,6 +30,9 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
+
+    container:
+      image: mcr.microsoft.com/playwright:v1.33.0-jammy
 
     steps:
       - name: Check out code
@@ -61,16 +65,13 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline --filter \!dash --filter \!backend --filter \!"./scripts/*"
 
       - name: Next.js cache
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
-
-      - name: Playwright install
-        run: pnpx playwright install --with-deps
 
       - name: E2E tests
         run: pnpm test:e2e --filter www-e2e...
