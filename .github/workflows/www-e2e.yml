@@ -23,7 +23,6 @@ env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
-  PLAYWRIGHT_IMAGE_TAG: v1.33.0-jammy
 
 jobs:
   build:
@@ -33,7 +32,7 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
 
     container:
-      image: mcr.microsoft.com/playwright:${{ env.PLAYWRIGHT_IMAGE_TAG }}
+      image: mcr.microsoft.com/playwright:v1.33.0-jammy
 
     steps:
       - name: Check out code
