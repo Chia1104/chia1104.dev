@@ -56,7 +56,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline --filter \!dash --filter \!"./tests/*" --filter \!www --filter \!"./scripts/*"
 
       - name: ESLint, Type checking, Unit tests
         run: pnpm lint type:check test --filter backend...

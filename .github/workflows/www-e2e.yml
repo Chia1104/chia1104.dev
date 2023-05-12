@@ -62,7 +62,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --prefer-offline --filter \!dash --filter \!backend --filter \!"./scripts/*"
 
       - name: Next.js cache
         uses: actions/cache@v3
@@ -71,7 +71,7 @@ jobs:
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
       - name: Playwright install
-        run: pnpx playwright install --with-deps
+        run: pnpm dlx playwright install --with-deps
 
       - name: E2E tests
         run: pnpm test:e2e --filter www-e2e...
