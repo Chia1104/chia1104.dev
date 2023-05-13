@@ -44,7 +44,8 @@
     "db:init": "turbo run db:init --parallel",
     "db:seed": "turbo run db:seed --parallel",
     "test:e2e": "turbo run test:e2e",
-    "next-sitemap": "turbo run next-sitemap --parallel"
+    "next-sitemap": "turbo run next-sitemap --parallel",
+    "seed": "turbo run db:seed --filter seed"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "13.4.2",
