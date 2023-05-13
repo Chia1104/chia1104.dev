@@ -34,6 +34,7 @@ const nextConfig = {
   experimental: {
     appDir: true,
     serverComponentsExternalPackages: ["ui"],
+    serverActions: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

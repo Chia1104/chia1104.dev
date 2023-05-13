@@ -5,3 +5,4 @@ export { default as useIsomorphicLayoutEffect } from "./use-isomorphic-layout-ef
 export { default as useLockedBody } from "./use-locked-body";
 export { default as usePortal } from "./use-portal";
 export { default as useSSR } from "./use-ssr";
+export { default as useInfiniteScroll } from "./use-infinite-scroll";

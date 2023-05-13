@@ -10,6 +10,7 @@ import transformer from "superjson";
 export const api = createTRPCNextAppDirClient<AppRouter>({
   config() {
     return {
+      abortOnUnmount: true,
       transformer,
       links: [
         loggerLink({

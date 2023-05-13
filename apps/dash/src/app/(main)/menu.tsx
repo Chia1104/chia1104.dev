@@ -84,7 +84,7 @@ const Menu = () => {
       position="floating"
       maxWidth="full"
       isBordered={false}
-      className="dark:border-0"
+      className="fixed dark:border-0"
       shouldHideOnScroll>
       <NavbarBrand className="cursor-pointer" onClick={() => router.push("/")}>
         <Image
