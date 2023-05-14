@@ -118,7 +118,17 @@ const Contact: FC = () => {
             required
           />
         </div>
-        <Script src="https://www.google.com/recaptcha/api.js" async defer />
+        <Script
+          id={id}
+          src="https://www.google.com/recaptcha/api.js"
+          async
+          defer>
+          {`
+            const onloadCallback = function() {
+              grecaptcha.reset();
+            };
+          `}
+        </Script>
         <div
           className="g-recaptcha mb-5 mt-7 self-center"
           data-sitekey={RE_CAPTCHA_KEY}
