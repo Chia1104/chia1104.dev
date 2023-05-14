@@ -125,7 +125,6 @@ const Contact: FC = () => {
           defer>
           {`
             const onloadCallback = function() {
-              console.log("reCAPTCHA has loaded!");
               grecaptcha.reset();
             };
           `}
