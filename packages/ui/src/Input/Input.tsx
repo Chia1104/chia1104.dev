@@ -5,13 +5,13 @@ import React, {
   useId,
   useState,
   type ChangeEvent,
-  type FocusEvent,
+  type ComponentProps,
   useImperativeHandle,
   useRef,
-  type ComponentProps,
+  useCallback,
 } from "react";
-import { type ZodType } from "zod";
-import { cn } from "../utils/cn.util";
+import { ZodType } from "zod";
+import { cn } from "../utils";
 
 interface Props extends ComponentProps<"input"> {
   title?: string;
@@ -19,6 +19,8 @@ interface Props extends ComponentProps<"input"> {
   titleClassName?: string;
   errorClassName?: string;
   schema?: ZodType<any>;
+  isValid?: boolean;
+  firstTimeError?: boolean;
 }
 
 interface InputRef extends Partial<HTMLInputElement> {
@@ -32,67 +34,66 @@ const Input = forwardRef<InputRef, Props>((props, ref) => {
     titleClassName,
     schema,
     type = "text",
+    value,
     className,
     onChange,
-    onBlur,
-    onFocus,
     errorClassName,
+    isValid: isValidProp = false,
+    firstTimeError: firstTimeErrorProp = false,
     ...rest
   } = props;
-  const [isError, setIsError] = useState(false);
-  const [isFocus, setIsFocus] = useState(false);
+  const [isValid, setIsValid] = useState<boolean>(isValidProp);
+  const [isFirstRender, setIsFirstRender] = useState<boolean>(
+    !firstTimeErrorProp
+  );
+  const [valueState, setValueState] = useState(value ?? "");
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useImperativeHandle(ref, () => ({
     isValid: () => {
-      if (schema) return !isError;
+      if (schema) return isValid;
       return true;
     },
     ...inputRef.current,
   }));
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (schema) {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
       const { value } = e.target;
-      const isValid = schema.safeParse(value).success;
-      setIsError(!isValid);
-    }
-    onChange && onChange(e);
-  };
-
-  const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
-    setIsFocus(false);
-    onBlur && onBlur(e);
-  };
-
-  const handleFocus = (e: FocusEvent<HTMLInputElement>) => {
-    setIsFocus(true);
-    onFocus && onFocus(e);
-  };
+      setValueState(value);
+      setIsFirstRender(false);
+      if (schema) {
+        setIsValid(schema.safeParse(value).success);
+      }
+      onChange && onChange(e);
+    },
+    [schema, onChange, setIsValid, setValueState, setIsFirstRender]
+  );
 
   return (
     <>
-      <label className={titleClassName} htmlFor={`${id}-input`}>
-        {title ?? ""}
-      </label>
+      {title && (
+        <label className={titleClassName} htmlFor={`${id}-input`}>
+          {title}
+        </label>
+      )}
       <input
         ref={inputRef}
         id={`${id}-input`}
         onChange={handleChange}
+        value={valueState}
         type={type}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
         className={cn(
-          "c-border-primary c-bg-primary w-full rounded-lg border border-[#CBD2D7] p-1 transition ease-in-out focus:outline-none",
-          isError &&
-            "border-danger dark:border-danger hover:cursor-not-allowed dark:hover:cursor-not-allowed",
-          isFocus && !isError && "focus:border-info",
+          "dark:bg-dark/90 text-dark disable:border-danger w-full rounded border bg-white/90 p-2 backdrop-blur-sm transition ease-in-out focus:shadow-md focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:text-white",
+          !isFirstRender && !isValid
+            ? "border-danger focus:shadow-danger/40"
+            : "focus:border-secondary focus:shadow-secondary/40 dark:focus:border-primary dark:focus:shadow-primary/40 dark:border-slate-700",
           className
         )}
         {...rest}
       />
-      {isError && (
+      {!isFirstRender && !isValid && error && (
         <p className={cn("text-danger", errorClassName)}>{error ?? ""}</p>
       )}
     </>
