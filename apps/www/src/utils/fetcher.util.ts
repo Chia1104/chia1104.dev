@@ -68,6 +68,9 @@ const fetcher = async <T = unknown>(
       data: _data?.data,
     } satisfies Pick<IApiResponse<T>, "statusCode" | "status" | "data">;
   } catch (e) {
+    if (e instanceof DOMException && dangerousThrow) {
+      throw new Error("You have aborted the request.");
+    }
     if (e instanceof Error && dangerousThrow) {
       throw new Error(e.message);
     }
