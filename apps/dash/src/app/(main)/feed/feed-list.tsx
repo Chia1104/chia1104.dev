@@ -27,7 +27,7 @@ FeedItem.displayName = "FeedItem";
 
 const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query } = props;
-  const { data, isSuccess, isLoading, fetchNextPage, hasNextPage } =
+  const { data, isSuccess, isFetching, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["posts"],
       queryFn: ({ pageParam }) =>
@@ -72,7 +72,7 @@ const FeedList: FC<Props> = (props) => {
           flatData?.map((post) => {
             return <FeedItem key={post.id} post={post} ref={ref} />;
           })}
-        {isLoading && <Skeleton />}
+        {isFetching && <Skeleton />}
       </div>
     </div>
   );
