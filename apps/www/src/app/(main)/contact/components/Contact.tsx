@@ -8,9 +8,10 @@ import {
   useState,
   type ChangeEvent,
   useEffect,
+  type FormEvent,
 } from "react";
 import { cn } from "ui";
-import { Input, type InputRef, Textarea, type TextAreaRef } from "ui";
+import { Input, type InputRef, Textarea, type TextareaRef } from "ui";
 import { z } from "zod";
 import { fetcher, type IApiResponse } from "@/utils/fetcher.util";
 import { toast } from "sonner";
@@ -23,7 +24,7 @@ const Contact: FC = () => {
   const [isSending, setIsSending] = useState(false);
   const id = useId();
   const emailRef = useRef<InputRef>(null);
-  const messageRef = useRef<TextAreaRef>(null);
+  const messageRef = useRef<TextareaRef>(null);
   const signal = useRef<AbortController>(new AbortController());
   const isMounted = useIsMounted();
   const { isDarkMode } = useDarkMode();
@@ -69,14 +70,13 @@ const Contact: FC = () => {
     });
   };
 
-  const validForm = () => {
-    const email = emailRef.current?.isValid();
-    const message = messageRef.current?.isValid();
-    if (!email || !message) {
+  const validForm = (e: FormEvent<HTMLFormElement>) => {
+    const form = e.currentTarget;
+    if (form.checkValidity()) {
+      setIsValidate(true);
+    } else {
       setIsValidate(false);
-      return;
     }
-    setIsValidate(true);
   };
 
   return (
@@ -103,12 +103,13 @@ const Contact: FC = () => {
             placeholder="Your email"
             error="Please enter a valid email"
             type="email"
+            className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
           />
         </div>
         <div className="mb-3 flex flex-col gap-2">
           <Textarea
             ref={messageRef}
-            className="h-40 max-h-40 p-3"
+            className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40 h-40 max-h-40 p-3"
             title="Message"
             name="message"
             placeholder="Your message"
@@ -118,7 +119,17 @@ const Contact: FC = () => {
             required
           />
         </div>
-        <Script src="https://www.google.com/recaptcha/api.js" async defer />
+        <Script
+          id={id}
+          src="https://www.google.com/recaptcha/api.js"
+          async
+          defer>
+          {`
+            const onloadCallback = function() {
+              grecaptcha.reset();
+            };
+          `}
+        </Script>
         <div
           className="g-recaptcha mb-5 mt-7 self-center"
           data-sitekey={RE_CAPTCHA_KEY}
