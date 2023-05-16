@@ -7,6 +7,7 @@ import { api } from "trpc-api";
 import { useInfiniteScroll } from "ui";
 import { Card, CardBody } from "@nextui-org/react";
 import { RouterInputs } from "api";
+import Skeleton from "./skeleton";
 
 interface Props {
   initFeed?: Post[];
@@ -71,6 +72,7 @@ const FeedList: FC<Props> = (props) => {
           flatData?.map((post) => {
             return <FeedItem key={post.id} post={post} ref={ref} />;
           })}
+        {isLoading && <Skeleton />}
       </div>
     </div>
   );
