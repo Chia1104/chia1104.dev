@@ -65,7 +65,7 @@ export const postRouter = createTRPCRouter({
         const nextItem = items.pop();
         nextCursor = nextItem?.id;
       }
-      if (items.length == 0) {
+      if (items.length == 0 || nextCursor == null) {
         hasNextPage = false;
       }
       return {

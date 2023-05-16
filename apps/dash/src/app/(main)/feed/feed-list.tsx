@@ -5,24 +5,32 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { type Post } from "db";
 import { api } from "trpc-api";
 import { useInfiniteScroll } from "ui";
+import { Card, CardBody } from "@nextui-org/react";
+import { RouterInputs } from "api";
 
 interface Props {
   initFeed?: Post[];
+  nextCursor?: string | number;
   useClient?: boolean;
+  query?: RouterInputs["post"]["infinite"];
 }
 
 const FeedItem = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
-  return <div ref={ref}>{post.title}</div>;
+  return (
+    <Card ref={ref} className="dark:bg-dark/90">
+      <CardBody>{post.title}</CardBody>
+    </Card>
+  );
 });
 FeedItem.displayName = "FeedItem";
 
 const FeedList: FC<Props> = (props) => {
-  const { initFeed } = props;
+  const { initFeed, nextCursor, query } = props;
   const { data, isSuccess, isLoading, fetchNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["posts"],
       queryFn: ({ pageParam }) =>
-        api.post.infinite.query({ limit: 5, cursor: pageParam }),
+        api.post.infinite.query({ ...query, cursor: pageParam }),
       getNextPageParam: (lastPage) => {
         if (lastPage.hasNextPage) {
           return lastPage.nextCursor;
@@ -36,7 +44,7 @@ const FeedList: FC<Props> = (props) => {
             {
               items: initFeed,
               hasNextPage: true,
-              nextCursor: initFeed[initFeed.length - 1].id,
+              nextCursor: nextCursor,
             },
           ],
           pageParams: [undefined],
@@ -57,11 +65,13 @@ const FeedList: FC<Props> = (props) => {
   });
   return (
     <div>
-      <h1>FeedList</h1>
-      {isSuccess &&
-        flatData?.map((post) => {
-          return <FeedItem key={post.id} post={post} ref={ref} />;
-        })}
+      <h2 className="mb-10 text-4xl">FeedList</h2>
+      <div className="flex flex-col gap-5">
+        {isSuccess &&
+          flatData?.map((post) => {
+            return <FeedItem key={post.id} post={post} ref={ref} />;
+          })}
+      </div>
     </div>
   );
 };

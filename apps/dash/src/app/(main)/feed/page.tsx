@@ -3,10 +3,11 @@ import { prisma } from "db";
 import { cache, Suspense } from "react";
 import { RouterOutputs } from "api";
 import { asyncComponent } from "@/utils/asyncComponent.util";
+import { api } from "trpc-api";
 
 const getPosts = cache(async () => {
   return await prisma.post.findMany({
-    take: 5,
+    take: 6,
     orderBy: {
       createdAt: "desc",
     },
@@ -14,14 +15,14 @@ const getPosts = cache(async () => {
 });
 
 const FeedPage = async () => {
-  // const post = await getPosts();
+  const post = await api.post.infinite.query({ limit: 10 });
   return (
     <div className="c-container main mt-24">
-      <FeedList />
-      <h2>Promise feed</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <PromiseFeedList promise={getPosts()} />
-      </Suspense>
+      <FeedList
+        initFeed={post.items}
+        nextCursor={post.nextCursor}
+        query={{ limit: 10 }}
+      />
     </div>
   );
 };
