@@ -58,7 +58,7 @@ const FeedList: FC<Props> = (props) => {
   }, [data, isSuccess]);
   const { ref } = useInfiniteScroll({
     hasMore: hasNextPage,
-    isLoading,
+    isLoading: isFetching,
     onLoadMore: fetchNextPage,
     intersectionObserverInit: {
       rootMargin: "0px 0px 200px 0px",
