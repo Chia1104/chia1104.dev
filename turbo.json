@@ -27,20 +27,12 @@
     },
     "dash#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": [
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET",
-        "NEXTAUTH_URL",
-        "NEXTAUTH_SECRET"
-      ]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "backend#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "env": [
-        "DATABASE_URL"
-      ]
+      "env": ["DATABASE_URL"]
     },
     "lint": {
       "dependsOn": ["^build"],
@@ -78,7 +70,9 @@
       "outputs": ["public/**"],
       "cache": false
     },
-    "db:seed": {}
+    "db:seed": {
+      "cache": false
+    }
   },
   "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]
 }

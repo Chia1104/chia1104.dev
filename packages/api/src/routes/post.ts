@@ -2,24 +2,80 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure.input(z.object({ text: z.string() })).query((opts) => {
-    return {
-      greeting: `Hello ${opts.input.text}`,
-    };
-  }),
+  get: publicProcedure
+    .input(
+      z
+        .object({
+          take: z.number().max(20).optional().default(10),
+          skip: z.number().optional().default(0),
+          orderBy: z
+            .enum(["createdAt", "updatedAt"])
+            .optional()
+            .default("updatedAt"),
+          sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+        })
+        .optional()
+        .default({
+          take: 10,
+          skip: 0,
+          orderBy: "updatedAt",
+          sortOrder: "desc",
+        })
+    )
+    .query(async (opts) => {
+      return await opts.ctx.db.post.findMany({
+        take: opts.input.take,
+        skip: opts.input.skip,
+        orderBy: { [opts.input.orderBy]: opts.input.sortOrder },
+      });
+    }),
 
-  getAll: publicProcedure.query(async (opts) => {
-    const startTime = Date.now();
-    const items = await opts.ctx.db.post.findMany({
-      take: 10,
-      orderBy: { updatedAt: "desc" },
-    });
-    const duration = Date.now() - startTime;
+  infinite: publicProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().max(20).optional().default(10),
+          cursor: z.string().nullish(), // <-- "cursor" needs to exist, but can be any type
+          orderBy: z
+            .enum(["createdAt", "updatedAt"])
+            .optional()
+            .default("updatedAt"),
+          sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+        })
+        .optional()
+        .default({
+          limit: 10,
+          cursor: null,
+          orderBy: "updatedAt",
+          sortOrder: "desc",
+        })
+    )
+    .query(async (opts) => {
+      const { input } = opts;
+      const limit = input.limit;
+      const { cursor, orderBy, sortOrder } = input;
+      const items = await opts.ctx.db.post.findMany({
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: { [orderBy]: sortOrder },
+      });
+      let nextCursor: typeof cursor | undefined = undefined;
+      let hasNextPage = true;
+      if (items.length > limit) {
+        const nextItem = items.pop();
+        nextCursor = nextItem?.id;
+      }
+      if (items.length == 0 || nextCursor == null) {
+        hasNextPage = false;
+      }
+      return {
+        items,
+        hasNextPage,
+        nextCursor,
+      };
+    }),
 
-    return { items, duration, fetchedAt: new Date(startTime) };
-  }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
+  getSecretMessage: protectedProcedure.query((opts) => {
+    return `Hello ${opts.ctx.session.user.name}!`;
   }),
 });

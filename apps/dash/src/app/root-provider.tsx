@@ -24,7 +24,17 @@ const Toaster: FC = () => {
 };
 
 const RootProvider: FC<Props> = ({ session, children }) => {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+          },
+        },
+      })
+  );
   return (
     <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>

@@ -30,10 +30,11 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
-  transpilePackages: ["ui", "db", "auth"],
+  transpilePackages: ["ui", "db", "auth", "api"],
   experimental: {
     appDir: true,
-    serverComponentsExternalPackages: ["ui", "db"],
+    serverComponentsExternalPackages: ["ui"],
+    serverActions: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
