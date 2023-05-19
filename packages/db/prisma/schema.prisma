@@ -99,3 +99,11 @@ model Profile {
   company      String?
   resume       Json?
 }
+
+model Image {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  url       String
+}

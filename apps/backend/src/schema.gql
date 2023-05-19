@@ -1,0 +1,46 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Post {
+  content: String!
+  createdAt: DateTime!
+  excerpt: String!
+  headImg: String
+  id: ID!
+  published: Boolean
+  readTime: Int
+  readingMins: String
+  slug: String!
+  tags: [String!]!
+  title: String!
+  updatedAt: DateTime!
+  user: User!
+}
+
+input PostOrderByUpdatedAtInput {
+  updatedAt: SortOrder!
+}
+
+type Query {
+  feed(orderBy: PostOrderByUpdatedAtInput, searchString: String, skip: Float, take: Float): [Post!]!
+}
+
+enum SortOrder {
+  asc
+  desc
+}
+
+type User {
+  email: ID
+  emailVerified: DateTime
+  id: ID!
+  image: String
+  name: String
+  posts: [Post!]
+}
