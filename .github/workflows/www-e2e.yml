@@ -21,7 +21,7 @@ env:
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  PNPM_VERSION: 8.4.0
+  PNPM_VERSION: 8.5.1
   NODE_VERSION: 18.*
 
 jobs:

@@ -33,10 +33,10 @@ ENV TURBO_TEAM=$TURBO_TEAM \
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    yarn global add pnpm && \
+    corepack enable && \
     pnpm i && \
-    yarn prisma generate && \
-    yarn turbo run build --filter=backend...
+    pnpm prisma generate && \
+    pnpm turbo run build --filter=backend...
 
 FROM base as runner
 WORKDIR /app

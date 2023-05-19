@@ -39,10 +39,10 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    yarn global add pnpm && \
+    corepack enable && \
     pnpm i && \
-    yarn turbo run db:generate && \
-    yarn turbo run build --filter=dash...
+    pnpm turbo run db:generate && \
+    pnpm turbo run build --filter=dash...
 
 FROM base AS runner
 WORKDIR /app
