@@ -27,7 +27,16 @@
     },
     "dash#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXTAUTH_URL",
+        "NEXTAUTH_SECRET",
+        "ZEABUR_URL",
+        "VERCEL_URL",
+        "RAILWAY_STATIC_URL"
+      ]
     },
     "backend#build": {
       "dependsOn": ["^build"],
