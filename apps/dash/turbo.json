@@ -2,6 +2,16 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "pipeline": {
-    "dash": {}
+    "dash": {
+      "env": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXTAUTH_URL",
+        "NEXTAUTH_SECRET",
+        "ZEABUR_URL",
+        "VERCEL_URL",
+        "RAILWAY_STATIC_URL"
+      ]
+    }
   }
 }
