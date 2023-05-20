@@ -67,5 +67,8 @@ jobs:
           path: ${{ github.workspace }}/apps/dash/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
+      - name: Build
+        run: pnpm build:dash
+
       - name: ESLint, Type checking, Unit tests
         run: pnpm lint type:check test --filter dash...
