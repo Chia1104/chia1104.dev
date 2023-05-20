@@ -14,10 +14,10 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^4.13.0"
+    "@prisma/client": "^4.14.1"
   },
   "devDependencies": {
-    "prisma": "^4.13.0",
+    "prisma": "^4.14.1",
     "tsconfig": "workspace:*"
   }
 }
