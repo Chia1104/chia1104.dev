@@ -1,23 +1,28 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "name": "api",
+  "name": "utils",
   "version": "0.0.0",
   "private": true,
-  "types": "./src/index.ts",
-  "main": "src/index.ts",
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "git clean -xdf .turbo node_modules dist",
     "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules",
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
   "dependencies": {
-    "@trpc/client": "^10.27.1",
-    "@trpc/server": "^10.27.1",
-    "auth": "workspace:*",
-    "db": "workspace:*",
-    "utils": "workspace:*",
+    "tsup": "^6.7.0"
+  },
+  "devDependencies": {
     "tsconfig": "workspace:*"
   }
 }

@@ -1,10 +1,10 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "trpc-api",
-  "typings": "server.ts",
+  "typings": "client.ts",
   "exports": {
     ".": {
-      "types": "./server.ts",
+      "types": "./client.ts",
       "react-server": "./server.ts",
       "default": "./client.ts"
     }
