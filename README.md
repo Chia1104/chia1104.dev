@@ -5,6 +5,8 @@
 [![Licensed under MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=for-the-badge&logo=unlicense)](LICENSE)
 [![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chia1104.dev?style=for-the-badge&logo=turborepo)](https://github.com/chia1104/chia1104.dev)
 
+> The project is still under development.
+
 This is my personal website, a monorepo managed using Turborepo. The development is based on the app structure of NextJS, with the use of TailwindCSS and Typescript. For backend functionalities, PostgreSQL and Redis are utilized to store articles and limit API traffic.
 
 Finally, the website is deployed to the Zeabur platform using Docker, and GitHub Actions are used for integration testing.
@@ -13,6 +15,7 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ![typescript](https://img.shields.io/badge/-Typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![nextjs](https://img.shields.io/badge/-NextJS-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![nestjs](https://img.shields.io/badge/-NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
 ![turborepo](https://img.shields.io/badge/-Turborepo-FF0080?style=for-the-badge&logo=turborepo&logoColor=white)
 ![tailwindcss](https://img.shields.io/badge/-TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![framer-motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
@@ -73,12 +76,16 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 ```bash
 chia1104.dev
 ├── apps
-│   ├── dash (WIP)
+│   ├── backend (NestJS, microservices)
+│   ├── dash (NextJS)
 │   └── www (NextJS)
 ├── packages
+│   ├── api (tRPC API, for nextjs)
+│   ├── auth (AuthJS)
+│   ├── utils (shared utilities)
 │   ├── ui (shared components)
 │   └── db (prisma orm)
-├── shared
+├── config
 │   ├── tailwind-config (tailwind config)
 │   └── tsconfig (base, nextjs, react)
 └── tests
