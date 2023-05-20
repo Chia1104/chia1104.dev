@@ -76,6 +76,7 @@
   },
   "packageManager": "pnpm@8.5.1",
   "dependencies": {
+    "dayjs": "^1.11.7",
     "superjson": "1.12.3",
     "zod": "^3.21.4"
   }

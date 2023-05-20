@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import generateSlug from "../utils/generate-slug.util";
 
 export const postRouter = createTRPCRouter({
   get: publicProcedure
@@ -51,9 +52,7 @@ export const postRouter = createTRPCRouter({
         })
     )
     .query(async (opts) => {
-      const { input } = opts;
-      const limit = input.limit;
-      const { cursor, orderBy, sortOrder } = input;
+      const { cursor, orderBy, sortOrder, limit } = opts.input;
       const items = await opts.ctx.db.post.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
@@ -75,7 +74,31 @@ export const postRouter = createTRPCRouter({
       };
     }),
 
-  getSecretMessage: protectedProcedure.query((opts) => {
-    return `Hello ${opts.ctx.session.user.name}!`;
-  }),
+  create: protectedProcedure
+    .input(
+      z.object({
+        title: z.string().optional().default("Untitled"),
+        excerpt: z.string().optional().default(""),
+        tags: z.array(z.string()).optional().default([]),
+        headImg: z.string().optional(),
+        published: z.boolean().optional().default(false),
+        content: z.string().optional().default(""),
+      })
+    )
+    .mutation(async (opts) => {
+      const { title, excerpt, tags, headImg, published, content } = opts.input;
+      const userId = opts.ctx.session.user.id;
+      return await opts.ctx.db.post.create({
+        data: {
+          title,
+          slug: generateSlug(title),
+          excerpt,
+          tags,
+          headImg,
+          published,
+          content,
+          userId,
+        },
+      });
+    }),
 });
