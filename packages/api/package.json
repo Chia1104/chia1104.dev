@@ -13,11 +13,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@trpc/client": "^10.27.1",
-    "@trpc/server": "^10.27.1",
+    "@trpc/client": "^10.28.0",
+    "@trpc/server": "^10.28.0",
     "auth": "workspace:*",
     "db": "workspace:*",
-    "utils": "workspace:*",
-    "tsconfig": "workspace:*"
+    "tsconfig": "workspace:*",
+    "utils": "workspace:*"
   }
 }

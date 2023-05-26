@@ -32,7 +32,7 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
 
     container:
-      image: mcr.microsoft.com/playwright:v1.33.0-jammy
+      image: mcr.microsoft.com/playwright:v1.34.3-jammy
 
     steps:
       - name: Check out code
