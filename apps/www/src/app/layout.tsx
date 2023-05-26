@@ -1,10 +1,11 @@
 import "../styles/globals.css";
 import { ErrorBoundary } from "ui";
-import { RootProvider, Analytics } from "@/app/components";
+import RootProvider from "./root-provider";
 import { type ReactNode } from "react";
 import { Chia } from "@/shared/meta/chia";
 import "@total-typescript/ts-reset";
 import type { Metadata } from "next";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: {
@@ -50,7 +51,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
         <ErrorBoundary>
           <RootProvider>{children}</RootProvider>
         </ErrorBoundary>
-        <Analytics />
+        <VercelAnalytics />
       </body>
     </html>
   );

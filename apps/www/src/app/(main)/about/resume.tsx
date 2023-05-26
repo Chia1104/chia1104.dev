@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import { Chia } from "@/shared/meta/chia";
-import Experience from "./Experience";
-import LanAndTools from "./LanAndTools";
+import Experience from "./experience";
+import LanAndTools from "./lan-and-tools";
 import { Link, Image } from "ui";
 
 interface Props {

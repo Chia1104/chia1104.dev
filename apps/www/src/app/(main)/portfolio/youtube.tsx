@@ -1,4 +1,4 @@
-import VideoList from "./VideoList";
+import VideoList from "./video-list";
 import { Chia } from "@/shared/meta/chia";
 import { asyncComponent } from "@/utils/asyncComponent.util";
 import { type FC } from "react";

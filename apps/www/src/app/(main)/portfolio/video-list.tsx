@@ -1,6 +1,6 @@
 import { type FC } from "react";
 import type { YoutubeItem } from "@/shared/types";
-import LastestVideo from "./LastestVideo";
+import LatestVideo from "./latest-video";
 import dayjs from "dayjs";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 const VideoList: FC<Props> = ({ item }) => {
   return (
     <div className="grid w-full grid-cols-1 gap-3 xl:grid-cols-2">
-      <LastestVideo item={item[0]} />
+      <LatestVideo item={item[0]} />
       <div className="my-5">
         {item.map(
           (v, i) =>
