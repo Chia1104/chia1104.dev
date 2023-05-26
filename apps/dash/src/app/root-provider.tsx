@@ -40,7 +40,7 @@ const RootProvider: FC<Props> = ({ session, children }) => {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider enableSystem attribute="class">
           <Toaster />
-          <AnimatePresence mode="wait">{children}</AnimatePresence>
+          {children}
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>

@@ -5,7 +5,7 @@ interface Props {
   item: YoutubeItem;
 }
 
-const LastestVideo: FC<Props> = ({ item }) => {
+const LatestVideo: FC<Props> = ({ item }) => {
   const id = item.snippet.resourceId.videoId;
   const name = item.snippet.title;
 
@@ -33,4 +33,4 @@ const LastestVideo: FC<Props> = ({ item }) => {
   );
 };
 
-export default LastestVideo;
+export default LatestVideo;

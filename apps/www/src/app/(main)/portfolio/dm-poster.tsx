@@ -7,7 +7,7 @@ interface Props {
   url: string;
 }
 
-const DMPoster: FC<Props> = ({ url }) => {
+const DmPoster: FC<Props> = ({ url }) => {
   const [isShow, setIsShow] = useState(false);
 
   const handleClose = () => setIsShow(false);
@@ -51,4 +51,4 @@ const DMPoster: FC<Props> = ({ url }) => {
   );
 };
 
-export default memo(DMPoster, (prev, next) => prev.url === next.url);
+export default memo(DmPoster, (prev, next) => prev.url === next.url);
