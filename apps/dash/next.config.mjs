@@ -32,7 +32,6 @@ const nextConfig = {
   swcMinify: true,
   transpilePackages: ["ui", "db", "auth", "api"],
   experimental: {
-    appDir: true,
     serverComponentsExternalPackages: ["ui"],
     serverActions: true,
   },
