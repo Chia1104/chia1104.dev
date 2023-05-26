@@ -2,7 +2,6 @@
 
 import { type FC, type ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
-import { AnimatePresence } from "framer-motion";
 import { useDarkMode, useIsMounted } from "@/hooks";
 import { Toaster as ST } from "sonner";
 
@@ -18,7 +17,7 @@ const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ThemeProvider enableSystem attribute="class">
       <Toaster />
-      <AnimatePresence mode="wait">{children}</AnimatePresence>
+      {children}
     </ThemeProvider>
   );
 };
