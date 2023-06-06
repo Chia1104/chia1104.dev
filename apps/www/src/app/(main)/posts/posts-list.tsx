@@ -23,7 +23,9 @@ interface PostItemProps {
 const PostItem: FC<PostItemProps> = ({ data, i }) => {
   const { mutate } = useZact(validatedIncrReadCount);
   return (
-    <div className="c-bg-secondary group relative flex min-h-[465px] w-full flex-col rounded-xl shadow-lg transition duration-300 ease-in-out hover:-translate-y-1.5 2xl:min-h-[520px]">
+    <div
+      onClick={() => mutate({ slug: data.slug })}
+      className="c-bg-secondary group relative flex min-h-[465px] w-full flex-col rounded-xl shadow-lg transition duration-300 ease-in-out hover:-translate-y-1.5 2xl:min-h-[520px]">
       <div
         className={cn(
           "aspect-h-9 aspect-w-16 mb-3 w-full overflow-hidden rounded-t-xl bg-gray-200",
@@ -51,12 +53,7 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
           {data.readingMins}
         </span>
       </p>
-      <Link
-        scroll
-        className="absolute inset-0"
-        href={`/posts/${data?.slug}`}
-        onClick={() => mutate({ slug: data.slug })}
-      />
+      <Link scroll className="absolute inset-0" href={`/posts/${data?.slug}`} />
     </div>
   );
 };
