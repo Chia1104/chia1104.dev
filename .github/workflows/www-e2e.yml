@@ -29,8 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
 
-#    container:
-#      image: mcr.microsoft.com/playwright:v1.34.3-jammy
+    container:
+      image: mcr.microsoft.com/playwright:v1.34.3-jammy
 
     steps:
       - name: '🐙️ Check out code'
@@ -46,8 +46,8 @@ jobs:
         with:
           INSTALL_COMMAND: '--filter \!dash --filter \!"./tests/*" --filter \!backend --filter \!"./scripts/*"'
 
-      - name: '📦  Install Playwright Browsers (no cache)'
-        run: npx playwright install --with-deps
+#      - name: '📦  Install Playwright Browsers (no cache)'
+#        run: npx playwright install --with-deps
 
       - name: '📦  Next.js cache'
         uses: actions/cache@v3

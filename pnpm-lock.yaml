@@ -21,6 +21,9 @@ importers:
       '@next/eslint-plugin-next':
         specifier: 13.4.4
         version: 13.4.4
+      '@playwright/test':
+        specifier: ^1.34.3
+        version: 1.34.3
       '@total-typescript/ts-reset':
         specifier: 0.4.2
         version: 0.4.2
@@ -598,9 +601,6 @@ importers:
 
   tests/www-e2e:
     devDependencies:
-      '@playwright/test':
-        specifier: ^1.34.3
-        version: 1.34.3
       start-server-and-test:
         specifier: ^2.0.0
         version: 2.0.0
