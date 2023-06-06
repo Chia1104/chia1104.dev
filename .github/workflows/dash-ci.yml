@@ -40,14 +40,6 @@ jobs:
         with:
           INSTALL_COMMAND: '--filter \!backend --filter \!"./tests/*" --filter \!www --filter \!"./scripts/*"'
 
-      - name: '🏗️  Build utils'
-        id: dash-build-utils
-        uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
-        with:
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
-          BUILD_COMMAND: 'build --filter utils...'
-
       - name: '🚨️  ESLint, Type checking, Unit tests'
         id: dash-lint-test
         uses: Chia1104/chia-stack/.github/actions/lint-test@main
