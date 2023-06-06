@@ -1,7 +1,9 @@
-import { GitHub, Youtube, Design } from "./components";
 import { Design as DesignData } from "@/shared/meta/design";
 import type { Metadata } from "next";
 import { Chia } from "@/shared/meta/chia";
+import GitHub from "./github";
+import Youtube from "./youtube";
+import Design from "./design";
 
 export const revalidate = 60;
 

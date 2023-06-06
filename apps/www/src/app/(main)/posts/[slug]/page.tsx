@@ -1,6 +1,6 @@
 import { getAllPosts, getCompiledSource } from "@/helpers/mdx/services";
 import { Image, Chip } from "ui";
-import { Giscus } from "./components";
+import Giscus from "./giscus";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";

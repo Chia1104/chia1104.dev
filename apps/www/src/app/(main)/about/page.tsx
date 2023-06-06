@@ -1,4 +1,4 @@
-import { Resume } from "./components";
+import Resume from "./resume";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -10,7 +10,7 @@ COPY . .
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    yarn global add turbo && \
+    yarn global add turbo@canary && \
     turbo prune --scope=www --docker
 
 FROM base AS installer
@@ -41,10 +41,10 @@ ENV TURBO_TEAM=$TURBO_TEAM \
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    yarn global add pnpm && \
+    corepack enable && \
     pnpm i && \
-    yarn turbo run build --filter=www... && \
-    yarn turbo run next-sitemap --filter=www
+    pnpm turbo run build --filter=www... && \
+    pnpm turbo run next-sitemap --filter=www
 
 FROM base AS runner
 WORKDIR /app

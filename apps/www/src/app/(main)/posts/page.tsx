@@ -1,6 +1,6 @@
 import { getAllPosts } from "@/helpers/mdx/services";
 import { Chia } from "@/shared/meta/chia";
-import { PostsList } from "./components";
+import PostsList from "./posts-list";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "seed",
+  "version": "0.0.0",
+  "private": true,
+  "types": "./index.ts",
+  "main": "index.ts",
+  "scripts": {
+    "lint": "eslint index.ts --fix",
+    "type:check": "tsc --noEmit",
+    "clean": "git clean -xdf .turbo node_modules",
+    "db:seed": "npx prisma db seed",
+    "tsc:config": "tsc --showConfig"
+  },
+  "prisma": {
+    "seed": "ts-node --transpile-only index.ts"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^7.6.0",
+    "db": "workspace:*",
+    "tsconfig": "workspace:*"
+  }
+}

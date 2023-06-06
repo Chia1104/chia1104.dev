@@ -35,7 +35,6 @@ const nextConfig = {
   transpilePackages: ["ui"],
   swcMinify: true,
   experimental: {
-    appDir: true,
     mdxRs: true,
     typedRoutes: false,
     serverComponentsExternalPackages: ["ui"],

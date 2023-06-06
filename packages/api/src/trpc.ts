@@ -46,13 +46,16 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = async (_opts: FetchCreateContextFnOptions) => {
+export const createTRPCContext = async (opts?: FetchCreateContextFnOptions) => {
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerSession();
 
-  return createInnerTRPCContext({
-    session,
-  });
+  return {
+    ...createInnerTRPCContext({
+      session,
+    }),
+    headers: opts && opts?.req?.headers,
+  };
 };
 
 /**

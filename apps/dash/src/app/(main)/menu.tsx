@@ -13,7 +13,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Tabs,
-  TabItem,
+  Tab,
 } from "@nextui-org/react";
 import { ToggleTheme, Image } from "ui";
 import { useDarkMode } from "@/hooks";
@@ -84,7 +84,7 @@ const Menu = () => {
       position="floating"
       maxWidth="full"
       isBordered={false}
-      className="dark:border-0"
+      className="fixed dark:border-0"
       shouldHideOnScroll>
       <NavbarBrand className="cursor-pointer" onClick={() => router.push("/")}>
         <Image
@@ -101,18 +101,14 @@ const Menu = () => {
           variant="solid"
           radius="lg"
           selectedKey={selectedLayoutSegments[0] ?? "dashboard"}>
-          <TabItem
+          <Tab
             title="Dashboard"
             key="dashboard"
             onClick={() => router.push("/")}
           />
-          <TabItem title="Metrics" key="metrics" />
-          <TabItem
-            title="Feed"
-            key="feed"
-            onClick={() => router.push("/feed")}
-          />
-          <TabItem
+          <Tab title="Metrics" key="metrics" />
+          <Tab title="Feed" key="feed" onClick={() => router.push("/feed")} />
+          <Tab
             title="Write"
             key="write"
             onClick={() => router.push("/write")}

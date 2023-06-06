@@ -187,17 +187,21 @@ export const Chia = {
     {
       title: "Work Experience",
       company: "LeadBest",
-      duration: "2023-3 - Now",
+      duration: "2023-3 - Present",
       location: "Taipei, Taiwan",
-      work: "ReactJS, NextJS, TypeScript, GCP",
+      work: "ReactJS, React Native, MUI, TypeScript, GCP, Scrum, Jira",
       link: "https://www.leadbestconsultant.com/",
+      detail: [
+        "Adopting the Scrum development process and effectively fulfilling customer requirements with the help and communication of cross-functional teams.",
+        "Creating new frontend projects using internal templates and maintaining related modules.",
+      ],
     },
     {
       title: "Work Experience",
       company: "WANIN",
       duration: "2022-7 - 2023-1",
       location: "Taipei, Taiwan",
-      work: "NextJS, VueJS, TailwindCSS, TypeScript, Turborepo, GCP",
+      work: "NextJS, VueJS, NestJS, TailwindCSS, TypeScript, Turborepo, GCP",
       link: "https://www.wanin.tw/",
       detail: [
         "Developed a full-stack project, League Funny, which is a website where users can share posts about their favorite games.",
@@ -205,6 +209,7 @@ export const Chia = {
         "Reduced 50% of the development time by using Turborepo to manage multiple repositories.",
         "Developed useful hooks such as useS3ImageUpload and useInfiniteScroll to streamline development.",
         "Led other developers to learn and use new technologies and React features.",
+        "Develop an internal backend system for the company to manage game player-related data and use Vue3 to complete the frontend and NestJS to complete the backend API.",
       ],
     },
     {
