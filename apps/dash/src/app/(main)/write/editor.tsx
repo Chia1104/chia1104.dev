@@ -50,7 +50,7 @@ const Editor = () => {
       <Button
         className="absolute bottom-2 right-2 z-20"
         variant="flat"
-        color="neutral"
+        color="default"
         onPress={() => {
           editorRef.current?.getAction("editor.action.formatDocument").run();
         }}>
