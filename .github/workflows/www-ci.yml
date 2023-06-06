@@ -20,8 +20,6 @@ env:
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  PNPM_VERSION: 8.5.1
-  NODE_VERSION: 18.*
 
 jobs:
   build:
@@ -31,43 +29,23 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
 
     steps:
-      - name: Check out code
+      - name: '🐙️ Check out code'
         uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
+      - name: '💽️  Init'
+        id: backend-init
+        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+
+      - name: '📦  Install'
+        id: backend-install
+        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          INSTALL_COMMAND: '--filter \!dash --filter \!"./tests/*" --filter \!backend --filter \!"./scripts/*"'
 
-      - uses: pnpm/action-setup@v2
-        name: Install pnpm
-        id: pnpm-install
+      - name: '🚨️  ESLint, Type checking, Unit tests'
+        id: backend-lint-test
+        uses: Chia1104/chia-stack/.github/actions/lint-test@main
         with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --prefer-offline --filter \!dash --filter \!"./tests/*" --filter \!backend --filter \!"./scripts/*"
-
-      - name: Next.js cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/apps/www/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
-
-      - name: ESLint, Type checking, Unit tests
-        run: pnpm lint type:check test --filter www...
+          COMMAND: '--filter www...'
+          TURBO_TEAM: ${{ env.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
