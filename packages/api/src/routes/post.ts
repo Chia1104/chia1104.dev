@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
-import generateSlug from "../utils/generate-slug.util";
+import { generateSlug } from "utils";
 
 export const postRouter = createTRPCRouter({
   get: publicProcedure

@@ -1,5 +1,5 @@
 import generateSlug from "./generate-slug.util";
-import { getToday } from "utils";
+import { getToday } from "../day/day.util";
 import { describe, expect, it } from "vitest";
 
 describe("generateSlug", () => {

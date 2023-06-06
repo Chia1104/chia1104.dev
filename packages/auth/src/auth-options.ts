@@ -5,7 +5,7 @@ import {
 } from "next-auth";
 import { prisma } from "db";
 import GoogleProvider from "next-auth/providers/google";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -70,7 +70,7 @@ const authOptions: NextAuthOptions = {
       };
     },
   },
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as any,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",

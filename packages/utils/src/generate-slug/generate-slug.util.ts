@@ -1,4 +1,4 @@
-import { getToday } from "utils";
+import { getToday } from "../day/day.util";
 
 const generateSlug = (title: string) => {
   return (
