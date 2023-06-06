@@ -37,11 +37,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: '💽️  Init'
-        id: backend-init
+        id: www-init
         uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
 
       - name: '📦  Install'
-        id: backend-install
+        id: www-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
         with:
           INSTALL_COMMAND: '--filter \!dash --filter \!"./tests/*" --filter \!backend --filter \!"./scripts/*"'
