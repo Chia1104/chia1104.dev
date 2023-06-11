@@ -1,12 +1,15 @@
 import { getAllPosts, getCompiledSource } from "@/helpers/mdx/services";
-import { Image, Chip } from "ui";
+import { Chip, Image } from "ui";
 import Giscus from "./giscus";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { WithContext, Blog } from "schema-dts";
+import type { Blog, WithContext } from "schema-dts";
 import { getBaseUrl } from "@/utils/getBaseUrl";
+import { createHmac } from "node:crypto";
+import { setSearchParams } from "utils";
+import { SHA_256_HASH } from "@/shared/constants";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -16,13 +19,22 @@ export const generateStaticParams = async () => {
   }));
 };
 
+const getToken = (id: string): string => {
+  const hmac = createHmac("sha256", SHA_256_HASH);
+  hmac.update(JSON.stringify({ title: id }));
+  return hmac.digest("hex");
+};
+
 export const generateMetadata = async ({
   params,
 }: {
-  params: any;
+  params: {
+    slug: string;
+  };
 }): Promise<Metadata> => {
   try {
     const { frontmatter } = await getCompiledSource(params.slug);
+    const token = getToken(frontmatter?.slug ?? "");
     return {
       title: frontmatter?.title,
       keywords: frontmatter?.tags?.join(",") || undefined,
@@ -38,7 +50,10 @@ export const generateMetadata = async ({
           {
             url: `${getBaseUrl({
               isServer: true,
-            })}/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
+            })}/api/og?${setSearchParams({
+              title: frontmatter?.slug,
+              token: token,
+            })}`,
             width: 1200,
             height: 630,
           },
@@ -50,9 +65,10 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         creator: "@chia1104",
         images: [
-          `${getBaseUrl({ isServer: true })}/api/og?title=${encodeURIComponent(
-            frontmatter?.title ?? ""
-          )}`,
+          `${getBaseUrl({ isServer: true })}/api/og?${setSearchParams({
+            title: frontmatter?.slug,
+            token: token,
+          })}`,
         ],
       },
     };
@@ -62,9 +78,16 @@ export const generateMetadata = async ({
   }
 };
 
-const PostDetailPage = async ({ params }: { params?: any }) => {
+const PostDetailPage = async ({
+  params,
+}: {
+  params: {
+    slug: string;
+  };
+}) => {
   try {
     const { frontmatter, content } = await getCompiledSource(params.slug);
+    const token = getToken(frontmatter?.slug ?? "");
     const jsonLd: WithContext<Blog> = {
       "@context": "https://schema.org",
       "@type": "Blog",
@@ -73,7 +96,10 @@ const PostDetailPage = async ({ params }: { params?: any }) => {
       dateModified: frontmatter?.updatedAt,
       name: frontmatter?.title,
       description: frontmatter?.excerpt,
-      image: `/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
+      image: `/api/og?${setSearchParams({
+        title: frontmatter?.slug,
+        token: token,
+      })}`,
       keywords: frontmatter?.tags?.join(","),
       author: {
         "@type": "Person",

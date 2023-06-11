@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/server";
+import { IS_VERCEL } from "@/shared/constants";
 
 export const alt = "Portfolio";
 export const size = {
@@ -10,7 +11,14 @@ export const runtime = "edge";
 
 const TITLE = "Portfolio";
 
-export default function og() {
+const font = IS_VERCEL
+  ? fetch(new URL("../../../assets/abduction2002.ttf", import.meta.url)).then(
+      (res) => res.arrayBuffer()
+    )
+  : undefined;
+
+export default async function og() {
+  const fontData = await font;
   return new ImageResponse(
     (
       <div
@@ -35,27 +43,29 @@ export default function og() {
             position: "relative",
           }}>
           <img
-            style={{
-              filter: "grayscale(45%) blur(2px)",
-            }}
             tw="w-full"
             alt="og"
-            src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fog-img-1200.png?alt=media"
+            src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fcyberpunk-1200-630.jpg?alt=media"
           />
-          <div tw="flex absolute w-full justify-center items-center p-20">
-            <div tw="flex flex-col justify-center items-center mr-10">
-              <img
-                style={{
-                  objectFit: "contain",
-                }}
-                tw="w-[200px] h-[200px] rounded-full"
-                alt="avatar"
-                src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fme-175.jpg?alt=media"
-              />
-              <h1 tw="text-3xl text-slate-900">Chia1104 - 俞又嘉</h1>
-              <h2 tw="text-xl text-slate-700">https://chia1104.dev</h2>
+          <div tw="flex flex-col absolute w-full justify-center items-center">
+            <div
+              style={{
+                backdropFilter: "blur(10px)",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                color: "#fff",
+                fontSize: 60,
+                fontStyle: "normal",
+                letterSpacing: "-0.025em",
+                padding: "30px 10px 20px 20px",
+                lineHeight: 1.4,
+                whiteSpace: "pre-wrap",
+              }}>
+              {TITLE}
             </div>
-            <h3 tw="text-[55px] text-slate-600 ml-10">{TITLE}</h3>
+          </div>
+          <div tw="flex flex-col justify-center items-center mr-10 absolute bottom-10">
+            <div tw="text-3xl text-white">Chia1104</div>
+            <div tw="text-xl text-white">https://chia1104.dev</div>
           </div>
         </div>
       </div>
@@ -63,6 +73,15 @@ export default function og() {
     {
       ...size,
       status: 200,
+      fonts: fontData
+        ? [
+            {
+              name: "Typewriter",
+              data: fontData,
+              style: "normal",
+            },
+          ]
+        : undefined,
     }
   );
 }
