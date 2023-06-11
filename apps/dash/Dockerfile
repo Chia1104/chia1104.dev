@@ -10,7 +10,7 @@ COPY . .
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    yarn global add turbo@canary && \
+    yarn global add turbo && \
     turbo prune --scope=dash --docker
 
 FROM base AS installer
