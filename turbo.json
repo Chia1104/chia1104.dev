@@ -9,6 +9,7 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"],
       "env": [
+        "SHA_256_HASH",
         "BASE_URL",
         "SITE_URL",
         "GH_PUBLIC_TOKEN",

@@ -1,14 +1,45 @@
 import { NextRequest, NextResponse, ImageResponse } from "next/server";
+import { SHA_256_HASH } from "@/shared/constants";
 
 export const runtime = "edge";
 
+const key = crypto.subtle.importKey(
+  "raw",
+  new TextEncoder().encode(SHA_256_HASH),
+  { name: "HMAC", hash: { name: "SHA-256" } },
+  false,
+  ["sign"]
+);
+
+const toHex = (arrayBuffer: ArrayBuffer) => {
+  return Array.prototype.map
+    .call(new Uint8Array(arrayBuffer), (n) => n.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const font = fetch(
+  new URL("../../../assets/abduction2002.ttf", import.meta.url)
+).then((res) => res.arrayBuffer());
+
 export async function GET(request: NextRequest) {
   try {
+    const fontData = await font;
     const searchParams = request.nextUrl.searchParams;
     const hasTitle = searchParams.has("title");
     const title = hasTitle
       ? searchParams.get("title")?.slice(0, 100)
       : "Full Stack Engineer";
+    const token = searchParams.get("token");
+    const verifyToken = toHex(
+      await crypto.subtle.sign(
+        "HMAC",
+        await key,
+        new TextEncoder().encode(JSON.stringify({ title }))
+      )
+    );
+    if (token !== verifyToken) {
+      return new Response("Invalid token.", { status: 401 });
+    }
     return new ImageResponse(
       (
         <div
@@ -37,14 +68,16 @@ export async function GET(request: NextRequest) {
               alt="og"
               src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fcyberpunk-1200-630.jpg?alt=media"
             />
-            <div tw="flex flex-col absolute w-full justify-center items-center p-20">
+            <div tw="flex flex-col absolute w-full justify-center items-center">
               <div
                 style={{
+                  backdropFilter: "blur(10px)",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
                   color: "#fff",
                   fontSize: 60,
                   fontStyle: "normal",
                   letterSpacing: "-0.025em",
-                  padding: "0 120px",
+                  padding: "30px 10px 20px 20px",
                   lineHeight: 1.4,
                   whiteSpace: "pre-wrap",
                 }}>
@@ -61,6 +94,13 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
+        fonts: [
+          {
+            name: "Typewriter",
+            data: fontData,
+            style: "normal",
+          },
+        ],
       }
     );
   } catch (e: any) {

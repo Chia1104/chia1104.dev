@@ -410,6 +410,9 @@ importers:
       usehooks-ts:
         specifier: ^2.9.1
         version: 2.9.1(react-dom@18.2.0)(react@18.2.0)
+      utils:
+        specifier: workspace:*
+        version: link:../../packages/utils
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: workspace:*
@@ -576,6 +579,9 @@ importers:
 
   packages/utils:
     dependencies:
+      dayjs:
+        specifier: ^1.11.8
+        version: 1.11.8
       tsup:
         specifier: ^6.7.0
         version: 6.7.0(ts-node@10.9.1)(typescript@5.1.3)
