@@ -24,5 +24,8 @@
   },
   "devDependencies": {
     "tsconfig": "workspace:*"
+  },
+  "peerDependencies": {
+    "dayjs": "^1.11.8"
   }
 }

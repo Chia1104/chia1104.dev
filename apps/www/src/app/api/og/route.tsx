@@ -1,14 +1,45 @@
 import { NextRequest, NextResponse, ImageResponse } from "next/server";
+import { SHA_256_HASH } from "@/shared/constants";
 
 export const runtime = "edge";
 
+const key = crypto.subtle.importKey(
+  "raw",
+  new TextEncoder().encode(SHA_256_HASH),
+  { name: "HMAC", hash: { name: "SHA-256" } },
+  false,
+  ["sign"]
+);
+
+const toHex = (arrayBuffer: ArrayBuffer) => {
+  return Array.prototype.map
+    .call(new Uint8Array(arrayBuffer), (n) => n.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const font = fetch(
+  new URL("../../../assets/abduction2002.ttf", import.meta.url)
+).then((res) => res.arrayBuffer());
+
 export async function GET(request: NextRequest) {
   try {
+    const fontData = await font;
     const searchParams = request.nextUrl.searchParams;
     const hasTitle = searchParams.has("title");
     const title = hasTitle
       ? searchParams.get("title")?.slice(0, 100)
       : "Full Stack Engineer";
+    const token = searchParams.get("token");
+    const verifyToken = toHex(
+      await crypto.subtle.sign(
+        "HMAC",
+        await key,
+        new TextEncoder().encode(JSON.stringify({ title }))
+      )
+    );
+    if (token !== verifyToken) {
+      return new Response("Invalid token.", { status: 401 });
+    }
     return new ImageResponse(
       (
         <div
@@ -33,27 +64,29 @@ export async function GET(request: NextRequest) {
               position: "relative",
             }}>
             <img
-              style={{
-                filter: "grayscale(45%) blur(2px)",
-              }}
               tw="w-full"
               alt="og"
-              src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fog-img-1200.png?alt=media"
+              src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fcyberpunk-1200-630.jpg?alt=media"
             />
-            <div tw="flex absolute w-full justify-center items-center p-20">
-              <div tw="flex flex-col justify-center items-center mr-10">
-                <img
-                  style={{
-                    objectFit: "contain",
-                  }}
-                  tw="w-[200px] h-[200px] rounded-full"
-                  alt="avatar"
-                  src="https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fme-175.jpg?alt=media"
-                />
-                <h1 tw="text-3xl text-slate-900">Chia1104 - 俞又嘉</h1>
-                <h2 tw="text-xl text-slate-700">https://chia1104.dev</h2>
+            <div tw="flex flex-col absolute w-full justify-center items-center">
+              <div
+                style={{
+                  backdropFilter: "blur(10px)",
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  color: "#fff",
+                  fontSize: 60,
+                  fontStyle: "normal",
+                  letterSpacing: "-0.025em",
+                  padding: "30px 10px 20px 20px",
+                  lineHeight: 1.4,
+                  whiteSpace: "pre-wrap",
+                }}>
+                {title}
               </div>
-              <h3 tw="text-[55px] text-slate-600 ml-10">{title}</h3>
+            </div>
+            <div tw="flex flex-col justify-center items-center mr-10 absolute bottom-10">
+              <div tw="text-3xl text-white">Chia1104</div>
+              <div tw="text-xl text-white">https://chia1104.dev</div>
             </div>
           </div>
         </div>
@@ -61,6 +94,13 @@ export async function GET(request: NextRequest) {
       {
         width: 1200,
         height: 630,
+        fonts: [
+          {
+            name: "Typewriter",
+            data: fontData,
+            style: "normal",
+          },
+        ],
       }
     );
   } catch (e: any) {

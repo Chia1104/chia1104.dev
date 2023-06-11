@@ -20,6 +20,7 @@ env:
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.4.0
@@ -64,3 +65,4 @@ jobs:
             SPOTIFY_CLIENT_SECRET=${{ env.SPOTIFY_CLIENT_SECRET }}
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
+            SHA_256_HASH=${{ env.SHA_256_HASH }}

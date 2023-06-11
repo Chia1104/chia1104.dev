@@ -41,3 +41,7 @@ export const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 export const RE_CAPTCHA_KEY = process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY;
 
 export const ZEABUR_URL = process.env.ZEABUR_URL;
+
+export const SHA_256_HASH = process.env.SHA_256_HASH ?? "SHA_256_HASH";
+
+export const IS_VERCEL = process.env.VERCEL;
