@@ -70,7 +70,10 @@ const nextConfig = {
     removeConsole: false,
   },
   images: {
-    domains: ["firebasestorage.googleapis.com"],
+    domains: [
+      "firebasestorage.googleapis.com",
+      "avatars.githubusercontent.com",
+    ],
   },
   async headers() {
     return [
