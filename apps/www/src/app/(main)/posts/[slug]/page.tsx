@@ -34,7 +34,7 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   try {
     const { frontmatter } = await getCompiledSource(params.slug);
-    const token = getToken(frontmatter?.slug ?? "");
+    const token = getToken(frontmatter?.title ?? "");
     return {
       title: frontmatter?.title,
       keywords: frontmatter?.tags?.join(",") || undefined,
@@ -51,7 +51,7 @@ export const generateMetadata = async ({
             url: `${getBaseUrl({
               isServer: true,
             })}/api/og?${setSearchParams({
-              title: frontmatter?.slug,
+              title: frontmatter?.title,
               token: token,
             })}`,
             width: 1200,
@@ -66,7 +66,7 @@ export const generateMetadata = async ({
         creator: "@chia1104",
         images: [
           `${getBaseUrl({ isServer: true })}/api/og?${setSearchParams({
-            title: frontmatter?.slug,
+            title: frontmatter?.title,
             token: token,
           })}`,
         ],
@@ -87,7 +87,7 @@ const PostDetailPage = async ({
 }) => {
   try {
     const { frontmatter, content } = await getCompiledSource(params.slug);
-    const token = getToken(frontmatter?.slug ?? "");
+    const token = getToken(frontmatter?.title ?? "");
     const jsonLd: WithContext<Blog> = {
       "@context": "https://schema.org",
       "@type": "Blog",
@@ -97,7 +97,7 @@ const PostDetailPage = async ({
       name: frontmatter?.title,
       description: frontmatter?.excerpt,
       image: `/api/og?${setSearchParams({
-        title: frontmatter?.slug,
+        title: frontmatter?.title,
         token: token,
       })}`,
       keywords: frontmatter?.tags?.join(","),
