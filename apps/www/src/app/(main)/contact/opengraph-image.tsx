@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/server";
+import { IS_VERCEL } from "@/shared/constants";
 
 export const alt = "Contact Me";
 export const size = {
@@ -10,9 +11,11 @@ export const runtime = "edge";
 
 const TITLE = "Contact Me";
 
-const font = fetch(
-  new URL("../../../assets/abduction2002.ttf", import.meta.url)
-).then((res) => res.arrayBuffer());
+const font = IS_VERCEL
+  ? fetch(new URL("../../../assets/abduction2002.ttf", import.meta.url)).then(
+      (res) => res.arrayBuffer()
+    )
+  : undefined;
 
 export default async function og() {
   const fontData = await font;
@@ -70,13 +73,15 @@ export default async function og() {
     {
       ...size,
       status: 200,
-      fonts: [
-        {
-          name: "Typewriter",
-          data: fontData,
-          style: "normal",
-        },
-      ],
+      fonts: fontData
+        ? [
+            {
+              name: "Typewriter",
+              data: fontData,
+              style: "normal",
+            },
+          ]
+        : undefined,
     }
   );
 }

@@ -78,5 +78,5 @@
       "cache": false
     }
   },
-  "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI"]
+  "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI", "VERCEL"]
 }
