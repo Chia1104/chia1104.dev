@@ -115,7 +115,7 @@ const PostDetailPage = async ({
             <p className="c-description">{frontmatter?.excerpt}</p>
             <span className="c-description mt-5 flex items-center gap-2">
               <Image
-                src="/memoji/contact-memoji.PNG"
+                src="https://avatars.githubusercontent.com/u/38397958?v=4"
                 width={40}
                 height={40}
                 className="rounded-full"
