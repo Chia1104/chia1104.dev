@@ -1,7 +1,6 @@
 import type { RepoGql } from "@/shared/types";
 import ReposList from "./repos-list";
 import { Chia } from "@/shared/meta/chia";
-import { asyncComponent } from "@/utils/asyncComponent.util";
 import { type FC } from "react";
 import githubClient from "@/helpers/GraphQL/github/github.client";
 import { GET_REPOS } from "@/helpers/GraphQL/github/query";
@@ -10,7 +9,7 @@ interface Props {
   repo?: RepoGql[];
 }
 
-const Github: FC<Props> = asyncComponent(async ({ repo }) => {
+const Github: FC<Props> = async ({ repo }) => {
   const GITHUB_URL = Chia.link.github;
   try {
     const repos = repo
@@ -65,6 +64,6 @@ const Github: FC<Props> = asyncComponent(async ({ repo }) => {
       </div>
     );
   }
-});
+};
 
 export default Github;

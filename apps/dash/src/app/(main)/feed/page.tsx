@@ -2,7 +2,6 @@ import FeedList from "./feed-list";
 import { prisma } from "db";
 import { cache, Suspense } from "react";
 import { RouterOutputs } from "api";
-import { asyncComponent } from "@/utils/asyncComponent.util";
 import { api } from "trpc-api";
 
 const getPosts = cache(async () => {
@@ -27,17 +26,19 @@ const FeedPage = async () => {
   );
 };
 
-const PromiseFeedList = asyncComponent(
-  async ({ promise }: { promise: Promise<RouterOutputs["post"]["get"]> }) => {
-    const post = await promise;
-    return (
-      <div>
-        {post.map((post) => {
-          return <div key={post.id}>{post.title}</div>;
-        })}
-      </div>
-    );
-  }
-);
+const PromiseFeedList = async ({
+  promise,
+}: {
+  promise: Promise<RouterOutputs["post"]["get"]>;
+}) => {
+  const post = await promise;
+  return (
+    <div>
+      {post.map((post) => {
+        return <div key={post.id}>{post.title}</div>;
+      })}
+    </div>
+  );
+};
 
 export default FeedPage;
