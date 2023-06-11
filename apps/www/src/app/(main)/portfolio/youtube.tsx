@@ -1,6 +1,5 @@
 import VideoList from "./video-list";
 import { Chia } from "@/shared/meta/chia";
-import { asyncComponent } from "@/utils/asyncComponent.util";
 import { type FC } from "react";
 import type { Youtube as Y } from "@/shared/types";
 import { getAllVideos } from "@/helpers/api/youtube";
@@ -12,7 +11,7 @@ interface Props {
   };
 }
 
-const Youtube: FC<Props> = asyncComponent(async ({ data }) => {
+const Youtube: FC<Props> = async ({ data }) => {
   const YOUTUBE_URL = Chia.link.youtube_playlist;
   try {
     const youtubeData = data ? data : await getAllVideos(4);
@@ -57,6 +56,6 @@ const Youtube: FC<Props> = asyncComponent(async ({ data }) => {
       </div>
     );
   }
-});
+};
 
 export default Youtube;
