@@ -81,10 +81,10 @@ const Menu = () => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
     <Navbar
-      position="floating"
+      position="fixed"
       maxWidth="full"
       isBordered={false}
-      className="fixed dark:border-0"
+      className="fixed border-0"
       shouldHideOnScroll>
       <NavbarBrand className="cursor-pointer" onClick={() => router.push("/")}>
         <Image
