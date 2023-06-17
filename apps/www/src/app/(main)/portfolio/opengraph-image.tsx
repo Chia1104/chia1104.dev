@@ -12,9 +12,9 @@ export const runtime = "edge";
 const TITLE = "Portfolio";
 
 const font = IS_VERCEL
-  ? fetch(new URL("../../../assets/abduction2002.ttf", import.meta.url)).then(
-      (res) => res.arrayBuffer()
-    )
+  ? fetch(new URL("../../../assets/abduction2002.ttf", import.meta.url))
+      .then((res) => res.arrayBuffer())
+      .catch(() => undefined)
   : undefined;
 
 export default async function og() {
