@@ -1,5 +1,4 @@
 import { ImageResponse } from "next/server";
-import { IS_VERCEL } from "@/shared/constants";
 
 export const alt = "About Me";
 export const size = {
@@ -11,11 +10,11 @@ export const runtime = "edge";
 
 const TITLE = "About Me";
 
-const font = IS_VERCEL
-  ? fetch(new URL("../../../assets/abduction2002.ttf", import.meta.url))
-      .then((res) => res.arrayBuffer())
-      .catch(() => undefined)
-  : undefined;
+const font = fetch(
+  new URL("../../../assets/abduction2002.ttf", import.meta.url)
+)
+  .then((res) => res.arrayBuffer())
+  .catch(() => undefined);
 
 export default async function og() {
   const fontData = await font;
