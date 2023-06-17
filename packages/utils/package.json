@@ -19,10 +19,8 @@
       "import": "./dist/index.mjs"
     }
   },
-  "dependencies": {
-    "tsup": "^6.7.0"
-  },
   "devDependencies": {
-    "tsconfig": "workspace:*"
+    "tsconfig": "workspace:*",
+    "tsup": "^7.0.0"
   }
 }
