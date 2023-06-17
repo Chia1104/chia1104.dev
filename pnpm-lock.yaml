@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -572,6 +572,10 @@ importers:
         version: link:../../config/tsconfig
 
   packages/utils:
+    dependencies:
+      dayjs:
+        specifier: ^1.11.8
+        version: 1.11.8
     devDependencies:
       tsconfig:
         specifier: workspace:*
