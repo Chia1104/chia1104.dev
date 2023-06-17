@@ -1,17 +1,19 @@
 "use client";
 
 import { type FC } from "react";
-import { Button, Link } from "@nextui-org/react";
+import { Button } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 
 const GoHome: FC = () => {
+  const router = useRouter();
   return (
-    <Button className="relative" size="lg" variant="flat" color="warning">
+    <Button
+      className="relative"
+      size="lg"
+      variant="flat"
+      color="warning"
+      onPress={() => router.push("/")}>
       Go to Home
-      <Link
-        href="/"
-        rel="noopener noreferrer"
-        className="absolute inset-0 w-full"
-      />
     </Button>
   );
 };
