@@ -407,6 +407,9 @@ importers:
       usehooks-ts:
         specifier: ^2.9.1
         version: 2.9.1(react-dom@18.2.0)(react@18.2.0)
+      utils:
+        specifier: workspace:*
+        version: link:../../packages/utils
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: workspace:*

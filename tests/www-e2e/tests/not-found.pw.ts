@@ -8,6 +8,7 @@ test("not-found page", async ({ page }) => {
   await expect(link).toHaveText("Go back");
   await expect(link).toHaveAttribute("href", "/");
   await link.click();
+  await page.waitForTimeout(3000);
   await expect(page.url()).toBe("http://127.0.0.1:3002/");
   const home_title = page.locator("h1");
   await expect(home_title).toHaveText("Chia1104 俞又嘉");

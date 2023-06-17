@@ -18,6 +18,7 @@ env:
   GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
   SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
@@ -41,6 +42,19 @@ jobs:
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
         with:
           INSTALL_COMMAND: '--filter \!dash --filter \!"./tests/*" --filter \!backend --filter \!"./scripts/*"'
+
+      #      - name: '📦  Next.js cache'
+      #        uses: actions/cache@v3
+      #        with:
+      #          path: ${{ github.workspace }}/apps/dash/.next/cache
+      #          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
+
+      - name: '🏗️  Build'
+        uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
+        with:
+          BUILD_COMMAND: 'build --filter utils...'
+          TURBO_TEAM: ${{ env.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
 
       - name: '🚨️  ESLint, Type checking, Unit tests'
         id: www-lint-test

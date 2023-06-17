@@ -1,12 +1,14 @@
 import { getAllPosts, getCompiledSource } from "@/helpers/mdx/services";
-import { Image, Chip } from "ui";
+import { Chip, Image } from "ui";
 import Giscus from "./giscus";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import dayjs from "dayjs";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { WithContext, Blog } from "schema-dts";
+import type { Blog, WithContext } from "schema-dts";
 import { getBaseUrl } from "@/utils/getBaseUrl";
+import { createHmac } from "node:crypto";
+import { setSearchParams } from "utils";
+import { SHA_256_HASH } from "@/shared/constants";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -16,13 +18,26 @@ export const generateStaticParams = async () => {
   }));
 };
 
+export const dynamic = "force-static";
+
+export const dynamicParams = false;
+
+const getToken = (id: string): string => {
+  const hmac = createHmac("sha256", SHA_256_HASH);
+  hmac.update(JSON.stringify({ title: id }));
+  return hmac.digest("hex");
+};
+
 export const generateMetadata = async ({
   params,
 }: {
-  params: any;
+  params: {
+    slug: string;
+  };
 }): Promise<Metadata> => {
   try {
     const { frontmatter } = await getCompiledSource(params.slug);
+    const token = getToken(frontmatter?.slug ?? "");
     return {
       title: frontmatter?.title,
       keywords: frontmatter?.tags?.join(",") || undefined,
@@ -38,7 +53,10 @@ export const generateMetadata = async ({
           {
             url: `${getBaseUrl({
               isServer: true,
-            })}/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
+            })}/api/og?${setSearchParams({
+              title: frontmatter?.slug,
+              token: token,
+            })}`,
             width: 1200,
             height: 630,
           },
@@ -50,9 +68,10 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         creator: "@chia1104",
         images: [
-          `${getBaseUrl({ isServer: true })}/api/og?title=${encodeURIComponent(
-            frontmatter?.title ?? ""
-          )}`,
+          `${getBaseUrl({ isServer: true })}/api/og?${setSearchParams({
+            title: frontmatter?.slug,
+            token: token,
+          })}`,
         ],
       },
     };
@@ -62,60 +81,66 @@ export const generateMetadata = async ({
   }
 };
 
-const PostDetailPage = async ({ params }: { params?: any }) => {
-  try {
-    const { frontmatter, content } = await getCompiledSource(params.slug);
-    const jsonLd: WithContext<Blog> = {
-      "@context": "https://schema.org",
-      "@type": "Blog",
-      headline: frontmatter?.title,
-      datePublished: frontmatter?.createdAt,
-      dateModified: frontmatter?.updatedAt,
-      name: frontmatter?.title,
-      description: frontmatter?.excerpt,
-      image: `/api/og?title=${encodeURIComponent(frontmatter?.title ?? "")}`,
-      keywords: frontmatter?.tags?.join(","),
-      author: {
-        "@type": "Person",
-        name: "Chia1104",
-      },
-    };
+const PostDetailPage = async ({
+  params,
+}: {
+  params: {
+    slug: string;
+  };
+}) => {
+  const { frontmatter, content } = await getCompiledSource(params.slug);
+  const token = getToken(frontmatter?.slug ?? "");
+  const jsonLd: WithContext<Blog> = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    headline: frontmatter?.title,
+    datePublished: frontmatter?.createdAt,
+    dateModified: frontmatter?.updatedAt,
+    name: frontmatter?.title,
+    description: frontmatter?.excerpt,
+    image: `/api/og?${setSearchParams({
+      title: frontmatter?.slug,
+      token: token,
+    })}`,
+    keywords: frontmatter?.tags?.join(","),
+    author: {
+      "@type": "Person",
+      name: "Chia1104",
+    },
+  };
 
-    return (
-      <>
-        <article className="main c-container mt-10">
-          <header className="mb-7 w-full max-w-[900px] self-center pl-3">
-            <h1 className="title pb-5">{frontmatter?.title}</h1>
-            <p className="c-description">{frontmatter?.excerpt}</p>
-            <span className="c-description mt-5 flex items-center gap-2">
-              <Image
-                src="/memoji/contact-memoji.PNG"
-                width={40}
-                height={40}
-                className="rounded-full"
-                alt="Chia1104"
-              />
-              {dayjs(frontmatter?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
-              {frontmatter?.readingMins}
-            </span>
-            <Chip data={frontmatter?.tags || []} />
-          </header>
-          <div className="c-bg-secondary mt-5 w-full max-w-[900px] self-center rounded-xl px-3 py-5 md:p-5">
-            {content}
-          </div>
-          <div className="mx-auto mt-20 w-full max-w-[900px] self-center">
-            <Giscus title={frontmatter?.title || ""} />
-          </div>
-        </article>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      </>
-    );
-  } catch (error) {
-    notFound();
-  }
+  return (
+    <>
+      <article className="main c-container mt-10">
+        <header className="mb-7 w-full max-w-[900px] self-center pl-3">
+          <h1 className="title pb-5">{frontmatter?.title}</h1>
+          <p className="c-description">{frontmatter?.excerpt}</p>
+          <span className="c-description mt-5 flex items-center gap-2">
+            <Image
+              src="https://avatars.githubusercontent.com/u/38397958?v=4"
+              width={40}
+              height={40}
+              className="rounded-full"
+              alt="Chia1104"
+            />
+            {dayjs(frontmatter?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
+            {frontmatter?.readingMins}
+          </span>
+          <Chip data={frontmatter?.tags || []} />
+        </header>
+        <div className="c-bg-secondary mt-5 w-full max-w-[900px] self-center rounded-xl px-3 py-5 md:p-5">
+          {content}
+        </div>
+        <div className="mx-auto mt-20 w-full max-w-[900px] self-center">
+          <Giscus title={frontmatter?.title || ""} />
+        </div>
+      </article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+    </>
+  );
 };
 
 export default PostDetailPage;
