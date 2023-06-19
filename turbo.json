@@ -10,8 +10,6 @@
       "outputs": [".next/**", "!.next/cache/**"],
       "env": [
         "SHA_256_HASH",
-        "BASE_URL",
-        "SITE_URL",
         "GH_PUBLIC_TOKEN",
         "NEXT_PUBLIC_RE_CAPTCHA_KEY",
         "RE_CAPTCHA_KEY",
@@ -21,9 +19,7 @@
         "SENDGRID_KEY",
         "REDIS_URL",
         "UPSTASH_TOKEN",
-        "ZEABUR_URL",
-        "VERCEL_URL",
-        "RAILWAY_STATIC_URL"
+        "RESEND_API_KEY"
       ]
     },
     "dash#build": {
@@ -78,5 +74,17 @@
       "cache": false
     }
   },
-  "globalEnv": ["HOST", "PORT", "NODE_ENV", "ANALYZE", "CI", "VERCEL"]
+  "globalEnv": [
+    "BASE_URL",
+    "SITE_URL",
+    "HOST",
+    "PORT",
+    "NODE_ENV",
+    "ANALYZE",
+    "CI",
+    "VERCEL",
+    "ZEABUR_URL",
+    "VERCEL_URL",
+    "RAILWAY_STATIC_URL"
+  ]
 }

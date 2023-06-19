@@ -1,4 +1,3 @@
-import sendgrid from "@sendgrid/mail";
 import { Chia } from "@/shared/meta/chia";
 import { NextResponse, NextRequest } from "next/server";
 import { ApiResponseStatus } from "@/utils/fetcher.util";
@@ -6,13 +5,17 @@ import { errorConfig } from "@/config/network.config";
 import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import EmailTemplate from "./email-template";
+import { setSearchParams } from "utils";
+import { Resend } from "resend";
+import { ReactElement } from "react";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const redis = new Redis({
   url: process.env.REDIS_URL ?? "",
   token: process.env.UPSTASH_TOKEN ?? "",
 });
-
-sendgrid.setApiKey(process.env.SENDGRID_KEY ?? "");
 
 const ratelimit = new Ratelimit({
   redis,
@@ -20,15 +23,15 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(2, "5s"),
 });
 
-const EmailSchema = z.string().email();
+const emailSchema = z.string().email();
 
 const contactSchema = z.object({
-  email: EmailSchema,
+  email: emailSchema,
   message: z.string().min(1),
   reCaptchToken: z.string().min(1),
 });
 
-type Email = z.infer<typeof EmailSchema>;
+type Email = z.infer<typeof emailSchema>;
 
 type ReCapthcaResponse = {
   success: boolean;
@@ -81,7 +84,11 @@ export async function POST(request: NextRequest) {
     }
 
     const siteverify = await fetch(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RE_CAPTCHA_KEY}&response=${reCaptchToken}&remoteip=${id}`,
+      `https://www.google.com/recaptcha/api/siteverify?${setSearchParams({
+        secret: process.env.RE_CAPTCHA_KEY,
+        response: reCaptchToken,
+        remoteip: id,
+      })}`,
       {
         method: "POST",
       }
@@ -97,33 +104,26 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const msg = {
+    const data = await resend.emails.send({
+      from: "contact@chia1104.dev",
       to: Chia.email,
-      from: Chia.email,
-      subject: `Message from ${email} via chia1104.dev`,
-      text: message as string,
-    };
-    const sendgridRes = await sendgrid.send(msg);
-    if (sendgridRes[0].statusCode === 202) {
-      return NextResponse.json(
-        {
-          statusCode: 200,
-          status: ApiResponseStatus.SUCCESS,
-          data: {
-            message: "We have received your message.",
-          },
-        },
-        { status: 200 }
-      );
-    }
+      subject: "Hello world",
+      react: EmailTemplate({
+        title: "Hello world",
+        message: message as string,
+        email: email as string,
+        ip: id,
+      }) as ReactElement,
+    });
     return NextResponse.json(
       {
-        statusCode: 400,
-        status: ApiResponseStatus.ERROR,
-        message: errorConfig[400],
+        statusCode: 200,
+        status: ApiResponseStatus.SUCCESS,
+        data: {
+          message: "We have received your message.",
+        },
       },
-      { status: 400 }
+      { status: 200 }
     );
   } catch (error: any) {
     console.error(error);
