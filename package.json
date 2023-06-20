@@ -24,6 +24,7 @@
     "build:dash": "turbo run build --filter dash...",
     "build:backend": "turbo run build --filter backend...",
     "dev": "turbo run dev --parallel",
+    "dev:turbo": "turbo run dev:turbo",
     "dev:www": "turbo run dev --filter www...",
     "dev:dash": "turbo run dev --filter dash...",
     "dev:backend": "turbo run dev --filter backend...",

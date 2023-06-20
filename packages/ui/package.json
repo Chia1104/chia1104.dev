@@ -12,12 +12,8 @@
     "test:watch": "vitest",
     "clean": "git clean -xdf .turbo node_modules"
   },
-  "devDependencies": {
+  "dependencies": {
     "@radix-ui/react-accordion": "1.1.2",
-    "@testing-library/react": "^14.0.0",
-    "@types/react": "^18.2.12",
-    "@types/react-dom": "^18.2.5",
-    "@vitejs/plugin-react": "^4.0.0",
     "clsx": "1.2.1",
     "framer-motion": "^10.12.16",
     "next": "13.4.6",
@@ -25,6 +21,13 @@
     "react-dom": "^18.2.0",
     "sonner": "0.4.0",
     "tailwind-merge": "1.13.2",
+    "utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^14.0.0",
+    "@types/react": "^18.2.12",
+    "@types/react-dom": "^18.2.5",
+    "@vitejs/plugin-react": "^4.0.0",
     "tsconfig": "workspace:*"
   }
 }

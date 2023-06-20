@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  type FC,
-  useId,
-  memo,
-  useRef,
-  useState,
-  type ChangeEvent,
-  useEffect,
-  type FormEvent,
-} from "react";
+import { type FC, useId, memo, useRef, useEffect, useState } from "react";
 import { cn } from "ui";
 import { Input, type InputRef, Textarea, type TextareaRef } from "ui";
 import { z } from "zod";
@@ -18,16 +9,36 @@ import { toast } from "sonner";
 import { RE_CAPTCHA_KEY } from "@/shared/constants";
 import Script from "next/script";
 import { useIsMounted, useDarkMode } from "@/hooks";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const Contact: FC = () => {
-  const [isValidate, setIsValidate] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const id = useId();
   const emailRef = useRef<InputRef>(null);
   const messageRef = useRef<TextareaRef>(null);
   const signal = useRef<AbortController>(new AbortController());
   const isMounted = useIsMounted();
   const { isDarkMode } = useDarkMode();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const formSchema = z.strictObject({
+    email: z.string().email(),
+    title: z.string().min(5, "Title must be at least 5 characters long"),
+    message: z.string().min(5, "Message must be at least 5 characters long"),
+  });
+
+  const {
+    control,
+    handleSubmit: onSubmit,
+    formState: { errors, isValid },
+  } = useForm({
+    defaultValues: {
+      email: "",
+      title: "",
+      message: "",
+    },
+    resolver: zodResolver(formSchema),
+  });
 
   useEffect(() => {
     signal.current = new AbortController();
@@ -36,10 +47,9 @@ const Contact: FC = () => {
     };
   }, []);
 
-  const handleSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSending(true);
-    const formData = new FormData(e.target);
+  const handleSubmit = onSubmit(async (data, event) => {
+    setIsLoading(true);
+    const formData = new FormData(event?.target);
     const promise = () =>
       fetcher<{ message: string }>({
         dangerousThrow: true,
@@ -60,31 +70,21 @@ const Contact: FC = () => {
           message: string;
         }>
       ) => {
-        setIsSending(false);
         return data?.data?.message ?? "Message sent successfully.";
       },
       error: (error: IApiResponse) => {
-        setIsSending(false);
         return error?.message ?? "Sorry, something went wrong.";
       },
     });
-  };
-
-  const validForm = (e: FormEvent<HTMLFormElement>) => {
-    const form = e.currentTarget;
-    if (form.checkValidity()) {
-      setIsValidate(true);
-    } else {
-      setIsValidate(false);
-    }
-  };
+    setIsLoading(false);
+  });
 
   return (
     <div className="c-bg-secondary flex w-full max-w-[700px] flex-col items-center justify-start rounded-xl px-5 py-10 md:p-10">
       <form
+        noValidate
         id={id + "-contact-form"}
-        className="flex w-full flex-col"
-        onChange={validForm}
+        className="flex w-full flex-col gap-4"
         onSubmit={handleSubmit}>
         <header className="mb-5 flex gap-3 text-3xl">
           Contact Me{" "}
@@ -93,30 +93,86 @@ const Contact: FC = () => {
           </span>
         </header>
         <div className="mb-3 flex flex-col gap-2">
-          <Input
-            ref={emailRef}
-            title="Email"
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({
+              field: { onChange, value, onBlur },
+              fieldState: { invalid, error },
+            }) => (
+              <Input
+                titleClassName="text-xl"
+                className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
+                isValid={!invalid}
+                errorMessage={error?.message}
+                ref={emailRef}
+                type="email"
+                title="Email"
+                placeholder="Your email"
+                value={value}
+                onChange={onChange}
+                onBlur={onBlur}
+                name="email"
+              />
+            )}
             name="email"
-            required
-            titleClassName="text-xl"
-            schema={z.string().email()}
-            placeholder="Your email"
-            error="Please enter a valid email"
-            type="email"
-            className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
           />
         </div>
         <div className="mb-3 flex flex-col gap-2">
-          <Textarea
-            ref={messageRef}
-            className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40 h-40 max-h-40 p-3"
-            title="Message"
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({
+              field: { onChange, value, onBlur },
+              fieldState: { invalid, error },
+            }) => (
+              <Input
+                titleClassName="text-xl"
+                className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
+                isValid={!invalid}
+                errorMessage={error?.message}
+                ref={emailRef}
+                type="text"
+                title="Title"
+                placeholder="Your title"
+                value={value}
+                onChange={onChange}
+                onBlur={onBlur}
+                name="title"
+              />
+            )}
+            name="title"
+          />
+        </div>
+        <div className="mb-3 flex flex-col gap-2">
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({
+              field: { onChange, value, onBlur },
+              fieldState: { invalid, error },
+            }) => (
+              <Textarea
+                ref={messageRef}
+                className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40 h-40 max-h-40 p-3"
+                title="Message"
+                name="message"
+                value={value}
+                onChange={onChange}
+                onBlur={onBlur}
+                placeholder="Your message"
+                titleClassName="text-xl"
+                errorMessage={error?.message}
+                isValid={!invalid}
+              />
+            )}
             name="message"
-            placeholder="Your message"
-            titleClassName="text-xl"
-            schema={z.string().min(1)}
-            error="Please enter a message"
-            required
           />
         </div>
         <Script
@@ -138,10 +194,10 @@ const Contact: FC = () => {
         <button
           id={id + "-contact-submit"}
           type="submit"
-          disabled={!isValidate || isSending}
+          disabled={isLoading}
           className={cn(
             "c-bg-gradient-green-to-purple flex h-10 w-[85px] items-center justify-center self-center rounded-full text-white transition ease-in-out hover:scale-[1.05]",
-            (!isValidate || isSending) && "cursor-not-allowed"
+            isLoading && "cursor-not-allowed"
           )}>
           Send
         </button>

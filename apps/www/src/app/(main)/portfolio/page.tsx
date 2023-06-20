@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: `${Chia.content} Welcome to my portfolio page. I always try to make the best of my time.`,
 };
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 const PortfoliosPage = () => {
   return (

@@ -26,6 +26,7 @@ env:
   PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
   GIT_HASH: ${{ github.sha }}
+  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
 jobs:
   build:
@@ -66,3 +67,4 @@ jobs:
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
             SHA_256_HASH=${{ env.SHA_256_HASH }}
+            RESEND_API_KEY=${{ env.RESEND_API_KEY }}
