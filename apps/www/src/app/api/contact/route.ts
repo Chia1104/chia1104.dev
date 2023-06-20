@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import EmailTemplate from "./email-template";
-import { setSearchParams } from "utils";
+import { setSearchParams, handleZodError } from "utils";
 import { Resend } from "resend";
 import { ReactElement } from "react";
 
@@ -26,8 +26,9 @@ const ratelimit = new Ratelimit({
 const emailSchema = z.string().email();
 
 const contactSchema = z.object({
-  email: emailSchema,
-  message: z.string().min(1),
+  email: z.string().email(),
+  title: z.string().min(5, "Title must be at least 5 characters long"),
+  message: z.string().min(5, "Message must be at least 5 characters long"),
   reCaptchToken: z.string().min(1),
 });
 
@@ -70,14 +71,30 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const email = formData.get("email")?.toString();
     const message = formData.get("message")?.toString();
+    const title = formData.get("title")?.toString();
     const reCaptchToken = formData.get("g-recaptcha-response")?.toString();
 
-    if (!contactSchema.safeParse({ email, message, reCaptchToken }).success) {
+    let isFormValid = false;
+    let errorMessage = "";
+
+    handleZodError({
+      schema: contactSchema,
+      data: { title, email, message, reCaptchToken },
+      postParse: (data) => {
+        isFormValid = true;
+      },
+      onError: (message) => {
+        isFormValid = false;
+        errorMessage = message;
+      },
+    });
+
+    if (!isFormValid) {
       return NextResponse.json(
         {
           statusCode: 400,
           status: ApiResponseStatus.ERROR,
-          message: errorConfig[400],
+          message: errorMessage,
         },
         { status: 400 }
       );
@@ -99,7 +116,7 @@ export async function POST(request: NextRequest) {
         {
           statusCode: 400,
           status: ApiResponseStatus.ERROR,
-          message: errorConfig[400],
+          message: "reCAPTCHA verification failed.",
         },
         { status: 400 }
       );
@@ -107,9 +124,9 @@ export async function POST(request: NextRequest) {
     const data = await resend.emails.send({
       from: "contact@chia1104.dev",
       to: Chia.email,
-      subject: "Hello world",
+      subject: title as string,
       react: EmailTemplate({
-        title: "Hello world",
+        title: title as string,
         message: message as string,
         email: email as string,
         ip: id,
