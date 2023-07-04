@@ -1,0 +1,21 @@
+area:www:
+  - apps/www/**
+  - packages/ui/**
+  - packages/utils/**
+  - .github/workflows/www-ci.yml
+  - package.json
+
+area:dash:
+  - apps/dash/**
+  - packages/ui/**
+  - packages/utils/**
+  - packages/auth/**
+  - packages/api/**
+  - packages/db/**
+  - .github/workflows/dash-ci.yml
+  - package.json
+
+area:backend:
+  - backend/**
+  - packages/db/**
+  - .github/workflows/backend-ci.yml
