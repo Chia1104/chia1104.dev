@@ -12,8 +12,8 @@ importers:
         specifier: ^1.11.8
         version: 1.11.8
       superjson:
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.4
+        version: 1.12.4
       zod:
         specifier: ^3.21.4
         version: 3.21.4
@@ -411,8 +411,8 @@ importers:
         specifier: 0.4.0
         version: 0.4.0(react-dom@18.2.0)(react@18.2.0)
       superjson:
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.4
+        version: 1.12.4
       ui:
         specifier: workspace:*
         version: link:../../packages/ui
@@ -12760,8 +12760,8 @@ packages:
       - supports-color
     dev: true
 
-  /superjson@1.12.3:
-    resolution: {integrity: sha512-0j+U70KUtP8+roVPbwfqkyQI7lBt7ETnuA7KXbTDX3mCKiD/4fXs2ldKSMdt0MCfpTwiMxo20yFU3vu6ewETpQ==}
+  /superjson@1.12.4:
+    resolution: {integrity: sha512-vkpPQAxdCg9SLfPv5GPC5fnGrui/WryktoN9O5+Zif/14QIMjw+RITf/5LbBh+9QpBFb3KNvJth+puz2H8o6GQ==}
     engines: {node: '>=10'}
     dependencies:
       copy-anything: 3.0.5
