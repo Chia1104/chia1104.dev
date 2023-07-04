@@ -23,6 +23,6 @@
   - any: [
         'backend/**',
         'packages/db/**',
-        '.github/workflows/backend-ci.yml'
+        '.github/workflows/backend-ci.yml',
         'package.json'
     ]
