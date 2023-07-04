@@ -1,7 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "enabled": false,
-  "extends": [
-    "config:base"
-  ]
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@chiastack/", "ui", "utils", "api", "db", "auth"],
+      "enabled": false
+    }
+  ],
+  "updateInternalDeps": true
 }
