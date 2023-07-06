@@ -13,7 +13,7 @@ const GoHome: FC = () => {
       variant="flat"
       color="warning"
       onPress={() => router.push("/")}>
-      Go to Home
+      Go to Home eiwuhihfsdfh
     </Button>
   );
 };
