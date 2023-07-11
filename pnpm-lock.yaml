@@ -251,8 +251,8 @@ importers:
         specifier: ^0.32.1
         version: 0.32.1
       sonner:
-        specifier: 0.5.0
-        version: 0.5.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.6.2
+        version: 0.6.2(react-dom@18.2.0)(react@18.2.0)
       tailwind-merge:
         specifier: ^1.13.2
         version: 1.13.2
@@ -408,8 +408,8 @@ importers:
         specifier: 0.32.2
         version: 0.32.2
       sonner:
-        specifier: 0.5.0
-        version: 0.5.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.6.2
+        version: 0.6.2(react-dom@18.2.0)(react@18.2.0)
       superjson:
         specifier: 1.12.4
         version: 1.12.4
@@ -562,8 +562,8 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       sonner:
-        specifier: 0.5.0
-        version: 0.5.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.6.2
+        version: 0.6.2(react-dom@18.2.0)(react@18.2.0)
       tailwind-merge:
         specifier: 1.13.2
         version: 1.13.2
@@ -9523,7 +9523,7 @@ packages:
       jest-util: 29.5.0
       natural-compare: 1.4.0
       pretty-format: 29.5.0
-      semver: 7.5.3
+      semver: 7.5.4
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -12350,7 +12350,6 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
-    dev: false
 
   /send@0.18.0:
     resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
@@ -12544,8 +12543,8 @@ packages:
       is-fullwidth-code-point: 4.0.0
     dev: true
 
-  /sonner@0.5.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-V5L4918wScYxpe3x1H92MV0vSkUqRREu8dwFf7dDTQmRMQ58r1vzSKCsULZ5HCTqxNkfCdhQXHf7rRMaj/MukQ==}
+  /sonner@0.6.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-bh4FWhYoNN481ZIW94W4e0kSLBTMGislYg2YXvDS1px1AJJz4erQe9jHV8s5pS1VMVDgfh3CslNSFLaU6Ldrnw==}
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
