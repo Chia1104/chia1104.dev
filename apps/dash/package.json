@@ -37,7 +37,7 @@
     "react-dom": "18.2.0",
     "server-only": "^0.0.1",
     "sharp": "^0.32.1",
-    "sonner": "0.5.0",
+    "sonner": "0.6.2",
     "tailwind-merge": "^1.13.2",
     "trpc-api": "link:./src/trpc",
     "ui": "workspace:*",
