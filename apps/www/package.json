@@ -62,7 +62,7 @@
     "remark-gfm": "^3.0.1",
     "resend": "^0.16.0",
     "schema-dts": "1.1.2",
-    "sharp": "0.32.2",
+    "sharp": "0.32.3",
     "sonner": "0.6.2",
     "superjson": "1.12.4",
     "ui": "workspace:*",
