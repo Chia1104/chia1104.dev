@@ -1,5 +1,25 @@
 import { type ZodTypeAny, ZodError, type ZodIssue } from "zod";
 
+export type HandleZodErrorReturn = {
+  message: string;
+  issues?: ZodIssue[];
+  isError: boolean;
+};
+
+export type HandleZodErrorOptions<T> = {
+  schema: ZodTypeAny;
+  /**
+   * @deprecated use data instead
+   */
+  value?: string;
+  data?: T;
+  prefixErrorMessage?: string;
+  preParse?: (data: T | string) => void;
+  postParse?: (data: T | string) => void;
+  onError?: (message: string, issues: ZodIssue[]) => void;
+  onFinally?: () => void | HandleZodErrorReturn;
+};
+
 const handleZodError = <T = unknown>({
   schema,
   value,
@@ -9,24 +29,15 @@ const handleZodError = <T = unknown>({
   postParse,
   onError,
   onFinally,
-}: {
-  schema: ZodTypeAny;
-  /**
-   * @deprecated use data instead
-   */
-  value?: string;
-  data: T;
-  prefixErrorMessage?: string;
-  preParse?: (data: T) => void;
-  postParse?: (data: T) => void;
-  onError?: (message: string, issues: ZodIssue[]) => void;
-  onFinally?: () => void;
-}) => {
+}: HandleZodErrorOptions<T>): HandleZodErrorReturn => {
   try {
-    preParse?.(data);
-    schema.parse(data);
-    postParse?.(data);
-    return "";
+    preParse?.((value as string) ?? (data as T));
+    schema.parse((value as string) ?? (data as T));
+    postParse?.((value as string) ?? (data as T));
+    return {
+      message: "",
+      isError: false,
+    };
   } catch (error: any) {
     let message = "";
     if (error instanceof ZodError) {
@@ -35,8 +46,17 @@ const handleZodError = <T = unknown>({
         .map((issue) => issue.message)
         .join(", ")}`;
       onError?.(message, issues);
+      return {
+        message,
+        issues: error.issues,
+        isError: true,
+      };
     }
-    return message;
+    return {
+      message: error?.message,
+      issues: error?.issues,
+      isError: true,
+    };
   } finally {
     onFinally?.();
   }

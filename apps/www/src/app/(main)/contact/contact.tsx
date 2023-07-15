@@ -11,6 +11,7 @@ import Script from "next/script";
 import { useIsMounted, useDarkMode } from "@/hooks";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
 const Contact: FC = () => {
   const id = useId();
@@ -20,6 +21,7 @@ const Contact: FC = () => {
   const isMounted = useIsMounted();
   const { isDarkMode } = useDarkMode();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const formSchema = z.strictObject({
     email: z.string().email(),
@@ -70,13 +72,15 @@ const Contact: FC = () => {
           message: string;
         }>
       ) => {
+        setIsLoading(false);
+        router.refresh();
         return data?.data?.message ?? "Message sent successfully.";
       },
       error: (error: IApiResponse) => {
+        setIsLoading(false);
         return error?.message ?? "Sorry, something went wrong.";
       },
     });
-    setIsLoading(false);
   });
 
   return (
