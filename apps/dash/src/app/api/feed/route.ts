@@ -8,7 +8,7 @@ type Query = {
   take?: number;
 };
 
-export const GET = async (request: NextRequest): Promise<NextResponse> => {
+export const GET = async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   const { skip, take } = searchParams as unknown as Query;
   const session = await getServerSession();
