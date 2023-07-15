@@ -8,7 +8,8 @@ import { Redis } from "@upstash/redis";
 import EmailTemplate from "./email-template";
 import { setSearchParams, handleZodError } from "utils";
 import { Resend } from "resend";
-import { ReactElement } from "react";
+
+export const runtime = "nodejs";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -29,7 +30,7 @@ const contactSchema = z.object({
   email: z.string().email(),
   title: z.string().min(5, "Title must be at least 5 characters long"),
   message: z.string().min(5, "Message must be at least 5 characters long"),
-  reCaptchToken: z.string().min(1),
+  reCaptchToken: z.string().min(1, "reCAPTCHA token is required"),
 });
 
 type Email = z.infer<typeof emailSchema>;
@@ -74,27 +75,24 @@ export async function POST(request: NextRequest) {
     const title = formData.get("title")?.toString();
     const reCaptchToken = formData.get("g-recaptcha-response")?.toString();
 
-    let isFormValid = false;
-    let errorMessage = "";
-
-    handleZodError({
+    const {
+      isError,
+      message: errorMessage,
+      issues,
+    } = handleZodError({
       schema: contactSchema,
       data: { title, email, message, reCaptchToken },
-      postParse: (data) => {
-        isFormValid = true;
-      },
-      onError: (message) => {
-        isFormValid = false;
-        errorMessage = message;
-      },
     });
 
-    if (!isFormValid) {
+    if (isError) {
+      const wtfNextServerRuntime = issues
+        ?.map((issue) => issue.message)
+        .join(", ");
       return NextResponse.json(
         {
           statusCode: 400,
           status: ApiResponseStatus.ERROR,
-          message: errorMessage,
+          message: wtfNextServerRuntime,
         },
         { status: 400 }
       );
@@ -124,13 +122,14 @@ export async function POST(request: NextRequest) {
     const data = await resend.emails.send({
       from: "contact@chia1104.dev",
       to: Chia.email,
-      subject: title as string,
+      subject: title ?? "Untitled",
+      text: message ?? "No message",
       react: EmailTemplate({
-        title: title as string,
-        message: message as string,
-        email: email as string,
+        title: title,
+        message: message,
+        email: email,
         ip: id,
-      }) as ReactElement,
+      }),
     });
     return NextResponse.json(
       {
