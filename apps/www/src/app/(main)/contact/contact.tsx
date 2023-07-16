@@ -52,6 +52,12 @@ const Contact: FC = () => {
   const handleSubmit = onSubmit(async (data, event) => {
     setIsLoading(true);
     const formData = new FormData(event?.target);
+    const reCaptchaToken = formData.get("g-recaptcha-response");
+    if (!reCaptchaToken) {
+      toast.error("Please verify you are not a robot.");
+      setIsLoading(false);
+      return;
+    }
     const promise = () =>
       fetcher<{ message: string }>({
         dangerousThrow: true,
@@ -190,11 +196,13 @@ const Contact: FC = () => {
             };
           `}
         </Script>
-        <div
-          className="g-recaptcha mb-5 mt-7 self-center"
-          data-sitekey={RE_CAPTCHA_KEY}
-          data-theme={isMounted && isDarkMode ? "dark" : "light"}
-        />
+        <div className="mb-5 mt-7 w-fit self-center rounded-2xl">
+          <div
+            className="g-recaptcha"
+            data-sitekey={RE_CAPTCHA_KEY}
+            data-theme={isMounted && isDarkMode ? "dark" : "light"}
+          />
+        </div>
         <button
           id={id + "-contact-submit"}
           type="submit"
