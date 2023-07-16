@@ -38,6 +38,11 @@
     bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out
   }
 
+  .c-bg-third {
+    @apply
+    bg-white/10 text-sec-text dark:text-white dark:bg-dark/10 backdrop-blur-lg transition ease-in-out
+  }
+
   .c-border-primary {
     @apply
     border-gray-200 dark:border-gray-800
