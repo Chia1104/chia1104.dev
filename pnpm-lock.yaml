@@ -565,8 +565,8 @@ importers:
         specifier: 0.6.2
         version: 0.6.2(react-dom@18.2.0)(react@18.2.0)
       tailwind-merge:
-        specifier: 1.13.2
-        version: 1.13.2
+        specifier: 1.14.0
+        version: 1.14.0
       utils:
         specifier: workspace:*
         version: link:../utils
@@ -12966,6 +12966,10 @@ packages:
     resolution: {integrity: sha512-R2/nULkdg1VR/EL4RXg4dEohdoxNUJGLMnWIQnPKL+O9Twu7Cn3Rxi4dlXkDzZrEGtR+G+psSXFouWlpTyLhCQ==}
     dev: false
 
+  /tailwind-merge@1.14.0:
+    resolution: {integrity: sha512-3mFKyCo/MBcgyOTlrY8T7odzZFx+w+qKSMAmdFzRvqBfLlSigU6TZnlFHK0lkMwj9Bj8OYU+9yW9lmGuS0QEnQ==}
+    dev: false
+
   /tailwind-scrollbar@3.0.4(tailwindcss@3.3.2):
     resolution: {integrity: sha512-X/QBsn/C5u9x6/YvTc1Zo7b09Gqs5BfDe0UK/8LDQUv8IEBKF+p2ISTRwvAr50MH0hn/wTyCEOann7uXoa1/2Q==}
     engines: {node: '>=12.13.0'}
@@ -12981,7 +12985,7 @@ packages:
     peerDependencies:
       tailwindcss: '*'
     dependencies:
-      tailwind-merge: 1.13.2
+      tailwind-merge: 1.14.0
       tailwindcss: 3.3.2(ts-node@10.9.1)
     dev: false
 
