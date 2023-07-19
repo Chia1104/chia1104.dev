@@ -1,5 +1,6 @@
 import type { FC } from "react";
 
+// why
 const Background: FC = () => {
   return (
     <>
