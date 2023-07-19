@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.0.2",
-    "db": "workspace:*",
-    "tsconfig": "workspace:*"
+    "db": "0.0.0",
+    "tsconfig": "0.0.0"
   }
 }
