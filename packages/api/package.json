@@ -13,9 +13,9 @@
   "dependencies": {
     "@trpc/client": "^10.30.0",
     "@trpc/server": "^10.30.0",
-    "auth": "workspace:*",
-    "db": "workspace:*",
-    "tsconfig": "workspace:*",
-    "utils": "workspace:*"
+    "auth": "0.0.0",
+    "db": "0.0.0",
+    "tsconfig": "0.0.0",
+    "utils": "0.0.0"
   }
 }
