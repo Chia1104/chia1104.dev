@@ -18,6 +18,6 @@
   },
   "devDependencies": {
     "prisma": "^5.0.0",
-    "tsconfig": "0.0.0"
+    "tsconfig": "7.0.0"
   }
 }
