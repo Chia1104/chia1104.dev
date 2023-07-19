@@ -85,7 +85,7 @@
     "tailwind-scrollbar": "^3.0.4",
     "tailwindcss": "^3.3.2",
     "tailwindcss-animate": "1.0.6",
-    "tsconfig": "0.0.0"
+    "tsconfig": "0.0.3"
   },
   "nextBundleAnalysis": {
     "budget": 358400,
