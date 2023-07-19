@@ -1,31 +1,34 @@
-'area:www':
-  - any: [
-        'apps/www/**/*',
-        'apps/www/**/.*',
-        'packages/ui/**/*',
-        'packages/utils/**/*',
-        '.github/workflows/www-ci.yml',
-        'package.json'
-    ]
+test:
+  - "*"
 
-'area:dash':
-  - any: [
-        'apps/dash/**/*',
-        'apps/dash/**/.*',
-        'packages/ui/**/*',
-        'packages/utils/**/*',
-        'packages/auth/**/*',
-        'packages/api/**/*',
-        'packages/db/**/*',
-        '.github/workflows/dash-ci.yml',
-        'package.json'
-    ]
+"area:www":
+  - any:
+      [
+        "apps/www/**",
+        "packages/ui/**",
+        "packages/utils/**",
+        ".github/workflows/www-ci.yml",
+        "package.json",
+      ]
 
-'area:backend':
-  - any: [
-        'apps/backend/**/*',
-        'apps/backend/**/.*',
-        'packages/db/**/*',
-        '.github/workflows/backend-ci.yml',
-        'package.json'
-    ]
+"area:dash":
+  - any:
+      [
+        "apps/dash/**",
+        "packages/ui/**",
+        "packages/utils/**",
+        "packages/auth/**",
+        "packages/api/**",
+        "packages/db/**",
+        ".github/workflows/dash-ci.yml",
+        "package.json",
+      ]
+
+"area:backend":
+  - any:
+      [
+        "apps/backend/**",
+        "packages/db/**",
+        ".github/workflows/backend-ci.yml",
+        "package.json",
+      ]
