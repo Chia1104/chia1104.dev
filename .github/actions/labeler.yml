@@ -1,28 +1,31 @@
 'area:www':
   - any: [
-        'apps/www/**',
-        'packages/ui/**',
-        'packages/utils/**',
+        'apps/www/**/*',
+        'apps/www/**/.*',
+        'packages/ui/**/*',
+        'packages/utils/**/*',
         '.github/workflows/www-ci.yml',
         'package.json'
     ]
 
 'area:dash':
   - any: [
-        'apps/dash/**',
-        'packages/ui/**',
-        'packages/utils/**',
-        'packages/auth/**',
-        'packages/api/**',
-        'packages/db/**',
+        'apps/dash/**/*',
+        'apps/dash/**/.*',
+        'packages/ui/**/*',
+        'packages/utils/**/*',
+        'packages/auth/**/*',
+        'packages/api/**/*',
+        'packages/db/**/*',
         '.github/workflows/dash-ci.yml',
         'package.json'
     ]
 
 'area:backend':
   - any: [
-        'backend/**',
-        'packages/db/**',
+        'apps/backend/**/*',
+        'apps/backend/**/.*',
+        'packages/db/**/*',
         '.github/workflows/backend-ci.yml',
         'package.json'
     ]
