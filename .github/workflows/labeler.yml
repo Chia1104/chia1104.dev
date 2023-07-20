@@ -13,3 +13,4 @@ jobs:
         with:
           dot: true
           sync-labels: true
+          configuration-path: are-you-sure-about-that.yml
