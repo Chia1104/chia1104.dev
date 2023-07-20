@@ -1,0 +1,37 @@
+name: Label Test
+on:
+  - pull_request
+
+jobs:
+  label_test:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Add label
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const files = await github.pulls.listFiles({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: context.payload.pull_request.number,
+            });
+            
+            const hasFile = files.data.some(file => file.filename === 'apps/www/.force-redeploy');
+            
+            if (hasFile) {
+              await github.issues.addLabels({
+                owner: context.payload.repository.owner.login,
+                repo: context.payload.repository.name,
+                issue_number: context.payload.pull_request.number,
+                labels: ['area:www'],
+              });
+            } else {
+              console.log("File 'apps/www/.force-redeploy' not found. No label added.");
+            }
