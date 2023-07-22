@@ -28,7 +28,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, '📈 area-dash') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-dash') }}
 
     steps:
       - name: '🐙️ Check out code'

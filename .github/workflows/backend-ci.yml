@@ -21,7 +21,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:backend') || contains(github.event.pull_request.labels.*.name, 'backend:enhancement') || contains(github.event.pull_request.labels.*.name, '🗃️ area-backend') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:backend') || contains(github.event.pull_request.labels.*.name, 'backend:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-backend') }}
 
     steps:
       - name: '🐙️ Check out code'
