@@ -55,5 +55,10 @@
     "tailwind-scrollbar": "^3.0.4",
     "tailwindcss": "^3.3.2",
     "tsconfig": "0.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@swc/core": {
+      "optional": true
+    }
   }
 }

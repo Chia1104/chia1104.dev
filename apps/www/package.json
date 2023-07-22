@@ -87,6 +87,11 @@
     "tailwindcss-animate": "1.0.6",
     "tsconfig": "0.0.0"
   },
+  "peerDependenciesMeta": {
+    "@swc/core": {
+      "optional": true
+    }
+  },
   "nextBundleAnalysis": {
     "budget": 358400,
     "budgetPercentIncreaseRed": 20,
