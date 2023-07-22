@@ -24,7 +24,7 @@
 "area-backend":
   - any:
       [
-        "backend/**",
+        "apps/backend/**",
         "packages/db/**",
         ".github/workflows/backend-ci.yml",
         "package.json",
