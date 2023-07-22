@@ -46,6 +46,14 @@
     "test:watch": {
       "outputs": []
     },
+    "test:cov": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": true
+    },
+    "test:debug": {
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
