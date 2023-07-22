@@ -21,7 +21,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:backend') || contains(github.event.pull_request.labels.*.name, 'backend:enhancement') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:backend') || contains(github.event.pull_request.labels.*.name, 'backend:enhancement') || contains(github.event.pull_request.labels.*.name, '🗃️ area-backend') }}
 
     steps:
       - name: '🐙️ Check out code'
@@ -35,7 +35,7 @@ jobs:
         id: backend-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
         with:
-          INSTALL_COMMAND: '--filter \!dash --filter \!"./tests/*" --filter \!www --filter \!"./scripts/*"'
+          INSTALL_COMMAND: '--filter db --filter tsconfig --filter root'
 
       - name: '🚨️  ESLint, Type checking, Unit tests'
         id: backend-lint-test

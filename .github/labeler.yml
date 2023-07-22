@@ -1,5 +1,5 @@
-'area:www':
-  - all: [
+'🌐 area-www':
+  - any: [
         'apps/www/**',
         'packages/ui/**',
         'packages/utils/**',
@@ -7,8 +7,8 @@
         'package.json'
     ]
 
-'area:dash':
-  - all: [
+'📈 area-dash':
+  - any: [
         'apps/dash/**',
         'packages/ui/**',
         'packages/utils/**',
@@ -19,8 +19,8 @@
         'package.json'
     ]
 
-'area:backend':
-  - all: [
+'🗃️ area-backend':
+  - any: [
         'backend/**',
         'packages/db/**',
         '.github/workflows/backend-ci.yml',
