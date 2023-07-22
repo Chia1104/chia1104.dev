@@ -29,7 +29,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, '🌐 area-www') }}
 
     steps:
       - name: '🐙️ Check out code'
@@ -43,7 +43,7 @@ jobs:
         id: www-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
         with:
-          INSTALL_COMMAND: '--filter \!dash --filter \!"./tests/*" --filter \!backend --filter \!"./scripts/*"'
+          INSTALL_COMMAND: '--filter www --filter ui --filter utils --filter tsconfig --filter root'
 
       #      - name: '📦  Next.js cache'
       #        uses: actions/cache@v3

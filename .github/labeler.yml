@@ -1,4 +1,4 @@
-'area:www':
+'🌐 area-www':
   - any: [
         'apps/www/**',
         'packages/ui/**',
@@ -7,7 +7,7 @@
         'package.json'
     ]
 
-'area:dash':
+'📈 area-dash':
   - any: [
         'apps/dash/**',
         'packages/ui/**',
@@ -19,7 +19,7 @@
         'package.json'
     ]
 
-'area:backend':
+'🗃️ area-backend':
   - any: [
         'backend/**',
         'packages/db/**',
