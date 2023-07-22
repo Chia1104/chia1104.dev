@@ -38,6 +38,7 @@ const nextConfig = {
     mdxRs: true,
     typedRoutes: false,
     serverComponentsExternalPackages: ["ui"],
+    outputFileTracingIgnores: ["**swc**"],
   },
   eslint: {
     ignoreDuringBuilds: true,

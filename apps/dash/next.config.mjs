@@ -34,6 +34,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["ui"],
     serverActions: true,
+    outputFileTracingIgnores: ["**swc**"],
   },
   eslint: {
     ignoreDuringBuilds: true,
