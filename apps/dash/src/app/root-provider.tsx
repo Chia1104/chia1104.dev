@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { useIsMounted } from "ui";
 import { Toaster as ST } from "sonner";
 import { useDarkMode } from "@/hooks";
+import { NextUIProvider } from "@nextui-org/react";
 
 interface Props {
   session: Session | null;
@@ -38,8 +39,10 @@ const RootProvider: FC<Props> = ({ session, children }) => {
     <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider enableSystem attribute="class">
-          <Toaster />
-          {children}
+          <NextUIProvider>
+            <Toaster />
+            {children}
+          </NextUIProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>

@@ -20,11 +20,11 @@
     }
   },
   "devDependencies": {
-    "dayjs": "^1.11.8",
+    "dayjs": "^1.11.9",
     "tsconfig": "0.0.0",
-    "tsup": "^7.0.0"
+    "tsup": "^7.1.0"
   },
   "peerDependencies": {
-    "dayjs": "^1.11.8"
+    "dayjs": "^1.11.9"
   }
 }

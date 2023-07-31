@@ -15,7 +15,7 @@ const LoginForm = () => {
         disabled={isPending}
         variant="flat"
         color="primary"
-        size="xl"
+        size="lg"
         className="mb-5 mt-auto"
         onPress={() =>
           startTransition(() => {
