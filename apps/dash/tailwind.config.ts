@@ -1,13 +1,13 @@
 import type { Config } from "tailwindcss";
 import baseConfig from "@chiastack/tailwind-config";
-import { nextui } from "@nextui-org/theme";
+import { nextui } from "@nextui-org/react";
 import tailwindScrollbar from "tailwind-scrollbar";
 
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/ui/src/**/*.{js,ts,jsx,tsx}",
-    "node_modules/@nextui-org/theme/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

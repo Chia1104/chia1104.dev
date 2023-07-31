@@ -11,8 +11,8 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@trpc/client": "^10.30.0",
-    "@trpc/server": "^10.30.0",
+    "@trpc/client": "^10.36.0",
+    "@trpc/server": "^10.36.0",
     "auth": "0.0.0",
     "db": "0.0.0",
     "tsconfig": "0.0.0",

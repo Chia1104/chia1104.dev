@@ -81,7 +81,7 @@ const Menu = () => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
     <Navbar
-      position="fixed"
+      position="sticky"
       maxWidth="full"
       isBordered={false}
       className="fixed border-0"
@@ -104,14 +104,18 @@ const Menu = () => {
           <Tab
             title="Dashboard"
             key="dashboard"
-            onClick={() => router.push("/")}
+            onClickCapture={() => router.push("/")}
           />
           <Tab title="Metrics" key="metrics" />
-          <Tab title="Feed" key="feed" onClick={() => router.push("/feed")} />
+          <Tab
+            title="Feed"
+            key="feed"
+            onClickCapture={() => router.push("/feed")}
+          />
           <Tab
             title="Write"
             key="write"
-            onClick={() => router.push("/write")}
+            onClickCapture={() => router.push("/write")}
           />
         </Tabs>
       </NavbarContent>
