@@ -73,7 +73,7 @@ ENV DATABASE_URL=${DATABASE_URL} \
     PORT=8080 \
     NODE_ENV=production \
     HOST=0.0.0.0 \
-    HOSTNAME=127.0.0.1
+    HOSTNAME=0.0.0.0
 
 EXPOSE 8080
 
