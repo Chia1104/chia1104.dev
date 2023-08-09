@@ -94,7 +94,8 @@ ENV GH_PUBLIC_TOKEN=${GH_PUBLIC_TOKEN} \
     VERCEL_URL=${VERCEL_URL} \
     RESEND_API_KEY=${RESEND_API_KEY} \
     PORT=8080 \
-    NODE_ENV=production
+    NODE_ENV=production \
+    HOST=0.0.0.0
 
 EXPOSE 8080
 
