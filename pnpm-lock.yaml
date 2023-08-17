@@ -18,8 +18,8 @@ importers:
         specifier: ^1.36.2
         version: 1.36.2
       '@total-typescript/ts-reset':
-        specifier: 0.4.2
-        version: 0.4.2
+        specifier: 0.5.1
+        version: 0.5.1
       '@types/node':
         specifier: ^20.4.5
         version: 20.4.5
@@ -5074,8 +5074,8 @@ packages:
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
     dev: true
 
-  /@total-typescript/ts-reset@0.4.2:
-    resolution: {integrity: sha512-vqd7ZUDSrXFVT1n8b2kc3LnklncDQFPvR58yUS1kEP23/nHPAO9l1lMjUfnPrXYYk4Hj54rrLKMW5ipwk7k09A==}
+  /@total-typescript/ts-reset@0.5.1:
+    resolution: {integrity: sha512-AqlrT8YA1o7Ff5wPfMOL0pvL+1X+sw60NN6CcOCqs658emD6RfiXhF7Gu9QcfKBH7ELY2nInLhKSCWVoNL70MQ==}
     dev: false
 
   /@trpc/client@10.36.0(@trpc/server@10.36.0):
