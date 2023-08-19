@@ -1,32 +1,18 @@
-import { type FC } from "react";
+import { type ReactNode, type FC } from "react";
 import { Chia } from "@/shared/meta/chia";
-import type { Design as D } from "@/shared/types";
-import DMPoster from "./dm-poster";
 
-interface Props {
-  data: D[];
-}
+const POSTER_URL = Chia.link.google_photos;
 
-const DMPosterList: FC<Props> = ({ data }) => {
-  return (
-    <div className="grid w-full grid-cols-1 gap-10 px-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-      {data.map((item) => (
-        <DMPoster url={item.imgUrl} key={item.id} />
-      ))}
-    </div>
-  );
-};
-
-const Design: FC<Props> = ({ data }) => {
-  const POSTER_URL = Chia.link.google_photos;
-
+const Layout: FC<{
+  children: ReactNode;
+}> = ({ children }) => {
   return (
     <>
       <header className="title c-text-bg-sec-half dark:c-text-bg-primary-half sm:self-start">
         Design
       </header>
       <p className="c-description pb-7 sm:self-start">Some of my design work</p>
-      <DMPosterList data={data} />
+      {children}
       <a
         href={POSTER_URL}
         target="_blank"
@@ -41,4 +27,4 @@ const Design: FC<Props> = ({ data }) => {
   );
 };
 
-export default Design;
+export default Layout;

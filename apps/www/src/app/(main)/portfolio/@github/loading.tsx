@@ -1,6 +1,4 @@
-import { type FC } from "react";
-
-const ReposLoader: FC = () => {
+export default function Loading() {
   return (
     <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2 xl:grid-cols-3">
       {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -18,6 +16,4 @@ const ReposLoader: FC = () => {
       ))}
     </div>
   );
-};
-
-export default ReposLoader;
+}

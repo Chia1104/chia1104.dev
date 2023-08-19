@@ -1,6 +1,4 @@
-import type { FC } from "react";
-
-const VideoLoader: FC = () => {
+export default function Loading() {
   return (
     <div className="grid w-full grid-cols-1 gap-3 xl:grid-cols-2">
       <div className="flex w-full flex-col items-center justify-center">
@@ -20,6 +18,4 @@ const VideoLoader: FC = () => {
       </div>
     </div>
   );
-};
-
-export default VideoLoader;
+}

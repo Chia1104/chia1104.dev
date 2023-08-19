@@ -19,6 +19,7 @@ export const getAllVideos = async (
       },
       next: {
         revalidate: 60,
+        tags: ["youtube-videos"],
       },
     });
     const data: Youtube = (await res.json()) as Youtube;
