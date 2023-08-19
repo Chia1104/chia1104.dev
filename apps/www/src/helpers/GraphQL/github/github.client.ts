@@ -4,7 +4,7 @@ import { GITHUB_GRAPHQL_API, GH_PUBLIC_TOKEN } from "@/shared/constants";
 async function middleware(request: RequestInit) {
   return {
     ...request,
-    next: { revalidate: 60 },
+    next: { revalidate: 60, tags: ["github-repos"] },
   };
 }
 
