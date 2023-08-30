@@ -35,7 +35,7 @@
     "@react-email/components": "^0.0.7",
     "@reduxjs/toolkit": "^1.9.5",
     "@sendgrid/mail": "7.7.0",
-    "@upstash/ratelimit": "0.4.3",
+    "@upstash/ratelimit": "0.4.4",
     "@upstash/redis": "1.22.0",
     "@vercel/analytics": "1.0.2",
     "cross-env": "7.0.3",
