@@ -19,7 +19,7 @@
     "next": "13.4.19",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sonner": "0.7.0",
+    "sonner": "0.7.1",
     "tailwind-merge": "^1.14.0",
     "utils": "0.0.0"
   },
