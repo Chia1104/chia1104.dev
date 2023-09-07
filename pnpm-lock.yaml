@@ -57,8 +57,8 @@ importers:
         specifier: 3.13.0
         version: 3.13.0(tailwindcss@3.3.3)
       happy-dom:
-        specifier: ^10.5.2
-        version: 10.5.2
+        specifier: ^11.0.0
+        version: 11.0.1
       husky:
         specifier: ^8.0.3
         version: 8.0.3
@@ -88,7 +88,7 @@ importers:
         version: 5.1.6
       vitest:
         specifier: ^0.34.2
-        version: 0.34.2(happy-dom@10.5.2)
+        version: 0.34.2(happy-dom@11.0.1)
       zod:
         specifier: ^3.21.4
         version: 3.21.4
@@ -5959,7 +5959,7 @@ packages:
       std-env: 3.3.3
       test-exclude: 6.0.0
       v8-to-istanbul: 9.1.0
-      vitest: 0.34.2(happy-dom@10.5.2)
+      vitest: 0.34.2(happy-dom@11.0.1)
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -9033,8 +9033,8 @@ packages:
       duplexer: 0.1.2
     dev: false
 
-  /happy-dom@10.5.2:
-    resolution: {integrity: sha512-dTA1cDcLOPIkAdykLd9Wo1k8Ly36Hh2OdKGkWEHWuAHb89KcVVRLSj1OFev7ir90xhRLSGCGrEdDvS6u9l13kg==}
+  /happy-dom@11.0.1:
+    resolution: {integrity: sha512-3U3kXpTbHQoCxItf5VhdHSSeX7ZKekcEx6hBZ5Ug12MeEASL89upfz6Nefv7pwTc5jWsXPHlVInjB1gID0HkwQ==}
     dependencies:
       css.escape: 1.5.1
       entities: 4.5.0
@@ -14889,7 +14889,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
 
-  /vitest@0.34.2(happy-dom@10.5.2):
+  /vitest@0.34.2(happy-dom@11.0.1):
     resolution: {integrity: sha512-WgaIvBbjsSYMq/oiMlXUI7KflELmzM43BEvkdC/8b5CAod4ryAiY2z8uR6Crbi5Pjnu5oOmhKa9sy7uk6paBxQ==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -14933,7 +14933,7 @@ packages:
       cac: 6.7.14
       chai: 4.3.7
       debug: 4.3.4
-      happy-dom: 10.5.2
+      happy-dom: 11.0.1
       local-pkg: 0.4.3
       magic-string: 0.30.2
       pathe: 1.1.1
