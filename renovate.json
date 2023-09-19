@@ -3,17 +3,23 @@
   "extends": ["config:base"],
   "labels": ["dependencies", "renovate"],
   "rebaseWhen": "conflicted",
-  "ignoreDeps": [
-    "node"
-  ],
+  "ignoreDeps": ["node"],
   "packageRules": [
     {
-      "matchPackagePatterns": ["^@chiastack/", "ui", "utils", "api", "db", "auth", "tsconfig"],
+      "matchPackagePatterns": [
+        "^@chiastack/",
+        "ui",
+        "utils",
+        "api",
+        "db",
+        "auth",
+        "tsconfig"
+      ],
       "enabled": false
     },
     {
       "groupName": "playwright",
-      "matchPackagePatterns": ["^playwright"]
+      "matchPackagePatterns": ["^playwright", "^mcr.microsoft.com/playwright"]
     }
   ],
   "updateInternalDeps": true
