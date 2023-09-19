@@ -19,7 +19,7 @@
     },
     {
       "groupName": "playwright",
-      "matchPackagePatterns": ["^playwright", "^mcr.microsoft.com/playwright"]
+      "matchPackagePatterns": ["^@playwright/", "^mcr.microsoft.com/playwright"]
     }
   ],
   "updateInternalDeps": true
