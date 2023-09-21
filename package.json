@@ -52,7 +52,7 @@
     "seed": "turbo run db:seed --filter seed"
   },
   "engines": {
-    "node": ">=18.*"
+    "node": ">=20.*"
   },
   "packageManager": "pnpm@8.7.6",
   "dependencies": {

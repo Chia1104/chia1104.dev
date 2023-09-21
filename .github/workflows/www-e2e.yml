@@ -41,6 +41,8 @@ jobs:
       - name: '💽️  Init'
         id: www-init
         uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        with:
+          NODE_VERSION: '20'
 
       - name: '📦  Install'
         id: www-install

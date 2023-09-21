@@ -1,21 +1,22 @@
-ARG NODE_VERSION=18
+ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine AS base
 
-FROM base AS builder
-
 WORKDIR /app
-COPY . .
 
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    yarn global add turbo && \
-    turbo prune --scope=dash --docker
+    corepack enable && \
+    yarn global add turbo
+
+FROM base AS builder
+
+COPY . .
+
+RUN turbo prune --scope=dash --docker
 
 FROM base AS installer
-
-WORKDIR /app
 
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
@@ -36,16 +37,11 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
     NEXTAUTH_URL=${NEXTAUTH_URL}
 
-RUN apk update && \
-    apk add --no-cache \
-    libc6-compat && \
-    corepack enable && \
-    pnpm i && \
+RUN pnpm i && \
     pnpm turbo run db:generate && \
     pnpm turbo run build --filter=dash...
 
 FROM base AS runner
-WORKDIR /app
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

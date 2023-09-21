@@ -1,21 +1,22 @@
-ARG NODE_VERSION=18
+ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine AS base
 
-FROM base AS builder
-
 WORKDIR /app
-COPY . .
 
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    yarn global add turbo && \
-    turbo prune --scope=backend --docker
+    corepack enable && \
+    yarn global add turbo
+
+FROM base AS builder
+
+COPY . .
+
+RUN turbo prune --scope=backend --docker
 
 FROM base AS installer
-
-WORKDIR /app
 
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
@@ -30,16 +31,12 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN \
     DATABASE_URL=${DATABASE_URL}
 
-RUN apk update && \
-    apk add --no-cache \
-    libc6-compat && \
-    corepack enable && \
-    pnpm i && \
+RUN pnpm i && \
     pnpm prisma generate && \
     pnpm turbo run build --filter=backend...
 
 FROM base as runner
-WORKDIR /app
+
 COPY --from=installer /app/ .
 
 ARG DATABASE_URL
