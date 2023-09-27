@@ -78,7 +78,7 @@
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.4",
     "shell-quote": "^1.8.1",
-    "superjson": "1.13.1",
+    "superjson": "1.13.3",
     "ts-node": "^10.9.1",
     "turbo": "1.10.14",
     "typescript": "^5.2.2",
