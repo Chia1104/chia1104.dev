@@ -65,9 +65,11 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ### Zeabur
 
-you can deploy `www`, `dash` and `backend` applications to Zeabur, and make sure that the services name are `www`, `dash` and `backend` respectively.
+> Zeabur currently does not support turborepo, but you can still deploy the website using the Dockerfile in the root directory.
 
-![Zeabur build settings](./.github/public/zeabur-deploy.png)
+<!-- 1. Create a new project on Zeabur, override the `build` and `start` commands:
+
+![Zeabur build settings](./.github/public/zeabur-deploy.png) -->
 
 ## 🏗️ Project Structure
 
