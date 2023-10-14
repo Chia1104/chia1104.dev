@@ -75,8 +75,8 @@ importers:
         specifier: ^1.8.1
         version: 1.8.1
       superjson:
-        specifier: 1.13.3
-        version: 1.13.3
+        specifier: 2.0.0
+        version: 2.0.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.6.2)(typescript@5.2.2)
@@ -422,8 +422,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3(react-dom@18.2.0)(react@18.2.0)
       superjson:
-        specifier: 1.13.3
-        version: 1.13.3
+        specifier: 2.0.0
+        version: 2.0.0
       ui:
         specifier: 0.0.0
         version: link:../../packages/ui
@@ -13781,9 +13781,9 @@ packages:
       - supports-color
     dev: true
 
-  /superjson@1.13.3:
-    resolution: {integrity: sha512-mJiVjfd2vokfDxsQPOwJ/PtanO87LhpYY88ubI5dUB1Ab58Txbyje3+jpm+/83R/fevaq/107NNhtYBLuoTrFg==}
-    engines: {node: '>=10'}
+  /superjson@2.0.0:
+    resolution: {integrity: sha512-W3n+NJ7TFjaLle8ihIIvsr/bbuKpnxeatsyjmhy7iSkom+/cshaHziCQAWXrHGWJVQSQFDOuES6C3nSEvcbrQg==}
+    engines: {node: '>=16'}
     dependencies:
       copy-anything: 3.0.5
     dev: false
