@@ -54,7 +54,7 @@
   "engines": {
     "node": ">=20.*"
   },
-  "packageManager": "pnpm@8.9.0",
+  "packageManager": "pnpm@8.9.2",
   "dependencies": {
     "@manypkg/cli": "^0.21.0",
     "@next/eslint-plugin-next": "13.5.4",
