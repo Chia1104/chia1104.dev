@@ -14,10 +14,10 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0"
+    "@prisma/client": "^5.4.2"
   },
   "devDependencies": {
-    "prisma": "^5.0.0",
+    "prisma": "^5.4.2",
     "tsconfig": "0.0.0"
   }
 }
