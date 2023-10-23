@@ -223,8 +223,8 @@ importers:
         specifier: 0.0.0-dev-v2-20230730211830
         version: 0.0.0-dev-v2-20230730211830(@types/react@18.2.17)(framer-motion@10.15.0)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3)
       '@nextui-org/theme':
-        specifier: 0.0.0-dev-v2-20230730211830
-        version: 0.0.0-dev-v2-20230730211830(tailwindcss@3.3.3)
+        specifier: 0.0.0-dev-v2-20231016135001
+        version: 0.0.0-dev-v2-20231016135001(tailwindcss@3.3.3)
       '@t3-oss/env-nextjs':
         specifier: ^0.7.0
         version: 0.7.0(typescript@5.2.2)(zod@3.22.4)
@@ -3283,6 +3283,31 @@ packages:
       tailwindcss: 3.3.3(ts-node@10.9.1)
     dev: false
 
+  /@nextui-org/theme@0.0.0-dev-v2-20231016135001(tailwindcss@3.3.3):
+    resolution: {integrity: sha512-BgY1zPZoUUn9etCwOYlGZXRqIxHcvf+0Mx7/V+MBb4DUQmD8hD1zo7R4isyhU0HTpdVvCEbTWcdr8RYcrIv/jw==}
+    peerDependencies:
+      tailwindcss: '*'
+    dependencies:
+      '@types/color': 3.0.5
+      '@types/flat': 5.0.4
+      '@types/lodash.foreach': 4.5.8
+      '@types/lodash.get': 4.4.8
+      '@types/lodash.kebabcase': 4.1.8
+      '@types/lodash.mapkeys': 4.6.8
+      '@types/lodash.omit': 4.5.8
+      color: 4.2.3
+      color2k: 2.0.2
+      deepmerge: 4.3.1
+      flat: 5.0.2
+      lodash.foreach: 4.5.0
+      lodash.get: 4.4.2
+      lodash.kebabcase: 4.1.1
+      lodash.mapkeys: 4.6.0
+      lodash.omit: 4.5.0
+      tailwind-variants: 0.1.14(tailwindcss@3.3.3)
+      tailwindcss: 3.3.3(ts-node@10.9.1)
+    dev: false
+
   /@nextui-org/tooltip@0.0.0-dev-v2-20230730211830(framer-motion@10.15.0)(react-dom@18.2.0)(react@18.2.0)(tailwindcss@3.3.3):
     resolution: {integrity: sha512-Y8RhgiItbRdtuAe4YzoYeiHbBfsb14WPgkS8oanxfiYK8ZmSF56n+npfMV1iB1GahUwcKN/H/2mJ7ODjRHAbUA==}
     peerDependencies:
@@ -5253,6 +5278,22 @@ packages:
     resolution: {integrity: sha512-69TtiDzu0bcmKQv3yg1Zx409/Kd7r0b5F1PfpYJfSHzLGtB53547V4u+9iqKYsTu/O2ai6KTb0TInNpvuQ3qmg==}
     dev: false
 
+  /@types/color-convert@2.0.2:
+    resolution: {integrity: sha512-KGRIgCxwcgazts4MXRCikPbIMzBpjfdgEZSy8TRHU/gtg+f9sOfHdtK8unPfxIoBtyd2aTTwINVLSNENlC8U8A==}
+    dependencies:
+      '@types/color-name': 1.1.2
+    dev: false
+
+  /@types/color-name@1.1.2:
+    resolution: {integrity: sha512-JWO/ZyxTKk0bLuOhAavGjnwLR73rUE7qzACnU7gMeyA/gdrSHm2xJwqNPipw2MtaZUaqQ2UG/q7pP6AQiZ8mqw==}
+    dev: false
+
+  /@types/color@3.0.5:
+    resolution: {integrity: sha512-T9yHCNtd8ap9L/r8KEESu5RDMLkoWXHo7dTureNoI1dbp25NsCN054vOu09iniIjR21MXUL+LU9bkIWrbyg8gg==}
+    dependencies:
+      '@types/color-convert': 2.0.2
+    dev: false
+
   /@types/connect@3.4.37:
     resolution: {integrity: sha512-zBUSRqkfZ59OcwXon4HVxhx5oWCJmc0OtBTK05M+p0dYjgN6iTwIL2T/WbsQZrEsdnwaF9cWQ+azOnpPvIqY3Q==}
     dependencies:
@@ -5311,6 +5352,10 @@ packages:
       '@types/express-serve-static-core': 4.17.39
       '@types/qs': 6.9.9
       '@types/serve-static': 1.15.4
+
+  /@types/flat@5.0.4:
+    resolution: {integrity: sha512-Qy8SOE+x5F40jebCj4vPoA/Y6J2Zd6h9ihMPYP8U8//dDEOK4Yu0ShOTKqEmWPR+4AdV4sls/VCaR6azEFvKKg==}
+    dev: false
 
   /@types/glob@8.1.0:
     resolution: {integrity: sha512-IO+MJPVhoqz+28h1qLAcBEH2+xHMK6MTyHJc7MTnnYb6wsoLR29POVGJ7LycmVXIqyy/4/2ShP5sUwTXuOwb/w==}
@@ -5381,6 +5426,40 @@ packages:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
       '@types/node': 20.8.7
+
+  /@types/lodash.foreach@4.5.8:
+    resolution: {integrity: sha512-nMZmw6YAyNivWbbaY/hTF56YMl5T9+i+auaUhxtbA+ZNEwqwyTo0b7Jn85HNfiqsVQVzbhI0zIaSp7C5EpAPQQ==}
+    dependencies:
+      '@types/lodash': 4.14.200
+    dev: false
+
+  /@types/lodash.get@4.4.8:
+    resolution: {integrity: sha512-XK+co6sBkJxh1vaVP8al6cAA17dX//RNCknGG8JhpHFJfxq/GXKAYB9NKheG22pu2xpWpxfFd65W08EhH2IFlg==}
+    dependencies:
+      '@types/lodash': 4.14.200
+    dev: false
+
+  /@types/lodash.kebabcase@4.1.8:
+    resolution: {integrity: sha512-ZwdT+S6Ejbl2KEw/nunwO63hMzABqzVdWonRMEuhKs0GfwqffaQ3tSJo+/wmDCCaGUHIiObsBFY59GUYjYMk5A==}
+    dependencies:
+      '@types/lodash': 4.14.200
+    dev: false
+
+  /@types/lodash.mapkeys@4.6.8:
+    resolution: {integrity: sha512-vA3/4dFOkK9ugEOuqGLEwLeWicwQM03LmboZHuiG0VU0jdFyq5NRdw8XF2cnz5ZdGiGF3Yb8dS9UVoQzirHlfA==}
+    dependencies:
+      '@types/lodash': 4.14.200
+    dev: false
+
+  /@types/lodash.omit@4.5.8:
+    resolution: {integrity: sha512-CeIDttD58jS7R7M4rI8ZNBbV6JGG+BkKQFnWjduFJwTxqo8NdT/xjbjmQc39MVB2TKJ0rvQxddNaIna+W/pQvw==}
+    dependencies:
+      '@types/lodash': 4.14.200
+    dev: false
+
+  /@types/lodash@4.14.200:
+    resolution: {integrity: sha512-YI/M/4HRImtNf3pJgbF+W6FrXovqj+T+/HpENLTooK9PnkacBsDpeP3IpHab40CClUfhNmdM2WTNP2sa2dni5Q==}
+    dev: false
 
   /@types/long@4.0.2:
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
@@ -13677,6 +13756,16 @@ packages:
 
   /tailwind-variants@0.1.13(tailwindcss@3.3.3):
     resolution: {integrity: sha512-G2M7M74hjq0nAo6QdEfUJgF+0t9DecFUw91GC1P9YTnwMcfB3uChT5U5e2DuNU42xoOz15lzo7r0mPdMzZkylg==}
+    engines: {node: '>=16.x', pnpm: '>=7.x'}
+    peerDependencies:
+      tailwindcss: '*'
+    dependencies:
+      tailwind-merge: 1.14.0
+      tailwindcss: 3.3.3(ts-node@10.9.1)
+    dev: false
+
+  /tailwind-variants@0.1.14(tailwindcss@3.3.3):
+    resolution: {integrity: sha512-qfOkSGP+cSolTTkJboldGmiM+w5uE77pazCRkwixEBsuaml9CmhN0E8qgH7QnZNmOTVSsgRK1tn/MsKOvOKVWA==}
     engines: {node: '>=16.x', pnpm: '>=7.x'}
     peerDependencies:
       tailwindcss: '*'
