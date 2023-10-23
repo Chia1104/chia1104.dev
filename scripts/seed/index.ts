@@ -1,4 +1,4 @@
-import { prisma } from "db";
+import { prisma } from "@chia/db";
 import { faker } from "@faker-js/faker";
 
 async function main() {

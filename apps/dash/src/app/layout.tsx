@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { ReactNode } from "react";
-import { getServerSession } from "auth";
+import { getServerSession } from "@chia/auth";
 import RootProvider from "./root-provider";
 
 export const metadata = {

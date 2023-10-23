@@ -2,7 +2,7 @@
 
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { experimental_createTRPCNextAppDirServer as createTRPCNextAppDirServer } from "@trpc/next/app-dir/server";
-import { type AppRouter } from "api";
+import { type AppRouter } from "@chia/api";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { IS_PRODUCTION } from "@/shared/constants";
 import { headers } from "next/headers";

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Menu from "./menu";
-import { Page } from "ui";
+import { Page } from "@chia/ui";
 
 export const metadata = {
   title: "Next App",

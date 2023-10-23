@@ -32,12 +32,12 @@ const securityHeaders = [
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  transpilePackages: ["ui"],
+  transpilePackages: ["@chia/ui"],
   swcMinify: true,
   experimental: {
     mdxRs: true,
     typedRoutes: false,
-    serverComponentsExternalPackages: ["ui"],
+    serverComponentsExternalPackages: ["@chia/ui"],
   },
   eslint: {
     ignoreDuringBuilds: true,

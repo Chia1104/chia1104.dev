@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, ScrollYProgress } from "ui";
+import { Page, ScrollYProgress } from "@chia/ui";
 import type { ReactNode } from "react";
 import NavMenu from "./nav-menu";
 import ReduxProvider from "./redux-provider";

@@ -5,7 +5,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "ui";
+} from "@chia/ui";
 
 const Experience: FC = () => {
   const resume = Chia.resume;

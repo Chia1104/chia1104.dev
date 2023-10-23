@@ -3,7 +3,7 @@ import {
   type DefaultSession,
   type DefaultUser,
 } from "next-auth";
-import { prisma } from "db";
+import { prisma } from "@chia/db";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 

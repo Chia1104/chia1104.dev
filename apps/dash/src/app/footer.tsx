@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { getToday } from "utils";
+import { getToday } from "@chia/utils";
 
 const Footer: FC = () => {
   return (

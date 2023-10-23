@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "name": "utils",
+  "name": "@chia/utils",
   "version": "0.0.0",
   "private": true,
   "types": "./dist/index.d.ts",
@@ -21,6 +21,6 @@
   },
   "devDependencies": {
     "tsconfig": "0.0.0",
-    "tsup": "^7.1.0"
+    "tsup": "^7.2.0"
   }
 }

@@ -4,7 +4,7 @@ import baseConfig, { animation } from "@chiastack/tailwind-config";
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
-    "node_modules/ui/src/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
     "!./src/**/*.test.{js,ts,jsx,tsx}",
     "!./src/**/*.spec.{js,ts,jsx,tsx}",
     "!./src/app/api/contact/email-template.tsx",

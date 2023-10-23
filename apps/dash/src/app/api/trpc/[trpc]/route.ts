@@ -1,6 +1,6 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "api";
-import { createTRPCContext } from "api";
+import { appRouter } from "@chia/api";
+import { createTRPCContext } from "@chia/api";
 
 const handler = (req: Request) => {
   return fetchRequestHandler({

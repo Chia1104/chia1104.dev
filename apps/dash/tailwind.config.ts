@@ -6,7 +6,7 @@ import tailwindScrollbar from "tailwind-scrollbar";
 export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
-    "node_modules/ui/src/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {

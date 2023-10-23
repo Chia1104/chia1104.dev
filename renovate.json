@@ -8,11 +8,11 @@
     {
       "matchPackagePatterns": [
         "^@chiastack/",
-        "ui",
-        "utils",
-        "api",
-        "db",
-        "auth",
+        "@chia/ui",
+        "@chia/utils",
+        "@chia/api",
+        "@chia/db",
+        "@chia/auth",
         "tsconfig"
       ],
       "enabled": false

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { Post } from "db";
+import { Post } from "@chia/db";
 import PostService from "@/modules/post/post.service";
 import { describe, it, expect, beforeEach } from "vitest";
 

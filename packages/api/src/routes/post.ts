@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
-import { generateSlug } from "utils";
+import { generateSlug } from "@chia/utils";
 
 export const postRouter = createTRPCRouter({
   get: publicProcedure

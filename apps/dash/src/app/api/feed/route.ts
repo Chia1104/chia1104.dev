@@ -1,6 +1,6 @@
-import { prisma } from "db";
+import { prisma } from "@chia/db";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "auth";
+import { getServerSession } from "@chia/auth";
 import { errorConfig } from "@/config/network.config";
 
 type Query = {
