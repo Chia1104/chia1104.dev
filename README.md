@@ -28,12 +28,14 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 ## 🌐 Deployments
 
 ### www
+
 - [Vercel](https://chia1104.dev/)
 - [Zeabur](https://chia1104.zeabur.app/)
 - [Railway](https://chia1104.up.railway.app/)
 
 ### dash
-- [Vercel](https://dash.chia1104.dev/)
+
+- [Zeabur](https://dash.chia1104.dev/)
 - [Railway](https://dash-chia1104.up.railway.app/)
 
 ## 🚀 Deploy your own
