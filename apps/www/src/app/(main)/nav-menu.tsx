@@ -2,7 +2,7 @@
 
 import { type FC, memo } from "react";
 import Link from "next/link";
-import { cn, ToggleTheme } from "ui";
+import { cn, ToggleTheme } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import { useDarkMode } from "@/hooks";

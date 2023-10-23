@@ -5,7 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { type Session } from "next-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { useIsMounted } from "ui";
+import { useIsMounted } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import { useDarkMode } from "@/hooks";
 import { NextUIProvider } from "@nextui-org/react";

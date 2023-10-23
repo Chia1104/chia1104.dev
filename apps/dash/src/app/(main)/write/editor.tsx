@@ -13,7 +13,7 @@ import {
 } from "@nextui-org/react";
 import { useRef, useState, type FC } from "react";
 import { useMonaco } from "@monaco-editor/react";
-import { MDXStrong } from "ui";
+import { MDXStrong } from "@chia/ui";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,

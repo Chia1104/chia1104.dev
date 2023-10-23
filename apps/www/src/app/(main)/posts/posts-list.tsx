@@ -3,7 +3,7 @@
 import { type FC } from "react";
 import type { PostFrontMatter } from "@/shared/types";
 import dayjs from "dayjs";
-import { Image, cn } from "ui";
+import { Image, cn } from "@chia/ui";
 import Link from "next/link";
 import { motion } from "framer-motion";
 

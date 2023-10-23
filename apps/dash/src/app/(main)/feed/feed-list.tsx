@@ -2,11 +2,11 @@
 
 import { type FC, forwardRef, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { type Post } from "db";
+import { type Post } from "@chia/db";
 import { api } from "trpc-api";
-import { useInfiniteScroll } from "ui";
+import { useInfiniteScroll } from "@chia/ui";
 import { Card, CardBody } from "@nextui-org/react";
-import { RouterInputs } from "api";
+import { RouterInputs } from "@chia/api";
 import Skeleton from "./skeleton";
 
 interface Props {

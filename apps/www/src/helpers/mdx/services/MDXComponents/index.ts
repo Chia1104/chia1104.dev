@@ -2,11 +2,15 @@
 
 import dynamic from "next/dynamic";
 
-export { MDXImage as Image } from "ui";
-export { MDXImage as img } from "ui";
-export { MDXCode as Code, MDXPre as pre, MDXCodeOrigin as code } from "ui";
-export { h1, h2, h4, h3, h5, h6 } from "ui";
-export { MDXOl as ol, MDXUl as ul } from "ui";
+export { MDXImage as Image } from "@chia/ui";
+export { MDXImage as img } from "@chia/ui";
+export {
+  MDXCode as Code,
+  MDXPre as pre,
+  MDXCodeOrigin as code,
+} from "@chia/ui";
+export { h1, h2, h4, h3, h5, h6 } from "@chia/ui";
+export { MDXOl as ol, MDXUl as ul } from "@chia/ui";
 export {
   MDXTable as table,
   MDXTh as th,
@@ -14,18 +18,18 @@ export {
   MDXTr as tr,
   MDXThead as thead,
   MDXTBody as tbody,
-} from "ui";
-export { MDXQuote as Quote } from "ui";
-export { MDXQuote as blockquote } from "ui";
-export { MDXParagraph as p, MDXStrong as strong } from "ui";
-export { MDXHr as hr } from "ui";
-export { MDXBr as br } from "ui";
-export { MDXSpacer as Spacer } from "ui";
-export { Link as a } from "ui";
+} from "@chia/ui";
+export { MDXQuote as Quote } from "@chia/ui";
+export { MDXQuote as blockquote } from "@chia/ui";
+export { MDXParagraph as p, MDXStrong as strong } from "@chia/ui";
+export { MDXHr as hr } from "@chia/ui";
+export { MDXBr as br } from "@chia/ui";
+export { MDXSpacer as Spacer } from "@chia/ui";
+export { Link as a } from "@chia/ui";
 
 export const CodeSandBox = dynamic(() =>
-  import("ui").then((mod) => mod.MDXCodeSandBox)
+  import("@chia/ui").then((mod) => mod.MDXCodeSandBox)
 );
 export const Youtube = dynamic(() =>
-  import("ui").then((mod) => mod.MDXYoutube)
+  import("@chia/ui").then((mod) => mod.MDXYoutube)
 );

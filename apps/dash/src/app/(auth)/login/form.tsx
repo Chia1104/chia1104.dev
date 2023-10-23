@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { Card, Image } from "ui";
+import { Card, Image } from "@chia/ui";
 import { Button } from "@nextui-org/react";
 import { useTransition } from "react";
 

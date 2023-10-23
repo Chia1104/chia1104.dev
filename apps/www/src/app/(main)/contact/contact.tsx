@@ -1,8 +1,8 @@
 "use client";
 
 import { type FC, useId, memo, useRef, useEffect, useState } from "react";
-import { cn } from "ui";
-import { Input, type InputRef, Textarea, type TextareaRef } from "ui";
+import { cn } from "@chia/ui";
+import { Input, type InputRef, Textarea, type TextareaRef } from "@chia/ui";
 import { z } from "zod";
 import { fetcher, type IApiResponse } from "@/utils/fetcher.util";
 import { toast } from "sonner";

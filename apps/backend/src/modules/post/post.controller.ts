@@ -1,7 +1,7 @@
 import { Controller, Get, NotFoundException } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import PostService from "./post.service";
-import { type Post } from "db";
+import { type Post } from "@chia/db";
 
 @ApiTags("Post")
 @Controller("post")

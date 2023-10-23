@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import EmailTemplate from "./email-template";
-import { setSearchParams, handleZodError } from "utils";
+import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
 
 export const runtime = "nodejs";

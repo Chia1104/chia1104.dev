@@ -2,7 +2,7 @@ import { type FC } from "react";
 import { Chia } from "@/shared/meta/chia";
 import Experience from "./experience";
 import LanAndTools from "./lan-and-tools";
-import { Link, Image } from "ui";
+import { Link, Image } from "@chia/ui";
 
 interface Props {
   avatarSrc?: string;

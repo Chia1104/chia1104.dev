@@ -8,9 +8,9 @@ import { type PrismaClient } from "@prisma/client";
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import { type Session } from "auth";
-import { getServerSession } from "auth";
-import { prisma } from "db";
+import { type Session } from "@chia/auth";
+import { getServerSession } from "@chia/auth";
+import { prisma } from "@chia/db";
 
 type CreateContextOptions = {
   session: Session | null;

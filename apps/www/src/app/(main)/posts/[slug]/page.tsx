@@ -1,5 +1,5 @@
 import { getAllPosts, getCompiledSource } from "@/helpers/mdx/services";
-import { Chip, Image } from "ui";
+import { Chip, Image } from "@chia/ui";
 import Giscus from "./giscus";
 import "highlight.js/styles/atom-one-dark-reasonable.css";
 import dayjs from "dayjs";
@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import type { Blog, WithContext } from "schema-dts";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { createHmac } from "node:crypto";
-import { setSearchParams } from "utils";
+import { setSearchParams } from "@chia/utils";
 import { SHA_256_HASH } from "@/shared/constants";
 
 export const generateStaticParams = async () => {

@@ -1,5 +1,5 @@
 import "../styles/globals.css";
-import { ErrorBoundary } from "ui";
+import { ErrorBoundary } from "@chia/ui";
 import RootProvider from "./root-provider";
 import { type ReactNode } from "react";
 import { Chia } from "@/shared/meta/chia";

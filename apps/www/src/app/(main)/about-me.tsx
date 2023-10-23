@@ -1,4 +1,4 @@
-import { Image } from "ui";
+import { Image } from "@chia/ui";
 import type { FC } from "react";
 import { Chia } from "@/shared/meta/chia";
 

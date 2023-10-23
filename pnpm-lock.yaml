@@ -98,6 +98,9 @@ importers:
       '@apollo/server':
         specifier: ^4.9.3
         version: 4.9.3(graphql@16.8.1)
+      '@chia/db':
+        specifier: 0.0.0
+        version: link:../../packages/db
       '@graphql-tools/utils':
         specifier: ^10.0.4
         version: 10.0.4(graphql@16.8.1)
@@ -128,9 +131,6 @@ importers:
       class-validator:
         specifier: ^0.14.0
         version: 0.14.0
-      db:
-        specifier: 0.0.0
-        version: link:../../packages/db
       express:
         specifier: ^4.18.2
         version: 4.18.2
@@ -198,6 +198,21 @@ importers:
 
   apps/dash:
     dependencies:
+      '@chia/api':
+        specifier: 0.0.0
+        version: link:../../packages/api
+      '@chia/auth':
+        specifier: 0.0.0
+        version: link:../../packages/auth
+      '@chia/db':
+        specifier: 0.0.0
+        version: link:../../packages/db
+      '@chia/ui':
+        specifier: 0.0.0
+        version: link:../../packages/ui
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../../packages/utils
       '@monaco-editor/react':
         specifier: ^4.5.1
         version: 4.5.1(monaco-editor@0.44.0)(react-dom@18.2.0)(react@18.2.0)
@@ -225,18 +240,9 @@ importers:
       '@trpc/server':
         specifier: ^10.36.0
         version: 10.36.0
-      api:
-        specifier: 0.0.0
-        version: link:../../packages/api
-      auth:
-        specifier: 0.0.0
-        version: link:../../packages/auth
       clsx:
         specifier: ^2.0.0
         version: 2.0.0
-      db:
-        specifier: 0.0.0
-        version: link:../../packages/db
       framer-motion:
         specifier: ^10.15.0
         version: 10.15.0(react-dom@18.2.0)(react@18.2.0)
@@ -270,15 +276,9 @@ importers:
       trpc-api:
         specifier: link:./src/trpc
         version: link:src/trpc
-      ui:
-        specifier: 0.0.0
-        version: link:../../packages/ui
       usehooks-ts:
         specifier: ^2.9.1
         version: 2.9.1(react-dom@18.2.0)(react@18.2.0)
-      utils:
-        specifier: 0.0.0
-        version: link:../../packages/utils
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: 0.0.1-beta.1
@@ -313,6 +313,12 @@ importers:
 
   apps/www:
     dependencies:
+      '@chia/ui':
+        specifier: 0.0.0
+        version: link:../../packages/ui
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../../packages/utils
       '@giscus/react':
         specifier: ^2.3.0
         version: 2.3.0(react-dom@18.2.0)(react@18.2.0)
@@ -421,15 +427,9 @@ importers:
       sonner:
         specifier: 1.0.3
         version: 1.0.3(react-dom@18.2.0)(react@18.2.0)
-      ui:
-        specifier: 0.0.0
-        version: link:../../packages/ui
       usehooks-ts:
         specifier: ^2.9.1
         version: 2.9.1(react-dom@18.2.0)(react@18.2.0)
-      utils:
-        specifier: 0.0.0
-        version: link:../../packages/utils
     devDependencies:
       '@chiastack/tailwind-config':
         specifier: 0.0.1-beta.1
@@ -493,31 +493,31 @@ importers:
 
   packages/api:
     dependencies:
+      '@chia/auth':
+        specifier: 0.0.0
+        version: link:../auth
+      '@chia/db':
+        specifier: 0.0.0
+        version: link:../db
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../utils
       '@trpc/client':
         specifier: ^10.36.0
         version: 10.36.0(@trpc/server@10.36.0)
       '@trpc/server':
         specifier: ^10.36.0
         version: 10.36.0
-      auth:
-        specifier: 0.0.0
-        version: link:../auth
-      db:
-        specifier: 0.0.0
-        version: link:../db
       tsconfig:
         specifier: 0.0.0
         version: link:../../config/tsconfig
-      utils:
-        specifier: 0.0.0
-        version: link:../utils
 
   packages/auth:
     dependencies:
       '@auth/prisma-adapter':
         specifier: ^1.0.1
         version: 1.0.1(@prisma/client@5.4.2)
-      db:
+      '@chia/db':
         specifier: 0.0.0
         version: link:../db
       next:
@@ -551,6 +551,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../utils
       '@radix-ui/react-accordion':
         specifier: 1.1.2
         version: 1.1.2(@types/react-dom@18.2.7)(@types/react@18.2.17)(react-dom@18.2.0)(react@18.2.0)
@@ -575,9 +578,6 @@ importers:
       tailwind-merge:
         specifier: ^1.14.0
         version: 1.14.0
-      utils:
-        specifier: 0.0.0
-        version: link:../utils
     devDependencies:
       '@testing-library/react':
         specifier: ^14.0.0
@@ -606,12 +606,12 @@ importers:
 
   scripts/seed:
     dependencies:
+      '@chia/db':
+        specifier: 0.0.0
+        version: link:../../packages/db
       '@faker-js/faker':
         specifier: ^8.0.2
         version: 8.0.2
-      db:
-        specifier: 0.0.0
-        version: link:../../packages/db
       tsconfig:
         specifier: 0.0.0
         version: link:../../config/tsconfig

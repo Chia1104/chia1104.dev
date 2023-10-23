@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "name": "api",
+  "name": "@chia/api",
   "version": "0.0.0",
   "private": true,
   "types": "./src/index.ts",
@@ -11,11 +11,11 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
+    "@chia/auth": "0.0.0",
+    "@chia/db": "0.0.0",
+    "@chia/utils": "0.0.0",
     "@trpc/client": "^10.36.0",
     "@trpc/server": "^10.36.0",
-    "auth": "0.0.0",
-    "db": "0.0.0",
-    "tsconfig": "0.0.0",
-    "utils": "0.0.0"
+    "tsconfig": "0.0.0"
   }
 }

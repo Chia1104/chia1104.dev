@@ -1,7 +1,7 @@
 import FeedList from "./feed-list";
-import { prisma } from "db";
+import { prisma } from "@chia/db";
 import { cache, Suspense } from "react";
-import { RouterOutputs } from "api";
+import { RouterOutputs } from "@chia/api";
 import { api } from "trpc-api";
 
 const getPosts = cache(async () => {

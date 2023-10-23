@@ -12,7 +12,7 @@ import React, {
 } from "react";
 import { type ZodTypeAny } from "zod";
 import { cn } from "../utils";
-import { handleZodError } from "utils";
+import { handleZodError } from "@chia/utils";
 
 interface Props extends ComponentProps<"textarea"> {
   title?: string;

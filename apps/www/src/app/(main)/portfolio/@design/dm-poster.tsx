@@ -1,7 +1,7 @@
 "use client";
 
 import { type FC, useState, memo } from "react";
-import { Image, Modal, cn } from "ui";
+import { Image, Modal, cn } from "@chia/ui";
 
 interface Props {
   url: string;
