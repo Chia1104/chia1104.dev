@@ -9,7 +9,7 @@ async function main() {
       excerpt: faker.lorem.paragraph(),
       content: faker.lorem.paragraphs(),
       published: true,
-      userId: "clgta9og600004a6lesa8xpw7",
+      userId: "clo32fw7v00004ajq52zppo7h",
     },
   }));
 }
