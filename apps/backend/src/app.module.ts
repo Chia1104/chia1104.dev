@@ -29,12 +29,12 @@ import Redis from "ioredis";
       useFactory: (config: ConfigService) => ({
         throttlers: [
           {
-            limit: config.get("THROTTLE_LIMIT"),
-            ttl: seconds(Number(config.get("THROTTLE_TTL"))),
+            limit: Number(process.env.THROTTLE_LIMIT) || 10,
+            ttl: seconds(Number(process.env.THROTTLE_TTL ?? 60)),
           },
         ],
         storage: new ThrottlerStorageRedisService(
-          new Redis(config.get("REDIS_URI"))
+          new Redis(process.env.REDIS_URI)
         ),
       }),
     }),
