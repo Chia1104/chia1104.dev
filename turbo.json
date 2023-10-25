@@ -84,7 +84,8 @@
     },
     "generate:typings": {
       "cache": false
-    }
+    },
+    "backend-graph": {}
   },
   "globalEnv": [
     "BASE_URL",
@@ -97,6 +98,10 @@
     "VERCEL",
     "ZEABUR_URL",
     "VERCEL_URL",
-    "RAILWAY_STATIC_URL"
+    "RAILWAY_STATIC_URL",
+    "REDIS_URI",
+    "REDIS_URL",
+    "DB_URL",
+    "DATABASE_URL"
   ]
 }

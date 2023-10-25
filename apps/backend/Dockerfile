@@ -10,17 +10,17 @@ RUN apk update && \
     corepack enable && \
     yarn global add turbo
 
-FROM base AS builder
+FROM base AS pre-builder
 
 COPY . .
 
 RUN turbo prune --scope=backend --docker
 
-FROM base AS installer
+FROM base AS builder
 
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/out/full/ .
+COPY --from=pre-builder /app/out/json/ .
+COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pre-builder /app/out/full/ .
 COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
@@ -35,16 +35,34 @@ RUN pnpm i && \
     pnpm prisma generate && \
     pnpm turbo run build --filter=backend...
 
+FROM base as prod
+
+COPY --from=pre-builder /app/out/json/ .
+COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pre-builder /app/out/full/ .
+
+RUN pnpm i --prod --ignore-scripts
+
 FROM base as runner
 
-COPY --from=installer /app/ .
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+# COPY --from=builder /app/packages/db ./packages/db
+COPY --from=prod /app/apps/backend/node_modules ./apps/backend/node_modules
+# PRISMA TOO BIG QQ...
+COPY --from=builder /app/node_modules ./node_modules
 
-ARG DATABASE_URL
+ARG DATABASE_URL \
+    REDIS_URI \
+    THROTTLE_LIMIT \
+    THROTTLE_TTL
 
 ENV NODE_ENV=production \
     PORT=8080 \
-    DATABASE_URL=${DATABASE_URL}
+    DATABASE_URL=${DATABASE_URL} \
+    REDIS_URI=${REDIS_URI} \
+    THROTTLE_LIMIT=${THROTTLE_LIMIT} \
+    THROTTLE_TTL=${THROTTLE_TTL}
 
 EXPOSE 8080
 
-CMD [ "node", "apps/backend/dist/src/main.js" ]
+CMD [ "node", "apps/backend/dist/main.js" ]

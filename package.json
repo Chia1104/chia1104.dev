@@ -49,7 +49,8 @@
     "db:seed": "turbo run db:seed --parallel",
     "test:e2e": "turbo run test:e2e",
     "next-sitemap": "turbo run next-sitemap --parallel",
-    "seed": "turbo run db:seed --filter seed"
+    "seed": "turbo run db:seed --filter seed",
+    "backend-graph": "turbo run build --filter backend... --graph=backend-graph.html"
   },
   "engines": {
     "node": ">=20.*"
