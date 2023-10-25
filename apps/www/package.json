@@ -32,7 +32,7 @@
     "@chia/utils": "0.0.0",
     "@giscus/react": "^2.3.0",
     "@hookform/resolvers": "^3.1.1",
-    "@mdx-js/react": "2.3.0",
+    "@mdx-js/react": "3.0.0",
     "@next/bundle-analyzer": "13.5.6",
     "@react-email/components": "^0.0.7",
     "@reduxjs/toolkit": "^1.9.5",
