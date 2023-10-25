@@ -1,14 +1,19 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import PostModule from "@/modules/post/post.module";
+import RateLimiterModule from "@/modules/rate-limiter/rate-limiter.module";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 import { join } from "path";
+import { ThrottlerModule, seconds } from "@nestjs/throttler";
+import { ThrottlerStorageRedisService } from "nestjs-throttler-storage-redis";
+import Redis from "ioredis";
 
 @Module({
   imports: [
     PostModule,
+    RateLimiterModule,
     ConfigModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -17,6 +22,21 @@ import { join } from "path";
       subscriptions: {
         "graphql-ws": true,
       },
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            limit: config.get("THROTTLE_LIMIT"),
+            ttl: seconds(Number(config.get("THROTTLE_TTL"))),
+          },
+        ],
+        storage: new ThrottlerStorageRedisService(
+          new Redis(config.get("REDIS_URI"))
+        ),
+      }),
     }),
   ],
   controllers: [AppController],
