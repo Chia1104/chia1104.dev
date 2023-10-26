@@ -79,3 +79,7 @@
 // };
 //
 // export default FeedList;
+
+export default function QQ() {
+  return <h1>QQ</h1>;
+}
