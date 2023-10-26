@@ -102,6 +102,7 @@
     "REDIS_URI",
     "REDIS_URL",
     "DB_URL",
-    "DATABASE_URL"
+    "DATABASE_URL",
+    "CHIA_ID"
   ]
 }

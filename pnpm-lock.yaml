@@ -621,6 +621,9 @@ importers:
       '@faker-js/faker':
         specifier: ^8.0.2
         version: 8.0.2
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.3.1
       tsconfig:
         specifier: 0.0.0
         version: link:../../config/tsconfig

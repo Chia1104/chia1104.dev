@@ -1,5 +1,6 @@
 import { prisma } from "@chia/db";
 import { faker } from "@faker-js/faker";
+import "dotenv/config";
 
 async function main() {
   void (await prisma.post.create({
@@ -9,7 +10,7 @@ async function main() {
       excerpt: faker.lorem.paragraph(),
       content: faker.lorem.paragraphs(),
       published: true,
-      userId: "clo32fw7v00004ajq52zppo7h",
+      userId: process.env.CHIA_ID ?? "",
     },
   }));
 }

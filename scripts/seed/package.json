@@ -18,6 +18,7 @@
   "dependencies": {
     "@chia/db": "0.0.0",
     "@faker-js/faker": "^8.0.2",
+    "dotenv": "^16.3.1",
     "tsconfig": "0.0.0"
   }
 }
