@@ -1,32 +1,17 @@
-import { PrismaClient } from "@prisma/client";
-// import { PrismaClient as PrismaClientEdge } from "@prisma/client/edge";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
-export * from "@prisma/client";
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set");
+}
 
-const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient;
-  // prismaEdge?: PrismaClientEdge;
-};
+// for migrations
+export const migrationClient = postgres(process.env.DATABASE_URL, { max: 1 });
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
-  });
+// for query purposes
+export const queryClient = postgres(process.env.DATABASE_URL);
+export const db = drizzle(queryClient);
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-
-// export const prismaEdge =
-//   globalForPrisma.prismaEdge ||
-//   new PrismaClientEdge({
-//     log:
-//       process.env.NODE_ENV === "development"
-//         ? ["query", "error", "warn"]
-//         : ["error"],
-//   });
-//
-// if (process.env.NODE_ENV !== "production")
-//   globalForPrisma.prismaEdge = prismaEdge;
+export * from "drizzle-orm";
+export * as schema from "./schema";
+export { pgTable as tableCreator } from "./schema/table";
