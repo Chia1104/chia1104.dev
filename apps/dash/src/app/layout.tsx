@@ -2,6 +2,7 @@ import "./globals.css";
 import type { ReactNode } from "react";
 import { getServerSession } from "@chia/auth";
 import RootProvider from "./root-provider";
+import { headers } from "next/headers";
 
 export const metadata = {
   title: "Next App",
@@ -17,7 +18,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden">
-        <RootProvider session={session}>{children}</RootProvider>
+        <RootProvider session={session} headers={headers()}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   );

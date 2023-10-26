@@ -1,8 +1,7 @@
-import FeedList from "./feed-list";
 import { prisma } from "@chia/db";
 import { cache, Suspense } from "react";
 import { RouterOutputs } from "@chia/api";
-import { api } from "trpc-api";
+import { api } from "@/trpc-api/server";
 
 const getPosts = cache(async () => {
   return await prisma.post.findMany({
@@ -17,11 +16,7 @@ const FeedPage = async () => {
   const post = await api.post.infinite.query({ limit: 10 });
   return (
     <div className="c-container main mt-24">
-      <FeedList
-        initFeed={post.items}
-        nextCursor={post.nextCursor}
-        query={{ limit: 10 }}
-      />
+      <PromiseFeedList promise={getPosts()} />
     </div>
   );
 };
