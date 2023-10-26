@@ -70,9 +70,15 @@ const nextConfig = {
     removeConsole: false,
   },
   images: {
-    domains: [
-      "firebasestorage.googleapis.com",
-      "avatars.githubusercontent.com",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
     ],
   },
   async headers() {
