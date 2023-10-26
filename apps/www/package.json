@@ -38,7 +38,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@sendgrid/mail": "7.7.0",
     "@upstash/ratelimit": "0.4.4",
-    "@upstash/redis": "1.23.4",
+    "@upstash/redis": "1.24.0",
     "@vercel/analytics": "1.1.1",
     "cross-env": "7.0.3",
     "fast-glob": "^3.3.1",
