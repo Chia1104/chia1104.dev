@@ -38,6 +38,7 @@ const nextConfig = {
     mdxRs: true,
     typedRoutes: false,
     serverComponentsExternalPackages: ["@chia/ui"],
+    webpackBuildWorker: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

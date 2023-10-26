@@ -9,7 +9,10 @@ import EmailTemplate from "./email-template";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
 
-export const runtime = "nodejs";
+/**
+ * @todo just let build successfully
+ */
+export const runtime = "edge";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
