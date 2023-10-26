@@ -37,7 +37,7 @@ const Components: typeof MDXComponents = {
 const MDXRemote = (props: MDXRemoteProps) => (
   <MDXR
     {...props}
-    components={{ ...Components, ...(props.components || {}) }}
+    components={{ ...(Components as any), ...(props.components || {}) }}
   />
 );
 
