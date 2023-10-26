@@ -9,6 +9,7 @@ import { join } from "path";
 import { ThrottlerModule, seconds } from "@nestjs/throttler";
 import { ThrottlerStorageRedisService } from "nestjs-throttler-storage-redis";
 import Redis from "ioredis";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 
 @Module({
   imports: [
@@ -22,6 +23,8 @@ import Redis from "ioredis";
       subscriptions: {
         "graphql-ws": true,
       },
+      playground: false,
+      plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
