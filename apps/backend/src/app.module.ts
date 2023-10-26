@@ -24,6 +24,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
         "graphql-ws": true,
       },
       playground: false,
+      introspection: true,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     ThrottlerModule.forRootAsync({
