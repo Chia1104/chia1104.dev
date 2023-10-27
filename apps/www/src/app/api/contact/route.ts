@@ -14,7 +14,7 @@ import { type ErrorResponse } from "@chia/utils";
  */
 export const runtime = "edge";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY ?? "re_123");
 
 const redis = new Redis({
   url: process.env.REDIS_URL ?? "",

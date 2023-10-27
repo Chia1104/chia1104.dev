@@ -6,7 +6,6 @@ import { Input, Textarea } from "@chia/ui";
 import { post, type HTTPError, handleKyError } from "@chia/utils";
 import { toast } from "sonner";
 import { RE_CAPTCHA_KEY } from "@/shared/constants";
-import Script from "next/script";
 import { useDarkMode } from "@/hooks";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -169,17 +168,6 @@ const Contact: FC = () => {
             name="message"
           />
         </div>
-        <Script
-          id={id}
-          src="https://www.google.com/recaptcha/api.js"
-          async
-          defer>
-          {`
-            const onloadCallback = function() {
-              grecaptcha.reset();
-            };
-          `}
-        </Script>
         <div className="mb-5 mt-7 w-fit self-center rounded-2xl">
           <Controller
             control={control}
