@@ -75,6 +75,7 @@
     "eslint-plugin-tailwindcss": "3.13.0",
     "happy-dom": "^12.9.1",
     "husky": "^8.0.3",
+    "ky": "^1.1.1",
     "lint-staged": "^15.0.2",
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.6",

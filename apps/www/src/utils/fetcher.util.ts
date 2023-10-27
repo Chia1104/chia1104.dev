@@ -1,11 +1,17 @@
 import setSearchParams from "./set-search-params.util";
 import { errorConfig } from "@/config/network.config";
 
+/**
+ * @deprecated
+ */
 export enum ApiResponseStatus {
   SUCCESS = "success",
   ERROR = "error",
 }
 
+/**
+ * @deprecated use `ky` instead
+ */
 interface IApiResponse<T = unknown> {
   statusCode: number;
   status: ApiResponseStatus;
@@ -13,6 +19,9 @@ interface IApiResponse<T = unknown> {
   message?: string;
 }
 
+/**
+ * @deprecated use `ky` instead
+ */
 interface IFetcherOptions {
   requestInit?: RequestInit;
   endpoint?: string;
@@ -27,6 +36,9 @@ const getErrorMessages = (statusCode: number): string => {
   );
 };
 
+/**
+ * @deprecated use `ky` instead
+ */
 const fetcher = async <T = unknown>(
   options: IFetcherOptions
 ): Promise<IApiResponse<T>> => {

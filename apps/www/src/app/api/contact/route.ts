@@ -1,13 +1,13 @@
 import { Chia } from "@/shared/meta/chia";
 import { NextResponse, NextRequest } from "next/server";
-import { ApiResponseStatus } from "@/utils/fetcher.util";
 import { errorConfig } from "@/config/network.config";
-import { z } from "zod";
+import z from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import EmailTemplate from "./email-template";
+// import EmailTemplate from "./email-template";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
+import { type ErrorResponse } from "@chia/utils";
 
 /**
  * @todo just let build successfully
@@ -29,12 +29,14 @@ const ratelimit = new Ratelimit({
 
 const emailSchema = z.string().email();
 
-const contactSchema = z.object({
+export const contactSchema = z.strictObject({
   email: z.string().email(),
   title: z.string().min(5, "Title must be at least 5 characters long"),
   message: z.string().min(5, "Message must be at least 5 characters long"),
   reCaptchToken: z.string().min(1, "reCAPTCHA token is required"),
 });
+
+export type Contact = z.infer<typeof contactSchema>;
 
 type Email = z.infer<typeof emailSchema>;
 
@@ -56,47 +58,51 @@ function getIP(req: NextRequest) {
   return ip;
 }
 
+function errorGenerator(
+  statusCode: keyof typeof errorConfig,
+  errors?: ErrorResponse["errors"]
+): ErrorResponse {
+  if (!(statusCode in errorConfig)) {
+    return {
+      code: "Unknown",
+      status: statusCode,
+      errors,
+    };
+  }
+  return {
+    code: errorConfig[statusCode] ?? "Unknown",
+    status: statusCode,
+    errors,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const id = getIP(request) ?? "anonymous";
     const limit = await ratelimit.limit(id ?? "anonymous");
 
     if (!limit.success) {
-      return NextResponse.json(
-        {
-          statusCode: 429,
-          status: ApiResponseStatus.ERROR,
-          message: errorConfig[429],
-        },
-        { status: 429 }
-      );
+      return NextResponse.json(errorGenerator(429), { status: 429 });
     }
 
-    const formData = await request.formData();
-    const email = formData.get("email")?.toString();
-    const message = formData.get("message")?.toString();
-    const title = formData.get("title")?.toString();
-    const reCaptchToken = formData.get("g-recaptcha-response")?.toString();
+    const data = (await request.json()) as Contact;
 
-    const {
-      isError,
-      message: errorMessage,
-      issues,
-    } = handleZodError({
+    const { isError, issues } = handleZodError({
       schema: contactSchema,
-      data: { title, email, message, reCaptchToken },
+      data,
     });
 
     if (isError) {
-      const wtfNextServerRuntime = issues
-        ?.map((issue) => issue.message)
-        .join(", ");
       return NextResponse.json(
-        {
-          statusCode: 400,
-          status: ApiResponseStatus.ERROR,
-          message: wtfNextServerRuntime,
-        },
+        errorGenerator(
+          400,
+          issues?.map((issue) => {
+            return {
+              field: issue.path.join("."),
+              message: issue.message,
+            };
+          })
+        ),
         { status: 400 }
       );
     }
@@ -104,7 +110,7 @@ export async function POST(request: NextRequest) {
     const siteverify = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?${setSearchParams({
         secret: process.env.RE_CAPTCHA_KEY,
-        response: reCaptchToken,
+        response: data.reCaptchToken,
         remoteip: id,
       })}`,
       {
@@ -114,47 +120,32 @@ export async function POST(request: NextRequest) {
     const siteverifyJson = (await siteverify.json()) as ReCapthcaResponse;
     if (!siteverifyJson.success) {
       return NextResponse.json(
-        {
-          statusCode: 400,
-          status: ApiResponseStatus.ERROR,
-          message: "reCAPTCHA verification failed.",
-        },
+        errorGenerator(400, [
+          {
+            field: "reCaptchToken",
+            message: "reCAPTCHA token is invalid",
+          },
+        ]),
         { status: 400 }
       );
     }
-    const data = await resend.emails.send({
+    await resend.emails.send({
       from: "contact@chia1104.dev",
       to: Chia.email,
-      subject: title ?? "Untitled",
-      text: message ?? "No message",
-      react: EmailTemplate({
-        title: title,
-        message: message,
-        email: email,
-        ip: id,
-      }),
+      subject: data.title ?? "Untitled",
+      text: data.message ?? "No message",
+      // react: EmailTemplate({
+      //   title: data.title ?? "Untitled",
+      //   message: data.message ?? "No message",
+      //   email: data.email ?? "Anonymous",
+      //   ip: id,
+      // }),
     });
-    return NextResponse.json(
-      {
-        statusCode: 200,
-        status: ApiResponseStatus.SUCCESS,
-        data: {
-          message: "We have received your message.",
-        },
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error(error);
-    return NextResponse.json(
-      {
-        statusCode: error?.code ?? 500,
-        status: ApiResponseStatus.ERROR,
-        message: !!error?.code
-          ? "Sorry, something went wrong. Please try again later."
-          : errorConfig[500],
-      },
-      { status: error?.code ?? 500 }
-    );
+    return NextResponse.json(errorGenerator(error?.code ?? 500), {
+      status: error?.code ?? 500,
+    });
   }
 }
