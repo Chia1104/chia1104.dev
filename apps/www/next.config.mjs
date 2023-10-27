@@ -38,6 +38,7 @@ const nextConfig = {
     mdxRs: true,
     typedRoutes: false,
     serverComponentsExternalPackages: ["@chia/ui"],
+    webpackBuildWorker: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -70,9 +71,15 @@ const nextConfig = {
     removeConsole: false,
   },
   images: {
-    domains: [
-      "firebasestorage.googleapis.com",
-      "avatars.githubusercontent.com",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
     ],
   },
   async headers() {

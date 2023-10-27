@@ -12,6 +12,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeCodeTitles from "rehype-code-titles";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { cache } from "react";
+// import { unstable_cache as cache } from "next/cache";
 import { Components } from "./MDXRemote";
 
 export const preload = (slug: string) => {

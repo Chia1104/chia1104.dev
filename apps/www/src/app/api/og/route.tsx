@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse, ImageResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { ImageResponse } from "next/og";
 import { SHA_256_HASH } from "@/shared/constants";
 
 export const runtime = "edge";
