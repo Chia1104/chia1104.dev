@@ -15,7 +15,7 @@ import {
   Text,
 } from "@react-email/components";
 
-interface Props {
+export interface Props {
   title?: string;
   message?: string;
   email?: string;
