@@ -16,6 +16,7 @@ const FeedPage = async () => {
   const post = await api.post.get.query({
     take: 5,
   });
+  console.log(process.env.DATABASE_URL);
   return (
     <div className="c-container main mt-24">
       <FeedList data={post} />
