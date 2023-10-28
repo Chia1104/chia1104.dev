@@ -13,25 +13,29 @@ const getPosts = cache(async () => {
 });
 
 const FeedPage = async () => {
-  const post = await api.post.infinite.query({ limit: 10 });
+  const post = await api.post.get.query({
+    take: 5,
+  });
   return (
     <div className="c-container main mt-24">
-      <PromiseFeedList promise={getPosts()} />
+      <FeedList data={post} />
     </div>
   );
 };
 
-const PromiseFeedList = async ({
+const FeedList = async ({
   promise,
+  data,
 }: {
-  promise: Promise<RouterOutputs["post"]["get"]>;
+  promise?: Promise<RouterOutputs["post"]["get"]>;
+  data?: RouterOutputs["post"]["get"];
 }) => {
-  const post = await promise;
+  const post = data ?? (await promise);
   return (
     <div>
-      {post.map((post) => {
+      {post?.map((post) => {
         return <div key={post.id}>{post.title}</div>;
-      })}
+      }) ?? "Loading..."}
     </div>
   );
 };

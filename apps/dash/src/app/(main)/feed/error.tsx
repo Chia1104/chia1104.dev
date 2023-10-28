@@ -1,5 +1,11 @@
 "use client";
 
 export default function Error() {
-  return <h1>QQ</h1>;
+  return (
+    <div className="c-container main mt-24">
+      <p>
+        <strong>Error</strong>
+      </p>
+    </div>
+  );
 }

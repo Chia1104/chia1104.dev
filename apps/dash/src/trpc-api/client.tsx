@@ -7,6 +7,7 @@ import { useState } from "react";
 import { type AppRouter } from "@chia/api";
 import superjson from "superjson";
 import { getBaseUrl } from "@/utils/getBaseUrl";
+import { IS_PRODUCTION } from "@/shared/constants";
 
 export const api = createTRPCReact<AppRouter>();
 
@@ -21,9 +22,9 @@ export function TRPCReactProvider(props: {
       transformer: superjson,
       links: [
         loggerLink({
-          enabled: (op) =>
-            process.env.NODE_ENV === "development" ||
-            (op.direction === "down" && op.result instanceof Error),
+          enabled: (opts) =>
+            !IS_PRODUCTION ||
+            (opts.direction === "down" && opts.result instanceof Error),
         }),
         unstable_httpBatchStreamLink({
           url: getBaseUrl() + "/api/trpc",
