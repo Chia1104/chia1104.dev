@@ -1,4 +1,4 @@
-name: backend CI
+name: service CI
 
 on:
   push:
@@ -6,9 +6,9 @@ on:
   pull_request:
     types: [ opened, labeled, unlabeled, synchronize ]
     paths:
-      - "apps/backend/**"
+      - "apps/service/**"
       - "packages/db/**"
-      - ".github/workflows/backend-ci.yml"
+      - ".github/workflows/service-ci.yml"
       - "package.json"
 
 env:
@@ -21,7 +21,7 @@ jobs:
     name: Build and Test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:backend') || contains(github.event.pull_request.labels.*.name, 'backend:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-backend') }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service') }}
 
     steps:
       - name: '🐙️ Check out code'
@@ -43,6 +43,6 @@ jobs:
         id: backend-lint-test
         uses: Chia1104/chia-stack/.github/actions/lint-test@main
         with:
-          COMMAND: '--filter backend...'
+          COMMAND: '--filter service...'
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}

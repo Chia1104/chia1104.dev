@@ -23,16 +23,16 @@
     "build": "turbo run build",
     "build:www": "turbo run build --filter www...",
     "build:dash": "turbo run build --filter dash...",
-    "build:backend": "turbo run build --filter backend...",
+    "build:service": "turbo run build --filter service...",
     "dev": "turbo run dev --parallel",
     "dev:turbo": "turbo run dev:turbo",
     "dev:www": "turbo run dev --filter www...",
     "dev:dash": "turbo run dev --filter dash...",
-    "dev:backend": "turbo run dev --filter backend...",
+    "dev:service": "turbo run dev --filter service...",
     "start": "turbo run start --parallel",
     "start:www": "turbo run start --filter www",
     "start:dash": "turbo run start --filter dash",
-    "start:backend": "turbo run start --filter backend",
+    "start:service": "turbo run start --filter service",
     "lint": "turbo run lint --parallel",
     "format": "prettier --write \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue}\"",
@@ -50,7 +50,7 @@
     "test:e2e": "turbo run test:e2e",
     "next-sitemap": "turbo run next-sitemap --parallel",
     "seed": "turbo run db:seed --filter seed",
-    "backend-graph": "turbo run build --filter backend... --graph=backend-graph.html"
+    "service-graph": "turbo run build --filter service... --graph=graph/service-graph.html"
   },
   "engines": {
     "node": ">=20.*"
