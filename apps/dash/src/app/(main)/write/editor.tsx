@@ -11,7 +11,12 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { useRef, useState, type FC } from "react";
+import {
+  useRef,
+  useState,
+  type FC,
+  type ComponentPropsWithoutRef,
+} from "react";
 import { useMonaco } from "@monaco-editor/react";
 import { MDXStrong } from "@chia/ui";
 
@@ -41,19 +46,17 @@ const ComponentModal: FC<{
 
 const Editor = () => {
   const { isDarkMode } = useDarkMode();
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<ComponentPropsWithoutRef<typeof MEditor>>(null);
   const monaco = useMonaco();
   const [value, setValue] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <div className="relative w-full overflow-hidden rounded-xl shadow-lg">
       <Button
+        disabled
         className="absolute bottom-2 right-2 z-20"
         variant="flat"
-        color="default"
-        onPress={() => {
-          editorRef.current?.getAction("editor.action.formatDocument").run();
-        }}>
+        color="default">
         Format
       </Button>
       <Button
@@ -73,9 +76,6 @@ const Editor = () => {
         height="85vh"
         defaultLanguage="markdown"
         theme={isDarkMode ? "vs-dark" : "light"}
-        onMount={(editor) => {
-          editorRef.current = editor;
-        }}
         loading={<Spinner />}
         onChange={(value) => {
           setValue(value ?? "");
