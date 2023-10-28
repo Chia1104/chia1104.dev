@@ -3,6 +3,8 @@ import { cache, Suspense } from "react";
 import { RouterOutputs } from "@chia/api";
 import { api } from "@/trpc-api/server";
 
+export const dynamic = "force-dynamic";
+
 const getPosts = cache(async () => {
   return await prisma.post.findMany({
     take: 6,
@@ -13,10 +15,10 @@ const getPosts = cache(async () => {
 });
 
 const FeedPage = async () => {
+  console.log(process.env.DATABASE_URL);
   const post = await api.post.get.query({
     take: 5,
   });
-  console.log(process.env.DATABASE_URL);
   return (
     <div className="c-container main mt-24">
       <FeedList data={post} />
