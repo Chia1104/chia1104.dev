@@ -26,7 +26,7 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
-    "backend#build": {
+    "service#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
       "env": ["DATABASE_URL"]
@@ -85,7 +85,7 @@
     "generate:typings": {
       "cache": false
     },
-    "backend-graph": {}
+    "service-graph": {}
   },
   "globalEnv": [
     "BASE_URL",

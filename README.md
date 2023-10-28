@@ -67,7 +67,7 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ### Zeabur
 
-you can deploy `www`, `dash` and `backend` applications to Zeabur, and make sure that the services name are `www`, `dash` and `backend` respectively.
+you can deploy `www`, `dash` and `service` applications to Zeabur, and make sure that the services name are `www`, `dash` and `service` respectively.
 
 ![Zeabur build settings](./.github/public/zeabur-deploy.png)
 
@@ -76,7 +76,7 @@ you can deploy `www`, `dash` and `backend` applications to Zeabur, and make sure
 ```bash
 chia1104.dev
 ├── apps
-│   ├── backend (NestJS, microservices)
+│   ├── service (NestJS)
 │   ├── dash (NextJS)
 │   └── www (NextJS)
 ├── packages

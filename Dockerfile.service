@@ -14,7 +14,7 @@ FROM base AS pre-builder
 
 COPY . .
 
-RUN turbo prune --scope=backend --docker
+RUN turbo prune --scope=service --docker
 
 FROM base AS builder
 
@@ -33,7 +33,7 @@ ENV TURBO_TEAM=$TURBO_TEAM \
 
 RUN pnpm i && \
     pnpm prisma generate && \
-    pnpm turbo run build --filter=backend...
+    pnpm turbo run build --filter=service...
 
 FROM base as prod
 
@@ -45,9 +45,9 @@ RUN pnpm i --prod --ignore-scripts
 
 FROM base as runner
 
-COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/apps/service/dist ./apps/service/dist
 # COPY --from=builder /app/packages/db ./packages/db
-COPY --from=prod /app/apps/backend/node_modules ./apps/backend/node_modules
+COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
 # PRISMA TOO BIG QQ...
 COPY --from=builder /app/node_modules ./node_modules
 
@@ -65,4 +65,4 @@ ENV NODE_ENV=production \
 
 EXPOSE 8080
 
-CMD [ "node", "apps/backend/dist/main.js" ]
+CMD [ "node", "apps/service/dist/main.js" ]
