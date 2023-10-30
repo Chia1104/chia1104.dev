@@ -53,7 +53,7 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 ![Vercel build settings](./.github/public/vercel-deploy1.png)
 
 | Command         | Script                                                                                 |
-|-----------------| -------------------------------------------------------------------------------------- |
+| --------------- | -------------------------------------------------------------------------------------- |
 | Build Command   | `cd ../.. && npx turbo run build --filter www...`                                      |
 | Install Command | `pnpm --filter \!dash --filter \!"./tests/*" install --store=node_modules/.pnpm-store` |
 
