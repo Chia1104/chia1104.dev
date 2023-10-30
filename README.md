@@ -1,6 +1,6 @@
 # Chia1104.dev
 
-[![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/production?style=for-the-badge&logo=vercel)](https://vercel.com/chia1104/chia1104/deployments)
+[![www deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/Production%20%E2%80%93%20chia1104?style=for-the-badge&logo=vercel&label=www)](https://chia1104.dev)
 [![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chia1104.dev/next/main/apps/www?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
 [![Licensed under MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=for-the-badge&logo=unlicense)](LICENSE)
 [![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chia1104.dev?style=for-the-badge&logo=turborepo)](https://github.com/chia1104/chia1104.dev)
