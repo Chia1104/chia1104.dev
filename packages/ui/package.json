@@ -20,7 +20,7 @@
     "next": "14.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sonner": "1.0.3",
+    "sonner": "1.1.0",
     "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
