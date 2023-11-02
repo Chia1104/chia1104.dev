@@ -9,9 +9,6 @@ import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
 import { type ErrorResponse } from "@chia/utils";
 
-/**
- * @todo just let build successfully
- */
 export const runtime = "edge";
 
 const resend = new Resend(process.env.RESEND_API_KEY ?? "re_123");
@@ -150,8 +147,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error(error);
-    return NextResponse.json(errorGenerator(error?.code ?? 500), {
-      status: error?.code ?? 500,
+    return NextResponse.json(errorGenerator(500), {
+      status: 500,
     });
   }
 }
