@@ -17,6 +17,7 @@ const DEFAULT_SRC =
 const OG: FC<Props> = ({ src = DEFAULT_SRC, metadata }) => {
   return (
     <div
+      // @ts-ignore
       tw="bg-slate-900"
       style={{
         backgroundSize: "150px 150px",
@@ -37,8 +38,15 @@ const OG: FC<Props> = ({ src = DEFAULT_SRC, metadata }) => {
           justifyItems: "center",
           position: "relative",
         }}>
-        <img tw="w-full" alt="og" src={src} />
-        <div tw="flex flex-col absolute w-full justify-center items-center">
+        <img
+          // @ts-ignore
+          tw="w-full"
+          alt="og"
+          src={src}
+        />
+        <div
+          // @ts-ignore
+          tw="flex flex-col absolute w-full justify-center items-center">
           <div
             style={{
               backdropFilter: "blur(10px)",
@@ -54,9 +62,17 @@ const OG: FC<Props> = ({ src = DEFAULT_SRC, metadata }) => {
             {metadata?.title ?? "Chia1104"}
           </div>
         </div>
-        <div tw="flex flex-col justify-center items-center mr-10 absolute bottom-10">
-          <div tw="text-3xl text-white">{metadata?.name ?? "Chia1104"}</div>
-          <div tw="text-xl text-white">
+        <div
+          // @ts-ignore
+          tw="flex flex-col justify-center items-center mr-10 absolute bottom-10">
+          <div
+            // @ts-ignore
+            tw="text-3xl text-white">
+            {metadata?.name ?? "Chia1104"}
+          </div>
+          <div
+            // @ts-ignore
+            tw="text-xl text-white">
             {metadata?.url ?? "https://chia1104.dev"}
           </div>
         </div>
