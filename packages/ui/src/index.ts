@@ -1,5 +1,3 @@
-"use client";
-
 export {
   Accordion,
   AccordionContent,
@@ -21,3 +19,4 @@ export * from "./utils";
 export { default as ToggleTheme } from "./ToggleTheme";
 export { default as Card } from "./Card";
 export { default as ScrollYProgress } from "./ScrollYProgress";
+export { default as OpenGraph } from "./OpenGraph";

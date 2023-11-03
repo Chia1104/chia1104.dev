@@ -1,3 +1,5 @@
+"use client";
+
 export { cn } from "./cn.util";
 export { default as useCopyToClipboard } from "./use-copy-to-clipboard";
 export { default as useIsMounted } from "./use-is-mounted";
