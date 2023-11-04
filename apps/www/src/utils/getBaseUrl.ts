@@ -13,15 +13,15 @@ export const getBaseUrl = (options?: Options) => {
   }
 
   if (env.RAILWAY_URL) {
-    return `https://${RAILWAY_URL.replace(/\/$/, "")}`; // remove trailing slash
+    return `https://${env.RAILWAY_URL.replace(/\/$/, "")}`; // remove trailing slash
   }
 
   if (env.VERCEL_URL) {
-    return `https://${VERCEL_URL.replace(/\/$/, "")}`;
+    return `https://${env.VERCEL_URL.replace(/\/$/, "")}`;
   }
 
   if (env.ZEABUR_URL) {
-    return `https://${ZEABUR_URL.replace(/\/$/, "")}`;
+    return `https://${env.ZEABUR_URL.replace(/\/$/, "")}`;
   }
 
   return BASE_URL.replace(/\/$/, "");
