@@ -35,6 +35,8 @@ env:
   YOUTUBE_LIST_ID: ${{ secrets.YOUTUBE_LIST_ID }}
   NEXT_PUBLIC_GISCUS_REPO_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_REPO_ID }}
   NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
+  UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
 
 jobs:
   build:
@@ -82,3 +84,5 @@ jobs:
             YOUTUBE_LIST_ID=${{ secrets.YOUTUBE_LIST_ID }}
             NEXT_PUBLIC_GISCUS_REPO_ID=${{ secrets.NEXT_PUBLIC_GISCUS_REPO_ID }}
             NEXT_PUBLIC_GISCUS_CATEGORY_ID=${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
+            REDIS_URL=${{ secrets.REDIS_URL }}
+            UPSTASH_TOKEN=${{ secrets.UPSTASH_TOKEN }}
