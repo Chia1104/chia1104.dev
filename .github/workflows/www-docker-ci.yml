@@ -86,3 +86,4 @@ jobs:
             NEXT_PUBLIC_GISCUS_CATEGORY_ID=${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
             REDIS_URL=${{ secrets.REDIS_URL }}
             UPSTASH_TOKEN=${{ secrets.UPSTASH_TOKEN }}
+            RE_CAPTCHA_KEY=${{ secrets.RE_CAPTCHA_KEY }}
