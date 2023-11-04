@@ -26,11 +26,13 @@ export const GET = async (req: NextRequest) => {
     and created_at >= '${lastFiveMinutes}'
   `;
   try {
-    const result: [
-      {
-        current_visitors: bigint;
-      },
-    ] = await prisma.$queryRaw`${Prisma.raw(query)}`;
+    const result = await prisma.$queryRaw<
+      [
+        {
+          current_visitors: bigint;
+        },
+      ]
+    >`${Prisma.raw(query)}`;
     return NextResponse.json({
       currentVisitors: Number(result[0].current_visitors),
     });
