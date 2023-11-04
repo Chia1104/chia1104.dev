@@ -7,6 +7,8 @@ const prisma = new PrismaClientEdge({
   datasourceUrl: process.env.UMAMI_EDGE_DB_URL,
 });
 
+export const dynamic = "force-dynamic";
+
 export const runtime = "edge";
 /**
  * Tokyo, Japan
