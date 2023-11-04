@@ -1,6 +1,7 @@
 import { useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
+import useIsMounted from "./use-is-mounted";
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";
 
@@ -17,13 +18,14 @@ export default function useDarkMode(): UseDarkModeOutput {
   const { theme, setTheme } = useTheme();
   const systemTheme = isDarkOS ? "dark" : "light";
   const localTheme = theme === "dark" ? "dark" : "light";
+  const isMounted = useIsMounted();
 
   useEffect(() => {
     setTheme(!theme ? systemTheme : localTheme);
   }, [systemTheme]);
 
   return {
-    isDarkMode: theme === "dark",
+    isDarkMode: isMounted && theme === "dark",
     theme,
     toggle: () => setTheme(theme === "dark" ? "light" : "dark"),
     enable: () => setTheme("dark"),

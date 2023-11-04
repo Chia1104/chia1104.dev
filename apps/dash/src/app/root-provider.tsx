@@ -4,9 +4,8 @@ import { type FC, type ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
 import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
-import { useIsMounted } from "@chia/ui";
+import { useIsMounted, useDarkMode } from "@chia/ui";
 import { Toaster as ST } from "sonner";
-import { useDarkMode } from "@/hooks";
 import { NextUIProvider } from "@nextui-org/react";
 import { TRPCReactProvider } from "@/trpc-api/client";
 

@@ -98,21 +98,9 @@
     bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out rounded px-5 py-3 text-2xl
   }
 
-  .footer {
-    @apply
-    flex py-8 border-t-[1px] border-solid justify-center items-center border-gray-200 dark:border-gray-800 bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md
-  }
-
   .main {
     @apply
     flex flex-1 flex-col justify-center items-center min-h-screen py-[4rem] md:px-[2rem] px-[1rem]
-  }
-
-  .footer a {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
   }
 
   .title a {
