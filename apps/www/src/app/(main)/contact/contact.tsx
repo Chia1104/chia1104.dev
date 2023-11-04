@@ -2,11 +2,10 @@
 
 import { type FC, useId, memo, useRef, useEffect, useState } from "react";
 import { cn } from "@chia/ui";
-import { Input, Textarea } from "@chia/ui";
+import { Input, Textarea, useDarkMode } from "@chia/ui";
 import { post, type HTTPError, handleKyError } from "@chia/utils";
 import { toast } from "sonner";
 import { RE_CAPTCHA_KEY } from "@/shared/constants";
-import { useDarkMode } from "@/hooks";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";

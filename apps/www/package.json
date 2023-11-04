@@ -55,6 +55,7 @@
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.45.2",
     "react-icons": "^4.10.1",
+    "react-medium-image-zoom": "^5.1.8",
     "react-redux": "^8.1.2",
     "reading-time": "^1.5.0",
     "rehype-autolink-headings": "^6.1.1",

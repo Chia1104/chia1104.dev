@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useDarkMode } from "@/hooks";
 import {
   Button,
   Spinner,
@@ -18,7 +17,7 @@ import {
   type ComponentPropsWithoutRef,
 } from "react";
 import { useMonaco } from "@monaco-editor/react";
-import { MDXStrong } from "@chia/ui";
+import { MDXStrong, useDarkMode } from "@chia/ui";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,

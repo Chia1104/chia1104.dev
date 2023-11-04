@@ -111,7 +111,7 @@ const PostDetailPage = async ({
 
   return (
     <>
-      <article className="main c-container mt-10">
+      <article className="main c-container mt-20">
         <header className="mb-7 w-full max-w-[900px] self-center pl-3">
           <h1 className="title pb-5">{frontmatter?.title}</h1>
           <p className="c-description">{frontmatter?.excerpt}</p>

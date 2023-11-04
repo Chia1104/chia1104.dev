@@ -19,7 +19,9 @@
         "SENDGRID_KEY",
         "REDIS_URL",
         "UPSTASH_TOKEN",
-        "RESEND_API_KEY"
+        "RESEND_API_KEY",
+        "NEXT_PUBLIC_UMAMI_WEBSITE_ID",
+        "NEXT_PUBLIC_UMAMI_URL"
       ]
     },
     "dash#build": {

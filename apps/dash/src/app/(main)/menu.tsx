@@ -18,8 +18,7 @@ import {
   Tab,
   NavbarMenuToggle,
 } from "@nextui-org/react";
-import { ToggleTheme, Image } from "@chia/ui";
-import { useDarkMode } from "@/hooks";
+import { ToggleTheme, Image, useDarkMode } from "@chia/ui";
 import { useSession } from "next-auth/react";
 import { signIn, signOut } from "next-auth/react";
 import { useTransition, type Key, useState } from "react";

@@ -5,6 +5,6 @@ import Footer from "./footer";
 describe("Footer", () => {
   test("renders", () => {
     render(<Footer />);
-    expect(screen.getByText(/Chia1104/i)).toBeDefined();
+    expect(screen.findAllByText("Chia1104")).toBeTruthy();
   });
 });

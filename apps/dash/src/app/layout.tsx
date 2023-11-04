@@ -31,7 +31,7 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession();
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden">
         <RootProvider session={session} headers={headers()}>
           {children}
