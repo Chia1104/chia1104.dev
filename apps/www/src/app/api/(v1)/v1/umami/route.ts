@@ -1,4 +1,4 @@
-import { PrismaClient as PrismaClientEdge } from "@prisma/client/edge";
+import { PrismaClient as PrismaClientEdge, Prisma } from "@prisma/client/edge";
 import { errorGenerator } from "@chia/utils";
 import dayjs from "dayjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -14,25 +14,21 @@ export const runtime = "edge";
 export const preferredRegion = ["hnd1"];
 
 export const GET = async (req: NextRequest) => {
-  /**
-   * @todo fix sql query parameters
-   */
   const websiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
-  /**
-   * @todo fix sql query parameters
-   */
   const lastFiveMinutes = dayjs().subtract(5, "minute").toISOString();
+
+  const query = `
+    select count(distinct session_id) as current_visitors
+    from website_event
+    where website_id = '${websiteId}'
+    and created_at >= '${lastFiveMinutes}'
+  `;
   try {
     const result: [
       {
         current_visitors: bigint;
       },
-    ] = await prisma.$queryRaw`
-        select count(distinct session_id) as current_visitors
-        from website_event
-        where website_id = ${websiteId}
-        and created_at >= ${lastFiveMinutes}
-      `;
+    ] = await prisma.$queryRaw`${Prisma.raw(query)}`;
     return NextResponse.json({
       currentVisitors: Number(result[0].current_visitors),
     });
