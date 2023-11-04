@@ -9,7 +9,7 @@ import { RE_CAPTCHA_KEY } from "@/shared/constants";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { contactSchema, type Contact } from "@/app/api/contact/route";
+import { contactSchema, type Contact } from "@/app/api/(v1)/contact/route";
 import dynamic from "next/dynamic";
 
 const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {

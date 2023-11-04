@@ -13,10 +13,7 @@ const Toggle: FC = () => {
 };
 
 const NavMenu: FC = () => {
-  let pathname = usePathname() || "/";
-  if (pathname.includes("/posts/")) {
-    pathname = "/posts";
-  }
+  const pathname = usePathname() || "/";
   return (
     <nav className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
       <div className="container flex w-[100%] px-5">
@@ -31,7 +28,7 @@ const NavMenu: FC = () => {
         <LayoutGroup>
           <div className="mr-3 flex w-[80%] items-center justify-end">
             {Object.entries(navItems).map(([path, { name, icon }]) => {
-              const isActive = path === pathname;
+              const isActive = pathname.includes(path);
               return (
                 <Link
                   key={path}
@@ -46,7 +43,7 @@ const NavMenu: FC = () => {
                   <span className="relative px-[10px] py-[5px]">
                     <p className="hidden md:block">{name}</p>
                     <div className="block md:hidden">{icon}</div>
-                    {path === pathname ? (
+                    {isActive ? (
                       <motion.div
                         className="absolute inset-0 z-[-1] rounded-md bg-[#dddddd] dark:bg-black/60"
                         layoutId="sidebar"

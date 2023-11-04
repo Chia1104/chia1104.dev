@@ -16,10 +16,8 @@ const LinkItem: FC<{
   name: string;
   showIcon?: boolean;
 }> = ({ path, icon, name, showIcon }) => {
-  let pathname = usePathname() || "/";
-  if (pathname.includes("/posts/")) {
-    pathname = "/posts";
-  }
+  const pathname = usePathname() || "/";
+  const isActive = pathname.includes(path);
   return (
     <Link
       key={path}
@@ -27,14 +25,14 @@ const LinkItem: FC<{
       className={cn(
         "flex align-middle transition-all hover:text-neutral-800 dark:hover:text-neutral-200",
         {
-          "text-neutral-500": path !== pathname,
-          "font-bold": path === pathname,
+          "text-neutral-500": !isActive,
+          "font-bold": isActive,
         }
       )}>
       <span className="relative flex items-center justify-center gap-2 px-[10px] py-[5px]">
         <div className={cn(showIcon ? "block" : "hidden")}>{icon}</div>
         <p className="">{name}</p>
-        {path === pathname ? (
+        {isActive ? (
           <motion.div
             className="absolute inset-0 z-[-1] rounded-md bg-[#dddddd] dark:bg-black/60"
             layoutId="sidebar"
@@ -68,6 +66,16 @@ const contact = {
   },
 };
 
+const Copyright: FC<{ className?: string }> = ({ className }) => (
+  <p className={className}>
+    © {new Date().getFullYear()} <span className="font-bold">{Chia.name}</span>
+  </p>
+);
+
+const Logo = () => (
+  <Image src="/icon.png" alt="logo" width={60} height={60} loading="lazy" />
+);
+
 const Footer: FC = () => {
   const { isDarkMode } = useDarkMode();
 
@@ -75,17 +83,8 @@ const Footer: FC = () => {
     <footer className="c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8">
       <div className="c-container flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start md:flex">
-          <Image
-            src="/icon.png"
-            alt="logo"
-            width={60}
-            height={60}
-            loading="lazy"
-          />
-          <p className="mt-auto">
-            © {new Date(new Date().getTime()).getFullYear()}{" "}
-            <span className="font-bold">{Chia.name}</span>
-          </p>
+          <Logo />
+          <Copyright className="mt-auto" />
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
           <p className="mb-3 ml-2 text-lg font-bold">Pages</p>
@@ -101,17 +100,8 @@ const Footer: FC = () => {
         </div>
       </div>
       <div className="c-container mt-5 flex w-full items-center justify-between px-10 md:hidden">
-        <Image
-          src="/icon.png"
-          alt="logo"
-          width={60}
-          height={60}
-          loading="lazy"
-        />
-        <p className="">
-          © {new Date(new Date().getTime()).getFullYear()}{" "}
-          <span className="font-bold">{Chia.name}</span>
-        </p>
+        <Logo />
+        <Copyright />
       </div>
       <div
         className={cn(

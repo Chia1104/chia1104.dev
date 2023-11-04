@@ -11,6 +11,7 @@ const errorConfig = {
   408: "Request Timeout",
   429: "Too Many Requests",
   500: "Internal Server Error",
+  503: "Service Unavailable",
 } as const;
 
 export { networkConfig, errorConfig };
