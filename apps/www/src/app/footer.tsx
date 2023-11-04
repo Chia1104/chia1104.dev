@@ -77,7 +77,7 @@ const Footer: FC = () => {
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start md:flex">
           <Image
             src="/icon.png"
-            alt="Chia1104"
+            alt="logo"
             width={60}
             height={60}
             loading="lazy"
@@ -103,7 +103,7 @@ const Footer: FC = () => {
       <div className="c-container mt-5 flex w-full items-center justify-between px-10 md:hidden">
         <Image
           src="/icon.png"
-          alt="Chia1104"
+          alt="logo"
           width={60}
           height={60}
           loading="lazy"
