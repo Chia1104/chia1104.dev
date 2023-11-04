@@ -23,8 +23,8 @@ env:
   SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  PNPM_VERSION: 8.4.0
-  NODE_VERSION: 18.*
+  PNPM_VERSION: 8.10.2
+  NODE_VERSION: 20.*
   GIT_HASH: ${{ github.sha }}
   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
