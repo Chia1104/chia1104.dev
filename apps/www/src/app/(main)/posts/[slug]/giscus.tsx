@@ -1,6 +1,5 @@
 "use client";
 
-import type { GiscusProps } from "@giscus/react";
 import { giscusConfig } from "@/config/giscus.config";
 import { useIsMounted, useDarkMode } from "@chia/ui";
 import G from "@giscus/react";
@@ -17,7 +16,7 @@ const Giscus: FC<Props> = (props) => {
 
   return (
     <G
-      {...(giscusConfig as GiscusProps)}
+      {...giscusConfig}
       term={title}
       mapping="specific"
       reactionsEnabled="1"

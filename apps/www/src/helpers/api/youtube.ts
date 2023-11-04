@@ -1,14 +1,10 @@
-import {
-  GOOGLE_API,
-  GOOGLE_API_KEY,
-  YOUTUBE_LIST_ID,
-} from "@/shared/constants";
+import { env } from "@/env.mjs";
 import type { ApiRespond, Youtube } from "@/shared/types";
 
 export const getAllVideos = async (
   maxResult = 10
 ): Promise<ApiRespond<Youtube>> => {
-  const URL = `${GOOGLE_API}youtube/v3/playlistItems?part=snippet&playlistId=${YOUTUBE_LIST_ID}&key=${GOOGLE_API_KEY}&maxResults=${maxResult}`;
+  const URL = `${env.GOOGLE_API}/youtube/v3/playlistItems?part=snippet&playlistId=${env.YOUTUBE_LIST_ID}&key=${env.GOOGLE_API_KEY}&maxResults=${maxResult}`;
 
   try {
     const res = await fetch(URL, {

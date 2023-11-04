@@ -325,6 +325,9 @@ importers:
 
   apps/www:
     dependencies:
+      '@chia/db':
+        specifier: 0.0.0
+        version: link:../../packages/db
       '@chia/ui':
         specifier: 0.0.0
         version: link:../../packages/ui
@@ -352,6 +355,9 @@ importers:
       '@sendgrid/mail':
         specifier: 7.7.0
         version: 7.7.0
+      '@t3-oss/env-nextjs':
+        specifier: ^0.7.1
+        version: 0.7.1(typescript@5.2.2)(zod@3.22.4)
       '@upstash/ratelimit':
         specifier: 0.4.4
         version: 0.4.4

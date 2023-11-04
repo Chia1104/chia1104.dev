@@ -2,9 +2,10 @@ import { PrismaClient as PrismaClientEdge, Prisma } from "@prisma/client/edge";
 import { errorGenerator } from "@chia/utils";
 import dayjs from "dayjs";
 import { NextRequest, NextResponse } from "next/server";
+import { env } from "@/env.mjs";
 
 const prisma = new PrismaClientEdge({
-  datasourceUrl: process.env.UMAMI_EDGE_DB_URL,
+  datasourceUrl: env.UMAMI_EDGE_DB_URL,
 });
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export const runtime = "edge";
 export const preferredRegion = ["hnd1"];
 
 export const GET = async (req: NextRequest) => {
-  const websiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+  const websiteId = env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
   const lastFiveMinutes = dayjs().subtract(5, "minute").toISOString();
 
   const query = `

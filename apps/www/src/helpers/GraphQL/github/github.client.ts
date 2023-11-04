@@ -1,5 +1,5 @@
 import { GraphQLClient } from "graphql-request";
-import { GITHUB_GRAPHQL_API, GH_PUBLIC_TOKEN } from "@/shared/constants";
+import { env } from "@/env.mjs";
 
 async function middleware(request: RequestInit) {
   return {
@@ -8,10 +8,10 @@ async function middleware(request: RequestInit) {
   };
 }
 
-const client = new GraphQLClient(GITHUB_GRAPHQL_API, {
+const client = new GraphQLClient(env.GITHUB_GRAPHQL_API, {
   headers: {
     accept: "application/vnd.github.v3+json",
-    authorization: `token ${GH_PUBLIC_TOKEN}`,
+    authorization: `token ${env.GH_PUBLIC_TOKEN}`,
   },
   // @ts-ignore
   requestMiddleware: middleware,

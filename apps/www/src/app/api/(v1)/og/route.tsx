@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
-import { SHA_256_HASH } from "@/shared/constants";
+import { env } from "@/env.mjs";
 import { OpenGraph } from "@chia/ui";
 import { errorGenerator } from "@chia/utils";
 
@@ -8,7 +8,7 @@ export const runtime = "edge";
 
 const key = crypto.subtle.importKey(
   "raw",
-  new TextEncoder().encode(SHA_256_HASH),
+  new TextEncoder().encode(env.SHA_256_HASH),
   { name: "HMAC", hash: { name: "SHA-256" } },
   false,
   ["sign"]

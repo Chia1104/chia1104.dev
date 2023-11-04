@@ -5,12 +5,12 @@ import { cn } from "@chia/ui";
 import { Input, Textarea, useDarkMode } from "@chia/ui";
 import { post, type HTTPError, handleKyError } from "@chia/utils";
 import { toast } from "sonner";
-import { RE_CAPTCHA_KEY } from "@/shared/constants";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { contactSchema, type Contact } from "@/app/api/(v1)/contact/route";
 import dynamic from "next/dynamic";
+import { env } from "@/env.mjs";
 
 const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
   ssr: false,
@@ -181,7 +181,7 @@ const Contact: FC = () => {
                 <ReCAPTCHA
                   placeholder="reCAPTCHA"
                   theme={isDarkMode ? "dark" : "light"}
-                  sitekey={RE_CAPTCHA_KEY!}
+                  sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY!}
                   onChange={(value) => {
                     onChange(value ?? "");
                   }}

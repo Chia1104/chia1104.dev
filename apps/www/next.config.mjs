@@ -1,5 +1,6 @@
 // @ts-check
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
+import "./src/env.mjs";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",

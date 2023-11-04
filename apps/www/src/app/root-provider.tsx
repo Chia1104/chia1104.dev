@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { useDarkMode, useIsMounted } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import Script from "next/script";
+import { env } from "@/env.mjs";
 
 const Toaster: FC = () => {
   const { theme } = useDarkMode();
@@ -20,8 +21,8 @@ const Analytics = () => {
   return (
     <Script
       async
-      data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-      src={`${process.env.NEXT_PUBLIC_UMAMI_URL}/script.js`}
+      data-website-id={env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+      src={`${env.NEXT_PUBLIC_UMAMI_URL}/script.js`}
     />
   );
 };

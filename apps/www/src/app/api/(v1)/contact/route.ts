@@ -7,14 +7,15 @@ import { type Props } from "./email-template";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
 import { errorGenerator } from "@chia/utils";
+import { env } from "@/env.mjs";
 
 export const runtime = "edge";
 
-const resend = new Resend(process.env.RESEND_API_KEY ?? "re_123");
+const resend = new Resend(env.RESEND_API_KEY ?? "re_123");
 
 const redis = new Redis({
-  url: process.env.REDIS_URL ?? "",
-  token: process.env.UPSTASH_TOKEN ?? "",
+  url: env.REDIS_URL ?? "",
+  token: env.UPSTASH_TOKEN ?? "",
 });
 
 const ratelimit = new Ratelimit({
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     const siteverify = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?${setSearchParams({
-        secret: process.env.RE_CAPTCHA_KEY,
+        secret: env.RE_CAPTCHA_KEY,
         response: data.reCaptchToken,
         remoteip: id,
       })}`,

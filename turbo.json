@@ -90,6 +90,11 @@
     "REDIS_URL",
     "DB_URL",
     "DATABASE_URL",
-    "CHIA_ID"
+    "CHIA_ID",
+    "GITHUB_API",
+    "GITHUB_GRAPHQL_API",
+    "GOOGLE_API",
+    "SPOTIFY_NOW_PLAYING_URL",
+    "SPOTIFY_TOKEN_URL"
   ]
 }
