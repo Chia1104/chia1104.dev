@@ -19,6 +19,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "test": [
+        "test/*"
       ]
     },
     "jsx": "preserve",

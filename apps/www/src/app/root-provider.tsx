@@ -18,7 +18,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const ReactQueryProvider = ({ children }: { children: ReactNode }) => {
+export const ReactQueryProvider = ({ children }: { children: ReactNode }) => {
   const [internalQueryClient] = useState(() => queryClient);
 
   return (

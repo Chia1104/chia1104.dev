@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "happy-dom",
+    setupFiles: ["./test/test-setup.tsx"],
   },
   resolve: {
     alias: {
