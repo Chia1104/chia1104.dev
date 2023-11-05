@@ -82,6 +82,7 @@
     "NODE_ENV",
     "ANALYZE",
     "CI",
+    "SKIP_ENV_VALIDATION",
     "VERCEL",
     "ZEABUR_URL",
     "VERCEL_URL",

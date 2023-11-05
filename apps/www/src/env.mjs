@@ -1,3 +1,5 @@
+// @ts-check
+
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
 
@@ -63,6 +65,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GISCUS_CATEGORY: z.string().optional().default("Comments"),
     NEXT_PUBLIC_GISCUS_THEME: z.string().optional().default("dark_dimmed"),
   },
+
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
@@ -98,4 +101,5 @@ export const env = createEnv({
     NEXT_PUBLIC_GISCUS_CATEGORY: process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
     NEXT_PUBLIC_GISCUS_THEME: process.env.NEXT_PUBLIC_GISCUS_THEME,
   },
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
