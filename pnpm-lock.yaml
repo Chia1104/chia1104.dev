@@ -358,6 +358,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.7.1
         version: 0.7.1(typescript@5.2.2)(zod@3.22.4)
+      '@tanstack/react-query':
+        specifier: '4'
+        version: 4.36.1(react-dom@18.2.0)(react@18.2.0)
       '@upstash/ratelimit':
         specifier: 0.4.4
         version: 0.4.4

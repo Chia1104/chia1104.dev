@@ -8,8 +8,6 @@ const prisma = new PrismaClientEdge({
   datasourceUrl: env.UMAMI_EDGE_DB_URL,
 });
 
-export const dynamic = "force-dynamic";
-
 export const runtime = "edge";
 /**
  * Tokyo, Japan
@@ -27,6 +25,10 @@ export const GET = async (req: NextRequest) => {
     and created_at >= '${lastFiveMinutes}'
   `;
   try {
+    /**
+     * @todo handle cacheStrategy
+     * (https://www.prisma.io/docs/data-platform/accelerate/concepts#cache-strategies)
+     */
     const result = await prisma.$queryRaw<
       [
         {
