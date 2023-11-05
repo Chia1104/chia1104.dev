@@ -1,13 +1,12 @@
 import { Chia } from "@/shared/meta/chia";
 import { NextResponse, NextRequest } from "next/server";
-import { errorConfig } from "@/config/network.config";
 import z from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { type Props } from "./email-template";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
-import { type ErrorResponse } from "@chia/utils";
+import { errorGenerator } from "@chia/utils";
 
 export const runtime = "edge";
 
@@ -53,24 +52,6 @@ function getIP(req: NextRequest) {
   }
 
   return ip;
-}
-
-function errorGenerator(
-  statusCode: keyof typeof errorConfig,
-  errors?: ErrorResponse["errors"]
-): ErrorResponse {
-  if (!(statusCode in errorConfig)) {
-    return {
-      code: "Unknown",
-      status: statusCode,
-      errors,
-    };
-  }
-  return {
-    code: errorConfig[statusCode] ?? "Unknown",
-    status: statusCode,
-    errors,
-  };
 }
 
 export async function POST(request: NextRequest) {

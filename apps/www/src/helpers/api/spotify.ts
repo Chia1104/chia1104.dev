@@ -1,16 +1,11 @@
-import {
-  SPOTIFY_NOW_PLAYING_URL,
-  SPOTIFY_TOKEN_URL,
-  SPOTIFY_CLIENT_ID,
-  SPOTIFY_CLIENT_SECRET,
-} from "@/shared/constants";
+import { env } from "@/env.mjs";
 
 const basic = Buffer.from(
-  `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`
+  `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
 ).toString("base64");
 
 const getAccessToken = async () => {
-  const URL = `${SPOTIFY_TOKEN_URL}?grant_type=client_credentials`;
+  const URL = `${env.SPOTIFY_TOKEN_URL}?grant_type=client_credentials`;
 
   try {
     const res = await fetch(URL, {
@@ -30,7 +25,7 @@ const getAccessToken = async () => {
 };
 
 export const getNowPlaying = async () => {
-  const URL = `${SPOTIFY_NOW_PLAYING_URL}`;
+  const URL = `${env.SPOTIFY_NOW_PLAYING_URL}`;
 
   try {
     const TOKEN = await getAccessToken();

@@ -1,9 +1,5 @@
-import {
-  BASE_URL,
-  RAILWAY_URL,
-  VERCEL_URL,
-  ZEABUR_URL,
-} from "@/shared/constants";
+import { BASE_URL } from "@/shared/constants";
+import { env } from "@/env.mjs";
 
 interface Options {
   isServer?: boolean;
@@ -16,16 +12,16 @@ export const getBaseUrl = (options?: Options) => {
     return "";
   }
 
-  if (RAILWAY_URL) {
-    return `https://${RAILWAY_URL.replace(/\/$/, "")}`; // remove trailing slash
+  if (env.RAILWAY_URL) {
+    return `https://${env.RAILWAY_URL.replace(/\/$/, "")}`; // remove trailing slash
   }
 
-  if (VERCEL_URL) {
-    return `https://${VERCEL_URL.replace(/\/$/, "")}`;
+  if (env.VERCEL_URL) {
+    return `https://${env.VERCEL_URL.replace(/\/$/, "")}`;
   }
 
-  if (ZEABUR_URL) {
-    return `https://${ZEABUR_URL.replace(/\/$/, "")}`;
+  if (env.ZEABUR_URL) {
+    return `https://${env.ZEABUR_URL.replace(/\/$/, "")}`;
   }
 
   return BASE_URL.replace(/\/$/, "");

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "pipeline": {
+    "dash": {
+      "env": [
+        "SHA_256_HASH",
+        "GH_PUBLIC_TOKEN",
+        "NEXT_PUBLIC_RE_CAPTCHA_KEY",
+        "RE_CAPTCHA_KEY",
+        "GOOGLE_API_KEY",
+        "SPOTIFY_CLIENT_ID",
+        "SPOTIFY_CLIENT_SECRET",
+        "SENDGRID_KEY",
+        "REDIS_URL",
+        "UPSTASH_TOKEN",
+        "RESEND_API_KEY",
+        "NEXT_PUBLIC_UMAMI_WEBSITE_ID",
+        "NEXT_PUBLIC_UMAMI_URL",
+        "UMAMI_DB_URL",
+        "UMAMI_EDGE_DB_URL",
+        "YOUTUBE_ID",
+        "YOUTUBE_LIST_ID",
+        "NEXT_PUBLIC_GISCUS_REPO",
+        "NEXT_PUBLIC_GISCUS_REPO_ID",
+        "NEXT_PUBLIC_GISCUS_CATEGORY_ID",
+        "NEXT_PUBLIC_GISCUS_CATEGORY",
+        "NEXT_PUBLIC_GISCUS_THEME"
+      ]
+    }
+  }
+}

@@ -8,7 +8,7 @@ import type { Blog, WithContext } from "schema-dts";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { createHmac } from "node:crypto";
 import { setSearchParams } from "@chia/utils";
-import { SHA_256_HASH } from "@/shared/constants";
+import { env } from "@/env.mjs";
 
 export const generateStaticParams = async () => {
   const posts = await getAllPosts();
@@ -23,7 +23,7 @@ export const dynamic = "force-static";
 export const dynamicParams = false;
 
 const getToken = (id: string): string => {
-  const hmac = createHmac("sha256", SHA_256_HASH);
+  const hmac = createHmac("sha256", env.SHA_256_HASH);
   hmac.update(JSON.stringify({ title: id }));
   return hmac.digest("hex");
 };

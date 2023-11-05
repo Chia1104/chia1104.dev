@@ -7,22 +7,7 @@
     },
     "www#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": [
-        "SHA_256_HASH",
-        "GH_PUBLIC_TOKEN",
-        "NEXT_PUBLIC_RE_CAPTCHA_KEY",
-        "RE_CAPTCHA_KEY",
-        "GOOGLE_API_KEY",
-        "SPOTIFY_CLIENT_ID",
-        "SPOTIFY_CLIENT_SECRET",
-        "SENDGRID_KEY",
-        "REDIS_URL",
-        "UPSTASH_TOKEN",
-        "RESEND_API_KEY",
-        "NEXT_PUBLIC_UMAMI_WEBSITE_ID",
-        "NEXT_PUBLIC_UMAMI_URL"
-      ]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "dash#build": {
       "dependsOn": ["^build"],
@@ -97,6 +82,7 @@
     "NODE_ENV",
     "ANALYZE",
     "CI",
+    "SKIP_ENV_VALIDATION",
     "VERCEL",
     "ZEABUR_URL",
     "VERCEL_URL",
@@ -105,6 +91,11 @@
     "REDIS_URL",
     "DB_URL",
     "DATABASE_URL",
-    "CHIA_ID"
+    "CHIA_ID",
+    "GITHUB_API",
+    "GITHUB_GRAPHQL_API",
+    "GOOGLE_API",
+    "SPOTIFY_NOW_PLAYING_URL",
+    "SPOTIFY_TOKEN_URL"
   ]
 }
