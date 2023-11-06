@@ -31,9 +31,8 @@ const CurrentVisitors: FC<
   >({
     queryKey: ["currentVisitors"],
     queryFn: () =>
-      get<Data>("api/v1/umami", undefined, {
+      get<Data>("/api/v1/umami", undefined, {
         next: { revalidate: 5 * 60 },
-        prefixUrl: "/",
       }),
     refetchInterval: 3 * 60 * 1000,
     refetchOnWindowFocus: true,

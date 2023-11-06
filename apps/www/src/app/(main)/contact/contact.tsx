@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { contactSchema, type Contact } from "@/app/api/(v1)/contact/route";
+import { contactSchema, type Contact } from "@/shared/validator";
 import dynamic from "next/dynamic";
 import { env } from "@/env.mjs";
 
@@ -48,7 +48,7 @@ const Contact: FC = () => {
     setIsLoading(true);
     const promise = () =>
       post<void, Contact>(
-        "/api/contact",
+        "/api/v1/send",
         {
           title: data.title,
           email: data.email,

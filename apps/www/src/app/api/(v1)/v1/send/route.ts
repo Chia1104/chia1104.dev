@@ -7,14 +7,16 @@ import { type Props } from "./email-template";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
 import { errorGenerator } from "@chia/utils";
+import { env } from "@/env.mjs";
+import { contactSchema, type Contact } from "@/shared/validator";
 
 export const runtime = "edge";
 
-const resend = new Resend(process.env.RESEND_API_KEY ?? "re_123");
+const resend = new Resend(env.RESEND_API_KEY);
 
 const redis = new Redis({
-  url: process.env.REDIS_URL ?? "",
-  token: process.env.UPSTASH_TOKEN ?? "",
+  url: env.REDIS_URL,
+  token: env.UPSTASH_TOKEN,
 });
 
 const ratelimit = new Ratelimit({
@@ -22,19 +24,6 @@ const ratelimit = new Ratelimit({
   analytics: true,
   limiter: Ratelimit.slidingWindow(2, "5s"),
 });
-
-const emailSchema = z.string().email();
-
-export const contactSchema = z.strictObject({
-  email: z.string().email(),
-  title: z.string().min(5, "Title must be at least 5 characters long"),
-  message: z.string().min(5, "Message must be at least 5 characters long"),
-  reCaptchToken: z.string().min(1, "reCAPTCHA token is required"),
-});
-
-export type Contact = z.infer<typeof contactSchema>;
-
-type Email = z.infer<typeof emailSchema>;
 
 type ReCapthcaResponse = {
   success: boolean;
@@ -87,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     const siteverify = await fetch(
       `https://www.google.com/recaptcha/api/siteverify?${setSearchParams({
-        secret: process.env.RE_CAPTCHA_KEY,
+        secret: env.RE_CAPTCHA_KEY,
         response: data.reCaptchToken,
         remoteip: id,
       })}`,
