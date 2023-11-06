@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: "contact@chia1104.dev",
       to: Chia.email,
       subject: data.title ?? "Untitled",
@@ -125,6 +125,20 @@ export async function POST(request: NextRequest) {
       //   ip: id,
       // }),
     });
+    if (result.error) {
+      console.error(result.error.message);
+      return NextResponse.json(
+        errorGenerator(500, [
+          {
+            field: "email",
+            message: "Failed to send email",
+          },
+        ]),
+        {
+          status: 500,
+        }
+      );
+    }
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error(error);
