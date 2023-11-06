@@ -45,9 +45,8 @@ export const get = async <
   data?: U,
   opts?: Options
 ): Promise<T> => {
-  const urlWithoutStartSlash = url.replace(/^\//, "");
   return await request()
-    .get(urlWithoutStartSlash, { searchParams: data, ...opts })
+    .get(url, { searchParams: data, ...opts })
     .json();
 };
 
@@ -56,9 +55,8 @@ export const post = async <T = unknown, U = unknown>(
   data: U,
   opts?: Options
 ): Promise<T> => {
-  const urlWithoutStartSlash = url.replace(/^\//, "");
   return await request()
-    .post(urlWithoutStartSlash, { json: data, ...opts })
+    .post(url, { json: data, ...opts })
     .json();
 };
 
@@ -67,9 +65,8 @@ export const put = async <T = unknown, U = unknown>(
   data: U,
   opts?: Options
 ): Promise<T> => {
-  const urlWithoutStartSlash = url.replace(/^\//, "");
   return await request()
-    .put(urlWithoutStartSlash, { json: data, ...opts })
+    .put(url, { json: data, ...opts })
     .json();
 };
 
@@ -77,8 +74,7 @@ export const del = async <T = unknown>(
   url: string,
   opts?: Options
 ): Promise<T> => {
-  const urlWithoutStartSlash = url.replace(/^\//, "");
-  return await request().delete(urlWithoutStartSlash, opts).json();
+  return await request().delete(url, opts).json();
 };
 
 export const patch = async <T = unknown, U = unknown>(
@@ -86,9 +82,8 @@ export const patch = async <T = unknown, U = unknown>(
   data: U,
   opts?: Options
 ): Promise<T> => {
-  const urlWithoutStartSlash = url.replace(/^\//, "");
   return await request()
-    .patch(urlWithoutStartSlash, { json: data, ...opts })
+    .patch(url, { json: data, ...opts })
     .json();
 };
 
