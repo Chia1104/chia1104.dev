@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 const ChiaWEB = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="zh-Hant-TW" suppressHydrationWarning>
-      <body className="c-bg-primary scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full">
+      <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
         <ErrorBoundary>
           <RootProvider>{children}</RootProvider>
         </ErrorBoundary>

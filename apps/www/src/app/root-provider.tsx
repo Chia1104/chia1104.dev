@@ -2,7 +2,7 @@
 
 import { type FC, type ReactNode, useState } from "react";
 import { ThemeProvider } from "next-themes";
-import { useDarkMode, useIsMounted } from "@chia/ui";
+import { useDarkMode, useIsMounted, Cursor } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import Script from "next/script";
 import { env } from "@/env.mjs";
@@ -54,6 +54,13 @@ const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
       <ReactQueryProvider>
         <Toaster />
         <Analytics />
+        <Cursor
+          className="bg-gradient-to-r from-gray-700 to-gray-600 dark:from-gray-400 dark:to-gray-500"
+          style={{
+            opacity: 0.1,
+            filter: "blur(50px)",
+          }}
+        />
         {children}
       </ReactQueryProvider>
     </ThemeProvider>

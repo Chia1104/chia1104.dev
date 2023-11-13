@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import baseConfig, { animation } from "@chiastack/tailwind-config";
+import baseConfig, { animation } from "@chia/tailwind-config";
 
 export default {
   content: [

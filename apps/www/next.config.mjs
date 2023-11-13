@@ -33,7 +33,12 @@ const securityHeaders = [
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  transpilePackages: ["@chia/ui"],
+  transpilePackages: [
+    "@chia/ui",
+    "@chia/tailwind-config",
+    "@chia/utils",
+    "@chia/db",
+  ],
   swcMinify: true,
   experimental: {
     mdxRs: true,
