@@ -3,7 +3,7 @@
 import type { FC, ReactNode } from "react";
 import { Chia } from "@/shared/meta/chia";
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
-import { cn, useDarkMode } from "@chia/ui";
+import { cn } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import navItems from "@/shared/routes";
@@ -78,8 +78,6 @@ const Logo = () => (
 );
 
 const Footer: FC = () => {
-  const { isDarkMode } = useDarkMode();
-
   return (
     <footer className="c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8">
       <div className="c-container mb-5 flex w-full px-10">
@@ -131,10 +129,7 @@ const Footer: FC = () => {
       </div>
       <div
         className={cn(
-          "absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full opacity-50 blur-3xl",
-          isDarkMode
-            ? "c-bg-gradient-purple-to-pink"
-            : "c-bg-gradient-yellow-to-pink"
+          "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full opacity-50 blur-3xl"
         )}
       />
     </footer>
