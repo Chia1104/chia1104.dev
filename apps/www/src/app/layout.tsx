@@ -7,6 +7,7 @@ import "@total-typescript/ts-reset";
 import type { Metadata, Viewport } from "next";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { getBaseUrl } from "@/utils/getBaseUrl";
+import "react-medium-image-zoom/dist/styles.css";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",
