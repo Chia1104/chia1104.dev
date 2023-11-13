@@ -15,5 +15,5 @@ test("not-found page", async ({ page }) => {
     }));
   expect(page.url()).toBe("http://127.0.0.1:3002/");
   const home_title = page.locator("h1");
-  await expect(home_title).toHaveText("Chia1104 俞又嘉");
+  await expect(home_title).toHaveText("Chia1104");
 });
