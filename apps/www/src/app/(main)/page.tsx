@@ -1,5 +1,5 @@
 import { Chia } from "@/shared/meta/chia";
-import { Image } from "@chia/ui";
+import { Image, ImageZoom } from "@chia/ui";
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import { FC, ReactNode } from "react";
 import Link from "next/link";
@@ -33,7 +33,7 @@ const LinkItem: FC<{
       key={path}
       href={path}
       target="_blank"
-      className="flex align-middle transition-all hover:text-neutral-800 dark:hover:text-neutral-200">
+      className="flex align-middle text-sm transition-all hover:text-neutral-800 dark:hover:text-neutral-200">
       <span className="relative flex items-center justify-center gap-2 px-[7px] py-[5px]">
         <div>{icon}</div>
         <p>{name}</p>
@@ -82,29 +82,31 @@ const IndexPage = () => {
         Furthermore, I take pleasure in sharing my skills with others.
       </p>
       <div className="mt-5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className="not-prose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">
-          <Image
-            src="/me/me.JPG"
-            alt={Chia.name}
-            className="object-cover"
-            fill
-            loading="lazy"
-          />
-        </div>
-        <div className="c-bg-third relative flex w-full flex-col gap-2 overflow-hidden rounded-lg">
+        <ImageZoom>
+          <div className="not-prose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">
+            <Image
+              src="/me/me.JPG"
+              alt={Chia.name}
+              className="object-cover"
+              fill
+              loading="lazy"
+            />
+          </div>
+        </ImageZoom>
+        <div className="c-bg-third relative flex w-full flex-col overflow-hidden rounded-lg">
           <ul>
-            <li>
+            <li className="text-sm">
               <span className="font-bold">Full Name: </span>
               <span>{Chia.fullName}</span>
             </li>
-            <li>
+            <li className="text-sm">
               <span className="font-bold">Email: </span>
               <span>
                 <a href={`mailto:${Chia.email}`}>{Chia.email}</a>
               </span>
             </li>
           </ul>
-          <div className="flex p-1">
+          <div className="flex px-2">
             {Object.entries(contact).map(([key, { name, icon, link }]) => (
               <LinkItem
                 key={key}

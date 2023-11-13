@@ -185,9 +185,12 @@ export const Chia = {
   company: "LeadBest" as const,
   resume: [
     {
+      id: 3,
       title: "Work Experience",
       company: "LeadBest",
       duration: "2023-3 - Present",
+      startTime: 1677600000000,
+      endTime: 0,
       location: "Taipei, Taiwan",
       work: "ReactJS, React Native, MUI, TypeScript, GCP, Scrum, Jira",
       link: "https://www.leadbestconsultant.com/",
@@ -197,9 +200,12 @@ export const Chia = {
       ],
     },
     {
+      id: 2,
       title: "Work Experience",
       company: "WANIN",
       duration: "2022-7 - 2023-1",
+      startTime: 1656662400000,
+      endTime: 1672512000000,
       location: "Taipei, Taiwan",
       work: "NextJS, VueJS, NestJS, TailwindCSS, TypeScript, Turborepo, GCP",
       link: "https://www.wanin.tw/",
@@ -213,9 +219,12 @@ export const Chia = {
       ],
     },
     {
+      id: 1,
       title: "Education",
       company: "CGU, IM",
       duration: "2018-6 - 2022-6",
+      startTime: 1527763200000,
+      endTime: 1656662400000,
       location: "Taipei, Taiwan",
       work: "MIS, Java, Python, MySQL, Computer Science, System Design",
       link: "https://im.cgu.edu.tw/",

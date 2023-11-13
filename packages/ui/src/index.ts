@@ -23,3 +23,5 @@ export { default as ScrollYProgress } from "./ScrollYProgress";
 export { default as OpenGraph } from "./OpenGraph";
 export { default as Back } from "./Back";
 export { default as Cursor } from "./Cursor";
+export { default as ImageZoom } from "./ImageZoom";
+export { default as Timeline } from "./Timeline";
