@@ -22,3 +22,4 @@ export { default as Card } from "./Card";
 export { default as ScrollYProgress } from "./ScrollYProgress";
 export { default as OpenGraph } from "./OpenGraph";
 export { default as Back } from "./Back";
+export { default as Cursor } from "./Cursor";

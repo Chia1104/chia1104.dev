@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import baseConfig from "@chiastack/tailwind-config";
+import baseConfig from "@chia/tailwind-config";
 import { nextui } from "@nextui-org/react";
 import tailwindScrollbar from "tailwind-scrollbar";
 
