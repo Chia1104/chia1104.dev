@@ -29,6 +29,7 @@ export const Chia = {
   title: "Full Stack Engineer" as const,
   email: "yuyuchia7423@gmail.com" as const,
   phone: "+886 0970227360" as const,
+  birthday: "1999-11-04" as const,
   content:
     "I am Yu Chia, Yu, a full-stack engineer with one year of experience in web development" as const,
   link: {
@@ -185,9 +186,12 @@ export const Chia = {
   company: "LeadBest" as const,
   resume: [
     {
+      id: 3,
       title: "Work Experience",
       company: "LeadBest",
       duration: "2023-3 - Present",
+      startTime: "2023-3",
+      endTime: 0,
       location: "Taipei, Taiwan",
       work: "ReactJS, React Native, MUI, TypeScript, GCP, Scrum, Jira",
       link: "https://www.leadbestconsultant.com/",
@@ -197,9 +201,12 @@ export const Chia = {
       ],
     },
     {
+      id: 2,
       title: "Work Experience",
       company: "WANIN",
       duration: "2022-7 - 2023-1",
+      startTime: "2022-7",
+      endTime: "2023-1",
       location: "Taipei, Taiwan",
       work: "NextJS, VueJS, NestJS, TailwindCSS, TypeScript, Turborepo, GCP",
       link: "https://www.wanin.tw/",
@@ -213,12 +220,24 @@ export const Chia = {
       ],
     },
     {
+      id: 1,
       title: "Education",
       company: "CGU, IM",
       duration: "2018-6 - 2022-6",
+      startTime: "2018-6",
+      endTime: "2022-6",
       location: "Taipei, Taiwan",
       work: "MIS, Java, Python, MySQL, Computer Science, System Design",
       link: "https://im.cgu.edu.tw/",
+    },
+    {
+      id: 0,
+      title: "Hello World",
+      company: "Chia1104",
+      duration: "1999-11-04 - Present",
+      startTime: "1999-11-04",
+      endTime: 0,
+      location: "Taipei, Taiwan",
     },
   ],
 };
