@@ -86,7 +86,7 @@ const IndexPage = () => {
           Furthermore, I take pleasure in sharing my skills with others.
         </p>
       </FadeIn>
-      <FadeIn>
+      <FadeIn className="w-full">
         <div className="mt-5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
           <ImageZoom>
             <div className="not-prose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">

@@ -106,7 +106,7 @@ const getTop4 = (data: PlayList) => {
 export default async function Page() {
   const data = getTop4(await getPlayList());
   return (
-    <FadeIn>
+    <FadeIn className="w-full">
       <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg p-3 px-5 sm:grid-cols-2">
         <div className="flex w-full items-center">
           <First data={data[0]} />
