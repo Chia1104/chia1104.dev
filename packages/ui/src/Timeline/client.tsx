@@ -4,13 +4,16 @@ import React, { type FC } from "react";
 import { motion } from "framer-motion";
 import type { ListItemProps, ListProps } from "./types";
 import { cn } from "../utils";
+import dayjs from "dayjs";
 
 export const Year: FC<{
-  year: string | number;
+  year: string | number | dayjs.Dayjs;
   className?: string;
 }> = ({ year, className }) => {
   return (
-    <div className={cn("rounded-lg p-1 text-[8em]", className)}>{year}</div>
+    <div className={cn("rounded-lg p-1 text-[8em]", className)}>
+      {dayjs(year).format("YYYY")}
+    </div>
   );
 };
 

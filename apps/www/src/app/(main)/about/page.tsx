@@ -1,7 +1,7 @@
 import Gallery from "./gallery";
 import type { Metadata } from "next";
 import { Chia } from "@/shared/meta/chia";
-import { Timeline } from "@chia/ui";
+import { Timeline, type TimelineTypes } from "@chia/ui";
 
 export const metadata: Metadata = {
   title: "About",
@@ -13,7 +13,7 @@ const AboutPage = () => {
     title: item.company,
     subtitle: item.title,
     startDate: item.startTime,
-  }));
+  })) satisfies TimelineTypes.Data[];
   return (
     <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <h1>About Me</h1>

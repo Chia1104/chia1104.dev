@@ -1,50 +1,27 @@
 import React, { type FC } from "react";
 import dayjs from "dayjs";
-import type { TimelineProps, TimelineData, Data } from "./types";
+import type { TimelineProps, Data, GroupData } from "./types";
 import { List } from "./client";
 
-/**
- * ```ts
- * const timelineData = {
- *  "2023": [
- *      {
- *          title: "Bachelor of Science in Computer Science",
- *          subtitle: "National Taiwan University",
- *          startDate: new Date("2023-09-01"),
- *          content: "I will be studying computer science at NTU.",
- *      }
- *  ],
- *  "2022": [
- *      {
- *          title: "Bachelor of Science in Computer Science",
- *          subtitle: "National Taiwan University",
- *          startDate: new Date("2022-09-01"),
- *          content: "I will be studying computer science at NTU.",
- *      }
- *  ]
- * }
- * ```
- */
-const groupData = (data: Data[]): TimelineData => {
-  const timelineData: TimelineData = {};
-  data.forEach((item) => {
-    const year = dayjs(item.startDate).format("YYYY");
-    if (!timelineData[year]) {
-      timelineData[year] = [];
-    }
-    timelineData[year].push(item);
-  });
-  return timelineData;
-};
+const getYear = (a: dayjs.Dayjs | string | number) => dayjs(a).year();
+
+const getGroupName = (data: Data) => getYear(data.startDate);
 
 const Timeline: FC<TimelineProps> = ({ data, ...props }) => {
-  const groupedData = groupData(data);
-  console.log(groupedData);
+  data.sort((a, b) => b.startDate - a.startDate);
   return (
     <div className="flex flex-col" {...props}>
-      {Object.keys(groupedData).map((year) => (
-        <List key={year} year={year} data={groupedData[year]} />
-      ))}
+      {data
+        .reduce((acc, curr) => {
+          acc.push({
+            year: getGroupName(curr),
+            data: [curr],
+          });
+          return acc;
+        }, [] as GroupData[])
+        .map((item) => (
+          <List key={item.year.toString()} year={item.year} data={item.data} />
+        ))}
     </div>
   );
 };

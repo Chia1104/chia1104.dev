@@ -4,6 +4,7 @@ import {
   type ComponentProps,
 } from "react";
 import { type HTMLMotionProps, type ForwardRefComponent } from "framer-motion";
+import { type Dayjs } from "dayjs";
 
 export interface Data {
   id: number;
@@ -13,7 +14,13 @@ export interface Data {
   startDate: dayjs.Dayjs | string | number | null;
 }
 
+export interface GroupData {
+  year: Dayjs | string | number;
+  data: Data[];
+}
+
 /**
+ * @deprecated
  * ```ts
  * const timelineData = {
  *  "2023": [
@@ -50,10 +57,7 @@ export interface ListItemProps
   data: Data;
 }
 
-export interface ListProps
-  extends ComponentPropsWithoutRef<
-    ForwardRefComponent<"ul", HTMLMotionProps<"ul">>
-  > {
-  year: string | number;
-  data: Data[];
-}
+export type ListProps = ComponentPropsWithoutRef<
+  ForwardRefComponent<"ul", HTMLMotionProps<"ul">>
+> &
+  GroupData;
