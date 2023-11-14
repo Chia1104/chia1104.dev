@@ -27,3 +27,4 @@ export { default as ImageZoom } from "./ImageZoom";
 export { default as Timeline } from "./Timeline";
 export * as TimelineTypes from "./Timeline/types.d";
 export { default as Age } from "./Age";
+export { default as FadeIn } from "./FadeIn";
