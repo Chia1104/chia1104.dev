@@ -34,6 +34,7 @@ export const getAccessToken = async () => {
         Authorization: `Basic ${BASIC}`,
       },
       body,
+      cache: "no-store",
     },
     {
       hooks: {
@@ -56,7 +57,7 @@ export const getAccessToken = async () => {
  * @description get favorite playlist from spotify
  * @param req { revalidate }
  * @default revalidate one request per day
- * @returns PlayList | null
+ * @returns PlayList
  */
 export const getPlayList = async (req?: { revalidate?: number }) => {
   req ??= {};
@@ -77,23 +78,31 @@ export const getPlayList = async (req?: { revalidate?: number }) => {
 };
 
 /**
+ * @todo implement Authorization code PKCE
  * @description get user current playing from spotify
  * @param req { revalidate }
  * @default revalidate one request per one minutes
- * @returns CurrentPlaying
+ * @returns CurrentPlaying | null
  */
-export const getNowPlaying = async (req?: { revalidate?: number }) => {
+export const getNowPlaying = async (req?: {
+  revalidate?: number;
+  cache?: RequestCache;
+}) => {
   req ??= {};
-  const { revalidate = 60 } = req;
+  const { revalidate = 60, cache } = req;
   const accessToken = await getAccessToken();
 
   const result = await spotifyRequest("me/player/currently-playing", {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-    next: {
-      revalidate,
-    },
+    cache,
+    next:
+      cache !== "no-store"
+        ? {
+            revalidate,
+          }
+        : undefined,
   });
 
   if (result.status === 204) {
