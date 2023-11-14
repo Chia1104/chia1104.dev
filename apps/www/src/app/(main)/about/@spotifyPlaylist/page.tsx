@@ -1,6 +1,6 @@
 import { getPlayList } from "@/app/api/(v1)/v1/spotify/utils";
 import type { PlayList } from "@/app/api/(v1)/v1/spotify/types";
-import { Image, cn, ImageZoom } from "@chia/ui";
+import { Image, cn, ImageZoom, FadeIn } from "@chia/ui";
 import { type FC } from "react";
 import Link from "next/link";
 
@@ -106,16 +106,18 @@ const getTop4 = (data: PlayList) => {
 export default async function Page() {
   const data = getTop4(await getPlayList());
   return (
-    <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg p-3 px-5 sm:grid-cols-2">
-      <div className="flex w-full items-center">
-        <First data={data[0]} />
+    <FadeIn>
+      <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg p-3 px-5 sm:grid-cols-2">
+        <div className="flex w-full items-center">
+          <First data={data[0]} />
+        </div>
+        <div className="flex w-full flex-col gap-3">
+          <Item data={data[1]} />
+          <Item data={data[2]} />
+          <Item data={data[3]} />
+        </div>
+        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
       </div>
-      <div className="flex w-full flex-col gap-3">
-        <Item data={data[1]} />
-        <Item data={data[2]} />
-        <Item data={data[3]} />
-      </div>
-      <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
-    </div>
+    </FadeIn>
   );
 }
