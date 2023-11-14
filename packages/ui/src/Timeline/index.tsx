@@ -20,7 +20,11 @@ const Timeline: FC<TimelineProps> = ({ data, ...props }) => {
           return acc;
         }, [] as GroupData[])
         .map((item) => (
-          <List key={item.year.toString()} year={item.year} data={item.data} />
+          <List
+            key={item.year.toString()}
+            year={item.year.toString()}
+            data={item.data}
+          />
         ))}
     </div>
   );
