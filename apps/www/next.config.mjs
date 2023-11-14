@@ -43,7 +43,11 @@ const nextConfig = {
   experimental: {
     mdxRs: true,
     typedRoutes: false,
-    serverComponentsExternalPackages: ["@chia/ui"],
+    serverComponentsExternalPackages: [
+      "@chia/ui",
+      "@chia/tailwind-config",
+      "@chia/utils",
+    ],
     webpackBuildWorker: true,
     // ppr: true,
   },
@@ -56,8 +60,8 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/portfolios",
-        destination: "/portfolio",
+        source: "/portfolio",
+        destination: "/projects",
         permanent: false,
       },
       {

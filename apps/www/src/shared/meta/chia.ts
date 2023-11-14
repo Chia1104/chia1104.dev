@@ -40,6 +40,7 @@ export const Chia = {
     youtube_playlist:
       "https://www.youtube.com/playlist?list=PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM",
     google_photos: "https://photos.app.goo.gl/J1FobfgynJKW84Dm6",
+    leadbest: "https://www.leadbestconsultant.com/",
   } as const,
   technologies: {
     languages: [

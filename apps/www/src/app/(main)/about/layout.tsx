@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "About",
 };
 
-const AboutPage = (props: {
+const AboutPage = async (props: {
   children: ReactNode;
   spotifyPlaylist: ReactNode;
   timeline: ReactNode;

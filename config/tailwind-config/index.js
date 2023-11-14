@@ -86,6 +86,26 @@ module.exports = {
           transparent: "rgba(242,227,7,0.75)",
         },
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            a: {
+              textDecoration: "rgb(55, 65, 81, 0.7) underline",
+              transition: "all 0.3s ease-in-out",
+              textUnderlineOffset: "5px",
+            },
+            ".dark a": {
+              textDecoration: "rgb(209, 213, 219, 0.7) underline",
+            },
+            "a:hover": {
+              textDecoration: "#000 underline",
+            },
+            ".dark a:hover": {
+              textDecoration: "#fff underline",
+            },
+          },
+        },
+      },
     },
   },
   darkMode: "class",

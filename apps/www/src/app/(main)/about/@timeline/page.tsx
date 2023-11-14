@@ -14,6 +14,7 @@ const TimelineParallel = () => {
         ))}
       </ul>
     ),
+    link: item.link,
   })) satisfies TimelineTypes.Data[];
   return <Timeline data={transformData} />;
 };
