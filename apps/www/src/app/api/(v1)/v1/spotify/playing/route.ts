@@ -10,6 +10,7 @@ export const GET = async (req: NextRequest) => {
     const data = await getNowPlaying();
     return NextResponse.json(data);
   } catch (error) {
+    console.error(error);
     if (error instanceof HTTPError) {
       const { response } = error;
       switch (response.status) {
