@@ -3,6 +3,8 @@ import type { PlayList } from "@/app/api/(v1)/v1/spotify/types";
 import { Image, cn, ImageZoom, FadeIn } from "@chia/ui";
 import { type FC } from "react";
 import Link from "next/link";
+import { env } from "@/env.mjs";
+import { SiSpotify } from "react-icons/si";
 
 const ImageItem: FC<{
   src: string;
@@ -104,10 +106,11 @@ const getTop4 = (data: PlayList) => {
 };
 
 export default async function Page() {
-  const data = getTop4(await getPlayList());
+  const playlist = await getPlayList();
+  const data = getTop4(playlist);
   return (
-    <FadeIn className="w-full">
-      <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg p-3 px-5 sm:grid-cols-2">
+    <FadeIn className="w-full flex-col">
+      <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7 sm:grid-cols-2 sm:py-3">
         <div className="flex w-full items-center">
           <First data={data[0]} />
         </div>
@@ -118,6 +121,17 @@ export default async function Page() {
         </div>
         <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
       </div>
+      <p className="flex items-center gap-3">
+        <span>
+          Check out the{" "}
+          <Link
+            href={`https://open.spotify.com/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID}`}>
+            {playlist.name}
+          </Link>{" "}
+          on my Spotify.
+        </span>
+        <SiSpotify className="inline-block" size={20} color="#1DB954" />
+      </p>
     </FadeIn>
   );
 }

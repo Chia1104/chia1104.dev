@@ -55,8 +55,12 @@ const IndexPage = () => {
           planning, and testing.
         </p>
         <p>
-          Working at LeadBest. I am responsible for the development of the
-          company's official website and maintaining related modules.
+          Working at{" "}
+          <Link href={Chia.link.leadbest} target="_blank">
+            LeadBest
+          </Link>
+          . I am responsible for the development of the company's official
+          website and maintaining related modules.
         </p>
         <ul>
           <li>

@@ -11,6 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../Accordion";
+import Link from "next/link";
 
 export const Year: FC<{
   year: string | number | dayjs.Dayjs;
@@ -38,10 +39,12 @@ export const Item: FC<ListItemProps> = ({ data, className, ...props }) => {
         opacity: 0,
         y: 20,
       }}
-      className={cn("flex flex-col text-start", className)}
+      className={cn("z-10 flex flex-col text-start", className)}
       {...props}>
       <span>
-        <span className="text-lg font-bold">{data.title}</span>{" "}
+        <span className="text-lg font-bold">
+          {data.link ? <Link href={data.link}>{data.title}</Link> : data.title}
+        </span>{" "}
         <span className="text-sm text-gray-500">{data.subtitle}</span>
       </span>
       {data.content && (

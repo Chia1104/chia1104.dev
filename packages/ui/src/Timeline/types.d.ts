@@ -12,6 +12,7 @@ export interface Data {
   subtitle?: ReactNode;
   content?: ReactNode;
   startDate: dayjs.Dayjs | string | number | null;
+  link?: string;
 }
 
 export interface GroupData {
