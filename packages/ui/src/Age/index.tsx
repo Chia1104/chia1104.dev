@@ -1,11 +1,4 @@
-"use client";
-
-import React, {
-  type FC,
-  useEffect,
-  useState,
-  type ComponentPropsWithoutRef,
-} from "react";
+import React, { type FC, type ComponentPropsWithoutRef } from "react";
 import dayjs from "dayjs";
 
 interface Props extends ComponentPropsWithoutRef<"span"> {
