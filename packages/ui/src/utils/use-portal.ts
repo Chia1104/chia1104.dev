@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import useSSR from "./use-ssr";
 

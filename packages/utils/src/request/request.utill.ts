@@ -23,7 +23,7 @@ export interface Paginated<T = unknown> {
   meta: PaginatedMeta;
 }
 
-const request = () => {
+const request = (defaultOptions?: Options) => {
   return ky.extend({
     timeout: 10000,
     credentials: "include",
@@ -34,6 +34,7 @@ const request = () => {
         },
       ],
     },
+    ...defaultOptions,
   });
 };
 
@@ -43,9 +44,10 @@ export const get = async <
 >(
   url: string,
   data?: U,
-  opts?: Options
+  opts?: Options,
+  defaultOptions?: Options
 ): Promise<T> => {
-  return await request()
+  return await request(defaultOptions)
     .get(url, { searchParams: data, ...opts })
     .json();
 };
@@ -53,9 +55,10 @@ export const get = async <
 export const post = async <T = unknown, U = unknown>(
   url: string,
   data: U,
-  opts?: Options
+  opts?: Options,
+  defaultOptions?: Options
 ): Promise<T> => {
-  return await request()
+  return await request(defaultOptions)
     .post(url, { json: data, ...opts })
     .json();
 };
@@ -63,26 +66,29 @@ export const post = async <T = unknown, U = unknown>(
 export const put = async <T = unknown, U = unknown>(
   url: string,
   data: U,
-  opts?: Options
+  opts?: Options,
+  defaultOptions?: Options
 ): Promise<T> => {
-  return await request()
+  return await request(defaultOptions)
     .put(url, { json: data, ...opts })
     .json();
 };
 
 export const del = async <T = unknown>(
   url: string,
-  opts?: Options
+  opts?: Options,
+  defaultOptions?: Options
 ): Promise<T> => {
-  return await request().delete(url, opts).json();
+  return await request(defaultOptions).delete(url, opts).json();
 };
 
 export const patch = async <T = unknown, U = unknown>(
   url: string,
   data: U,
-  opts?: Options
+  opts?: Options,
+  defaultOptions?: Options
 ): Promise<T> => {
-  return await request()
+  return await request(defaultOptions)
     .patch(url, { json: data, ...opts })
     .json();
 };

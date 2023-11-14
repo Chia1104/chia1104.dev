@@ -23,6 +23,11 @@ export const env = createEnv({
      * @todo
      */
     SPOTIFY_CLIENT_SECRET: z.string().optional(),
+    SPOTIFY_FAVORITE_PLAYLIST_ID: z
+      .string()
+      .optional()
+      .default("37i9dQZF1Epyg7jBW9q502"),
+    SPOTIFY_REFRESH_TOKEN: z.string().optional(),
     /**
      * @deprecated
      */
@@ -77,6 +82,8 @@ export const env = createEnv({
     GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
     SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
+    SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
+    SPOTIFY_REFRESH_TOKEN: process.env.SPOTIFY_REFRESH_TOKEN,
     SENDGRID_KEY: process.env.SENDGRID_KEY,
     REDIS_URL: process.env.REDIS_URL,
     UPSTASH_TOKEN: process.env.UPSTASH_TOKEN,

@@ -1,3 +1,5 @@
+"use client";
+
 import { useMediaQuery } from "usehooks-ts";
 import { useTheme } from "next-themes";
 import { useEffect } from "react";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 const IS_BROWSER = typeof window !== "undefined";

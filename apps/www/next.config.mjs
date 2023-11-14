@@ -45,6 +45,7 @@ const nextConfig = {
     typedRoutes: false,
     serverComponentsExternalPackages: ["@chia/ui"],
     webpackBuildWorker: true,
+    // ppr: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -88,6 +89,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "avatars.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.scdn.co",
       },
     ],
   },

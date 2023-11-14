@@ -11,6 +11,8 @@
         "GOOGLE_API_KEY",
         "SPOTIFY_CLIENT_ID",
         "SPOTIFY_CLIENT_SECRET",
+        "SPOTIFY_FAVORITE_PLAYLIST_ID",
+        "SPOTIFY_REFRESH_TOKEN",
         "SENDGRID_KEY",
         "REDIS_URL",
         "UPSTASH_TOKEN",

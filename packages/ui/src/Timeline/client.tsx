@@ -45,7 +45,11 @@ export const Item: FC<ListItemProps> = ({ data, className, ...props }) => {
         <span className="text-sm text-gray-500">{data.subtitle}</span>
       </span>
       {data.content && (
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion
+          type="single"
+          collapsible
+          className="w-full"
+          defaultValue={data.id.toString()}>
           <AccordionItem
             value={data.id.toString()}
             className="prose-h3:m-1 prose-h3:w-fit">
