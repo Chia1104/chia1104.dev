@@ -17,7 +17,12 @@ export const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
 
 export const FAVORITE_PLAYLIST_ID = env.SPOTIFY_FAVORITE_PLAYLIST_ID;
 
-export const getAccessToken = async () => {
+export const getAccessToken = async (req?: {
+  revalidate?: number;
+  cache?: RequestCache;
+}) => {
+  req ??= {};
+  const { revalidate = 60 * 60 * 1, cache } = req;
   const body = env.SPOTIFY_REFRESH_TOKEN
     ? new URLSearchParams({
         grant_type: "refresh_token",
@@ -34,7 +39,13 @@ export const getAccessToken = async () => {
         Authorization: `Basic ${BASIC}`,
       },
       body,
-      cache: "no-store",
+      cache,
+      next:
+        cache !== "no-store"
+          ? {
+              revalidate,
+            }
+          : undefined,
     },
     {
       hooks: {
@@ -56,14 +67,24 @@ export const getAccessToken = async () => {
 /**
  * @description get favorite playlist from spotify
  * @param req { revalidate }
- * @default revalidate one request per day
+ * @default revalidate one request per one hour
  * @returns PlayList
  */
-export const getPlayList = async (req?: { revalidate?: number }) => {
+export const getPlayList = async (req?: {
+  revalidate?: number;
+  tokenRequestCache?: RequestCache;
+}) => {
   req ??= {};
-  const { revalidate = 60 * 60 * 24 } = req;
+  const { revalidate = 60 * 60 * 1, tokenRequestCache } = req;
 
-  const accessToken = await getAccessToken();
+  if (revalidate < 0) {
+    throw new Error("revalidate must be positive");
+  }
+
+  const accessToken = await getAccessToken({
+    cache: tokenRequestCache,
+    revalidate,
+  });
 
   const result = await spotifyRequest(`playlists/${FAVORITE_PLAYLIST_ID}`, {
     headers: {
@@ -90,7 +111,9 @@ export const getNowPlaying = async (req?: {
 }) => {
   req ??= {};
   const { revalidate = 60, cache } = req;
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessToken({
+    revalidate,
+  });
 
   const result = await spotifyRequest("me/player/currently-playing", {
     headers: {

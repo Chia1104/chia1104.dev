@@ -6,8 +6,6 @@ import Link from "next/link";
 import { env } from "@/env.mjs";
 import { SiSpotify } from "react-icons/si";
 
-export const runtime = "edge";
-
 const ImageItem: FC<{
   src: string;
   alt: string;
@@ -108,7 +106,9 @@ const getTop4 = (data: PlayList) => {
 };
 
 export default async function Page() {
-  const playlist = await getPlayList();
+  const playlist = await getPlayList({
+    revalidate: 60 * 30,
+  });
   const data = getTop4(playlist);
   return (
     <FadeIn className="w-full flex-col">

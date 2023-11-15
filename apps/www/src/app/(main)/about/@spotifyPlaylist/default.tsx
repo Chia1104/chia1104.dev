@@ -1,5 +1,3 @@
-"use client";
-
 import { Image, ImageZoom } from "@chia/ui";
 
 export default function Error() {
