@@ -78,7 +78,10 @@ export const env = createEnv({
     ZEABUR_URL: process.env.ZEABUR_URL,
     GH_PUBLIC_TOKEN: process.env.GH_PUBLIC_TOKEN,
     SITE_URL: process.env.SITE_URL,
-    RE_CAPTCHA_KEY: process.env.RE_CAPTCHA_KEY,
+    RE_CAPTCHA_KEY:
+      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+        ? "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+        : process.env.RE_CAPTCHA_KEY,
     GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
     SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
@@ -91,7 +94,10 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     UMAMI_DB_URL: process.env.UMAMI_DB_URL,
     UMAMI_EDGE_DB_URL: process.env.UMAMI_EDGE_DB_URL,
-    NEXT_PUBLIC_RE_CAPTCHA_KEY: process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY,
+    NEXT_PUBLIC_RE_CAPTCHA_KEY:
+      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+        ? "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+        : process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY,
     NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
     NEXT_PUBLIC_UMAMI_URL: process.env.NEXT_PUBLIC_UMAMI_URL,
     YOUTUBE_ID: process.env.YOUTUBE_ID,

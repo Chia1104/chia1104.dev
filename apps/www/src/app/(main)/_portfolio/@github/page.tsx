@@ -2,7 +2,7 @@ import type { RepoGql } from "@/shared/types";
 import { type FC } from "react";
 import githubClient from "@/helpers/GraphQL/github/github.client";
 import { GET_REPOS } from "@/helpers/GraphQL/github/query";
-import ReposList from "@/app/(main)/portfolio/@github/repos-list";
+import ReposList from "@/app/(main)/_portfolio/@github/repos-list";
 
 const Page: FC = async () => {
   const repos = (

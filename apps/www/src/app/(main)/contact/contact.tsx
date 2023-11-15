@@ -18,7 +18,6 @@ const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
 
 const Contact: FC = () => {
   const id = useId();
-  const controller = useRef<AbortController>(new AbortController());
   const { isDarkMode } = useDarkMode();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -26,7 +25,7 @@ const Contact: FC = () => {
   const {
     control,
     handleSubmit: onSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<Contact>({
     defaultValues: {
       email: "",
@@ -37,28 +36,15 @@ const Contact: FC = () => {
     resolver: zodResolver(contactSchema),
   });
 
-  useEffect(() => {
-    controller.current = new AbortController();
-    return () => {
-      controller.current.abort();
-    };
-  }, []);
-
   const handleSubmit = onSubmit(async (data, event) => {
     setIsLoading(true);
     const promise = () =>
-      post<void, Contact>(
-        "/api/v1/send",
-        {
-          title: data.title,
-          email: data.email,
-          message: data.message,
-          reCaptchToken: data.reCaptchToken,
-        },
-        {
-          signal: controller.current.signal,
-        }
-      );
+      post<void, Contact>("/api/v1/send", {
+        title: data.title,
+        email: data.email,
+        message: data.message,
+        reCaptchToken: data.reCaptchToken,
+      });
     toast.promise<void>(promise, {
       loading: "Loading...",
       success: () => {
@@ -77,17 +63,10 @@ const Contact: FC = () => {
   return (
     <div className="c-bg-secondary flex w-full max-w-[700px] flex-col items-center justify-start rounded-xl px-5 py-10 md:p-10">
       <form
-        noValidate
         id={id + "-contact-form"}
         className="flex w-full flex-col gap-4"
         onSubmit={handleSubmit}>
-        <header className="mb-5 flex gap-3 text-3xl">
-          Contact Me{" "}
-          <span className="animate-waving-hand inline-block origin-[70%_70%]">
-            👋
-          </span>
-        </header>
-        <div className="mb-3 flex flex-col gap-2">
+        <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
           <Controller
             control={control}
             rules={{
@@ -114,7 +93,7 @@ const Contact: FC = () => {
             name="email"
           />
         </div>
-        <div className="mb-3 flex flex-col gap-2">
+        <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
           <Controller
             control={control}
             rules={{
@@ -141,7 +120,7 @@ const Contact: FC = () => {
             name="title"
           />
         </div>
-        <div className="mb-3 flex flex-col gap-2">
+        <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
           <Controller
             control={control}
             rules={{
