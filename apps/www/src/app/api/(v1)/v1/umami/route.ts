@@ -10,9 +10,9 @@ const prisma = new PrismaClientEdge({
 
 export const runtime = "edge";
 /**
- * Tokyo, Japan
+ * Tokyo, Japan and Hong Kong
  */
-export const preferredRegion = ["hnd1"];
+export const preferredRegion = ["hnd1", "hkg1"];
 
 export const GET = async (req: NextRequest) => {
   const websiteId = env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
