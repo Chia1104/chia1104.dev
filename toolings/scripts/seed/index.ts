@@ -1,6 +1,5 @@
 import { prisma } from "@chia/db";
 import { faker } from "@faker-js/faker";
-import "dotenv/config";
 
 async function main() {
   void (await prisma.post.create({
