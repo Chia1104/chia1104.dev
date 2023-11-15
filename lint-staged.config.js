@@ -5,7 +5,7 @@ const eslint = new ESLint();
 const isWin = process.platform === "win32";
 
 module.exports = {
-  "**/*.{js,jsx,ts,tsx,vue,mjs,cjs}": (filenames) => {
+  "**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue,json}": (filenames) => {
     const escapedFileNames = filenames
       .map((filename) => `"${isWin ? filename : escape([filename])}"`)
       .join(" ");

@@ -10,19 +10,12 @@
     ".next/types/**/*.ts",
     "./src/env.mjs"
   ],
-  "exclude": [
-    "node_modules",
-    ".next"
-  ],
+  "exclude": ["node_modules", ".next"],
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "test": [
-        "test/*"
-      ]
+      "@/*": ["src/*"],
+      "test": ["test/*"]
     },
     "jsx": "preserve",
     "plugins": [

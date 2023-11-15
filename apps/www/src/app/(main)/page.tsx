@@ -1,7 +1,7 @@
 import { Chia } from "@/shared/meta/chia";
 import { Image, ImageZoom, FadeIn } from "@chia/ui";
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
-import { FC, ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 import Link from "next/link";
 
 const contact = {

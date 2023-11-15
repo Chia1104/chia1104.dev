@@ -6,6 +6,8 @@ import Link from "next/link";
 import { env } from "@/env.mjs";
 import { SiSpotify } from "react-icons/si";
 
+export const runtime = "edge";
+
 const ImageItem: FC<{
   src: string;
   alt: string;

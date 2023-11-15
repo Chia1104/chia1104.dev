@@ -1,6 +1,5 @@
 import { Chia } from "@/shared/meta/chia";
 import { NextResponse, NextRequest } from "next/server";
-import z from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { type Props } from "./email-template";
@@ -11,6 +10,10 @@ import { env } from "@/env.mjs";
 import { contactSchema, type Contact } from "@/shared/validator";
 
 export const runtime = "edge";
+/**
+ * Tokyo, Japan
+ */
+export const preferredRegion = ["hnd1"];
 
 const resend = new Resend(env.RESEND_API_KEY);
 
