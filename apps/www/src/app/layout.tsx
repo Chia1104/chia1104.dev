@@ -8,6 +8,7 @@ import type { Metadata, Viewport } from "next";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import "react-medium-image-zoom/dist/styles.css";
+import Footer from "./footer";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",
@@ -57,7 +58,10 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
     <html lang="zh-Hant-TW" suppressHydrationWarning>
       <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
         <ErrorBoundary>
-          <RootProvider>{children}</RootProvider>
+          <RootProvider>
+            {children}
+            <Footer />
+          </RootProvider>
         </ErrorBoundary>
         <VercelAnalytics />
       </body>

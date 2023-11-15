@@ -17,7 +17,12 @@ export const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
 
 export const FAVORITE_PLAYLIST_ID = env.SPOTIFY_FAVORITE_PLAYLIST_ID;
 
-export const getAccessToken = async () => {
+export const getAccessToken = async (req?: {
+  revalidate?: number;
+  cache?: RequestCache;
+}) => {
+  req ??= {};
+  const { revalidate = 60 * 60 * 8, cache } = req;
   const body = env.SPOTIFY_REFRESH_TOKEN
     ? new URLSearchParams({
         grant_type: "refresh_token",
@@ -34,7 +39,13 @@ export const getAccessToken = async () => {
         Authorization: `Basic ${BASIC}`,
       },
       body,
-      cache: "no-store",
+      cache,
+      next:
+        cache !== "no-store"
+          ? {
+              revalidate,
+            }
+          : undefined,
     },
     {
       hooks: {
@@ -63,7 +74,13 @@ export const getPlayList = async (req?: { revalidate?: number }) => {
   req ??= {};
   const { revalidate = 60 * 60 * 24 } = req;
 
-  const accessToken = await getAccessToken();
+  if (revalidate < 0) {
+    throw new Error("revalidate must be positive");
+  }
+
+  const accessToken = await getAccessToken({
+    revalidate: revalidate / 3,
+  });
 
   const result = await spotifyRequest(`playlists/${FAVORITE_PLAYLIST_ID}`, {
     headers: {
