@@ -106,9 +106,7 @@ const getTop4 = (data: PlayList) => {
 };
 
 export default async function Page() {
-  const playlist = await getPlayList({
-    tokenRequestCache: "no-store",
-  });
+  const playlist = await getPlayList();
   const data = getTop4(playlist);
   return (
     <FadeIn className="w-full flex-col">

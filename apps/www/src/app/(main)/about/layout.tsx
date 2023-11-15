@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   title: "About",
 };
 
-export const revalidate = 60 * 60 * 24;
-export const runtime = "edge";
+// export const revalidate = 60 * 60 * 24;
+// export const runtime = "edge";
 
 const AboutPage = async (props: {
   children: ReactNode;
