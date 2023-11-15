@@ -52,7 +52,7 @@
     "service-graph": "turbo run build --filter service... --graph=graph/service-graph.html"
   },
   "engines": {
-    "node": ">=20.*"
+    "node": ">=20.6"
   },
   "packageManager": "pnpm@8.10.3",
   "dependencies": {
@@ -80,7 +80,7 @@
     "prettier-plugin-tailwindcss": "^0.5.6",
     "shell-quote": "^1.8.1",
     "superjson": "2.2.1",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.1.2",
     "turbo": "1.10.16",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6",
