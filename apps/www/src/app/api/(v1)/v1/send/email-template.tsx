@@ -76,9 +76,7 @@ const EmailTemplate: FC<Props> = ({
             <Text className="text-[14px] leading-[24px]">{message}</Text>
             <Section className="mb-[32px] mt-[32px] text-center">
               <Button
-                pX={20}
-                pY={12}
-                className="bg-cyberpunk rounded text-center text-[12px] font-semibold text-[#666666] no-underline"
+                className="bg-cyberpunk rounded px-5 py-3 text-center text-[12px] font-semibold text-[#666666] no-underline"
                 href={fromEmail}>
                 Reply
               </Button>
