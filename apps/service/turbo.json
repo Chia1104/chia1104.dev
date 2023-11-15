@@ -3,10 +3,7 @@
   "extends": ["//"],
   "pipeline": {
     "backend": {
-      "env": [
-        "THROTTLE_LIMIT",
-        "THROTTLE_TTL"
-      ]
+      "env": ["THROTTLE_LIMIT", "THROTTLE_TTL"]
     }
   }
 }
