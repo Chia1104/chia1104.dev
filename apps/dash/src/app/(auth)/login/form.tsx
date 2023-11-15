@@ -8,8 +8,12 @@ import { useTransition } from "react";
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
   return (
-    <Card>
-      <p className="mt-5">Sign In</p>
+    <Card
+      wrapperProps={{
+        className: "w-full max-w-[500px]",
+      }}
+      className="prose dark:prose-invert flex w-full max-w-[500px] flex-col items-center justify-center p-5">
+      <h1 className="">Sign In</h1>
       <Image src="/logo.png" alt="chia1104" width={150} height={150} />
       <Button
         disabled={isPending}

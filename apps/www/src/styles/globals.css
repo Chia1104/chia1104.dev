@@ -4,103 +4,83 @@
 
 @layer components {
   .c-container {
-    @apply
-    container mx-auto
+    @apply container mx-auto
   }
 
   .c-hover-link {
-    @apply
-    hover:border-b-2 border-primary transition ease-in-out
+    @apply hover:border-b-2 border-primary transition ease-in-out
   }
 
   .c-text-primary {
-    @apply
-    text-black dark:text-white transition ease-in-out
+    @apply text-black dark:text-white transition ease-in-out
   }
 
   .c-text-secondary {
-    @apply
-    text-sec-text dark:text-white transition ease-in-out
+    @apply text-sec-text dark:text-white transition ease-in-out
   }
 
   .c-description {
-    @apply
-    text-lg text-sec-text dark:text-gray-400 transition ease-in-out
+    @apply text-lg text-sec-text dark:text-gray-400 transition ease-in-out
   }
 
   .c-bg-primary {
-    @apply
-    bg-[#dddddd] text-black dark:text-white dark:bg-black transition ease-in-out
+    @apply bg-[#dddddd] text-black dark:text-white dark:bg-black transition ease-in-out
   }
 
   .c-bg-secondary {
-    @apply
-    bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out
+    @apply bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out
   }
 
   .c-bg-third {
-    @apply
-    bg-white/10 text-sec-text dark:text-white dark:bg-dark/10 backdrop-blur-lg transition ease-in-out
+    @apply bg-white/10 text-sec-text dark:text-white dark:bg-dark/10 backdrop-blur-lg transition ease-in-out
   }
 
   .c-border-primary {
-    @apply
-    border-gray-200 dark:border-gray-800
+    @apply border-gray-200 dark:border-gray-800
   }
 
   .c-text-purple-to-blue {
-    @apply
-    text-transparent bg-clip-text bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
   }
 
   .c-bg-gradient-purple-to-blue {
-    @apply
-    bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
+    @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
   }
 
   .c-text-purple-to-pink {
-    @apply
-    text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600
   }
 
   .c-bg-gradient-purple-to-pink {
-    @apply
-    bg-gradient-to-r from-purple-400 to-pink-600
+    @apply bg-gradient-to-r from-purple-400 to-pink-600
   }
 
   .c-text-green-to-purple {
-    @apply
-    text-transparent bg-clip-text bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
   }
 
   .c-bg-gradient-green-to-purple {
-    @apply
-    bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
+    @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
   }
 
   .c-text-yellow-to-pink {
-    @apply
-    text-transparent bg-clip-text bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
   }
 
   .c-bg-gradient-yellow-to-pink {
-    @apply
-    bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
+    @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
   }
 
   .c-button-primary {
-    @apply
-    bg-primary rounded-full drop-shadow-lg text-white hover:bg-secondary transition ease-in-out flex justify-center items-center px-3 py-1
+    @apply bg-primary rounded-full drop-shadow-lg text-white hover:bg-secondary transition ease-in-out flex justify-center items-center px-3 py-1
   }
 
   .c-button-secondary {
-    @apply
-    bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out rounded px-5 py-3 text-2xl
+    @apply bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out rounded px-5 py-3 text-2xl
   }
 
   .main {
-    @apply
-    flex flex-1 flex-col justify-center items-center min-h-screen py-[4rem] md:px-[2rem] px-[1rem]
+    @apply flex flex-1 flex-col justify-center items-center min-h-screen py-[4rem] md:px-[2rem] px-[1rem]
   }
 
   .title a {
@@ -133,7 +113,7 @@
     padding: 0.75rem;
     font-size: 1.1rem;
     font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
-    Bitstream Vera Sans Mono, Courier New, monospace;
+      Bitstream Vera Sans Mono, Courier New, monospace;
   }
 
   .card {
@@ -248,6 +228,26 @@
   .dark .c-background::before {
     background-image: radial-gradient(#535353 0.5px, transparent 0);
   }
+
+  .animated-feature-cards::before {
+    @apply pointer-events-none absolute select-none rounded-3xl opacity-0 transition-opacity duration-300 hover:opacity-100;
+    background: radial-gradient(1000px circle at var(--x) var(--y),
+        #F9C851 0,
+        #FCA5A5 25%,
+        #FECACA 50%,
+        transparent 80%);
+    z-index: -1;
+    content: '';
+    inset: -1px;
+  }
+}
+
+.dark .animated-feature-cards::before {
+  background: radial-gradient(1000px circle at var(--x) var(--y),
+      #db2777 0,
+      #c084fc 25%,
+      rgba(255, 255, 255, 0) 50%,
+      transparent 80%);
 }
 
 html,

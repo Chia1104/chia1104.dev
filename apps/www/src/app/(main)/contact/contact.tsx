@@ -1,8 +1,8 @@
 "use client";
 
-import { type FC, useId, memo, useRef, useEffect, useState } from "react";
+import { type FC, useId, memo, useState } from "react";
 import { cn } from "@chia/ui";
-import { Input, Textarea, useDarkMode } from "@chia/ui";
+import { Input, Textarea, useDarkMode, Card } from "@chia/ui";
 import { post, type HTTPError, handleKyError } from "@chia/utils";
 import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
@@ -61,7 +61,11 @@ const Contact: FC = () => {
   });
 
   return (
-    <div className="c-bg-secondary flex w-full max-w-[700px] flex-col items-center justify-start rounded-xl px-5 py-10 md:p-10">
+    <Card
+      wrapperProps={{
+        className: "w-full max-w-[700px]",
+      }}
+      className="flex w-full max-w-[700px] flex-col items-center justify-start px-5 py-10 md:p-10">
       <form
         id={id + "-contact-form"}
         className="flex w-full flex-col gap-4"
@@ -181,7 +185,7 @@ const Contact: FC = () => {
           Send
         </button>
       </form>
-    </div>
+    </Card>
   );
 };
 
