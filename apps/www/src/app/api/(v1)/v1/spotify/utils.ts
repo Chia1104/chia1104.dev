@@ -70,15 +70,19 @@ export const getAccessToken = async (req?: {
  * @default revalidate one request per day
  * @returns PlayList
  */
-export const getPlayList = async (req?: { revalidate?: number }) => {
+export const getPlayList = async (req?: {
+  revalidate?: number;
+  tokenRequestCache?: RequestCache;
+}) => {
   req ??= {};
-  const { revalidate = 60 * 60 * 24 } = req;
+  const { revalidate = 60 * 60 * 24, tokenRequestCache } = req;
 
   if (revalidate < 0) {
     throw new Error("revalidate must be positive");
   }
 
   const accessToken = await getAccessToken({
+    cache: tokenRequestCache,
     revalidate: revalidate / 3,
   });
 
