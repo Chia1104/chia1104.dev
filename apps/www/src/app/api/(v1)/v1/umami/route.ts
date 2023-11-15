@@ -12,7 +12,7 @@ export const runtime = "edge";
 /**
  * Tokyo, Japan and Hong Kong
  */
-export const preferredRegion = ["hnd1", "hkg1"];
+export const preferredRegion = ["hkg1"];
 
 export const GET = async (req: NextRequest) => {
   const websiteId = env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
