@@ -22,7 +22,7 @@ export const getAccessToken = async (req?: {
   cache?: RequestCache;
 }) => {
   req ??= {};
-  const { revalidate = 60 * 60 * 8, cache } = req;
+  const { revalidate = 60 * 60 * 1, cache } = req;
   const body = env.SPOTIFY_REFRESH_TOKEN
     ? new URLSearchParams({
         grant_type: "refresh_token",
@@ -67,7 +67,7 @@ export const getAccessToken = async (req?: {
 /**
  * @description get favorite playlist from spotify
  * @param req { revalidate }
- * @default revalidate one request per day
+ * @default revalidate one request per one hour
  * @returns PlayList
  */
 export const getPlayList = async (req?: {
@@ -75,7 +75,7 @@ export const getPlayList = async (req?: {
   tokenRequestCache?: RequestCache;
 }) => {
   req ??= {};
-  const { revalidate = 60 * 60 * 24, tokenRequestCache } = req;
+  const { revalidate = 60 * 60 * 1, tokenRequestCache } = req;
 
   if (revalidate < 0) {
     throw new Error("revalidate must be positive");
@@ -83,7 +83,7 @@ export const getPlayList = async (req?: {
 
   const accessToken = await getAccessToken({
     cache: tokenRequestCache,
-    revalidate: revalidate / 3,
+    revalidate,
   });
 
   const result = await spotifyRequest(`playlists/${FAVORITE_PLAYLIST_ID}`, {
@@ -111,7 +111,9 @@ export const getNowPlaying = async (req?: {
 }) => {
   req ??= {};
   const { revalidate = 60, cache } = req;
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessToken({
+    revalidate,
+  });
 
   const result = await spotifyRequest("me/player/currently-playing", {
     headers: {

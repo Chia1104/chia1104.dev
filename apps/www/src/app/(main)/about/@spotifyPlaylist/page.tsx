@@ -106,7 +106,9 @@ const getTop4 = (data: PlayList) => {
 };
 
 export default async function Page() {
-  const playlist = await getPlayList();
+  const playlist = await getPlayList({
+    revalidate: 60 * 30,
+  });
   const data = getTop4(playlist);
   return (
     <FadeIn className="w-full flex-col">
