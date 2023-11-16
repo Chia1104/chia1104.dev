@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { OpenGraph } from "@chia/ui";
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 
 export const alt = "Contact Me";
 export const size = {
@@ -20,7 +20,7 @@ export default async function og() {
           title: TITLE,
           excerpt:
             "If you want to get in touch with me, you can send me an email first and we can go from there. I'm always open to new opportunities and support requests.",
-          subtitle: Chia.bio,
+          subtitle: meta.bio,
         }}
         styles={{
           title: {

@@ -1,8 +1,8 @@
-import { Chia } from "@/shared/meta/chia";
-import { Timeline, type TimelineTypes, Age } from "@chia/ui";
+import meta from "@chia/meta";
+import { Timeline, type TimelineTypes } from "@chia/ui";
 
 const TimelineParallel = () => {
-  const transformData = Chia.resume.map((item) => ({
+  const transformData = meta.timeline.map((item) => ({
     id: item.id,
     title: item.company,
     subtitle: `${item.title} (${item.duration})`,

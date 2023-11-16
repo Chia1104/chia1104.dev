@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@chia/db": "0.0.0",
+    "@chia/meta": "0.0.0",
     "@chia/ui": "0.0.0",
     "@chia/utils": "0.0.0",
     "@giscus/react": "^2.3.0",
@@ -42,6 +43,7 @@
     "@upstash/ratelimit": "0.4.4",
     "@upstash/redis": "1.25.1",
     "@vercel/analytics": "1.1.1",
+    "@vercel/edge-config": "^0.4.1",
     "cross-env": "7.0.3",
     "fast-glob": "^3.3.1",
     "framer-motion": "^10.15.0",

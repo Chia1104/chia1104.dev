@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { OpenGraph } from "@chia/ui";
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 
 export const alt = "Chia1104";
 export const size = {
@@ -15,9 +15,9 @@ export default async function og() {
     (
       <OpenGraph
         metadata={{
-          title: Chia.name,
-          excerpt: Chia.content,
-          subtitle: Chia.bio,
+          title: meta.name,
+          excerpt: meta.content,
+          subtitle: meta.bio,
         }}
         styles={{
           title: {

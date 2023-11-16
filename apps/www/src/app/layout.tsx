@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import { ErrorBoundary } from "@chia/ui";
 import RootProvider from "./root-provider";
 import { type ReactNode } from "react";
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 import "@total-typescript/ts-reset";
 import type { Metadata, Viewport } from "next";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
@@ -25,10 +25,10 @@ export const metadata: Metadata = {
     })
   ),
   title: {
-    default: `${Chia.name} | ${Chia.title}`,
-    template: `%s | ${Chia.name}`,
+    default: `${meta.name} | ${meta.title}`,
+    template: `%s | ${meta.name}`,
   },
-  description: Chia.content,
+  description: meta.content,
   keywords: [
     "Typescript",
     "FullStack",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     "NestJS",
     "Chia1104",
   ],
-  creator: Chia.name,
+  creator: meta.name,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
