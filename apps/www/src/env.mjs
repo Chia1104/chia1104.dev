@@ -28,8 +28,14 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().min(1),
     UMAMI_DB_URL: z.string().optional(),
     UMAMI_EDGE_DB_URL: z.string().optional(),
-    YOUTUBE_ID: z.string().min(1),
-    YOUTUBE_LIST_ID: z.string().min(1),
+    /**
+     * @deprecated
+     */
+    YOUTUBE_ID: z.string().optional(),
+    /**
+     * @deprecated
+     */
+    YOUTUBE_LIST_ID: z.string().optional(),
     VERCEL: z.string().optional(),
     GITHUB_API: z.string().optional().default("https://api.github.com"),
     GITHUB_GRAPHQL_API: z

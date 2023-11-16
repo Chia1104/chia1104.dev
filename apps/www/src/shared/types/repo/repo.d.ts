@@ -24,6 +24,7 @@ export type RepoGql = {
     pushedAt: string;
     stargazerCount: number;
     forkCount: number;
+    openGraphImageUrl: string;
     primaryLanguage: {
       name: string;
       color: string;
