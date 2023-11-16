@@ -49,7 +49,7 @@ export default {
     leadbest: "https://www.leadbestconsultant.com/",
   },
   location: "Taipei, Taiwan",
-  bio: "LeadBest",
+  bio: "An impassioned full-stack engineer.",
   timeline: [
     {
       id: 3,
