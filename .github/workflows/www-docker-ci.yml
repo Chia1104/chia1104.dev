@@ -18,6 +18,7 @@ env:
   GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
   SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  SPOTIFY_FAVORITE_PLAYLIST_ID: ${{ secrets.SPOTIFY_FAVORITE_PLAYLIST_ID }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
@@ -31,12 +32,11 @@ env:
   NEXT_PUBLIC_UMAMI_URL: ${{ secrets.NEXT_PUBLIC_UMAMI_URL }}
   UMAMI_DB_URL: ${{ secrets.UMAMI_DB_URL }}
   UMAMI_EDGE_DB_URL: ${{ secrets.UMAMI_EDGE_DB_URL }}
-  YOUTUBE_ID: ${{ secrets.YOUTUBE_ID }}
-  YOUTUBE_LIST_ID: ${{ secrets.YOUTUBE_LIST_ID }}
   NEXT_PUBLIC_GISCUS_REPO_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_REPO_ID }}
   NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
+  NODE_ENV: test
 
 jobs:
   build:
@@ -74,14 +74,13 @@ jobs:
             GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
             SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}
             SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}
+            SPOTIFY_FAVORITE_PLAYLIST_ID=${{ secrets.SPOTIFY_FAVORITE_PLAYLIST_ID }}
             TURBO_TEAM=${{ secrets.TURBO_TEAM }}
             TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
             SHA_256_HASH=${{ secrets.SHA_256_HASH }}
             RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
             NEXT_PUBLIC_UMAMI_WEBSITE_ID=${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
             NEXT_PUBLIC_UMAMI_URL=${{ secrets.NEXT_PUBLIC_UMAMI_URL }}
-            YOUTUBE_ID=${{ secrets.YOUTUBE_ID }}
-            YOUTUBE_LIST_ID=${{ secrets.YOUTUBE_LIST_ID }}
             NEXT_PUBLIC_GISCUS_REPO_ID=${{ secrets.NEXT_PUBLIC_GISCUS_REPO_ID }}
             NEXT_PUBLIC_GISCUS_CATEGORY_ID=${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
             REDIS_URL=${{ secrets.REDIS_URL }}
