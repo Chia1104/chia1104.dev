@@ -15,7 +15,7 @@ export default async function og() {
     (
       <OpenGraph
         metadata={{
-          title: meta.name,
+          title: `${meta.name}.dev`,
           excerpt: meta.content,
           subtitle: meta.bio,
         }}
