@@ -20,10 +20,6 @@ const toHex = (arrayBuffer: ArrayBuffer) => {
     .join("");
 };
 
-const font = fetch(
-  new URL("../../../../assets/abduction2002.ttf", import.meta.url)
-).then((res) => res.arrayBuffer());
-
 const isUrl = (url: string) => {
   try {
     const _url = new URL(url);
@@ -35,12 +31,13 @@ const isUrl = (url: string) => {
 
 export async function GET(request: NextRequest) {
   try {
-    const fontData = await font;
     const searchParams = request.nextUrl.searchParams;
     const hasTitle = searchParams.has("title");
     const title = hasTitle
       ? searchParams.get("title")?.slice(0, 100)
       : "Full Stack Engineer";
+    const excerpt = searchParams.get("excerpt");
+    const subtitle = searchParams.get("subtitle");
     const token = searchParams.get("token");
     const verifyToken = toHex(
       await crypto.subtle.sign(
@@ -65,19 +62,19 @@ export async function GET(request: NextRequest) {
         <OpenGraph
           metadata={{
             title,
+            excerpt,
+            subtitle,
+          }}
+          styles={{
+            title: {
+              color: "transparent",
+            },
           }}
         />
       ),
       {
         width: 1200,
         height: 630,
-        fonts: [
-          {
-            name: "Typewriter",
-            data: fontData,
-            style: "normal",
-          },
-        ],
       }
     );
   } catch (e: any) {
