@@ -1,5 +1,5 @@
 import Gallery from "./gallery";
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 import { Age, FadeIn } from "@chia/ui";
 
 const AboutPage = () => {
@@ -8,7 +8,7 @@ const AboutPage = () => {
       <FadeIn className="w-full flex-col">
         <h1>About Me</h1>
         <p>
-          Currently <Age birthday={Chia.birthday} className="text-xl" /> years
+          Currently <Age birthday={meta.birthday} className="text-xl" /> years
           old
         </p>
         <Gallery />

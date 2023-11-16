@@ -1,4 +1,4 @@
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 import { Image, ImageZoom, FadeIn } from "@chia/ui";
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import type { FC, ReactNode } from "react";
@@ -8,17 +8,17 @@ const contact = {
   github: {
     name: "Github",
     icon: <SiGithub />,
-    link: Chia.link.github,
+    link: meta.link.github,
   },
   instagram: {
     name: "Instagram",
     icon: <SiInstagram />,
-    link: Chia.link.instagram,
+    link: meta.link.instagram,
   },
   linkedin: {
     name: "Linkedin",
     icon: <SiLinkedin />,
-    link: Chia.link.linkedin,
+    link: meta.link.linkedin,
   },
 };
 
@@ -46,7 +46,7 @@ const IndexPage = () => {
   return (
     <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <FadeIn className="w-full flex-col">
-        <h1 className="text-start font-bold">{Chia.name}</h1>
+        <h1 className="text-start font-bold">{meta.name}</h1>
         <p>
           I am a full-stack engineer with one year of experience in web
           development, including experience in real business production. My
@@ -56,7 +56,7 @@ const IndexPage = () => {
         </p>
         <p>
           Working at{" "}
-          <Link href={Chia.link.leadbest} target="_blank">
+          <Link href={meta.link.leadbest} target="_blank">
             LeadBest
           </Link>
           . I am responsible for the development of the company's official
@@ -96,7 +96,7 @@ const IndexPage = () => {
             <div className="not-prose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">
               <Image
                 src="/me/me.JPG"
-                alt={Chia.name}
+                alt={meta.name}
                 className="object-cover"
                 fill
                 loading="lazy"
@@ -107,12 +107,12 @@ const IndexPage = () => {
             <ul>
               <li className="text-sm">
                 <span className="font-bold">Full Name: </span>
-                <span>{Chia.fullName}</span>
+                <span>{meta.fullName}</span>
               </li>
               <li className="text-sm">
                 <span className="font-bold">Email: </span>
                 <span>
-                  <a href={`mailto:${Chia.email}`}>{Chia.email}</a>
+                  <a href={`mailto:${meta.email}`}>{meta.email}</a>
                 </span>
               </li>
             </ul>

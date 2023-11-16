@@ -15,23 +15,13 @@ export const env = createEnv({
     SITE_URL: z.string().optional().default("https://www.chia1104.dev"),
     RE_CAPTCHA_KEY: z.string().min(1),
     GOOGLE_API_KEY: z.string().min(1),
-    /**
-     * @todo
-     */
-    SPOTIFY_CLIENT_ID: z.string().optional(),
-    /**
-     * @todo
-     */
-    SPOTIFY_CLIENT_SECRET: z.string().optional(),
+    SPOTIFY_CLIENT_ID: z.string().min(1),
+    SPOTIFY_CLIENT_SECRET: z.string().min(1),
     SPOTIFY_FAVORITE_PLAYLIST_ID: z
       .string()
       .optional()
       .default("37i9dQZF1Epyg7jBW9q502"),
     SPOTIFY_REFRESH_TOKEN: z.string().optional(),
-    /**
-     * @deprecated
-     */
-    SENDGRID_KEY: z.string().optional(),
     REDIS_URL: z.string().min(1),
     UPSTASH_TOKEN: z.string().min(1),
     SHA_256_HASH: z.string().min(1),
@@ -55,6 +45,7 @@ export const env = createEnv({
       .string()
       .optional()
       .default("https://accounts.spotify.com/api/token"),
+    EDGE_CONFIG: z.string().optional(),
   },
 
   client: {
@@ -87,7 +78,6 @@ export const env = createEnv({
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
     SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
     SPOTIFY_REFRESH_TOKEN: process.env.SPOTIFY_REFRESH_TOKEN,
-    SENDGRID_KEY: process.env.SENDGRID_KEY,
     REDIS_URL: process.env.REDIS_URL,
     UPSTASH_TOKEN: process.env.UPSTASH_TOKEN,
     SHA_256_HASH: process.env.SHA_256_HASH,
@@ -113,6 +103,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GISCUS_CATEGORY_ID: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID,
     NEXT_PUBLIC_GISCUS_CATEGORY: process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
     NEXT_PUBLIC_GISCUS_THEME: process.env.NEXT_PUBLIC_GISCUS_THEME,
+    EDGE_CONFIG: process.env.EDGE_CONFIG,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

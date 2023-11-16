@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import { cn } from "@chia/ui";
 import { usePathname } from "next/navigation";
@@ -53,23 +53,23 @@ const contact = {
   github: {
     name: "Github",
     icon: <SiGithub />,
-    link: Chia.link.github,
+    link: meta.link.github,
   },
   instagram: {
     name: "Instagram",
     icon: <SiInstagram />,
-    link: Chia.link.instagram,
+    link: meta.link.instagram,
   },
   linkedin: {
     name: "Linkedin",
     icon: <SiLinkedin />,
-    link: Chia.link.linkedin,
+    link: meta.link.linkedin,
   },
 };
 
 const Copyright: FC<{ className?: string }> = ({ className }) => (
   <p className={className}>
-    © {new Date().getFullYear()} <span className="font-bold">{Chia.name}</span>
+    © {new Date().getFullYear()} <span className="font-bold">{meta.name}</span>
   </p>
 );
 

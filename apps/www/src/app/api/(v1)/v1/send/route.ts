@@ -1,4 +1,4 @@
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 import { NextResponse, NextRequest } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
     const result = await resend.emails.send({
       from: "contact@chia1104.dev",
-      to: Chia.email,
+      to: meta.email,
       subject: data.title ?? "Untitled",
       text: data.message ?? "No message",
       html: htmlSource({

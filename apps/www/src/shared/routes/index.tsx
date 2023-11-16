@@ -35,8 +35,8 @@ const routes = {
   //     </svg>
   //   ),
   // },
-  // "/portfolio": {
-  //   name: "Portfolio",
+  // "/projects": {
+  //   name: "Projects",
   //   icon: (
   //     <svg
   //       xmlns="http://www.w3.org/2000/svg"

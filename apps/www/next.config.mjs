@@ -38,6 +38,7 @@ const nextConfig = {
     "@chia/tailwind-config",
     "@chia/utils",
     "@chia/db",
+    "@chia/meta",
   ],
   swcMinify: true,
   experimental: {
@@ -47,6 +48,7 @@ const nextConfig = {
       "@chia/ui",
       "@chia/tailwind-config",
       "@chia/utils",
+      "@chia/meta",
     ],
     webpackBuildWorker: true,
     // ppr: true,
