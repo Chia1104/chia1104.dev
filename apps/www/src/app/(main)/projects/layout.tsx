@@ -8,6 +8,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         I love to build things. Here are some of the projects I've worked on
         recently.
       </p>
+      {children}
     </article>
   );
 }
