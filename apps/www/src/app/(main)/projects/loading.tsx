@@ -16,18 +16,11 @@ const LoadingCard = () => (
 
 export default function Loading() {
   return (
-    <article className="main c-container prose dark:prose-invert mt-20">
-      <h1>Projects</h1>
-      <p>
-        I love to build things. Here are some of the projects I've worked on
-        recently.
-      </p>
-      <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
-        <LoadingCard />
-        <LoadingCard />
-        <LoadingCard />
-        <LoadingCard />
-      </div>
-    </article>
+    <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
+      <LoadingCard />
+      <LoadingCard />
+      <LoadingCard />
+      <LoadingCard />
+    </div>
   );
 }

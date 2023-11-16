@@ -78,26 +78,19 @@ const RepoCard: FC<{
 const Page = async () => {
   const repo = await getPinnedRepos(meta.name);
   return (
-    <article className="main c-container prose dark:prose-invert mt-20">
-      <h1>Projects</h1>
-      <p>
-        I love to build things. Here are some of the projects I've worked on
-        recently.
-      </p>
-      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-        {repo.user.pinnedItems.edges.map((item) => (
-          <RepoCard
-            key={item.node.id}
-            href={item.node.url}
-            image={item.node.openGraphImageUrl}
-            name={item.node.name}
-            description={item.node.description}
-            language={item.node.primaryLanguage}
-            updatedAt={item.node.pushedAt}
-          />
-        ))}
-      </div>
-    </article>
+    <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+      {repo.user.pinnedItems.edges.map((item) => (
+        <RepoCard
+          key={item.node.id}
+          href={item.node.url}
+          image={item.node.openGraphImageUrl}
+          name={item.node.name}
+          description={item.node.description}
+          language={item.node.primaryLanguage}
+          updatedAt={item.node.pushedAt}
+        />
+      ))}
+    </div>
   );
 };
 
