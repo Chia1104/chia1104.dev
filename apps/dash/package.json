@@ -25,7 +25,7 @@
     "@nextui-org/react": "2.2.9",
     "@nextui-org/theme": "2.1.17",
     "@t3-oss/env-nextjs": "^0.7.1",
-    "@tanstack/react-query": "^4.36.1",
+    "@tanstack/react-query": "^5.0.0",
     "@trpc/client": "^10.43.0",
     "@trpc/next": "^10.43.0",
     "@trpc/react-query": "^10.43.0",
