@@ -1,14 +1,9 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Image, Card } from "@chia/ui";
 import { getPinnedRepos } from "@/helpers/GraphQL/github";
 import meta from "@chia/meta";
 import { type FC } from "react";
 import dayjs from "dayjs";
-
-export const metadata: Metadata = {
-  title: "Projects",
-};
 
 const RepoCard: FC<{
   image: string;
