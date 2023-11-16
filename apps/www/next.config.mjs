@@ -108,6 +108,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "raw.githubusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "opengraph.githubassets.com",
+      },
+      {
+        protocol: "https",
+        hostname: "repository-images.githubusercontent.com",
+      },
     ],
   },
   async headers() {
