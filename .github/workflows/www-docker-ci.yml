@@ -74,6 +74,7 @@ jobs:
             GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
             SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}
             SPOTIFY_CLIENT_SECRET=${{ secrets.SPOTIFY_CLIENT_SECRET }}
+            SPOTIFY_FAVORITE_PLAYLIST_ID=${{ secrets.SPOTIFY_FAVORITE_PLAYLIST_ID }}
             TURBO_TEAM=${{ secrets.TURBO_TEAM }}
             TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
             SHA_256_HASH=${{ secrets.SHA_256_HASH }}
