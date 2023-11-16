@@ -10,8 +10,6 @@ import {
   type ForwardRefComponent,
 } from "framer-motion";
 import React, {
-  useEffect,
-  useState,
   type MouseEvent,
   type ComponentPropsWithoutRef,
   type FC,
