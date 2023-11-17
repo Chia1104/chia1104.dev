@@ -3,6 +3,23 @@
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
 
+export const getClientEnv = () => {
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    return process.env.NEXT_PUBLIC_VERCEL_ENV;
+  }
+  if (process.env.RAILWAY_ENVIRONMENT_NAME) {
+    return process.env.RAILWAY_ENVIRONMENT_NAME === "production"
+      ? "railway-prod"
+      : "railway-dev";
+  }
+  if (process.env.ZEABUR_ENVIRONMENT_NAME) {
+    return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
+      ? "railway-prod"
+      : "railway-dev";
+  }
+  return "development";
+};
+
 export const env = createEnv({
   server: {
     NODE_ENV: z
@@ -28,14 +45,6 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().min(1),
     UMAMI_DB_URL: z.string().optional(),
     UMAMI_EDGE_DB_URL: z.string().optional(),
-    /**
-     * @deprecated
-     */
-    YOUTUBE_ID: z.string().optional(),
-    /**
-     * @deprecated
-     */
-    YOUTUBE_LIST_ID: z.string().optional(),
     VERCEL: z.string().optional(),
     GITHUB_API: z.string().optional().default("https://api.github.com"),
     GITHUB_GRAPHQL_API: z
@@ -52,9 +61,26 @@ export const env = createEnv({
       .optional()
       .default("https://accounts.spotify.com/api/token"),
     EDGE_CONFIG: z.string().optional(),
+    SENTRY_AUTH_TOKEN: z.string().optional(),
+    SANITY_ORG: z.string().optional(),
+    SANITY_PROJECT: z.string().optional(),
   },
 
   client: {
+    NEXT_PUBLIC_ENV: z
+      .enum([
+        "preview",
+        "development",
+        "production",
+        "test",
+        "zeabur-prod",
+        "vercel-prod",
+        "railway-prod",
+        "zeabur-dev",
+        "vercel-dev",
+        "railway-dev",
+      ])
+      .default("development"),
     NEXT_PUBLIC_RE_CAPTCHA_KEY: z.string().min(1),
     NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().min(1),
     NEXT_PUBLIC_UMAMI_URL: z.string().min(1),
@@ -66,10 +92,12 @@ export const env = createEnv({
     NEXT_PUBLIC_GISCUS_CATEGORY_ID: z.string().min(1),
     NEXT_PUBLIC_GISCUS_CATEGORY: z.string().optional().default("Comments"),
     NEXT_PUBLIC_GISCUS_THEME: z.string().optional().default("dark_dimmed"),
+    NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   },
 
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_ENV: getClientEnv(),
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
@@ -96,8 +124,6 @@ export const env = createEnv({
         : process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY,
     NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
     NEXT_PUBLIC_UMAMI_URL: process.env.NEXT_PUBLIC_UMAMI_URL,
-    YOUTUBE_ID: process.env.YOUTUBE_ID,
-    YOUTUBE_LIST_ID: process.env.YOUTUBE_LIST_ID,
     VERCEL: process.env.VERCEL,
     GITHUB_API: process.env.GITHUB_API,
     GITHUB_GRAPHQL_API: process.env.GITHUB_GRAPHQL_API,
@@ -110,6 +136,10 @@ export const env = createEnv({
     NEXT_PUBLIC_GISCUS_CATEGORY: process.env.NEXT_PUBLIC_GISCUS_CATEGORY,
     NEXT_PUBLIC_GISCUS_THEME: process.env.NEXT_PUBLIC_GISCUS_THEME,
     EDGE_CONFIG: process.env.EDGE_CONFIG,
+    SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    SANITY_ORG: process.env.SANITY_ORG,
+    SANITY_PROJECT: process.env.SANITY_PROJECT,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
