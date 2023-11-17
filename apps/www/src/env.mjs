@@ -63,7 +63,7 @@ export const env = createEnv({
     EDGE_CONFIG: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
-    SANITY_PROJECT: z.string().optional(),
+    SENTRY_PROJECT: z.string().optional(),
   },
 
   client: {
