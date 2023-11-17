@@ -57,12 +57,10 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="zh-Hant-TW" suppressHydrationWarning>
       <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
-        <ErrorBoundary>
-          <RootProvider>
-            {children}
-            <Footer />
-          </RootProvider>
-        </ErrorBoundary>
+        <RootProvider>
+          {children}
+          <Footer />
+        </RootProvider>
         <VercelAnalytics />
       </body>
     </html>

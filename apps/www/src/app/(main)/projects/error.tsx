@@ -1,8 +1,20 @@
 "use client";
 
 import { Image, ImageZoom } from "@chia/ui";
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
 
-export default function Error() {
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    Sentry.captureException(error);
+    console.error(error);
+  }, [error]);
   return (
     <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-lg p-3 px-5">
       <h3 className="my-2">
