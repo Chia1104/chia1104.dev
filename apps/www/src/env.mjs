@@ -14,7 +14,7 @@ export const getClientEnv = () => {
   }
   if (process.env.ZEABUR_ENVIRONMENT_NAME) {
     return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
-      ? "railway-prod"
+      ? "zeabur-prod"
       : "railway-dev";
   }
   return "development";
