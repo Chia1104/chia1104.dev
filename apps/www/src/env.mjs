@@ -138,7 +138,7 @@ export const env = createEnv({
     EDGE_CONFIG: process.env.EDGE_CONFIG,
     SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    SANITY_ORG: process.env.SANITY_ORG,
+    SENTRY_ORG: process.env.SENTRY_ORG,
     SANITY_PROJECT: process.env.SANITY_PROJECT,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
