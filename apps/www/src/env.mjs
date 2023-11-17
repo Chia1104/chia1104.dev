@@ -62,7 +62,7 @@ export const env = createEnv({
       .default("https://accounts.spotify.com/api/token"),
     EDGE_CONFIG: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
-    SANITY_ORG: z.string().optional(),
+    SENTRY_ORG: z.string().optional(),
     SANITY_PROJECT: z.string().optional(),
   },
 
