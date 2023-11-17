@@ -21,16 +21,19 @@ const RepoCard: FC<{
   return (
     <Card
       className="relative flex h-full min-h-[442px] flex-col"
-      whileInView={{
-        opacity: 1,
-        y: 0,
-        transition: {
-          duration: 0.5,
+      wrapperProps={{
+        whileInView: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: 0.5,
+          },
+          offset: 10,
         },
-      }}
-      initial={{
-        opacity: 0,
-        y: 20,
+        initial: {
+          opacity: 0,
+          y: 20,
+        },
       }}>
       <div className="aspect-h-9 aspect-w-16 c-bg-gradient-green-to-purple not-prose w-full overflow-hidden rounded-t-3xl">
         <Image
