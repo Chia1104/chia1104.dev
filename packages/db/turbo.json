@@ -3,9 +3,7 @@
   "extends": ["//"],
   "pipeline": {
     "@chia/db": {
-      "env": [
-        "DATABASE_URL"
-      ]
+      "env": ["DATABASE_URL"]
     },
     "db:generate": {},
     "db:push": {},

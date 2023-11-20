@@ -35,7 +35,6 @@ const Components: typeof MDXComponents = {
 };
 
 const MDXRemote = (props: MDXRemoteProps) => (
-  // @ts-ignore
   <MDXR
     {...props}
     components={{ ...(Components as any), ...(props.components || {}) }}

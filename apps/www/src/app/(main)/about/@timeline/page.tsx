@@ -1,0 +1,22 @@
+import meta from "@chia/meta";
+import { Timeline, type TimelineTypes } from "@chia/ui";
+
+const TimelineParallel = () => {
+  const transformData = meta.timeline.map((item) => ({
+    id: item.id,
+    title: item.company,
+    subtitle: `${item.title} (${item.duration})`,
+    startDate: item.startTime,
+    content: item.detail && (
+      <ul>
+        {item.detail.map((desc, index) => (
+          <li key={index}>{desc}</li>
+        ))}
+      </ul>
+    ),
+    link: item.link,
+  })) satisfies TimelineTypes.Data[];
+  return <Timeline data={transformData} />;
+};
+
+export default TimelineParallel;

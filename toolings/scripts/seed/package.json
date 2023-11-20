@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "seed",
+  "version": "0.0.0",
+  "private": true,
+  "types": "./index.ts",
+  "main": "index.ts",
+  "scripts": {
+    "lint": "eslint index.ts --fix",
+    "type:check": "tsc --noEmit",
+    "clean": "git clean -xdf .turbo node_modules",
+    "db:seed": "npx prisma db seed",
+    "tsc:config": "tsc --showConfig"
+  },
+  "prisma": {
+    "seed": "node --import tsx --env-file=.env index.ts"
+  },
+  "dependencies": {
+    "@chia/db": "0.0.0",
+    "@faker-js/faker": "^8.0.2",
+    "dotenv": "^16.3.1",
+    "tsconfig": "0.0.0"
+  }
+}

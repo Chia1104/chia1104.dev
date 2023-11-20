@@ -18,11 +18,10 @@ interface PostItemProps {
 
 const PostItem: FC<PostItemProps> = ({ data, i }) => {
   return (
-    <div className="c-bg-secondary group relative flex min-h-[465px] w-full flex-col rounded-xl shadow-lg transition duration-300 ease-in-out hover:-translate-y-1.5 2xl:min-h-[520px]">
+    <div className="c-bg-secondary group relative flex min-h-[365px] w-full flex-col rounded-xl px-4 py-6 shadow-lg transition duration-300 ease-in-out hover:-translate-y-1.5 md:px-6">
       <div
         className={cn(
-          "aspect-h-9 aspect-w-16 mb-3 w-full overflow-hidden rounded-t-xl bg-gray-200",
-          i === 0 && "lg:aspect-h-1 lg:aspect-w-3"
+          "aspect-h-9 aspect-w-16 c-bg-gradient-green-to-purple mb-3 w-full overflow-hidden rounded-xl"
         )}>
         <Image
           src={data.headImg || "/posts/example-posts/example.jpg"}
@@ -34,13 +33,13 @@ const PostItem: FC<PostItemProps> = ({ data, i }) => {
           quality={100}
         />
       </div>
-      <h2 className="subtitle group-hover:text-secondary mx-5 mb-3 line-clamp-2 leading-normal transition duration-300 ease-in-out">
+      <h2 className="subtitle group-hover:text-secondary mb-3 line-clamp-1 leading-normal transition duration-300 ease-in-out">
         {data.title}
       </h2>
-      <p className="c-description mx-5 mb-3 line-clamp-3 leading-normal">
+      <p className="c-description mb-3 line-clamp-3 leading-normal">
         {data.excerpt}
       </p>
-      <p className="c-description mx-5 mb-3 mt-auto self-start">
+      <p className="c-description mt-auto self-start">
         {dayjs(data.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
         <span className="c-text-bg-sec-half dark:c-text-bg-primary-half">
           {data.readingMins}
@@ -65,7 +64,7 @@ const postCardAnimation = {
 const PostsList: FC<PostsListProps> = ({ post }) => {
   return (
     <motion.div
-      className="grid w-full grid-cols-1 gap-10 lg:grid-cols-2 xl:grid-cols-3"
+      className="grid w-full grid-cols-1 gap-10 md:grid-cols-2"
       transition={{ duration: 0.3, type: "spring" }}
       variants={postAnimation}
       animate="show">
@@ -74,7 +73,7 @@ const PostsList: FC<PostsListProps> = ({ post }) => {
           key={post.id}
           transition={{ type: "spring" }}
           variants={postCardAnimation}
-          className={cn("h-auto w-full", index === 0 && "lg:col-span-2")}>
+          className={cn("h-auto w-full")}>
           <PostItem data={post} i={index} />
         </motion.div>
       ))}

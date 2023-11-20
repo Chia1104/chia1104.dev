@@ -21,11 +21,11 @@
         "package.json",
       ]
 
-"area-backend":
+"area-service":
   - any:
       [
-        "apps/backend/**",
+        "apps/service/**",
         "packages/db/**",
-        ".github/workflows/backend-ci.yml",
+        ".github/workflows/service-ci.yml",
         "package.json",
       ]

@@ -2,17 +2,33 @@ import "../styles/globals.css";
 import { ErrorBoundary } from "@chia/ui";
 import RootProvider from "./root-provider";
 import { type ReactNode } from "react";
-import { Chia } from "@/shared/meta/chia";
+import meta from "@chia/meta";
 import "@total-typescript/ts-reset";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
+import { getBaseUrl } from "@/utils/getBaseUrl";
+import "react-medium-image-zoom/dist/styles.css";
+import Footer from "./footer";
+
+export const viewport: Viewport = {
+  themeColor: "#2B2E4A",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    getBaseUrl({
+      isServer: true,
+    })
+  ),
   title: {
-    default: `${Chia.name} | ${Chia.title}`,
-    template: `%s | ${Chia.name}`,
+    default: `${meta.name} | ${meta.title}`,
+    template: `%s | ${meta.name}`,
   },
-  description: Chia.content,
+  description: meta.content,
   keywords: [
     "Typescript",
     "FullStack",
@@ -21,18 +37,11 @@ export const metadata: Metadata = {
     "NestJS",
     "Chia1104",
   ],
-  themeColor: "#2B2E4A",
-  colorScheme: "dark",
-  creator: Chia.name,
+  creator: meta.name,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
   },
   verification: {
     google: "google",
@@ -46,11 +55,12 @@ export const metadata: Metadata = {
 
 const ChiaWEB = ({ children }: { children: ReactNode }) => {
   return (
-    <html lang="zh-Hant-TW">
-      <body className="c-bg-primary scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full">
-        <ErrorBoundary>
-          <RootProvider>{children}</RootProvider>
-        </ErrorBoundary>
+    <html lang="zh-Hant-TW" suppressHydrationWarning>
+      <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
+        <RootProvider>
+          {children}
+          <Footer />
+        </RootProvider>
         <VercelAnalytics />
       </body>
     </html>

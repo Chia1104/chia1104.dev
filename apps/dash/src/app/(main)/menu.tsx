@@ -6,6 +6,8 @@ import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
+  NavbarMenu,
+  NavbarMenuItem,
   Button,
   Avatar,
   Dropdown,
@@ -14,16 +16,17 @@ import {
   DropdownItem,
   Tabs,
   Tab,
+  NavbarMenuToggle,
 } from "@nextui-org/react";
-import { ToggleTheme, Image } from "@chia/ui";
-import { useDarkMode } from "@/hooks";
+import { ToggleTheme, Image, useDarkMode } from "@chia/ui";
 import { useSession } from "next-auth/react";
 import { signIn, signOut } from "next-auth/react";
-import { useTransition } from "react";
+import { useTransition, type Key, useState } from "react";
 import { useRouter, useSelectedLayoutSegments } from "next/navigation";
+import NextLink from "next/link";
 
 const User = () => {
-  const [isPedding, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const { data: session, status } = useSession();
   return (
     <>
@@ -55,7 +58,7 @@ const User = () => {
                 src={session?.user?.image ?? ""}
               />
             </DropdownTrigger>
-            <DropdownMenu disabledKeys={isPedding ? ["logout"] : undefined}>
+            <DropdownMenu disabledKeys={isPending ? ["logout"] : undefined}>
               <DropdownItem
                 key="logout"
                 className="text-danger"
@@ -78,45 +81,63 @@ const User = () => {
 const Menu = () => {
   const { isDarkMode, toggle } = useDarkMode();
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const selectedLayoutSegments = useSelectedLayoutSegments();
+  const handlePush = (key: Key) => {
+    switch (key) {
+      case "dashboard":
+        router.push("/");
+        break;
+      case "metrics":
+        // router.push("/metrics");
+        break;
+      case "feed":
+        router.push("/feed");
+        break;
+      case "write":
+        router.push("/write");
+        break;
+      default:
+        break;
+    }
+  };
   return (
     <Navbar
+      isMenuOpen={isMenuOpen}
+      onMenuOpenChange={setIsMenuOpen}
       position="sticky"
       maxWidth="full"
       isBordered={false}
       className="fixed border-0"
       shouldHideOnScroll>
-      <NavbarBrand className="cursor-pointer" onClick={() => router.push("/")}>
-        <Image
-          src="/logo.png"
-          alt="chia1104"
-          width={50}
-          height={50}
-          blur={false}
+      <NavbarContent>
+        <NavbarBrand
+          className="hidden cursor-pointer md:block"
+          onClick={() => router.push("/")}>
+          <Image
+            src="/logo.png"
+            alt="chia1104"
+            width={50}
+            height={50}
+            blur={false}
+          />
+        </NavbarBrand>
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          className="md:hidden"
         />
-      </NavbarBrand>
+      </NavbarContent>
       <NavbarContent className="hidden md:flex" justify="center">
         <Tabs
           size="md"
           variant="solid"
           radius="lg"
+          onSelectionChange={(key) => handlePush(key)}
           selectedKey={selectedLayoutSegments[0] ?? "dashboard"}>
-          <Tab
-            title="Dashboard"
-            key="dashboard"
-            onClickCapture={() => router.push("/")}
-          />
+          <Tab title="Dashboard" key="dashboard" />
           <Tab title="Metrics" key="metrics" />
-          <Tab
-            title="Feed"
-            key="feed"
-            onClickCapture={() => router.push("/feed")}
-          />
-          <Tab
-            title="Write"
-            key="write"
-            onClickCapture={() => router.push("/write")}
-          />
+          <Tab title="Feed" key="feed" />
+          <Tab title="Write" key="write" />
         </Tabs>
       </NavbarContent>
       <NavbarContent justify="end">
@@ -125,6 +146,32 @@ const Menu = () => {
           <ToggleTheme isDark={isDarkMode} toggleTheme={toggle} />
         </NavbarItem>
       </NavbarContent>
+      <NavbarMenu>
+        <NavbarMenuItem>
+          <NextLink
+            className="text-primary w-full"
+            href="/"
+            onClick={() => setIsMenuOpen(false)}>
+            Dashboard
+          </NextLink>
+        </NavbarMenuItem>
+        <NavbarMenuItem>
+          <NextLink
+            className="text-primary w-full"
+            href="/feed"
+            onClick={() => setIsMenuOpen(false)}>
+            Feed
+          </NextLink>
+        </NavbarMenuItem>
+        <NavbarMenuItem>
+          <NextLink
+            className="text-primary w-full"
+            href="/write"
+            onClick={() => setIsMenuOpen(false)}>
+            write
+          </NextLink>
+        </NavbarMenuItem>
+      </NavbarMenu>
     </Navbar>
   );
 };

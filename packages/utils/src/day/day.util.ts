@@ -2,10 +2,11 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
+const TIMEZONE = "Asia/Taipei";
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
-
-const TIMEZONE = "Asia/Taipei";
+dayjs.tz.setDefault(TIMEZONE);
 
 export const getToday = () => {
   return dayjs().format("YYYY-MM-DD");

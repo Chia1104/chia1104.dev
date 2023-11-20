@@ -1,0 +1,48 @@
+name: service CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+    paths:
+      - "apps/service/**"
+      - "packages/db/**"
+      - ".github/workflows/service-ci.yml"
+      - "package.json"
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+jobs:
+  build:
+    name: Build and Test
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service') }}
+
+    steps:
+      - name: '🐙️ Check out code'
+        uses: actions/checkout@v4
+
+      - name: '💽️  Init'
+        id: backend-init
+        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        with:
+          NODE_VERSION: '20'
+
+      - name: '📦  Install'
+        id: backend-install
+        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
+        with:
+          INSTALL_COMMAND: '--filter db --filter tsconfig --filter root'
+
+      - name: '🚨️  ESLint, Type checking, Unit tests'
+        id: backend-lint-test
+        uses: Chia1104/chia-stack/.github/actions/lint-test@main
+        with:
+          COMMAND: '--filter service...'
+          TURBO_TEAM: ${{ env.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}

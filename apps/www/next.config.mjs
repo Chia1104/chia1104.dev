@@ -1,5 +1,7 @@
 // @ts-check
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
+import "./src/env.mjs";
+import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
@@ -32,21 +34,37 @@ const securityHeaders = [
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  transpilePackages: ["@chia/ui"],
+  transpilePackages: [
+    "@chia/ui",
+    "@chia/tailwind-config",
+    "@chia/utils",
+    "@chia/db",
+    "@chia/meta",
+  ],
   swcMinify: true,
   experimental: {
     mdxRs: true,
     typedRoutes: false,
-    serverComponentsExternalPackages: ["@chia/ui"],
+    serverComponentsExternalPackages: [
+      "@chia/ui",
+      "@chia/tailwind-config",
+      "@chia/utils",
+      "@chia/meta",
+    ],
+    webpackBuildWorker: true,
+    // ppr: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async redirects() {
     return [
       {
-        source: "/portfolios",
-        destination: "/portfolio",
+        source: "/portfolio",
+        destination: "/projects",
         permanent: false,
       },
       {
@@ -70,9 +88,35 @@ const nextConfig = {
     removeConsole: false,
   },
   images: {
-    domains: [
-      "firebasestorage.googleapis.com",
-      "avatars.githubusercontent.com",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.scdn.co",
+      },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com",
+      },
+      {
+        protocol: "https",
+        hostname: "raw.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "opengraph.githubassets.com",
+      },
+      {
+        protocol: "https",
+        hostname: "repository-images.githubusercontent.com",
+      },
     ],
   },
   async headers() {
@@ -92,4 +136,9 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-export default nextComposePlugins;
+export default withSentryConfigImport(nextComposePlugins, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+});

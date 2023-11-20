@@ -7,18 +7,15 @@
     "**/*.d.ts",
     "**/*.spec.ts",
     "**/*.spec.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "./src/env.mjs"
   ],
-  "exclude": [
-    "node_modules",
-    ".next"
-  ],
+  "exclude": ["node_modules", ".next"],
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"],
+      "test": ["test/*"]
     },
     "jsx": "preserve",
     "plugins": [

@@ -1,74 +1,138 @@
-import { Chia } from "@/shared/meta/chia";
-import { getAllPosts } from "@/helpers/mdx/services";
-import dayjs from "dayjs";
-import AboutMe from "./about-me";
-import NewsCard from "./news-card";
+import meta from "@chia/meta";
+import { Image, ImageZoom, FadeIn } from "@chia/ui";
+import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
+import type { FC, ReactNode } from "react";
+import Link from "next/link";
 
-const getHomePageData = async () => {
-  const posts = await getAllPosts();
-
-  return {
-    post: posts[0],
-  };
+const contact = {
+  github: {
+    name: "Github",
+    icon: <SiGithub />,
+    link: meta.link.github,
+  },
+  instagram: {
+    name: "Instagram",
+    icon: <SiInstagram />,
+    link: meta.link.instagram,
+  },
+  linkedin: {
+    name: "Linkedin",
+    icon: <SiLinkedin />,
+    link: meta.link.linkedin,
+  },
 };
 
-const HomePage = async () => {
-  const { post } = await getHomePageData();
-
+const LinkItem: FC<{
+  path: string;
+  icon: ReactNode;
+  name: string;
+  showIcon?: boolean;
+}> = ({ path, icon, name, showIcon }) => {
   return (
-    <article className="c-container main">
-      <div className="flex h-full w-full flex-col">
-        <AboutMe avatarSrc="/me/me-memoji.PNG" />
-        <div className="min:w-[370px] mx-auto mt-10 flex w-full max-w-[740px] flex-col items-center justify-center md:flex-row">
-          <div className="px-3 py-7">
-            <NewsCard title="About me" content={Chia.content} link="/about" />
-          </div>
-          <div className="px-3 py-7">
-            <NewsCard
-              title="New update"
-              content={post?.excerpt || "This is an example of a blog post."}
-              subtitle={dayjs(post?.createdAt).format("MMMM D, YYYY")}
-              link={`/posts/${post?.slug}`}
-            />
+    <Link
+      key={path}
+      href={path}
+      target="_blank"
+      className="flex align-middle text-sm transition-all hover:text-neutral-800 dark:hover:text-neutral-200">
+      <span className="relative flex items-center justify-center gap-2 px-[7px] py-[5px]">
+        <div>{icon}</div>
+        <p>{name}</p>
+      </span>
+    </Link>
+  );
+};
+
+const IndexPage = () => {
+  return (
+    <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
+      <FadeIn className="w-full flex-col">
+        <h1 className="text-start font-bold">{meta.name}</h1>
+        <p>
+          I am a full-stack engineer with one year of experience in web
+          development, including experience in real business production. My
+          expertise lies in NextJS frontend development and backend services
+          management. I excel in project management, code review, feature
+          planning, and testing.
+        </p>
+        <p>
+          Working at{" "}
+          <Link href={meta.link.leadbest} target="_blank">
+            LeadBest
+          </Link>
+          . I am responsible for the development of the company's official
+          website and maintaining related modules.
+        </p>
+        <ul>
+          <li>
+            Adopting the Scrum development process and effectively fulfilling
+            customer requirements with the help and communication of
+            cross-functional teams.
+          </li>
+          <li>
+            Creating new frontend projects using internal templates and
+            maintaining related modules.
+          </li>
+        </ul>
+      </FadeIn>
+
+      <FadeIn className="w-full flex-col">
+        <p>
+          Additionally, I actively participate in open-source projects online,
+          gaining experience in document writing and feature enhancements.
+          During my leisure time, I explore new technologies to complete my own
+          side projects.
+        </p>
+        <p>
+          I possess a knack for rapid learning to solve problems and exhibit a
+          high level of resilience. I dare to step out of my comfort zone and
+          embrace new endeavors. I am passionate about acquiring knowledge in
+          emerging technologies and finding fulfillment in their achievements.
+          Furthermore, I take pleasure in sharing my skills with others.
+        </p>
+      </FadeIn>
+      <FadeIn className="w-full">
+        <div className="mt-5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
+          <ImageZoom>
+            <div className="not-prose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">
+              <Image
+                src="/me/me.JPG"
+                alt={meta.name}
+                className="object-cover"
+                fill
+                loading="lazy"
+              />
+            </div>
+          </ImageZoom>
+          <div className="c-bg-third relative flex w-full flex-col overflow-hidden rounded-lg">
+            <ul>
+              <li className="text-sm">
+                <span className="font-bold">Full Name: </span>
+                <span>{meta.fullName}</span>
+              </li>
+              <li className="text-sm">
+                <span className="font-bold">Email: </span>
+                <span>
+                  <a href={`mailto:${meta.email}`}>{meta.email}</a>
+                </span>
+              </li>
+            </ul>
+            <div className="flex px-2">
+              {Object.entries(contact).map(([key, { name, icon, link }]) => (
+                <LinkItem
+                  key={key}
+                  path={link}
+                  name={name}
+                  icon={icon}
+                  showIcon
+                />
+              ))}
+            </div>
+            <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
           </div>
         </div>
-        <div className="min:w-[370px] bg-primary/90 mx-auto mt-10 w-full max-w-[740px] rounded-xl p-5 text-white backdrop-blur-sm">
-          <ul>
-            <li className="mb-2">
-              🔭 I’m currently working on: My personal website with NextJS
-            </li>
-            <li className="mb-2">
-              🌱 I’m currently learning: Docker, Next.js, Nest.js, TypeScript,
-              Go
-            </li>
-            <li className="mb-2">👯 I’m looking to collaborate on: Intern</li>
-            <li className="mb-2">📫 How to reach me: yuyuchia7423@gmail.com</li>
-            <li>
-              ⚡ Fun fact:
-              <a
-                href="https://open.spotify.com/user/21vnijzple4ufn2nzlfjy37py?si=b5f011d11a794ba4&nd=1"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="c-link text-info">
-                {" "}
-                Spotify{" "}
-              </a>
-              /{}
-              <a
-                href="https://skyline.github.com/Chia1104/2022"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="c-link text-info">
-                {" "}
-                {}
-                Chia1104's 2022 GitHub Skyline{" "}
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
+      </FadeIn>
     </article>
   );
 };
 
-export default HomePage;
+export default IndexPage;

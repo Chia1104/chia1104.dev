@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import baseConfig, { animation } from "@chiastack/tailwind-config";
+import baseConfig, { animation } from "@chia/tailwind-config";
 
 export default {
   content: [
@@ -10,6 +10,13 @@ export default {
     "!./src/app/api/contact/email-template.tsx",
   ],
   theme: {
+    screens: {
+      sm: "640px",
+      md: "768px",
+      lg: "992px",
+      xl: "992px",
+      "2xl": "992px",
+    },
     extend: {
       colors: {
         primary: "#2B2E4A",

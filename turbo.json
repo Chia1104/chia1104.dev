@@ -7,26 +7,13 @@
     },
     "www#build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": [
-        "SHA_256_HASH",
-        "GH_PUBLIC_TOKEN",
-        "NEXT_PUBLIC_RE_CAPTCHA_KEY",
-        "RE_CAPTCHA_KEY",
-        "GOOGLE_API_KEY",
-        "SPOTIFY_CLIENT_ID",
-        "SPOTIFY_CLIENT_SECRET",
-        "SENDGRID_KEY",
-        "REDIS_URL",
-        "UPSTASH_TOKEN",
-        "RESEND_API_KEY"
-      ]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "dash#build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
-    "backend#build": {
+    "service#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
       "env": ["DATABASE_URL"]
@@ -85,7 +72,7 @@
     "generate:typings": {
       "cache": false
     },
-    "backend-graph": {}
+    "service-graph": {}
   },
   "globalEnv": [
     "BASE_URL",
@@ -95,6 +82,7 @@
     "NODE_ENV",
     "ANALYZE",
     "CI",
+    "SKIP_ENV_VALIDATION",
     "VERCEL",
     "ZEABUR_URL",
     "VERCEL_URL",
@@ -103,6 +91,19 @@
     "REDIS_URL",
     "DB_URL",
     "DATABASE_URL",
-    "CHIA_ID"
+    "CHIA_ID",
+    "GITHUB_API",
+    "GITHUB_GRAPHQL_API",
+    "GOOGLE_API",
+    "SPOTIFY_NOW_PLAYING_URL",
+    "SPOTIFY_TOKEN_URL",
+    "EDGE_CONFIG",
+    "NEXT_PUBLIC_SENTRY_DSN",
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_ORG",
+    "SENTRY_PROJECT",
+    "NEXT_PUBLIC_VERCEL_ENV",
+    "RAILWAY_ENVIRONMENT_NAME",
+    "ZEABUR_ENVIRONMENT_NAME"
   ]
 }

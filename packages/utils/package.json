@@ -21,6 +21,6 @@
   },
   "devDependencies": {
     "tsconfig": "0.0.0",
-    "tsup": "^7.2.0"
+    "tsup": "^8.0.0"
   }
 }

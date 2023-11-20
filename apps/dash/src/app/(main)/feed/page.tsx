@@ -1,17 +1,5 @@
+import { api } from "@/trpc-api/server";
 import FeedList from "./feed-list";
-import { prisma } from "@chia/db";
-import { cache, Suspense } from "react";
-import { RouterOutputs } from "@chia/api";
-import { api } from "trpc-api";
-
-const getPosts = cache(async () => {
-  return await prisma.post.findMany({
-    take: 6,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-});
 
 const FeedPage = async () => {
   const post = await api.post.infinite.query({ limit: 10 });
@@ -26,19 +14,21 @@ const FeedPage = async () => {
   );
 };
 
-const PromiseFeedList = async ({
-  promise,
-}: {
-  promise: Promise<RouterOutputs["post"]["get"]>;
-}) => {
-  const post = await promise;
-  return (
-    <div>
-      {post.map((post) => {
-        return <div key={post.id}>{post.title}</div>;
-      })}
-    </div>
-  );
-};
+// const FeedList = async ({
+//   promise,
+//   data,
+// }: {
+//   promise?: Promise<RouterOutputs["post"]["get"]>;
+//   data?: RouterOutputs["post"]["get"];
+// }) => {
+//   const post = data ?? (await promise);
+//   return (
+//     <div>
+//       {post?.map((post) => {
+//         return <div key={post.id}>{post.title}</div>;
+//       }) ?? "Loading..."}
+//     </div>
+//   );
+// };
 
 export default FeedPage;

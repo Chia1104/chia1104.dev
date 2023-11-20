@@ -1,3 +1,5 @@
+"use client";
+
 import {
   motion,
   useScroll,
@@ -6,7 +8,7 @@ import {
   type ForwardRefComponent,
 } from "framer-motion";
 import React, { type FC, type ComponentProps } from "react";
-import { cn } from "../utils";
+import { cn, useDarkMode } from "../utils";
 
 const ScrollYProgress: FC<
   ComponentProps<ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>>
@@ -18,10 +20,18 @@ const ScrollYProgress: FC<
     restDelta: 0.001,
   });
 
+  const { isDarkMode } = useDarkMode();
+
   return (
     <motion.div
       {...rest}
-      className={cn("bg-secondary w-full", className)}
+      className={cn(
+        "w-full",
+        className,
+        isDarkMode
+          ? "c-bg-gradient-purple-to-pink"
+          : "c-bg-gradient-yellow-to-pink"
+      )}
       style={{
         scaleX,
         height: "5px",

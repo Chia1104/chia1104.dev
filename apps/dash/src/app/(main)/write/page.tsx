@@ -2,7 +2,7 @@ import Editor from "./editor";
 
 const WritePage = () => {
   return (
-    <div className="c-container mt-24 px-5">
+    <div className="c-container mt-10 px-5 py-10">
       <Editor />
     </div>
   );

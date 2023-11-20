@@ -9,7 +9,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <ReduxProvider>
       <NavMenu />
-      <ScrollYProgress className="fixed top-0 z-[999] mt-[75px]" />
+      <ScrollYProgress className="fixed top-0 z-[999]" />
       <Page>{children}</Page>
     </ReduxProvider>
   );

@@ -1,5 +1,3 @@
-"use client";
-
 export {
   Accordion,
   AccordionContent,
@@ -19,5 +17,14 @@ export * from "./Textarea";
 export * from "./MDXComponents";
 export * from "./utils";
 export { default as ToggleTheme } from "./ToggleTheme";
+export * from "./ToggleTheme";
 export { default as Card } from "./Card";
 export { default as ScrollYProgress } from "./ScrollYProgress";
+export { default as OpenGraph } from "./OpenGraph";
+export { default as Back } from "./Back";
+export { default as Cursor } from "./Cursor";
+export { default as ImageZoom } from "./ImageZoom";
+export { default as Timeline } from "./Timeline";
+export * as TimelineTypes from "./Timeline/types.d";
+export { default as Age } from "./Age";
+export { default as FadeIn } from "./FadeIn";

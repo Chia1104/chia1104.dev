@@ -1,6 +1,6 @@
 # Chia1104.dev
 
-[![Vercel deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/production?style=for-the-badge&logo=vercel)](https://vercel.com/chia1104/chia1104/deployments)
+[![www deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/Production%20%E2%80%93%20chia1104?style=for-the-badge&logo=vercel&label=www)](https://chia1104.dev)
 [![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chia1104.dev/next/main/apps/www?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
 [![Licensed under MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=for-the-badge&logo=unlicense)](LICENSE)
 [![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chia1104.dev?style=for-the-badge&logo=turborepo)](https://github.com/chia1104/chia1104.dev)
@@ -53,7 +53,7 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 ![Vercel build settings](./.github/public/vercel-deploy1.png)
 
 | Command         | Script                                                                                 |
-|-----------------| -------------------------------------------------------------------------------------- |
+| --------------- | -------------------------------------------------------------------------------------- |
 | Build Command   | `cd ../.. && npx turbo run build --filter www...`                                      |
 | Install Command | `pnpm --filter \!dash --filter \!"./tests/*" install --store=node_modules/.pnpm-store` |
 
@@ -67,7 +67,7 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 ### Zeabur
 
-you can deploy `www`, `dash` and `backend` applications to Zeabur, and make sure that the services name are `www`, `dash` and `backend` respectively.
+you can deploy `www`, `dash` and `service` applications to Zeabur, and make sure that the services name are `www`, `dash` and `service` respectively.
 
 ![Zeabur build settings](./.github/public/zeabur-deploy.png)
 
@@ -76,7 +76,7 @@ you can deploy `www`, `dash` and `backend` applications to Zeabur, and make sure
 ```bash
 chia1104.dev
 ├── apps
-│   ├── backend (NestJS, microservices)
+│   ├── service (NestJS)
 │   ├── dash (NextJS)
 │   └── www (NextJS)
 ├── packages

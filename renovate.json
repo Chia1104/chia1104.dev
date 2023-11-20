@@ -7,7 +7,7 @@
   "packageRules": [
     {
       "matchPackagePatterns": [
-        "^@chiastack/",
+        "^@chia/*",
         "@chia/ui",
         "@chia/utils",
         "@chia/api",

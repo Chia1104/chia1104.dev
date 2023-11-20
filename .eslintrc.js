@@ -81,7 +81,7 @@ module.exports = {
           "packages/*/tsconfig.json",
           "apps/*/tsconfig.json",
           "tests/*/tsconfig.json",
-          "scripts/*/tsconfig.json",
+          "toolings/**/*/tsconfig.json",
         ],
       },
       rules: {

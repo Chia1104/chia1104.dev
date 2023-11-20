@@ -1,9 +1,8 @@
 "use client";
 
 import { type FC, forwardRef, useMemo } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { type Post } from "@chia/db";
-import { api } from "trpc-api";
+import { api } from "@/trpc-api/client";
 import { useInfiniteScroll } from "@chia/ui";
 import { Card, CardBody } from "@nextui-org/react";
 import { RouterInputs } from "@chia/api";
@@ -26,31 +25,25 @@ const FeedItem = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
 FeedItem.displayName = "FeedItem";
 
 const FeedList: FC<Props> = (props) => {
-  const { initFeed, nextCursor, query } = props;
+  const { initFeed, nextCursor, query = {} } = props;
   const { data, isSuccess, isFetching, fetchNextPage, hasNextPage } =
-    useInfiniteQuery({
-      queryKey: ["posts"],
-      queryFn: ({ pageParam }) =>
-        api.post.infinite.query({ ...query, cursor: pageParam }),
-      getNextPageParam: (lastPage) => {
-        if (lastPage.hasNextPage) {
-          return lastPage.nextCursor;
-        }
-        return undefined;
-      },
-      initialData: () => {
-        if (!initFeed) return undefined;
-        return {
-          pages: [
-            {
-              items: initFeed,
-              hasNextPage: true,
-              nextCursor: nextCursor,
-            },
-          ],
-          pageParams: [undefined],
-        };
-      },
+    api.post.infinite.useInfiniteQuery(query, {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      initialData: !!initFeed
+        ? {
+            pages: [
+              {
+                items: initFeed,
+                hasNextPage: true,
+                nextCursor: nextCursor?.toString(),
+              },
+            ],
+            pageParams: [undefined],
+          }
+        : {
+            pages: [],
+            pageParams: [],
+          },
     });
   const flatData = useMemo(() => {
     if (!isSuccess || !data) return [];
