@@ -14,8 +14,8 @@
     "@chia/auth": "0.0.0",
     "@chia/db": "0.0.0",
     "@chia/utils": "0.0.0",
-    "@trpc/client": "^10.43.0",
-    "@trpc/server": "^10.43.0",
+    "@trpc/client": "next",
+    "@trpc/server": "next",
     "next": "14.0.3",
     "tsconfig": "0.0.0"
   }

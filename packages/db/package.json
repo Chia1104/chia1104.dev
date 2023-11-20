@@ -12,14 +12,15 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@prisma/client": "^5.5.0",
+    "dotenv": "^16.3.1",
     "drizzle-orm": "^0.28.6",
+    "pg": "^8.11.3",
     "postgres": "^3.4.1"
   },
   "devDependencies": {
     "@auth/core": "^0.18.0",
+    "@types/pg": "^8.10.9",
     "drizzle-kit": "^0.19.13",
-    "prisma": "^5.5.0",
     "tsconfig": "0.0.0"
   }
 }

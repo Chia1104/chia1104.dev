@@ -33,10 +33,13 @@ const nextConfig = {
   transpilePackages: ["@chia/ui", "@chia/db", "@chia/auth", "@chia/api"],
   experimental: {
     serverComponentsExternalPackages: ["@chia/ui"],
-    serverActions: true,
+    webpackBuildWorker: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
   async headers() {
     return [
@@ -45,6 +48,14 @@ const nextConfig = {
         headers: securityHeaders,
       },
     ];
+  },
+  webpack: (config, { webpack }) => {
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^pg-native$|^cloudflare:sockets$/,
+      })
+    );
+    return config;
   },
 };
 

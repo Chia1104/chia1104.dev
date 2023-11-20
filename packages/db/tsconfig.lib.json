@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "../../apps/backend/dist/out-tsc",
+    "outDir": "../../apps/service/dist/out-tsc",
     "declaration": true,
     "types": ["node"],
     "target": "es2021",

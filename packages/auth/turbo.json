@@ -6,8 +6,8 @@
       "env": [
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
-        "NEXTAUTH_URL",
-        "NEXTAUTH_SECRET"
+        "AUTH_URL",
+        "AUTH_SECRET"
       ]
     }
   }

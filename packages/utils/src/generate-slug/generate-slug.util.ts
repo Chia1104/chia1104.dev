@@ -1,4 +1,5 @@
 import { getToday } from "../day/day.util";
+import crypto from "crypto";
 
 const generateSlug = (title: string) => {
   return (
@@ -7,7 +8,9 @@ const generateSlug = (title: string) => {
     title
       .toLowerCase()
       .replace(/[^\w ]+/g, "")
-      .replace(/ +/g, "-")
+      .replace(/ +/g, "-") +
+    "-" +
+    crypto.randomBytes(4).toString("hex")
   );
 };
 

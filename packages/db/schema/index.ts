@@ -1,8 +1,14 @@
-import { timestamp, text, primaryKey, integer } from "drizzle-orm/pg-core";
+import {
+  timestamp,
+  text,
+  primaryKey,
+  integer,
+  serial,
+} from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { pgTable } from "./table";
-import { roles } from "./enums";
-import { InferSelectModel } from "drizzle-orm";
+import { roles, feed_type } from "./enums";
+import { type InferSelectModel, relations, sql } from "drizzle-orm";
 
 export const users = pgTable("user", {
   id: text("id").notNull().primaryKey(),
@@ -55,10 +61,14 @@ export const verificationTokens = pgTable(
   })
 );
 
-export const asset = pgTable("asset", {
-  id: text("id").notNull().primaryKey(),
-  createdAt: timestamp("createdAt", { mode: "date" }).notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).notNull(),
+export const assets = pgTable("asset", {
+  id: serial("id").primaryKey(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updatedAt")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
   name: text("name").notNull(),
   extention: text("extention"),
   url: text("url").notNull(),
@@ -67,35 +77,55 @@ export const asset = pgTable("asset", {
     .references(() => users.id),
 });
 
-export const feed = pgTable("feed", {
-  id: text("id").notNull().primaryKey(),
+export const feeds = pgTable("feed", {
+  id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
+  type: feed_type("type").notNull(),
   title: text("title").notNull(),
+  expert: text("expert"),
   description: text("description"),
-  createdAt: timestamp("createdAt", { mode: "date" }).notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).notNull(),
+  createdAt: timestamp("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updatedAt")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
   readTime: integer("readTime"),
   userId: text("userId")
     .notNull()
     .references(() => users.id),
-  image: text("assetId")
-    .notNull()
-    .references(() => asset.id),
 });
 
-export const post = pgTable("post", {
-  id: text("id").notNull().primaryKey(),
-  feedId: text("feedId")
+export const posts = pgTable("post", {
+  id: serial("id").primaryKey(),
+  feedId: integer("feedId")
     .notNull()
-    .references(() => feed.id, { onDelete: "cascade" }),
+    .references(() => feeds.id, { onDelete: "cascade" }),
   content: text("content"),
-  expert: text("expert"),
 });
+
+export const notes = pgTable("note", {
+  id: serial("id").primaryKey(),
+  feedId: integer("feedId")
+    .notNull()
+    .references(() => feeds.id, { onDelete: "cascade" }),
+  content: text("content"),
+});
+
+export const usersRelations = relations(users, ({ many }) => ({
+  feeds: many(feeds),
+  assets: many(assets),
+}));
+
+export const feedsRelations = relations(feeds, ({ one }) => ({
+  posts: one(posts),
+  notes: one(notes),
+}));
 
 export type User = InferSelectModel<typeof users>;
 export type Account = InferSelectModel<typeof accounts>;
 export type Session = InferSelectModel<typeof sessions>;
 export type VerificationToken = InferSelectModel<typeof verificationTokens>;
-export type Asset = InferSelectModel<typeof asset>;
-export type Feed = InferSelectModel<typeof feed>;
-export type Post = InferSelectModel<typeof post>;
+export type Asset = InferSelectModel<typeof assets>;
+export type Feed = InferSelectModel<typeof feeds>;
+export type Post = InferSelectModel<typeof posts>;

@@ -4,8 +4,8 @@ import { createEnv } from "@t3-oss/env-nextjs";
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "production"]).default("development"),
-    NEXTAUTH_URL: process.env.VERCEL_URL ? z.string().optional() : z.string(),
-    NEXTAUTH_SECRET:
+    AUTH_URL: process.env.VERCEL_URL ? z.string().optional() : z.string(),
+    AUTH_SECRET:
       process.env.NODE_ENV === "production"
         ? z.string().min(1)
         : z.string().optional(),
@@ -19,8 +19,8 @@ export const env = createEnv({
   client: {},
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    AUTH_URL: process.env.AUTH_URL,
+    AUTH_SECRET: process.env.AUTH_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,

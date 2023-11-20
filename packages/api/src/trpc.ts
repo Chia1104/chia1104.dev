@@ -1,31 +1,33 @@
-import { type PrismaClient } from "@prisma/client";
-import { type NextRequest } from "next/server";
-import { getServerSession } from "@chia/auth";
-import { prisma } from "@chia/db";
-
-type CreateContextOptions = {
-  headers: Headers;
-};
-
-const createInnerTRPCContext = async (opts: CreateContextOptions) => {
-  const session = await getServerSession();
-
-  return {
-    session,
-    headers: opts.headers,
-    db: prisma as PrismaClient,
-  };
-};
-
-export const createTRPCContext = async (opts: { req: NextRequest }) => {
-  return await createInnerTRPCContext({
-    headers: opts.req.headers,
-  });
-};
-
+import { auth, type Session } from "@chia/auth";
+import { db } from "@chia/db";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+
+type CreateContextOptions = {
+  session: Session | null;
+};
+
+const createInnerTRPCContext = (opts: CreateContextOptions) => {
+  return {
+    session: opts.session,
+    db,
+  };
+};
+
+export const createTRPCContext = async (opts: {
+  req?: Request;
+  auth: Session | null;
+}) => {
+  const session = opts.auth ?? (await auth());
+  const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
+
+  console.log(">>> tRPC Request from", source, "by", session?.user);
+
+  return createInnerTRPCContext({
+    session,
+  });
+};
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
-import { generateSlug } from "@chia/utils";
+import { desc, eq, schema, asc } from "@chia/db";
 
 export const postRouter = createTRPCRouter({
   get: publicProcedure
@@ -10,7 +10,7 @@ export const postRouter = createTRPCRouter({
           take: z.number().max(20).optional().default(10),
           skip: z.number().optional().default(0),
           orderBy: z
-            .enum(["createdAt", "updatedAt"])
+            .enum(["createdAt", "updatedAt", "id", "slug", "title"])
             .optional()
             .default("updatedAt"),
           sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
@@ -24,10 +24,16 @@ export const postRouter = createTRPCRouter({
         })
     )
     .query(async (opts) => {
-      return await opts.ctx.db.post.findMany({
-        take: opts.input.take,
-        skip: opts.input.skip,
-        orderBy: { [opts.input.orderBy]: opts.input.sortOrder },
+      return opts.ctx.db.query.feeds.findMany({
+        orderBy:
+          opts.input.sortOrder === "asc"
+            ? asc(schema.feeds[opts.input.orderBy])
+            : desc(schema.feeds[opts.input.orderBy]),
+        limit: opts.input.take,
+        offset: opts.input.skip,
+        with: {
+          posts: true,
+        },
       });
     }),
 
@@ -36,9 +42,9 @@ export const postRouter = createTRPCRouter({
       z
         .object({
           limit: z.number().max(20).optional().default(10),
-          cursor: z.string().nullish(), // <-- "cursor" needs to exist, but can be any type
+          cursor: z.any(),
           orderBy: z
-            .enum(["createdAt", "updatedAt"])
+            .enum(["createdAt", "updatedAt", "id", "slug", "title"])
             .optional()
             .default("updatedAt"),
           sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
@@ -53,10 +59,19 @@ export const postRouter = createTRPCRouter({
     )
     .query(async (opts) => {
       const { cursor, orderBy, sortOrder, limit } = opts.input;
-      const items = await opts.ctx.db.post.findMany({
-        take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { [orderBy]: sortOrder },
+      const items = await opts.ctx.db.query.feeds.findMany({
+        orderBy:
+          opts.input.sortOrder === "asc"
+            ? asc(schema.feeds[opts.input.orderBy])
+            : desc(schema.feeds[opts.input.orderBy]),
+        limit: limit,
+        with: {
+          posts: true,
+        },
+        where: (feeds, { gt, lt }) =>
+          sortOrder === "asc"
+            ? lt(feeds[orderBy], cursor)
+            : gt(feeds[orderBy], cursor),
       });
       let nextCursor: typeof cursor | undefined = undefined;
       let hasNextPage = true;
@@ -72,33 +87,5 @@ export const postRouter = createTRPCRouter({
         hasNextPage,
         nextCursor,
       };
-    }),
-
-  create: protectedProcedure
-    .input(
-      z.object({
-        title: z.string().optional().default("Untitled"),
-        excerpt: z.string().optional().default(""),
-        tags: z.array(z.string()).optional().default([]),
-        headImg: z.string().optional(),
-        published: z.boolean().optional().default(false),
-        content: z.string().optional().default(""),
-      })
-    )
-    .mutation(async (opts) => {
-      const { title, excerpt, tags, headImg, published, content } = opts.input;
-      const userId = opts.ctx.session.user.id;
-      return await opts.ctx.db.post.create({
-        data: {
-          title,
-          slug: generateSlug(title),
-          excerpt,
-          tags,
-          headImg,
-          published,
-          content,
-          userId,
-        },
-      });
     }),
 });
