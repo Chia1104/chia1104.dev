@@ -31,23 +31,18 @@ const FeedList: FC<Props> = (props) => {
 
   const { data, isSuccess, isFetching, fetchNextPage, hasNextPage } =
     api.post.infinite.useInfiniteQuery(query, {
-      enabled: true,
       getNextPageParam: (lastPage) => lastPage?.nextCursor,
       initialData: !!initFeed
         ? {
             pages: [
               {
                 items: initFeed,
-                hasNextPage: true,
                 nextCursor: nextCursor?.toString(),
               },
             ],
             pageParams: [undefined],
           }
-        : {
-            pages: [],
-            pageParams: [],
-          },
+        : undefined,
     });
 
   const flatData = useMemo(() => {
