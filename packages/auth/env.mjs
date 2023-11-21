@@ -9,7 +9,7 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string().min(1)
         : z.string().min(1).optional(),
-    AUTH_URL: z.string(),
+    AUTH_URL: z.string().optional(),
   },
   client: {},
   runtimeEnv: {
