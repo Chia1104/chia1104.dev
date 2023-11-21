@@ -1,21 +1,31 @@
 import NextAuth from "next-auth";
-import type { DefaultSession } from "@auth/core/types";
 import { db, tableCreator } from "@chia/db";
-import Google from "@auth/core/providers/google";
+import type { DefaultSession } from "@auth/core/types";
+import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 // @ts-ignore
 import { env } from "./env.mjs";
 
-declare module "next-auth" {
+declare module "@auth/core/types" {
   interface Session extends DefaultSession {
     user: {
-      id: string;
       role: "admin" | "user";
     } & DefaultSession["user"];
   }
 
   interface User {
-    id: string;
+    role: "admin" | "user";
+  }
+}
+
+declare module "next-auth" {
+  interface Session extends DefaultSession {
+    user: {
+      role: "admin" | "user";
+    } & DefaultSession["user"];
+  }
+
+  interface User {
     role: "admin" | "user";
   }
 }
@@ -40,13 +50,12 @@ export const {
       },
     }),
   },
-  adapter: DrizzleAdapter(db, tableCreator) as any,
+  adapter: DrizzleAdapter(db, tableCreator),
   providers: [
-    // @ts-expect-error
     Google({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
   ],
 });
-export type { Session } from "next-auth";
+export type { Session } from "@auth/core/types";

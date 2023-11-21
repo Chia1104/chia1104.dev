@@ -1,13 +1,22 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { type Post } from "@chia/db";
+import { Injectable, Inject } from "@nestjs/common";
+import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
+import { type DB, desc, schema } from "@chia/db";
 
 @Injectable()
 class PostService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(DRIZZLE_PROVIDER) private readonly db: DB) {}
 
-  async getAllPosts(): Promise<Post[]> {
-    return this.prisma.post.findMany();
+  async getAllPosts() {
+    return this.db.query.posts.findMany({
+      orderBy: desc(schema.feeds.updatedAt),
+      with: {
+        feeds: {
+          with: {
+            posts: true,
+          },
+        },
+      },
+    });
   }
 }
 

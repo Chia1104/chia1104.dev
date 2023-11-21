@@ -12,5 +12,8 @@
       "@/*": ["src/*"]
     }
   },
+  "module": {
+    "type": "commonjs"
+  },
   "minify": true
 }

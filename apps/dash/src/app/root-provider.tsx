@@ -10,7 +10,6 @@ import { NextUIProvider } from "@nextui-org/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import superjson from "superjson";
-import { env } from "@/env.mjs";
 import { api } from "@/trpc-api";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 

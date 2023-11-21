@@ -10,12 +10,37 @@ import {
 } from "@nestjs/graphql";
 import { Inject } from "@nestjs/common";
 import { Post } from "@/shared/models/post.model";
-import { PrismaService } from "@/modules/prisma/prisma.service";
+import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
+import { type DB, desc, schema } from "@chia/db";
 
 @InputType()
-class PostOrderByUpdatedAtInput {
+class FeedOrderByUpdatedAtInput {
   @Field(() => SortOrder)
   updatedAt: SortOrder;
+}
+
+@InputType()
+class FeedOrderByCreatedAtInput {
+  @Field(() => SortOrder)
+  createdAt: SortOrder;
+}
+
+@InputType()
+class FeedOrderByIdInput {
+  @Field(() => SortOrder)
+  id: SortOrder;
+}
+
+@InputType()
+class FeedOrderBySlugInput {
+  @Field(() => SortOrder)
+  slug: SortOrder;
+}
+
+@InputType()
+class FeedTypeInput {
+  @Field(() => FeedType)
+  type: FeedType;
 }
 
 enum SortOrder {
@@ -27,9 +52,18 @@ registerEnumType(SortOrder, {
   name: "SortOrder",
 });
 
+enum FeedType {
+  post = "post",
+  note = "note",
+}
+
+registerEnumType(FeedType, {
+  name: "feedType",
+});
+
 @Resolver(Post)
 class PostResolver {
-  constructor(@Inject(PrismaService) private prismaService: PrismaService) {}
+  constructor(@Inject(DRIZZLE_PROVIDER) private readonly db: DB) {}
 
   /**
    * query ($take: Float) {
@@ -51,30 +85,45 @@ class PostResolver {
    * @param ctx
    */
   @Query(() => [Post])
-  feed(
-    @Args("searchString", { nullable: true }) searchString: string,
+  async feed(
     @Args("skip", { nullable: true }) skip: number,
     @Args("take", { nullable: true }) take: number,
-    @Args("orderBy", { nullable: true }) orderBy: PostOrderByUpdatedAtInput,
+    @Args("feedType", { nullable: true }) feedType: FeedTypeInput,
+    @Args("orderBy", { nullable: true })
+    orderBy:
+      | FeedOrderByUpdatedAtInput
+      | FeedOrderByCreatedAtInput
+      | FeedOrderByIdInput
+      | FeedOrderBySlugInput,
     @Context() ctx
   ) {
-    const or = searchString
-      ? {
-          OR: [
-            { title: { contains: searchString } },
-            { content: { contains: searchString } },
-          ],
-        }
-      : {};
+    const _orderBy = orderBy
+      ? orderBy[Object.keys(orderBy)[0]] === "desc"
+        ? desc(schema.feeds[Object.keys(orderBy)[0]])
+        : schema.feeds[Object.keys(orderBy)[0]]
+      : desc(schema.feeds.updatedAt);
 
-    return this.prismaService.post.findMany({
-      where: {
-        published: true,
-        ...or,
+    const _feedType = !!feedType.type
+      ? feedType.type === "post"
+        ? ({
+            posts: true,
+          } as const)
+        : ({
+            notes: true,
+          } as const)
+      : ({
+          posts: true,
+        } as const);
+
+    return this.db.query.posts.findMany({
+      limit: take || undefined,
+      offset: skip || undefined,
+      orderBy: _orderBy,
+      with: {
+        feeds: {
+          with: _feedType,
+        },
       },
-      take: take || undefined,
-      skip: skip || undefined,
-      orderBy: orderBy || undefined,
     });
   }
 }

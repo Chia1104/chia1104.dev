@@ -32,7 +32,6 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     DATABASE_URL=${DATABASE_URL}
 
 RUN pnpm i && \
-    pnpm prisma generate && \
     pnpm turbo run build --filter=service...
 
 FROM base as prod
@@ -46,10 +45,8 @@ RUN pnpm i --prod --ignore-scripts
 FROM base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
-# COPY --from=builder /app/packages/db ./packages/db
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
-# PRISMA TOO BIG QQ...
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=prod /app/node_modules ./node_modules
 
 ARG DATABASE_URL \
     REDIS_URI \
@@ -65,4 +62,4 @@ ENV NODE_ENV=production \
 
 EXPOSE 8080
 
-CMD [ "node", "apps/service/dist/main.js" ]
+CMD [ "node", "apps/service/dist/apps/service/src/main.js" ]
