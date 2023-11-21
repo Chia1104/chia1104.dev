@@ -16,7 +16,7 @@ export const users = pgTable("user", {
   email: text("email").notNull(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
-  role: roles("role").notNull(),
+  role: roles("role").default("user").notNull(),
 });
 
 export const accounts = pgTable(
@@ -63,10 +63,10 @@ export const verificationTokens = pgTable(
 
 export const assets = pgTable("asset", {
   id: serial("id").primaryKey(),
-  createdAt: timestamp("created_at")
+  createdAt: timestamp("created_at", { mode: "date" })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp("updatedAt")
+  updatedAt: timestamp("updatedAt", { mode: "date" })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   name: text("name").notNull(),
@@ -84,10 +84,10 @@ export const feeds = pgTable("feed", {
   title: text("title").notNull(),
   expert: text("expert"),
   description: text("description"),
-  createdAt: timestamp("created_at")
+  createdAt: timestamp("created_at", { mode: "date" })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp("updatedAt")
+  updatedAt: timestamp("updatedAt", { mode: "date" })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   readTime: integer("readTime"),
@@ -120,6 +120,31 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const feedsRelations = relations(feeds, ({ one }) => ({
   posts: one(posts),
   notes: one(notes),
+  users: one(users, {
+    fields: [feeds.userId],
+    references: [users.id],
+  }),
+}));
+
+export const assetsRelations = relations(assets, ({ one }) => ({
+  users: one(users, {
+    fields: [assets.userId],
+    references: [users.id],
+  }),
+}));
+
+export const postsRelations = relations(posts, ({ one }) => ({
+  feeds: one(feeds, {
+    fields: [posts.feedId],
+    references: [feeds.id],
+  }),
+}));
+
+export const notesRelations = relations(notes, ({ one }) => ({
+  feeds: one(feeds, {
+    fields: [notes.feedId],
+    references: [feeds.id],
+  }),
 }));
 
 export type User = InferSelectModel<typeof users>;

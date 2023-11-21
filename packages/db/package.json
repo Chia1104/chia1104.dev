@@ -12,7 +12,6 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "dotenv": "^16.3.1",
     "drizzle-orm": "^0.28.6",
     "pg": "^8.11.3",
     "postgres": "^3.4.1"

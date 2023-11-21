@@ -28,9 +28,11 @@ FeedItem.displayName = "FeedItem";
 
 const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query = {} } = props;
+
   const { data, isSuccess, isFetching, fetchNextPage, hasNextPage } =
     api.post.infinite.useInfiniteQuery(query, {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: true,
+      getNextPageParam: (lastPage) => lastPage?.nextCursor,
       initialData: !!initFeed
         ? {
             pages: [
@@ -47,10 +49,12 @@ const FeedList: FC<Props> = (props) => {
             pageParams: [],
           },
     });
+
   const flatData = useMemo(() => {
     if (!isSuccess || !data) return [];
     return data.pages.flatMap((page) => page.items);
   }, [data, isSuccess]);
+
   const { ref } = useInfiniteScroll({
     hasMore: hasNextPage,
     isLoading: isFetching,

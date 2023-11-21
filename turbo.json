@@ -91,7 +91,7 @@
     "REDIS_URL",
     "DB_URL",
     "DATABASE_URL",
-    "CHIA_ID",
+    "ADMIN_ID",
     "GITHUB_API",
     "GITHUB_GRAPHQL_API",
     "GOOGLE_API",

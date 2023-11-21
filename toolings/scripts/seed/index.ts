@@ -2,8 +2,8 @@ import { faker } from "@faker-js/faker";
 import { db, schema } from "@chia/db";
 import { feeds } from "@chia/db/schema";
 
-if (!process.env.CHIA_ID) {
-  throw new Error("CHIA_ID not set");
+if (!process.env.ADMIN_ID || !process.env.DATABASE_URL) {
+  throw new Error("Missing env variables ADMIN_ID or DATABASE_URL");
 }
 
 const seedPost = async () => {
@@ -16,7 +16,7 @@ const seedPost = async () => {
         title: faker.lorem.sentence(),
         expert: faker.lorem.paragraphs(),
         description: faker.lorem.paragraphs(),
-        userId: process.env.CHIA_ID!,
+        userId: process.env.ADMIN_ID!,
       })
       .returning({ feedId: feeds.id });
     await trx.insert(schema.posts).values({
@@ -33,15 +33,20 @@ const seed = async () => {
   if (!action) {
     throw new Error("No action provided");
   }
-  console.log("Seeding", action);
   const actionFn = seedActions.find((a) => a.name === action);
   if (!actionFn) {
     throw new Error("Unknown action");
   }
+  console.log("Seeding", action);
   await actionFn();
 };
 
-seed().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+seed()
+  .then(() => {
+    console.log("Done");
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

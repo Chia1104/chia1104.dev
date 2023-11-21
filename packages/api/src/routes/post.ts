@@ -73,6 +73,7 @@ export const postRouter = createTRPCRouter({
             ? lt(feeds[orderBy], cursor)
             : gt(feeds[orderBy], cursor),
       });
+      console.log(items);
       let nextCursor: typeof cursor | undefined = undefined;
       let hasNextPage = true;
       if (items.length > limit) {

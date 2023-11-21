@@ -1,6 +1,7 @@
 // @ts-check
 
 import "./src/env.mjs";
+import "@chia/auth/env.mjs";
 
 const securityHeaders = [
   {
@@ -48,14 +49,6 @@ const nextConfig = {
         headers: securityHeaders,
       },
     ];
-  },
-  webpack: (config, { webpack }) => {
-    config.plugins.push(
-      new webpack.IgnorePlugin({
-        resourceRegExp: /^pg-native$|^cloudflare:sockets$/,
-      })
-    );
-    return config;
   },
 };
 

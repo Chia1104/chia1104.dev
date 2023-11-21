@@ -2,8 +2,6 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter, createTRPCContext } from "@chia/api";
 import { auth } from "@chia/auth";
 
-export const runtime = "edge";
-
 const handler = auth(async (req) => {
   return await fetchRequestHandler({
     endpoint: "/api/trpc",
