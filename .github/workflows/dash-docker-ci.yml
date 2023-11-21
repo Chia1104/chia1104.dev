@@ -16,12 +16,13 @@ env:
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  AUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
   GIT_HASH: ${{ github.sha }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   build:
@@ -56,6 +57,7 @@ jobs:
           build-args: |
             GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
-            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            AUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
+            DATABASE_URL=${{ env.DATABASE_URL }}

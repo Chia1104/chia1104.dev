@@ -25,19 +25,12 @@ COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
     TURBO_TOKEN \
-    NEXTAUTH_SECRET \
-    GOOGLE_CLIENT_ID \
-    GOOGLE_CLIENT_SECRET \
-    NEXTAUTH_URL \
     DATABASE_URL
 
 ENV TURBO_TEAM=${TURBO_TEAM} \
     TURBO_TOKEN=${TURBO_TOKEN} \
-    NEXTAUTH_SECRET=${NEXTAUTH_SECRET} \
-    GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
-    GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
-    NEXTAUTH_URL=${NEXTAUTH_URL} \
-    DATABASE_URL=${DATABASE_URL}
+    DATABASE_URL=${DATABASE_URL} \
+    SKIP_ENV_VALIDATION=1
 
 RUN pnpm i && \
     pnpm turbo run db:generate && \
@@ -57,18 +50,7 @@ COPY --from=installer /app/apps/dash/public ./apps/dash/public
 COPY --from=installer --chown=nextjs:nodejs /app/apps/dash/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/dash/.next/static ./apps/dash/.next/static
 
-ARG DATABASE_URL \
-    NEXTAUTH_SECRET \
-    GOOGLE_CLIENT_ID \
-    GOOGLE_CLIENT_SECRET \
-    NEXTAUTH_URL
-
-ENV DATABASE_URL=${DATABASE_URL} \
-    NEXTAUTH_SECRET=${NEXTAUTH_SECRET} \
-    GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
-    GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
-    NEXTAUTH_URL=${NEXTAUTH_URL} \
-    PORT=8080 \
+ENV PORT=8080 \
     NODE_ENV=production \
     HOST=0.0.0.0 \
     HOSTNAME=0.0.0.0
