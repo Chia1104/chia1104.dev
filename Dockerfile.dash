@@ -35,7 +35,6 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     SKIP_ENV_VALIDATION=1
 
 RUN pnpm i && \
-    pnpm turbo run db:generate && \
     pnpm turbo run build --filter=dash...
 
 FROM base AS runner
