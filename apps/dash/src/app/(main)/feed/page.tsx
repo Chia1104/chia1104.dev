@@ -20,7 +20,7 @@ const getPosts = cache(
   ["posts-infinite"],
   {
     tags: ["posts"],
-    revalidate: Infinity,
+    revalidate: false,
   }
 );
 

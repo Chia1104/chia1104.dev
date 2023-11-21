@@ -13,12 +13,10 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.28.6",
-    "pg": "^8.11.3",
     "postgres": "^3.4.1"
   },
   "devDependencies": {
     "@auth/core": "^0.18.0",
-    "@types/pg": "^8.10.9",
     "drizzle-kit": "^0.19.13",
     "tsconfig": "0.0.0"
   }
