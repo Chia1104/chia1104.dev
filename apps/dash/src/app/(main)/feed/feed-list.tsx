@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, forwardRef, useMemo } from "react";
+import { type FC, forwardRef, useMemo, memo } from "react";
 import { api } from "@/trpc-api";
 import { useInfiniteScroll } from "@chia/ui";
 import { Card, CardBody } from "@nextui-org/react";
@@ -40,7 +40,7 @@ const FeedList: FC<Props> = (props) => {
                 nextCursor: nextCursor?.toString(),
               },
             ],
-            pageParams: [undefined],
+            pageParams: [nextCursor?.toString()],
           }
         : undefined,
     });
@@ -63,8 +63,11 @@ const FeedList: FC<Props> = (props) => {
       <h2 className="mb-10 text-4xl">FeedList</h2>
       <div className="flex flex-col gap-5">
         {isSuccess &&
-          flatData?.map((feed) => {
-            return <FeedItem key={feed.id} feed={feed} ref={ref} />;
+          flatData?.map((feed, index) => {
+            if (flatData.length === index + 1) {
+              return <FeedItem key={feed.id} ref={ref} feed={feed} />;
+            }
+            return <FeedItem key={feed.id} feed={feed} />;
           })}
         {isFetching && <Skeleton />}
       </div>
@@ -72,4 +75,6 @@ const FeedList: FC<Props> = (props) => {
   );
 };
 
-export default FeedList;
+export default memo(FeedList, (prev, next) => {
+  return prev.initFeed === next.initFeed;
+});

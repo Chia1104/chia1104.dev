@@ -1,17 +1,27 @@
 import FeedList from "./feed-list";
 import { db } from "@chia/db";
-import { PostsAPI } from "@chia/db/utils/posts";
-import { cache } from "react";
-import { unstable_cache } from "next/cache";
+import { unstable_cache as cache } from "next/cache";
+import { postRouter } from "@chia/api/src/routes/post";
+import { auth } from "@chia/auth";
 
-const postsAPI = new PostsAPI(db);
-
-const getPosts = unstable_cache(() =>
-  postsAPI.getInfinitePosts({
-    limit: 10,
-    orderBy: "createdAt",
-    sortOrder: "desc",
-  })
+const getPosts = cache(
+  async () => {
+    const session = await auth();
+    const postCaller = postRouter.createCaller({
+      session,
+      db,
+    });
+    return await postCaller.infinite({
+      limit: 10,
+      orderBy: "createdAt",
+      sortOrder: "desc",
+    });
+  },
+  ["posts-infinite"],
+  {
+    tags: ["posts"],
+    revalidate: Infinity,
+  }
 );
 
 const FeedPage = async () => {
@@ -21,7 +31,7 @@ const FeedPage = async () => {
       <FeedList
         initFeed={posts.items}
         nextCursor={posts.nextCursor}
-        query={{ limit: 10 }}
+        query={{ limit: 10, orderBy: "createdAt", sortOrder: "desc" }}
       />
     </div>
   );
