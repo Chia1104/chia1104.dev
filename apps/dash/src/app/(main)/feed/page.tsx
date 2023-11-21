@@ -1,28 +1,22 @@
 import FeedList from "./feed-list";
 import { db } from "@chia/db";
-import { unstable_cache as cache } from "next/cache";
 import { postRouter } from "@chia/api/src/routes/post";
 import { auth } from "@chia/auth";
 
-const getPosts = cache(
-  async () => {
-    const session = await auth();
-    const postCaller = postRouter.createCaller({
-      session,
-      db,
-    });
-    return await postCaller.infinite({
-      limit: 10,
-      orderBy: "createdAt",
-      sortOrder: "desc",
-    });
-  },
-  ["posts-infinite"],
-  {
-    tags: ["posts"],
-    revalidate: false,
-  }
-);
+const getPosts = async () => {
+  const session = await auth();
+  const postCaller = postRouter.createCaller({
+    session,
+    db,
+  });
+  return await postCaller.infinite({
+    limit: 10,
+    orderBy: "createdAt",
+    sortOrder: "desc",
+  });
+};
+
+export const dynamic = "force-dynamic";
 
 const FeedPage = async () => {
   const posts = await getPosts();
