@@ -171,8 +171,8 @@ importers:
         specifier: 0.32.6
         version: 0.32.6
       sonner:
-        specifier: 1.2.0
-        version: 1.2.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 1.2.2
+        version: 1.2.2(react-dom@18.2.0)(react@18.2.0)
       tailwind-merge:
         specifier: ^2.0.0
         version: 2.0.0
@@ -461,8 +461,8 @@ importers:
         specifier: 0.32.6
         version: 0.32.6
       sonner:
-        specifier: 1.2.0
-        version: 1.2.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 1.2.2
+        version: 1.2.2(react-dom@18.2.0)(react@18.2.0)
       usehooks-ts:
         specifier: ^2.9.1
         version: 2.9.1(react-dom@18.2.0)(react@18.2.0)
@@ -616,8 +616,8 @@ importers:
         specifier: ^5.1.8
         version: 5.1.8(react-dom@18.2.0)(react@18.2.0)
       sonner:
-        specifier: 1.2.0
-        version: 1.2.0(react-dom@18.2.0)(react@18.2.0)
+        specifier: 1.2.2
+        version: 1.2.2(react-dom@18.2.0)(react@18.2.0)
       tailwind-merge:
         specifier: ^2.0.0
         version: 2.0.0
@@ -14254,8 +14254,8 @@ packages:
       is-fullwidth-code-point: 4.0.0
     dev: false
 
-  /sonner@1.2.0(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-4bIPKrhF+Z4yEC4EZvNBswcVzMrUhztOQXqyIoiZqiqN1TT39FeK+TgRsQidvvztnYgOn4+S3LdAsri61c7ATA==}
+  /sonner@1.2.2(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-EHxYBr5tLDQW4CqosTsX95/Qd5oxjDeQN/EbKBZcjdNp4Hjs6snXB6Lmu1kTL27M3su0oG9DxkllfvX+aSoI4Q==}
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
