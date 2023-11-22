@@ -4,6 +4,8 @@ import {
   primaryKey,
   integer,
   serial,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { pgTable } from "./table";
@@ -61,56 +63,90 @@ export const verificationTokens = pgTable(
   })
 );
 
-export const assets = pgTable("asset", {
-  id: serial("id").primaryKey(),
-  createdAt: timestamp("created_at", { mode: "date" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  name: text("name").notNull(),
-  extention: text("extention"),
-  url: text("url").notNull(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id),
-});
+export const assets = pgTable(
+  "asset",
+  {
+    id: serial("id").primaryKey(),
+    createdAt: timestamp("created_at", { mode: "date" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    name: text("name").notNull(),
+    extention: text("extention"),
+    url: text("url").notNull(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id),
+  },
+  (table) => {
+    return {
+      idIndex: uniqueIndex("asset_id_index").on(table.id),
+    };
+  }
+);
 
-export const feeds = pgTable("feed", {
-  id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  type: feed_type("type").notNull(),
-  title: text("title").notNull(),
-  expert: text("expert"),
-  description: text("description"),
-  createdAt: timestamp("created_at", { mode: "date" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  readTime: integer("readTime"),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id),
-});
+export const feeds = pgTable(
+  "feed",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    type: feed_type("type").notNull(),
+    title: text("title").notNull(),
+    expert: text("expert"),
+    description: text("description"),
+    createdAt: timestamp("created_at", { mode: "date" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    readTime: integer("readTime"),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id),
+  },
+  (table) => {
+    return {
+      idIndex: uniqueIndex("feed_id_index").on(table.id),
+      slugIndex: uniqueIndex("feed_slug_index").on(table.slug),
+      titleIndex: index("feed_title_index").on(table.title),
+    };
+  }
+);
 
-export const posts = pgTable("post", {
-  id: serial("id").primaryKey(),
-  feedId: integer("feedId")
-    .notNull()
-    .references(() => feeds.id, { onDelete: "cascade" }),
-  content: text("content"),
-});
+export const posts = pgTable(
+  "post",
+  {
+    id: serial("id").primaryKey(),
+    feedId: integer("feedId")
+      .notNull()
+      .references(() => feeds.id, { onDelete: "cascade" }),
+    content: text("content"),
+  },
+  (table) => {
+    return {
+      idIndex: uniqueIndex("post_id_index").on(table.id),
+    };
+  }
+);
 
-export const notes = pgTable("note", {
-  id: serial("id").primaryKey(),
-  feedId: integer("feedId")
-    .notNull()
-    .references(() => feeds.id, { onDelete: "cascade" }),
-  content: text("content"),
-});
+export const notes = pgTable(
+  "note",
+  {
+    id: serial("id").primaryKey(),
+    feedId: integer("feedId")
+      .notNull()
+      .references(() => feeds.id, { onDelete: "cascade" }),
+    content: text("content"),
+  },
+  (table) => {
+    return {
+      idIndex: uniqueIndex("note_id_index").on(table.id),
+    };
+  }
+);
 
 export const usersRelations = relations(users, ({ many }) => ({
   feeds: many(feeds),
