@@ -8,6 +8,10 @@ on:
     paths:
       - "apps/dash/**"
       - "packages/ui/**"
+      - "packages/utils/**"
+      - "packages/auth/**"
+      - "packages/api/**"
+      - "packages/db/**"
       - ".github/workflows/dash-docker-ci.yml"
       - "package.json"
 

@@ -8,6 +8,7 @@ on:
     paths:
       - "apps/www/**"
       - "packages/ui/**"
+      - "packages/utils/**"
       - ".github/workflows/www-docker-ci.yml"
       - "package.json"
 
