@@ -48,18 +48,9 @@ COPY --from=builder /app/apps/service/dist ./apps/service/dist
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
 COPY --from=prod /app/node_modules ./node_modules
 
-ARG DATABASE_URL \
-    REDIS_URI \
-    THROTTLE_LIMIT \
-    THROTTLE_TTL
-
 ENV NODE_ENV=production \
-    PORT=8080 \
-    DATABASE_URL=${DATABASE_URL} \
-    REDIS_URI=${REDIS_URI} \
-    THROTTLE_LIMIT=${THROTTLE_LIMIT} \
-    THROTTLE_TTL=${THROTTLE_TTL}
+    PORT=8080
 
 EXPOSE 8080
 
-CMD [ "node", "apps/service/dist/apps/service/src/main.js" ]
+CMD [ "node", "apps/service/dist/main.js" ]

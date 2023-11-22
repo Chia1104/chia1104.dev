@@ -3,45 +3,38 @@ import {
   Resolver,
   Query,
   Args,
-  Context,
   InputType,
   Field,
   registerEnumType,
 } from "@nestjs/graphql";
 import { Inject } from "@nestjs/common";
-import { Post } from "@/shared/models/post.model";
+import { Feed } from "@/shared/models/feed.model";
 import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
 import { type DB, desc, schema } from "@chia/db";
 
 @InputType()
-class FeedOrderByUpdatedAtInput {
+class FeedOrderByInput {
   @Field(() => SortOrder)
   updatedAt: SortOrder;
-}
 
-@InputType()
-class FeedOrderByCreatedAtInput {
   @Field(() => SortOrder)
   createdAt: SortOrder;
-}
 
-@InputType()
-class FeedOrderByIdInput {
   @Field(() => SortOrder)
   id: SortOrder;
-}
 
-@InputType()
-class FeedOrderBySlugInput {
   @Field(() => SortOrder)
   slug: SortOrder;
 }
 
-@InputType()
-class FeedTypeInput {
-  @Field(() => FeedType)
-  type: FeedType;
+enum FeedType {
+  post = "post",
+  note = "note",
 }
+
+registerEnumType(FeedType, {
+  name: "FeedType",
+});
 
 enum SortOrder {
   asc = "asc",
@@ -52,17 +45,8 @@ registerEnumType(SortOrder, {
   name: "SortOrder",
 });
 
-enum FeedType {
-  post = "post",
-  note = "note",
-}
-
-registerEnumType(FeedType, {
-  name: "feedType",
-});
-
-@Resolver(Post)
-class PostResolver {
+@Resolver(Feed)
+class FeedResolver {
   constructor(@Inject(DRIZZLE_PROVIDER) private readonly db: DB) {}
 
   /**
@@ -78,24 +62,18 @@ class PostResolver {
    *  "take": 2
    * }
    *
-   * @param searchString
    * @param skip
    * @param take
    * @param orderBy
-   * @param ctx
    */
-  @Query(() => [Post])
+  @Query(() => [Feed])
   async feed(
     @Args("skip", { nullable: true }) skip: number,
     @Args("take", { nullable: true }) take: number,
-    @Args("feedType", { nullable: true }) feedType: FeedTypeInput,
+    @Args("feedType", { nullable: true, defaultValue: FeedType.post })
+    feedType: FeedType,
     @Args("orderBy", { nullable: true })
-    orderBy:
-      | FeedOrderByUpdatedAtInput
-      | FeedOrderByCreatedAtInput
-      | FeedOrderByIdInput
-      | FeedOrderBySlugInput,
-    @Context() ctx
+    orderBy: FeedOrderByInput
   ) {
     const _orderBy = orderBy
       ? orderBy[Object.keys(orderBy)[0]] === "desc"
@@ -103,29 +81,26 @@ class PostResolver {
         : schema.feeds[Object.keys(orderBy)[0]]
       : desc(schema.feeds.updatedAt);
 
-    const _feedType = !!feedType.type
-      ? feedType.type === "post"
+    const _feedType = !!feedType
+      ? feedType === "post"
         ? ({
-            posts: true,
+            post: true,
           } as const)
         : ({
-            notes: true,
+            note: true,
           } as const)
       : ({
-          posts: true,
+          post: true,
         } as const);
 
-    return this.db.query.posts.findMany({
+    return this.db.query.feeds.findMany({
       limit: take || undefined,
       offset: skip || undefined,
+      where: (feeds, { eq }) => eq(feeds.type, feedType),
       orderBy: _orderBy,
-      with: {
-        feeds: {
-          with: _feedType,
-        },
-      },
+      with: _feedType,
     });
   }
 }
 
-export default PostResolver;
+export default FeedResolver;

@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { ObjectType, Field, ID } from "@nestjs/graphql";
-import { Post } from "./post.model";
+import { Feed } from "./feed.model";
 
 @ObjectType()
 export class User {
@@ -19,6 +19,6 @@ export class User {
   @Field({ nullable: true })
   image?: string;
 
-  @Field(() => [Post], { nullable: true })
-  posts?: Post[];
+  @Field(() => [Feed], { nullable: true })
+  feeds?: Feed[];
 }

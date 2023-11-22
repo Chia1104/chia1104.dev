@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AppController } from "./app.controller";
-import PostModule from "@/modules/post/post.module";
+import FeedModule from "@/modules/feed/feed.module";
 import RateLimiterModule from "@/modules/rate-limiter/rate-limiter.module";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
@@ -13,7 +13,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
 
 @Module({
   imports: [
-    PostModule,
+    FeedModule,
     RateLimiterModule,
     ConfigModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({

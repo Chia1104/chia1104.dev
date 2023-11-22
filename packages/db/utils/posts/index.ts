@@ -22,8 +22,9 @@ export class PostsAPI {
       ],
       limit: opts.take,
       offset: opts.skip,
+      where: (feeds, { eq }) => eq(feeds.type, "post"),
       with: {
-        posts: true,
+        post: true,
       },
     });
   }
@@ -47,14 +48,15 @@ export class PostsAPI {
       ],
       limit: limit + 1,
       with: {
-        posts: true,
+        post: true,
       },
       where: cursor
-        ? (feeds, { gte, lte }) =>
-            sortOrder === "asc"
+        ? (feeds, { gte, lte, eq }) =>
+            (sortOrder === "asc"
               ? gte(feeds[orderBy], cursorTransform(cursor))
-              : lte(feeds[orderBy], cursorTransform(cursor))
-        : undefined,
+              : lte(feeds[orderBy], cursorTransform(cursor))) &&
+            eq(feeds.type, "post")
+        : (feeds, { eq }) => eq(feeds.type, "post"),
     });
     let nextCursor: typeof cursor | undefined = undefined;
     if (items.length > limit) {

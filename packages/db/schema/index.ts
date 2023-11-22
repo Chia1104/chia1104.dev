@@ -118,23 +118,23 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const feedsRelations = relations(feeds, ({ one }) => ({
-  posts: one(posts),
-  notes: one(notes),
-  users: one(users, {
+  post: one(posts),
+  note: one(notes),
+  user: one(users, {
     fields: [feeds.userId],
     references: [users.id],
   }),
 }));
 
 export const assetsRelations = relations(assets, ({ one }) => ({
-  users: one(users, {
+  user: one(users, {
     fields: [assets.userId],
     references: [users.id],
   }),
 }));
 
 export const postsRelations = relations(posts, ({ one }) => ({
-  feeds: one(feeds, {
+  feed: one(feeds, {
     fields: [posts.feedId],
     references: [feeds.id],
   }),
@@ -154,3 +154,4 @@ export type VerificationToken = InferSelectModel<typeof verificationTokens>;
 export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type Post = InferSelectModel<typeof posts>;
+export type Note = InferSelectModel<typeof notes>;

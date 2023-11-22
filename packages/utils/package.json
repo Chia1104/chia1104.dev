@@ -20,7 +20,6 @@
     }
   },
   "devDependencies": {
-    "tsconfig": "0.0.0",
-    "tsup": "^8.0.0"
+    "tsconfig": "0.0.0"
   }
 }
