@@ -45,7 +45,10 @@ RUN pnpm i --prod --ignore-scripts
 FROM base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+COPY ./packages/db/package.json ./packages/db/package.json
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
+COPY --from=prod /app/packages/db/node_modules ./packages/db/node_modules
 COPY --from=prod /app/node_modules ./node_modules
 
 ENV NODE_ENV=production \
