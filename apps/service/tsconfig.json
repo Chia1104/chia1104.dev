@@ -4,9 +4,9 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@chia/db": ["../../packages/db"],
-      "@chia/db/*": ["../../packages/db/*"]
+      "@/*": ["src/*"]
+      //      "@chia/db": ["../../packages/db"],
+      //      "@chia/db/*": ["../../packages/db/*"]
     }
   }
 }

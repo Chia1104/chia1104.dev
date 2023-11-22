@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { db, schema } from "@chia/db";
-import { feeds } from "@chia/db/schema";
+import { feeds } from "../../../packages/db/src/schema";
 
 if (!process.env.ADMIN_ID || !process.env.DATABASE_URL) {
   throw new Error("Missing env variables ADMIN_ID or DATABASE_URL");
