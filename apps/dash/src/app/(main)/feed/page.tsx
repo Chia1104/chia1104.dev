@@ -11,7 +11,7 @@ const getPosts = async () => {
   });
   return await postCaller.infinite({
     limit: 10,
-    orderBy: "createdAt",
+    orderBy: "id",
     sortOrder: "desc",
   });
 };
@@ -25,7 +25,7 @@ const FeedPage = async () => {
       <FeedList
         initFeed={posts.items}
         nextCursor={posts.nextCursor}
-        query={{ limit: 10, orderBy: "createdAt", sortOrder: "desc" }}
+        query={{ limit: 10, orderBy: "id", sortOrder: "desc" }}
       />
     </div>
   );

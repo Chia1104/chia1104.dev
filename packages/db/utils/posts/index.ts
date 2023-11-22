@@ -50,10 +50,10 @@ export class PostsAPI {
         posts: true,
       },
       where: cursor
-        ? (feeds, { gt, lt }) =>
+        ? (feeds, { gte, lte }) =>
             sortOrder === "asc"
-              ? gt(feeds[orderBy], cursorTransform(cursor))
-              : lt(feeds[orderBy], cursorTransform(cursor))
+              ? gte(feeds[orderBy], cursorTransform(cursor))
+              : lte(feeds[orderBy], cursorTransform(cursor))
         : undefined,
     });
     let nextCursor: typeof cursor | undefined = undefined;

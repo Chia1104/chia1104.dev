@@ -20,7 +20,9 @@ const FeedItem = forwardRef<
 >(({ feed }, ref) => {
   return (
     <Card ref={ref} className="dark:bg-dark/90">
-      <CardBody>{feed.title}</CardBody>
+      <CardBody>
+        {feed.id} - {feed.title}
+      </CardBody>
     </Card>
   );
 });
