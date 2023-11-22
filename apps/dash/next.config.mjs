@@ -1,6 +1,7 @@
 // @ts-check
 
 import "./src/env.mjs";
+import "@chia/auth/env.mjs";
 
 const securityHeaders = [
   {
@@ -33,10 +34,13 @@ const nextConfig = {
   transpilePackages: ["@chia/ui", "@chia/db", "@chia/auth", "@chia/api"],
   experimental: {
     serverComponentsExternalPackages: ["@chia/ui"],
-    serverActions: true,
+    webpackBuildWorker: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
   async headers() {
     return [

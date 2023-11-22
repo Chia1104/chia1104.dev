@@ -18,10 +18,11 @@ on:
 env:
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-  NEXTAUTH_URL: http://localhost:3001
+  AUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  AUTH_URL: http://localhost:3001
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   build:
@@ -43,19 +44,17 @@ jobs:
       - name: '📦  Install'
         id: dash-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
-        with:
-          INSTALL_COMMAND: '--filter \!backend --filter \!"./tests/*" --filter \!www --filter \!"./scripts/*"'
 
-#      - name: '📦  Next.js cache'
-#        uses: actions/cache@v3
-#        with:
-#          path: ${{ github.workspace }}/apps/dash/.next/cache
-#          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
+      - name: '📦  Next.js cache'
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/apps/dash/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
       - name: '🏗️  Build'
         uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
         with:
-          BUILD_COMMAND: 'build --filter utils...'
+          BUILD_COMMAND: 'build --filter dash...'
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
 

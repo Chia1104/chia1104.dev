@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AppController } from "./app.controller";
-import PostModule from "@/modules/post/post.module";
+import FeedModule from "@/modules/feed/feed.module";
 import RateLimiterModule from "@/modules/rate-limiter/rate-limiter.module";
 import { GraphQLModule } from "@nestjs/graphql";
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
@@ -13,7 +13,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
 
 @Module({
   imports: [
-    PostModule,
+    FeedModule,
     RateLimiterModule,
     ConfigModule.forRoot(),
     GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -30,15 +30,21 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
+      useFactory: (
+        config: ConfigService<{
+          THROTTLE_LIMIT: string;
+          THROTTLE_TTL: string;
+          REDIS_URI: string;
+        }>
+      ) => ({
         throttlers: [
           {
-            limit: Number(process.env.THROTTLE_LIMIT) || 10,
-            ttl: seconds(Number(process.env.THROTTLE_TTL ?? 60)),
+            limit: Number(config.get("THROTTLE_LIMIT")) || 10,
+            ttl: seconds(Number(config.get("THROTTLE_TTL") ?? 60)),
           },
         ],
         storage: new ThrottlerStorageRedisService(
-          new Redis(process.env.REDIS_URI)
+          new Redis(config.get("REDIS_URI"))
         ),
       }),
     }),

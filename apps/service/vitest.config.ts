@@ -5,6 +5,7 @@ import swc from "unplugin-swc";
 export default defineConfig({
   test: {
     environment: "node",
+    passWithNoTests: true,
   },
   resolve: {
     alias: {

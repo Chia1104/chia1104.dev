@@ -5,6 +5,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
+      //      "@chia/db": ["../../packages/db"],
+      //      "@chia/db/*": ["../../packages/db/*"]
     }
   }
 }

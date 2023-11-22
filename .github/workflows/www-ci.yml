@@ -71,7 +71,7 @@ jobs:
       - name: '🏗️  Build'
         uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
         with:
-          BUILD_COMMAND: 'build --filter utils...'
+          BUILD_COMMAND: 'build --filter @chia/util...'
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
 

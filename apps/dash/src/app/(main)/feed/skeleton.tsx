@@ -7,7 +7,7 @@ const Skeleton: FC = () => {
   return (
     <>
       {[1, 2, 3, 4, 5].map((i) => (
-        <NSkeleton key={i} className="h-[100px] rounded-xl">
+        <NSkeleton key={i} className="h-[100px] w-full rounded-xl">
           LOADING
         </NSkeleton>
       ))}

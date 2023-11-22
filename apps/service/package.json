@@ -3,9 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "build:tsc": "nest build",
     "build": "nest build -b swc",
     "format": "prettier --write \"**/*.{ts,js}\"",
+    "dev:tsc": "nest start --watch",
     "dev": "nest start -b swc -w --type-check",
+    "start:tsc": "node dist/apps/service/src/main",
     "start": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "vitest run",

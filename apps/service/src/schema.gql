@@ -7,28 +7,30 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-type Post {
-  content: String!
+type Feed {
   createdAt: DateTime!
   excerpt: String!
-  headImg: String
   id: ID!
-  published: Boolean
-  readTime: Int
-  readingMins: String
   slug: String!
-  tags: [String!]!
   title: String!
   updatedAt: DateTime!
   user: User!
 }
 
-input PostOrderByUpdatedAtInput {
-  updatedAt: SortOrder!
+input FeedOrderByInput {
+  createdAt: SortOrder
+  id: SortOrder
+  slug: SortOrder
+  updatedAt: SortOrder
+}
+
+enum FeedType {
+  note
+  post
 }
 
 type Query {
-  feed(orderBy: PostOrderByUpdatedAtInput, searchString: String, skip: Float, take: Float): [Post!]!
+  feed(feedType: FeedType = post, orderBy: FeedOrderByInput, skip: Float, take: Float): [Feed!]!
 }
 
 enum SortOrder {
@@ -39,8 +41,8 @@ enum SortOrder {
 type User {
   email: ID
   emailVerified: DateTime
+  feeds: [Feed!]
   id: ID!
   image: String
   name: String
-  posts: [Post!]
 }

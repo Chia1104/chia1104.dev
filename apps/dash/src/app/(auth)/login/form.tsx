@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signInAction } from "@/server/auth.action";
 import { Card, Image } from "@chia/ui";
 import { Button } from "@nextui-org/react";
 import { useTransition } from "react";
@@ -21,11 +21,7 @@ const LoginForm = () => {
         color="primary"
         size="lg"
         className="mb-5 mt-auto"
-        onPress={() =>
-          startTransition(() => {
-            signIn("google", { redirect: true, callbackUrl: "/" });
-          })
-        }>
+        onPress={() => startTransition(() => signInAction())}>
         Sign in with Google
       </Button>
     </Card>

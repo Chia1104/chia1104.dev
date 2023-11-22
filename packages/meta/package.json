@@ -5,7 +5,9 @@
   "private": true,
   "types": "index.ts",
   "main": "index.ts",
-  "scripts": {},
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist"
+  },
   "dependencies": {},
   "devDependencies": {
     "tsconfig": "0.0.0"

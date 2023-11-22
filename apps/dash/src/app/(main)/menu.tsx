@@ -20,7 +20,7 @@ import {
 } from "@nextui-org/react";
 import { ToggleTheme, Image, useDarkMode } from "@chia/ui";
 import { useSession } from "next-auth/react";
-import { signIn, signOut } from "next-auth/react";
+import { signInAction, signOutAction } from "@/server/auth.action";
 import { useTransition, type Key, useState } from "react";
 import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import NextLink from "next/link";
@@ -36,12 +36,7 @@ const User = () => {
             as={Link}
             color="primary"
             variant="flat"
-            onPress={() =>
-              signIn("google", {
-                redirect: true,
-                callbackUrl: "/",
-              })
-            }>
+            onPress={() => startTransition(() => signInAction())}>
             Sign Up
           </Button>
         </NavbarItem>
@@ -63,11 +58,7 @@ const User = () => {
                 key="logout"
                 className="text-danger"
                 color="danger"
-                onPress={() =>
-                  startTransition(() => {
-                    signOut();
-                  })
-                }>
+                onPress={() => startTransition(() => signOutAction())}>
                 Sign Out
               </DropdownItem>
             </DropdownMenu>

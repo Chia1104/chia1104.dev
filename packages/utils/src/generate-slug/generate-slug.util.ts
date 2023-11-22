@@ -7,7 +7,9 @@ const generateSlug = (title: string) => {
     title
       .toLowerCase()
       .replace(/[^\w ]+/g, "")
-      .replace(/ +/g, "-")
+      .replace(/ +/g, "-") +
+    "-" +
+    crypto.randomUUID()
   );
 };
 

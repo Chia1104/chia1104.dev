@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import navItems from "@/shared/routes";
 import Link from "next/link";
 import { Image } from "@chia/ui";
-import CurrentVisitors from "./current-visitors";
 
 const LinkItem: FC<{
   path: string;
@@ -80,31 +79,6 @@ const Logo = () => (
 const Footer: FC = () => {
   return (
     <footer className="c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8">
-      <div className="c-container mb-5 flex w-full px-10">
-        <CurrentVisitors className="">
-          {({ data, isLoading, isError, isSuccess }) => (
-            <>
-              {isLoading && (
-                <span className="c-bg-secondary h-3 w-20 animate-pulse rounded-full" />
-              )}
-              {isSuccess && (
-                <p className="text-center text-sm">
-                  <span className="font-bold">
-                    {data?.currentVisitors ?? 0}
-                  </span>{" "}
-                  visitors online
-                </p>
-              )}
-              {isError && (
-                <p className="text-center text-sm">
-                  <span className="font-bold">Error</span> loading visitors
-                  online
-                </p>
-              )}
-            </>
-          )}
-        </CurrentVisitors>
-      </div>
       <div className="c-container flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start md:flex">
           <Logo />
