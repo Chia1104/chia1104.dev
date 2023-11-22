@@ -11,6 +11,7 @@ export default defineConfig((opts) => {
     format: ["cjs", "esm"],
     target: "es2020",
     tsconfig: "tsconfig.build.json",
+    external: ["drizzle-orm"],
   } satisfies Options;
   return [
     {
