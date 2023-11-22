@@ -18,10 +18,10 @@ type Feed {
 }
 
 input FeedOrderByInput {
-  createdAt: SortOrder!
-  id: SortOrder!
-  slug: SortOrder!
-  updatedAt: SortOrder!
+  createdAt: SortOrder
+  id: SortOrder
+  slug: SortOrder
+  updatedAt: SortOrder
 }
 
 enum FeedType {

@@ -23,8 +23,8 @@ class FeedService {
           : desc(feeds[dto.orderBy]),
       ],
       where: (feeds, { eq }) => eq(feeds.type, dto.type),
-      limit: dto.take,
-      offset: dto.skip,
+      limit: dto.take ? Number(dto.take) : undefined,
+      offset: dto.skip ? Number(dto.skip) : undefined,
       with: feedType,
     });
   }

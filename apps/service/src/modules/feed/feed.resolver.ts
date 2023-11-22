@@ -14,17 +14,25 @@ import { type DB, desc, schema } from "@chia/db";
 
 @InputType()
 class FeedOrderByInput {
-  @Field(() => SortOrder)
-  updatedAt: SortOrder;
+  @Field(() => SortOrder, {
+    nullable: true,
+  })
+  updatedAt?: SortOrder;
 
-  @Field(() => SortOrder)
-  createdAt: SortOrder;
+  @Field(() => SortOrder, {
+    nullable: true,
+  })
+  createdAt?: SortOrder;
 
-  @Field(() => SortOrder)
-  id: SortOrder;
+  @Field(() => SortOrder, {
+    nullable: true,
+  })
+  id?: SortOrder;
 
-  @Field(() => SortOrder)
-  slug: SortOrder;
+  @Field(() => SortOrder, {
+    nullable: true,
+  })
+  slug?: SortOrder;
 }
 
 enum FeedType {
@@ -64,6 +72,7 @@ class FeedResolver {
    *
    * @param skip
    * @param take
+   * @param feedType
    * @param orderBy
    */
   @Query(() => [Feed])
