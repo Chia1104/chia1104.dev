@@ -127,6 +127,9 @@ const nextConfig = {
       },
     ];
   },
+  sentry: {
+    hideSourceMaps: true,
+  },
 };
 
 const plugins = [withBundleAnalyzer];
