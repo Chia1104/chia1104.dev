@@ -7,6 +7,10 @@ import { Toaster as ST } from "sonner";
 import Script from "next/script";
 import { env } from "@/env.mjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
+import superjson from "superjson";
+import { api } from "@/trpc-api";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,15 +22,50 @@ export const queryClient = new QueryClient({
   },
 });
 
-export const ReactQueryProvider = ({ children }: { children: ReactNode }) => {
-  const [internalQueryClient] = useState(() => queryClient);
+export function TRPCReactProvider(props: {
+  children: React.ReactNode;
+  headers?: Headers;
+}) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: Infinity,
+          },
+        },
+      })
+  );
+
+  const [trpcClient] = useState(() =>
+    api.createClient({
+      transformer: superjson,
+      links: [
+        loggerLink({
+          enabled: (opts) =>
+            process.env.NODE_ENV === "development" ||
+            (opts.direction === "down" && opts.result instanceof Error),
+        }),
+        unstable_httpBatchStreamLink({
+          url: `${getBaseUrl()}/api/trpc`,
+          headers() {
+            const headers = new Map(props.headers);
+            headers.set("x-trpc-source", "nextjs-react");
+            return Object.fromEntries(headers);
+          },
+        }),
+      ],
+    })
+  );
 
   return (
-    <QueryClientProvider client={internalQueryClient}>
-      {children}
-    </QueryClientProvider>
+    <api.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        {props.children}
+      </QueryClientProvider>
+    </api.Provider>
   );
-};
+}
 
 const Toaster: FC = () => {
   const { theme } = useDarkMode();
@@ -48,10 +87,13 @@ const Analytics = () => {
   );
 };
 
-const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
+const RootProvider: FC<{ children: ReactNode; headers: Headers }> = ({
+  children,
+  headers,
+}) => {
   return (
     <ThemeProvider enableSystem attribute="class">
-      <ReactQueryProvider>
+      <TRPCReactProvider headers={headers}>
         <Toaster />
         <Analytics />
         <Cursor
@@ -62,7 +104,7 @@ const RootProvider: FC<{ children: ReactNode }> = ({ children }) => {
           }}
         />
         {children}
-      </ReactQueryProvider>
+      </TRPCReactProvider>
     </ThemeProvider>
   );
 };

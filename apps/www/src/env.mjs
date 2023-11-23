@@ -64,6 +64,8 @@ export const env = createEnv({
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
     SENTRY_PROJECT: z.string().optional(),
+    ADMIN_ID: z.string().optional(),
+    DATABASE_URL: z.string().min(1),
   },
 
   client: {
@@ -140,6 +142,8 @@ export const env = createEnv({
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     SENTRY_ORG: process.env.SENTRY_ORG,
     SENTRY_PROJECT: process.env.SENTRY_PROJECT,
+    ADMIN_ID: process.env.ADMIN_ID,
+    DATABASE_URL: process.env.DATABASE_URL,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

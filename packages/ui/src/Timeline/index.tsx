@@ -7,10 +7,11 @@ const getYear = (a: dayjs.Dayjs | string | number) => dayjs(a).year();
 
 const getGroupName = (data: Data) => getYear(data.startDate);
 
-const Timeline: FC<TimelineProps> = ({ data, ...props }) => {
-  data.sort(
-    (a, b) => dayjs(b.startDate).valueOf() - dayjs(a.startDate).valueOf()
-  );
+const Timeline: FC<TimelineProps> = ({ data, enableSort = true, ...props }) => {
+  enableSort &&
+    data.sort(
+      (a, b) => dayjs(b.startDate).valueOf() - dayjs(a.startDate).valueOf()
+    );
   return (
     <div className="my-2 flex flex-col gap-5" {...props}>
       {data

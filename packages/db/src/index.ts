@@ -19,4 +19,4 @@ export { schema };
 export * from "drizzle-orm";
 export { pgTable as tableCreator } from "./schema/table";
 
-export * from "./utils/posts";
+export * from "./utils/feeds";

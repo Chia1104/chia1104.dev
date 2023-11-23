@@ -1,11 +1,11 @@
 import FeedList from "./feed-list";
 import { db } from "@chia/db";
-import { postRouter } from "@chia/api/src/routes/post";
+import { feedsRouter } from "@chia/api/src/routes/feeds";
 import { auth } from "@chia/auth";
 
 const getPosts = async () => {
   const session = await auth();
-  const postCaller = postRouter.createCaller({
+  const postCaller = feedsRouter.createCaller({
     session,
     db,
   });

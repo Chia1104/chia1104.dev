@@ -49,6 +49,7 @@ export interface TimelineData {
 
 export interface TimelineProps extends ComponentPropsWithoutRef<"div"> {
   data: Data[];
+  enableSort?: boolean;
 }
 
 export interface ListItemProps

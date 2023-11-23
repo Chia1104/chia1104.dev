@@ -17,7 +17,7 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
 
 export const createTRPCContext = async (opts: {
   req?: Request;
-  auth: Session | null;
+  auth?: Session | null;
 }) => {
   const session = opts.auth ?? (await auth());
   const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
@@ -60,3 +60,17 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
 });
 
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+
+const dangerous_isAdmin = t.middleware(({ ctx, next }) => {
+  if (!process.env.ADMIN_ID)
+    throw new TRPCError({
+      code: "FORBIDDEN",
+    });
+  return next({
+    ctx: {
+      adminId: process.env.ADMIN_ID,
+    },
+  });
+});
+
+export const adminProcedure = t.procedure.use(dangerous_isAdmin);

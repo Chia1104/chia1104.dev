@@ -1,5 +1,5 @@
 import "../styles/globals.css";
-import { ErrorBoundary } from "@chia/ui";
+import { headers } from "next/headers";
 import RootProvider from "./root-provider";
 import { type ReactNode } from "react";
 import meta from "@chia/meta";
@@ -57,7 +57,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
   return (
     <html lang="zh-Hant-TW" suppressHydrationWarning>
       <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
-        <RootProvider>
+        <RootProvider headers={headers()}>
           {children}
           <Footer />
         </RootProvider>
