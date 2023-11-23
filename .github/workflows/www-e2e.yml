@@ -9,6 +9,8 @@ on:
       - "apps/www/**"
       - "packages/ui/**"
       - "packages/utils/**"
+      - "packages/meta/**"
+      - "packages/db/**"
       - ".github/workflows/www-e2e.yml"
       - "tests/www-e2e/**"
       - "package.json"

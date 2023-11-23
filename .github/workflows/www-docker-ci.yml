@@ -9,7 +9,9 @@ on:
       - "apps/www/**"
       - "packages/ui/**"
       - "packages/utils/**"
-      - ".github/workflows/www-docker-ci.yml"
+      - "packages/meta/**"
+      - "packages/db/**"
+      - ".github/workflows/www-docker.yml"
       - "package.json"
 
 env:
