@@ -44,24 +44,19 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FChia1104%2Fchia1104.dev)
 
-1. Create a new project on Vercel, select the `apps/www` folder as the root directory:
+- Create a new project on Vercel, select the `apps/www` (or `apps/dash`) folder as the root directory:
 
 ![Vercel build settings](./.github/public/vercel-deploy2.png)
-
-2. Apply the following settings:
-
-![Vercel build settings](./.github/public/vercel-deploy1.png)
-
-| Command         | Script                                                                                 |
-| --------------- | -------------------------------------------------------------------------------------- |
-| Build Command   | `cd ../.. && npx turbo run build --filter www...`                                      |
-| Install Command | `pnpm --filter \!dash --filter \!"./tests/*" install --store=node_modules/.pnpm-store` |
 
 ### Railway
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/QTqT7m?referralCode=HYbEt0)
 
-1. Add the following environment variables:
+- Overwrite the `railway.json` file with the following content (recommended):
+
+![Railway environment variables](./.github/public/railway-deploy2.png)
+
+- or add the following environment variables:
 
 ![Railway environment variables](./.github/public/railway-deploy.png)
 
@@ -85,8 +80,8 @@ chia1104.dev
 │   ├── utils (shared utilities)
 │   ├── ui (shared components)
 │   └── db (prisma orm)
-├── config
-│   ├── tailwind-config (tailwind config)
+├── toolings
+│   ├── tailwind (tailwind config and css files)
 │   └── tsconfig (base, nextjs, react)
 └── tests
     ├── www-e2e (playwright e2e tests)
