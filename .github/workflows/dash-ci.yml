@@ -7,11 +7,7 @@ on:
     types: [ opened, labeled, unlabeled, synchronize ]
     paths:
       - "apps/dash/**"
-      - "packages/ui/**"
-      - "packages/utils/**"
-      - "packages/auth/**"
-      - "packages/api/**"
-      - "packages/db/**"
+      - "packages/**"
       - ".github/workflows/dash-ci.yml"
       - "package.json"
 

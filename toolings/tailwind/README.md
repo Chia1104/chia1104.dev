@@ -12,7 +12,7 @@ Make sure your tailwind version is at least 3.3.0.
 
 ```ts
 import type { Config } from "tailwindcss";
-import baseConfig, { animation } from "@chia/tailwind-config";
+import baseConfig, { animation } from "@chia/tailwind";
 
 export default {
   // other config
@@ -23,8 +23,8 @@ export default {
 ### JavaScript
 
 ```js
-const baseConfig = require("@chia/tailwind-config");
-const { animation } = require("@chia/tailwind-config");
+const baseConfig = require("@chia/tailwind");
+const { animation } = require("@chia/tailwind");
 
 module.exports = {
   // other config

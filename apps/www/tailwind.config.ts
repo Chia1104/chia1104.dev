@@ -1,5 +1,11 @@
 import type { Config } from "tailwindcss";
-import baseConfig, { animation } from "@chia/tailwind-config";
+import baseConfig, {
+  animation,
+  shadcnConfig,
+  egoistIcons,
+} from "@chia/tailwind";
+import aspectRatio from "@tailwindcss/aspect-ratio";
+import tailwindScrollbar from "tailwind-scrollbar";
 
 export default {
   content: [
@@ -55,11 +61,7 @@ export default {
   corePlugins: {
     aspectRatio: false,
   },
-  plugins: [
-    require("@tailwindcss/aspect-ratio"),
-    require("tailwind-scrollbar")({ nocompatible: true }),
-    require("tailwindcss-animate"),
-  ],
+  plugins: [aspectRatio, tailwindScrollbar({ nocompatible: true })],
   darkMode: "class",
-  presets: [animation, baseConfig],
+  presets: [shadcnConfig, animation, baseConfig, egoistIcons],
 } satisfies Config;

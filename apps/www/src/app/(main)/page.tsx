@@ -1,23 +1,22 @@
 import meta from "@chia/meta";
 import { Image, ImageZoom, FadeIn } from "@chia/ui";
-import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import type { FC, ReactNode } from "react";
 import Link from "next/link";
 
 const contact = {
   github: {
     name: "Github",
-    icon: <SiGithub />,
+    icon: <span className="i-mdi-github h-5 w-5" />,
     link: meta.link.github,
   },
   instagram: {
     name: "Instagram",
-    icon: <SiInstagram />,
+    icon: <span className="i-mdi-instagram h-5 w-5" />,
     link: meta.link.instagram,
   },
   linkedin: {
     name: "Linkedin",
-    icon: <SiLinkedin />,
+    icon: <span className="i-mdi-linkedin h-5 w-5" />,
     link: meta.link.linkedin,
   },
 };

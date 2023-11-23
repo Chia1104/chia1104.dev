@@ -1,5 +1,7 @@
 const animation = require("./animation");
+const shadcnConfig = require("./shadcn-ui");
 const typography = require("@tailwindcss/typography");
+const egoistIcons = require("./egoist-icons");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -113,3 +115,5 @@ module.exports = {
 };
 
 module.exports.animation = animation;
+module.exports.shadcnConfig = shadcnConfig;
+module.exports.egoistIcons = egoistIcons;

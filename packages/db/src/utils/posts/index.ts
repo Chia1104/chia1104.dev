@@ -51,11 +51,13 @@ export class PostsAPI {
         post: true,
       },
       where: cursor
-        ? (feeds, { gte, lte, eq }) =>
-            (sortOrder === "asc"
-              ? gte(feeds[orderBy], cursorTransform(cursor))
-              : lte(feeds[orderBy], cursorTransform(cursor))) &&
-            eq(feeds.type, "post")
+        ? (feeds, { gte, lte, eq, and }) =>
+            and(
+              sortOrder === "asc"
+                ? gte(feeds[orderBy], cursorTransform(cursor))
+                : lte(feeds[orderBy], cursorTransform(cursor)),
+              eq(feeds.type, "post")
+            )
         : (feeds, { eq }) => eq(feeds.type, "post"),
     });
     let nextCursor: typeof cursor | undefined = undefined;

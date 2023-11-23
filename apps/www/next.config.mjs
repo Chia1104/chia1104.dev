@@ -36,7 +36,7 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [
     "@chia/ui",
-    "@chia/tailwind-config",
+    "@chia/tailwind",
     "@chia/utils",
     "@chia/db",
     "@chia/meta",
@@ -47,7 +47,7 @@ const nextConfig = {
     typedRoutes: false,
     serverComponentsExternalPackages: [
       "@chia/ui",
-      "@chia/tailwind-config",
+      "@chia/tailwind",
       "@chia/utils",
       "@chia/meta",
     ],
