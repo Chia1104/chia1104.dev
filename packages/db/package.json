@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@auth/core": "^0.18.0",
-    "drizzle-kit": "^0.19.13",
+    "drizzle-kit": "^0.20.0",
     "tsconfig": "0.0.0"
   }
 }
