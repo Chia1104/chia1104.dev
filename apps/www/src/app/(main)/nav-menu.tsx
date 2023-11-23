@@ -17,7 +17,7 @@ const NavMenu: FC = () => {
   return (
     <nav className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
       <div className="container flex w-[100%] px-5">
-        <div className="flex w-[20%] items-center">
+        <div className="flex w-[20%] items-center text-2xl">
           <Link
             href="/"
             scroll

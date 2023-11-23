@@ -2,7 +2,6 @@ import Contact from "./contact";
 import type { Metadata } from "next";
 import "./style.css";
 import Link from "next/link";
-import { SiGithub, SiInstagram, SiLinkedin } from "react-icons/si";
 import meta from "@chia/meta";
 import type { FC, ReactNode } from "react";
 
@@ -13,17 +12,17 @@ export const metadata: Metadata = {
 const contact = {
   github: {
     name: "Github",
-    icon: <SiGithub />,
+    icon: <span className="i-mdi-github h-6 w-6" />,
     link: meta.link.github,
   },
   instagram: {
     name: "Instagram",
-    icon: <SiInstagram />,
+    icon: <span className="i-mdi-instagram h-6 w-6" />,
     link: meta.link.instagram,
   },
   linkedin: {
     name: "Linkedin",
-    icon: <SiLinkedin />,
+    icon: <span className="i-mdi-linkedin h-6 w-6" />,
     link: meta.link.linkedin,
   },
 };

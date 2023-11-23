@@ -4,7 +4,6 @@ import { Image, cn, ImageZoom, FadeIn } from "@chia/ui";
 import { type FC } from "react";
 import Link from "next/link";
 import { env } from "@/env.mjs";
-import { SiSpotify } from "react-icons/si";
 
 const ImageItem: FC<{
   src: string;
@@ -132,7 +131,7 @@ export default async function Page() {
           </Link>{" "}
           on my Spotify.
         </span>
-        <SiSpotify className="inline-block" size={20} color="#1DB954" />
+        <span className="i-mdi-spotify h-8 w-8 text-[#1DB954]" />
       </p>
     </FadeIn>
   );

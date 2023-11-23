@@ -3,14 +3,14 @@ import Link from "next/link";
 import { ImageZoom, Image } from "@chia/ui";
 
 export const metadata: Metadata = {
-  title: "Notes",
+  title: "Blog",
 };
 
 const Page = () => {
   return (
-    <article className="main c-container prose dark:prose-invert mt-20">
+    <div className="w-full">
       <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
-        <h1>Notes</h1>
+        <h1>Blog</h1>
         <p>
           Coming soon. In the meantime, check out more{" "}
           <Link href="/about">Information</Link> about me.
@@ -28,7 +28,7 @@ const Page = () => {
         </ImageZoom>
         <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
       </div>
-    </article>
+    </div>
   );
 };
 
