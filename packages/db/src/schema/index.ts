@@ -177,7 +177,7 @@ export const postsRelations = relations(posts, ({ one }) => ({
 }));
 
 export const notesRelations = relations(notes, ({ one }) => ({
-  feeds: one(feeds, {
+  feed: one(feeds, {
     fields: [notes.feedId],
     references: [feeds.id],
   }),
