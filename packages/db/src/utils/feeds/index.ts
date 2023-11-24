@@ -94,14 +94,20 @@ export class FeedsAPI {
       }
       return cursor;
     };
+    const feedType =
+      type === "post"
+        ? ({
+            post: true,
+          } as const)
+        : ({
+            note: true,
+          } as const);
     const items = await this.db.query.feeds.findMany({
       orderBy: (feeds, { asc, desc }) => [
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
-      with: {
-        post: true,
-      },
+      with: feedType,
       where: cursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
@@ -144,14 +150,20 @@ export class FeedsAPI {
       }
       return cursor;
     };
+    const feedType =
+      type === "post"
+        ? ({
+            post: true,
+          } as const)
+        : ({
+            note: true,
+          } as const);
     const items = await this.db.query.feeds.findMany({
       orderBy: (feeds, { asc, desc }) => [
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
-      with: {
-        post: true,
-      },
+      with: feedType,
       where: cursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
