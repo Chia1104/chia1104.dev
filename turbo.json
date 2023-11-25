@@ -94,6 +94,7 @@
     "REDIS_URL",
     "DB_URL",
     "DATABASE_URL",
+    "LOCAL_DATABASE_URL",
     "ADMIN_ID",
     "GITHUB_API",
     "GITHUB_GRAPHQL_API",

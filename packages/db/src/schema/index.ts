@@ -6,6 +6,7 @@ import {
   serial,
   index,
   uniqueIndex,
+  boolean,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { pgTable } from "./table";
@@ -63,6 +64,28 @@ export const verificationTokens = pgTable(
   })
 );
 
+export const tags = pgTable(
+  "tag",
+  {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    description: text("description"),
+  },
+  (table) => {
+    return {
+      idIndex: uniqueIndex("tag_id_index").on(table.id),
+      slugIndex: uniqueIndex("tag_slug_index").on(table.slug),
+      nameIndex: index("tag_name_index").on(table.name),
+    };
+  }
+);
+
+export const tagsRelation = relations(tags, ({ many }) => ({
+  assetsToTags: many(assetsToTags),
+  feedsToTags: many(feedsToTags),
+}));
+
 export const assets = pgTable(
   "asset",
   {
@@ -87,12 +110,28 @@ export const assets = pgTable(
   }
 );
 
+export const assetsToTags = pgTable(
+  "assets_to_tags",
+  {
+    assetId: integer("assetId")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    tagId: integer("tagId")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey(t.assetId, t.tagId),
+  })
+);
+
 export const feeds = pgTable(
   "feed",
   {
     id: serial("id").primaryKey(),
     slug: text("slug").notNull().unique(),
     type: feed_type("type").notNull(),
+    published: boolean("published").default(false).notNull(),
     title: text("title").notNull(),
     expert: text("expert"),
     description: text("description"),
@@ -102,7 +141,6 @@ export const feeds = pgTable(
     updatedAt: timestamp("updatedAt", { mode: "date" })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    readTime: integer("readTime"),
     userId: text("userId")
       .notNull()
       .references(() => users.id),
@@ -116,6 +154,21 @@ export const feeds = pgTable(
   }
 );
 
+export const feedsToTags = pgTable(
+  "feeds_to_tags",
+  {
+    feedId: integer("feedId")
+      .notNull()
+      .references(() => feeds.id, { onDelete: "cascade" }),
+    tagId: integer("tagId")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+  },
+  (t) => ({
+    pk: primaryKey(t.feedId, t.tagId),
+  })
+);
+
 export const posts = pgTable(
   "post",
   {
@@ -124,6 +177,7 @@ export const posts = pgTable(
       .notNull()
       .references(() => feeds.id, { onDelete: "cascade" }),
     content: text("content"),
+    readTime: integer("readTime"),
   },
   (table) => {
     return {
@@ -153,20 +207,22 @@ export const usersRelations = relations(users, ({ many }) => ({
   assets: many(assets),
 }));
 
-export const feedsRelations = relations(feeds, ({ one }) => ({
+export const feedsRelations = relations(feeds, ({ one, many }) => ({
   post: one(posts),
   note: one(notes),
   user: one(users, {
     fields: [feeds.userId],
     references: [users.id],
   }),
+  feedsToTags: many(feedsToTags),
 }));
 
-export const assetsRelations = relations(assets, ({ one }) => ({
+export const assetsRelations = relations(assets, ({ one, many }) => ({
   user: one(users, {
     fields: [assets.userId],
     references: [users.id],
   }),
+  assetsToTags: many(assetsToTags),
 }));
 
 export const postsRelations = relations(posts, ({ one }) => ({
@@ -191,3 +247,4 @@ export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type Post = InferSelectModel<typeof posts>;
 export type Note = InferSelectModel<typeof notes>;
+export type Tag = InferSelectModel<typeof tags>;
