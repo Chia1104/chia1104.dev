@@ -17,6 +17,7 @@ const seedPost = async () => {
         expert: faker.lorem.paragraphs(),
         description: faker.lorem.paragraphs(),
         userId: process.env.ADMIN_ID!,
+        published: false,
       })
       .returning({ feedId: feeds.id });
     await trx.insert(schema.posts).values({

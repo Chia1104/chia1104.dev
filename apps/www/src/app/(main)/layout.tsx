@@ -2,8 +2,8 @@
 
 import { Page, ScrollYProgress } from "@chia/ui";
 import type { ReactNode } from "react";
-import NavMenu from "./nav-menu";
-import ReduxProvider from "./redux-provider";
+import NavMenu from "./_components/nav-menu";
+import ReduxProvider from "./_components/redux-provider";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (

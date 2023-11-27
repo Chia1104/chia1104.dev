@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import { headers } from "next/headers";
-import RootProvider from "./root-provider";
+import RootProvider from "./_components/root-provider";
 import { type ReactNode } from "react";
 import meta from "@chia/meta";
 import "@total-typescript/ts-reset";
@@ -8,7 +8,7 @@ import type { Metadata, Viewport } from "next";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import "react-medium-image-zoom/dist/styles.css";
-import Footer from "./footer";
+import Footer from "./_components/footer";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",

@@ -1,4 +1,4 @@
-import Gallery from "./gallery";
+import Gallery from "./_components/gallery";
 import meta from "@chia/meta";
 import { Age, FadeIn } from "@chia/ui";
 
