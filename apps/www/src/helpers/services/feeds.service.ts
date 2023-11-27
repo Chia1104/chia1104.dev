@@ -13,11 +13,11 @@ export const getPosts = (limit = 10) =>
   cache(
     async () => {
       const session = await auth();
-      const postCaller = feedsRouter.createCaller({
+      const feedsCaller = feedsRouter.createCaller({
         db,
         session,
       });
-      return await postCaller.infinite({
+      return await feedsCaller.infinityByAdmin({
         limit,
         orderBy: "id",
         sortOrder: "desc",
@@ -35,12 +35,12 @@ export const getNotes = (limit = 10) =>
   cache(
     async () => {
       const session = await auth();
-      const postCaller = feedsRouter.createCaller({
+      const feedsCaller = feedsRouter.createCaller({
         db,
         session,
       });
-      return await postCaller.infinite({
-        limit: 4,
+      return await feedsCaller.infinityByAdmin({
+        limit,
         orderBy: "id",
         sortOrder: "desc",
         type: "note",

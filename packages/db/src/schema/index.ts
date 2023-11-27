@@ -131,7 +131,7 @@ export const feeds = pgTable(
     id: serial("id").primaryKey(),
     slug: text("slug").notNull().unique(),
     type: feed_type("type").notNull(),
-    published: boolean("published").default(false).notNull(),
+    published: boolean("published").default(false),
     title: text("title").notNull(),
     expert: text("expert"),
     description: text("description"),

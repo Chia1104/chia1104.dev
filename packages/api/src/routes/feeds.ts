@@ -1,14 +1,9 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-  adminProcedure,
-} from "../trpc";
-import { FeedsAPI } from "@chia/db";
+import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
+import { FeedsAPI, eq, schema } from "@chia/db";
 
 export const feedsRouter = createTRPCRouter({
-  get: publicProcedure
+  get: protectedProcedure
     .input(
       z
         .object({
@@ -31,10 +26,13 @@ export const feedsRouter = createTRPCRouter({
         })
     )
     .query(async (opts) => {
-      return new FeedsAPI(opts.ctx.db).getFeeds(opts.input);
+      return new FeedsAPI(opts.ctx.db).getFeeds({
+        ...opts.input,
+        whereAnd: [eq(schema.feeds.userId, opts.ctx.session.user.id)],
+      });
     }),
 
-  infinite: publicProcedure
+  infinite: protectedProcedure
     .input(
       z
         .object({
@@ -57,7 +55,10 @@ export const feedsRouter = createTRPCRouter({
         })
     )
     .query(async (opts) => {
-      return new FeedsAPI(opts.ctx.db).getInfiniteFeeds(opts.input);
+      return new FeedsAPI(opts.ctx.db).getInfiniteFeeds({
+        ...opts.input,
+        whereAnd: [eq(schema.feeds.userId, opts.ctx.session.user.id)],
+      });
     }),
 
   getByAdmin: adminProcedure
@@ -86,6 +87,7 @@ export const feedsRouter = createTRPCRouter({
       return new FeedsAPI(opts.ctx.db).getFeedsByUserId({
         ...opts.input,
         userId: opts.ctx.adminId,
+        whereAnd: [eq(schema.feeds.published, true)],
       });
     }),
 
@@ -115,6 +117,7 @@ export const feedsRouter = createTRPCRouter({
       return new FeedsAPI(opts.ctx.db).getInfiniteFeedsByUserId({
         ...opts.input,
         userId: opts.ctx.adminId,
+        whereAnd: [eq(schema.feeds.published, true)],
       });
     }),
 });

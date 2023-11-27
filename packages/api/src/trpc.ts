@@ -62,10 +62,12 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 const dangerous_isAdmin = t.middleware(({ ctx, next }) => {
-  if (!process.env.ADMIN_ID)
+  if (!process.env.ADMIN_ID) {
+    console.warn("No ADMIN_ID set");
     throw new TRPCError({
       code: "FORBIDDEN",
     });
+  }
   return next({
     ctx: {
       adminId: process.env.ADMIN_ID,
