@@ -24,7 +24,11 @@ export const PostNavigation: FC<{
         Posts
       </NavigationMenuTrigger>
       <NavigationMenuContent>
-        <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+        <ul
+          className={cn(
+            "grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]",
+            hasPosts ? "lg:grid-cols-[.75fr_1fr]" : "max-w-[300px]"
+          )}>
           {hasPosts ? (
             posts?.map((post, index) => {
               if (index === 0) {
@@ -55,7 +59,7 @@ export const PostNavigation: FC<{
               );
             })
           ) : (
-            <ListItem>No posts found.</ListItem>
+            <ListItem className="row-span-6">No posts found.</ListItem>
           )}
         </ul>
         <span className="flex w-full items-center justify-end gap-1 py-2 pb-5 pr-5 text-sm font-medium">

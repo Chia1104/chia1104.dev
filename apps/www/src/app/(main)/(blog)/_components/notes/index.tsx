@@ -26,7 +26,7 @@ export const NoteNavigation: FC<{
       <NavigationMenuContent>
         <ul
           className={cn(
-            "grid w-full gap-3 p-4 pb-0 sm:max-w-[400px] md:w-[500px] lg:w-[600px]",
+            "grid w-[300px] gap-3 p-4 pb-0 md:w-[500px] lg:w-[600px]",
             hasNotes ? "md:grid-cols-2" : "max-w-[300px]"
           )}>
           {hasNotes ? (

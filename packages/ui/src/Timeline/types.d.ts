@@ -5,6 +5,7 @@ import {
 } from "react";
 import { type HTMLMotionProps, type ForwardRefComponent } from "framer-motion";
 import { type Dayjs } from "dayjs";
+import type { LinkProps } from "next/link";
 
 export interface Data {
   id: number;
@@ -13,6 +14,10 @@ export interface Data {
   content?: ReactNode;
   startDate: dayjs.Dayjs | string | number | null;
   link?: string;
+  defaultOpen?: boolean;
+  titleProps?: ComponentPropsWithoutRef<"span">;
+  subtitleProps?: ComponentPropsWithoutRef<"span">;
+  linkProps?: Partial<LinkProps>;
 }
 
 export interface GroupData {

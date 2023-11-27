@@ -26,6 +26,7 @@ export const Year: FC<{
 };
 
 export const Item: FC<ListItemProps> = ({ data, className, ...props }) => {
+  const { defaultOpen = true, titleProps, subtitleProps, linkProps } = data;
   return (
     <motion.li
       whileInView={{
@@ -42,17 +43,29 @@ export const Item: FC<ListItemProps> = ({ data, className, ...props }) => {
       className={cn("z-10 flex flex-col text-start", className)}
       {...props}>
       <span>
-        <span className="text-lg font-bold">
-          {data.link ? <Link href={data.link}>{data.title}</Link> : data.title}
+        <span
+          {...titleProps}
+          className={cn("text-lg font-bold", titleProps?.className)}>
+          {data.link ? (
+            <Link href={data.link} {...linkProps}>
+              {data.title}
+            </Link>
+          ) : (
+            data.title
+          )}
         </span>{" "}
-        <span className="text-sm text-gray-500">{data.subtitle}</span>
+        <span
+          {...subtitleProps}
+          className={cn("text-sm text-gray-500", subtitleProps?.className)}>
+          {data.subtitle}
+        </span>
       </span>
       {data.content && (
         <Accordion
           type="single"
           collapsible
           className="w-full"
-          defaultValue={data.id.toString()}>
+          defaultValue={defaultOpen ? data.id.toString() : undefined}>
           <AccordionItem
             value={data.id.toString()}
             className="prose-h3:m-1 prose-h3:w-fit">

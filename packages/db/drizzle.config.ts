@@ -13,7 +13,10 @@ export default {
   schema: "./src/schema",
   driver: "pg",
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL,
+    connectionString:
+      process.env.NODE_ENV === "prod"
+        ? process.env.DATABASE_URL
+        : process.env.LOCAL_DATABASE_URL!,
   },
   out: "./.drizzle",
   tablesFilter: ["chia_*"],
