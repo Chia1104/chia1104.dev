@@ -1,4 +1,5 @@
 import { db, type DB } from "@chia/db";
+import { FactoryProvider } from "@nestjs/common";
 
 export const DRIZZLE_PROVIDER = "DRIZZLE_PROVIDER";
 
@@ -7,5 +8,4 @@ export default {
   useFactory: async (): Promise<DB> => {
     return db;
   },
-  exports: [DRIZZLE_PROVIDER],
-};
+} satisfies FactoryProvider;
