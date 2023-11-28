@@ -2,8 +2,8 @@
 
 import React, { type FC } from "react";
 import { motion } from "framer-motion";
-import type { ListItemProps, ListProps } from "./types";
-import { cn } from "../utils";
+import type { ListItemProps, ListProps, GroupListProps } from "./types";
+import { cn, useInfiniteScroll } from "../utils";
 import dayjs from "dayjs";
 import {
   Accordion,
@@ -25,10 +25,17 @@ export const Year: FC<{
   );
 };
 
-export const Item: FC<ListItemProps> = ({ data, className, ...props }) => {
+export const Item: FC<ListItemProps> = ({
+  data,
+  className,
+  refTarget,
+  isLastItem,
+  ...props
+}) => {
   const { defaultOpen = true, titleProps, subtitleProps, linkProps } = data;
   return (
     <motion.li
+      ref={isLastItem ? refTarget : undefined}
       whileInView={{
         opacity: 1,
         y: 0,
@@ -80,13 +87,53 @@ export const Item: FC<ListItemProps> = ({ data, className, ...props }) => {
   );
 };
 
-export const List: FC<ListProps> = ({ year, data, className, ...props }) => (
+export const List: FC<ListProps> = ({
+  year,
+  data,
+  className,
+  isLastGroup,
+  refTarget,
+  ...props
+}) => (
   <motion.ul
     className={cn("relative flex flex-col gap-1", className)}
     {...props}>
     <Year year={year} className="absolute -top-4 left-0" />
-    {data.map((item) => (
-      <Item key={item.id} data={item} />
+    {data.map((item, index) => (
+      <Item
+        refTarget={
+          isLastGroup && data.length - 1 === index ? refTarget : undefined
+        }
+        key={item.id}
+        data={item}
+        isLastItem={isLastGroup && data.length - 1 === index}
+      />
     ))}
   </motion.ul>
 );
+
+export const GroupList: FC<GroupListProps> = ({
+  data,
+  onEndReached,
+  asyncDataStatus,
+}) => {
+  const { ref } = useInfiniteScroll<HTMLLIElement>({
+    onLoadMore: onEndReached,
+    isLoading: asyncDataStatus?.isLoading,
+    isError: asyncDataStatus?.isError,
+    hasMore: asyncDataStatus?.hasMore,
+  });
+  return (
+    <>
+      {data.map((item, index) => (
+        <List
+          refTarget={data.length - 1 === index ? ref : undefined}
+          isLastGroup={data.length - 1 === index}
+          key={item.year.toString()}
+          year={item.year.toString()}
+          data={item.data}
+        />
+      ))}
+    </>
+  );
+};

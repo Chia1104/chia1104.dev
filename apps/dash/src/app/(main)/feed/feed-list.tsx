@@ -52,7 +52,7 @@ const FeedList: FC<Props> = (props) => {
     return data.pages.flatMap((page) => page.items);
   }, [data, isSuccess]);
 
-  const { ref } = useInfiniteScroll({
+  const { ref } = useInfiniteScroll<HTMLDivElement>({
     hasMore: hasNextPage,
     isLoading: isFetching,
     onLoadMore: fetchNextPage,

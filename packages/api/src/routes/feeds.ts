@@ -7,7 +7,7 @@ export const feedsRouter = createTRPCRouter({
     .input(
       z
         .object({
-          take: z.number().max(20).optional().default(10),
+          take: z.number().max(50).optional().default(10),
           skip: z.number().optional().default(0),
           orderBy: z
             .enum(["createdAt", "updatedAt", "id", "slug", "title"])
@@ -36,7 +36,7 @@ export const feedsRouter = createTRPCRouter({
     .input(
       z
         .object({
-          limit: z.number().max(20).optional().default(10),
+          limit: z.number().max(50).optional().default(10),
           cursor: z.any(),
           orderBy: z
             .enum(["createdAt", "updatedAt", "id", "slug", "title"])
@@ -65,7 +65,7 @@ export const feedsRouter = createTRPCRouter({
     .input(
       z
         .object({
-          take: z.number().max(20).optional().default(10),
+          take: z.number().optional().default(10),
           skip: z.number().optional().default(0),
           orderBy: z
             .enum(["createdAt", "updatedAt", "id", "slug", "title"])
@@ -95,7 +95,7 @@ export const feedsRouter = createTRPCRouter({
     .input(
       z
         .object({
-          limit: z.number().max(20).optional().default(10),
+          limit: z.number().optional().default(10),
           cursor: z.any(),
           orderBy: z
             .enum(["createdAt", "updatedAt", "id", "slug", "title"])

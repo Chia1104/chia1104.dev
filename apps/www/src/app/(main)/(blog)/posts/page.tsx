@@ -1,33 +1,31 @@
 import type { Metadata } from "next";
-import { Timeline, type TimelineTypes, ImageZoom, Image } from "@chia/ui";
+import { ImageZoom, Image } from "@chia/ui";
 import { getPosts } from "@/helpers/services/feeds.service";
-import dayjs from "dayjs";
 import Link from "next/link";
+import { List } from "../_components/posts";
 
 export const metadata: Metadata = {
   title: "Blog",
 };
 
 const Page = async () => {
-  const posts = await getPosts();
-  const transformData = posts.items.map((item) => ({
-    id: item.id,
-    title: item.title,
-    // titleProps: {
-    //   className: "line-clamp-1",
-    // },
-    subtitle: dayjs(item.updatedAt).format("MMMM D, YYYY"),
-    startDate: item.updatedAt,
-    content: item.expert,
-    link: `/posts/${item.slug}`,
-  })) satisfies TimelineTypes.Data[];
+  const posts = await getPosts(20);
   const hasPosts =
-    !!transformData && Array.isArray(transformData) && transformData.length > 0;
+    !!posts && Array.isArray(posts.items) && posts.items.length > 0;
   return (
     <div className="w-full">
       <h1>Posts</h1>
       {hasPosts ? (
-        <Timeline data={transformData} enableSort={false} />
+        <List
+          initialData={posts.items}
+          nextCursor={posts.nextCursor}
+          query={{
+            limit: 10,
+            orderBy: "id",
+            sortOrder: "desc",
+            type: "post",
+          }}
+        />
       ) : (
         <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
           <p>
