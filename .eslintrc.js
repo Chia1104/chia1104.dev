@@ -78,7 +78,6 @@ module.exports = {
       files: "**/*.{ts,tsx,cts,mts}",
       parserOptions: {
         project: [
-          "tsconfig.eslint.json",
           "packages/*/tsconfig.json",
           "apps/*/tsconfig.json",
           "tests/*/tsconfig.json",
