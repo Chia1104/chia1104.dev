@@ -2,8 +2,13 @@
 
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
+// @ts-ignore
+import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
 
 export const getClientEnv = () => {
+  if (process.env.NEXT_PUBLIC_ENV) {
+    return process.env.NEXT_PUBLIC_ENV;
+  }
   if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
     return process.env.NEXT_PUBLIC_VERCEL_ENV;
   }
@@ -22,9 +27,7 @@ export const getClientEnv = () => {
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z
-      .enum(["development", "production", "test"])
-      .default("development"),
+    NODE_ENV: nodeEnvSchema,
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
@@ -71,24 +74,7 @@ export const env = createEnv({
   },
 
   client: {
-    NEXT_PUBLIC_ENV: z
-      .enum([
-        "preview",
-        "development",
-        "local",
-        "beta",
-        "gamma",
-        "prod",
-        "production",
-        "test",
-        "zeabur-prod",
-        "vercel-prod",
-        "railway-prod",
-        "zeabur-dev",
-        "vercel-dev",
-        "railway-dev",
-      ])
-      .default("development"),
+    NEXT_PUBLIC_ENV: envSchema,
     NEXT_PUBLIC_RE_CAPTCHA_KEY: z.string().min(1),
     NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().min(1),
     NEXT_PUBLIC_UMAMI_URL: z.string().min(1),

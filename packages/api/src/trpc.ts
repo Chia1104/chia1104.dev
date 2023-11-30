@@ -9,9 +9,7 @@ type CreateContextOptions = {
   session: Session | null;
 };
 
-const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV;
-
-const database = getDb(env, {
+const database = getDb(undefined, {
   db,
   betaDb,
   localDb,

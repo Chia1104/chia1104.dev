@@ -2,12 +2,32 @@
 
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
+// @ts-ignore
+import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
+
+export const getClientEnv = () => {
+  if (process.env.NEXT_PUBLIC_ENV) {
+    return process.env.NEXT_PUBLIC_ENV;
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    return process.env.NEXT_PUBLIC_VERCEL_ENV;
+  }
+  if (process.env.RAILWAY_ENVIRONMENT_NAME) {
+    return process.env.RAILWAY_ENVIRONMENT_NAME === "production"
+      ? "railway-prod"
+      : "railway-dev";
+  }
+  if (process.env.ZEABUR_ENVIRONMENT_NAME) {
+    return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
+      ? "zeabur-prod"
+      : "zeabur-dev";
+  }
+  return "development";
+};
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z
-      .enum(["development", "production", "test"])
-      .default("development"),
+    NODE_ENV: nodeEnvSchema,
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
@@ -18,28 +38,11 @@ export const env = createEnv({
   },
 
   client: {
-    NEXT_PUBLIC_ENV: z
-      .enum([
-        "preview",
-        "development",
-        "local",
-        "beta",
-        "gamma",
-        "prod",
-        "production",
-        "test",
-        "zeabur-prod",
-        "vercel-prod",
-        "railway-prod",
-        "zeabur-dev",
-        "vercel-dev",
-        "railway-dev",
-      ])
-      .default("development"),
+    NEXT_PUBLIC_ENV: envSchema,
   },
 
   runtimeEnv: {
-    NEXT_PUBLIC_ENV: process.env.NEXT_PUBLIC_ENV,
+    NEXT_PUBLIC_ENV: getClientEnv(),
     NODE_ENV: process.env.NODE_ENV,
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,
