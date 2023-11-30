@@ -3,16 +3,13 @@
   "build": {
     "builder": "DOCKERFILE",
     "watchPatterns": [
-      "/apps/www",
-      "/packages/ui",
-      "/packages/utils",
-      "/packages/meta",
+      "/apps/service",
       "/packages/db",
-      "/toolings/tailwind",
-      "/toolings/deployment/railway/www.json",
+      "/packages/utils",
+      "/infra/railway/service.json",
       "package.json"
     ],
-    "dockerfilePath": "./apps/www/Dockerfile"
+    "dockerfilePath": "./apps/service/Dockerfile"
   },
   "deploy": {
     "numReplicas": 1,
