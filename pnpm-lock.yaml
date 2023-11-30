@@ -576,6 +576,9 @@ importers:
       '@chia/db':
         specifier: 0.0.0
         version: link:../db
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../utils
       '@t3-oss/env-nextjs':
         specifier: ^0.7.1
         version: 0.7.1(typescript@5.3.2)(zod@3.22.4)
@@ -704,10 +707,13 @@ importers:
         version: link:../../apps/www
 
   toolings/scripts/seed:
-    dependencies:
+    devDependencies:
       '@chia/db':
         specifier: 0.0.0
         version: link:../../../packages/db
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../../../packages/utils
       '@faker-js/faker':
         specifier: ^8.0.2
         version: 8.3.1
@@ -2138,7 +2144,7 @@ packages:
   /@faker-js/faker@8.3.1:
     resolution: {integrity: sha512-FdgpFxY6V6rLZE9mmIBb9hM0xpfvQOSNOLnzolzKwsE1DH+gC7lEKV1p1IbR0lAYyvYd5a4u3qWJzowUkw1bIw==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0, npm: '>=6.14.13'}
-    dev: false
+    dev: true
 
   /@fastify/busboy@2.1.0:
     resolution: {integrity: sha512-+KpH+QxZU7O4675t3mnkQKcZZg56u+K/Ct2K+N2AZYNVK8kyeo/bI18tI8aPm3tvNNRyTWfj6s5tnGNlcbQRsA==}

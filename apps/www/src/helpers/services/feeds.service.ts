@@ -1,20 +1,27 @@
 import "server-only";
 import { feedsRouter } from "@chia/api/src/routes/feeds";
-import { db } from "@chia/db";
+import { db, localDb, betaDb } from "@chia/db";
 import { auth } from "@chia/auth";
 import { unstable_cache as cache } from "next/cache";
+import { getDb } from "@chia/utils";
 
 export const keys = {
   posts: (limit: number) => ["ADMIN_ISR_POSTS", limit.toString()],
   notes: (limit: number) => ["ADMIN_ISR_NOTES", limit.toString()],
 };
 
+const database = getDb(undefined, {
+  db,
+  localDb,
+  betaDb,
+});
+
 export const getPosts = (limit = 10) =>
   cache(
     async () => {
       const session = await auth();
       const feedsCaller = feedsRouter.createCaller({
-        db,
+        db: database,
         session,
       });
       return await feedsCaller.infinityByAdmin({
@@ -36,7 +43,7 @@ export const getNotes = (limit = 10) =>
     async () => {
       const session = await auth();
       const feedsCaller = feedsRouter.createCaller({
-        db,
+        db: database,
         session,
       });
       return await feedsCaller.infinityByAdmin({

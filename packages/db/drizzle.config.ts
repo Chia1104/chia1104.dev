@@ -18,7 +18,6 @@ const dbEnv = (env = process.env.VERCEL_ENV ?? process.env.NODE_ENV) => {
       }
       return process.env.DATABASE_URL;
     }
-    case "development":
     case "preview":
     case "beta": {
       if (!process.env.BETA_DATABASE_URL) {
@@ -26,6 +25,7 @@ const dbEnv = (env = process.env.VERCEL_ENV ?? process.env.NODE_ENV) => {
       }
       return process.env.BETA_DATABASE_URL;
     }
+    case "development":
     case "local": {
       if (!process.env.LOCAL_DATABASE_URL) {
         throw new Error("LOCAL_DATABASE_URL is not set");

@@ -1,17 +1,28 @@
 import { auth, type Session } from "@chia/auth";
-import { db } from "@chia/db";
+import { db, betaDb, localDb } from "@chia/db";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { getDb, getAdminId } from "@chia/utils";
 
 type CreateContextOptions = {
   session: Session | null;
 };
 
+const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV;
+
+const database = getDb(env, {
+  db,
+  betaDb,
+  localDb,
+});
+
+const adminId = getAdminId();
+
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
-    db,
+    db: database,
   };
 };
 
@@ -62,15 +73,9 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 const dangerous_isAdmin = t.middleware(({ ctx, next }) => {
-  if (!process.env.ADMIN_ID) {
-    console.warn("No ADMIN_ID set");
-    throw new TRPCError({
-      code: "FORBIDDEN",
-    });
-  }
   return next({
     ctx: {
-      adminId: process.env.ADMIN_ID,
+      adminId,
     },
   });
 });

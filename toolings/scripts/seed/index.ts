@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { db, schema, localDb, betaDb, type DB } from "@chia/db";
+import { getDb, getAdminId } from "@chia/utils";
 
 const withReplicas = (
   fun: (database: DB, adminId: string, env?: string) => Promise<void> | void,
@@ -8,50 +9,14 @@ const withReplicas = (
   }
 ) => {
   const env = options?.env ?? process.env.NODE_ENV;
-  const database = () => {
-    switch (env) {
-      case "production":
-      case "prod": {
-        return db;
-      }
-      case "development":
-      case "preview":
-      case "beta": {
-        return betaDb;
-      }
-      case "local": {
-        return localDb;
-      }
-      default:
-        throw new Error(`Unknown env: ${env}`);
-    }
-  };
-  const adminId = () => {
-    switch (env) {
-      case "production":
-      case "prod": {
-        if (!process.env.ADMIN_ID)
-          throw new Error("Missing env variables ADMIN_ID");
-        return process.env.ADMIN_ID;
-      }
-      case "development":
-      case "preview":
-      case "beta": {
-        if (!process.env.BETA_ADMIN_ID)
-          throw new Error("Missing env variables BETA_ADMIN_ID");
-        return process.env.BETA_ADMIN_ID;
-      }
-      case "local": {
-        if (!process.env.LOCAL_ADMIN_ID)
-          throw new Error("Missing env variables LOCAL_ADMIN_ID");
-        return process.env.LOCAL_ADMIN_ID;
-      }
-      default:
-        throw new Error(`Unknown env: ${env}`);
-    }
-  };
+  const database = getDb(env, {
+    db,
+    betaDb,
+    localDb,
+  });
+  const adminId = getAdminId(env);
   return async () => {
-    await fun(database(), adminId(), env);
+    await fun(database, adminId, env);
   };
 };
 

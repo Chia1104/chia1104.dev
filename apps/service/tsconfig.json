@@ -6,7 +6,9 @@
     "paths": {
       "@/*": ["src/*"],
       "@chia/db": ["../../packages/db"],
-      "@chia/db/*": ["../../packages/db/*"]
+      "@chia/db/*": ["../../packages/db/*"],
+      "@chia/utils": ["../../packages/utils"],
+      "@chia/utils/*": ["../../packages/utils/*"]
     }
   }
 }

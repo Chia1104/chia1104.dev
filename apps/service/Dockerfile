@@ -25,6 +25,7 @@ COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
 COPY ./packages/db /app/packages/db
+COPY ./packages/utils /app/packages/utils
 COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
