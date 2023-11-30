@@ -14,10 +14,11 @@ const withReplicas = (
       case "prod": {
         return db;
       }
+      case "development":
+      case "preview":
       case "beta": {
         return betaDb;
       }
-      case "development":
       case "local": {
         return localDb;
       }
@@ -33,12 +34,13 @@ const withReplicas = (
           throw new Error("Missing env variables ADMIN_ID");
         return process.env.ADMIN_ID;
       }
+      case "development":
+      case "preview":
       case "beta": {
         if (!process.env.BETA_ADMIN_ID)
           throw new Error("Missing env variables BETA_ADMIN_ID");
         return process.env.BETA_ADMIN_ID;
       }
-      case "development":
       case "local": {
         if (!process.env.LOCAL_ADMIN_ID)
           throw new Error("Missing env variables LOCAL_ADMIN_ID");

@@ -39,7 +39,13 @@ env:
   NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
-  NODE_ENV: test
+  NODE_ENV: beta
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+  AUTH_URL: http://localhost:3000
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
+  ADMIN_ID: ${{ secrets.ADMIN_ID }}
+  BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
 
 jobs:
   build:
