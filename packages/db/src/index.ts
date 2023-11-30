@@ -11,11 +11,17 @@ export const queryClient = postgres(process.env.DATABASE_URL);
 
 export const localQueryClient = postgres(process.env.LOCAL_DATABASE_URL!);
 
-export const db = drizzle(queryClient, {
+export const betaQueryClient = postgres(process.env.BETA_DATABASE_URL!);
+
+export const db: DB = drizzle(queryClient, {
   schema,
 });
 
-export const localDb = drizzle(localQueryClient, {
+export const localDb: DB = drizzle(localQueryClient, {
+  schema,
+});
+
+export const betaDb: DB = drizzle(betaQueryClient, {
   schema,
 });
 

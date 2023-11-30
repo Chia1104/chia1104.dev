@@ -1,107 +1,126 @@
 import { faker } from "@faker-js/faker";
-import { db, schema, localDb } from "@chia/db";
+import { db, schema, localDb, betaDb, type DB } from "@chia/db";
 
-const seedPost = async (env?: string) => {
-  env === "prod"
-    ? await db.transaction(async (trx) => {
-        if (!process.env.ADMIN_ID || !process.env.DATABASE_URL) {
-          throw new Error("Missing env variables ADMIN_ID or DATABASE_URL");
-        }
-        const feed = await trx
-          .insert(schema.feeds)
-          .values({
-            slug: faker.lorem.slug(),
-            type: "post",
-            title: faker.lorem.sentence(),
-            expert: faker.lorem.paragraph(),
-            description: faker.lorem.paragraph(),
-            userId: process.env.ADMIN_ID,
-            published: true,
-          })
-          .returning({ feedId: schema.feeds.id });
-        await trx.insert(schema.posts).values({
-          feedId: feed[0].feedId,
-          content: faker.lorem.paragraphs(),
-        });
-      })
-    : await localDb.transaction(async (trx) => {
-        if (!process.env.LOCAL_ADMIN_ID || !process.env.LOCAL_DATABASE_URL) {
-          throw new Error(
-            "Missing env variables LOCAL_ADMIN_ID or LOCAL_DATABASE_URL"
-          );
-        }
-        const feed = await trx
-          .insert(schema.feeds)
-          .values({
-            slug: faker.lorem.slug(),
-            type: "post",
-            title: faker.lorem.sentence(),
-            expert: faker.lorem.paragraph(),
-            description: faker.lorem.paragraph(),
-            userId: process.env.LOCAL_ADMIN_ID,
-            published: true,
-          })
-          .returning({ feedId: schema.feeds.id });
-        await trx.insert(schema.posts).values({
-          feedId: feed[0].feedId,
-          content: faker.lorem.paragraphs(),
-        });
-      });
+const withReplicas = (
+  fun: (database: DB, adminId: string, env?: string) => Promise<void> | void,
+  options?: {
+    env?: string;
+  }
+) => {
+  const env = options?.env ?? process.env.NODE_ENV;
+  const database = () => {
+    switch (env) {
+      case "production":
+      case "prod": {
+        return db;
+      }
+      case "beta": {
+        return betaDb;
+      }
+      case "development":
+      case "local": {
+        return localDb;
+      }
+      default:
+        throw new Error(`Unknown env: ${env}`);
+    }
+  };
+  const adminId = () => {
+    switch (env) {
+      case "production":
+      case "prod": {
+        if (!process.env.ADMIN_ID)
+          throw new Error("Missing env variables ADMIN_ID");
+        return process.env.ADMIN_ID;
+      }
+      case "beta": {
+        if (!process.env.BETA_ADMIN_ID)
+          throw new Error("Missing env variables BETA_ADMIN_ID");
+        return process.env.BETA_ADMIN_ID;
+      }
+      case "development":
+      case "local": {
+        if (!process.env.LOCAL_ADMIN_ID)
+          throw new Error("Missing env variables LOCAL_ADMIN_ID");
+        return process.env.LOCAL_ADMIN_ID;
+      }
+      default:
+        throw new Error(`Unknown env: ${env}`);
+    }
+  };
+  return async () => {
+    await fun(database(), adminId(), env);
+  };
 };
 
-const seedNote = async (env?: string) => {
-  env === "prod"
-    ? await db.transaction(async (trx) => {
-        if (!process.env.ADMIN_ID || !process.env.DATABASE_URL) {
-          throw new Error("Missing env variables ADMIN_ID or DATABASE_URL");
-        }
-        const feed = await trx
-          .insert(schema.feeds)
-          .values({
-            slug: faker.lorem.slug(),
-            type: "note",
-            title: faker.lorem.sentence(),
-            expert: faker.lorem.paragraph(),
-            description: faker.lorem.paragraph(),
-            userId: process.env.ADMIN_ID,
-            published: true,
-          })
-          .returning({ feedId: schema.feeds.id });
-        await trx.insert(schema.notes).values({
-          feedId: feed[0].feedId,
-          content: faker.lorem.paragraphs(),
-        });
-      })
-    : await localDb.transaction(async (trx) => {
-        if (!process.env.LOCAL_ADMIN_ID || !process.env.LOCAL_DATABASE_URL) {
-          throw new Error(
-            "Missing env variables LOCAL_ADMIN_ID or LOCAL_DATABASE_URL"
-          );
-        }
-        const feed = await trx
-          .insert(schema.feeds)
-          .values({
-            slug: faker.lorem.slug(),
-            type: "note",
-            title: faker.lorem.sentence(),
-            expert: faker.lorem.paragraph(),
-            description: faker.lorem.paragraph(),
-            userId: process.env.LOCAL_ADMIN_ID,
-            published: true,
-          })
-          .returning({ feedId: schema.feeds.id });
-        await trx.insert(schema.notes).values({
-          feedId: feed[0].feedId,
-          content: faker.lorem.paragraphs(),
-        });
+const seedPost = withReplicas(
+  async (db, adminId) => {
+    await db.transaction(async (trx) => {
+      const feed = await trx
+        .insert(schema.feeds)
+        .values({
+          slug: faker.lorem.slug(),
+          type: "post",
+          title: faker.lorem.sentence(),
+          expert: faker.lorem.paragraph(),
+          description: faker.lorem.paragraph(),
+          userId: adminId,
+          published: true,
+        })
+        .returning({ feedId: schema.feeds.id });
+      await trx.insert(schema.posts).values({
+        feedId: feed[0].feedId,
+        content: faker.lorem.paragraphs(),
       });
-};
+    });
+  },
+  {
+    env: process.argv[3] ?? "local",
+  }
+);
 
-const seedActions = [seedPost, seedNote];
+const seedNote = withReplicas(
+  async (db, adminId) => {
+    await db.transaction(async (trx) => {
+      if (!process.env.ADMIN_ID || !process.env.DATABASE_URL) {
+        throw new Error("Missing env variables ADMIN_ID or DATABASE_URL");
+      }
+      const feed = await trx
+        .insert(schema.feeds)
+        .values({
+          slug: faker.lorem.slug(),
+          type: "note",
+          title: faker.lorem.sentence(),
+          expert: faker.lorem.paragraph(),
+          description: faker.lorem.paragraph(),
+          userId: adminId,
+          published: true,
+        })
+        .returning({ feedId: schema.feeds.id });
+      await trx.insert(schema.notes).values({
+        feedId: feed[0].feedId,
+        content: faker.lorem.paragraphs(),
+      });
+    });
+  },
+  {
+    env: process.argv[3] ?? "local",
+  }
+);
+
+const seedActions = [
+  {
+    name: "seedPost",
+    fn: seedPost,
+  },
+  {
+    name: "seedNote",
+    fn: seedNote,
+  },
+];
 
 const seed = async () => {
   const action = process.argv[2];
-  const env = process.argv[3] ?? "local";
   if (!action) {
     throw new Error("No action provided");
   }
@@ -110,7 +129,7 @@ const seed = async () => {
     throw new Error("Unknown action");
   }
   console.log("Seeding", action);
-  await actionFn(env);
+  await actionFn.fn();
 };
 
 seed()
