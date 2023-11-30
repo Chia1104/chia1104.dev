@@ -1,8 +1,29 @@
+const getInternalEnv = () => {
+  if (process.env.ENV) {
+    return process.env.ENV;
+  }
+  if (process.env.NEXT_PUBLIC_ENV) {
+    return process.env.NEXT_PUBLIC_ENV;
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    return process.env.NEXT_PUBLIC_VERCEL_ENV;
+  }
+  if (process.env.RAILWAY_ENVIRONMENT_NAME) {
+    return process.env.RAILWAY_ENVIRONMENT_NAME === "production"
+      ? "railway-prod"
+      : "railway-dev";
+  }
+  if (process.env.ZEABUR_ENVIRONMENT_NAME) {
+    return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
+      ? "zeabur-prod"
+      : "zeabur-dev";
+  }
+};
+
 export const getEnv = (env?: string) =>
   env ??
   process.env.VERCEL_ENV ??
-  process.env.ENV ??
-  process.env.NEXT_PUBLIC_ENV ??
+  getInternalEnv() ??
   process.env.NODE_ENV ??
   "local";
 
@@ -19,14 +40,19 @@ export const switchEnv = <TResult = unknown>(
   }
 ) => {
   switch (getEnv(env)) {
+    case "railway-prod":
+    case "zeabur-prod":
     case "production":
     case "prod": {
       return prod();
     }
+    case "railway-dev":
+    case "zeabur-dev":
     case "preview":
     case "beta": {
       return beta();
     }
+    case "test":
     case "development":
     case "local": {
       return local();
