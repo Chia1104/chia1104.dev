@@ -112,6 +112,24 @@ export const List: FC<ListProps> = ({
   </motion.ul>
 );
 
+export const LoadingSkeletons = () => (
+  <div className="relative flex animate-pulse flex-col gap-5 p-5">
+    <span className="c-bg-secondary absolute -top-10 left-0 h-14 w-1/4 rounded" />
+    <div className="flex flex-col gap-2">
+      <div className="c-bg-secondary h-4 w-2/3 rounded" />
+      <div className="c-bg-secondary h-4 w-1/4 rounded" />
+    </div>
+    <div className="flex flex-col gap-2">
+      <div className="c-bg-secondary h-4 w-2/3 rounded" />
+      <div className="c-bg-secondary h-4 w-1/4 rounded" />
+    </div>
+    <div className="flex flex-col gap-2">
+      <div className="c-bg-secondary h-4 w-2/3 rounded" />
+      <div className="c-bg-secondary h-4 w-1/4 rounded" />
+    </div>
+  </div>
+);
+
 export const GroupList: FC<GroupListProps> = ({
   data,
   onEndReached,
@@ -134,6 +152,10 @@ export const GroupList: FC<GroupListProps> = ({
           data={item.data}
         />
       ))}
+      {
+        // Show loading skeletons when loading more data
+        asyncDataStatus?.isLoading && <LoadingSkeletons />
+      }
     </>
   );
 };
