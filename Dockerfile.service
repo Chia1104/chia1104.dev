@@ -40,7 +40,7 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     BETA_DATABASE_URL=${BETA_DATABASE_URL} \
     ENV=${ENV}
 
-RUN pnpm i
+RUN pnpm i --no-frozen-lockfile
 
 RUN pnpm turbo run build --filter=service...
 
@@ -50,7 +50,7 @@ COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
 
-RUN pnpm i --prod --ignore-scripts
+RUN pnpm i --prod --ignore-scripts --no-frozen-lockfile
 
 FROM base as runner
 
