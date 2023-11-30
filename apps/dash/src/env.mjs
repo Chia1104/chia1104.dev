@@ -3,7 +3,17 @@ import { createEnv } from "@t3-oss/env-nextjs";
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z.enum(["development", "production"]).default("development"),
+    NODE_ENV: z
+      .enum([
+        "development",
+        "production",
+        "test",
+        "prod",
+        "local",
+        "beta",
+        "preview",
+      ])
+      .default("local"),
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
