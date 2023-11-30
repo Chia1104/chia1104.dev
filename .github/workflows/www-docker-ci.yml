@@ -39,7 +39,7 @@ env:
   NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
-  NODE_ENV: beta
+  NODE_ENV: test
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:8080
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -48,6 +48,7 @@ env:
   BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  NEXT_PUBLIC_ENV: beta
 
 jobs:
   build:
@@ -105,3 +106,4 @@ jobs:
             BETA_ADMIN_ID=${{ env.BETA_ADMIN_ID }}
             GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
+            NEXT_PUBLIC_ENV=${{ env.NEXT_PUBLIC_ENV }}

@@ -23,16 +23,8 @@ export const getClientEnv = () => {
 export const env = createEnv({
   server: {
     NODE_ENV: z
-      .enum([
-        "development",
-        "production",
-        "test",
-        "prod",
-        "local",
-        "beta",
-        "preview",
-      ])
-      .default("local"),
+      .enum(["development", "production", "test"])
+      .default("development"),
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
@@ -83,6 +75,10 @@ export const env = createEnv({
       .enum([
         "preview",
         "development",
+        "local",
+        "beta",
+        "gamma",
+        "prod",
         "production",
         "test",
         "zeabur-prod",

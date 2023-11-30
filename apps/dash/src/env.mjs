@@ -1,19 +1,13 @@
+// @ts-check
+
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
 
 export const env = createEnv({
   server: {
     NODE_ENV: z
-      .enum([
-        "development",
-        "production",
-        "test",
-        "prod",
-        "local",
-        "beta",
-        "preview",
-      ])
-      .default("local"),
+      .enum(["development", "production", "test"])
+      .default("development"),
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
@@ -23,9 +17,29 @@ export const env = createEnv({
     BETA_DATABASE_URL: z.string().optional(),
   },
 
-  client: {},
+  client: {
+    NEXT_PUBLIC_ENV: z
+      .enum([
+        "preview",
+        "development",
+        "local",
+        "beta",
+        "gamma",
+        "prod",
+        "production",
+        "test",
+        "zeabur-prod",
+        "vercel-prod",
+        "railway-prod",
+        "zeabur-dev",
+        "vercel-dev",
+        "railway-dev",
+      ])
+      .default("development"),
+  },
 
   runtimeEnv: {
+    NEXT_PUBLIC_ENV: process.env.NEXT_PUBLIC_ENV,
     NODE_ENV: process.env.NODE_ENV,
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,

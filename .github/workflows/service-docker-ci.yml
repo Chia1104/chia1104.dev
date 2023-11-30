@@ -15,11 +15,13 @@ env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
   GIT_HASH: ${{ github.sha }}
+  ENV: beta
 
 jobs:
   build:
@@ -53,5 +55,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             DATABASE_URL=${{ env.DATABASE_URL }}
+            BETA_DATABASE_URL=${{ env.BETA_DATABASE_URL }}
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
+            ENV=${{ env.ENV }}

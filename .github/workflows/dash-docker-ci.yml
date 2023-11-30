@@ -27,6 +27,7 @@ env:
   BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
   BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
+  NEXT_PUBLIC_ENV: beta
 
 jobs:
   build:
@@ -69,3 +70,4 @@ jobs:
             BETA_DATABASE_URL=${{ env.BETA_DATABASE_URL }}
             ADMIN_ID=${{ env.ADMIN_ID }}
             BETA_ADMIN_ID=${{ env.BETA_ADMIN_ID }}
+            NEXT_PUBLIC_ENV=${{ env.NEXT_PUBLIC_ENV }}

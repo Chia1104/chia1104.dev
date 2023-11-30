@@ -111,6 +111,8 @@
     "RAILWAY_ENVIRONMENT_NAME",
     "ZEABUR_ENVIRONMENT_NAME",
     "VERCEL_ENV",
-    "*_VERCEL_ENV"
+    "*_VERCEL_ENV",
+    "ENV",
+    "*_ENV"
   ]
 }

@@ -30,11 +30,15 @@ COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
     TURBO_TOKEN \
-    DATABASE_URL
+    DATABASE_URL \
+    BETA_DATABASE_URL \
+    ENV
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN \
-    DATABASE_URL=${DATABASE_URL}
+    DATABASE_URL=${DATABASE_URL} \
+    BETA_DATABASE_URL=${BETA_DATABASE_URL} \
+    ENV=${ENV}
 
 RUN pnpm i
 
@@ -52,6 +56,7 @@ FROM base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
 COPY ./packages/db/package.json ./packages/db/package.json
+COPY ./packages/utils/package.json ./packages/utils/package.json
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
 COPY --from=prod /app/node_modules ./node_modules
 

@@ -9,7 +9,9 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
 
-const dbEnv = (env = process.env.VERCEL_ENV ?? process.env.NODE_ENV) => {
+const dbEnv = (
+  env = process.env.VERCEL_ENV ?? process.env.ENV ?? process.env.NODE_ENV
+) => {
   switch (env) {
     case "production":
     case "prod": {
