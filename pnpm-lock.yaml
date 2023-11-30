@@ -223,9 +223,6 @@ importers:
       '@apollo/server':
         specifier: ^4.9.4
         version: 4.9.5(graphql@16.8.1)
-      '@chia/db':
-        specifier: 0.0.0
-        version: link:../../packages/db
       '@graphql-tools/utils':
         specifier: ^10.0.7
         version: 10.0.11(graphql@16.8.1)

@@ -2,13 +2,16 @@ ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine AS base
 
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
 WORKDIR /app
 
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
     corepack enable && \
-    yarn global add turbo
+    pnpm add -g turbo
 
 FROM base AS builder
 
@@ -71,9 +74,9 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     SPOTIFY_FAVORITE_PLAYLIST_ID=${SPOTIFY_FAVORITE_PLAYLIST_ID} \
     SPOTIFY_REFRESH_TOKEN=${SPOTIFY_REFRESH_TOKEN}
 
-RUN pnpm i && \
-    pnpm turbo run build --filter=www... && \
-    pnpm turbo run next-sitemap --filter=www
+RUN pnpm i
+RUN pnpm turbo run build --filter=www...
+RUN pnpm turbo run next-sitemap --filter=www
 
 FROM base AS runner
 

@@ -2,13 +2,16 @@ ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine AS base
 
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
 WORKDIR /app
 
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
     corepack enable && \
-    yarn global add turbo
+    pnpm add -g turbo
 
 FROM base AS builder
 
@@ -34,8 +37,8 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     AUTH_URL=${AUTH_URL} \
     SKIP_ENV_VALIDATION=1
 
-RUN pnpm i && \
-    pnpm turbo run build --filter=dash...
+RUN pnpm i
+RUN pnpm turbo run build --filter=dash...
 
 FROM base AS runner
 
