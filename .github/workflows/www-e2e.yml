@@ -47,6 +47,8 @@ env:
   BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
   BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
 jobs:
   build:
