@@ -1,6 +1,7 @@
 // @ts-check
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import "./src/env.mjs";
+import "@chia/auth/env.mjs";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({

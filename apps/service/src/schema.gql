@@ -24,13 +24,8 @@ input FeedOrderByInput {
   updatedAt: SortOrder
 }
 
-enum FeedType {
-  note
-  post
-}
-
 type Query {
-  feed(feedType: FeedType = post, orderBy: FeedOrderByInput, skip: Float, take: Float): [Feed!]!
+  feed(feedType: String = "post", orderBy: FeedOrderByInput, skip: Float, take: Float): [Feed!]!
 }
 
 enum SortOrder {

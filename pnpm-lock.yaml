@@ -92,7 +92,7 @@ importers:
         version: 8.0.1(typescript@5.3.2)
       tsx:
         specifier: ^4.1.2
-        version: 4.3.0
+        version: 4.4.0
       turbo:
         specifier: 1.10.16
         version: 1.10.16
@@ -140,16 +140,16 @@ importers:
         version: 5.8.4(react-dom@18.2.0)(react@18.2.0)
       '@trpc/client':
         specifier: next
-        version: 11.0.0-alpha-next-2023-11-21-11-13-12.106(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)
       '@trpc/next':
         specifier: next
-        version: 11.0.0-alpha-next-2023-11-21-11-13-12.106(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-21-11-13-12.106)(@trpc/react-query@11.0.0-alpha-next-2023-11-21-11-13-12.106)(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)(next@14.0.3)(react-dom@18.2.0)(react@18.2.0)
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/react-query@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)(next@14.0.3)(react-dom@18.2.0)(react@18.2.0)
       '@trpc/react-query':
         specifier: next
-        version: 11.0.0-alpha-next-2023-11-21-11-13-12.106(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-21-11-13-12.106)(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)(react-dom@18.2.0)(react@18.2.0)
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)(react-dom@18.2.0)(react@18.2.0)
       '@trpc/server':
         specifier: next
-        version: 11.0.0-alpha-next-2023-11-21-11-13-12.106
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111
       clsx:
         specifier: ^2.0.0
         version: 2.0.0
@@ -223,12 +223,9 @@ importers:
       '@apollo/server':
         specifier: ^4.9.4
         version: 4.9.5(graphql@16.8.1)
-      '@chia/db':
-        specifier: 0.0.0
-        version: link:../../packages/db
       '@graphql-tools/utils':
         specifier: ^10.0.7
-        version: 10.0.10(graphql@16.8.1)
+        version: 10.0.11(graphql@16.8.1)
       '@nestjs/apollo':
         specifier: ^12.0.9
         version: 12.0.11(@apollo/server@4.9.5)(@nestjs/common@10.2.10)(@nestjs/core@10.2.10)(@nestjs/graphql@12.0.11)(graphql@16.8.1)
@@ -332,6 +329,12 @@ importers:
 
   apps/www:
     dependencies:
+      '@chia/api':
+        specifier: 0.0.0
+        version: link:../../packages/api
+      '@chia/auth':
+        specifier: 0.0.0
+        version: link:../../packages/auth
       '@chia/db':
         specifier: 0.0.0
         version: link:../../packages/db
@@ -368,6 +371,18 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.8.4
         version: 5.8.4(react-dom@18.2.0)(react@18.2.0)
+      '@trpc/client':
+        specifier: next
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)
+      '@trpc/next':
+        specifier: next
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/react-query@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)(next@14.0.3)(react-dom@18.2.0)(react@18.2.0)
+      '@trpc/react-query':
+        specifier: next
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)(react-dom@18.2.0)(react@18.2.0)
+      '@trpc/server':
+        specifier: next
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111
       '@upstash/ratelimit':
         specifier: 1.0.0
         version: 1.0.0
@@ -401,6 +416,9 @@ importers:
       next:
         specifier: 14.0.3
         version: 14.0.3(react-dom@18.2.0)(react@18.2.0)
+      next-auth:
+        specifier: 5.0.0-beta.3
+        version: 5.0.0-beta.3(next@14.0.3)(react@18.2.0)
       next-mdx-remote:
         specifier: ^4.4.1
         version: 4.4.1(react-dom@18.2.0)(react@18.2.0)
@@ -536,10 +554,10 @@ importers:
         version: link:../utils
       '@trpc/client':
         specifier: next
-        version: 11.0.0-alpha-next-2023-11-21-11-13-12.106(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)
       '@trpc/server':
         specifier: next
-        version: 11.0.0-alpha-next-2023-11-21-11-13-12.106
+        version: 11.0.0-alpha-next-2023-11-23-16-02-13.111
       next:
         specifier: 14.0.3
         version: 14.0.3(react-dom@18.2.0)(react@18.2.0)
@@ -558,6 +576,9 @@ importers:
       '@chia/db':
         specifier: 0.0.0
         version: link:../db
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../utils
       '@t3-oss/env-nextjs':
         specifier: ^0.7.1
         version: 0.7.1(typescript@5.3.2)(zod@3.22.4)
@@ -576,7 +597,10 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: ^0.29.0
-        version: 0.29.0(postgres@3.4.3)
+        version: 0.29.0(@types/pg@8.10.9)(pg@8.11.3)(postgres@3.4.3)
+      pg:
+        specifier: ^8.11.3
+        version: 8.11.3
       postgres:
         specifier: ^3.4.1
         version: 3.4.3
@@ -584,6 +608,9 @@ importers:
       '@auth/core':
         specifier: ^0.18.0
         version: 0.18.3
+      '@types/pg':
+        specifier: ^8.10.9
+        version: 8.10.9
       drizzle-kit:
         specifier: ^0.20.0
         version: 0.20.4
@@ -680,10 +707,13 @@ importers:
         version: link:../../apps/www
 
   toolings/scripts/seed:
-    dependencies:
+    devDependencies:
       '@chia/db':
         specifier: 0.0.0
         version: link:../../../packages/db
+      '@chia/utils':
+        specifier: 0.0.0
+        version: link:../../../packages/utils
       '@faker-js/faker':
         specifier: ^8.0.2
         version: 8.3.1
@@ -2114,7 +2144,7 @@ packages:
   /@faker-js/faker@8.3.1:
     resolution: {integrity: sha512-FdgpFxY6V6rLZE9mmIBb9hM0xpfvQOSNOLnzolzKwsE1DH+gC7lEKV1p1IbR0lAYyvYd5a4u3qWJzowUkw1bIw==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0, npm: '>=6.14.13'}
-    dev: false
+    dev: true
 
   /@fastify/busboy@2.1.0:
     resolution: {integrity: sha512-+KpH+QxZU7O4675t3mnkQKcZZg56u+K/Ct2K+N2AZYNVK8kyeo/bI18tI8aPm3tvNNRyTWfj6s5tnGNlcbQRsA==}
@@ -2182,7 +2212,7 @@ packages:
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
     dependencies:
-      '@graphql-tools/utils': 10.0.10(graphql@16.8.1)
+      '@graphql-tools/utils': 10.0.11(graphql@16.8.1)
       graphql: 16.8.1
       tslib: 2.6.2
     dev: false
@@ -2194,7 +2224,7 @@ packages:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
     dependencies:
       '@graphql-tools/merge': 9.0.0(graphql@16.8.1)
-      '@graphql-tools/utils': 10.0.10(graphql@16.8.1)
+      '@graphql-tools/utils': 10.0.11(graphql@16.8.1)
       graphql: 16.8.1
       tslib: 2.6.2
       value-or-promise: 1.0.12
@@ -2212,8 +2242,8 @@ packages:
       value-or-promise: 1.0.12
     dev: false
 
-  /@graphql-tools/utils@10.0.10(graphql@16.8.1):
-    resolution: {integrity: sha512-NzK2qZP+jUt4Cc+l879wLqk/JGGu8SAEJgqaamYBgIgfmsuwzDWpKw2VpO0DbZdFdtlAStl7a3mbJmOrRqmZnw==}
+  /@graphql-tools/utils@10.0.11(graphql@16.8.1):
+    resolution: {integrity: sha512-vVjXgKn6zjXIlYBd7yJxCVMYGb5j18gE3hx3Qw3mNsSEsYQXbJbPdlwb7Fc9FogsJei5AaqiQerqH4kAosp1nQ==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
@@ -6664,53 +6694,53 @@ packages:
     resolution: {integrity: sha512-AqlrT8YA1o7Ff5wPfMOL0pvL+1X+sw60NN6CcOCqs658emD6RfiXhF7Gu9QcfKBH7ELY2nInLhKSCWVoNL70MQ==}
     dev: true
 
-  /@trpc/client@11.0.0-alpha-next-2023-11-21-11-13-12.106(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106):
-    resolution: {integrity: sha512-OxgbvwoWgWpijxhtovG4eO9hA+ov/WWtHuwXMwhNt1Jsr5HtHqYnCkU0vaQceponGlvQVPzLYi3zZ7oqQwPFLQ==}
+  /@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111):
+    resolution: {integrity: sha512-1SOc85XCfcO1SMbFVPUcgMjcwVtnz1sXEgFkV7PnW5Kn3aS5tDp9fXgibF/fe7shfbzkLT4nlGIHXyzehYKu+Q==}
     peerDependencies:
-      '@trpc/server': 11.0.0-alpha-next-2023-11-21-11-13-12.106+fd86afd65
+      '@trpc/server': 11.0.0-alpha-next-2023-11-23-16-02-13.111+4bdb274df
     dependencies:
-      '@trpc/server': 11.0.0-alpha-next-2023-11-21-11-13-12.106
+      '@trpc/server': 11.0.0-alpha-next-2023-11-23-16-02-13.111
     dev: false
 
-  /@trpc/next@11.0.0-alpha-next-2023-11-21-11-13-12.106(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-21-11-13-12.106)(@trpc/react-query@11.0.0-alpha-next-2023-11-21-11-13-12.106)(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)(next@14.0.3)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-RcXjvtSYqL241B45ELp1r/k4sFMn2EFxoDL7eT6kC+fIh+gSUNZItDD78Xx/sOMB6KqhAbAjnuYeWP+V8TtBzA==}
+  /@trpc/next@11.0.0-alpha-next-2023-11-23-16-02-13.111(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/react-query@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)(next@14.0.3)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-yV49HKciWf+jf3hrcl69iCm9zmY/9AzBWaML5+mprV1nLwerIS3GSuUCdmi4pybV/lHDpePNZnKfIAJ51SO2Yg==}
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
-      '@trpc/client': 11.0.0-alpha-next-2023-11-21-11-13-12.106+fd86afd65
-      '@trpc/react-query': 11.0.0-alpha-next-2023-11-21-11-13-12.106+fd86afd65
-      '@trpc/server': 11.0.0-alpha-next-2023-11-21-11-13-12.106+fd86afd65
+      '@trpc/client': 11.0.0-alpha-next-2023-11-23-16-02-13.111+4bdb274df
+      '@trpc/react-query': 11.0.0-alpha-next-2023-11-23-16-02-13.111+4bdb274df
+      '@trpc/server': 11.0.0-alpha-next-2023-11-23-16-02-13.111+4bdb274df
       next: '*'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
     dependencies:
       '@tanstack/react-query': 5.8.4(react-dom@18.2.0)(react@18.2.0)
-      '@trpc/client': 11.0.0-alpha-next-2023-11-21-11-13-12.106(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)
-      '@trpc/react-query': 11.0.0-alpha-next-2023-11-21-11-13-12.106(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-21-11-13-12.106)(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)(react-dom@18.2.0)(react@18.2.0)
-      '@trpc/server': 11.0.0-alpha-next-2023-11-21-11-13-12.106
+      '@trpc/client': 11.0.0-alpha-next-2023-11-23-16-02-13.111(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)
+      '@trpc/react-query': 11.0.0-alpha-next-2023-11-23-16-02-13.111(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)(react-dom@18.2.0)(react@18.2.0)
+      '@trpc/server': 11.0.0-alpha-next-2023-11-23-16-02-13.111
       next: 14.0.3(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-ssr-prepass: 1.5.0(react@18.2.0)
     dev: false
 
-  /@trpc/react-query@11.0.0-alpha-next-2023-11-21-11-13-12.106(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-21-11-13-12.106)(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-5oJmgYykcgFwRYEWTm+dzrbK90qxMcT0jvsNyfwJF+Bv47dsZ+MhrvHYhLPzEbiFF594lsgrarAE2ljYj8Im2A==}
+  /@trpc/react-query@11.0.0-alpha-next-2023-11-23-16-02-13.111(@tanstack/react-query@5.8.4)(@trpc/client@11.0.0-alpha-next-2023-11-23-16-02-13.111)(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-fFtPNhLTmQT+6B53jX67VVjJ3O7PKcUZBjLCc/A9HywaBNZ9IJCt2anbwPQjbo/npFwlTJe3CIyxFKjR9ADMsw==}
     peerDependencies:
       '@tanstack/react-query': ^5.0.0
-      '@trpc/client': 11.0.0-alpha-next-2023-11-21-11-13-12.106+fd86afd65
-      '@trpc/server': 11.0.0-alpha-next-2023-11-21-11-13-12.106+fd86afd65
+      '@trpc/client': 11.0.0-alpha-next-2023-11-23-16-02-13.111+4bdb274df
+      '@trpc/server': 11.0.0-alpha-next-2023-11-23-16-02-13.111+4bdb274df
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
     dependencies:
       '@tanstack/react-query': 5.8.4(react-dom@18.2.0)(react@18.2.0)
-      '@trpc/client': 11.0.0-alpha-next-2023-11-21-11-13-12.106(@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106)
-      '@trpc/server': 11.0.0-alpha-next-2023-11-21-11-13-12.106
+      '@trpc/client': 11.0.0-alpha-next-2023-11-23-16-02-13.111(@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111)
+      '@trpc/server': 11.0.0-alpha-next-2023-11-23-16-02-13.111
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@trpc/server@11.0.0-alpha-next-2023-11-21-11-13-12.106:
-    resolution: {integrity: sha512-txzg8RTrZhkTaYOE1vXa99iKDAT6A31e8T34KCpaxY752Wzv9/A9F9AFq+NDN3+PqlIPoCvmUp38dN2BLPk3SQ==}
+  /@trpc/server@11.0.0-alpha-next-2023-11-23-16-02-13.111:
+    resolution: {integrity: sha512-8Q7mDh/3ysgdsjhOQtf/9FhRNe9BRXUpYMfbLlidhXjje4DsSST77g5d/YoT6InPLGVHI6Kf/ICOdpJy7Q6jUw==}
     engines: {node: '>=18.0.0'}
     dev: false
 
@@ -6950,6 +6980,13 @@ packages:
     resolution: {integrity: sha512-wmyg8HUhcn6ACjsn8oKYjkN/zUzQeNtMy44weTJSM6p4MMzEOuKbA3OjJ267uPCOW7Xex9dyrNTful8XTQYoDA==}
     dependencies:
       undici-types: 5.26.5
+
+  /@types/pg@8.10.9:
+    resolution: {integrity: sha512-UksbANNE/f8w0wOMxVKKIrLCbEMV+oM1uKejmwXr39olg4xqcfBDbXxObJAt6XxHbDa4XTKOlUEcEltXDX+XLQ==}
+    dependencies:
+      '@types/node': 20.9.4
+      pg-protocol: 1.6.0
+      pg-types: 4.0.1
 
   /@types/prismjs@1.26.3:
     resolution: {integrity: sha512-A0D0aTXvjlqJ5ZILMz3rNfDBOx9hHxLZYv2by47Sm/pqW35zzjusrZTryatjN/Rf8Us2gZrJD+KeHbUSTux1Cw==}
@@ -8000,6 +8037,11 @@ packages:
   /buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
+  /buffer-writer@2.0.0:
+    resolution: {integrity: sha512-a7ZpuTZU1TRtnwyCNW3I5dc0wWNC3VR9S++Ewyk2HHZdrO3CQJqSpd+95Us590V6AL7JqUAH2IwZ/398PmNFgw==}
+    engines: {node: '>=4'}
+    dev: false
+
   /buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
     dependencies:
@@ -8241,7 +8283,7 @@ packages:
     resolution: {integrity: sha512-ct3ltplN8I9fOwUd8GrP8UQixwff129BkEtuWDKL5W45cQuLd19xqmTLu5ge78YDm/fdje6FMt0hGOhl0lii3A==}
     dependencies:
       '@types/validator': 13.11.7
-      libphonenumber-js: 1.10.50
+      libphonenumber-js: 1.10.51
       validator: 13.11.0
 
   /class-variance-authority@0.7.0:
@@ -8969,7 +9011,7 @@ packages:
       - utf-8-validate
     dev: true
 
-  /drizzle-orm@0.29.0(postgres@3.4.3):
+  /drizzle-orm@0.29.0(@types/pg@8.10.9)(pg@8.11.3)(postgres@3.4.3):
     resolution: {integrity: sha512-AC+CuW4GezVjsZDGU9u9B4HyikudOyYVhjm6he3Xn1D6Kky7bHGKob97MMX2piO+t9b6UuajLzlii/T/lu1qwA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -9031,6 +9073,8 @@ packages:
       sqlite3:
         optional: true
     dependencies:
+      '@types/pg': 8.10.9
+      pg: 8.11.3
       postgres: 3.4.3
     dev: false
 
@@ -12108,8 +12152,8 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /libphonenumber-js@1.10.50:
-    resolution: {integrity: sha512-AOYOJslxKQ49mpwvpkSFcagoMtxeH1UpUHm+05pmPkenPpFbt6ofdeEvQ+ZylmQiJS99ocRWeEeEp7quVlFyVA==}
+  /libphonenumber-js@1.10.51:
+    resolution: {integrity: sha512-vY2I+rQwrDQzoPds0JeTEpeWzbUJgqoV0O4v31PauHBb/e+1KCXKylHcDnBMgJZ9fH9mErsEbROJY3Z3JtqEmg==}
 
   /lie@3.1.1:
     resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==}
@@ -13073,7 +13117,7 @@ packages:
       glob-to-regexp: 0.4.1
       source-map-support: 0.5.21
       stoppable: 1.1.0
-      undici: 5.27.2
+      undici: 5.28.0
       workerd: 1.20231030.0
       ws: 8.14.2
       youch: 3.3.3
@@ -13533,6 +13577,9 @@ packages:
       es-abstract: 1.22.3
     dev: true
 
+  /obuf@1.1.2:
+    resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
+
   /on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
     engines: {node: '>= 0.8'}
@@ -13690,6 +13737,10 @@ packages:
       semver: 6.3.1
     dev: true
 
+  /packet-reader@1.0.0:
+    resolution: {integrity: sha512-HAKu/fG3HpHFO0AA8WE8q2g+gBJaZ9MG7fcKk+IJPLTGAD6Psw4443l+9DGRbOIh3/aXr7Phy0TjilYivJo5XQ==}
+    dev: false
+
   /parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -13822,6 +13873,84 @@ packages:
       '@types/estree': 1.0.5
       estree-walker: 3.0.3
       is-reference: 3.0.2
+    dev: false
+
+  /pg-cloudflare@1.1.1:
+    resolution: {integrity: sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==}
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /pg-connection-string@2.6.2:
+    resolution: {integrity: sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==}
+    dev: false
+
+  /pg-int8@1.0.1:
+    resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
+    engines: {node: '>=4.0.0'}
+
+  /pg-numeric@1.0.2:
+    resolution: {integrity: sha512-BM/Thnrw5jm2kKLE5uJkXqqExRUY/toLHda65XgFTBTFYZyopbKjBe29Ii3RbkvlsMoFwD+tHeGaCjjv0gHlyw==}
+    engines: {node: '>=4'}
+
+  /pg-pool@3.6.1(pg@8.11.3):
+    resolution: {integrity: sha512-jizsIzhkIitxCGfPRzJn1ZdcosIt3pz9Sh3V01fm1vZnbnCMgmGl5wvGGdNN2EL9Rmb0EcFoCkixH4Pu+sP9Og==}
+    peerDependencies:
+      pg: '>=8.0'
+    dependencies:
+      pg: 8.11.3
+    dev: false
+
+  /pg-protocol@1.6.0:
+    resolution: {integrity: sha512-M+PDm637OY5WM307051+bsDia5Xej6d9IR4GwJse1qA1DIhiKlksvrneZOYQq42OM+spubpcNYEo2FcKQrDk+Q==}
+
+  /pg-types@2.2.0:
+    resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
+    engines: {node: '>=4'}
+    dependencies:
+      pg-int8: 1.0.1
+      postgres-array: 2.0.0
+      postgres-bytea: 1.0.0
+      postgres-date: 1.0.7
+      postgres-interval: 1.2.0
+    dev: false
+
+  /pg-types@4.0.1:
+    resolution: {integrity: sha512-hRCSDuLII9/LE3smys1hRHcu5QGcLs9ggT7I/TCs0IE+2Eesxi9+9RWAAwZ0yaGjxoWICF/YHLOEjydGujoJ+g==}
+    engines: {node: '>=10'}
+    dependencies:
+      pg-int8: 1.0.1
+      pg-numeric: 1.0.2
+      postgres-array: 3.0.2
+      postgres-bytea: 3.0.0
+      postgres-date: 2.0.1
+      postgres-interval: 3.0.0
+      postgres-range: 1.1.3
+
+  /pg@8.11.3:
+    resolution: {integrity: sha512-+9iuvG8QfaaUrrph+kpF24cXkH1YOOUeArRNYIxq1viYHZagBxrTno7cecY1Fa44tJeZvaoG+Djpkc3JwehN5g==}
+    engines: {node: '>= 8.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+    dependencies:
+      buffer-writer: 2.0.0
+      packet-reader: 1.0.0
+      pg-connection-string: 2.6.2
+      pg-pool: 3.6.1(pg@8.11.3)
+      pg-protocol: 1.6.0
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.1.1
+    dev: false
+
+  /pgpass@1.0.5:
+    resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
+    dependencies:
+      split2: 4.2.0
     dev: false
 
   /picocolors@1.0.0:
@@ -13967,6 +14096,49 @@ packages:
       nanoid: 3.3.7
       picocolors: 1.0.0
       source-map-js: 1.0.2
+
+  /postgres-array@2.0.0:
+    resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
+    engines: {node: '>=4'}
+    dev: false
+
+  /postgres-array@3.0.2:
+    resolution: {integrity: sha512-6faShkdFugNQCLwucjPcY5ARoW1SlbnrZjmGl0IrrqewpvxvhSLHimCVzqeuULCbG0fQv7Dtk1yDbG3xv7Veog==}
+    engines: {node: '>=12'}
+
+  /postgres-bytea@1.0.0:
+    resolution: {integrity: sha512-xy3pmLuQqRBZBXDULy7KbaitYqLcmxigw14Q5sj8QBVLqEwXfeybIKVWiqAXTlcvdvb0+xkOtDbfQMOf4lST1w==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
+  /postgres-bytea@3.0.0:
+    resolution: {integrity: sha512-CNd4jim9RFPkObHSjVHlVrxoVQXz7quwNFpz7RY1okNNme49+sVyiTvTRobiLV548Hx/hb1BG+iE7h9493WzFw==}
+    engines: {node: '>= 6'}
+    dependencies:
+      obuf: 1.1.2
+
+  /postgres-date@1.0.7:
+    resolution: {integrity: sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
+  /postgres-date@2.0.1:
+    resolution: {integrity: sha512-YtMKdsDt5Ojv1wQRvUhnyDJNSr2dGIC96mQVKz7xufp07nfuFONzdaowrMHjlAzY6GDLd4f+LUHHAAM1h4MdUw==}
+    engines: {node: '>=12'}
+
+  /postgres-interval@1.2.0:
+    resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      xtend: 4.0.2
+    dev: false
+
+  /postgres-interval@3.0.0:
+    resolution: {integrity: sha512-BSNDnbyZCXSxgA+1f5UU2GmwhoI0aU5yMxRGO8CdFEcY2BQF9xm/7MqKnYoM1nJDk8nONNWDk9WeSmePFhQdlw==}
+    engines: {node: '>=12'}
+
+  /postgres-range@1.1.3:
+    resolution: {integrity: sha512-VdlZoocy5lCP0c/t66xAfclglEapXPCIVhqqJRncYpvbCgImF0w67aPKfbqUMr72tO2k5q0TdTZwCLjPTI6C9g==}
 
   /postgres@3.4.3:
     resolution: {integrity: sha512-iHJn4+M9vbTdHSdDzNkC0crHq+1CUdFhx+YqCE+SqWxPjm+Zu63jq7yZborOBF64c8pc58O5uMudyL1FQcHacA==}
@@ -15241,6 +15413,11 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
+  /split2@4.2.0:
+    resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
+    engines: {node: '>= 10.x'}
+    dev: false
+
   /split@0.3.3:
     resolution: {integrity: sha512-wD2AeVmxXRBoX44wAycgjVpMhvbwdI2aZjCkvfNcH1YqHQvJVa1duWc73OyVGJUc05fhFaTZeQ/PYsrmyH0JVA==}
     dependencies:
@@ -16076,8 +16253,8 @@ packages:
       - ts-node
     dev: true
 
-  /tsx@4.3.0:
-    resolution: {integrity: sha512-zalfbBdr7tvYok5sSbnsv4uL+DhT1wRZwbWwuOXjhH8YtJxN2bpl6lpXMxuPThMAKzZ2qgrhuf5ckq/uSsm3CA==}
+  /tsx@4.4.0:
+    resolution: {integrity: sha512-4fwcEjRUxW20ciSaMB8zkpGwCPxuRGnadDuj/pBk5S9uT29zvWz15PK36GrKJo45mSJomDxVejZ73c6lr3811Q==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     dependencies:
@@ -16285,8 +16462,8 @@ packages:
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  /undici@5.27.2:
-    resolution: {integrity: sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==}
+  /undici@5.28.0:
+    resolution: {integrity: sha512-gM12DkXhlAc5+/TPe60iy9P6ETgVfqTuRJ6aQ4w8RYu0MqKuXhaq3/b86GfzDQnNA3NUO6aUNdvevrKH59D0Nw==}
     engines: {node: '>=14.0'}
     dependencies:
       '@fastify/busboy': 2.1.0

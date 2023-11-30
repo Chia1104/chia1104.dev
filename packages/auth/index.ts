@@ -1,10 +1,11 @@
 import NextAuth from "next-auth";
-import { db, tableCreator } from "@chia/db";
+import { db, tableCreator, localDb, betaDb } from "@chia/db";
 import type { DefaultSession } from "@auth/core/types";
 import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 // @ts-ignore
 import { env } from "./env.mjs";
+import { getDb } from "@chia/utils";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {
@@ -50,7 +51,14 @@ export const {
       },
     }),
   },
-  adapter: DrizzleAdapter(db, tableCreator),
+  adapter: DrizzleAdapter(
+    getDb(undefined, {
+      db,
+      betaDb,
+      localDb,
+    }),
+    tableCreator
+  ),
   providers: [
     Google({
       clientId: env.GOOGLE_CLIENT_ID,

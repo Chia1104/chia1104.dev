@@ -12,8 +12,9 @@
     "db:seed": "node --import=tsx --env-file=../../../.env.global index.ts seedPost",
     "tsc:config": "tsc --showConfig"
   },
-  "dependencies": {
+  "devDependencies": {
     "@chia/db": "0.0.0",
+    "@chia/utils": "0.0.0",
     "@faker-js/faker": "^8.0.2",
     "tsconfig": "0.0.0"
   }

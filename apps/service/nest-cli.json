@@ -5,7 +5,27 @@
   "monorepo": true,
   "compilerOptions": {
     "deleteOutDir": true,
+    "webpack": true,
     "assets": ["**/*.graphql"]
   },
-  "projects": {}
+  "projects": {
+    "@chia/db": {
+      "type": "library",
+      "root": "../../packages/db",
+      "entryFile": "index",
+      "sourceRoot": "../../packages/db/src",
+      "compilerOptions": {
+        "tsConfigPath": "../../packages/db/tsconfig.lib.json"
+      }
+    },
+    "@chia/utils": {
+      "type": "library",
+      "root": "../../packages/utils",
+      "entryFile": "index",
+      "sourceRoot": "../../packages/utils/src",
+      "compilerOptions": {
+        "tsConfigPath": "../../packages/utils/tsconfig.lib.json"
+      }
+    }
+  }
 }

@@ -8,15 +8,15 @@ import { type RouterInputs, type RouterOutputs } from "@chia/api";
 import Skeleton from "./skeleton";
 
 interface Props {
-  initFeed?: RouterOutputs["post"]["infinite"]["items"];
+  initFeed?: RouterOutputs["feeds"]["infinite"]["items"];
   nextCursor?: string | number;
   useClient?: boolean;
-  query?: RouterInputs["post"]["infinite"];
+  query?: RouterInputs["feeds"]["infinite"];
 }
 
 const FeedItem = forwardRef<
   HTMLDivElement,
-  { feed: RouterOutputs["post"]["infinite"]["items"][0] }
+  { feed: RouterOutputs["feeds"]["infinite"]["items"][0] }
 >(({ feed }, ref) => {
   return (
     <Card ref={ref} className="dark:bg-dark/90">
@@ -32,27 +32,33 @@ const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query = {} } = props;
 
   const { data, isSuccess, isFetching, fetchNextPage, hasNextPage } =
-    api.post.infinite.useInfiniteQuery(query, {
-      getNextPageParam: (lastPage) => lastPage?.nextCursor,
-      initialData: !!initFeed
-        ? {
-            pages: [
-              {
-                items: initFeed,
-                nextCursor: nextCursor?.toString(),
-              },
-            ],
-            pageParams: [nextCursor?.toString()],
-          }
-        : undefined,
-    });
+    api.feeds.infinite.useInfiniteQuery(
+      {
+        ...query,
+        type: "post",
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage?.nextCursor,
+        initialData: !!initFeed
+          ? {
+              pages: [
+                {
+                  items: initFeed,
+                  nextCursor: nextCursor?.toString(),
+                },
+              ],
+              pageParams: [nextCursor?.toString()],
+            }
+          : undefined,
+      }
+    );
 
   const flatData = useMemo(() => {
     if (!isSuccess || !data) return [];
     return data.pages.flatMap((page) => page.items);
   }, [data, isSuccess]);
 
-  const { ref } = useInfiniteScroll({
+  const { ref } = useInfiniteScroll<HTMLDivElement>({
     hasMore: hasNextPage,
     isLoading: isFetching,
     onLoadMore: fetchNextPage,

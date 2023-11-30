@@ -2,13 +2,16 @@ ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine AS base
 
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
 WORKDIR /app
 
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
     corepack enable && \
-    yarn global add turbo
+    pnpm add -g turbo
 
 FROM base AS builder
 
@@ -45,7 +48,16 @@ ARG TURBO_TEAM \
     SPOTIFY_CLIENT_ID \
     SPOTIFY_CLIENT_SECRET \
     SPOTIFY_FAVORITE_PLAYLIST_ID \
-    SPOTIFY_REFRESH_TOKEN
+    SPOTIFY_REFRESH_TOKEN \
+    DATABASE_URL \
+    BETA_DATABASE_URL \
+    ADMIN_ID \
+    BETA_ADMIN_ID \
+    AUTH_URL \
+    AUTH_SECRET \
+    GOOGLE_CLIENT_ID \
+    GOOGLE_CLIENT_SECRET \
+    NEXT_PUBLIC_ENV
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN \
@@ -69,11 +81,21 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID} \
     SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET} \
     SPOTIFY_FAVORITE_PLAYLIST_ID=${SPOTIFY_FAVORITE_PLAYLIST_ID} \
-    SPOTIFY_REFRESH_TOKEN=${SPOTIFY_REFRESH_TOKEN}
+    SPOTIFY_REFRESH_TOKEN=${SPOTIFY_REFRESH_TOKEN} \
+    DATABASE_URL=${DATABASE_URL} \
+    BETA_DATABASE_URL=${BETA_DATABASE_URL} \
+    ADMIN_ID=${ADMIN_ID} \
+    BETA_ADMIN_ID=${BETA_ADMIN_ID} \
+    AUTH_URL=${AUTH_URL} \
+    AUTH_SECRET=${AUTH_SECRET} \
+    GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
+    GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
+    NEXT_PUBLIC_ENV=${NEXT_PUBLIC_ENV} \
+    SKIP_ENV_VALIDATION=1
 
-RUN pnpm i && \
-    pnpm turbo run build --filter=www... && \
-    pnpm turbo run next-sitemap --filter=www
+RUN pnpm i
+RUN pnpm turbo run build --filter=www...
+RUN pnpm turbo run next-sitemap --filter=www
 
 FROM base AS runner
 

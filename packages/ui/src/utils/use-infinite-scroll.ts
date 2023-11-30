@@ -10,14 +10,14 @@ export interface UseInfiniteScrollOptions {
   intersectionObserverInit?: IntersectionObserverInit;
 }
 
-export interface UseInfiniteScrollResult {
-  ref: (node: HTMLDivElement) => void;
+export interface UseInfiniteScrollResult<TNode> {
+  ref: (node: TNode) => void;
   observer: IntersectionObserver | null;
 }
 
-const useInfiniteScroll = (
+const useInfiniteScroll = <TNode extends HTMLElement = HTMLDivElement>(
   option?: UseInfiniteScrollOptions
-): UseInfiniteScrollResult => {
+): UseInfiniteScrollResult<TNode> => {
   option ??= {};
   const {
     hasMore,
@@ -28,7 +28,7 @@ const useInfiniteScroll = (
   } = option;
   const observer = useRef<IntersectionObserver | null>(null);
   const ref = useCallback(
-    (node: HTMLDivElement) => {
+    (node: TNode) => {
       if (isLoading || isError || !hasMore) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
@@ -38,7 +38,7 @@ const useInfiniteScroll = (
       }, intersectionObserverInit);
       if (node) observer.current.observe(node);
     },
-    [isLoading, hasMore]
+    [isLoading, hasMore, onLoadMore, intersectionObserverInit, isError]
   );
   return { ref, observer: observer.current };
 };

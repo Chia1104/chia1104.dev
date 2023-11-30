@@ -1,23 +1,34 @@
 import { auth, type Session } from "@chia/auth";
-import { db } from "@chia/db";
+import { db, betaDb, localDb } from "@chia/db";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { getDb, getAdminId } from "@chia/utils";
 
 type CreateContextOptions = {
   session: Session | null;
 };
 
+const env = process.env.VERCEL_ENV ?? process.env.NODE_ENV;
+
+const database = getDb(env, {
+  db,
+  betaDb,
+  localDb,
+});
+
+const adminId = getAdminId();
+
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
-    db,
+    db: database,
   };
 };
 
 export const createTRPCContext = async (opts: {
   req?: Request;
-  auth: Session | null;
+  auth?: Session | null;
 }) => {
   const session = opts.auth ?? (await auth());
   const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
@@ -60,3 +71,13 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
 });
 
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+
+const dangerous_isAdmin = t.middleware(({ ctx, next }) => {
+  return next({
+    ctx: {
+      adminId,
+    },
+  });
+});
+
+export const adminProcedure = t.procedure.use(dangerous_isAdmin);

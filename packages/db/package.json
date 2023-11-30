@@ -3,16 +3,9 @@
   "name": "@chia/db",
   "version": "0.0.0",
   "private": true,
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
-    }
-  },
-  "types": "./dist/index.d.mts",
+  "types": "./src/index.ts",
+  "main": "./src/index.ts",
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
     "db:generate": "drizzle-kit generate:pg",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
@@ -20,10 +13,12 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.29.0",
+    "pg": "^8.11.3",
     "postgres": "^3.4.1"
   },
   "devDependencies": {
     "@auth/core": "^0.18.0",
+    "@types/pg": "^8.10.9",
     "drizzle-kit": "^0.20.0",
     "tsconfig": "0.0.0"
   }

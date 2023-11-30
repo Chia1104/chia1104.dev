@@ -28,6 +28,8 @@
     "clean": "git clean -xdf .next .turbo node_modules"
   },
   "dependencies": {
+    "@chia/api": "0.0.0",
+    "@chia/auth": "0.0.0",
     "@chia/db": "0.0.0",
     "@chia/meta": "0.0.0",
     "@chia/ui": "0.0.0",
@@ -40,6 +42,10 @@
     "@sentry/nextjs": "^7.80.1",
     "@t3-oss/env-nextjs": "^0.7.1",
     "@tanstack/react-query": "^5.8.4",
+    "@trpc/client": "next",
+    "@trpc/next": "next",
+    "@trpc/react-query": "next",
+    "@trpc/server": "next",
     "@upstash/ratelimit": "1.0.0",
     "@upstash/redis": "1.25.1",
     "@vercel/analytics": "1.1.1",
@@ -51,6 +57,7 @@
     "graphql-request": "^6.1.0",
     "gray-matter": "^4.0.3",
     "next": "14.0.3",
+    "next-auth": "5.0.0-beta.3",
     "next-mdx-remote": "^4.4.1",
     "next-themes": "^0.2.1",
     "p-map": "^6.0.0",

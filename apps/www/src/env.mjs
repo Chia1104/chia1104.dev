@@ -64,6 +64,10 @@ export const env = createEnv({
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
     SENTRY_PROJECT: z.string().optional(),
+    ADMIN_ID: z.string().optional(),
+    BETA_ADMIN_ID: z.string().optional(),
+    DATABASE_URL: z.string().optional(),
+    BETA_DATABASE_URL: z.string().optional(),
   },
 
   client: {
@@ -71,6 +75,10 @@ export const env = createEnv({
       .enum([
         "preview",
         "development",
+        "local",
+        "beta",
+        "gamma",
+        "prod",
         "production",
         "test",
         "zeabur-prod",
@@ -140,6 +148,10 @@ export const env = createEnv({
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     SENTRY_ORG: process.env.SENTRY_ORG,
     SENTRY_PROJECT: process.env.SENTRY_PROJECT,
+    ADMIN_ID: process.env.ADMIN_ID,
+    BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
+    DATABASE_URL: process.env.DATABASE_URL,
+    BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });

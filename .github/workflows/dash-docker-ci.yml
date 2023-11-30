@@ -16,7 +16,7 @@ env:
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  AUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:8080
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -24,6 +24,10 @@ env:
   NODE_VERSION: 18.*
   GIT_HASH: ${{ github.sha }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
+  ADMIN_ID: ${{ secrets.ADMIN_ID }}
+  BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
+  NEXT_PUBLIC_ENV: beta
 
 jobs:
   build:
@@ -58,8 +62,12 @@ jobs:
           build-args: |
             GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
-            AUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            AUTH_SECRET=${{ env.AUTH_SECRET }}
             AUTH_URL=${{ env.AUTH_URL }}
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
             DATABASE_URL=${{ env.DATABASE_URL }}
+            BETA_DATABASE_URL=${{ env.BETA_DATABASE_URL }}
+            ADMIN_ID=${{ env.ADMIN_ID }}
+            BETA_ADMIN_ID=${{ env.BETA_ADMIN_ID }}
+            NEXT_PUBLIC_ENV=${{ env.NEXT_PUBLIC_ENV }}

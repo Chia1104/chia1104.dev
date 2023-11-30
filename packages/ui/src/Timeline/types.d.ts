@@ -5,6 +5,7 @@ import {
 } from "react";
 import { type HTMLMotionProps, type ForwardRefComponent } from "framer-motion";
 import { type Dayjs } from "dayjs";
+import type { LinkProps } from "next/link";
 
 export interface Data {
   id: number;
@@ -13,6 +14,10 @@ export interface Data {
   content?: ReactNode;
   startDate: dayjs.Dayjs | string | number | null;
   link?: string;
+  defaultOpen?: boolean;
+  titleProps?: ComponentPropsWithoutRef<"span">;
+  subtitleProps?: ComponentPropsWithoutRef<"span">;
+  linkProps?: Partial<LinkProps>;
 }
 
 export interface GroupData {
@@ -47,8 +52,17 @@ export interface TimelineData {
   [year: string]: Data[];
 }
 
+export interface AsyncDataStatus {
+  isLoading?: boolean;
+  isError?: boolean;
+  hasMore?: boolean;
+}
+
 export interface TimelineProps extends ComponentPropsWithoutRef<"div"> {
   data: Data[];
+  enableSort?: boolean;
+  onEndReached?: () => void;
+  asyncDataStatus?: AsyncDataStatus;
 }
 
 export interface ListItemProps
@@ -56,9 +70,20 @@ export interface ListItemProps
     ForwardRefComponent<HTMLLIElement, HTMLMotionProps<"li">>
   > {
   data: Data;
+  isLastItem: boolean;
+  refTarget?: (node: HTMLLIElement) => void;
 }
 
 export type ListProps = ComponentPropsWithoutRef<
   ForwardRefComponent<"ul", HTMLMotionProps<"ul">>
 > &
-  GroupData;
+  GroupData & {
+    isLastGroup: boolean;
+    refTarget?: (node: HTMLLIElement) => void;
+  };
+
+export type GroupListProps = {
+  data: GroupData[];
+  onEndReached?: () => void;
+  asyncDataStatus?: AsyncDataStatus;
+};

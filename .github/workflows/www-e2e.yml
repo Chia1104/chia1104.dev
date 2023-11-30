@@ -41,6 +41,15 @@ env:
   REDIS_URL: ${{ secrets.REDIS_URL }}
   UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
   NODE_ENV: test
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+  AUTH_URL: http://localhost:3000
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
+  ADMIN_ID: ${{ secrets.ADMIN_ID }}
+  BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  NEXT_PUBLIC_ENV: beta
 
 jobs:
   build:

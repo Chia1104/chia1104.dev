@@ -94,7 +94,9 @@
     "REDIS_URL",
     "DB_URL",
     "DATABASE_URL",
+    "*_DATABASE_URL",
     "ADMIN_ID",
+    "*_ADMIN_ID",
     "GITHUB_API",
     "GITHUB_GRAPHQL_API",
     "GOOGLE_API",
@@ -107,6 +109,10 @@
     "SENTRY_PROJECT",
     "NEXT_PUBLIC_VERCEL_ENV",
     "RAILWAY_ENVIRONMENT_NAME",
-    "ZEABUR_ENVIRONMENT_NAME"
+    "ZEABUR_ENVIRONMENT_NAME",
+    "VERCEL_ENV",
+    "*_VERCEL_ENV",
+    "ENV",
+    "*_ENV"
   ]
 }

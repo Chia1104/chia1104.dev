@@ -14,11 +14,16 @@ on:
 env:
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  AUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:3001
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  NODE_ENV: test
+  BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
+  ADMIN_ID: ${{ secrets.ADMIN_ID }}
+  BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
+  NEXT_PUBLIC_ENV: beta
 
 jobs:
   build:

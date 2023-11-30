@@ -2,13 +2,16 @@ ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine AS base
 
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
 WORKDIR /app
 
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
     corepack enable && \
-    yarn global add turbo
+    pnpm add -g turbo
 
 FROM base AS pre-builder
 
@@ -21,18 +24,25 @@ FROM base AS builder
 COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
+COPY ./packages/db /app/packages/db
+COPY ./packages/utils /app/packages/utils
 COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
     TURBO_TOKEN \
-    DATABASE_URL
+    DATABASE_URL \
+    BETA_DATABASE_URL \
+    ENV
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN \
-    DATABASE_URL=${DATABASE_URL}
+    DATABASE_URL=${DATABASE_URL} \
+    BETA_DATABASE_URL=${BETA_DATABASE_URL} \
+    ENV=${ENV}
 
-RUN pnpm i && \
-    pnpm turbo run build --filter=service...
+RUN pnpm i
+
+RUN pnpm turbo run build --filter=service...
 
 FROM base as prod
 
@@ -45,10 +55,9 @@ RUN pnpm i --prod --ignore-scripts
 FROM base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
-COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY ./packages/db/package.json ./packages/db/package.json
+COPY ./packages/utils/package.json ./packages/utils/package.json
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
-COPY --from=prod /app/packages/db/node_modules ./packages/db/node_modules
 COPY --from=prod /app/node_modules ./node_modules
 
 ENV NODE_ENV=production \

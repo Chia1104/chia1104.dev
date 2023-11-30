@@ -1,32 +1,87 @@
 import { faker } from "@faker-js/faker";
-import { db, schema } from "@chia/db";
-import { feeds } from "../../../packages/db/src/schema";
+import { db, schema, localDb, betaDb, type DB } from "@chia/db";
+import { getDb, getAdminId } from "@chia/utils";
 
-if (!process.env.ADMIN_ID || !process.env.DATABASE_URL) {
-  throw new Error("Missing env variables ADMIN_ID or DATABASE_URL");
-}
-
-const seedPost = async () => {
-  await db.transaction(async (trx) => {
-    const feed = await trx
-      .insert(schema.feeds)
-      .values({
-        slug: faker.lorem.slug(),
-        type: "post",
-        title: faker.lorem.sentence(),
-        expert: faker.lorem.paragraphs(),
-        description: faker.lorem.paragraphs(),
-        userId: process.env.ADMIN_ID!,
-      })
-      .returning({ feedId: feeds.id });
-    await trx.insert(schema.posts).values({
-      feedId: feed[0].feedId,
-      content: faker.lorem.paragraphs(),
-    });
+const withReplicas = (
+  fun: (database: DB, adminId: string, env?: string) => Promise<void> | void,
+  options?: {
+    env?: string;
+  }
+) => {
+  const env = options?.env ?? process.env.NODE_ENV;
+  const database = getDb(env, {
+    db,
+    betaDb,
+    localDb,
   });
+  const adminId = getAdminId(env);
+  return async () => {
+    await fun(database, adminId, env);
+  };
 };
 
-const seedActions = [seedPost];
+const seedPost = withReplicas(
+  async (db, adminId) => {
+    await db.transaction(async (trx) => {
+      const feed = await trx
+        .insert(schema.feeds)
+        .values({
+          slug: faker.lorem.slug(),
+          type: "post",
+          title: faker.lorem.sentence(),
+          expert: faker.lorem.paragraph(),
+          description: faker.lorem.paragraph(),
+          userId: adminId,
+          published: true,
+        })
+        .returning({ feedId: schema.feeds.id });
+      await trx.insert(schema.posts).values({
+        feedId: feed[0].feedId,
+        content: faker.lorem.paragraphs(),
+      });
+    });
+  },
+  {
+    env: process.argv[3] ?? "local",
+  }
+);
+
+const seedNote = withReplicas(
+  async (db, adminId) => {
+    await db.transaction(async (trx) => {
+      const feed = await trx
+        .insert(schema.feeds)
+        .values({
+          slug: faker.lorem.slug(),
+          type: "note",
+          title: faker.lorem.sentence(),
+          expert: faker.lorem.paragraph(),
+          description: faker.lorem.paragraph(),
+          userId: adminId,
+          published: true,
+        })
+        .returning({ feedId: schema.feeds.id });
+      await trx.insert(schema.notes).values({
+        feedId: feed[0].feedId,
+        content: faker.lorem.paragraphs(),
+      });
+    });
+  },
+  {
+    env: process.argv[3] ?? "local",
+  }
+);
+
+const seedActions = [
+  {
+    name: "seedPost",
+    fn: seedPost,
+  },
+  {
+    name: "seedNote",
+    fn: seedNote,
+  },
+];
 
 const seed = async () => {
   const action = process.argv[2];
@@ -38,7 +93,7 @@ const seed = async () => {
     throw new Error("Unknown action");
   }
   console.log("Seeding", action);
-  await actionFn();
+  await actionFn.fn();
 };
 
 seed()
