@@ -57,7 +57,7 @@
     "graphql-request": "^6.1.0",
     "gray-matter": "^4.0.3",
     "next": "14.0.3",
-    "next-auth": "5.0.0-beta.3",
+    "next-auth": "5.0.0-beta.4",
     "next-mdx-remote": "^4.4.1",
     "next-themes": "^0.2.1",
     "p-map": "^6.0.0",
