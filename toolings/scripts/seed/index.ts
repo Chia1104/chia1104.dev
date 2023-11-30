@@ -82,9 +82,6 @@ const seedPost = withReplicas(
 const seedNote = withReplicas(
   async (db, adminId) => {
     await db.transaction(async (trx) => {
-      if (!process.env.ADMIN_ID || !process.env.DATABASE_URL) {
-        throw new Error("Missing env variables ADMIN_ID or DATABASE_URL");
-      }
       const feed = await trx
         .insert(schema.feeds)
         .values({
