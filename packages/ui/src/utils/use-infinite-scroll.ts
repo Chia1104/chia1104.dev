@@ -2,7 +2,7 @@
 
 import { useRef, useCallback } from "react";
 
-export interface UseInfiniteScrollOptions<TNode> {
+export interface UseInfiniteScrollOptions {
   hasMore?: boolean;
   isLoading?: boolean;
   isError?: boolean;
@@ -16,7 +16,7 @@ export interface UseInfiniteScrollResult<TNode> {
 }
 
 const useInfiniteScroll = <TNode extends HTMLElement = HTMLDivElement>(
-  option?: UseInfiniteScrollOptions<TNode>
+  option?: UseInfiniteScrollOptions
 ): UseInfiniteScrollResult<TNode> => {
   option ??= {};
   const {
