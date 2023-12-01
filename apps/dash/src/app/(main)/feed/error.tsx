@@ -43,7 +43,7 @@ export default function Error({
       <div className="text-center">
         <h1 className="text-3xl font-bold">500 - {error?.name}</h1>
         <p className="text-xl font-bold">
-          {error?.message ?? "Something went wrong."}
+          {error?.digest ?? "Something went wrong."}
         </p>
       </div>
     </div>
