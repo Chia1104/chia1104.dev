@@ -4,13 +4,15 @@ import { env } from "@/env.mjs";
 async function middleware(request: RequestInit) {
   return {
     ...request,
-    next: { revalidate: 60, tags: ["github-repos"] },
+    next: { revalidate: 60 },
   };
 }
 
 const GITHUB_GRAPHQL_API =
-  env.GITHUB_GRAPHQL_API ?? "https://api.github.com/graphql";
-const GH_PUBLIC_TOKEN = env.GH_PUBLIC_TOKEN ?? "super secret";
+  env.GITHUB_GRAPHQL_API ??
+  process.env.GITHUB_GRAPHQL_API ??
+  "https://api.github.com/graphql";
+const GH_PUBLIC_TOKEN = env.GH_PUBLIC_TOKEN ?? process.env.GH_PUBLIC_TOKEN;
 
 const client = new GraphQLClient(GITHUB_GRAPHQL_API, {
   headers: {
