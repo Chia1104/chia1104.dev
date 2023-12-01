@@ -7,10 +7,7 @@ on:
     types: [ opened, labeled, unlabeled, synchronize ]
     paths:
       - "apps/www/**"
-      - "packages/ui/**"
-      - "packages/utils/**"
-      - "packages/meta/**"
-      - "packages/db/**"
+      - "packages/**"
       - ".github/workflows/www-ci.yml"
       - "package.json"
 

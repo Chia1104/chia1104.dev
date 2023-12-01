@@ -5,7 +5,6 @@
     "watchPatterns": [
       "/apps/dash",
       "/packages/*",
-      "/toolings/tailwind",
       "/infra/railway/dash.json",
       "package.json"
     ],
