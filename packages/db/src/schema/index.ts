@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { pgTable } from "./table";
-import { roles, feed_type } from "./enums";
+import { roles, feed_type, article_type } from "./enums";
 import { type InferSelectModel, relations, sql } from "drizzle-orm";
 
 export const users = pgTable("user", {
@@ -176,6 +176,7 @@ export const posts = pgTable(
     feedId: integer("feedId")
       .notNull()
       .references(() => feeds.id, { onDelete: "cascade" }),
+    type: article_type("type").default("mdx"),
     content: text("content"),
     readTime: integer("readTime"),
   },
@@ -193,6 +194,7 @@ export const notes = pgTable(
     feedId: integer("feedId")
       .notNull()
       .references(() => feeds.id, { onDelete: "cascade" }),
+    type: article_type("type").default("mdx"),
     content: text("content"),
   },
   (table) => {
