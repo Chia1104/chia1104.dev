@@ -78,7 +78,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            GH_PUBLIC_TOKEenv.GH_PUBLIC_TOKEN }}
+            GH_PUBLIC_TOKE=${{ env.GH_PUBLIC_TOKEN }}
             NEXT_PUBLIC_RE_CAPTCHA_KEY=${{ env.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
             GOOGLE_API_KEY=${{ env.GOOGLE_API_KEY }}
             SPOTIFY_CLIENT_ID=${{ env.SPOTIFY_CLIENT_ID }}
