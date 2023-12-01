@@ -8,10 +8,14 @@ async function middleware(request: RequestInit) {
   };
 }
 
-const client = new GraphQLClient(env.GITHUB_GRAPHQL_API!, {
+const GITHUB_GRAPHQL_API =
+  env.GITHUB_GRAPHQL_API ?? "https://api.github.com/graphql";
+const GH_PUBLIC_TOKEN = env.GH_PUBLIC_TOKEN ?? "super secret";
+
+const client = new GraphQLClient(GITHUB_GRAPHQL_API, {
   headers: {
     accept: "application/vnd.github.v3+json",
-    authorization: `token ${env.GH_PUBLIC_TOKEN}`,
+    authorization: `token ${GH_PUBLIC_TOKEN}`,
   },
   // @ts-ignore
   requestMiddleware: middleware,
