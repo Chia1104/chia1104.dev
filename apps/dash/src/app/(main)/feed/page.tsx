@@ -1,11 +1,10 @@
 import FeedList from "./feed-list";
 import { db, localDb, betaDb } from "@chia/db";
 import { feedsRouter } from "@chia/api/src/routes/feeds";
-import { auth } from "@chia/auth";
+import { auth, type Session } from "@chia/auth";
 import { getDb } from "@chia/utils";
 
-const getPosts = async () => {
-  const session = await auth();
+const getPosts = async (session: Session | null) => {
   const feedsCaller = feedsRouter.createCaller({
     session,
     db: getDb(undefined, {
@@ -25,7 +24,18 @@ const getPosts = async () => {
 export const dynamic = "force-dynamic";
 
 const FeedPage = async () => {
-  const posts = await getPosts();
+  const session = await auth();
+  if (!session) {
+    return (
+      <div className="c-container main">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold">401</h1>
+          <p className="text-xl font-bold">You are not logged in.</p>
+        </div>
+      </div>
+    );
+  }
+  const posts = await getPosts(session);
   return (
     <div className="c-container main mt-24">
       <FeedList

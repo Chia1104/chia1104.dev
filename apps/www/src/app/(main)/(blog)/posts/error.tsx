@@ -1,23 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { Image, ImageZoom, withError } from "@chia/ui";
+import * as Sentry from "@sentry/nextjs";
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error(error);
-  }, [error]);
+const Error = withError(
+  () => {
+    return (
+      <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-lg p-3 px-5">
+        <h3 className="my-2">
+          Here looks a little boring, I'll prepare it for you soon
+        </h3>
+        <ImageZoom>
+          <div className="not-prose aspect-h-1 aspect-w-1 relative w-[200px]">
+            <Image
+              src="/memo.png"
+              alt="memo"
+              className="object-cover"
+              fill
+              loading="lazy"
+            />
+          </div>
+        </ImageZoom>
+        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
+      </div>
+    );
+  },
+  {
+    onError(error) {
+      Sentry.captureException(error);
+      console.error(error);
+    },
+  }
+);
 
-  return (
-    <main className="main c-container">
-      <p>Something went wrong!</p>
-      <button onClick={() => reset()}>Reset error boundary</button>
-    </main>
-  );
-}
+export default Error;
