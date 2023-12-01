@@ -5,7 +5,7 @@ import meta from "@chia/meta";
 import "@total-typescript/ts-reset";
 import type { Metadata, Viewport } from "next";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
-import { getBaseUrl } from "@/utils/getBaseUrl";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import "react-medium-image-zoom/dist/styles.css";
 import Footer from "./_components/footer";
 
@@ -21,6 +21,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     getBaseUrl({
       isServer: true,
+      baseUrl: WWW_BASE_URL,
     })
   ),
   title: {

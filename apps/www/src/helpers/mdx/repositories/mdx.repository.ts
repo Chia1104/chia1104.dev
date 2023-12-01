@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs/promises";
 import matter from "gray-matter";
 import readingTime from "reading-time";
-import { POSTS_PATH } from "@/shared/constants";
+import { POSTS_PATH } from "@chia/utils";
 
 export const getPostPaths = () => path.join(process.cwd(), POSTS_PATH);
 

@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import superjson from "superjson";
 import { api } from "@/trpc-api";
-import { getBaseUrl } from "@/utils/getBaseUrl";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -47,12 +47,9 @@ export function TRPCReactProvider(props: {
             (opts.direction === "down" && opts.result instanceof Error),
         }),
         unstable_httpBatchStreamLink({
-          url: `${getBaseUrl()}/api/trpc`,
-          // headers() {
-          //   const headers = new Map(props.headers);
-          //   headers.set("x-trpc-source", "nextjs-react");
-          //   return Object.fromEntries(headers);
-          // },
+          url: `${getBaseUrl({
+            baseUrl: WWW_BASE_URL,
+          })}/api/trpc`,
         }),
       ],
     })
