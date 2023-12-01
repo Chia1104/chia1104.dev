@@ -140,4 +140,5 @@ export const env = createEnv({
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  emptyStringAsUndefined: true,
 });
