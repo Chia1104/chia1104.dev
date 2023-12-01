@@ -18,8 +18,8 @@ export const preferredRegion = ["hnd1"];
 const resend = new Resend(env.RESEND_API_KEY);
 
 const redis = new Redis({
-  url: env.REDIS_URL,
-  token: env.UPSTASH_TOKEN,
+  url: env.REDIS_URL!,
+  token: env.UPSTASH_TOKEN!,
 });
 
 const ratelimit = new Ratelimit({
