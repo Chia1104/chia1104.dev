@@ -90,6 +90,7 @@
     "ZEABUR_URL",
     "VERCEL_URL",
     "RAILWAY_STATIC_URL",
+    "RAILWAY_PUBLIC_DOMAIN",
     "REDIS_URI",
     "REDIS_URL",
     "DB_URL",

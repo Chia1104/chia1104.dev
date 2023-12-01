@@ -5,7 +5,7 @@ import "highlight.js/styles/atom-one-dark-reasonable.css";
 import dayjs from "dayjs";
 import type { Metadata } from "next";
 import type { Blog, WithContext } from "schema-dts";
-import { getBaseUrl } from "@/utils/getBaseUrl";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { createHmac } from "node:crypto";
 import { setSearchParams } from "@chia/utils";
 import { env } from "@/env.mjs";
@@ -53,6 +53,7 @@ export const generateMetadata = async ({
           {
             url: `${getBaseUrl({
               isServer: true,
+              baseUrl: WWW_BASE_URL,
             })}/api/og?${setSearchParams({
               title: frontmatter?.title,
               excerpt: frontmatter.excerpt,
@@ -70,7 +71,10 @@ export const generateMetadata = async ({
         description: frontmatter?.excerpt,
         creator: "@chia1104",
         images: [
-          `${getBaseUrl({ isServer: true })}/api/og?${setSearchParams({
+          `${getBaseUrl({
+            isServer: true,
+            baseUrl: WWW_BASE_URL,
+          })}/api/og?${setSearchParams({
             title: frontmatter?.title,
             excerpt: frontmatter.excerpt,
             subtitle: dayjs(frontmatter.updatedAt).format("MMMM D, YYYY"),

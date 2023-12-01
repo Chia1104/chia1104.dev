@@ -1,3 +1,5 @@
+import type { Env } from "../schema";
+
 const getInternalEnv = () => {
   if (process.env.ENV) {
     return process.env.ENV;
@@ -21,14 +23,14 @@ const getInternalEnv = () => {
 };
 
 export const getEnv = (env?: string) =>
-  env ??
-  process.env.VERCEL_ENV ??
-  getInternalEnv() ??
-  process.env.NODE_ENV ??
-  "local";
+  (env ??
+    process.env.VERCEL_ENV ??
+    getInternalEnv() ??
+    process.env.NODE_ENV ??
+    "local") as Env;
 
 export const switchEnv = <TResult = unknown>(
-  env: string,
+  env: string | undefined,
   {
     prod,
     beta,
@@ -74,7 +76,7 @@ export const getDb = <DB = unknown>(
     localDb: DB;
   }
 ) => {
-  return switchEnv(getEnv(env), {
+  return switchEnv(env, {
     prod: () => db,
     beta: () => betaDb,
     local: () => localDb,
@@ -82,7 +84,7 @@ export const getDb = <DB = unknown>(
 };
 
 export const getDbUrl = (env?: string) => {
-  return switchEnv(getEnv(env), {
+  return switchEnv(env, {
     prod: () => {
       if (!process.env.DATABASE_URL)
         throw new Error("Missing env variables DATABASE_URL");
@@ -102,7 +104,7 @@ export const getDbUrl = (env?: string) => {
 };
 
 export const getAdminId = (env?: string) => {
-  return switchEnv(getEnv(env), {
+  return switchEnv(env, {
     prod: () => {
       if (!process.env.ADMIN_ID)
         throw new Error("Missing env variables ADMIN_ID");
@@ -119,4 +121,46 @@ export const getAdminId = (env?: string) => {
       return process.env.LOCAL_ADMIN_ID;
     },
   });
+};
+
+export const getBaseUrl = (options?: {
+  isServer?: boolean;
+  baseUrl?: string;
+}) => {
+  options ??= {};
+  const { isServer, baseUrl = `http://localhost:${process.env.PORT ?? 3000}` } =
+    options;
+  if (typeof window !== "undefined" && !isServer) {
+    return "";
+  }
+
+  const RAILWAY_URL =
+    process.env.RAILWAY_STATIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN;
+
+  if (RAILWAY_URL) {
+    return `https://${RAILWAY_URL.replace(/\/$/, "")}`; // remove trailing slash
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
+  }
+
+  /**
+   * @TODO
+   */
+  if (process.env.ZEABUR_URL) {
+    return `https://${process.env.ZEABUR_URL.replace(/\/$/, "")}`;
+  }
+
+  return baseUrl?.replace(/\/$/, "");
+};
+
+/**
+ * @TODO protential bug, server env will be leaked to client
+ */
+export default {
+  ENV: getEnv(),
+  // DATABASE_URL: getDbUrl(),
+  // ADMIN_ID: getAdminId(),
+  // BASE_URL: getBaseUrl(),
 };

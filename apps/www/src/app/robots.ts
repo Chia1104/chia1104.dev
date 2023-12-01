@@ -1,5 +1,5 @@
 import { type MetadataRoute } from "next";
-import { getBaseUrl } from "@/utils/getBaseUrl";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,6 +8,9 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/api/",
     },
-    sitemap: `${getBaseUrl({ isServer: true })}/sitemap.xml`,
+    sitemap: `${getBaseUrl({
+      isServer: true,
+      baseUrl: WWW_BASE_URL,
+    })}/sitemap.xml`,
   };
 }

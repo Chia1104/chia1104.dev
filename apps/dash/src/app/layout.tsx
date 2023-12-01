@@ -4,7 +4,7 @@ import { auth } from "@chia/auth";
 import RootProvider from "./root-provider";
 import { headers } from "next/headers";
 import type { Viewport, Metadata } from "next";
-import { getBaseUrl } from "@/utils/getBaseUrl";
+import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     getBaseUrl({
       isServer: true,
+      baseUrl: DASH_BASE_URL,
     })
   ),
   title: "Dashboard | Chia1104",
