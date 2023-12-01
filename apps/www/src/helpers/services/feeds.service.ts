@@ -1,5 +1,12 @@
 import "server-only";
-import { db, localDb, betaDb, getInfiniteFeedsByUserId } from "@chia/db";
+import {
+  db,
+  localDb,
+  betaDb,
+  getInfiniteFeedsByUserId,
+  eq,
+  schema,
+} from "@chia/db";
 import { unstable_cache as cache } from "next/cache";
 import { getDb, getAdminId } from "@chia/utils";
 
@@ -25,6 +32,7 @@ export const getPosts = (limit = 10) =>
         orderBy: "id",
         sortOrder: "desc",
         type: "post",
+        whereAnd: [eq(schema.feeds.published, true)],
       });
     },
     keys.posts(limit),
@@ -43,6 +51,7 @@ export const getNotes = (limit = 10) =>
         orderBy: "id",
         sortOrder: "desc",
         type: "note",
+        whereAnd: [eq(schema.feeds.published, true)],
       });
     },
     keys.notes(limit),
