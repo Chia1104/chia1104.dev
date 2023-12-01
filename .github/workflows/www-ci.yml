@@ -70,18 +70,11 @@ jobs:
         with:
           INSTALL_COMMAND: '--filter www --filter ui --filter utils --filter tsconfig --filter root'
 
-      - name: '📦  Next.js cache'
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/apps/dash/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
-
-      - name: '🏗️  Build'
-        uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
-        with:
-          BUILD_COMMAND: 'build --filter @chia/utils...'
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+      # - name: '📦  Next.js cache'
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ${{ github.workspace }}/apps/dash/.next/cache
+      #     key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
       - name: '🚨️  ESLint, Type checking, Unit tests'
         id: www-lint-test
