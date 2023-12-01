@@ -23,7 +23,7 @@ export const dynamic = "force-static";
 export const dynamicParams = false;
 
 const getToken = (id: string): string => {
-  const hmac = createHmac("sha256", env.SHA_256_HASH);
+  const hmac = createHmac("sha256", env.SHA_256_HASH ?? "super secret");
   hmac.update(JSON.stringify({ title: id }));
   return hmac.digest("hex");
 };

@@ -1,9 +1,7 @@
 import "server-only";
-import { feedsRouter } from "@chia/api/src/routes/feeds";
-import { db, localDb, betaDb } from "@chia/db";
-import { auth } from "@chia/auth";
+import { db, localDb, betaDb, getInfiniteFeedsByUserId } from "@chia/db";
 import { unstable_cache as cache } from "next/cache";
-import { getDb } from "@chia/utils";
+import { getDb, getAdminId } from "@chia/utils";
 
 export const keys = {
   posts: (limit: number) => ["ADMIN_ISR_POSTS", limit.toString()],
@@ -16,15 +14,13 @@ const database = getDb(undefined, {
   betaDb,
 });
 
+const adminId = getAdminId();
+
 export const getPosts = (limit = 10) =>
   cache(
     async () => {
-      const session = await auth();
-      const feedsCaller = feedsRouter.createCaller({
-        db: database,
-        session,
-      });
-      return await feedsCaller.infinityByAdmin({
+      return await getInfiniteFeedsByUserId(database, {
+        userId: adminId,
         limit,
         orderBy: "id",
         sortOrder: "desc",
@@ -41,12 +37,8 @@ export const getPosts = (limit = 10) =>
 export const getNotes = (limit = 10) =>
   cache(
     async () => {
-      const session = await auth();
-      const feedsCaller = feedsRouter.createCaller({
-        db: database,
-        session,
-      });
-      return await feedsCaller.infinityByAdmin({
+      return await getInfiniteFeedsByUserId(database, {
+        userId: adminId,
         limit,
         orderBy: "id",
         sortOrder: "desc",

@@ -1,17 +1,22 @@
+import "server-only";
 import { GraphQLClient } from "graphql-request";
 import { env } from "@/env.mjs";
 
 async function middleware(request: RequestInit) {
   return {
     ...request,
-    next: { revalidate: 60, tags: ["github-repos"] },
+    next: { revalidate: 60 },
   };
 }
 
-const client = new GraphQLClient(env.GITHUB_GRAPHQL_API, {
+const GITHUB_GRAPHQL_API =
+  env.GITHUB_GRAPHQL_API ?? "https://api.github.com/graphql";
+const GH_PUBLIC_TOKEN = env.GH_PUBLIC_TOKEN ?? "";
+
+const client = new GraphQLClient(GITHUB_GRAPHQL_API, {
   headers: {
     accept: "application/vnd.github.v3+json",
-    authorization: `token ${env.GH_PUBLIC_TOKEN}`,
+    authorization: `token ${GH_PUBLIC_TOKEN}`,
   },
   // @ts-ignore
   requestMiddleware: middleware,
