@@ -94,7 +94,7 @@
     "@vitejs/plugin-react-swc": "^3.3.2",
     "autoprefixer": "^10.4.16",
     "next-sitemap": "^4.1.8",
-    "postcss": "8.4.31",
+    "postcss": "8.4.32",
     "postcss-import": "^15.1.0",
     "redux": "^4.2.1",
     "tailwind-scrollbar": "^3.0.5",
