@@ -9,9 +9,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 });
 
-// IMPORTANT! Set the runtime to edge: https://vercel.com/docs/functions/edge-functions/edge-runtime
-export const runtime = "edge";
-
 export const generate = auth(async (req) => {
   try {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "") {
