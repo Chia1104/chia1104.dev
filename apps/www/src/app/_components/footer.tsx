@@ -100,9 +100,19 @@ const Footer: FC = () => {
         <Logo />
         <Copyright />
       </div>
-      <div
+      <motion.div
+        whileInView={{
+          opacity: "50%",
+        }}
+        initial={{
+          opacity: "0%",
+        }}
+        transition={{
+          delay: 0.3,
+          duration: 0.7,
+        }}
         className={cn(
-          "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full opacity-50 blur-3xl"
+          "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full blur-3xl"
         )}
       />
     </footer>
