@@ -36,6 +36,7 @@ const User = () => {
             as={Link}
             color="primary"
             variant="flat"
+            isDisabled={isPending}
             onPress={() => startTransition(() => signInAction())}>
             Sign Up
           </Button>

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/{{ name }}",
+  "version": "0.0.0",
+  "private": true,
+  "types": "./index.ts",
+  "main": "./index.ts",
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist",
+    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
+    "type:check": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest --passWithNoTests"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsconfig": "0.0.0"
+  }
+}

@@ -31,9 +31,16 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   swcMinify: true,
-  transpilePackages: ["@chia/ui", "@chia/db", "@chia/auth", "@chia/api"],
+  transpilePackages: [
+    "@chia/api",
+    "@chia/auth",
+    "@chia/db",
+    "@chia/editor",
+    "@chia/ui",
+    "@chia/utils",
+  ],
   experimental: {
-    serverComponentsExternalPackages: ["@chia/ui"],
+    serverComponentsExternalPackages: ["@chia/ui", "@chia/editor"],
     webpackBuildWorker: true,
   },
   eslint: {

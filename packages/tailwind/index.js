@@ -110,7 +110,7 @@ module.exports = {
       },
     },
   },
-  darkMode: "class",
+  darkMode: ["class", ".dark-theme"],
   plugins: [typography],
 };
 

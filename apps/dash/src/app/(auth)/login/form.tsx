@@ -16,7 +16,7 @@ const LoginForm = () => {
       <h1 className="">Sign In</h1>
       <Image src="/logo.png" alt="chia1104" width={150} height={150} />
       <Button
-        disabled={isPending}
+        isDisabled={isPending}
         variant="flat"
         color="primary"
         size="lg"
