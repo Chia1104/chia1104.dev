@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import {
   Button,
   Spinner,
@@ -18,11 +17,11 @@ import {
 } from "react";
 import { useMonaco } from "@monaco-editor/react";
 import { MDXStrong, useDarkMode } from "@chia/ui";
+import MEditor from "@monaco-editor/react";
 
-const MEditor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false,
-});
-
+/**
+ * @todo
+ */
 const ComponentModal: FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -43,14 +42,14 @@ const ComponentModal: FC<{
   );
 };
 
-const Editor = () => {
+export const Monaco = () => {
   const { isDarkMode } = useDarkMode();
   const editorRef = useRef<ComponentPropsWithoutRef<typeof MEditor>>(null);
   const monaco = useMonaco();
   const [value, setValue] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
-    <div className="relative w-full overflow-hidden rounded-xl shadow-lg">
+    <div className="relative w-full overflow-hidden rounded-2xl shadow-lg">
       <Button
         disabled
         className="absolute bottom-2 right-2 z-20"
@@ -84,5 +83,3 @@ const Editor = () => {
     </div>
   );
 };
-
-export default Editor;

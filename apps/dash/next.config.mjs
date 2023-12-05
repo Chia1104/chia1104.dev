@@ -32,11 +32,12 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   transpilePackages: [
-    "@chia/ui",
-    "@chia/db",
-    "@chia/auth",
     "@chia/api",
+    "@chia/auth",
+    "@chia/db",
     "@chia/editor",
+    "@chia/ui",
+    "@chia/utils",
   ],
   experimental: {
     serverComponentsExternalPackages: ["@chia/ui", "@chia/editor"],

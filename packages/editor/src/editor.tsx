@@ -14,7 +14,10 @@ const Editor: FC<ComponentPropsWithoutRef<typeof Novel>> = ({
       defaultValue=""
       completionApi="/api/ai/generate"
       {...props}
-      className={cn("c-bg-third w-full rounded-2xl", className)}
+      className={cn(
+        "dark:bg-dark/80 relative w-full overflow-hidden rounded-2xl border border-gray-300  bg-white text-black shadow-lg transition ease-in-out dark:border-gray-700 dark:text-white",
+        className
+      )}
       extensions={extensions}
     />
   );
