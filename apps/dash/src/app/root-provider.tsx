@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, type ReactNode, useState } from "react";
+import { type FC, type ReactNode, useState, useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
@@ -74,6 +74,28 @@ export function TRPCReactProvider(props: {
   );
 }
 
+/**
+ * @todo Remove this when the new Novel Editor is ready
+ */
+const ThemeService = () => {
+  const { theme } = useDarkMode();
+  useEffect(() => {
+    const html = document.querySelector("html");
+    const handleDark = (element: HTMLElement) => {
+      element.classList.remove("light", "light-theme");
+      element.classList.add("dark", "dark-theme");
+    };
+    const handleLight = (element: HTMLElement) => {
+      element.classList.remove("dark", "dark-theme");
+      element.classList.add("light", "light-theme");
+    };
+    if (html && theme) {
+      theme === "dark" ? handleDark(html) : handleLight(html);
+    }
+  }, [theme]);
+  return null;
+};
+
 const RootProvider: FC<Props> = ({ session, children, headers }) => {
   return (
     <SessionProvider session={session}>
@@ -81,6 +103,7 @@ const RootProvider: FC<Props> = ({ session, children, headers }) => {
         <ThemeProvider enableSystem attribute="class">
           <NextUIProvider>
             <Toaster />
+            <ThemeService />
             {children}
           </NextUIProvider>
         </ThemeProvider>
