@@ -43,7 +43,7 @@ importers:
         specifier: ^6.9.0
         version: 6.13.2(eslint@8.55.0)(typescript@5.3.2)
       '@vitest/coverage-v8':
-        specifier: ^1.0.0
+        specifier: ^1.0.1
         version: 1.0.1(vitest@1.0.1)
       dotenv:
         specifier: ^16.3.1
