@@ -2,7 +2,7 @@
 
 import { type FC, type ReactNode, useState } from "react";
 import { ThemeProvider } from "next-themes";
-import { useDarkMode, useIsMounted, Cursor } from "@chia/ui";
+import { useDarkMode, Cursor } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import Script from "next/script";
 import { env } from "@/env.mjs";
@@ -66,10 +66,7 @@ export function TRPCReactProvider(props: {
 
 const Toaster: FC = () => {
   const { theme } = useDarkMode();
-  const isMounted = useIsMounted();
-  return (
-    <ST theme={isMounted && (theme as any)} position="bottom-left" richColors />
-  );
+  return <ST theme={theme as any} position="bottom-left" richColors />;
 };
 
 const Analytics = () => {

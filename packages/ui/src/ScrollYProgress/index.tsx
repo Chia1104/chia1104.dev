@@ -8,7 +8,7 @@ import {
   type ForwardRefComponent,
 } from "framer-motion";
 import { type FC, type ComponentProps } from "react";
-import { cn, useDarkMode } from "../utils";
+import { cn } from "../utils";
 
 const ScrollYProgress: FC<
   ComponentProps<ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>>
@@ -20,17 +20,12 @@ const ScrollYProgress: FC<
     restDelta: 0.001,
   });
 
-  const { isDarkMode } = useDarkMode();
-
   return (
     <motion.div
       {...rest}
       className={cn(
-        "w-full",
-        className,
-        isDarkMode
-          ? "c-bg-gradient-purple-to-pink"
-          : "c-bg-gradient-yellow-to-pink"
+        "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink w-full",
+        className
       )}
       style={{
         scaleX,

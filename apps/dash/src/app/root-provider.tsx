@@ -4,7 +4,7 @@ import { type FC, type ReactNode, useState, useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
-import { useIsMounted, useDarkMode } from "@chia/ui";
+import { useDarkMode } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import { NextUIProvider } from "@nextui-org/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,10 +21,7 @@ interface Props {
 
 const Toaster: FC = () => {
   const { theme } = useDarkMode();
-  const isMounted = useIsMounted();
-  return (
-    <ST theme={isMounted && (theme as any)} position="bottom-left" richColors />
-  );
+  return <ST theme={theme as any} position="bottom-left" richColors />;
 };
 
 export function TRPCReactProvider(props: {
