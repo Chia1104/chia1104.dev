@@ -9,6 +9,7 @@
     "db:generate": "drizzle-kit generate:pg",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
+    "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {

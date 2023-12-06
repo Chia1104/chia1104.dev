@@ -20,7 +20,8 @@
   "include": ["**/*.ts"],
   "exclude": [
     "node_modules",
-    "**/*.{spec,test}.{mts,ts}",
+    "**/*.spec.mts",
+    "**/*.test.mts",
     "vitest.config.mts",
     "tsup.config.ts"
   ]
