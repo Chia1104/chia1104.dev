@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC } from "react";
+import { type FC } from "react";
 import { motion } from "framer-motion";
 import type { ListItemProps, ListProps, GroupListProps } from "./types";
 import { cn, useInfiniteScroll } from "../utils";

@@ -18,5 +18,11 @@
     "declaration": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "**/*.spec.mts",
+    "**/*.test.mts",
+    "vitest.config.mts",
+    "tsup.config.ts"
+  ]
 }

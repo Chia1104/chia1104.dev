@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC, useId } from "react";
+import { type FC, useId } from "react";
 import { motion } from "framer-motion";
 
 interface ToggleThemeProps {

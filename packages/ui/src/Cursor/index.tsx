@@ -1,11 +1,6 @@
 "use client";
 
-import React, {
-  useEffect,
-  useState,
-  type FC,
-  type ComponentProps,
-} from "react";
+import { useEffect, useState, type FC, type ComponentProps } from "react";
 import {
   motion,
   type HTMLMotionProps,

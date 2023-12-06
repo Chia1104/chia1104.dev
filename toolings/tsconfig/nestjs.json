@@ -15,6 +15,7 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, {
+import {
   type DetailedHTMLProps,
   type FC,
   type HTMLAttributes,

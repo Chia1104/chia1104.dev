@@ -1,5 +1,5 @@
 {
-  "extends": ["tsconfig/base.json"],
-  "include": ["src", "vitest.config.ts", "tsup.config.ts"],
+  "extends": ["tsconfig/nextjs.json"],
+  "include": ["src", "vitest.config.mts", "__tests__"],
   "exclude": ["dist", "build", "node_modules"]
 }

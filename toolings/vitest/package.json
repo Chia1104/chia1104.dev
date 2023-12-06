@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "vitest-shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "types": "./index.ts",
+  "main": "./index.ts",
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react-swc": "^3.3.2",
+    "tsconfig": "0.0.0"
+  }
+}

@@ -2,6 +2,7 @@ const TAILWIND_CONFIG = {
   extends: ["plugin:tailwindcss/recommended"],
   rules: {
     "tailwindcss/classnames-order": "off", // conflicts with prettier-plugin-tailwindcss
+    "tailwindcss/no-custom-classname": "off",
   },
 };
 
@@ -10,6 +11,9 @@ module.exports = {
   root: true,
   reportUnusedDisableDirectives: true,
   ignorePatterns: ["next-env.d.ts"],
+  parserOptions: {
+    project: ["./tsconfig.eslint.json"],
+  },
   overrides: [
     {
       files: "**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}",
@@ -75,13 +79,13 @@ module.exports = {
     },
     // Rules for TypeScript files
     {
-      files: "**/*.{ts,tsx,cts,mts}",
+      files: "**/*.{ts,tsx,cts,mts,mjs}",
       parserOptions: {
         project: [
           "packages/*/tsconfig.json",
           "apps/*/tsconfig.json",
           "tests/*/tsconfig.json",
-          "toolings/**/*/tsconfig.json",
+          "toolings/*/tsconfig.json",
         ],
       },
       rules: {

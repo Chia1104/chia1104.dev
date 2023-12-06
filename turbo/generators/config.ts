@@ -46,6 +46,16 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
       },
       {
         type: "add",
+        path: "packages/{{ name }}/vitest.config.mts",
+        templateFile: "templates/base/vitest.config.mts.hbs",
+      },
+      {
+        type: "add",
+        path: "packages/{{ name }}/__tests___/index.spec.mts",
+        templateFile: "templates/base/index.spec.mts.hbs",
+      },
+      {
+        type: "add",
         path: "packages/{{ name }}/index.ts",
         template: "export * from './src';",
       },

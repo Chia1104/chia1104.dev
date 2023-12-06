@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC } from "react";
+import { type FC } from "react";
 import { AnimatePresence, motion, type MotionProps } from "framer-motion";
 import useLockedBody from "../utils/use-locked-body";
 import { createPortal } from "react-dom";

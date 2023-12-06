@@ -7,7 +7,7 @@ import {
   type HTMLMotionProps,
   type ForwardRefComponent,
 } from "framer-motion";
-import React, { type FC, type ComponentProps } from "react";
+import { type FC, type ComponentProps } from "react";
 import { cn, useDarkMode } from "../utils";
 
 const ScrollYProgress: FC<

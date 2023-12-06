@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     environment: "node",
     passWithNoTests: true,
+    setupFiles: ["../../toolings/vitest/setup.ts"],
   },
   resolve: {
     alias: {

@@ -1,4 +1,4 @@
-import React, { type FC, type ComponentPropsWithoutRef } from "react";
+import { type FC, type ComponentPropsWithoutRef } from "react";
 import dayjs from "dayjs";
 
 interface Props extends ComponentPropsWithoutRef<"span"> {

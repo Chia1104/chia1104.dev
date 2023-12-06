@@ -1,10 +1,6 @@
 "use client";
 
-import React, {
-  type FC,
-  type DetailedHTMLProps,
-  type HTMLAttributes,
-} from "react";
+import { type FC, type DetailedHTMLProps, type HTMLAttributes } from "react";
 
 export const MDXParagraph: FC<
   DetailedHTMLProps<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>

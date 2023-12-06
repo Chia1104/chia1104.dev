@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC, type ReactNode, type SVGProps } from "react";
+import { type FC, type ReactNode, type SVGProps } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "../utils";
 import { motion, HTMLMotionProps } from "framer-motion";
