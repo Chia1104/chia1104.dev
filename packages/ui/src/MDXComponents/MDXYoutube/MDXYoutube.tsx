@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC } from "react";
+import { type FC } from "react";
 
 interface MDXYoutubeProps {
   ytSrc: string;

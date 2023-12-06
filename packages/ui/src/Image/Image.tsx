@@ -1,4 +1,4 @@
-import React, { type FC } from "react";
+import { type FC } from "react";
 import NextImage, { type ImageProps as NextImageProps } from "next/image";
 import { cn } from "../utils/cn.util";
 

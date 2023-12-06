@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC } from "react";
+import { type FC } from "react";
 import Zoom, { type UncontrolledProps } from "react-medium-image-zoom";
 
 const ImageZoom: FC<UncontrolledProps> = (props) => {

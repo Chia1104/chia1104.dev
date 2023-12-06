@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC, useMemo } from "react";
+import { type FC, useMemo } from "react";
 import dayjs from "dayjs";
 import type { TimelineProps, Data, GroupData } from "./types";
 import { GroupList } from "./client";

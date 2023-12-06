@@ -1,10 +1,6 @@
 "use client";
 
-import React, {
-  type FC,
-  type DetailedHTMLProps,
-  type HTMLAttributes,
-} from "react";
+import { type FC, type DetailedHTMLProps, type HTMLAttributes } from "react";
 
 export const MDXHr: FC<
   DetailedHTMLProps<HTMLAttributes<HTMLHRElement>, HTMLHRElement>

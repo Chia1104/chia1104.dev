@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC, type ReactNode } from "react";
+import { type FC, type ReactNode } from "react";
 import NextLink, { type LinkProps as NextLinkProps } from "next/link";
 
 interface LinkProps {

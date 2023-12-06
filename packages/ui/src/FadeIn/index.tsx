@@ -1,6 +1,6 @@
 "use client";
 
-import React, { type FC, type ComponentProps } from "react";
+import { type FC, type ComponentProps } from "react";
 import {
   motion,
   type HTMLMotionProps,

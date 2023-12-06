@@ -3,12 +3,7 @@
 import Image from "../../Image";
 import Modal from "../../Modal";
 import { type ImageProps } from "next/image";
-import React, {
-  type FC,
-  DetailedHTMLProps,
-  ImgHTMLAttributes,
-  useState,
-} from "react";
+import { type FC, DetailedHTMLProps, ImgHTMLAttributes, useState } from "react";
 import { cn } from "../../utils/cn.util";
 
 interface MDXImageProps extends ImageProps {

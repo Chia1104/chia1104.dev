@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import { cn } from "../../utils";
 import useCopyToClipboard from "../../utils/use-copy-to-clipboard";

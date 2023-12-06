@@ -1,6 +1,6 @@
 "use server";
 
-import React, { type FC, type CSSProperties } from "react";
+import { type FC, type CSSProperties } from "react";
 
 interface Props {
   /**

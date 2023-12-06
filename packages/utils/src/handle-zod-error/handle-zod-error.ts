@@ -12,10 +12,10 @@ export type HandleZodErrorOptions<T> = {
    * @deprecated use data instead
    */
   value?: string;
-  data?: T;
+  data: T;
   prefixErrorMessage?: string;
-  preParse?: (data: T | string) => void;
-  postParse?: (data: T | string) => void;
+  preParse?: (data: T) => void;
+  postParse?: (data: T) => void;
   onError?: (message: string, issues: ZodIssue[]) => void;
   onFinally?: () => void | HandleZodErrorReturn;
 };
@@ -31,14 +31,14 @@ const handleZodError = <T = unknown>({
   onFinally,
 }: HandleZodErrorOptions<T>): HandleZodErrorReturn => {
   try {
-    preParse?.((value as string) ?? (data as T));
-    schema.parse((value as string) ?? (data as T));
-    postParse?.((value as string) ?? (data as T));
+    preParse?.(data);
+    schema.parse(data);
+    postParse?.(data);
     return {
       message: "",
       isError: false,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     let message = "";
     if (error instanceof ZodError) {
       const issues = error.issues;
@@ -53,8 +53,9 @@ const handleZodError = <T = unknown>({
       };
     }
     return {
-      message: error?.message,
-      issues: error?.issues,
+      message: `${prefixErrorMessage}${
+        error instanceof Error ? error.message : String(error)
+      }`,
       isError: true,
     };
   } finally {

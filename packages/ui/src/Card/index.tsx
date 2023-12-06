@@ -9,11 +9,7 @@ import {
   type HTMLMotionProps,
   type ForwardRefComponent,
 } from "framer-motion";
-import React, {
-  type MouseEvent,
-  type ComponentPropsWithoutRef,
-  type FC,
-} from "react";
+import { type MouseEvent, type ComponentPropsWithoutRef, type FC } from "react";
 import { cn } from "../utils";
 
 interface Props
