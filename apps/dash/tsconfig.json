@@ -3,10 +3,10 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
+    "**/*.mts",
     "**/*.tsx",
     "**/*.d.ts",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
+    "**/*.{spec,test}.{mts,ts,tsx}",
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules", ".next"],

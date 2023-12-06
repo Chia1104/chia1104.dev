@@ -1,5 +1,5 @@
 {
   "extends": ["tsconfig/react-library.json"],
-  "include": ["src", "vitest.config.ts"],
+  "include": ["**/*.{ts,mts}", "**/*.{spec,test}.{ts,mts}"],
   "exclude": ["dist", "build", "node_modules"]
 }

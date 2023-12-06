@@ -1,22 +1,5 @@
 {
-  "extends": "tsconfig/nextjs.json",
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.d.ts",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": ["node_modules", ".next"],
-  "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
-    "jsx": "preserve",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
-  }
+  "extends": ["tsconfig/base.json"],
+  "include": ["**/*.{ts,mts}", "**/*.{spec,test}.{ts,mts}"],
+  "exclude": ["dist", "build", "node_modules"]
 }

@@ -10,6 +10,8 @@ export default defineConfig({
       "@test": "./test",
     },
     root: "./",
+    passWithNoTests: true,
+    setupFiles: ["../../toolings/vitest/setup.ts"],
   },
   resolve: {
     alias: {

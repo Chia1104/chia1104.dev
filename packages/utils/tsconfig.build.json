@@ -1,5 +1,11 @@
 {
   "extends": ["tsconfig/base.json"],
   "include": ["src"],
-  "exclude": ["dist", "build", "node_modules", "**/*.spec.ts"]
+  "exclude": [
+    "dist",
+    "build",
+    "node_modules",
+    "vitest.config.mts",
+    "**/*.{spec,test}.{mts,ts}"
+  ]
 }

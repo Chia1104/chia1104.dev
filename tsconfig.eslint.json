@@ -8,8 +8,10 @@
   },
   "include": [
     "**/tsup.config.ts",
-    "shared/tailwind-config/index.d.ts",
-    "**/global.d.ts"
+    "**/global.d.ts",
+    "vitest.workspace.ts",
+    "lint-staged.config.cjs",
+    ".eslintrc.cjs"
   ],
   "exclude": []
 }
