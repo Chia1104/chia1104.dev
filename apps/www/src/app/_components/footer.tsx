@@ -34,7 +34,7 @@ const LinkItem: FC<{
         {isActive ? (
           <motion.div
             className="absolute inset-0 z-[-1] rounded-md bg-[#dddddd] dark:bg-black/60"
-            layoutId="sidebar"
+            layoutId="footer"
             transition={{
               type: "spring",
               stiffness: 350,
