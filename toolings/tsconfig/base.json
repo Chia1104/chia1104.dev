@@ -15,8 +15,7 @@
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "strict": true,
-    "types": ["vitest/globals"],
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
+    "types": ["vitest/globals"]
   },
   "exclude": ["node_modules"]
 }
