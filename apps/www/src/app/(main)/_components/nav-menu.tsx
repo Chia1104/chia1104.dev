@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, memo } from "react";
+import { type FC } from "react";
 import Link from "next/link";
 import { cn, ToggleTheme, useDarkMode } from "@chia/ui";
 import { usePathname } from "next/navigation";
@@ -46,7 +46,7 @@ const NavMenu: FC = () => {
                     {isActive ? (
                       <motion.div
                         className="absolute inset-0 z-[-1] rounded-md bg-[#dddddd] dark:bg-black/60"
-                        layoutId="sidebar"
+                        layoutId="nav-menu"
                         transition={{
                           type: "spring",
                           stiffness: 350,
@@ -66,4 +66,4 @@ const NavMenu: FC = () => {
   );
 };
 
-export default memo(NavMenu);
+export default NavMenu;
