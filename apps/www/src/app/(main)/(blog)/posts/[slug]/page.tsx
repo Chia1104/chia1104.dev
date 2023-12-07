@@ -133,11 +133,11 @@ const PostDetailPage = async ({
 
   return (
     <>
-      <article className="main c-container mt-20">
-        <header className="mb-7 w-full max-w-[900px] self-center pl-3">
-          <h1 className="title pb-5">{post[0]?.title}</h1>
-          <p className="c-description">{post[0]?.description}</p>
-          <span className="c-description mt-5 flex items-center gap-2">
+      <div className="w-full">
+        <header className="mb-7 w-full self-center pl-3">
+          <h1 className="">{post[0]?.title}</h1>
+          <p className="">{post[0]?.description}</p>
+          <span className="mt-5 flex items-center gap-2">
             <Image
               src="https://avatars.githubusercontent.com/u/38397958?v=4"
               width={40}
@@ -145,13 +145,13 @@ const PostDetailPage = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(post[0]?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
+            {dayjs(post[0]?.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <div className="mx-auto mt-20 w-full max-w-[900px] self-center">
+        <div className="mx-auto mt-20 w-full self-center">
           <Giscus title={post[0]?.title || ""} />
         </div>
-      </article>
+      </div>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

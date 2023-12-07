@@ -13,9 +13,9 @@ const Page = async () => {
   const transformData = notes.items.map((item) => ({
     id: item.id,
     title: item.title,
-    // titleProps: {
-    //   className: "line-clamp-1",
-    // },
+    titleProps: {
+      className: "line-clamp-1",
+    },
     subtitle: dayjs(item.updatedAt).format("MMMM D, YYYY"),
     startDate: item.updatedAt,
     content: item.excerpt,
