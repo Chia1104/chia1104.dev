@@ -9,6 +9,7 @@ import { setSearchParams } from "@chia/utils";
 import { env } from "@/env.mjs";
 import { getPosts, getPostBySlug } from "@/helpers/services/feeds.service";
 import { notFound } from "next/navigation";
+import { type OgDTO } from "@/app/api/(v1)/og/utils";
 
 export const generateStaticParams = async () => {
   const posts = await getPosts(100);
@@ -38,20 +39,20 @@ export const generateMetadata = async ({
     const token = getToken(post[0].title);
     return {
       title: post[0].title,
-      description: post[0]?.expert,
+      description: post[0]?.excerpt,
       openGraph: {
         type: "article",
         locale: "zh_TW",
         url: `https://chia1104.dev/posts/${params.slug}`,
         siteName: "Chia",
         title: post[0]?.title,
-        description: post[0]?.expert ?? "",
+        description: post[0]?.excerpt ?? "",
         images: [
           {
-            url: setSearchParams(
+            url: setSearchParams<OgDTO>(
               {
                 title: post[0]?.title,
-                excerpt: post[0].expert,
+                excerpt: post[0].excerpt,
                 subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
                 token: token,
               },
@@ -70,13 +71,13 @@ export const generateMetadata = async ({
       twitter: {
         card: "summary_large_image",
         title: "Chia",
-        description: post[0]?.expert ?? "",
+        description: post[0]?.excerpt ?? "",
         creator: "@chia1104",
         images: [
-          setSearchParams(
+          setSearchParams<OgDTO>(
             {
               title: post[0]?.title,
-              excerpt: post[0].expert,
+              excerpt: post[0].excerpt,
               subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
               token: token,
             },
@@ -117,10 +118,10 @@ const PostDetailPage = async ({
     datePublished: dayjs(post[0]?.createdAt).format("MMMM D, YYYY"),
     dateModified: dayjs(post[0]?.updatedAt).format("MMMM D, YYYY"),
     name: post[0]?.title,
-    description: post[0]?.expert ?? "",
-    image: `/api/og?${setSearchParams({
+    description: post[0]?.excerpt ?? "",
+    image: `/api/og?${setSearchParams<OgDTO>({
       title: post[0].title,
-      excerpt: post[0].expert,
+      excerpt: post[0].excerpt,
       subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
       token: token,
     })}`,
