@@ -112,7 +112,7 @@ export const List: FC<{
           titleProps: {
             className: "line-clamp-1",
           },
-          subtitle: `${dayjs(updatedAt).format("MMMM D, YYYY")} - ${id}`,
+          subtitle: dayjs(updatedAt).format("MMMM D, YYYY"),
           startDate: updatedAt,
           content: excerpt,
           link: `/posts/${slug}`,

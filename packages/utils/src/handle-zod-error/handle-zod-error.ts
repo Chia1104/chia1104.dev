@@ -1,4 +1,4 @@
-import { type ZodTypeAny, ZodError, type ZodIssue } from "zod";
+import { ZodError, type ZodIssue, z } from "zod";
 
 export type HandleZodErrorReturn = {
   message: string;
@@ -7,11 +7,7 @@ export type HandleZodErrorReturn = {
 };
 
 export type HandleZodErrorOptions<T> = {
-  schema: ZodTypeAny;
-  /**
-   * @deprecated use data instead
-   */
-  value?: string;
+  schema: z.ZodType<T>;
   data: T;
   prefixErrorMessage?: string;
   preParse?: (data: T) => void;
@@ -22,7 +18,6 @@ export type HandleZodErrorOptions<T> = {
 
 const handleZodError = <T = unknown>({
   schema,
-  value,
   data,
   prefixErrorMessage = "",
   preParse,

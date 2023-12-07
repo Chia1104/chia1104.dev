@@ -1,5 +1,5 @@
 import "server-only";
-import { env } from "@/env.mjs";
+import { env } from "./env.mjs";
 import { post, request } from "@chia/utils";
 import { type PlayList, type CurrentPlaying } from "./types";
 
@@ -9,24 +9,25 @@ export const spotifyRequest = request({
   prefixUrl: SPOTIFY_BASE_URL,
 });
 
-export const BASIC = Buffer.from(
+const BASIC = Buffer.from(
   `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
 ).toString("base64");
 
-export const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
+const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
 
 export const FAVORITE_PLAYLIST_ID = env.SPOTIFY_FAVORITE_PLAYLIST_ID;
 
-export const getAccessToken = async (req?: {
+export const getSpotifyAccessToken = async (req?: {
+  refresh_token?: string;
   revalidate?: number;
   cache?: RequestCache;
 }) => {
   req ??= {};
-  const { revalidate = 60 * 60 * 1, cache } = req;
+  const { revalidate = 60 * 60 * 1, cache, refresh_token } = req;
   const body = env.SPOTIFY_REFRESH_TOKEN
     ? new URLSearchParams({
         grant_type: "refresh_token",
-        refresh_token: env.SPOTIFY_REFRESH_TOKEN,
+        refresh_token: refresh_token ?? env.SPOTIFY_REFRESH_TOKEN,
       })
     : "grant_type=client_credentials";
   const result = await post<{
@@ -71,29 +72,33 @@ export const getAccessToken = async (req?: {
  * @returns PlayList
  */
 export const getPlayList = async (req?: {
+  playlistId?: string;
   revalidate?: number;
   tokenRequestCache?: RequestCache;
 }) => {
   req ??= {};
-  const { revalidate = 60 * 60 * 1, tokenRequestCache } = req;
+  const { revalidate = 60 * 60 * 1, tokenRequestCache, playlistId } = req;
 
   if (revalidate < 0) {
     throw new Error("revalidate must be positive");
   }
 
-  const accessToken = await getAccessToken({
+  const accessToken = await getSpotifyAccessToken({
     cache: tokenRequestCache,
     revalidate,
   });
 
-  const result = await spotifyRequest(`playlists/${FAVORITE_PLAYLIST_ID}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    next: {
-      revalidate,
-    },
-  });
+  const result = await spotifyRequest(
+    `playlists/${playlistId ?? FAVORITE_PLAYLIST_ID}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      next: {
+        revalidate,
+      },
+    }
+  );
 
   return result.json<PlayList>();
 };
@@ -111,7 +116,7 @@ export const getNowPlaying = async (req?: {
 }) => {
   req ??= {};
   const { revalidate = 60, cache } = req;
-  const accessToken = await getAccessToken({
+  const accessToken = await getSpotifyAccessToken({
     revalidate,
   });
 

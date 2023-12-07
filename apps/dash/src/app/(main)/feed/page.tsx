@@ -1,6 +1,6 @@
 import FeedList from "./feed-list";
 import { db, localDb, betaDb } from "@chia/db";
-import { feedsRouter } from "@chia/api/src/routes/feeds";
+import { feedsRouter } from "@chia/api/trpc/routes/feeds";
 import { auth, type Session } from "@chia/auth";
 import { getDb } from "@chia/utils";
 

@@ -1,7 +1,5 @@
-import { getAllPosts, getCompiledSource } from "@/helpers/mdx/services";
-import { Chip, Image } from "@chia/ui";
+import { Image } from "@chia/ui";
 import Giscus from "./giscus";
-import "highlight.js/styles/atom-one-dark-reasonable.css";
 import dayjs from "dayjs";
 import type { Metadata } from "next";
 import type { Blog, WithContext } from "schema-dts";
@@ -9,18 +7,19 @@ import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { createHmac } from "node:crypto";
 import { setSearchParams } from "@chia/utils";
 import { env } from "@/env.mjs";
+import { getPosts, getPostBySlug } from "@/services/feeds.service";
+import { notFound } from "next/navigation";
+import { type OgDTO } from "@/app/api/(v1)/og/utils";
 
 export const generateStaticParams = async () => {
-  const posts = await getAllPosts();
+  const posts = await getPosts(100);
 
-  return posts.map((post) => ({
+  return posts.items.map((post) => ({
     slug: post.slug,
   }));
 };
-
-export const dynamic = "force-static";
-
-export const dynamicParams = false;
+export const dynamicParams = true;
+export const revalidate = 60;
 
 const getToken = (id: string): string => {
   const hmac = createHmac("sha256", env.SHA_256_HASH ?? "super secret");
@@ -36,30 +35,34 @@ export const generateMetadata = async ({
   };
 }): Promise<Metadata> => {
   try {
-    const { frontmatter } = await getCompiledSource(params.slug);
-    const token = getToken(frontmatter?.title ?? "");
+    const post = await getPostBySlug(params.slug);
+    const token = getToken(post[0].title);
     return {
-      title: frontmatter?.title,
-      keywords: frontmatter?.tags?.join(",") || undefined,
-      description: frontmatter?.excerpt,
+      title: post[0].title,
+      description: post[0]?.excerpt,
       openGraph: {
         type: "article",
         locale: "zh_TW",
         url: `https://chia1104.dev/posts/${params.slug}`,
         siteName: "Chia",
-        title: frontmatter?.title,
-        description: frontmatter?.excerpt,
+        title: post[0]?.title,
+        description: post[0]?.excerpt ?? "",
         images: [
           {
-            url: `${getBaseUrl({
-              isServer: true,
-              baseUrl: WWW_BASE_URL,
-            })}/api/og?${setSearchParams({
-              title: frontmatter?.title,
-              excerpt: frontmatter.excerpt,
-              subtitle: dayjs(frontmatter.updatedAt).format("MMMM D, YYYY"),
-              token: token,
-            })}`,
+            url: setSearchParams<OgDTO>(
+              {
+                title: post[0]?.title,
+                excerpt: post[0].excerpt,
+                subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
+                token: token,
+              },
+              {
+                baseUrl: `${getBaseUrl({
+                  isServer: true,
+                  baseUrl: WWW_BASE_URL,
+                })}/api/og`,
+              }
+            ),
             width: 1200,
             height: 630,
           },
@@ -68,18 +71,23 @@ export const generateMetadata = async ({
       twitter: {
         card: "summary_large_image",
         title: "Chia",
-        description: frontmatter?.excerpt,
+        description: post[0]?.excerpt ?? "",
         creator: "@chia1104",
         images: [
-          `${getBaseUrl({
-            isServer: true,
-            baseUrl: WWW_BASE_URL,
-          })}/api/og?${setSearchParams({
-            title: frontmatter?.title,
-            excerpt: frontmatter.excerpt,
-            subtitle: dayjs(frontmatter.updatedAt).format("MMMM D, YYYY"),
-            token: token,
-          })}`,
+          setSearchParams<OgDTO>(
+            {
+              title: post[0]?.title,
+              excerpt: post[0].excerpt,
+              subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
+              token: token,
+            },
+            {
+              baseUrl: `${getBaseUrl({
+                isServer: true,
+                baseUrl: WWW_BASE_URL,
+              })}/api/og`,
+            }
+          ),
         ],
       },
     };
@@ -96,23 +104,27 @@ const PostDetailPage = async ({
     slug: string;
   };
 }) => {
-  const { frontmatter, content } = await getCompiledSource(params.slug);
-  const token = getToken(frontmatter?.slug ?? "");
+  const post = await getPostBySlug(params.slug);
+
+  if (!post?.[0]) {
+    notFound();
+  }
+
+  const token = getToken(post[0].slug);
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    headline: frontmatter?.title,
-    datePublished: frontmatter?.createdAt,
-    dateModified: frontmatter?.updatedAt,
-    name: frontmatter?.title,
-    description: frontmatter?.excerpt,
-    image: `/api/og?${setSearchParams({
-      title: frontmatter?.title,
-      excerpt: frontmatter.excerpt,
-      subtitle: dayjs(frontmatter.updatedAt).format("MMMM D, YYYY"),
+    headline: post[0].title,
+    datePublished: dayjs(post[0]?.createdAt).format("MMMM D, YYYY"),
+    dateModified: dayjs(post[0]?.updatedAt).format("MMMM D, YYYY"),
+    name: post[0]?.title,
+    description: post[0]?.excerpt ?? "",
+    image: `/api/og?${setSearchParams<OgDTO>({
+      title: post[0].title,
+      excerpt: post[0].excerpt,
+      subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
       token: token,
     })}`,
-    keywords: frontmatter?.tags?.join(","),
     author: {
       "@type": "Person",
       name: "Chia1104",
@@ -121,11 +133,11 @@ const PostDetailPage = async ({
 
   return (
     <>
-      <article className="main c-container mt-20">
-        <header className="mb-7 w-full max-w-[900px] self-center pl-3">
-          <h1 className="title pb-5">{frontmatter?.title}</h1>
-          <p className="c-description">{frontmatter?.excerpt}</p>
-          <span className="c-description mt-5 flex items-center gap-2">
+      <div className="w-full">
+        <header className="mb-7 w-full self-center pl-3">
+          <h1 className="">{post[0]?.title}</h1>
+          <p className="">{post[0]?.description}</p>
+          <span className="mt-5 flex items-center gap-2">
             <Image
               src="https://avatars.githubusercontent.com/u/38397958?v=4"
               width={40}
@@ -133,18 +145,13 @@ const PostDetailPage = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(frontmatter?.createdAt).format("MMMM D, YYYY")} &mdash;{" "}
-            {frontmatter?.readingMins}
+            {dayjs(post[0]?.createdAt).format("MMMM D, YYYY")}
           </span>
-          <Chip data={frontmatter?.tags || []} />
         </header>
-        <div className="c-bg-secondary mt-5 w-full max-w-[900px] self-center rounded-xl px-3 py-5 md:p-5">
-          {content}
+        <div className="mx-auto mt-20 w-full self-center">
+          <Giscus title={post[0]?.title || ""} />
         </div>
-        <div className="mx-auto mt-20 w-full max-w-[900px] self-center">
-          <Giscus title={frontmatter?.title || ""} />
-        </div>
-      </article>
+      </div>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

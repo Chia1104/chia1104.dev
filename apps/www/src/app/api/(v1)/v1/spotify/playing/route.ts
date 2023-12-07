@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getNowPlaying } from "../utils";
+import { NextResponse } from "next/server";
+import { getNowPlaying } from "@chia/api/spotify";
 import { errorGenerator } from "@chia/utils";
 import { HTTPError } from "ky";
 
 export const runtime = "edge";
 
-export const GET = async (req: NextRequest) => {
+export const GET = async () => {
   try {
     const data = await getNowPlaying({
       cache: "no-store",

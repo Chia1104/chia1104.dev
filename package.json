@@ -59,6 +59,7 @@
   "packageManager": "pnpm@8.11.0",
   "dependencies": {
     "dayjs": "^1.11.10",
+    "graphql-request": "^6.1.0",
     "ky": "^1.1.1",
     "zod": "^3.22.4"
   },

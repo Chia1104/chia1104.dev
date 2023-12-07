@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import { env } from "@/env.mjs";
 import { OpenGraph } from "@chia/ui";
-import { errorGenerator } from "@chia/utils";
+import { errorGenerator, handleZodError } from "@chia/utils";
+import { ogSchema, type OgDTO } from "./utils";
 
 export const runtime = "edge";
 
@@ -33,12 +34,14 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const hasTitle = searchParams.has("title");
+
     const title = hasTitle
       ? searchParams.get("title")?.slice(0, 100)
       : "Full Stack Engineer";
     const excerpt = searchParams.get("excerpt");
     const subtitle = searchParams.get("subtitle");
     const token = searchParams.get("token");
+
     const verifyToken = toHex(
       await crypto.subtle.sign(
         "HMAC",
@@ -46,14 +49,28 @@ export async function GET(request: NextRequest) {
         new TextEncoder().encode(JSON.stringify({ title }))
       )
     );
-    if (token !== verifyToken) {
+
+    const { isError, issues } = handleZodError({
+      schema: ogSchema(verifyToken),
+      data: {
+        title,
+        excerpt,
+        subtitle,
+        token,
+      },
+    });
+
+    if (isError) {
       return NextResponse.json(
-        errorGenerator(400, [
-          {
-            field: "token",
-            message: "Invalid token",
-          },
-        ]),
+        errorGenerator(
+          400,
+          issues?.map((issue) => {
+            return {
+              field: issue.path.join("."),
+              message: issue.message,
+            };
+          })
+        ),
         { status: 400 }
       );
     }

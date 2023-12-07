@@ -6,6 +6,7 @@ import {
   getInfiniteFeedsByUserId,
   eq,
   schema,
+  getByFeedSlug,
 } from "@chia/db";
 import { unstable_cache as cache } from "next/cache";
 import { getDb, getAdminId } from "@chia/utils";
@@ -13,6 +14,8 @@ import { getDb, getAdminId } from "@chia/utils";
 export const keys = {
   posts: (limit: number) => ["ADMIN_ISR_POSTS", limit.toString()],
   notes: (limit: number) => ["ADMIN_ISR_NOTES", limit.toString()],
+  post: (slug: string) => ["ADMIN_ISR_POST", slug],
+  note: (slug: string) => ["ADMIN_ISR_NOTE", slug],
 };
 
 const database = getDb(undefined, {
@@ -39,6 +42,18 @@ export const getPosts = (limit = 10) =>
     {
       revalidate: 60,
       tags: keys.posts(limit),
+    }
+  )();
+
+export const getPostBySlug = (slug: string) =>
+  cache(
+    async () => {
+      return await getByFeedSlug(database, slug);
+    },
+    keys.post(slug),
+    {
+      revalidate: 60,
+      tags: keys.post(slug),
     }
   )();
 
