@@ -42,7 +42,7 @@
     "test:cov": "turbo run test:cov --parallel",
     "test:debug": "turbo run test:debug --parallel",
     "db:generate": "turbo run db:generate",
-    "db:push": "turbo run db:push --parallel",
+    "db:push": "cd packages/db && pnpm run db:push",
     "db:init": "turbo run db:init --parallel",
     "db:seed": "turbo run db:seed --parallel",
     "db:studio": "turbo run db:studio --parallel",

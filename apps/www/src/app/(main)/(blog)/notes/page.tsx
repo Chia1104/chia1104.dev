@@ -18,7 +18,7 @@ const Page = async () => {
     // },
     subtitle: dayjs(item.updatedAt).format("MMMM D, YYYY"),
     startDate: item.updatedAt,
-    content: item.expert,
+    content: item.excerpt,
     link: `/notes/${item.slug}`,
   })) satisfies TimelineTypes.Data[];
   const hasNotes =
