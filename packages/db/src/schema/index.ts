@@ -133,7 +133,7 @@ export const feeds = pgTable(
     type: feed_type("type").notNull(),
     published: boolean("published").default(false),
     title: text("title").notNull(),
-    expert: text("expert"),
+    excerpt: text("excerpt"),
     description: text("description"),
     createdAt: timestamp("created_at", { mode: "date" })
       .default(sql`CURRENT_TIMESTAMP`)

@@ -105,7 +105,7 @@ export const List: FC<{
     if (!isSuccess || !data || isError) return [];
     return data.pages.flatMap((page) =>
       page.items.map((item) => {
-        const { id, title, updatedAt, expert, slug } = item;
+        const { id, title, updatedAt, excerpt, slug } = item;
         return {
           id,
           title,
@@ -114,7 +114,7 @@ export const List: FC<{
           },
           subtitle: `${dayjs(updatedAt).format("MMMM D, YYYY")} - ${id}`,
           startDate: updatedAt,
-          content: expert,
+          content: excerpt,
           link: `/posts/${slug}`,
         } satisfies TimelineTypes.Data;
       })

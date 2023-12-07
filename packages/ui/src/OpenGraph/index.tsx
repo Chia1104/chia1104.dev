@@ -3,28 +3,20 @@
 import { type FC, type CSSProperties } from "react";
 
 interface Props {
-  /**
-   * @deprecated
-   */
-  src?: string;
   metadata?: {
     title?: string | null;
     excerpt?: string | null;
     subtitle?: string | null;
-    /**
-     * @deprecated
-     */
-    name?: string;
-    /**
-     * @deprecated
-     */
-    url?: string;
   };
   styles?: {
     backgroundImage?: string;
     filter?: CSSProperties;
     title?: CSSProperties;
+    /**
+     * @deprecated typo
+     */
     expert?: CSSProperties;
+    excerpt?: CSSProperties;
     subtitle?: CSSProperties;
   };
 }
@@ -124,7 +116,7 @@ const OG: FC<Props> = ({ metadata, styles }) => {
           color: "darkgray",
           marginLeft: 80,
           marginRight: 80,
-          ...styles?.expert,
+          ...styles?.excerpt,
         }}>
         {metadata?.excerpt?.slice(0, 100)}
       </p>
