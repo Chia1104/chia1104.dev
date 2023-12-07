@@ -1,9 +1,8 @@
-import { getPlayList } from "@/app/api/(v1)/v1/spotify/utils";
-import type { PlayList } from "@/app/api/(v1)/v1/spotify/types";
+import { getPlayList } from "@chia/api/spotify";
 import { Image, cn, ImageZoom, FadeIn } from "@chia/ui";
 import { type FC } from "react";
 import Link from "next/link";
-import { env } from "@/env.mjs";
+import { env } from "@chia/api/spotify/env.mjs";
 
 const ImageItem: FC<{
   src: string;
@@ -100,7 +99,7 @@ const Item: FC<{
   );
 };
 
-const getTop4 = (data: PlayList) => {
+const getTop4 = (data: Awaited<ReturnType<typeof getPlayList>>) => {
   return data.tracks.items.slice(0, 4);
 };
 

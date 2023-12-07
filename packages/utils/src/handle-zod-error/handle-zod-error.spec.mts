@@ -6,6 +6,7 @@ describe("handleZodError", () => {
   it("should return isError true", () => {
     const result = handleZodError({
       schema: z.string(),
+      // @ts-ignore
       data: 123,
     });
     expect(result.isError).toBe(true);
@@ -22,6 +23,7 @@ describe("handleZodError", () => {
   it("should return isError true with message", () => {
     const result = handleZodError({
       schema: z.string(),
+      // @ts-ignore
       data: 123,
       prefixErrorMessage: "Error: ",
     });
@@ -36,7 +38,9 @@ describe("handleZodError", () => {
         age: z.number(),
       }),
       data: {
+        // @ts-ignore
         name: 123,
+        // @ts-ignore
         age: "123",
       },
       prefixErrorMessage: "Error: ",

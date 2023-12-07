@@ -31,17 +31,9 @@ export const env = createEnv({
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
-    GH_PUBLIC_TOKEN: z.string().min(1),
     SITE_URL: z.string().optional().default("https://www.chia1104.dev"),
     RE_CAPTCHA_KEY: z.string().min(1),
     GOOGLE_API_KEY: z.string().min(1),
-    SPOTIFY_CLIENT_ID: z.string().min(1),
-    SPOTIFY_CLIENT_SECRET: z.string().min(1),
-    SPOTIFY_FAVORITE_PLAYLIST_ID: z
-      .string()
-      .optional()
-      .default("37i9dQZF1Epyg7jBW9q502"),
-    SPOTIFY_REFRESH_TOKEN: z.string().optional(),
     REDIS_URL: z.string().min(1),
     UPSTASH_TOKEN: z.string().min(1),
     SHA_256_HASH: z.string().min(1),
@@ -49,20 +41,7 @@ export const env = createEnv({
     UMAMI_DB_URL: z.string().optional(),
     UMAMI_EDGE_DB_URL: z.string().optional(),
     VERCEL: z.string().optional(),
-    GITHUB_API: z.string().optional().default("https://api.github.com"),
-    GITHUB_GRAPHQL_API: z
-      .string()
-      .optional()
-      .default("https://api.github.com/graphql"),
     GOOGLE_API: z.string().optional().default("https://www.googleapis.com"),
-    SPOTIFY_NOW_PLAYING_URL: z
-      .string()
-      .optional()
-      .default("https://api.spotify.com/v1/me/player/currently-playing"),
-    SPOTIFY_TOKEN_URL: z
-      .string()
-      .optional()
-      .default("https://accounts.spotify.com/api/token"),
     EDGE_CONFIG: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
@@ -95,17 +74,12 @@ export const env = createEnv({
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
-    GH_PUBLIC_TOKEN: process.env.GH_PUBLIC_TOKEN,
     SITE_URL: process.env.SITE_URL,
     RE_CAPTCHA_KEY:
       process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
         ? "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
         : process.env.RE_CAPTCHA_KEY,
     GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
-    SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
-    SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
-    SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
-    SPOTIFY_REFRESH_TOKEN: process.env.SPOTIFY_REFRESH_TOKEN,
     REDIS_URL: process.env.REDIS_URL,
     UPSTASH_TOKEN: process.env.UPSTASH_TOKEN,
     SHA_256_HASH: process.env.SHA_256_HASH,
@@ -119,11 +93,7 @@ export const env = createEnv({
     NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
     NEXT_PUBLIC_UMAMI_URL: process.env.NEXT_PUBLIC_UMAMI_URL,
     VERCEL: process.env.VERCEL,
-    GITHUB_API: process.env.GITHUB_API,
-    GITHUB_GRAPHQL_API: process.env.GITHUB_GRAPHQL_API,
     GOOGLE_API: process.env.GOOGLE_API,
-    SPOTIFY_NOW_PLAYING_URL: process.env.SPOTIFY_NOW_PLAYING_URL,
-    SPOTIFY_TOKEN_URL: process.env.SPOTIFY_TOKEN_URL,
     NEXT_PUBLIC_GISCUS_REPO: process.env.NEXT_PUBLIC_GISCUS_REPO,
     NEXT_PUBLIC_GISCUS_REPO_ID: process.env.NEXT_PUBLIC_GISCUS_REPO_ID,
     NEXT_PUBLIC_GISCUS_CATEGORY_ID: process.env.NEXT_PUBLIC_GISCUS_CATEGORY_ID,

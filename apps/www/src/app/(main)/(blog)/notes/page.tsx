@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Timeline, type TimelineTypes, ImageZoom, Image } from "@chia/ui";
-import { getNotes } from "@/helpers/services/feeds.service";
+import { getNotes } from "@/services/feeds.service";
 import dayjs from "dayjs";
 import Link from "next/link";
 

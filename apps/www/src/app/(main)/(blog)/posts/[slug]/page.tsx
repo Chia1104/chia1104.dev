@@ -7,7 +7,7 @@ import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { createHmac } from "node:crypto";
 import { setSearchParams } from "@chia/utils";
 import { env } from "@/env.mjs";
-import { getPosts, getPostBySlug } from "@/helpers/services/feeds.service";
+import { getPosts, getPostBySlug } from "@/services/feeds.service";
 import { notFound } from "next/navigation";
 import { type OgDTO } from "@/app/api/(v1)/og/utils";
 

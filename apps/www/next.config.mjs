@@ -2,6 +2,8 @@
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import "./src/env.mjs";
 import "@chia/auth/env.mjs";
+import "@chia/api/github/env.mjs";
+import "@chia/api/spotify/env.mjs";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
@@ -47,10 +49,8 @@ const nextConfig = {
   swcMinify: true,
   experimental: {
     serverComponentsExternalPackages: ["@chia/ui"],
-    mdxRs: true,
     typedRoutes: false,
     webpackBuildWorker: true,
-    // ppr: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

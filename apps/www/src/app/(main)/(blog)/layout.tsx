@@ -1,6 +1,6 @@
-import { NavigationMenu, NavigationMenuList, cn } from "@chia/ui";
+import { NavigationMenu, NavigationMenuList } from "@chia/ui";
 import { type FC, type ReactNode } from "react";
-import { getPosts, getNotes } from "@/helpers/services/feeds.service";
+import { getPosts, getNotes } from "@/services/feeds.service";
 import { type RouterOutputs } from "@chia/api";
 import { PostNavigation } from "./_components/posts";
 import { NoteNavigation } from "./_components/notes";

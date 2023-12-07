@@ -3,10 +3,10 @@
   "name": "@chia/api",
   "version": "0.0.0",
   "private": true,
-  "types": "./src/index.ts",
-  "main": "src/index.ts",
+  "types": "index.ts",
+  "main": "index.ts",
   "scripts": {
-    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
+    "lint": "eslint \"**/*.{ts,js,tsx,jsx,mts}\" --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules"
   },
@@ -14,9 +14,11 @@
     "@chia/auth": "0.0.0",
     "@chia/db": "0.0.0",
     "@chia/utils": "0.0.0",
+    "@t3-oss/env-nextjs": "^0.7.1",
     "@trpc/client": "next",
     "@trpc/server": "next",
     "next": "14.0.3",
+    "server-only": "^0.0.1",
     "tsconfig": "0.0.0"
   }
 }

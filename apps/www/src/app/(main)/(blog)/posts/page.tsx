@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ImageZoom, Image } from "@chia/ui";
-import { getPosts } from "@/helpers/services/feeds.service";
+import { getPosts } from "@/services/feeds.service";
 import Link from "next/link";
 import { List } from "../_components/posts";
 

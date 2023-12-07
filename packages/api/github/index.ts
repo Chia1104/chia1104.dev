@@ -1,6 +1,6 @@
 import client from "./github.client";
 import { GET_PINNED_REPOS, GET_REPOS } from "./query";
-import { RepoGql } from "@/shared/types";
+import { RepoGql } from "./types";
 
 export interface PinnedRepository {
   user: {
