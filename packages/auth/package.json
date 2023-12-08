@@ -16,7 +16,7 @@
     "@chia/db": "0.0.0",
     "@chia/utils": "0.0.0",
     "@t3-oss/env-nextjs": "^0.7.1",
-    "next": "14.0.3",
+    "next": "14.0.4",
     "next-auth": "5.0.0-beta.4"
   },
   "devDependencies": {
