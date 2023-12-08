@@ -137,7 +137,7 @@ importers:
         version: link:../../packages/utils
       '@monaco-editor/react':
         specifier: ^4.6.0
-        version: 4.6.0(monaco-editor@0.45.0)(react-dom@18.2.0)(react@18.2.0)
+        version: 4.6.0(monaco-editor@0.44.0)(react-dom@18.2.0)(react@18.2.0)
       '@nextui-org/react':
         specifier: 2.2.9
         version: 2.2.9(@types/react@18.2.42)(framer-motion@10.16.14)(react-dom@18.2.0)(react@18.2.0)(tailwind-variants@0.1.18)(tailwindcss@3.3.6)
@@ -216,7 +216,7 @@ importers:
         version: 18.2.17
       '@vitejs/plugin-react-swc':
         specifier: ^3.3.2
-        version: 3.5.0(vite@5.0.6)
+        version: 3.5.0(vite@5.0.5)
       autoprefixer:
         specifier: ^10.4.16
         version: 10.4.16(postcss@8.4.32)
@@ -482,7 +482,7 @@ importers:
         version: 2.1.8
       '@vitejs/plugin-react-swc':
         specifier: ^3.3.2
-        version: 3.5.0(vite@5.0.6)
+        version: 3.5.0(vite@5.0.5)
       autoprefixer:
         specifier: ^10.4.16
         version: 10.4.16(postcss@8.4.32)
@@ -761,7 +761,7 @@ importers:
         version: 18.2.17
       '@vitejs/plugin-react-swc':
         specifier: ^3.3.2
-        version: 3.5.0(vite@5.0.6)
+        version: 3.5.0(vite@5.0.5)
       tsconfig:
         specifier: 0.0.0
         version: link:../../toolings/tsconfig
@@ -805,7 +805,7 @@ importers:
     devDependencies:
       '@vitejs/plugin-react-swc':
         specifier: ^3.3.2
-        version: 3.5.0(vite@5.0.6)
+        version: 3.5.0(vite@5.0.5)
       tsconfig:
         specifier: 0.0.0
         version: link:../tsconfig
@@ -1392,7 +1392,7 @@ packages:
     resolution: {integrity: sha512-7+ziVclejQTLYhXl+Oi1f6gTGD1XDCeLa4R472TNGQxb08zbEJ0OdNoh5Piz+57Ltmui6xR88BXR4gS3/Toslw==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      core-js-pure: 3.34.0
+      core-js-pure: 3.33.3
       regenerator-runtime: 0.14.0
     dev: true
 
@@ -2564,7 +2564,7 @@ packages:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 18.15.3
+      '@types/node': 20.10.4
       jest-mock: 29.7.0
 
   /@jest/expect-utils@29.7.0:
@@ -2590,7 +2590,7 @@ packages:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-      '@types/node': 18.15.3
+      '@types/node': 20.10.4
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -2709,7 +2709,7 @@ packages:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 18.15.3
+      '@types/node': 20.10.4
       '@types/yargs': 17.0.32
       chalk: 4.1.2
 
@@ -2865,24 +2865,24 @@ packages:
       os-filter-obj: 2.0.0
     dev: true
 
-  /@monaco-editor/loader@1.4.0(monaco-editor@0.45.0):
+  /@monaco-editor/loader@1.4.0(monaco-editor@0.44.0):
     resolution: {integrity: sha512-00ioBig0x642hytVspPl7DbQyaSWRaolYie/UFNjoTdvoKPzo6xrXLhTk9ixgIKcLH5b5vDOjVNiGyY+uDCUlg==}
     peerDependencies:
       monaco-editor: '>= 0.21.0 < 1'
     dependencies:
-      monaco-editor: 0.45.0
+      monaco-editor: 0.44.0
       state-local: 1.0.7
     dev: false
 
-  /@monaco-editor/react@4.6.0(monaco-editor@0.45.0)(react-dom@18.2.0)(react@18.2.0):
+  /@monaco-editor/react@4.6.0(monaco-editor@0.44.0)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-RFkU9/i7cN2bsq/iTkurMWOEErmYcY6JiQI3Jn+WeR/FGISH8JbHERjpS9oRuSOPvDMJI0Z8nJeKkbOs9sBYQw==}
     peerDependencies:
       monaco-editor: '>= 0.25.0 < 1'
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     dependencies:
-      '@monaco-editor/loader': 1.4.0(monaco-editor@0.45.0)
-      monaco-editor: 0.45.0
+      '@monaco-editor/loader': 1.4.0(monaco-editor@0.44.0)
+      monaco-editor: 0.44.0
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
@@ -3243,12 +3243,6 @@ packages:
     dependencies:
       glob: 7.1.7
     dev: false
-
-  /@next/eslint-plugin-next@14.0.4:
-    resolution: {integrity: sha512-U3qMNHmEZoVmHA0j/57nRfi3AscXNvkOnxDmle/69Jz/G0o/gWjXTDdlgILZdrxQ0Lw/jv2mPW8PGy0EGIHXhQ==}
-    dependencies:
-      glob: 7.1.7
-    dev: true
 
   /@next/eslint-plugin-next@14.0.4:
     resolution: {integrity: sha512-U3qMNHmEZoVmHA0j/57nRfi3AscXNvkOnxDmle/69Jz/G0o/gWjXTDdlgILZdrxQ0Lw/jv2mPW8PGy0EGIHXhQ==}
@@ -7905,7 +7899,7 @@ packages:
   /@types/jsdom@20.0.1:
     resolution: {integrity: sha512-d0r18sZPmMQr1eG35u12FZfhIXNrnsPU/g5wvRKCUf/tOGilKKwYMYGqh33BNR6ba+2gkHw1EUiHoN3mn7E5IQ==}
     dependencies:
-      '@types/node': 18.15.3
+      '@types/node': 20.10.4
       '@types/tough-cookie': 4.0.5
       parse5: 7.1.2
     dev: false
@@ -7987,12 +7981,18 @@ packages:
 
   /@types/node@18.15.3:
     resolution: {integrity: sha512-p6ua9zBxz5otCmbpb5D3U4B5Nanw6Pk3PPyX05xnxbB/fRv71N7CPmORg7uAD5P70T0xmx1pzAx/FUfa5X+3cw==}
+    dev: false
 
-  /@types/node@18.19.3:
-    resolution: {integrity: sha512-k5fggr14DwAytoA/t8rPrIz++lXK7/DqckthCmoZOKNsEbJkId4Z//BqgApXBUGrGddrigYa1oqheo/7YmW4rg==}
+  /@types/node@18.19.2:
+    resolution: {integrity: sha512-6wzfBdbWpe8QykUkXBjtmO3zITA0A3FIjoy+in0Y2K4KrCiRhNYJIdwAPDffZ3G6GnaKaSLSEa9ZuORLfEoiwg==}
     dependencies:
       undici-types: 5.26.5
     dev: false
+
+  /@types/node@20.10.3:
+    resolution: {integrity: sha512-XJavIpZqiXID5Yxnxv3RUDKTN5b81ddNC3ecsA0SoFXz/QU8OGBwZGMomiq0zw+uuqbL/krztv/DINAQ/EV4gg==}
+    dependencies:
+      undici-types: 5.26.5
 
   /@types/node@20.10.4:
     resolution: {integrity: sha512-D08YG6rr8X90YB56tSIuBaddy/UXAA9RKJoFvrsnogAum/0pmjkgi4+2nx96A330FmioegBWmEYQ+syqCFaveg==}
@@ -8010,7 +8010,7 @@ packages:
   /@types/pg@8.10.9:
     resolution: {integrity: sha512-UksbANNE/f8w0wOMxVKKIrLCbEMV+oM1uKejmwXr39olg4xqcfBDbXxObJAt6XxHbDa4XTKOlUEcEltXDX+XLQ==}
     dependencies:
-      '@types/node': 20.10.4
+      '@types/node': 20.10.3
       pg-protocol: 1.6.0
       pg-types: 4.0.1
 
@@ -8405,13 +8405,13 @@ packages:
       '@upstash/redis': 1.24.3
     dev: false
 
-  /@vitejs/plugin-react-swc@3.5.0(vite@5.0.6):
+  /@vitejs/plugin-react-swc@3.5.0(vite@5.0.5):
     resolution: {integrity: sha512-1PrOvAaDpqlCV+Up8RkAh9qaiUjoDUcjtttyhXDKw53XA6Ve16SOp6cCOpRs8Dj8DqUQs6eTW5YkLcLJjrXAig==}
     peerDependencies:
       vite: ^4 || ^5
     dependencies:
       '@swc/core': 1.3.100
-      vite: 5.0.6(@types/node@20.10.4)
+      vite: 5.0.5(@types/node@20.10.4)
     transitivePeerDependencies:
       - '@swc/helpers'
     dev: true
@@ -8543,7 +8543,7 @@ packages:
     dependencies:
       '@vue/runtime-core': 3.3.10
       '@vue/shared': 3.3.10
-      csstype: 3.1.3
+      csstype: 3.1.2
     dev: false
 
   /@vue/server-renderer@3.3.10(vue@3.3.10):
@@ -8708,7 +8708,7 @@ packages:
     resolution: {integrity: sha512-umOSDSDrfHbTNPuNpC2NSnnA3LUrqpevPb4T9jRx4MagXNS0rs+gwiTcAvqCRmsD6utzsrzNt+ebm00SNWiC3Q==}
     dependencies:
       acorn: 8.11.2
-      acorn-walk: 8.3.1
+      acorn-walk: 8.3.0
     dev: false
 
   /acorn-import-assertions@1.9.0(acorn@8.11.2):
@@ -8728,11 +8728,6 @@ packages:
 
   /acorn-walk@8.3.0:
     resolution: {integrity: sha512-FS7hV565M5l1R08MXqo8odwMTB02C2UqzB17RVgu9EyuYFBqJZ3/ZY97sQD5FewVu1UyDFc1yztUDrAwT0EypA==}
-    engines: {node: '>=0.4.0'}
-    dev: true
-
-  /acorn-walk@8.3.1:
-    resolution: {integrity: sha512-TgUZgYvqZprrl7YldZNoa9OciCAyZR+Ejm9eXzKCmjsF5IKp/wgQ7Z/ZpjpGTIUPwrHQIcYeI8qDh4PsEwxMbw==}
     engines: {node: '>=0.4.0'}
 
   /acorn@8.11.2:
@@ -9934,8 +9929,8 @@ packages:
       is-what: 4.1.16
     dev: true
 
-  /core-js-pure@3.34.0:
-    resolution: {integrity: sha512-pmhivkYXkymswFfbXsANmBAewXx86UBfmagP+w0wkK06kLsLlTK5oQmsURPivzMkIBQiYq2cjamcZExIwlFQIg==}
+  /core-js-pure@3.33.3:
+    resolution: {integrity: sha512-taJ00IDOP+XYQEA2dAe4ESkmHt1fL8wzYDo3mRWQey8uO9UojlBFMneA65kMyxfYP7106c6LzWaq7/haDT6BCQ==}
     requiresBuild: true
     dev: true
 
@@ -10077,10 +10072,6 @@ packages:
 
   /csstype@3.1.2:
     resolution: {integrity: sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==}
-
-  /csstype@3.1.3:
-    resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
-    dev: false
 
   /d@1.0.1:
     resolution: {integrity: sha512-m62ShEObQ39CfralilEQRjH6oAMtNCV1xJyEx5LpRYUVN+EviphDgUc/F3hnYbADmkiNs67Y+3ylmlG7Lnu+FA==}
@@ -13615,7 +13606,7 @@ packages:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
       '@types/jsdom': 20.0.1
-      '@types/node': 18.15.3
+      '@types/node': 20.10.4
       jest-mock: 29.7.0
       jest-util: 29.7.0
       jsdom: 20.0.3
@@ -13711,7 +13702,7 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 18.15.3
+      '@types/node': 20.10.4
       jest-util: 29.7.0
 
   /jest-pnp-resolver@1.2.3(jest-resolve@29.7.0):
@@ -15437,7 +15428,7 @@ packages:
     hasBin: true
     dependencies:
       acorn: 8.11.2
-      acorn-walk: 8.3.1
+      acorn-walk: 8.3.0
       capnp-ts: 0.7.0
       exit-hook: 2.2.1
       glob-to-regexp: 0.4.1
@@ -15543,8 +15534,8 @@ packages:
       ufo: 1.3.2
     dev: true
 
-  /monaco-editor@0.45.0:
-    resolution: {integrity: sha512-mjv1G1ZzfEE3k9HZN0dQ2olMdwIfaeAAjFiwNprLfYNRSz7ctv9XuCT7gPtBGrMUeV1/iZzYKj17Khu1hxoHOA==}
+  /monaco-editor@0.44.0:
+    resolution: {integrity: sha512-5SmjNStN6bSuSE5WPT2ZV+iYn1/yI9sd4Igtk23ChvqB7kDk9lZbB9F5frsuvpB+2njdIeGGFf2G4gbE6rCC9Q==}
     dev: false
 
   /mri@1.2.0:
@@ -16094,7 +16085,7 @@ packages:
     resolution: {integrity: sha512-Dd3q8EvINfganZFtg6V36HjrMaihqRgIcKiHua4Nq9aw/PxOP48dhbsk8x5klrxajt5Lpnc1KTOG5i1S6BKAJA==}
     hasBin: true
     dependencies:
-      '@types/node': 18.19.3
+      '@types/node': 18.19.2
       '@types/node-fetch': 2.6.9
       abort-controller: 3.0.0
       agentkeepalive: 4.5.0
@@ -18180,7 +18171,7 @@ packages:
   /solid-js@1.8.7:
     resolution: {integrity: sha512-9dzrSVieh2zj3SnJ02II6xZkonR6c+j/91b7XZUNcC6xSaldlqjjGh98F1fk5cRJ8ZTkzqF5fPIWDxEOs6QZXA==}
     dependencies:
-      csstype: 3.1.3
+      csstype: 3.1.2
       seroval: 0.15.1
     dev: false
 
@@ -19156,7 +19147,7 @@ packages:
       '@tsconfig/node16': 1.0.4
       '@types/node': 20.10.4
       acorn: 8.11.2
-      acorn-walk: 8.3.1
+      acorn-walk: 8.3.0
       arg: 4.1.3
       create-require: 1.1.1
       diff: 4.0.2
@@ -19939,7 +19930,7 @@ packages:
       debug: 4.3.4
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 5.0.6(@types/node@20.10.4)
+      vite: 5.0.5(@types/node@20.10.4)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -19951,8 +19942,8 @@ packages:
       - terser
     dev: true
 
-  /vite@5.0.6(@types/node@20.10.4):
-    resolution: {integrity: sha512-MD3joyAEBtV7QZPl2JVVUai6zHms3YOmLR+BpMzLlX2Yzjfcc4gTgNi09d/Rua3F4EtC8zdwPU8eQYyib4vVMQ==}
+  /vite@5.0.5(@types/node@20.10.4):
+    resolution: {integrity: sha512-OekeWqR9Ls56f3zd4CaxzbbS11gqYkEiBtnWFFgYR2WV8oPJRRKq0mpskYy/XaoCL3L7VINDhqqOMNDiYdGvGg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
@@ -20018,7 +20009,7 @@ packages:
       '@vitest/snapshot': 1.0.2
       '@vitest/spy': 1.0.2
       '@vitest/utils': 1.0.2
-      acorn-walk: 8.3.1
+      acorn-walk: 8.3.0
       cac: 6.7.14
       chai: 4.3.10
       debug: 4.3.4
@@ -20032,7 +20023,7 @@ packages:
       strip-literal: 1.3.0
       tinybench: 2.5.1
       tinypool: 0.8.1
-      vite: 5.0.6(@types/node@20.10.4)
+      vite: 5.0.5(@types/node@20.10.4)
       vite-node: 1.0.2(@types/node@20.10.4)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
