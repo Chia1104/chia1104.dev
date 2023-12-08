@@ -16,24 +16,21 @@ import {
   type ComponentPropsWithoutRef,
 } from "react";
 import { useMonaco } from "@monaco-editor/react";
-import { MDXStrong, useDarkMode } from "@chia/ui";
+import { useDarkMode } from "@chia/ui";
 import MEditor from "@monaco-editor/react";
+import { useWriteContext } from "./write.context";
+import { compile } from "@/server/mdx.action";
 
-/**
- * @todo
- */
-const ComponentModal: FC<{
+const PreviewModal: FC<{
   isOpen: boolean;
   onClose: () => void;
 }> = ({ isOpen, onClose }) => {
+  const { state } = useWriteContext();
   return (
     <Modal isOpen={isOpen} onOpenChange={onClose}>
       <ModalContent>
         <ModalHeader>Modal Title</ModalHeader>
-        <ModalBody>
-          <p>Strong</p>
-          <MDXStrong>Strong</MDXStrong>
-        </ModalBody>
+        <ModalBody>{state?.serializedContent}</ModalBody>
         <ModalFooter>
           <Button onPress={onClose}>Close</Button>
         </ModalFooter>
@@ -48,6 +45,7 @@ export const Monaco = () => {
   const monaco = useMonaco();
   const [value, setValue] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { setState, state } = useWriteContext();
   return (
     <div className="relative w-full overflow-hidden rounded-2xl shadow-lg">
       <Button
@@ -61,12 +59,20 @@ export const Monaco = () => {
         className="absolute bottom-2 right-24 z-20"
         variant="light"
         color="primary"
-        onPress={() => {
-          setIsModalOpen(true);
-        }}>
-        +
+        // onPress={async () => {
+        //   const serializedContent = await compile(value);
+        //   setIsModalOpen(true);
+        //   setState({
+        //     ...state,
+        //     feedType: "post",
+        //     editorType: "monaco",
+        //     serializedContent,
+        //   });
+        // }}
+      >
+        Preview
       </Button>
-      <ComponentModal
+      <PreviewModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
@@ -77,6 +83,12 @@ export const Monaco = () => {
         loading={<Spinner />}
         onChange={(value) => {
           setValue(value ?? "");
+          setState({
+            ...state,
+            feedType: "post",
+            editorType: "monaco",
+            sourceContent: value,
+          });
         }}
         value={value}
       />

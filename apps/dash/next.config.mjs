@@ -36,11 +36,12 @@ const nextConfig = {
     "@chia/auth",
     "@chia/db",
     "@chia/editor",
+    "@chia/mdx",
     "@chia/ui",
     "@chia/utils",
   ],
   experimental: {
-    serverComponentsExternalPackages: ["@chia/ui", "@chia/editor"],
+    serverComponentsExternalPackages: ["@chia/ui", "@chia/editor", "@chia/mdx"],
     webpackBuildWorker: true,
   },
   eslint: {
