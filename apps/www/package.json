@@ -50,7 +50,7 @@
     "@vercel/edge-config": "^0.4.1",
     "cross-env": "7.0.3",
     "framer-motion": "^10.15.0",
-    "next": "14.0.3",
+    "next": "14.0.4",
     "next-auth": "5.0.0-beta.4",
     "next-themes": "^0.2.1",
     "react": "^18.2.0",
@@ -69,7 +69,7 @@
   },
   "devDependencies": {
     "@chia/tailwind": "0.0.1-beta.1",
-    "@next/bundle-analyzer": "14.0.3",
+    "@next/bundle-analyzer": "14.0.4",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@testing-library/react": "^14.0.0",
     "@types/react": "^18.2.17",
