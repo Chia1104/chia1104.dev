@@ -15,26 +15,24 @@ export const serializeMDX = async (
 ) => {
   return await serialize(content, {
     mdxOptions: {
-      parseFrontmatter: false,
       remarkPlugins: [
         [remarkGfm, { singleTilde: false }],
         ...(options?.options?.mdxOptions?.remarkPlugins ?? []),
       ],
       rehypePlugins: [
         [rehypeSlug],
-        [rehypePrism, { ignoreMissing: true }],
+        // [rehypePrism, { ignoreMissing: true }],
         [rehypeAutolinkHeadings],
-        [
-          // @ts-ignore
-          rehypePrettyCode,
-          {
-            theme: {
-              light: "github-light",
-              dark: "github-dark",
-            },
-            keepBackground: false,
-          },
-        ],
+        // [
+        //   () => rehypePrettyCode,
+        //   {
+        //     theme: {
+        //       light: "github-light",
+        //       dark: "github-dark",
+        //     },
+        //     keepBackground: false,
+        //   },
+        // ],
         ...(options?.options?.mdxOptions?.rehypePlugins ?? []),
       ],
       ...options?.options?.mdxOptions,
@@ -49,26 +47,24 @@ export const compileMDX = async (content: string, options?: MDXRemoteProps) => {
     source: content,
     options: {
       mdxOptions: {
-        parseFrontmatter: false,
         remarkPlugins: [
           [remarkGfm, { singleTilde: false }],
           ...(options?.options?.mdxOptions?.remarkPlugins ?? []),
         ],
         rehypePlugins: [
           [rehypeSlug],
-          [rehypePrism, { ignoreMissing: true }],
+          // [rehypePrism, { ignoreMissing: true }],
           [rehypeAutolinkHeadings],
-          [
-            // @ts-ignore
-            rehypePrettyCode,
-            {
-              theme: {
-                light: "github-light",
-                dark: "github-dark",
-              },
-              keepBackground: false,
-            },
-          ],
+          // [
+          //   () => rehypePrettyCode,
+          //   {
+          //     theme: {
+          //       light: "github-light",
+          //       dark: "github-dark",
+          //     },
+          //     keepBackground: false,
+          //   },
+          // ],
           ...(options?.options?.mdxOptions?.rehypePlugins ?? []),
         ],
         ...options?.options?.mdxOptions,
