@@ -4,8 +4,14 @@ describe("compileMDX", () => {
   it("should compile mdx", async () => {
     const content = `
     # Hello
+
+    - spec 1
+
+    [ ] todo 1
+
+    > Hello
     `;
-    // const result = await compileMDX(content);
-    // console.log(result.content);
+    const result = await compileMDX(content);
+    expect(result).toMatchSnapshot();
   });
 });

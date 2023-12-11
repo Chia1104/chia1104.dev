@@ -14,6 +14,7 @@ export const serializeMDX = async (
   options?: MDXRemoteProps
 ) => {
   return await serialize(content, {
+    options: { parseFrontmatter: false },
     mdxOptions: {
       remarkPlugins: [
         [remarkGfm, { singleTilde: false }],
@@ -46,6 +47,7 @@ export const compileMDX = async (content: string, options?: MDXRemoteProps) => {
     ...options,
     source: content,
     options: {
+      parseFrontmatter: false,
       mdxOptions: {
         remarkPlugins: [
           [remarkGfm, { singleTilde: false }],
