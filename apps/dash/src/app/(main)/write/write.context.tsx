@@ -17,6 +17,7 @@ export interface State {
   editorType: "novel" | "monaco";
   content?: string;
   sourceContent?: any;
+  serializedContent?: any;
 }
 
 export interface Context {

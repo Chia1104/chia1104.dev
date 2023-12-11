@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`compileMDX > should compile mdx 1`] = `
+{
+  "content": <MDXContent
+    components={{}}
+  />,
+  "frontmatter": {},
+}
+`;

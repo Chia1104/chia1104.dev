@@ -20,6 +20,7 @@
     "@chia/auth": "0.0.0",
     "@chia/db": "0.0.0",
     "@chia/editor": "0.0.0",
+    "@chia/mdx": "0.0.0",
     "@chia/meta": "0.0.0",
     "@chia/ui": "0.0.0",
     "@chia/utils": "0.0.0",

@@ -25,7 +25,7 @@
     "dev": "turbo run dev --parallel",
     "dev:turbo": "turbo run dev:turbo",
     "dev:www": "turbo run dev --filter www... --concurrency=11",
-    "dev:dash": "turbo run dev --filter dash... --concurrency=11",
+    "dev:dash": "turbo run dev --filter dash... --concurrency=12",
     "dev:service": "turbo run dev --filter service... --concurrency=11",
     "start": "turbo run start --parallel",
     "start:www": "turbo run start --filter www",
