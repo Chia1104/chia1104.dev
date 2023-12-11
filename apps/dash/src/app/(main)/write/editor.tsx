@@ -22,6 +22,7 @@ import MEditor from "@monaco-editor/react";
 import { useWriteContext } from "./write.context";
 import { compile } from "@/server/mdx.action";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 const PreviewModal: FC<{
   isOpen: boolean;
@@ -55,6 +56,7 @@ export const Monaco = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { setState, state } = useWriteContext();
   const [isPending, startTransition] = useTransition();
+  const session = useSession();
   return (
     <div className="relative w-full overflow-hidden rounded-2xl shadow-lg">
       <Button
@@ -72,23 +74,26 @@ export const Monaco = () => {
         /**
          * @todo avoid script(code) injection
          */
-        // onPress={() =>
-        //   startTransition(async () => {
-        //     try {
-        //       const serializedContent = await compile(value);
-        //       setIsModalOpen(true);
-        //       setState({
-        //         ...state,
-        //         feedType: "post",
-        //         editorType: "monaco",
-        //         serializedContent,
-        //       });
-        //     } catch (error) {
-        //       toast.error("An error occurred while compiling the markdown.");
-        //     }
-        //   })
-        // }
-      >
+        onPress={() =>
+          startTransition(async () => {
+            try {
+              if (session.data?.user.role !== "admin") {
+                toast.error("You don't have permission to preview.");
+                return;
+              }
+              const serializedContent = await compile(value);
+              setIsModalOpen(true);
+              setState({
+                ...state,
+                feedType: "post",
+                editorType: "monaco",
+                serializedContent,
+              });
+            } catch (error) {
+              toast.error("An error occurred while compiling the markdown.");
+            }
+          })
+        }>
         Preview
       </Button>
       <PreviewModal

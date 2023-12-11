@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode from "rehype-pretty-code";
-import rehypePrism from "rehype-prism-plus/generator";
+import rehypePrism from "rehype-prism-plus";
 
 export const serializeMDX = async (
   content: string,
@@ -22,18 +22,20 @@ export const serializeMDX = async (
       ],
       rehypePlugins: [
         [rehypeSlug],
-        // [rehypePrism, { ignoreMissing: true }],
+        // @ts-expect-error
+        [rehypePrism, { ignoreMissing: true }],
         [rehypeAutolinkHeadings],
-        // [
-        //   () => rehypePrettyCode,
-        //   {
-        //     theme: {
-        //       light: "github-light",
-        //       dark: "github-dark",
-        //     },
-        //     keepBackground: false,
-        //   },
-        // ],
+        [
+          // @ts-expect-error
+          rehypePrettyCode,
+          {
+            theme: {
+              light: "github-light",
+              dark: "github-dark",
+            },
+            keepBackground: false,
+          },
+        ],
         ...(options?.options?.mdxOptions?.rehypePlugins ?? []),
       ],
       ...options?.options?.mdxOptions,
@@ -55,18 +57,20 @@ export const compileMDX = async (content: string, options?: MDXRemoteProps) => {
         ],
         rehypePlugins: [
           [rehypeSlug],
-          // [rehypePrism, { ignoreMissing: true }],
+          // @ts-expect-error
+          [rehypePrism, { ignoreMissing: true }],
           [rehypeAutolinkHeadings],
-          // [
-          //   () => rehypePrettyCode,
-          //   {
-          //     theme: {
-          //       light: "github-light",
-          //       dark: "github-dark",
-          //     },
-          //     keepBackground: false,
-          //   },
-          // ],
+          [
+            // @ts-expect-error
+            rehypePrettyCode,
+            {
+              theme: {
+                light: "github-light",
+                dark: "github-dark",
+              },
+              keepBackground: false,
+            },
+          ],
           ...(options?.options?.mdxOptions?.rehypePlugins ?? []),
         ],
         ...options?.options?.mdxOptions,
