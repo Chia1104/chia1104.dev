@@ -8,6 +8,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import "react-medium-image-zoom/dist/styles.css";
 import Footer from "./_components/footer";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",
@@ -62,6 +63,7 @@ const ChiaWEB = ({ children }: { children: ReactNode }) => {
           <Footer />
         </RootProvider>
         <VercelAnalytics />
+        <SpeedInsights />
       </body>
     </html>
   );
