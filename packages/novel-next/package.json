@@ -12,8 +12,38 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@chia/ui": "0.0.0",
+    "@chia/utils": "0.0.0",
+    "@tiptap/core": "^2.1.13",
+    "@tiptap/extension-blockquote": "^2.1.13",
+    "@tiptap/extension-code-block-lowlight": "^2.1.13",
+    "@tiptap/extension-color": "^2.1.13",
+    "@tiptap/extension-highlight": "^2.1.13",
+    "@tiptap/extension-horizontal-rule": "^2.1.13",
+    "@tiptap/extension-image": "^2.1.13",
+    "@tiptap/extension-link": "^2.1.13",
+    "@tiptap/extension-placeholder": "^2.1.13",
+    "@tiptap/extension-task-item": "^2.1.13",
+    "@tiptap/extension-task-list": "^2.1.13",
+    "@tiptap/extension-text-style": "^2.1.13",
+    "@tiptap/extension-underline": "^2.1.13",
+    "@tiptap/pm": "^2.1.13",
+    "@tiptap/react": "^2.1.13",
+    "@tiptap/starter-kit": "^2.1.13",
+    "@tiptap/suggestion": "^2.1.13",
+    "ai": "^2.2.27",
+    "lowlight": "^3.1.0",
+    "lucide-react": "^0.292.0",
+    "next": "14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tippy.js": "^6.3.7",
+    "tiptap-markdown": "^0.8.8"
+  },
   "devDependencies": {
+    "@types/react": "^18.2.17",
+    "@types/react-dom": "^18.2.7",
     "tsconfig": "0.0.0"
   }
 }

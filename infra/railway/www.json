@@ -5,6 +5,7 @@
     "watchPatterns": [
       "/apps/www",
       "/packages/*",
+      "!/packages/novel-next",
       "/infra/railway/www.json",
       "package.json"
     ],
