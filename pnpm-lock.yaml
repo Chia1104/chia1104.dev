@@ -34,8 +34,8 @@ importers:
         specifier: 0.5.1
         version: 0.5.1
       '@turbo/gen':
-        specifier: ^1.11.1
-        version: 1.11.1(@types/node@20.10.4)(typescript@5.3.3)
+        specifier: ^1.11.2
+        version: 1.11.2(@types/node@20.10.4)(typescript@5.3.3)
       '@types/node':
         specifier: ^20.10.4
         version: 20.10.4
@@ -61,8 +61,8 @@ importers:
         specifier: ^9.1.0
         version: 9.1.0(eslint@8.55.0)
       eslint-config-turbo:
-        specifier: ^1.11.1
-        version: 1.11.1(eslint@8.55.0)
+        specifier: ^1.11.2
+        version: 1.11.2(eslint@8.55.0)
       eslint-plugin-prettier:
         specifier: ^5.0.1
         version: 5.0.1(eslint-config-prettier@9.1.0)(eslint@8.55.0)(prettier@3.1.0)
@@ -7824,11 +7824,11 @@ packages:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
     dev: true
 
-  /@turbo/gen@1.11.1(@types/node@20.10.4)(typescript@5.3.3):
-    resolution: {integrity: sha512-+IxFelmvEG/YnJ2/K8FFfe3X/DAFASvLxz5snfZpJWUBhYu6oUR+b4k/6EbKgqWTOLUgyca9IN+Tog4od+S0Qg==}
+  /@turbo/gen@1.11.2(@types/node@20.10.4)(typescript@5.3.3):
+    resolution: {integrity: sha512-zV4vwedEujiAcACPnFXnKat8IqDo0EVJpMbS3W5CiokUBv35vw5PjldjqKcdh0GIiUTlriWGwRU6FZ8pzBg+kg==}
     hasBin: true
     dependencies:
-      '@turbo/workspaces': 1.11.1
+      '@turbo/workspaces': 1.11.2
       chalk: 2.4.2
       commander: 10.0.1
       fs-extra: 10.1.0
@@ -7847,8 +7847,8 @@ packages:
       - typescript
     dev: true
 
-  /@turbo/workspaces@1.11.1:
-    resolution: {integrity: sha512-15rZ/pNT3Nf9yKgp3Mod2mDlCrTpN6jC+aqofSkYkAG97PBKwpNIWuN/HRSIvugJzEh/+PWfDWg2cCcp2OrUkw==}
+  /@turbo/workspaces@1.11.2:
+    resolution: {integrity: sha512-yP6xKV0Cst6U1PDCTaGz0B0ufcD22LfGsMcOmv36+HaajnnaAnNZDUbdfO3LDD4VR7dyMtBOgqkqREJ8vBWSzA==}
     hasBin: true
     dependencies:
       chalk: 2.4.2
@@ -11091,13 +11091,13 @@ packages:
       eslint: 8.55.0
     dev: true
 
-  /eslint-config-turbo@1.11.1(eslint@8.55.0):
-    resolution: {integrity: sha512-F0w5nusZ3SMSXS+ns/f0GLiRmLyP0+20Nd1xPgRXxJSW3UCsurysuqfCjo4VwSIVK2mfkDSdrn6/+JxV3WZgiw==}
+  /eslint-config-turbo@1.11.2(eslint@8.55.0):
+    resolution: {integrity: sha512-vqbyCH6kCHFoIAWUmGL61c0BfUQNz0XAl2RzAnEkSQ+PLXvEvuV2HsvL51UOzyyElfJlzZuh9T4BvUqb5KR9Eg==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
       eslint: 8.55.0
-      eslint-plugin-turbo: 1.11.1(eslint@8.55.0)
+      eslint-plugin-turbo: 1.11.2(eslint@8.55.0)
     dev: true
 
   /eslint-import-resolver-node@0.3.9:
@@ -11464,8 +11464,8 @@ packages:
       tailwindcss: 3.3.6
     dev: true
 
-  /eslint-plugin-turbo@1.11.1(eslint@8.55.0):
-    resolution: {integrity: sha512-QegEzLp9CIsDVQOSSjvEl6QUUGpb7Hj9IdFdgz7OHBYzhCArY5z+Q3y+LO6jn1MSkzGUteGNjLhrlkjXadePCA==}
+  /eslint-plugin-turbo@1.11.2(eslint@8.55.0):
+    resolution: {integrity: sha512-U6DX+WvgGFiwEAqtOjm4Ejd9O4jsw8jlFNkQi0ywxbMnbiTie+exF4Z0F/B1ajtjjeZkBkgRnlU+UkoraBN+bw==}
     peerDependencies:
       eslint: '>6.6.0'
     dependencies:
