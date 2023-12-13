@@ -45,7 +45,7 @@
     "@trpc/react-query": "next",
     "@trpc/server": "next",
     "@upstash/ratelimit": "1.0.0",
-    "@upstash/redis": "1.25.1",
+    "@upstash/redis": "1.25.2",
     "@vercel/analytics": "1.1.1",
     "@vercel/edge-config": "^0.4.1",
     "@vercel/speed-insights": "^1.0.1",
