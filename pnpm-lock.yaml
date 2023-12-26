@@ -399,8 +399,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0
       '@upstash/redis':
-        specifier: 1.25.2
-        version: 1.25.2
+        specifier: 1.27.1
+        version: 1.27.1
       '@vercel/analytics':
         specifier: 1.1.1
         version: 1.1.1
@@ -8474,7 +8474,7 @@ packages:
     resolution: {integrity: sha512-cpPSR0XJAJs4Ddz9nq3tINlPS5aLfWVCqhhtHnXt4p7qr5+/Znlt1Es736poB/9rnl1hAHrOsOvVj46NEXcVqA==}
     engines: {node: '>=16.0.0'}
     dependencies:
-      '@upstash/redis': 1.25.2
+      '@upstash/redis': 1.27.1
     dev: false
 
   /@upstash/ratelimit@0.4.4:
@@ -8495,8 +8495,8 @@ packages:
       crypto-js: 4.2.0
     dev: false
 
-  /@upstash/redis@1.25.2:
-    resolution: {integrity: sha512-iI3jgvmDIbe4Px0PskB8lrn1NXz7ZQyGpW9Ehmonk6SEFqhqssqIB04VmlNh8zZUXwzy6G9DaIa5gIUM6B7DwA==}
+  /@upstash/redis@1.27.1:
+    resolution: {integrity: sha512-K9UgTBypJ4Dx65s2u5auoyf/5YoCQjaN91QtxlkNg+3g0rqXXy4ELtzACstk1v+bTa547Mm3rzTjotDX/s9+Zg==}
     dependencies:
       crypto-js: 4.2.0
     dev: false
