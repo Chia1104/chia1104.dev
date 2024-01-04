@@ -18,7 +18,7 @@
     "postgres": "^3.4.1"
   },
   "devDependencies": {
-    "@auth/core": "^0.19.0",
+    "@auth/core": "^0.18.0",
     "@types/pg": "^8.10.9",
     "drizzle-kit": "^0.20.0",
     "tsconfig": "0.0.0"
