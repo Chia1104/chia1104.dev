@@ -73,6 +73,8 @@ const RepoCard: FC<{
   );
 };
 
+export const revalidate = 60;
+
 const Page = async () => {
   const repo = await getPinnedRepos(meta.name);
   return (

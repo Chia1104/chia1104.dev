@@ -135,3 +135,5 @@ export default async function Page() {
     </FadeIn>
   );
 }
+
+export const revalidate = 60 * 30;
