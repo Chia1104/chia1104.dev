@@ -35,6 +35,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
           THROTTLE_LIMIT: string;
           THROTTLE_TTL: string;
           REDIS_URI: string;
+          REDIS_URL: string;
         }>
       ) => ({
         throttlers: [
@@ -44,7 +45,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
           },
         ],
         storage: new ThrottlerStorageRedisService(
-          new Redis(config.get("REDIS_URI"))
+          new Redis(config.get("REDIS_URL") || config.get("REDIS_URI"))
         ),
       }),
     }),
