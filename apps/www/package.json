@@ -46,7 +46,7 @@
     "@trpc/server": "next",
     "@upstash/ratelimit": "1.0.0",
     "@upstash/redis": "1.28.1",
-    "@vercel/analytics": "1.1.1",
+    "@vercel/analytics": "1.1.2",
     "@vercel/edge-config": "^0.4.1",
     "@vercel/speed-insights": "^1.0.1",
     "cross-env": "7.0.3",
