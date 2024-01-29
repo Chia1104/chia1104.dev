@@ -48,7 +48,7 @@ const nextConfig = {
   ],
   swcMinify: true,
   experimental: {
-    serverComponentsExternalPackages: ["@chia/ui"],
+    serverComponentsExternalPackages: [],
     typedRoutes: false,
     webpackBuildWorker: true,
   },
