@@ -47,7 +47,7 @@ jobs:
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
 
       - name: '📦  Next.js cache'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/dash/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
