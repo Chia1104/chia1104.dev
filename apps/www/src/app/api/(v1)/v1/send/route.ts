@@ -12,9 +12,9 @@ import EmailTemplate from "./email-template";
 
 export const runtime = "edge";
 /**
- * Hong Kong
+ * Tokyo, Japan
  */
-export const preferredRegion = ["hkg1"];
+export const preferredRegion = ["hnd1"];
 
 const resend = new Resend(env.RESEND_API_KEY);
 
