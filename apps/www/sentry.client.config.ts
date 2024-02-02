@@ -7,6 +7,6 @@ Sentry.init({
   tracesSampleRate: 1.0,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  enabled: ["production"].includes(env.NEXT_PUBLIC_ENV),
+  enabled: ["production", "preview"].includes(env.NEXT_PUBLIC_ENV),
   environment: env.NEXT_PUBLIC_ENV,
 });
