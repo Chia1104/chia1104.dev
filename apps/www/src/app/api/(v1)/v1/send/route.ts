@@ -9,13 +9,27 @@ import { env } from "@/env.mjs";
 import { contactSchema, type Contact } from "@/shared/validator";
 import * as Sentry from "@sentry/nextjs";
 import EmailTemplate from "./email-template";
-import { kv } from "@vercel/kv";
 
 export const runtime = "edge";
 /**
  * Hong Kong
  */
-export const preferredRegion = ["hnd1"];
+export const preferredRegion = ["hkg1"];
+
+const resend = new Resend(env.RESEND_API_KEY);
+
+const redis = new Redis({
+  url: env.REDIS_URL!,
+  token: env.UPSTASH_TOKEN!,
+});
+
+const ratelimit = new Ratelimit({
+  redis,
+  analytics: true,
+  timeout: 1000,
+  limiter: Ratelimit.slidingWindow(2, "5s"),
+  prefix: "rate-limiter",
+});
 
 type ReCapthcaResponse = {
   success: boolean;
@@ -42,21 +56,6 @@ function getIP(req: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const resend = new Resend(env.RESEND_API_KEY);
-
-    const ratelimit = new Ratelimit({
-      redis: process.env.VERCEL
-        ? kv
-        : new Redis({
-            url: env.REDIS_URL!,
-            token: env.UPSTASH_TOKEN!,
-          }),
-      analytics: true,
-      timeout: 1000,
-      limiter: Ratelimit.slidingWindow(2, "5s"),
-      prefix: "rate-limiter",
-    });
-
     const id = getIP(request) ?? "anonymous";
     const { success, limit, reset, remaining } = await ratelimit.limit(
       id,
