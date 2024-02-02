@@ -9,6 +9,7 @@ import { env } from "@/env.mjs";
 import { contactSchema, type Contact } from "@/shared/validator";
 import * as Sentry from "@sentry/nextjs";
 import EmailTemplate from "./email-template";
+import { kv } from "@vercel/kv";
 
 export const runtime = "edge";
 /**
@@ -24,10 +25,11 @@ const redis = new Redis({
 });
 
 const ratelimit = new Ratelimit({
-  redis,
+  redis: process.env.VERCEL ? kv : redis,
   analytics: true,
   timeout: 1000,
   limiter: Ratelimit.slidingWindow(2, "5s"),
+  prefix: "rate-limiter",
 });
 
 type ReCapthcaResponse = {
@@ -56,10 +58,20 @@ function getIP(req: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const id = getIP(request) ?? "anonymous";
-    const limit = await ratelimit.limit(id, request);
+    const { success, limit, reset, remaining } = await ratelimit.limit(
+      id,
+      request
+    );
 
-    if (!limit.success) {
-      return NextResponse.json(errorGenerator(429), { status: 429 });
+    if (!success) {
+      return NextResponse.json(errorGenerator(429), {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      });
     }
 
     const data = (await request.json()) as Contact;

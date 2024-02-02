@@ -407,6 +407,9 @@ importers:
       '@vercel/edge-config':
         specifier: ^0.4.1
         version: 0.4.1
+      '@vercel/kv':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@vercel/speed-insights':
         specifier: ^1.0.1
         version: 1.0.1
@@ -416,6 +419,9 @@ importers:
       framer-motion:
         specifier: ^11.0.0
         version: 11.0.3(react-dom@18.2.0)(react@18.2.0)
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.3.2
       next:
         specifier: 14.1.0
         version: 14.1.0(react-dom@18.2.0)(react@18.2.0)
@@ -879,6 +885,10 @@ importers:
         version: link:../../toolings/tsconfig
 
   packages/utils:
+    dependencies:
+      ioredis:
+        specifier: ^5.3.2
+        version: 5.3.2
     devDependencies:
       tsconfig:
         specifier: 0.0.0
@@ -8546,6 +8556,12 @@ packages:
       crypto-js: 4.2.0
     dev: false
 
+  /@upstash/redis@1.25.1:
+    resolution: {integrity: sha512-ACj0GhJ4qrQyBshwFgPod6XufVEfKX2wcaihsEvSdLYnY+m+pa13kGt1RXm/yTHKf4TQi/Dy2A8z/y6WUEOmlg==}
+    dependencies:
+      crypto-js: 4.2.0
+    dev: false
+
   /@upstash/redis@1.28.3:
     resolution: {integrity: sha512-IduU0zrxVKO0z4D+usJUP/VZRYkbbbSoAdj4WYwgijjhc1nxhRZEtktZ8ueTyXT4dAatJ+gDKIIbVSVIiB1xBw==}
     dependencies:
@@ -8587,6 +8603,13 @@ packages:
     engines: {node: '>=14.6'}
     dependencies:
       '@upstash/redis': 1.24.3
+    dev: false
+
+  /@vercel/kv@1.0.1:
+    resolution: {integrity: sha512-uTKddsqVYS2GRAM/QMNNXCTuw9N742mLoGRXoNDcyECaxEXvIHG0dEY+ZnYISV4Vz534VwJO+64fd9XeSggSKw==}
+    engines: {node: '>=14.6'}
+    dependencies:
+      '@upstash/redis': 1.25.1
     dev: false
 
   /@vercel/speed-insights@1.0.1:
