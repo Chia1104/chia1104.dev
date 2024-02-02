@@ -12,7 +12,7 @@ import EmailTemplate from "./email-template";
 
 export const runtime = "edge";
 /**
- * Tokyo, Japan
+ * Hong Kong
  */
 export const preferredRegion = ["hnd1"];
 
