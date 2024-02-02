@@ -56,11 +56,11 @@ function getIP(req: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const id = getIP(request) ?? "anonymous";
-    // const limit = await ratelimit.limit(id ?? "anonymous");
+    const limit = await ratelimit.limit(id, request);
 
-    // if (!limit.success) {
-    //   return NextResponse.json(errorGenerator(429), { status: 429 });
-    // }
+    if (!limit.success) {
+      return NextResponse.json(errorGenerator(429), { status: 429 });
+    }
 
     const data = (await request.json()) as Contact;
 
