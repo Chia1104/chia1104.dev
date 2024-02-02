@@ -17,21 +17,6 @@ export const runtime = "edge";
  */
 export const preferredRegion = ["hnd1"];
 
-const resend = new Resend(env.RESEND_API_KEY);
-
-const ratelimit = new Ratelimit({
-  redis: process.env.VERCEL
-    ? kv
-    : new Redis({
-        url: env.REDIS_URL!,
-        token: env.UPSTASH_TOKEN!,
-      }),
-  analytics: true,
-  timeout: 1000,
-  limiter: Ratelimit.slidingWindow(2, "5s"),
-  prefix: "rate-limiter",
-});
-
 type ReCapthcaResponse = {
   success: boolean;
   challenge_ts: string;
@@ -57,6 +42,21 @@ function getIP(req: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const resend = new Resend(env.RESEND_API_KEY);
+
+    const ratelimit = new Ratelimit({
+      redis: process.env.VERCEL
+        ? kv
+        : new Redis({
+            url: env.REDIS_URL!,
+            token: env.UPSTASH_TOKEN!,
+          }),
+      analytics: true,
+      timeout: 1000,
+      limiter: Ratelimit.slidingWindow(2, "5s"),
+      prefix: "rate-limiter",
+    });
+
     const id = getIP(request) ?? "anonymous";
     const { success, limit, reset, remaining } = await ratelimit.limit(
       id,
