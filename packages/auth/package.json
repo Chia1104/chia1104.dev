@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@auth/core": "^0.18.0",
-    "@auth/drizzle-adapter": "^0.3.6",
+    "@auth/drizzle-adapter": "^0.6.0",
     "@chia/db": "0.0.0",
     "@chia/utils": "0.0.0",
     "@t3-oss/env-nextjs": "^0.8.0",
