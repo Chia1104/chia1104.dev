@@ -1,5 +1,4 @@
 // @ts-check
-
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
 // @ts-ignore
@@ -53,5 +52,7 @@ export const env = createEnv({
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
   },
 
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation:
+    process.env.SKIP_ENV_VALIDATION === "true" ||
+    process.env.SKIP_ENV_VALIDATION === "1",
 });

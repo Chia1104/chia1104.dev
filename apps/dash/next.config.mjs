@@ -1,7 +1,6 @@
 // @ts-check
 
 import "./src/env.mjs";
-import "@chia/auth/env.mjs";
 
 const securityHeaders = [
   {

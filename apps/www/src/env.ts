@@ -1,7 +1,8 @@
-// @ts-check
-
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
+import { vercel } from "@t3-oss/env-core/presets";
+import { env as githubEnv } from "@chia/api/github/env";
+import { env as spotifyEnv } from "@chia/api/spotify/env";
 // @ts-ignore
 import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
 
@@ -29,18 +30,14 @@ export const env = createEnv({
   server: {
     NODE_ENV: nodeEnvSchema,
     RAILWAY_URL: z.string().optional(),
-    VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
     SITE_URL: z.string().optional().default("https://www.chia1104.dev"),
     RE_CAPTCHA_KEY: z.string().min(1),
     GOOGLE_API_KEY: z.string().min(1),
-    REDIS_URL: z.string().min(1),
-    UPSTASH_TOKEN: z.string().min(1),
     SHA_256_HASH: z.string().min(1),
     RESEND_API_KEY: z.string().min(1),
     UMAMI_DB_URL: z.string().optional(),
     UMAMI_EDGE_DB_URL: z.string().optional(),
-    VERCEL: z.string().optional(),
     GOOGLE_API: z.string().optional().default("https://www.googleapis.com"),
     EDGE_CONFIG: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
@@ -72,7 +69,6 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_ENV: getClientEnv(),
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
-    VERCEL_URL: process.env.VERCEL_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
     SITE_URL: process.env.SITE_URL,
     RE_CAPTCHA_KEY:
@@ -80,8 +76,6 @@ export const env = createEnv({
         ? "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
         : process.env.RE_CAPTCHA_KEY,
     GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
-    REDIS_URL: process.env.REDIS_URL,
-    UPSTASH_TOKEN: process.env.UPSTASH_TOKEN,
     SHA_256_HASH: process.env.SHA_256_HASH,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     UMAMI_DB_URL: process.env.UMAMI_DB_URL,
@@ -92,7 +86,6 @@ export const env = createEnv({
         : process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY,
     NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
     NEXT_PUBLIC_UMAMI_URL: process.env.NEXT_PUBLIC_UMAMI_URL,
-    VERCEL: process.env.VERCEL,
     GOOGLE_API: process.env.GOOGLE_API,
     NEXT_PUBLIC_GISCUS_REPO: process.env.NEXT_PUBLIC_GISCUS_REPO,
     NEXT_PUBLIC_GISCUS_REPO_ID: process.env.NEXT_PUBLIC_GISCUS_REPO_ID,
@@ -109,6 +102,9 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
   },
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation:
+    process.env.SKIP_ENV_VALIDATION === "true" ||
+    process.env.SKIP_ENV_VALIDATION === "1",
   emptyStringAsUndefined: true,
+  extends: [vercel, spotifyEnv, githubEnv],
 });

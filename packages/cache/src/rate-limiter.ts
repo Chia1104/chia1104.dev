@@ -1,12 +1,21 @@
 import Redis from "ioredis";
 
 type Result = {
+  /**
+   * Maximum number of requests allowed within a window.
+   */
   limit: number;
+  /**
+   * How many requests the user has left within the current window.
+   */
   remaining: number;
+  /**
+   * Whether the request may pass(true) or exceeded the limit(false)
+   */
   success: boolean;
 };
 
-const rateLimiter = async ({
+export const rateLimiter = async ({
   client,
   ip,
   limit,
@@ -23,11 +32,17 @@ const rateLimiter = async ({
   const currentCount = await client.get(key);
   const count = parseInt(currentCount as string, 10) || 0;
   if (count >= limit) {
-    return { limit, remaining: limit - count, success: false };
+    return {
+      limit,
+      remaining: limit - count,
+      success: false,
+    };
   }
   client.incr(key);
   client.expire(key, duration);
-  return { limit, remaining: limit - (count + 1), success: true };
+  return {
+    limit,
+    remaining: limit - (count + 1),
+    success: true,
+  };
 };
-
-export default rateLimiter;

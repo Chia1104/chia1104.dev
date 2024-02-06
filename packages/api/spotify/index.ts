@@ -1,5 +1,5 @@
 import "server-only";
-import { env } from "./env.mjs";
+import { env } from "./env";
 import { post, request } from "@chia/utils";
 import { type PlayList, type CurrentPlaying } from "./types";
 

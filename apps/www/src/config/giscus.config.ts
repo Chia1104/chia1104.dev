@@ -1,4 +1,4 @@
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import type { GiscusProps } from "@giscus/react";
 
 export const giscusConfig = {

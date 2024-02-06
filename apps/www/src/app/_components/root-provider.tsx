@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { useDarkMode, Cursor } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import Script from "next/script";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import superjson from "superjson";
@@ -39,7 +39,6 @@ export function TRPCReactProvider(props: {
 
   const [trpcClient] = useState(() =>
     api.createClient({
-      transformer: superjson,
       links: [
         loggerLink({
           enabled: (opts) =>
@@ -47,6 +46,7 @@ export function TRPCReactProvider(props: {
             (opts.direction === "down" && opts.result instanceof Error),
         }),
         unstable_httpBatchStreamLink({
+          transformer: superjson,
           url: `${getBaseUrl({
             baseUrl: WWW_BASE_URL,
           })}/api/trpc`,

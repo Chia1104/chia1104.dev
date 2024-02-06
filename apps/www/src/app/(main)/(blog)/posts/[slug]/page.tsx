@@ -6,7 +6,7 @@ import type { Blog, WithContext } from "schema-dts";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { createHmac } from "node:crypto";
 import { setSearchParams } from "@chia/utils";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 import { notFound } from "next/navigation";
 import { type OgDTO } from "@/app/api/(v1)/og/utils";
@@ -36,9 +36,9 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   try {
     const post = await getPostBySlug(params.slug);
-    const token = getToken(post[0].title);
+    const token = getToken(post[0]?.title ?? "");
     return {
-      title: post[0].title,
+      title: post[0]?.title,
       description: post[0]?.excerpt,
       openGraph: {
         type: "article",
@@ -52,8 +52,8 @@ export const generateMetadata = async ({
             url: setSearchParams<OgDTO>(
               {
                 title: post[0]?.title,
-                excerpt: post[0].excerpt,
-                subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
+                excerpt: post[0]?.excerpt,
+                subtitle: dayjs(post[0]?.updatedAt).format("MMMM D, YYYY"),
                 token: token,
               },
               {
@@ -77,8 +77,8 @@ export const generateMetadata = async ({
           setSearchParams<OgDTO>(
             {
               title: post[0]?.title,
-              excerpt: post[0].excerpt,
-              subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
+              excerpt: post[0]?.excerpt,
+              subtitle: dayjs(post[0]?.updatedAt).format("MMMM D, YYYY"),
               token: token,
             },
             {

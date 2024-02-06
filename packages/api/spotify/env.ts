@@ -1,7 +1,5 @@
-// @ts-check
-
 import { z } from "zod";
-import { createEnv } from "@t3-oss/env-nextjs";
+import { createEnv } from "@t3-oss/env-core";
 
 export const env = createEnv({
   server: {
@@ -29,4 +27,7 @@ export const env = createEnv({
     SPOTIFY_NOW_PLAYING_URL: process.env.SPOTIFY_NOW_PLAYING_URL,
     SPOTIFY_TOKEN_URL: process.env.SPOTIFY_TOKEN_URL,
   },
+  skipValidation:
+    process.env.SKIP_ENV_VALIDATION === "true" ||
+    process.env.SKIP_ENV_VALIDATION === "1",
 });
