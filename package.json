@@ -81,7 +81,7 @@
     "eslint-config-turbo": "^1.11.2",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-react": "7.33.2",
-    "eslint-plugin-tailwindcss": "3.14.1",
+    "eslint-plugin-tailwindcss": "3.14.2",
     "happy-dom": "^13.0.0",
     "husky": "^8.0.3",
     "jest-extended": "^4.0.2",
