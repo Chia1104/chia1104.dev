@@ -31,7 +31,7 @@ importers:
         specifier: 14.1.0
         version: 14.1.0
       '@playwright/test':
-        specifier: ^1.40.1
+        specifier: ^1.41.2
         version: 1.41.2
       '@total-typescript/ts-reset':
         specifier: 0.5.1
