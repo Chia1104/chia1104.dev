@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Contact Me",
 };
 
+/**
+ * Tokyo, Japan
+ */
+export const preferredRegion = ["hnd1"];
+
 const contact = {
   github: {
     name: "Github",

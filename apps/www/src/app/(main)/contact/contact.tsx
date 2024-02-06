@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { contactSchema, type Contact } from "@/shared/validator";
 import dynamic from "next/dynamic";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 
 const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
   ssr: false,
@@ -162,7 +162,6 @@ const Contact: FC = () => {
             }) => (
               <div className="recaptcha-style">
                 <ReCAPTCHA
-                  placeholder="reCAPTCHA"
                   theme={isDarkMode ? "dark" : "light"}
                   sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY!}
                   onChange={(value) => {

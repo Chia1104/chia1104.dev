@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "pipeline": {
+    "@chia/api": {
+      "env": [
+        "SPOTIFY_CLIENT_ID",
+        "SPOTIFY_CLIENT_SECRET",
+        "SPOTIFY_FAVORITE_PLAYLIST_ID",
+        "SPOTIFY_REFRESH_TOKEN"
+      ]
+    }
+  }
+}

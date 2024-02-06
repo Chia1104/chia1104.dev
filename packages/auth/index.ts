@@ -3,8 +3,7 @@ import { db, tableCreator, localDb, betaDb } from "@chia/db";
 import type { DefaultSession } from "@auth/core/types";
 import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-// @ts-ignore
-import { env } from "./env.mjs";
+import { env } from "./env";
 import { getDb } from "@chia/utils";
 
 declare module "@auth/core/types" {

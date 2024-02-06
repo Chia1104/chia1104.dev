@@ -11,7 +11,7 @@ const MDXYoutube: FC<MDXYoutubeProps> = ({ ytSrc, ytTitle }) => {
   return (
     <div className="mx-auto my-10 h-[300px] w-full max-w-[750px] overflow-hidden rounded-lg border-0 shadow-lg md:h-[400px] lg:h-[430px]">
       <iframe
-        className="h-full w-full"
+        className="size-full"
         src={ytSrc}
         title={ytTitle}
         loading="lazy"

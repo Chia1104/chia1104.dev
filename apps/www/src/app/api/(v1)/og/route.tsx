@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { OpenGraph } from "@chia/ui";
 import { errorGenerator, handleZodError } from "@chia/utils";
 import { ogSchema, type OgDTO } from "./utils";

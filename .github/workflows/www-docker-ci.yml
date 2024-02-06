@@ -36,6 +36,7 @@ env:
   NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
+  CACHE_PROVIDER: upstash
   NODE_ENV: test
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:8080
@@ -94,6 +95,7 @@ jobs:
             NEXT_PUBLIC_GISCUS_CATEGORY_ID=${{ env.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
             REDIS_URL=${{ env.REDIS_URL }}
             UPSTASH_TOKEN=${{ env.UPSTASH_TOKEN }}
+            CACHE_PROVIDER=upstash
             RE_CAPTCHA_KEY=${{ env.RE_CAPTCHA_KEY }}
             AUTH_SECRET=${{ env.AUTH_SECRET }}
             AUTH_URL=${{ env.AUTH_URL }}

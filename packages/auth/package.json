@@ -11,13 +11,13 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@auth/core": "^0.18.0",
-    "@auth/drizzle-adapter": "^0.3.6",
+    "@auth/core": "^0.26.2",
+    "@auth/drizzle-adapter": "^0.6.2",
     "@chia/db": "0.0.0",
     "@chia/utils": "0.0.0",
-    "@t3-oss/env-nextjs": "^0.8.0",
+    "@t3-oss/env-core": "^0.8.0",
     "next": "14.1.0",
-    "next-auth": "5.0.0-beta.4"
+    "next-auth": "5.0.0-beta.8"
   },
   "devDependencies": {
     "tsconfig": "0.0.0"

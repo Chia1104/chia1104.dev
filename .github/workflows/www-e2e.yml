@@ -37,6 +37,7 @@ env:
   NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
+  CACHE_PROVIDER: upstash
   NODE_ENV: test
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:3000
@@ -56,7 +57,7 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
 
     container:
-      image: mcr.microsoft.com/playwright:v1.40.1-jammy
+      image: mcr.microsoft.com/playwright:v1.41.2-jammy
 
     steps:
       - name: '🐙️ Check out code'

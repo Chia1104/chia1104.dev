@@ -1,7 +1,5 @@
-// @ts-check
-
 import { z } from "zod";
-import { createEnv } from "@t3-oss/env-nextjs";
+import { createEnv } from "@t3-oss/env-core";
 
 export const env = createEnv({
   server: {
@@ -18,4 +16,7 @@ export const env = createEnv({
       process.env.GITHUB_GRAPHQL_API ?? "https://api.github.com/graphql",
     GH_PUBLIC_TOKEN: process.env.GH_PUBLIC_TOKEN,
   },
+  skipValidation:
+    process.env.SKIP_ENV_VALIDATION === "true" ||
+    process.env.SKIP_ENV_VALIDATION === "1",
 });

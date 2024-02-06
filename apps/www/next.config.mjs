@@ -1,9 +1,5 @@
 // @ts-check
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
-import "./src/env.mjs";
-import "@chia/auth/env.mjs";
-import "@chia/api/github/env.mjs";
-import "@chia/api/spotify/env.mjs";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
@@ -40,6 +36,7 @@ const nextConfig = {
   transpilePackages: [
     "@chia/api",
     "@chia/auth",
+    "@chia/cache",
     "@chia/db",
     "@chia/editor",
     "@chia/meta",

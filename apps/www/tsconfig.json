@@ -8,7 +8,7 @@
     "**/*.d.ts",
     "**/*.{spec,test}.{mts,ts}",
     ".next/types/**/*.ts",
-    "./src/env.mjs"
+    "next.config.mjs"
   ],
   "exclude": ["node_modules", ".next"],
   "compilerOptions": {
@@ -22,6 +22,7 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "incremental": true
   }
 }

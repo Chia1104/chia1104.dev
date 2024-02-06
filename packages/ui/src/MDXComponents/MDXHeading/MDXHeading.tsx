@@ -28,7 +28,7 @@ export const H1: FC<
           className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-7 w-7"
+            className="size-7"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -64,7 +64,7 @@ export const H2: FC<
           className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="size-6"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -100,7 +100,7 @@ export const H3: FC<
           className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="size-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -136,7 +136,7 @@ export const H4: FC<
           className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
+            className="size-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -172,7 +172,7 @@ export const H5: FC<
           className="c-text-secondary block font-medium group-hover:block md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
+            className="size-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
