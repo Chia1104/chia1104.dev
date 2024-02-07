@@ -54,7 +54,7 @@ const IndexPage = () => {
         </p>
         <p>
           Working at{" "}
-          <Link href={meta.link.leadbest} target="_blank">
+          <Link preview href={meta.link.leadbest} target="_blank">
             LeadBest
           </Link>
           . I am responsible for the development of the company's official

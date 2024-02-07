@@ -11,7 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../Accordion";
-import Link from "next/link";
+import Link from "../Link";
 
 export const Year: FC<{
   year: string | number | dayjs.Dayjs;
@@ -54,6 +54,7 @@ export const Item: FC<ListItemProps> = ({
           {...titleProps}
           className={cn("text-lg font-bold", titleProps?.className)}>
           {data.link ? (
+            // @ts-expect-error
             <Link href={data.link} {...linkProps}>
               {data.title}
             </Link>
