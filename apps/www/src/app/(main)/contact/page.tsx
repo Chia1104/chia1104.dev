@@ -1,9 +1,9 @@
 import Contact from "./contact";
 import type { Metadata } from "next";
 import "./style.css";
-import Link from "next/link";
 import meta from "@chia/meta";
 import type { FC, ReactNode } from "react";
+import { Link } from "@chia/ui";
 
 export const metadata: Metadata = {
   title: "Contact Me",
@@ -37,9 +37,11 @@ const LinkItem: FC<{
   icon: ReactNode;
   name: string;
   showIcon?: boolean;
-}> = ({ path, icon, name, showIcon }) => {
+  preview?: boolean;
+}> = ({ path, icon, name, showIcon, preview }) => {
   return (
     <Link
+      preview={preview}
       key={path}
       href={path}
       target="_blank"
@@ -69,7 +71,14 @@ const ContactPage = () => {
       <h3>Find me on</h3>
       <div className="mb-5 flex px-1">
         {Object.entries(contact).map(([key, { name, icon, link }]) => (
-          <LinkItem key={key} path={link} name={name} icon={icon} showIcon />
+          <LinkItem
+            key={key}
+            path={link}
+            name={name}
+            icon={icon}
+            showIcon
+            preview={key === "github"}
+          />
         ))}
       </div>
       <Contact />

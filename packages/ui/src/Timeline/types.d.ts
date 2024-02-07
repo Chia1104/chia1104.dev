@@ -5,7 +5,7 @@ import {
 } from "react";
 import { type HTMLMotionProps, type ForwardRefComponent } from "framer-motion";
 import { type Dayjs } from "dayjs";
-import type { LinkProps } from "next/link";
+import type { LinkProps } from "../Link";
 
 export interface Data {
   id: number;

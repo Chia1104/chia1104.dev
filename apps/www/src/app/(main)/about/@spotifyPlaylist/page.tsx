@@ -1,7 +1,6 @@
 import { getPlayList } from "@chia/api/spotify";
-import { Image, cn, ImageZoom, FadeIn } from "@chia/ui";
+import { Image, cn, ImageZoom, FadeIn, Link } from "@chia/ui";
 import { type FC } from "react";
-import Link from "next/link";
 import { env } from "@/env";
 
 const ImageItem: FC<{
@@ -125,6 +124,7 @@ export default async function Page() {
         <span>
           Check out the{" "}
           <Link
+            preview
             href={`https://open.spotify.com/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID}`}>
             {playlist.name}
           </Link>{" "}

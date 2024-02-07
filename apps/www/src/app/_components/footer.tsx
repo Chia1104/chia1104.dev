@@ -2,11 +2,10 @@
 
 import type { FC, ReactNode } from "react";
 import meta from "@chia/meta";
-import { cn } from "@chia/ui";
+import { cn, Link } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import navItems from "@/shared/routes";
-import Link from "next/link";
 import { Image } from "@chia/ui";
 
 const LinkItem: FC<{
@@ -14,11 +13,13 @@ const LinkItem: FC<{
   icon: ReactNode;
   name: string;
   showIcon?: boolean;
-}> = ({ path, icon, name, showIcon }) => {
+  preview?: boolean;
+}> = ({ path, icon, name, showIcon, preview }) => {
   const pathname = usePathname() || "/";
   const isActive = pathname.includes(path);
   return (
     <Link
+      preview={preview}
       key={path}
       href={path}
       className={cn(

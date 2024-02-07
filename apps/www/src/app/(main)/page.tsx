@@ -1,7 +1,6 @@
 import meta from "@chia/meta";
-import { Image, ImageZoom, FadeIn } from "@chia/ui";
+import { Image, ImageZoom, FadeIn, Link } from "@chia/ui";
 import type { FC, ReactNode } from "react";
-import Link from "next/link";
 
 const contact = {
   github: {
@@ -55,7 +54,7 @@ const IndexPage = () => {
         </p>
         <p>
           Working at{" "}
-          <Link href={meta.link.leadbest} target="_blank">
+          <Link preview href={meta.link.leadbest} target="_blank">
             LeadBest
           </Link>
           . I am responsible for the development of the company's official
