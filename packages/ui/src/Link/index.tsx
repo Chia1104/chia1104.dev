@@ -1,6 +1,11 @@
 "use client";
 
-import { type FC, type ReactNode, useState } from "react";
+import {
+  type FC,
+  type ReactNode,
+  useState,
+  type ComponentPropsWithoutRef,
+} from "react";
 import NextLink, { type LinkProps as NextLinkProps } from "next/link";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../HoverCard";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
@@ -8,7 +13,9 @@ import { useQuery } from "@tanstack/react-query";
 import { post, isUrl } from "@chia/utils";
 import { z } from "zod";
 
-export interface LinkProps extends NextLinkProps {
+type InternalLinkProps = NextLinkProps & ComponentPropsWithoutRef<"a">;
+
+export interface LinkProps extends InternalLinkProps {
   href: string | any;
   children: ReactNode;
   isInternalLink?: boolean;
@@ -16,11 +23,15 @@ export interface LinkProps extends NextLinkProps {
 
 export type LinkPropsWithPreview =
   | (LinkProps & {
-      preview: false | undefined;
-    })
+      preview?: false | undefined;
+    } & NeverPreviewProps)
   | (LinkProps & {
       preview: true;
     } & PreviewProps);
+
+interface NeverPreviewProps {
+  endpoint?: never;
+}
 
 export interface PreviewProps {
   endpoint?: string;
