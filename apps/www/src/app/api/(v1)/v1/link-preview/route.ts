@@ -4,9 +4,14 @@ import * as Sentry from "@sentry/nextjs";
 import { errorGenerator, isUrl, handleZodError } from "@chia/utils";
 import { NextResponse } from "next/server";
 import { JSDOM } from "jsdom";
-import { type DocResponse, type PreviewDTO, previewSchema } from "./_utils";
+import { type DocResponse, type PreviewDTO } from "./_utils";
 import { type NextRequest } from "next/server";
 import { HTTPError } from "ky";
+import { z } from "zod";
+
+const previewSchema = z.strictObject({
+  href: z.string().min(1),
+});
 
 export const runtime = "nodejs";
 
@@ -20,7 +25,10 @@ export const POST = withRateLimiter<
       const { href } = (await req.json()) as PreviewDTO;
 
       const { isError, issues } = handleZodError({
-        schema: previewSchema,
+        schema: previewSchema.refine((data) => isUrl(data.href), {
+          message: "Invalid URL",
+          path: ["href"],
+        }),
         data: { href },
       });
 
