@@ -26,14 +26,21 @@ export const POST = withRateLimiter<
 >(
   async (req) => {
     try {
-      const { href } = (await req.json()) as PreviewDTO;
+      let dto: PreviewDTO | null = null;
+      await (req.json() as Promise<PreviewDTO>)
+        .then((response) => {
+          dto = response;
+        })
+        .catch(() => {
+          dto = null;
+        });
 
       const { isError, issues } = handleZodError({
         schema: previewSchema.refine((data) => isUrl(data.href), {
           message: "Invalid URL",
           path: ["href"],
         }),
-        data: { href },
+        data: dto,
       });
 
       if (isError) {
@@ -51,13 +58,13 @@ export const POST = withRateLimiter<
         );
       }
 
-      const url = new URL(href);
+      const url = new URL(dto!.href);
 
       const upstash = new Upstash({
         prefix: "link-preview",
       });
 
-      const cachedDoc = await upstash.get<DocResponse>(href);
+      const cachedDoc = await upstash.get<DocResponse>(dto!.href);
 
       let title: null | string | undefined = null;
       let description: null | string | undefined = null;
@@ -67,7 +74,7 @@ export const POST = withRateLimiter<
       if (!cachedDoc) {
         const res = await request({
           headers: { "Content-Type": "text/html" },
-        }).get(href);
+        }).get(dto!.href);
         const html = await res.text();
         const parsed = new JSDOM(html);
         title = parsed.window.document.querySelector("title")?.textContent;
@@ -84,7 +91,7 @@ export const POST = withRateLimiter<
           .querySelector('meta[property="og:image"]')
           ?.getAttribute("content");
         await upstash.set<DocResponse>(
-          href,
+          dto!.href,
           {
             title,
             description,
