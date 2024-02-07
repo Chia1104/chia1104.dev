@@ -1,7 +1,6 @@
 import meta from "@chia/meta";
 import { Image, ImageZoom, FadeIn, Link } from "@chia/ui";
 import type { FC, ReactNode } from "react";
-// import Link from "next/link";
 
 const contact = {
   github: {
@@ -29,7 +28,6 @@ const LinkItem: FC<{
 }> = ({ path, icon, name, showIcon }) => {
   return (
     <Link
-      preview
       key={path}
       href={path}
       target="_blank"
@@ -47,9 +45,6 @@ const IndexPage = () => {
     <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <FadeIn className="w-full flex-col">
         <h1 className="text-start font-bold">{meta.name}</h1>
-        <Link href="https://chia1104.dev" preview>
-          Chia1104.dev
-        </Link>
         <p>
           I am a full-stack engineer with one year of experience in web
           development, including experience in real business production. My

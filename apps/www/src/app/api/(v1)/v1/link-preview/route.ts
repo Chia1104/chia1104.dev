@@ -1,5 +1,5 @@
 import { request } from "@chia/utils";
-import { withRateLimiter, createClient } from "@chia/cache";
+import { withRateLimiter, createClient, Upstash } from "@chia/cache";
 import * as Sentry from "@sentry/nextjs";
 import { errorGenerator, isUrl, handleZodError } from "@chia/utils";
 import { NextResponse } from "next/server";
@@ -14,6 +14,10 @@ const previewSchema = z.strictObject({
 });
 
 export const runtime = "nodejs";
+/**
+ * Tokyo, Japan
+ */
+export const preferredRegion = ["hnd1"];
 
 export const POST = withRateLimiter<
   NextResponse,
@@ -47,28 +51,63 @@ export const POST = withRateLimiter<
         );
       }
 
-      const res = await request({
-        headers: { "Content-Type": "text/html" },
-      }).get(href);
-      const html = await res.text();
-      const parsed = new JSDOM(html);
+      const url = new URL(href);
 
-      const title = parsed.window.document.querySelector("title")?.textContent;
-      const description = parsed.window.document
-        .querySelector('meta[name="description"]')
-        ?.getAttribute("content");
-      const favicon = parsed.window.document
-        .querySelector('link[rel="icon"]')
-        ?.getAttribute("href");
-      const ogImage = parsed.window.document
-        .querySelector('meta[property="og:image"]')
-        ?.getAttribute("content");
+      const upstash = new Upstash({
+        prefix: "link-preview",
+      });
+
+      const cachedDoc = await upstash.get<DocResponse>(href);
+
+      let title: null | string | undefined = null;
+      let description: null | string | undefined = null;
+      let favicon: null | string | undefined = null;
+      let ogImage: null | string | undefined = null;
+
+      if (!cachedDoc) {
+        const res = await request({
+          headers: { "Content-Type": "text/html" },
+        }).get(href);
+        const html = await res.text();
+        const parsed = new JSDOM(html);
+        title = parsed.window.document.querySelector("title")?.textContent;
+        description = parsed.window.document
+          .querySelector('meta[name="description"]')
+          ?.getAttribute("content");
+
+        const _favicon = parsed.window.document
+          .querySelector('link[rel="icon"]')
+          ?.getAttribute("href");
+
+        favicon = isUrl(_favicon) ? _favicon : url.origin + _favicon;
+        ogImage = parsed.window.document
+          .querySelector('meta[property="og:image"]')
+          ?.getAttribute("content");
+        await upstash.set<DocResponse>(
+          href,
+          {
+            title,
+            description,
+            favicon,
+            ogImage,
+          },
+          {
+            ex: 60 * 60 * 24, // remove after 24 hours
+          }
+        );
+        return NextResponse.json<DocResponse>({
+          title,
+          description,
+          favicon,
+          ogImage,
+        });
+      }
 
       return NextResponse.json<DocResponse>({
-        title,
-        description,
-        favicon,
-        ogImage,
+        title: cachedDoc?.title,
+        description: cachedDoc?.description,
+        favicon: cachedDoc?.favicon,
+        ogImage: cachedDoc?.ogImage,
       });
     } catch (error) {
       console.error(error);

@@ -22,6 +22,7 @@ export const createClient = (config?: Config) => {
       return new Upstash({
         url: config?.url ?? env.REDIS_URL!,
         token: config?.token ?? env.UPSTASH_TOKEN!,
+        ...config,
       });
     }
     case "redis": {

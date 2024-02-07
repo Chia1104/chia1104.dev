@@ -5,3 +5,4 @@ export * from "./create-client";
 export * from "./create-redis";
 export * from "./create-upstash";
 export * from "./with-rate-limiter";
+export * from "./upstash-core";
