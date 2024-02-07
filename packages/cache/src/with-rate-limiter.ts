@@ -12,7 +12,7 @@ export const withRateLimiter = <
     req: TRequest,
     res: TResponse,
     ip: string
-  ) => TResponse | Promise<TResponse> | void,
+  ) => TResponse | Promise<TResponse> | void | Promise<void>,
   config: {
     client: Upstash | Redis;
     onLimitReached?: ({
