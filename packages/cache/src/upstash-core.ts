@@ -5,20 +5,20 @@ interface Options extends UpstashConfig {
   prefix?: string;
 }
 
-export class Upstash {
+export class Upstash<TValue = unknown> {
   constructor(private options: Options = {}) {
     this.options.prefix = this.options.prefix || "cache";
   }
 
   private upstash = createUpstash(this.options);
 
-  async get<TResult = unknown>(key: string) {
+  async get<TResult = TValue>(key: string) {
     return this.upstash.get<TResult>(`${this.options.prefix}:${key}`);
   }
 
-  async set<TValue = unknown>(
+  async set<Value = TValue>(
     key: string,
-    value: TValue,
+    value: Value,
     options?: SetCommandOptions
   ) {
     return this.upstash.set(`${this.options.prefix}:${key}`, value, options);

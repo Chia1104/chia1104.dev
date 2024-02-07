@@ -60,11 +60,11 @@ export const POST = withRateLimiter<
 
       const url = new URL(dto!.href);
 
-      const upstash = new Upstash({
+      const upstash = new Upstash<DocResponse>({
         prefix: "link-preview",
       });
 
-      const cachedDoc = await upstash.get<DocResponse>(dto!.href);
+      const cachedDoc = await upstash.get(dto!.href);
 
       let title: null | string | undefined = null;
       let description: null | string | undefined = null;
@@ -90,7 +90,7 @@ export const POST = withRateLimiter<
         ogImage = parsed.window.document
           .querySelector('meta[property="og:image"]')
           ?.getAttribute("content");
-        await upstash.set<DocResponse>(
+        await upstash.set(
           dto!.href,
           {
             title,
