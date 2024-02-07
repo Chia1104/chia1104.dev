@@ -64,9 +64,9 @@ const PreviewCard: FC<LinkPropsWithPreview & { preview: true }> = ({
   return (
     <HoverCard onOpenChange={setIsOpen}>
       <HoverCardTrigger asChild>
-        <Link href={href} {...props}>
+        <a target="_blank" rel="noopener noreferrer" {...props} href={href}>
           {children}
-        </Link>
+        </a>
       </HoverCardTrigger>
       <HoverCardContent className="w-full max-w-80">
         {!!data && isSuccess && (
