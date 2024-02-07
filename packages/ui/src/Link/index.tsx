@@ -18,12 +18,13 @@ import {
 import { post, isUrl, handleKyError } from "@chia/utils";
 import { z } from "zod";
 import { HTTPError } from "ky";
+import { cn } from "../utils";
 
 type InternalLinkProps = NextLinkProps & ComponentPropsWithoutRef<"a">;
 
 export interface LinkPropsWithoutPreview extends InternalLinkProps {
   href: string | any;
-  children: ReactNode;
+  children?: ReactNode;
   isInternalLink?: boolean;
 }
 
@@ -43,7 +44,7 @@ interface NeverPreviewProps {
 
 export interface PreviewProps {
   endpoint?: string;
-  children:
+  children?:
     | ReactNode
     | ((result: UseQueryResult<DocResponse, HTTPError>) => ReactNode);
   previewContent?:
@@ -87,28 +88,34 @@ const PreviewDetail: FC<
   return (
     <>
       {isError ? (
-        <div className="bg-danger/30 z-[999] flex w-full max-w-60 items-center justify-center space-x-2 rounded-md p-1">
+        <div className="bg-danger/30 z-[999] flex w-full max-w-60 items-center justify-center space-x-2 rounded-md px-1">
           <div className="text-danger i-mdi-alert ml-2 h-7 w-7" />
           <p className="pr-2">{callbackError ?? "Failed to fetch preview"}</p>
         </div>
       ) : !!data && isSuccess ? (
-        <div className="z-[999] flex flex-col gap-3">
+        <div className="flex min-w-0 flex-col gap-3">
           {data.ogImage && (
             <div className="not-prose aspect-h-9 aspect-w-16 relative w-60 overflow-hidden rounded-md">
               <img
-                className=" not-prose rounded-md bg-neutral-200 object-cover p-0 dark:bg-neutral-800"
+                className="not-prose w-full rounded-md bg-neutral-200 object-cover p-0 dark:bg-neutral-800"
                 src={data.ogImage}
                 alt={data.title ?? "og-image"}
               />
             </div>
           )}
-          <div className="flex items-center justify-start space-x-4">
+          <div
+            className={cn(
+              "flex max-w-60 items-center justify-start",
+              (data.title || data.description) && "gap-x-4"
+            )}>
             <Avatar>
               <AvatarImage src={data.favicon ?? ""} />
               <AvatarFallback>FI</AvatarFallback>
             </Avatar>
-            <div className="space-y-1">
-              <h4 className="text-sm font-semibold">{data?.title}</h4>
+            <div className="flex flex-col gap-1">
+              <h4 className="line-clamp-1 text-sm font-semibold">
+                {data?.title}
+              </h4>
               <p className="line-clamp-3 text-sm">{data?.description}</p>
             </div>
           </div>
@@ -160,7 +167,7 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
   });
   return (
     <HoverCard onOpenChange={setIsOpen}>
-      <HoverCardTrigger asChild>
+      <HoverCardTrigger asChild className="z-10">
         <a target="_blank" rel="noopener noreferrer" {...props} href={href}>
           {typeof children === "function"
             ? // @ts-expect-error
@@ -175,7 +182,12 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
             : children}
         </a>
       </HoverCardTrigger>
-      <HoverCardContent className="z-[999] w-full max-w-80">
+      <HoverCardContent
+        className={cn(
+          "z-20 w-full max-w-80 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
+          isError &&
+            "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)]"
+        )}>
         {!!previewContent ? (
           typeof previewContent === "function" ? (
             // @ts-expect-error

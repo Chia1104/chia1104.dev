@@ -6,14 +6,14 @@ interface Options extends UpstashConfig {
 }
 
 export class Upstash<TValue = unknown> {
-  constructor(private options: Options = {}) {
+  constructor(private options: Options) {
     this.options.prefix = this.options.prefix || "cache";
   }
 
-  private upstash = createUpstash(this.options);
+  private upstash = () => createUpstash(this.options);
 
   async get<TResult = TValue>(key: string) {
-    return this.upstash.get<TResult>(`${this.options.prefix}:${key}`);
+    return this.upstash().get<TResult>(`${this.options.prefix}:${key}`);
   }
 
   async set<Value = TValue>(
@@ -21,11 +21,11 @@ export class Upstash<TValue = unknown> {
     value: Value,
     options?: SetCommandOptions
   ) {
-    return this.upstash.set(`${this.options.prefix}:${key}`, value, options);
+    return this.upstash().set(`${this.options.prefix}:${key}`, value, options);
   }
 
   async del(...args: string[]) {
-    return this.upstash.del(
+    return this.upstash().del(
       ...args.map((key) => `${this.options.prefix}:${key}`)
     );
   }
