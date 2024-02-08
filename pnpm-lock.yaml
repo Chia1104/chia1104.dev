@@ -381,8 +381,8 @@ importers:
         specifier: ^7.80.1
         version: 7.100.0(next@14.1.0)(react@18.2.0)
       '@t3-oss/env-core':
-        specifier: ^0.8.0
-        version: 0.8.0(typescript@5.3.3)(zod@3.22.4)
+        specifier: ^0.9.0
+        version: 0.9.1(typescript@5.3.3)(zod@3.22.4)
       '@t3-oss/env-nextjs':
         specifier: ^0.8.0
         version: 0.8.0(typescript@5.3.3)(zod@3.22.4)
@@ -542,8 +542,8 @@ importers:
         specifier: 0.0.0
         version: link:../utils
       '@t3-oss/env-core':
-        specifier: ^0.8.0
-        version: 0.8.0(typescript@5.3.3)(zod@3.22.4)
+        specifier: ^0.9.0
+        version: 0.9.1(typescript@5.3.3)(zod@3.22.4)
       '@trpc/client':
         specifier: next
         version: 11.0.0-next-beta.264(@trpc/server@11.0.0-next-beta.264)
@@ -575,8 +575,8 @@ importers:
         specifier: 0.0.0
         version: link:../utils
       '@t3-oss/env-core':
-        specifier: ^0.8.0
-        version: 0.8.0(typescript@5.3.3)(zod@3.22.4)
+        specifier: ^0.9.0
+        version: 0.9.1(typescript@5.3.3)(zod@3.22.4)
       next:
         specifier: 14.1.0
         version: 14.1.0(react-dom@18.2.0)(react@18.2.0)
@@ -591,8 +591,8 @@ importers:
   packages/cache:
     dependencies:
       '@t3-oss/env-core':
-        specifier: ^0.8.0
-        version: 0.8.0(typescript@5.3.3)(zod@3.22.4)
+        specifier: ^0.9.0
+        version: 0.9.1(typescript@5.3.3)(zod@3.22.4)
       '@upstash/ratelimit':
         specifier: 1.0.0
         version: 1.0.0
@@ -7326,6 +7326,19 @@ packages:
 
   /@t3-oss/env-core@0.8.0(typescript@5.3.3)(zod@3.22.4):
     resolution: {integrity: sha512-Tc1pg0KH/tJeI0Z1s/Isp1VsGDj1N03ZAYFV8GjWgMxytF/ve0Dv+opjmTapHICRv8qiB1Y/fsTjkWNMpKPRCQ==}
+    peerDependencies:
+      typescript: '>=5.0.0'
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      typescript: 5.3.3
+      zod: 3.22.4
+    dev: false
+
+  /@t3-oss/env-core@0.9.1(typescript@5.3.3)(zod@3.22.4):
+    resolution: {integrity: sha512-QgR4jV2BmRMdq+in5DbI9Ox/mgpNM/b1H1wB6a0Zf015RsuLk12mIC9FKzDtLITgSSSI/Gt8ZbarqugAUtRslw==}
     peerDependencies:
       typescript: '>=5.0.0'
       zod: ^3.0.0

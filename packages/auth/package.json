@@ -15,7 +15,7 @@
     "@auth/drizzle-adapter": "^0.6.2",
     "@chia/db": "0.0.0",
     "@chia/utils": "0.0.0",
-    "@t3-oss/env-core": "^0.8.0",
+    "@t3-oss/env-core": "^0.9.0",
     "next": "14.1.0",
     "next-auth": "5.0.0-beta.9"
   },
