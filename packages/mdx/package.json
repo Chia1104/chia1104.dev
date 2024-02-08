@@ -20,7 +20,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rehype-autolink-headings": "^7.1.0",
-    "rehype-pretty-code": "^0.12.0",
+    "rehype-pretty-code": "^0.13.0",
     "rehype-prism-plus": "^1.6.3",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.0",
