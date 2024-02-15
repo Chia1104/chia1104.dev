@@ -1,0 +1,16 @@
+module timeline
+
+class Timeline {
+  id: Int16
+  title: String
+  company: String
+  duration: String
+  startTime: String | Int16
+  endTime: String | Int16
+  location: String
+  work: String
+  link: String
+  detail: List<String>?
+}
+
+timeline: Timeline

@@ -4,19 +4,10 @@ name: String
 chineseName: String
 fullName: String
 title: String
-email: String
+email: String(matches(Regex(#"([\w\.]+)@([\w\.]+)"#)))
 phone: String
 birthday: String
 content: String
 location: String
 bio: String
-link: Link
-
-class Link {
-  github: String
-  linkedin: String
-  instagram: String
-  youtube_playlist: String
-  google_photos: String
-  leadbest: String
-}
+link: Map<String, String>

@@ -1,0 +1,17 @@
+amends "timeline.schema.pkl"
+
+timeline {
+  id = 3
+  title = "Work Experience"
+  company = "LeadBest"
+  duration = "2023-3 - Present"
+  startTime = "2023-3"
+  endTime = 0
+  location = "Taipei, Taiwan"
+  work = "ReactJS, React Native, MUI, TypeScript, GCP, Scrum, Jira"
+  link = "https://www.leadbestconsultant.com/"
+  detail = List(
+    "Adopting the Scrum development process and effectively fulfilling customer requirements with the help and communication of cross-functional teams.",
+    "Creating new frontend projects using internal templates and maintaining related modules."
+  )
+}
