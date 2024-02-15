@@ -7,6 +7,8 @@
   "phone": "+886 970227360",
   "birthday": "1999-11-04",
   "content": "I am Yu Chia, Yu, a full-stack engineer with one year of experience in web development",
+  "location": "Taipei, Taiwan",
+  "bio": "LeadBest",
   "link": {
     "github": "https://github.com/Chia1104",
     "linkedin": "https://www.linkedin.com/in/%E5%8F%88%E5%98%89-%E4%BF%9E-889664230",
@@ -14,7 +16,5 @@
     "youtube_playlist": "https://www.youtube.com/playlist?list=PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM",
     "google_photos": "https://photos.app.goo.gl/J1FobfgynJKW84Dm6",
     "leadbest": "https://www.leadbestconsultant.com/"
-  },
-  "location": "Taipei, Taiwan",
-  "bio": "LeadBest"
+  }
 }
