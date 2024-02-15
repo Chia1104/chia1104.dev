@@ -1,0 +1,22 @@
+module meta
+
+name: String
+chineseName: String
+fullName: String
+title: String
+email: String
+phone: String
+birthday: String
+content: String
+location: String
+bio: String
+link: Link
+
+class Link {
+  github: String
+  linkedin: String
+  instagram: String
+  youtube_playlist: String
+  google_photos: String
+  leadbest: String
+}
