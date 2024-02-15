@@ -9,7 +9,7 @@ WORKDIR /app
 
 RUN apk update && \
     apk add --no-cache \
-    libc6-compat make curl && \
+    libc6-compat && \
     corepack enable && \
     pnpm add -g turbo
 
@@ -25,7 +25,6 @@ COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
-COPY Makefile Makefile
 
 ARG TURBO_TEAM \
     TURBO_TOKEN \
@@ -57,10 +56,6 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     RAILWAY_PUBLIC_DOMAIN=${RAILWAY_PUBLIC_DOMAIN} \
     ZEABUR_URL=${ZEABUR_URL} \
     SKIP_ENV_VALIDATION=1
-
-RUN make install-pkl-alpine-linux-amd64
-
-ENV PATH="/app/.pkl:${PATH}"
 
 RUN pnpm i
 RUN pnpm turbo run build --filter=dash...

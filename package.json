@@ -54,7 +54,8 @@
     "dash-graph": "turbo run build --filter dash... --graph=graph/dash-graph.html"
   },
   "engines": {
-    "node": ">=20.6"
+    "node": ">=20.6",
+    "pkl": ">=0.25.2"
   },
   "packageManager": "pnpm@8.15.1",
   "dependencies": {

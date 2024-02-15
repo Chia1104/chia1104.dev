@@ -7,7 +7,7 @@
   "main": "index.ts",
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
-    "build": "pkl eval -f json -o meta.json meta.pkl"
+    "build:meta": "pkl eval -f json -o meta.json meta.pkl"
   },
   "dependencies": {},
   "devDependencies": {

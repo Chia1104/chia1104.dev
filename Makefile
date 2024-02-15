@@ -24,19 +24,3 @@ init-dash:
 	@echo "Creating dashboard .env file..."
 	@cp ./apps/dash/.env.example ./apps/dash/.env
 	@echo "Creating dashboard .env file... Done"
-
-install-pkl-macos-amd64:
-	@echo "Create .pkl directory..."
-	@mkdir -p .pkl
-	@echo "Installing Pickle(pkl)..."
-	@curl -L -o .pkl/pkl https://github.com/apple/pkl/releases/download/0.25.2/pkl-macos-amd64
-	@chmod +x .pkl/pkl
-	@echo "Installing Pickle(pkl)... Done"
-
-install-pkl-alpine-linux-amd64:
-	@echo "Create .pkl directory..."
-	@mkdir -p .pkl
-	@echo "Installing Pickle(pkl)..."
-	@curl -L -o .pkl/pkl https://github.com/apple/pkl/releases/download/0.25.2/pkl-alpine-linux-amd64
-	@chmod +x .pkl/pkl
-	@echo "Installing Pickle(pkl)... Done"
