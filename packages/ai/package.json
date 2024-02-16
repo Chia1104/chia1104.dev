@@ -13,9 +13,9 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "openai": "^4.20.1"
+    "openai": "^4.28.0"
   },
   "devDependencies": {
-    "tsconfig": "0.0.0"
+    "tsconfig": "workspace:*"
   }
 }

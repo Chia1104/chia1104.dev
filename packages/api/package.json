@@ -11,14 +11,14 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@chia/auth": "0.0.0",
-    "@chia/db": "0.0.0",
-    "@chia/utils": "0.0.0",
-    "@t3-oss/env-core": "^0.8.0",
-    "@trpc/client": "next",
-    "@trpc/server": "next",
+    "@chia/auth": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@t3-oss/env-core": "^0.9.2",
+    "@trpc/client": "11.0.0-next-beta.289",
+    "@trpc/server": "11.0.0-next-beta.289",
     "next": "14.1.0",
     "server-only": "^0.0.1",
-    "tsconfig": "0.0.0"
+    "tsconfig": "workspace:*"
   }
 }

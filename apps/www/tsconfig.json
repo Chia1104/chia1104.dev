@@ -15,7 +15,8 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "test": ["test/*"]
+      "test": ["test/*"],
+      "~/*": ["../../*"]
     },
     "jsx": "preserve",
     "plugins": [

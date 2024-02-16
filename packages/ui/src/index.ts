@@ -32,3 +32,5 @@ export { default as FadeIn } from "./FadeIn";
 export * from "./NavigationMenu";
 export * from "./Error";
 export { default as LoadingIcon } from "./icons/loading-icon";
+export * from "./Popover";
+export * from "./Button";

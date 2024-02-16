@@ -2,7 +2,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter, createTRPCContext } from "@chia/api/trpc";
 import { auth } from "@chia/auth";
 
-const handler = auth(async (req) => {
+const handler: ReturnType<typeof auth> = auth(async (req) => {
   return await fetchRequestHandler({
     endpoint: "/api/trpc",
     router: appRouter,

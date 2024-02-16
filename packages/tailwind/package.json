@@ -9,10 +9,10 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "devDependencies": {
-    "@egoist/tailwindcss-icons": "^1.4.0",
-    "@iconify/json": "^2.2.145",
+    "@egoist/tailwindcss-icons": "^1.7.4",
+    "@iconify/json": "^2.2.183",
     "@tailwindcss/typography": "^0.5.10",
-    "tailwindcss": "^3.3.3",
+    "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "1.0.7"
   }
 }

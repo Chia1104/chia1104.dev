@@ -1,5 +1,4 @@
 import { Image } from "@chia/ui";
-import Giscus from "./giscus";
 import dayjs from "dayjs";
 import type { Metadata } from "next";
 import type { Blog, WithContext } from "schema-dts";
@@ -148,9 +147,6 @@ const PostDetailPage = async ({
             {dayjs(post[0]?.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <div className="mx-auto mt-20 w-full self-center">
-          <Giscus title={post[0]?.title || ""} />
-        </div>
       </div>
       <script
         type="application/ld+json"
