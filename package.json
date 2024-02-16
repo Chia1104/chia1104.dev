@@ -17,7 +17,7 @@
     "tests/*"
   ],
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "build": "turbo run build",
     "build:www": "turbo run build --filter www...",
     "build:dash": "turbo run build --filter dash...",
