@@ -8,9 +8,9 @@ class Timeline {
   startTime: String | Int16
   endTime: String | Int16
   location: String
-  work: String
-  link: String
+  work: String?
+  link: String?
   detail: List<String>?
 }
 
-timeline: Timeline
+timeline: List<Timeline>

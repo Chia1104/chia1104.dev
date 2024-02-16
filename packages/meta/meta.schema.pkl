@@ -10,4 +10,4 @@ birthday: String
 content: String
 location: String
 bio: String
-link: Map<String, String>
+link: Map<String, String(matches(Regex(#"^(https?|http)://[^\s/$.?#].[^\s]*$"#)))>
