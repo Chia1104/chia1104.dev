@@ -742,100 +742,6 @@ importers:
         specifier: 0.0.0
         version: link:../../toolings/tsconfig
 
-  packages/novel-next:
-    dependencies:
-      '@chia/ui':
-        specifier: workspace:*
-        version: link:../ui
-      '@chia/utils':
-        specifier: workspace:*
-        version: link:../utils
-      '@tiptap/core':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/pm@2.2.3)
-      '@tiptap/extension-blockquote':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)
-      '@tiptap/extension-code-block-lowlight':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/extension-code-block@2.2.3)(@tiptap/pm@2.2.3)
-      '@tiptap/extension-color':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/extension-text-style@2.2.3)
-      '@tiptap/extension-highlight':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)
-      '@tiptap/extension-horizontal-rule':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
-      '@tiptap/extension-image':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)
-      '@tiptap/extension-link':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
-      '@tiptap/extension-placeholder':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
-      '@tiptap/extension-task-item':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
-      '@tiptap/extension-task-list':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)
-      '@tiptap/extension-text-style':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)
-      '@tiptap/extension-underline':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)
-      '@tiptap/pm':
-        specifier: ^2.2.3
-        version: 2.2.3
-      '@tiptap/react':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)(react-dom@18.2.0)(react@18.2.0)
-      '@tiptap/starter-kit':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/pm@2.2.3)
-      '@tiptap/suggestion':
-        specifier: ^2.2.3
-        version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
-      ai:
-        specifier: ^2.2.35
-        version: 2.2.35(react@18.2.0)(solid-js@1.8.15)(svelte@4.2.11)(vue@3.4.19)
-      lowlight:
-        specifier: ^3.1.0
-        version: 3.1.0
-      lucide-react:
-        specifier: ^0.331.0
-        version: 0.331.0(react@18.2.0)
-      next:
-        specifier: 14.1.0
-        version: 14.1.0(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
-      react:
-        specifier: ^18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.2.0(react@18.2.0)
-      tippy.js:
-        specifier: ^6.3.7
-        version: 6.3.7
-      tiptap-markdown:
-        specifier: ^0.8.9
-        version: 0.8.9(@tiptap/core@2.2.3)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.55
-        version: 18.2.55
-      '@types/react-dom':
-        specifier: ^18.2.19
-        version: 18.2.19
-      tsconfig:
-        specifier: workspace:*
-        version: link:../../toolings/tsconfig
-
   packages/tailwind:
     devDependencies:
       '@egoist/tailwindcss-icons':
@@ -7675,16 +7581,6 @@ packages:
 
   /@tiptap/extension-placeholder@2.0.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3):
     resolution: {integrity: sha512-Z42jo0termRAf0S0L8oxrts94IWX5waU4isS2CUw8xCUigYyCFslkhQXkWATO1qRbjNFLKN2C9qvCgGf4UeBrw==}
-    peerDependencies:
-      '@tiptap/core': ^2.0.0
-      '@tiptap/pm': ^2.0.0
-    dependencies:
-      '@tiptap/core': 2.2.3(@tiptap/pm@2.2.3)
-      '@tiptap/pm': 2.2.3
-    dev: false
-
-  /@tiptap/extension-placeholder@2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3):
-    resolution: {integrity: sha512-Kc+9a/uACY9XBT0uB/qFVpIHm8MzVr0uWA7MCjwDcMneANRLsXEBzWBzyHxRFoNRECfocivV9hQIhuO4i09c9A==}
     peerDependencies:
       '@tiptap/core': ^2.0.0
       '@tiptap/pm': ^2.0.0
