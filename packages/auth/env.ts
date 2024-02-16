@@ -9,13 +9,14 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string().min(1)
         : z.string().min(1).optional(),
-    AUTH_URL: z.string().optional(),
+    AUTH_REDIRECT_PROXY_URL: z.string().optional(),
   },
   runtimeEnv: {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     AUTH_SECRET: process.env.AUTH_SECRET,
-    AUTH_URL: process.env.AUTH_URL,
+    AUTH_REDIRECT_PROXY_URL:
+      process.env.AUTH_REDIRECT_PROXY_URL ?? process.env.AUTH_URL,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

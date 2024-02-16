@@ -13,20 +13,21 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@chia/auth": "0.0.0",
-    "@chia/ui": "0.0.0",
-    "@chia/utils": "0.0.0",
-    "@tiptap/extension-code-block-lowlight": "^2.1.13",
-    "@tiptap/starter-kit": "^2.1.13",
-    "ai": "^2.2.27",
+    "@chia/auth": "workspace:*",
+    "@chia/ui": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@tiptap/extension-code-block-lowlight": "^2.2.3",
+    "@tiptap/starter-kit": "^2.2.3",
+    "ai": "^2.2.35",
     "lowlight": "^3.1.0",
+    "lucide-react": "^0.331.0",
     "next": "14.1.0",
-    "novel": "^0.1.22",
-    "openai": "^4.20.1",
+    "novel": "^0.2.4",
+    "openai": "^4.28.0",
     "react": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.17",
-    "tsconfig": "0.0.0"
+    "@types/react": "^18.2.55",
+    "tsconfig": "workspace:*"
   }
 }

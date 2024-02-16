@@ -17,7 +17,7 @@ env:
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_URL: http://localhost:8080
+  AUTH_REDIRECT_PROXY_URL: http://localhost:8080
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.4.0

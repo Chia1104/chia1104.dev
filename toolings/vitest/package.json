@@ -10,7 +10,7 @@
     "clean": "git clean -xdf .turbo node_modules dist"
   },
   "devDependencies": {
-    "@vitejs/plugin-react-swc": "^3.3.2",
-    "tsconfig": "0.0.0"
+    "@vitejs/plugin-react-swc": "^3.6.0",
+    "tsconfig": "workspace:*"
   }
 }

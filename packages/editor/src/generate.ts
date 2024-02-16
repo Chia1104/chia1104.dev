@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI, { APIError } from "openai";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { errorGenerator, getAdminId } from "@chia/utils";
 import { NextResponse } from "next/server";
@@ -9,7 +9,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 });
 
-export const generate = auth(async (req) => {
+export const generate: ReturnType<typeof auth> = auth(async (req) => {
   try {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "") {
       return NextResponse.json(errorGenerator(503), {
@@ -67,6 +67,11 @@ export const generate = auth(async (req) => {
     // Respond with the stream
     return new StreamingTextResponse(stream);
   } catch (error) {
+    if (error instanceof APIError) {
+      return NextResponse.json(errorGenerator((error.status as any) ?? 500), {
+        status: error.status,
+      });
+    }
     return NextResponse.json(errorGenerator(500), {
       status: 500,
     });

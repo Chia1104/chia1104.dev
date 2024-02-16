@@ -40,7 +40,7 @@ env:
   CACHE_PROVIDER: upstash
   NODE_ENV: test
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_URL: http://localhost:3000
+  AUTH_REDIRECT_PROXY_URL: http://localhost:3000
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
   ADMIN_ID: ${{ secrets.ADMIN_ID }}

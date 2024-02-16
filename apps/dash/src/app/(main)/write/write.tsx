@@ -48,15 +48,14 @@ const Editor = () => {
     return (
       <div className="relative w-full">
         <NovelEditor
-          className="z-10 min-h-[85vh] bg-transparent dark:bg-transparent"
-          onDebouncedUpdate={(ins) => {
+          className="z-10 min-h-[85vh]"
+          onUpdate={({ editor }) => {
             setState({
               ...state,
-              content: ins?.getHTML(),
+              content: editor?.getHTML(),
             });
           }}
         />
-        <LoadingFallback className="absolute inset-0" />
       </div>
     );
   }
