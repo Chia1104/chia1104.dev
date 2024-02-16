@@ -6,7 +6,9 @@
   "types": "index.ts",
   "main": "index.ts",
   "scripts": {
-    "clean": "git clean -xdf .turbo node_modules dist"
+    "clean": "git clean -xdf .turbo node_modules dist",
+    "build:meta": "pkl eval -f json -o meta.json meta.pkl",
+    "build:timeline": "pkl eval -f json -o timeline.json timeline.pkl"
   },
   "dependencies": {},
   "devDependencies": {

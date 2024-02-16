@@ -1,0 +1,13 @@
+module meta
+
+name: String
+chineseName: String
+fullName: String
+title: String
+email: String(matches(Regex(#"([\w\.]+)@([\w\.]+)"#)))
+phone: String
+birthday: String
+content: String
+location: String
+bio: String
+link: Map<String, String(matches(Regex(#"^(https?|http)://[^\s/$.?#].[^\s]*$"#)))>
