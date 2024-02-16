@@ -3,8 +3,10 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 export default defineConfig({
+  // @ts-expect-error
   plugins: [react()],
   test: {
+    globals: true,
     environment: "happy-dom",
     passWithNoTests: true,
     setupFiles: ["../../toolings/vitest/setup.ts"],

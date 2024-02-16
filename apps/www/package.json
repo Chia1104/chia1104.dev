@@ -76,7 +76,9 @@
     "@chia/tailwind": "workspace:0.0.1-beta.1",
     "@next/bundle-analyzer": "14.1.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
+    "@testing-library/user-event": "^14.5.2",
     "@types/jsdom": "^21.1.6",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
@@ -88,7 +90,8 @@
     "postcss-import": "^16.0.1",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.1",
-    "tsconfig": "workspace:*"
+    "tsconfig": "workspace:*",
+    "vitest-shared": "workspace:*"
   },
   "nextBundleAnalysis": {
     "budget": 358400,

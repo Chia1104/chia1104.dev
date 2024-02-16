@@ -78,7 +78,9 @@ const Logo = () => (
 
 const Footer: FC = () => {
   return (
-    <footer className="c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8">
+    <footer
+      data-testid="footer"
+      className="c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8">
       <div className="c-container flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start md:flex">
           <Logo />
