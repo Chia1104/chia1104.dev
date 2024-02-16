@@ -1,6 +1,7 @@
 import Gallery from "./_components/gallery";
 import meta from "@chia/meta";
-import { Age, FadeIn } from "@chia/ui";
+import { Age, FadeIn, Card } from "@chia/ui";
+import Location from "./_components/location";
 
 const AboutPage = () => {
   return (
@@ -16,6 +17,21 @@ const AboutPage = () => {
           Outside of programming, I enjoy traveling, playing video games with
           friends, and watching movies.
         </p>
+      </FadeIn>
+      <h2>Location</h2>
+      <p className="flex items-center gap-2">
+        <span className="i-mdi-location h-5 w-5" />
+        Currently living in {meta.location}
+      </p>
+      <FadeIn className="flex w-full justify-center">
+        <Card className="flex w-full justify-center">
+          <Location
+            location={[24.91571, 121.6739]}
+            className="h-[300px] w-[300px]"
+            width={300}
+            height={300}
+          />
+        </Card>
       </FadeIn>
     </>
   );
