@@ -2,9 +2,9 @@ name: www E2E tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    types: [opened, labeled, unlabeled, synchronize]
     paths:
       - "apps/www/**"
       - "packages/**"
@@ -40,7 +40,7 @@ env:
   CACHE_PROVIDER: upstash
   NODE_ENV: test
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_REDIRECT_PROXY_URL: http://localhost:3000
+  AUTH_URL: http://localhost:3000
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
@@ -60,34 +60,34 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.41.2-jammy
 
     steps:
-      - name: '🐙️ Check out code'
+      - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
-      - name: '💽️  Init'
+      - name: "💽️  Init"
         id: www-init
         uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
         with:
-          NODE_VERSION: '20'
+          NODE_VERSION: "20"
 
-      - name: '📦  Install'
+      - name: "📦  Install"
         id: www-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
         with:
-          INSTALL_COMMAND: '--filter www --filter ui --filter utils --filter tsconfig --filter root'
+          INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
-#      - name: '📦  Install Playwright Browsers (no cache)'
-#        run: npx playwright install --with-deps
+      #      - name: '📦  Install Playwright Browsers (no cache)'
+      #        run: npx playwright install --with-deps
 
-      - name: '📦  Next.js cache'
+      - name: "📦  Next.js cache"
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
-      - name: '🚨️  E2E tests'
+      - name: "🚨️  E2E tests"
         run: pnpm test:e2e --filter www-e2e...
 
-      - name: '✅  Output coverage'
+      - name: "✅  Output coverage"
         uses: actions/upload-artifact@v4
         if: always()
         with:

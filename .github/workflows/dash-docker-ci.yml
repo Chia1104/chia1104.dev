@@ -2,9 +2,9 @@ name: dash Docker CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    types: [opened, labeled, unlabeled, synchronize]
     paths:
       - "apps/dash/**"
       - "packages/**"
@@ -17,7 +17,7 @@ env:
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_REDIRECT_PROXY_URL: http://localhost:8080
+  AUTH_URL: http://localhost:8080
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   PNPM_VERSION: 8.4.0
@@ -36,20 +36,16 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'dash:docker') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') }}
 
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      -
-        name: Login to Docker Hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ env.DOCKERHUB_TOKEN }}
-      -
-        name: Set up Docker Builder
+      - name: Set up Docker Builder
         uses: docker/setup-buildx-action@v3
-      -
-        name: Build and push
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .

@@ -2,9 +2,9 @@ name: www CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    types: [opened, labeled, unlabeled, synchronize]
     paths:
       - "apps/www/**"
       - "packages/**"
@@ -39,7 +39,7 @@ env:
   CACHE_PROVIDER: upstash
   NODE_ENV: test
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_REDIRECT_PROXY_URL: http://localhost:3000
+  AUTH_URL: http://localhost:3000
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
@@ -56,20 +56,20 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
 
     steps:
-      - name: '🐙️ Check out code'
+      - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
-      - name: '💽️  Init'
+      - name: "💽️  Init"
         id: www-init
         uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
         with:
-          NODE_VERSION: '20'
+          NODE_VERSION: "20"
 
-      - name: '📦  Install'
+      - name: "📦  Install"
         id: www-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
         with:
-          INSTALL_COMMAND: '--filter www --filter ui --filter utils --filter tsconfig --filter root'
+          INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
       # - name: '📦  Next.js cache'
       #   uses: actions/cache@v3
@@ -77,10 +77,10 @@ jobs:
       #     path: ${{ github.workspace }}/apps/dash/.next/cache
       #     key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
-      - name: '🚨️  ESLint, Type checking, Unit tests'
+      - name: "🚨️  ESLint, Type checking, Unit tests"
         id: www-lint-test
         uses: Chia1104/chia-stack/.github/actions/lint-test@main
         with:
-          COMMAND: '--filter www...'
+          COMMAND: "--filter www..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}

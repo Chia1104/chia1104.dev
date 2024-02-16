@@ -2,9 +2,9 @@ name: dash CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    types: [opened, labeled, unlabeled, synchronize]
     paths:
       - "apps/dash/**"
       - "packages/**"
@@ -15,7 +15,7 @@ env:
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_REDIRECT_PROXY_URL: http://localhost:3001
+  AUTH_URL: http://localhost:3001
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -33,36 +33,36 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-dash') }}
 
     steps:
-      - name: '🐙️ Check out code'
+      - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
-      - name: '💽️  Init'
+      - name: "💽️  Init"
         id: dash-init
         uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
         with:
-          NODE_VERSION: '20'
+          NODE_VERSION: "20"
 
-      - name: '📦  Install'
+      - name: "📦  Install"
         id: dash-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
 
-      - name: '📦  Next.js cache'
+      - name: "📦  Next.js cache"
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/dash/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
 
-      - name: '🏗️  Build'
+      - name: "🏗️  Build"
         uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
         with:
-          BUILD_COMMAND: 'build --filter dash...'
+          BUILD_COMMAND: "build --filter dash..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
 
-      - name: '🚨️  ESLint, Type checking, Unit tests'
+      - name: "🚨️  ESLint, Type checking, Unit tests"
         id: dash-lint-test
         uses: Chia1104/chia-stack/.github/actions/lint-test@main
         with:
-          COMMAND: '--filter dash...'
+          COMMAND: "--filter dash..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
