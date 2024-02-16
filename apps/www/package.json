@@ -52,6 +52,7 @@
     "@vercel/analytics": "1.1.4",
     "@vercel/edge-config": "^1.0.0",
     "@vercel/speed-insights": "^1.0.10",
+    "cobe": "^0.6.3",
     "cross-env": "7.0.3",
     "framer-motion": "^11.0.5",
     "jsdom": "^24.0.0",
