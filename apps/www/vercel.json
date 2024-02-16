@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd ../.. && pnpm build:www && turbo run next-sitemap --filter=www",
-  "installCommand": "cd ../.. && rm -r apps/service && rm -r apps/dash && rm -r tests && rm -r packages/novel-next && pnpm install --store=node_modules/.pnpm-store"
+  "installCommand": "cd ../.. && rm -r apps/service && rm -r apps/dash && rm -r tests && pnpm install --store=node_modules/.pnpm-store"
 }
