@@ -107,6 +107,7 @@ export default async function Page() {
     revalidate: 60 * 30,
   });
   const data = getTop4(playlist);
+  const href = `https://open.spotify.com/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID}`;
   return (
     <FadeIn className="w-full flex-col">
       <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7 sm:grid-cols-2 sm:py-3">
@@ -123,9 +124,7 @@ export default async function Page() {
       <p className="flex items-center gap-3">
         <span>
           Check out the{" "}
-          <Link
-            preview
-            href={`https://open.spotify.com/playlist/${env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID}`}>
+          <Link preview href={href}>
             {playlist.name}
           </Link>{" "}
           on my Spotify.
