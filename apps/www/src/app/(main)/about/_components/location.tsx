@@ -1,6 +1,6 @@
 "use client";
 
-import createGlobe from "cobe";
+import createGlobe, { type COBEOptions } from "cobe";
 import {
   type ComponentPropsWithoutRef,
   type FC,
@@ -15,39 +15,56 @@ type LocationProps = {
   location: [number, number];
   width: number | string;
   height: number | string;
+  defaultPositionOffset?: [number, number];
+  enableYInteraction?: boolean;
+  cobeOptions?: Omit<Partial<COBEOptions>, "width" | "height" | "onRender">;
 } & Omit<ComponentPropsWithoutRef<"canvas">, "width" | "height">;
 
-const Location: FC<LocationProps> = ({ className, location, ...props }) => {
+const Location: FC<LocationProps> = ({
+  className,
+  location,
+  defaultPositionOffset = [0.1, 2.75],
+  enableYInteraction,
+  cobeOptions = {},
+  ...props
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointerInteracting = useRef<number | null>(null);
-  const pointerInteractionMovement = useRef(0);
+  const pointerXInteracting = useRef<number | null>(null);
+  const pointerYInteracting = useRef<number | null>(null);
+  const pointerXInteractionMovement = useRef(0);
+  const pointerYInteractionMovement = useRef(0);
   const { width, height } = useResizeObserver({
     ref: canvasRef,
     box: "border-box",
   });
   const x = useMotionValue(0);
-  const spring = useSpring(x);
+  const y = useMotionValue(0);
+  const springX = useSpring(x);
+  const springY = useSpring(y);
   const { isDarkMode } = useDarkMode();
   useEffect(() => {
     if (canvasRef.current && width && height) {
       const globe = createGlobe(canvasRef.current, {
         devicePixelRatio: 2,
-        width: width * 2,
-        height: width * 2,
         phi: 0,
         theta: -0.1,
-        dark: isDarkMode ? 1 : 0,
         diffuse: 2,
         mapSamples: 36_000,
         mapBrightness: 2,
         baseColor: [0.8, 0.8, 0.8],
         markerColor: [235 / 255, 35 / 255, 35 / 255],
         glowColor: [0.5, 0.5, 0.5],
-        markers: [{ location, size: 0.1 }],
         scale: 1.05,
+        dark: isDarkMode ? 1 : 0,
+        ...cobeOptions,
+        markers: [{ size: 0.1, ...cobeOptions.markers, location }],
+        width: width * 2,
+        height: width * 2,
         onRender: (state) => {
-          state.phi = 2.75 + spring.get();
-          state.theta = 0.1;
+          state.phi = defaultPositionOffset[1] + springX.get();
+          state.theta = enableYInteraction
+            ? defaultPositionOffset[0] + springY.get()
+            : defaultPositionOffset[0];
           state.width = width * 2;
           state.height = width * 2;
         },
@@ -57,35 +74,62 @@ const Location: FC<LocationProps> = ({ className, location, ...props }) => {
         globe.destroy();
       };
     }
-  }, [width, height, x, isDarkMode]);
+  }, [
+    width,
+    height,
+    springX,
+    springY,
+    isDarkMode,
+    location,
+    enableYInteraction,
+    defaultPositionOffset,
+    cobeOptions,
+  ]);
   return (
     <canvas
       ref={canvasRef}
       onPointerDown={(e) => {
-        pointerInteracting.current =
-          e.clientX - pointerInteractionMovement.current;
+        pointerXInteracting.current =
+          e.clientX - pointerXInteractionMovement.current;
+        pointerYInteracting.current =
+          e.clientY - pointerYInteractionMovement.current;
         canvasRef.current && (canvasRef.current.style.cursor = "grabbing");
       }}
       onPointerUp={() => {
-        pointerInteracting.current = null;
+        pointerXInteracting.current = null;
+        pointerYInteracting.current = null;
         canvasRef.current && (canvasRef.current.style.cursor = "grab");
       }}
       onPointerOut={() => {
-        pointerInteracting.current = null;
+        pointerXInteracting.current = null;
+        pointerYInteracting.current = null;
         canvasRef.current && (canvasRef.current.style.cursor = "grab");
       }}
       onMouseMove={(e) => {
-        if (pointerInteracting.current !== null) {
-          const delta = e.clientX - pointerInteracting.current;
-          pointerInteractionMovement.current = delta;
-          spring.set(delta / 100);
+        if (
+          pointerXInteracting.current !== null &&
+          pointerYInteracting.current !== null
+        ) {
+          const deltaX = e.clientX - pointerXInteracting.current;
+          const deltaY = e.clientY - pointerYInteracting.current;
+          pointerXInteractionMovement.current = deltaX;
+          pointerYInteractionMovement.current = deltaY;
+          springX.set(deltaX / 100);
+          enableYInteraction && springY.set(deltaY / 100);
         }
       }}
       onTouchMove={(e) => {
-        if (pointerInteracting.current !== null && e.touches[0]) {
-          const delta = e.touches[0].clientX - pointerInteracting.current;
-          pointerInteractionMovement.current = delta;
-          spring.set(delta / 100);
+        if (
+          pointerXInteracting.current !== null &&
+          pointerYInteracting.current !== null &&
+          e.touches[0]
+        ) {
+          const deltaX = e.touches[0].clientX - pointerXInteracting.current;
+          const deltaY = e.touches[0].clientY - pointerYInteracting.current;
+          pointerXInteractionMovement.current = deltaX;
+          pointerYInteractionMovement.current = deltaY;
+          springX.set(deltaX / 100);
+          enableYInteraction && springY.set(deltaY / 100);
         }
       }}
       className={cn(className)}
