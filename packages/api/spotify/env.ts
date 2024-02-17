@@ -22,10 +22,14 @@ export const env = createEnv({
   runtimeEnv: {
     SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
-    SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
+    SPOTIFY_FAVORITE_PLAYLIST_ID:
+      process.env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "37i9dQZF1Epyg7jBW9q502",
     SPOTIFY_REFRESH_TOKEN: process.env.SPOTIFY_REFRESH_TOKEN,
-    SPOTIFY_NOW_PLAYING_URL: process.env.SPOTIFY_NOW_PLAYING_URL,
-    SPOTIFY_TOKEN_URL: process.env.SPOTIFY_TOKEN_URL,
+    SPOTIFY_NOW_PLAYING_URL:
+      process.env.SPOTIFY_NOW_PLAYING_URL ??
+      "https://api.spotify.com/v1/me/player/currently-playing",
+    SPOTIFY_TOKEN_URL:
+      process.env.SPOTIFY_TOKEN_URL ?? "https://accounts.spotify.com/api/token",
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
