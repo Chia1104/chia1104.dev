@@ -125,7 +125,7 @@ export default async function Page() {
           Check out the{" "}
           <Link
             preview
-            href={`https://open.spotify.com/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID}`}>
+            href={`https://open.spotify.com/playlist/${env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID}`}>
             {playlist.name}
           </Link>{" "}
           on my Spotify.
