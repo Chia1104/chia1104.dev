@@ -1,54 +1,80 @@
 "use client";
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import Image from "next/image";
+import { Button } from "../Button";
+import * as Sentry from "@sentry/nextjs";
 
-interface Props {
+interface Props<TError> {
   children: ReactNode;
   errorMessage?: string;
+  errorElement?:
+    | (({
+        error,
+        errorMessage,
+        reset,
+      }: {
+        error: TError | null;
+        errorMessage?: string;
+        reset: () => void;
+      }) => ReactNode)
+    | ReactNode;
+  onError?: (error: TError, errorInfo: ErrorInfo) => void;
+  disableSentry?: boolean;
 }
 
-interface State {
+interface State<TError> {
   hasError: boolean;
+  error: TError | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
+export class ErrorBoundary<TError extends Error> extends Component<
+  Props<TError>,
+  State<TError>
+> {
+  public state: State<TError> = {
     hasError: false,
+    error: null,
   };
 
-  public static getDerivedStateFromError(_: Error): State {
+  public static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: TError, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
+    this.props.onError?.(error, errorInfo);
+    if (!this.props.disableSentry) {
+      Sentry.captureException(error);
+    }
+    this.setState({ error });
   }
 
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="c-container flex size-full flex-col items-center justify-center">
-          <h1 className="title text-warning">
-            {this.props.errorMessage ?? "Oops, there is an error!"}
-          </h1>
-          <Image
-            src="/error/error-memoji.png"
-            alt="Error Memoji"
-            width={200}
-            height={200}
-            priority
-            aria-label="Error Memoji"
-          />
-          <button
-            type="button"
-            onClick={() => this.setState({ hasError: false })}
-            className="c-button-primary"
-            aria-label="Reload page">
-            Try again?
-          </button>
-        </div>
+        <>
+          {this.props.errorElement ? (
+            typeof this.props.errorElement === "function" ? (
+              this.props.errorElement({
+                error: this.state.error,
+                errorMessage: this.props.errorMessage,
+                reset: () => this.setState({ hasError: false }),
+              })
+            ) : (
+              this.props.errorElement
+            )
+          ) : (
+            <div className="y-container prose dark:prose-invert flex size-full flex-col items-center justify-center px-3 py-5">
+              <h2>{this.props.errorMessage ?? "Oops, there is an error!"}</h2>
+              <Button
+                onClick={() => this.setState({ hasError: false })}
+                aria-label="Reload page">
+                Try again?
+              </Button>
+            </div>
+          )}
+        </>
       );
     }
 

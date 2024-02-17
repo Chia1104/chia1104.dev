@@ -1,6 +1,6 @@
 import Gallery from "./_components/gallery";
 import meta from "@chia/meta";
-import { Age, FadeIn, Card } from "@chia/ui";
+import { Age, FadeIn, Card, ErrorBoundary } from "@chia/ui";
 import Location from "./_components/location";
 
 const AboutPage = () => {
@@ -25,12 +25,17 @@ const AboutPage = () => {
       </p>
       <FadeIn className="flex w-full justify-center">
         <Card className="flex w-full justify-center">
-          <Location
-            location={[24.91571, 121.6739]}
-            className="h-[300px] w-[300px]"
-            width={300}
-            height={300}
-          />
+          <ErrorBoundary>
+            <Location
+              cobeOptions={{
+                opacity: 0.9,
+              }}
+              location={[24.91571, 121.6739]}
+              className="size-[300px]"
+              width={300}
+              height={300}
+            />
+          </ErrorBoundary>
         </Card>
       </FadeIn>
     </>
