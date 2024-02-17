@@ -17,10 +17,7 @@ type LocationProps = {
   height: number | string;
   defaultPositionOffset?: [number, number];
   enableYInteraction?: boolean;
-  cobeOptions?: Omit<
-    Partial<COBEOptions>,
-    "dark" | "markers" | "width" | "height" | "onRender"
-  >;
+  cobeOptions?: Omit<Partial<COBEOptions>, "width" | "height" | "onRender">;
 } & Omit<ComponentPropsWithoutRef<"canvas">, "width" | "height">;
 
 const Location: FC<LocationProps> = ({
@@ -58,9 +55,9 @@ const Location: FC<LocationProps> = ({
         markerColor: [235 / 255, 35 / 255, 35 / 255],
         glowColor: [0.5, 0.5, 0.5],
         scale: 1.05,
-        ...cobeOptions,
-        markers: [{ location, size: 0.1 }],
         dark: isDarkMode ? 1 : 0,
+        ...cobeOptions,
+        markers: [{ size: 0.1, ...cobeOptions.markers, location }],
         width: width * 2,
         height: width * 2,
         onRender: (state) => {
