@@ -9,10 +9,6 @@ export const env = createEnv({
       .string()
       .optional()
       .default("37i9dQZF1Epyg7jBW9q502"),
-    NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID: z
-      .string()
-      .optional()
-      .default("37i9dQZF1Epyg7jBW9q502"),
     SPOTIFY_REFRESH_TOKEN: z.string().optional(),
     SPOTIFY_NOW_PLAYING_URL: z
       .string()
@@ -40,12 +36,13 @@ export const env = createEnv({
     SPOTIFY_TOKEN_URL:
       process.env.SPOTIFY_TOKEN_URL ?? "https://accounts.spotify.com/api/token",
   },
-  // client: {
-  //   NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID:
-  //     process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
-  //     "37i9dQZF1Epyg7jBW9q502",
-  // },
-  // clientPrefix: "NEXT_PUBLIC_",
+  client: {
+    NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID: z
+      .string()
+      .optional()
+      .default("37i9dQZF1Epyg7jBW9q502"),
+  },
+  clientPrefix: "NEXT_PUBLIC_",
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
