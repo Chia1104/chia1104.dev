@@ -113,17 +113,17 @@ const PreviewDetail: FC<
               <AvatarFallback>FI</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1">
-              <h4 className="line-clamp-1 text-sm font-semibold">
+              <h4 className="mt-2 line-clamp-1 text-sm font-semibold">
                 {data?.title}
               </h4>
-              <p className="line-clamp-3 text-sm">{data?.description}</p>
+              <p className="mb-0 line-clamp-3 text-sm">{data?.description}</p>
             </div>
           </div>
         </div>
       ) : (
         <div className="z-[999] flex flex-col gap-3">
           <div className="h-[120px] w-60 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
-          <div className="flex justify-between space-x-4">
+          <div className="mt-3 flex justify-between space-x-4">
             <div className="h-10 w-10 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
             <div className="space-y-1">
               <div className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />

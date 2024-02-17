@@ -5,6 +5,7 @@
     "@chia/api": {
       "env": [
         "SPOTIFY_CLIENT_ID",
+        "NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID",
         "SPOTIFY_CLIENT_SECRET",
         "SPOTIFY_FAVORITE_PLAYLIST_ID",
         "SPOTIFY_REFRESH_TOKEN"

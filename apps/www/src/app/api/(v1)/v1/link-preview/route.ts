@@ -66,30 +66,38 @@ export const POST = withRateLimiter<
 
       const cachedDoc = await upstash.get(dto!.href);
 
-      let title: null | string | undefined = null;
-      let description: null | string | undefined = null;
-      let favicon: null | string | undefined = null;
-      let ogImage: null | string | undefined = null;
-
       if (!cachedDoc) {
         const res = await request({
-          headers: { "Content-Type": "text/html" },
+          headers: {
+            "Content-Type": "text/html",
+          },
         }).get(dto!.href);
         const html = await res.text();
         const parsed = new JSDOM(html);
-        title = parsed.window.document.querySelector("title")?.textContent;
-        description = parsed.window.document
+        const title =
+          parsed.window.document.querySelector("title")?.textContent;
+        const description = parsed.window.document
           .querySelector('meta[name="description"]')
           ?.getAttribute("content");
 
-        const _favicon = parsed.window.document
+        const postparsedFavicon = parsed.window.document
           .querySelector('link[rel="icon"]')
           ?.getAttribute("href");
 
-        favicon = isUrl(_favicon) ? _favicon : url.origin + _favicon;
-        ogImage = parsed.window.document
+        const postparsedOgImage = parsed.window.document
           .querySelector('meta[property="og:image"]')
           ?.getAttribute("content");
+
+        const favicon = postparsedFavicon
+          ? isUrl(postparsedFavicon)
+            ? postparsedFavicon
+            : url.origin + "/" + postparsedFavicon.replace(/^\//, "") // remove leading slash
+          : undefined;
+        const ogImage = postparsedOgImage
+          ? isUrl(postparsedOgImage)
+            ? postparsedOgImage
+            : url.origin + "/" + postparsedOgImage.replace(/^\//, "") // remove leading slash
+          : undefined;
         await upstash.set(
           dto!.href,
           {
@@ -111,10 +119,10 @@ export const POST = withRateLimiter<
       }
 
       return NextResponse.json<DocResponse>({
-        title: cachedDoc?.title,
-        description: cachedDoc?.description,
-        favicon: cachedDoc?.favicon,
-        ogImage: cachedDoc?.ogImage,
+        title: cachedDoc.title,
+        description: cachedDoc.description,
+        favicon: cachedDoc.favicon,
+        ogImage: cachedDoc.ogImage,
       });
     } catch (error) {
       console.error(error);
