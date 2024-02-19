@@ -151,18 +151,6 @@ const MotionThemeIcon: FC<{
   );
 };
 
-/**
- * @deprecated use `ThemeSelector` instead
- */
-const ToggleTheme: FC<Props> = ({ variants = defaultThemeVariants }) => {
-  const { theme = "system", setTheme } = useTheme();
-  return (
-    <button onClick={() => setTheme(theme === "dark" ? "dark" : "light")}>
-      <MotionThemeIcon theme={theme as Theme} variants={variants} />
-    </button>
-  );
-};
-
 export const ThemeSelector: FC<Props> = ({
   variants = defaultThemeVariants,
 }) => {
@@ -188,4 +176,4 @@ export const ThemeSelector: FC<Props> = ({
 };
 
 export default ThemeSelector;
-export { MotionThemeIcon, ToggleTheme };
+export { MotionThemeIcon };
