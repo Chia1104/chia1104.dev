@@ -75,7 +75,7 @@ const RootProvider: FC<Props> = ({ session, children, headers }) => {
   return (
     <SessionProvider session={session}>
       <TRPCReactProvider headers={headers}>
-        <ThemeProvider enableSystem attribute="class">
+        <ThemeProvider defaultTheme="system" enableSystem attribute="class">
           <NextUIProvider>
             <Toaster />
             {children}
