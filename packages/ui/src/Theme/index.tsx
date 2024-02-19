@@ -35,10 +35,10 @@ export const Theme = {
 export type Theme = (typeof Theme)[keyof typeof Theme];
 
 const VariantsKey = {
-  SVG: "svgVariants",
-  CIRCLE: "circleVariants",
-  MASK: "maskVariants",
-  LINES: "linesVariants",
+  SVG: "svgVariant",
+  CIRCLE: "circleVariant",
+  MASK_CIRCLE: "maskCircleVariant",
+  LINES: "linesVariant",
 } as const;
 
 type VariantsKey = (typeof VariantsKey)[keyof typeof VariantsKey];
@@ -46,7 +46,7 @@ type VariantsKey = (typeof VariantsKey)[keyof typeof VariantsKey];
 export type ThemeVariants = Record<VariantsKey, Record<Theme, Variant>>;
 
 const defaultThemeVariants: ThemeVariants = {
-  svgVariants: {
+  [VariantsKey.SVG]: {
     dark: {
       rotate: 40,
     },
@@ -57,7 +57,7 @@ const defaultThemeVariants: ThemeVariants = {
       rotate: 0,
     },
   },
-  circleVariants: {
+  [VariantsKey.CIRCLE]: {
     dark: {
       r: 9,
     },
@@ -65,10 +65,10 @@ const defaultThemeVariants: ThemeVariants = {
       r: 5,
     },
     system: {
-      r: 7,
+      r: 5,
     },
   },
-  maskVariants: {
+  [VariantsKey.MASK_CIRCLE]: {
     dark: {
       cx: "50%",
       cy: "23%",
@@ -78,11 +78,11 @@ const defaultThemeVariants: ThemeVariants = {
       cy: "0%",
     },
     system: {
-      cx: "50%",
-      cy: "50%",
+      cx: "100%",
+      cy: "0%",
     },
   },
-  linesVariants: {
+  [VariantsKey.LINES]: {
     dark: {
       opacity: 0,
     },
@@ -90,7 +90,7 @@ const defaultThemeVariants: ThemeVariants = {
       opacity: 1,
     },
     system: {
-      opacity: 1,
+      opacity: 0,
     },
   },
 };
@@ -115,14 +115,14 @@ const MotionThemeIcon: FC<{
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      variants={variants.svgVariants}
+      variants={variants.svgVariant}
       animate={theme}>
       <mask id={`${id}-mask`}>
-        <rect x="0" y="0" width="100%" height="100%" fill="white" />
+        <motion.rect x="0" y="0" width="100%" height="100%" fill="white" />
         <motion.circle
           r="9"
           fill="black"
-          variants={variants.maskVariants}
+          variants={variants.maskCircleVariant}
           animate={theme}
         />
       </mask>
@@ -131,12 +131,12 @@ const MotionThemeIcon: FC<{
         cy="12"
         fill="currentColor"
         mask={`url(#${id}-mask)`}
-        variants={variants.circleVariants}
+        variants={variants.circleVariant}
         animate={theme}
       />
       <motion.g
         stroke="currentColor"
-        variants={variants.linesVariants}
+        variants={variants.linesVariant}
         animate={theme}>
         <line x1="12" y1="1" x2="12" y2="3" />
         <line x1="12" y1="21" x2="12" y2="23" />
@@ -158,7 +158,7 @@ export const ThemeSelector: FC<Props> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
+        <Button size="sm" variant="outline">
           <MotionThemeIcon theme={theme as Theme} variants={variants} />
         </Button>
       </DropdownMenuTrigger>
@@ -167,8 +167,18 @@ export const ThemeSelector: FC<Props> = ({
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            itemIndicator={<MotionThemeIcon theme="dark" variants={variants} />}
+            value="dark">
+            Dark
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            itemIndicator={
+              <MotionThemeIcon theme="light" variants={variants} />
+            }
+            value="light">
+            Light
+          </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -176,4 +186,4 @@ export const ThemeSelector: FC<Props> = ({
 };
 
 export default ThemeSelector;
-export { MotionThemeIcon };
+export { MotionThemeIcon, defaultThemeVariants };

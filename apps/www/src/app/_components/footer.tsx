@@ -25,7 +25,7 @@ const LinkItem: FC<{
       className={cn(
         "flex align-middle transition-all hover:text-neutral-800 dark:hover:text-neutral-200",
         {
-          "text-neutral-500": !isActive,
+          "dark:text-popover-foreground text-neutral-500": !isActive,
           "font-bold": isActive,
         }
       )}>
@@ -34,7 +34,7 @@ const LinkItem: FC<{
         <p className="">{name}</p>
         {isActive ? (
           <motion.div
-            className="absolute inset-0 z-[-1] rounded-md bg-[#dddddd] dark:bg-black/60"
+            className="bg-accent absolute inset-0 z-[-1] rounded-md"
             layoutId="footer"
             transition={{
               type: "spring",
