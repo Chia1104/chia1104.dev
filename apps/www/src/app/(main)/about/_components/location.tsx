@@ -8,7 +8,6 @@ import {
   useEffect,
 } from "react";
 import { cn, useTheme } from "@chia/ui";
-// import { useTheme } from "next-themes";
 import { useResizeObserver } from "usehooks-ts";
 import { useSpring, useMotionValue } from "framer-motion";
 
