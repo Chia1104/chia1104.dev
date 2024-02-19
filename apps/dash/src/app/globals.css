@@ -1,5 +1,6 @@
-@import "@chia/tailwind/index.css";
 @import "@chia/tailwind/novel.css";
+@import "@chia/tailwind/shadcn-ui.css";
+@import "@chia/tailwind/index.css";
 
 @tailwind base;
 @tailwind components;

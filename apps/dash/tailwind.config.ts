@@ -1,5 +1,9 @@
 import type { Config } from "tailwindcss";
-import baseConfig, { egoistIcons } from "@chia/tailwind";
+import baseConfig, {
+  egoistIcons,
+  shadcnConfig,
+  animation,
+} from "@chia/tailwind";
 import { nextui } from "@nextui-org/react";
 import tailwindScrollbar from "tailwind-scrollbar";
 
@@ -29,5 +33,5 @@ export default {
   },
   plugins: [nextui(), tailwindScrollbar({ nocompatible: true })],
   darkMode: "class",
-  presets: [baseConfig, egoistIcons],
+  presets: [shadcnConfig, animation, baseConfig, egoistIcons],
 } satisfies Config;

@@ -1,10 +1,10 @@
 "use client";
 
-import { type FC, type ReactNode, useState, useEffect } from "react";
+import { type FC, type ReactNode, useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
-import { useDarkMode } from "@chia/ui";
+import { useTheme, Theme } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import { NextUIProvider } from "@nextui-org/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,8 +20,8 @@ interface Props {
 }
 
 const Toaster: FC = () => {
-  const { theme } = useDarkMode();
-  return <ST theme={theme as any} position="bottom-left" richColors />;
+  const { theme } = useTheme();
+  return <ST theme={theme as Theme} position="bottom-left" richColors />;
 };
 
 export function TRPCReactProvider(props: {
@@ -71,28 +71,6 @@ export function TRPCReactProvider(props: {
   );
 }
 
-/**
- * @todo Remove this when the new Novel Editor is ready
- */
-const ThemeService = () => {
-  const { theme } = useDarkMode();
-  useEffect(() => {
-    const html = document.querySelector("html");
-    const handleDark = (element: HTMLElement) => {
-      element.classList.remove("light", "light-theme");
-      element.classList.add("dark", "dark-theme");
-    };
-    const handleLight = (element: HTMLElement) => {
-      element.classList.remove("dark", "dark-theme");
-      element.classList.add("light", "light-theme");
-    };
-    if (html && theme) {
-      theme === "dark" ? handleDark(html) : handleLight(html);
-    }
-  }, [theme]);
-  return null;
-};
-
 const RootProvider: FC<Props> = ({ session, children, headers }) => {
   return (
     <SessionProvider session={session}>
@@ -100,7 +78,6 @@ const RootProvider: FC<Props> = ({ session, children, headers }) => {
         <ThemeProvider enableSystem attribute="class">
           <NextUIProvider>
             <Toaster />
-            <ThemeService />
             {children}
           </NextUIProvider>
         </ThemeProvider>
