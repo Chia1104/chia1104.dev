@@ -2,15 +2,10 @@
 
 import { type FC } from "react";
 import Link from "next/link";
-import { cn, ToggleTheme, useDarkMode } from "@chia/ui";
+import { cn, ThemeSelector } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import navItems from "@/shared/routes";
-
-const Toggle: FC = () => {
-  const { isDarkMode, toggle } = useDarkMode();
-  return <ToggleTheme toggleTheme={toggle} isDark={isDarkMode} />;
-};
 
 const NavMenu: FC = () => {
   const pathname = usePathname() || "/";
@@ -59,7 +54,7 @@ const NavMenu: FC = () => {
               );
             })}
           </div>
-          <Toggle />
+          <ThemeSelector />
         </LayoutGroup>
       </div>
     </nav>

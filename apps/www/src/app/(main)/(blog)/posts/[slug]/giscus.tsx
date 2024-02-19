@@ -1,7 +1,7 @@
 "use client";
 
 import { giscusConfig } from "@/config/giscus.config";
-import { useIsMounted, useDarkMode } from "@chia/ui";
+import { useIsMounted, useTheme } from "@chia/ui";
 import G from "@giscus/react";
 import type { FC } from "react";
 
@@ -12,7 +12,7 @@ interface Props {
 const Giscus: FC<Props> = (props) => {
   const { title } = props;
   const isMounted = useIsMounted();
-  const { isDarkMode } = useDarkMode();
+  const { isDarkMode } = useTheme();
 
   return (
     <G
@@ -21,7 +21,7 @@ const Giscus: FC<Props> = (props) => {
       mapping="specific"
       reactionsEnabled="1"
       emitMetadata="0"
-      theme={isMounted && isDarkMode ? "dark" : "light"}
+      theme={isDarkMode ? "dark" : "light"}
     />
   );
 };

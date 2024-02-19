@@ -7,7 +7,8 @@ import {
   useRef,
   useEffect,
 } from "react";
-import { cn, useDarkMode } from "@chia/ui";
+import { cn, useTheme } from "@chia/ui";
+// import { useTheme } from "next-themes";
 import { useResizeObserver } from "usehooks-ts";
 import { useSpring, useMotionValue } from "framer-motion";
 
@@ -41,7 +42,7 @@ const Location: FC<LocationProps> = ({
   const y = useMotionValue(0);
   const springX = useSpring(x);
   const springY = useSpring(y);
-  const { isDarkMode } = useDarkMode();
+  const { theme, isDarkMode } = useTheme();
   useEffect(() => {
     if (canvasRef.current && width && height) {
       const globe = createGlobe(canvasRef.current, {
