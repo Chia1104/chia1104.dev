@@ -1,7 +1,7 @@
 "use client";
 
 import { type FC, useId } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variant } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +34,16 @@ export const Theme = {
 
 export type Theme = (typeof Theme)[keyof typeof Theme];
 
-export type ThemeVariants = Record<string, Record<Theme, Record<string, any>>>;
+const VariantsKey = {
+  SVG: "svgVariants",
+  CIRCLE: "circleVariants",
+  MASK: "maskVariants",
+  LINES: "linesVariants",
+} as const;
+
+type VariantsKey = (typeof VariantsKey)[keyof typeof VariantsKey];
+
+export type ThemeVariants = Record<VariantsKey, Record<Theme, Variant>>;
 
 const defaultThemeVariants: ThemeVariants = {
   svgVariants: {
