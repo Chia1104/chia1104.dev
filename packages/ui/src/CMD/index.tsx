@@ -5,8 +5,6 @@ import {
   useEffect,
   type KeyboardEvent,
   type Dispatch,
-  type FC,
-  type ReactNode,
   forwardRef,
 } from "react";
 import { type DialogProps } from "@radix-ui/react-dialog";
@@ -15,16 +13,21 @@ import { Search } from "lucide-react";
 import { cn } from "../utils";
 import { Dialog, DialogContent } from "../Dialog";
 
-export const useCMD = (options?: {
-  cmd?: string;
-}): [boolean, Dispatch<boolean>] => {
+export const useCMD = (
+  defaultOpen = false,
+  options?: {
+    cmd?: string;
+    onKeyDown?: (e: KeyboardEvent) => void;
+  }
+): [boolean, Dispatch<boolean>] => {
   const cmd = options?.cmd || "k";
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === cmd && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
+        options?.onKeyDown?.(e);
       }
     };
 
