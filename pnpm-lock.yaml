@@ -184,8 +184,8 @@ importers:
         specifier: 14.1.0
         version: 14.1.0(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
       next-auth:
-        specifier: 5.0.0-beta.11
-        version: 5.0.0-beta.11(next@14.1.0)(react@18.2.0)
+        specifier: 5.0.0-beta.13
+        version: 5.0.0-beta.13(next@14.1.0)(react@18.2.0)
       next-themes:
         specifier: ^0.2.1
         version: 0.2.1(next@14.1.0)(react-dom@18.2.0)(react@18.2.0)
@@ -441,8 +441,8 @@ importers:
         specifier: 14.1.0
         version: 14.1.0(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
       next-auth:
-        specifier: 5.0.0-beta.11
-        version: 5.0.0-beta.11(next@14.1.0)(react@18.2.0)
+        specifier: 5.0.0-beta.13
+        version: 5.0.0-beta.13(next@14.1.0)(react@18.2.0)
       next-themes:
         specifier: ^0.2.1
         version: 0.2.1(next@14.1.0)(react-dom@18.2.0)(react@18.2.0)
@@ -605,8 +605,8 @@ importers:
         specifier: 14.1.0
         version: 14.1.0(@opentelemetry/api@1.7.0)(react-dom@18.2.0)(react@18.2.0)
       next-auth:
-        specifier: 5.0.0-beta.11
-        version: 5.0.0-beta.11(next@14.1.0)(react@18.2.0)
+        specifier: 5.0.0-beta.13
+        version: 5.0.0-beta.13(next@14.1.0)(react@18.2.0)
     devDependencies:
       tsconfig:
         specifier: workspace:*
@@ -15434,8 +15434,8 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: true
 
-  /next-auth@5.0.0-beta.11(next@14.1.0)(react@18.2.0):
-    resolution: {integrity: sha512-OrfOVyXBGC69O8lEe81ZwFzQuWnY3Bsqee7kawr1iBycgSD64oNCtoFvRXiOWe7R0jOaafqQQlpsOS0mARhT3Q==}
+  /next-auth@5.0.0-beta.13(next@14.1.0)(react@18.2.0):
+    resolution: {integrity: sha512-2m2Gq69WQ0YXcHCCpHn2y5z1bxSlqD/XOuAgrdtz49/VIAdTFFeYZz97RYqf6xMF8VGmoG32VUnJ6LzaHk6Fwg==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
