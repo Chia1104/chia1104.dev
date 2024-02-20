@@ -34,3 +34,5 @@ export * from "./Error";
 export { default as LoadingIcon } from "./icons/loading-icon";
 export * from "./Popover";
 export * from "./Button";
+export * from "./CMD";
+export * from "./Tooltip";

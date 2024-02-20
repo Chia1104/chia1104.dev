@@ -149,15 +149,17 @@ const MotionThemeIcon: FC<{
   );
 };
 
-export const ThemeSelector: FC<Props> = ({
-  variants = defaultThemeVariants,
-}) => {
+export const ThemeSelector: FC<
+  Props & {
+    label?: string;
+  }
+> = ({ variants = defaultThemeVariants, label = "Theme" }) => {
   const { theme = "system", setTheme } = useTheme();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button size="sm" variant="outline" className="gap-2">
-          <MotionThemeIcon theme={theme as Theme} variants={variants} /> Theme
+          <MotionThemeIcon theme={theme as Theme} variants={variants} /> {label}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">

@@ -2,10 +2,132 @@
 
 import { type FC } from "react";
 import Link from "next/link";
-import { cn } from "@chia/ui";
-import { usePathname } from "next/navigation";
+import {
+  cn,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  useCMD,
+  Theme,
+  MotionThemeIcon,
+  defaultThemeVariants,
+  useTheme,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  Button,
+} from "@chia/ui";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import navItems from "@/shared/routes";
+import contact from "@/shared/contact";
+import capitalize from "lodash/capitalize";
+
+const CMDK = () => {
+  const [open, setOpen] = useCMD();
+  const { theme, setTheme } = useTheme();
+  const router = useRouter();
+  return (
+    <>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={() => setOpen(true)} size="sm" variant="ghost">
+              <div className="i-mdi-hamburger size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Pages">
+            {Object.entries(navItems).map(([path, { name }]) => {
+              return (
+                <CommandItem
+                  key={path}
+                  onSelect={() => {
+                    router.push(path);
+                    setOpen(false);
+                  }}>
+                  {name}
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+          <CommandSeparator className="mb-2" />
+          <CommandGroup heading="Contact">
+            {Object.entries(contact).map(([key, { name, icon, link }]) => (
+              <CommandItem
+                className="gap-5"
+                key={key}
+                onSelect={() => {
+                  window.open(link, "_blank");
+                  setOpen(false);
+                }}>
+                {icon}
+                {name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandSeparator className="mb-2" />
+          <CommandGroup heading={`Theme (${capitalize(theme)})`}>
+            <CommandItem
+              defaultChecked={theme === Theme.SYSTEM}
+              className="gap-5"
+              onSelect={() => {
+                setTheme(Theme.SYSTEM);
+                setOpen(false);
+              }}>
+              <MotionThemeIcon
+                theme={Theme.SYSTEM}
+                variants={defaultThemeVariants}
+              />
+              System
+            </CommandItem>
+            <CommandItem
+              defaultChecked={theme === Theme.DARK}
+              className="gap-5"
+              onSelect={() => {
+                setTheme(Theme.DARK);
+                setOpen(false);
+              }}>
+              <MotionThemeIcon
+                theme={Theme.DARK}
+                variants={defaultThemeVariants}
+              />
+              Dark
+            </CommandItem>
+            <CommandItem
+              defaultChecked={theme === Theme.LIGHT}
+              className="gap-5"
+              onSelect={() => {
+                setTheme(Theme.LIGHT);
+                setOpen(false);
+              }}>
+              <MotionThemeIcon
+                theme={Theme.LIGHT}
+                variants={defaultThemeVariants}
+              />
+              Light
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </>
+  );
+};
 
 const NavMenu: FC = () => {
   const pathname = usePathname() || "/";
@@ -54,6 +176,7 @@ const NavMenu: FC = () => {
                 </Link>
               );
             })}
+            <CMDK />
           </div>
         </LayoutGroup>
       </div>
