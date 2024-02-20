@@ -110,7 +110,9 @@ const IndexPage = () => {
               <li className="text-sm">
                 <span className="font-bold">Email: </span>
                 <span>
-                  <a href={`mailto:${meta.email}`}>{meta.email}</a>
+                  <Link scroll={false} href="/email">
+                    {meta.email}
+                  </Link>
                 </span>
               </li>
             </ul>

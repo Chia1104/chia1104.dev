@@ -9,6 +9,8 @@ import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import "react-medium-image-zoom/dist/styles.css";
 import Footer from "./_components/footer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Page, ScrollYProgress } from "@chia/ui";
+import NavMenu from "./_components/nav-menu";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",
@@ -54,12 +56,23 @@ export const metadata: Metadata = {
   },
 };
 
-const ChiaWEB = ({ children }: { children: ReactNode }) => {
+const ChiaWEB = ({
+  children,
+  modal,
+}: {
+  children: ReactNode;
+  modal: ReactNode;
+}) => {
   return (
     <html lang="zh-Hant-TW" suppressHydrationWarning>
       <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
         <RootProvider>
-          {children}
+          <NavMenu />
+          <ScrollYProgress className="fixed top-0 z-[999]" />
+          <Page>
+            {children}
+            {modal}
+          </Page>
           <Footer />
         </RootProvider>
         <VercelAnalytics />
