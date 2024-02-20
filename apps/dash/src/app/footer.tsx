@@ -151,7 +151,10 @@ const Footer: FC = () => {
         </div>
       </div>
       <div className="c-container mt-5 flex w-full items-center justify-between px-10 md:hidden">
-        <Logo />
+        <div className="flex items-center gap-5">
+          <Logo />
+          <ThemeSelector />
+        </div>
         <Copyright />
       </div>
       <div
