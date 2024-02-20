@@ -18,7 +18,7 @@ import {
   Tab,
   NavbarMenuToggle,
 } from "@nextui-org/react";
-import { ThemeSelector, Image } from "@chia/ui";
+import { Image } from "@chia/ui";
 import { useSession } from "next-auth/react";
 import { signInAction, signOutAction } from "@/server/auth.action";
 import { useTransition, type Key, useState } from "react";
@@ -133,9 +133,6 @@ const Menu = () => {
       </NavbarContent>
       <NavbarContent justify="end">
         <User />
-        <NavbarItem>
-          <ThemeSelector />
-        </NavbarItem>
       </NavbarContent>
       <NavbarMenu>
         <NavbarMenuItem>

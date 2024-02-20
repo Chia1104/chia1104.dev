@@ -1,11 +1,72 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { cn, Image } from "@chia/ui";
+import {
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
+import {
+  cn,
+  Image,
+  MotionThemeIcon,
+  defaultThemeVariants,
+  useTheme,
+  type Theme,
+} from "@chia/ui";
 import meta from "@chia/meta";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+
+const ThemeSelector = () => {
+  const { theme, setTheme } = useTheme();
+  return (
+    <Dropdown>
+      <DropdownTrigger>
+        <Button
+          variant="flat"
+          size="sm"
+          startContent={
+            <MotionThemeIcon
+              theme={theme as Theme}
+              variants={defaultThemeVariants}
+            />
+          }>
+          Theme
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu>
+        <DropdownItem
+          key="system"
+          startContent={
+            <MotionThemeIcon theme="system" variants={defaultThemeVariants} />
+          }
+          onPress={(e) => setTheme("system")}>
+          System
+        </DropdownItem>
+        <DropdownItem
+          key="system"
+          startContent={
+            <MotionThemeIcon theme="dark" variants={defaultThemeVariants} />
+          }
+          onPress={(e) => setTheme("dark")}>
+          Dark
+        </DropdownItem>
+        <DropdownItem
+          key="system"
+          startContent={
+            <MotionThemeIcon theme="light" variants={defaultThemeVariants} />
+          }
+          onPress={(e) => setTheme("light")}>
+          Light
+        </DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  );
+};
 
 const LinkItem: FC<{
   path: string;
@@ -77,8 +138,9 @@ const Footer: FC = () => {
   return (
     <footer className="footer">
       <div className="c-container flex w-full px-10">
-        <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start md:flex">
+        <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />
+          <ThemeSelector />
           <Copyright className="mt-auto" />
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
