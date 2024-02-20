@@ -11,6 +11,8 @@ import Footer from "./_components/footer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Page, ScrollYProgress } from "@chia/ui";
 import NavMenu from "./_components/nav-menu";
+import { GoogleTagManager } from "@next/third-parties/google";
+import { env } from "@/env";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",
@@ -76,6 +78,7 @@ const ChiaWEB = ({
           <Footer />
         </RootProvider>
         <VercelAnalytics />
+        <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID ?? ""} />
         <SpeedInsights />
       </body>
     </html>
