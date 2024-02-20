@@ -67,7 +67,7 @@ const Footer: FC = () => {
       <div className="c-container flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />
-          <ThemeSelector />
+          <ThemeSelector enableCMD />
           <Copyright className="mt-auto" />
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
@@ -84,9 +84,9 @@ const Footer: FC = () => {
         </div>
       </div>
       <div className="c-container mt-5 flex w-full items-center justify-between px-10 md:hidden">
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3">
           <Logo />
-          <ThemeSelector />
+          <ThemeSelector label="" />
         </div>
         <Copyright />
       </div>

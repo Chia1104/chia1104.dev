@@ -2,7 +2,7 @@
 
 import { type FC, type ReactNode, useState } from "react";
 import { ThemeProvider } from "next-themes";
-import { Cursor, Theme, useTheme } from "@chia/ui";
+import { Cursor, Theme, useTheme, useCMD } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import Script from "next/script";
 import { env } from "@/env";
@@ -11,6 +11,7 @@ import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import superjson from "superjson";
 import { api } from "@/trpc-api";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
+import { useRouter } from "next/navigation";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +82,17 @@ const Analytics = () => {
   );
 };
 
+const ContactCMD = () => {
+  const router = useRouter();
+  useCMD(false, {
+    cmd: "i",
+    onKeyDown: () => {
+      router.push("/email");
+    },
+  });
+  return null;
+};
+
 const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
   children,
   headers,
@@ -97,6 +109,7 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
             filter: "blur(50px)",
           }}
         />
+        <ContactCMD />
         {children}
       </TRPCReactProvider>
     </ThemeProvider>

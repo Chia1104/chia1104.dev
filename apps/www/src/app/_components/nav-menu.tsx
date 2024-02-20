@@ -56,18 +56,28 @@ const CMDK = () => {
             {Object.entries(navItems).map(([path, { name }]) => {
               return (
                 <CommandItem
+                  className="gap-5"
                   key={path}
                   onSelect={() => {
                     router.push(path);
                     setOpen(false);
                   }}>
+                  <div className="i-mdi-paper size-5" />
                   {name}
                 </CommandItem>
               );
             })}
           </CommandGroup>
           <CommandSeparator className="mb-2" />
-          <CommandGroup heading="Contact">
+          <CommandGroup
+            heading={
+              <span className="flex items-center justify-between">
+                <p>Contact</p>
+                <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
+                  <span className="text-xs">⌘</span>I
+                </kbd>
+              </span>
+            }>
             {Object.entries(contact).map(([key, { name, icon, link }]) => (
               <CommandItem
                 className="gap-5"
@@ -82,7 +92,15 @@ const CMDK = () => {
             ))}
           </CommandGroup>
           <CommandSeparator className="mb-2" />
-          <CommandGroup heading={`Theme (${capitalize(theme)})`}>
+          <CommandGroup
+            heading={
+              <span className="flex items-center justify-between">
+                <p>Theme ({capitalize(theme)})</p>
+                <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
+                  <span className="text-xs">⌘</span>J
+                </kbd>
+              </span>
+            }>
             <CommandItem
               defaultChecked={theme === Theme.SYSTEM}
               className="gap-5"
