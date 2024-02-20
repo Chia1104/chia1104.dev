@@ -1,12 +1,13 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import meta from "@chia/meta";
 import { cn, Link, ThemeSelector } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import navItems from "@/shared/routes";
+import contact from "@/shared/contact";
 import { Image } from "@chia/ui";
+import meta from "@chia/meta";
 
 const LinkItem: FC<{
   path: string;
@@ -46,24 +47,6 @@ const LinkItem: FC<{
       </span>
     </Link>
   );
-};
-
-const contact = {
-  github: {
-    name: "Github",
-    icon: <span className="i-mdi-github h-6 w-6" />,
-    link: meta.link.github,
-  },
-  instagram: {
-    name: "Instagram",
-    icon: <span className="i-mdi-instagram h-6 w-6" />,
-    link: meta.link.instagram,
-  },
-  linkedin: {
-    name: "Linkedin",
-    icon: <span className="i-mdi-linkedin h-6 w-6" />,
-    link: meta.link.linkedin,
-  },
 };
 
 const Copyright: FC<{ className?: string }> = ({ className }) => (
