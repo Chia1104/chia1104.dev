@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from "../DropdownMenu";
 import { Button } from "../Button";
-import { useTheme } from "next-themes";
+import useTheme from "../utils/use-theme";
+import { useCMD } from "../CMD";
 
 interface Props {
   /**
@@ -152,35 +153,61 @@ const MotionThemeIcon: FC<{
 export const ThemeSelector: FC<
   Props & {
     label?: string;
+    enableCMD?: boolean;
   }
-> = ({ variants = defaultThemeVariants, label = "Theme" }) => {
+> = ({
+  variants = defaultThemeVariants,
+  label = "Theme",
+  enableCMD = false,
+}) => {
   const { theme = "system", setTheme } = useTheme();
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="outline" className="gap-2">
-          <MotionThemeIcon theme={theme as Theme} variants={variants} /> {label}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-          <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            itemIndicator={<MotionThemeIcon theme="dark" variants={variants} />}
-            value="dark">
-            Dark
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            itemIndicator={
-              <MotionThemeIcon theme="light" variants={variants} />
-            }
-            value="light">
-            Light
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      {enableCMD && <ThemeCMD />}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="outline" className="gap-2">
+            <MotionThemeIcon theme={theme as Theme} variants={variants} />{" "}
+            {label}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+            <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              itemIndicator={
+                <MotionThemeIcon theme="dark" variants={variants} />
+              }
+              value="dark">
+              Dark
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              itemIndicator={
+                <MotionThemeIcon theme="light" variants={variants} />
+              }
+              value="light">
+              Light
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
+};
+
+export const ThemeCMD = () => {
+  const { theme, setTheme, isDarkMode } = useTheme();
+  useCMD(
+    false,
+    {
+      cmd: "j",
+      onKeyDown: () => {
+        setTheme(isDarkMode ? "light" : "dark");
+      },
+    },
+    [theme, isDarkMode]
+  );
+  return null;
 };
 
 export default ThemeSelector;

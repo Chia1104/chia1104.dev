@@ -33,7 +33,7 @@ const ContactForm = () => {
           onSuccess={() => router.back()}
           render={({ controller, isPending, ReCAPTCHA }) => (
             <>
-              <div className="flex h-[450px] w-full max-w-[700px] flex-col gap-2 overflow-y-scroll py-2">
+              <div className="flex h-[65vh] w-full max-w-[700px] flex-col gap-2 overflow-y-scroll py-2">
                 <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
                   <Controller
                     control={controller}
