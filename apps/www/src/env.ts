@@ -63,6 +63,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GISCUS_CATEGORY: z.string().optional().default("Comments"),
     NEXT_PUBLIC_GISCUS_THEME: z.string().optional().default("dark_dimmed"),
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+    NEXT_PUBLIC_GTM_ID: z.string().optional(),
   },
 
   runtimeEnv: {
@@ -101,6 +102,7 @@ export const env = createEnv({
     BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
     DATABASE_URL: process.env.DATABASE_URL,
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
+    NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
