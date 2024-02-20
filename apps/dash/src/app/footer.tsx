@@ -14,7 +14,7 @@ import {
   MotionThemeIcon,
   defaultThemeVariants,
   useTheme,
-  type Theme,
+  Theme,
 } from "@chia/ui";
 import meta from "@chia/meta";
 import Link from "next/link";
@@ -42,25 +42,34 @@ const ThemeSelector = () => {
         <DropdownItem
           key="system"
           startContent={
-            <MotionThemeIcon theme="system" variants={defaultThemeVariants} />
+            <MotionThemeIcon
+              theme={Theme.SYSTEM}
+              variants={defaultThemeVariants}
+            />
           }
-          onPress={(e) => setTheme("system")}>
+          onPress={(e) => setTheme(Theme.SYSTEM)}>
           System
         </DropdownItem>
         <DropdownItem
           key="system"
           startContent={
-            <MotionThemeIcon theme="dark" variants={defaultThemeVariants} />
+            <MotionThemeIcon
+              theme={Theme.DARK}
+              variants={defaultThemeVariants}
+            />
           }
-          onPress={(e) => setTheme("dark")}>
+          onPress={(e) => setTheme(Theme.DARK)}>
           Dark
         </DropdownItem>
         <DropdownItem
           key="system"
           startContent={
-            <MotionThemeIcon theme="light" variants={defaultThemeVariants} />
+            <MotionThemeIcon
+              theme={Theme.LIGHT}
+              variants={defaultThemeVariants}
+            />
           }
-          onPress={(e) => setTheme("light")}>
+          onPress={(e) => setTheme(Theme.LIGHT)}>
           Light
         </DropdownItem>
       </DropdownMenu>
