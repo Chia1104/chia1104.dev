@@ -17,7 +17,7 @@ import {
   useTransition,
 } from "react";
 import { useMonaco } from "@monaco-editor/react";
-import { useDarkMode } from "@chia/ui";
+import { useTheme } from "@chia/ui";
 import MEditor from "@monaco-editor/react";
 import { useWriteContext } from "./write.context";
 import { compile } from "@/server/mdx.action";
@@ -49,7 +49,7 @@ const PreviewModal: FC<{
 };
 
 export const Monaco = () => {
-  const { isDarkMode } = useDarkMode();
+  const { isDarkMode } = useTheme();
   const editorRef = useRef<ComponentPropsWithoutRef<typeof MEditor>>(null);
   const monaco = useMonaco();
   const [value, setValue] = useState("");

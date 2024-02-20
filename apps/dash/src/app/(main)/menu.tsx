@@ -18,7 +18,7 @@ import {
   Tab,
   NavbarMenuToggle,
 } from "@nextui-org/react";
-import { ToggleTheme, Image, useDarkMode } from "@chia/ui";
+import { Image } from "@chia/ui";
 import { useSession } from "next-auth/react";
 import { signInAction, signOutAction } from "@/server/auth.action";
 import { useTransition, type Key, useState } from "react";
@@ -71,7 +71,6 @@ const User = () => {
 };
 
 const Menu = () => {
-  const { isDarkMode, toggle } = useDarkMode();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const selectedLayoutSegments = useSelectedLayoutSegments();
@@ -134,9 +133,6 @@ const Menu = () => {
       </NavbarContent>
       <NavbarContent justify="end">
         <User />
-        <NavbarItem>
-          <ToggleTheme isDark={isDarkMode} toggleTheme={toggle} />
-        </NavbarItem>
       </NavbarContent>
       <NavbarMenu>
         <NavbarMenuItem>

@@ -14,6 +14,9 @@ interface UseDarkModeOutput {
   disable: () => void;
 }
 
+/**
+ * @deprecated use `useTheme`
+ */
 export default function useDarkMode(): UseDarkModeOutput {
   const isDarkOS = useMediaQuery(COLOR_SCHEME_QUERY);
   const { theme, setTheme } = useTheme();

@@ -2,15 +2,10 @@
 
 import { type FC } from "react";
 import Link from "next/link";
-import { cn, ToggleTheme, useDarkMode } from "@chia/ui";
+import { cn } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import navItems from "@/shared/routes";
-
-const Toggle: FC = () => {
-  const { isDarkMode, toggle } = useDarkMode();
-  return <ToggleTheme toggleTheme={toggle} isDark={isDarkMode} />;
-};
 
 const NavMenu: FC = () => {
   const pathname = usePathname() || "/";
@@ -36,7 +31,8 @@ const NavMenu: FC = () => {
                   className={cn(
                     "flex align-middle transition-all hover:text-neutral-800 dark:hover:text-neutral-200",
                     {
-                      "text-neutral-500": !isActive,
+                      "dark:text-popover-foreground text-neutral-500":
+                        !isActive,
                       "font-bold": isActive,
                     }
                   )}>
@@ -45,7 +41,7 @@ const NavMenu: FC = () => {
                     <div className="block md:hidden">{icon}</div>
                     {isActive ? (
                       <motion.div
-                        className="absolute inset-0 z-[-1] rounded-md bg-[#dddddd] dark:bg-black/60"
+                        className="bg-accent absolute inset-0 z-[-1] rounded-md"
                         layoutId="nav-menu"
                         transition={{
                           type: "spring",
@@ -59,7 +55,6 @@ const NavMenu: FC = () => {
               );
             })}
           </div>
-          <Toggle />
         </LayoutGroup>
       </div>
     </nav>

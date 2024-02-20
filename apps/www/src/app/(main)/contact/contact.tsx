@@ -2,7 +2,7 @@
 
 import { type FC, useId, memo, useState } from "react";
 import { cn } from "@chia/ui";
-import { Input, Textarea, useDarkMode, Card } from "@chia/ui";
+import { Input, Textarea, Card, useTheme } from "@chia/ui";
 import { post, type HTTPError, handleKyError } from "@chia/utils";
 import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
@@ -18,7 +18,7 @@ const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
 
 const Contact: FC = () => {
   const id = useId();
-  const { isDarkMode } = useDarkMode();
+  const { theme, isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 

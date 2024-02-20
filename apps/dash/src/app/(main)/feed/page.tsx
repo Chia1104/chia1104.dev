@@ -37,13 +37,13 @@ const FeedPage = async () => {
   }
   const posts = await getPosts(session);
   return (
-    <div className="c-container main mt-24">
+    <article className="c-container main mt-24">
       <FeedList
         initFeed={posts.items}
         nextCursor={posts.nextCursor}
         query={{ limit: 10, orderBy: "id", sortOrder: "desc", type: "post" }}
       />
-    </div>
+    </article>
   );
 };
 

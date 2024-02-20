@@ -1,11 +1,81 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { cn, Image } from "@chia/ui";
+import {
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
+import {
+  cn,
+  Image,
+  MotionThemeIcon,
+  defaultThemeVariants,
+  useTheme,
+  Theme,
+} from "@chia/ui";
 import meta from "@chia/meta";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+
+const ThemeSelector = () => {
+  const { theme, setTheme } = useTheme();
+  return (
+    <Dropdown>
+      <DropdownTrigger>
+        <Button
+          variant="flat"
+          size="sm"
+          startContent={
+            <MotionThemeIcon
+              theme={theme as Theme}
+              variants={defaultThemeVariants}
+            />
+          }>
+          Theme
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu>
+        <DropdownItem
+          key="system"
+          startContent={
+            <MotionThemeIcon
+              theme={Theme.SYSTEM}
+              variants={defaultThemeVariants}
+            />
+          }
+          onPress={(e) => setTheme(Theme.SYSTEM)}>
+          System
+        </DropdownItem>
+        <DropdownItem
+          key="system"
+          startContent={
+            <MotionThemeIcon
+              theme={Theme.DARK}
+              variants={defaultThemeVariants}
+            />
+          }
+          onPress={(e) => setTheme(Theme.DARK)}>
+          Dark
+        </DropdownItem>
+        <DropdownItem
+          key="system"
+          startContent={
+            <MotionThemeIcon
+              theme={Theme.LIGHT}
+              variants={defaultThemeVariants}
+            />
+          }
+          onPress={(e) => setTheme(Theme.LIGHT)}>
+          Light
+        </DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  );
+};
 
 const LinkItem: FC<{
   path: string;
@@ -77,8 +147,9 @@ const Footer: FC = () => {
   return (
     <footer className="footer">
       <div className="c-container flex w-full px-10">
-        <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start md:flex">
+        <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />
+          <ThemeSelector />
           <Copyright className="mt-auto" />
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
@@ -89,7 +160,10 @@ const Footer: FC = () => {
         </div>
       </div>
       <div className="c-container mt-5 flex w-full items-center justify-between px-10 md:hidden">
-        <Logo />
+        <div className="flex items-center gap-5">
+          <Logo />
+          <ThemeSelector />
+        </div>
         <Copyright />
       </div>
       <div
