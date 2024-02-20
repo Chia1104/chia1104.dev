@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <article className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <div className="static flex h-48 h-auto w-auto w-full items-end justify-center bg-gradient-to-t bg-none from-white via-white dark:from-black dark:via-black">
+        <div className="static flex h-auto w-auto items-end justify-center bg-none from-white via-white dark:from-black dark:via-black">
           <a
             className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
             href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
