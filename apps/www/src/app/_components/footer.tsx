@@ -2,7 +2,7 @@
 
 import type { FC, ReactNode } from "react";
 import meta from "@chia/meta";
-import { cn, Link } from "@chia/ui";
+import { cn, Link, ThemeSelector } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import navItems from "@/shared/routes";
@@ -82,8 +82,9 @@ const Footer: FC = () => {
       data-testid="footer"
       className="c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8">
       <div className="c-container flex w-full px-10">
-        <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start md:flex">
+        <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />
+          <ThemeSelector />
           <Copyright className="mt-auto" />
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
@@ -100,7 +101,10 @@ const Footer: FC = () => {
         </div>
       </div>
       <div className="c-container mt-5 flex w-full items-center justify-between px-10 md:hidden">
-        <Logo />
+        <div className="flex items-center gap-5">
+          <Logo />
+          <ThemeSelector />
+        </div>
         <Copyright />
       </div>
       <motion.div

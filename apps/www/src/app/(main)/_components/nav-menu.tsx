@@ -2,7 +2,7 @@
 
 import { type FC } from "react";
 import Link from "next/link";
-import { cn, ThemeSelector } from "@chia/ui";
+import { cn } from "@chia/ui";
 import { usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import navItems from "@/shared/routes";
@@ -55,7 +55,6 @@ const NavMenu: FC = () => {
               );
             })}
           </div>
-          <ThemeSelector />
         </LayoutGroup>
       </div>
     </nav>

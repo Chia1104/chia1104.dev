@@ -5,10 +5,8 @@ import { motion, type Variant } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../DropdownMenu";
 import { Button } from "../Button";
@@ -158,13 +156,11 @@ export const ThemeSelector: FC<Props> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="sm" variant="outline">
-          <MotionThemeIcon theme={theme as Theme} variants={variants} />
+        <Button size="sm" variant="outline" className="gap-2">
+          <MotionThemeIcon theme={theme as Theme} variants={variants} /> Theme
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>Theme</DropdownMenuLabel>
-        <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
           <DropdownMenuRadioItem
