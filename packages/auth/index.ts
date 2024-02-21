@@ -33,7 +33,7 @@ declare module "next-auth" {
 /**
  * @todo nest-auth issue
  */
-const AUTH_URL = env.VERCEL_URL ?? env.AUTH_URL;
+const AUTH_URL = env.AUTH_URL;
 const useSecureCookies = AUTH_URL?.startsWith("https://");
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
@@ -43,7 +43,6 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  trustHost: true,
   useSecureCookies,
   cookies: {
     sessionToken: {
@@ -71,15 +70,6 @@ export const {
         id: user.id,
       },
     }),
-    /**
-     * @todo nest-auth issue
-     */
-    redirect: ({ url, baseUrl }) => {
-      const overwriteUrl = env.VERCEL_URL ?? baseUrl;
-      if (url.startsWith("/")) return `${overwriteUrl}${url}`;
-      else if (new URL(url).origin === overwriteUrl) return url;
-      return overwriteUrl;
-    },
   },
   adapter: DrizzleAdapter(
     getDb(undefined, {
