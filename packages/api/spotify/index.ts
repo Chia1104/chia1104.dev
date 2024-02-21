@@ -21,15 +21,17 @@ export const getSpotifyAccessToken = async (req?: {
   refresh_token?: string;
   revalidate?: number;
   cache?: RequestCache;
+  grant_type?: "refresh_token" | "client_credentials";
 }) => {
   req ??= {};
-  const { revalidate = 60 * 60 * 1, cache, refresh_token } = req;
-  const body = env.SPOTIFY_REFRESH_TOKEN
-    ? new URLSearchParams({
-        grant_type: "refresh_token",
-        refresh_token: refresh_token ?? env.SPOTIFY_REFRESH_TOKEN,
-      })
-    : "grant_type=client_credentials";
+  const { revalidate = 60 * 60 * 1, cache, refresh_token, grant_type } = req;
+  const body =
+    grant_type === "refresh_token"
+      ? new URLSearchParams({
+          grant_type: "refresh_token",
+          refresh_token: refresh_token ?? env.SPOTIFY_REFRESH_TOKEN ?? "",
+        })
+      : "grant_type=client_credentials";
   const result = await post<{
     access_token: string;
   }>(
@@ -118,6 +120,7 @@ export const getNowPlaying = async (req?: {
   const { revalidate = 60, cache } = req;
   const accessToken = await getSpotifyAccessToken({
     revalidate,
+    grant_type: "refresh_token",
   });
 
   const result = await spotifyRequest("me/player/currently-playing", {

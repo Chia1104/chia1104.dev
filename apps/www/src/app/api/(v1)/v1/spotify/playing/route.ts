@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { getNowPlaying } from "@chia/api/spotify";
 import { errorGenerator } from "@chia/utils";
 import { HTTPError } from "ky";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const runtime = "edge";
 
 export const GET = async () => {
+  noStore();
   try {
     const data = await getNowPlaying({
       cache: "no-store",
