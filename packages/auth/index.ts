@@ -40,6 +40,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  trustHost: true,
   useSecureCookies,
   cookies: {
     sessionToken: {
