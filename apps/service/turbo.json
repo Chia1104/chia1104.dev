@@ -3,7 +3,14 @@
   "extends": ["//"],
   "pipeline": {
     "backend": {
-      "env": ["THROTTLE_LIMIT", "THROTTLE_TTL"]
+      "env": [
+        "THROTTLE_LIMIT",
+        "THROTTLE_TTL",
+        "SPOTIFY_CLIENT_ID",
+        "SPOTIFY_CLIENT_SECRET",
+        "SPOTIFY_REDIRECT_URI",
+        "CORS_ALLOWED_ORIGIN"
+      ]
     }
   }
 }

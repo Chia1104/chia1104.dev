@@ -24,6 +24,7 @@ FROM base AS builder
 COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
+COPY ./packages/cache /app/packages/cache
 COPY ./packages/db /app/packages/db
 COPY ./packages/utils /app/packages/utils
 COPY turbo.json turbo.json
@@ -66,6 +67,7 @@ RUN pnpm i --prod --ignore-scripts
 FROM base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
+COPY ./packages/cache/package.json ./packages/cache/package.json
 COPY ./packages/db/package.json ./packages/db/package.json
 COPY ./packages/utils/package.json ./packages/utils/package.json
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules

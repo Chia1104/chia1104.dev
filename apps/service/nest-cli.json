@@ -9,6 +9,15 @@
     "assets": ["**/*.graphql"]
   },
   "projects": {
+    "@chia/cache": {
+      "type": "library",
+      "root": "../../packages/cache",
+      "entryFile": "index",
+      "sourceRoot": "../../packages/cache/src",
+      "compilerOptions": {
+        "tsConfigPath": "../../packages/cache/tsconfig.lib.json"
+      }
+    },
     "@chia/db": {
       "type": "library",
       "root": "../../packages/db",

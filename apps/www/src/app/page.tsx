@@ -1,6 +1,7 @@
 import meta from "@chia/meta";
 import { Image, ImageZoom, FadeIn, Link } from "@chia/ui";
 import type { FC, ReactNode } from "react";
+import SpotifyTest from "./spotify-test";
 
 const contact = {
   github: {
@@ -43,6 +44,7 @@ const LinkItem: FC<{
 const IndexPage = () => {
   return (
     <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
+      <SpotifyTest />
       <FadeIn className="w-full flex-col">
         <h1 className="text-start font-bold">{meta.name}</h1>
         <p>
