@@ -8,7 +8,8 @@
         "GOOGLE_CLIENT_SECRET",
         "AUTH_URL",
         "AUTH_SECRET",
-        "AUTH_REDIRECT_PROXY_URL"
+        "AUTH_REDIRECT_PROXY_URL",
+        "AUTH_COOKIE_DOMAIN"
       ]
     }
   }
