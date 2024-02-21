@@ -17,7 +17,13 @@ async function bootstrap() {
     },
   });
   app.enableShutdownHooks();
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+      forbidNonWhitelisted: true,
+    })
+  );
   const config = new DocumentBuilder()
     .setTitle("NestJS Example")
     .setVersion("1.0")

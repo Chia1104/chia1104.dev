@@ -3,7 +3,6 @@ import {
   Post,
   Get,
   InternalServerErrorException,
-  ValidationPipe,
   HttpException,
   Query,
   Body,
@@ -22,6 +21,8 @@ class SpotifyController {
   constructor(private readonly spotifyService: SpotifyService) {}
 
   @Post("authorize")
+  @ApiOperation({ summary: "Authorize Spotify" })
+  @ApiResponse({ status: 500, description: "Internal server error" })
   async authorize(@Body() dto: AuthorizeSpotifyDto) {
     try {
       const redirectUrl = this.spotifyService.generateAuthorizeUrl(dto);
@@ -32,14 +33,10 @@ class SpotifyController {
   }
 
   @Get("callback")
+  @ApiOperation({ summary: "Callback Spotify" })
+  @ApiResponse({ status: 500, description: "Internal server error" })
   async codeAuthorize(
-    @Query(
-      new ValidationPipe({
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-        forbidNonWhitelisted: true,
-      })
-    )
+    @Query()
     query: AuthorizeCodeDto
   ) {
     try {
