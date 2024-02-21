@@ -1,5 +1,4 @@
 import { createEnv } from "@t3-oss/env-core";
-import { vercel } from "@t3-oss/env-core/presets";
 import { z } from "zod";
 
 export const env = createEnv({
@@ -25,5 +24,4 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [vercel],
 });
