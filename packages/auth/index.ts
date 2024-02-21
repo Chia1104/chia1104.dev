@@ -30,24 +30,29 @@ declare module "next-auth" {
   }
 }
 
+const AUTH_URL = env.AUTH_REDIRECT_PROXY_URL ?? env.AUTH_URL;
+const useSecureCookies = AUTH_URL?.startsWith("https://");
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+
 export const {
   handlers: { GET, POST },
   auth,
   signIn,
   signOut,
 } = NextAuth({
-  useSecureCookies: process.env.NODE_ENV === "production",
+  useSecureCookies,
   cookies: {
     sessionToken: {
-      name: `chia1104-dev.session-token`,
+      name: `${cookiePrefix}authjs.session-token`,
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain: env.AUTH_URL?.includes("localhost")
-          ? env.AUTH_URL
-          : ".chia1104.dev",
+        secure: useSecureCookies,
+        domain:
+          env.AUTH_COOKIE_DOMAIN || AUTH_URL?.includes("localhost")
+            ? "localhost"
+            : ".chia1104.dev",
       },
     },
   },
