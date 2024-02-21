@@ -37,6 +37,20 @@ export const {
   signOut,
 } = NextAuth({
   useSecureCookies: process.env.NODE_ENV === "production",
+  cookies: {
+    sessionToken: {
+      name: `chia1104-dev.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        domain: env.AUTH_URL?.includes("localhost")
+          ? env.AUTH_URL
+          : ".chia1104.dev",
+      },
+    },
+  },
   pages: {
     signIn: "/login",
   },
