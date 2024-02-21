@@ -37,3 +37,4 @@ export * from "./Button";
 export * from "./CMD";
 export * from "./Tooltip";
 export * from "./Drawer";
+export * from "./HoverCard";
