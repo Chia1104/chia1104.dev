@@ -22,6 +22,11 @@ env:
   PNPM_VERSION: 8.4.0
   NODE_VERSION: 18.*
   GIT_HASH: ${{ github.sha }}
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  SPOTIFY_REDIRECT_URI: http://localhost:3003
+  REDIS_URI: ${{ secrets.REDIS_URI }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
   ENV: beta
 
 jobs:
@@ -59,4 +64,9 @@ jobs:
             BETA_DATABASE_URL=${{ env.BETA_DATABASE_URL }}
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
+            SPOTIFY_CLIENT_ID=${{ env.SPOTIFY_CLIENT_ID }}
+            SPOTIFY_CLIENT_SECRET=${{ env.SPOTIFY_CLIENT_SECRET }}
+            SPOTIFY_REDIRECT_URI=${{ env.SPOTIFY_REDIRECT_URI }}
+            REDIS_URI=${{ env.REDIS_URI }}
+            REDIS_URL=${{ env.REDIS_URL }}
             ENV=${{ env.ENV }}

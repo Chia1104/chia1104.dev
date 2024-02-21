@@ -19,6 +19,11 @@ env:
   BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
   BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  SPOTIFY_REDIRECT_URI: http://localhost:3003
+  REDIS_URI: ${{ secrets.REDIS_URI }}
+  REDIS_URL: ${{ secrets.REDIS_URL }}
   ENV: beta
 
 jobs:
