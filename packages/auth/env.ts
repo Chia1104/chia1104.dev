@@ -1,4 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
+import { vercel } from "@t3-oss/env-core/presets";
 import { z } from "zod";
 
 export const env = createEnv({
@@ -19,9 +20,10 @@ export const env = createEnv({
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_REDIRECT_PROXY_URL: process.env.AUTH_REDIRECT_PROXY_URL,
     AUTH_URL: process.env.AUTH_URL,
-    AUTH_COOKIE_DOMAIN: process.env.AUTH_COOKIE_DOMAIN,
+    AUTH_COOKIE_DOMAIN: process.env.AUTH_COOKIE_DOMAIN ?? ".chia1104.dev",
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
+  extends: [vercel],
 });

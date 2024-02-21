@@ -30,7 +30,7 @@ declare module "next-auth" {
   }
 }
 
-const AUTH_URL = env.AUTH_REDIRECT_PROXY_URL ?? env.AUTH_URL;
+const AUTH_URL = env.VERCEL_URL ?? env.AUTH_REDIRECT_PROXY_URL ?? env.AUTH_URL;
 const useSecureCookies = AUTH_URL?.startsWith("https://");
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
@@ -50,10 +50,9 @@ export const {
         sameSite: "lax",
         path: "/",
         secure: useSecureCookies,
-        domain:
-          env.AUTH_COOKIE_DOMAIN || AUTH_URL?.includes("localhost")
-            ? "localhost"
-            : ".chia1104.dev",
+        domain: AUTH_URL?.includes("localhost")
+          ? "localhost"
+          : env.AUTH_COOKIE_DOMAIN,
       },
     },
   },
