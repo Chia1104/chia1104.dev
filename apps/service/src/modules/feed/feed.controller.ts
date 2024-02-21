@@ -5,7 +5,6 @@ import {
   InternalServerErrorException,
   HttpException,
   Query,
-  ValidationPipe,
 } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import FeedService from "./feed.service";
@@ -22,13 +21,7 @@ class FeedController {
   @ApiResponse({ status: 404, description: "Feed not found" })
   @ApiResponse({ status: 400, description: "Bad request" })
   async getAllFeed(
-    @Query(
-      new ValidationPipe({
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-        forbidNonWhitelisted: true,
-      })
-    )
+    @Query()
     query: QueryFeedsDto
   ) {
     try {

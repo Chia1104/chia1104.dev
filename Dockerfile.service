@@ -24,6 +24,7 @@ FROM base AS builder
 COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
+COPY ./packages/cache /app/packages/cache
 COPY ./packages/db /app/packages/db
 COPY ./packages/utils /app/packages/utils
 COPY turbo.json turbo.json
@@ -37,8 +38,12 @@ ARG TURBO_TEAM \
     ZEABUR_ENVIRONMENT_NAME \
     RAILWAY_STATIC_URL \
     RAILWAY_PUBLIC_DOMAIN \
-    ZEABUR_URL
-
+    ZEABUR_URL \
+    REDIS_URI \
+    REDIS_URL \
+    SPOTIFY_CLIENT_ID \
+    SPOTIFY_CLIENT_SECRET \
+    SPOTIFY_REDIRECT_URI
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN \
@@ -49,9 +54,14 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     ZEABUR_ENVIRONMENT_NAME=${ZEABUR_ENVIRONMENT_NAME} \
     RAILWAY_STATIC_URL=${RAILWAY_STATIC_URL} \
     RAILWAY_PUBLIC_DOMAIN=${RAILWAY_PUBLIC_DOMAIN} \
-    ZEABUR_URL=${ZEABUR_URL}
+    ZEABUR_URL=${ZEABUR_URL} \
+    REDIS_URI=${REDIS_URI} \
+    REDIS_URL=${REDIS_URL} \
+    SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID} \
+    SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET} \
+    SPOTIFY_REDIRECT_URI=${SPOTIFY_REDIRECT_URI}
 
-RUN pnpm i --no-frozen-lockfile
+RUN pnpm i
 
 RUN pnpm turbo run build --filter=service...
 
@@ -61,11 +71,12 @@ COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
 
-RUN pnpm i --prod --ignore-scripts --no-frozen-lockfile
+RUN pnpm i --prod --ignore-scripts
 
 FROM base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
+COPY ./packages/cache/package.json ./packages/cache/package.json
 COPY ./packages/db/package.json ./packages/db/package.json
 COPY ./packages/utils/package.json ./packages/utils/package.json
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules

@@ -16,6 +16,8 @@ export const env = createEnv({
     REDIS_URL: process.env.REDIS_URL,
     REDIS_URI: process.env.REDIS_URI,
   },
+  clientPrefix: "NEXT_PUBLIC_",
+  client: {},
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",

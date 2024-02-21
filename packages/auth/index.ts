@@ -30,13 +30,34 @@ declare module "next-auth" {
   }
 }
 
+/**
+ * @todo nest-auth issue
+ */
+const AUTH_URL = env.AUTH_URL;
+const useSecureCookies = AUTH_URL?.startsWith("https://");
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+
 export const {
   handlers: { GET, POST },
   auth,
   signIn,
   signOut,
 } = NextAuth({
-  useSecureCookies: process.env.NODE_ENV === "production",
+  useSecureCookies,
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}authjs.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+        domain: AUTH_URL?.includes("localhost")
+          ? "localhost"
+          : env.AUTH_COOKIE_DOMAIN,
+      },
+    },
+  },
   pages: {
     signIn: "/login",
   },
