@@ -13,6 +13,8 @@ import {
   ErrorBoundary,
   Link,
   Progress,
+  Marquee,
+  TextShimmer,
 } from "@chia/ui";
 import { get, handleKyError } from "@chia/utils";
 import { HTTPError } from "ky";
@@ -128,16 +130,20 @@ const Card: FC<
           {props.isLoading ? (
             <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
           ) : !!props.data ? (
-            <Link
-              className="m-0 line-clamp-1 w-[85%]"
-              href={props.data?.item.external_urls.spotify ?? "/"}
-              target="_blank">
-              {props.data.item.name} - {props.data.item.artists[0].name}
-            </Link>
+            <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
+              <Link
+                className="m-0 text-sm"
+                href={props.data?.item.external_urls.spotify ?? "/"}
+                target="_blank">
+                <TextShimmer className="m-0 p-0">
+                  {props.data.item.name} - {props.data.item.artists[0].name}
+                </TextShimmer>
+              </Link>
+            </Marquee>
           ) : (
             <p className="m-0">Nothing Playing</p>
           )}
-          {!!props.data && <span className="i-lucide-sparkles size-5" />}
+          {/* {!!props.data && <span className="i-lucide-sparkles size-5" />} */}
         </div>
       </HoverCardTrigger>
       {props.data && (
@@ -154,8 +160,18 @@ const Card: FC<
               className="m-0 size-20 rounded-lg object-cover"
             />
             <div className="prose dark:prose-invert p-1">
-              <h4 className="line-clamp-1">{props.data?.item.name}</h4>
-              <p className="line-clamp-1">{props.data?.item.artists[0].name}</p>
+              {props.data?.item.name.length > 13 ? (
+                <Marquee className="max-w-[70%] p-0" repeat={2}>
+                  <h4 className="mb-2 mt-0">{props.data?.item.name}</h4>
+                </Marquee>
+              ) : (
+                <h4 className="mb-2 mt-0 line-clamp-1">
+                  {props.data?.item.name}
+                </h4>
+              )}
+              <p className="mt-0 line-clamp-1 text-sm">
+                {props.data?.item.artists[0].name}
+              </p>
             </div>
           </div>
           {props.isSuccess && <ProgressBar {...props} />}
