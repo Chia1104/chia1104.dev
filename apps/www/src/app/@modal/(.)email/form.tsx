@@ -10,7 +10,6 @@ import {
   cn,
   Meteors,
   ShimmerButton,
-  useTheme,
 } from "@chia/ui";
 import { useRouter } from "next/navigation";
 import { Form } from "@/app/contact/contact";
@@ -18,16 +17,16 @@ import { Link, Input, Textarea } from "@chia/ui";
 import meta from "@chia/meta";
 import { Controller } from "react-hook-form";
 import { useId } from "react";
+import { motion } from "framer-motion";
 
 const ContactForm = () => {
   const router = useRouter();
   const id = useId();
-  const { isDarkMode } = useTheme();
 
   return (
     <Drawer open onClose={() => router.back()}>
-      <DrawerContent className="c-bg-third flex w-full flex-col items-center p-5">
-        <div className="relative flex w-full flex-col items-center">
+      <DrawerContent className="c-bg-third flex w-full flex-col items-center p-5 pb-0">
+        <div className="relative flex w-full flex-col items-center overflow-hidden">
           <Meteors number={20} />
           <DrawerHeader className="max-w-[700px]">
             <DrawerTitle>Contact</DrawerTitle>
@@ -124,7 +123,7 @@ const ContactForm = () => {
                     {ReCAPTCHA}
                   </div>
                 </div>
-                <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 py-1">
+                <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 pb-5 pt-1">
                   <ShimmerButton
                     shimmerSize="0.1em"
                     id={id + "-contact-submit"}
@@ -141,6 +140,21 @@ const ContactForm = () => {
                   </span>
                 </DrawerFooter>
               </>
+            )}
+          />
+          <motion.div
+            whileInView={{
+              opacity: "50%",
+            }}
+            initial={{
+              opacity: "0%",
+            }}
+            transition={{
+              delay: 0.3,
+              duration: 0.7,
+            }}
+            className={cn(
+              "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full blur-3xl"
             )}
           />
         </div>

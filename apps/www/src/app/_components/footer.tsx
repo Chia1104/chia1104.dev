@@ -66,7 +66,10 @@ const Footer: FC = () => {
       data-testid="footer"
       className="c-bg-third relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden py-20">
       <div className="c-container z-40 mb-10 flex w-full px-10">
-        <CurrentPlaying />
+        <CurrentPlaying
+          className="bg-white dark:bg-black"
+          hoverCardContentClassName="bg-white dark:bg-black"
+        />
       </div>
 
       <div className="c-container z-20 flex w-full px-10">
