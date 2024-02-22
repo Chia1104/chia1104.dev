@@ -36,7 +36,7 @@ const ContactForm = () => {
             onSuccess={() => router.back()}
             render={({ controller, isPending, ReCAPTCHA }) => (
               <>
-                <div className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full flex h-[65vh] max-h-[650px] w-full max-w-[700px] flex-col gap-2 overflow-y-scroll py-2">
+                <div className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full flex h-[65vh] max-h-[650px] w-full max-w-[700px] flex-col gap-2 overflow-y-auto px-2 py-2">
                   <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
                     <Controller
                       control={controller}
@@ -121,7 +121,7 @@ const ContactForm = () => {
                     {ReCAPTCHA}
                   </div>
                 </div>
-                <DrawerFooter className="prose dark:prose-invert flex h-12 max-w-[700px] flex-row items-center justify-center py-3">
+                <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 py-1">
                   <button
                     id={id + "-contact-submit"}
                     type="submit"
@@ -132,15 +132,12 @@ const ContactForm = () => {
                     )}>
                     Send
                   </button>
-                  or Via{" "}
-                  <Link href={`mailto:${meta.email}`} className="flex w-fit">
-                    email
-                  </Link>{" "}
-                  <Link
-                    href={`mailto:${meta.email}`}
-                    className="hidden w-fit sm:flex">
-                    {meta.email}
-                  </Link>
+                  <span className="flex gap-1">
+                    or Via
+                    <Link href={`mailto:${meta.email}`} className="flex w-fit">
+                      email
+                    </Link>
+                  </span>
                 </DrawerFooter>
               </>
             )}
