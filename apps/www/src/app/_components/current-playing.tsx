@@ -39,6 +39,7 @@ interface Props {
     "queryKey" | "queryFn"
   >;
   className?: string;
+  hoverCardContentClassName?: string;
 }
 
 type State = number;
@@ -82,6 +83,7 @@ const ProgressBar: FC<UseQueryResult<CurrentPlaying, HTTPError>> = (props) => {
 const Card: FC<
   UseQueryResult<CurrentPlaying, HTTPError> & {
     className?: string;
+    hoverCardContentClassName?: string;
   }
 > = (props) => {
   const [, setValue] = useCurrentPlayingContext();
@@ -151,7 +153,8 @@ const Card: FC<
           className={cn(
             "c-bg-third z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
             props.isError &&
-              "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)]"
+              "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)]",
+            props.hoverCardContentClassName
           )}>
           <div className="flex items-center gap-5">
             <img
@@ -181,7 +184,12 @@ const Card: FC<
   );
 };
 
-const CurrentPlaying: FC<Props> = ({ children, queryOptions, className }) => {
+const CurrentPlaying: FC<Props> = ({
+  children,
+  queryOptions,
+  className,
+  hoverCardContentClassName,
+}) => {
   const result = useQuery<CurrentPlaying, HTTPError>({
     refetchInterval: (ctx) => {
       if (
@@ -228,7 +236,11 @@ const CurrentPlaying: FC<Props> = ({ children, queryOptions, className }) => {
 
   return (
     <CurrentPlayingContextProvider initValue={result.data?.progress_ms ?? 0}>
-      <Card {...result} className={className} />
+      <Card
+        {...result}
+        className={className}
+        hoverCardContentClassName={hoverCardContentClassName}
+      />
     </CurrentPlayingContextProvider>
   );
 };

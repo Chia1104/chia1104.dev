@@ -9,6 +9,7 @@ import {
   DrawerTitle,
   cn,
   Meteors,
+  ShimmerButton,
 } from "@chia/ui";
 import { useRouter } from "next/navigation";
 import { Form } from "@/app/contact/contact";
@@ -16,6 +17,7 @@ import { Link, Input, Textarea } from "@chia/ui";
 import meta from "@chia/meta";
 import { Controller } from "react-hook-form";
 import { useId } from "react";
+import { motion } from "framer-motion";
 
 const ContactForm = () => {
   const router = useRouter();
@@ -23,8 +25,8 @@ const ContactForm = () => {
 
   return (
     <Drawer open onClose={() => router.back()}>
-      <DrawerContent className="c-bg-third flex w-full flex-col items-center p-5">
-        <div className="relative flex w-full flex-col items-center">
+      <DrawerContent className="c-bg-third flex w-full flex-col items-center p-5 pb-0">
+        <div className="relative flex w-full flex-col items-center overflow-hidden">
           <Meteors number={20} />
           <DrawerHeader className="max-w-[700px]">
             <DrawerTitle>Contact</DrawerTitle>
@@ -36,7 +38,7 @@ const ContactForm = () => {
             onSuccess={() => router.back()}
             render={({ controller, isPending, ReCAPTCHA }) => (
               <>
-                <div className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full flex h-[65vh] max-h-[650px] w-full max-w-[700px] flex-col gap-2 overflow-y-scroll py-2">
+                <div className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full flex h-[65vh] max-h-[650px] w-full max-w-[700px] flex-col gap-2 overflow-y-auto px-2 py-2">
                   <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
                     <Controller
                       control={controller}
@@ -121,28 +123,38 @@ const ContactForm = () => {
                     {ReCAPTCHA}
                   </div>
                 </div>
-                <DrawerFooter className="prose dark:prose-invert flex h-12 max-w-[700px] flex-row items-center justify-center py-3">
-                  <button
+                <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 pb-5 pt-1">
+                  <ShimmerButton
+                    shimmerSize="0.1em"
                     id={id + "-contact-submit"}
                     type="submit"
                     disabled={isPending}
-                    className={cn(
-                      "c-bg-gradient-green-to-purple flex h-10 w-[85px] items-center justify-center self-center rounded-full text-white transition ease-in-out hover:scale-[1.05]",
-                      isPending && "cursor-not-allowed"
-                    )}>
+                    className={cn("py-1", isPending && "cursor-not-allowed")}>
                     Send
-                  </button>
-                  or Via{" "}
-                  <Link href={`mailto:${meta.email}`} className="flex w-fit">
-                    email
-                  </Link>{" "}
-                  <Link
-                    href={`mailto:${meta.email}`}
-                    className="hidden w-fit sm:flex">
-                    {meta.email}
-                  </Link>
+                  </ShimmerButton>
+                  <span className="flex gap-1">
+                    or Via
+                    <Link href={`mailto:${meta.email}`} className="flex w-fit">
+                      email
+                    </Link>
+                  </span>
                 </DrawerFooter>
               </>
+            )}
+          />
+          <motion.div
+            whileInView={{
+              opacity: "50%",
+            }}
+            initial={{
+              opacity: "0%",
+            }}
+            transition={{
+              delay: 0.3,
+              duration: 0.7,
+            }}
+            className={cn(
+              "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full blur-3xl"
             )}
           />
         </div>
