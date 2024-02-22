@@ -141,7 +141,7 @@ const Card: FC<
               </Link>
             </Marquee>
           ) : (
-            <p className="m-0">Nothing Playing</p>
+            <p className="m-0">Not Playing</p>
           )}
           {/* {!!props.data && <span className="i-lucide-sparkles size-5" />} */}
         </div>
