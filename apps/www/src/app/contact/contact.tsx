@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@chia/ui";
-import { Input, Textarea, Card, useTheme } from "@chia/ui";
+import { Input, Textarea, Card, useTheme, ShimmerButton } from "@chia/ui";
 import { post, type HTTPError, handleKyError } from "@chia/utils";
 import { toast } from "sonner";
 import { useForm, Controller, type Control } from "react-hook-form";
@@ -237,16 +237,17 @@ export const Form: FC<
               name="reCaptchToken"
             />
           </div>
-          <button
+          <ShimmerButton
+            shimmerSize="0.1em"
             id={id + "-contact-submit"}
             type="submit"
             disabled={isLoading || isSubmitting}
             className={cn(
-              "c-bg-gradient-green-to-purple mt-3 flex h-10 w-[85px] items-center justify-center self-center rounded-full text-white transition ease-in-out hover:scale-[1.05]",
+              "w-fit self-center py-2",
               isLoading && "cursor-not-allowed"
             )}>
             Send
-          </button>
+          </ShimmerButton>
         </>
       )}
     </form>

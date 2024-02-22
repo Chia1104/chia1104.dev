@@ -9,6 +9,8 @@ import {
   DrawerTitle,
   cn,
   Meteors,
+  ShimmerButton,
+  useTheme,
 } from "@chia/ui";
 import { useRouter } from "next/navigation";
 import { Form } from "@/app/contact/contact";
@@ -20,6 +22,7 @@ import { useId } from "react";
 const ContactForm = () => {
   const router = useRouter();
   const id = useId();
+  const { isDarkMode } = useTheme();
 
   return (
     <Drawer open onClose={() => router.back()}>
@@ -122,16 +125,14 @@ const ContactForm = () => {
                   </div>
                 </div>
                 <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 py-1">
-                  <button
+                  <ShimmerButton
+                    shimmerSize="0.1em"
                     id={id + "-contact-submit"}
                     type="submit"
                     disabled={isPending}
-                    className={cn(
-                      "c-bg-gradient-green-to-purple flex h-10 w-[85px] items-center justify-center self-center rounded-full text-white transition ease-in-out hover:scale-[1.05]",
-                      isPending && "cursor-not-allowed"
-                    )}>
+                    className={cn("py-1", isPending && "cursor-not-allowed")}>
                     Send
-                  </button>
+                  </ShimmerButton>
                   <span className="flex gap-1">
                     or Via
                     <Link href={`mailto:${meta.email}`} className="flex w-fit">

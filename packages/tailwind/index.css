@@ -71,6 +71,10 @@
     @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
   }
 
+  .c-bg-gradient-black-to-dark-gray {
+    @apply bg-gradient-to-r from-black to-gray-900
+  }
+
   .c-button-primary {
     @apply bg-primary rounded-full drop-shadow-lg text-white hover:bg-secondary transition ease-in-out flex justify-center items-center px-3 py-1
   }
