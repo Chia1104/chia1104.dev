@@ -8,6 +8,7 @@ import navItems from "@/shared/routes";
 import contact from "@/shared/contact";
 import { Image } from "@chia/ui";
 import meta from "@chia/meta";
+import CurrentPlaying from "@/app/_components/current-playing";
 
 const LinkItem: FC<{
   path: string;
@@ -63,7 +64,11 @@ const Footer: FC = () => {
   return (
     <footer
       data-testid="footer"
-      className="c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8">
+      className="c-bg-third relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden py-20">
+      <div className="c-container z-20 mb-10 flex w-full px-10">
+        <CurrentPlaying />
+      </div>
+
       <div className="c-container flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />
