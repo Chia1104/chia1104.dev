@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import navItems from "@/shared/routes";
 import contact from "@/shared/contact";
-import { Image } from "@chia/ui";
+import { Image, RetroGrid } from "@chia/ui";
 import meta from "@chia/meta";
 import CurrentPlaying from "@/app/_components/current-playing";
 
@@ -62,14 +62,14 @@ const Logo = () => (
 
 const Footer: FC = () => {
   return (
-    <footer
+    <RetroGrid
       data-testid="footer"
       className="c-bg-third relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden py-20">
-      <div className="c-container z-20 mb-10 flex w-full px-10">
+      <div className="c-container z-40 mb-10 flex w-full px-10">
         <CurrentPlaying />
       </div>
 
-      <div className="c-container flex w-full px-10">
+      <div className="c-container z-20 flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />
           <ThemeSelector enableCMD />
@@ -88,7 +88,7 @@ const Footer: FC = () => {
           ))}
         </div>
       </div>
-      <div className="c-container mt-5 flex w-full items-center justify-between px-10 md:hidden">
+      <div className="c-container z-20 mt-5 flex w-full items-center justify-between px-10 md:hidden">
         <div className="flex items-center gap-3">
           <Logo />
           <ThemeSelector label="" />
@@ -110,7 +110,7 @@ const Footer: FC = () => {
           "dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -bottom-[300px] -z-40 h-[450px] w-full max-w-[850px] rounded-full blur-3xl"
         )}
       />
-    </footer>
+    </RetroGrid>
   );
 };
 
