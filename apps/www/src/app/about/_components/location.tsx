@@ -6,6 +6,9 @@ import {
   type FC,
   useRef,
   useEffect,
+  useCallback,
+  type PointerEvent,
+  type TouchEvent,
 } from "react";
 import { cn, useTheme } from "@chia/ui";
 import { useResizeObserver } from "usehooks-ts";
@@ -18,17 +21,22 @@ type LocationProps = {
   defaultPositionOffset?: [number, number];
   enableYInteraction?: boolean;
   cobeOptions?: Omit<Partial<COBEOptions>, "width" | "height" | "onRender">;
+  stiffness?: number;
+  damping?: number;
 } & Omit<ComponentPropsWithoutRef<"canvas">, "width" | "height">;
 
 const Location: FC<LocationProps> = ({
   className,
   location,
-  defaultPositionOffset = [0.1, 2.75],
+  defaultPositionOffset = [0, 2.75],
   enableYInteraction,
   cobeOptions = {},
+  stiffness = 50,
+  damping = 30,
   ...props
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const globe = useRef<ReturnType<typeof createGlobe>>();
   const pointerXInteracting = useRef<number | null>(null);
   const pointerYInteracting = useRef<number | null>(null);
   const pointerXInteractionMovement = useRef(0);
@@ -39,12 +47,18 @@ const Location: FC<LocationProps> = ({
   });
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const springX = useSpring(x);
-  const springY = useSpring(y);
-  const { theme, isDarkMode } = useTheme();
+  const springX = useSpring(x, {
+    stiffness,
+    damping,
+  });
+  const springY = useSpring(y, {
+    stiffness,
+    damping,
+  });
+  const { isDarkMode } = useTheme();
   useEffect(() => {
     if (canvasRef.current && width && height) {
-      const globe = createGlobe(canvasRef.current, {
+      globe.current = createGlobe(canvasRef.current, {
         devicePixelRatio: 2,
         phi: 0,
         theta: -0.1,
@@ -59,21 +73,20 @@ const Location: FC<LocationProps> = ({
         ...cobeOptions,
         markers: [{ size: 0.1, ...cobeOptions.markers, location }],
         width: width * 2,
-        height: width * 2,
+        height: height * 2,
         onRender: (state) => {
           state.phi = defaultPositionOffset[1] + springX.get();
           state.theta = enableYInteraction
             ? defaultPositionOffset[0] + springY.get()
             : defaultPositionOffset[0];
           state.width = width * 2;
-          state.height = width * 2;
+          state.height = height * 2;
         },
       });
-
-      return () => {
-        globe.destroy();
-      };
     }
+    return () => {
+      globe.current?.destroy();
+    };
   }, [
     width,
     height,
@@ -85,57 +98,76 @@ const Location: FC<LocationProps> = ({
     defaultPositionOffset,
     cobeOptions,
   ]);
+
+  const handlePointerDown = useCallback(
+    (e: PointerEvent<HTMLCanvasElement>) => {
+      pointerXInteracting.current =
+        e.clientX - pointerXInteractionMovement.current;
+      pointerYInteracting.current =
+        e.clientY - pointerYInteractionMovement.current;
+      canvasRef.current && (canvasRef.current.style.cursor = "grabbing");
+    },
+    [pointerXInteractionMovement, pointerYInteractionMovement]
+  );
+
+  const handlePointerUp = useCallback(() => {
+    pointerXInteracting.current = null;
+    pointerYInteracting.current = null;
+    canvasRef.current && (canvasRef.current.style.cursor = "grab");
+  }, []);
+
+  const handlePointOut = useCallback(() => {
+    pointerXInteracting.current = null;
+    pointerYInteracting.current = null;
+    canvasRef.current && (canvasRef.current.style.cursor = "grab");
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (e: PointerEvent<HTMLCanvasElement>) => {
+      if (
+        pointerXInteracting.current !== null &&
+        pointerYInteracting.current !== null
+      ) {
+        const deltaX = e.clientX - pointerXInteracting.current;
+        const deltaY = e.clientY - pointerYInteracting.current;
+        pointerXInteractionMovement.current = deltaX;
+        pointerYInteractionMovement.current = deltaY;
+        springX.set(deltaX / 100);
+        enableYInteraction && springY.set(deltaY / 100);
+      }
+    },
+    [enableYInteraction, springX, springY]
+  );
+
+  const handleTouchMove = useCallback(
+    (e: TouchEvent<HTMLCanvasElement>) => {
+      if (
+        pointerXInteracting.current !== null &&
+        pointerYInteracting.current !== null &&
+        e.touches[0]
+      ) {
+        const deltaX = e.touches[0].clientX - pointerXInteracting.current;
+        const deltaY = e.touches[0].clientY - pointerYInteracting.current;
+        pointerXInteractionMovement.current = deltaX;
+        pointerYInteractionMovement.current = deltaY;
+        springX.set(deltaX / 100);
+        enableYInteraction && springY.set(deltaY / 100);
+      }
+    },
+    [enableYInteraction, springX, springY]
+  );
+
   return (
     <canvas
       ref={canvasRef}
-      onPointerDown={(e) => {
-        pointerXInteracting.current =
-          e.clientX - pointerXInteractionMovement.current;
-        pointerYInteracting.current =
-          e.clientY - pointerYInteractionMovement.current;
-        canvasRef.current && (canvasRef.current.style.cursor = "grabbing");
-      }}
-      onPointerUp={() => {
-        pointerXInteracting.current = null;
-        pointerYInteracting.current = null;
-        canvasRef.current && (canvasRef.current.style.cursor = "grab");
-      }}
-      onPointerOut={() => {
-        pointerXInteracting.current = null;
-        pointerYInteracting.current = null;
-        canvasRef.current && (canvasRef.current.style.cursor = "grab");
-      }}
-      onMouseMove={(e) => {
-        if (
-          pointerXInteracting.current !== null &&
-          pointerYInteracting.current !== null
-        ) {
-          const deltaX = e.clientX - pointerXInteracting.current;
-          const deltaY = e.clientY - pointerYInteracting.current;
-          pointerXInteractionMovement.current = deltaX;
-          pointerYInteractionMovement.current = deltaY;
-          springX.set(deltaX / 100);
-          enableYInteraction && springY.set(deltaY / 100);
-        }
-      }}
-      onTouchMove={(e) => {
-        if (
-          pointerXInteracting.current !== null &&
-          pointerYInteracting.current !== null &&
-          e.touches[0]
-        ) {
-          const deltaX = e.touches[0].clientX - pointerXInteracting.current;
-          const deltaY = e.touches[0].clientY - pointerYInteracting.current;
-          pointerXInteractionMovement.current = deltaX;
-          pointerYInteractionMovement.current = deltaY;
-          springX.set(deltaX / 100);
-          enableYInteraction && springY.set(deltaY / 100);
-        }
-      }}
-      className={cn(className)}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerOut={handlePointOut}
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleTouchMove}
+      className={cn("h-full w-full [contain:layout_paint_size]", className)}
       {...props}
       style={{
-        contain: "layout paint size",
         cursor: "auto",
         userSelect: "none",
       }}
