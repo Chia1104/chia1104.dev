@@ -58,6 +58,18 @@ const Location: FC<LocationProps> = ({
   const { isDarkMode } = useTheme();
   useEffect(() => {
     if (canvasRef.current && width && height) {
+      try {
+        const context =
+          canvasRef.current.getContext("webgl") ||
+          canvasRef.current.getContext("experimental-webgl");
+        if (!context) {
+          throw new Error("WebGL not supported");
+        }
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+
       globe.current = createGlobe(canvasRef.current, {
         devicePixelRatio: 2,
         phi: 0,
