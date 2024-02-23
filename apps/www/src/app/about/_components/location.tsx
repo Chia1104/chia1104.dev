@@ -59,10 +59,8 @@ const Location: FC<LocationProps> = ({
   useEffect(() => {
     if (canvasRef.current && width && height) {
       try {
-        const context =
-          canvasRef.current.getContext("webgl") ||
-          canvasRef.current.getContext("experimental-webgl");
-        if (!context) {
+        const context = canvasRef.current.getContext("webgl");
+        if (!context || !context?.getContextAttributes()) {
           throw new Error("WebGL not supported");
         }
       } catch (e) {
