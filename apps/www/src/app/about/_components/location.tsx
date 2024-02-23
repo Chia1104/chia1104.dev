@@ -4,13 +4,15 @@ import createGlobe, { type COBEOptions } from "cobe";
 import {
   type ComponentPropsWithoutRef,
   type FC,
+  type ReactNode,
   useRef,
   useEffect,
   useCallback,
+  useState,
   type PointerEvent,
   type TouchEvent,
 } from "react";
-import { cn, useTheme } from "@chia/ui";
+import { cn, useTheme, Image } from "@chia/ui";
 import { useResizeObserver } from "usehooks-ts";
 import { useSpring, useMotionValue } from "framer-motion";
 
@@ -23,6 +25,7 @@ type LocationProps = {
   cobeOptions?: Omit<Partial<COBEOptions>, "width" | "height" | "onRender">;
   stiffness?: number;
   damping?: number;
+  fallbackElement?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<"canvas">, "width" | "height">;
 
 const Location: FC<LocationProps> = ({
@@ -33,8 +36,10 @@ const Location: FC<LocationProps> = ({
   cobeOptions = {},
   stiffness = 50,
   damping = 30,
+  fallbackElement,
   ...props
 }) => {
+  const [isError, setIsError] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const globe = useRef<ReturnType<typeof createGlobe>>();
   const pointerXInteracting = useRef<number | null>(null);
@@ -61,9 +66,11 @@ const Location: FC<LocationProps> = ({
       try {
         const context = canvasRef.current.getContext("webgl");
         if (!context || !context?.getContextAttributes()) {
-          throw new Error("WebGL not supported");
+          throw new Error("WebGL not supported, or context not available");
         }
+        setIsError(false);
       } catch (e) {
+        setIsError(true);
         console.error(e);
         return;
       }
@@ -80,6 +87,7 @@ const Location: FC<LocationProps> = ({
         glowColor: [0.5, 0.5, 0.5],
         scale: 1.05,
         dark: isDarkMode ? 1 : 0,
+        context: { antialias: false },
         ...cobeOptions,
         markers: [{ size: 0.1, ...cobeOptions.markers, location }],
         width: width * 2,
@@ -168,20 +176,45 @@ const Location: FC<LocationProps> = ({
   );
 
   return (
-    <canvas
-      ref={canvasRef}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerOut={handlePointOut}
-      onMouseMove={handleMouseMove}
-      onTouchMove={handleTouchMove}
-      className={cn("h-full w-full [contain:layout_paint_size]", className)}
-      {...props}
-      style={{
-        cursor: "auto",
-        userSelect: "none",
-      }}
-    />
+    <>
+      {isError ? (
+        <>
+          {fallbackElement ?? (
+            <div
+              className={cn(
+                "not-prose aspect-h-1 aspect-w-1 relative w-[600px]",
+                className
+              )}>
+              <Image
+                src={
+                  isDarkMode ? "/assets/globe.png" : "/assets/globe-light.png"
+                }
+                alt="globe-fallback"
+                blur={false}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+        </>
+      ) : (
+        <canvas
+          ref={canvasRef}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerOut={handlePointOut}
+          onMouseMove={handleMouseMove}
+          onTouchMove={handleTouchMove}
+          className={cn("h-full w-full [contain:layout_paint_size]", className)}
+          {...props}
+          style={{
+            cursor: "auto",
+            userSelect: "none",
+            ...props.style,
+          }}
+        />
+      )}
+    </>
   );
 };
 
