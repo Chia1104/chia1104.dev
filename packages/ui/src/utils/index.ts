@@ -9,3 +9,5 @@ export { default as useInfiniteScroll } from "./use-infinite-scroll";
 export { default as useDarkMode } from "./use-dark-mode";
 export * as crypto from "./crypto";
 export { default as useTheme } from "./use-theme";
+export * from "./get-img-average-rgb";
+export * from "./get-base64-image";

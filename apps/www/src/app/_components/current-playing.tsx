@@ -15,8 +15,9 @@ import {
   Progress,
   Marquee,
   TextShimmer,
+  experimental_getImgAverageRGB,
 } from "@chia/ui";
-import { get, handleKyError } from "@chia/utils";
+import { get } from "@chia/utils";
 import { HTTPError } from "ky";
 import {
   type FC,
@@ -24,6 +25,7 @@ import {
   useState,
   useEffect,
   createContext,
+  useRef,
   type Dispatch,
   type SetStateAction,
   useContext,
@@ -87,6 +89,8 @@ const Card: FC<
   }
 > = (props) => {
   const [, setValue] = useCurrentPlayingContext();
+  const [rgb, setRGB] = useState([0, 0, 0]);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   // Sync the progress bar with the current playing song
   useEffect(() => {
@@ -158,6 +162,18 @@ const Card: FC<
           )}>
           <div className="flex items-center gap-5">
             <img
+              crossOrigin="anonymous"
+              onLoad={(e) => {
+                const img = e.target;
+                if (img instanceof HTMLImageElement) {
+                  const rgb = experimental_getImgAverageRGB(img, {
+                    blockSize: 5,
+                  });
+                  console.log(rgb);
+                  setRGB(rgb);
+                }
+              }}
+              ref={imgRef}
               src={props.data?.item.album.images[0].url}
               alt={props.data?.item.album.name}
               className="m-0 size-20 rounded-lg object-cover"
