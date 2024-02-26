@@ -103,9 +103,8 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
         <Toaster />
         <Analytics />
         <Cursor
-          className="bg-gradient-to-r from-gray-700 to-gray-600 dark:from-gray-400 dark:to-gray-500"
           style={{
-            opacity: 0.1,
+            opacity: 0.13,
             filter: "blur(50px)",
           }}
         />
