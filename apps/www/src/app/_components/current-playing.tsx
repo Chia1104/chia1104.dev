@@ -165,7 +165,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
             ref={imgRef}
             src={props.data?.item.album.images[0].url}
             alt={props.data?.item.album.name}
-            className="m-0 rounded-lg object-cover"
+            className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
           />
         )}
       </>
