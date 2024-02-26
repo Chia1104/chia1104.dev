@@ -177,15 +177,39 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
     () => (
       <>
         {!!props.data && props.data?.item.name.length > 13 ? (
-          <Marquee className="max-w-[80%] p-0" repeat={2}>
-            <h4 className="mb-2 mt-0">{props.data?.item.name}</h4>
+          <Marquee className="w-full p-0" repeat={2}>
+            <h4
+              className={cn(
+                "text-md mb-2 mt-0",
+                props.experimental?.displayBackgroundColorFromImage
+                  ? isLight
+                    ? "text-dark"
+                    : "text-light"
+                  : ""
+              )}>
+              {props.data?.item.name}
+            </h4>
           </Marquee>
         ) : (
-          <h4 className="mb-2 mt-0 line-clamp-1">{props.data?.item.name}</h4>
+          <h4
+            className={cn(
+              "mb-2 mt-0 line-clamp-1 text-lg",
+              props.experimental?.displayBackgroundColorFromImage
+                ? isLight
+                  ? "text-dark"
+                  : "text-light"
+                : ""
+            )}>
+            {props.data?.item.name}
+          </h4>
         )}
       </>
     ),
-    [props.data?.item.name]
+    [
+      props.data?.item.name,
+      isLight,
+      props.experimental?.displayBackgroundColorFromImage,
+    ]
   );
 
   const MemoLink = useMemo(
@@ -197,7 +221,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
               className="m-0 text-sm"
               href={props.data?.item.external_urls.spotify ?? "/"}
               target="_blank">
-              <TextShimmer className="m-0 p-0">
+              <TextShimmer className="m-0 flex w-full p-0">
                 {props.data.item.name} - {props.data.item.artists[0].name}
               </TextShimmer>
             </Link>
@@ -249,11 +273,25 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
           )}>
           <div className="flex items-center gap-5">
             {MemoImage}
-            <div className={cn("p-1", isLight ? "prose" : "prose-invert")}>
+            <div
+              className={cn(
+                "overflow-hidden p-1",
+                props.experimental?.displayBackgroundColorFromImage
+                  ? "not-prose"
+                  : "prose dark:prose-invert"
+              )}>
               {MemoTitle}
-              <span className="mt-0 line-clamp-1 text-sm">
+              <p
+                className={cn(
+                  "mt-0 line-clamp-1 text-sm",
+                  props.experimental?.displayBackgroundColorFromImage
+                    ? isLight
+                      ? "text-dark"
+                      : "text-light"
+                    : ""
+                )}>
                 {props.data?.item.artists[0].name}
-              </span>
+              </p>
             </div>
           </div>
           {props.isSuccess && <ProgressBar {...props} />}
