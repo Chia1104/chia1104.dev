@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC, useState, forwardRef, type Ref } from "react";
+import { useState, forwardRef } from "react";
 import NextImage, { type ImageProps as NextImageProps } from "next/image";
 import { cn } from "../utils/cn.util";
 

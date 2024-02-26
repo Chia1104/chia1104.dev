@@ -3,20 +3,17 @@
 import Image from "../../Image";
 import Modal from "../../Modal";
 import { type ImageProps } from "next/image";
-import { type FC, DetailedHTMLProps, ImgHTMLAttributes, useState } from "react";
+import { type ComponentPropsWithRef, type FC, useState } from "react";
 import { cn } from "../../utils/cn.util";
 
-interface MDXImageProps extends ImageProps {
+interface MDXImageProps extends ComponentPropsWithRef<typeof Image> {
   alt: string;
   showAlt?: boolean;
   aspectRatio?: string;
   objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
 }
 
-export const MDXImage: FC<
-  MDXImageProps &
-    DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>
-> = (MDXImageProps) => {
+export const MDXImage: FC<MDXImageProps> = (MDXImageProps) => {
   const {
     alt,
     showAlt = true,
