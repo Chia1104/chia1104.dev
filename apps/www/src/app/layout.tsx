@@ -12,10 +12,14 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Page, ScrollYProgress } from "@chia/ui";
 import NavMenu from "./_components/nav-menu";
 import { GoogleTagManager } from "@next/third-parties/google";
+import Background from "./_components/background";
 import { env } from "@/env";
 
 export const viewport: Viewport = {
-  themeColor: "#2B2E4A",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FECACA" },
+    { media: "(prefers-color-scheme: dark)", color: "#2B2E4A" },
+  ],
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -69,6 +73,7 @@ const ChiaWEB = ({
     <html lang="zh-Hant-TW" suppressHydrationWarning>
       <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
         <RootProvider>
+          <Background />
           <NavMenu />
           <ScrollYProgress className="fixed top-0 z-[999]" />
           <Page>

@@ -39,12 +39,7 @@ const Cursor: FC<
   const makeStyle = (style?: MotionStyle) => {
     return {
       transform: "translate(-50%, -50%)",
-      width: "400px",
-      height: "400px",
       filter: "blur(20px)",
-      borderRadius: "9999px",
-      backgroundColor: "rgb(255, 67, 75)",
-      background: "linear-gradient(#43d9ad, #4d5bce)",
       opacity: 0.4,
       zIndex: -1,
       ...style,
@@ -53,7 +48,10 @@ const Cursor: FC<
 
   return (
     <motion.div
-      className={cn("fixed left-0 top-0", className)}
+      className={cn(
+        "c-bg-gradient-yellow-to-pink dark:c-bg-gradient-purple-to-pink fixed left-0 top-0 size-[400px] rounded-full",
+        className
+      )}
       style={makeStyle(style)}
       animate="default"
       variants={variants}

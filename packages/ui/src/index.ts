@@ -45,3 +45,4 @@ export { default as RetroGrid } from "./RetroGrid";
 export { default as Meteors } from "./Meteors";
 export { default as BorderBeam } from "./BorderBeam";
 export { default as ShimmerButton } from "./ShimmerButton";
+export { default as Spotlight } from "./Spotlight";
