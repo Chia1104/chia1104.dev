@@ -17,6 +17,7 @@ import {
   TextShimmer,
   Image,
   experimental_getImgAverageRGB,
+  getBrightness,
 } from "@chia/ui";
 import { get } from "@chia/utils";
 import { HTTPError } from "ky";
@@ -139,8 +140,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
         props.data?.item.album.images[0].url
       ) {
         const rgb = experimental_getImgAverageRGB(img);
-        const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-        const isLight = brightness > 125;
+        const { isLight } = getBrightness(rgb);
         setIsLight(isLight);
         setBgRGB(rgb);
       }
