@@ -16,7 +16,12 @@ const AboutPage = async (props: {
       {props.children}
       <h2>Favorite Songs</h2>
       <p>Currently, I'm listening to this song.</p>
-      <CurrentPlaying className="mb-5" />
+      <CurrentPlaying
+        className="mb-5"
+        experimental={{
+          displayBackgroundColorFromImage: true,
+        }}
+      />
       {props.spotifyPlaylist}
       <h2>Timeline</h2>
       {props.timeline}

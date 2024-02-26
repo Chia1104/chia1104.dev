@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 export default defineConfig({
+  // @ts-ignore
   plugins: [react()],
   test: {
     globals: true,

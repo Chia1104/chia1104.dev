@@ -68,7 +68,7 @@ const Footer: FC = () => {
       <div className="c-container z-40 mb-10 flex w-full px-10">
         <CurrentPlaying
           className="bg-white dark:bg-black"
-          hoverCardContentClassName="bg-white dark:bg-black"
+          hoverCardContentClassName="bg-white/30 dark:bg-black/30 backdrop-blur-lg"
         />
       </div>
 
