@@ -15,6 +15,7 @@ import {
   Progress,
   Marquee,
   TextShimmer,
+  Image,
   experimental_getImgAverageRGB,
 } from "@chia/ui";
 import { get } from "@chia/utils";
@@ -29,10 +30,20 @@ import {
   type Dispatch,
   type SetStateAction,
   useContext,
+  useCallback,
+  useMemo,
 } from "react";
 import { type CurrentPlaying } from "@chia/api/spotify/types";
 
-interface Props {
+interface ExtendsProps {
+  className?: string;
+  hoverCardContentClassName?: string;
+  experimental?: {
+    displayBackgroundColorFromImage?: boolean;
+  };
+}
+
+interface Props extends ExtendsProps {
   children?:
     | ReactNode
     | ((result: UseQueryResult<CurrentPlaying, HTTPError>) => ReactNode);
@@ -40,8 +51,6 @@ interface Props {
     UseQueryOptions<CurrentPlaying, HTTPError>,
     "queryKey" | "queryFn"
   >;
-  className?: string;
-  hoverCardContentClassName?: string;
 }
 
 type State = number;
@@ -82,15 +91,13 @@ const ProgressBar: FC<UseQueryResult<CurrentPlaying, HTTPError>> = (props) => {
   );
 };
 
-const Card: FC<
-  UseQueryResult<CurrentPlaying, HTTPError> & {
-    className?: string;
-    hoverCardContentClassName?: string;
-  }
-> = (props) => {
+const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
+  props
+) => {
   const [, setValue] = useCurrentPlayingContext();
-  const [rgb, setRGB] = useState([0, 0, 0]);
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [bgRGB, setBgRGB] = useState<number[]>([]);
+  const [isLight, setIsLight] = useState<boolean>(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   // Sync the progress bar with the current playing song
   useEffect(() => {
@@ -124,6 +131,89 @@ const Card: FC<
     props.data?.item.duration_ms,
     props.data?.progress_ms,
   ]);
+
+  const handleImageLoad = useCallback(
+    (img: HTMLImageElement) => {
+      if (
+        props.experimental?.displayBackgroundColorFromImage &&
+        props.data?.item.album.images[0].url
+      ) {
+        const rgb = experimental_getImgAverageRGB(img);
+        const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+        const isLight = brightness > 125;
+        setIsLight(isLight);
+        setBgRGB(rgb);
+      }
+    },
+    [
+      props.experimental?.displayBackgroundColorFromImage,
+      props.data?.item.album.images[0].url,
+    ]
+  );
+
+  const MemoImage = useMemo(
+    () => (
+      <>
+        {props.data && (
+          <Image
+            crossOrigin="anonymous"
+            width={80}
+            height={80}
+            sizes="80px"
+            blur={false}
+            onLoad={(e) => handleImageLoad(e.target as HTMLImageElement)}
+            ref={imgRef}
+            src={props.data?.item.album.images[0].url}
+            alt={props.data?.item.album.name}
+            className="m-0 rounded-lg object-cover"
+          />
+        )}
+      </>
+    ),
+    [props.data?.item.album.images[0].url]
+  );
+
+  const MemoTitle = useMemo(
+    () => (
+      <>
+        {!!props.data && props.data?.item.name.length > 13 ? (
+          <Marquee className="max-w-[80%] p-0" repeat={2}>
+            <h4 className="mb-2 mt-0">{props.data?.item.name}</h4>
+          </Marquee>
+        ) : (
+          <h4 className="mb-2 mt-0 line-clamp-1">{props.data?.item.name}</h4>
+        )}
+      </>
+    ),
+    [props.data?.item.name]
+  );
+
+  const MemoLink = useMemo(
+    () => (
+      <>
+        {!!props.data ? (
+          <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
+            <Link
+              className="m-0 text-sm"
+              href={props.data?.item.external_urls.spotify ?? "/"}
+              target="_blank">
+              <TextShimmer className="m-0 p-0">
+                {props.data.item.name} - {props.data.item.artists[0].name}
+              </TextShimmer>
+            </Link>
+          </Marquee>
+        ) : (
+          <p className="m-0">Not Playing</p>
+        )}
+      </>
+    ),
+    [
+      props.data?.item.external_urls.spotify,
+      props.data?.item.name,
+      props.data?.item.artists[0].name,
+    ]
+  );
+
   return (
     <HoverCard>
       <HoverCardTrigger asChild className="prose dark:prose-invert z-10">
@@ -135,62 +225,35 @@ const Card: FC<
           <span className="i-mdi-spotify size-5 text-[#1DB954]" />
           {props.isLoading ? (
             <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
-          ) : !!props.data ? (
-            <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
-              <Link
-                className="m-0 text-sm"
-                href={props.data?.item.external_urls.spotify ?? "/"}
-                target="_blank">
-                <TextShimmer className="m-0 p-0">
-                  {props.data.item.name} - {props.data.item.artists[0].name}
-                </TextShimmer>
-              </Link>
-            </Marquee>
           ) : (
-            <p className="m-0">Not Playing</p>
+            MemoLink
           )}
-          {/* {!!props.data && <span className="i-lucide-sparkles size-5" />} */}
         </div>
       </HoverCardTrigger>
       {props.data && (
         <HoverCardContent
+          style={{
+            backgroundColor:
+              !!bgRGB && bgRGB.length === 3
+                ? `rgba(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]}, 0.3)`
+                : undefined,
+          }}
           className={cn(
-            "c-bg-third z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
+            "z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
             props.isError &&
               "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)]",
+            props.experimental?.displayBackgroundColorFromImage
+              ? "backdrop-blur-lg"
+              : "c-bg-third",
             props.hoverCardContentClassName
           )}>
           <div className="flex items-center gap-5">
-            <img
-              crossOrigin="anonymous"
-              onLoad={(e) => {
-                const img = e.target;
-                if (img instanceof HTMLImageElement) {
-                  const rgb = experimental_getImgAverageRGB(img, {
-                    blockSize: 5,
-                  });
-                  console.log(rgb);
-                  setRGB(rgb);
-                }
-              }}
-              ref={imgRef}
-              src={props.data?.item.album.images[0].url}
-              alt={props.data?.item.album.name}
-              className="m-0 size-20 rounded-lg object-cover"
-            />
-            <div className="prose dark:prose-invert p-1">
-              {props.data?.item.name.length > 13 ? (
-                <Marquee className="max-w-[70%] p-0" repeat={2}>
-                  <h4 className="mb-2 mt-0">{props.data?.item.name}</h4>
-                </Marquee>
-              ) : (
-                <h4 className="mb-2 mt-0 line-clamp-1">
-                  {props.data?.item.name}
-                </h4>
-              )}
-              <p className="mt-0 line-clamp-1 text-sm">
+            {MemoImage}
+            <div className={cn("p-1", isLight ? "prose" : "prose-invert")}>
+              {MemoTitle}
+              <span className="mt-0 line-clamp-1 text-sm">
                 {props.data?.item.artists[0].name}
-              </p>
+              </span>
             </div>
           </div>
           {props.isSuccess && <ProgressBar {...props} />}
@@ -205,6 +268,7 @@ const CurrentPlaying: FC<Props> = ({
   queryOptions,
   className,
   hoverCardContentClassName,
+  experimental,
 }) => {
   const result = useQuery<CurrentPlaying, HTTPError>({
     refetchInterval: (ctx) => {
@@ -256,6 +320,7 @@ const CurrentPlaying: FC<Props> = ({
         {...result}
         className={className}
         hoverCardContentClassName={hoverCardContentClassName}
+        experimental={experimental}
       />
     </CurrentPlayingContextProvider>
   );
