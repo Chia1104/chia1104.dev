@@ -68,12 +68,16 @@ const config: Config = {
       themes: {
         light: {
           colors: {
-            background: "DEFAULT",
+            background: {
+              DEFAULT: "transparent",
+            },
           },
         },
         dark: {
           colors: {
-            background: "DEFAULT",
+            background: {
+              DEFAULT: "transparent",
+            },
           },
         },
       },
