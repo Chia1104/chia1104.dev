@@ -101,7 +101,7 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
   const router = useRouter();
   return (
     <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-      <NextUIProvider>
+      <NextUIProvider navigate={router.push}>
         <TRPCReactProvider headers={headers}>
           <Toaster />
           <Analytics />
