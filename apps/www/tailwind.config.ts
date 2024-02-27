@@ -25,8 +25,6 @@ export default {
     },
     extend: {
       colors: {
-        primary: "#2B2E4A",
-        secondary: "rgba(255,155,26,0.65)",
         "sec-text": "#444444",
         success: "#4caf50",
         info: "#2196f3",

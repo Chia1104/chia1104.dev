@@ -42,7 +42,7 @@ const VariantsKey = {
 
 type VariantsKey = (typeof VariantsKey)[keyof typeof VariantsKey];
 
-export type ThemeVariants = Record<VariantsKey, Record<Theme, Variant>>;
+type ThemeVariants = Record<VariantsKey, Record<Theme, Variant>>;
 
 const defaultThemeVariants: ThemeVariants = {
   [VariantsKey.SVG]: {
@@ -150,7 +150,7 @@ const MotionThemeIcon: FC<{
   );
 };
 
-export const ThemeSelector: FC<
+const ThemeSelector: FC<
   Props & {
     label?: string;
     enableCMD?: boolean;
@@ -195,7 +195,7 @@ export const ThemeSelector: FC<
   );
 };
 
-export const ThemeCMD = () => {
+const ThemeCMD = () => {
   const { theme, setTheme, isDarkMode } = useTheme();
   useCMD(
     false,
@@ -211,4 +211,4 @@ export const ThemeCMD = () => {
 };
 
 export default ThemeSelector;
-export { MotionThemeIcon, defaultThemeVariants };
+export { MotionThemeIcon, defaultThemeVariants, ThemeCMD, type ThemeVariants };

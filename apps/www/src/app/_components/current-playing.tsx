@@ -33,6 +33,7 @@ import {
   useContext,
   useCallback,
   useMemo,
+  useTransition,
 } from "react";
 import { type CurrentPlaying } from "@chia/api/spotify/types";
 
@@ -99,6 +100,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
   const [bgRGB, setBgRGB] = useState<number[]>([]);
   const [isLight, setIsLight] = useState<boolean>(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const [isPending, startTransition] = useTransition();
 
   // Sync the progress bar with the current playing song
   useEffect(() => {
@@ -139,10 +141,12 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
         props.experimental?.displayBackgroundColorFromImage &&
         props.data?.item.album.images[0].url
       ) {
-        const rgb = experimental_getImgAverageRGB(img);
-        const { isLight } = getBrightness(rgb);
-        setIsLight(isLight);
-        setBgRGB(rgb);
+        startTransition(() => {
+          const rgb = experimental_getImgAverageRGB(img);
+          const { isLight } = getBrightness(rgb);
+          setIsLight(isLight);
+          setBgRGB(rgb);
+        });
       }
     },
     [
@@ -181,7 +185,8 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
             <h4
               className={cn(
                 "text-md mb-2 mt-0",
-                props.experimental?.displayBackgroundColorFromImage
+                props.experimental?.displayBackgroundColorFromImage &&
+                  !isPending
                   ? isLight
                     ? "text-dark"
                     : "text-light"
@@ -194,7 +199,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
           <h4
             className={cn(
               "mb-2 mt-0 line-clamp-1 text-lg",
-              props.experimental?.displayBackgroundColorFromImage
+              props.experimental?.displayBackgroundColorFromImage && !isPending
                 ? isLight
                   ? "text-dark"
                   : "text-light"
@@ -206,6 +211,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
       </>
     ),
     [
+      isPending,
       props.data?.item.name,
       isLight,
       props.experimental?.displayBackgroundColorFromImage,
@@ -266,7 +272,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
             "z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
             props.isError &&
               "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)]",
-            props.experimental?.displayBackgroundColorFromImage
+            props.experimental?.displayBackgroundColorFromImage && !isPending
               ? "backdrop-blur-lg"
               : "c-bg-third",
             props.hoverCardContentClassName
@@ -276,7 +282,8 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
             <div
               className={cn(
                 "overflow-hidden p-1",
-                props.experimental?.displayBackgroundColorFromImage
+                props.experimental?.displayBackgroundColorFromImage &&
+                  !isPending
                   ? "not-prose"
                   : "prose dark:prose-invert"
               )}>
@@ -284,7 +291,8 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
               <p
                 className={cn(
                   "mt-0 line-clamp-1 text-sm",
-                  props.experimental?.displayBackgroundColorFromImage
+                  props.experimental?.displayBackgroundColorFromImage &&
+                    !isPending
                     ? isLight
                       ? "text-dark"
                       : "text-light"
