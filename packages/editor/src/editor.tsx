@@ -27,10 +27,14 @@ const Editor: FC<
         {...props}
         editorProps={{
           ...defaultEditorProps,
+          attributes: {
+            class: `prose dark:prose-invert focus:outline-none min-h-[300px] min-w-full`,
+            ...editorProps?.attributes,
+          },
           ...editorProps,
         }}
         className={cn(
-          "prose dark:prose-invert c-bg-third m-0 min-w-full overflow-hidden rounded-2xl border border-gray-300 px-2 py-1 shadow-lg transition-all ease-in-out dark:border-gray-700",
+          "c-bg-third m-0 min-w-full overflow-hidden rounded-2xl border border-gray-300 p-10 shadow-lg transition-all ease-in-out dark:border-gray-700",
           className
         )}
         extensions={extensions}>
