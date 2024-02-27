@@ -51,7 +51,7 @@ const ThemeSelector = () => {
           System
         </DropdownItem>
         <DropdownItem
-          key="system"
+          key="dark"
           startContent={
             <MotionThemeIcon
               theme={Theme.DARK}
@@ -62,7 +62,7 @@ const ThemeSelector = () => {
           Dark
         </DropdownItem>
         <DropdownItem
-          key="system"
+          key="light"
           startContent={
             <MotionThemeIcon
               theme={Theme.LIGHT}
