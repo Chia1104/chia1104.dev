@@ -54,9 +54,9 @@ const ShimmerButton = React.forwardRef<HTMLButtonElement, ShimmerButtonProps>(
             "absolute inset-0 overflow-visible [container-type:size]"
           )}>
           {/* spark */}
-          <div className="animate-slide absolute inset-0 h-[100cqh] [aspect-ratio:1] [border-radius:0] [mask:none]">
+          <div className="animate-cia-slide absolute inset-0 h-[100cqh] [aspect-ratio:1] [border-radius:0] [mask:none]">
             {/* spark before */}
-            <div className="animate-spin-around absolute inset-[-100%] w-auto rotate-0 [background:conic-gradient(from_calc(270deg-(var(--spread)*0.5)),transparent_0,var(--shimmer-color)_var(--spread),transparent_var(--spread))] [translate:0_0]" />
+            <div className="animate-cia-spin-around absolute inset-[-100%] w-auto rotate-0 [background:conic-gradient(from_calc(270deg-(var(--spread)*0.5)),transparent_0,var(--shimmer-color)_var(--spread),transparent_var(--spread))] [translate:0_0]" />
           </div>
         </div>
         {children}

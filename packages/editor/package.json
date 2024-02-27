@@ -16,18 +16,19 @@
     "@chia/auth": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@tiptap/extension-code-block-lowlight": "^2.2.3",
-    "@tiptap/starter-kit": "^2.2.3",
-    "ai": "^2.2.35",
+    "@tiptap/core": "^2.2.4",
+    "@tiptap/extension-code-block-lowlight": "^2.2.4",
+    "@tiptap/starter-kit": "^2.2.4",
+    "ai": "^2.2.36",
     "lowlight": "^3.1.0",
-    "lucide-react": "^0.336.0",
+    "lucide-react": "0.336.0",
     "next": "14.1.0",
-    "novel": "^0.2.4",
+    "novel": "^0.2.6",
     "openai": "^4.28.0",
     "react": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.55",
+    "@types/react": "18.2.55",
     "tsconfig": "workspace:*"
   }
 }

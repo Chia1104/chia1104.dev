@@ -7,7 +7,7 @@ import baseConfig, {
 import aspectRatio from "@tailwindcss/aspect-ratio";
 import tailwindScrollbar from "tailwind-scrollbar";
 
-export default {
+const config: Config = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
@@ -61,5 +61,7 @@ export default {
   },
   plugins: [aspectRatio, tailwindScrollbar({ nocompatible: true })],
   darkMode: "class",
-  presets: [shadcnConfig, animation, baseConfig, egoistIcons],
-} satisfies Config;
+  presets: [shadcnConfig, animation(), baseConfig, egoistIcons],
+};
+
+export default config;

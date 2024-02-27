@@ -1,5 +1,6 @@
 import { common, createLowlight } from "lowlight";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import type { AnyExtension } from "@tiptap/core";
 import {
   TiptapImage,
   TiptapLink,
@@ -44,6 +45,10 @@ const tiptapImage = TiptapImage.extend().configure({
   HTMLAttributes: {
     class: cn("rounded-lg border border-muted"),
   },
+});
+
+const codeBlockLowlight = CodeBlockLowlight.configure({
+  lowlight,
 });
 
 const updatedImage = UpdatedImage.configure({
@@ -91,11 +96,6 @@ const starterKit = StarterKit.configure({
       class: cn("border-l-4 border-primary"),
     },
   },
-  codeBlock: {
-    HTMLAttributes: {
-      class: cn("rounded-sm bg-muted border p-5 font-mono font-medium"),
-    },
-  },
   code: {
     HTMLAttributes: {
       class: cn("rounded-md bg-muted  px-1.5 py-1 font-mono font-medium"),
@@ -108,6 +108,7 @@ const starterKit = StarterKit.configure({
     width: 4,
   },
   gapcursor: false,
+  codeBlock: false,
 });
 
 export const suggestionItems = createSuggestionItems([
@@ -255,10 +256,8 @@ const slashCommand = Command.configure({
   },
 });
 
-export default [
-  CodeBlockLowlight.configure({
-    lowlight,
-  }),
+const extensions: AnyExtension[] = [
+  codeBlockLowlight,
   starterKit,
   placeholder,
   tiptapLink,
@@ -269,3 +268,5 @@ export default [
   horizontalRule,
   slashCommand,
 ];
+
+export default extensions;
