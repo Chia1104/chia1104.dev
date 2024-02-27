@@ -1,4 +1,6 @@
-const config = ({ disableTailwindAnimation }) => {
+const config = (options) => {
+  options ??= {};
+  const { disableTailwindAnimation = false } = options;
   /** @type {import('tailwindcss').Config} */
   return {
     theme: {

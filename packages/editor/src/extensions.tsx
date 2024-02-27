@@ -1,5 +1,6 @@
 import { common, createLowlight } from "lowlight";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import type { AnyExtension } from "@tiptap/core";
 import {
   TiptapImage,
   TiptapLink,
@@ -255,7 +256,7 @@ const slashCommand = Command.configure({
   },
 });
 
-export default [
+const extensions: AnyExtension[] = [
   codeBlockLowlight,
   starterKit,
   placeholder,
@@ -267,3 +268,5 @@ export default [
   horizontalRule,
   slashCommand,
 ];
+
+export default extensions;
