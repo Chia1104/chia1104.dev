@@ -22,13 +22,13 @@ import { cn } from "../utils";
 
 type InternalLinkProps = NextLinkProps & ComponentPropsWithoutRef<"a">;
 
-export interface LinkPropsWithoutPreview extends InternalLinkProps {
+interface LinkPropsWithoutPreview extends InternalLinkProps {
   href: string | any;
   children?: ReactNode;
   isInternalLink?: boolean;
 }
 
-export type LinkProps =
+type LinkProps =
   | (LinkPropsWithoutPreview & {
       preview?: false | undefined;
     } & NeverPreviewProps)
@@ -42,7 +42,7 @@ interface NeverPreviewProps {
   queryOptions?: never;
 }
 
-export interface PreviewProps {
+interface PreviewProps {
   endpoint?: string;
   children?:
     | ReactNode
@@ -56,18 +56,18 @@ export interface PreviewProps {
   >;
 }
 
-export interface DocResponse {
+interface DocResponse {
   title?: string | null;
   description?: string | null;
   favicon?: string | null;
   ogImage?: string | null;
 }
 
-export const previewSchema = z.strictObject({
+const previewSchema = z.strictObject({
   href: z.string().min(1),
 });
 
-export type PreviewDTO = z.infer<typeof previewSchema>;
+type PreviewDTO = z.infer<typeof previewSchema>;
 
 const PreviewDetail: FC<
   Pick<
@@ -142,6 +142,7 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
   children,
   href,
   endpoint = "/api/v1/link-preview",
+  preview,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -244,3 +245,12 @@ const Link: FC<LinkProps> = (props) => {
 };
 
 export default Link;
+export type {
+  LinkProps,
+  LinkPropsWithoutPreview,
+  NeverPreviewProps,
+  PreviewProps,
+  PreviewDTO,
+  DocResponse,
+};
+export { previewSchema };

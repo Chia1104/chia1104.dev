@@ -9,16 +9,16 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#9200ff",
-          light: "#b200ff",
-          dark: "#6e00cc",
-          transparent: "rgba(146,0,255,0.75)",
+          DEFAULT: "rgb(192 132 252)",
+          light: "rgb(216 180 254)",
+          dark: "rgb(192 132 252)",
+          transparent: "rgba(192 132 252,0.75)",
         },
         secondary: {
-          DEFAULT: "#007aff",
-          light: "#339cff",
-          dark: "#0062cc",
-          transparent: "rgba(0,122,255,0.75)",
+          DEFAULT: "#FCA5A5",
+          light: "#FECACA",
+          dark: "#F9C851",
+          transparent: "rgba(252,165,165,0.75)",
         },
         success: {
           DEFAULT: "#4caf50",
