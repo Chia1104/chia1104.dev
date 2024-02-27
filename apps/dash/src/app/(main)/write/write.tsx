@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { WriteProvider, useWriteContext } from "./write.context";
-import NovelEditor from "@chia/editor/src/editor";
+import NovelEditor from "@chia/editor/editor";
 import { Tabs, Tab, Button } from "@nextui-org/react";
 import { cn } from "@chia/ui";
 import { type FC } from "react";
