@@ -6,11 +6,13 @@ import baseConfig, {
 } from "@chia/tailwind";
 import aspectRatio from "@tailwindcss/aspect-ratio";
 import tailwindScrollbar from "tailwind-scrollbar";
+import { nextui } from "@nextui-org/react";
 
 const config: Config = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
     "!./src/**/*.test.{js,ts,jsx,tsx}",
     "!./src/**/*.spec.{js,ts,jsx,tsx}",
     "!./src/app/api/contact/email-template.tsx",
@@ -59,7 +61,26 @@ const config: Config = {
   corePlugins: {
     aspectRatio: false,
   },
-  plugins: [aspectRatio, tailwindScrollbar({ nocompatible: true })],
+  plugins: [
+    nextui({
+      prefix: "nextui",
+      addCommonColors: false,
+      themes: {
+        light: {
+          colors: {
+            background: "DEFAULT",
+          },
+        },
+        dark: {
+          colors: {
+            background: "DEFAULT",
+          },
+        },
+      },
+    }),
+    aspectRatio,
+    tailwindScrollbar({ nocompatible: true }),
+  ],
   darkMode: "class",
   presets: [shadcnConfig, animation(), baseConfig, egoistIcons],
 };

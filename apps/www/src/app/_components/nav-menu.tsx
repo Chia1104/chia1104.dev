@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC } from "react";
+import { type FC, type Key } from "react";
 import Link from "next/link";
 import {
   cn,
@@ -16,17 +16,12 @@ import {
   MotionThemeIcon,
   defaultThemeVariants,
   useTheme,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-  Button,
 } from "@chia/ui";
-import { usePathname, useRouter } from "next/navigation";
-import { LayoutGroup, motion } from "framer-motion";
+import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import navItems from "@/shared/routes";
 import contact from "@/shared/contact";
 import capitalize from "lodash/capitalize";
+import { Tabs, Tab, Tooltip, Button, Kbd } from "@nextui-org/react";
 
 const CMDK = () => {
   const [open, setOpen] = useCMD();
@@ -34,20 +29,18 @@ const CMDK = () => {
   const router = useRouter();
   return (
     <>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button onClick={() => setOpen(true)} size="sm" variant="ghost">
-              <div className="i-mdi-hamburger size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
-              <span className="text-xs">⌘</span>K
-            </kbd>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip
+        delay={300}
+        content={
+          <Kbd keys={["command"]} className="text-xs">
+            K
+          </Kbd>
+        }
+        placement="bottom">
+        <Button size="sm" isIconOnly onPress={() => setOpen(true)}>
+          <div className="i-mdi-hamburger size-4" />
+        </Button>
+      </Tooltip>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
@@ -73,9 +66,9 @@ const CMDK = () => {
             heading={
               <span className="flex items-center justify-between">
                 <p>Contact</p>
-                <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
-                  <span className="text-xs">⌘</span>I
-                </kbd>
+                <Kbd className="text-xs" keys={["command"]}>
+                  I
+                </Kbd>
               </span>
             }>
             {Object.entries(contact).map(([key, { name, icon, link }]) => (
@@ -96,9 +89,9 @@ const CMDK = () => {
             heading={
               <span className="flex items-center justify-between">
                 <p>Theme ({capitalize(theme)})</p>
-                <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
-                  <span className="text-xs">⌘</span>J
-                </kbd>
+                <Kbd keys={["command"]} className="text-xs">
+                  J
+                </Kbd>
               </span>
             }>
             <CommandItem
@@ -148,10 +141,10 @@ const CMDK = () => {
 };
 
 const NavMenu: FC = () => {
-  const pathname = usePathname() || "/";
+  const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
     <nav className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
-      <div className="container flex w-[100%] px-5">
+      <div className="container flex w-[100%] justify-between px-5">
         <div className="flex w-[20%] items-center text-2xl">
           <Link
             href="/"
@@ -160,43 +153,30 @@ const NavMenu: FC = () => {
             Chia1104
           </Link>
         </div>
-        <LayoutGroup>
-          <div className="mr-3 flex w-[80%] items-center justify-end">
+        <div className="flex w-fit items-center">
+          <Tabs
+            variant="light"
+            aria-label="nav bar"
+            className="w-fit"
+            selectedKey={selectedLayoutSegments[0] ?? "/"}>
             {Object.entries(navItems).map(([path, { name, icon }]) => {
-              const isActive = pathname.includes(path);
               return (
-                <Link
-                  key={path}
-                  href={path}
-                  className={cn(
-                    "flex align-middle transition-all hover:text-neutral-800 dark:hover:text-neutral-200",
-                    {
-                      "dark:text-popover-foreground text-neutral-500":
-                        !isActive,
-                      "font-bold": isActive,
-                    }
-                  )}>
-                  <span className="relative px-[10px] py-[5px]">
-                    <p className="hidden md:block">{name}</p>
-                    <div className="block md:hidden">{icon}</div>
-                    {isActive ? (
-                      <motion.div
-                        className="bg-accent absolute inset-0 z-[-1] rounded-md"
-                        layoutId="nav-menu"
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 30,
-                        }}
-                      />
-                    ) : null}
-                  </span>
-                </Link>
+                <Tab
+                  key={path.replace(/^\//, "")}
+                  title={
+                    <Link key={path} href={path}>
+                      <span className="relative px-[10px] py-[5px]">
+                        <p className="hidden md:block">{name}</p>
+                        <div className="block md:hidden">{icon}</div>
+                      </span>
+                    </Link>
+                  }
+                />
               );
             })}
-            <CMDK />
-          </div>
-        </LayoutGroup>
+          </Tabs>
+          <CMDK />
+        </div>
       </div>
     </nav>
   );
