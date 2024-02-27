@@ -71,7 +71,7 @@ const ChiaWEB = ({
 }) => {
   return (
     <html lang="zh-Hant-TW" suppressHydrationWarning>
-      <body className="c-bg-primary scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
+      <body className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
         <RootProvider>
           <Background />
           <NavMenu />
