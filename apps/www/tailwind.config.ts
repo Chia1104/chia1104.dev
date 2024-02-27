@@ -69,14 +69,20 @@ const config: Config = {
         light: {
           colors: {
             background: {
-              DEFAULT: "transparent",
+              /**
+               * @todo
+               */
+              DEFAULT: "DO_NOT_PARSE",
             },
           },
         },
         dark: {
           colors: {
             background: {
-              DEFAULT: "transparent",
+              /**
+               * @todo
+               */
+              DEFAULT: "DO_NOT_PARSE",
             },
           },
         },
