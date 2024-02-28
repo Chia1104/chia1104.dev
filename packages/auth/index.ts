@@ -40,6 +40,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  basePath: "/api/auth",
   trustHost:
     !env.VERCEL && process.env.NODE_ENV === "production" ? true : undefined,
   useSecureCookies,
