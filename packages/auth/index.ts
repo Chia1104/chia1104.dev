@@ -31,7 +31,7 @@ declare module "next-auth" {
 }
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
-const useSecureCookies = AUTH_URL?.startsWith("https://");
+const useSecureCookies = process.env.NODE_ENV === "production";
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
 export const {
@@ -40,9 +40,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  basePath: "/api/auth",
-  trustHost:
-    !env.VERCEL && process.env.NODE_ENV === "production" ? true : undefined,
+  trustHost: true,
   useSecureCookies,
   cookies: {
     sessionToken: {
