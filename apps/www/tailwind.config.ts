@@ -61,7 +61,21 @@ const config: Config = {
   corePlugins: {
     aspectRatio: false,
   },
-  plugins: [nextui(), aspectRatio, tailwindScrollbar({ nocompatible: true })],
+  plugins: [
+    nextui({
+      themes: {
+        light: {
+          colors: {
+            background: {
+              DEFAULT: "#dddddd",
+            },
+          },
+        },
+      },
+    }),
+    aspectRatio,
+    tailwindScrollbar({ nocompatible: true }),
+  ],
   darkMode: "class",
   presets: [shadcnConfig, animation(), baseConfig, egoistIcons],
 };
