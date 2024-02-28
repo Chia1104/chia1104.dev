@@ -30,10 +30,7 @@ declare module "next-auth" {
   }
 }
 
-/**
- * @todo nest-auth issue
- */
-const AUTH_URL = env.AUTH_URL;
+const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 const useSecureCookies = AUTH_URL?.startsWith("https://");
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
@@ -43,6 +40,8 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  trustHost:
+    !env.VERCEL && process.env.NODE_ENV === "production" ? true : undefined,
   useSecureCookies,
   cookies: {
     sessionToken: {
@@ -52,9 +51,11 @@ export const {
         sameSite: "lax",
         path: "/",
         secure: useSecureCookies,
-        domain: AUTH_URL?.includes("localhost")
-          ? "localhost"
-          : env.AUTH_COOKIE_DOMAIN,
+        domain:
+          AUTH_URL?.includes("localhost") ||
+          process.env.NODE_ENV === "development"
+            ? "localhost"
+            : env.AUTH_COOKIE_DOMAIN,
       },
     },
   },
