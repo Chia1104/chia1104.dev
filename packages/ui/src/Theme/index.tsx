@@ -3,13 +3,12 @@
 import { type FC, useId } from "react";
 import { motion, type Variant } from "framer-motion";
 import {
+  Button,
+  Dropdown,
+  DropdownTrigger,
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "../DropdownMenu";
-import { Button } from "../Button";
+  DropdownItem,
+} from "@nextui-org/react";
 import useTheme from "../utils/use-theme";
 import { useCMD } from "../CMD";
 
@@ -164,33 +163,44 @@ const ThemeSelector: FC<
   return (
     <>
       {enableCMD && <ThemeCMD />}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline" className="gap-2">
-            <MotionThemeIcon theme={theme as Theme} variants={variants} />{" "}
+      <Dropdown className="not-prose">
+        <DropdownTrigger>
+          <Button
+            variant="flat"
+            size="sm"
+            startContent={
+              <MotionThemeIcon theme={theme as Theme} variants={variants} />
+            }>
             {label}
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
-          <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
-            <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem
-              itemIndicator={
-                <MotionThemeIcon theme="dark" variants={variants} />
-              }
-              value="dark">
-              Dark
-            </DropdownMenuRadioItem>
-            <DropdownMenuRadioItem
-              itemIndicator={
-                <MotionThemeIcon theme="light" variants={variants} />
-              }
-              value="light">
-              Light
-            </DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </DropdownTrigger>
+        <DropdownMenu>
+          <DropdownItem
+            key="system"
+            startContent={
+              <MotionThemeIcon theme={Theme.SYSTEM} variants={variants} />
+            }
+            onPress={() => setTheme(Theme.SYSTEM)}>
+            System
+          </DropdownItem>
+          <DropdownItem
+            key="dark"
+            startContent={
+              <MotionThemeIcon theme={Theme.DARK} variants={variants} />
+            }
+            onPress={() => setTheme(Theme.DARK)}>
+            Dark
+          </DropdownItem>
+          <DropdownItem
+            key="light"
+            startContent={
+              <MotionThemeIcon theme={Theme.LIGHT} variants={variants} />
+            }
+            onPress={() => setTheme(Theme.LIGHT)}>
+            Light
+          </DropdownItem>
+        </DropdownMenu>
+      </Dropdown>
     </>
   );
 };

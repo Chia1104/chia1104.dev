@@ -4,87 +4,87 @@
 
 @layer components {
   .c-container {
-    @apply container mx-auto
+    @apply container mx-auto;
   }
 
   .c-hover-link {
-    @apply hover:border-b-2 border-primary transition ease-in-out
+    @apply border-primary transition ease-in-out hover:border-b-2;
   }
 
   .c-text-primary {
-    @apply text-black dark:text-white transition ease-in-out
+    @apply text-black transition ease-in-out dark:text-white;
   }
 
   .c-text-secondary {
-    @apply text-sec-text dark:text-white transition ease-in-out
+    @apply text-sec-text transition ease-in-out dark:text-white;
   }
 
   .c-description {
-    @apply text-lg text-sec-text dark:text-gray-400 transition ease-in-out
+    @apply text-sec-text text-lg transition ease-in-out dark:text-gray-400;
   }
 
   .c-bg-primary {
-    @apply bg-[#dddddd] text-black dark:text-white dark:bg-black transition ease-in-out
+    @apply bg-[#dddddd] text-black transition ease-in-out dark:bg-black dark:text-white;
   }
 
   .c-bg-secondary {
-    @apply bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out
+    @apply text-sec-text dark:bg-dark/80 bg-white/80 backdrop-blur-md transition ease-in-out dark:text-white;
   }
 
   .c-bg-third {
-    @apply bg-white/10 text-sec-text dark:text-white dark:bg-dark/10 backdrop-blur-lg transition ease-in-out
+    @apply text-sec-text dark:bg-dark/10 bg-white/10 backdrop-blur-lg transition ease-in-out dark:text-white;
   }
 
   .c-border-primary {
-    @apply border-gray-200 dark:border-gray-800
+    @apply border-gray-200 dark:border-gray-800;
   }
 
   .c-text-purple-to-blue {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
+    @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8] bg-clip-text text-transparent;
   }
 
   .c-bg-gradient-purple-to-blue {
-    @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8]
+    @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8];
   }
 
   .c-text-purple-to-pink {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600
+    @apply bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent;
   }
 
   .c-bg-gradient-purple-to-pink {
-    @apply bg-gradient-to-r from-purple-400 to-pink-600
+    @apply bg-gradient-to-r from-purple-400 to-pink-600;
   }
 
   .c-text-green-to-purple {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
+    @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA] bg-clip-text text-transparent;
   }
 
   .c-bg-gradient-green-to-purple {
-    @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]
+    @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA];
   }
 
   .c-text-yellow-to-pink {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
+    @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA] bg-clip-text text-transparent;
   }
 
   .c-bg-gradient-yellow-to-pink {
-    @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA]
+    @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA];
   }
 
   .c-bg-gradient-black-to-dark-gray {
-    @apply bg-gradient-to-r from-black to-gray-900
+    @apply bg-gradient-to-r from-black to-gray-900;
   }
 
   .c-button-primary {
-    @apply bg-primary rounded-full drop-shadow-lg text-white hover:bg-secondary transition ease-in-out flex justify-center items-center px-3 py-1
+    @apply bg-primary hover:bg-secondary flex items-center justify-center rounded-full px-3 py-1 text-white drop-shadow-lg transition ease-in-out;
   }
 
   .c-button-secondary {
-    @apply bg-white/80 text-sec-text dark:text-white dark:bg-dark/80 backdrop-blur-md transition ease-in-out rounded px-5 py-3 text-2xl
+    @apply text-sec-text dark:bg-dark/80 rounded bg-white/80 px-5 py-3 text-2xl backdrop-blur-md transition ease-in-out dark:text-white;
   }
 
   .main {
-    @apply flex flex-1 flex-col justify-center items-center min-h-screen py-[4rem] md:px-[2rem] px-[1rem]
+    @apply flex min-h-screen flex-1 flex-col items-center justify-center px-[1rem] py-[4rem] md:px-[2rem];
   }
 
   .code {
@@ -92,12 +92,19 @@
     border-radius: 5px;
     padding: 0.75rem;
     font-size: 1.1rem;
-    font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
-      Bitstream Vera Sans Mono, Courier New, monospace;
+    font-family:
+      Menlo,
+      Monaco,
+      Lucida Console,
+      Liberation Mono,
+      DejaVu Sans Mono,
+      Bitstream Vera Sans Mono,
+      Courier New,
+      monospace;
   }
 
   .c-link {
-    @apply c-link-underline c-link-underline-secondary
+    @apply c-link-underline c-link-underline-secondary;
   }
 
   .c-link-active {
@@ -105,34 +112,40 @@
     background-size: 100% 3px;
     background-position: 0 100%;
     background-repeat: no-repeat;
-    transition: background-size .2s ease-in-out;
-    background-image: linear-gradient(transparent, transparent), linear-gradient(#ff9b1a, #ff9b1a)
+    transition: background-size 0.2s ease-in-out;
+    background-image: linear-gradient(transparent, transparent),
+      linear-gradient(#ff9b1a, #ff9b1a);
   }
 
   .c-link-underline {
     border-bottom-width: 0;
-    background-image: linear-gradient(transparent, transparent), linear-gradient(#fff, #fff);
+    background-image: linear-gradient(transparent, transparent),
+      linear-gradient(#fff, #fff);
     background-size: 0 3px;
     background-position: 0 100%;
     background-repeat: no-repeat;
-    transition: background-size .2s ease-in-out;
+    transition: background-size 0.2s ease-in-out;
   }
 
   .c-link-underline-secondary {
-    background-image: linear-gradient(transparent, transparent), linear-gradient(#ff9b1a, #ff9b1a)
+    background-image: linear-gradient(transparent, transparent),
+      linear-gradient(#ff9b1a, #ff9b1a);
   }
 
   .c-link-underline:hover {
     background-size: 100% 3px;
-    background-position: 0 100%
+    background-position: 0 100%;
   }
 
   .c-text-bg-primary-half {
-    background-image: linear-gradient(transparent 60%, #2B2E4A 55%);
+    background-image: linear-gradient(transparent 60%, #2b2e4a 55%);
   }
 
   .c-text-bg-sec-half {
-    background-image: linear-gradient(transparent 60%, rgba(255, 155, 26, 0.8) 55%);
+    background-image: linear-gradient(
+      transparent 60%,
+      rgba(255, 155, 26, 0.8) 55%
+    );
   }
 
   .c-text-bg-info-half {
@@ -149,11 +162,11 @@
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    @apply bg-white/90 dark:bg-dark/90 backdrop-blur-sm transition ease-in-out
+    @apply dark:bg-dark/90 bg-white/90 backdrop-blur-sm transition ease-in-out;
   }
 
   .c-background::before {
-    content: '';
+    content: "";
     display: block;
     position: fixed;
     top: 0;
@@ -172,26 +185,36 @@
 
   .animated-feature-cards::before {
     @apply pointer-events-none absolute select-none rounded-3xl opacity-0 transition-opacity duration-300 hover:opacity-100;
-    background: radial-gradient(1000px circle at var(--x) var(--y),
-        #F9C851 0,
-        #FCA5A5 25%,
-        #FECACA 50%,
-        transparent 80%);
+    background: radial-gradient(
+      1000px circle at var(--x) var(--y),
+      #f9c851 0,
+      #fca5a5 25%,
+      #fecaca 50%,
+      transparent 80%
+    );
     z-index: -1;
-    content: '';
+    content: "";
     inset: -1px;
   }
 
   .dark .animated-feature-cards::before {
-    background: radial-gradient(1000px circle at var(--x) var(--y),
-        #db2777 0,
-        #c084fc 25%,
-        rgba(255, 255, 255, 0) 50%,
-        transparent 80%);
+    background: radial-gradient(
+      1000px circle at var(--x) var(--y),
+      #db2777 0,
+      #c084fc 25%,
+      rgba(255, 255, 255, 0) 50%,
+      transparent 80%
+    );
   }
 
   .footer {
-    @apply c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8
+    @apply c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8;
+  }
+}
+
+@layer base {
+  :root {
+    @apply transition-colors ease-in-out;
   }
 }
 
@@ -199,14 +222,7 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   scroll-behavior: smooth;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
 
 *,

@@ -4,14 +4,12 @@ export {
   AccordionItem,
   AccordionTrigger,
 } from "./Accordion";
-export { default as Chip } from "./Chip";
 export * from "./ErrorBoundary";
 export { default as Image } from "./Image";
 export { default as Input } from "./Input";
 export * from "./Input";
 export { default as Link } from "./Link";
 export * from "./Link";
-export { default as Modal } from "./Modal";
 export { default as Page } from "./Page";
 export { default as Textarea } from "./Textarea";
 export * from "./Textarea";
@@ -33,7 +31,6 @@ export * from "./NavigationMenu";
 export * from "./Error";
 export { default as LoadingIcon } from "./icons/loading-icon";
 export * from "./Popover";
-export * from "./Button";
 export * from "./CMD";
 export * from "./Tooltip";
 export * from "./Drawer";

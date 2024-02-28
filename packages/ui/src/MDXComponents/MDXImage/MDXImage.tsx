@@ -1,9 +1,7 @@
 "use client";
 
 import Image from "../../Image";
-import Modal from "../../Modal";
-import { type ImageProps } from "next/image";
-import { type ComponentPropsWithRef, type FC, useState } from "react";
+import { type ComponentPropsWithRef, type FC } from "react";
 import { cn } from "../../utils/cn.util";
 
 interface MDXImageProps extends ComponentPropsWithRef<typeof Image> {
@@ -21,9 +19,6 @@ export const MDXImage: FC<MDXImageProps> = (MDXImageProps) => {
     objectFit = "cover",
     ...rest
   } = MDXImageProps;
-  const [isShow, setIsShow] = useState(false);
-  const handleClose = () => setIsShow(false);
-
   return (
     <div className="my-5 flex flex-col items-center justify-center">
       <div
@@ -52,28 +47,8 @@ export const MDXImage: FC<MDXImageProps> = (MDXImageProps) => {
           quality={100}
           {...rest}
           alt={alt}
-          onClick={() => setIsShow(!isShow)}
         />
       </div>
-      <Modal
-        isShowed={isShow}
-        activeModal={handleClose}
-        className="w-full max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
-        <div className="aspect-h-1 aspect-w-1 w-full">
-          <Image
-            blur={false}
-            alt={alt}
-            loading="lazy"
-            className="object-contain"
-            fill
-            sizes="(max-width: 768px) 100vw,
-                   (max-width: 1200px) 50vw,
-                   33vw"
-            quality={100}
-            {...rest}
-          />
-        </div>
-      </Modal>
       {showAlt && <p className="mt-2 self-center">{alt}</p>}
     </div>
   );

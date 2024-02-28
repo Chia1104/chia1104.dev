@@ -12,6 +12,7 @@ import superjson from "superjson";
 import { api } from "@/trpc-api";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { useRouter } from "next/navigation";
+import { NextUIProvider } from "@nextui-org/react";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,20 +98,23 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
   children,
   headers,
 }) => {
+  const router = useRouter();
   return (
     <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-      <TRPCReactProvider headers={headers}>
-        <Toaster />
-        <Analytics />
-        <Cursor
-          style={{
-            opacity: 0.13,
-            filter: "blur(50px)",
-          }}
-        />
-        <ContactCMD />
-        {children}
-      </TRPCReactProvider>
+      <NextUIProvider navigate={router.push}>
+        <TRPCReactProvider headers={headers}>
+          <Toaster />
+          <Analytics />
+          <Cursor
+            style={{
+              opacity: 0.13,
+              filter: "blur(50px)",
+            }}
+          />
+          <ContactCMD />
+          {children}
+        </TRPCReactProvider>
+      </NextUIProvider>
     </ThemeProvider>
   );
 };

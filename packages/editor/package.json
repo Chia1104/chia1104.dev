@@ -7,7 +7,7 @@
   "main": "./index.ts",
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
-    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
+    "lint": "eslint \"**/*.{ts,js,tsx,jsx,mts}\" --fix",
     "type:check": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests"
@@ -16,8 +16,10 @@
     "@chia/auth": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
+    "@nextui-org/react": "2.2.9",
     "@tiptap/core": "^2.2.4",
     "@tiptap/extension-code-block-lowlight": "^2.2.4",
+    "@tiptap/html": "^2.2.4",
     "@tiptap/starter-kit": "^2.2.4",
     "ai": "^2.2.36",
     "lowlight": "^3.1.0",

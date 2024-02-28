@@ -1,7 +1,7 @@
 "use client";
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { Button } from "../Button";
+import { Button } from "@nextui-org/react";
 import * as Sentry from "@sentry/nextjs";
 
 interface Props<TError> {
@@ -68,7 +68,7 @@ export class ErrorBoundary<TError extends Error> extends Component<
             <div className="y-container prose dark:prose-invert flex size-full flex-col items-center justify-center px-3 py-5">
               <h2>{this.props.errorMessage ?? "Oops, there is an error!"}</h2>
               <Button
-                onClick={() => this.setState({ hasError: false })}
+                onPress={() => this.setState({ hasError: false })}
                 aria-label="Reload page">
                 Try again?
               </Button>

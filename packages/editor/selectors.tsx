@@ -13,7 +13,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { EditorBubbleItem, useEditor } from "novel";
-import { Popover, PopoverTrigger, PopoverContent, Button } from "@chia/ui";
+import { Popover, PopoverTrigger, PopoverContent } from "@chia/ui";
+import { Button } from "@nextui-org/react";
 
 export type SelectorItem = {
   name: string;
@@ -106,11 +107,11 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
   };
 
   return (
-    <Popover modal={true} open={open} onOpenChange={onOpenChange}>
+    <Popover modal open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger
         asChild
         className="hover:bg-accent gap-2 rounded-none border-none focus:ring-0">
-        <Button variant="ghost" className="gap-2">
+        <Button variant="flat" className="gap-2 rounded-lg">
           <span className="whitespace-nowrap text-sm">{activeItem.name}</span>
           <ChevronDown className="h-4 w-4" />
         </Button>
@@ -123,7 +124,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
               item.command(editor);
               onOpenChange(false);
             }}
-            className="hover:bg-accent flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm">
+            className="hover:bg-default/40 flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm">
             <div className="flex items-center space-x-2">
               <div className="rounded-sm border p-1">
                 <item.icon className="h-3 w-3" />

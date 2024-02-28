@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "../utils";
 import { type ReactElement, type ComponentPropsWithoutRef, useId } from "react";
 

@@ -11,7 +11,7 @@ export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
-    "node_modules/@chia/editor/src/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@chia/editor/(editor|extensions).{js,ts,jsx,tsx}",
     "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
@@ -26,25 +26,7 @@ export default {
       },
     },
   },
-  plugins: [
-    nextui({
-      prefix: "nextui",
-      addCommonColors: false,
-      themes: {
-        light: {
-          colors: {
-            background: "DEFAULT",
-          },
-        },
-        dark: {
-          colors: {
-            background: "DEFAULT",
-          },
-        },
-      },
-    }),
-    tailwindScrollbar({ nocompatible: true }),
-  ],
+  plugins: [nextui(), tailwindScrollbar({ nocompatible: true })],
   darkMode: "class",
   presets: [
     shadcnConfig,

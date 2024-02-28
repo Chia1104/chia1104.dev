@@ -1,3 +1,6 @@
+/**
+ * @deprecated
+ */
 "use client";
 
 export * from "./MDXImage";
