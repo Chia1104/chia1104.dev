@@ -5,8 +5,8 @@
   "monorepo": true,
   "compilerOptions": {
     "deleteOutDir": true,
-    "webpack": true,
-    "assets": ["**/*.graphql"]
+    "assets": ["**/*.graphql"],
+    "builder": "webpack"
   },
   "projects": {
     "@chia/cache": {
