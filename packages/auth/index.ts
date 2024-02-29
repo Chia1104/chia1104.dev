@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig, type NextAuthResult } from "next-auth";
 import { db, tableCreator, localDb, betaDb } from "@chia/db";
 import type { DefaultSession } from "@auth/core/types";
 import Google from "next-auth/providers/google";
@@ -34,12 +34,7 @@ const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 const useSecureCookies = process.env.NODE_ENV === "production";
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+export const config = {
   trustHost: true,
   useSecureCookies,
   cookies: {
@@ -86,5 +81,12 @@ export const {
       allowDangerousEmailAccountLinking: true,
     }),
   ],
-});
+} satisfies NextAuthConfig;
+
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+} = NextAuth(config) as NextAuthResult;
 export type { Session } from "@auth/core/types";

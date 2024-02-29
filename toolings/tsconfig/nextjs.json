@@ -16,7 +16,9 @@
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "declaration": false,
+    "declarationMap": false
   },
   "include": ["src", "next-env.d.ts"],
   "exclude": ["node_modules"]
