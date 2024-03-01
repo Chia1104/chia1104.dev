@@ -24,12 +24,14 @@ import { signInAction, signOutAction } from "@/server/auth.action";
 import { useTransition, type Key, useState } from "react";
 import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import NextLink from "next/link";
+import SpotifyLogin from "../spotify-login";
 
 const User = () => {
   const [isPending, startTransition] = useTransition();
   const { data: session, status } = useSession();
   return (
     <>
+      <SpotifyLogin />
       {status === "unauthenticated" ? (
         <NavbarItem>
           <Button
