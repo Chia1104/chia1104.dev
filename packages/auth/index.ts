@@ -6,6 +6,31 @@ import { env } from "./env";
 import { getDb } from "@chia/utils";
 import type { NextRequest } from "next/server";
 import { getBaseConfig } from "./utils";
+import type { DefaultSession } from "@auth/core/types";
+
+declare module "@auth/core/types" {
+  interface Session extends DefaultSession {
+    user: {
+      role: "admin" | "user";
+    } & DefaultSession["user"];
+  }
+
+  interface User {
+    role: "admin" | "user";
+  }
+}
+
+declare module "next-auth" {
+  interface Session extends DefaultSession {
+    user: {
+      role: "admin" | "user";
+    } & DefaultSession["user"];
+  }
+
+  interface User {
+    role: "admin" | "user";
+  }
+}
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
