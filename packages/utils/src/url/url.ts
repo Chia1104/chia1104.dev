@@ -36,7 +36,7 @@ export const encodeUrlEncoded = <
   for (const [key, value] of Object.entries(object)) {
     if (!!value && Array.isArray(value)) {
       value.forEach((v) => params.append(key, v));
-    } else if (!!value) {
+    } else if (!!value && typeof value === "string") {
       params.append(key, value);
     }
   }

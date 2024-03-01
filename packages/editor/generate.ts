@@ -20,7 +20,7 @@ export const generate: ReturnType<typeof auth> = auth(async (req) => {
       });
     }
 
-    if (!req.auth || req.auth.user.id !== getAdminId()) {
+    if (!req.auth || req.auth.user?.id !== getAdminId()) {
       return NextResponse.json(
         errorGenerator(403, [
           {
