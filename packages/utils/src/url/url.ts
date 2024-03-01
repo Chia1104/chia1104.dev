@@ -27,14 +27,14 @@ export const setSearchParams = <
 };
 
 export const encodeUrlEncoded = <
-  T extends Partial<Record<string, string | null>>,
+  T extends Record<string, string | string[] | null>,
 >(
   object: T
 ) => {
   const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(object)) {
-    if (Array.isArray(value)) {
+    if (!!value && Array.isArray(value)) {
       value.forEach((v) => params.append(key, v));
     } else if (!!value) {
       params.append(key, value);
