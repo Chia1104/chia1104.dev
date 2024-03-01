@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
+    "@auth/core": "^0.27.0",
+    "@auth/drizzle-adapter": "^0.7.0",
     "@graphql-tools/utils": "^10.0.13",
     "@nestjs/apollo": "^12.1.0",
     "@nestjs/common": "^10.3.3",

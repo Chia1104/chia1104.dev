@@ -1,7 +1,7 @@
-import setSearchParams from "./set-search-params";
+import { setSearchParams, encodeUrlEncoded } from "./url";
 import { describe, expect, it } from "vitest";
 
-describe("setSearchParams", () => {
+describe("url test", () => {
   it("should return empty string if no params are passed", () => {
     expect(setSearchParams()).toEqual("");
   });
@@ -23,4 +23,10 @@ describe("setSearchParams", () => {
       "foo=bar&baz=qux"
     );
   });
+
+  it("should be work", () => {
+    expect(encodeUrlEncoded({ foo: "bar", baz: "qux" })).toEqual(
+      "foo=bar&baz=qux"
+    );
+  })
 });

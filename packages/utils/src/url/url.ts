@@ -2,7 +2,9 @@ interface Options {
   baseUrl?: string;
 }
 
-const setSearchParams = <T extends Partial<Record<string, string | null>>>(
+export const setSearchParams = <
+  T extends Partial<Record<string, string | null>>,
+>(
   searchParams?: T,
   opts?: Options
 ) => {
@@ -24,4 +26,20 @@ const setSearchParams = <T extends Partial<Record<string, string | null>>>(
   );
 };
 
-export default setSearchParams;
+export const encodeUrlEncoded = <
+  T extends Partial<Record<string, string | null>>,
+>(
+  object: T
+) => {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(object)) {
+    if (Array.isArray(value)) {
+      value.forEach((v) => params.append(key, v));
+    } else if (!!value) {
+      params.append(key, value);
+    }
+  }
+
+  return params.toString();
+};

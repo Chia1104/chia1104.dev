@@ -35,6 +35,15 @@
       "compilerOptions": {
         "tsConfigPath": "../../packages/utils/tsconfig.lib.json"
       }
+    },
+    "@chia/auth": {
+      "type": "library",
+      "root": "../../packages/auth",
+      "entryFile": "utils",
+      "sourceRoot": "../../packages/auth",
+      "compilerOptions": {
+        "tsConfigPath": "../../packages/auth/tsconfig.lib.json"
+      }
     }
   }
 }

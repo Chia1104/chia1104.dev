@@ -6,9 +6,11 @@ import RateLimiterModule from "@/modules/rate-limiter/rate-limiter.module";
 import GraphQLModule from "./modules/graphql";
 import ConfigModule from "@/config";
 import ThrottlerModule from "@/modules/throttler";
+import AuthModule from "@/modules/auth/auth.module";
 
 @Module({
   imports: [
+    AuthModule,
     FeedModule,
     SpotifyModule,
     RateLimiterModule,

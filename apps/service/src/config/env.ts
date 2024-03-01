@@ -34,6 +34,9 @@ export const appEnvSchema = z.object({
   SPOTIFY_CLIENT_SECRET: z.string().min(1),
   SPOTIFY_REDIRECT_URI: z.string().min(1),
   CORS_ALLOWED_ORIGIN: z.string().optional(),
+  AUTH_SECRET: z.string().min(1),
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
 });
 
 export type AppEnv = z.infer<typeof appEnvSchema>;
@@ -48,4 +51,7 @@ export default () => ({
   SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
   SPOTIFY_REDIRECT_URI: process.env.SPOTIFY_REDIRECT_URI,
   CORS_ALLOWED_ORIGIN: process.env.CORS_ALLOWED_ORIGIN,
+  AUTH_SECRET: process.env.AUTH_SECRET,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
 });
