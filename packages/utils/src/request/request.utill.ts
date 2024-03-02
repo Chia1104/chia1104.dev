@@ -38,6 +38,19 @@ const request = (defaultOptions?: Options) => {
   });
 };
 
+export const serviceRequest = (
+  defaultOptions?: Options & {
+    isInternal?: boolean;
+  }
+) => {
+  return request({
+    ...defaultOptions,
+    prefixUrl: defaultOptions?.isInternal
+      ? process.env.INTERNAL_SERVICE_ENDPOINT
+      : process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
+  });
+};
+
 export const get = async <
   T = unknown,
   U extends SearchParamsOption = SearchParamsOption,

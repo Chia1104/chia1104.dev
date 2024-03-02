@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "pipeline": {
+    "@chia/utils": {
+      "env": ["NEXT_PUBLIC_SERVICE_ENDPOINT", "INTERNAL_SERVICE_ENDPOINT"]
+    }
+  }
+}

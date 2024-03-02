@@ -15,11 +15,11 @@ import {
   AuthorizeCodeDto,
 } from "@/shared/dto/spotify.dto";
 import { HTTPError } from "ky";
-import { AuthGuard } from "@/commons/guard/auth.guard";
+import { AdminGuard } from "@/commons/guard/admin.guard";
 
 @ApiTags("OAuth Spotify")
 @Controller("oauth/spotify")
-@UseGuards(AuthGuard)
+@UseGuards(AdminGuard)
 class SpotifyController {
   constructor(private readonly spotifyService: SpotifyService) {}
 

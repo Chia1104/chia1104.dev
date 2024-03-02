@@ -2,17 +2,32 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@nextui-org/react";
-import { post } from "@chia/utils";
+import { serviceRequest, type HTTPError } from "@chia/utils";
+import { toast } from "sonner";
 
 const SpotifyLogin = () => {
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending } = useMutation<
+    {
+      url: string;
+    },
+    HTTPError
+  >({
     mutationFn: () =>
-      post<{ url: string }>("http://localhost:3003/oauth/spotify/authorize", {
-        state: crypto.getRandomValues(new Uint8Array(16)).join(""),
-        scopes: ["user-read-currently-playing"],
-      }),
+      serviceRequest()
+        .post(`/oauth/spotify/authorize`, {
+          json: {
+            state: crypto.getRandomValues(new Uint8Array(16)).join(""),
+            scopes: ["user-read-currently-playing"],
+          },
+        })
+        .json<{
+          url: string;
+        }>(),
     onSuccess: (data) => {
       window.location.href = data.url;
+    },
+    onError: (error) => {
+      toast.error("You don't have permission to access Spotify.");
     },
   });
 
@@ -22,7 +37,7 @@ const SpotifyLogin = () => {
       onPress={() => {
         mutate();
       }}>
-      Login with Spotify
+      Refresh Spotify Token
     </Button>
   );
 };
