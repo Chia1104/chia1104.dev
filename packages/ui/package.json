@@ -37,7 +37,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-medium-image-zoom": "^5.1.10",
-    "sonner": "1.4.1",
+    "sonner": "1.4.3",
     "tailwind-merge": "^2.2.1",
     "usehooks-ts": "^2.14.0",
     "vaul": "^0.9.0"
