@@ -209,7 +209,7 @@ importers:
         version: 2.2.1
       usehooks-ts:
         specifier: ^2.14.0
-        version: 2.14.0(react@18.2.0)
+        version: 2.15.1(react@18.2.0)
     devDependencies:
       '@chia/tailwind':
         specifier: workspace:0.0.1-beta.1
@@ -493,7 +493,7 @@ importers:
         version: 1.4.1(react-dom@18.2.0)(react@18.2.0)
       usehooks-ts:
         specifier: ^2.14.0
-        version: 2.14.0(react@18.2.0)
+        version: 2.15.1(react@18.2.0)
       zustand:
         specifier: ^4.5.0
         version: 4.5.0(@types/react@18.2.55)(react@18.2.0)
@@ -878,7 +878,7 @@ importers:
         version: 2.2.1
       usehooks-ts:
         specifier: ^2.14.0
-        version: 2.14.0(react@18.2.0)
+        version: 2.15.1(react@18.2.0)
       vaul:
         specifier: ^0.9.0
         version: 0.9.0(@types/react-dom@18.2.19)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
@@ -22114,8 +22114,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /usehooks-ts@2.14.0(react@18.2.0):
-    resolution: {integrity: sha512-jnhrjTRJoJS7cFxz63tRYc5mzTKf/h+Ii8P0PDHymT9qDe4ZA2/gzDRmDR4WGausg5X8wMIdghwi3BBCN9JKow==}
+  /usehooks-ts@2.15.1(react@18.2.0):
+    resolution: {integrity: sha512-AK29ODCt4FT9XleILNbkbjjmkRCNaQrgxQEkvqHjlnT76iPXzTFGvK2Y/s83JEdSxRp43YEnSa3bYBEV6HZ26Q==}
     engines: {node: '>=16.15.0'}
     peerDependencies:
       react: ^16.8.0  || ^17 || ^18
