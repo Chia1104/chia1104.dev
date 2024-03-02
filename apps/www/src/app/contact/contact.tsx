@@ -7,6 +7,7 @@ import {
   useState,
   type ComponentPropsWithoutRef,
   type ReactNode,
+  type ReactElement,
 } from "react";
 import { cn } from "@chia/ui";
 import { Input, Textarea, Card, useTheme, ShimmerButton } from "@chia/ui";
@@ -40,16 +41,10 @@ export const Form: FC<
           email: string;
           reCaptchToken: string;
         },
-        any,
-        {
-          title: string;
-          message: string;
-          email: string;
-          reCaptchToken: string;
-        }
+        any
       >;
       isPending: boolean;
-      ReCAPTCHA: JSX.Element;
+      ReCAPTCHA: ReactElement;
     }) => ReactNode;
   }
 > = ({
