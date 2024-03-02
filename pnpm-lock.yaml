@@ -306,7 +306,7 @@ importers:
         version: 7.1.3
       nestjs-throttler-storage-redis:
         specifier: ^0.4.1
-        version: 0.4.1(@nestjs/common@10.3.3)(@nestjs/core@10.3.3)(@nestjs/throttler@5.1.2)(ioredis@5.3.2)(reflect-metadata@0.2.1)
+        version: 0.4.2(@nestjs/common@10.3.3)(@nestjs/core@10.3.3)(@nestjs/throttler@5.1.2)(ioredis@5.3.2)(reflect-metadata@0.2.1)
       reflect-metadata:
         specifier: ^0.2.1
         version: 0.2.1
@@ -17482,8 +17482,8 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nestjs-throttler-storage-redis@0.4.1(@nestjs/common@10.3.3)(@nestjs/core@10.3.3)(@nestjs/throttler@5.1.2)(ioredis@5.3.2)(reflect-metadata@0.2.1):
-    resolution: {integrity: sha512-nSjPWfzAqwTFl6WA+wqwjJIHf63ffG9RJTojccHrDIE6cEk5Iw5IjO98crcBbu4PEqezWoX2eaUwAtpB1Ei8jA==}
+  /nestjs-throttler-storage-redis@0.4.2(@nestjs/common@10.3.3)(@nestjs/core@10.3.3)(@nestjs/throttler@5.1.2)(ioredis@5.3.2)(reflect-metadata@0.2.1):
+    resolution: {integrity: sha512-aYiTAhkRDNbvTx8RlliZ7wW6B2EoxbioBHlBEnFAo3VT2jBNZB4JjVE4n84mt2YQvImM95NvXiDg72uxzlooKw==}
     peerDependencies:
       '@nestjs/common': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
       '@nestjs/core': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
