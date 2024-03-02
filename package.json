@@ -57,7 +57,7 @@
     "node": ">=20.6",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@8.15.3",
+  "packageManager": "pnpm@8.15.4",
   "dependencies": {
     "dayjs": "^1.11.10",
     "graphql-request": "^6.1.0",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@manypkg/cli": "^0.21.2",
-    "@next/eslint-plugin-next": "14.1.0",
+    "@next/eslint-plugin-next": "14.1.1",
     "@playwright/test": "^1.41.2",
     "@total-typescript/ts-reset": "0.5.1",
     "@turbo/gen": "^1.12.4",
