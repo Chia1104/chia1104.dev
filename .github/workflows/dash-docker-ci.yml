@@ -28,6 +28,9 @@ env:
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
   BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
   NEXT_PUBLIC_ENV: beta
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  SPOTIFY_REDIRECT_URI: http://localhost:8080
 
 jobs:
   build:
