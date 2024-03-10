@@ -6,6 +6,7 @@ import {
   HttpException,
   Query,
   Body,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import SpotifyService from "./spotify.service";
@@ -14,9 +15,11 @@ import {
   AuthorizeCodeDto,
 } from "@/shared/dto/spotify.dto";
 import { HTTPError } from "ky";
+import { AdminGuard } from "@/commons/guard/admin.guard";
 
 @ApiTags("OAuth Spotify")
 @Controller("oauth/spotify")
+@UseGuards(AdminGuard)
 class SpotifyController {
   constructor(private readonly spotifyService: SpotifyService) {}
 

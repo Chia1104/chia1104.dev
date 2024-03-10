@@ -1,11 +1,12 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import { db, tableCreator, localDb, betaDb } from "@chia/db";
-import type { DefaultSession } from "@auth/core/types";
 import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { env } from "./env";
+import { env } from "@chia/auth-core/env";
 import { getDb } from "@chia/utils";
 import type { NextRequest } from "next/server";
+import { getBaseConfig } from "@chia/auth-core/utils";
+import type { DefaultSession } from "@auth/core/types";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {
@@ -32,53 +33,16 @@ declare module "next-auth" {
 }
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
-const useSecureCookies = process.env.NODE_ENV === "production";
-const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
-export const getCookieDomain = (req?: NextRequest) => {
-  if (
-    AUTH_URL?.includes("localhost") ||
-    process.env.NODE_ENV === "development"
-  ) {
-    return "localhost";
-  }
-  return (
-    env.AUTH_COOKIE_DOMAIN ??
-    AUTH_URL?.replace(/(^\w+:|^)\/\//, "") ??
-    req?.nextUrl.hostname ??
-    ".chia1104.dev"
-  );
-};
-
-export const getBaseConfig = (req?: NextRequest) => {
+export const getConfig = (req?: NextRequest) => {
   return {
-    trustHost: true,
-    useSecureCookies,
-    cookies: {
-      sessionToken: {
-        name: `${cookiePrefix}authjs.session-token`,
-        options: {
-          httpOnly: true,
-          sameSite: "lax",
-          path: "/",
-          secure: useSecureCookies,
-          domain: getCookieDomain(req),
-        },
+    ...getBaseConfig({
+      req,
+      env: {
+        AUTH_URL,
+        AUTH_COOKIE_DOMAIN: env.AUTH_COOKIE_DOMAIN,
       },
-    },
-    pages: {
-      signIn: "/login",
-    },
-    callbacks: {
-      session: ({ session, user }) => ({
-        ...session,
-        user: {
-          ...session.user,
-          role: user.role,
-          id: user.id,
-        },
-      }),
-    },
+    }),
     adapter: DrizzleAdapter(
       getDb(undefined, {
         db,
@@ -102,5 +66,5 @@ export const {
   auth,
   signIn,
   signOut,
-} = NextAuth(getBaseConfig());
+} = NextAuth(getConfig());
 export type { Session } from "@auth/core/types";

@@ -1,11 +1,10 @@
 "use client";
 
-import { type FC, type ComponentPropsWithoutRef, useState } from "react";
+import React, { type FC, type ComponentPropsWithoutRef, useState } from "react";
 import {
   EditorRoot,
   EditorContent,
   EditorBubble,
-  defaultEditorProps,
   EditorCommand,
   EditorCommandEmpty,
   EditorCommandItem,
@@ -26,7 +25,6 @@ const Editor: FC<
       <EditorContent
         {...props}
         editorProps={{
-          ...defaultEditorProps,
           attributes: {
             class: `prose dark:prose-invert focus:outline-none min-h-[300px] min-w-full`,
             ...editorProps?.attributes,

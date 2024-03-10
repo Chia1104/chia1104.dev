@@ -10,7 +10,9 @@
         "AUTH_SECRET",
         "ZEABUR_URL",
         "VERCEL_URL",
-        "RAILWAY_STATIC_URL"
+        "RAILWAY_STATIC_URL",
+        "NEXT_PUBLIC_SERVICE_ENDPOINT",
+        "INTERNAL_SERVICE_ENDPOINT"
       ]
     }
   }

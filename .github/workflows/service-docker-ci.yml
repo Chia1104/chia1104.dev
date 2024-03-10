@@ -24,10 +24,14 @@ env:
   GIT_HASH: ${{ github.sha }}
   SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-  SPOTIFY_REDIRECT_URI: http://localhost:3003
+  SPOTIFY_REDIRECT_URI: http://localhost:8080
   REDIS_URI: ${{ secrets.REDIS_URI }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   ENV: beta
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+  AUTH_URL: http://localhost:8080
 
 jobs:
   build:
@@ -70,3 +74,7 @@ jobs:
             REDIS_URI=${{ env.REDIS_URI }}
             REDIS_URL=${{ env.REDIS_URL }}
             ENV=${{ env.ENV }}
+            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
+            AUTH_SECRET=${{ env.AUTH_SECRET }}
+            AUTH_URL=${{ env.AUTH_URL }}

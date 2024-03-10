@@ -9,7 +9,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 });
 
-export const generate: ReturnType<typeof auth> = auth(async (req) => {
+export const generate = auth(async (req) => {
   try {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "") {
       return NextResponse.json(errorGenerator(503), {
@@ -20,7 +20,7 @@ export const generate: ReturnType<typeof auth> = auth(async (req) => {
       });
     }
 
-    if (!req.auth || req.auth.user.id !== getAdminId()) {
+    if (!req.auth || req.auth.user?.id !== getAdminId()) {
       return NextResponse.json(
         errorGenerator(403, [
           {

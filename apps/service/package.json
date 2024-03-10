@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "build:tsc": "nest build",
-    "build": "nest build",
+    "build": "INTERNAL_FRAMEWORK=nestjs nest build",
     "format": "prettier --write \"**/*.{ts,js}\"",
-    "dev": "nest start --watch",
+    "dev": "INTERNAL_FRAMEWORK=nestjs nest start --watch",
     "start": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "vitest run",
@@ -19,6 +19,9 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
+    "@auth/core": "^0.28.0",
+    "@auth/drizzle-adapter": "^0.8.0",
+    "@chia/auth-core": "workspace:*",
     "@graphql-tools/utils": "^10.0.13",
     "@nestjs/apollo": "^12.1.0",
     "@nestjs/common": "^10.3.3",

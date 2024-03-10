@@ -1,6 +1,6 @@
-// @ts-check
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
+import { env as spotify } from "@chia/api/spotify/env";
 // @ts-ignore
 import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
 
@@ -34,10 +34,12 @@ export const env = createEnv({
     BETA_ADMIN_ID: z.string().optional(),
     DATABASE_URL: z.string().optional(),
     BETA_DATABASE_URL: z.string().optional(),
+    INTERNAL_SERVICE_ENDPOINT: z.string().optional(),
   },
 
   client: {
     NEXT_PUBLIC_ENV: envSchema,
+    NEXT_PUBLIC_SERVICE_ENDPOINT: z.string().optional(),
   },
 
   runtimeEnv: {
@@ -50,9 +52,13 @@ export const env = createEnv({
     BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
     DATABASE_URL: process.env.DATABASE_URL,
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
+    NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
+    INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
   },
 
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
+
+  extends: [spotify],
 });

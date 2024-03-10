@@ -25,6 +25,10 @@ env:
   REDIS_URI: ${{ secrets.REDIS_URI }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   ENV: beta
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+  AUTH_URL: http://localhost:3003
 
 jobs:
   build:

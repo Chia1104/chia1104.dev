@@ -1,0 +1,16 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "pipeline": {
+    "@chia/auth-core": {
+      "env": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "AUTH_URL",
+        "AUTH_SECRET",
+        "AUTH_REDIRECT_PROXY_URL",
+        "AUTH_COOKIE_DOMAIN"
+      ]
+    }
+  }
+}

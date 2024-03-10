@@ -9,7 +9,10 @@
         "SPOTIFY_CLIENT_ID",
         "SPOTIFY_CLIENT_SECRET",
         "SPOTIFY_REDIRECT_URI",
-        "CORS_ALLOWED_ORIGIN"
+        "CORS_ALLOWED_ORIGIN",
+        "AUTH_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET"
       ]
     }
   }
