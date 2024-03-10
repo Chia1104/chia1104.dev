@@ -15,13 +15,12 @@ import { HTTPError } from "ky";
 import { unstable_noStore as noStore } from "next/cache";
 import { createUpstash } from "@chia/cache/src/create-upstash";
 
-const upstash = createUpstash();
-
 export const runtime = "edge";
 
 export const GET = async (req: NextRequest) => {
   noStore();
   try {
+    const upstash = createUpstash();
     const storedState = await upstash.get<string>(SPOTIFY_OAUTH_STATE);
     const searchParams = req.nextUrl.searchParams;
     const dto = {
