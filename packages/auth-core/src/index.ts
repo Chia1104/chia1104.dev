@@ -21,6 +21,8 @@ declare module "@auth/core/types" {
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
+export const name = "auth-core";
+
 export const getConfig = (
   req?: Request,
   config?: Partial<Omit<AuthConfig, "raw">>
