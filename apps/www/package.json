@@ -73,7 +73,7 @@
     "server-only": "^0.0.1",
     "sharp": "0.32.6",
     "sonner": "1.4.3",
-    "usehooks-ts": "^2.14.0",
+    "usehooks-ts": "^3.0.0",
     "zustand": "^4.5.0"
   },
   "devDependencies": {

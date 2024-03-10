@@ -46,7 +46,7 @@
     "sharp": "0.32.6",
     "sonner": "1.4.3",
     "tailwind-merge": "^2.2.1",
-    "usehooks-ts": "^2.14.0"
+    "usehooks-ts": "^3.0.0"
   },
   "devDependencies": {
     "@chia/tailwind": "workspace:0.0.1-beta.1",
