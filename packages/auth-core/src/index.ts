@@ -1,12 +1,11 @@
-import NextAuth, { type NextAuthConfig } from "next-auth";
+import { Auth as InternalAuth, type AuthConfig } from "@auth/core";
 import { db, tableCreator, localDb, betaDb } from "@chia/db";
-import Google from "next-auth/providers/google";
+import Google from "@auth/core/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { env } from "@chia/auth-core/env";
+import { env } from "./env";
 import { getDb } from "@chia/utils";
-import type { NextRequest } from "next/server";
-import { getBaseConfig } from "@chia/auth-core/utils";
-import type { DefaultSession } from "@auth/core/types";
+import { getBaseConfig } from "./utils";
+import type { DefaultSession, Session } from "@auth/core/types";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {
@@ -20,21 +19,12 @@ declare module "@auth/core/types" {
   }
 }
 
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: {
-      role: "admin" | "user";
-    } & DefaultSession["user"];
-  }
-
-  interface User {
-    role: "admin" | "user";
-  }
-}
-
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
-export const getConfig = (req?: NextRequest) => {
+export const getConfig = (
+  req?: Request,
+  config?: Partial<Omit<AuthConfig, "raw">>
+) => {
   return {
     ...getBaseConfig({
       req,
@@ -55,16 +45,14 @@ export const getConfig = (req?: NextRequest) => {
       Google({
         clientId: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET,
-        allowDangerousEmailAccountLinking: true,
       }),
     ],
-  } satisfies NextAuthConfig;
+    ...config,
+  } satisfies AuthConfig;
 };
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth(getConfig());
+export const Auth = (
+  request: Request,
+  config?: Partial<Omit<AuthConfig, "raw">>
+) => InternalAuth(request, getConfig(request, config));
 export type { Session } from "@auth/core/types";

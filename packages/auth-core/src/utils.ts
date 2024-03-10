@@ -1,16 +1,19 @@
-import type { NextAuthConfig } from "next-auth";
 import type { env as internalEnv } from "./env";
-import { NextRequest } from "next/server";
+import { type AuthConfig } from "@auth/core";
 
 export const useSecureCookies = process.env.NODE_ENV === "production";
 export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+export const DEFAULT_COOKIE_DOMAIN = ".chia1104.dev";
 
-export const getCookieDomain = (options?: {
-  req?: NextRequest | Request;
+export const getCookieDomain = <TRequest extends Request = Request>(options?: {
+  /**
+   * @deprecated use `env` instead
+   */
+  req?: TRequest;
   env?: Partial<typeof internalEnv>;
-}) => {
+}): string => {
   options ??= {};
-  const { req, env } = options;
+  const { env } = options;
   const AUTH_URL = env?.AUTH_URL?.replace(/\/api\/auth$/, "");
   if (
     AUTH_URL?.includes("localhost") ||
@@ -18,27 +21,20 @@ export const getCookieDomain = (options?: {
   ) {
     return "localhost";
   }
-  if (req instanceof NextRequest) {
-    return (
-      env?.AUTH_COOKIE_DOMAIN ??
-      AUTH_URL?.replace(/(^\w+:|^)\/\//, "") ??
-      req?.nextUrl?.hostname ??
-      ".chia1104.dev"
-    );
-  }
   return (
     env?.AUTH_COOKIE_DOMAIN ??
     AUTH_URL?.replace(/(^\w+:|^)\/\//, "") ??
-    ".chia1104.dev"
+    DEFAULT_COOKIE_DOMAIN
   );
 };
 
-export const getBaseConfig = (options?: {
-  req?: NextRequest | Request;
+export const getBaseConfig = <TRequest extends Request = Request>(options?: {
+  req?: TRequest;
   env?: Partial<typeof internalEnv>;
+  config?: Partial<Omit<AuthConfig, "raw">>;
 }) => {
   options ??= {};
-  const { req, env } = options;
+  const { req, env, config } = options;
   return {
     trustHost: true,
     useSecureCookies,
@@ -62,11 +58,11 @@ export const getBaseConfig = (options?: {
         ...session,
         user: {
           ...session.user,
-          // @ts-ignore
           role: user.role,
           id: user.id,
         },
       }),
     },
-  } satisfies Omit<NextAuthConfig, "adapter" | "providers">;
+    ...config,
+  } satisfies Omit<AuthConfig, "adapter" | "providers">;
 };

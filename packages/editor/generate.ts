@@ -9,7 +9,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 });
 
-export const generate: ReturnType<typeof auth> = auth(async (req) => {
+export const generate = auth(async (req) => {
   try {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "") {
       return NextResponse.json(errorGenerator(503), {

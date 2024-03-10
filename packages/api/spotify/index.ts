@@ -1,7 +1,11 @@
 import "server-only";
 import { env } from "./env";
 import { post, request } from "@chia/utils";
-import { type PlayList, type CurrentPlaying } from "./types";
+import type { PlayList, CurrentPlaying } from "./types";
+import type {
+  GenerateAuthorizeUrlDTO,
+  CodeAuthorizationDTO,
+} from "./validator";
 
 export const SPOTIFY_BASE_URL = "https://api.spotify.com/v1";
 
@@ -13,7 +17,7 @@ const BASIC = Buffer.from(
   `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
 ).toString("base64");
 
-const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
+const ACCOUNT_ENDPOINT = "https://accounts.spotify.com";
 
 export const FAVORITE_PLAYLIST_ID = env.SPOTIFY_FAVORITE_PLAYLIST_ID;
 
@@ -35,7 +39,7 @@ export const getSpotifyAccessToken = async (req?: {
   const result = await post<{
     access_token: string;
   }>(
-    TOKEN_ENDPOINT,
+    `${ACCOUNT_ENDPOINT}/api/token`,
     undefined,
     {
       headers: {
@@ -106,7 +110,6 @@ export const getPlayList = async (req?: {
 };
 
 /**
- * @todo implement Authorization code PKCE
  * @description get user current playing from spotify
  * @param req { revalidate }
  * @default revalidate one request per one minutes
@@ -141,4 +144,44 @@ export const getNowPlaying = async (req?: {
   }
 
   return result.json<CurrentPlaying>();
+};
+
+export const generateAuthorizeUrl = (dto: GenerateAuthorizeUrlDTO) => {
+  const clientId = env.SPOTIFY_CLIENT_ID;
+  const url = new URL("https://accounts.spotify.com/authorize");
+  url.searchParams.append("client_id", clientId);
+  url.searchParams.append("response_type", "code");
+  url.searchParams.append("redirect_uri", dto.redirectUri);
+  url.searchParams.append("state", dto.state);
+  url.searchParams.append("scope", dto.scopes.join(" "));
+  return url.toString();
+};
+
+export const codeAuthorization = (dto: CodeAuthorizationDTO) => {
+  return post<{
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    refresh_token: string;
+    scope: string;
+  }>(`${ACCOUNT_ENDPOINT}/api/token`, undefined, {
+    headers: {
+      Authorization: `Basic ${BASIC}`,
+    },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      code: dto.code,
+      redirect_uri: dto.redirectUri,
+    }),
+    hooks: {
+      beforeRequest: [
+        (request) => {
+          request.headers.set(
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+          );
+        },
+      ],
+    },
+  });
 };

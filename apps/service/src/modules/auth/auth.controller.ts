@@ -7,16 +7,14 @@ import {
   Res,
 } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { getBaseConfig } from "@chia/auth";
+import { Auth, env } from "@chia/auth-core";
 import { toWebRequest, toExpressResponse } from "@chia/utils";
 import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from "express";
-import env from "@/config/env";
 import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
-import { type DB, tableCreator } from "@chia/db";
-import { dynamicImportPackage } from "@/utils/dynamic-import-package.util";
+import { type DB } from "@chia/db";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -31,31 +29,8 @@ class AuthController {
     @Res() res: ExpressResponse
   ) {
     try {
-      const Auth = (
-        await dynamicImportPackage<typeof import("@auth/core")>("@auth/core")
-      ).Auth;
-      const DrizzleAdapter = (
-        await dynamicImportPackage<typeof import("@auth/drizzle-adapter")>(
-          "@auth/drizzle-adapter"
-        )
-      ).DrizzleAdapter;
-      const Google = (
-        await dynamicImportPackage<
-          typeof import("@auth/core/providers/google")
-        >("@auth/core/providers/google")
-      ).default;
       const result = await Auth(toWebRequest(request), {
-        ...getBaseConfig(),
-        secret: env().AUTH_SECRET,
-        basePath: "/auth",
-        adapter: DrizzleAdapter(this.db, tableCreator),
-        providers: [
-          Google({
-            clientId: env().GOOGLE_CLIENT_ID,
-            clientSecret: env().GOOGLE_CLIENT_SECRET,
-            allowDangerousEmailAccountLinking: true,
-          }),
-        ],
+        secret: env.AUTH_SECRET,
       });
       return await toExpressResponse(result, res);
     } catch (error) {

@@ -10,10 +10,17 @@ export const env = createEnv({
       .optional()
       .default("37i9dQZF1Epyg7jBW9q502"),
     SPOTIFY_REFRESH_TOKEN: z.string().optional(),
+    SPOTIFY_REDIRECT_URI: z.string().optional(),
+    /**
+     * @deprecated
+     */
     SPOTIFY_NOW_PLAYING_URL: z
       .string()
       .optional()
       .default("https://api.spotify.com/v1/me/player/currently-playing"),
+    /**
+     * @deprecated
+     */
     SPOTIFY_TOKEN_URL: z
       .string()
       .optional()
@@ -30,9 +37,16 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
       "37i9dQZF1Epyg7jBW9q502",
     SPOTIFY_REFRESH_TOKEN: process.env.SPOTIFY_REFRESH_TOKEN,
+    SPOTIFY_REDIRECT_URI: process.env.SPOTIFY_REDIRECT_URI,
+    /**
+     * @deprecated
+     */
     SPOTIFY_NOW_PLAYING_URL:
       process.env.SPOTIFY_NOW_PLAYING_URL ??
       "https://api.spotify.com/v1/me/player/currently-playing",
+    /**
+     * @deprecated
+     */
     SPOTIFY_TOKEN_URL:
       process.env.SPOTIFY_TOKEN_URL ?? "https://accounts.spotify.com/api/token",
   },

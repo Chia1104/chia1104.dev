@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createEnv } from "@t3-oss/env-core";
 import { vercel } from "@t3-oss/env-core/presets";
 import { z } from "zod";

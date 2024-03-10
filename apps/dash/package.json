@@ -18,6 +18,7 @@
   "dependencies": {
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
+    "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/editor": "workspace:*",
     "@chia/mdx": "workspace:*",

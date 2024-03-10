@@ -4,29 +4,15 @@ import {
   ExecutionContext,
   Inject,
 } from "@nestjs/common";
-import { getBaseConfig } from "@chia/auth";
-import env from "@/config/env";
-import { dynamicImportPackage } from "@/utils/dynamic-import-package.util";
+import { Auth, env } from "@chia/auth-core";
 import { DRIZZLE_PROVIDER } from "@/modules/drizzle/drizzle.provider";
-import { type DB, tableCreator } from "@chia/db";
+import { type DB } from "@chia/db";
+import { dynamicImportPackage } from "@/utils/dynamic-import-package.util";
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   constructor(@Inject(DRIZZLE_PROVIDER) private readonly db: DB) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const Auth = (
-      await dynamicImportPackage<typeof import("@auth/core")>("@auth/core")
-    ).Auth;
-    const DrizzleAdapter = (
-      await dynamicImportPackage<typeof import("@auth/drizzle-adapter")>(
-        "@auth/drizzle-adapter"
-      )
-    ).DrizzleAdapter;
-    const Google = (
-      await dynamicImportPackage<typeof import("@auth/core/providers/google")>(
-        "@auth/core/providers/google"
-      )
-    ).default;
     const createActionURL = (
       await dynamicImportPackage<typeof import("@auth/core")>("@auth/core")
     ).createActionURL;
@@ -44,17 +30,7 @@ export class AuthGuard implements CanActivate {
     const response = await Auth(
       new Request(url, { headers: { cookie: request.headers.cookie ?? "" } }),
       {
-        ...getBaseConfig(),
-        secret: env().AUTH_SECRET,
-        basePath: "/auth",
-        adapter: DrizzleAdapter(this.db, tableCreator),
-        providers: [
-          Google({
-            clientId: env().GOOGLE_CLIENT_ID,
-            clientSecret: env().GOOGLE_CLIENT_SECRET,
-            allowDangerousEmailAccountLinking: true,
-          }),
-        ],
+        secret: env.AUTH_SECRET,
       }
     );
     const { status = 200 } = response;
