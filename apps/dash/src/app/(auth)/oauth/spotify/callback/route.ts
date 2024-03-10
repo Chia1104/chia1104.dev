@@ -17,11 +17,12 @@ import { createUpstash } from "@chia/cache/src/create-upstash";
 
 export const runtime = "edge";
 
+const upstash = () => createUpstash();
+
 export const GET = async (req: NextRequest) => {
   noStore();
   try {
-    const upstash = createUpstash();
-    const storedState = await upstash.get<string>(SPOTIFY_OAUTH_STATE);
+    const storedState = await upstash().get<string>(SPOTIFY_OAUTH_STATE);
     const searchParams = req.nextUrl.searchParams;
     const dto = {
       code: searchParams.get("code") ?? "",
@@ -60,7 +61,7 @@ export const GET = async (req: NextRequest) => {
     }
 
     const result = await codeAuthorization(dto as CodeAuthorizationDTO);
-    await upstash.set(SPOTIFY_OAUTH_RESULT, result);
+    await upstash().set(SPOTIFY_OAUTH_RESULT, result);
     return NextResponse.redirect(
       `${getSiteUrl(req)}/oauth/spotify/callback/success`
     );

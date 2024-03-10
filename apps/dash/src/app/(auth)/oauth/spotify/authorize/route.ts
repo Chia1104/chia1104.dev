@@ -12,9 +12,10 @@ import { createUpstash } from "@chia/cache";
 
 export const runtime = "nodejs";
 
+const upstash = () => createUpstash();
+
 export const POST = auth(async (req) => {
   try {
-    const upstash = createUpstash();
     if (req.auth?.user.id !== getAdminId()) {
       return NextResponse.json(
         errorGenerator(403, [
@@ -69,7 +70,7 @@ export const POST = auth(async (req) => {
       );
     }
 
-    await upstash.set(SPOTIFY_OAUTH_STATE, dto.state, {
+    await upstash().set(SPOTIFY_OAUTH_STATE, dto.state, {
       ex: 60,
     });
 
