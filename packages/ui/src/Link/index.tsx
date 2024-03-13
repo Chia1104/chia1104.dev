@@ -89,7 +89,7 @@ const PreviewDetail: FC<
     <>
       {isError ? (
         <div className="bg-danger/30 z-[999] flex w-full max-w-60 items-center justify-center space-x-2 rounded-md px-1">
-          <div className="text-danger i-mdi-alert ml-2 h-7 w-7" />
+          <div className="text-danger i-mdi-alert ml-2 size-7" />
           <p className="pr-2">{callbackError ?? "Failed to fetch preview"}</p>
         </div>
       ) : !!data && isSuccess ? (
@@ -124,7 +124,7 @@ const PreviewDetail: FC<
         <div className="z-[999] flex flex-col gap-3">
           <div className="h-[120px] w-60 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
           <div className="mt-3 flex justify-between space-x-4">
-            <div className="h-10 w-10 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
+            <div className="size-10 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
             <div className="space-y-1">
               <div className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
               <div className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />

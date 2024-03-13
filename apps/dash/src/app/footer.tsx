@@ -1,81 +1,11 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import {
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-} from "@nextui-org/react";
-import {
-  cn,
-  Image,
-  MotionThemeIcon,
-  defaultThemeVariants,
-  useTheme,
-  Theme,
-} from "@chia/ui";
+import { cn, Image, ThemeSelector } from "@chia/ui";
 import meta from "@chia/meta";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-
-const ThemeSelector = () => {
-  const { theme, setTheme } = useTheme();
-  return (
-    <Dropdown>
-      <DropdownTrigger>
-        <Button
-          variant="flat"
-          size="sm"
-          startContent={
-            <MotionThemeIcon
-              theme={theme as Theme}
-              variants={defaultThemeVariants}
-            />
-          }>
-          Theme
-        </Button>
-      </DropdownTrigger>
-      <DropdownMenu>
-        <DropdownItem
-          key="system"
-          startContent={
-            <MotionThemeIcon
-              theme={Theme.SYSTEM}
-              variants={defaultThemeVariants}
-            />
-          }
-          onPress={(e) => setTheme(Theme.SYSTEM)}>
-          System
-        </DropdownItem>
-        <DropdownItem
-          key="dark"
-          startContent={
-            <MotionThemeIcon
-              theme={Theme.DARK}
-              variants={defaultThemeVariants}
-            />
-          }
-          onPress={(e) => setTheme(Theme.DARK)}>
-          Dark
-        </DropdownItem>
-        <DropdownItem
-          key="light"
-          startContent={
-            <MotionThemeIcon
-              theme={Theme.LIGHT}
-              variants={defaultThemeVariants}
-            />
-          }
-          onPress={(e) => setTheme(Theme.LIGHT)}>
-          Light
-        </DropdownItem>
-      </DropdownMenu>
-    </Dropdown>
-  );
-};
 
 const LinkItem: FC<{
   path: string;

@@ -1,5 +1,3 @@
-"use server";
-
 import { type FC, type CSSProperties } from "react";
 
 interface Props {
