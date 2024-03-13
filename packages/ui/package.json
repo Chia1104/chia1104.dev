@@ -29,7 +29,7 @@
     "@tanstack/react-query": "^5.27.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
-    "cmdk": "0.2.0",
+    "cmdk": "0.2.1",
     "framer-motion": "11.0.8",
     "lucide-react": "^0.356.0",
     "next": "14.1.3",
