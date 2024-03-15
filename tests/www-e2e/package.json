@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "start-server-and-test": "^2.0.0",
-    "tsconfig": "0.0.0",
-    "www": "2.0.0"
+    "tsconfig": "workspace:*",
+    "www": "workspace:*"
   }
 }

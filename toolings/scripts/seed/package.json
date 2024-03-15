@@ -13,9 +13,9 @@
     "tsc:config": "tsc --showConfig"
   },
   "devDependencies": {
-    "@chia/db": "0.0.0",
-    "@chia/utils": "0.0.0",
+    "@chia/db": "workspace:*",
+    "@chia/utils": "workspace:*",
     "@faker-js/faker": "^8.0.2",
-    "tsconfig": "0.0.0"
+    "tsconfig": "workspace:*"
   }
 }
