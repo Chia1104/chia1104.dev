@@ -12,6 +12,6 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "tsconfig": "0.0.0"
+    "tsconfig": "workspace:*"
   }
 }
