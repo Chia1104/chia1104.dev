@@ -1,4 +1,5 @@
 // @ts-check
+import million from "million/compiler";
 
 const securityHeaders = [
   {
@@ -64,4 +65,6 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-export default nextComposePlugins;
+export default million.next(nextComposePlugins, {
+  rsc: true,
+});

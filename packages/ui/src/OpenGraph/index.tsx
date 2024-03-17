@@ -19,6 +19,7 @@ interface Props {
   };
 }
 
+// million-ignore
 const OG: FC<Props> = ({ metadata, styles }) => {
   const titleStyle =
     styles?.title?.color === "transparent"
