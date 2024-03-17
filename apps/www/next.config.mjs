@@ -1,6 +1,7 @@
 // @ts-check
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
+import million from "million/compiler";
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
@@ -134,9 +135,15 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-export default withSentryConfigImport(nextComposePlugins, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: true,
-});
+export default million.next(
+  // @ts-ignore
+  withSentryConfigImport(nextComposePlugins, {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: true,
+  }),
+  {
+    rsc: true,
+  }
+);
