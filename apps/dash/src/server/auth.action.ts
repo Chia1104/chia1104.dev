@@ -8,4 +8,4 @@ export const signInAction = () =>
     callbackUrl: "/",
   });
 
-export const signOutAction = signOut;
+export const signOutAction = () => signOut();
