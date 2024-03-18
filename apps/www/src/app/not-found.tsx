@@ -1,22 +1,25 @@
-import Link from "next/link";
+import {
+  TextRevealCard,
+  TextRevealCardDescription,
+  TextRevealCardTitle,
+} from "@chia/ui";
+import { Button, Link, Code } from "@nextui-org/react";
 
 export default function NotFound() {
   return (
-    <main className="main c-container">
-      <div className="flex flex-col items-start gap-5">
-        <h2 className="title">404</h2>
-        <p className="c-description">
-          The page you are looking for does not exist.
-        </p>
-      </div>
-      <Link
-        href="/"
-        className="hover:bg-secondary hover:dark:bg-primary group relative mt-7 inline-flex self-center rounded transition ease-in-out"
-        aria-label="Go back">
-        <span className="c-button-secondary transform text-base group-hover:-translate-x-1 group-hover:-translate-y-1">
-          Go back
-        </span>
-      </Link>
-    </main>
+    <div className="main c-container">
+      <TextRevealCard
+        text="404 Not Found"
+        revealText="出事拉，阿北！"
+        startCount={20}>
+        <TextRevealCardTitle>Not Found</TextRevealCardTitle>
+        <TextRevealCardDescription>
+          Sorry, the page you are looking for does not exist.
+        </TextRevealCardDescription>
+        <Button as={Link} href="/" className="mt-5">
+          <Code>cd ../</Code>
+        </Button>
+      </TextRevealCard>
+    </div>
   );
 }
