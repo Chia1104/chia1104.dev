@@ -1,8 +1,10 @@
+"use client";
+
 import {
   TextRevealCard,
   TextRevealCardDescription,
   TextRevealCardTitle,
-} from "@chia/ui";
+} from "../../src/TextRevealCard";
 import { Button, Link, Code } from "@nextui-org/react";
 
 export default function NotFound() {
