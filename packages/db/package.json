@@ -13,7 +13,7 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "drizzle-orm": "^0.29.3",
+    "drizzle-orm": "^0.30.0",
     "pg": "^8.11.3",
     "postgres": "^3.4.3"
   },
