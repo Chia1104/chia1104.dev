@@ -3,8 +3,8 @@ import { test, expect } from "@playwright/test";
 test("not-found page", async ({ page }) => {
   await page.goto("http://127.0.0.1:3002/this-is-not-found-page");
   const title = page.locator("h2");
-  await expect(title).toHaveText("404");
-  const link = page.getByText("Go back");
+  await expect(title).toHaveText("Not Found");
+  const link = page.getByText("cd ../");
   await link.click({
     clickCount: 2,
   });
