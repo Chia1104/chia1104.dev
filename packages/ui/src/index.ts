@@ -1,3 +1,6 @@
+import NotFound from "../features/NotFound";
+import Error from "../features/Error";
+
 export {
   Accordion,
   AccordionContent,
@@ -44,3 +47,7 @@ export { default as BorderBeam } from "./BorderBeam";
 export { default as ShimmerButton } from "./ShimmerButton";
 export { default as Spotlight } from "./Spotlight";
 export * from "./TextRevealCard";
+export const Features = {
+  NotFound,
+  Error,
+};
