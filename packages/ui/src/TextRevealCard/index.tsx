@@ -101,7 +101,8 @@ export const TextRevealCard = ({
           <p className="bg-[#323238] bg-clip-text py-10 text-[3rem] font-bold text-transparent">
             {text}
           </p>
-          <MemoizedStars count={startCount} />
+          {/* todo: rsc memo issue */}
+          {/* <MemoizedStars count={startCount} /> */}
         </div>
       </div>
     </div>
