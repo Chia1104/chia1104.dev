@@ -744,7 +744,7 @@ importers:
         version: 2.2.4(@tiptap/pm@2.2.4)
       ai:
         specifier: ^3.0.9
-        version: 3.0.12(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.12)(vue@3.4.21)(zod@3.22.4)
+        version: 3.0.13(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.12)(vue@3.4.21)(zod@3.22.4)
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
@@ -10821,8 +10821,8 @@ packages:
       indent-string: 4.0.0
     dev: true
 
-  /ai@3.0.12(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.12)(vue@3.4.21)(zod@3.22.4):
-    resolution: {integrity: sha512-cP/Moag7PcDOE3kA7WU00YS+mQiuPpAxY+uf57lkWwnqSB1K3/RzwnRF+LD1FqgJfCubI4WEbajMPbnnCr8lAg==}
+  /ai@3.0.13(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.12)(vue@3.4.21)(zod@3.22.4):
+    resolution: {integrity: sha512-fDrYnVTdMJuS/qYUq0T/CX3WDuTfcZFie9LkgnoQ2layfUG2Wzh/mpfkfYXFEq/mqnpep3xUtECOB1weyyvwUg==}
     engines: {node: '>=14.6'}
     peerDependencies:
       react: ^18.2.0
