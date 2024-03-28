@@ -36,7 +36,7 @@
     "@trpc/react-query": "11.0.0-next-beta.318",
     "@trpc/server": "11.0.0-next-beta.318",
     "clsx": "^2.1.0",
-    "framer-motion": "11.0.8",
+    "framer-motion": "11.0.23",
     "lowlight": "^3.1.0",
     "million": "^3.0.6",
     "next": "14.1.4",
