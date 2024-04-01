@@ -1,5 +1,10 @@
-// @ts-check
+/**
+ * @typedef {import('next').NextConfig} NextConfig
+ * @typedef {(config: NextConfig) => NextConfig} Plugin
+ */
+
 import million from "million/compiler";
+// import MillionCompiler from "@million/lint";
 
 const securityHeaders = [
   {
@@ -24,7 +29,7 @@ const securityHeaders = [
   },
 ];
 
-/** @type {import('next').NextConfig} */
+/** @type {NextConfig} */
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
@@ -58,6 +63,7 @@ const nextConfig = {
   },
 };
 
+/** @type {Plugin[]} */
 const plugins = [];
 
 const nextComposePlugins = plugins.reduce(
@@ -65,6 +71,7 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
+// @ts-expect-error
 export default million.next(nextComposePlugins, {
   rsc: true,
 });

@@ -1,4 +1,8 @@
-// @ts-check
+/**
+ * @typedef {import('next').NextConfig} NextConfig
+ * @typedef {(config: NextConfig) => NextConfig} Plugin
+ */
+
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import million from "million/compiler";
@@ -30,7 +34,7 @@ const securityHeaders = [
   },
 ];
 
-/** @type {import('next').NextConfig} */
+/** @type {NextConfig} */
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
@@ -128,6 +132,7 @@ const nextConfig = {
   },
 };
 
+/** @type {Plugin[]} */
 const plugins = [withBundleAnalyzer];
 
 const nextComposePlugins = plugins.reduce(
