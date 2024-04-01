@@ -27,6 +27,8 @@ env:
   SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   SPOTIFY_REDIRECT_URI: http://localhost:3001
+  NODE_VERSION: 21
+  PNPM_VERSION: 8.15.5
 
 jobs:
   build:
@@ -43,7 +45,8 @@ jobs:
         id: dash-init
         uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
         with:
-          NODE_VERSION: "20"
+          NODE_VERSION: ${{ env.NODE_VERSION }}
+          PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: dash-install
