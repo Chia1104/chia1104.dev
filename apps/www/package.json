@@ -73,7 +73,7 @@
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
     "sharp": "0.32.6",
-    "sonner": "1.4.3",
+    "sonner": "1.4.41",
     "usehooks-ts": "^3.0.1",
     "zustand": "^4.5.2"
   },
