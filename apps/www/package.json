@@ -51,7 +51,7 @@
     "@trpc/next": "11.0.0-rc.332",
     "@trpc/react-query": "11.0.0-rc.332",
     "@trpc/server": "11.0.0-rc.332",
-    "@upstash/ratelimit": "1.0.1",
+    "@upstash/ratelimit": "1.0.3",
     "@vercel/analytics": "1.2.2",
     "@vercel/edge-config": "^1.1.0",
     "@vercel/speed-insights": "^1.0.10",
