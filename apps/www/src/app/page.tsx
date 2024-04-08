@@ -5,17 +5,17 @@ import type { FC, ReactNode } from "react";
 const contact = {
   github: {
     name: "Github",
-    icon: <span className="i-mdi-github h-5 w-5" />,
+    icon: <span className="i-mdi-github size-5" />,
     link: meta.link.github,
   },
   instagram: {
     name: "Instagram",
-    icon: <span className="i-mdi-instagram h-5 w-5" />,
+    icon: <span className="i-mdi-instagram size-5" />,
     link: meta.link.instagram,
   },
   linkedin: {
     name: "Linkedin",
-    icon: <span className="i-mdi-linkedin h-5 w-5" />,
+    icon: <span className="i-mdi-linkedin size-5" />,
     link: meta.link.linkedin,
   },
 };
@@ -127,7 +127,7 @@ const IndexPage = () => {
                 />
               ))}
             </div>
-            <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
+            <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
           </div>
         </div>
       </FadeIn>

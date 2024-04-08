@@ -24,7 +24,7 @@ const GlobalError = withError(
                   />
                 </div>
               </div>
-              <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
+              <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
             </div>
           </main>
         </body>

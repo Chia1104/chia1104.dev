@@ -144,8 +144,8 @@ const NavMenu: FC = () => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
     <nav className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
-      <div className="container flex w-[100%] justify-between px-5">
-        <div className="flex w-[20%] items-center text-2xl">
+      <div className="container flex w-full justify-between px-5">
+        <div className="flex w-1/5 items-center text-2xl">
           <Link
             href="/"
             scroll

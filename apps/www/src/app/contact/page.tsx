@@ -17,17 +17,17 @@ export const preferredRegion = ["hnd1"];
 const contact = {
   github: {
     name: "Github",
-    icon: <span className="i-mdi-github h-6 w-6" />,
+    icon: <span className="i-mdi-github size-6" />,
     link: meta.link.github,
   },
   instagram: {
     name: "Instagram",
-    icon: <span className="i-mdi-instagram h-6 w-6" />,
+    icon: <span className="i-mdi-instagram size-6" />,
     link: meta.link.instagram,
   },
   linkedin: {
     name: "Linkedin",
-    icon: <span className="i-mdi-linkedin h-6 w-6" />,
+    icon: <span className="i-mdi-linkedin size-6" />,
     link: meta.link.linkedin,
   },
 };

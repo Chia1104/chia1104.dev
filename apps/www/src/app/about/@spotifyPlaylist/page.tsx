@@ -39,7 +39,7 @@ const PlayIcon: FC<{
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className="h-6 w-6">
+      className="size-6">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -119,7 +119,7 @@ export default async function Page() {
           <Item data={data[2]} />
           <Item data={data[3]} />
         </div>
-        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 h-full w-full opacity-50 blur-3xl" />
+        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
       </div>
       <p className="flex items-center gap-3">
         <span>
@@ -129,7 +129,7 @@ export default async function Page() {
           </Link>{" "}
           on my Spotify.
         </span>
-        <span className="i-mdi-spotify h-8 w-8 text-[#1DB954]" />
+        <span className="i-mdi-spotify size-8 text-[#1DB954]" />
       </p>
     </FadeIn>
   );

@@ -47,12 +47,12 @@ const EmailTemplate: FC<Props> = ({
       <Html>
         <Head />
         <Preview>{previewText}</Preview>
-        <Body className="mx-auto my-auto bg-black p-10 font-sans text-white">
+        <Body className="m-auto bg-black p-10 font-sans text-white">
           <Section
             style={{
               backgroundImage: "radial-gradient(#535353 0.5px, transparent 0)",
             }}
-            className="fixed left-0 top-0 -z-10 block h-full w-full bg-[length:11px_11px] before:content-['']"
+            className="fixed left-0 top-0 -z-10 block size-full bg-[length:11px_11px] before:content-['']"
           />
           <Container className="bg-dark/30 border-purple mx-auto my-[40px] w-[465px] rounded border border-solid p-[20px] text-white backdrop-blur-md">
             <Section className="mt-[32px]">
@@ -74,7 +74,7 @@ const EmailTemplate: FC<Props> = ({
               </Link>
             </Text>
             <Text className="text-[14px] leading-[24px]">{message}</Text>
-            <Section className="mb-[32px] mt-[32px] text-center">
+            <Section className="my-[32px] text-center">
               <Button
                 className="bg-cyberpunk rounded px-5 py-3 text-center text-[12px] font-semibold text-[#666666] no-underline"
                 href={fromEmail}>

@@ -45,7 +45,7 @@ const CurrentVisitors: FC<
         className
       )}
       {...props}>
-      <span className="relative flex h-3 w-3">
+      <span className="relative flex size-3">
         <span
           className={cn(
             "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
