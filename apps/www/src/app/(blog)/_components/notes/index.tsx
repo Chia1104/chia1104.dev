@@ -46,7 +46,7 @@ export const NoteNavigation: FC<{
           <Link href="/notes" className="w-fit">
             View all notes
           </Link>
-          <span className="i-lucide-chevron-right h-3 w-3" />
+          <span className="i-lucide-chevron-right size-3" />
         </span>
       </NavigationMenuContent>
     </NavigationMenuItem>

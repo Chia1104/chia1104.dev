@@ -19,7 +19,7 @@ const AboutPage = () => {
         </p>
       </FadeIn>
       <h2 className="flex items-center gap-3">
-        Location <span className="i-mdi-location h-7 w-7" />
+        Location <span className="i-mdi-location size-7" />
       </h2>
       <p>Here is where I am currently located.</p>
       <FadeIn className="flex w-full justify-center">

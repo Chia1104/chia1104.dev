@@ -40,7 +40,7 @@ export const PostNavigation: FC<{
                   <li key={post.id} className="row-span-3">
                     <NavigationMenuLink asChild>
                       <a
-                        className="from-muted/50 to-muted flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b p-6 no-underline outline-none focus:shadow-md"
+                        className="from-muted/50 to-muted flex size-full select-none flex-col justify-end rounded-md bg-gradient-to-b p-6 no-underline outline-none focus:shadow-md"
                         href={`/posts/${post.slug}`}>
                         <div className="mb-2 mt-4 line-clamp-2 text-lg font-medium">
                           {post.title}
@@ -70,7 +70,7 @@ export const PostNavigation: FC<{
           <Link href="/posts" className="w-fit">
             View all posts
           </Link>
-          <span className="i-lucide-chevron-right h-3 w-3" />
+          <span className="i-lucide-chevron-right size-3" />
         </span>
       </NavigationMenuContent>
     </NavigationMenuItem>
