@@ -58,6 +58,7 @@ export const getConfig = (req?: NextRequest) => {
         allowDangerousEmailAccountLinking: true,
       }),
     ],
+    skipCSRFCheck: undefined,
   } satisfies NextAuthConfig;
 };
 
