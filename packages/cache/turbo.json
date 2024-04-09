@@ -2,7 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "pipeline": {
-    "@chia/cache": {
+    "build": {
       "env": ["CACHE_PROVIDER", "REDIS_URL", "UPSTASH_TOKEN", "REDIS_URI"]
     }
   }

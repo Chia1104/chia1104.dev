@@ -2,7 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "pipeline": {
-    "backend": {
+    "build": {
       "env": [
         "THROTTLE_LIMIT",
         "THROTTLE_TTL",

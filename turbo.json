@@ -72,9 +72,6 @@
     "db:studio": {
       "cache": false
     },
-    "generate:typings": {
-      "cache": false
-    },
     "service-graph": {}
   },
   "globalEnv": [
