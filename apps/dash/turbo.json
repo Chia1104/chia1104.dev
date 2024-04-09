@@ -2,7 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "pipeline": {
-    "dash": {
+    "build": {
       "env": [
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",

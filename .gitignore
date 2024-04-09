@@ -49,3 +49,5 @@ tests/**/*.png
 playwright-report
 
 tsconfig.tsbuildinfo
+
+.nx

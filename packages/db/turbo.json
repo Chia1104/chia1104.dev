@@ -2,7 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "pipeline": {
-    "@chia/db": {
+    "build": {
       "env": ["DATABASE_URL"]
     },
     "db:generate": {},
