@@ -31,7 +31,7 @@
     "clsx": "^2.1.0",
     "cmdk": "0.2.1",
     "framer-motion": "11.0.27",
-    "lucide-react": "^0.365.0",
+    "lucide-react": "^0.367.0",
     "next": "14.1.4",
     "next-themes": "^0.3.0",
     "react": "^18.2.0",
@@ -43,7 +43,7 @@
     "vaul": "^0.9.0"
   },
   "devDependencies": {
-    "@testing-library/react": "^14.3.0",
+    "@testing-library/react": "^15.0.0",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
     "@vitejs/plugin-react-swc": "^3.6.0",
