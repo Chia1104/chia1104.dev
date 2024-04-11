@@ -1,61 +1,58 @@
 "use client";
 
-import { useEffect, useState, type FC, type ComponentProps } from "react";
+import { useCallback, type FC, type ComponentProps } from "react";
 import {
   motion,
+  useMotionValue,
+  useTransform,
+  useSpring,
   type HTMLMotionProps,
   type ForwardRefComponent,
-  type MotionStyle,
 } from "framer-motion";
 import { cn } from "../utils";
+import { useEventListener } from "usehooks-ts";
 
 const Cursor: FC<
   ComponentProps<ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>>
-> = ({ style, className, transition, ...props }) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+> = ({ style, className, ...props }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, {
+    stiffness: 300,
+    damping: 40,
+  });
+  const springY = useSpring(y, {
+    stiffness: 300,
+    damping: 40,
+  });
 
-  useEffect(() => {
-    const updateMousePosition = (e: MouseEvent) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
-    };
-
-    window.addEventListener("mousemove", updateMousePosition);
-
-    return () => {
-      window.removeEventListener("mousemove", updateMousePosition);
-    };
-  }, []);
-
-  const variants = {
-    default: {
-      x: mousePosition.x - 200,
-      y: mousePosition.y - 200,
+  const updateMousePosition = useCallback(
+    (e: MouseEvent) => {
+      springX.set(e.clientX);
+      springY.set(e.clientY);
     },
-  };
+    [springX, springY]
+  );
 
-  const makeStyle = (style?: MotionStyle) => {
-    return {
-      transform: "translate(-50%, -50%)",
-      filter: "blur(20px)",
-      opacity: 0.4,
-      zIndex: -1,
-      ...style,
-    };
-  };
+  useEventListener("mousemove", updateMousePosition);
 
+  const transformX = useTransform(springX, (value) => value - 200);
+  const transformY = useTransform(springY, (value) => value - 200);
   return (
     <motion.div
       className={cn(
         "c-bg-gradient-yellow-to-pink dark:c-bg-gradient-purple-to-pink fixed left-0 top-0 size-[400px] rounded-full",
         className
       )}
-      style={makeStyle(style)}
-      animate="default"
-      variants={variants}
-      transition={{ ease: "linear", duration: 0.1, ...transition }}
+      style={{
+        x: transformX,
+        y: transformY,
+        transform: "translate(-50%, -50%)",
+        filter: "blur(20px)",
+        opacity: 0.4,
+        zIndex: -1,
+        ...style,
+      }}
       {...props}
     />
   );

@@ -57,7 +57,7 @@
     "@vercel/speed-insights": "^1.0.10",
     "cobe": "^0.6.3",
     "cross-env": "7.0.3",
-    "framer-motion": "11.0.8",
+    "framer-motion": "11.0.27",
     "jsdom": "^24.0.0",
     "million": "^3.0.6",
     "next": "14.1.4",
