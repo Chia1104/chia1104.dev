@@ -13,14 +13,6 @@ import useTheme from "../utils/use-theme";
 import { useCMD } from "../CMD";
 
 interface Props {
-  /**
-   * @deprecated
-   */
-  toggleTheme?: () => void;
-  /**
-   * @deprecated
-   */
-  isDark?: boolean;
   variants?: ThemeVariants;
 }
 
@@ -94,10 +86,6 @@ const defaultThemeVariants: ThemeVariants = {
 };
 
 const MotionThemeIcon: FC<{
-  /**
-   * @deprecated use `theme` from `useTheme` instead
-   */
-  isDark?: boolean;
   theme: Theme;
   variants: ThemeVariants;
 }> = ({ theme, variants }) => {
@@ -113,6 +101,7 @@ const MotionThemeIcon: FC<{
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      initial="system"
       variants={variants.svgVariant}
       animate={theme}>
       <mask id={`${id}-mask`}>
@@ -120,6 +109,7 @@ const MotionThemeIcon: FC<{
         <motion.circle
           r="9"
           fill="black"
+          initial="system"
           variants={variants.maskCircleVariant}
           animate={theme}
         />
@@ -129,11 +119,13 @@ const MotionThemeIcon: FC<{
         cy="12"
         fill="currentColor"
         mask={`url(#${id}-mask)`}
+        initial="system"
         variants={variants.circleVariant}
         animate={theme}
       />
       <motion.g
         stroke="currentColor"
+        initial="system"
         variants={variants.linesVariant}
         animate={theme}>
         <line x1="12" y1="1" x2="12" y2="3" />
