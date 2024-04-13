@@ -587,7 +587,7 @@ importers:
     dependencies:
       openai:
         specifier: ^4.33.0
-        version: 4.33.0
+        version: 4.33.1
     devDependencies:
       tsconfig:
         specifier: workspace:*
@@ -747,7 +747,7 @@ importers:
         version: 2.2.6(@tiptap/pm@2.3.0)
       ai:
         specifier: ^3.0.19
-        version: 3.0.19(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.13)(vue@3.4.21)(zod@3.22.4)
+        version: 3.0.19(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.14)(vue@3.4.21)(zod@3.22.4)
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
@@ -762,7 +762,7 @@ importers:
         version: 0.3.1(@types/react@18.2.74)(react-dom@18.2.0)(react@18.2.0)
       openai:
         specifier: ^4.33.0
-        version: 4.33.0
+        version: 4.33.1
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -8936,7 +8936,7 @@ packages:
   /@types/node-fetch@2.6.11:
     resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
     dependencies:
-      '@types/node': 20.12.5
+      '@types/node': 20.12.7
       form-data: 4.0.0
     dev: false
 
@@ -8944,8 +8944,8 @@ packages:
     resolution: {integrity: sha512-p6ua9zBxz5otCmbpb5D3U4B5Nanw6Pk3PPyX05xnxbB/fRv71N7CPmORg7uAD5P70T0xmx1pzAx/FUfa5X+3cw==}
     dev: false
 
-  /@types/node@18.19.30:
-    resolution: {integrity: sha512-453z1zPuJLVDbyahaa1sSD5C2sht6ZpHp5rgJNs+H8YGqhluCXcuOUmBYsAo0Tos0cHySJ3lVUGbGgLlqIkpyg==}
+  /@types/node@18.19.31:
+    resolution: {integrity: sha512-ArgCD39YpyyrtFKIqMDvjz79jto5fcI/SVUs2HwB+f0dAzq68yqOdyaSivLiLugSziTpNXLQrVb7RZFmdZzbhA==}
     dependencies:
       undici-types: 5.26.5
     dev: false
@@ -8959,7 +8959,6 @@ packages:
     resolution: {integrity: sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==}
     dependencies:
       undici-types: 5.26.5
-    dev: true
 
   /@types/pg@8.11.4:
     resolution: {integrity: sha512-yw3Bwbda6vO+NvI1Ue/YKOwtl31AYvvd/e73O3V4ZkNzuGpTDndLSyc0dQRB2xrQqDePd20pEGIfqSp/GH3pRw==}
@@ -9034,7 +9033,7 @@ packages:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 20.12.5
+      '@types/node': 20.12.7
     dev: true
 
   /@types/supertest@6.0.2:
@@ -9743,7 +9742,7 @@ packages:
       indent-string: 4.0.0
     dev: true
 
-  /ai@3.0.19(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.13)(vue@3.4.21)(zod@3.22.4):
+  /ai@3.0.19(react@18.2.0)(solid-js@1.8.16)(svelte@4.2.14)(vue@3.4.21)(zod@3.22.4):
     resolution: {integrity: sha512-HV0MixfqMrxq2N/gVsEXoNfO9e0mWkgv7zdUH6UvdtI53Qd0UjoxjH0bwe/TsxoCqnK4gnWaGYiGKZrpy/Ldtw==}
     engines: {node: '>=14.6'}
     peerDependencies:
@@ -9773,8 +9772,8 @@ packages:
       secure-json-parse: 2.7.0
       solid-js: 1.8.16
       solid-swr-store: 0.10.7(solid-js@1.8.16)(swr-store@0.10.6)
-      sswr: 2.0.0(svelte@4.2.13)
-      svelte: 4.2.13
+      sswr: 2.0.0(svelte@4.2.14)
+      svelte: 4.2.14
       swr: 2.2.0(react@18.2.0)
       swr-store: 0.10.6
       swrv: 1.0.4(vue@3.4.21)
@@ -14600,7 +14599,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 20.12.5
+      '@types/node': 20.12.7
       merge-stream: 2.0.0
       supports-color: 8.1.1
     dev: true
@@ -16849,11 +16848,11 @@ packages:
       is-wsl: 2.2.0
     dev: true
 
-  /openai@4.33.0:
-    resolution: {integrity: sha512-Sh4KvplkvkAREuhb8yZpohqsOo08cBBu6LNWLD8YyMxe8yCxbE+ouJYUs1X2oDPrzQGANj0rFNQYiwW9gWLBOg==}
+  /openai@4.33.1:
+    resolution: {integrity: sha512-0DH572aSxGTT1JPOXgJQ9mjiuSPg/7scPot8hLc5I1mfQxPxLXTZWJpWerKaIWOuPkR2nrB0SamGDEehH8RuWA==}
     hasBin: true
     dependencies:
-      '@types/node': 18.19.30
+      '@types/node': 18.19.31
       '@types/node-fetch': 2.6.11
       abort-controller: 3.0.0
       agentkeepalive: 4.5.0
@@ -19125,12 +19124,12 @@ packages:
     resolution: {integrity: sha512-Oo+0REFV59/rz3gfJNKQiBlwfHaSESl1pcGyABQsnnIfWOFt6JNj5gCog2U6MLZ//IGYD+nA8nI+mTShREReaA==}
     dev: true
 
-  /sswr@2.0.0(svelte@4.2.13):
+  /sswr@2.0.0(svelte@4.2.14):
     resolution: {integrity: sha512-mV0kkeBHcjcb0M5NqKtKVg/uTIYNlIIniyDfSGrSfxpEdM9C365jK0z55pl9K0xAkNTJi2OAOVFQpgMPUk+V0w==}
     peerDependencies:
       svelte: ^4.0.0
     dependencies:
-      svelte: 4.2.13
+      svelte: 4.2.14
       swrev: 4.0.0
     dev: false
 
@@ -19499,8 +19498,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  /svelte@4.2.13:
-    resolution: {integrity: sha512-jtVt2KXLbQnsWN93Zd7EVboNh8Tqexes4rZfXNP7nYRjd9+JjubTD8BXloUmU1OUYpc6pdd1aKBhCV+b2ZKoMg==}
+  /svelte@4.2.14:
+    resolution: {integrity: sha512-ry3+YlWqZpHxLy45MW4MZIxNdvB+Wl7p2nnstWKbOAewaJyNJuOtivSbRChcfIej6wFBjWqyKmf/NgK1uW2JAA==}
     engines: {node: '>=16'}
     dependencies:
       '@ampproject/remapping': 2.3.0
