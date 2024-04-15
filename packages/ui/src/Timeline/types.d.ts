@@ -63,6 +63,9 @@ export interface TimelineProps extends ComponentPropsWithoutRef<"div"> {
   enableSort?: boolean;
   onEndReached?: () => void;
   asyncDataStatus?: AsyncDataStatus;
+  experimental?: {
+    enableViewTransition?: boolean;
+  };
 }
 
 export interface ListItemProps
@@ -72,6 +75,9 @@ export interface ListItemProps
   data: Data;
   isLastItem: boolean;
   refTarget?: (node: HTMLLIElement) => void;
+  experimental?: {
+    enableViewTransition?: boolean;
+  };
 }
 
 export type ListProps = ComponentPropsWithoutRef<
@@ -80,10 +86,16 @@ export type ListProps = ComponentPropsWithoutRef<
   GroupData & {
     isLastGroup: boolean;
     refTarget?: (node: HTMLLIElement) => void;
+    experimental?: {
+      enableViewTransition?: boolean;
+    };
   };
 
 export type GroupListProps = {
   data: GroupData[];
   onEndReached?: () => void;
   asyncDataStatus?: AsyncDataStatus;
+  experimental?: {
+    enableViewTransition?: boolean;
+  };
 };

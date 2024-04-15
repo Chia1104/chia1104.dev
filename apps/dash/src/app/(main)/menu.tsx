@@ -23,7 +23,7 @@ import { useSession } from "next-auth/react";
 import { signInAction, signOutAction } from "@/server/auth.action";
 import { useTransition, type Key, useState } from "react";
 import { useRouter, useSelectedLayoutSegments } from "next/navigation";
-import NextLink from "next/link";
+import { Link as NextLink } from "next-view-transitions";
 import SpotifyLogin from "../spotify-login";
 
 const User = () => {

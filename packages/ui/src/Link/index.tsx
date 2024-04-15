@@ -19,6 +19,11 @@ import { post, isUrl, handleKyError } from "@chia/utils";
 import { z } from "zod";
 import { HTTPError } from "ky";
 import { cn } from "../utils";
+import dynamic from "next/dynamic";
+
+const TransitionLink = dynamic(() =>
+  import("next-view-transitions").then((mod) => mod.Link)
+);
 
 type InternalLinkProps = NextLinkProps & ComponentPropsWithoutRef<"a">;
 
@@ -26,6 +31,9 @@ interface LinkPropsWithoutPreview extends InternalLinkProps {
   href: string | any;
   children?: ReactNode;
   isInternalLink?: boolean;
+  experimental?: {
+    enableViewTransition?: boolean;
+  };
 }
 
 type LinkProps =
@@ -143,6 +151,7 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
   href,
   endpoint = "/api/v1/link-preview",
   preview,
+  experimental,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -222,16 +231,23 @@ const Link: FC<LinkProps> = (props) => {
     children,
     isInternalLink: _isInternalLink,
     preview,
+    experimental,
     ...rest
   } = props;
   const isInternalLink =
     _isInternalLink ?? (href.startsWith("/") || href.startsWith("#"));
 
-  if (isInternalLink && !preview) {
+  if (isInternalLink && !preview && !experimental?.enableViewTransition) {
     return (
       <NextLink prefetch={false} passHref scroll {...rest} href={href}>
         {children}
       </NextLink>
+    );
+  } else if (isInternalLink && !preview && experimental?.enableViewTransition) {
+    return (
+      <TransitionLink passHref {...rest} href={href}>
+        {children}
+      </TransitionLink>
     );
   } else if (preview && isUrl(href)) {
     return <PreviewCard {...props} />;

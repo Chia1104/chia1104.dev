@@ -16,6 +16,7 @@ const Timeline: FC<TimelineProps> = ({
   className,
   asyncDataStatus,
   onEndReached,
+  experimental,
   ...props
 }) => {
   enableSort &&
@@ -40,6 +41,7 @@ const Timeline: FC<TimelineProps> = ({
   return (
     <div className={cn("my-2 flex flex-col gap-5", className)} {...props}>
       <GroupList
+        experimental={experimental}
         data={groupData}
         onEndReached={onEndReached}
         asyncDataStatus={asyncDataStatus}

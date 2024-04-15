@@ -1,55 +1,15 @@
 "use client";
 
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
 import { cn, Link, ThemeSelector } from "@chia/ui";
-import { usePathname, useSelectedLayoutSegments } from "next/navigation";
+import { useSelectedLayoutSegments } from "next/navigation";
 import { motion } from "framer-motion";
 import navItems from "@/shared/routes";
 import contact from "@/shared/contact";
 import { Image, RetroGrid } from "@chia/ui";
 import meta from "@chia/meta";
 import CurrentPlaying from "@/app/_components/current-playing";
-import { Tabs, Tab, Tooltip, Button, Kbd } from "@nextui-org/react";
-
-const LinkItem: FC<{
-  path: string;
-  icon: ReactNode;
-  name: string;
-  showIcon?: boolean;
-  preview?: boolean;
-}> = ({ path, icon, name, showIcon, preview }) => {
-  const pathname = usePathname() || "/";
-  const isActive = pathname.includes(path);
-  return (
-    <Link
-      preview={preview}
-      key={path}
-      href={path}
-      className={cn(
-        "flex align-middle transition-all hover:text-neutral-800 dark:hover:text-neutral-200",
-        {
-          "dark:text-popover-foreground text-neutral-500": !isActive,
-          "font-bold": isActive,
-        }
-      )}>
-      <span className="relative flex items-center justify-center gap-2 px-[10px] py-[5px]">
-        <div className={cn(showIcon ? "block" : "hidden")}>{icon}</div>
-        <p className="">{name}</p>
-        {isActive ? (
-          <motion.div
-            className="bg-accent absolute inset-0 z-[-1] rounded-md"
-            layoutId="footer"
-            transition={{
-              type: "spring",
-              stiffness: 350,
-              damping: 30,
-            }}
-          />
-        ) : null}
-      </span>
-    </Link>
-  );
-};
+import { Tabs, Tab, Button } from "@nextui-org/react";
 
 const Copyright: FC<{ className?: string }> = ({ className }) => (
   <p className={className}>
@@ -96,7 +56,12 @@ const Footer: FC = () => {
                   className="w-fit text-start"
                   key={path.replace(/^\//, "")}
                   title={
-                    <Link key={path} href={path}>
+                    <Link
+                      experimental={{
+                        enableViewTransition: true,
+                      }}
+                      key={path}
+                      href={path}>
                       <span className="relative px-[10px] py-[5px]">
                         <p>{name}</p>
                       </span>

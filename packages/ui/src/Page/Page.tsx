@@ -8,6 +8,9 @@ interface Props {
   children: ReactNode;
 }
 
+/**
+ * @deprecated
+ */
 const Page: FC<Props> = (props) => {
   const { children } = props;
   const pathname = usePathname();

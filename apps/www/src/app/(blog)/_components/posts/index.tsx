@@ -7,13 +7,13 @@ import {
   NavigationMenuTrigger,
   cn,
   Timeline,
+  Link,
   type TimelineTypes,
 } from "@chia/ui";
 import { type FC, useMemo } from "react";
 import { type RouterOutputs, type RouterInputs } from "@chia/api";
 import ListItem from "../list-item";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { api } from "@/trpc-api";
 import dayjs from "dayjs";
 
@@ -123,6 +123,9 @@ export const List: FC<{
 
   return (
     <Timeline
+      experimental={{
+        enableViewTransition: true,
+      }}
       data={transformData}
       enableSort={false}
       asyncDataStatus={{
