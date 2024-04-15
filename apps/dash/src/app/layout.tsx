@@ -5,6 +5,7 @@ import RootProvider from "./root-provider";
 import { headers } from "next/headers";
 import type { Viewport, Metadata } from "next";
 import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
+import { ViewTransitions } from "next-view-transitions";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",
@@ -32,12 +33,14 @@ export default async function RootLayout({
 }) {
   const session = await auth();
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden">
-        <RootProvider session={session} headers={headers()}>
-          {children}
-        </RootProvider>
-      </body>
-    </html>
+    <ViewTransitions>
+      <html lang="en" suppressHydrationWarning>
+        <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden">
+          <RootProvider session={session} headers={headers()}>
+            {children}
+          </RootProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }
