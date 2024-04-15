@@ -78,8 +78,10 @@ const ChiaWEB = ({
             <Background />
             <NavMenu />
             <ScrollYProgress className="fixed top-0 z-[999]" />
-            {children}
-            {modal}
+            <main>
+              {children}
+              {modal}
+            </main>
             <Footer />
           </RootProvider>
           <VercelAnalytics />
