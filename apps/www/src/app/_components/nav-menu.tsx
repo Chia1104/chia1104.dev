@@ -1,9 +1,7 @@
 "use client";
 
-import { type FC, type Key } from "react";
-import Link from "next/link";
+import { type FC } from "react";
 import {
-  cn,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -16,6 +14,7 @@ import {
   MotionThemeIcon,
   defaultThemeVariants,
   useTheme,
+  Link,
 } from "@chia/ui";
 import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import navItems from "@/shared/routes";
@@ -147,6 +146,9 @@ const NavMenu: FC = () => {
       <div className="container flex w-full justify-between px-5">
         <div className="flex w-1/5 items-center text-2xl">
           <Link
+            experimental={{
+              enableViewTransition: true,
+            }}
             href="/"
             scroll
             className="subtitle hover:c-text-green-to-purple ml-3 transition ease-in-out">
@@ -164,7 +166,12 @@ const NavMenu: FC = () => {
                 <Tab
                   key={path.replace(/^\//, "")}
                   title={
-                    <Link key={path} href={path}>
+                    <Link
+                      experimental={{
+                        enableViewTransition: true,
+                      }}
+                      key={path}
+                      href={path}>
                       <span className="relative px-[10px] py-[5px]">
                         <p className="hidden md:block">{name}</p>
                         <div className="block md:hidden">{icon}</div>

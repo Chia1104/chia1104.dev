@@ -30,6 +30,7 @@ export const Item: FC<ListItemProps> = ({
   className,
   refTarget,
   isLastItem,
+  experimental,
   ...props
 }) => {
   const { defaultOpen = true, titleProps, subtitleProps, linkProps } = data;
@@ -55,7 +56,13 @@ export const Item: FC<ListItemProps> = ({
           className={cn("text-lg font-bold", titleProps?.className)}>
           {data.link ? (
             // @ts-expect-error
-            <Link href={data.link} {...linkProps}>
+            <Link
+              href={data.link}
+              experimental={{
+                enableViewTransition: experimental?.enableViewTransition,
+                ...linkProps?.experimental,
+              }}
+              {...linkProps}>
               {data.title}
             </Link>
           ) : (
@@ -94,6 +101,7 @@ export const List: FC<ListProps> = ({
   className,
   isLastGroup,
   refTarget,
+  experimental,
   ...props
 }) => (
   <motion.ul
@@ -102,6 +110,7 @@ export const List: FC<ListProps> = ({
     <Year year={year} className="absolute -top-4 left-0" />
     {data.map((item, index) => (
       <Item
+        experimental={experimental}
         refTarget={
           isLastGroup && data.length - 1 === index ? refTarget : undefined
         }
@@ -135,6 +144,7 @@ export const GroupList: FC<GroupListProps> = ({
   data,
   onEndReached,
   asyncDataStatus,
+  experimental,
 }) => {
   const { ref } = useInfiniteScroll<HTMLLIElement>({
     onLoadMore: onEndReached,
@@ -146,6 +156,7 @@ export const GroupList: FC<GroupListProps> = ({
     <>
       {data.map((item, index) => (
         <List
+          experimental={experimental}
           refTarget={data.length - 1 === index ? ref : undefined}
           isLastGroup={data.length - 1 === index}
           key={item.year.toString()}
