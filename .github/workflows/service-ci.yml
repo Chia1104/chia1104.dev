@@ -30,7 +30,7 @@ env:
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:3003
   NODE_VERSION: 21
-  PNPM_VERSION: 8.15.5
+  PNPM_VERSION: 9
 
 jobs:
   build:
