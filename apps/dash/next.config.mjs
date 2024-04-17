@@ -33,7 +33,6 @@ const securityHeaders = [
 const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  swcMinify: true,
   transpilePackages: [
     "@chia/api",
     "@chia/auth",
