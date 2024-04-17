@@ -48,8 +48,8 @@ const nextConfig = {
     "@chia/ui",
     "@chia/utils",
   ],
-  swcMinify: true,
   experimental: {
+    optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
     serverComponentsExternalPackages: [],
     typedRoutes: false,
     webpackBuildWorker: true,
@@ -83,9 +83,6 @@ const nextConfig = {
         statusCode: 301,
       },
     ];
-  },
-  compiler: {
-    removeConsole: false,
   },
   images: {
     remotePatterns: [
