@@ -44,6 +44,7 @@ const nextConfig = {
     "@chia/utils",
   ],
   experimental: {
+    optimizePackageImports: ["@nextui-org/react"],
     serverComponentsExternalPackages: [],
     webpackBuildWorker: true,
   },
