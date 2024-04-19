@@ -63,9 +63,11 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     SPOTIFY_REDIRECT_URI=${SPOTIFY_REDIRECT_URI} \
     GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
     GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
-    AUTH_SECRET=${AUTH_SECRET}
+    AUTH_SECRET=${AUTH_SECRET} \
+    # pnpm issue #6312 (https://github.com/pnpm/pnpm/issues/6312)
+    CI=false
 
-RUN pnpm i --fix-lockfile
+RUN pnpm i
 
 RUN pnpm turbo run build --filter=service...
 
@@ -75,7 +77,7 @@ COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
 
-RUN pnpm i --prod --ignore-scripts --fix-lockfile
+RUN pnpm i --prod --ignore-scripts
 
 FROM base as runner
 
