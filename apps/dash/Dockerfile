@@ -63,7 +63,7 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     NEXT_PUBLIC_SERVICE_ENDPOINT=${NEXT_PUBLIC_SERVICE_ENDPOINT} \
     INTERNAL_SERVICE_ENDPOINT=${INTERNAL_SERVICE_ENDPOINT}
 
-RUN pnpm i
+RUN pnpm i --fix-lockfile
 RUN pnpm turbo run build --filter=dash...
 
 FROM base AS runner

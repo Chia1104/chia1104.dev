@@ -103,7 +103,7 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
     RAILWAY_PUBLIC_DOMAIN=${RAILWAY_PUBLIC_DOMAIN} \
     SKIP_ENV_VALIDATION=1
 
-RUN pnpm i
+RUN pnpm i --fix-lockfile
 RUN pnpm turbo run build --filter=www...
 RUN pnpm turbo run next-sitemap --filter=www
 
