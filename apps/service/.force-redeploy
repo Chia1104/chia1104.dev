@@ -3,3 +3,4 @@ fix lockfile
 force re-deploy
 fix lockfile
 test lock-file
+hoist node linker

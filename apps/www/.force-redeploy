@@ -5,3 +5,4 @@ fix lockfile
 force re-deploy
 force re-deploy
 test lock-file
+hoist node linker
