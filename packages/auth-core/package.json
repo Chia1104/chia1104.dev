@@ -33,7 +33,7 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "devDependencies": {
-    "@auth/core": "^0.29.0",
+    "@auth/core": "^0.30.0",
     "@auth/drizzle-adapter": "^0.9.0",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
