@@ -11,7 +11,8 @@ RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
     corepack enable pnpm && \
-    pnpm add -g turbo
+    # turbo issue #7993(https://github.com/vercel/turbo/issues/7993)
+    pnpm add -g turbo@canary
 
 FROM base AS pre-builder
 
