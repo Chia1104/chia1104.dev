@@ -160,8 +160,8 @@ importers:
         specifier: 2.1.18
         version: 2.1.18(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.5.0(@swc/helpers@0.5.11))(@types/node@20.12.7)(typescript@5.4.5)))
       '@t3-oss/env-nextjs':
-        specifier: ^0.9.2
-        version: 0.9.2(typescript@5.4.5)(zod@3.23.4)
+        specifier: ^0.10.0
+        version: 0.10.1(typescript@5.4.5)(zod@3.23.4)
       '@tanstack/react-query':
         specifier: ^5.29.0
         version: 5.32.0(react@18.2.0)
@@ -432,8 +432,8 @@ importers:
         specifier: ^0.9.2
         version: 0.9.2(typescript@5.4.5)(zod@3.23.4)
       '@t3-oss/env-nextjs':
-        specifier: ^0.9.2
-        version: 0.9.2(typescript@5.4.5)(zod@3.23.4)
+        specifier: ^0.10.0
+        version: 0.10.1(typescript@5.4.5)(zod@3.23.4)
       '@tanstack/react-query':
         specifier: ^5.29.0
         version: 5.32.0(react@18.2.0)
@@ -4375,6 +4375,15 @@ packages:
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
     engines: {node: '>=14.16'}
 
+  '@t3-oss/env-core@0.10.1':
+    resolution: {integrity: sha512-GcKZiCfWks5CTxhezn9k5zWX3sMDIYf6Kaxy2Gx9YEQftFcz8hDRN56hcbylyAO3t4jQnQ5ifLawINsNgCDpOg==}
+    peerDependencies:
+      typescript: '>=5.0.0'
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@t3-oss/env-core@0.9.2':
     resolution: {integrity: sha512-KgWXljUTHgO3o7GMZQPAD5+P+HqpauMNNHowlm7V2b9IeMitSUpNKwG6xQrup/xARWHTdxRVIl0mSI4wCevQhQ==}
     peerDependencies:
@@ -4384,8 +4393,8 @@ packages:
       typescript:
         optional: true
 
-  '@t3-oss/env-nextjs@0.9.2':
-    resolution: {integrity: sha512-dklHrgKLESStNVB67Jdbu6osxDYA+xNKaPBRerlnkEvzbCccSKMvZENx6EZebJuR4snqB3/yRykNMn/bdIAyiQ==}
+  '@t3-oss/env-nextjs@0.10.1':
+    resolution: {integrity: sha512-iy2qqJLnFh1RjEWno2ZeyTu0ufomkXruUsOZludzDIroUabVvHsrSjtkHqwHp1/pgPUzN3yBRHMILW162X7x2Q==}
     peerDependencies:
       typescript: '>=5.0.0'
       zod: ^3.0.0
@@ -15531,6 +15540,12 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
+  '@t3-oss/env-core@0.10.1(typescript@5.4.5)(zod@3.23.4)':
+    dependencies:
+      zod: 3.23.4
+    optionalDependencies:
+      typescript: 5.4.5
+
   '@t3-oss/env-core@0.9.2(typescript@5.3.3)(zod@3.23.4)':
     dependencies:
       zod: 3.23.4
@@ -15543,9 +15558,9 @@ snapshots:
     optionalDependencies:
       typescript: 5.4.5
 
-  '@t3-oss/env-nextjs@0.9.2(typescript@5.4.5)(zod@3.23.4)':
+  '@t3-oss/env-nextjs@0.10.1(typescript@5.4.5)(zod@3.23.4)':
     dependencies:
-      '@t3-oss/env-core': 0.9.2(typescript@5.4.5)(zod@3.23.4)
+      '@t3-oss/env-core': 0.10.1(typescript@5.4.5)(zod@3.23.4)
       zod: 3.23.4
     optionalDependencies:
       typescript: 5.4.5
