@@ -10,8 +10,9 @@ WORKDIR /app
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    corepack enable && \
-    pnpm add -g turbo
+    corepack enable pnpm && \
+    # turbo issue #7993(https://github.com/vercel/turbo/issues/7993)
+    pnpm add -g turbo@canary
 
 FROM base AS pre-builder
 
@@ -63,9 +64,7 @@ ENV TURBO_TEAM=$TURBO_TEAM \
     SPOTIFY_REDIRECT_URI=${SPOTIFY_REDIRECT_URI} \
     GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
     GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
-    AUTH_SECRET=${AUTH_SECRET} \
-    # pnpm issue #6312 (https://github.com/pnpm/pnpm/issues/6312)
-    CI=false
+    AUTH_SECRET=${AUTH_SECRET}
 
 RUN pnpm i
 
