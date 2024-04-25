@@ -28,7 +28,7 @@ env:
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   SPOTIFY_REDIRECT_URI: http://localhost:3001
   NODE_VERSION: 21
-  PNPM_VERSION: 9.0.4
+  PNPM_VERSION: 9.0.6
 
 jobs:
   build:
