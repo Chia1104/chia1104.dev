@@ -69,7 +69,7 @@
   },
   "devDependencies": {
     "@manypkg/cli": "^0.21.3",
-    "@next/eslint-plugin-next": "14.2.1",
+    "@next/eslint-plugin-next": "14.2.3",
     "@playwright/test": "^1.43.0",
     "@total-typescript/ts-reset": "0.5.1",
     "@turbo/gen": "^1.13.2",
