@@ -10,7 +10,7 @@ WORKDIR /app
 RUN apk update && \
     apk add --no-cache \
     libc6-compat && \
-    corepack enable && \
+    corepack use pnpm@9.0.6 && \
     pnpm add -g turbo
 
 FROM base AS builder
