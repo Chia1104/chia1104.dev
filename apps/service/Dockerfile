@@ -18,14 +18,13 @@ FROM base AS pre-builder
 
 COPY . .
 
-RUN turbo prune --scope=service --docker
+RUN turbo prune --scope=service --scope=@chia/cache --docker
 
 FROM base AS builder
 
 COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
-COPY ./packages/cache /app/packages/cache
 COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
