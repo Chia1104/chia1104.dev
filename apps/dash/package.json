@@ -26,7 +26,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@monaco-editor/react": "^4.6.0",
-    "@nextui-org/react": "2.2.10",
+    "@nextui-org/react": "2.3.6",
     "@nextui-org/theme": "2.1.18",
     "@t3-oss/env-nextjs": "^0.9.2",
     "@tanstack/react-query": "^5.29.0",
