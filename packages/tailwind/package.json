@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@egoist/tailwindcss-icons": "^1.7.4",
-    "@iconify/json": "^2.2.198",
+    "@iconify/json": "^2.2.204",
     "@tailwindcss/typography": "^0.5.12",
     "tailwindcss": "^3.4.3",
     "tailwindcss-animate": "1.0.7"

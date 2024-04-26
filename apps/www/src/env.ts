@@ -108,5 +108,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
   emptyStringAsUndefined: true,
-  extends: [vercel, spotifyEnv, githubEnv],
+  extends: [vercel(), spotifyEnv, githubEnv],
 });

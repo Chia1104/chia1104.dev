@@ -1,11 +1,10 @@
 import { Auth as InternalAuth, type AuthConfig } from "@auth/core";
-import { db, tableCreator, localDb, betaDb } from "@chia/db";
+import { db, localDb, betaDb, schema } from "@chia/db";
 import Google from "@auth/core/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { env } from "./env";
 import { getDb } from "@chia/utils";
 import { getBaseConfig } from "./utils";
-import type { DefaultSession, Session } from "@auth/core/types";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {
@@ -41,7 +40,12 @@ export const getConfig = (
         betaDb,
         localDb,
       }),
-      tableCreator
+      {
+        usersTable: schema.users,
+        accountsTable: schema.accounts,
+        sessionsTable: schema.sessions,
+        verificationTokensTable: schema.verificationTokens,
+      }
     ),
     providers: [
       Google({

@@ -13,14 +13,14 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "drizzle-orm": "^0.30.7",
+    "drizzle-orm": "^0.30.9",
     "pg": "^8.11.5",
     "postgres": "^3.4.4"
   },
   "devDependencies": {
-    "@auth/core": "^0.29.0",
-    "@types/pg": "^8.11.4",
-    "drizzle-kit": "^0.20.14",
+    "@auth/core": "^0.30.0",
+    "@types/pg": "^8.11.5",
+    "drizzle-kit": "^0.20.17",
     "tsconfig": "workspace:*"
   }
 }
