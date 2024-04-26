@@ -753,7 +753,7 @@ importers:
         version: 2.3.0(@tiptap/pm@2.3.0)
       ai:
         specifier: ^3.0.33
-        version: 3.0.33(react@18.3.0)(solid-js@1.8.17)(svelte@4.2.15)(vue@3.4.25(typescript@5.4.5))(zod@3.23.4)
+        version: 3.0.34(react@18.3.0)(solid-js@1.8.17)(svelte@4.2.15)(vue@3.4.25(typescript@5.4.5))(zod@3.23.4)
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
@@ -1077,6 +1077,7 @@ packages:
   '@apollo/server-plugin-landing-page-graphql-playground@4.0.0':
     resolution: {integrity: sha512-PBDtKI/chJ+hHeoJUUH9Kuqu58txQl00vUGuxqiC9XcReulIg7RjsyD0G1u3drX4V709bxkL5S0nTeXfRHD0qA==}
     engines: {node: '>=14.0'}
+    deprecated: The use of GraphQL Playground in Apollo Server was supported in previous versions, but this is no longer the case as of December 31, 2022. This package exists for v4 migration purposes only. We do not intend to resolve security issues or other bugs with this package if they arise, so please migrate away from this to [Apollo Server's default Explorer](https://www.apollographql.com/docs/apollo-server/api/plugin/landing-pages) as soon as possible.
     peerDependencies:
       '@apollo/server': ^4.0.0
 
@@ -5342,8 +5343,8 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ai@3.0.33:
-    resolution: {integrity: sha512-4jkB5iNrPjhGg/U0mWGD4Zw3ZId/O5JorZFYO4cyjD3o4EVAZ97NbXCCWkeQmXh3fdTm7bqCm0uCLucW65wDkA==}
+  ai@3.0.34:
+    resolution: {integrity: sha512-8kYya4BVOn99K4mcxkAViDAqMcT2MICgf/rdIKvZ8PJgjBTM/7JphL5ZHT+Q/NsT9QP1FWQcfZXsSL5UDdPHwA==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18.2.0
@@ -16961,7 +16962,7 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@3.0.33(react@18.3.0)(solid-js@1.8.17)(svelte@4.2.15)(vue@3.4.25(typescript@5.4.5))(zod@3.23.4):
+  ai@3.0.34(react@18.3.0)(solid-js@1.8.17)(svelte@4.2.15)(vue@3.4.25(typescript@5.4.5))(zod@3.23.4):
     dependencies:
       '@ai-sdk/provider': 0.0.2
       '@ai-sdk/provider-utils': 0.0.4(zod@3.23.4)
