@@ -63,7 +63,7 @@ export const getConfig = (req?: NextRequest) => {
         allowDangerousEmailAccountLinking: true,
       }),
     ],
-  };
+  } satisfies NextAuthConfig;
 };
 
 export const {
