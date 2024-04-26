@@ -1,5 +1,5 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
-import { db, tableCreator, localDb, betaDb } from "@chia/db";
+import { db, localDb, betaDb, schema } from "@chia/db";
 import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { env } from "@chia/auth-core/env";
@@ -49,7 +49,12 @@ export const getConfig = (req?: NextRequest) => {
         betaDb,
         localDb,
       }),
-      tableCreator
+      {
+        usersTable: schema.users,
+        accountsTable: schema.accounts,
+        sessionsTable: schema.sessions,
+        verificationTokensTable: schema.verificationTokens,
+      }
     ),
     providers: [
       Google({
@@ -58,8 +63,7 @@ export const getConfig = (req?: NextRequest) => {
         allowDangerousEmailAccountLinking: true,
       }),
     ],
-    skipCSRFCheck: undefined,
-  } satisfies NextAuthConfig;
+  };
 };
 
 export const {
@@ -67,5 +71,5 @@ export const {
   auth,
   signIn,
   signOut,
-} = NextAuth(getConfig());
+} = NextAuth(getConfig() as NextAuthConfig);
 export type { Session } from "@auth/core/types";

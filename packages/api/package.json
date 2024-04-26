@@ -14,7 +14,7 @@
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@t3-oss/env-core": "^0.9.2",
+    "@t3-oss/env-core": "^0.10.1",
     "@trpc/client": "11.0.0-rc.354",
     "@trpc/server": "11.0.0-rc.354",
     "next": "14.2.3",
