@@ -653,8 +653,8 @@ importers:
         specifier: 14.2.3
         version: 14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.0(react@18.3.0))(react@18.3.0)
       next-auth:
-        specifier: 5.0.0-beta.16
-        version: 5.0.0-beta.16(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.0(react@18.3.0))(react@18.3.0))(react@18.3.0)
+        specifier: 5.0.0-beta.17
+        version: 5.0.0-beta.17(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.0(react@18.3.0))(react@18.3.0))(react@18.3.0)
     devDependencies:
       tsconfig:
         specifier: workspace:*
@@ -8710,6 +8710,22 @@ packages:
 
   next-auth@5.0.0-beta.16:
     resolution: {integrity: sha512-dX2snB+ezN23tFzSes3n3uosT9iBf0eILPYWH/R2fd9n3ZzdMQlRzq7JIOPeS1aLc84IuRlyuyXyx9XmmZB6og==}
+    peerDependencies:
+      '@simplewebauthn/browser': ^9.0.1
+      '@simplewebauthn/server': ^9.0.2
+      next: ^14
+      nodemailer: ^6.6.5
+      react: ^18.2.0
+    peerDependenciesMeta:
+      '@simplewebauthn/browser':
+        optional: true
+      '@simplewebauthn/server':
+        optional: true
+      nodemailer:
+        optional: true
+
+  next-auth@5.0.0-beta.17:
+    resolution: {integrity: sha512-XA/7JtAjOgDfAeotJPFUsFZGGItZwzZrxLt9Gc9fE7EchLk6zydZfuZ22Vvwixs3IilkN644D5IoD5tEOAFGCQ==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
@@ -21364,6 +21380,12 @@ snapshots:
   next-auth@5.0.0-beta.16(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.0(react@18.3.0))(react@18.3.0))(react@18.3.0):
     dependencies:
       '@auth/core': 0.28.1
+      next: 14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.0(react@18.3.0))(react@18.3.0)
+      react: 18.3.0
+
+  next-auth@5.0.0-beta.17(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.0(react@18.3.0))(react@18.3.0))(react@18.3.0):
+    dependencies:
+      '@auth/core': 0.30.0
       next: 14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.0(react@18.3.0))(react@18.3.0)
       react: 18.3.0
 

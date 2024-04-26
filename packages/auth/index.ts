@@ -63,7 +63,7 @@ export const getConfig = (req?: NextRequest) => {
         allowDangerousEmailAccountLinking: true,
       }),
     ],
-  };
+  } satisfies NextAuthConfig;
 };
 
 export const {
@@ -71,5 +71,5 @@ export const {
   auth,
   signIn,
   signOut,
-} = NextAuth(getConfig() as NextAuthConfig);
+} = NextAuth(getConfig());
 export type { Session } from "@auth/core/types";
