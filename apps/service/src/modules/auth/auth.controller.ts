@@ -1,42 +1,24 @@
-import {
-  Controller,
-  Get,
-  InternalServerErrorException,
-  Inject,
-  Req,
-  Res,
-} from "@nestjs/common";
+import { Controller, Get, Req, Res } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Auth, env } from "@chia/auth-core";
-import { toWebRequest, toExpressResponse } from "@chia/utils";
 import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from "express";
-import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
-import { type DB } from "@chia/db";
+import AuthService from "./auth.service";
 
 @ApiTags("Auth")
 @Controller("auth")
 class AuthController {
-  constructor(@Inject(DRIZZLE_PROVIDER) private readonly db: DB) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Get("session")
-  @ApiOperation({ summary: "Get session" })
+  @Get("*")
+  @ApiOperation({ summary: "auth routes" })
   @ApiResponse({ status: 500, description: "Internal server error" })
-  async getSession(
+  async authRoutes(
     @Req() request: ExpressRequest,
-    @Res() res: ExpressResponse
+    @Res() response: ExpressResponse
   ) {
-    try {
-      const result = await Auth(toWebRequest(request), {
-        secret: env.AUTH_SECRET,
-      });
-      return await toExpressResponse(result, res);
-    } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException();
-    }
+    return await this.authService.auth(request, response);
   }
 }
 
