@@ -63,7 +63,6 @@ export const getBaseConfig = <TRequest extends Request = Request>(options?: {
         },
       }),
     },
-    secret: env?.AUTH_SECRET,
     ...config,
   } satisfies Omit<AuthConfig, "adapter" | "providers">;
 };

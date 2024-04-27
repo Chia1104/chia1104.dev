@@ -114,8 +114,6 @@
     "ENV",
     "*_ENV",
     "OPENAI_API_KEY",
-    "HUGGINGFACE_API_KEY",
-    "GITHUB_CLIENT_ID",
-    "GITHUB_CLIENT_SECRET"
+    "HUGGINGFACE_API_KEY"
   ]
 }
