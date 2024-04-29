@@ -842,7 +842,7 @@ importers:
         version: 1.7.4(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.5.0(@swc/helpers@0.5.11))(@types/node@20.12.7)(typescript@5.4.5)))
       '@iconify/json':
         specifier: ^2.2.204
-        version: 2.2.204
+        version: 2.2.205
       '@tailwindcss/typography':
         specifier: ^0.5.12
         version: 0.5.12(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.5.0(@swc/helpers@0.5.11))(@types/node@20.12.7)(typescript@5.4.5)))
@@ -1933,8 +1933,8 @@ packages:
   '@humanwhocodes/object-schema@2.0.3':
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
 
-  '@iconify/json@2.2.204':
-    resolution: {integrity: sha512-sFlh+TIF54DZoEzsF5YVWY7XEzjN2ZSmCjtzvajk5EdNjvPAKr9Tvvptoyj6hcuylJsDxiU12FRDSdygW1c8bg==}
+  '@iconify/json@2.2.205':
+    resolution: {integrity: sha512-79DbcI0U40w6jCYADjhSheJ6SVB/FJG/z0ltnqdHF/uRi6/MLroqe7y9Qy+99Ebb6F2WZgVV+TXfFMMORMPXFw==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -5774,8 +5774,8 @@ packages:
     resolution: {integrity: sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==}
     engines: {node: '>=8'}
 
-  cjs-module-lexer@1.2.3:
-    resolution: {integrity: sha512-0TNiGstbQmCFwt4akjjBg5pLRTSyj/PkWQ1ZoO2zntmg9yLqSRxwEa4iCfQLGjqhiqBfOJa7W/E8wfGrTDmlZQ==}
+  cjs-module-lexer@1.3.1:
+    resolution: {integrity: sha512-a3KdPAANPbNE4ZUv9h6LckSl9zLsYOP4MBmhIPkRaeyybt+r4UghLvq+xw/YwUcC1gqylCkL4rdVs3Lwupjm4Q==}
 
   class-transformer@0.5.1:
     resolution: {integrity: sha512-SQa1Ws6hUbfC98vKGxZH3KFY0Y1lm5Zm0SY8XX9zbK7FJCyVEac3ATW0RIpwzW+oOfmHE5PMPufDG9hCfoEOMw==}
@@ -6486,6 +6486,9 @@ packages:
 
   es-module-lexer@1.5.0:
     resolution: {integrity: sha512-pqrTKmwEIgafsYZAGw9kszYzmagcE/n4dbgwGWLEXg7J4QFJVQRBld8j3Q3GNez79jzxZshq0bcT962QHOghjw==}
+
+  es-module-lexer@1.5.2:
+    resolution: {integrity: sha512-l60ETUTmLqbVbVHv1J4/qj+M8nq7AwMzEcg3kmJDt9dCNrTk+yHcYFf/Kw75pMDwd9mPcIGCG5LcS20SxYRzFA==}
 
   es-object-atoms@1.0.0:
     resolution: {integrity: sha512-MZ4iQ6JwHOBQjahnjwaC1ZtIBH+2ohjamzAO3oaHcXYup7qxjF2fixyH+Q71voWHeOkI2q/TnJao/KfXYIZWbw==}
@@ -12235,7 +12238,7 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.3': {}
 
-  '@iconify/json@2.2.204':
+  '@iconify/json@2.2.205':
     dependencies:
       '@iconify/types': 2.0.0
       pathe: 1.1.2
@@ -17456,7 +17459,7 @@ snapshots:
 
   ci-info@3.9.0: {}
 
-  cjs-module-lexer@1.2.3: {}
+  cjs-module-lexer@1.3.1: {}
 
   class-transformer@0.5.1: {}
 
@@ -18149,6 +18152,9 @@ snapshots:
       safe-array-concat: 1.1.2
 
   es-module-lexer@1.5.0: {}
+
+  es-module-lexer@1.5.2:
+    optional: true
 
   es-object-atoms@1.0.0:
     dependencies:
@@ -20027,7 +20033,7 @@ snapshots:
       '@jest/types': 29.6.3
       '@types/node': 20.12.7
       chalk: 4.1.2
-      cjs-module-lexer: 1.2.3
+      cjs-module-lexer: 1.3.1
       collect-v8-coverage: 1.0.2
       glob: 7.2.3
       graceful-fs: 4.2.11
@@ -24280,7 +24286,7 @@ snapshots:
       browserslist: 4.23.0
       chrome-trace-event: 1.0.3
       enhanced-resolve: 5.16.0
-      es-module-lexer: 1.5.0
+      es-module-lexer: 1.5.2
       eslint-scope: 5.1.1
       events: 3.3.0
       glob-to-regexp: 0.4.1
