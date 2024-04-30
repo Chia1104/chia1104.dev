@@ -42,7 +42,7 @@
     "@next/third-parties": "^14.2.3",
     "@nextui-org/react": "2.3.6",
     "@nextui-org/theme": "2.2.3",
-    "@react-email/components": "^0.0.16",
+    "@react-email/components": "^0.0.17",
     "@sentry/nextjs": "^7.112.2",
     "@t3-oss/env-core": "^0.10.1",
     "@t3-oss/env-nextjs": "^0.10.1",
