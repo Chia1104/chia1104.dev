@@ -15,8 +15,8 @@
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "^0.10.1",
-    "@trpc/client": "11.0.0-rc.359",
-    "@trpc/server": "11.0.0-rc.359",
+    "@trpc/client": "11.0.0-rc.364",
+    "@trpc/server": "11.0.0-rc.364",
     "next": "14.2.3",
     "server-only": "^0.0.1",
     "tsconfig": "workspace:*"
