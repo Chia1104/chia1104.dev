@@ -47,7 +47,7 @@ class AuthController {
 
   @Get("/callback/:provider")
   @ApiOperation({
-    summary: "Handles the callback from an OAuth provider (Google)",
+    summary: "Handles the callback from an OAuth provider",
   })
   @ApiResponse({ status: 500, description: "Internal server error" })
   async authCallbackGoogleGetHandler(
