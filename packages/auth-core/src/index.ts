@@ -1,6 +1,7 @@
 import { Auth as InternalAuth, type AuthConfig } from "@auth/core";
 import { db, localDb, betaDb, schema } from "@chia/db";
 import Google from "@auth/core/providers/google";
+import Github from "@auth/core/providers/github";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { env } from "./env";
 import { getDb } from "@chia/utils";
@@ -32,6 +33,7 @@ export const getConfig = (
       env: {
         AUTH_URL,
         AUTH_COOKIE_DOMAIN: env.AUTH_COOKIE_DOMAIN,
+        AUTH_SECRET: env.AUTH_SECRET,
       },
     }),
     adapter: DrizzleAdapter(
@@ -51,6 +53,10 @@ export const getConfig = (
       Google({
         clientId: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET,
+      }),
+      Github({
+        clientId: env.GITHUB_CLIENT_ID,
+        clientSecret: env.GITHUB_CLIENT_SECRET,
       }),
     ],
     ...config,
