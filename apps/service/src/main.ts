@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
+import cookieParser from "cookie-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -16,6 +17,7 @@ async function bootstrap() {
       exposedHeaders: ["retry-after"],
     },
   });
+  app.use(cookieParser());
   app.enableShutdownHooks();
   app.useGlobalPipes(
     new ValidationPipe({
