@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Boxes, Pencil, Settings2 } from "lucide-react";
 import { type FC, type ReactNode, useRef } from "react";
 import { useHover } from "usehooks-ts";
-import { User } from "./menu";
 
 const LinkItem: FC<{
   name: string;
