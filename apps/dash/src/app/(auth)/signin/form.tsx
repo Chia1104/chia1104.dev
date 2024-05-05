@@ -21,7 +21,7 @@ const LoginForm = () => {
         color="primary"
         size="lg"
         className="mb-5 mt-auto"
-        onPress={() => startTransition(() => signInAction())}>
+        onPress={() => startTransition(() => signInAction("/"))}>
         Sign in with Google
       </Button>
     </Card>

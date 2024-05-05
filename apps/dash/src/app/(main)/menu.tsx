@@ -3,36 +3,25 @@
 import {
   Link,
   Navbar,
-  NavbarBrand,
   NavbarContent,
   NavbarItem,
-  NavbarMenu,
-  NavbarMenuItem,
   Button,
   Avatar,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-  Tabs,
-  Tab,
-  NavbarMenuToggle,
 } from "@nextui-org/react";
-import { Image } from "@chia/ui";
-import { useSession } from "next-auth/react";
-import { signInAction, signOutAction } from "@/server/auth.action";
-import { useTransition, type Key, useState } from "react";
-import { useRouter, useSelectedLayoutSegments } from "next/navigation";
-import { Link as NextLink } from "next-view-transitions";
-import SpotifyLogin from "../spotify-login";
+import { signInAction } from "@/server/auth.action";
+import { useTransition, useState } from "react";
+import AuthGuard from "@/components/auth-guard/index.client";
+import { signOut } from "next-auth/react";
 
 const User = () => {
   const [isPending, startTransition] = useTransition();
-  const { data: session, status } = useSession();
   return (
-    <>
-      <SpotifyLogin />
-      {status === "unauthenticated" ? (
+    <AuthGuard
+      fallback={
         <NavbarItem>
           <Button
             as={Link}
@@ -40,10 +29,11 @@ const User = () => {
             variant="flat"
             isDisabled={isPending}
             onPress={() => startTransition(() => signInAction())}>
-            Sign Up
+            Sign In
           </Button>
         </NavbarItem>
-      ) : (
+      }>
+      {(session) => (
         <NavbarItem>
           <Dropdown>
             <DropdownTrigger>
@@ -53,7 +43,7 @@ const User = () => {
                 className="transition-transform"
                 color="secondary"
                 size="sm"
-                src={session?.user?.image ?? ""}
+                src={session.user?.image ?? ""}
               />
             </DropdownTrigger>
             <DropdownMenu disabledKeys={isPending ? ["logout"] : undefined}>
@@ -61,39 +51,19 @@ const User = () => {
                 key="logout"
                 className="text-danger"
                 color="danger"
-                onPress={() => startTransition(() => signOutAction())}>
+                onPress={() => startTransition(() => signOut())}>
                 Sign Out
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
         </NavbarItem>
       )}
-    </>
+    </AuthGuard>
   );
 };
 
 const Menu = () => {
-  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const selectedLayoutSegments = useSelectedLayoutSegments();
-  const handlePush = (key: Key) => {
-    switch (key) {
-      case "dashboard":
-        router.push("/");
-        break;
-      case "metrics":
-        // router.push("/metrics");
-        break;
-      case "feed":
-        router.push("/feed");
-        break;
-      case "write":
-        router.push("/write");
-        break;
-      default:
-        break;
-    }
-  };
   return (
     <Navbar
       isMenuOpen={isMenuOpen}
@@ -101,67 +71,11 @@ const Menu = () => {
       position="sticky"
       maxWidth="full"
       isBordered={false}
-      className="fixed border-0"
+      className="fixed z-20 border-0"
       shouldHideOnScroll>
-      <NavbarContent>
-        <NavbarBrand
-          className="hidden cursor-pointer md:block"
-          onClick={() => router.push("/")}>
-          <Image
-            src="/logo.png"
-            alt="chia1104"
-            width={50}
-            height={50}
-            blur={false}
-          />
-        </NavbarBrand>
-        <NavbarMenuToggle
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="md:hidden"
-        />
-      </NavbarContent>
-      <NavbarContent className="hidden md:flex" justify="center">
-        <Tabs
-          size="md"
-          variant="solid"
-          radius="lg"
-          onSelectionChange={(key) => handlePush(key)}
-          selectedKey={selectedLayoutSegments[0] ?? "dashboard"}>
-          <Tab title="Dashboard" key="dashboard" />
-          <Tab title="Metrics" key="metrics" />
-          <Tab title="Feed" key="feed" />
-          <Tab title="Write" key="write" />
-        </Tabs>
-      </NavbarContent>
       <NavbarContent justify="end">
         <User />
       </NavbarContent>
-      <NavbarMenu>
-        <NavbarMenuItem>
-          <NextLink
-            className="text-primary w-full"
-            href="/"
-            onClick={() => setIsMenuOpen(false)}>
-            Dashboard
-          </NextLink>
-        </NavbarMenuItem>
-        <NavbarMenuItem>
-          <NextLink
-            className="text-primary w-full"
-            href="/feed"
-            onClick={() => setIsMenuOpen(false)}>
-            Feed
-          </NextLink>
-        </NavbarMenuItem>
-        <NavbarMenuItem>
-          <NextLink
-            className="text-primary w-full"
-            href="/write"
-            onClick={() => setIsMenuOpen(false)}>
-            write
-          </NextLink>
-        </NavbarMenuItem>
-      </NavbarMenu>
     </Navbar>
   );
 };

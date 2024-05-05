@@ -2,9 +2,10 @@
 
 import { signIn, signOut } from "@chia/auth";
 
-export const signInAction = () =>
+export const signInAction = (redirectTo?: string) =>
   signIn("google", {
     redirect: true,
+    redirectTo,
     callbackUrl: "/",
   });
 

@@ -186,6 +186,9 @@ importers:
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
+      lucide-react:
+        specifier: ^0.374.0
+        version: 0.374.0(react@18.3.1)
       million:
         specifier: ^3.0.6
         version: 3.0.6(rollup@4.16.4)
