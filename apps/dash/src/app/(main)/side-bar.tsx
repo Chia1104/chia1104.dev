@@ -1,12 +1,46 @@
 "use client";
 
-import { Image } from "@chia/ui";
-import { Button } from "@nextui-org/react";
+import { Image, Link, cn } from "@chia/ui";
 import { motion, AnimatePresence } from "framer-motion";
 import { Boxes, Pencil, Settings2 } from "lucide-react";
 import { type FC, type ReactNode, useRef } from "react";
 import { useHover } from "usehooks-ts";
-import { Link } from "next-view-transitions";
+import { User } from "./menu";
+
+const LinkItem: FC<{
+  name: string;
+  href: string;
+  className?: string;
+  isHover?: boolean;
+  icon?: ReactNode;
+}> = ({ name, href, className, icon, isHover }) => {
+  return (
+    <Link
+      href={href}
+      experimental={{
+        enableViewTransition: true,
+      }}
+      className={cn(
+        "hover:bg-default/40 duration-250 relative flex h-9 w-full items-center rounded-lg px-[0.9rem] py-2 transition-colors",
+        className
+      )}
+      aria-label={name}>
+      {icon}
+      <AnimatePresence>
+        {isHover && (
+          <motion.p
+            className="ml-2 text-sm font-semibold"
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: "auto" }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.2 }}>
+            {name}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </Link>
+  );
+};
 
 const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
   const asideRef = useRef(null);
@@ -29,69 +63,25 @@ const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
           />
         </div>
         <nav className="flex size-full flex-col items-center gap-1 p-2">
-          <Button
-            as={Link}
+          <LinkItem
+            name="Projects"
             href="/"
-            variant="flat"
-            isIconOnly
-            className="flex w-full rounded-lg"
-            aria-label="Projct">
-            <Boxes className="size-5" />
-            <AnimatePresence>
-              {isHover && (
-                <motion.p
-                  className="ml-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}>
-                  Projct
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </Button>
-          <Button
-            as={Link}
+            isHover={isHover}
+            icon={<Boxes className="size-5" />}
+          />
+          <LinkItem
+            name="Feed"
             href="/feed"
-            variant="flat"
-            isIconOnly
-            className="flex w-full rounded-lg"
-            aria-label="Feed">
-            <Pencil className="size-5" />
-            <AnimatePresence>
-              {isHover && (
-                <motion.p
-                  className="ml-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}>
-                  Feed
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </Button>
-          <Button
-            as={Link}
+            isHover={isHover}
+            icon={<Pencil className="size-5" />}
+          />
+          <LinkItem
+            name="Setting"
             href="/setting"
-            variant="flat"
-            isIconOnly
-            className="mt-auto flex w-full rounded-lg"
-            aria-label="Setting">
-            <Settings2 className="size-5" />
-            <AnimatePresence>
-              {isHover && (
-                <motion.p
-                  className="ml-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}>
-                  Setting
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </Button>
+            className="mt-auto"
+            isHover={isHover}
+            icon={<Settings2 className="size-5" />}
+          />
         </nav>
       </motion.aside>
       <div className="flex flex-col">{children}</div>
