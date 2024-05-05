@@ -1,6 +1,6 @@
 "use client";
 
-import { Image, Link, cn } from "@chia/ui";
+import { Image, Link, cn, useIsMobile } from "@chia/ui";
 import { motion, AnimatePresence } from "framer-motion";
 import { Boxes, Pencil, Settings2 } from "lucide-react";
 import { type FC, type ReactNode, useRef } from "react";
@@ -44,12 +44,17 @@ const LinkItem: FC<{
 const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
   const asideRef = useRef(null);
   const isHover = useHover(asideRef);
+  const isMobile = useIsMobile();
   return (
     <div className="grid h-screen w-full pl-[56px]">
       <motion.aside
-        whileHover={{
-          width: 220,
-        }}
+        whileHover={
+          !isMobile
+            ? {
+                width: 220,
+              }
+            : undefined
+        }
         ref={asideRef}
         className="c-bg-third inset-y group fixed left-0 z-30 flex h-full flex-col items-center border-r">
         <div className="flex w-full justify-normal border-b p-2">
@@ -65,20 +70,20 @@ const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
           <LinkItem
             name="Projects"
             href="/"
-            isHover={isHover}
+            isHover={!isMobile ? isHover : false}
             icon={<Boxes className="size-5" />}
           />
           <LinkItem
             name="Feed"
             href="/feed"
-            isHover={isHover}
+            isHover={!isMobile ? isHover : false}
             icon={<Pencil className="size-5" />}
           />
           <LinkItem
             name="Setting"
             href="/setting"
-            className="mt-auto"
-            isHover={isHover}
+            className={cn("mt-auto")}
+            isHover={!isMobile ? isHover : false}
             icon={<Settings2 className="size-5" />}
           />
         </nav>

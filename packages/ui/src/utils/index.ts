@@ -12,3 +12,4 @@ export { default as useTheme } from "./use-theme";
 export * from "./get-img-average-rgb";
 export * from "./get-base64-image";
 export * from "./get-brightness";
+export { default as useIsMobile } from "./use-is-mobile";
