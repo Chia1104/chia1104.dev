@@ -169,17 +169,17 @@ importers:
         specifier: ^5.32.0
         version: 5.35.1(react@18.3.1)
       '@trpc/client':
-        specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354(@trpc/server@11.0.0-rc.354)
+        specifier: 11.0.0-rc.364
+        version: 11.0.0-rc.364(@trpc/server@11.0.0-rc.364)
       '@trpc/next':
         specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@trpc/server@11.0.0-rc.354)(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@trpc/server@11.0.0-rc.354)(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trpc/react-query':
         specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trpc/server':
-        specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354
+        specifier: 11.0.0-rc.364
+        version: 11.0.0-rc.364
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -338,8 +338,8 @@ importers:
         specifier: ^5.4.1
         version: 5.4.1
       minio:
-        specifier: ^7.1.4
-        version: 7.1.4
+        specifier: ^8.0.0
+        version: 8.0.0
       nestjs-throttler-storage-redis:
         specifier: ^0.4.4
         version: 0.4.4(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/throttler@5.1.2(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.3.8(@nestjs/common@10.3.8(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/platform-express@10.3.8)(reflect-metadata@0.2.2)(rxjs@7.8.1))(reflect-metadata@0.2.2))(ioredis@5.4.1)(reflect-metadata@0.2.2)
@@ -438,8 +438,8 @@ importers:
         specifier: 2.2.3
         version: 2.2.3(tailwindcss@3.4.3(ts-node@10.9.2(@swc/core@1.5.2(@swc/helpers@0.5.11))(@types/node@20.12.8)(typescript@5.4.5)))
       '@react-email/components':
-        specifier: ^0.0.16
-        version: 0.0.16(@types/react@18.3.1)(react@18.3.1)
+        specifier: ^0.0.17
+        version: 0.0.17(@types/react@18.3.1)(react@18.3.1)
       '@sentry/nextjs':
         specifier: ^7.112.2
         version: 7.113.0(next@14.2.3(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(webpack@5.90.1(@swc/core@1.5.2(@swc/helpers@0.5.11))(esbuild@0.19.12))
@@ -453,17 +453,17 @@ importers:
         specifier: ^5.32.0
         version: 5.35.1(react@18.3.1)
       '@trpc/client':
-        specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354(@trpc/server@11.0.0-rc.354)
+        specifier: 11.0.0-rc.364
+        version: 11.0.0-rc.364(@trpc/server@11.0.0-rc.364)
       '@trpc/next':
         specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@trpc/server@11.0.0-rc.354)(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@trpc/server@11.0.0-rc.354)(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trpc/react-query':
         specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@trpc/server':
-        specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354
+        specifier: 11.0.0-rc.364
+        version: 11.0.0-rc.364
       '@upstash/ratelimit':
         specifier: 1.1.3
         version: 1.1.3
@@ -629,11 +629,11 @@ importers:
         specifier: ^0.10.1
         version: 0.10.1(typescript@5.4.5)(zod@3.23.6)
       '@trpc/client':
-        specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354(@trpc/server@11.0.0-rc.354)
+        specifier: 11.0.0-rc.364
+        version: 11.0.0-rc.364(@trpc/server@11.0.0-rc.364)
       '@trpc/server':
-        specifier: 11.0.0-rc.354
-        version: 11.0.0-rc.354
+        specifier: 11.0.0-rc.364
+        version: 11.0.0-rc.364
       next:
         specifier: 14.2.3
         version: 14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -773,8 +773,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       lucide-react:
-        specifier: ^0.374.0
-        version: 0.374.0(react@18.3.1)
+        specifier: ^0.377.0
+        version: 0.377.0(react@18.3.1)
       next:
         specifier: 14.2.3
         version: 14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -925,8 +925,8 @@ importers:
         specifier: 11.1.7
         version: 11.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       lucide-react:
-        specifier: ^0.374.0
-        version: 0.374.0(react@18.3.1)
+        specifier: ^0.377.0
+        version: 0.377.0(react@18.3.1)
       next:
         specifier: 14.2.3
         version: 14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1088,6 +1088,7 @@ packages:
   '@apollo/server-plugin-landing-page-graphql-playground@4.0.0':
     resolution: {integrity: sha512-PBDtKI/chJ+hHeoJUUH9Kuqu58txQl00vUGuxqiC9XcReulIg7RjsyD0G1u3drX4V709bxkL5S0nTeXfRHD0qA==}
     engines: {node: '>=14.0'}
+    deprecated: The use of GraphQL Playground in Apollo Server was supported in previous versions, but this is no longer the case as of December 31, 2022. This package exists for v4 migration purposes only. We do not intend to resolve security issues or other bugs with this package if they arise, so please migrate away from this to [Apollo Server's default Explorer](https://www.apollographql.com/docs/apollo-server/api/plugin/landing-pages) as soon as possible.
     peerDependencies:
       '@apollo/server': ^4.0.0
 
@@ -3753,127 +3754,131 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
 
-  '@react-email/body@0.0.7':
-    resolution: {integrity: sha512-vjJ5P1MUNWV0KNivaEWA6MGj/I3c764qQJMsKjCHlW6mkFJ4SXbm2OlQFtKAb++Bj8LDqBlnE6oW77bWcMc0NA==}
+  '@react-email/body@0.0.8':
+    resolution: {integrity: sha512-gqdkNYlIaIw0OdpWu8KjIcQSIFvx7t2bZpXVxMMvBS859Ia1+1X3b5RNbjI3S1ZqLddUf7owOHkO4MiXGE+nxg==}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/button@0.0.14':
-    resolution: {integrity: sha512-SMk40moGcAvkHIALX4XercQlK0PNeeEIam6OXHw68ea9WtzzqVwiK4pzLY0iiMI9B4xWHcaS2lCPf3cKbQBf1Q==}
+  '@react-email/button@0.0.15':
+    resolution: {integrity: sha512-9Zi6SO3E8PoHYDfcJTecImiHLyitYWmIRs0HE3Ogra60ZzlWP2EXu+AZqwQnhXuq+9pbgwBWNWxB5YPetNPTNA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/code-block@0.0.3':
-    resolution: {integrity: sha512-nxhl7WjjM2cOYtl0boBZfSObTrUCz2LbarcMyHkTVAsA9rbjbtWAQF7jmlefXJusk3Uol5l2c8hTh2lHLlHTRQ==}
+  '@react-email/code-block@0.0.4':
+    resolution: {integrity: sha512-xjVLi/9dFNJ70N7hYme+21eQWa3b9/kgp4V+FKQJkQCuIMobxPRCIGM5jKD/0Vo2OqrE5chYv/dkg/aP8a8sPg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/code-inline@0.0.1':
-    resolution: {integrity: sha512-SeZKTB9Q4+TUafzeUm/8tGK3dFgywUHb1od/BrAiJCo/im65aT+oJfggJLjK2jCdSsus8odcK2kReeM3/FCNTQ==}
+  '@react-email/code-inline@0.0.2':
+    resolution: {integrity: sha512-0cmgbbibFeOJl0q04K9jJlPDuJ+SEiX/OG6m3Ko7UOkG3TqjRD8Dtvkij6jNDVfUh/zESpqJCP2CxrCLLMUjdA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/column@0.0.9':
-    resolution: {integrity: sha512-1ekqNBgmbS6m97/sUFOnVvQtLYljUWamw8Y44VId95v6SjiJ4ca+hMcdOteHWBH67xkRofEOWTvqDRea5SBV8w==}
+  '@react-email/column@0.0.10':
+    resolution: {integrity: sha512-MnP8Mnwipr0X3XtdD6jMLckb0sI5/IlS6Kl/2F6/rsSWBJy5Gg6nizlekTdkwDmy0kNSe3/1nGU0Zqo98pl63Q==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/components@0.0.16':
-    resolution: {integrity: sha512-1WATpMSH03cRvhfNjGl/Up3seZJOzN9KLzlk3Q9g/cqNhZEJ7HYxoZM4AQKAI0V3ttXzzxKv8Oj+AZQLHDiICA==}
+  '@react-email/components@0.0.17':
+    resolution: {integrity: sha512-x5gGQaK0QchbwHvUrCBVnE8GCWdO5osTVuTSA54Fwzels6ZDeNTHEYRx9gI3Nwcf/dkoVYkVH4rzWST0SF0MLA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/container@0.0.11':
-    resolution: {integrity: sha512-jzl/EHs0ClXIRFamfH+NR/cqv4GsJJscqRhdYtnWYuRAsWpKBM1muycrrPqIVhWvWi6sFHInWTt07jX+bDc3SQ==}
+  '@react-email/container@0.0.12':
+    resolution: {integrity: sha512-HFu8Pu5COPFfeZxSL+wKv/TV5uO/sp4zQ0XkRCdnGkj/xoq0lqOHVDL4yC2Pu6fxXF/9C3PHDA++5uEYV5WVJw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/font@0.0.5':
-    resolution: {integrity: sha512-if/qKYmH3rJ2egQJoKbV8SfKCPavu+ikUq/naT/UkCr8Q0lkk309tRA0x7fXG/WeIrmcipjMzFRGTm2TxTecDw==}
+  '@react-email/font@0.0.6':
+    resolution: {integrity: sha512-sZZFvEZ4U3vNCAZ8wXqIO3DuGJR2qE/8m2fEH+tdqwa532zGO3zW+UlCTg0b9455wkJSzEBeaWik0IkNvjXzxw==}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/head@0.0.7':
-    resolution: {integrity: sha512-IcXL4jc0H1qzAXJCD9ajcRFBQdbUHkjKJyiUeogpaYSVZSq6cVDWQuGaI23TA9k+pI2TFeQimogUFb3Kgeeudw==}
+  '@react-email/head@0.0.8':
+    resolution: {integrity: sha512-8/NI0gtQmLIilAe6rebK1TWw3IXHxtrR02rInkQq8yQ7zKbYbzx7Q/FhmsJgAk+uYh2Er/KhgYJ0sHZyDhfMTQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/heading@0.0.11':
-    resolution: {integrity: sha512-EF5ZtRCxhHPw3m+8iibKKg0RAvAeHj1AP68sjU7s6+J+kvRgllr/E972Wi5Y8UvcIGossCvpX1WrSMDzeB4puA==}
+  '@react-email/heading@0.0.12':
+    resolution: {integrity: sha512-eB7mpnAvDmwvQLoPuwEiPRH4fPXWe6ltz6Ptbry2BlI88F0a2k11Ghb4+sZHBqg7vVw/MKbqEgtLqr3QJ/KfCQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/hr@0.0.7':
-    resolution: {integrity: sha512-8suK0M/deXHt0DBSeKhSC4bnCBCBm37xk6KJh9M0/FIKlvdltQBem52YUiuqVl1XLB87Y6v6tvspn3SZ9fuxEA==}
+  '@react-email/hr@0.0.8':
+    resolution: {integrity: sha512-JLVvpCg2wYKEB+n/PGCggWG9fRU5e4lxsGdpK5SDLsCL0ic3OLKSpHMfeE+ZSuw0GixAVVQN7F64PVJHQkd4MQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/html@0.0.7':
-    resolution: {integrity: sha512-oy7OoRtoOKApVI/5Lz1OZptMKmMYJu9Xn6+lOmdBQchAuSdQtWJqxhrSj/iI/mm8HZWo6MZEQ6SFpfOuf8/P6Q==}
+  '@react-email/html@0.0.8':
+    resolution: {integrity: sha512-arII3wBNLpeJtwyIJXPaILm5BPKhA+nvdC1F9QkuKcOBJv2zXctn8XzPqyGqDfdplV692ulNJP7XY55YqbKp6w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/img@0.0.7':
-    resolution: {integrity: sha512-up9tM2/dJ24u/CFjcvioKbyGuPw1yeJg605QA7VkrygEhd0CoQEjjgumfugpJ+VJgIt4ZjT9xMVCK5QWTIWoaA==}
+  '@react-email/img@0.0.8':
+    resolution: {integrity: sha512-jx/rPuKo31tV18fu7P5rRqelaH5wkhg83Dq7uLwJpfqhbi4KFBGeBfD0Y3PiLPPoh+WvYf+Adv9W2ghNW8nOMQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/link@0.0.7':
-    resolution: {integrity: sha512-hXPChT3ZMyKnUSA60BLEMD2maEgyB2A37yg5bASbLMrXmsExHi6/IS1h2XiUPLDK4KqH5KFaFxi2cdNo1JOKwA==}
+  '@react-email/link@0.0.8':
+    resolution: {integrity: sha512-nVikuTi8WJHa6Baad4VuRUbUCa/7EtZ1Qy73TRejaCHn+vhetc39XGqHzKLNh+Z/JFL8Hv9g+4AgG16o2R0ogQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/markdown@0.0.9':
-    resolution: {integrity: sha512-t//19Zz+W5svKqrSrqoOLpf6dq70jbwYxX8Z+NEMi4LqylklccOaYAyKrkYyulfZwhW7KDH9d2wjVk5jfUABxQ==}
+  '@react-email/markdown@0.0.10':
+    resolution: {integrity: sha512-MH0xO+NJ4IuJcx9nyxbgGKAMXyudFjCZ0A2GQvuWajemW9qy2hgnJ3mW3/z5lwcenG+JPn7JyO/iZpizQ7u1tA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/preview@0.0.8':
-    resolution: {integrity: sha512-Jm0KUYBZQd2w0s2QRMQy0zfHdo3Ns+9bYSE1OybjknlvhANirjuZw9E5KfWgdzO7PyrRtB1OBOQD8//Obc4uIQ==}
+  '@react-email/preview@0.0.9':
+    resolution: {integrity: sha512-2fyAA/zzZYfYmxfyn3p2YOIU30klyA6Dq4ytyWq4nfzQWWglt5hNDE0cMhObvRtfjM9ghMSVtoELAb0MWiF/kw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
   '@react-email/render@0.0.12':
     resolution: {integrity: sha512-S8WRv/PqECEi6x0QJBj0asnAb5GFtJaHlnByxLETLkgJjc76cxMYDH4r9wdbuJ4sjkcbpwP3LPnVzwS+aIjT7g==}
     engines: {node: '>=18.0.0'}
 
-  '@react-email/row@0.0.7':
-    resolution: {integrity: sha512-h7pwrLVGk5CIx7Ai/oPxBgCCAGY7BEpCUQ7FCzi4+eThcs5IdjSwDPefLEkwaFS8KZc56UNwTAH92kNq5B7blg==}
+  '@react-email/render@0.0.13':
+    resolution: {integrity: sha512-lmBizrV+rQeSa3GjiL8/kPU0gENqO/wv+4xrlWANabp9UY3lTLXzy7HMRSE8YFBES9AbxP5VX1iRKuEnsoBDew==}
     engines: {node: '>=18.0.0'}
-    peerDependencies:
-      react: 18.2.0
 
-  '@react-email/section@0.0.11':
-    resolution: {integrity: sha512-3bZ/DuvX1julATI7oqYza6pOtWZgLJDBaa62LFFEvYjisyN+k6lrP2KOucPsDKu2DOkUzlQgK0FOm6VQJX+C0w==}
+  '@react-email/row@0.0.8':
+    resolution: {integrity: sha512-JsB6pxs/ZyjYpEML3nbwJRGAerjcN/Pa/QG48XUwnT/MioDWrUuyQuefw+CwCrSUZ2P1IDrv2tUD3/E3xzcoKw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/tailwind@0.0.15':
-    resolution: {integrity: sha512-TE3NQ7VKhhvv3Zv0Z1NtoV6AF7aOWiG4juVezMZw1hZCG0mkN6iXC63u23vPQi12y6xCp20ZUHfg67kQeDSP/g==}
+  '@react-email/section@0.0.12':
+    resolution: {integrity: sha512-UCD/N/BeOTN4h3VZBUaFdiSem6HnpuxD1Q51TdBFnqeNqS5hBomp8LWJJ9s4gzwHWk1XPdNfLA3I/fJwulJshg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
 
-  '@react-email/text@0.0.7':
-    resolution: {integrity: sha512-eHCx0mdllGcgK9X7wiLKjNZCBRfxRVNjD3NNYRmOc3Icbl8M9JHriJIfxBuGCmGg2UAORK5P3KmaLQ8b99/pbA==}
+  '@react-email/tailwind@0.0.16':
+    resolution: {integrity: sha512-uMifPxCEHaHLhpS1kVCMGyTeEL+aMYzHT4bgj8CkgCiBoF9wNNfIVMUlHGzHUTv4ZTEPaMfZgC/Hi8RqzL/Ogw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      react: 18.2.0
+      react: ^18.2.0
+
+  '@react-email/text@0.0.8':
+    resolution: {integrity: sha512-uvN2TNWMrfC9wv/LLmMLbbEN1GrMWZb9dBK14eYxHHAEHCeyvGb5ePZZ2MPyzO7Y5yTC+vFEnCEr76V+hWMxCQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^18.2.0
 
   '@react-stately/calendar@3.4.1':
     resolution: {integrity: sha512-XKCdrXNA7/ukZ842EeDZfLqYUQDv/x5RoAVkzTbp++3U/MLM1XZXsqj+5xVlQfJiWpQzM9L6ySjxzzgepJDeuw==}
@@ -4736,18 +4741,18 @@ packages:
   '@total-typescript/ts-reset@0.5.1':
     resolution: {integrity: sha512-AqlrT8YA1o7Ff5wPfMOL0pvL+1X+sw60NN6CcOCqs658emD6RfiXhF7Gu9QcfKBH7ELY2nInLhKSCWVoNL70MQ==}
 
-  '@trpc/client@11.0.0-rc.354':
-    resolution: {integrity: sha512-wlvSnNQD8vopL8Jngk5sfZJgw5J3ttadsNoAA01ex5upL8kmN2a6bNNbOOGu/Go2RdZLH2we2GdZkBh6NA3Jmg==}
+  '@trpc/client@11.0.0-rc.364':
+    resolution: {integrity: sha512-k9ZH7I0OOBFME9fZJ1JI0ZjvPEV64bvoT20kWHkFeMH5trJmK1tzcc/q7c7cLBY4pziLPqBDPFw2qax09vyRTg==}
     peerDependencies:
-      '@trpc/server': 11.0.0-rc.354+ab11f2310
+      '@trpc/server': 11.0.0-rc.364+d95fb467b
 
-  '@trpc/next@11.0.0-rc.354':
-    resolution: {integrity: sha512-1SLVqp8yZ72q9wDUqYriO9KdWUTNuQ7opbFObU6fyN/1Gc5db9NBZKICiHSxuL5qZJDcr3pTQuFu1JK9GUlVxw==}
+  '@trpc/next@11.0.0-rc.364':
+    resolution: {integrity: sha512-iwwvGcA5h3//EIRImda8KH15nlS7uDV1wR0y2+RLLotLGmnbbKvxiZWoIyKdvQVwgjDhLgPxaXur2Jw19m6fjg==}
     peerDependencies:
       '@tanstack/react-query': ^5.25.0
-      '@trpc/client': 11.0.0-rc.354+ab11f2310
-      '@trpc/react-query': 11.0.0-rc.354+ab11f2310
-      '@trpc/server': 11.0.0-rc.354+ab11f2310
+      '@trpc/client': 11.0.0-rc.364+d95fb467b
+      '@trpc/react-query': 11.0.0-rc.364+d95fb467b
+      '@trpc/server': 11.0.0-rc.364+d95fb467b
       next: '*'
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -4757,17 +4762,17 @@ packages:
       '@trpc/react-query':
         optional: true
 
-  '@trpc/react-query@11.0.0-rc.354':
-    resolution: {integrity: sha512-E5RVF+oYjOPUrYxt4k9O5YoMugIl49GoxMWU/qmOe4AbkZcM60ISdRqtuNhe6QPYbU7u5Y++oO8MDscv4yBxBw==}
+  '@trpc/react-query@11.0.0-rc.364':
+    resolution: {integrity: sha512-updB1uOVHS/1NK+hclt8OK/Im0GYD8mIRTxs96hZhfaT6tqUhij/wWWG0U6OofxPGC/MZs75ojQeq8Uag9Tr5g==}
     peerDependencies:
       '@tanstack/react-query': ^5.25.0
-      '@trpc/client': 11.0.0-rc.354+ab11f2310
-      '@trpc/server': 11.0.0-rc.354+ab11f2310
+      '@trpc/client': 11.0.0-rc.364+d95fb467b
+      '@trpc/server': 11.0.0-rc.364+d95fb467b
       react: '>=18.2.0'
       react-dom: '>=18.2.0'
 
-  '@trpc/server@11.0.0-rc.354':
-    resolution: {integrity: sha512-45QgalVFW3+JnFqrfTWKRuqkDTOtl9tnPps6DG6kf2lwULwSW3v55+YpMWc6ZSrkZdBXGMON0bBR/Ab4hU0zbA==}
+  '@trpc/server@11.0.0-rc.364':
+    resolution: {integrity: sha512-sGlrb2jSCiU74TrJ+N+WxIcJIUDyo0WOy0y30vIArw6oHFXjeithgxjvIu+PbN+VWt/Gt4ee8kVhnmxCW4X/Qw==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -8303,8 +8308,8 @@ packages:
   lru-queue@0.1.0:
     resolution: {integrity: sha512-BpdYkt9EvGl8OfWHDQPISVpcl5xZthb+XPsbELj5AQXxIC8IriDZIQYjBJPEm5rS420sjZ0TLEzRcq5KdBhYrQ==}
 
-  lucide-react@0.374.0:
-    resolution: {integrity: sha512-3LAHdWe4sl2Qb1AfSxXKf08Tym7mxBoYeOo9KT7LXjM5WpnZ2fdj7GpZeYGwyNue6Gv4VYrl5pWgrF0MhkxS3A==}
+  lucide-react@0.377.0:
+    resolution: {integrity: sha512-o0weTZC4j8YiSi5VIE6RTwPt5uOA+YtuXejvkOxbLghLwIloNkI20INgWigrhBthvgdDcuULp0XRTr0wokqKMw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
 
@@ -8711,8 +8716,8 @@ packages:
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
-  minio@7.1.4:
-    resolution: {integrity: sha512-1rjcS8l7QlWsA4EZ1JauInkRkzu2J/qN0U+ee3HZErY84bdcebMhd10wDdfpAjmXyFsvrUPnKjZB2G7OJXrvXw==}
+  minio@8.0.0:
+    resolution: {integrity: sha512-GkM/lk+Gzwd4fAQvLlB+cy3NV3PRADe0tNXnH9JD5BmdAHKIp+5vypptbjdkU85xWBIQsa2xK35GpXjmYXBBYA==}
     engines: {node: ^16 || ^18 || >=20}
     deprecated: This release broke API contract, please use 8.0.0 instead by making relevant changes to application or keep 7.1.3 (to avoid making application changes)
 
@@ -15102,94 +15107,94 @@ snapshots:
       '@swc/helpers': 0.5.11
       react: 18.3.1
 
-  '@react-email/body@0.0.7(react@18.3.1)':
+  '@react-email/body@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/button@0.0.14(react@18.3.1)':
+  '@react-email/button@0.0.15(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/code-block@0.0.3(react@18.3.1)':
+  '@react-email/code-block@0.0.4(react@18.3.1)':
     dependencies:
       prismjs: 1.29.0
       react: 18.3.1
 
-  '@react-email/code-inline@0.0.1(react@18.3.1)':
+  '@react-email/code-inline@0.0.2(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/column@0.0.9(react@18.3.1)':
+  '@react-email/column@0.0.10(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/components@0.0.16(@types/react@18.3.1)(react@18.3.1)':
+  '@react-email/components@0.0.17(@types/react@18.3.1)(react@18.3.1)':
     dependencies:
-      '@react-email/body': 0.0.7(react@18.3.1)
-      '@react-email/button': 0.0.14(react@18.3.1)
-      '@react-email/code-block': 0.0.3(react@18.3.1)
-      '@react-email/code-inline': 0.0.1(react@18.3.1)
-      '@react-email/column': 0.0.9(react@18.3.1)
-      '@react-email/container': 0.0.11(react@18.3.1)
-      '@react-email/font': 0.0.5(react@18.3.1)
-      '@react-email/head': 0.0.7(react@18.3.1)
-      '@react-email/heading': 0.0.11(@types/react@18.3.1)(react@18.3.1)
-      '@react-email/hr': 0.0.7(react@18.3.1)
-      '@react-email/html': 0.0.7(react@18.3.1)
-      '@react-email/img': 0.0.7(react@18.3.1)
-      '@react-email/link': 0.0.7(react@18.3.1)
-      '@react-email/markdown': 0.0.9(react@18.3.1)
-      '@react-email/preview': 0.0.8(react@18.3.1)
-      '@react-email/render': 0.0.12
-      '@react-email/row': 0.0.7(react@18.3.1)
-      '@react-email/section': 0.0.11(react@18.3.1)
-      '@react-email/tailwind': 0.0.15(react@18.3.1)
-      '@react-email/text': 0.0.7(react@18.3.1)
+      '@react-email/body': 0.0.8(react@18.3.1)
+      '@react-email/button': 0.0.15(react@18.3.1)
+      '@react-email/code-block': 0.0.4(react@18.3.1)
+      '@react-email/code-inline': 0.0.2(react@18.3.1)
+      '@react-email/column': 0.0.10(react@18.3.1)
+      '@react-email/container': 0.0.12(react@18.3.1)
+      '@react-email/font': 0.0.6(react@18.3.1)
+      '@react-email/head': 0.0.8(react@18.3.1)
+      '@react-email/heading': 0.0.12(@types/react@18.3.1)(react@18.3.1)
+      '@react-email/hr': 0.0.8(react@18.3.1)
+      '@react-email/html': 0.0.8(react@18.3.1)
+      '@react-email/img': 0.0.8(react@18.3.1)
+      '@react-email/link': 0.0.8(react@18.3.1)
+      '@react-email/markdown': 0.0.10(react@18.3.1)
+      '@react-email/preview': 0.0.9(react@18.3.1)
+      '@react-email/render': 0.0.13
+      '@react-email/row': 0.0.8(react@18.3.1)
+      '@react-email/section': 0.0.12(react@18.3.1)
+      '@react-email/tailwind': 0.0.16(react@18.3.1)
+      '@react-email/text': 0.0.8(react@18.3.1)
       react: 18.3.1
     transitivePeerDependencies:
       - '@types/react'
 
-  '@react-email/container@0.0.11(react@18.3.1)':
+  '@react-email/container@0.0.12(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/font@0.0.5(react@18.3.1)':
+  '@react-email/font@0.0.6(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/head@0.0.7(react@18.3.1)':
+  '@react-email/head@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/heading@0.0.11(@types/react@18.3.1)(react@18.3.1)':
+  '@react-email/heading@0.0.12(@types/react@18.3.1)(react@18.3.1)':
     dependencies:
       '@radix-ui/react-slot': 1.0.2(@types/react@18.3.1)(react@18.3.1)
       react: 18.3.1
     transitivePeerDependencies:
       - '@types/react'
 
-  '@react-email/hr@0.0.7(react@18.3.1)':
+  '@react-email/hr@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/html@0.0.7(react@18.3.1)':
+  '@react-email/html@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/img@0.0.7(react@18.3.1)':
+  '@react-email/img@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/link@0.0.7(react@18.3.1)':
+  '@react-email/link@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/markdown@0.0.9(react@18.3.1)':
+  '@react-email/markdown@0.0.10(react@18.3.1)':
     dependencies:
       md-to-react-email: 5.0.2(react@18.3.1)
       react: 18.3.1
 
-  '@react-email/preview@0.0.8(react@18.3.1)':
+  '@react-email/preview@0.0.9(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
@@ -15200,19 +15205,26 @@ snapshots:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
 
-  '@react-email/row@0.0.7(react@18.3.1)':
+  '@react-email/render@0.0.13':
+    dependencies:
+      html-to-text: 9.0.5
+      js-beautify: 1.15.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  '@react-email/row@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/section@0.0.11(react@18.3.1)':
+  '@react-email/section@0.0.12(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/tailwind@0.0.15(react@18.3.1)':
+  '@react-email/tailwind@0.0.16(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
-  '@react-email/text@0.0.7(react@18.3.1)':
+  '@react-email/text@0.0.8(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
@@ -16239,30 +16251,30 @@ snapshots:
 
   '@total-typescript/ts-reset@0.5.1': {}
 
-  '@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354)':
+  '@trpc/client@11.0.0-rc.364(@trpc/server@11.0.0-rc.364)':
     dependencies:
-      '@trpc/server': 11.0.0-rc.354
+      '@trpc/server': 11.0.0-rc.364
 
-  '@trpc/next@11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@trpc/server@11.0.0-rc.354)(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@trpc/next@11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@trpc/server@11.0.0-rc.354)(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@trpc/client': 11.0.0-rc.354(@trpc/server@11.0.0-rc.354)
       '@trpc/server': 11.0.0-rc.354
-      next: 14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      next: 14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
     optionalDependencies:
-      '@tanstack/react-query': 5.35.1(react@18.3.1)
-      '@trpc/react-query': 11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tanstack/react-query': 5.32.0(react@18.3.1)
+      '@trpc/react-query': 11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  '@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.35.1(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@trpc/react-query@11.0.0-rc.354(@tanstack/react-query@5.32.0(react@18.3.1))(@trpc/client@11.0.0-rc.354(@trpc/server@11.0.0-rc.354))(@trpc/server@11.0.0-rc.354)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/react-query': 5.35.1(react@18.3.1)
+      '@tanstack/react-query': 5.32.0(react@18.3.1)
       '@trpc/client': 11.0.0-rc.354(@trpc/server@11.0.0-rc.354)
       '@trpc/server': 11.0.0-rc.354
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@trpc/server@11.0.0-rc.354': {}
+  '@trpc/server@11.0.0-rc.364': {}
 
   '@tsconfig/node10@1.0.11': {}
 
@@ -20495,7 +20507,7 @@ snapshots:
     dependencies:
       es5-ext: 0.10.64
 
-  lucide-react@0.374.0(react@18.3.1):
+  lucide-react@0.377.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
@@ -21268,7 +21280,7 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minio@7.1.4:
+  minio@8.0.0:
     dependencies:
       async: 3.2.5
       block-stream2: 2.1.0
