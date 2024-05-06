@@ -51,3 +51,4 @@ export const Features = {
   NotFound,
   Error,
 };
+export { default as SubmitForm } from "./SubmitForm";

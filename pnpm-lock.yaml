@@ -129,6 +129,9 @@ importers:
       '@chia/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@chia/auth-core':
+        specifier: workspace:*
+        version: link:../../packages/auth-core
       '@chia/cache':
         specifier: workspace:*
         version: link:../../packages/cache
@@ -198,6 +201,9 @@ importers:
       next-auth:
         specifier: 5.0.0-beta.17
         version: 5.0.0-beta.17(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+      next-safe-action:
+        specifier: 7.0.0-next.32
+        version: 7.0.0-next.32(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -5018,6 +5024,76 @@ packages:
   '@types/yargs@17.0.32':
     resolution: {integrity: sha512-xQ67Yc/laOG5uMfX/093MRlGGCIBzZMarVa+gfNKJxWAIgykYpVGkBdbqEzGDDfCrVUj6Hiff4mTZ5BA6TmAog==}
 
+  '@typeschema/core@0.13.2':
+    resolution: {integrity: sha512-pAt0MK249/9szYaoPuvzhSfOd3smrLhhwCCpUNB4onX32mRx5F3lzDIveIYGQkLYRq58xOX5sjoW+n72f/MLLw==}
+    peerDependencies:
+      '@types/json-schema': ^7.0.15
+    peerDependenciesMeta:
+      '@types/json-schema':
+        optional: true
+
+  '@typeschema/main@0.13.9':
+    resolution: {integrity: sha512-Z6yFaf2dLoqvuSNIeUelek9XI8T5Rog/NXHBMwV6KLhQCT0lQPBtmZSXAdW6EzFaqn1najhQEcirBqjWiFXiig==}
+    peerDependencies:
+      '@typeschema/arktype': 0.13.2
+      '@typeschema/class-validator': 0.1.2
+      '@typeschema/deepkit': 0.13.4
+      '@typeschema/effect': 0.13.4
+      '@typeschema/fastest-validator': 0.1.0
+      '@typeschema/function': 0.13.2
+      '@typeschema/io-ts': 0.13.3
+      '@typeschema/joi': 0.13.3
+      '@typeschema/json': 0.13.3
+      '@typeschema/ow': 0.13.3
+      '@typeschema/runtypes': 0.13.2
+      '@typeschema/superstruct': 0.13.2
+      '@typeschema/suretype': 0.1.0
+      '@typeschema/typebox': 0.13.4
+      '@typeschema/valibot': 0.13.4
+      '@typeschema/valita': 0.1.0
+      '@typeschema/vine': 0.1.0
+      '@typeschema/yup': 0.13.3
+      '@typeschema/zod': 0.13.3
+    peerDependenciesMeta:
+      '@typeschema/arktype':
+        optional: true
+      '@typeschema/class-validator':
+        optional: true
+      '@typeschema/deepkit':
+        optional: true
+      '@typeschema/effect':
+        optional: true
+      '@typeschema/fastest-validator':
+        optional: true
+      '@typeschema/function':
+        optional: true
+      '@typeschema/io-ts':
+        optional: true
+      '@typeschema/joi':
+        optional: true
+      '@typeschema/json':
+        optional: true
+      '@typeschema/ow':
+        optional: true
+      '@typeschema/runtypes':
+        optional: true
+      '@typeschema/superstruct':
+        optional: true
+      '@typeschema/suretype':
+        optional: true
+      '@typeschema/typebox':
+        optional: true
+      '@typeschema/valibot':
+        optional: true
+      '@typeschema/valita':
+        optional: true
+      '@typeschema/vine':
+        optional: true
+      '@typeschema/yup':
+        optional: true
+      '@typeschema/zod':
+        optional: true
+
   '@typescript-eslint/eslint-plugin@7.7.1':
     resolution: {integrity: sha512-KwfdWXJBOviaBVhxO3p5TJiLpNuh2iyXyjmWN0f1nU87pwyvfS0EmjC6ukQVYVFJd/K1+0NWGPDXiyEyQorn0Q==}
     engines: {node: ^18.18.0 || >=20.0.0}
@@ -8737,6 +8813,13 @@ packages:
     peerDependencies:
       react: '>=16.x <=18.x'
       react-dom: '>=16.x <=18.x'
+
+  next-safe-action@7.0.0-next.32:
+    resolution: {integrity: sha512-Ys2o1bEKZ/ZgNe2u23bwgyPVwgYUHQnkukTH8qrj4//c7RskgI1WiXrGjllzeukdrM5b11S/9seMyVhW5ZpvoA==}
+    engines: {node: '>=18.17'}
+    peerDependencies:
+      next: '>= 14.0.0'
+      react: '>= 18.2.0'
 
   next-sitemap@4.2.3:
     resolution: {integrity: sha512-vjdCxeDuWDzldhCnyFCQipw5bfpl4HmZA7uoo3GAaYGjGgfL4Cxb1CiztPuWGmS+auYs7/8OekRS8C2cjdAsjQ==}
@@ -16520,6 +16603,16 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
+  '@typeschema/core@0.13.2(@types/json-schema@7.0.15)':
+    optionalDependencies:
+      '@types/json-schema': 7.0.15
+
+  '@typeschema/main@0.13.9(@types/json-schema@7.0.15)':
+    dependencies:
+      '@typeschema/core': 0.13.2(@types/json-schema@7.0.15)
+    transitivePeerDependencies:
+      - '@types/json-schema'
+
   '@typescript-eslint/eslint-plugin@7.7.1(@typescript-eslint/parser@7.7.1(eslint@8.57.0)(typescript@5.4.5))(eslint@8.57.0)(typescript@5.4.5)':
     dependencies:
       '@eslint-community/regexpp': 4.10.0
@@ -21385,6 +21478,33 @@ snapshots:
       vfile-matter: 3.0.1
     transitivePeerDependencies:
       - supports-color
+
+  next-safe-action@7.0.0-next.32(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
+    dependencies:
+      '@typeschema/main': 0.13.9(@types/json-schema@7.0.15)
+      next: 14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react: 18.3.1
+    transitivePeerDependencies:
+      - '@types/json-schema'
+      - '@typeschema/arktype'
+      - '@typeschema/class-validator'
+      - '@typeschema/deepkit'
+      - '@typeschema/effect'
+      - '@typeschema/fastest-validator'
+      - '@typeschema/function'
+      - '@typeschema/io-ts'
+      - '@typeschema/joi'
+      - '@typeschema/json'
+      - '@typeschema/ow'
+      - '@typeschema/runtypes'
+      - '@typeschema/superstruct'
+      - '@typeschema/suretype'
+      - '@typeschema/typebox'
+      - '@typeschema/valibot'
+      - '@typeschema/valita'
+      - '@typeschema/vine'
+      - '@typeschema/yup'
+      - '@typeschema/zod'
 
   next-sitemap@4.2.3(next@14.2.3(@babel/core@7.24.4)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:

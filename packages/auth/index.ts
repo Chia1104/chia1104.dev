@@ -1,12 +1,16 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import { db, localDb, betaDb, schema } from "@chia/db";
 import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
+import Resend from "next-auth/providers/resend";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { env } from "@chia/auth-core/env";
 import { getDb } from "@chia/utils";
 import type { NextRequest } from "next/server";
 import { getBaseConfig } from "@chia/auth-core/utils";
 import type { DefaultSession } from "@auth/core/types";
+import { sendVerificationRequest } from "./authSendRequest";
+import crypto from "node:crypto";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {
@@ -60,7 +64,18 @@ export const getConfig = (req?: NextRequest) => {
       Google({
         clientId: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET,
-        allowDangerousEmailAccountLinking: true,
+      }),
+      GitHub({
+        clientId: env.GITHUB_CLIENT_ID,
+        clientSecret: env.GITHUB_CLIENT_SECRET,
+      }),
+      Resend({
+        from: "contact@chia1104.dev",
+        apiKey: env.RESEND_API_KEY,
+        async generateVerificationToken() {
+          return crypto.getRandomValues(new Uint8Array(32)).join("");
+        },
+        sendVerificationRequest,
       }),
     ],
   } satisfies NextAuthConfig;

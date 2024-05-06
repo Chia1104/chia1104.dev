@@ -9,7 +9,8 @@
         "AUTH_URL",
         "AUTH_SECRET",
         "AUTH_REDIRECT_PROXY_URL",
-        "AUTH_COOKIE_DOMAIN"
+        "AUTH_COOKIE_DOMAIN",
+        "RESEND_API_KEY"
       ]
     }
   }

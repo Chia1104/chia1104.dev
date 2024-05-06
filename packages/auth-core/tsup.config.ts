@@ -2,7 +2,13 @@ import { defineConfig, type Options } from "tsup";
 
 export default defineConfig((opts) => {
   return {
-    entry: ["src/index.ts", "src/utils.ts", "src/env.ts", "src/cjs.ts"],
+    entry: [
+      "src/index.ts",
+      "src/utils.ts",
+      "src/env.ts",
+      "src/cjs.ts",
+      "src/types.ts",
+    ],
     clean: true,
     minify: !opts.watch,
     dts: true,
