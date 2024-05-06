@@ -47,6 +47,9 @@ export const getConfig = (req?: NextRequest) => {
         AUTH_COOKIE_DOMAIN: env.AUTH_COOKIE_DOMAIN,
       },
     }),
+    pages: {
+      verifyRequest: "/auth/verify-request",
+    },
     adapter: DrizzleAdapter(
       getDb(undefined, {
         db,
