@@ -202,8 +202,8 @@ importers:
         specifier: 5.0.0-beta.17
         version: 5.0.0-beta.17(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-safe-action:
-        specifier: 7.0.0-next.32
-        version: 7.0.0-next.32(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        specifier: 7.0.0-next.34
+        version: 7.0.0-next.34(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -8834,12 +8834,12 @@ packages:
       react: '>=16.x <=18.x'
       react-dom: '>=16.x <=18.x'
 
-  next-safe-action@7.0.0-next.32:
-    resolution: {integrity: sha512-Ys2o1bEKZ/ZgNe2u23bwgyPVwgYUHQnkukTH8qrj4//c7RskgI1WiXrGjllzeukdrM5b11S/9seMyVhW5ZpvoA==}
+  next-safe-action@7.0.0-next.34:
+    resolution: {integrity: sha512-+8m+sc1rzfkf53WUTBJeVJpuaNyUl1Sap9TwX9z5oB8NYpJavyw5BakgX+UmU+02lH9SgWuqaNQIfcZlw6WzDw==}
     engines: {node: '>=18.17'}
     peerDependencies:
-      next: '>= 14.0.0'
-      react: '>= 18.2.0'
+      next: '>= 14.3.0-canary.42'
+      react: '>= 18.3.1'
 
   next-sitemap@4.2.3:
     resolution: {integrity: sha512-vjdCxeDuWDzldhCnyFCQipw5bfpl4HmZA7uoo3GAaYGjGgfL4Cxb1CiztPuWGmS+auYs7/8OekRS8C2cjdAsjQ==}
@@ -21512,7 +21512,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  next-safe-action@7.0.0-next.32(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
+  next-safe-action@7.0.0-next.34(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
     dependencies:
       '@typeschema/main': 0.13.9(@types/json-schema@7.0.15)
       next: 14.2.3(@babel/core@7.24.5)(@playwright/test@1.43.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
