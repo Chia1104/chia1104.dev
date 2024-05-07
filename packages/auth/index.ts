@@ -76,7 +76,7 @@ export const getConfig = (req?: NextRequest) => {
         from: "contact@chia1104.dev",
         apiKey: env.RESEND_API_KEY,
         async generateVerificationToken() {
-          return crypto.getRandomValues(new Uint8Array(32)).join("");
+          return crypto.randomBytes(32).toString("hex");
         },
         sendVerificationRequest,
       }),
