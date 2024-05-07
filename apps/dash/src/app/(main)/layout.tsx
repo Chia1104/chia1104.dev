@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await auth();
   if (!session) {
-    redirect("/signin");
+    redirect("/auth/signin");
   }
   return (
     <SideBar>
