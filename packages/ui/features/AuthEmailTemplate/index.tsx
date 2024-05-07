@@ -5,31 +5,21 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
   Img,
-  Link,
-  Preview,
   Section,
   Tailwind,
   Text,
 } from "@react-email/components";
 
 export interface Props {
-  title?: string;
-  message?: string;
-  email?: string;
-  ip?: string;
+  url: string;
+  host: string;
+  theme?: "default";
 }
 
-const EmailTemplate: FC<Props> = ({
-  title = "Untitled",
-  message,
-  email,
-  ip,
-}) => {
-  const previewText = `You have received a message from ${email}`;
-  const fromEmail = `mailto:${email}`;
+const EmailTemplate = ({ url, host }: Props) => {
+  const escapedHost = host.replace(/\./g, "&#8203;.");
   return (
     <Tailwind
       config={{
@@ -46,7 +36,6 @@ const EmailTemplate: FC<Props> = ({
       }}>
       <Html>
         <Head />
-        <Preview>{previewText}</Preview>
         <Body className="m-auto bg-black p-10 font-sans text-white">
           <Section
             style={{
@@ -57,34 +46,27 @@ const EmailTemplate: FC<Props> = ({
           <Container className="bg-dark/30 border-purple mx-auto my-[40px] w-[465px] rounded border border-solid p-[20px] text-white backdrop-blur-md">
             <Section className="mt-[32px]">
               <Img
-                src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/contact.PNG"
+                src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/icon.png"
                 width="100"
                 height="100"
-                alt="Contact me"
+                alt="logo"
                 className="mx-auto my-0"
               />
             </Section>
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal">
-              <strong>{title}</strong>
+              Here's your sign-in link for <strong>{escapedHost}</strong>
             </Heading>
             <Text className="text-[14px] leading-[24px]">
-              From:{" "}
-              <Link href={fromEmail} className="text-cyan no-underline">
-                {email}
-              </Link>
+              Click the button below to sign in to your account. If you didn't
+              request this link, you can safely ignore this email.
             </Text>
-            <Text className="text-[14px] leading-[24px]">{message}</Text>
             <Section className="my-[32px] text-center">
               <Button
                 className="bg-cyberpunk rounded px-5 py-3 text-center text-[12px] font-semibold text-[#666666] no-underline"
-                href={fromEmail}>
-                Reply
+                href={url}>
+                Sign in
               </Button>
             </Section>
-            <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
-            <Text className="text-[12px] leading-[24px] text-[#666666]">
-              The message was sent from IP address {ip}
-            </Text>
           </Container>
         </Body>
       </Html>

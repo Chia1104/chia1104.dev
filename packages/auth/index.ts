@@ -11,6 +11,7 @@ import { getBaseConfig } from "@chia/auth-core/utils";
 import type { DefaultSession } from "@auth/core/types";
 import { sendVerificationRequest } from "./authSendRequest";
 import crypto from "node:crypto";
+import { AUTH_EMAIL } from "@chia/utils";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {
@@ -73,7 +74,7 @@ export const getConfig = (req?: NextRequest) => {
         clientSecret: env.GITHUB_CLIENT_SECRET,
       }),
       Resend({
-        from: "contact@chia1104.dev",
+        from: AUTH_EMAIL,
         apiKey: env.RESEND_API_KEY,
         async generateVerificationToken() {
           return crypto.randomBytes(32).toString("hex");

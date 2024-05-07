@@ -2,7 +2,7 @@ import meta from "@chia/meta";
 import { NextResponse } from "next/server";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
-import { errorGenerator } from "@chia/utils";
+import { errorGenerator, CONTACT_EMAIL } from "@chia/utils";
 import { env } from "@/env";
 import { contactSchema, type Contact } from "@/shared/validator";
 import * as Sentry from "@sentry/nextjs";
@@ -78,7 +78,7 @@ export const POST = withRateLimiter(
         );
       }
       const result = await resend.emails.send({
-        from: "contact@chia1104.dev",
+        from: CONTACT_EMAIL,
         to: meta.email,
         subject: data.title ?? "Untitled",
         text: data.message ?? "No message",

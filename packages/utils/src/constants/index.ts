@@ -18,12 +18,5 @@ export const SERVICE_BASE_URL =
     ? "https://service.chia1104.dev"
     : "http://localhost:3003";
 
-/**
- * @deprecated
- * no longer needed
- */
-export const POSTS_PATH = !IS_TEST
-  ? IS_PRODUCTION
-    ? "./posts/published"
-    : "./posts/unpublished"
-  : "./posts/examples";
+export const CONTACT_EMAIL = "contact@chia1104.dev";
+export const AUTH_EMAIL = "auth@chia1104.dev";
