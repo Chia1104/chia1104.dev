@@ -49,6 +49,7 @@ export const getConfig = (req?: NextRequest) => {
       },
     }),
     pages: {
+      signIn: "/auth/signin",
       verifyRequest: "/auth/verify-request",
     },
     adapter: DrizzleAdapter(
@@ -68,10 +69,12 @@ export const getConfig = (req?: NextRequest) => {
       Google({
         clientId: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET,
+        allowDangerousEmailAccountLinking: true,
       }),
       GitHub({
         clientId: env.GITHUB_CLIENT_ID,
         clientSecret: env.GITHUB_CLIENT_SECRET,
+        allowDangerousEmailAccountLinking: true,
       }),
       Resend({
         from: AUTH_EMAIL,
