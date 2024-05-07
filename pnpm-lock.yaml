@@ -711,8 +711,8 @@ importers:
         specifier: 1.1.3
         version: 1.1.3
       '@upstash/redis':
-        specifier: 1.30.0
-        version: 1.30.0
+        specifier: 1.30.1
+        version: 1.30.1
       ioredis:
         specifier: ^5.4.1
         version: 5.4.1
@@ -1097,6 +1097,7 @@ packages:
   '@apollo/server-plugin-landing-page-graphql-playground@4.0.0':
     resolution: {integrity: sha512-PBDtKI/chJ+hHeoJUUH9Kuqu58txQl00vUGuxqiC9XcReulIg7RjsyD0G1u3drX4V709bxkL5S0nTeXfRHD0qA==}
     engines: {node: '>=14.0'}
+    deprecated: The use of GraphQL Playground in Apollo Server was supported in previous versions, but this is no longer the case as of December 31, 2022. This package exists for v4 migration purposes only. We do not intend to resolve security issues or other bugs with this package if they arise, so please migrate away from this to [Apollo Server's default Explorer](https://www.apollographql.com/docs/apollo-server/api/plugin/landing-pages) as soon as possible.
     peerDependencies:
       '@apollo/server': ^4.0.0
 
@@ -5202,8 +5203,8 @@ packages:
   '@upstash/ratelimit@1.1.3':
     resolution: {integrity: sha512-rl+GMvPdZJ9xPDIvIrqRl/g0nzAEaH75hwR5lXAKW8zPPplD/AeliDCHwuwcFCPIjg49FKyA1oc5H473WkVFrQ==}
 
-  '@upstash/redis@1.30.0':
-    resolution: {integrity: sha512-bkxl2n7qls27hONXNyItM6ccRT0NBJ8c6zl83wx+TlODpYXehgeiUJTkcTaXLp7hk+zy6Mqpzpeo3GX+wZSvBw==}
+  '@upstash/redis@1.30.1':
+    resolution: {integrity: sha512-Cmk2cvm1AcD6mKLg/UFhQDzM+H1HsX/k5ufvNL4Kii8DsMTKmadMJ1rRZEGQ/SM7H51EeOL/YSa6K2EPc1SYPA==}
 
   '@vercel/analytics@1.2.2':
     resolution: {integrity: sha512-X0rctVWkQV1e5Y300ehVNqpOfSOufo7ieA5PIdna8yX/U7Vjz0GFsGf4qvAhxV02uQ2CVt7GYcrFfddXXK2Y4A==}
@@ -16774,13 +16775,13 @@ snapshots:
 
   '@upstash/core-analytics@0.0.8':
     dependencies:
-      '@upstash/redis': 1.30.0
+      '@upstash/redis': 1.30.1
 
   '@upstash/ratelimit@1.1.3':
     dependencies:
       '@upstash/core-analytics': 0.0.8
 
-  '@upstash/redis@1.30.0':
+  '@upstash/redis@1.30.1':
     dependencies:
       crypto-js: 4.2.0
 
