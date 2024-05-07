@@ -127,6 +127,12 @@ const nextConfig = {
   sentry: {
     hideSourceMaps: true,
   },
+  webpack: (config) => {
+    config.externals.push({
+      "node:crypto": "commonjs crypto",
+    });
+    return config;
+  },
 };
 
 /** @type {Plugin[]} */

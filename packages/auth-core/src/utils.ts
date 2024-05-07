@@ -50,9 +50,6 @@ export const getBaseConfig = <TRequest extends Request = Request>(options?: {
         },
       },
     },
-    pages: {
-      signIn: "/login",
-    },
     callbacks: {
       session: ({ session, user }) => ({
         ...session,

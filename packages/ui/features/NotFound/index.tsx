@@ -5,9 +5,11 @@ import {
   TextRevealCardDescription,
   TextRevealCardTitle,
 } from "../../src/TextRevealCard";
-import { Button, Link, Code } from "@nextui-org/react";
+import { Button, Code } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 
 export default function NotFound() {
+  const router = useRouter();
   return (
     <div className="main c-container">
       <TextRevealCard
@@ -18,7 +20,7 @@ export default function NotFound() {
         <TextRevealCardDescription>
           Sorry, the page you are looking for does not exist.
         </TextRevealCardDescription>
-        <Button as={Link} href="/" className="mt-5">
+        <Button onPress={() => router.push("/")} className="mt-5">
           <Code>cd ../</Code>
         </Button>
       </TextRevealCard>

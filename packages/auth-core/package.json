@@ -21,11 +21,15 @@
       "require": "./dist/env.js",
       "import": "./dist/env.mjs",
       "types": "./dist/env.d.mts"
+    },
+    "./types": {
+      "require": "./dist/types.js",
+      "import": "./dist/types.mjs",
+      "types": "./dist/types.d.mts"
     }
   },
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
     "clean": "git clean -xdf .turbo node_modules dist",
     "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
     "type:check": "tsc --noEmit",

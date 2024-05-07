@@ -12,6 +12,7 @@ import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import superjson from "superjson";
 import { api } from "@/trpc-api";
 import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
+import { useRouter } from "next/navigation";
 
 interface Props {
   session: Session | null;
@@ -72,11 +73,12 @@ export function TRPCReactProvider(props: {
 }
 
 const RootProvider: FC<Props> = ({ session, children, headers }) => {
+  const router = useRouter();
   return (
     <SessionProvider session={session}>
       <TRPCReactProvider headers={headers}>
         <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-          <NextUIProvider>
+          <NextUIProvider navigate={router.push}>
             <Toaster />
             {children}
           </NextUIProvider>
