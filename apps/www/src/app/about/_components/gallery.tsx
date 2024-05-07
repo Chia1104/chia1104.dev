@@ -7,7 +7,7 @@ const images = [
   {
     id: 1,
     alt: "me-1",
-    src: "https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fme-1.JPG?alt=media",
+    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/me-1.JPG",
   },
   {
     id: 2,
@@ -17,17 +17,17 @@ const images = [
   {
     id: 3,
     alt: "group-1",
-    src: "https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fgroup-1.JPG?alt=media",
+    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-1.JPG",
   },
   {
     id: 4,
     alt: "group-2",
-    src: "https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fgroup-2.JPG?alt=media",
+    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG",
   },
   {
     id: 5,
     alt: "graph-1",
-    src: "https://firebasestorage.googleapis.com/v0/b/chia1104.appspot.com/o/images%2Fgraph-1.jpg?alt=media",
+    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/graph-1.jpg",
   },
 ];
 
