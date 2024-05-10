@@ -2,9 +2,9 @@ name: service CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    types: [opened, labeled, unlabeled, synchronize]
     paths:
       - "apps/service/**"
       - "packages/db/**"
@@ -30,7 +30,7 @@ env:
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:3003
   NODE_VERSION: 21
-  PNPM_VERSION: 9.0.6
+  PNPM_VERSION: 9.1.0
 
 jobs:
   build:
@@ -40,31 +40,31 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service') }}
 
     steps:
-      - name: '🐙️ Check out code'
+      - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
-      - name: '💽️  Init'
+      - name: "💽️  Init"
         id: backend-init
         uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
           PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
-      - name: '📦  Install'
+      - name: "📦  Install"
         id: backend-install
         uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
 
-      - name: '🏗️  Build'
+      - name: "🏗️  Build"
         uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
         with:
-          BUILD_COMMAND: 'build --filter service...'
+          BUILD_COMMAND: "build --filter service..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
 
-      - name: '🚨️  ESLint, Type checking, Unit tests'
+      - name: "🚨️  ESLint, Type checking, Unit tests"
         id: backend-lint-test
         uses: Chia1104/chia-stack/.github/actions/lint-test@main
         with:
-          COMMAND: '--filter service...'
+          COMMAND: "--filter service..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
           TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
