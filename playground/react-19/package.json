@@ -1,0 +1,17 @@
+{
+  "name": "react-19",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "babel-plugin-react-compiler": "0.0.0-experimental-592953e-20240517",
+    "next-canary": "npm:next@canary",
+    "react-beta": "npm:react@beta",
+    "react-dom-beta": "npm:react-dom@beta"
+  }
+}
