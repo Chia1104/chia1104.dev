@@ -29,7 +29,7 @@ env:
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:3003
-  NODE_VERSION: 21
+  NODE_VERSION: 20
   PNPM_VERSION: 9.1.0
 
 jobs:
