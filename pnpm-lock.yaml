@@ -202,8 +202,8 @@ importers:
         specifier: 5.0.0-beta.18
         version: 5.0.0-beta.18(next@14.2.3(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-safe-action:
-        specifier: 7.0.0-next.35
-        version: 7.0.0-next.35(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        specifier: 7.0.0-next.44
+        version: 7.0.0-next.44(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1104,6 +1104,7 @@ packages:
   '@apollo/server-plugin-landing-page-graphql-playground@4.0.0':
     resolution: {integrity: sha512-PBDtKI/chJ+hHeoJUUH9Kuqu58txQl00vUGuxqiC9XcReulIg7RjsyD0G1u3drX4V709bxkL5S0nTeXfRHD0qA==}
     engines: {node: '>=14.0'}
+    deprecated: The use of GraphQL Playground in Apollo Server was supported in previous versions, but this is no longer the case as of December 31, 2022. This package exists for v4 migration purposes only. We do not intend to resolve security issues or other bugs with this package if they arise, so please migrate away from this to [Apollo Server's default Explorer](https://www.apollographql.com/docs/apollo-server/api/plugin/landing-pages) as soon as possible.
     peerDependencies:
       '@apollo/server': ^4.0.0
 
@@ -7841,6 +7842,7 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -9186,12 +9188,19 @@ packages:
     peerDependencies:
       react: '>=16'
 
-  next-safe-action@7.0.0-next.35:
-    resolution: {integrity: sha512-iPPdCzHbnmsYwjNK3ot4HECSTXTZuShv2LNPFdsCc034ox5ehK8zJYGOTDYoK4VKCRYh2dPpzgS2zisYC9bNAQ==}
+  next-safe-action@7.0.0-next.44:
+    resolution: {integrity: sha512-/WTqYIVXf9c5AP0i9HfIfYVMmMU6lLZ2DM0O9J1/9QtECWz07WhmuXWrNa28kYZdTHBl/qUrjh5iCYEV4VzY4g==}
     engines: {node: '>=18.17'}
     peerDependencies:
+      '@typeschema/zod': ^0.13.3
       next: '>= 14.3.0-canary.42'
       react: '>= 18.3.1'
+      zod: ^3.23.6
+    peerDependenciesMeta:
+      '@typeschema/zod':
+        optional: true
+      zod:
+        optional: true
 
   next-sitemap@4.2.3:
     resolution: {integrity: sha512-vjdCxeDuWDzldhCnyFCQipw5bfpl4HmZA7uoo3GAaYGjGgfL4Cxb1CiztPuWGmS+auYs7/8OekRS8C2cjdAsjQ==}
@@ -10860,6 +10869,7 @@ packages:
 
   subscriptions-transport-ws@0.11.0:
     resolution: {integrity: sha512-8D4C6DIH5tGiAIpp5I0wD/xRlNiZAPGHygzCe7VzyzUoxHtawzjNAY9SUTXU05/EY2NMY9/9GF0ycizkXr1CWQ==}
+    deprecated: The `subscriptions-transport-ws` package is no longer maintained. We recommend you use `graphql-ws` instead. For help migrating Apollo software to `graphql-ws`, see https://www.apollographql.com/docs/apollo-server/data/subscriptions/#switching-from-subscriptions-transport-ws    For general help using `graphql-ws`, see https://github.com/enisdenjo/graphql-ws/blob/master/README.md
     peerDependencies:
       graphql: ^15.7.2 || ^16.0.0
 
@@ -22322,11 +22332,13 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  next-safe-action@7.0.0-next.35(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1):
+  next-safe-action@7.0.0-next.44(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod@3.23.8):
     dependencies:
       '@typeschema/main': 0.13.9(@types/json-schema@7.0.15)
       next: 14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
+    optionalDependencies:
+      zod: 3.23.8
     transitivePeerDependencies:
       - '@types/json-schema'
       - '@typeschema/arktype'
@@ -22347,7 +22359,6 @@ snapshots:
       - '@typeschema/valita'
       - '@typeschema/vine'
       - '@typeschema/yup'
-      - '@typeschema/zod'
 
   next-sitemap@4.2.3(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
