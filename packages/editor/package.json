@@ -17,20 +17,20 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@nextui-org/react": "2.3.6",
-    "@tiptap/core": "^2.3.0",
-    "@tiptap/extension-code-block-lowlight": "^2.3.0",
-    "@tiptap/html": "^2.3.0",
-    "@tiptap/starter-kit": "^2.3.0",
-    "ai": "^3.0.33",
+    "@tiptap/core": "^2.4.0",
+    "@tiptap/extension-code-block-lowlight": "^2.4.0",
+    "@tiptap/html": "^2.4.0",
+    "@tiptap/starter-kit": "^2.4.0",
+    "ai": "^3.1.14",
     "lowlight": "^3.1.0",
-    "lucide-react": "^0.377.0",
+    "lucide-react": "^0.379.0",
     "next": "14.2.3",
-    "novel": "^0.3.1",
-    "openai": "^4.38.5",
+    "novel": "^0.4.2",
+    "openai": "^4.47.1",
     "react": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.1",
+    "@types/react": "^18.3.3",
     "tsconfig": "workspace:*"
   }
 }

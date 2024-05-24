@@ -53,6 +53,7 @@ const nextConfig = {
     serverComponentsExternalPackages: [],
     typedRoutes: false,
     webpackBuildWorker: true,
+    instrumentationHook: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -124,9 +125,6 @@ const nextConfig = {
       },
     ];
   },
-  sentry: {
-    hideSourceMaps: true,
-  },
   webpack: (config) => {
     config.externals.push({
       "node:crypto": "commonjs crypto",
@@ -150,6 +148,7 @@ export default million.next(
     project: process.env.SENTRY_PROJECT,
     authToken: process.env.SENTRY_AUTH_TOKEN,
     silent: true,
+    hideSourceMaps: true,
   }),
   {
     rsc: true,

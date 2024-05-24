@@ -41,9 +41,9 @@ const dbEnv = (
 
 export default {
   schema: "./src/schema",
-  driver: "pg",
+  dialect: "postgresql",
   dbCredentials: {
-    connectionString: dbEnv(),
+    url: dbEnv(),
   },
   out: "./.drizzle",
   tablesFilter: ["chia_*"],

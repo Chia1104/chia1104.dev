@@ -22,11 +22,9 @@ export const serializeMDX = async (
       ],
       rehypePlugins: [
         [rehypeSlug],
-        // @ts-expect-error
         [rehypePrism, { ignoreMissing: true }],
         [rehypeAutolinkHeadings],
         [
-          // @ts-expect-error
           rehypePrettyCode,
           {
             theme: {
@@ -57,11 +55,9 @@ export const compileMDX = async (content: string, options?: MDXRemoteProps) => {
         ],
         rehypePlugins: [
           [rehypeSlug],
-          // @ts-expect-error
           [rehypePrism, { ignoreMissing: true }],
           [rehypeAutolinkHeadings],
           [
-            // @ts-expect-error
             rehypePrettyCode,
             {
               theme: {
