@@ -11,16 +11,16 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@auth/core": "^0.30.0",
-    "@auth/drizzle-adapter": "^1.0.1",
+    "@auth/core": "^0.31.0",
+    "@auth/drizzle-adapter": "^1.1.0",
     "@chia/auth-core": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@react-email/render": "^0.0.13",
+    "@react-email/render": "^0.0.15",
     "@t3-oss/env-core": "^0.10.1",
     "next": "14.2.3",
-    "next-auth": "5.0.0-beta.17"
+    "next-auth": "5.0.0-beta.18"
   },
   "devDependencies": {
     "tsconfig": "workspace:*"
