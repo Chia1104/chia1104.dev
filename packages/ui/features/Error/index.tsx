@@ -21,8 +21,7 @@ const Error = ({
         <TextRevealCard
           className={className}
           text="500"
-          revealText="出事拉，阿北！"
-          startCount={20}>
+          revealText="出事拉，阿北！">
           <TextRevealCardTitle>Oops, something went wrong!</TextRevealCardTitle>
           <TextRevealCardDescription>
             We are sorry, but something went wrong. Please try again later.
