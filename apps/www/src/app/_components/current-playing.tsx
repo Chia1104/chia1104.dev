@@ -98,7 +98,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
 
   // Sync the progress bar with the current playing song
   useEffect(() => {
-    if (!props.isFetching && props.isSuccess && props.data.is_playing) {
+    if (!props.isFetching && props.isSuccess && props.data?.is_playing) {
       setValue(props.data.progress_ms);
     }
   }, [
