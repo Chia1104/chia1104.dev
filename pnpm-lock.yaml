@@ -236,8 +236,8 @@ importers:
         specifier: workspace:0.0.1-beta.1
         version: link:../../packages/tailwind
       '@million/lint':
-        specifier: 1.0.0-rc.9
-        version: 1.0.0-rc.9(rollup@4.18.0)
+        specifier: 1.0.0-rc.12
+        version: 1.0.0-rc.12(react@18.3.1)(rollup@4.18.0)
       '@testing-library/react':
         specifier: ^15.0.7
         version: 15.0.7(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -550,8 +550,8 @@ importers:
         specifier: workspace:0.0.1-beta.1
         version: link:../../packages/tailwind
       '@million/lint':
-        specifier: 1.0.0-rc.9
-        version: 1.0.0-rc.9(rollup@3.29.4)
+        specifier: 1.0.0-rc.12
+        version: 1.0.0-rc.12(react@18.3.1)(rollup@3.29.4)
       '@next/bundle-analyzer':
         specifier: 14.2.3
         version: 14.2.3
@@ -2301,8 +2301,8 @@ packages:
     resolution: {integrity: sha512-XsBVyZZUBQ0fAAC6taX7jBuSdA3R9Q+cTWzZifZmHUCLyy+azgOQ8ZMHTClXPzPaI+yWLf6mr3l3UYcaJdCE4w==}
     hasBin: true
 
-  '@million/lint@1.0.0-rc.9':
-    resolution: {integrity: sha512-x1M7S8AoZ86BklpGK+u5HF1i1noINJ7lUzYp0plLAqMKxAg3WWupJkRLQuNOu5NYUekrDUUTY0U+k7rJ3FoACA==}
+  '@million/lint@1.0.0-rc.12':
+    resolution: {integrity: sha512-kX1OggpTquLWoz63TG0zlOzDDIcTC1OGfdXycnK4NynkWjEKtB5P7rDtznx0w1gAOZZdLsQbM/8/FcbLua4ZoQ==}
     hasBin: true
 
   '@mole-inc/bin-wrapper@8.0.1':
@@ -13288,7 +13288,7 @@ snapshots:
       - debug
       - supports-color
 
-  '@million/lint@1.0.0-rc.9(rollup@3.29.4)':
+  '@million/lint@1.0.0-rc.12(react@18.3.1)(rollup@3.29.4)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
       '@babel/core': 7.24.6
@@ -13304,18 +13304,17 @@ snapshots:
       piscina: 4.5.1
       posthog-node: 3.6.3
       pretty-ms: 8.0.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
       react-reconciler: 0.29.2(react@18.3.1)
       tmp: 0.2.3
       unplugin: 1.10.1
     transitivePeerDependencies:
       - debug
       - encoding
+      - react
       - rollup
       - supports-color
 
-  '@million/lint@1.0.0-rc.9(rollup@4.18.0)':
+  '@million/lint@1.0.0-rc.12(react@18.3.1)(rollup@4.18.0)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
       '@babel/core': 7.24.6
@@ -13331,14 +13330,13 @@ snapshots:
       piscina: 4.5.1
       posthog-node: 3.6.3
       pretty-ms: 8.0.0
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
       react-reconciler: 0.29.2(react@18.3.1)
       tmp: 0.2.3
       unplugin: 1.10.1
     transitivePeerDependencies:
       - debug
       - encoding
+      - react
       - rollup
       - supports-color
 
