@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "../utils";
-import { type ReactElement, type ComponentPropsWithoutRef, useId } from "react";
+import { useId } from "react";
+import type { ReactElement, ComponentPropsWithoutRef } from "react";
 
 interface Props extends ComponentPropsWithoutRef<"svg"> {
   className?: string;
@@ -36,7 +37,7 @@ const Spotlight = ({
           rx="1924.71"
           ry="273.501"
           transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
-          fill={fill || "white"}
+          fill={fill ?? "white"}
           fillOpacity="0.21"
         />
       </g>

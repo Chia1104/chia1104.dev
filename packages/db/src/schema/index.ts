@@ -11,7 +11,8 @@ import {
 import type { AdapterAccount } from "@auth/core/adapters";
 import { pgTable } from "./table";
 import { roles, feed_type, article_type } from "./enums";
-import { type InferSelectModel, relations, sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 
 export const users = pgTable("user", {
   id: text("id").notNull().primaryKey(),

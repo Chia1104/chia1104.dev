@@ -66,7 +66,7 @@ export const toExpressResponse = async (
   });
 
   res.writeHead(response.status, response.statusText, {
-    "Content-Type": response.headers.get("content-type") || "",
+    "Content-Type": response.headers.get("content-type") ?? "",
   });
 
   res.write(await response.text());

@@ -2,7 +2,8 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@nextui-org/react";
-import { post, type HTTPError } from "@chia/utils";
+import { post } from "@chia/utils";
+import type { HTTPError } from "@chia/utils";
 import { toast } from "sonner";
 
 const SpotifyLogin = () => {

@@ -13,7 +13,7 @@ export const GET = async () => {
     console.error(error);
     if (error instanceof HTTPError || !!error.response) {
       const { response } = error;
-      return NextResponse.json(errorGenerator(response.status), {
+      return NextResponse.json(errorGenerator(response.status as number), {
         status: response.status,
       });
     }

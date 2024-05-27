@@ -13,14 +13,14 @@ export const feedsRouter = createTRPCRouter({
   get: protectedProcedure.input(getSchema).query(async (opts) => {
     return getFeeds(opts.ctx.db, {
       ...opts.input,
-      whereAnd: [eq(schema.feeds.userId, opts.ctx.session.user.id!)],
+      whereAnd: [eq(schema.feeds.userId, opts.ctx.session.user.id ?? "")],
     });
   }),
 
   infinite: protectedProcedure.input(infiniteSchema).query(async (opts) => {
     return getInfiniteFeeds(opts.ctx.db, {
       ...opts.input,
-      whereAnd: [eq(schema.feeds.userId, opts.ctx.session.user.id!)],
+      whereAnd: [eq(schema.feeds.userId, opts.ctx.session.user.id ?? "")],
     });
   }),
 

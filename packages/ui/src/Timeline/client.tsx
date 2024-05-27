@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC } from "react";
+import type { FC } from "react";
 import { motion } from "framer-motion";
 import type { ListItemProps, ListProps, GroupListProps } from "./types";
 import { cn, useInfiniteScroll } from "../utils";
@@ -55,7 +55,7 @@ export const Item: FC<ListItemProps> = ({
           {...titleProps}
           className={cn("text-lg font-bold", titleProps?.className)}>
           {data.link ? (
-            // @ts-expect-error
+            // @ts-expect-error - are we cool?
             <Link
               href={data.link}
               experimental={{

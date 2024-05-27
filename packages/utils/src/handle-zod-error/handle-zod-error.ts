@@ -1,12 +1,14 @@
-import { ZodError, type ZodIssue, z } from "zod";
+import type { z } from "zod";
+import { ZodError } from "zod";
+import type { ZodIssue } from "zod";
 
-export type HandleZodErrorReturn = {
+export interface HandleZodErrorReturn {
   message: string;
   issues?: ZodIssue[];
   isError: boolean;
-};
+}
 
-export type HandleZodErrorOptions<T> = {
+export interface HandleZodErrorOptions<T> {
   schema: z.ZodType<T>;
   data: T;
   prefixErrorMessage?: string;
@@ -14,7 +16,7 @@ export type HandleZodErrorOptions<T> = {
   postParse?: (data: T) => void;
   onError?: (message: string, issues: ZodIssue[]) => void;
   onFinally?: () => void | HandleZodErrorReturn;
-};
+}
 
 const handleZodError = <T = unknown>({
   schema,

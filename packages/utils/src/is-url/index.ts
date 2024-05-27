@@ -3,8 +3,8 @@ export const isUrl = (
   allowedProtocols: string[] = ["http", "https"]
 ): boolean => {
   try {
-    new URL(url);
-    return allowedProtocols.includes(url.split(":")[0]);
+    const _url = new URL(url as string);
+    return allowedProtocols.includes(_url.toString().split(":")[0]);
   } catch (e) {
     return false;
   }

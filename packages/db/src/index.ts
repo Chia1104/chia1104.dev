@@ -1,5 +1,6 @@
 import "dotenv/config";
-import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { drizzle } from "drizzle-orm/postgres-js";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
@@ -9,9 +10,9 @@ if (!process.env.DATABASE_URL) {
 
 export const queryClient = postgres(process.env.DATABASE_URL);
 
-export const localQueryClient = postgres(process.env.LOCAL_DATABASE_URL!);
+export const localQueryClient = postgres(process.env.LOCAL_DATABASE_URL ?? "");
 
-export const betaQueryClient = postgres(process.env.BETA_DATABASE_URL!);
+export const betaQueryClient = postgres(process.env.BETA_DATABASE_URL ?? "");
 
 export const db: DB = drizzle(queryClient, {
   schema,

@@ -1,4 +1,5 @@
-import { ZodError, type ZodIssue, type ZodType } from "zod";
+import { ZodError } from "zod";
+import type { ZodIssue, ZodType } from "zod";
 
 export type HandleZodErrorReturn<TData> =
   | {
@@ -11,10 +12,10 @@ export type HandleZodErrorReturn<TData> =
       data: TData;
     };
 
-export type HandleZodErrorOptions<
+export interface HandleZodErrorOptions<
   TSourceData = unknown,
   TFormatData = unknown,
-> = {
+> {
   schema: ZodType<TSourceData>;
   data: TSourceData;
   preParse?: (data: TSourceData) => void;
@@ -22,7 +23,7 @@ export type HandleZodErrorOptions<
   onFormat?: (data: TSourceData) => TFormatData;
   onError?: (issues: ZodIssue[]) => void;
   onFinally?: () => void;
-};
+}
 
 /**
  *

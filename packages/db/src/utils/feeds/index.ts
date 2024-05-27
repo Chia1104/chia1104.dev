@@ -1,6 +1,8 @@
-import { type DB, schema } from "../..";
+import { schema } from "../..";
+import type { DB } from "../..";
 import dayjs from "dayjs";
-import { eq, type SQLWrapper } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import type { SQLWrapper } from "drizzle-orm";
 import type { GetDTO, InfiniteDTO } from "../validator/feeds";
 
 const withDTO = <TDto = unknown, TResult = unknown>(

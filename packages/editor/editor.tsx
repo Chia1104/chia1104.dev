@@ -1,6 +1,7 @@
 "use client";
 
-import React, { type FC, type ComponentPropsWithoutRef, useState } from "react";
+import React, { useState } from "react";
+import type { FC, ComponentPropsWithoutRef } from "react";
 import {
   EditorRoot,
   EditorContent,

@@ -1,16 +1,14 @@
 "use client";
 
-import createGlobe, { type COBEOptions } from "cobe";
-import {
-  type ComponentPropsWithoutRef,
-  type FC,
-  type ReactNode,
-  useRef,
-  useEffect,
-  useCallback,
-  useState,
-  type PointerEvent,
-  type TouchEvent,
+import createGlobe from "cobe";
+import type { COBEOptions } from "cobe";
+import { useRef, useEffect, useCallback, useState } from "react";
+import type {
+  ComponentPropsWithoutRef,
+  FC,
+  ReactNode,
+  PointerEvent,
+  TouchEvent,
 } from "react";
 import { cn, useTheme, Image } from "@chia/ui";
 import { useResizeObserver } from "usehooks-ts";
@@ -65,7 +63,7 @@ const Location: FC<LocationProps> = ({
     if (canvasRef.current && width && height) {
       try {
         const context = canvasRef.current.getContext("webgl");
-        if (!context || !context?.getContextAttributes()) {
+        if (!context?.getContextAttributes()) {
           throw new Error("WebGL not supported, or context not available");
         }
         setIsError(false);

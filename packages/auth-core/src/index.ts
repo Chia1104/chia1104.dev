@@ -1,4 +1,5 @@
-import { Auth as InternalAuth, type AuthConfig } from "@auth/core";
+import { Auth as InternalAuth } from "@auth/core";
+import type { AuthConfig } from "@auth/core";
 import { db, localDb, betaDb, schema } from "@chia/db";
 import Google from "@auth/core/providers/google";
 import Github from "@auth/core/providers/github";

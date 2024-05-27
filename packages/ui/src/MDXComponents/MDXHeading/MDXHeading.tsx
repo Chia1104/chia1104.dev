@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  type FC,
-  type DetailedHTMLProps,
-  type HTMLAttributes,
-  useRef,
-} from "react";
+import { useRef } from "react";
+import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
 import useIsMounted from "../../utils/use-is-mounted";
 
 export const H1: FC<

@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { ImageResponse } from "next/og";
 import { env } from "@/env";
 import { OpenGraph } from "@chia/ui";
 import { errorGenerator, handleZodError } from "@chia/utils";
-import { ogSchema, type OgDTO } from "./utils";
+import { ogSchema } from "./utils";
 
 export const runtime = "edge";
 
@@ -17,17 +18,10 @@ const key = crypto.subtle.importKey(
 
 const toHex = (arrayBuffer: ArrayBuffer) => {
   return Array.prototype.map
-    .call(new Uint8Array(arrayBuffer), (n) => n.toString(16).padStart(2, "0"))
+    .call(new Uint8Array(arrayBuffer), (n: number) =>
+      n.toString(16).padStart(2, "0")
+    )
     .join("");
-};
-
-const isUrl = (url: string) => {
-  try {
-    const _url = new URL(url);
-    return _url.protocol === "http:" || _url.protocol === "https:";
-  } catch (e) {
-    return false;
-  }
 };
 
 export async function GET(request: NextRequest) {
@@ -94,8 +88,7 @@ export async function GET(request: NextRequest) {
         height: 630,
       }
     );
-  } catch (e: any) {
-    console.log(`${e.message}`);
+  } catch (e) {
     return NextResponse.json(errorGenerator(500), { status: 500 });
   }
 }

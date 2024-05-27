@@ -1,7 +1,5 @@
-import {
-  compileMDX as _compileMDX,
-  type MDXRemoteProps,
-} from "next-mdx-remote/rsc";
+import { compileMDX as _compileMDX } from "next-mdx-remote/rsc";
+import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import { serialize } from "next-mdx-remote/serialize";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";

@@ -15,8 +15,8 @@
     "dev:turbo": "next dev --turbo",
     "build": "pnpm env:check && next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "test": "vitest run",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "type:check": "tsc --noEmit",
@@ -80,6 +80,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:0.0.1-beta.1",
     "@million/lint": "1.0.0-rc.9",
     "@next/bundle-analyzer": "14.2.3",

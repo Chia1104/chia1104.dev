@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Timeline, type TimelineTypes, ImageZoom, Image } from "@chia/ui";
+import { Timeline, ImageZoom, Image } from "@chia/ui";
+import type { TimelineTypes } from "@chia/ui";
 import { getNotes } from "@/services/feeds.service";
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -21,8 +22,7 @@ const Page = async () => {
     content: item.excerpt,
     link: `/notes/${item.slug}`,
   })) satisfies TimelineTypes.Data[];
-  const hasNotes =
-    !!transformData && Array.isArray(transformData) && transformData.length > 0;
+  const hasNotes = Array.isArray(transformData) && transformData.length > 0;
   return (
     <div className="w-full">
       <h1>Notes</h1>

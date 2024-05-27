@@ -1,6 +1,6 @@
-import Redis from "ioredis";
+import type Redis from "ioredis";
 
-type Result = {
+interface Result {
   /**
    * Maximum number of requests allowed within a window.
    */
@@ -13,7 +13,7 @@ type Result = {
    * Whether the request may pass(true) or exceeded the limit(false)
    */
   success: boolean;
-};
+}
 
 export const rateLimiter = async ({
   client,
@@ -29,8 +29,8 @@ export const rateLimiter = async ({
   prefix?: string;
 }): Promise<Result> => {
   const key = `${prefix}:${ip}`;
-  const currentCount = await client.get(key);
-  const count = parseInt(currentCount as string, 10) || 0;
+  const currentCount = (await client.get(key)) ?? "0";
+  const count = parseInt(currentCount, 10);
   if (count >= limit) {
     return {
       limit,
@@ -38,8 +38,8 @@ export const rateLimiter = async ({
       success: false,
     };
   }
-  client.incr(key);
-  client.expire(key, duration);
+  void client.incr(key);
+  void client.expire(key, duration);
   return {
     limit,
     remaining: limit - (count + 1),

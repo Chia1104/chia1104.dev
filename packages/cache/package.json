@@ -19,6 +19,7 @@
     "ioredis": "^5.4.1"
   },
   "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
     "tsconfig": "workspace:*"
   }
 }

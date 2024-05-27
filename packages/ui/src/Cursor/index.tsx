@@ -1,14 +1,9 @@
 "use client";
 
-import { useCallback, type FC, type ComponentProps } from "react";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  useSpring,
-  type HTMLMotionProps,
-  type ForwardRefComponent,
-} from "framer-motion";
+import { useCallback } from "react";
+import type { FC, ComponentProps } from "react";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
 import { cn } from "../utils";
 import { useEventListener } from "usehooks-ts";
 

@@ -12,10 +12,7 @@ class RateLimiterController {
     description: "ThrottlerException: Too Many Requests",
   })
   @UseGuards(ThrottlerBehindProxyGuard)
-  async checkRateLimiting(): Promise<{
-    ip: string;
-    success: boolean;
-  }> {
+  checkRateLimiting() {
     return {
       ip: "foo",
       success: true,

@@ -3,7 +3,6 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { vercel } from "@t3-oss/env-core/presets";
 import { env as githubEnv } from "@chia/api/github/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
-// @ts-ignore
 import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
 
 export const getClientEnv = () => {

@@ -4,10 +4,9 @@ import { Card } from "@chia/ui";
 const Page = ({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Record<string, string | string[] | undefined>;
 }) => {
   const provider = searchParams.provider;
-  const type = searchParams.type;
   switch (provider) {
     default:
     case Provider.resend:

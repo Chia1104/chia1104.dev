@@ -4,11 +4,13 @@ import {
   ExecutionContext,
   Inject,
 } from "@nestjs/common";
-import { Auth, type Session, env } from "@chia/auth-core";
+import { Auth, env } from "@chia/auth-core";
+import type { Session } from "@chia/auth-core";
 import { DRIZZLE_PROVIDER } from "@/modules/drizzle/drizzle.provider";
-import { type DB } from "@chia/db";
+import type { DB } from "@chia/db";
 import { getAdminId } from "@chia/utils";
 import { dynamicImportPackage } from "@/utils/dynamic-import-package.util";
+import type { Request } from "express";
 
 @Injectable()
 export class AdminGuard implements CanActivate {
@@ -18,12 +20,12 @@ export class AdminGuard implements CanActivate {
       await dynamicImportPackage<typeof import("@auth/core")>("@auth/core")
     ).createActionURL;
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
 
     const url = createActionURL(
       "session",
       request.protocol,
-      new Headers(request.headers),
+      new Headers(request.headers as HeadersInit),
       process.env,
       "/auth"
     );

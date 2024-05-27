@@ -1,14 +1,17 @@
-import ky, { type Options, type HTTPError, type SearchParamsOption } from "ky";
+import ky from "ky";
+import type { Options, HTTPError, SearchParamsOption } from "ky";
 
 export type { HTTPError };
 
 export interface ErrorResponse {
   status?: number;
   code: string;
-  errors?: Array<{
-    field: string;
-    message: string;
-  }> | null;
+  errors?:
+    | {
+        field: string;
+        message: string;
+      }[]
+    | null;
 }
 
 export interface PaginatedMeta {

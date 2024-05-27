@@ -1,9 +1,7 @@
 import { auth } from "@chia/auth";
 import { errorGenerator, getAdminId, handleZodError } from "@chia/utils";
-import {
-  GenerateAuthorizeUrlDTO,
-  generateAuthorizeUrlSchema,
-} from "@chia/api/spotify/validator";
+import type { GenerateAuthorizeUrlDTO } from "@chia/api/spotify/validator";
+import { generateAuthorizeUrlSchema } from "@chia/api/spotify/validator";
 import { generateAuthorizeUrl } from "@chia/api/spotify";
 import { NextResponse } from "next/server";
 import { getRedirectUri, SPOTIFY_OAUTH_STATE } from "../_utils";
@@ -82,7 +80,7 @@ export const POST = auth(async (req) => {
     console.error(error);
     if (error instanceof HTTPError) {
       return NextResponse.json(
-        errorGenerator(error.response.status as any, [
+        errorGenerator(error.response.status, [
           {
             field: "spotify",
             message: error.message,

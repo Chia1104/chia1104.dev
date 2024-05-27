@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "../../Image";
-import { type ComponentPropsWithRef, type FC } from "react";
+import type { ComponentPropsWithRef, FC } from "react";
 import { cn } from "../../utils/cn.util";
 
 interface MDXImageProps extends ComponentPropsWithRef<typeof Image> {

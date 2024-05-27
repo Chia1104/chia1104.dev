@@ -1,11 +1,11 @@
 "use client";
 
-import {
-  type FC,
-  type LiHTMLAttributes,
-  type DetailedHTMLProps,
-  type HTMLAttributes,
-  type OlHTMLAttributes,
+import type {
+  FC,
+  LiHTMLAttributes,
+  DetailedHTMLProps,
+  HTMLAttributes,
+  OlHTMLAttributes,
 } from "react";
 
 export const MDXUl: FC<

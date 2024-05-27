@@ -1,10 +1,9 @@
 import { errorGenerator, handleZodError } from "@chia/utils";
-import {
-  CodeAuthorizationDTO,
-  codeAuthorizationSchema,
-} from "@chia/api/spotify/validator";
+import type { CodeAuthorizationDTO } from "@chia/api/spotify/validator";
+import { codeAuthorizationSchema } from "@chia/api/spotify/validator";
 import { codeAuthorization } from "@chia/api/spotify";
-import { NextResponse, NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import {
   getRedirectUri,
   SPOTIFY_OAUTH_STATE,
@@ -69,7 +68,7 @@ export const GET = async (req: NextRequest) => {
     console.error(error);
     if (error instanceof HTTPError) {
       return NextResponse.json(
-        errorGenerator(error.response.status as any, [
+        errorGenerator(error.response.status, [
           {
             field: "spotify",
             message: error.message,

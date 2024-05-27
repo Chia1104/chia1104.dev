@@ -1,6 +1,7 @@
 "use client";
 
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component } from "react";
+import type { ErrorInfo, ReactNode } from "react";
 import { Button } from "@nextui-org/react";
 import * as Sentry from "@sentry/nextjs";
 

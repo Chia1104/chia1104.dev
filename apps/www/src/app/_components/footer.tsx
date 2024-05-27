@@ -75,7 +75,7 @@ const Footer: FC = () => {
         <div className="flex w-1/2 flex-col items-start gap-1 md:w-1/3">
           <p className="mb-3 ml-2 text-lg font-bold">Contact</p>
           <div className="flex flex-col items-start gap-2">
-            {Object.entries(contact).map(([key, { name, icon, link }]) => (
+            {Object.entries(contact).map(([_key, { name, icon, link }]) => (
               <Button
                 size="sm"
                 href={link}

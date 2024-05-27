@@ -1,10 +1,10 @@
-import {
-  type ReactNode,
-  type ComponentPropsWithoutRef,
-  type ComponentProps,
+import type {
+  ReactNode,
+  ComponentPropsWithoutRef,
+  ComponentProps,
 } from "react";
-import { type HTMLMotionProps, type ForwardRefComponent } from "framer-motion";
-import { type Dayjs } from "dayjs";
+import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
+import type { Dayjs } from "dayjs";
 import type { LinkProps } from "../Link";
 
 export interface Data {
@@ -12,7 +12,7 @@ export interface Data {
   title: ReactNode;
   subtitle?: ReactNode;
   content?: ReactNode;
-  startDate: dayjs.Dayjs | string | number | null;
+  startDate: Dayjs | string | number;
   link?: string;
   defaultOpen?: boolean;
   titleProps?: ComponentPropsWithoutRef<"span">;
@@ -48,9 +48,7 @@ export interface GroupData {
  * }
  * ```
  */
-export interface TimelineData {
-  [year: string]: Data[];
-}
+export type TimelineData = Record<string, Data[]>;
 
 export interface AsyncDataStatus {
   isLoading?: boolean;
@@ -91,11 +89,11 @@ export type ListProps = ComponentPropsWithoutRef<
     };
   };
 
-export type GroupListProps = {
+export interface GroupListProps {
   data: GroupData[];
   onEndReached?: () => void;
   asyncDataStatus?: AsyncDataStatus;
   experimental?: {
     enableViewTransition?: boolean;
   };
-};
+}

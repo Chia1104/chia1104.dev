@@ -1,7 +1,9 @@
 "use client";
 
-import { type FC, useId } from "react";
-import { motion, type Variant } from "framer-motion";
+import { useId } from "react";
+import type { FC } from "react";
+import { motion } from "framer-motion";
+import type { Variant } from "framer-motion";
 import {
   Button,
   Dropdown,

@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  type FC,
-  type DetailedHTMLProps,
-  type BlockquoteHTMLAttributes,
-} from "react";
+import type { FC, DetailedHTMLProps, BlockquoteHTMLAttributes } from "react";
 import { cn } from "../../utils/cn.util";
 
 interface Props

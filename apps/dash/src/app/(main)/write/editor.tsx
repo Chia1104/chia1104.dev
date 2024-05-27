@@ -9,14 +9,8 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import {
-  useRef,
-  useState,
-  type FC,
-  type ComponentPropsWithoutRef,
-  useTransition,
-} from "react";
-import { useMonaco } from "@monaco-editor/react";
+import { useState, useTransition } from "react";
+import type { FC } from "react";
 import { useTheme } from "@chia/ui";
 import MEditor from "@monaco-editor/react";
 import { useWriteContext } from "./write.context";
@@ -50,8 +44,6 @@ const PreviewModal: FC<{
 
 export const Monaco = () => {
   const { isDarkMode } = useTheme();
-  const editorRef = useRef<ComponentPropsWithoutRef<typeof MEditor>>(null);
-  const monaco = useMonaco();
   const [value, setValue] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { setState, state } = useWriteContext();

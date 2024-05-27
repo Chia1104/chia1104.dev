@@ -1,10 +1,11 @@
 "use client";
 
-import { type FC, forwardRef, useMemo, memo } from "react";
+import { forwardRef, useMemo, memo } from "react";
+import type { FC } from "react";
 import { api } from "@/trpc-api";
 import { useInfiniteScroll } from "@chia/ui";
 import { Card, CardBody } from "@nextui-org/react";
-import { type RouterInputs, type RouterOutputs } from "@chia/api";
+import type { RouterInputs, RouterOutputs } from "@chia/api";
 import Skeleton from "./skeleton";
 
 interface Props {
@@ -39,7 +40,7 @@ const FeedList: FC<Props> = (props) => {
       },
       {
         getNextPageParam: (lastPage) => lastPage?.nextCursor,
-        initialData: !!initFeed
+        initialData: initFeed
           ? {
               pages: [
                 {
@@ -61,7 +62,7 @@ const FeedList: FC<Props> = (props) => {
   const { ref } = useInfiniteScroll<HTMLDivElement>({
     hasMore: hasNextPage,
     isLoading: isFetching,
-    onLoadMore: fetchNextPage,
+    onLoadMore: void fetchNextPage,
     intersectionObserverInit: {
       rootMargin: "0px 0px 200px 0px",
     },

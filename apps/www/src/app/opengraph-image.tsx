@@ -10,7 +10,7 @@ export const size = {
 export const contentType = "image/png";
 export const runtime = "edge";
 
-export default async function og() {
+export default function og() {
   return new ImageResponse(
     (
       <OpenGraph

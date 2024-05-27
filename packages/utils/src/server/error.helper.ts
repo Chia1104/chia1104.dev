@@ -1,8 +1,8 @@
 import { errorConfig } from "./network.config";
-import { type ErrorResponse } from "../request/request.utill";
+import type { ErrorResponse } from "../request/request.utill";
 
 export function errorGenerator(
-  statusCode: keyof typeof errorConfig,
+  statusCode: number,
   errors?: ErrorResponse["errors"]
 ): ErrorResponse {
   if (!(statusCode in errorConfig)) {
@@ -13,7 +13,7 @@ export function errorGenerator(
     };
   }
   return {
-    code: errorConfig[statusCode] ?? "Unknown",
+    code: errorConfig[statusCode as keyof typeof errorConfig] ?? "Unknown",
     status: statusCode,
     errors,
   };

@@ -1,9 +1,10 @@
 "use client";
 
-import { type FC, type ReactNode, type SVGProps } from "react";
+import type { FC, ReactNode, SVGProps } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "../utils";
-import { motion, HTMLMotionProps } from "framer-motion";
+import type { HTMLMotionProps } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Props extends Omit<HTMLMotionProps<"button">, "children"> {
   icon?: ReactNode;
@@ -12,7 +13,7 @@ interface Props extends Omit<HTMLMotionProps<"button">, "children"> {
   children?: ReactNode;
 }
 
-interface IconProps extends SVGProps<SVGSVGElement> {}
+type IconProps = SVGProps<SVGSVGElement>;
 
 const BackIcon: FC<IconProps> = ({ className, ...props }) => (
   <svg

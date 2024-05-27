@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import RootProvider from "./_components/root-provider";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import meta from "@chia/meta";
 import "@total-typescript/ts-reset";
 import type { Metadata, Viewport } from "next";

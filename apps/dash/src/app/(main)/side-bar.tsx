@@ -3,7 +3,8 @@
 import { Image, Link, cn, useIsMobile } from "@chia/ui";
 import { motion, AnimatePresence } from "framer-motion";
 import { Boxes, Pencil, Settings2 } from "lucide-react";
-import { type FC, type ReactNode, useRef } from "react";
+import { useRef } from "react";
+import type { FC, ReactNode } from "react";
 import { useHover } from "usehooks-ts";
 
 const LinkItem: FC<{

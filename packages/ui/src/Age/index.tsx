@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  type FC,
-  type ComponentPropsWithoutRef,
-  useEffect,
-  useRef,
-} from "react";
+import { useEffect, useRef } from "react";
+import type { FC, ComponentPropsWithoutRef } from "react";
 import dayjs from "dayjs";
 import { useInView, useMotionValue, useSpring } from "framer-motion";
 
@@ -37,10 +33,10 @@ const Age: FC<Props> = ({
   }, [motionValue, isInView, delay, value, direction]);
 
   useEffect(() => {
-    springValue.on("change", (latest) => {
+    springValue.on("change", (latest: number) => {
       if (ref.current) {
         ref.current.textContent = Intl.NumberFormat("en-US").format(
-          latest.toFixed(0)
+          Number(latest.toFixed(0))
         );
       }
     });

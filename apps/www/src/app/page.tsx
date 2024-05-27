@@ -25,7 +25,7 @@ const LinkItem: FC<{
   icon: ReactNode;
   name: string;
   showIcon?: boolean;
-}> = ({ path, icon, name, showIcon }) => {
+}> = ({ path, icon, name, showIcon: _showIcon }) => {
   return (
     <Link
       key={path}

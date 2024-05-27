@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "../utils";
-import { type SVGProps, type ComponentPropsWithoutRef, type FC } from "react";
+import type { SVGProps, ComponentPropsWithoutRef, FC } from "react";
 
 const LoadingIcon: FC<
   ComponentPropsWithoutRef<"svg"> & SVGProps<SVGSVGElement>

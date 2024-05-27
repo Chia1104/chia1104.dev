@@ -227,10 +227,10 @@ export const suggestionItems = createSuggestionItems([
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
-      input.onchange = async () => {
+      input.onchange = () => {
         if (input.files?.length) {
-          const file = input.files[0];
-          const pos = editor.view.state.selection.from;
+          const _file = input.files[0];
+          const _pos = editor.view.state.selection.from;
           // startImageUpload(file, editor.view, pos);
         }
       };

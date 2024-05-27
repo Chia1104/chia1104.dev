@@ -10,7 +10,8 @@ import {
 import { Inject } from "@nestjs/common";
 import { Feed } from "@/shared/models/feed.model";
 import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
-import { type DB, desc, schema } from "@chia/db";
+import { desc, schema } from "@chia/db";
+import type { AnyColumn, DB } from "@chia/db";
 
 @InputType()
 class FeedOrderByInput {
@@ -86,12 +87,12 @@ class FeedResolver {
   ) {
     const _orderBy = orderBy
       ? orderBy[Object.keys(orderBy)[0]] === "desc"
-        ? desc(schema.feeds[Object.keys(orderBy)[0]])
+        ? desc(schema.feeds[Object.keys(orderBy)[0]] as AnyColumn)
         : schema.feeds[Object.keys(orderBy)[0]]
       : desc(schema.feeds.updatedAt);
 
-    const _feedType = !!feedType
-      ? feedType === "post"
+    const _feedType = feedType
+      ? feedType === FeedType.post
         ? ({
             post: true,
           } as const)

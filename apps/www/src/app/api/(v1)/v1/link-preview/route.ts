@@ -1,11 +1,11 @@
 import { request } from "@chia/utils";
 import { withRateLimiter, createClient, Upstash } from "@chia/cache";
 import * as Sentry from "@sentry/nextjs";
-import { errorGenerator, isUrl, handleZodError } from "@chia/utils";
+import { errorGenerator, isUrl, enhanceHandleZodError } from "@chia/utils";
 import { NextResponse } from "next/server";
 import { JSDOM } from "jsdom";
-import { type DocResponse, type PreviewDTO } from "./_utils";
-import { type NextRequest } from "next/server";
+import type { DocResponse, PreviewDTO } from "./_utils";
+import type { NextRequest } from "next/server";
 import { HTTPError } from "ky";
 import { z } from "zod";
 
@@ -35,19 +35,20 @@ export const POST = withRateLimiter<
           dto = null;
         });
 
-      const { isError, issues } = handleZodError({
+      const result = enhanceHandleZodError({
         schema: previewSchema.refine((data) => isUrl(data.href), {
           message: "Invalid URL",
           path: ["href"],
         }),
         data: dto,
+        onFormat: (data) => data?.href ?? "",
       });
 
-      if (isError) {
+      if (result.isError) {
         return NextResponse.json(
           errorGenerator(
             400,
-            issues?.map((issue) => {
+            result.issues.map((issue) => {
               return {
                 field: issue.path.join("."),
                 message: issue.message,
@@ -58,20 +59,20 @@ export const POST = withRateLimiter<
         );
       }
 
-      const url = new URL(dto!.href);
+      const url = new URL(result.data);
 
       const upstash = new Upstash<DocResponse>({
         prefix: "link-preview",
       });
 
-      const cachedDoc = await upstash.get(dto!.href);
+      const cachedDoc = await upstash.get(result.data);
 
       if (!cachedDoc) {
         const res = await request({
           headers: {
             "Content-Type": "text/html",
           },
-        }).get(dto!.href);
+        }).get(result.data);
         const html = await res.text();
         const parsed = new JSDOM(html);
         const title =
@@ -99,7 +100,7 @@ export const POST = withRateLimiter<
             : url.origin + "/" + postparsedOgImage.replace(/^\//, "") // remove leading slash
           : undefined;
         await upstash.set(
-          dto!.href,
+          result.data,
           {
             title,
             description,
@@ -127,7 +128,7 @@ export const POST = withRateLimiter<
     } catch (error) {
       console.error(error);
       if (error instanceof HTTPError) {
-        return NextResponse.json(errorGenerator(error.response.status as any), {
+        return NextResponse.json(errorGenerator(error.response.status), {
           status: error.response.status,
         });
       }

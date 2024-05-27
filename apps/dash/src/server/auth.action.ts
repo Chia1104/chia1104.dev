@@ -34,8 +34,7 @@ export const signInAction = async (options?: SignInOptions) => {
       });
       break;
     case Provider.resend:
-      const formData = options.formData;
-      await signIn(Provider.resend, formData);
+      await signIn(Provider.resend, options.formData);
       break;
   }
 };

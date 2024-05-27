@@ -15,6 +15,7 @@
     "@auth/drizzle-adapter": "^1.1.0",
     "@chia/auth-core": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/eslint-config": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@react-email/render": "^0.0.15",

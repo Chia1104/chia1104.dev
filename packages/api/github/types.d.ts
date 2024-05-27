@@ -1,4 +1,4 @@
-export type Repo = {
+export interface Repo {
   id: number;
   name: string;
   owner: object;
@@ -12,10 +12,10 @@ export type Repo = {
   watchers_count: number;
   language: string;
   forks_count: number;
-  topics: Array<string>;
-};
+  topics: string[];
+}
 
-export type RepoGql = {
+export interface RepoGql {
   node: {
     id: number;
     name: string;
@@ -30,4 +30,4 @@ export type RepoGql = {
       color: string;
     };
   };
-};
+}

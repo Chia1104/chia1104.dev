@@ -1,6 +1,6 @@
 import { getPlayList } from "@chia/api/spotify";
 import { Image, cn, ImageZoom, FadeIn, Link } from "@chia/ui";
-import { type FC } from "react";
+import type { FC } from "react";
 import { env } from "@/env";
 
 const ImageItem: FC<{

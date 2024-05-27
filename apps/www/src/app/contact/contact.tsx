@@ -1,22 +1,23 @@
 "use client";
 
-import {
-  type FC,
-  useId,
-  memo,
-  useState,
-  type ComponentPropsWithoutRef,
-  type ReactNode,
-  type ReactElement,
+import { useId, memo, useState } from "react";
+import type {
+  FC,
+  ComponentPropsWithoutRef,
+  ReactNode,
+  ReactElement,
 } from "react";
 import { cn } from "@chia/ui";
 import { Input, Textarea, Card, useTheme, ShimmerButton } from "@chia/ui";
-import { post, type HTTPError, handleKyError } from "@chia/utils";
+import { post, handleKyError } from "@chia/utils";
+import type { HTTPError } from "@chia/utils";
 import { toast } from "sonner";
-import { useForm, Controller, type Control } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import type { Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { contactSchema, type Contact } from "@/shared/validator";
+import { contactSchema } from "@/shared/validator";
+import type { Contact } from "@/shared/validator";
 import dynamic from "next/dynamic";
 import { env } from "@/env";
 
@@ -74,7 +75,7 @@ export const Form: FC<
     resolver: zodResolver(contactSchema),
   });
 
-  const handleSubmit = onSubmit(async (data, event) => {
+  const handleSubmit = onSubmit((data) => {
     setIsLoading(true);
     const promise = () =>
       post<void, Contact>("/api/v1/send", {
@@ -119,7 +120,7 @@ export const Form: FC<
                 <div className="recaptcha-style">
                   <ReCAPTCHA
                     theme={isDarkMode ? "dark" : "light"}
-                    sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY!}
+                    sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY}
                     onChange={(value) => {
                       onChange(value ?? "");
                     }}
@@ -222,7 +223,7 @@ export const Form: FC<
                 <div className="recaptcha-style">
                   <ReCAPTCHA
                     theme={isDarkMode ? "dark" : "light"}
-                    sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY!}
+                    sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY}
                     onChange={(value) => {
                       onChange(value ?? "");
                     }}
