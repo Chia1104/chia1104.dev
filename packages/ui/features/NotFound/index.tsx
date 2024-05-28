@@ -12,10 +12,7 @@ export default function NotFound() {
   const router = useRouter();
   return (
     <div className="main c-container">
-      <TextRevealCard
-        text="404 Not Found"
-        revealText="出事拉，阿北！"
-        startCount={20}>
+      <TextRevealCard text="404 Not Found" revealText="出事拉，阿北！">
         <TextRevealCardTitle>Not Found</TextRevealCardTitle>
         <TextRevealCardDescription>
           Sorry, the page you are looking for does not exist.

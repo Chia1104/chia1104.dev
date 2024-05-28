@@ -12,6 +12,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
     "tsconfig": "workspace:*"
   }
 }

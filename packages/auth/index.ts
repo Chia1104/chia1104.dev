@@ -1,4 +1,5 @@
-import NextAuth, { type NextAuthConfig } from "next-auth";
+import NextAuth from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import { db, localDb, betaDb, schema } from "@chia/db";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
@@ -79,7 +80,7 @@ export const getConfig = (req?: NextRequest) => {
       Resend({
         from: AUTH_EMAIL,
         apiKey: env.RESEND_API_KEY,
-        async generateVerificationToken() {
+        generateVerificationToken() {
           return crypto.randomBytes(32).toString("hex");
         },
         sendVerificationRequest,

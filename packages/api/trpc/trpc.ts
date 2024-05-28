@@ -1,13 +1,14 @@
-import { auth, type Session } from "@chia/auth";
+import { auth } from "@chia/auth";
+import type { Session } from "@chia/auth";
 import { db, betaDb, localDb } from "@chia/db";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { getDb, getAdminId } from "@chia/utils";
 
-type CreateContextOptions = {
+interface CreateContextOptions {
   session: Session | null;
-};
+}
 
 const database = getDb(undefined, {
   db,
@@ -73,6 +74,7 @@ export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 const dangerous_isAdmin = t.middleware(({ ctx, next }) => {
   return next({
     ctx: {
+      ...ctx,
       adminId,
     },
   });

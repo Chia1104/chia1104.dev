@@ -1,13 +1,15 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { get, type HTTPError } from "@chia/utils";
-import { ReactNode, type ComponentProps, type FC } from "react";
+import { get } from "@chia/utils";
+import type { HTTPError } from "@chia/utils";
+import type { ReactNode } from "react";
+import type { ComponentProps, FC } from "react";
 import { cn } from "@chia/ui";
 
-type Data = {
+interface Data {
   currentVisitors: number;
-};
+}
 
 const CurrentVisitors: FC<
   Omit<ComponentProps<"span">, "children"> & {

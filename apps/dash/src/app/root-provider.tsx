@@ -1,10 +1,12 @@
 "use client";
 
-import { type FC, type ReactNode, useState } from "react";
+import { useState } from "react";
+import type { FC, ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
-import { type Session } from "next-auth";
+import type { Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
-import { useTheme, Theme } from "@chia/ui";
+import type { Theme } from "@chia/ui";
+import { useTheme } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import { NextUIProvider } from "@nextui-org/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -78,7 +80,7 @@ const RootProvider: FC<Props> = ({ session, children, headers }) => {
     <SessionProvider session={session}>
       <TRPCReactProvider headers={headers}>
         <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-          <NextUIProvider navigate={router.push}>
+          <NextUIProvider navigate={void router.push}>
             <Toaster />
             {children}
           </NextUIProvider>

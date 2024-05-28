@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  type FC,
-  type DetailedHTMLProps,
-  type IframeHTMLAttributes,
-} from "react";
+import type { FC, DetailedHTMLProps, IframeHTMLAttributes } from "react";
 
 interface MDXCodeSandBoxProps
   extends DetailedHTMLProps<

@@ -1,4 +1,4 @@
-import { type FC, type CSSProperties } from "react";
+import type { FC, CSSProperties } from "react";
 
 interface Props {
   metadata?: {

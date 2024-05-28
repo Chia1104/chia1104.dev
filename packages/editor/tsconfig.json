@@ -1,5 +1,5 @@
 {
   "extends": ["tsconfig/nextjs.json"],
-  "include": ["**/*.ts", "**/*.mts", "__tests__"],
+  "include": ["**/*.ts", "**/*.mts", "__tests__", "**/*.tsx"],
   "exclude": ["dist", "build", "node_modules"]
 }

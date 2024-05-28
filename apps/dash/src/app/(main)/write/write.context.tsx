@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  type FC,
-  useState,
-  useContext,
-  createContext,
-  type Dispatch,
-  type ReactNode,
-} from "react";
+import { useState, useContext, createContext } from "react";
+import type { FC, Dispatch, ReactNode } from "react";
 
 export interface State {
   title?: string;
@@ -30,7 +24,7 @@ export const WriteContext = createContext<Context>({
     feedType: "note",
     editorType: "novel",
   },
-  setState: () => {},
+  setState: () => undefined,
 });
 
 export const WriteProvider: FC<{ children: ReactNode }> = ({ children }) => {

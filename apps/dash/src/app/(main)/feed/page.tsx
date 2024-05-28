@@ -1,7 +1,8 @@
 import FeedList from "./feed-list";
 import { db, localDb, betaDb } from "@chia/db";
 import { feedsRouter } from "@chia/api/trpc/routes/feeds";
-import { auth, type Session } from "@chia/auth";
+import { auth } from "@chia/auth";
+import type { Session } from "@chia/auth";
 import { getDb } from "@chia/utils";
 
 const getPosts = async (session: Session | null) => {

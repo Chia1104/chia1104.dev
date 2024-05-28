@@ -1,7 +1,5 @@
 const { quote } = require("shell-quote");
-const { ESLint } = require("eslint");
 
-const eslint = new ESLint();
 const isWin = process.platform === "win32";
 
 module.exports = {
@@ -11,10 +9,6 @@ module.exports = {
       .join(" ");
     return [
       `prettier --write ${escapedFileNames}`,
-      `eslint --fix ${filenames
-        .filter((file) => !eslint.isPathIgnored(file))
-        .map((f) => `"${f}"`)
-        .join(" ")}`,
       `git add ${escapedFileNames}`,
     ];
   },

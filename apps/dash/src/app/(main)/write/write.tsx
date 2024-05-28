@@ -5,7 +5,7 @@ import { WriteProvider, useWriteContext } from "./write.context";
 import NovelEditor from "@chia/editor/editor";
 import { Tabs, Tab, Button } from "@nextui-org/react";
 import { cn } from "@chia/ui";
-import { type FC } from "react";
+import type { FC } from "react";
 
 const LoadingFallback: FC<{ className?: string }> = ({ className }) => (
   <div
@@ -31,7 +31,7 @@ const SwitchEditor: FC<{ className?: string }> = ({ className }) => {
       onSelectionChange={(value) => {
         setState({
           ...state,
-          // @ts-ignore
+          // @ts-expect-error - are we cool?
           editorType: value,
         });
       }}>

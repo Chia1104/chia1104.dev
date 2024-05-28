@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC } from "react";
+import type { FC } from "react";
 import { Image, cn, ImageZoom } from "@chia/ui";
 
 const images = [

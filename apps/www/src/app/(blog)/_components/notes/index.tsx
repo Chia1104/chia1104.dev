@@ -3,12 +3,11 @@
 import {
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuTrigger,
   cn,
 } from "@chia/ui";
-import { type FC } from "react";
-import { type RouterOutputs } from "@chia/api";
+import type { FC } from "react";
+import type { RouterOutputs } from "@chia/api";
 import ListItem from "../list-item";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -30,7 +29,7 @@ export const NoteNavigation: FC<{
             hasNotes ? "md:grid-cols-2" : "max-w-[300px]"
           )}>
           {hasNotes ? (
-            notes?.map((note) => (
+            notes.map((note) => (
               <ListItem
                 key={note.id}
                 title={note.title}

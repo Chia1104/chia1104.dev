@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  type KeyboardEvent,
-  type Dispatch,
-  forwardRef,
-  type DependencyList,
-} from "react";
-import { type DialogProps } from "@radix-ui/react-dialog";
+import { useState, useEffect, forwardRef } from "react";
+import type { KeyboardEvent, Dispatch, DependencyList } from "react";
+import type { DialogProps } from "@radix-ui/react-dialog";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
 import { cn } from "../utils";
@@ -22,7 +16,7 @@ export const useCMD = (
   },
   deps?: DependencyList
 ): [boolean, Dispatch<boolean>] => {
-  const cmd = options?.cmd || "k";
+  const cmd = options?.cmd ?? "k";
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -33,9 +27,9 @@ export const useCMD = (
       }
     };
 
-    // @ts-ignore
+    // @ts-expect-error - are we cool?
     document.addEventListener("keydown", down);
-    // @ts-ignore
+    // @ts-expect-error - are we cool?
     return () => document.removeEventListener("keydown", down);
   }, deps ?? []);
   return [open, setOpen];
@@ -56,7 +50,7 @@ const Command = forwardRef<
 ));
 Command.displayName = CommandPrimitive.displayName;
 
-interface CommandDialogProps extends DialogProps {}
+type CommandDialogProps = DialogProps;
 
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   return (

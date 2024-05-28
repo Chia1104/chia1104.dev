@@ -8,10 +8,11 @@ import {
   cn,
   Timeline,
   Link,
-  type TimelineTypes,
 } from "@chia/ui";
-import { type FC, useMemo } from "react";
-import { type RouterOutputs, type RouterInputs } from "@chia/api";
+import type { TimelineTypes } from "@chia/ui";
+import { useMemo } from "react";
+import type { FC } from "react";
+import type { RouterOutputs, RouterInputs } from "@chia/api";
 import ListItem from "../list-item";
 import { useRouter } from "next/navigation";
 import { api } from "@/trpc-api";
@@ -34,7 +35,7 @@ export const PostNavigation: FC<{
             hasPosts ? "lg:grid-cols-[.75fr_1fr]" : "max-w-[300px]"
           )}>
           {hasPosts ? (
-            posts?.map((post, index) => {
+            posts.map((post, index) => {
               if (index === 0) {
                 return (
                   <li key={post.id} className="row-span-3">
@@ -86,23 +87,21 @@ export const List: FC<{
     api.feeds.infinityByAdmin.useInfiniteQuery(
       { ...query, type: "post" },
       {
-        getNextPageParam: (lastPage) => lastPage?.nextCursor,
-        initialData: !!initialData
-          ? {
-              pages: [
-                {
-                  items: initialData,
-                  nextCursor: nextCursor?.toString(),
-                },
-              ],
-              pageParams: [nextCursor?.toString()],
-            }
-          : undefined,
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        initialData: {
+          pages: [
+            {
+              items: initialData,
+              nextCursor: nextCursor?.toString(),
+            },
+          ],
+          pageParams: [nextCursor?.toString()],
+        },
       }
     );
 
   const transformData = useMemo(() => {
-    if (!isSuccess || !data || isError) return [];
+    if ((!isSuccess && !data) || isError) return [];
     return data.pages.flatMap((page) =>
       page.items.map((item) => {
         const { id, title, updatedAt, excerpt, slug } = item;

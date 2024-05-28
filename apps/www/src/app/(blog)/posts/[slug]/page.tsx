@@ -8,7 +8,7 @@ import { setSearchParams } from "@chia/utils";
 import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 import { notFound } from "next/navigation";
-import { type OgDTO } from "@/app/api/(v1)/og/utils";
+import type { OgDTO } from "@/app/api/(v1)/og/utils";
 
 export const generateStaticParams = async () => {
   const posts = await getPosts(100);
@@ -21,7 +21,7 @@ export const dynamicParams = true;
 export const revalidate = 60;
 
 const getToken = (id: string): string => {
-  const hmac = createHmac("sha256", env.SHA_256_HASH ?? "super secret");
+  const hmac = createHmac("sha256", env.SHA_256_HASH);
   hmac.update(JSON.stringify({ title: id }));
   return hmac.digest("hex");
 };
@@ -105,7 +105,7 @@ const PostDetailPage = async ({
 }) => {
   const post = await getPostBySlug(params.slug);
 
-  if (!post?.[0]) {
+  if (!post[0]) {
     notFound();
   }
 

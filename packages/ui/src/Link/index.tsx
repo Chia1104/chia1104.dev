@@ -1,23 +1,16 @@
 "use client";
 
-import {
-  type FC,
-  type ReactNode,
-  useState,
-  type ComponentPropsWithoutRef,
-  useEffect,
-} from "react";
-import NextLink, { type LinkProps as NextLinkProps } from "next/link";
+import { useState, useEffect } from "react";
+import type { FC, ReactNode, ComponentPropsWithoutRef } from "react";
+import NextLink from "next/link";
+import type { LinkProps as NextLinkProps } from "next/link";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../HoverCard";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
-import {
-  useQuery,
-  type UseQueryResult,
-  type UseQueryOptions,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
 import { post, isUrl, handleKyError } from "@chia/utils";
 import { z } from "zod";
-import { HTTPError } from "ky";
+import type { HTTPError } from "ky";
 import { cn } from "../utils";
 import dynamic from "next/dynamic";
 
@@ -28,7 +21,7 @@ const TransitionLink = dynamic(() =>
 type InternalLinkProps = NextLinkProps & ComponentPropsWithoutRef<"a">;
 
 interface LinkPropsWithoutPreview extends InternalLinkProps {
-  href: string | any;
+  href: string;
   children?: ReactNode;
   isInternalLink?: boolean;
   experimental?: {
@@ -89,7 +82,7 @@ const PreviewDetail: FC<
       return (await handleKyError(error)).code;
     };
     if (isError && !!error) {
-      handleError(error).then(setCallbackError);
+      void handleError(error).then(setCallbackError);
     }
   }, [isError, error]);
 
@@ -114,7 +107,7 @@ const PreviewDetail: FC<
           <div
             className={cn(
               "flex max-w-60 items-center justify-start",
-              (data.title || data.description) && "gap-x-4"
+              (data.title ?? data.description) && "gap-x-4"
             )}>
             <Avatar>
               <AvatarImage src={data.favicon ?? ""} />
@@ -150,15 +143,12 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
   children,
   href,
   endpoint = "/api/v1/link-preview",
-  preview,
-  experimental,
+  preview: _preview,
+  experimental: _experimental,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { data, isLoading, isError, isSuccess, error, ...rest } = useQuery<
-    DocResponse,
-    HTTPError
-  >({
+  const result = useQuery<DocResponse, HTTPError>({
     retry: 1,
     ...queryOptions,
     queryKey: ["link-preview", { href }],
@@ -179,45 +169,27 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
     <HoverCard onOpenChange={setIsOpen}>
       <HoverCardTrigger asChild className="z-10">
         <a target="_blank" rel="noopener noreferrer" {...props} href={href}>
-          {typeof children === "function"
-            ? // @ts-expect-error
-              children({
-                data,
-                isLoading,
-                isError,
-                isSuccess,
-                error,
-                ...rest,
-              })
-            : children}
+          {typeof children === "function" ? children(result) : children}
         </a>
       </HoverCardTrigger>
       <HoverCardContent
         className={cn(
           "z-20 w-full max-w-80 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
-          isError &&
+          result.isError &&
             "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54_/_0.3)]"
         )}>
-        {!!previewContent ? (
+        {previewContent ? (
           typeof previewContent === "function" ? (
-            // @ts-expect-error
-            previewContent({
-              data,
-              isLoading,
-              isError,
-              isSuccess,
-              error,
-              ...rest,
-            })
+            previewContent(result)
           ) : (
             previewContent
           )
         ) : (
           <PreviewDetail
-            data={data}
-            isError={isError}
-            isSuccess={isSuccess}
-            error={error}
+            data={result.data}
+            isError={result.isError}
+            isSuccess={result.isSuccess}
+            error={result.error}
           />
         )}
       </HoverCardContent>

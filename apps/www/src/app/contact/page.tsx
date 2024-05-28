@@ -38,7 +38,7 @@ const LinkItem: FC<{
   name: string;
   showIcon?: boolean;
   preview?: boolean;
-}> = ({ path, icon, name, showIcon, preview }) => {
+}> = ({ path, icon, name, showIcon: _showIcon, preview }) => {
   return (
     <Link
       preview={preview}

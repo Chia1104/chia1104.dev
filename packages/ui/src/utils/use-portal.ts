@@ -21,9 +21,9 @@ const usePortal = (
 
   useEffect(() => {
     const customContainer = getContainer ? getContainer() : null;
-    const parentElement = customContainer || document.body;
+    const parentElement = customContainer ?? document.body;
     const hasElement = parentElement.querySelector<HTMLElement>(`#${_id}`);
-    const el = hasElement || createElement(_id);
+    const el = hasElement ?? createElement(_id);
 
     if (!hasElement) {
       parentElement.appendChild(el);

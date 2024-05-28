@@ -12,7 +12,7 @@ export const runtime = "edge";
 
 const TITLE = "Contact Me";
 
-export default async function og() {
+export default function og() {
   return new ImageResponse(
     (
       <OpenGraph

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, type RenderOptions } from "@testing-library/react";
+import { render } from "@testing-library/react";
 
 export const renderWithProviders = (ui: React.ReactElement) => {
   const queryClient = new QueryClient();

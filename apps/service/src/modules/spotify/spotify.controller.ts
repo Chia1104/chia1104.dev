@@ -26,7 +26,7 @@ class SpotifyController {
   @Post("authorize")
   @ApiOperation({ summary: "Authorize Spotify" })
   @ApiResponse({ status: 500, description: "Internal server error" })
-  async authorize(@Body() dto: AuthorizeSpotifyDto) {
+  authorize(@Body() dto: AuthorizeSpotifyDto) {
     try {
       const redirectUrl = this.spotifyService.generateAuthorizeUrl(dto);
       return { url: redirectUrl };

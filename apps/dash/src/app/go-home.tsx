@@ -1,6 +1,6 @@
 "use client";
 
-import { type FC } from "react";
+import type { FC } from "react";
 import { Button } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 

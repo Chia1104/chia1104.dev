@@ -6,7 +6,7 @@ import { auth } from "@chia/auth";
 
 // Create an OpenAI API client (that's edge friendly!)
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "",
+  apiKey: process.env.OPENAI_API_KEY ?? "",
 });
 
 export const generate = auth(async (req) => {
@@ -68,7 +68,7 @@ export const generate = auth(async (req) => {
     return new StreamingTextResponse(stream);
   } catch (error) {
     if (error instanceof APIError) {
-      return NextResponse.json(errorGenerator((error.status as any) ?? 500), {
+      return NextResponse.json(errorGenerator(error.status ?? 500), {
         status: error.status,
       });
     }

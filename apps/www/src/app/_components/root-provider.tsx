@@ -1,8 +1,10 @@
 "use client";
 
-import { type FC, type ReactNode, useState } from "react";
+import { useState } from "react";
+import type { FC, ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
-import { Cursor, Theme, useTheme, useCMD } from "@chia/ui";
+import type { Theme } from "@chia/ui";
+import { Cursor, useTheme, useCMD } from "@chia/ui";
 import { Toaster as ST } from "sonner";
 import Script from "next/script";
 import { env } from "@/env";
@@ -101,7 +103,7 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
   const router = useRouter();
   return (
     <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-      <NextUIProvider navigate={router.push}>
+      <NextUIProvider navigate={void router.push}>
         <TRPCReactProvider headers={headers}>
           <Toaster />
           <Analytics />

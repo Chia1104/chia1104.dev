@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useRef, useState, memo, FC } from "react";
+import type { FC } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import { motion } from "framer-motion";
 import { cn } from "../utils";
 
@@ -8,16 +9,14 @@ export const TextRevealCard = ({
   revealText,
   children,
   className,
-  startCount,
 }: {
   text: string;
   revealText: string;
   children?: React.ReactNode;
   className?: string;
-  startCount?: number;
 }) => {
   const [widthPercentage, setWidthPercentage] = useState(0);
-  const cardRef = useRef<HTMLDivElement | any>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(0);
   const [localWidth, setLocalWidth] = useState(0);
   const [isMouseOver, setIsMouseOver] = useState(false);

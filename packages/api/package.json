@@ -13,6 +13,7 @@
   "dependencies": {
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "^0.10.1",
     "@trpc/client": "11.0.0-rc.366",

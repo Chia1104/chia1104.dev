@@ -1,7 +1,7 @@
 export function getIP<T extends Request>(req: T) {
   try {
-    // @ts-expect-error
-    let ip = req?.ip ?? req.headers.get("x-real-ip");
+    // @ts-expect-error - are we cool?
+    let ip: string = req?.ip ?? req.headers.get("x-real-ip");
     const forwardedFor = req.headers.get("x-forwarded-for");
 
     if (!ip && forwardedFor) {

@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import type { Dayjs } from "dayjs";
 
 export interface Meta {
   name: string;
@@ -9,9 +9,7 @@ export interface Meta {
   phone: string;
   birthday: string;
   content: string;
-  link: {
-    [name: string]: string;
-  };
+  link: Record<string, string>;
   location: string;
   bio: string;
   timeline: {
@@ -19,8 +17,8 @@ export interface Meta {
     title: string;
     company: string;
     duration: string;
-    startTime: string | number | dayjs.Dayjs | null;
-    endTime: string | number | dayjs.Dayjs | null;
+    startTime: string | number | Dayjs | null;
+    endTime: string | number | Dayjs | null;
     location: string;
     work?: string;
     link?: string;

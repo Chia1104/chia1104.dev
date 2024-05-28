@@ -1,8 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { Session } from "@chia/auth";
-import { type ReactNode } from "react";
+import type { Session } from "@chia/auth";
+import type { ReactNode } from "react";
 
 interface Props {
   children: ReactNode | ((session: Session) => ReactNode);

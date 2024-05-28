@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { env as spotify } from "@chia/api/spotify/env";
-// @ts-ignore
 import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
 
 export const getClientEnv = () => {

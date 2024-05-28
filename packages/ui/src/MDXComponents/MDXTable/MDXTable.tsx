@@ -1,12 +1,12 @@
 "use client";
 
-import {
-  type DetailedHTMLProps,
-  type FC,
-  type HTMLAttributes,
-  type TableHTMLAttributes,
-  type TdHTMLAttributes,
-  type ThHTMLAttributes,
+import type {
+  DetailedHTMLProps,
+  FC,
+  HTMLAttributes,
+  TableHTMLAttributes,
+  TdHTMLAttributes,
+  ThHTMLAttributes,
 } from "react";
 
 export const MDXTable: FC<

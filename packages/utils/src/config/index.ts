@@ -135,7 +135,7 @@ export const getBaseUrl = (options?: {
   }
 
   const RAILWAY_URL =
-    process.env.RAILWAY_STATIC_URL || process.env.RAILWAY_PUBLIC_DOMAIN;
+    process.env.RAILWAY_STATIC_URL ?? process.env.RAILWAY_PUBLIC_DOMAIN;
 
   if (RAILWAY_URL) {
     return `https://${RAILWAY_URL.replace(/\/$/, "")}`; // remove trailing slash

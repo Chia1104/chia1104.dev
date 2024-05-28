@@ -7,7 +7,8 @@
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write \"**/*.{js,jsx,cjs,mjs,ts,tsx,md}\"",
@@ -54,6 +55,7 @@
     "usehooks-ts": "^3.1.0"
   },
   "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:0.0.1-beta.1",
     "@million/lint": "1.0.0-rc.12",
     "@testing-library/react": "^15.0.7",

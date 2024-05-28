@@ -1,7 +1,8 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { Button, type ButtonProps } from "@nextui-org/react";
+import { Button } from "@nextui-org/react";
+import type { ButtonProps } from "@nextui-org/react";
 import type { FC, ReactNode } from "react";
 
 interface Props extends Omit<ButtonProps, "children"> {

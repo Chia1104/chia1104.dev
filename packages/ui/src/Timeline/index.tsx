@@ -1,12 +1,14 @@
 "use client";
 
-import { type FC, useMemo } from "react";
+import { useMemo } from "react";
+import type { FC } from "react";
 import dayjs from "dayjs";
 import type { TimelineProps, Data, GroupData } from "./types";
 import { GroupList } from "./client";
 import { cn } from "../utils";
 
-const getYear = (a: dayjs.Dayjs | string | number) => dayjs(a).year();
+const getYear = (a: dayjs.Dayjs | string | number | Date | null) =>
+  dayjs(a).year();
 
 const getGroupName = (data: Data) => getYear(data.startDate);
 

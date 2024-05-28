@@ -25,7 +25,7 @@ export const MDXCode: FC<MDXCodeProps> = (MDXCodeProps) => {
           type === "success" && "border-success bg-success/70",
           type === "error" && "border-danger bg-danger/70"
         )}>
-        {text || "Code info"}
+        {text ?? "Code info"}
       </div>
       {children}
     </div>

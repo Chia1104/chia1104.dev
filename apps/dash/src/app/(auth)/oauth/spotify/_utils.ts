@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { env } from "@/env";
 import { getAdminId } from "@chia/utils";
 

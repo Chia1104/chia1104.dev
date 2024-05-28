@@ -21,7 +21,7 @@ const useInfiniteScroll = <TNode extends HTMLElement = HTMLDivElement>(
   option ??= {};
   const {
     hasMore,
-    isLoading,
+    isLoading = false,
     onLoadMore,
     intersectionObserverInit,
     isError = false,

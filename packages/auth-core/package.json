@@ -40,6 +40,7 @@
     "@auth/core": "^0.31.0",
     "@auth/drizzle-adapter": "^1.1.0",
     "@chia/db": "workspace:*",
+    "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "^0.10.1",
     "tsconfig": "workspace:*"

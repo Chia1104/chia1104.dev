@@ -1,5 +1,5 @@
 import type { env as internalEnv } from "./env";
-import { type AuthConfig } from "@auth/core";
+import type { AuthConfig } from "@auth/core";
 
 export const useSecureCookies = process.env.NODE_ENV === "production";
 export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
@@ -16,7 +16,7 @@ export const getCookieDomain = <TRequest extends Request = Request>(options?: {
   const { env } = options;
   const AUTH_URL = env?.AUTH_URL?.replace(/\/api\/auth$/, "");
   if (
-    AUTH_URL?.includes("localhost") ||
+    AUTH_URL?.includes("localhost") ??
     process.env.NODE_ENV === "development"
   ) {
     return "localhost";

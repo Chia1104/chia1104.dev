@@ -1,17 +1,13 @@
 "use client";
 
-import { type FC, type ComponentProps } from "react";
-import {
-  motion,
-  type HTMLMotionProps,
-  type ForwardRefComponent,
-} from "framer-motion";
+import type { FC, ComponentProps } from "react";
+import { motion } from "framer-motion";
+import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
 import { cn } from "../utils";
 
-interface FadeInProps
-  extends ComponentProps<
-    ForwardRefComponent<HTMLSpanElement, HTMLMotionProps<"span">>
-  > {}
+type FadeInProps = ComponentProps<
+  ForwardRefComponent<HTMLSpanElement, HTMLMotionProps<"span">>
+>;
 
 const FadeIn: FC<FadeInProps> = ({ className, children, ...props }) => {
   return (

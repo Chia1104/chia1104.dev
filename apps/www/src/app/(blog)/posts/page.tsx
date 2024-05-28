@@ -10,8 +10,7 @@ export const metadata: Metadata = {
 
 const Page = async () => {
   const posts = await getPosts(20);
-  const hasPosts =
-    !!posts && Array.isArray(posts.items) && posts.items.length > 0;
+  const hasPosts = Array.isArray(posts.items) && posts.items.length > 0;
   return (
     <div className="w-full">
       <h1>Posts</h1>

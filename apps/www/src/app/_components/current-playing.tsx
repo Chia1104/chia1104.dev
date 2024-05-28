@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  useQuery,
-  type UseQueryResult,
-  type UseQueryOptions,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
 import {
   HoverCard,
   HoverCardContent,
@@ -20,22 +17,19 @@ import {
   getBrightness,
 } from "@chia/ui";
 import { get } from "@chia/utils";
-import { HTTPError } from "ky";
+import type { HTTPError } from "ky";
 import {
-  type FC,
-  type ReactNode,
   useState,
   useEffect,
   createContext,
   useRef,
-  type Dispatch,
-  type SetStateAction,
   useContext,
   useCallback,
   useMemo,
   useTransition,
 } from "react";
-import { type CurrentPlaying } from "@chia/api/spotify/types";
+import type { FC, ReactNode, Dispatch, SetStateAction } from "react";
+import type { CurrentPlaying } from "@chia/api/spotify/types";
 
 interface ExtendsProps {
   className?: string;
@@ -59,7 +53,7 @@ type State = number;
 
 const CurrentPlayingContext = createContext<
   [State, Dispatch<SetStateAction<State>>]
->([0, () => {}]);
+>([0, () => undefined]);
 
 const useCurrentPlayingContext = () => {
   const context = useContext(CurrentPlayingContext);
@@ -105,7 +99,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
   // Sync the progress bar with the current playing song
   useEffect(() => {
     if (!props.isFetching && props.isSuccess && props.data?.is_playing) {
-      setValue(props.data?.progress_ms ?? 0);
+      setValue(props.data.progress_ms);
     }
   }, [
     props.data?.is_playing,
@@ -113,6 +107,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
     props.isSuccess,
     props.data?.item.duration_ms,
     props.data?.progress_ms,
+    setValue,
   ]);
 
   // Update the progress bar
@@ -120,20 +115,16 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
     if (props.data?.is_playing) {
       const interval = setInterval(() => {
         setValue((prev) => {
-          if (prev < props.data?.item.duration_ms) {
+          if (prev < props.data.item.duration_ms) {
             return prev + 1000;
           }
-          props.refetch();
+          void props.refetch();
           return 0;
         });
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [
-    props.data?.is_playing,
-    props.data?.item.duration_ms,
-    props.data?.progress_ms,
-  ]);
+  }, [setValue, props]);
 
   const handleImageLoad = useCallback(
     (img: HTMLImageElement) => {
@@ -150,8 +141,8 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
       }
     },
     [
+      props.data?.item.album.images,
       props.experimental?.displayBackgroundColorFromImage,
-      props.data?.item.album.images[0].url,
     ]
   );
 
@@ -167,20 +158,20 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
             blur={false}
             onLoad={(e) => handleImageLoad(e.target as HTMLImageElement)}
             ref={imgRef}
-            src={props.data?.item.album.images[0].url}
-            alt={props.data?.item.album.name}
+            src={props.data.item.album.images[0].url}
+            alt={props.data.item.album.name}
             className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
           />
         )}
       </>
     ),
-    [props.data?.item.album.images[0].url]
+    [props.data, handleImageLoad]
   );
 
   const MemoTitle = useMemo(
     () => (
       <>
-        {!!props.data && props.data?.item.name.length > 13 ? (
+        {!!props.data && props.data.item.name.length > 13 ? (
           <Marquee className="w-full p-0" repeat={2}>
             <h4
               className={cn(
@@ -192,7 +183,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
                     : "text-light"
                   : ""
               )}>
-              {props.data?.item.name}
+              {props.data.item.name}
             </h4>
           </Marquee>
         ) : (
@@ -212,7 +203,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
     ),
     [
       isPending,
-      props.data?.item.name,
+      props.data,
       isLight,
       props.experimental?.displayBackgroundColorFromImage,
     ]
@@ -221,11 +212,11 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
   const MemoLink = useMemo(
     () => (
       <>
-        {!!props.data ? (
+        {props.data ? (
           <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
             <Link
               className="m-0 text-sm"
-              href={props.data?.item.external_urls.spotify ?? "/"}
+              href={props.data.item.external_urls.spotify}
               target="_blank">
               <TextShimmer className="m-0 flex w-full p-0">
                 {props.data.item.name} - {props.data.item.artists[0].name}
@@ -237,11 +228,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
         )}
       </>
     ),
-    [
-      props.data?.item.external_urls.spotify,
-      props.data?.item.name,
-      props.data?.item.artists[0].name,
-    ]
+    [props.data]
   );
 
   return (
@@ -264,7 +251,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
         <HoverCardContent
           style={{
             backgroundColor:
-              !!bgRGB && bgRGB.length === 3
+              bgRGB.length === 3
                 ? `rgba(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]}, 0.3)`
                 : undefined,
           }}
@@ -298,7 +285,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
                       : "text-light"
                     : ""
                 )}>
-                {props.data?.item.artists[0].name}
+                {props.data.item.artists[0].name}
               </p>
             </div>
           </div>
@@ -320,11 +307,11 @@ const CurrentPlaying: FC<Props> = ({
     refetchInterval: (ctx) => {
       if (
         ctx.state.data?.is_playing &&
-        ctx.state.data?.item.duration_ms &&
-        ctx.state.data?.progress_ms
+        ctx.state.data.item.duration_ms &&
+        ctx.state.data.progress_ms
       ) {
         const delta =
-          (ctx.state.data?.item.duration_ms - ctx.state.data?.progress_ms) / 2;
+          (ctx.state.data.item.duration_ms - ctx.state.data.progress_ms) / 2;
         return delta > 30_000 ? delta : 30_000;
       }
       return 60_000;

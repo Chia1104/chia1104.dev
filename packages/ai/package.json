@@ -16,6 +16,7 @@
     "openai": "^4.47.1"
   },
   "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
     "tsconfig": "workspace:*"
   }
 }

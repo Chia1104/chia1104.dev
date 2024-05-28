@@ -4,7 +4,8 @@ import { setSearchParams, handleZodError } from "@chia/utils";
 import { Resend } from "resend";
 import { errorGenerator, CONTACT_EMAIL } from "@chia/utils";
 import { env } from "@/env";
-import { contactSchema, type Contact } from "@/shared/validator";
+import { contactSchema } from "@/shared/validator";
+import type { Contact } from "@/shared/validator";
 import * as Sentry from "@sentry/nextjs";
 import EmailTemplate from "./email-template";
 import { withRateLimiter } from "@chia/cache/src/with-rate-limiter";
@@ -18,12 +19,12 @@ export const preferredRegion = ["hnd1"];
 
 const resend = new Resend(env.RESEND_API_KEY);
 
-type ReCapthcaResponse = {
+interface ReCapthcaResponse {
   success: boolean;
   challenge_ts: string;
   hostname: string;
   "error-codes": string[];
-};
+}
 
 export const POST = withRateLimiter(
   async (request, response, id) => {

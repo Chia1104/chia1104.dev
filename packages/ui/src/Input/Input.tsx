@@ -5,32 +5,22 @@ import {
   forwardRef,
   useId,
   useState,
-  type ChangeEvent,
-  type ComponentProps,
   useImperativeHandle,
   useRef,
   useCallback,
   useMemo,
 } from "react";
-import { type ZodTypeAny } from "zod";
+import type { ChangeEvent, ComponentProps } from "react";
+import type { ZodTypeAny } from "zod";
 import { cn } from "../utils";
 import { handleZodError } from "@chia/utils";
 
 interface Props extends ComponentProps<"input"> {
   title?: string;
-  /**
-   * @deprecated use errorMessage instead
-   */
-  error?: string;
   titleClassName?: string;
   errorClassName?: string;
   schema?: ZodTypeAny;
   isValid?: boolean;
-  /**
-   * @deprecated use isDirty instead
-   */
-  firstTimeError?: boolean;
-  isDirty?: boolean;
   errorMessage?: string | string[];
   onParse?: (
     value: string,
@@ -56,7 +46,6 @@ const Input = forwardRef<InputRef, Props>((props, ref) => {
     className,
     onChange,
     errorClassName,
-    isDirty = false,
     isValid,
     onParse,
     errorMessage,
@@ -124,7 +113,7 @@ const Input = forwardRef<InputRef, Props>((props, ref) => {
     const msg = typeof errorMessage === "string" ? errorMessage : state.message;
     const multiMsg =
       errorMessage instanceof Array ? errorMessage : state.multiMessage;
-    const isError = !isValid ?? !state.isValid;
+    const isError = !isValid || !state.isValid;
     return [isError, msg, multiMsg];
   }, [errorMessage, state.message, state.multiMessage, isValid, state.isValid]);
 
