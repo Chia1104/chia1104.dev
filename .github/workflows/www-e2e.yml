@@ -26,7 +26,7 @@ env:
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   NODE_VERSION: 20
-  PNPM_VERSION: 9.1.2
+  PNPM_VERSION: 9.1.3
   GIT_HASH: ${{ github.sha }}
   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
