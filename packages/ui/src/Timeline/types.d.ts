@@ -12,7 +12,7 @@ export interface Data {
   title: ReactNode;
   subtitle?: ReactNode;
   content?: ReactNode;
-  startDate: Dayjs | string | number;
+  startDate: Dayjs | string | number | Date | null;
   link?: string;
   defaultOpen?: boolean;
   titleProps?: ComponentPropsWithoutRef<"span">;
