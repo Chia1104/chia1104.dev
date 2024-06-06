@@ -172,8 +172,8 @@ importers:
         specifier: 5.0.0-beta.18
         version: 5.0.0-beta.18(next@14.2.3(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-safe-action:
-        specifier: 7.0.0-next.44
-        version: 7.0.0-next.44(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        specifier: 7.0.0-next.52
+        version: 7.0.0-next.52(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod-to-json-schema@3.22.5(zod@3.23.8))(zod@3.23.8)
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -5447,6 +5447,17 @@ packages:
       '@typeschema/zod':
         optional: true
 
+  '@typeschema/zod@0.13.3':
+    resolution: {integrity: sha512-p5Hs22WIKkM/vZTAvw5QOLSA0EJ6QBUsQMGUrXlYnTAE2LSR/F5MLsDUb18O6S5VxGjrzU7x3VIznD5qOafJRw==}
+    peerDependencies:
+      zod: ^3.22.4
+      zod-to-json-schema: ^3.22.4
+    peerDependenciesMeta:
+      zod:
+        optional: true
+      zod-to-json-schema:
+        optional: true
+
   '@typescript-eslint/eslint-plugin@7.10.0':
     resolution: {integrity: sha512-PzCr+a/KAef5ZawX7nbyNwBDtM1HdLIT53aSA2DDlxmxMngZ43O8SIePOeX8H5S+FHXeI6t97mTt/dDdzY4Fyw==}
     engines: {node: ^18.18.0 || >=20.0.0}
@@ -9151,17 +9162,14 @@ packages:
     peerDependencies:
       react: '>=16'
 
-  next-safe-action@7.0.0-next.44:
-    resolution: {integrity: sha512-/WTqYIVXf9c5AP0i9HfIfYVMmMU6lLZ2DM0O9J1/9QtECWz07WhmuXWrNa28kYZdTHBl/qUrjh5iCYEV4VzY4g==}
+  next-safe-action@7.0.0-next.52:
+    resolution: {integrity: sha512-copiw53KlakwnyvR/qsvupf4dOfshdYveTCl5XbFskT3xLZHPNOawGsGs9UpDN8as+REf8H7VDUAnN7AF2qoYQ==}
     engines: {node: '>=18.17'}
     peerDependencies:
-      '@typeschema/zod': ^0.13.3
       next: '>= 14.3.0-canary.42'
       react: '>= 18.3.1'
       zod: ^3.23.6
     peerDependenciesMeta:
-      '@typeschema/zod':
-        optional: true
       zod:
         optional: true
 
@@ -17369,9 +17377,20 @@ snapshots:
     optionalDependencies:
       '@types/json-schema': 7.0.15
 
-  '@typeschema/main@0.13.9(@types/json-schema@7.0.15)':
+  '@typeschema/main@0.13.9(@types/json-schema@7.0.15)(@typeschema/zod@0.13.3(@types/json-schema@7.0.15)(zod-to-json-schema@3.22.5(zod@3.23.8))(zod@3.23.8))':
     dependencies:
       '@typeschema/core': 0.13.2(@types/json-schema@7.0.15)
+    optionalDependencies:
+      '@typeschema/zod': 0.13.3(@types/json-schema@7.0.15)(zod-to-json-schema@3.22.5(zod@3.23.8))(zod@3.23.8)
+    transitivePeerDependencies:
+      - '@types/json-schema'
+
+  '@typeschema/zod@0.13.3(@types/json-schema@7.0.15)(zod-to-json-schema@3.22.5(zod@3.23.8))(zod@3.23.8)':
+    dependencies:
+      '@typeschema/core': 0.13.2(@types/json-schema@7.0.15)
+    optionalDependencies:
+      zod: 3.23.8
+      zod-to-json-schema: 3.22.5(zod@3.23.8)
     transitivePeerDependencies:
       - '@types/json-schema'
 
@@ -22173,9 +22192,10 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  next-safe-action@7.0.0-next.44(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod@3.23.8):
+  next-safe-action@7.0.0-next.52(@types/json-schema@7.0.15)(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(zod-to-json-schema@3.22.5(zod@3.23.8))(zod@3.23.8):
     dependencies:
-      '@typeschema/main': 0.13.9(@types/json-schema@7.0.15)
+      '@typeschema/main': 0.13.9(@types/json-schema@7.0.15)(@typeschema/zod@0.13.3(@types/json-schema@7.0.15)(zod-to-json-schema@3.22.5(zod@3.23.8))(zod@3.23.8))
+      '@typeschema/zod': 0.13.3(@types/json-schema@7.0.15)(zod-to-json-schema@3.22.5(zod@3.23.8))(zod@3.23.8)
       next: 14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
     optionalDependencies:
@@ -22200,6 +22220,7 @@ snapshots:
       - '@typeschema/valita'
       - '@typeschema/vine'
       - '@typeschema/yup'
+      - zod-to-json-schema
 
   next-sitemap@4.2.3(next@14.2.3(@babel/core@7.24.6)(@opentelemetry/api@1.8.0)(@playwright/test@1.44.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
