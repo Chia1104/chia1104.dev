@@ -6,7 +6,6 @@ import { errorGenerator, CONTACT_EMAIL } from "@chia/utils";
 import { env } from "@/env";
 import { contactSchema } from "@/shared/validator";
 import type { Contact } from "@/shared/validator";
-import * as Sentry from "@sentry/nextjs";
 import EmailTemplate from "./email-template";
 import { withRateLimiter } from "@chia/cache/src/with-rate-limiter";
 import { createUpstash } from "@chia/cache/src/create-upstash";
@@ -92,7 +91,6 @@ export const POST = withRateLimiter(
       });
       if (result.error) {
         console.error(result.error.message);
-        Sentry.captureException(result.error);
         return NextResponse.json(
           errorGenerator(500, [
             {
@@ -106,9 +104,8 @@ export const POST = withRateLimiter(
         );
       }
       return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      Sentry.captureException(error);
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });
@@ -118,7 +115,6 @@ export const POST = withRateLimiter(
     client: createUpstash(),
     onError: (error) => {
       console.error(error);
-      Sentry.captureException(error);
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });
