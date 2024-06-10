@@ -31,6 +31,7 @@ env:
   AUTH_URL: http://localhost:3003
   NODE_VERSION: 20
   PNPM_VERSION: 9.3.0
+  TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
   build:

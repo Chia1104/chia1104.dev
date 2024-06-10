@@ -48,6 +48,7 @@ env:
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   NEXT_PUBLIC_ENV: beta
+  TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
   build:
