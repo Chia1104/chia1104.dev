@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
@@ -120,6 +120,11 @@
     "HUGGINGFACE_API_KEY",
     "GITHUB_CLIENT_ID",
     "GITHUB_CLIENT_SECRET",
-    "NEXT_RUNTIME"
+    "NEXT_RUNTIME",
+    "SPOTIFY_CLIENT_ID",
+    "SPOTIFY_CLIENT_SECRET",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "AUTH_SECRET"
   ]
 }

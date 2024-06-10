@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "env": ["CACHE_PROVIDER", "REDIS_URL", "UPSTASH_TOKEN", "REDIS_URI"]
     }

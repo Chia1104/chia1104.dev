@@ -32,7 +32,7 @@ FeedItem.displayName = "FeedItem";
 const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query = {} } = props;
 
-  const { data, isSuccess, isFetching, fetchNextPage, hasNextPage } =
+  const { data, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage } =
     api.feeds.infinite.useInfiniteQuery(
       {
         ...query,
@@ -61,8 +61,8 @@ const FeedList: FC<Props> = (props) => {
 
   const { ref } = useInfiniteScroll<HTMLDivElement>({
     hasMore: hasNextPage,
-    isLoading: isFetching,
-    onLoadMore: void fetchNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: () => void fetchNextPage(),
     intersectionObserverInit: {
       rootMargin: "0px 0px 200px 0px",
     },
@@ -72,13 +72,14 @@ const FeedList: FC<Props> = (props) => {
       <h2 className="mb-10 text-4xl">FeedList</h2>
       <div className="flex flex-col gap-5">
         {isSuccess &&
-          flatData?.map((feed, index) => {
+          !!flatData &&
+          flatData.map((feed, index) => {
             if (flatData.length === index + 1) {
               return <FeedItem key={feed.id} ref={ref} feed={feed} />;
             }
             return <FeedItem key={feed.id} feed={feed} />;
           })}
-        {isFetching && <Skeleton />}
+        {isFetchingNextPage && <Skeleton />}
       </div>
     </div>
   );

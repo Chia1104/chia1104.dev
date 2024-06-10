@@ -11,7 +11,7 @@ import EmailTemplate from "./email-template";
 import { withRateLimiter } from "@chia/cache/src/with-rate-limiter";
 import { createUpstash } from "@chia/cache/src/create-upstash";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 /**
  * Tokyo, Japan
  */

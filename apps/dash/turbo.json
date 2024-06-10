@@ -1,11 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "env": [
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
+        "SPOTIFY_CLIENT_ID",
+        "SPOTIFY_CLIENT_SECRET",
         "AUTH_URL",
         "AUTH_SECRET",
         "ZEABUR_URL",
