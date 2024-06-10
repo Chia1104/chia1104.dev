@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev:e2e": "npx playwright test",
-    "start:www": "cd ../../apps/www && PORT=3002 HOST=127.0.0.1 npx next start",
+    "start:www": "cd ../.. && PORT=3002 HOST=127.0.0.1 npm run start:www",
     "test:e2e": "start-server-and-test start:www http://127.0.0.1:3002 dev:e2e",
     "clean": "git clean -xdf .turbo node_modules coverage"
   },
