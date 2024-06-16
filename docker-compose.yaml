@@ -1,0 +1,17 @@
+version: "3"
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - ~/OrbStack/docker/volumes/chia1104dev-postgres:/data/postgres
+    env_file:
+      - .env.global
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
