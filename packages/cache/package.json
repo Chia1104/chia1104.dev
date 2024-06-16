@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.10.1",
-    "@upstash/ratelimit": "1.2.0",
-    "@upstash/redis": "1.31.3",
+    "@upstash/ratelimit": "1.2.1",
+    "@upstash/redis": "1.31.5",
     "ioredis": "^5.4.1"
   },
   "devDependencies": {
