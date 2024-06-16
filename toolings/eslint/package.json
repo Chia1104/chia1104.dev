@@ -18,7 +18,7 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.2",
-    "eslint-plugin-react-hooks": "5.1.0-beta-26f2496093-20240514",
+    "eslint-plugin-react-hooks": "5.1.0-rc-fb9a90fa48-20240614",
     "typescript-eslint": "^7.13.0"
   },
   "devDependencies": {
