@@ -24,6 +24,22 @@ const withReplicas = (
 const seedPost = withReplicas(
   async (db, adminId) => {
     await db.transaction(async (trx) => {
+      let tags = await trx.select().from(schema.tags);
+      if (tags.length === 0) {
+        tags = await trx
+          .insert(schema.tags)
+          .values([
+            {
+              slug: "tag1",
+              name: "Tag 1",
+            },
+            {
+              slug: "tag2",
+              name: "Tag 2",
+            },
+          ])
+          .returning();
+      }
       const feed = await trx
         .insert(schema.feeds)
         .values({
@@ -36,6 +52,16 @@ const seedPost = withReplicas(
           published: true,
         })
         .returning({ feedId: schema.feeds.id });
+      await trx.insert(schema.feedsToTags).values([
+        {
+          feedId: feed[0].feedId,
+          tagId: tags[0].id,
+        },
+        {
+          feedId: feed[0].feedId,
+          tagId: tags[1].id,
+        },
+      ]);
       await trx.insert(schema.posts).values({
         feedId: feed[0].feedId,
         content: faker.lorem.paragraphs(),

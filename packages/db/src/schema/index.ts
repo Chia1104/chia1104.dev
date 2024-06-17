@@ -124,7 +124,9 @@ export const assetsToTags = pgTable(
       .references(() => tags.id, { onDelete: "cascade" }),
   },
   (t) => ({
-    pk: primaryKey(t.assetId, t.tagId),
+    pk: primaryKey({
+      columns: [t.assetId, t.tagId],
+    }),
   })
 );
 
@@ -243,6 +245,28 @@ export const notesRelations = relations(notes, ({ one }) => ({
   feed: one(feeds, {
     fields: [notes.feedId],
     references: [feeds.id],
+  }),
+}));
+
+export const assetsToTagsRelations = relations(assetsToTags, ({ one }) => ({
+  asset: one(assets, {
+    fields: [assetsToTags.assetId],
+    references: [assets.id],
+  }),
+  tag: one(tags, {
+    fields: [assetsToTags.tagId],
+    references: [tags.id],
+  }),
+}));
+
+export const feedsToTagsRelations = relations(feedsToTags, ({ one }) => ({
+  feed: one(feeds, {
+    fields: [feedsToTags.feedId],
+    references: [feeds.id],
+  }),
+  tag: one(tags, {
+    fields: [feedsToTags.tagId],
+    references: [tags.id],
   }),
 }));
 
