@@ -6,11 +6,13 @@
   "types": "./src/index.ts",
   "main": "./src/index.ts",
   "scripts": {
+    "db:start": "docker-compose up -d",
     "db:generate": "drizzle-kit generate:pg",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules"
+    "clean": "git clean -xdf .turbo node_modules",
+    "db:check": "node --import=tsx --env-file=../../.env.global check.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.31.2",

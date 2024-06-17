@@ -1,4 +1,3 @@
-version: "3"
 services:
   postgres:
     container_name: postgres
@@ -6,9 +5,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ~/OrbStack/docker/volumes/chia1104dev-postgres:/data/postgres
+      - ~/OrbStack/docker/volumes/postgres:/data/postgres
     env_file:
-      - .env.global
+      - ../../.env.global
     networks:
       - postgres
 
