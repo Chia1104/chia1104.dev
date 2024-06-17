@@ -9,14 +9,6 @@ class FeedService {
   constructor(@Inject(DRIZZLE_PROVIDER) private readonly db: DB) {}
 
   async getAll(dto?: QueryFeedsDto) {
-    const feedType =
-      dto?.type === FeedType.post
-        ? ({
-            post: true,
-          } as const)
-        : ({
-            note: true,
-          } as const);
     const orderBy = dto?.orderBy ?? "updatedAt";
     return this.db.query.feeds.findMany({
       orderBy: (feeds, { asc, desc }) => [
@@ -25,7 +17,20 @@ class FeedService {
       where: (feeds, { eq }) => eq(feeds.type, dto?.type ?? FeedType.post),
       limit: dto?.take ? Number(dto.take) : undefined,
       offset: dto?.skip ? Number(dto.skip) : undefined,
-      with: feedType,
+      with: {
+        post: dto?.type === FeedType.post ? true : undefined,
+        note: dto?.type === FeedType.note ? true : undefined,
+        feedsToTags: {
+          with: {
+            tag: {
+              columns: {
+                slug: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 }

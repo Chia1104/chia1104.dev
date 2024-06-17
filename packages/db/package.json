@@ -7,8 +7,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "db:start": "docker-compose up -d",
-    "db:generate": "drizzle-kit generate:pg",
-    "db:push": "drizzle-kit push:pg",
+    "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules",
