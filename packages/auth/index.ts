@@ -86,6 +86,7 @@ export const getConfig = (req?: NextRequest) => {
         sendVerificationRequest,
       }),
     ],
+    skipCSRFCheck: undefined,
   } satisfies NextAuthConfig;
 };
 
