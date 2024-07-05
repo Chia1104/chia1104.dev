@@ -59,8 +59,6 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
-    container:
-      image: mcr.microsoft.com/playwright:v1.44.1-jammy
     steps:
       - name: "🐙️ Check out code"
         uses: actions/checkout@v4
@@ -77,8 +75,8 @@ jobs:
         with:
           INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
-      # - name: "📦  Install Playwright Browsers (no cache)"
-      #   run: npx playwright install --with-deps
+      - name: "📦  Install Playwright Browsers (no cache)"
+        run: npx playwright install --with-deps
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
