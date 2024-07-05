@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start:www": "pnpm exec turbo run start --filter www",
-    "test:e2e": "pnpm exec playwright test",
+    "start:www": "npx turbo run start --filter www",
+    "test:e2e": "npx playwright test",
     "clean": "git clean -xdf .turbo node_modules coverage"
   },
   "devDependencies": {
