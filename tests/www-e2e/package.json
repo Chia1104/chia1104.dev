@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "start:www": "pnpm exec turbo run start --filter www",
     "test:e2e": "pnpm exec playwright test",
     "clean": "git clean -xdf .turbo node_modules coverage"
   },

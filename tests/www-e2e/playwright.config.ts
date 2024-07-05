@@ -14,7 +14,7 @@ export default defineConfig({
   reporter: "html",
 
   webServer: {
-    command: "pnpm exec turbo run start --filter www",
+    command: "pnpm run start:www",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     stdout: "ignore",
