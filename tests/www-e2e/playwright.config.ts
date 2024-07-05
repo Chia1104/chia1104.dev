@@ -37,13 +37,12 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
       },
     },
-    // playwright issue #11130 (https://github.com/microsoft/playwright/issues/11130)
-    // {
-    //   name: "desktop-firefox",
-    //   use: {
-    //     ...devices["Desktop Firefox"],
-    //   },
-    // },
+    {
+      name: "desktop-firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+      },
+    },
     {
       name: "desktop-safari",
       use: {
