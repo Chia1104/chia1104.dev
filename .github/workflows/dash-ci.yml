@@ -12,7 +12,7 @@ on:
       - "package.json"
 
 concurrency:
-  group: pull-${{ github.ref }}-dash
+  group: pull-${{ github.ref }}-dash-ci
   cancel-in-progress: true
 
 env:

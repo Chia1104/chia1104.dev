@@ -13,7 +13,7 @@ on:
       - "package.json"
 
 concurrency:
-  group: pull-${{ github.ref }}-www
+  group: pull-${{ github.ref }}-www-e2e
   cancel-in-progress: true
 
 env:
