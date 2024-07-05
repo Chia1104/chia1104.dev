@@ -34,7 +34,6 @@ env:
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:3003
   NODE_VERSION: 20
-  PNPM_VERSION: 9.4.0
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -53,7 +52,6 @@ jobs:
         uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
-          PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: backend-install

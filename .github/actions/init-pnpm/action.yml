@@ -2,10 +2,6 @@ name: "💽️  Init"
 description: "Localized Init"
 
 inputs:
-  PNPM_VERSION:
-    description: "pnpm version"
-    default: "9"
-    required: false
   NODE_VERSION:
     description: "node version"
     default: "20"

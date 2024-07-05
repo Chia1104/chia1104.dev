@@ -32,7 +32,6 @@ env:
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   SPOTIFY_REDIRECT_URI: http://localhost:3001
   NODE_VERSION: 20
-  PNPM_VERSION: 9.4.0
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -51,7 +50,6 @@ jobs:
         uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
-          PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: dash-install
