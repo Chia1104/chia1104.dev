@@ -59,7 +59,8 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
-
+    container:
+      image: mcr.microsoft.com/playwright:v1.44.1-jammy
     steps:
       - name: "🐙️ Check out code"
         uses: actions/checkout@v4
