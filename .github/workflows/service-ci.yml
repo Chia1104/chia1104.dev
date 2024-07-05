@@ -12,6 +12,10 @@ on:
       - ".github/workflows/service-ci.yml"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-service
+  cancel-in-progress: true
+
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}

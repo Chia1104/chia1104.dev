@@ -11,6 +11,10 @@ on:
       - ".github/workflows/www-ci.yml"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-www
+  cancel-in-progress: true
+
 env:
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
   NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
@@ -77,7 +81,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www-nextjs
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
 
       - name: "🏗️  Build"
         uses: Chia1104/chia-stack/.github/actions/pnpm-build@main

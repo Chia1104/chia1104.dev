@@ -1,18 +1,25 @@
-import { PlaywrightTestConfig, devices } from "@playwright/test";
+import { PlaywrightTestConfig, devices, defineConfig } from "@playwright/test";
 import path from "path";
 
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || "localhost";
+const HOST = process.env.HOST || "127.0.0.1";
 const BASE_URL = `http://${HOST}:${PORT}`;
 
-// Reference: https://playwright.dev/docs/test-configuration
-const config: PlaywrightTestConfig = {
+export default defineConfig({
   timeout: 30 * 1000,
   testDir: path.join(__dirname, "tests"),
   testMatch: "**/*.pw.ts",
   retries: 2,
   outputDir: "coverage",
   reporter: "html",
+
+  webServer: {
+    command: "cd ../.. && pnpm build:www && pnpm start:www",
+    url: BASE_URL,
+    reuseExistingServer: !process.env.CI,
+    stdout: "ignore",
+    stderr: "pipe",
+  },
 
   use: {
     baseURL: BASE_URL,
@@ -54,5 +61,4 @@ const config: PlaywrightTestConfig = {
       use: devices["iPhone 12"],
     },
   ],
-};
-export default config;
+});

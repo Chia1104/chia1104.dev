@@ -11,6 +11,10 @@ on:
       - ".github/workflows/dash-ci.yml"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-dash
+  cancel-in-progress: true
+
 env:
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -57,7 +61,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/dash/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-dash
 
       - name: "🏗️  Build"
         uses: Chia1104/chia-stack/.github/actions/pnpm-build@main

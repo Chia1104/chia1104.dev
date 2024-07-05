@@ -13,7 +13,7 @@
     "analyze": "cross-env ANALYZE=true npm run build",
     "dev": "pnpm env:check-local && next dev",
     "dev:turbo": "next dev --turbo",
-    "build": "pnpm env:check && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

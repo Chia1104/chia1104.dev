@@ -12,6 +12,10 @@ on:
       - "tests/www-e2e/**"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-www
+  cancel-in-progress: true
+
 env:
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
   NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
@@ -57,9 +61,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
 
-    container:
-      image: mcr.microsoft.com/playwright:v1.44.1-jammy
-
     steps:
       - name: "🐙️ Check out code"
         uses: actions/checkout@v4
@@ -77,21 +78,21 @@ jobs:
         with:
           INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
-      #      - name: '📦  Install Playwright Browsers (no cache)'
-      #        run: npx playwright install --with-deps
+      - name: "📦  Install Playwright Browsers (no cache)"
+        run: npx playwright install --with-deps
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
 
       - name: "🚨️  E2E tests"
         run: pnpm test:e2e --filter www-e2e...
 
       - name: "✅  Output coverage"
         uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: tests/www-e2e/playwright-report/
