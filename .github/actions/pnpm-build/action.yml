@@ -1,0 +1,26 @@
+name: '🏗️ Build'
+description: 'Localized Build'
+
+inputs:
+  BUILD_COMMAND:
+    description: 'Dynamic Build String for Run Script'
+    default: 'build'
+    required: true
+  TURBO_TOKEN:
+    description: 'Turbo Token'
+    required: false
+  TURBO_TEAM:
+    description: 'Turbo Team'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: '🏗️  Build'
+      id: build
+      shell: bash
+      env:
+        TURBO_TOKEN: ${{ inputs.TURBO_TOKEN }}
+        TURBO_TEAM: ${{ inputs.TURBO_TEAM }}
+      run: |
+        pnpm run ${{ inputs.BUILD_COMMAND }}

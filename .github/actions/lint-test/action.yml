@@ -1,0 +1,26 @@
+name: '🚨️ ESLint, Type checking, Unit tests'
+description: 'Localized Lint'
+
+inputs:
+  COMMAND:
+    description: 'Command to run'
+    required: false
+    default: ''
+  TURBO_TEAM:
+    description: 'ID for Turbo'
+    required: false
+  TURBO_TOKEN:
+    description: 'ID for Turbo'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: '🚨️  ESLint, Type checking, Unit tests'
+      id: lint
+      shell: bash
+      env:
+        TURBO_TEAM: ${{ inputs.TURBO_TEAM }}
+        TURBO_TOKEN: ${{ inputs.TURBO_TOKEN }}
+      run: |
+        pnpm lint type:check test ${{ inputs.COMMAND }}

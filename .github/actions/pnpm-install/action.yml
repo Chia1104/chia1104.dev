@@ -1,0 +1,17 @@
+name: '📦  Install'
+description: 'Localized Install'
+
+inputs:
+  INSTALL_COMMAND:
+    description: 'Dynamic Install String for Run Script'
+    default: ''
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: '📦️  Dependencies'
+      id: dependencies
+      shell: bash
+      run: |
+        pnpm install --prefer-offline ${{ inputs.INSTALL_COMMAND }}

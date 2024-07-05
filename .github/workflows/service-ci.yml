@@ -50,17 +50,17 @@ jobs:
 
       - name: "💽️  Init"
         id: backend-init
-        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
           PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: backend-install
-        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
+        uses: ./.github/actions/pnpm-install
 
       - name: "🏗️  Build"
-        uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
+        uses: ./.github/actions/pnpm-build
         with:
           BUILD_COMMAND: "build --filter service..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
@@ -68,7 +68,7 @@ jobs:
 
       - name: "🚨️  ESLint, Type checking, Unit tests"
         id: backend-lint-test
-        uses: Chia1104/chia-stack/.github/actions/lint-test@main
+        uses: ./.github/actions/lint-test
         with:
           COMMAND: "--filter service..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}

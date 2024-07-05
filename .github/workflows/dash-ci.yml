@@ -48,14 +48,14 @@ jobs:
 
       - name: "💽️  Init"
         id: dash-init
-        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
           PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: dash-install
-        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
+        uses: ./.github/actions/pnpm-install
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
@@ -64,7 +64,7 @@ jobs:
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-dash
 
       - name: "🏗️  Build"
-        uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
+        uses: ./.github/actions/pnpm-build
         with:
           BUILD_COMMAND: "build --filter dash..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
@@ -72,7 +72,7 @@ jobs:
 
       - name: "🚨️  ESLint, Type checking, Unit tests"
         id: dash-lint-test
-        uses: Chia1104/chia-stack/.github/actions/lint-test@main
+        uses: ./.github/actions/lint-test
         with:
           COMMAND: "--filter dash..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}

@@ -67,14 +67,14 @@ jobs:
 
       - name: "💽️  Init"
         id: www-init
-        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
           PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: www-install
-        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
+        uses: ./.github/actions/pnpm-install
         with:
           INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
