@@ -19,6 +19,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     stdout: "ignore",
     stderr: "pipe",
+    cwd: path.join(__dirname, "../.."),
   },
 
   use: {
