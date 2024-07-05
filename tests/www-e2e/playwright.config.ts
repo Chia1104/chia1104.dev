@@ -14,7 +14,7 @@ export default defineConfig({
   reporter: "html",
 
   webServer: {
-    command: "cd ../.. && pnpm dev:www",
+    command: "turbo run start --filter www",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     stdout: "ignore",

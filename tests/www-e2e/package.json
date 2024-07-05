@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test:e2e": "playwright test",
+    "test:e2e": "pnpm exec playwright test",
     "clean": "git clean -xdf .turbo node_modules coverage"
   },
   "devDependencies": {
