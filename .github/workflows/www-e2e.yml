@@ -85,6 +85,13 @@ jobs:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
 
+      - name: "🏗️  Build"
+        uses: ./.github/actions/pnpm-build
+        with:
+          BUILD_COMMAND: "build --filter www..."
+          TURBO_TEAM: ${{ env.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+
       - name: "🚨️  E2E tests"
         run: TURBO_TELEMETRY_DISABLED=1 pnpm test:e2e --filter www-e2e...
 
