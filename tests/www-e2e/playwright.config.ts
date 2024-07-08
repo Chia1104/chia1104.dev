@@ -20,6 +20,9 @@ export default defineConfig({
     stdout: "ignore",
     stderr: "pipe",
     cwd: path.join(__dirname, "../.."),
+    env: {
+      DEBUG: "pw:webserver",
+    },
   },
 
   use: {

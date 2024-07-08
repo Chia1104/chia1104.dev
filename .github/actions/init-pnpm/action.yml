@@ -14,7 +14,6 @@ runs:
       id: pnpm-install
       uses: pnpm/action-setup@v4
       with:
-        version: ${{ inputs.PNPM_VERSION }}
         run_install: false
 
     - name: "🗃️  Get pnpm store directory"
