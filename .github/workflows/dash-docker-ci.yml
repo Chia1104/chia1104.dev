@@ -11,6 +11,10 @@ on:
       - ".github/workflows/dash-docker.yml"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-dash-docker-ci
+  cancel-in-progress: true
+
 env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

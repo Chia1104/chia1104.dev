@@ -12,6 +12,10 @@ on:
       - ".github/workflows/service-ci.yml"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-service-ci
+  cancel-in-progress: true
+
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -30,7 +34,6 @@ env:
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_URL: http://localhost:3003
   NODE_VERSION: 20
-  PNPM_VERSION: 9.4.0
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -46,17 +49,16 @@ jobs:
 
       - name: "💽️  Init"
         id: backend-init
-        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
-          PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: backend-install
-        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
+        uses: ./.github/actions/pnpm-install
 
       - name: "🏗️  Build"
-        uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
+        uses: ./.github/actions/pnpm-build
         with:
           BUILD_COMMAND: "build --filter service..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
@@ -64,7 +66,7 @@ jobs:
 
       - name: "🚨️  ESLint, Type checking, Unit tests"
         id: backend-lint-test
-        uses: Chia1104/chia-stack/.github/actions/lint-test@main
+        uses: ./.github/actions/lint-test
         with:
           COMMAND: "--filter service..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}

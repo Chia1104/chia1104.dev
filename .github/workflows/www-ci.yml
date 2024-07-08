@@ -11,6 +11,10 @@ on:
       - ".github/workflows/www-ci.yml"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-www-ci
+  cancel-in-progress: true
+
 env:
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
   NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
@@ -25,7 +29,6 @@ env:
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   NODE_VERSION: 20
-  PNPM_VERSION: 9.4.0
   GIT_HASH: ${{ github.sha }}
   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
@@ -62,14 +65,13 @@ jobs:
 
       - name: "💽️  Init"
         id: www-init
-        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
-          PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: www-install
-        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
+        uses: ./.github/actions/pnpm-install
         with:
           INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
@@ -77,10 +79,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www-nextjs
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
 
       - name: "🏗️  Build"
-        uses: Chia1104/chia-stack/.github/actions/pnpm-build@main
+        uses: ./.github/actions/pnpm-build
         with:
           BUILD_COMMAND: "build --filter www..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}
@@ -88,7 +90,7 @@ jobs:
 
       - name: "🚨️  ESLint, Type checking, Unit tests"
         id: www-lint-test
-        uses: Chia1104/chia-stack/.github/actions/lint-test@main
+        uses: ./.github/actions/lint-test
         with:
           COMMAND: "--filter www..."
           TURBO_TEAM: ${{ env.TURBO_TEAM }}

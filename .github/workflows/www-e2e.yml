@@ -12,6 +12,10 @@ on:
       - "tests/www-e2e/**"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-www-e2e
+  cancel-in-progress: true
+
 env:
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
   NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
@@ -26,7 +30,6 @@ env:
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   NODE_VERSION: 20
-  PNPM_VERSION: 9.4.0
   GIT_HASH: ${{ github.sha }}
   RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
   NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
@@ -49,6 +52,7 @@ env:
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   NEXT_PUBLIC_ENV: beta
   TURBO_TELEMETRY_DISABLED: 1
+  DEBUG: pw:webserver
 
 jobs:
   build:
@@ -56,42 +60,37 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
-
-    container:
-      image: mcr.microsoft.com/playwright:v1.44.1-jammy
-
     steps:
       - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
       - name: "💽️  Init"
         id: www-init
-        uses: Chia1104/chia-stack/.github/actions/init-pnpm@main
+        uses: ./.github/actions/init-pnpm
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
-          PNPM_VERSION: ${{ env.PNPM_VERSION }}
 
       - name: "📦  Install"
         id: www-install
-        uses: Chia1104/chia-stack/.github/actions/pnpm-install@main
+        uses: ./.github/actions/pnpm-install
         with:
           INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
-      #      - name: '📦  Install Playwright Browsers (no cache)'
-      #        run: npx playwright install --with-deps
+      - name: "📦  Install Playwright Browsers (no cache)"
+        run: npx playwright install --with-deps
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/apps/www/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-nextjs
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
 
       - name: "🚨️  E2E tests"
         run: pnpm test:e2e --filter www-e2e...
 
       - name: "✅  Output coverage"
         uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: tests/www-e2e/playwright-report/

@@ -47,3 +47,6 @@ yarn-error.log*
 .vscode
 
 cypress/videos
+
+public/sitemap.xml
+public/sitemap-0.xml

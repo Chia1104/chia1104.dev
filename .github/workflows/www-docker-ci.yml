@@ -11,6 +11,10 @@ on:
       - ".github/workflows/www-docker.yml"
       - "package.json"
 
+concurrency:
+  group: pull-${{ github.ref }}-www-docker-ci
+  cancel-in-progress: true
+
 env:
   GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
   NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
