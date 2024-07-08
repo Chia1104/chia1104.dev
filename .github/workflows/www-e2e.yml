@@ -16,44 +16,6 @@ concurrency:
   group: pull-${{ github.ref }}-www-e2e
   cancel-in-progress: true
 
-env:
-  GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
-  NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
-  RE_CAPTCHA_KEY: ${{ secrets.RE_CAPTCHA_KEY }}
-  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-  SPOTIFY_FAVORITE_PLAYLIST_ID: ${{ secrets.SPOTIFY_FAVORITE_PLAYLIST_ID }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
-  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  NODE_VERSION: 20
-  GIT_HASH: ${{ github.sha }}
-  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-  NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
-  NEXT_PUBLIC_UMAMI_URL: ${{ secrets.NEXT_PUBLIC_UMAMI_URL }}
-  UMAMI_DB_URL: ${{ secrets.UMAMI_DB_URL }}
-  UMAMI_EDGE_DB_URL: ${{ secrets.UMAMI_EDGE_DB_URL }}
-  NEXT_PUBLIC_GISCUS_REPO_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_REPO_ID }}
-  NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
-  REDIS_URL: ${{ secrets.REDIS_URL }}
-  UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
-  CACHE_PROVIDER: upstash
-  NODE_ENV: test
-  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_URL: http://localhost:3000
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
-  ADMIN_ID: ${{ secrets.ADMIN_ID }}
-  BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
-  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  NEXT_PUBLIC_ENV: beta
-  TURBO_TELEMETRY_DISABLED: 1
-  DEBUG: pw:webserver
-
 jobs:
   build:
     name: Playwright tests
@@ -85,15 +47,45 @@ jobs:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
 
-      - name: "🏗️  Build"
-        uses: ./.github/actions/pnpm-build
-        with:
-          BUILD_COMMAND: "build --filter www..."
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
-
       - name: "🚨️  E2E tests"
-        run: TURBO_TELEMETRY_DISABLED=1 pnpm test:e2e --filter www-e2e...
+        run: pnpm test:e2e --filter www-e2e...
+        env:
+          GH_PUBLIC_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
+          NEXT_PUBLIC_RE_CAPTCHA_KEY: ${{ secrets.NEXT_PUBLIC_RE_CAPTCHA_KEY }}
+          RE_CAPTCHA_KEY: ${{ secrets.RE_CAPTCHA_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_FAVORITE_PLAYLIST_ID: ${{ secrets.SPOTIFY_FAVORITE_PLAYLIST_ID }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          SHA_256_HASH: ${{ secrets.SHA_256_HASH }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          NODE_VERSION: 20
+          GIT_HASH: ${{ github.sha }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
+          NEXT_PUBLIC_UMAMI_URL: ${{ secrets.NEXT_PUBLIC_UMAMI_URL }}
+          UMAMI_DB_URL: ${{ secrets.UMAMI_DB_URL }}
+          UMAMI_EDGE_DB_URL: ${{ secrets.UMAMI_EDGE_DB_URL }}
+          NEXT_PUBLIC_GISCUS_REPO_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_REPO_ID }}
+          NEXT_PUBLIC_GISCUS_CATEGORY_ID: ${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          UPSTASH_TOKEN: ${{ secrets.UPSTASH_TOKEN }}
+          CACHE_PROVIDER: upstash
+          NODE_ENV: test
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          AUTH_URL: http://localhost:3000
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BETA_DATABASE_URL: ${{ secrets.BETA_DATABASE_URL }}
+          ADMIN_ID: ${{ secrets.ADMIN_ID }}
+          BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          NEXT_PUBLIC_ENV: beta
+          TURBO_TELEMETRY_DISABLED: 1
+          DEBUG: pw:webserver
 
       - name: "✅  Output coverage"
         uses: actions/upload-artifact@v4
