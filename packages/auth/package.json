@@ -18,7 +18,7 @@
     "@chia/eslint-config": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@react-email/render": "^0.0.15",
+    "@react-email/render": "^0.0.16",
     "@t3-oss/env-core": "^0.10.1",
     "next": "14.2.4",
     "next-auth": "5.0.0-beta.19"
