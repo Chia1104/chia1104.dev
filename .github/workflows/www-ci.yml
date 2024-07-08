@@ -72,8 +72,6 @@ jobs:
       - name: "📦  Install"
         id: www-install
         uses: ./.github/actions/pnpm-install
-        with:
-          INSTALL_COMMAND: "--filter www --filter ui --filter utils --filter tsconfig --filter root"
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4

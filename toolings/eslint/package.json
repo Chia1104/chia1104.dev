@@ -14,14 +14,14 @@
   },
   "dependencies": {
     "@next/eslint-plugin-next": "^14.2.4",
-    "eslint-config-turbo": "^2.0.4",
+    "eslint-config-turbo": "^2.0.6",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "5.1.0-rc-fb9a90fa48-20240614",
-    "typescript-eslint": "^7.13.1"
+    "typescript-eslint": "^7.15.0"
   },
   "devDependencies": {
-    "eslint": "^9.5.0"
+    "eslint": "^9.6.0"
   }
 }
