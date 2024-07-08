@@ -16,8 +16,8 @@
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "^0.10.1",
-    "@trpc/client": "11.0.0-rc.421",
-    "@trpc/server": "11.0.0-rc.421",
+    "@trpc/client": "11.0.0-rc.449",
+    "@trpc/server": "11.0.0-rc.449",
     "next": "14.2.4",
     "server-only": "^0.0.1",
     "tsconfig": "workspace:*"
