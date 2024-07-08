@@ -23,7 +23,7 @@
     "@tiptap/starter-kit": "^2.4.0",
     "ai": "^3.2.16",
     "lowlight": "^3.1.0",
-    "lucide-react": "^0.401.0",
+    "lucide-react": "^0.402.0",
     "next": "14.2.4",
     "novel": "^0.4.3",
     "openai": "^4.52.3",
