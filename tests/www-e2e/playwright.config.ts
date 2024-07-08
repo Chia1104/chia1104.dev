@@ -17,7 +17,7 @@ export default defineConfig({
     command: "pnpm run start:www",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
-    stdout: "ignore",
+    stdout: "pipe",
     stderr: "pipe",
     cwd: path.join(__dirname, "../.."),
     env: {
