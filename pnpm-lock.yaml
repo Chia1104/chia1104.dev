@@ -587,7 +587,7 @@ importers:
     dependencies:
       openai:
         specifier: ^4.52.3
-        version: 4.52.3
+        version: 4.52.4
     devDependencies:
       '@chia/eslint-config':
         specifier: workspace:*
@@ -771,7 +771,7 @@ importers:
         version: 2.4.0(@tiptap/pm@2.4.0)
       ai:
         specifier: ^3.2.16
-        version: 3.2.16(openai@4.52.3)(react@18.3.1)(solid-js@1.8.18)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.3))(zod@3.23.8)
+        version: 3.2.16(openai@4.52.4)(react@18.3.1)(solid-js@1.8.18)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.3))(zod@3.23.8)
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
@@ -786,7 +786,7 @@ importers:
         version: 0.4.3(@tiptap/extension-code-block@2.4.0(@tiptap/core@2.4.0(@tiptap/pm@2.4.0))(@tiptap/pm@2.4.0))(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       openai:
         specifier: ^4.52.3
-        version: 4.52.3
+        version: 4.52.4
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -9608,8 +9608,8 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@4.52.3:
-    resolution: {integrity: sha512-IyQLYKGYoEEkUCEm2frPzwHDJ3Ym663KtivnY6pWCzuoi6/HgSIMMxpcuTRS81GH6tiULPYGmTxIvzXdmPIWOw==}
+  openai@4.52.4:
+    resolution: {integrity: sha512-3CkV7e8epJBnTe5ptn4i3ivfm1d8cvkbvBOzhGmGYEarpDpcCgwOMV1aBPvZ/HoveUtREWUE9Fqcy7BcPNtMJg==}
     hasBin: true
 
   opener@1.5.2:
@@ -13580,8 +13580,8 @@ snapshots:
     dependencies:
       '@antfu/ni': 0.21.12
       '@axiomhq/js': 1.0.0-rc.3
-      '@babel/core': 7.24.7
-      '@babel/types': 7.24.7
+      '@babel/core': 7.24.6
+      '@babel/types': 7.24.6
       '@clack/prompts': 0.7.0
       cli-high: 0.4.2
       diff: 5.2.0
@@ -18169,7 +18169,7 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@3.2.16(openai@4.52.3)(react@18.3.1)(solid-js@1.8.18)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.3))(zod@3.23.8):
+  ai@3.2.16(openai@4.52.4)(react@18.3.1)(solid-js@1.8.18)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.3))(zod@3.23.8):
     dependencies:
       '@ai-sdk/provider': 0.0.11
       '@ai-sdk/provider-utils': 1.0.0(zod@3.23.8)
@@ -18186,7 +18186,7 @@ snapshots:
       sswr: 2.1.0(svelte@4.2.18)
       zod-to-json-schema: 3.22.5(zod@3.23.8)
     optionalDependencies:
-      openai: 4.52.3
+      openai: 4.52.4
       react: 18.3.1
       svelte: 4.2.18
       zod: 3.23.8
@@ -22828,7 +22828,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.52.3:
+  openai@4.52.4:
     dependencies:
       '@types/node': 18.19.39
       '@types/node-fetch': 2.6.11
