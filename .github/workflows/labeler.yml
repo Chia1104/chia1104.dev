@@ -9,10 +9,10 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Uploads repository content to the runner
-        with:
-          repository: "Chia1104/chia1104.dev"
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
       - uses: actions/labeler@v5
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           dot: true
+          configuration-path: ./.github/labeler.yml
