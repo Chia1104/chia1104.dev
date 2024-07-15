@@ -81,7 +81,7 @@
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:0.0.1-beta.1",
-    "@million/lint": "1.0.0-rc.76",
+    "@million/lint": "1.0.0-rc.80",
     "@next/bundle-analyzer": "14.2.5",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@testing-library/jest-dom": "^6.4.6",
