@@ -57,7 +57,7 @@
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:0.0.1-beta.1",
-    "@million/lint": "1.0.0-rc.76",
+    "@million/lint": "1.0.0-rc.80",
     "@testing-library/react": "^16.0.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
