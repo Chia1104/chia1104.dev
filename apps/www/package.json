@@ -40,7 +40,7 @@
     "@giscus/react": "^3.0.0",
     "@hookform/resolvers": "^3.9.0",
     "@next/third-parties": "^14.2.4",
-    "@nextui-org/react": "2.4.2",
+    "@nextui-org/react": "2.4.6",
     "@nextui-org/theme": "2.2.6",
     "@react-email/components": "^0.0.21",
     "@sentry/nextjs": "^8.15.0",
