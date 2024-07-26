@@ -9,12 +9,12 @@ export {
 } from "./Accordion";
 export * from "./ErrorBoundary";
 export { default as Image } from "./Image";
-export { default as Input } from "./Input";
+export * from "./Input";
 export * from "./Input";
 export { default as Link } from "./Link";
 export * from "./Link";
 export { default as Page } from "./Page";
-export { default as Textarea } from "./Textarea";
+export * from "./Textarea";
 export * from "./Textarea";
 export * from "./MDXComponents";
 export * from "./utils";
