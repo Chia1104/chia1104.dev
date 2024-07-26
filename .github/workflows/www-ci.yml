@@ -213,7 +213,7 @@ jobs:
         id: pull-e2e-tests
         shell: bash
         run: |
-          pnpm test:e2e --filter www...
+          pnpm test:e2e --filter www-e2e...
 
       - name: "✅  Output coverage"
         uses: actions/upload-artifact@v4
