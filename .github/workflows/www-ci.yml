@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/install
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
-      
+
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
         with:
@@ -83,22 +83,22 @@ jobs:
       - name: "🧹  Lint & Type check & Test"
         shell: bash
         run: |
-          turbo run lint type:check test --parallel --filter www...
-  
+          pnpm lint type:check test --filter www...
+
   e2e-tests:
-    name: 'E2E tests'
+    name: "E2E tests"
     timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
-      - name: '🐙️  Checkout'
+      - name: "🐙️  Checkout"
         id: pull-checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: '📦  Install'
+      - name: "📦  Install"
         id: pull-install
-        uses: './.github/actions/install'
+        uses: "./.github/actions/install"
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
@@ -111,7 +111,7 @@ jobs:
       - name: "📦  Install Playwright Browsers"
         run: npx playwright install --with-deps
 
-      - name: '🧪  E2E tests'
+      - name: "🧪  E2E tests"
         id: pull-e2e-tests
         shell: bash
         run: |

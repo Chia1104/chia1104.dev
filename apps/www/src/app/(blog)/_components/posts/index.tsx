@@ -81,7 +81,7 @@ export const PostNavigation: FC<{
 export const List: FC<{
   initialData: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
   query?: RouterInputs["feeds"]["infinityByAdmin"];
-  nextCursor?: string | number;
+  nextCursor?: string | number | Date;
 }> = ({ initialData, nextCursor, query = {} }) => {
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     api.feeds.infinityByAdmin.useInfiniteQuery(
