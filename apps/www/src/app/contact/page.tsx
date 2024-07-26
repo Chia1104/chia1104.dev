@@ -1,9 +1,12 @@
-import Contact from "./contact";
-import type { Metadata } from "next";
-import "./style.css";
-import meta from "@chia/meta";
 import type { FC, ReactNode } from "react";
+
+import type { Metadata } from "next";
+
+import meta from "@chia/meta";
 import { Link } from "@chia/ui";
+
+import Contact from "./contact";
+import "./style.css";
 
 export const metadata: Metadata = {
   title: "Contact Me",

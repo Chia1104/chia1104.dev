@@ -1,7 +1,8 @@
 "use client";
 
-import { cn } from "../utils";
 import { useMemo } from "react";
+
+import { cn } from "../utils";
 
 interface MeteorsProps {
   number?: number;

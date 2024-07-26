@@ -1,7 +1,22 @@
 "use client";
 
+import {
+  useState,
+  useEffect,
+  createContext,
+  useRef,
+  useContext,
+  useCallback,
+  useMemo,
+  useTransition,
+} from "react";
+import type { FC, ReactNode, Dispatch, SetStateAction } from "react";
+
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
+import type { HTTPError } from "ky";
+
+import type { CurrentPlaying } from "@chia/api/spotify/types";
 import {
   HoverCard,
   HoverCardContent,
@@ -17,19 +32,6 @@ import {
   getBrightness,
 } from "@chia/ui";
 import { get } from "@chia/utils";
-import type { HTTPError } from "ky";
-import {
-  useState,
-  useEffect,
-  createContext,
-  useRef,
-  useContext,
-  useCallback,
-  useMemo,
-  useTransition,
-} from "react";
-import type { FC, ReactNode, Dispatch, SetStateAction } from "react";
-import type { CurrentPlaying } from "@chia/api/spotify/types";
 
 interface ExtendsProps {
   className?: string;

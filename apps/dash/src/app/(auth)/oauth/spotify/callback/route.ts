@@ -1,18 +1,20 @@
-import { errorGenerator, handleZodError } from "@chia/utils";
-import type { CodeAuthorizationDTO } from "@chia/api/spotify/validator";
-import { codeAuthorizationSchema } from "@chia/api/spotify/validator";
-import { codeAuthorization } from "@chia/api/spotify";
+import { HTTPError } from "ky";
+import { unstable_noStore as noStore } from "next/cache";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+
+import { codeAuthorization } from "@chia/api/spotify";
+import type { CodeAuthorizationDTO } from "@chia/api/spotify/validator";
+import { codeAuthorizationSchema } from "@chia/api/spotify/validator";
+import { createUpstash } from "@chia/cache/src/create-upstash";
+import { errorGenerator, handleZodError } from "@chia/utils";
+
 import {
   getRedirectUri,
   SPOTIFY_OAUTH_STATE,
   SPOTIFY_OAUTH_RESULT,
   getSiteUrl,
 } from "../_utils";
-import { HTTPError } from "ky";
-import { unstable_noStore as noStore } from "next/cache";
-import { createUpstash } from "@chia/cache/src/create-upstash";
 
 export const runtime = "edge";
 

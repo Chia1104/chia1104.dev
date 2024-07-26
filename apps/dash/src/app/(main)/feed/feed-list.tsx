@@ -2,10 +2,14 @@
 
 import { forwardRef, useMemo, memo } from "react";
 import type { FC } from "react";
-import { api } from "@/trpc-api";
-import { useInfiniteScroll } from "@chia/ui";
+
 import { Card, CardBody } from "@nextui-org/react";
+
 import type { RouterInputs, RouterOutputs } from "@chia/api";
+import { useInfiniteScroll } from "@chia/ui";
+
+import { api } from "@/trpc-api";
+
 import Skeleton from "./skeleton";
 
 interface Props {

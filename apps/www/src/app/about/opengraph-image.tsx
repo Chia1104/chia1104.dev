@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
-import { OpenGraph } from "@chia/ui";
+
 import meta from "@chia/meta";
+import { OpenGraph } from "@chia/ui";
 
 export const alt = "About Me";
 export const size = {

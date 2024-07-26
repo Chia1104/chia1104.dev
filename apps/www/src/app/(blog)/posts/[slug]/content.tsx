@@ -1,6 +1,7 @@
 import { compileMDX } from "@fumadocs/mdx-remote";
 import defaultComponents from "fumadocs-ui/mdx";
 import { DocsBody } from "fumadocs-ui/page";
+
 import { cn } from "@chia/ui";
 
 interface BaseProps {

@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
-import { getNowPlaying } from "@chia/api/spotify";
-import { errorGenerator } from "@chia/utils";
 import { HTTPError } from "ky";
 import { unstable_noStore as noStore } from "next/cache";
+import { NextResponse } from "next/server";
+
+import { getNowPlaying } from "@chia/api/spotify";
+import { errorGenerator } from "@chia/utils";
 
 export const runtime = "edge";
 

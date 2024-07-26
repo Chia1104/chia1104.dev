@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { ImageZoom, Image } from "@chia/ui";
-import { getPosts } from "@/services/feeds.service";
 import Link from "next/link";
+
+import { ImageZoom, Image } from "@chia/ui";
+
+import { getPosts } from "@/services/feeds.service";
+
 import { List } from "../_components/posts";
 
 export const metadata: Metadata = {

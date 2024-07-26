@@ -1,5 +1,6 @@
-import "reflect-metadata";
 import { ObjectType, Field, ID } from "@nestjs/graphql";
+import "reflect-metadata";
+
 import { Feed } from "./feed.model";
 
 @ObjectType()

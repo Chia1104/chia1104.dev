@@ -1,12 +1,13 @@
 "use client";
 
+import { Button } from "@nextui-org/react";
+
+import { withError } from "../../src/Error";
 import {
   TextRevealCard,
   TextRevealCardDescription,
   TextRevealCardTitle,
 } from "../../src/TextRevealCard";
-import { withError } from "../../src/Error";
-import { Button } from "@nextui-org/react";
 
 const Error = ({
   onError,

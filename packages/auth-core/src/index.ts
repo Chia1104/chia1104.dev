@@ -1,11 +1,13 @@
 import { Auth as InternalAuth } from "@auth/core";
 import type { AuthConfig } from "@auth/core";
-import { db, localDb, betaDb, schema } from "@chia/db";
-import Google from "@auth/core/providers/google";
 import Github from "@auth/core/providers/github";
+import Google from "@auth/core/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { env } from "./env";
+
+import { db, localDb, betaDb, schema } from "@chia/db";
 import { getDb } from "@chia/utils";
+
+import { env } from "./env";
 import { getBaseConfig } from "./utils";
 
 declare module "@auth/core/types" {

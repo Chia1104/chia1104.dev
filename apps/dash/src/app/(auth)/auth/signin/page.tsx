@@ -1,6 +1,8 @@
-import Form from "./form";
-import { auth } from "@chia/auth";
 import { redirect } from "next/navigation";
+
+import { auth } from "@chia/auth";
+
+import Form from "./form";
 
 const LoginPage = async () => {
   const session = await auth();

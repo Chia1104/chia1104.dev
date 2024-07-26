@@ -1,5 +1,6 @@
-import { cn } from "../utils";
 import type { CSSProperties, FC, ComponentPropsWithoutRef } from "react";
+
+import { cn } from "../utils";
 
 interface TextShimmerProps extends ComponentPropsWithoutRef<"p"> {
   shimmerWidth?: number;

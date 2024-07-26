@@ -2,7 +2,6 @@
  * @typedef {import('next').NextConfig} NextConfig
  * @typedef {(config: NextConfig) => NextConfig} Plugin
  */
-
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import million from "million/compiler";

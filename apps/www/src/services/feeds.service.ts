@@ -1,4 +1,6 @@
+import { unstable_cache as cache } from "next/cache";
 import "server-only";
+
 import {
   db,
   localDb,
@@ -8,7 +10,6 @@ import {
   schema,
   getFeedBySlug,
 } from "@chia/db";
-import { unstable_cache as cache } from "next/cache";
 import { getDb, getAdminId } from "@chia/utils";
 
 export const keys = {

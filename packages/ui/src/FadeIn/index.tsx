@@ -1,8 +1,10 @@
 "use client";
 
 import type { FC, ComponentProps } from "react";
+
 import { motion } from "framer-motion";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
+
 import { cn } from "../utils";
 
 type FadeInProps = ComponentProps<

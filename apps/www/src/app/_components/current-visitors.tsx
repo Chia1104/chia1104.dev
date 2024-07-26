@@ -1,11 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { get } from "@chia/utils";
-import type { HTTPError } from "@chia/utils";
 import type { ReactNode } from "react";
 import type { ComponentProps, FC } from "react";
+
+import { useQuery } from "@tanstack/react-query";
+
 import { cn } from "@chia/ui";
+import { get } from "@chia/utils";
+import type { HTTPError } from "@chia/utils";
 
 interface Data {
   currentVisitors: number;

@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import { Inject } from "@nestjs/common";
 import {
   Resolver,
   Query,
@@ -7,11 +7,14 @@ import {
   Field,
   registerEnumType,
 } from "@nestjs/graphql";
-import { Inject } from "@nestjs/common";
-import { Feed } from "@/shared/models/feed.model";
-import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
+import "reflect-metadata";
+
 import { desc, schema } from "@chia/db";
 import type { AnyColumn, DB } from "@chia/db";
+
+import { Feed } from "@/shared/models/feed.model";
+
+import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
 
 @InputType()
 class FeedOrderByInput {

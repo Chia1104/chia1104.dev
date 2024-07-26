@@ -1,11 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { WriteProvider, useWriteContext } from "./write.context";
-import NovelEditor from "@chia/editor/editor";
-import { Tabs, Tab, Button } from "@nextui-org/react";
-import { cn } from "@chia/ui";
 import type { FC } from "react";
+
+import { Tabs, Tab, Button } from "@nextui-org/react";
+import dynamic from "next/dynamic";
+
+import NovelEditor from "@chia/editor/editor";
+import { cn } from "@chia/ui";
+
+import { WriteProvider, useWriteContext } from "./write.context";
 
 const LoadingFallback: FC<{ className?: string }> = ({ className }) => (
   <div

@@ -1,5 +1,6 @@
-import "reflect-metadata";
 import { ObjectType, Field, ID } from "@nestjs/graphql";
+import "reflect-metadata";
+
 import { User } from "./user.model";
 
 export enum FeedType {

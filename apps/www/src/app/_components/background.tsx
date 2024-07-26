@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC } from "react";
+
 import { Spotlight, useTheme, useIsMounted } from "@chia/ui";
 
 const Background: FC = () => {

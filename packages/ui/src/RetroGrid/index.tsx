@@ -1,5 +1,6 @@
-import { cn } from "../utils";
 import type { FC, ComponentPropsWithoutRef } from "react";
+
+import { cn } from "../utils";
 
 const RetroGrid: FC<ComponentPropsWithoutRef<"div">> = ({
   className,

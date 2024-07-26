@@ -1,5 +1,6 @@
-import { env } from "@/env";
 import type { GiscusProps } from "@giscus/react";
+
+import { env } from "@/env";
 
 export const giscusConfig = {
   repo: env.NEXT_PUBLIC_GISCUS_REPO as GiscusProps["repo"],

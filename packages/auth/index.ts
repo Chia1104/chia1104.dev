@@ -1,18 +1,20 @@
+import type { DefaultSession } from "@auth/core/types";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import NextAuth from "next-auth";
 import type { NextAuthConfig } from "next-auth";
-import { db, localDb, betaDb, schema } from "@chia/db";
-import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { env } from "@chia/auth-core/env";
-import { getDb } from "@chia/utils";
 import type { NextRequest } from "next/server";
-import { getBaseConfig } from "@chia/auth-core/utils";
-import type { DefaultSession } from "@auth/core/types";
-import { sendVerificationRequest } from "./authSendRequest";
 import crypto from "node:crypto";
+
+import { env } from "@chia/auth-core/env";
+import { getBaseConfig } from "@chia/auth-core/utils";
+import { db, localDb, betaDb, schema } from "@chia/db";
+import { getDb } from "@chia/utils";
 import { AUTH_EMAIL } from "@chia/utils";
+
+import { sendVerificationRequest } from "./authSendRequest";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {

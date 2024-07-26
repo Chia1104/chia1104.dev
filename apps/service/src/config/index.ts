@@ -1,4 +1,5 @@
 import { ConfigModule } from "@nestjs/config";
+
 import { appEnvSchema } from "@/config/env";
 
 export default ConfigModule.forRoot({

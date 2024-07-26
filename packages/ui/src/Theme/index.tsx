@@ -2,8 +2,7 @@
 
 import { useId } from "react";
 import type { FC } from "react";
-import { motion } from "framer-motion";
-import type { Variant } from "framer-motion";
+
 import {
   Button,
   Dropdown,
@@ -11,8 +10,11 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@nextui-org/react";
-import useTheme from "../utils/use-theme";
+import { motion } from "framer-motion";
+import type { Variant } from "framer-motion";
+
 import { useCMD } from "../CMD";
+import useTheme from "../utils/use-theme";
 
 interface Props {
   variants?: ThemeVariants;

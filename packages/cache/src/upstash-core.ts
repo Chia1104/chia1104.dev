@@ -1,6 +1,7 @@
+import type { SetCommandOptions } from "@upstash/redis";
+
 import { createUpstash } from "./create-upstash";
 import type { UpstashConfig } from "./create-upstash";
-import type { SetCommandOptions } from "@upstash/redis";
 
 interface Options extends UpstashConfig {
   prefix?: string;

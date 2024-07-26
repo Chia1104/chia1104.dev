@@ -1,9 +1,10 @@
-import FeedList from "./feed-list";
-import { db, localDb, betaDb } from "@chia/db";
 import { feedsRouter } from "@chia/api/trpc/routes/feeds";
 import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth";
+import { db, localDb, betaDb } from "@chia/db";
 import { getDb } from "@chia/utils";
+
+import FeedList from "./feed-list";
 
 const getPosts = async (session: Session | null) => {
   const feedsCaller = feedsRouter.createCaller({

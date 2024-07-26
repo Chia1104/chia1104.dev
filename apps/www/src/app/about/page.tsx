@@ -1,6 +1,7 @@
-import Gallery from "./_components/gallery";
 import meta from "@chia/meta";
 import { Age, FadeIn, Card, ErrorBoundary } from "@chia/ui";
+
+import Gallery from "./_components/gallery";
 import Location from "./_components/location";
 
 const AboutPage = () => {

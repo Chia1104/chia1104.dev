@@ -1,8 +1,9 @@
-import OpenAI, { APIError } from "openai";
 import { OpenAIStream, StreamingTextResponse } from "ai";
-import { errorGenerator, getAdminId } from "@chia/utils";
 import { NextResponse } from "next/server";
+import OpenAI, { APIError } from "openai";
+
 import { auth } from "@chia/auth";
+import { errorGenerator, getAdminId } from "@chia/utils";
 
 // Create an OpenAI API client (that's edge friendly!)
 const openai = new OpenAI({

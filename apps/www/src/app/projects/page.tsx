@@ -1,9 +1,11 @@
+import type { FC } from "react";
+
+import dayjs from "dayjs";
 import Link from "next/link";
-import { Image, Card } from "@chia/ui";
+
 import { getPinnedRepos } from "@chia/api/github";
 import meta from "@chia/meta";
-import type { FC } from "react";
-import dayjs from "dayjs";
+import { Image, Card } from "@chia/ui";
 
 const RepoCard: FC<{
   image: string;

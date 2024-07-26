@@ -2,9 +2,11 @@
 
 import { useRef, useCallback } from "react";
 import type { FC, DetailedHTMLProps, HTMLAttributes } from "react";
+
+import { toast } from "sonner";
+
 import { cn } from "../../utils";
 import useCopyToClipboard from "../../utils/use-copy-to-clipboard";
-import { toast } from "sonner";
 
 interface MDXCodeProps
   extends DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> {

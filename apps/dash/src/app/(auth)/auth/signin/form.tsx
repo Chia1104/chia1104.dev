@@ -1,10 +1,13 @@
 "use client";
 
-import { signInAction } from "@/server/auth.action";
-import { Card, SubmitForm } from "@chia/ui";
-import { Provider } from "@chia/auth-core/types";
-import { Input, Divider, Button } from "@nextui-org/react";
 import { useTransition } from "react";
+
+import { Input, Divider, Button } from "@nextui-org/react";
+
+import { Provider } from "@chia/auth-core/types";
+import { Card, SubmitForm } from "@chia/ui";
+
+import { signInAction } from "@/server/auth.action";
 
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();

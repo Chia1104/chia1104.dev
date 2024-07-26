@@ -12,6 +12,7 @@ Make sure your tailwind version is at least 3.3.0.
 
 ```ts
 import type { Config } from "tailwindcss";
+
 import baseConfig, { animation } from "@chia/tailwind";
 
 export default {

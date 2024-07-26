@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import useIsomorphicLayoutEffect from "./use-isomorphic-layout-effect";
 
 type UseLockedBodyOutput = [boolean, (locked: boolean) => void];

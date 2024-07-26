@@ -1,6 +1,18 @@
-import { common, createLowlight } from "lowlight";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import type { AnyExtension } from "@tiptap/core";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { common, createLowlight } from "lowlight";
+import {
+  CheckSquare,
+  Code,
+  Heading1,
+  Heading2,
+  Heading3,
+  ImageIcon,
+  List,
+  ListOrdered,
+  Text,
+  TextQuote,
+} from "lucide-react";
 import {
   TiptapImage,
   TiptapLink,
@@ -14,19 +26,8 @@ import {
   Command,
   renderItems,
 } from "novel/extensions";
+
 import { cn } from "@chia/ui";
-import {
-  CheckSquare,
-  Code,
-  Heading1,
-  Heading2,
-  Heading3,
-  ImageIcon,
-  List,
-  ListOrdered,
-  Text,
-  TextQuote,
-} from "lucide-react";
 
 const lowlight = createLowlight(common);
 

@@ -9,13 +9,15 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import SpotifyService from "./spotify.service";
+import { HTTPError } from "ky";
+
+import { AdminGuard } from "@/commons/guard/admin.guard";
 import {
   AuthorizeSpotifyDto,
   AuthorizeCodeDto,
 } from "@/shared/dto/spotify.dto";
-import { HTTPError } from "ky";
-import { AdminGuard } from "@/commons/guard/admin.guard";
+
+import SpotifyService from "./spotify.service";
 
 @ApiTags("OAuth Spotify")
 @Controller("oauth/spotify")

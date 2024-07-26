@@ -1,11 +1,12 @@
+import { nextui } from "@nextui-org/react";
+import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
+
 import baseConfig, {
   egoistIcons,
   animation,
   shadcnConfig,
 } from "@chia/tailwind";
-import { nextui } from "@nextui-org/react";
-import tailwindScrollbar from "tailwind-scrollbar";
 
 export default {
   content: [

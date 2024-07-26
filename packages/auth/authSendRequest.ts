@@ -1,6 +1,7 @@
 import type { Theme } from "@auth/core/types";
-import type { EmailConfig } from "next-auth/providers";
 import { renderAsync } from "@react-email/render";
+import type { EmailConfig } from "next-auth/providers";
+
 import AuthEmailTemplate from "@chia/ui/features/AuthEmailTemplate";
 
 export async function sendVerificationRequest(params: {

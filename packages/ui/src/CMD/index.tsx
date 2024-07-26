@@ -2,11 +2,13 @@
 
 import { useState, useEffect, forwardRef } from "react";
 import type { KeyboardEvent, Dispatch, DependencyList } from "react";
+
 import type { DialogProps } from "@radix-ui/react-dialog";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
-import { cn } from "../utils";
+
 import { Dialog, DialogContent } from "../Dialog";
+import { cn } from "../utils";
 
 export const useCMD = (
   defaultOpen = false,

@@ -1,9 +1,10 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
+import type { FC, ReactNode } from "react";
+
 import { Button } from "@nextui-org/react";
 import type { ButtonProps } from "@nextui-org/react";
-import type { FC, ReactNode } from "react";
+import { useFormStatus } from "react-dom";
 
 interface Props extends Omit<ButtonProps, "children"> {
   children: ReactNode | ((isPending: boolean) => ReactNode);

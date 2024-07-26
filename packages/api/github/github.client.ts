@@ -1,5 +1,6 @@
-import "server-only";
 import { GraphQLClient } from "graphql-request";
+import "server-only";
+
 import { env } from "./env";
 
 const client = new GraphQLClient(env.GITHUB_GRAPHQL_API, {

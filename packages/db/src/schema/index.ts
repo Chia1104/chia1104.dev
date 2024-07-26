@@ -1,3 +1,6 @@
+import type { AdapterAccount } from "@auth/core/adapters";
+import { relations, sql } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 import {
   timestamp,
   text,
@@ -8,11 +11,9 @@ import {
   uniqueIndex,
   boolean,
 } from "drizzle-orm/pg-core";
-import type { AdapterAccount } from "@auth/core/adapters";
-import { pgTable } from "./table";
+
 import { roles, feed_type, article_type } from "./enums";
-import { relations, sql } from "drizzle-orm";
-import type { InferSelectModel } from "drizzle-orm";
+import { pgTable } from "./table";
 
 export const users = pgTable("user", {
   id: text("id").notNull().primaryKey(),

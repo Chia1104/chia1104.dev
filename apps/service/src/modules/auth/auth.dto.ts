@@ -1,5 +1,6 @@
-import { IsEnum, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsEnum, IsOptional } from "class-validator";
+
 import { AuthError, OAuthProvider } from "./types";
 
 export class AuthErrorDto {

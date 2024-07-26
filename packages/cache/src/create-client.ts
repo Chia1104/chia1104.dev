@@ -1,8 +1,9 @@
 import { Redis as Upstash } from "@upstash/redis";
 import Redis from "ioredis";
-import { env } from "./env";
-import type { UpstashConfig } from "./create-upstash";
+
 import type { RedisConfig } from "./create-redis";
+import type { UpstashConfig } from "./create-upstash";
+import { env } from "./env";
 
 export type Config =
   | ({
