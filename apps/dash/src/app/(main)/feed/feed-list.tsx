@@ -10,7 +10,7 @@ import Skeleton from "./skeleton";
 
 interface Props {
   initFeed?: RouterOutputs["feeds"]["infinite"]["items"];
-  nextCursor?: string | number;
+  nextCursor?: string | number | Date;
   useClient?: boolean;
   query?: RouterInputs["feeds"]["infinite"];
 }

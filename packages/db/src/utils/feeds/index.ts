@@ -137,8 +137,12 @@ export const getInfiniteFeeds = withDTO(
       whereAnd?: (SQLWrapper | undefined)[];
     }
   ) => {
-    const cursorTransform = (cursor: any) => {
-      if (orderBy === "createdAt" || orderBy === "updatedAt") {
+    const cursorTransform = (cursor: string | number | Date | dayjs.Dayjs) => {
+      if (
+        cursor instanceof dayjs.Dayjs ||
+        orderBy === "createdAt" ||
+        orderBy === "updatedAt"
+      ) {
         return dayjs(cursor).toDate();
       }
       return cursor;
@@ -196,8 +200,12 @@ export const getInfiniteFeedsByUserId = withDTO(
       whereAnd?: (SQLWrapper | undefined)[];
     }
   ) => {
-    const cursorTransform = (cursor: any) => {
-      if (orderBy === "createdAt" || orderBy === "updatedAt") {
+    const cursorTransform = (cursor: string | number | Date | dayjs.Dayjs) => {
+      if (
+        cursor instanceof dayjs.Dayjs ||
+        orderBy === "createdAt" ||
+        orderBy === "updatedAt"
+      ) {
         return dayjs(cursor).toDate();
       }
       return cursor;

@@ -7,7 +7,8 @@
   "main": "./index.ts",
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
-    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests"

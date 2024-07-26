@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "main": "src/index.ts",
   "scripts": {
-    "lint": "eslint \"src/**/*.{ts,js,tsx,jsx}\" --fix",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

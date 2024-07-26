@@ -37,8 +37,8 @@ env:
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
-  init:
-    name: Init service
+  ci:
+    name: Build & test service
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service') }}
@@ -53,87 +53,12 @@ jobs:
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
-  lint:
-    name: 'Lint check'
-    timeout-minutes: 20
-    runs-on: ubuntu-latest
-    needs: init
-    steps:
-      - name: '🐙️  Checkout'
-        id: pull-checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: '📦  Install'
-        id: pull-install
-        uses: './.github/actions/install'
-        with:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
-
       - name: "🏗️  Build"
         shell: bash
         run: |
           pnpm build --filter service...
 
-      - name: '🧹  Lint check'
-        id: pull-lint
+      - name: "🧹  Lint & Type check & Test"
         shell: bash
         run: |
-          pnpm lint --filter service...
-  type-check:
-    name: 'Type check'
-    timeout-minutes: 20
-    runs-on: ubuntu-latest
-    needs: init
-    steps:
-      - name: '🐙️  Checkout'
-        id: pull-checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: '📦  Install'
-        id: pull-install
-        uses: './.github/actions/install'
-        with:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
-
-      - name: "🏗️  Build"
-        shell: bash
-        run: |
-          pnpm build --filter service...
-
-      - name: '🔍  TypeCheck'
-        id: pull-typecheck
-        shell: bash
-        run: |
-          pnpm type:check --filter service...
-  unit-test:
-    name: 'Unit test'
-    timeout-minutes: 20
-    runs-on: ubuntu-latest
-    needs: init
-    steps:
-      - name: '🐙️  Checkout'
-        id: pull-checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-
-      - name: '📦  Install'
-        id: pull-install
-        uses: './.github/actions/install'
-        with:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
-
-      - name: "🏗️  Build"
-        shell: bash
-        run: |
-          pnpm build --filter service...
-
-      - name: '🧪  Unit test'
-        id: pull-unit-test
-        shell: bash
-        run: |
-          pnpm test --filter service...
+          turbo run lint type:check test --parallel --filter service...
