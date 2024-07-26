@@ -1,12 +1,13 @@
+import { nextui } from "@nextui-org/react";
+import aspectRatio from "@tailwindcss/aspect-ratio";
+import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
+
 import baseConfig, {
   animation,
   shadcnConfig,
   egoistIcons,
 } from "@chia/tailwind";
-import aspectRatio from "@tailwindcss/aspect-ratio";
-import tailwindScrollbar from "tailwind-scrollbar";
-import { nextui } from "@nextui-org/react";
 
 const config: Config = {
   content: [

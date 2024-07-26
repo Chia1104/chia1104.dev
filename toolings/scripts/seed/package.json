@@ -6,7 +6,8 @@
   "types": "./index.ts",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint index.ts --fix",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules",
     "db:seed": "node --import=tsx --env-file=../../../.env.global index.ts seedPost",

@@ -1,5 +1,5 @@
-import { errorConfig } from "./network.config";
 import type { ErrorResponse } from "../request/request.utill";
+import { errorConfig } from "./network.config";
 
 export function errorGenerator(
   statusCode: number,

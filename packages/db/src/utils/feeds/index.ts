@@ -1,8 +1,9 @@
-import { schema } from "../..";
-import type { DB } from "../..";
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import type { SQLWrapper } from "drizzle-orm";
+
+import { schema } from "../..";
+import type { DB } from "../..";
 import type { GetDTO, InfiniteDTO } from "../validator/feeds";
 
 const withDTO = <TDto = unknown, TResult = unknown>(
@@ -137,8 +138,12 @@ export const getInfiniteFeeds = withDTO(
       whereAnd?: (SQLWrapper | undefined)[];
     }
   ) => {
-    const cursorTransform = (cursor: any) => {
-      if (orderBy === "createdAt" || orderBy === "updatedAt") {
+    const cursorTransform = (cursor: string | number | Date | dayjs.Dayjs) => {
+      if (
+        cursor instanceof dayjs.Dayjs ||
+        orderBy === "createdAt" ||
+        orderBy === "updatedAt"
+      ) {
         return dayjs(cursor).toDate();
       }
       return cursor;
@@ -196,8 +201,12 @@ export const getInfiniteFeedsByUserId = withDTO(
       whereAnd?: (SQLWrapper | undefined)[];
     }
   ) => {
-    const cursorTransform = (cursor: any) => {
-      if (orderBy === "createdAt" || orderBy === "updatedAt") {
+    const cursorTransform = (cursor: string | number | Date | dayjs.Dayjs) => {
+      if (
+        cursor instanceof dayjs.Dayjs ||
+        orderBy === "createdAt" ||
+        orderBy === "updatedAt"
+      ) {
         return dayjs(cursor).toDate();
       }
       return cursor;

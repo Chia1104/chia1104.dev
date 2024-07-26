@@ -1,5 +1,7 @@
 "use client";
 
+import { useTransition, useState } from "react";
+
 import {
   Link,
   Navbar,
@@ -12,10 +14,10 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@nextui-org/react";
-import { signInAction } from "@/server/auth.action";
-import { useTransition, useState } from "react";
-import AuthGuard from "@/components/auth-guard/index.client";
 import { signOut } from "next-auth/react";
+
+import AuthGuard from "@/components/auth-guard/index.client";
+import { signInAction } from "@/server/auth.action";
 
 const User = () => {
   const [isPending, startTransition] = useTransition();

@@ -6,7 +6,8 @@
   "types": "./index.ts",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint \"**/*.{ts,js,tsx,jsx}\" --fix",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules"
   },

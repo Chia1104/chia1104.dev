@@ -2,10 +2,12 @@
 
 import { useMemo } from "react";
 import type { FC } from "react";
+
 import dayjs from "dayjs";
-import type { TimelineProps, Data, GroupData } from "./types";
-import { GroupList } from "./client";
+
 import { cn } from "../utils";
+import { GroupList } from "./client";
+import type { TimelineProps, Data, GroupData } from "./types";
 
 const getYear = (a: dayjs.Dayjs | string | number | Date | null) =>
   dayjs(a).year();

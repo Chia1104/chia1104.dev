@@ -37,8 +37,8 @@ env:
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
-  build:
-    name: Build and Test
+  ci:
+    name: Build & test service
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service') }}
@@ -48,26 +48,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "💽️  Init"
-        id: backend-init
-        uses: ./.github/actions/init-pnpm
+        id: dash-init
+        uses: ./.github/actions/install
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
-      - name: "📦  Install"
-        id: backend-install
-        uses: ./.github/actions/pnpm-install
-
       - name: "🏗️  Build"
-        uses: ./.github/actions/pnpm-build
-        with:
-          BUILD_COMMAND: "build --filter service..."
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+        shell: bash
+        run: |
+          pnpm build --filter service...
 
-      - name: "🚨️  ESLint, Type checking, Unit tests"
-        id: backend-lint-test
-        uses: ./.github/actions/lint-test
-        with:
-          COMMAND: "--filter service..."
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+      - name: "🧹  Lint & Type check & Test"
+        shell: bash
+        run: |
+          pnpm lint type:check test --filter service...

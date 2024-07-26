@@ -53,8 +53,8 @@ env:
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
-  build:
-    name: Build and Test
+  ci:
+    name: Build & test www
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
@@ -64,14 +64,43 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "💽️  Init"
-        id: www-init
-        uses: ./.github/actions/init-pnpm
+        id: dash-init
+        uses: ./.github/actions/install
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
+      - name: "📦  Next.js cache"
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/apps/dash/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
+
+      - name: "🏗️  Build"
+        shell: bash
+        run: |
+          pnpm build --filter www...
+
+      - name: "🧹  Lint & Type check & Test"
+        shell: bash
+        run: |
+          pnpm lint type:check test --filter www...
+
+  e2e-tests:
+    name: "E2E tests"
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - name: "🐙️  Checkout"
+        id: pull-checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
       - name: "📦  Install"
-        id: www-install
-        uses: ./.github/actions/pnpm-install
+        id: pull-install
+        uses: "./.github/actions/install"
+        with:
+          NODE_VERSION: ${{ env.NODE_VERSION }}
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
@@ -79,17 +108,19 @@ jobs:
           path: ${{ github.workspace }}/apps/www/.next/cache
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
 
-      - name: "🏗️  Build"
-        uses: ./.github/actions/pnpm-build
-        with:
-          BUILD_COMMAND: "build --filter www..."
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+      - name: "📦  Install Playwright Browsers"
+        run: npx playwright install --with-deps
 
-      - name: "🚨️  ESLint, Type checking, Unit tests"
-        id: www-lint-test
-        uses: ./.github/actions/lint-test
+      - name: "🧪  E2E tests"
+        id: pull-e2e-tests
+        shell: bash
+        run: |
+          pnpm test:e2e --filter www-e2e...
+
+      - name: "✅  Output coverage"
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
-          COMMAND: "--filter www..."
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+          name: playwright-report
+          path: tests/www-e2e/playwright-report/
+          retention-days: 30

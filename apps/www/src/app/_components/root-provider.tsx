@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import type { FC, ReactNode } from "react";
-import { ThemeProvider } from "next-themes";
-import type { Theme } from "@chia/ui";
-import { Cursor, useTheme, useCMD } from "@chia/ui";
-import { Toaster as ST } from "sonner";
-import Script from "next/script";
-import { env } from "@/env";
+
+import { NextUIProvider } from "@nextui-org/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
-import superjson from "superjson";
-import { api } from "@/trpc-api";
-import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
+import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
-import { NextUIProvider } from "@nextui-org/react";
+import Script from "next/script";
+import { Toaster as ST } from "sonner";
+import superjson from "superjson";
+
+import type { Theme } from "@chia/ui";
+import { Cursor, useTheme, useCMD } from "@chia/ui";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
+
+import { env } from "@/env";
+import { api } from "@/trpc-api";
 
 export const queryClient = new QueryClient({
   defaultOptions: {

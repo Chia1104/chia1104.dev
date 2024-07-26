@@ -1,7 +1,8 @@
 "use client";
 
-import { Image, withError } from "@chia/ui";
 import * as Sentry from "@sentry/nextjs";
+
+import { Image, withError } from "@chia/ui";
 
 const Error = withError(
   () => {

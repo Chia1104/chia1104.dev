@@ -1,6 +1,11 @@
 "use client";
 
 import type { FC } from "react";
+
+import { Tabs, Tab, Tooltip, Button, Kbd } from "@nextui-org/react";
+import capitalize from "lodash/capitalize";
+import { useRouter, useSelectedLayoutSegments } from "next/navigation";
+
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,11 +21,9 @@ import {
   useTheme,
   Link,
 } from "@chia/ui";
-import { useRouter, useSelectedLayoutSegments } from "next/navigation";
-import navItems from "@/shared/routes";
+
 import contact from "@/shared/contact";
-import capitalize from "lodash/capitalize";
-import { Tabs, Tab, Tooltip, Button, Kbd } from "@nextui-org/react";
+import navItems from "@/shared/routes";
 
 const CMDK = () => {
   const [open, setOpen] = useCMD();

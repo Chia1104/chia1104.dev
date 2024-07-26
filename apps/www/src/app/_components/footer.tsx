@@ -1,15 +1,18 @@
 "use client";
 
 import type { FC } from "react";
-import { cn, Link, ThemeSelector } from "@chia/ui";
-import { useSelectedLayoutSegments } from "next/navigation";
-import { motion } from "framer-motion";
-import navItems from "@/shared/routes";
-import contact from "@/shared/contact";
-import { Image, RetroGrid } from "@chia/ui";
-import meta from "@chia/meta";
-import CurrentPlaying from "@/app/_components/current-playing";
+
 import { Tabs, Tab, Button } from "@nextui-org/react";
+import { motion } from "framer-motion";
+import { useSelectedLayoutSegments } from "next/navigation";
+
+import meta from "@chia/meta";
+import { cn, Link, ThemeSelector } from "@chia/ui";
+import { Image, RetroGrid } from "@chia/ui";
+
+import CurrentPlaying from "@/app/_components/current-playing";
+import contact from "@/shared/contact";
+import navItems from "@/shared/routes";
 
 const Copyright: FC<{ className?: string }> = ({ className }) => (
   <p className={className}>

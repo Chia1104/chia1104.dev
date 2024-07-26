@@ -3,8 +3,10 @@ import type {
   ComponentPropsWithoutRef,
   ComponentProps,
 } from "react";
-import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
+
 import type { Dayjs } from "dayjs";
+import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
+
 import type { LinkProps } from "../Link";
 
 export interface Data {

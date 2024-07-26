@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
+import { Buffer } from "buffer";
+import ky from "ky";
+
 import env from "@/config/env";
 import { AuthorizeSpotifyDto } from "@/shared/dto/spotify.dto";
-import ky from "ky";
-import { Buffer } from "buffer";
 
 @Injectable()
 class SpotifyService {

@@ -1,11 +1,13 @@
 "use client";
 
-import { Image, Link, cn, useIsMobile } from "@chia/ui";
-import { motion, AnimatePresence } from "framer-motion";
-import { Boxes, Pencil, Settings2 } from "lucide-react";
 import { useRef } from "react";
 import type { FC, ReactNode } from "react";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { Boxes, Pencil, Settings2 } from "lucide-react";
 import { useHover } from "usehooks-ts";
+
+import { Image, Link, cn, useIsMobile } from "@chia/ui";
 
 const LinkItem: FC<{
   name: string;

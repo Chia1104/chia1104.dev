@@ -1,10 +1,12 @@
 "use client";
 
 import type { FC, ReactNode, SVGProps } from "react";
-import { useRouter } from "next/navigation";
-import { cn } from "../utils";
+
 import type { HTMLMotionProps } from "framer-motion";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+
+import { cn } from "../utils";
 
 interface Props extends Omit<HTMLMotionProps<"button">, "children"> {
   icon?: ReactNode;

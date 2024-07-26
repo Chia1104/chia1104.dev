@@ -1,8 +1,9 @@
 "use client";
 
-import { cn } from "../utils";
 import { useId } from "react";
 import type { ReactElement, ComponentPropsWithoutRef } from "react";
+
+import { cn } from "../utils";
 
 interface Props extends ComponentPropsWithoutRef<"svg"> {
   className?: string;

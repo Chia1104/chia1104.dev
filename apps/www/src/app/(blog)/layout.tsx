@@ -1,9 +1,12 @@
-import { NavigationMenu, NavigationMenuList } from "@chia/ui";
 import type { FC, ReactNode } from "react";
-import { getPosts, getNotes } from "@/services/feeds.service";
+
 import type { RouterOutputs } from "@chia/api";
-import { PostNavigation } from "./_components/posts";
+import { NavigationMenu, NavigationMenuList } from "@chia/ui";
+
+import { getPosts, getNotes } from "@/services/feeds.service";
+
 import { NoteNavigation } from "./_components/notes";
+import { PostNavigation } from "./_components/posts";
 
 const Navigation: FC<{
   posts?: RouterOutputs["feeds"]["infinityByAdmin"]["items"];

@@ -1,8 +1,9 @@
-import Footer from "./footer";
+import "@testing-library/jest-dom/vitest";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "test/utils";
-import "@testing-library/jest-dom/vitest";
 import { IntersectionObserverMock } from "vitest-shared";
+
+import Footer from "./footer";
 
 vi.stubGlobal("IntersectionObserver", IntersectionObserverMock);
 

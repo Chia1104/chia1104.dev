@@ -13,8 +13,9 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from "express";
-import AuthService from "./auth.service";
+
 import { AuthErrorDto, OAuthProviderDto } from "./auth.dto";
+import AuthService from "./auth.service";
 
 @ApiTags("Auth")
 @Controller("auth")

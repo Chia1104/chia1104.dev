@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC } from "react";
+
 import { Skeleton as NSkeleton } from "@nextui-org/react";
 
 const Skeleton: FC = () => {

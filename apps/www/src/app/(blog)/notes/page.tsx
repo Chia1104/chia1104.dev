@@ -1,9 +1,11 @@
+import dayjs from "dayjs";
 import type { Metadata } from "next";
+import Link from "next/link";
+
 import { Timeline, ImageZoom, Image } from "@chia/ui";
 import type { TimelineTypes } from "@chia/ui";
+
 import { getNotes } from "@/services/feeds.service";
-import dayjs from "dayjs";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Notes",

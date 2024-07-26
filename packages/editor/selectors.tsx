@@ -1,4 +1,6 @@
 import React from "react";
+
+import { Button } from "@nextui-org/react";
 import {
   Check,
   ChevronDown,
@@ -13,8 +15,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { EditorBubbleItem, useEditor } from "novel";
+
 import { Popover, PopoverTrigger, PopoverContent } from "@chia/ui";
-import { Button } from "@nextui-org/react";
 
 export interface SelectorItem {
   name: string;

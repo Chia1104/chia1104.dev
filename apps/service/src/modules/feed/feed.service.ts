@@ -1,8 +1,11 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
+
 import type { DB } from "@chia/db";
+
 import { QueryFeedsDto } from "@/shared/dto/feeds.dto";
 import { FeedType } from "@/shared/models/feed.model";
+
+import { DRIZZLE_PROVIDER } from "../drizzle/drizzle.provider";
 
 @Injectable()
 class FeedService {

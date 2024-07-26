@@ -1,8 +1,10 @@
 "use client";
 
+import type { FC, ComponentProps } from "react";
+
 import { motion, useScroll, useSpring } from "framer-motion";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
-import type { FC, ComponentProps } from "react";
+
 import { cn } from "../utils";
 
 const ScrollYProgress: FC<

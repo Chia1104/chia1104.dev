@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
-import { env } from "@/env";
+
 import { getAdminId } from "@chia/utils";
+
+import { env } from "@/env";
 
 export const getRedirectUri = (req: NextRequest) => {
   return (

@@ -7,3 +7,4 @@ force re-deploy
 test lock-file
 hoist node linker
 regenerate lock file
+refactor ci

@@ -1,5 +1,5 @@
-import { IsEnum, IsNumberString, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsEnum, IsNumberString, IsOptional } from "class-validator";
 
 export class QueryFeedsDto {
   @IsNumberString()

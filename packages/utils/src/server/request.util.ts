@@ -1,8 +1,9 @@
-import { encodeUrlEncoded } from "../url/url";
 import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from "express";
+
+import { encodeUrlEncoded } from "../url/url";
 
 export const encodeJson = <T extends Record<string, unknown>>(obj: T) => {
   return JSON.stringify(obj);

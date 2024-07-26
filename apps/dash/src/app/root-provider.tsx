@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import type { FC, ReactNode } from "react";
-import { SessionProvider } from "next-auth/react";
-import type { Session } from "next-auth";
-import { ThemeProvider } from "next-themes";
-import type { Theme } from "@chia/ui";
-import { useTheme } from "@chia/ui";
-import { Toaster as ST } from "sonner";
+
 import { NextUIProvider } from "@nextui-org/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
-import superjson from "superjson";
-import { api } from "@/trpc-api";
-import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
+import type { Session } from "next-auth";
+import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
+import { Toaster as ST } from "sonner";
+import superjson from "superjson";
+
+import type { Theme } from "@chia/ui";
+import { useTheme } from "@chia/ui";
+import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
+
+import { api } from "@/trpc-api";
 
 interface Props {
   session: Session | null;

@@ -1,5 +1,6 @@
 import { Redis as Upstash } from "@upstash/redis";
 import type { RedisConfigNodejs } from "@upstash/redis";
+
 import { env } from "./env";
 
 export type UpstashConfig = Partial<RedisConfigNodejs>;

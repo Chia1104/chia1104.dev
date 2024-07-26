@@ -1,6 +1,7 @@
+import type { FC, ReactNode } from "react";
+
 import meta from "@chia/meta";
 import { Image, ImageZoom, FadeIn, Link } from "@chia/ui";
-import type { FC, ReactNode } from "react";
 
 const contact = {
   github: {

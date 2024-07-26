@@ -1,5 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
+import type { FC } from "react";
+
+import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
+
+import type { RouterOutputs, RouterInputs } from "@chia/api";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
@@ -10,13 +17,10 @@ import {
   Link,
 } from "@chia/ui";
 import type { TimelineTypes } from "@chia/ui";
-import { useMemo } from "react";
-import type { FC } from "react";
-import type { RouterOutputs, RouterInputs } from "@chia/api";
-import ListItem from "../list-item";
-import { useRouter } from "next/navigation";
+
 import { api } from "@/trpc-api";
-import dayjs from "dayjs";
+
+import ListItem from "../list-item";
 
 export const PostNavigation: FC<{
   posts?: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
@@ -81,7 +85,7 @@ export const PostNavigation: FC<{
 export const List: FC<{
   initialData: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
   query?: RouterInputs["feeds"]["infinityByAdmin"];
-  nextCursor?: string | number;
+  nextCursor?: string | number | Date;
 }> = ({ initialData, nextCursor, query = {} }) => {
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     api.feeds.infinityByAdmin.useInfiniteQuery(

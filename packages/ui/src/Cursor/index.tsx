@@ -2,10 +2,12 @@
 
 import { useCallback } from "react";
 import type { FC, ComponentProps } from "react";
+
 import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
-import { cn } from "../utils";
 import { useEventListener } from "usehooks-ts";
+
+import { cn } from "../utils";
 
 const Cursor: FC<
   ComponentProps<ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>>

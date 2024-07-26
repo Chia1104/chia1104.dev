@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { z } from "zod";
 
 export const getSchema = z
@@ -25,7 +26,15 @@ export type GetDTO = z.infer<typeof getSchema>;
 export const infiniteSchema = z
   .object({
     limit: z.number().max(50).optional().default(10),
-    cursor: z.any(),
+    // string | number | Date | dayjs.Dayjs
+    cursor: z
+      .union([
+        z.string(),
+        z.number(),
+        z.date(),
+        z.instanceof(dayjs as unknown as typeof dayjs.Dayjs),
+      ])
+      .nullish(),
     orderBy: z
       .enum(["createdAt", "updatedAt", "id", "slug", "title"])
       .optional()

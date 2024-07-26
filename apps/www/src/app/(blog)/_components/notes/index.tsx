@@ -1,16 +1,19 @@
 "use client";
 
+import type { FC } from "react";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import type { RouterOutputs } from "@chia/api";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuTrigger,
   cn,
 } from "@chia/ui";
-import type { FC } from "react";
-import type { RouterOutputs } from "@chia/api";
+
 import ListItem from "../list-item";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export const NoteNavigation: FC<{
   notes?: RouterOutputs["feeds"]["infinityByAdmin"]["items"];

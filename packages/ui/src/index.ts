@@ -1,5 +1,5 @@
-import NotFound from "../features/NotFound";
 import Error from "../features/Error";
+import NotFound from "../features/NotFound";
 
 export {
   Accordion,

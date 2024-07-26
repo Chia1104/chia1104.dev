@@ -1,7 +1,10 @@
 "use client";
+
 import type { FC } from "react";
 import { useEffect, useRef, useState, memo } from "react";
+
 import { motion } from "framer-motion";
+
 import { cn } from "../utils";
 
 export const TextRevealCard = ({

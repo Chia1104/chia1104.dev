@@ -5,5 +5,17 @@ module.exports = {
   tabWidth: 2,
   trailingComma: "es5",
   bracketSameLine: true,
-  plugins: [require.resolve("prettier-plugin-tailwindcss")],
+  importOrder: [
+    "^react$",
+    "<THIRD_PARTY_MODULES>",
+    "^@chia/(.*)$",
+    "^@/(.*)$",
+    "^[./]",
+  ],
+  importOrderSeparation: true,
+  importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
+  plugins: [
+    require.resolve("prettier-plugin-tailwindcss"),
+    require.resolve("@trivago/prettier-plugin-sort-imports"),
+  ],
 };

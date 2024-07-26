@@ -2,8 +2,8 @@
  * @typedef {import('next').NextConfig} NextConfig
  * @typedef {(config: NextConfig) => NextConfig} Plugin
  */
-
 import million from "million/compiler";
+
 // import MillionCompiler from "@million/lint";
 
 const securityHeaders = [

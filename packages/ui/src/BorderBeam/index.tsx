@@ -1,5 +1,6 @@
-import { cn } from "../utils";
 import type { ComponentPropsWithoutRef, CSSProperties, FC } from "react";
+
+import { cn } from "../utils";
 
 interface BorderBeamProps extends ComponentPropsWithoutRef<"div"> {
   size?: number;

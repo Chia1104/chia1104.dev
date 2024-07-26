@@ -1,5 +1,13 @@
 "use client";
 
+import { useId } from "react";
+
+import { Input, Textarea } from "@nextui-org/react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { Controller } from "react-hook-form";
+
+import meta from "@chia/meta";
 import {
   Drawer,
   DrawerClose,
@@ -11,14 +19,9 @@ import {
   Meteors,
   ShimmerButton,
 } from "@chia/ui";
-import { useRouter } from "next/navigation";
-import { Form } from "@/app/contact/contact";
 import { Link } from "@chia/ui";
-import meta from "@chia/meta";
-import { Controller } from "react-hook-form";
-import { useId } from "react";
-import { motion } from "framer-motion";
-import { Input, Textarea } from "@nextui-org/react";
+
+import { Form } from "@/app/contact/contact";
 
 const ContactForm = () => {
   const router = useRouter();

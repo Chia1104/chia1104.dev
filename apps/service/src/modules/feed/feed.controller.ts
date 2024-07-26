@@ -7,9 +7,11 @@ import {
   Query,
 } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import FeedService from "./feed.service";
-import { QueryFeedsDto } from "@/shared/dto/feeds.dto";
 import { isArray } from "class-validator";
+
+import { QueryFeedsDto } from "@/shared/dto/feeds.dto";
+
+import FeedService from "./feed.service";
 
 @ApiTags("Feed")
 @Controller("feed")

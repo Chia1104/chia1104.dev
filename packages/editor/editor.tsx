@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import type { FC, ComponentPropsWithoutRef } from "react";
+
 import {
   EditorRoot,
   EditorContent,
@@ -10,7 +11,9 @@ import {
   EditorCommandEmpty,
   EditorCommandItem,
 } from "novel";
+
 import { cn } from "@chia/ui";
+
 import extensions, { suggestionItems } from "./extensions";
 import { NodeSelector } from "./selectors";
 

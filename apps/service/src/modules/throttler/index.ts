@@ -1,9 +1,10 @@
+import { ConfigService } from "@nestjs/config";
 import { ThrottlerModule, seconds } from "@nestjs/throttler";
-import { ThrottlerStorageRedisService } from "nestjs-throttler-storage-redis";
 import Redis from "ioredis";
+import { ThrottlerStorageRedisService } from "nestjs-throttler-storage-redis";
+
 import ConfigModule from "@/config";
 import type { AppEnv } from "@/config";
-import { ConfigService } from "@nestjs/config";
 
 export default ThrottlerModule.forRootAsync({
   imports: [ConfigModule],

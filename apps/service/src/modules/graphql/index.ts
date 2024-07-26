@@ -1,7 +1,7 @@
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
-import { GraphQLModule } from "@nestjs/graphql";
 import type { ApolloDriverConfig } from "@nestjs/apollo";
 import { ApolloDriver } from "@nestjs/apollo";
+import { GraphQLModule } from "@nestjs/graphql";
 import { join } from "path";
 
 export default GraphQLModule.forRoot<ApolloDriverConfig>({

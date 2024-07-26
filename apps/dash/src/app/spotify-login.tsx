@@ -1,10 +1,11 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
 import { Button } from "@nextui-org/react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 import { post } from "@chia/utils";
 import type { HTTPError } from "@chia/utils";
-import { toast } from "sonner";
 
 const SpotifyLogin = () => {
   const { mutate, isPending } = useMutation<

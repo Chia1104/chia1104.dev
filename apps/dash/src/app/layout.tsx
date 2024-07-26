@@ -1,11 +1,14 @@
-import "./globals.css";
 import type { ReactNode } from "react";
-import { auth } from "@chia/auth";
-import RootProvider from "./root-provider";
-import { headers } from "next/headers";
+
 import type { Viewport, Metadata } from "next";
-import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
 import { ViewTransitions } from "next-view-transitions";
+import { headers } from "next/headers";
+
+import { auth } from "@chia/auth";
+import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
+
+import "./globals.css";
+import RootProvider from "./root-provider";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",

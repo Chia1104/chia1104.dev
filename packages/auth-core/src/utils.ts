@@ -1,5 +1,6 @@
-import type { env as internalEnv } from "./env";
 import type { AuthConfig } from "@auth/core";
+
+import type { env as internalEnv } from "./env";
 
 export const useSecureCookies = process.env.NODE_ENV === "production";
 export const cookiePrefix = useSecureCookies ? "__Secure-" : "";

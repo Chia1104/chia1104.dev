@@ -1,7 +1,5 @@
 "use client";
 
-import createGlobe from "cobe";
-import type { COBEOptions } from "cobe";
 import { useRef, useEffect, useCallback, useState } from "react";
 import type {
   ComponentPropsWithoutRef,
@@ -10,9 +8,13 @@ import type {
   PointerEvent,
   TouchEvent,
 } from "react";
-import { cn, useTheme, Image } from "@chia/ui";
-import { useResizeObserver } from "usehooks-ts";
+
+import createGlobe from "cobe";
+import type { COBEOptions } from "cobe";
 import { useSpring, useMotionValue } from "framer-motion";
+import { useResizeObserver } from "usehooks-ts";
+
+import { cn, useTheme, Image } from "@chia/ui";
 
 type LocationProps = {
   location: [number, number];

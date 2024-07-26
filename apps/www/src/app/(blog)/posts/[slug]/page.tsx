@@ -1,16 +1,20 @@
-import { Image } from "@chia/ui";
+import { Suspense } from "react";
+
 import dayjs from "dayjs";
 import type { Metadata } from "next";
-import type { Blog, WithContext } from "schema-dts";
-import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
+import { notFound } from "next/navigation";
 import { createHmac } from "node:crypto";
+import type { Blog, WithContext } from "schema-dts";
+
+import { Image } from "@chia/ui";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { setSearchParams } from "@chia/utils";
+
+import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
-import { notFound } from "next/navigation";
-import type { OgDTO } from "@/app/api/(v1)/og/utils";
+
 import Content from "./content";
-import { Suspense } from "react";
 
 /**
  * TODO: waiting for the next release of fumadocs-ui (v13)

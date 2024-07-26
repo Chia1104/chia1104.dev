@@ -1,5 +1,4 @@
 /// <reference types="./types.d.ts" />
-
 import eslint from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
 import tseslint from "typescript-eslint";
@@ -34,7 +33,7 @@ export const restrictEnvAccess = tseslint.config({
 export default tseslint.config(
   {
     // Globally ignored files
-    ignores: ["**/*.config.*"],
+    ignores: ["**/*.config.*", "dist/**", "build/**", "node_modules/**"],
   },
   {
     files: ["**/*.js", "**/*.ts", "**/*.tsx"],

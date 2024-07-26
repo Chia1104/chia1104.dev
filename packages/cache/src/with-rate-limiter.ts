@@ -1,7 +1,8 @@
-import type Redis from "ioredis";
 import { Ratelimit } from "@upstash/ratelimit";
 import type { RatelimitConfig } from "@upstash/ratelimit";
 import type { Redis as Upstash } from "@upstash/redis";
+import type Redis from "ioredis";
+
 import { getIP } from "./utils";
 
 export const withRateLimiter = <

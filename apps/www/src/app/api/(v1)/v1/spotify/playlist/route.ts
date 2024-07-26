@@ -1,7 +1,8 @@
+import { HTTPError } from "ky";
 import { NextResponse } from "next/server";
+
 import { getPlayList } from "@chia/api/spotify";
 import { errorGenerator } from "@chia/utils";
-import { HTTPError } from "ky";
 
 export const runtime = "edge";
 

@@ -1,5 +1,7 @@
 "use client";
 
+import type { MouseEvent, ComponentPropsWithoutRef, FC } from "react";
+
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import type {
   MotionStyle,
@@ -7,7 +9,7 @@ import type {
   HTMLMotionProps,
   ForwardRefComponent,
 } from "framer-motion";
-import type { MouseEvent, ComponentPropsWithoutRef, FC } from "react";
+
 import { cn } from "../utils";
 
 interface Props

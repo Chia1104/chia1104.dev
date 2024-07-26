@@ -1,9 +1,12 @@
 "use client";
 
-import { giscusConfig } from "@/config/giscus.config";
-import { useTheme } from "@chia/ui";
-import G from "@giscus/react";
 import type { FC } from "react";
+
+import G from "@giscus/react";
+
+import { useTheme } from "@chia/ui";
+
+import { giscusConfig } from "@/config/giscus.config";
 
 interface Props {
   title: string;

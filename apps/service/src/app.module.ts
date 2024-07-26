@@ -1,14 +1,16 @@
 import { Module, Global } from "@nestjs/common";
-import { AppController } from "./app.controller";
-import FeedModule from "@/modules/feed/feed.module";
-import SpotifyModule from "@/modules/spotify/spotify.module";
-import RateLimiterModule from "@/modules/rate-limiter/rate-limiter.module";
-import GraphQLModule from "./modules/graphql";
+
 import ConfigModule from "@/config";
-import ThrottlerModule from "@/modules/throttler";
 import AuthModule from "@/modules/auth/auth.module";
+import FeedModule from "@/modules/feed/feed.module";
+import RateLimiterModule from "@/modules/rate-limiter/rate-limiter.module";
+import SpotifyModule from "@/modules/spotify/spotify.module";
+import ThrottlerModule from "@/modules/throttler";
+
+import { AppController } from "./app.controller";
 import DrizzleModule from "./modules/drizzle/drizzle.module";
 import DrizzleProvider from "./modules/drizzle/drizzle.provider";
+import GraphQLModule from "./modules/graphql";
 
 @Global()
 @Module({

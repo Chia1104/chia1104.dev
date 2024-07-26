@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+
 import { env } from "./src/env";
 
 Sentry.init({

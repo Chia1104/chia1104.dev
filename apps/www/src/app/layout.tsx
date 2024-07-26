@@ -1,20 +1,24 @@
-import "../styles/globals.css";
-import RootProvider from "./_components/root-provider";
 import type { ReactNode } from "react";
-import meta from "@chia/meta";
-import "@total-typescript/ts-reset";
-import type { Metadata, Viewport } from "next";
-import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
-import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
-import "react-medium-image-zoom/dist/styles.css";
-import Footer from "./_components/footer";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ScrollYProgress } from "@chia/ui";
-import NavMenu from "./_components/nav-menu";
+
 import { GoogleTagManager } from "@next/third-parties/google";
-import Background from "./_components/background";
-import { env } from "@/env";
+import "@total-typescript/ts-reset";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata, Viewport } from "next";
 import { ViewTransitions } from "next-view-transitions";
+import "react-medium-image-zoom/dist/styles.css";
+
+import meta from "@chia/meta";
+import { ScrollYProgress } from "@chia/ui";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
+
+import { env } from "@/env";
+
+import "../styles/globals.css";
+import Background from "./_components/background";
+import Footer from "./_components/footer";
+import NavMenu from "./_components/nav-menu";
+import RootProvider from "./_components/root-provider";
 
 export const viewport: Viewport = {
   themeColor: [

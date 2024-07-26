@@ -1,7 +1,8 @@
 "use client";
 
-import { Features } from "@chia/ui";
 import * as Sentry from "@sentry/nextjs";
+
+import { Features } from "@chia/ui";
 
 export default Features.Error({
   onError(error) {
