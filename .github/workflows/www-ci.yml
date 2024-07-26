@@ -1,8 +1,6 @@
 name: www CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
     paths:
@@ -54,7 +52,7 @@ env:
 
 jobs:
   ci:
-    name: Build & test www
+    name: Build & test
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
@@ -89,6 +87,7 @@ jobs:
     name: "E2E tests"
     timeout-minutes: 20
     runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
     steps:
       - name: "🐙️  Checkout"
         id: pull-checkout

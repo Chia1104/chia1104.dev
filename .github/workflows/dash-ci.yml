@@ -1,8 +1,6 @@
 name: dash CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
     paths:
@@ -36,7 +34,7 @@ env:
 
 jobs:
   ci:
-    name: Build & test dash
+    name: Build & test
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-dash') }}

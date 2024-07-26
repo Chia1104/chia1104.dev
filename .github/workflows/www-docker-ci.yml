@@ -1,8 +1,6 @@
 name: www Docker CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
     paths:
