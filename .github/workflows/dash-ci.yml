@@ -60,7 +60,7 @@ jobs:
       - name: "🏗️  Build"
         shell: bash
         run: |
-          pnpm build filter dash...
+          pnpm build --filter dash...
   lint:
     name: 'Lint check'
     timeout-minutes: 20
@@ -78,6 +78,17 @@ jobs:
         uses: './.github/actions/install'
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
+
+      - name: "📦  Next.js cache"
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/apps/dash/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-dash
+
+      - name: "🏗️  Build"
+        shell: bash
+        run: |
+          pnpm build --filter dash...
 
       - name: '🧹  Lint check'
         id: pull-lint
@@ -102,6 +113,17 @@ jobs:
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
+      - name: "📦  Next.js cache"
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/apps/dash/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-dash
+
+      - name: "🏗️  Build"
+        shell: bash
+        run: |
+          pnpm build --filter dash...
+
       - name: '🔍  TypeCheck'
         id: pull-typecheck
         shell: bash
@@ -124,6 +146,17 @@ jobs:
         uses: './.github/actions/install'
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
+
+      - name: "📦  Next.js cache"
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/apps/dash/.next/cache
+          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-dash
+
+      - name: "🏗️  Build"
+        shell: bash
+        run: |
+          pnpm build --filter dash...
 
       - name: '🧪  Unit test'
         id: pull-unit-test
