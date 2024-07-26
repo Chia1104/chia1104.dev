@@ -28,7 +28,12 @@ export const infiniteSchema = z
     limit: z.number().max(50).optional().default(10),
     // string | number | Date | dayjs.Dayjs
     cursor: z
-      .union([z.string(), z.number(), z.date(), z.instanceof(dayjs.Dayjs)])
+      .union([
+        z.string(),
+        z.number(),
+        z.date(),
+        z.instanceof(dayjs as unknown as typeof dayjs.Dayjs),
+      ])
       .nullish(),
     orderBy: z
       .enum(["createdAt", "updatedAt", "id", "slug", "title"])
