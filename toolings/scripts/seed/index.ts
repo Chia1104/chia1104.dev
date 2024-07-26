@@ -64,7 +64,39 @@ const seedPost = withReplicas(
       ]);
       await trx.insert(schema.posts).values({
         feedId: feed[0].feedId,
-        content: faker.lorem.paragraphs(),
+        content:
+          `
+# Heading 1
+ 
+## Heading 2
+ 
+### Heading 3
+ 
+#### Heading 4
+ 
+Hello World, **Bold**, _Italic_, ~~Hidden~~
+
+1. First
+2. Second
+3. Third
+ 
+- Item 1
+- Item 2
+ 
+> Quote here
+ 
+ 
+| Table | Description |
+| ----- | ----------- |
+| Hello | World       |
+ 
+` +
+          `${"```"}` +
+          `${`js
+console.log('Hello World');`}` +
+          `${`
+`}` +
+          `${"```"}`,
       });
     });
   },

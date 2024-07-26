@@ -9,6 +9,13 @@ import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 import { notFound } from "next/navigation";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
+import Content from "./content";
+import { Suspense } from "react";
+
+/**
+ * TODO: waiting for the next release of fumadocs-ui (v13)
+ */
+// import "fumadocs-ui/style.css";
 
 export const generateStaticParams = async () => {
   const posts = await getPosts(100);
@@ -35,24 +42,25 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   try {
     const post = await getPostBySlug(params.slug);
-    const token = getToken(post[0]?.title ?? "");
+    if (!post) return {};
+    const token = getToken(post.title);
     return {
-      title: post[0]?.title,
-      description: post[0]?.excerpt,
+      title: post.title,
+      description: post.excerpt,
       openGraph: {
         type: "article",
         locale: "zh_TW",
-        url: `https://chia1104.dev/posts/${params.slug}`,
+        url: `https://chia1104.dev/posts/${post.slug}`,
         siteName: "Chia",
-        title: post[0]?.title,
-        description: post[0]?.excerpt ?? "",
+        title: post.title,
+        description: post.excerpt ?? "",
         images: [
           {
             url: setSearchParams<OgDTO>(
               {
-                title: post[0]?.title,
-                excerpt: post[0]?.excerpt,
-                subtitle: dayjs(post[0]?.updatedAt).format("MMMM D, YYYY"),
+                title: post.title,
+                excerpt: post.excerpt,
+                subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
                 token: token,
               },
               {
@@ -70,14 +78,14 @@ export const generateMetadata = async ({
       twitter: {
         card: "summary_large_image",
         title: "Chia",
-        description: post[0]?.excerpt ?? "",
+        description: post.excerpt ?? "",
         creator: "@chia1104",
         images: [
           setSearchParams<OgDTO>(
             {
-              title: post[0]?.title,
-              excerpt: post[0]?.excerpt,
-              subtitle: dayjs(post[0]?.updatedAt).format("MMMM D, YYYY"),
+              title: post.title,
+              excerpt: post.excerpt,
+              subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
               token: token,
             },
             {
@@ -105,23 +113,23 @@ const PostDetailPage = async ({
 }) => {
   const post = await getPostBySlug(params.slug);
 
-  if (!post[0]) {
+  if (!post) {
     notFound();
   }
 
-  const token = getToken(post[0].slug);
+  const token = getToken(post.slug);
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    headline: post[0].title,
-    datePublished: dayjs(post[0]?.createdAt).format("MMMM D, YYYY"),
-    dateModified: dayjs(post[0]?.updatedAt).format("MMMM D, YYYY"),
-    name: post[0]?.title,
-    description: post[0]?.excerpt ?? "",
+    headline: post.title,
+    datePublished: dayjs(post.createdAt).format("MMMM D, YYYY"),
+    dateModified: dayjs(post.updatedAt).format("MMMM D, YYYY"),
+    name: post.title,
+    description: post.excerpt ?? "",
     image: `/api/og?${setSearchParams<OgDTO>({
-      title: post[0].title,
-      excerpt: post[0].excerpt,
-      subtitle: dayjs(post[0].updatedAt).format("MMMM D, YYYY"),
+      title: post.title,
+      excerpt: post.excerpt,
+      subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
       token: token,
     })}`,
     author: {
@@ -132,10 +140,10 @@ const PostDetailPage = async ({
 
   return (
     <>
-      <div className="w-full">
+      <div className="flex w-full flex-col items-center">
         <header className="mb-7 w-full self-center pl-3">
-          <h1 className="">{post[0]?.title}</h1>
-          <p className="">{post[0]?.description}</p>
+          <h1 className="">{post.title}</h1>
+          <p className="">{post.description}</p>
           <span className="mt-5 flex items-center gap-2">
             <Image
               src="https://avatars.githubusercontent.com/u/38397958?v=4"
@@ -144,9 +152,15 @@ const PostDetailPage = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(post[0]?.createdAt).format("MMMM D, YYYY")}
+            {dayjs(post.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
+        <Suspense
+          fallback={
+            <div className="loader mb-4 size-12 rounded-full border-4 border-gray-200 ease-linear" />
+          }>
+          <Content type={post.post?.type} content={post.post?.content ?? ""} />
+        </Suspense>
       </div>
       <script
         type="application/ld+json"
