@@ -13,11 +13,12 @@ import {
 } from "@chia/ui";
 import { useRouter } from "next/navigation";
 import { Form } from "@/app/contact/contact";
-import { Link, Input, Textarea } from "@chia/ui";
+import { Link } from "@chia/ui";
 import meta from "@chia/meta";
 import { Controller } from "react-hook-form";
 import { useId } from "react";
 import { motion } from "framer-motion";
+import { Input, Textarea } from "@nextui-org/react";
 
 const ContactForm = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const ContactForm = () => {
             onSuccess={() => router.back()}
             render={({ controller, isPending, ReCAPTCHA }) => (
               <>
-                <div className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full flex h-[65vh] max-h-[650px] w-full max-w-[700px] flex-col gap-2 overflow-y-auto p-2">
+                <div className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full flex h-[55vh] max-h-[550px] w-full max-w-[700px] flex-col gap-2 overflow-y-auto p-2">
                   <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
                     <Controller
                       control={controller}
@@ -50,13 +51,12 @@ const ContactForm = () => {
                         fieldState: { invalid, error },
                       }) => (
                         <Input
-                          titleClassName="text-xl"
-                          className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
-                          isValid={!invalid}
-                          errorMessage={error?.message}
+                          isRequired
                           type="email"
-                          title="Email"
+                          label="Email"
                           placeholder="Your email"
+                          isInvalid={invalid}
+                          errorMessage={error?.message}
                           value={value}
                           onChange={onChange}
                           onBlur={onBlur}
@@ -77,12 +77,11 @@ const ContactForm = () => {
                         fieldState: { invalid, error },
                       }) => (
                         <Input
-                          titleClassName="text-xl"
-                          className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
-                          isValid={!invalid}
+                          isRequired
+                          isInvalid={invalid}
                           errorMessage={error?.message}
                           type="text"
-                          title="Title"
+                          label="Title"
                           placeholder="Your title"
                           value={value}
                           onChange={onChange}
@@ -104,16 +103,15 @@ const ContactForm = () => {
                         fieldState: { invalid, error },
                       }) => (
                         <Textarea
-                          className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40 h-40 max-h-40 p-3"
-                          title="Message"
+                          isRequired
+                          isInvalid={invalid}
+                          label="Message"
                           name="message"
                           value={value}
                           onChange={onChange}
                           onBlur={onBlur}
                           placeholder="Your message"
-                          titleClassName="text-xl"
                           errorMessage={error?.message}
-                          isValid={!invalid}
                         />
                       )}
                       name="message"

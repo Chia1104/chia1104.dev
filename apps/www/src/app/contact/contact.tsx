@@ -8,7 +8,7 @@ import type {
   ReactElement,
 } from "react";
 import { cn } from "@chia/ui";
-import { Input, Textarea, Card, useTheme, ShimmerButton } from "@chia/ui";
+import { Card, useTheme, ShimmerButton } from "@chia/ui";
 import { post, handleKyError } from "@chia/utils";
 import type { HTTPError } from "@chia/utils";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import { contactSchema } from "@/shared/validator";
 import type { Contact } from "@/shared/validator";
 import dynamic from "next/dynamic";
 import { env } from "@/env";
+import { Input, Textarea } from "@nextui-org/react";
 
 const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
   ssr: false,
@@ -144,13 +145,12 @@ export const Form: FC<
                 fieldState: { invalid, error },
               }) => (
                 <Input
-                  titleClassName="text-xl"
-                  className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
-                  isValid={!invalid}
-                  errorMessage={error?.message}
+                  isRequired
                   type="email"
-                  title="Email"
+                  label="Email"
                   placeholder="Your email"
+                  isInvalid={invalid}
+                  errorMessage={error?.message}
                   value={value}
                   onChange={onChange}
                   onBlur={onBlur}
@@ -171,12 +171,11 @@ export const Form: FC<
                 fieldState: { invalid, error },
               }) => (
                 <Input
-                  titleClassName="text-xl"
-                  className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40"
-                  isValid={!invalid}
+                  isRequired
+                  isInvalid={invalid}
                   errorMessage={error?.message}
                   type="text"
-                  title="Title"
+                  label="Title"
                   placeholder="Your title"
                   value={value}
                   onChange={onChange}
@@ -198,16 +197,15 @@ export const Form: FC<
                 fieldState: { invalid, error },
               }) => (
                 <Textarea
-                  className="focus:border-info focus:shadow-info/40 dark:focus:border-info dark:focus:shadow-info/40 h-40 max-h-40 p-3"
-                  title="Message"
+                  isRequired
+                  isInvalid={invalid}
+                  label="Message"
                   name="message"
                   value={value}
                   onChange={onChange}
                   onBlur={onBlur}
                   placeholder="Your message"
-                  titleClassName="text-xl"
                   errorMessage={error?.message}
-                  isValid={!invalid}
                 />
               )}
               name="message"
