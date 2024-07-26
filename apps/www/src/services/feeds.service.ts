@@ -6,7 +6,7 @@ import {
   getInfiniteFeedsByUserId,
   eq,
   schema,
-  getByFeedSlug,
+  getFeedBySlug,
 } from "@chia/db";
 import { unstable_cache as cache } from "next/cache";
 import { getDb, getAdminId } from "@chia/utils";
@@ -45,10 +45,13 @@ export const getPosts = (limit = 10) =>
     }
   )();
 
-export const getPostBySlug = (slug: string) =>
+export const getPostBySlug = (slug: string, type?: "post" | "note") =>
   cache(
     async () => {
-      return await getByFeedSlug(database, slug);
+      return await getFeedBySlug(database, {
+        slug,
+        type: type ?? "post",
+      });
     },
     keys.post(slug),
     {

@@ -47,6 +47,9 @@ export const getFeeds = withDTO(
   }
 );
 
+/**
+ * @deprecated use getFeedById instead
+ */
 export const getByFeedId = withDTO((db, id: number) => {
   return db
     .select()
@@ -54,9 +57,34 @@ export const getByFeedId = withDTO((db, id: number) => {
     .where(eq(schema.feeds.id, Number(id)));
 });
 
+export const getFeedById = withDTO(
+  (db, { id, type }: { id: number; type: "post" | "note" }) => {
+    return db.query.feeds.findFirst({
+      where: (feeds, { eq }) => eq(feeds.id, id),
+      with: {
+        [type]: true,
+      },
+    });
+  }
+);
+
+/**
+ * @deprecated use getFeedBySlug instead
+ */
 export const getByFeedSlug = withDTO((db, slug: string) => {
   return db.select().from(schema.feeds).where(eq(schema.feeds.slug, slug));
 });
+
+export const getFeedBySlug = withDTO(
+  (db, { slug, type }: { slug: string; type: "post" | "note" }) => {
+    return db.query.feeds.findFirst({
+      where: (feeds, { eq }) => eq(feeds.slug, slug),
+      with: {
+        [type]: true,
+      },
+    });
+  }
+);
 
 export const getFeedsByUserId = withDTO(
   async (
