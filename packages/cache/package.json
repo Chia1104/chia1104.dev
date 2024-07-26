@@ -14,9 +14,9 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@t3-oss/env-core": "^0.10.1",
-    "@upstash/ratelimit": "1.2.1",
-    "@upstash/redis": "1.32.0",
+    "@t3-oss/env-core": "^0.11.0",
+    "@upstash/ratelimit": "2.0.1",
+    "@upstash/redis": "1.33.0",
     "ioredis": "^5.4.1"
   },
   "devDependencies": {
