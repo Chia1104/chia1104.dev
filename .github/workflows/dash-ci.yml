@@ -35,8 +35,8 @@ env:
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
-  build:
-    name: Build and Test
+  init:
+    name: Init dash
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-dash') }}
@@ -47,13 +47,9 @@ jobs:
 
       - name: "💽️  Init"
         id: dash-init
-        uses: ./.github/actions/init-pnpm
+        uses: ./.github/actions/install
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
-
-      - name: "📦  Install"
-        id: dash-install
-        uses: ./.github/actions/pnpm-install
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
@@ -62,16 +58,75 @@ jobs:
           key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-dash
 
       - name: "🏗️  Build"
-        uses: ./.github/actions/pnpm-build
+        shell: bash
+        run: |
+          pnpm build filter dash...
+  lint:
+    name: 'Lint check'
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
+      - name: '🐙️  Checkout'
+        id: pull-checkout
+        uses: actions/checkout@v4
         with:
-          BUILD_COMMAND: "build --filter dash..."
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: "🚨️  ESLint, Type checking, Unit tests"
-        id: dash-lint-test
-        uses: ./.github/actions/lint-test
+      - name: '📦  Install'
+        id: pull-install
+        uses: './.github/actions/install'
         with:
-          COMMAND: "--filter dash..."
-          TURBO_TEAM: ${{ env.TURBO_TEAM }}
-          TURBO_TOKEN: ${{ env.TURBO_TOKEN }}
+          NODE_VERSION: ${{ env.NODE_VERSION }}
+
+      - name: '🧹  Lint check'
+        id: pull-lint
+        shell: bash
+        run: |
+          pnpm lint --filter dash...
+  type-check:
+    name: 'Type check'
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
+      - name: '🐙️  Checkout'
+        id: pull-checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: '📦  Install'
+        id: pull-install
+        uses: './.github/actions/install'
+        with:
+          NODE_VERSION: ${{ env.NODE_VERSION }}
+
+      - name: '🔍  TypeCheck'
+        id: pull-typecheck
+        shell: bash
+        run: |
+          pnpm type:check --filter dash...
+  unit-test:
+    name: 'Unit test'
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
+      - name: '🐙️  Checkout'
+        id: pull-checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: '📦  Install'
+        id: pull-install
+        uses: './.github/actions/install'
+        with:
+          NODE_VERSION: ${{ env.NODE_VERSION }}
+
+      - name: '🧪  Unit test'
+        id: pull-unit-test
+        shell: bash
+        run: |
+          pnpm test --filter dash...
