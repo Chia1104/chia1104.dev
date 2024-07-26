@@ -71,6 +71,11 @@ jobs:
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
+      - name: "🏗️  Build"
+        shell: bash
+        run: |
+          pnpm build --filter service...
+
       - name: '🧹  Lint check'
         id: pull-lint
         shell: bash
@@ -94,6 +99,11 @@ jobs:
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
+      - name: "🏗️  Build"
+        shell: bash
+        run: |
+          pnpm build --filter service...
+
       - name: '🔍  TypeCheck'
         id: pull-typecheck
         shell: bash
@@ -116,6 +126,11 @@ jobs:
         uses: './.github/actions/install'
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
+
+      - name: "🏗️  Build"
+        shell: bash
+        run: |
+          pnpm build --filter service...
 
       - name: '🧪  Unit test'
         id: pull-unit-test
