@@ -3,8 +3,38 @@
   "extends": ["config:base"],
   "labels": ["dependencies", "renovate"],
   "rebaseWhen": "conflicted",
-  "ignoreDeps": ["node"],
+  "rangeStrategy": "bump",
   "packageRules": [
+    {
+      "groupName": "eslint",
+      "matchPackagePatterns": ["eslint", "eslint-*", "@types/eslint"]
+    },
+    {
+      "matchPackageNames": ["node", "@types/node"],
+      "matchCurrentVersion": "^20.0.0",
+      "allowedVersions": "^20.0.0"
+    },
+    {
+      "groupName": "prettier",
+      "matchPackagePatterns": ["prettier", "prettier-*", "@types/prettier"]
+    },
+    {
+      "groupName": "react",
+      "matchPackagePatterns": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
+      ]
+    },
+    {
+      "groupName": "trpc",
+      "matchPackagePatterns": ["@trpc/*"]
+    },
+    {
+      "groupName": "typescript-eslint",
+      "matchPackagePatterns": ["@typescript-eslint/*"]
+    },
     {
       "matchPackagePatterns": [
         "^@chia/*",
