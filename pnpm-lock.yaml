@@ -1071,7 +1071,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/utils
       '@faker-js/faker':
-        specifier: ^8.0.2
+        specifier: ^8.4.1
         version: 8.4.1
       tsconfig:
         specifier: workspace:*
