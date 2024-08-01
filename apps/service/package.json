@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.5",
-    "@auth/core": "^0.34.1",
+    "@auth/core": "^0.34.2",
     "@auth/drizzle-adapter": "^1.4.1",
     "@chia/auth-core": "workspace:*",
     "@graphql-tools/utils": "^10.3.2",

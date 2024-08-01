@@ -38,7 +38,7 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "devDependencies": {
-    "@auth/core": "^0.34.1",
+    "@auth/core": "^0.34.2",
     "@auth/drizzle-adapter": "^1.4.1",
     "@chia/db": "workspace:*",
     "@chia/eslint-config": "workspace:*",
