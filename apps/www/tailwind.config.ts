@@ -1,5 +1,6 @@
 import { nextui } from "@nextui-org/react";
 import aspectRatio from "@tailwindcss/aspect-ratio";
+import { docsUi } from "fumadocs-ui/tailwind-plugin";
 import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
 
@@ -14,6 +15,7 @@ const config: Config = {
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "node_modules/fumadocs-ui/dist/**/*.js",
     "!./src/**/*.test.{js,ts,jsx,tsx}",
     "!./src/**/*.spec.{js,ts,jsx,tsx}",
     "!./src/app/api/contact/email-template.tsx",
@@ -61,6 +63,7 @@ const config: Config = {
   },
   corePlugins: {
     aspectRatio: false,
+    // preflight: false,
   },
   plugins: [
     nextui({
@@ -76,9 +79,20 @@ const config: Config = {
     }),
     aspectRatio,
     tailwindScrollbar({ nocompatible: true }),
+    docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
   ],
   darkMode: "class",
-  presets: [shadcnConfig, animation(), baseConfig, egoistIcons],
+  presets: [
+    shadcnConfig,
+    animation(),
+    baseConfig,
+    egoistIcons,
+    // createPreset({
+    //   preset: "ocean",
+    //   modifyContainer: false,
+    //   cssPrefix: "fd-",
+    // }),
+  ],
 };
 
 export default config;

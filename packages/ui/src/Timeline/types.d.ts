@@ -20,6 +20,7 @@ export interface Data {
   titleProps?: ComponentPropsWithoutRef<"span">;
   subtitleProps?: ComponentPropsWithoutRef<"span">;
   linkProps?: Partial<LinkProps>;
+  slug?: string;
 }
 
 export interface GroupData {

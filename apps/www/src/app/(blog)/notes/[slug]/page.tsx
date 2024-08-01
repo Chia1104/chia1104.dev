@@ -10,18 +10,18 @@ import { Image } from "@chia/ui";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { setSearchParams } from "@chia/utils";
 
-import { ContentSkeletons } from "@/app/(blog)/posts/[slug]/loading";
+import { ContentSkeletons } from "@/app/(blog)/notes/[slug]/loading";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
-import { getPosts, getPostBySlug } from "@/services/feeds.service";
+import { getNotes, getNoteBySlug } from "@/services/feeds.service";
 
 import Content from "./content";
 
 export const generateStaticParams = async () => {
-  const posts = await getPosts(100);
+  const notes = await getNotes(100);
 
-  return posts.items.map((post) => ({
-    slug: post.slug,
+  return notes.items.map((note) => ({
+    slug: note.slug,
   }));
 };
 export const dynamicParams = true;
@@ -41,26 +41,26 @@ export const generateMetadata = async ({
   };
 }): Promise<Metadata> => {
   try {
-    const post = await getPostBySlug(params.slug);
-    if (!post) return {};
-    const token = getToken(post.title);
+    const note = await getNoteBySlug(params.slug);
+    if (!note) notFound();
+    const token = getToken(note.title);
     return {
-      title: post.title,
-      description: post.excerpt,
+      title: note.title,
+      description: note.excerpt,
       openGraph: {
         type: "article",
         locale: "zh_TW",
-        url: `https://chia1104.dev/posts/${post.slug}`,
+        url: `https://chia1104.dev/notes/${note.slug}`,
         siteName: "Chia",
-        title: post.title,
-        description: post.excerpt ?? "",
+        title: note.title,
+        description: note.excerpt ?? "",
         images: [
           {
             url: setSearchParams<OgDTO>(
               {
-                title: post.title,
-                excerpt: post.excerpt,
-                subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
+                title: note.title,
+                excerpt: note.excerpt,
+                subtitle: dayjs(note.updatedAt).format("MMMM D, YYYY"),
                 token: token,
               },
               {
@@ -78,14 +78,14 @@ export const generateMetadata = async ({
       twitter: {
         card: "summary_large_image",
         title: "Chia",
-        description: post.excerpt ?? "",
+        description: note.excerpt ?? "",
         creator: "@chia1104",
         images: [
           setSearchParams<OgDTO>(
             {
-              title: post.title,
-              excerpt: post.excerpt,
-              subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
+              title: note.title,
+              excerpt: note.excerpt,
+              subtitle: dayjs(note.updatedAt).format("MMMM D, YYYY"),
               token: token,
             },
             {
@@ -111,25 +111,25 @@ const PostDetailPage = async ({
     slug: string;
   };
 }) => {
-  const post = await getPostBySlug(params.slug);
+  const note = await getNoteBySlug(params.slug);
 
-  if (!post) {
+  if (!note) {
     notFound();
   }
 
-  const token = getToken(post.slug);
+  const token = getToken(note.slug);
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    headline: post.title,
-    datePublished: dayjs(post.createdAt).format("MMMM D, YYYY"),
-    dateModified: dayjs(post.updatedAt).format("MMMM D, YYYY"),
-    name: post.title,
-    description: post.excerpt ?? "",
+    headline: note.title,
+    datePublished: dayjs(note.createdAt).format("MMMM D, YYYY"),
+    dateModified: dayjs(note.updatedAt).format("MMMM D, YYYY"),
+    name: note.title,
+    description: note.excerpt ?? "",
     image: `/api/og?${setSearchParams<OgDTO>({
-      title: post.title,
-      excerpt: post.excerpt,
-      subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
+      title: note.title,
+      excerpt: note.excerpt,
+      subtitle: dayjs(note.updatedAt).format("MMMM D, YYYY"),
       token: token,
     })}`,
     author: {
@@ -144,11 +144,11 @@ const PostDetailPage = async ({
         <header className="mb-14 w-full self-center">
           <h1
             style={{
-              viewTransitionName: `view-transition-link-${post.id}`,
+              viewTransitionName: `view-transition-link-${note.id}`,
             }}>
-            {post.title}
+            {note.title}
           </h1>
-          <p>{post.description}</p>
+          <p>{note.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image
               src="https://avatars.githubusercontent.com/u/38397958?v=4"
@@ -157,7 +157,7 @@ const PostDetailPage = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(post.createdAt).format("MMMM D, YYYY")}
+            {dayjs(note.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
         <Suspense
@@ -166,7 +166,7 @@ const PostDetailPage = async ({
               <ContentSkeletons />
             </div>
           }>
-          <Content type={post.post?.type} content={post.post?.content ?? ""} />
+          <Content type={note.note?.type} content={note.note?.content ?? ""} />
         </Suspense>
       </div>
       <script

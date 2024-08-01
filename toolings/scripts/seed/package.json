@@ -10,7 +10,7 @@
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules",
-    "db:seed": "node --import=tsx --env-file=../../../.env.global index.ts seedPost",
+    "db:seed": "tsx --env-file=../../../.env.global index.ts",
     "tsc:config": "tsc --showConfig"
   },
   "devDependencies": {

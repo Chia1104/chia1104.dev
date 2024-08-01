@@ -64,7 +64,12 @@ export const Item: FC<ListItemProps> = ({
                 enableViewTransition: experimental?.enableViewTransition,
                 ...linkProps?.experimental,
               }}
-              {...linkProps}>
+              {...linkProps}
+              style={{
+                viewTransitionName: `view-transition-link-${data.id}`,
+                ...linkProps?.style,
+              }}
+              className={cn(linkProps?.className)}>
               {data.title}
             </Link>
           ) : (

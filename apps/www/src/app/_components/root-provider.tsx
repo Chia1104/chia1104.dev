@@ -6,6 +6,7 @@ import type { FC, ReactNode } from "react";
 import { NextUIProvider } from "@nextui-org/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
+import { RootProvider as FDProvider } from "fumadocs-ui/provider";
 import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
@@ -107,18 +108,23 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
   return (
     <ThemeProvider defaultTheme="system" enableSystem attribute="class">
       <NextUIProvider navigate={void router.push}>
-        <TRPCReactProvider headers={headers}>
-          <Toaster />
-          <Analytics />
-          <Cursor
-            style={{
-              opacity: 0.13,
-              filter: "blur(50px)",
-            }}
-          />
-          <ContactCMD />
-          {children}
-        </TRPCReactProvider>
+        <FDProvider
+          search={{
+            enabled: false,
+          }}>
+          <TRPCReactProvider headers={headers}>
+            <Toaster />
+            <Analytics />
+            <Cursor
+              style={{
+                opacity: 0.13,
+                filter: "blur(50px)",
+              }}
+            />
+            <ContactCMD />
+            {children}
+          </TRPCReactProvider>
+        </FDProvider>
       </NextUIProvider>
     </ThemeProvider>
   );
