@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 
 import dayjs from "dayjs";
-import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createHmac } from "node:crypto";
@@ -15,9 +14,8 @@ import { ContentSkeletons } from "@/app/(blog)/posts/[slug]/loading";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
-import { getDoc } from "@/services/fumadocs.service";
 
-import Content from "./content";
+import Content from "../../_components/content";
 
 export const generateStaticParams = async () => {
   const posts = await getPosts(100);

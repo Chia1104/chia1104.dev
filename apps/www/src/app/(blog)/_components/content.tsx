@@ -1,8 +1,7 @@
 import { compileMDX } from "@fumadocs/mdx-remote";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import { DocsBody } from "fumadocs-ui/page";
-
-import { cn } from "@chia/ui";
+import { cn } from "~/packages/ui";
 
 import { fumadocsComponents } from "@/mdx-components";
 
