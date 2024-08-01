@@ -142,7 +142,12 @@ const PostDetailPage = async ({
     <>
       <div className="flex w-full flex-col items-center">
         <header className="mb-14 w-full self-center">
-          <h1 className="view-transition-link">{note.title}</h1>
+          <h1
+            style={{
+              viewTransitionName: `view-transition-link-${note.id}`,
+            }}>
+            {note.title}
+          </h1>
           <p>{note.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image
