@@ -7,7 +7,7 @@
 
 @layer components {
   .c-scroll-bar {
-    @apply scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full
+    @apply scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full;
   }
 }
 
@@ -15,21 +15,31 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    Fira Sans,
+    Droid Sans,
+    Helvetica Neue,
+    sans-serif;
   scroll-behavior: smooth;
-  scroll-padding-top: 80px;
+  scroll-padding-top: 10px;
 }
 
 ::selection {
   background: #8884;
 }
 
-[data-rmiz-modal-overlay='visible'] {
+[data-rmiz-modal-overlay="visible"] {
   background-color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.dark [data-rmiz-modal-overlay='visible'] {
+.dark [data-rmiz-modal-overlay="visible"] {
   background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
@@ -40,4 +50,17 @@ body {
 [data-rmiz-modal-img] {
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
+}
+
+:root {
+  /* hsl colors */
+  /* use whitespace instead of comma */
+  --fd--background: unset;
+  --fd--foreground: unset;
+
+  --fd--muted: unset;
+  --fd--muted-foreground: unset;
+
+  --fd--popover: unset;
+  --fd--popover-foreground: unset;
 }

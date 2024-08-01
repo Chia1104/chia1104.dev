@@ -1,17 +1,22 @@
 "use client";
 
-import type { FC } from "react";
+import { FC, useMemo } from "react";
 
+import dayjs from "dayjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import type { RouterOutputs } from "@chia/api";
+import type { RouterInputs, RouterOutputs } from "@chia/api";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuTrigger,
   cn,
+  Timeline,
 } from "@chia/ui";
+import type { TimelineTypes } from "@chia/ui";
+
+import { api } from "@/trpc-api";
 
 import ListItem from "../list-item";
 
@@ -52,5 +57,64 @@ export const NoteNavigation: FC<{
         </span>
       </NavigationMenuContent>
     </NavigationMenuItem>
+  );
+};
+
+export const List: FC<{
+  initialData: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
+  query?: RouterInputs["feeds"]["infinityByAdmin"];
+  nextCursor?: string | number | Date;
+}> = ({ initialData, nextCursor, query = {} }) => {
+  const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
+    api.feeds.infinityByAdmin.useInfiniteQuery(
+      { ...query, type: "note" },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        initialData: {
+          pages: [
+            {
+              items: initialData,
+              nextCursor: nextCursor?.toString(),
+            },
+          ],
+          pageParams: [nextCursor?.toString()],
+        },
+      }
+    );
+
+  const transformData = useMemo(() => {
+    if ((!isSuccess && !data) || isError) return [];
+    return data.pages.flatMap((page) =>
+      page.items.map((item) => {
+        const { id, title, updatedAt, excerpt, slug } = item;
+        return {
+          id,
+          title,
+          titleProps: {
+            className: "line-clamp-1",
+          },
+          subtitle: dayjs(updatedAt).format("MMMM D, YYYY"),
+          startDate: updatedAt,
+          content: excerpt,
+          link: `/notes/${slug}`,
+        } satisfies TimelineTypes.Data;
+      })
+    );
+  }, [data, isSuccess, isError]);
+
+  return (
+    <Timeline
+      experimental={{
+        enableViewTransition: true,
+      }}
+      data={transformData}
+      enableSort={false}
+      asyncDataStatus={{
+        hasMore: hasNextPage,
+        isLoading: isFetching,
+        isError,
+      }}
+      onEndReached={fetchNextPage}
+    />
   );
 };

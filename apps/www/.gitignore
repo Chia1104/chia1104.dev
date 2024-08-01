@@ -50,3 +50,5 @@ cypress/videos
 
 public/sitemap.xml
 public/sitemap-0.xml
+
+.map.ts

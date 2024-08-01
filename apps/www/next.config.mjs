@@ -4,7 +4,10 @@
  */
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
+import createMDX from "fumadocs-mdx/config";
 import million from "million/compiler";
+
+const withMDX = createMDX();
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
@@ -142,13 +145,15 @@ const nextComposePlugins = plugins.reduce(
 
 export default million.next(
   // @ts-ignore
-  withSentryConfigImport(nextComposePlugins, {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    silent: true,
-    hideSourceMaps: true,
-  }),
+  withMDX(
+    withSentryConfigImport(nextComposePlugins, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: true,
+      hideSourceMaps: true,
+    })
+  ),
   {
     rsc: true,
   }

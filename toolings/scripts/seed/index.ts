@@ -68,25 +68,30 @@ const seedPost = withReplicas(
         content:
           `
 # Heading 1
- 
+
 ## Heading 2
- 
+
 ### Heading 3
- 
+
 #### Heading 4
- 
+
 Hello World, **Bold**, _Italic_, ~~Hidden~~
+
+<Banner>Hello World</Banner>
 
 1. First
 2. Second
 3. Third
- 
+
 - Item 1
 - Item 2
- 
+
 > Quote here
- 
- 
+
+[chia1104](https://chia1104.dev)
+
+![Image](https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG)
+
 | Table | Description |
 | ----- | ----------- |
 | Hello | World       |
@@ -109,6 +114,22 @@ console.log('Hello World');`}` +
 const seedNote = withReplicas(
   async (db, adminId) => {
     await db.transaction(async (trx) => {
+      let tags = await trx.select().from(schema.tags);
+      if (tags.length === 0) {
+        tags = await trx
+          .insert(schema.tags)
+          .values([
+            {
+              slug: "tag1",
+              name: "Tag 1",
+            },
+            {
+              slug: "tag2",
+              name: "Tag 2",
+            },
+          ])
+          .returning();
+      }
       const feed = await trx
         .insert(schema.feeds)
         .values({
@@ -121,9 +142,57 @@ const seedNote = withReplicas(
           published: true,
         })
         .returning({ feedId: schema.feeds.id });
+      await trx.insert(schema.feedsToTags).values([
+        {
+          feedId: feed[0].feedId,
+          tagId: tags[0].id,
+        },
+        {
+          feedId: feed[0].feedId,
+          tagId: tags[1].id,
+        },
+      ]);
       await trx.insert(schema.notes).values({
         feedId: feed[0].feedId,
-        content: faker.lorem.paragraphs(),
+        content:
+          `
+# Heading 1
+
+## Heading 2
+
+### Heading 3
+
+#### Heading 4
+
+Hello World, **Bold**, _Italic_, ~~Hidden~~
+
+<Banner>Hello World</Banner>
+
+1. First
+2. Second
+3. Third
+
+- Item 1
+- Item 2
+
+> Quote here
+
+[chia1104](https://chia1104.dev)
+
+![Image](https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG)
+
+| Table | Description |
+| ----- | ----------- |
+| Hello | World       |
+| foo   | bar         |
+ 
+` +
+          `${"```"}` +
+          `${`js
+console.log('Hello World');`}` +
+          `${`
+`}` +
+          `${"```"}`,
       });
     });
   },

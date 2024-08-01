@@ -79,3 +79,18 @@ export const getNotes = (limit = 10) =>
       tags: keys.notes(limit),
     }
   )();
+
+export const getNoteBySlug = (slug: string, type?: "post" | "note") =>
+  cache(
+    async () => {
+      return await getFeedBySlug(database, {
+        slug,
+        type: type ?? "note",
+      });
+    },
+    keys.note(slug),
+    {
+      revalidate: 60,
+      tags: keys.note(slug),
+    }
+  )();

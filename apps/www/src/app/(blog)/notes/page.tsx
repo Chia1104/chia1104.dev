@@ -1,35 +1,33 @@
-import dayjs from "dayjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Timeline, ImageZoom, Image } from "@chia/ui";
-import type { TimelineTypes } from "@chia/ui";
+import { ImageZoom, Image } from "@chia/ui";
 
 import { getNotes } from "@/services/feeds.service";
+
+import { List } from "../_components/notes";
 
 export const metadata: Metadata = {
   title: "Notes",
 };
 
 const Page = async () => {
-  const notes = await getNotes();
-  const transformData = notes.items.map((item) => ({
-    id: item.id,
-    title: item.title,
-    titleProps: {
-      className: "line-clamp-1",
-    },
-    subtitle: dayjs(item.updatedAt).format("MMMM D, YYYY"),
-    startDate: item.updatedAt,
-    content: item.excerpt,
-    link: `/notes/${item.slug}`,
-  })) satisfies TimelineTypes.Data[];
-  const hasNotes = Array.isArray(transformData) && transformData.length > 0;
+  const notes = await getNotes(20);
+  const hasNotes = Array.isArray(notes.items) && notes.items.length > 0;
   return (
     <div className="w-full">
       <h1>Notes</h1>
       {hasNotes ? (
-        <Timeline data={transformData} enableSort={false} />
+        <List
+          initialData={notes.items}
+          nextCursor={notes.nextCursor}
+          query={{
+            limit: 10,
+            orderBy: "id",
+            sortOrder: "desc",
+            type: "note",
+          }}
+        />
       ) : (
         <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
           <p>

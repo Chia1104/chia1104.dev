@@ -232,3 +232,8 @@ body {
   margin: 0;
   padding: 0;
 }
+
+.view-transition-link {
+  view-transition-name: link-title;
+  width: fit-content;
+}
