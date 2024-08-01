@@ -62,6 +62,7 @@
     "fumadocs-core": "^13.0.1",
     "fumadocs-mdx": "^9.0.0",
     "fumadocs-ui": "^13.0.1",
+    "gray-matter": "^4.0.3",
     "jsdom": "^24.1.1",
     "million": "^3.1.11",
     "next": "14.2.5",

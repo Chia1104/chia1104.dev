@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import dayjs from "dayjs";
+import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createHmac } from "node:crypto";
@@ -14,6 +15,7 @@ import { ContentSkeletons } from "@/app/(blog)/posts/[slug]/loading";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
+import { getDoc } from "@/services/fumadocs.service";
 
 import Content from "./content";
 
@@ -141,7 +143,7 @@ const PostDetailPage = async ({
   return (
     <>
       <div className="flex w-full flex-col items-center">
-        <header className="mb-14 w-full self-center">
+        <header className="mb-5 w-full self-center">
           <h1
             style={{
               viewTransitionName: `view-transition-link-${post.id}`,
