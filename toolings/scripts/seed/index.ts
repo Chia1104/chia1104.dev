@@ -22,6 +22,51 @@ const withReplicas = (
   };
 };
 
+const CONTENT =
+  `
+# Heading 1 - Foo
+
+## Heading 2 - Bar
+
+### Heading 3 - Baz
+
+#### Heading 4
+
+Hello World, **Bold**, _Italic_, ~~Hidden~~
+
+<Banner>Hello World</Banner>
+
+1. First
+2. Second
+3. Third
+
+- Item 1
+- Item 2
+
+> Quote here
+
+[chia1104](https://chia1104.dev)
+
+![Image](https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG)
+
+| Table | Description |
+| ----- | ----------- |
+| Hello | World       |
+| foo   | bar         |
+
+<Tabs items={['Javascript', 'Rust']}>
+  <Tab value="Javascript">Javascript is weird</Tab>
+  <Tab value="Rust">Rust is fast</Tab>
+</Tabs>
+ 
+` +
+  `${"```"}` +
+  `${`js
+console.log('Hello World');`}` +
+  `${`
+`}` +
+  `${"```"}`;
+
 const seedPost = withReplicas(
   async (db, adminId) => {
     await db.transaction(async (trx) => {
@@ -65,44 +110,7 @@ const seedPost = withReplicas(
       ]);
       await trx.insert(schema.posts).values({
         feedId: feed[0].feedId,
-        content:
-          `
-# Heading 1
-
-## Heading 2
-
-### Heading 3
-
-#### Heading 4
-
-Hello World, **Bold**, _Italic_, ~~Hidden~~
-
-<Banner>Hello World</Banner>
-
-1. First
-2. Second
-3. Third
-
-- Item 1
-- Item 2
-
-> Quote here
-
-[chia1104](https://chia1104.dev)
-
-![Image](https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG)
-
-| Table | Description |
-| ----- | ----------- |
-| Hello | World       |
- 
-` +
-          `${"```"}` +
-          `${`js
-console.log('Hello World');`}` +
-          `${`
-`}` +
-          `${"```"}`,
+        content: CONTENT,
       });
     });
   },
@@ -154,45 +162,7 @@ const seedNote = withReplicas(
       ]);
       await trx.insert(schema.notes).values({
         feedId: feed[0].feedId,
-        content:
-          `
-# Heading 1
-
-## Heading 2
-
-### Heading 3
-
-#### Heading 4
-
-Hello World, **Bold**, _Italic_, ~~Hidden~~
-
-<Banner>Hello World</Banner>
-
-1. First
-2. Second
-3. Third
-
-- Item 1
-- Item 2
-
-> Quote here
-
-[chia1104](https://chia1104.dev)
-
-![Image](https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG)
-
-| Table | Description |
-| ----- | ----------- |
-| Hello | World       |
-| foo   | bar         |
- 
-` +
-          `${"```"}` +
-          `${`js
-console.log('Hello World');`}` +
-          `${`
-`}` +
-          `${"```"}`,
+        content: CONTENT,
       });
     });
   },

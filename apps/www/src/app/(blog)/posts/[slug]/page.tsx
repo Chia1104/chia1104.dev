@@ -15,7 +15,7 @@ import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 
-import Content from "./content";
+import Content from "../../_components/content";
 
 export const generateStaticParams = async () => {
   const posts = await getPosts(100);
@@ -141,7 +141,7 @@ const PostDetailPage = async ({
   return (
     <>
       <div className="flex w-full flex-col items-center">
-        <header className="mb-14 w-full self-center">
+        <header className="mb-5 w-full self-center">
           <h1
             style={{
               viewTransitionName: `view-transition-link-${post.id}`,

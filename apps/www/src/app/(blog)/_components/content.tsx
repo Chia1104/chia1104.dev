@@ -1,4 +1,5 @@
 import { compileMDX } from "@fumadocs/mdx-remote";
+import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import { DocsBody } from "fumadocs-ui/page";
 
 import { cn } from "@chia/ui";
@@ -23,13 +24,18 @@ const MdxContent = async (props: BaseProps) => {
   });
 
   return (
-    <DocsBody
-      className={cn(
-        props.className,
-        "prose dark:prose-invert w-full min-w-full prose-a:no-underline"
-      )}>
-      {compiled.content}
-    </DocsBody>
+    <>
+      <div className="[&>*]:w-full mb-14 w-full">
+        <InlineTOC items={compiled.toc} />
+      </div>
+      <DocsBody
+        className={cn(
+          props.className,
+          "prose dark:prose-invert w-full min-w-full prose-a:no-underline"
+        )}>
+        {compiled.content}
+      </DocsBody>
+    </>
   );
 };
 

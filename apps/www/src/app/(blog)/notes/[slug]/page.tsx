@@ -10,12 +10,11 @@ import { Image } from "@chia/ui";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 import { setSearchParams } from "@chia/utils";
 
+import Content from "@/app/(blog)/_components/content";
 import { ContentSkeletons } from "@/app/(blog)/notes/[slug]/loading";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
-
-import Content from "./content";
 
 export const generateStaticParams = async () => {
   const notes = await getNotes(100);
