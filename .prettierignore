@@ -42,3 +42,5 @@ dist
 vscode
 .vscode
 .idea
+
+.map.ts
