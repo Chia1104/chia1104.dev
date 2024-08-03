@@ -11,16 +11,24 @@ init:
 	@echo "Creating www .env file..."
 	@cp ./apps/www/.env.example ./apps/www/.env
 	@echo "Creating www .env file... Done"
-	@echo "Creating db .env file..."
-	@cp ./packages/db/.env.example ./packages/db/.env
-	@echo "Creating db .env file... Done"
+	@echo "Creating dash .env file..."
+	@cp ./apps/dash/.env.example ./apps/dash/.env
+	@echo "Creating dash .env file... Done"
+	@echo "Creating service .env file..."
+	@cp ./apps/service/.env.example ./apps/service/.env
+	@echo "Creating service .env file... Done"
 
-init-db:
-	@echo "Creating db .env file..."
-	@cp ./packages/db/.env.example ./packages/db/.env
-	@echo "Creating db .env file... Done"
+init-www:
+	@echo "Creating dashboard .env file..."
+	@cp ./apps/www/.env.example ./apps/www/.env
+	@echo "Creating www .env file... Done"
 
 init-dash:
 	@echo "Creating dashboard .env file..."
 	@cp ./apps/dash/.env.example ./apps/dash/.env
 	@echo "Creating dashboard .env file... Done"
+
+init-service:
+	@echo "Creating dashboard .env file..."
+	@cp ./apps/service/.env.example ./apps/service/.env
+	@echo "Creating service .env file... Done"
