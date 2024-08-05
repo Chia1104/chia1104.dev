@@ -9,7 +9,6 @@ import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
 import { RootProvider as FDProvider } from "fumadocs-ui/provider";
 import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
-import Script from "next/script";
 import { Toaster as ST } from "sonner";
 import superjson from "superjson";
 
@@ -17,7 +16,6 @@ import type { Theme } from "@chia/ui";
 import { Cursor, useTheme, useCMD } from "@chia/ui";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
 
-import { env } from "@/env";
 import { api } from "@/trpc-api";
 
 export const queryClient = new QueryClient({
@@ -77,18 +75,6 @@ const Toaster: FC = () => {
   return <ST theme={theme as Theme} position="bottom-left" richColors />;
 };
 
-const Analytics = () => {
-  if (process.env.NODE_ENV !== "production") return null;
-
-  return (
-    <Script
-      async
-      data-website-id={env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-      src={`${env.NEXT_PUBLIC_UMAMI_URL}/script.js`}
-    />
-  );
-};
-
 const ContactCMD = () => {
   const router = useRouter();
   useCMD(false, {
@@ -114,7 +100,6 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
           }}>
           <TRPCReactProvider headers={headers}>
             <Toaster />
-            <Analytics />
             <Cursor
               style={{
                 opacity: 0.13,
