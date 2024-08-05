@@ -19,7 +19,13 @@ export * from "./Textarea";
 export * from "./MDXComponents";
 export * from "./utils";
 export { default as ThemeSelector } from "./Theme";
-export * from "./Theme";
+export {
+  MotionThemeIcon,
+  defaultThemeVariants,
+  ThemeCMD,
+  Theme,
+} from "./Theme";
+export type { ThemeVariants } from "./Theme";
 export { default as Card } from "./Card";
 export { default as ScrollYProgress } from "./ScrollYProgress";
 export { default as OpenGraph } from "./OpenGraph";
