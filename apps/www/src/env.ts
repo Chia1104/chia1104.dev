@@ -52,8 +52,6 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_ENV: envSchema,
     NEXT_PUBLIC_RE_CAPTCHA_KEY: z.string().min(1),
-    NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().min(1),
-    NEXT_PUBLIC_UMAMI_URL: z.string().min(1),
     NEXT_PUBLIC_GISCUS_REPO: z
       .string()
       .optional()
@@ -85,8 +83,6 @@ export const env = createEnv({
       process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
         ? "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
         : process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY,
-    NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
-    NEXT_PUBLIC_UMAMI_URL: process.env.NEXT_PUBLIC_UMAMI_URL,
     GOOGLE_API: process.env.GOOGLE_API,
     NEXT_PUBLIC_GISCUS_REPO: process.env.NEXT_PUBLIC_GISCUS_REPO,
     NEXT_PUBLIC_GISCUS_REPO_ID: process.env.NEXT_PUBLIC_GISCUS_REPO_ID,
