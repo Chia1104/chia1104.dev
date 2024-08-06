@@ -1,6 +1,7 @@
 /// <reference types="./types.d.ts" />
 import eslint from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
+import turboPlugin from "eslint-plugin-turbo";
 import tseslint from "typescript-eslint";
 
 /**
@@ -39,6 +40,7 @@ export default tseslint.config(
     files: ["**/*.js", "**/*.ts", "**/*.tsx"],
     plugins: {
       import: importPlugin,
+      turbo: turboPlugin,
     },
     extends: [
       eslint.configs.recommended,

@@ -119,6 +119,7 @@ export const handleKyError = async (
         try {
           return (await error.response.clone().json()) as ErrorResponse;
         } catch (err) {
+          console.error(err);
           return {
             code: "unknown error",
           };

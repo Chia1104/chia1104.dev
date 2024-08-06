@@ -34,14 +34,16 @@ export const toWebRequest = (req: ExpressRequest) => {
   const headers = new Headers();
 
   Object.entries(req.headers).forEach(([key, value]) => {
-    if (Array.isArray(value)) {
+    if (Array.isArray(value) && value.length > 0) {
       value.forEach((v) => {
-        v && headers.append(key, v);
+        headers.append(key, v);
       });
       return;
     }
 
-    value && headers.append(key, value);
+    if (value) {
+      headers.append(key, value as string);
+    }
   });
 
   // GET and HEAD not allowed to receive body
