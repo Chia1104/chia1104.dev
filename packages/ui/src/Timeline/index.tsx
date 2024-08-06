@@ -23,7 +23,7 @@ const Timeline: FC<TimelineProps> = ({
   experimental,
   ...props
 }) => {
-  enableSort &&
+  if (enableSort)
     data.sort(
       (a, b) => dayjs(b.startDate).valueOf() - dayjs(a.startDate).valueOf()
     );

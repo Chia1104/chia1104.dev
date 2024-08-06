@@ -33,6 +33,7 @@ class SpotifyController {
       const redirectUrl = this.spotifyService.generateAuthorizeUrl(dto);
       return { url: redirectUrl };
     } catch (error) {
+      console.error(error);
       throw new InternalServerErrorException();
     }
   }

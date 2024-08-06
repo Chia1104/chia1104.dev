@@ -123,7 +123,7 @@ const Location: FC<LocationProps> = ({
         e.clientX - pointerXInteractionMovement.current;
       pointerYInteracting.current =
         e.clientY - pointerYInteractionMovement.current;
-      canvasRef.current && (canvasRef.current.style.cursor = "grabbing");
+      if (canvasRef.current) canvasRef.current.style.cursor = "grabbing";
     },
     [pointerXInteractionMovement, pointerYInteractionMovement]
   );
@@ -131,13 +131,13 @@ const Location: FC<LocationProps> = ({
   const handlePointerUp = useCallback(() => {
     pointerXInteracting.current = null;
     pointerYInteracting.current = null;
-    canvasRef.current && (canvasRef.current.style.cursor = "grab");
+    if (canvasRef.current) canvasRef.current.style.cursor = "grab";
   }, []);
 
   const handlePointOut = useCallback(() => {
     pointerXInteracting.current = null;
     pointerYInteracting.current = null;
-    canvasRef.current && (canvasRef.current.style.cursor = "grab");
+    if (canvasRef.current) canvasRef.current.style.cursor = "grab";
   }, []);
 
   const handleMouseMove = useCallback(
@@ -151,7 +151,7 @@ const Location: FC<LocationProps> = ({
         pointerXInteractionMovement.current = deltaX;
         pointerYInteractionMovement.current = deltaY;
         springX.set(deltaX / 100);
-        enableYInteraction && springY.set(deltaY / 100);
+        if (enableYInteraction) springY.set(deltaY / 100);
       }
     },
     [enableYInteraction, springX, springY]
@@ -169,7 +169,7 @@ const Location: FC<LocationProps> = ({
         pointerXInteractionMovement.current = deltaX;
         pointerYInteractionMovement.current = deltaY;
         springX.set(deltaX / 100);
-        enableYInteraction && springY.set(deltaY / 100);
+        if (enableYInteraction) springY.set(deltaY / 100);
       }
     },
     [enableYInteraction, springX, springY]
