@@ -86,6 +86,7 @@ export const Monaco = () => {
                 serializedContent,
               });
             } catch (error) {
+              console.error(error);
               toast.error("An error occurred while compiling the markdown.");
             }
           })

@@ -28,7 +28,7 @@ const Image = forwardRef<HTMLImageElement, ImageProps>((props, ref) => {
       )}
       onLoad={(e) => {
         setLoading(false);
-        onLoad && onLoad(e);
+        if (onLoad) onLoad(e);
       }}
       {...rest}
     />

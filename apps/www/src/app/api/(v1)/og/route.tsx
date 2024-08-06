@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (e) {
+    console.error(e);
     return NextResponse.json(errorGenerator(500), { status: 500 });
   }
 }

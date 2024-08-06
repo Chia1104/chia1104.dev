@@ -92,7 +92,7 @@ export const Form: FC<
       loading: "Loading...",
       success: () => {
         setIsLoading(false);
-        !disableRouterRefresh && router.refresh();
+        if (!disableRouterRefresh) router.refresh();
         onSuccess?.();
         return "Message sent successfully.";
       },
