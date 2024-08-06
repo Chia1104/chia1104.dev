@@ -73,7 +73,7 @@
     "@playwright/test": "^1.45.3",
     "@total-typescript/ts-reset": "0.5.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@turbo/gen": "^2.0.9",
+    "@turbo/gen": "^2.0.12",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.14.12",
     "@vitest/coverage-v8": "^2.0.4",
@@ -88,7 +88,7 @@
     "shell-quote": "^1.8.1",
     "tsup": "^8.2.3",
     "tsx": "^4.16.2",
-    "turbo": "2.0.9",
+    "turbo": "2.0.12",
     "typescript": "5.5.4",
     "vitest": "^2.0.5"
   },
