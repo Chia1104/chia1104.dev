@@ -37,7 +37,7 @@
     "@trpc/react-query": "11.0.0-rc.477",
     "@trpc/server": "11.0.0-rc.477",
     "clsx": "^2.1.1",
-    "framer-motion": "11.3.21",
+    "framer-motion": "11.3.23",
     "lowlight": "^3.1.0",
     "lucide-react": "^0.424.0",
     "million": "^3.1.11",
