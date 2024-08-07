@@ -23,7 +23,7 @@
     "@auth/core": "^0.34.2",
     "@auth/drizzle-adapter": "^1.4.2",
     "@chia/auth-core": "workspace:*",
-    "@graphql-tools/utils": "^10.3.3",
+    "@graphql-tools/utils": "^10.3.4",
     "@nestjs/apollo": "^12.2.0",
     "@nestjs/common": "^10.3.10",
     "@nestjs/config": "^3.2.3",
