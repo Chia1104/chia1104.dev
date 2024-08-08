@@ -10,11 +10,6 @@
       "matchPackagePatterns": ["eslint", "eslint-*", "@types/eslint"]
     },
     {
-      "matchPackageNames": ["node", "@types/node"],
-      "matchCurrentVersion": "^20.0.0",
-      "allowedVersions": "^20.0.0"
-    },
-    {
       "groupName": "prettier",
       "matchPackagePatterns": ["prettier", "prettier-*", "@types/prettier"]
     },
@@ -36,6 +31,10 @@
       "matchPackagePatterns": ["@typescript-eslint/*"]
     },
     {
+      "groupName": "fumadocs",
+      "matchPackagePatterns": ["@fumadocs/*"]
+    },
+    {
       "matchPackagePatterns": [
         "^@chia/*",
         "@chia/ui",
@@ -43,7 +42,8 @@
         "@chia/api",
         "@chia/db",
         "@chia/auth",
-        "tsconfig"
+        "tsconfig",
+        "node"
       ],
       "enabled": false
     },
