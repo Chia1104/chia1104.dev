@@ -32,7 +32,7 @@
     },
     {
       "groupName": "fumadocs",
-      "matchPackagePatterns": ["@fumadocs/*"]
+      "matchPackagePatterns": ["fumadocs-*"]
     },
     {
       "matchPackagePatterns": [
