@@ -19,7 +19,7 @@
     "clean": "git clean -xdf dist .turbo node_modules"
   },
   "dependencies": {
-    "@apollo/server": "^4.10.5",
+    "@apollo/server": "^4.11.0",
     "@auth/core": "^0.34.2",
     "@auth/drizzle-adapter": "^1.4.2",
     "@chia/auth-core": "workspace:*",
