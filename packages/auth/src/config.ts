@@ -1,6 +1,6 @@
 import type { DefaultSession } from "@auth/core/types";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import NextAuth from "next-auth";
+import type { Session as NextAuthSession } from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
@@ -42,6 +42,20 @@ declare module "next-auth" {
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
+const adapter = DrizzleAdapter(
+  getDb(undefined, {
+    db,
+    betaDb,
+    localDb,
+  }),
+  {
+    usersTable: schema.users,
+    accountsTable: schema.accounts,
+    sessionsTable: schema.sessions,
+    verificationTokensTable: schema.verificationTokens,
+  }
+);
+
 export const getConfig = (req?: NextRequest) => {
   return {
     ...getBaseConfig({
@@ -55,19 +69,7 @@ export const getConfig = (req?: NextRequest) => {
       signIn: "/auth/signin",
       verifyRequest: "/auth/verify-request",
     },
-    adapter: DrizzleAdapter(
-      getDb(undefined, {
-        db,
-        betaDb,
-        localDb,
-      }),
-      {
-        usersTable: schema.users,
-        accountsTable: schema.accounts,
-        sessionsTable: schema.sessions,
-        verificationTokensTable: schema.verificationTokens,
-      }
-    ),
+    adapter,
     providers: [
       Google({
         clientId: env.GOOGLE_CLIENT_ID,
@@ -92,10 +94,21 @@ export const getConfig = (req?: NextRequest) => {
   } satisfies NextAuthConfig;
 };
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth(getConfig());
-export type { Session } from "@auth/core/types";
+export const validateToken = async (
+  token: string
+): Promise<NextAuthSession | null> => {
+  const sessionToken = token.slice("Bearer ".length);
+  const session = await adapter.getSessionAndUser?.(sessionToken);
+  return session
+    ? {
+        user: {
+          ...session.user,
+        },
+        expires: session.session.expires.toISOString(),
+      }
+    : null;
+};
+
+export const invalidateSessionToken = async (token: string) => {
+  await adapter.deleteSession?.(token);
+};
