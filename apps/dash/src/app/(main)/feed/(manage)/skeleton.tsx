@@ -11,7 +11,7 @@ const Skeleton: FC = () => {
         <NSkeleton
           className="rounded-lg duration-700 before:animate-[shimmer_5s_infinite]"
           key={i}>
-          <div className="bg-default-300 h-[50px] w-full rounded-lg" />
+          <div className="bg-default-300 min-h-[120px] w-full rounded-lg" />
         </NSkeleton>
       ))}
     </>

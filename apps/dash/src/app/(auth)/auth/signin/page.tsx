@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import "server-only";
 
 import { auth } from "@chia/auth";
 

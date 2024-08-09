@@ -1,3 +1,4 @@
+import ComingSoon from "../features/ComingSoon";
 import Error from "../features/Error";
 import NotFound from "../features/NotFound";
 
@@ -13,7 +14,6 @@ export * from "./Input";
 export * from "./Input";
 export { default as Link } from "./Link";
 export * from "./Link";
-export { default as Page } from "./Page";
 export * from "./Textarea";
 export * from "./Textarea";
 export * from "./MDXComponents";
@@ -56,5 +56,6 @@ export * from "./TextRevealCard";
 export const Features = {
   NotFound,
   Error,
+  ComingSoon,
 };
 export { default as SubmitForm } from "./SubmitForm";

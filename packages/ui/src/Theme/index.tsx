@@ -9,6 +9,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  ButtonProps,
 } from "@nextui-org/react";
 import { motion } from "framer-motion";
 import type { Variant } from "framer-motion";
@@ -149,11 +150,13 @@ const ThemeSelector: FC<
   Props & {
     label?: string;
     enableCMD?: boolean;
+    buttonProps?: ButtonProps;
   }
 > = ({
   variants = defaultThemeVariants,
   label = "Theme",
   enableCMD = false,
+  buttonProps,
 }) => {
   const { theme = "system", setTheme } = useTheme();
   return (
@@ -166,7 +169,8 @@ const ThemeSelector: FC<
             size="sm"
             startContent={
               <MotionThemeIcon theme={theme as Theme} variants={variants} />
-            }>
+            }
+            {...buttonProps}>
             {label}
           </Button>
         </DropdownTrigger>

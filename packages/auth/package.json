@@ -3,8 +3,14 @@
   "name": "@chia/auth",
   "version": "0.0.0",
   "private": true,
-  "types": "./index.ts",
-  "main": "index.ts",
+  "type": "module",
+  "//": "https://github.com/reactjs/rfcs/blob/main/text/0227-server-module-conventions.md#poisoned-imports",
+  "exports": {
+    ".": {
+      "react-server": "./src/index.rsc.ts",
+      "default": "./src/index.ts"
+    }
+  },
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -22,9 +28,11 @@
     "@react-email/render": "^0.0.17",
     "@t3-oss/env-core": "^0.11.0",
     "next": "14.2.5",
-    "next-auth": "5.0.0-beta.20"
+    "next-auth": "5.0.0-beta.20",
+    "react": "^18.3.1"
   },
   "devDependencies": {
+    "@types/react": "^18.3.3",
     "tsconfig": "workspace:*"
   }
 }
