@@ -23,7 +23,7 @@ import { api } from "@/trpc-api";
 import ListItem from "../list-item";
 
 export const PostNavigation: FC<{
-  posts?: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
+  posts?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
 }> = ({ posts }) => {
   const hasPosts = !!posts && Array.isArray(posts) && posts.length > 0;
   const router = useRouter();
@@ -83,12 +83,12 @@ export const PostNavigation: FC<{
 };
 
 export const List: FC<{
-  initialData: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
-  query?: RouterInputs["feeds"]["infinityByAdmin"];
+  initialData: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
+  query?: RouterInputs["feeds"]["getFeedsWithMetaByAdminId"];
   nextCursor?: string | number | Date;
 }> = ({ initialData, nextCursor, query = {} }) => {
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
-    api.feeds.infinityByAdmin.useInfiniteQuery(
+    api.feeds.getFeedsWithMetaByAdminId.useInfiniteQuery(
       { ...query, type: "post" },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,

@@ -15,16 +15,16 @@ import { api } from "@/trpc-api";
 import Skeleton from "./skeleton";
 
 interface Props {
-  initFeed?: RouterOutputs["feeds"]["infinite"]["items"];
+  initFeed?: RouterOutputs["feeds"]["getFeedsWithMeta"]["items"];
   nextCursor?: string | number | Date;
   useClient?: boolean;
-  query?: RouterInputs["feeds"]["infinite"];
+  query?: RouterInputs["feeds"]["getFeedsWithMeta"];
   title?: ReactNode;
 }
 
 const FeedItem = forwardRef<
   HTMLDivElement,
-  { feed: RouterOutputs["feeds"]["infinite"]["items"][0] }
+  { feed: RouterOutputs["feeds"]["getFeedsWithMeta"]["items"][0] }
 >(({ feed }, ref) => {
   return (
     <Card ref={ref} className="dark:bg-dark/90 grid-cols-1">
@@ -48,7 +48,7 @@ const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query = {} } = props;
 
   const { data, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    api.feeds.infinite.useInfiniteQuery(query, {
+    api.feeds.getFeedsWithMeta.useInfiniteQuery(query, {
       getNextPageParam: (lastPage) => lastPage?.nextCursor,
       initialData: initFeed
         ? {
