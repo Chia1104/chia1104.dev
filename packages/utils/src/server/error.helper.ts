@@ -18,3 +18,9 @@ export function errorGenerator(
     errors,
   };
 }
+
+export class ParsedJSONError extends Error {
+  constructor(public error: ErrorResponse) {
+    super("Parsed JSON error");
+  }
+}

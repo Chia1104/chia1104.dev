@@ -1,5 +1,5 @@
-import { generate } from "@chia/editor/generate";
+import { generate, DEFAULT_MAX_DURATION } from "@chia/editor/generate";
 
-// export const runtime = "edge";
+export const maxDuration = DEFAULT_MAX_DURATION;
 
 export const POST = generate;

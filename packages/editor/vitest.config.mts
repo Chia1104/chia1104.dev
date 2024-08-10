@@ -5,6 +5,10 @@ export default defineConfig({
     globals: true,
     environment: "node",
     passWithNoTests: true,
-    setupFiles: ["../../toolings/vitest/setup.ts"],
+    setupFiles: [
+      "../../toolings/vitest/setup.ts",
+      "__tests__/setup.ts",
+      "dotenv/config",
+    ],
   },
 });

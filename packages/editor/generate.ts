@@ -1,14 +1,35 @@
-import { OpenAIStream, StreamingTextResponse } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { convertToCoreMessages, streamText } from "ai";
 import { NextResponse } from "next/server";
-import OpenAI, { APIError } from "openai";
+import { z } from "zod";
 
 import { auth } from "@chia/auth";
-import { errorGenerator, getAdminId } from "@chia/utils";
+import { errorGenerator, getAdminId, ParsedJSONError } from "@chia/utils";
 
-// Create an OpenAI API client (that's edge friendly!)
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY ?? "",
+/**
+ * Allow streaming responses up to 30 seconds
+ * @example
+ * ```ts
+ * export const maxDuration = DEFAULT_MAX_DURATION;
+ * ```
+ */
+export const DEFAULT_MAX_DURATION = 30;
+
+// https://platform.openai.com/docs/models
+export const OpenAIModal = {
+  "gpt-4o": "gpt-4o",
+  "gpt-4": "gpt-4",
+  "gpt-3.5-turbo": "gpt-3.5-turbo",
+} as const;
+
+export type OpenAIModal = (typeof OpenAIModal)[keyof typeof OpenAIModal];
+
+export const requestSchema = z.object({
+  prompt: z.string(),
+  modal: z.nativeEnum(OpenAIModal).optional().default(OpenAIModal["gpt-4o"]),
 });
+
+export type RequestDTO = z.infer<typeof requestSchema>;
 
 export const generate = auth(async (req) => {
   try {
@@ -35,43 +56,60 @@ export const generate = auth(async (req) => {
       );
     }
 
-    const { prompt } = (await req.json()) as { prompt: string };
+    const json = req.json().catch(() => {
+      throw new ParsedJSONError(errorGenerator(400));
+    });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
+    const request = requestSchema.parse(await json);
+
+    const result = await streamText({
+      model: openai(request.modal),
+      messages: convertToCoreMessages([
         {
           role: "system",
           content:
             "You are an AI writing assistant that continues existing text based on context from prior text. " +
             "Give more weight/priority to the later characters than the beginning ones. " +
-            "Limit your response to no more than 200 characters, but make sure to construct complete sentences.",
-          // we're disabling markdown for now until we can figure out a way to stream markdown text with proper formatting: https://github.com/steven-tey/novel/discussions/7
-          // "Use Markdown formatting when appropriate.",
+            "Limit your response to no more than 200 characters, but make sure to construct complete sentences." +
+            "Use Markdown formatting when appropriate.",
         },
         {
           role: "user",
-          content: prompt,
+          content: request.prompt,
         },
-      ],
-      temperature: 0.7,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-      stream: true,
-      n: 1,
+      ]),
     });
 
-    // Convert the response into a friendly text-stream
-    const stream = OpenAIStream(response);
-
-    // Respond with the stream
-    return new StreamingTextResponse(stream);
+    return result.toDataStreamResponse();
   } catch (error) {
-    if (error instanceof APIError) {
-      return NextResponse.json(errorGenerator(error.status ?? 500), {
-        status: error.status,
-      });
+    if (error instanceof ParsedJSONError) {
+      return NextResponse.json(
+        errorGenerator(400, [
+          {
+            field: "body",
+            message: "Invalid JSON body.",
+          },
+        ]),
+        {
+          status: 400,
+        }
+      );
+    }
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        errorGenerator(
+          400,
+          error.issues.map((issue) => {
+            return {
+              field: issue.path.join("."),
+              message: issue.message,
+            };
+          })
+        ),
+        {
+          status: 400,
+        }
+      );
     }
     return NextResponse.json(errorGenerator(500), {
       status: 500,
