@@ -17,7 +17,7 @@ const getNotes = async (session: Session | null) => {
       betaDb,
     }),
   });
-  return await feedsCaller.infinite({
+  return await feedsCaller.getFeedsWithMeta({
     limit: 10,
     orderBy: "id",
     sortOrder: "desc",
