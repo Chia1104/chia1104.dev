@@ -4,6 +4,6 @@ export default defineConfig({
   test: {
     environment: "node",
     passWithNoTests: true,
-    setupFiles: ["../../toolings/vitest/setup.ts"],
+    setupFiles: ["../../toolings/vitest/setup.ts", "__tests__/setup.ts"],
   },
 });

@@ -7,16 +7,13 @@ import {
   Heading1,
   Heading2,
   Heading3,
-  ImageIcon,
   List,
   ListOrdered,
   Text,
   TextQuote,
 } from "lucide-react";
 import {
-  TiptapImage,
   TiptapLink,
-  UpdatedImage,
   TaskList,
   TaskItem,
   HorizontalRule,
@@ -40,21 +37,8 @@ const tiptapLink = TiptapLink.configure({
   },
 });
 
-const tiptapImage = TiptapImage.extend().configure({
-  allowBase64: true,
-  HTMLAttributes: {
-    class: cn("rounded-lg border border-muted"),
-  },
-});
-
 const codeBlockLowlight = CodeBlockLowlight.configure({
   lowlight,
-});
-
-const updatedImage = UpdatedImage.configure({
-  HTMLAttributes: {
-    class: cn("rounded-lg border border-muted"),
-  },
 });
 
 const taskList = TaskList.configure({
@@ -217,27 +201,6 @@ export const suggestionItems = createSuggestionItems([
     command: ({ editor, range }) =>
       editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
   },
-  {
-    title: "Image",
-    description: "Upload an image from your computer.",
-    searchTerms: ["photo", "picture", "media"],
-    icon: <ImageIcon size={18} />,
-    command: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).run();
-      // upload image
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = () => {
-        if (input.files?.length) {
-          const _file = input.files[0];
-          const _pos = editor.view.state.selection.from;
-          // startImageUpload(file, editor.view, pos);
-        }
-      };
-      input.click();
-    },
-  },
 ]);
 
 const slashCommand = Command.configure({
@@ -252,8 +215,6 @@ const extensions: AnyExtension[] = [
   starterKit,
   placeholder,
   tiptapLink,
-  tiptapImage,
-  updatedImage,
   taskList,
   taskItem,
   horizontalRule,
