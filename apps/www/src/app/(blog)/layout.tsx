@@ -10,8 +10,8 @@ import { NoteNavigation } from "./_components/notes";
 import { PostNavigation } from "./_components/posts";
 
 const Navigation: FC<{
-  posts?: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
-  notes?: RouterOutputs["feeds"]["infinityByAdmin"]["items"];
+  posts?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
+  notes?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
 }> = ({ posts, notes }) => {
   return (
     <NavigationMenu className="not-prose mb-5 md:mb-10">
