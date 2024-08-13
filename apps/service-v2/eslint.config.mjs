@@ -4,7 +4,7 @@ import reactConfig from "@chia/eslint-config/react";
 /** @type {import('typescript-eslint').Config} */
 export default [
   {
-    ignores: [".next/**"],
+    ignores: ["**/*.d.ts"],
   },
   ...baseConfig,
   ...reactConfig,

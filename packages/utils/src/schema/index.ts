@@ -24,3 +24,5 @@ export const envSchema = z
   ])
   .default("development");
 export type Env = z.infer<typeof envSchema>;
+
+export const numericStringSchema = z.string().pipe(z.coerce.number());

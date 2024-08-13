@@ -38,14 +38,19 @@ export const getInfiniteFeeds = withDTO(
     }
   ) => {
     const cursorTransform = (cursor: string | number | Date | dayjs.Dayjs) => {
-      if (
-        cursor instanceof dayjs.Dayjs ||
-        orderBy === "createdAt" ||
-        orderBy === "updatedAt"
-      ) {
-        return dayjs(cursor).toDate();
+      try {
+        if (
+          cursor instanceof dayjs.Dayjs ||
+          orderBy === "createdAt" ||
+          orderBy === "updatedAt"
+        ) {
+          return dayjs(cursor).toDate();
+        }
+        return cursor;
+      } catch (e) {
+        console.error(e);
+        return null;
       }
-      return cursor;
     };
     const feedType =
       type === "post"
@@ -55,18 +60,19 @@ export const getInfiniteFeeds = withDTO(
         : ({
             note: true,
           } as const);
+    const parsedCursor = cursor ? cursorTransform(cursor) : null;
     const items = await db.query.feeds.findMany({
       orderBy: (feeds, { asc, desc }) => [
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
       with: feedType,
-      where: cursor
+      where: parsedCursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
               sortOrder === "asc"
-                ? gte(feeds[orderBy], cursorTransform(cursor))
-                : lte(feeds[orderBy], cursorTransform(cursor)),
+                ? gte(feeds[orderBy], parsedCursor)
+                : lte(feeds[orderBy], parsedCursor),
               eq(feeds.type, type),
               ...whereAnd
             )
@@ -101,14 +107,19 @@ export const getInfiniteFeedsByUserId = withDTO(
     }
   ) => {
     const cursorTransform = (cursor: string | number | Date | dayjs.Dayjs) => {
-      if (
-        cursor instanceof dayjs.Dayjs ||
-        orderBy === "createdAt" ||
-        orderBy === "updatedAt"
-      ) {
-        return dayjs(cursor).toDate();
+      try {
+        if (
+          cursor instanceof dayjs.Dayjs ||
+          orderBy === "createdAt" ||
+          orderBy === "updatedAt"
+        ) {
+          return dayjs(cursor).toDate();
+        }
+        return cursor;
+      } catch (e) {
+        console.error(e);
+        return null;
       }
-      return cursor;
     };
     const feedType =
       type === "post"
@@ -118,18 +129,19 @@ export const getInfiniteFeedsByUserId = withDTO(
         : ({
             note: true,
           } as const);
+    const parsedCursor = cursor ? cursorTransform(cursor) : null;
     const items = await db.query.feeds.findMany({
       orderBy: (feeds, { asc, desc }) => [
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
       with: feedType,
-      where: cursor
+      where: parsedCursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
               sortOrder === "asc"
-                ? gte(feeds[orderBy], cursorTransform(cursor))
-                : lte(feeds[orderBy], cursorTransform(cursor)),
+                ? gte(feeds[orderBy], parsedCursor)
+                : lte(feeds[orderBy], parsedCursor),
               eq(feeds.type, type),
               eq(feeds.userId, userId),
               ...whereAnd
