@@ -69,11 +69,12 @@ app.onError((e, c) => {
           field: e.name,
           message: e.message,
         },
-      ])
+      ]),
+      e.status
     );
   }
   c.get("sentry").captureException(e);
-  return c.json(errorGenerator(500));
+  return c.json(errorGenerator(500), 500);
 });
 
 app.route("/auth", authRoutes);

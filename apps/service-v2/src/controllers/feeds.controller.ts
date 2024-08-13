@@ -1,6 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { getRuntimeKey } from "hono/adapter";
 
 import { getInfiniteFeeds } from "@chia/db";
 import { errorGenerator } from "@chia/utils";
@@ -25,7 +24,8 @@ api.get(
               message: issue.message,
             };
           })
-        )
+        ),
+        400
       );
     }
   }),
@@ -42,9 +42,5 @@ api.get(
     return c.json(feeds);
   }
 );
-
-api.get("/test", (c) => {
-  return c.text(getRuntimeKey());
-});
 
 export default api;
