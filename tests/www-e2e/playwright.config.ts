@@ -14,7 +14,7 @@ export default defineConfig({
   reporter: "html",
 
   webServer: {
-    command: "pnpm run start:www",
+    command: "pnpm run dev:www",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",

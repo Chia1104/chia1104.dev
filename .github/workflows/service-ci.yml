@@ -51,11 +51,6 @@ jobs:
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
-      - name: "🏗️  Build"
-        shell: bash
-        run: |
-          pnpm build --filter service...
-
       - name: "🧹  Lint & Type check & Test"
         shell: bash
         run: |
