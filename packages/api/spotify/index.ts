@@ -9,6 +9,17 @@ import type {
   CodeAuthorizationDTO,
 } from "./validator";
 
+interface NextFetchRequestConfig {
+  revalidate?: number | false;
+  tags?: string[];
+}
+
+declare module "ky" {
+  interface Options {
+    next?: NextFetchRequestConfig | undefined;
+  }
+}
+
 export const SPOTIFY_BASE_URL = "https://api.spotify.com/v1";
 
 export const spotifyRequest = request({

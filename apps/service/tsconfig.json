@@ -12,5 +12,6 @@
       "@chia/utils": ["../../packages/utils"],
       "@chia/utils/*": ["../../packages/utils/*"]
     }
-  }
+  },
+  "exclude": ["vitest.config.mts", "vitest.config.e2e.mts"]
 }
