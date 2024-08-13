@@ -24,7 +24,7 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@chia/auth-core-esm": "workspace:*",
+    "@chia/auth-core": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",

@@ -2,7 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import type { Session } from "@chia/auth-core-esm/types";
+import type { Session } from "@chia/auth-core/types";
 import { db, betaDb, localDb } from "@chia/db";
 import { getDb, getAdminId } from "@chia/utils";
 

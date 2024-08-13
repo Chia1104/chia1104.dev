@@ -7,7 +7,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 
-import { getConfig } from "@chia/auth-core-esm";
+import { getConfig } from "@chia/auth-core";
 import { db, localDb, betaDb } from "@chia/db";
 import { getDb, errorGenerator } from "@chia/utils";
 

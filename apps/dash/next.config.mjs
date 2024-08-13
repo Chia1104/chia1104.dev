@@ -36,6 +36,7 @@ const nextConfig = {
   transpilePackages: [
     "@chia/api",
     "@chia/auth",
+    "@chia/auth-core",
     "@chia/db",
     "@chia/editor",
     "@chia/mdx",

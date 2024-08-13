@@ -10,19 +10,15 @@ WORKDIR /app
 
 RUN apk update && \
     apk add --no-cache \
-    python3 \
-    build-base \
-    gcc \
     libc6-compat && \
     corepack enable pnpm && \
-    pnpm add -g turbo && \
-    ln -sf /usr/bin/python3 /usr/bin/python
+    pnpm add -g turbo
 
 FROM base AS pre-builder
 
 COPY . .
 
-RUN turbo prune --scope=service-v2 --docker
+RUN turbo prune --scope=service --scope=@chia/cache --docker
 
 FROM base AS builder
 
@@ -71,7 +67,7 @@ ENV TURBO_TEAM=$TURBO_TEAM \
 
 RUN pnpm i
 
-RUN pnpm turbo run build --filter=service-v2...
+RUN pnpm turbo run build --filter=service...
 
 FROM base as prod
 
@@ -83,8 +79,11 @@ RUN pnpm i --prod --ignore-scripts
 
 FROM base as runner
 
-COPY --from=builder /app/apps/service-v2/dist ./apps/service/dist
-COPY --from=prod /app/apps/service-v2/node_modules ./apps/service/node_modules
+COPY --from=builder /app/apps/service/dist ./apps/service/dist
+COPY --from=builder /app/packages/auth-core/dist ./packages/auth-core/dist
+COPY ./packages/auth-core/package.json ./packages/auth-core/package.json
+COPY ./packages/cache/package.json ./packages/cache/package.json
+COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
 COPY --from=prod /app/node_modules ./node_modules
 
 ENV NODE_ENV=production \
@@ -92,4 +91,4 @@ ENV NODE_ENV=production \
 
 EXPOSE 8080
 
-CMD [ "node", "apps/service/dist/server.mjs" ]
+CMD [ "node", "apps/service/dist/main.js" ]

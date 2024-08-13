@@ -1,6 +1,11 @@
+ARG BUN_VERSION=1.1.22
 ARG NODE_VERSION=20
 
-FROM node:${NODE_VERSION}-alpine AS base
+FROM oven/bun:$BUN_VERSION as runner-base
+
+WORKDIR /app
+
+FROM node:${NODE_VERSION}-alpine AS builder-base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -10,17 +15,21 @@ WORKDIR /app
 
 RUN apk update && \
     apk add --no-cache \
+    python3 \
+    build-base \
+    gcc \
     libc6-compat && \
     corepack enable pnpm && \
-    pnpm add -g turbo
+    pnpm add -g turbo && \
+    ln -sf /usr/bin/python3 /usr/bin/python
 
-FROM base AS pre-builder
+FROM builder-base AS pre-builder
 
 COPY . .
 
-RUN turbo prune --scope=service --scope=@chia/cache --docker
+RUN turbo prune --scope=service --docker
 
-FROM base AS builder
+FROM builder-base AS builder
 
 COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
@@ -69,7 +78,7 @@ RUN pnpm i
 
 RUN pnpm turbo run build --filter=service...
 
-FROM base as prod
+FROM builder-base as prod
 
 COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
@@ -77,12 +86,9 @@ COPY --from=pre-builder /app/out/full/ .
 
 RUN pnpm i --prod --ignore-scripts
 
-FROM base as runner
+FROM runner-base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
-COPY --from=builder /app/packages/auth-core/dist ./packages/auth-core/dist
-COPY ./packages/auth-core/package.json ./packages/auth-core/package.json
-COPY ./packages/cache/package.json ./packages/cache/package.json
 COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
 COPY --from=prod /app/node_modules ./node_modules
 
@@ -91,4 +97,4 @@ ENV NODE_ENV=production \
 
 EXPOSE 8080
 
-CMD [ "node", "apps/service/dist/main.js" ]
+CMD [ "bun", "apps/service/dist/server.mjs" ]

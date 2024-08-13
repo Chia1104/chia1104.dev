@@ -1,0 +1,17 @@
+{
+  "extends": "tsconfig/nestjs.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@chia/cache": ["../../packages/cache"],
+      "@chia/cache/*": ["../../packages/cache/*"],
+      "@chia/db": ["../../packages/db"],
+      "@chia/db/*": ["../../packages/db/*"],
+      "@chia/utils": ["../../packages/utils"],
+      "@chia/utils/*": ["../../packages/utils/*"]
+    }
+  },
+  "exclude": ["vitest.config.mts", "vitest.config.e2e.mts"]
+}
