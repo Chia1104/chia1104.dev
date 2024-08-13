@@ -1,10 +1,7 @@
-const {
-  iconsPlugin,
-  getIconCollections,
-} = require("@egoist/tailwindcss-icons");
+import { iconsPlugin, getIconCollections } from "@egoist/tailwindcss-icons";
+import type { Config } from "tailwindcss";
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   plugins: [
     iconsPlugin({
       // Select the icon collections you want to use
@@ -12,4 +9,6 @@ module.exports = {
       collections: getIconCollections(["mdi", "lucide"]),
     }),
   ],
-};
+} satisfies Partial<Config>;
+
+export default config;

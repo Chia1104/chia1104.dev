@@ -4,11 +4,19 @@
   "types": "index.d.ts",
   "version": "0.0.1-beta.1",
   "private": true,
-  "main": "index.js",
+  "exports": {
+    ".": {
+      "default": "./index.ts"
+    },
+    "./animation": "./animation.ts",
+    "./egoist-icons": "./egoist-icons.ts",
+    "./shadcn-ui": "./shadcn-ui.ts"
+  },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules"
   },
   "devDependencies": {
+    "tsconfig": "workspace:*",
     "@egoist/tailwindcss-icons": "^1.8.1",
     "@iconify/json": "^2.2.234",
     "@tailwindcss/typography": "^0.5.14",

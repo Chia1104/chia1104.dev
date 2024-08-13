@@ -1,18 +1,24 @@
-const config = (options) => {
+import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+
+type Options = {
+  disableTailwindAnimation?: boolean;
+};
+
+const config = (options?: Options) => {
   options ??= {};
   const { disableTailwindAnimation = false } = options;
-  /** @type {import('tailwindcss').Config} */
   return {
     theme: {
       extend: {
         keyframes: {
           "accordion-down": {
-            from: { height: 0 },
+            from: { height: "0" },
             to: { height: "var(--radix-accordion-content-height)" },
           },
           "accordion-up": {
             from: { height: "var(--radix-accordion-content-height)" },
-            to: { height: 0 },
+            to: { height: "0" },
           },
           "cia-marquee": {
             from: { transform: "translateX(0)" },
@@ -35,11 +41,11 @@ const config = (options) => {
             "100%": { transform: "translateY(0)" },
           },
           "cia-meteor": {
-            "0%": { transform: "rotate(215deg) translateX(0)", opacity: 1 },
-            "70%": { opacity: 1 },
+            "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
+            "70%": { opacity: "1" },
             "100%": {
               transform: "rotate(215deg) translateX(-500px)",
-              opacity: 0,
+              opacity: "0",
             },
           },
           "cia-border-beam": {
@@ -68,11 +74,11 @@ const config = (options) => {
           },
           "cia-spotlight": {
             "0%": {
-              opacity: 0,
+              opacity: "0",
               transform: "translate(-72%, -62%) scale(0.5)",
             },
             "100%": {
-              opacity: 1,
+              opacity: "1",
               transform: "translate(-50%,-40%) scale(1)",
             },
           },
@@ -95,8 +101,10 @@ const config = (options) => {
         },
       },
     },
-    plugins: [!disableTailwindAnimation && require("tailwindcss-animate")],
-  };
+    plugins: [
+      !disableTailwindAnimation ? tailwindcssAnimate : { handler: () => {} },
+    ],
+  } satisfies Partial<Config>;
 };
 
-module.exports = config;
+export default config;
