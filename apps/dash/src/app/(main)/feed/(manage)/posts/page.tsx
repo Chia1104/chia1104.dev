@@ -1,6 +1,6 @@
 import "server-only";
 
-import { feedsRouter } from "@chia/api/trpc/routes/feeds";
+import { feedsRouter } from "@chia/api/trpc";
 import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth";
 import { db, localDb, betaDb } from "@chia/db";

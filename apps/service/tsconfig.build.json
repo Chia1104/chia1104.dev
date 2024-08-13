@@ -1,11 +1,14 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": ["./tsconfig.json"],
+  "include": ["**/*.ts"],
   "exclude": [
     "node_modules",
-    "test",
-    "dist",
-    "**/*.{spec,test}.{mts,ts}",
-    "vitest.config.mts",
-    "vitest.config.e2e.mts"
-  ]
+    "**/*.spec.mts",
+    "**/*.test.mts",
+    "tsup.config.ts",
+    "vitest.config.mts"
+  ],
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
 }

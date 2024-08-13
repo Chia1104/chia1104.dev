@@ -2,8 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { auth } from "@chia/auth";
-import type { Session } from "@chia/auth";
+import type { Session } from "@chia/auth-core/types";
 import { db, betaDb, localDb } from "@chia/db";
 import { getDb, getAdminId } from "@chia/utils";
 
@@ -26,14 +25,14 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
   };
 };
 
-export const createTRPCContext = async (opts: {
+export const createTRPCContext = (opts: {
+  /**
+   * @deprecated
+   */
   req?: Request;
   auth?: Session | null;
 }) => {
-  const session = opts.auth ?? (await auth());
-  const source = opts.req?.headers.get("x-trpc-source") ?? "unknown";
-
-  console.log(">>> tRPC Request from", source, "by", session?.user);
+  const session = opts.auth ?? null;
 
   return createInnerTRPCContext({
     session,
@@ -59,7 +58,7 @@ export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 
 const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
+  if (!ctx.session?.user || !ctx.session) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({

@@ -1,16 +1,17 @@
 {
-  "extends": "tsconfig/nestjs.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "baseUrl": ".",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node", "bun-types"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"],
-      "@chia/cache": ["../../packages/cache"],
-      "@chia/cache/*": ["../../packages/cache/*"],
-      "@chia/db": ["../../packages/db"],
-      "@chia/db/*": ["../../packages/db/*"],
-      "@chia/utils": ["../../packages/utils"],
-      "@chia/utils/*": ["../../packages/utils/*"]
+      "@/*": ["src/*"]
     }
-  }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"]
 }

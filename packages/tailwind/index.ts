@@ -1,10 +1,7 @@
-const animation = require("./animation");
-const shadcnConfig = require("./shadcn-ui");
-const typography = require("@tailwindcss/typography");
-const egoistIcons = require("./egoist-icons");
+import typography from "@tailwindcss/typography";
+import type { Config } from "tailwindcss";
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   theme: {
     extend: {
       colors: {
@@ -112,8 +109,6 @@ module.exports = {
   },
   darkMode: ["class", ".dark-theme"],
   plugins: [typography],
-};
+} satisfies Partial<Config>;
 
-module.exports.animation = animation;
-module.exports.shadcnConfig = shadcnConfig;
-module.exports.egoistIcons = egoistIcons;
+export default config;

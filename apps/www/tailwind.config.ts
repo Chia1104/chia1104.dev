@@ -4,11 +4,10 @@ import { docsUi } from "fumadocs-ui/tailwind-plugin";
 import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
 
-import baseConfig, {
-  animation,
-  shadcnConfig,
-  egoistIcons,
-} from "@chia/tailwind";
+import baseConfig from "@chia/tailwind";
+import animation from "@chia/tailwind/animation";
+import egoistIcons from "@chia/tailwind/egoist-icons";
+import shadcnConfig from "@chia/tailwind/shadcn-ui";
 
 const config: Config = {
   content: [
@@ -63,7 +62,6 @@ const config: Config = {
   },
   corePlugins: {
     aspectRatio: false,
-    // preflight: false,
   },
   plugins: [
     nextui({
@@ -82,17 +80,7 @@ const config: Config = {
     docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
   ],
   darkMode: "class",
-  presets: [
-    shadcnConfig,
-    animation(),
-    baseConfig,
-    egoistIcons,
-    // createPreset({
-    //   preset: "ocean",
-    //   modifyContainer: false,
-    //   cssPrefix: "fd-",
-    // }),
-  ],
+  presets: [shadcnConfig, animation(), baseConfig, egoistIcons],
 };
 
 export default config;

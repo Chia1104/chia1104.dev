@@ -67,17 +67,6 @@ jobs:
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
-      - name: "📦  Next.js cache"
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/apps/dash/.next/cache
-          key: ${{ runner.os }}-${{ runner.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}-www
-
-      - name: "🏗️  Build"
-        shell: bash
-        run: |
-          pnpm build --filter www...
-
       - name: "🧹  Lint & Type check & Test"
         shell: bash
         run: |

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import * as _dotenv from "dotenv/config";
 import { drizzle } from "drizzle-orm/postgres-js";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -34,3 +34,4 @@ export * from "drizzle-orm";
 export { pgTable as tableCreator } from "./schema/table";
 
 export * from "./utils/feeds";
+export * from "./utils/validator/feeds";

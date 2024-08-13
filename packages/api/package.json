@@ -5,6 +5,18 @@
   "private": true,
   "types": "index.ts",
   "main": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./github": "./github/index.ts",
+    "./github/query": "./github/query/index.ts",
+    "./github/env": "./github/env.ts",
+    "./github/types": "./github/types.d.ts",
+    "./spotify": "./spotify/index.ts",
+    "./spotify/env": "./spotify/env.ts",
+    "./spotify/types": "./spotify/types.d.ts",
+    "./spotify/validator": "./spotify/validator.ts",
+    "./trpc": "./trpc/index.ts"
+  },
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -12,14 +24,13 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@chia/auth": "workspace:*",
+    "@chia/auth-core": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "^0.11.0",
     "@trpc/client": "11.0.0-rc.477",
     "@trpc/server": "11.0.0-rc.477",
-    "next": "14.2.5",
     "server-only": "^0.0.1",
     "tsconfig": "workspace:*"
   }

@@ -3,33 +3,13 @@
   "name": "@chia/auth-core",
   "version": "0.0.0",
   "private": true,
-  "main": "./dist/cjs.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/cjs.d.ts",
   "exports": {
-    ".": {
-      "require": "./dist/cjs.js",
-      "import": "./dist/index.mjs",
-      "types": "./dist/cjs.d.ts"
-    },
-    "./utils": {
-      "require": "./dist/utils.js",
-      "import": "./dist/utils.mjs",
-      "types": "./dist/utils.d.mts"
-    },
-    "./env": {
-      "require": "./dist/env.js",
-      "import": "./dist/env.mjs",
-      "types": "./dist/env.d.mts"
-    },
-    "./types": {
-      "require": "./dist/types.js",
-      "import": "./dist/types.mjs",
-      "types": "./dist/types.d.mts"
-    }
+    ".": "./src/index.ts",
+    "./utils": "./src/utils.ts",
+    "./env": "./src/env.ts",
+    "./types": "./src/types.ts"
   },
   "scripts": {
-    "build": "tsup",
     "clean": "git clean -xdf .turbo node_modules dist",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
