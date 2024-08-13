@@ -92,4 +92,4 @@ ENV NODE_ENV=production \
 
 EXPOSE 8080
 
-CMD [ "node", "apps/service/dist/server.js" ]
+CMD [ "node", "apps/service/dist/server.mjs" ]

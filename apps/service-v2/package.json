@@ -2,10 +2,11 @@
   "name": "service-v2",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
+    "bun:dev": "bun run --watch --bun src/server.ts",
     "build": "tsup",
-    "preview": "node --env-file=.env dist/server.mjs",
-    "vite:dev": "vite",
-    "vite:build": "vite build"
+    "start": "node dist/server.mjs",
+    "bun:start": "bun run --bun dist/server.mjs",
+    "preview": "node --env-file=.env dist/server.mjs"
   },
   "dependencies": {
     "@chia/api": "workspace:*",
