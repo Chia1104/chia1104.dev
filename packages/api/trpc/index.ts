@@ -5,6 +5,8 @@ import type { AppRouter } from "./root";
 export { appRouter, type AppRouter } from "./root";
 export { createTRPCContext } from "./trpc";
 
+export { feedsRouter } from "./routes/feeds";
+
 /**
  * Inference helpers for input types
  * @example type HelloInput = RouterInputs['example']['hello']

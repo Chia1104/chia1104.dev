@@ -5,10 +5,7 @@ import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
 } from "@chia/db";
-import {
-  infiniteSchema,
-  getPublicFeedBySlugSchema,
-} from "@chia/db/src/utils/validator/feeds";
+import { infiniteSchema, getPublicFeedBySlugSchema } from "@chia/db";
 
 import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
 

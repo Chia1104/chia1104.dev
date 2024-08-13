@@ -9,3 +9,5 @@ export const Provider = {
 export type Provider = (typeof Provider)[keyof typeof Provider];
 
 export const providerSchema = z.nativeEnum(Provider);
+
+export type { Session } from "@auth/core/types";

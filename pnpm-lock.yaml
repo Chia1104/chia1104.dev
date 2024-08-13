@@ -389,6 +389,9 @@ importers:
       '@auth/drizzle-adapter':
         specifier: ^1.4.2
         version: 1.4.2
+      '@chia/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@chia/auth-core-esm':
         specifier: workspace:*
         version: link:../../packages/auth-core-esm
@@ -410,6 +413,9 @@ importers:
       '@hono/sentry':
         specifier: ^1.2.0
         version: 1.2.0(hono@4.5.4)
+      '@hono/trpc-server':
+        specifier: ^0.3.2
+        version: 0.3.2(@trpc/server@11.0.0-rc.477)(hono@4.5.4)
       '@hono/zod-validator':
         specifier: ^0.2.2
         version: 0.2.2(hono@4.5.4)(zod@3.23.8)
@@ -545,7 +551,7 @@ importers:
         version: 24.1.1(bufferutil@4.0.8)
       million:
         specifier: ^3.1.11
-        version: 3.1.11(rollup@4.20.0)
+        version: 3.1.11(rollup@3.29.4)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -606,7 +612,7 @@ importers:
         version: link:../../packages/tailwind
       '@million/lint':
         specifier: 1.0.0-rc.84
-        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)
+        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)
       '@next/bundle-analyzer':
         specifier: 14.2.5
         version: 14.2.5(bufferutil@4.0.8)
@@ -680,9 +686,9 @@ importers:
 
   packages/api:
     dependencies:
-      '@chia/auth':
+      '@chia/auth-core-esm':
         specifier: workspace:*
-        version: link:../auth
+        version: link:../auth-core-esm
       '@chia/db':
         specifier: workspace:*
         version: link:../db
@@ -701,9 +707,6 @@ importers:
       '@trpc/server':
         specifier: 11.0.0-rc.477
         version: 11.0.0-rc.477
-      next:
-        specifier: 14.2.5
-        version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
@@ -1329,7 +1332,6 @@ packages:
   '@apollo/server-plugin-landing-page-graphql-playground@4.0.0':
     resolution: {integrity: sha512-PBDtKI/chJ+hHeoJUUH9Kuqu58txQl00vUGuxqiC9XcReulIg7RjsyD0G1u3drX4V709bxkL5S0nTeXfRHD0qA==}
     engines: {node: '>=14.0'}
-    deprecated: The use of GraphQL Playground in Apollo Server was supported in previous versions, but this is no longer the case as of December 31, 2022. This package exists for v4 migration purposes only. We do not intend to resolve security issues or other bugs with this package if they arise, so please migrate away from this to [Apollo Server's default Explorer](https://www.apollographql.com/docs/apollo-server/api/plugin/landing-pages) as soon as possible.
     peerDependencies:
       '@apollo/server': ^4.0.0
 
@@ -2523,6 +2525,13 @@ packages:
     resolution: {integrity: sha512-9mS8GrkGtR4YxM1CViL4Ft8LFQ9YhCoXeqKnUA1AUmrvA5PhUU/V+xoo8Autw0nVriin3liX5/lPrwWz3muwiw==}
     peerDependencies:
       hono: '>=3.*'
+
+  '@hono/trpc-server@0.3.2':
+    resolution: {integrity: sha512-dTKDrSldjBn0hi9FjHOGdiHgMCWPoW5NaBUTQRNLyVL9JcJJu9oiwTFoIscPFxc9CF2rAeA8aRGHoFJK+A8cLw==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@trpc/server': ^10.10.0 || >11.0.0-rc
+      hono: '>=4.*'
 
   '@hono/zod-validator@0.2.2':
     resolution: {integrity: sha512-dSDxaPV70Py8wuIU2QNpoVEIOSzSXZ/6/B/h4xA7eOMz7+AarKTSGV8E6QwrdcCbBLkpqfJ4Q2TmBO0eP1tCBQ==}
@@ -8380,7 +8389,6 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
 
   glob@9.3.5:
     resolution: {integrity: sha512-e1LleDykUz2Iu+MTYdkSsuWX8lvAjAcs0Xef0lNIu0S2wOAzuTxCJtcd9S3cijlwYF18EsU3rzb8jPVobxDh9Q==}
@@ -8707,7 +8715,6 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
-    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -11327,7 +11334,6 @@ packages:
 
   rimraf@3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
-    deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
   rollup@3.29.4:
@@ -11854,7 +11860,6 @@ packages:
 
   subscriptions-transport-ws@0.11.0:
     resolution: {integrity: sha512-8D4C6DIH5tGiAIpp5I0wD/xRlNiZAPGHygzCe7VzyzUoxHtawzjNAY9SUTXU05/EY2NMY9/9GF0ycizkXr1CWQ==}
-    deprecated: The `subscriptions-transport-ws` package is no longer maintained. We recommend you use `graphql-ws` instead. For help migrating Apollo software to `graphql-ws`, see https://www.apollographql.com/docs/apollo-server/data/subscriptions/#switching-from-subscriptions-transport-ws    For general help using `graphql-ws`, see https://github.com/enisdenjo/graphql-ws/blob/master/README.md
     peerDependencies:
       graphql: ^15.7.2 || ^16.0.0
 
@@ -14140,6 +14145,11 @@ snapshots:
       hono: 4.5.4
       toucan-js: 4.0.0
 
+  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.477)(hono@4.5.4)':
+    dependencies:
+      '@trpc/server': 11.0.0-rc.477
+      hono: 4.5.4
+
   '@hono/zod-validator@0.2.2(hono@4.5.4)(zod@3.23.8)':
     dependencies:
       hono: 4.5.4
@@ -14632,6 +14642,39 @@ snapshots:
       xycolors: 0.1.2
     transitivePeerDependencies:
       - supports-color
+
+  '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)':
+    dependencies:
+      '@axiomhq/js': 1.0.0-rc.3
+      '@babel/core': 7.24.6
+      '@babel/types': 7.24.6
+      '@hono/node-server': 1.12.0
+      '@million/install': 0.0.18
+      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
+      '@rrweb/types': 2.0.0-alpha.16
+      babel-plugin-syntax-hermes-parser: 0.21.1
+      ci-info: 4.0.0
+      esbuild: 0.20.2
+      hono: 4.5.4
+      isomorphic-fetch: 3.0.0
+      nanoid: 5.0.7
+      pako: 2.1.0
+      pathe: 1.1.2
+      piscina: 4.6.1
+      pretty-ms: 8.0.0
+      rrweb: 2.0.0-alpha.4
+      rrweb-player: 1.0.0-alpha.4
+      semver: 7.6.3
+      socket.io-client: 4.7.5(bufferutil@4.0.8)
+      tmp: 0.2.3
+      unplugin: 1.12.0
+      update-notifier-cjs: 5.1.6
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - rollup
+      - supports-color
+      - utf-8-validate
 
   '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)':
     dependencies:
@@ -23904,6 +23947,18 @@ snapshots:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.1
+
+  million@3.1.11(rollup@3.29.4):
+    dependencies:
+      '@babel/core': 7.25.2
+      '@babel/types': 7.25.2
+      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
+      kleur: 4.1.5
+      undici: 6.19.5
+      unplugin: 1.12.0
+    transitivePeerDependencies:
+      - rollup
+      - supports-color
 
   million@3.1.11(rollup@4.20.0):
     dependencies:

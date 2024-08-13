@@ -3,14 +3,16 @@ import { serve } from "@hono/node-server";
 import { sentry } from "@hono/sentry";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 
 import { getConfig } from "@chia/auth-core-esm";
 import { db, localDb, betaDb } from "@chia/db";
-import { getDb } from "@chia/utils";
+import { getDb, errorGenerator } from "@chia/utils";
 
 import authRoutes from "@/controllers/auth.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
+import trpcRoutes from "@/controllers/trpc.controller";
 import { env } from "@/env";
 import { initDrizzleORM } from "@/middlewares/drizzle.middleware";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
@@ -58,12 +60,23 @@ app.use(
 
 app.onError((e, c) => {
   console.error(e);
+  if (e instanceof HTTPException) {
+    return c.json(
+      errorGenerator(e.status, [
+        {
+          field: e.name,
+          message: e.message,
+        },
+      ])
+    );
+  }
   c.get("sentry").captureException(e);
-  return c.text("Internal Server Error", 500);
+  return c.json(errorGenerator(500));
 });
 
 app.route("/auth", authRoutes);
 app.route("/feeds", feedsRoutes);
+app.route("/trpc", trpcRoutes);
 
 const port = Number(process.env.PORT) || 3005;
 console.log(
