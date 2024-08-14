@@ -8,7 +8,8 @@
     "build": "tsup",
     "node:start": "node dist/server.mjs",
     "start": "bun run --bun dist/server.mjs",
-    "node:preview": "node --env-file=.env dist/server.mjs"
+    "node:preview": "node --env-file=.env dist/server.mjs",
+    "test": "NODE_ENV=test bun test"
   },
   "dependencies": {
     "@chia/api": "workspace:*",

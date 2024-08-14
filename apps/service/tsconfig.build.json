@@ -5,6 +5,7 @@
     "node_modules",
     "**/*.spec.mts",
     "**/*.test.mts",
+    "__tests__",
     "tsup.config.ts",
     "vitest.config.mts"
   ],
