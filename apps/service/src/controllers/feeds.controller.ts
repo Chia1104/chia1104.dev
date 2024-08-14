@@ -4,7 +4,6 @@ import { Hono } from "hono";
 import { getInfiniteFeeds } from "@chia/db";
 import { errorGenerator } from "@chia/utils";
 
-import { DRIZZLE_ORM } from "@/middlewares/drizzle.middleware";
 import { cursorTransform } from "@/services/feeds.service";
 import { getFeedsWithMetaSchema } from "@/validators/feeds.validator";
 import type { GetFeedsWithMetaDTO } from "@/validators/feeds.validator";
@@ -31,8 +30,7 @@ api.get(
   }),
   async (c) => {
     const { type, limit, orderBy, sortOrder, cursor } = c.req.query();
-    const db = c.get(DRIZZLE_ORM);
-    const feeds = await getInfiniteFeeds(db, {
+    const feeds = await getInfiniteFeeds(c.var.db, {
       type: type as GetFeedsWithMetaDTO["type"],
       limit: Number(limit),
       orderBy: orderBy as GetFeedsWithMetaDTO["orderBy"],

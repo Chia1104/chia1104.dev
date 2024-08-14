@@ -779,6 +779,9 @@ importers:
       '@chia/eslint-config':
         specifier: workspace:*
         version: link:../../toolings/eslint
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@types/pg':
         specifier: ^8.11.6
         version: 8.11.6
@@ -12393,8 +12396,8 @@ snapshots:
     dependencies:
       '@antfu/ni': 0.21.12
       '@axiomhq/js': 1.0.0-rc.3
-      '@babel/core': 7.24.6
-      '@babel/types': 7.24.6
+      '@babel/core': 7.25.2
+      '@babel/types': 7.25.2
       '@clack/prompts': 0.7.0
       cli-high: 0.4.2
       diff: 5.2.0

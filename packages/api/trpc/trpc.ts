@@ -3,18 +3,14 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import type { Session } from "@chia/auth-core/types";
-import { db, betaDb, localDb } from "@chia/db";
-import { getDb, getAdminId } from "@chia/utils";
+import { getDB } from "@chia/db";
+import { getAdminId } from "@chia/utils";
 
 interface CreateContextOptions {
   session: Session | null;
 }
 
-const database = getDb(undefined, {
-  db,
-  betaDb,
-  localDb,
-});
+const database = getDB();
 
 const adminId = getAdminId();
 

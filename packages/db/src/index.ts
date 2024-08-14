@@ -3,6 +3,8 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
+import { switchEnv } from "@chia/utils";
+
 import * as schema from "./schema";
 
 if (!process.env.DATABASE_URL) {
@@ -35,3 +37,10 @@ export { pgTable as tableCreator } from "./schema/table";
 
 export * from "./utils/feeds";
 export * from "./utils/validator/feeds";
+
+export const getDB = (env?: string) =>
+  switchEnv(env, {
+    prod: () => db,
+    beta: () => betaDb,
+    local: () => localDb,
+  });
