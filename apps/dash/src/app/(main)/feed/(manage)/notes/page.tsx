@@ -3,19 +3,14 @@ import "server-only";
 import { feedsRouter } from "@chia/api/trpc";
 import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth";
-import { db, localDb, betaDb } from "@chia/db";
-import { getDb } from "@chia/utils";
+import { getDB } from "@chia/db";
 
 import FeedList from "../feed-list";
 
 const getNotes = async (session: Session | null) => {
   const feedsCaller = feedsRouter.createCaller({
     session,
-    db: getDb(undefined, {
-      db,
-      localDb,
-      betaDb,
-    }),
+    db: getDB(),
   });
   return await feedsCaller.getFeedsWithMeta({
     limit: 10,

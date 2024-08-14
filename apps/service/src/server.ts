@@ -1,25 +1,23 @@
 import { initAuthConfig } from "@hono/auth-js";
 import { serve } from "@hono/node-server";
 import { sentry } from "@hono/sentry";
-import { Hono } from "hono";
 import { getRuntimeKey } from "hono/adapter";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 
 import { getConfig } from "@chia/auth-core";
-import { db, localDb, betaDb } from "@chia/db";
-import { getDb, errorGenerator } from "@chia/utils";
+import { errorGenerator } from "@chia/utils";
 
 import authRoutes from "@/controllers/auth.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
 import trpcRoutes from "@/controllers/trpc.controller";
 import { env } from "@/env";
-import { initDrizzleORM } from "@/middlewares/drizzle.middleware";
+import drizzleFactory from "@/factories/drizzle.factory";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
-const app = new Hono<HonoContext>();
+const app = drizzleFactory.createApp();
 
 app.use(logger());
 app.use(
@@ -37,17 +35,6 @@ app.use(
   initAuthConfig(() =>
     getConfig(undefined, {
       basePath: "/auth",
-    })
-  )
-);
-
-app.use(
-  "*",
-  initDrizzleORM(
-    getDb(undefined, {
-      db,
-      betaDb,
-      localDb,
     })
   )
 );

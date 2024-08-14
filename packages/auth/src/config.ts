@@ -10,8 +10,7 @@ import crypto from "node:crypto";
 
 import { env } from "@chia/auth-core/env";
 import { getBaseConfig } from "@chia/auth-core/utils";
-import { db, localDb, betaDb, schema } from "@chia/db";
-import { getDb } from "@chia/utils";
+import { getDB, schema } from "@chia/db";
 import { AUTH_EMAIL } from "@chia/utils";
 
 import { sendVerificationRequest } from "./authSendRequest";
@@ -42,19 +41,12 @@ declare module "next-auth" {
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
-const adapter = DrizzleAdapter(
-  getDb(undefined, {
-    db,
-    betaDb,
-    localDb,
-  }),
-  {
-    usersTable: schema.users,
-    accountsTable: schema.accounts,
-    sessionsTable: schema.sessions,
-    verificationTokensTable: schema.verificationTokens,
-  }
-);
+const adapter = DrizzleAdapter(getDB(), {
+  usersTable: schema.users,
+  accountsTable: schema.accounts,
+  sessionsTable: schema.sessions,
+  verificationTokensTable: schema.verificationTokens,
+});
 
 export const getConfig = (req?: NextRequest) => {
   return {

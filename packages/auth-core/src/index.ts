@@ -4,8 +4,7 @@ import Github from "@auth/core/providers/github";
 import Google from "@auth/core/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 
-import { db, localDb, betaDb, schema } from "@chia/db";
-import { getDb } from "@chia/utils";
+import { getDB, schema } from "@chia/db";
 
 import { env } from "./env";
 import { getBaseConfig } from "./utils";
@@ -39,19 +38,12 @@ export const getConfig = (
         AUTH_SECRET: env.AUTH_SECRET,
       },
     }),
-    adapter: DrizzleAdapter(
-      getDb(undefined, {
-        db,
-        betaDb,
-        localDb,
-      }),
-      {
-        usersTable: schema.users,
-        accountsTable: schema.accounts,
-        sessionsTable: schema.sessions,
-        verificationTokensTable: schema.verificationTokens,
-      }
-    ),
+    adapter: DrizzleAdapter(getDB(), {
+      usersTable: schema.users,
+      accountsTable: schema.accounts,
+      sessionsTable: schema.sessions,
+      verificationTokensTable: schema.verificationTokens,
+    }),
     providers: [
       Google({
         clientId: env.GOOGLE_CLIENT_ID,

@@ -64,6 +64,13 @@ export const switchEnv = <TResult = unknown>(
   }
 };
 
+/**
+ * @deprecated use `getDB` from `@chia/db`
+ * @param env
+ * @param db
+ * @param betaDb
+ * @param localDb
+ */
 export const getDb = <DB = unknown>(
   env: string | undefined,
   {
@@ -155,12 +162,6 @@ export const getBaseUrl = (options?: {
   return baseUrl?.replace(/\/$/, "");
 };
 
-/**
- * @TODO protential bug, server env will be leaked to client
- */
 export default {
   ENV: getEnv(),
-  // DATABASE_URL: getDbUrl(),
-  // ADMIN_ID: getAdminId(),
-  // BASE_URL: getBaseUrl(),
 };

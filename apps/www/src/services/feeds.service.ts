@@ -2,15 +2,13 @@ import { unstable_cache as cache } from "next/cache";
 import "server-only";
 
 import {
-  db,
-  localDb,
-  betaDb,
+  getDB,
   getInfiniteFeedsByUserId,
   eq,
   schema,
   getFeedBySlug,
 } from "@chia/db";
-import { getDb, getAdminId } from "@chia/utils";
+import { getAdminId } from "@chia/utils";
 
 export const keys = {
   posts: (limit: number) => ["ADMIN_ISR_POSTS", limit.toString()],
@@ -19,11 +17,7 @@ export const keys = {
   note: (slug: string) => ["ADMIN_ISR_NOTE", slug],
 };
 
-const database = getDb(undefined, {
-  db,
-  localDb,
-  betaDb,
-});
+const database = getDB();
 
 const adminId = getAdminId();
 
