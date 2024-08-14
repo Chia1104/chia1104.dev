@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/package",
   "name": "@chia/tailwind",
   "types": "index.d.ts",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.0",
   "private": true,
   "exports": {
     ".": {
@@ -21,6 +21,7 @@
     "@iconify/json": "^2.2.234",
     "@tailwindcss/typography": "^0.5.14",
     "tailwindcss": "^3.4.8",
-    "tailwindcss-animate": "1.0.7"
+    "tailwindcss-animate": "1.0.7",
+    "typescript": "catalog:"
   }
 }

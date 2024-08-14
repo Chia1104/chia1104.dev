@@ -18,6 +18,8 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
-    "tsconfig": "workspace:*"
+    "eslint": "catalog:",
+    "tsconfig": "workspace:*",
+    "typescript": "catalog:"
   }
 }

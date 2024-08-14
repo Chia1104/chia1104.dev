@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^3.7.0",
-    "tsconfig": "workspace:*"
+    "tsconfig": "workspace:*",
+    "typescript": "catalog:"
   }
 }
