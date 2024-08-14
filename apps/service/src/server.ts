@@ -17,7 +17,7 @@ import { env } from "@/env";
 import drizzleFactory from "@/factories/drizzle.factory";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
-const app = drizzleFactory.createApp();
+export const app = drizzleFactory.createApp();
 
 app.use(logger());
 app.use(

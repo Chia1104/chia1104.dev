@@ -51,6 +51,9 @@ jobs:
         with:
           NODE_VERSION: ${{ env.NODE_VERSION }}
 
+      - name: "🔥 Init bun"
+        run: pnpm add -g bun
+
       - name: "🧹  Lint & Type check & Test"
         shell: bash
         run: |
