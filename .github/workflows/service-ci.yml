@@ -7,6 +7,9 @@ on:
       - "apps/service/**"
       - "packages/db/**"
       - "packages/utils/**"
+      - "packages/auth-core/**"
+      - "packages/cache/**"
+      - "packages/api/**"
       - ".github/workflows/service-ci.yml"
       - "package.json"
 

@@ -37,6 +37,7 @@ export { pgTable as tableCreator } from "./schema/table";
 
 export * from "./utils/feeds";
 export * from "./utils/validator/feeds";
+export * from "./schema/enums";
 
 export const getDB = (env?: string) =>
   switchEnv(env, {

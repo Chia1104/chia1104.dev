@@ -59,3 +59,5 @@ export const Features = {
   ComingSoon,
 };
 export { default as SubmitForm } from "./SubmitForm";
+export * from "./Form";
+export { default as Label } from "./Label";
