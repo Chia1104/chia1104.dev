@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@chia/auth-core": "workspace:*",
+    "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",

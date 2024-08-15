@@ -1,3 +1,17 @@
-import { Features } from "@chia/ui";
+import { Features, ErrorBoundary } from "@chia/ui";
 
-export default Features.ComingSoon;
+import { env } from "@/env";
+
+import CreateTest from "./create-test";
+
+const Page = () => {
+  return env.NODE_ENV === "production" ? (
+    Features.ComingSoon
+  ) : (
+    <ErrorBoundary>
+      <CreateTest />
+    </ErrorBoundary>
+  );
+};
+
+export default Page;

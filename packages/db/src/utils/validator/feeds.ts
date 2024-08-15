@@ -1,5 +1,8 @@
 import dayjs from "dayjs";
+import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+import { feeds, posts, notes } from "../../schema";
 
 export const baseInfiniteSchema = z.object({
   limit: z.number().max(50).optional().default(10),
@@ -35,3 +38,14 @@ export const getPublicFeedBySlugSchema = z.object({
 });
 
 export type GetPublicFeedBySlugDTO = z.infer<typeof getPublicFeedBySlugSchema>;
+
+export const insertFeedSchema = createInsertSchema(feeds);
+
+export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
+
+export const insertFeedContentSchema = (type: "post" | "note") =>
+  type === "post" ? createInsertSchema(posts) : createInsertSchema(notes);
+
+export type InsertFeedContentDTO = z.infer<
+  ReturnType<typeof insertFeedContentSchema>
+>;

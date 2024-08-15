@@ -4,8 +4,14 @@ import {
   getInfiniteFeeds,
   getInfiniteFeedsByUserId,
   getFeedBySlug,
+  createFeed,
 } from "@chia/db";
-import { infiniteSchema, getPublicFeedBySlugSchema } from "@chia/db";
+import {
+  infiniteSchema,
+  getPublicFeedBySlugSchema,
+  insertFeedSchema,
+  insertFeedContentSchema,
+} from "@chia/db";
 
 import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
 
@@ -35,6 +41,25 @@ export const feedsRouter = createTRPCRouter({
       return getFeedBySlug(opts.ctx.db, {
         slug: opts.input.slug,
         type: opts.input.type,
+      });
+    }),
+
+  createPost: adminProcedure
+    .input(
+      insertFeedSchema
+        .omit({ userId: true })
+        .merge(insertFeedContentSchema("post").omit({ feedId: true }))
+    )
+    .mutation(async (opts) => {
+      await createFeed(opts.ctx.db, {
+        slug: opts.input.slug,
+        type: "post",
+        title: opts.input.title,
+        description: opts.input.description,
+        excerpt: opts.input.excerpt || opts.input.description?.slice(0, 100),
+        userId: opts.ctx.adminId,
+        published: opts.input.published ?? false,
+        content: opts.input.content,
       });
     }),
 });

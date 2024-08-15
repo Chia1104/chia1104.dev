@@ -1,8 +1,12 @@
 import dayjs from "dayjs";
 import type { SQLWrapper } from "drizzle-orm";
 
-import type { DB } from "../..";
-import type { InfiniteDTO } from "../validator/feeds";
+import { DB, schema } from "../..";
+import type {
+  InfiniteDTO,
+  InsertFeedDTO,
+  InsertFeedContentDTO,
+} from "../validator/feeds";
 
 const withDTO = <TDto = unknown, TResult = unknown>(
   fn: (db: DB, dto: TDto) => Promise<TResult>
@@ -160,3 +164,28 @@ export const getInfiniteFeedsByUserId = withDTO(
     };
   }
 );
+
+export const createFeed = withDTO<
+  InsertFeedDTO & Pick<InsertFeedContentDTO, "content">,
+  void
+>(async (db, dto) => {
+  await db.transaction(async (trx) => {
+    await trx.insert(dto.type === "note" ? schema.notes : schema.posts).values({
+      feedId: (
+        await trx
+          .insert(schema.feeds)
+          .values({
+            slug: dto.slug,
+            type: dto.type,
+            title: dto.title,
+            excerpt: dto.excerpt,
+            description: dto.description,
+            userId: dto.userId,
+            published: dto.published,
+          })
+          .returning({ feedId: schema.feeds.id })
+      )[0].feedId,
+      content: dto.content,
+    });
+  });
+});

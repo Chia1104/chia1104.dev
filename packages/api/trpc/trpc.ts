@@ -76,4 +76,6 @@ const dangerous_isAdmin = t.middleware(({ ctx, next }) => {
   });
 });
 
+export const authGuard = (input?: string): input is string => !!input;
+
 export const adminProcedure = t.procedure.use(dangerous_isAdmin);

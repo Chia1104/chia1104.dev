@@ -620,6 +620,9 @@ importers:
       '@chia/auth-core':
         specifier: workspace:*
         version: link:../auth-core
+      '@chia/cache':
+        specifier: workspace:*
+        version: link:../cache
       '@chia/db':
         specifier: workspace:*
         version: link:../db
@@ -766,6 +769,9 @@ importers:
       drizzle-orm:
         specifier: ^0.32.2
         version: 0.32.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(bun-types@1.1.23)(pg@8.12.0)(postgres@3.4.4)(react@18.3.1)
+      drizzle-zod:
+        specifier: ^0.5.1
+        version: 0.5.1(drizzle-orm@0.32.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(bun-types@1.1.23)(pg@8.12.0)(postgres@3.4.4)(react@18.3.1))(zod@3.23.8)
       pg:
         specifier: ^8.12.0
         version: 8.12.0
@@ -6862,6 +6868,12 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drizzle-zod@0.5.1:
+    resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
+    peerDependencies:
+      drizzle-orm: '>=0.23.13'
+      zod: '*'
 
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
@@ -17871,6 +17883,11 @@ snapshots:
       pg: 8.12.0
       postgres: 3.4.4
       react: 18.3.1
+
+  drizzle-zod@0.5.1(drizzle-orm@0.32.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(bun-types@1.1.23)(pg@8.12.0)(postgres@3.4.4)(react@18.3.1))(zod@3.23.8):
+    dependencies:
+      drizzle-orm: 0.32.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(bun-types@1.1.23)(pg@8.12.0)(postgres@3.4.4)(react@18.3.1)
+      zod: 3.23.8
 
   duplexer@0.1.2: {}
 

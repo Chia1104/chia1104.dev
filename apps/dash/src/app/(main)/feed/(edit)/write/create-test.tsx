@@ -1,0 +1,38 @@
+"use client";
+
+import { useTransition } from "react";
+
+import { Button } from "@nextui-org/react";
+import { toast } from "sonner";
+
+import { api } from "@/trpc-api";
+
+const CreateTest = () => {
+  const create = api.feeds.createPost.useMutation({
+    onSuccess() {
+      toast.success("Test created");
+    },
+    onError(err) {
+      toast.error(err.message);
+    },
+  });
+  const [isPending, startTransition] = useTransition();
+
+  const submit = () =>
+    startTransition(async () => {
+      await create.mutateAsync({
+        slug: crypto.randomUUID(),
+        title: "Test",
+        description: "Test",
+        content: "Test",
+      });
+    });
+
+  return (
+    <Button onPress={() => submit()} isLoading={isPending}>
+      create test
+    </Button>
+  );
+};
+
+export default CreateTest;
