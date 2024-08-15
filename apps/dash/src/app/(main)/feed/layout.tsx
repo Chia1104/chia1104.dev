@@ -9,7 +9,9 @@ const Layout = async ({ children }: { children: ReactNode }) => {
   const session = await auth();
   if (!session) redirect("/login");
 
-  return <article className="c-container main">{children}</article>;
+  return (
+    <article className="c-container main justify-start">{children}</article>
+  );
 };
 
 export default Layout;

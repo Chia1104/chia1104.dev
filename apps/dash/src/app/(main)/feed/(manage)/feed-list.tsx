@@ -8,7 +8,7 @@ import { Card, CardBody, CardHeader } from "@nextui-org/react";
 import dayjs from "dayjs";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
-import { useInfiniteScroll } from "@chia/ui";
+import { useInfiniteScroll, Image, Card as CHCard } from "@chia/ui";
 
 import { api } from "@/trpc-api";
 
@@ -21,6 +21,19 @@ interface Props {
   query?: RouterInputs["feeds"]["getFeedsWithMeta"];
   title?: ReactNode;
 }
+
+const Empty = () => {
+  return (
+    <CHCard
+      className="prose dark:prose-invert flex w-full flex-col items-center justify-center px-1 py-12 sm:px-4 gap-5 max-w-full"
+      wrapperProps={{
+        className: "w-full",
+      }}>
+      <h3>Currently no feeds available</h3>
+      <Image src="/img-empty.png" alt="Empty" width={150} height={150} />
+    </CHCard>
+  );
+};
 
 const FeedItem = forwardRef<
   HTMLDivElement,
@@ -79,6 +92,7 @@ const FeedList: FC<Props> = (props) => {
   return (
     <div className="w-full">
       <h2 className="mb-10 text-4xl">{props.title}</h2>
+      {isSuccess && flatData.length === 0 && <Empty />}
       <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
         {isSuccess &&
           !!flatData &&
