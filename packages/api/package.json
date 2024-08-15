@@ -33,6 +33,7 @@
     "@trpc/client": "11.0.0-rc.477",
     "@trpc/server": "11.0.0-rc.477",
     "eslint": "catalog:",
+    "github-slugger": "^2.0.0",
     "server-only": "^0.0.1",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"
