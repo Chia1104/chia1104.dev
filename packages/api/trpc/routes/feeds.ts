@@ -1,3 +1,5 @@
+import GithubSlugger from "github-slugger";
+
 import {
   eq,
   schema,
@@ -20,6 +22,8 @@ import {
   adminProcedure,
   onlyAdminProcedure,
 } from "../trpc";
+
+const slugger = new GithubSlugger();
 
 export const feedsRouter = createTRPCRouter({
   getFeedsWithMeta: protectedProcedure
@@ -62,7 +66,7 @@ export const feedsRouter = createTRPCRouter({
     )
     .mutation(async (opts) => {
       await createFeed(opts.ctx.db, {
-        slug: opts.input.slug,
+        slug: slugger.slug(opts.input.slug),
         type: opts.input.type,
         title: opts.input.title,
         description: opts.input.description,

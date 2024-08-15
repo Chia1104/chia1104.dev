@@ -656,6 +656,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.9.0(jiti@1.21.6)
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
