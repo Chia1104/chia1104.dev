@@ -47,6 +47,16 @@ app.use(
   })
 );
 
+/**
+ * @TODO: customize schema
+ */
+// app.use("/graphql", (c, n) =>
+//   graphqlServer({
+//     schema: buildSchema(c.var.db).schema,
+//     graphiql: true,
+//   })(c, n)
+// );
+
 app.onError((e, c) => {
   console.error(e);
   if (e instanceof HTTPException) {
