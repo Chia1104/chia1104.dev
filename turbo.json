@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -73,9 +74,14 @@
       "cache": false
     },
     "db:studio": {
-      "cache": false
+      "cache": false,
+      "interactive": true
     },
-    "service-graph": {}
+    "service-graph": {},
+    "ui-add": {
+      "cache": false,
+      "interactive": true
+    }
   },
   "globalEnv": [
     "BASE_URL",

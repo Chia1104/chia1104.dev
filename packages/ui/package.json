@@ -11,16 +11,19 @@
     "type:check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "git clean -xdf .turbo node_modules"
+    "clean": "git clean -xdf .turbo node_modules",
+    "ui-add": "pnpm dlx shadcn-ui add && prettier src --write --list-different"
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
+    "@hookform/resolvers": "^3.9.0",
     "@nextui-org/react": "2.4.6",
     "@radix-ui/react-accordion": "1.2.0",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
     "@radix-ui/react-hover-card": "^1.1.1",
+    "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-navigation-menu": "^1.2.0",
     "@radix-ui/react-popover": "^1.1.1",
     "@radix-ui/react-progress": "^1.1.0",
@@ -39,6 +42,7 @@
     "next-view-transitions": "^0.3.0",
     "react": "catalog:react18",
     "react-dom": "catalog:react18",
+    "react-hook-form": "^7.52.2",
     "react-medium-image-zoom": "^5.2.8",
     "sonner": "1.5.0",
     "tailwind-merge": "^2.4.0",

@@ -53,7 +53,8 @@
     "service-graph": "turbo run build --filter service... --graph=graph/service-graph.html",
     "www-graph": "turbo run build --filter www... --graph=graph/www-graph.html",
     "dash-graph": "turbo run build --filter dash... --graph=graph/dash-graph.html",
-    "graph": "nx graph"
+    "graph": "nx graph",
+    "ui-add": "turbo run ui-add"
   },
   "engines": {
     "node": ">=20.6",
