@@ -5,10 +5,12 @@ import { useTransition } from "react";
 import { Button } from "@nextui-org/react";
 import { toast } from "sonner";
 
+import { FeedType } from "@chia/db/types";
+
 import { api } from "@/trpc-api";
 
-const CreateTest = () => {
-  const create = api.feeds.createPost.useMutation({
+const CreateTest = ({ type = FeedType.Post }: { type?: FeedType }) => {
+  const create = api.feeds.createFeed.useMutation({
     onSuccess() {
       toast.success("Test created");
     },
@@ -25,6 +27,7 @@ const CreateTest = () => {
         title: "Test",
         description: "Test",
         content: "Test",
+        type,
       });
     });
 

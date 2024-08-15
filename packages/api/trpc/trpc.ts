@@ -79,3 +79,14 @@ const dangerous_isAdmin = t.middleware(({ ctx, next }) => {
 export const authGuard = (input?: string): input is string => !!input;
 
 export const adminProcedure = t.procedure.use(dangerous_isAdmin);
+
+export const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
+  if (!ctx.session?.user || !ctx.session || ctx.session.user.id !== adminId) {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return next();
+});
+
+export const onlyAdminProcedure = t.procedure
+  .use(enforceUserIsAdmin)
+  .use(dangerous_isAdmin);

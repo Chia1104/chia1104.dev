@@ -3,6 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { feeds, posts, notes } from "../../schema";
+import { ArticleType } from "../../types";
 
 export const baseInfiniteSchema = z.object({
   limit: z.number().max(50).optional().default(10),
@@ -44,7 +45,27 @@ export const insertFeedSchema = createInsertSchema(feeds);
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
 
 export const insertFeedContentSchema = (type: "post" | "note") =>
-  type === "post" ? createInsertSchema(posts) : createInsertSchema(notes);
+  type === "post"
+    ? createInsertSchema(posts)
+        .omit({ type: true })
+        .merge(
+          z.object({
+            contentType: z
+              .nativeEnum(ArticleType)
+              .nullish()
+              .default(ArticleType.Mdx),
+          })
+        )
+    : createInsertSchema(notes)
+        .omit({ type: true })
+        .merge(
+          z.object({
+            contentType: z
+              .nativeEnum(ArticleType)
+              .nullish()
+              .default(ArticleType.Mdx),
+          })
+        );
 
 export type InsertFeedContentDTO = z.infer<
   ReturnType<typeof insertFeedContentSchema>

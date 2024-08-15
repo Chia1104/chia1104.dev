@@ -166,7 +166,7 @@ export const getInfiniteFeedsByUserId = withDTO(
 );
 
 export const createFeed = withDTO<
-  InsertFeedDTO & Pick<InsertFeedContentDTO, "content">,
+  InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">,
   void
 >(async (db, dto) => {
   await db.transaction(async (trx) => {
@@ -186,6 +186,7 @@ export const createFeed = withDTO<
           .returning({ feedId: schema.feeds.id })
       )[0].feedId,
       content: dto.content,
+      type: dto.contentType,
     });
   });
 });

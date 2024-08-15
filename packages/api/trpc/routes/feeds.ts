@@ -6,14 +6,20 @@ import {
   getFeedBySlug,
   createFeed,
 } from "@chia/db";
+import { ArticleType } from "@chia/db/types";
 import {
   infiniteSchema,
   getPublicFeedBySlugSchema,
   insertFeedSchema,
   insertFeedContentSchema,
-} from "@chia/db";
+} from "@chia/db/validator/feeds";
 
-import { createTRPCRouter, protectedProcedure, adminProcedure } from "../trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  adminProcedure,
+  onlyAdminProcedure,
+} from "../trpc";
 
 export const feedsRouter = createTRPCRouter({
   getFeedsWithMeta: protectedProcedure
@@ -44,22 +50,27 @@ export const feedsRouter = createTRPCRouter({
       });
     }),
 
-  createPost: adminProcedure
+  createFeed: onlyAdminProcedure
     .input(
       insertFeedSchema
         .omit({ userId: true })
-        .merge(insertFeedContentSchema("post").omit({ feedId: true }))
+        .merge(
+          insertFeedContentSchema("post")
+            .omit({ feedId: true })
+            .partial({ contentType: true })
+        )
     )
     .mutation(async (opts) => {
       await createFeed(opts.ctx.db, {
         slug: opts.input.slug,
-        type: "post",
+        type: opts.input.type,
         title: opts.input.title,
         description: opts.input.description,
         excerpt: opts.input.excerpt || opts.input.description?.slice(0, 100),
         userId: opts.ctx.adminId,
         published: opts.input.published ?? false,
         content: opts.input.content,
+        contentType: opts.input.contentType ?? ArticleType.Mdx,
       });
     }),
 });
