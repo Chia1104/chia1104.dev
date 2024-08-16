@@ -18,7 +18,7 @@ import {
 } from "@chia/ui";
 import type { TimelineTypes } from "@chia/ui";
 
-import { api } from "@/trpc-api";
+import { api } from "@/trpc/client";
 
 import ListItem from "../list-item";
 

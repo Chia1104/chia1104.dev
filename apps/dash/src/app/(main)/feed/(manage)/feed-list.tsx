@@ -10,13 +10,13 @@ import dayjs from "dayjs";
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { useInfiniteScroll, Image, Card as CHCard } from "@chia/ui";
 
-import { api } from "@/trpc-api";
+import { api } from "@/trpc/client";
 
 import Skeleton from "./skeleton";
 
 interface Props {
   initFeed?: RouterOutputs["feeds"]["getFeedsWithMeta"]["items"];
-  nextCursor?: string | number | Date;
+  nextCursor?: string | number | null;
   useClient?: boolean;
   query?: RouterInputs["feeds"]["getFeedsWithMeta"];
   title?: ReactNode;

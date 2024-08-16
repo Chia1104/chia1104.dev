@@ -90,3 +90,9 @@ export const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
 export const onlyAdminProcedure = t.procedure
   .use(enforceUserIsAdmin)
   .use(dangerous_isAdmin);
+
+/**
+ * Create a server-side caller
+ * @see https://trpc.io/docs/server/server-side-calls
+ */
+export const createCallerFactory = t.createCallerFactory;
