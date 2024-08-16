@@ -974,7 +974,7 @@ importers:
         specifier: ^1.8.1
         version: 1.8.1(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       '@iconify/json':
-        specifier: ^2.2.234
+        specifier: ^2.2.237
         version: 2.2.237
       '@tailwindcss/typography':
         specifier: ^0.5.14
