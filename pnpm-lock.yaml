@@ -285,7 +285,7 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       tailwindcss:
-        specifier: ^3.4.8
+        specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4))
       tsconfig:
         specifier: workspace:*
@@ -376,7 +376,7 @@ importers:
         specifier: ^16.1.0
         version: 16.1.0(postcss@8.4.41)
       tailwindcss:
-        specifier: ^3.4.8
+        specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4))
       tsconfig:
         specifier: workspace:*
@@ -605,7 +605,7 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       tailwindcss:
-        specifier: ^3.4.8
+        specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4))
       tsconfig:
         specifier: workspace:*
@@ -980,7 +980,7 @@ importers:
         specifier: ^0.5.14
         version: 0.5.14(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       tailwindcss:
-        specifier: ^3.4.8
+        specifier: ^3.4.10
         version: 3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4))
       tailwindcss-animate:
         specifier: 1.0.7
@@ -12942,8 +12942,8 @@ snapshots:
     dependencies:
       '@antfu/ni': 0.21.12
       '@axiomhq/js': 1.0.0-rc.3
-      '@babel/core': 7.24.6
-      '@babel/types': 7.24.6
+      '@babel/core': 7.25.2
+      '@babel/types': 7.25.2
       '@clack/prompts': 0.7.0
       cli-high: 0.4.2
       diff: 5.2.0
