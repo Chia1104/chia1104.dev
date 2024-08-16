@@ -110,7 +110,7 @@ importers:
         specifier: ^2.3.5
         version: 2.3.5(typescript@5.5.4)
       nx:
-        specifier: ^19.5.6
+        specifier: ^19.6.0
         version: 19.6.0(@swc/core@1.7.11(@swc/helpers@0.5.12))
       prettier:
         specifier: ^3.3.3
@@ -12942,8 +12942,8 @@ snapshots:
     dependencies:
       '@antfu/ni': 0.21.12
       '@axiomhq/js': 1.0.0-rc.3
-      '@babel/core': 7.24.6
-      '@babel/types': 7.24.6
+      '@babel/core': 7.25.2
+      '@babel/types': 7.25.2
       '@clack/prompts': 0.7.0
       cli-high: 0.4.2
       diff: 5.2.0
@@ -21632,7 +21632,7 @@ snapshots:
       bl: 4.1.0
       chalk: 4.1.2
       cli-cursor: 3.1.0
-      cli-spinners: 2.6.1
+      cli-spinners: 2.9.2
       is-interactive: 1.0.0
       log-symbols: 4.1.0
       strip-ansi: 6.0.1
