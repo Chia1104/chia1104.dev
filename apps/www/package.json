@@ -58,7 +58,7 @@
     "@vercel/speed-insights": "^1.0.12",
     "cobe": "^0.6.3",
     "cross-env": "7.0.3",
-    "framer-motion": "11.3.23",
+    "framer-motion": "11.3.28",
     "fumadocs-core": "^13.1.0",
     "fumadocs-mdx": "^9.0.0",
     "fumadocs-ui": "^13.1.0",
