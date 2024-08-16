@@ -4,7 +4,7 @@ import FeedList from "../feed-list";
 
 export const dynamic = "force-dynamic";
 
-const FeedPage = async () => {
+const FeedPage = () => {
   return (
     <FeedList
       title="Notes"
