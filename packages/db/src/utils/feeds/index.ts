@@ -2,6 +2,7 @@ import type { SQLWrapper } from "drizzle-orm";
 
 import { cursorTransform, dateToTimestamp, withDTO } from "../";
 import { schema } from "../..";
+import { FeedOrderBy, FeedType } from "../../types";
 import type {
   InfiniteDTO,
   InsertFeedDTO,
@@ -9,7 +10,7 @@ import type {
 } from "../validator/feeds";
 
 export const getFeedBySlug = withDTO(
-  (db, { slug, type }: { slug: string; type: "post" | "note" }) => {
+  (db, { slug, type }: { slug: string; type: FeedType }) => {
     return db.query.feeds.findFirst({
       where: (feeds, { eq }) => eq(feeds.slug, slug),
       with: {
@@ -25,9 +26,9 @@ export const getInfiniteFeeds = withDTO(
     {
       limit = 10,
       cursor,
-      orderBy = "updatedAt",
+      orderBy = FeedOrderBy.UpdatedAt,
       sortOrder = "desc",
-      type = "post",
+      type = FeedType.Post,
       whereAnd = [],
     }: InfiniteDTO & {
       whereAnd?: (SQLWrapper | undefined)[];
@@ -36,8 +37,7 @@ export const getInfiniteFeeds = withDTO(
     const parsedCursor = cursor
       ? cursorTransform(
           cursor,
-          // @ts-expect-error
-          orderBy === "updatedAt" || orderBy === "updatedAt"
+          orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
             ? "timestamp"
             : "default"
         )
@@ -48,7 +48,7 @@ export const getInfiniteFeeds = withDTO(
       ],
       limit: limit + 1,
       with:
-        type === "post"
+        type === FeedType.Post
           ? ({
               post: true,
             } as const)
@@ -70,8 +70,7 @@ export const getInfiniteFeeds = withDTO(
     if (items.length > limit) {
       const nextItem = items.pop();
       nextCursor =
-        // @ts-expect-error
-        orderBy === "updatedAt" || orderBy === "updatedAt"
+        orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
           ? dateToTimestamp(nextItem?.[orderBy])
           : nextItem?.[orderBy];
     }
@@ -88,9 +87,9 @@ export const getInfiniteFeedsByUserId = withDTO(
     {
       limit = 10,
       cursor,
-      orderBy = "updatedAt",
+      orderBy = FeedOrderBy.UpdatedAt,
       sortOrder = "desc",
-      type = "post",
+      type = FeedType.Post,
       userId,
       whereAnd = [],
     }: InfiniteDTO & {
@@ -101,8 +100,7 @@ export const getInfiniteFeedsByUserId = withDTO(
     const parsedCursor = cursor
       ? cursorTransform(
           cursor,
-          // @ts-expect-error
-          orderBy === "updatedAt" || orderBy === "updatedAt"
+          orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
             ? "timestamp"
             : "default"
         )
@@ -113,7 +111,7 @@ export const getInfiniteFeedsByUserId = withDTO(
       ],
       limit: limit + 1,
       with:
-        type === "post"
+        type === FeedType.Post
           ? ({
               post: true,
             } as const)
@@ -137,8 +135,7 @@ export const getInfiniteFeedsByUserId = withDTO(
     if (items.length > limit) {
       const nextItem = items.pop();
       nextCursor =
-        // @ts-expect-error
-        orderBy === "updatedAt" || orderBy === "updatedAt"
+        orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
           ? dateToTimestamp(nextItem?.[orderBy])
           : nextItem?.[orderBy];
     }

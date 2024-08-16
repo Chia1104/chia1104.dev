@@ -21,3 +21,13 @@ export const ArticleType = {
 } as const;
 
 export type ArticleType = (typeof ArticleType)[keyof typeof ArticleType];
+
+export const FeedOrderBy = {
+  UpdatedAt: "updatedAt",
+  CreatedAt: "createdAt",
+  Id: "id",
+  Slug: "slug",
+  Title: "title",
+} as const;
+
+export type FeedOrderBy = (typeof FeedOrderBy)[keyof typeof FeedOrderBy];

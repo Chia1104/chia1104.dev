@@ -2,31 +2,28 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { feeds, posts, notes } from "../../schema";
-import { ArticleType } from "../../types";
+import { ArticleType, FeedOrderBy, FeedType } from "../../types";
 
 export const baseInfiniteSchema = z.object({
   limit: z.number().max(50).optional().default(10),
   cursor: z.union([z.string(), z.number()]).nullish(),
-  orderBy: z
-    .enum(["createdAt", "updatedAt", "id", "slug", "title"])
-    .optional()
-    .default("updatedAt"),
+  orderBy: z.nativeEnum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
-  type: z.enum(["post", "note"]).optional().default("post"),
+  type: z.nativeEnum(FeedType).optional().default(FeedType.Post),
 });
 
 export const infiniteSchema = baseInfiniteSchema.optional().default({
   limit: 10,
   cursor: null,
-  orderBy: "updatedAt",
+  orderBy: FeedOrderBy.UpdatedAt,
   sortOrder: "desc",
-  type: "post",
+  type: FeedType.Post,
 });
 
 export type InfiniteDTO = z.infer<typeof infiniteSchema>;
 
 export const getPublicFeedBySlugSchema = z.object({
-  type: z.enum(["post", "note"]).optional().default("post"),
+  type: z.nativeEnum(FeedType).optional().default(FeedType.Post),
   slug: z.string().min(1),
 });
 
