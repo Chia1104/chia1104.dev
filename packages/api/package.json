@@ -15,7 +15,8 @@
     "./spotify/env": "./spotify/env.ts",
     "./spotify/types": "./spotify/types.d.ts",
     "./spotify/validator": "./spotify/validator.ts",
-    "./trpc": "./trpc/index.ts"
+    "./trpc": "./trpc/index.ts",
+    "./trpc/utils": "./trpc/utils.ts"
   },
   "scripts": {
     "lint": "eslint",

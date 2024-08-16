@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -7,14 +6,7 @@ import { ArticleType } from "../../types";
 
 export const baseInfiniteSchema = z.object({
   limit: z.number().max(50).optional().default(10),
-  cursor: z
-    .union([
-      z.string(),
-      z.number(),
-      z.date(),
-      z.instanceof(dayjs as unknown as typeof dayjs.Dayjs),
-    ])
-    .nullish(),
+  cursor: z.union([z.string(), z.number()]).nullish(),
   orderBy: z
     .enum(["createdAt", "updatedAt", "id", "slug", "title"])
     .optional()
