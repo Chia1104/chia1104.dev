@@ -6,7 +6,7 @@ import CreateTest from "./create-test";
 
 const Page = () => {
   return env.NODE_ENV === "production" ? (
-    Features.ComingSoon
+    <Features.ComingSoon />
   ) : (
     <ErrorBoundary>
       <CreateTest />
