@@ -620,7 +620,7 @@ importers:
   packages/ai:
     dependencies:
       openai:
-        specifier: ^4.55.0
+        specifier: ^4.56.0
         version: 4.56.0(zod@3.23.8)
     devDependencies:
       '@chia/eslint-config':
@@ -873,7 +873,7 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0(@tiptap/extension-code-block@2.6.4(@tiptap/core@2.6.4(@tiptap/pm@2.6.4))(@tiptap/pm@2.6.4))(@types/react@18.3.3)(highlight.js@11.9.0)(lowlight@3.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       openai:
-        specifier: ^4.55.0
+        specifier: ^4.56.0
         version: 4.56.0(zod@3.23.8)
       react:
         specifier: ^18.3.1
@@ -12942,8 +12942,8 @@ snapshots:
     dependencies:
       '@antfu/ni': 0.21.12
       '@axiomhq/js': 1.0.0-rc.3
-      '@babel/core': 7.24.6
-      '@babel/types': 7.24.6
+      '@babel/core': 7.25.2
+      '@babel/types': 7.25.2
       '@clack/prompts': 0.7.0
       cli-high: 0.4.2
       diff: 5.2.0
