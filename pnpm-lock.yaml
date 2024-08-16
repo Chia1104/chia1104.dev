@@ -1158,7 +1158,7 @@ importers:
         specifier: ^14.2.5
         version: 14.2.5
       eslint-config-turbo:
-        specifier: ^2.0.12
+        specifier: ^2.0.14
         version: 2.0.14(eslint@9.9.0(jiti@1.21.6))
       eslint-plugin-import:
         specifier: ^2.29.1
@@ -1173,14 +1173,14 @@ importers:
         specifier: 5.1.0-rc-fb9a90fa48-20240614
         version: 5.1.0-rc-fb9a90fa48-20240614(eslint@9.9.0(jiti@1.21.6))
       eslint-plugin-turbo:
-        specifier: ^2.0.12
+        specifier: ^2.0.14
         version: 2.0.14(eslint@9.9.0(jiti@1.21.6))
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: ^8.1.0
         version: 8.1.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
     devDependencies:
       eslint:
-        specifier: ^9.8.0
+        specifier: ^9.9.0
         version: 9.9.0(jiti@1.21.6)
 
   toolings/scripts/seed:
