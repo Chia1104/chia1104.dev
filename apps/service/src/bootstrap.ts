@@ -64,28 +64,30 @@ const bootstrap = <TContext extends HonoContext>(
   /**
    * Rate limiter middleware
    */
-  app.use(
-    rateLimiter({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      limit: 87, // Limit each IP to 87 requests per `window` (here, per 15 minutes).
-      standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-      keyGenerator: (c) => {
-        let info: ReturnType<typeof getConnInfo> | null = null;
-        try {
-          info = getConnInfo(c);
-        } catch (e) {
-          console.error(e);
-          info = null;
-        }
-        return `root-request:${info?.remote.address}`;
-      },
-      // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-      store: new RedisStore({
+  env.NODE_ENV === "production" &&
+    !!env.ZEABUR_SERVICE_ID &&
+    app.use(
+      rateLimiter({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        limit: 87, // Limit each IP to 87 requests per `window` (here, per 15 minutes).
+        standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+        keyGenerator: (c) => {
+          let info: ReturnType<typeof getConnInfo> | null = null;
+          try {
+            info = getConnInfo(c);
+          } catch (e) {
+            console.error(e);
+            info = null;
+          }
+          return `root-request:${info?.remote.address}`;
+        },
         // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-        sendCommand: (...args: string[]) => createRedis().call(...args),
-      }),
-    })
-  );
+        store: new RedisStore({
+          // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
+          sendCommand: (...args: string[]) => createRedis().call(...args),
+        }),
+      })
+    );
 
   /**
    * @TODO: customize schema
