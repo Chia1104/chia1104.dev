@@ -1140,7 +1140,7 @@ importers:
   tests/www-e2e:
     devDependencies:
       start-server-and-test:
-        specifier: ^2.0.0
+        specifier: ^2.0.5
         version: 2.0.5
       tsconfig:
         specifier: workspace:*
