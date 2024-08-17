@@ -846,16 +846,16 @@ importers:
         specifier: 2.4.6
         version: 2.4.6(@types/react@18.3.3)(framer-motion@11.3.28(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       '@tiptap/core':
-        specifier: ^2.5.9
+        specifier: ^2.6.4
         version: 2.6.4(@tiptap/pm@2.6.4)
       '@tiptap/extension-code-block-lowlight':
-        specifier: ^2.5.9
+        specifier: ^2.6.4
         version: 2.6.4(@tiptap/core@2.6.4(@tiptap/pm@2.6.4))(@tiptap/extension-code-block@2.6.4(@tiptap/core@2.6.4(@tiptap/pm@2.6.4))(@tiptap/pm@2.6.4))(@tiptap/pm@2.6.4)(highlight.js@11.9.0)(lowlight@3.1.0)
       '@tiptap/html':
-        specifier: ^2.5.9
+        specifier: ^2.6.4
         version: 2.6.4(@tiptap/core@2.6.4(@tiptap/pm@2.6.4))(@tiptap/pm@2.6.4)
       '@tiptap/starter-kit':
-        specifier: ^2.5.9
+        specifier: ^2.6.4
         version: 2.6.4
       ai:
         specifier: ^3.3.9
