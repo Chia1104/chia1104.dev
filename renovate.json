@@ -4,6 +4,7 @@
   "labels": ["dependencies", "renovate"],
   "rebaseWhen": "conflicted",
   "rangeStrategy": "bump",
+  "ignorePaths": ["legacy/service/package.json"],
   "packageRules": [
     {
       "groupName": "eslint",

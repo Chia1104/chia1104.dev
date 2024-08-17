@@ -23,12 +23,12 @@
     "@tiptap/extension-code-block-lowlight": "^2.5.9",
     "@tiptap/html": "^2.5.9",
     "@tiptap/starter-kit": "^2.5.9",
-    "ai": "^3.3.2",
+    "ai": "^3.3.9",
     "lowlight": "^3.1.0",
     "lucide-react": "^0.424.0",
     "next": "14.2.5",
     "novel": "^0.5.0",
-    "openai": "^4.55.0",
+    "openai": "^4.56.0",
     "react": "^18.3.1"
   },
   "devDependencies": {
