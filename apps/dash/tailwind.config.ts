@@ -1,4 +1,5 @@
 import { nextui } from "@nextui-org/react";
+import { docsUi } from "fumadocs-ui/tailwind-plugin";
 import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
 
@@ -13,6 +14,7 @@ export default {
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/editor/(editor|extensions).{js,ts,jsx,tsx}",
     "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "node_modules/fumadocs-ui/dist/**/*.js",
   ],
   theme: {
     extend: {
@@ -26,7 +28,11 @@ export default {
       },
     },
   },
-  plugins: [nextui(), tailwindScrollbar({ nocompatible: true })],
+  plugins: [
+    nextui(),
+    tailwindScrollbar({ nocompatible: true }),
+    docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
+  ],
   darkMode: "class",
   presets: [
     shadcnConfig,

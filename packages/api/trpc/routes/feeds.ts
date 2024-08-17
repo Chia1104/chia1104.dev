@@ -22,6 +22,7 @@ import {
   adminProcedure,
   onlyAdminProcedure,
 } from "../trpc";
+import { createFeedSchema } from "../validators";
 
 const slugger = new GithubSlugger();
 
@@ -55,18 +56,14 @@ export const feedsRouter = createTRPCRouter({
     }),
 
   createFeed: onlyAdminProcedure
-    .input(
-      insertFeedSchema
-        .omit({ userId: true })
-        .merge(
-          insertFeedContentSchema("post")
-            .omit({ feedId: true })
-            .partial({ contentType: true })
-        )
-    )
+    .input(createFeedSchema)
     .mutation(async (opts) => {
       await createFeed(opts.ctx.db, {
-        slug: slugger.slug(opts.input.slug),
+        slug: opts.input.slug
+          ? slugger.slug(opts.input.slug)
+          : `${slugger.slug(opts.input.title)}-${crypto
+              .getRandomValues(new Uint32Array(1))[0]
+              .toString(16)}`,
         type: opts.input.type,
         title: opts.input.title,
         description: opts.input.description,

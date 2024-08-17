@@ -60,21 +60,27 @@ FeedItem.displayName = "FeedItem";
 const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query = {} } = props;
 
-  const { data, isSuccess, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    api.feeds.getFeedsWithMeta.useInfiniteQuery(query, {
-      getNextPageParam: (lastPage) => lastPage?.nextCursor,
-      initialData: initFeed
-        ? {
-            pages: [
-              {
-                items: initFeed,
-                nextCursor: nextCursor?.toString(),
-              },
-            ],
-            pageParams: [nextCursor?.toString()],
-          }
-        : undefined,
-    });
+  const {
+    data,
+    isSuccess,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = api.feeds.getFeedsWithMeta.useInfiniteQuery(query, {
+    getNextPageParam: (lastPage) => lastPage?.nextCursor,
+    initialData: initFeed
+      ? {
+          pages: [
+            {
+              items: initFeed,
+              nextCursor: nextCursor?.toString(),
+            },
+          ],
+          pageParams: [nextCursor?.toString()],
+        }
+      : undefined,
+  });
 
   const flatData = useMemo(() => {
     if (!isSuccess || !data) return [];
@@ -102,7 +108,7 @@ const FeedList: FC<Props> = (props) => {
             }
             return <FeedItem key={feed.id} feed={feed} />;
           })}
-        {isFetchingNextPage && <Skeleton />}
+        {(isFetchingNextPage || isLoading) && <Skeleton />}
       </div>
     </div>
   );

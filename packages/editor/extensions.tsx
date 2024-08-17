@@ -23,6 +23,7 @@ import {
   Command,
   renderItems,
 } from "novel/extensions";
+import { Markdown } from "tiptap-markdown";
 
 import { cn } from "@chia/ui";
 
@@ -210,6 +211,10 @@ const slashCommand = Command.configure({
   },
 });
 
+const markdown = Markdown.configure({
+  html: true,
+});
+
 const extensions: AnyExtension[] = [
   codeBlockLowlight,
   starterKit,
@@ -219,6 +224,7 @@ const extensions: AnyExtension[] = [
   taskItem,
   horizontalRule,
   slashCommand,
+  markdown,
 ];
 
 export default extensions;

@@ -7,7 +7,7 @@ import type { ButtonProps } from "@nextui-org/react";
 import { useFormStatus } from "react-dom";
 
 interface Props extends Omit<ButtonProps, "children"> {
-  children: ReactNode | ((isPending: boolean) => ReactNode);
+  children?: ReactNode | ((isPending: boolean) => ReactNode);
 }
 
 const SubmitForm: FC<Props> = ({ children, ...props }) => {
