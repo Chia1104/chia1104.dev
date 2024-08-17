@@ -268,6 +268,9 @@ importers:
       usehooks-ts:
         specifier: ^3.1.0
         version: 3.1.0(react@18.3.1)
+      zustand:
+        specifier: ^4.5.4
+        version: 4.5.5(@types/react@18.3.3)(react@18.3.1)
     devDependencies:
       '@chia/eslint-config':
         specifier: workspace:*

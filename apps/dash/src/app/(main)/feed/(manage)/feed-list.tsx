@@ -1,7 +1,6 @@
 "use client";
 
 import { forwardRef, useMemo, memo } from "react";
-import type { ReactNode } from "react";
 import type { FC } from "react";
 
 import { Card, CardBody, CardHeader } from "@nextui-org/react";
@@ -10,6 +9,7 @@ import dayjs from "dayjs";
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { useInfiniteScroll, Image, Card as CHCard } from "@chia/ui";
 
+import { useGetAllDrafts } from "@/app/(main)/feed/(edit)/_components/use-draft";
 import { api } from "@/trpc/client";
 
 import Skeleton from "./skeleton";
@@ -19,7 +19,6 @@ interface Props {
   nextCursor?: string | number | null;
   useClient?: boolean;
   query?: RouterInputs["feeds"]["getFeedsWithMeta"];
-  title?: ReactNode;
 }
 
 const Empty = () => {
@@ -30,7 +29,13 @@ const Empty = () => {
         className: "w-full",
       }}>
       <h3>Currently no feeds available</h3>
-      <Image src="/img-empty.png" alt="Empty" width={150} height={150} />
+      <Image
+        src="/img-empty.png"
+        alt="Empty"
+        width={150}
+        height={150}
+        blur={false}
+      />
     </CHCard>
   );
 };
@@ -56,6 +61,28 @@ const FeedItem = forwardRef<
   );
 });
 FeedItem.displayName = "FeedItem";
+
+export const PreviewFeedItem = ({
+  feed,
+}: {
+  feed: Partial<RouterOutputs["feeds"]["getFeedsWithMeta"]["items"][0]>;
+}) => {
+  return (
+    <Card className="dark:bg-dark/90 grid-cols-1">
+      <CardHeader>
+        <h4 className="font-medium text-large line-clamp-2">{feed.title}</h4>
+      </CardHeader>
+      <CardBody className="gap-2">
+        <p className="text-tiny font-bold mt-auto line-clamp-2">
+          {feed.description}
+        </p>
+        <p className="text-tiny font-bold">
+          {dayjs(feed.createdAt).format("MMMM D, YYYY")}
+        </p>
+      </CardBody>
+    </Card>
+  );
+};
 
 const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query = {} } = props;
@@ -97,7 +124,6 @@ const FeedList: FC<Props> = (props) => {
   });
   return (
     <div className="w-full">
-      <h2 className="mb-10 text-4xl">{props.title}</h2>
       {isSuccess && flatData.length === 0 && <Empty />}
       <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
         {isSuccess &&
@@ -109,6 +135,27 @@ const FeedList: FC<Props> = (props) => {
             return <FeedItem key={feed.id} feed={feed} />;
           })}
         {(isFetchingNextPage || isLoading) && <Skeleton />}
+      </div>
+    </div>
+  );
+};
+
+export const Drafts = () => {
+  const drafts = useGetAllDrafts();
+  if (drafts.length === 0) {
+    return <Empty />;
+  }
+  return (
+    <div className="w-full">
+      <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+        {drafts.map((draft) =>
+          draft?.state?.draft ? (
+            <PreviewFeedItem
+              key={draft?.state.draft.title}
+              feed={draft?.state.draft}
+            />
+          ) : null
+        )}
       </div>
     </div>
   );

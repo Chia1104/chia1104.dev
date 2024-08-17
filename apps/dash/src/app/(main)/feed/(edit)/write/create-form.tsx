@@ -1,9 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -16,13 +18,21 @@ import { api } from "@/trpc/client";
 
 import type { Ref } from "../_components/edit-fields";
 import EditFields from "../_components/edit-fields";
+import { useDraft } from "../_components/use-draft";
 
 const CreateForm = ({ type = FeedType.Post }: { type?: FeedType }) => {
   const editFieldsRef = useRef<Ref>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = useRef(searchParams.get("token") ?? crypto.randomUUID());
+  const { destroy, getState, setState } = useDraft(token.current);
+  const draft = useRef(getState().draft);
   const utils = api.useUtils();
   const create = api.feeds.createFeed.useMutation({
-    async onSuccess() {
-      toast.success("Test created");
+    async onSuccess(_data, { type }) {
+      toast.success("Feed created successfully");
+      destroy();
+      router.push(`/feed/${type}s`);
       await utils.feeds.invalidate();
     },
     onError(err) {
@@ -31,9 +41,13 @@ const CreateForm = ({ type = FeedType.Post }: { type?: FeedType }) => {
   });
   const form = useForm<CreateFeedInput>({
     defaultValues: {
-      type,
-      createdAt: dayjs().toDate(),
       contentType: ArticleType.Mdx,
+      type,
+      title: "Untitled",
+      ...draft.current,
+      createdAt: draft.current?.createdAt
+        ? dayjs(draft.current.createdAt).toDate()
+        : dayjs().toDate(),
     },
     resolver: zodResolver(createFeedSchema),
   });
@@ -46,6 +60,12 @@ const CreateForm = ({ type = FeedType.Post }: { type?: FeedType }) => {
     });
   });
 
+  useEffect(() => {
+    setState({
+      draft: form.getValues(),
+    });
+  }, [form, form.getValues, setState]);
+
   return (
     <Form {...form}>
       <form
@@ -55,6 +75,8 @@ const CreateForm = ({ type = FeedType.Post }: { type?: FeedType }) => {
           ref={editFieldsRef}
           disabled={create.isPending}
           isPending={create.isPending}
+          token={token.current}
+          mode="create"
         />
         <SubmitForm
           className="max-w-[150px] w-full"

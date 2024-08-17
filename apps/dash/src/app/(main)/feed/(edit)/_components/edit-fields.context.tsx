@@ -20,6 +20,7 @@ export interface EditFieldsContext {
   };
   setContent: Dispatch<SetStateAction<EditFieldsContext["content"]>>;
   mode: "edit" | "create";
+  token: string;
 }
 
 export const DEFAULT_EDIT_FIELDS_CONTEXT = {
@@ -36,6 +37,7 @@ export const DEFAULT_EDIT_FIELDS_CONTEXT = {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setContent: () => {},
   mode: "create",
+  token: "",
 } satisfies EditFieldsContext;
 
 export const EditFieldsContext = createContext<EditFieldsContext>(

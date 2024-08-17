@@ -33,12 +33,14 @@ import {
   useEditFieldsContext,
   DEFAULT_EDIT_FIELDS_CONTEXT,
 } from "./edit-fields.context";
+import { useDraft } from "./use-draft";
 
 interface Props {
   disabled?: boolean;
   isPending?: boolean;
   className?: string;
   mode?: "edit" | "create";
+  token?: string;
 }
 
 export interface Ref {
@@ -56,6 +58,9 @@ export const MetadataFields = () => {
     { key: ArticleType.Mdx, label: ArticleType.Mdx.toUpperCase() },
     { key: ArticleType.Tiptap, label: ArticleType.Tiptap.toUpperCase() },
   ]);
+  const [contentType, setContentType] = useState(
+    new Set([form.getValues("contentType")])
+  );
   return (
     <div className="w-full flex flex-col gap-5">
       <div className="flex justify-between">
@@ -200,6 +205,10 @@ export const MetadataFields = () => {
               <FormItem className="w-1/2">
                 <FormControl>
                   <Select
+                    // @ts-expect-error - why Set ??
+                    selectedKeys={contentType}
+                    // @ts-expect-error - why Set ??
+                    onSelectionChange={setContentType}
                     disabled={editFields.disabled}
                     isInvalid={fieldState.invalid}
                     items={articleType.current}
@@ -275,6 +284,7 @@ const SwitchEditor = () => {
   const form = useFormContext<CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const { isDarkMode } = useTheme();
+  const { setState, getState } = useDraft(editFields.token);
   return (
     <>
       {form.watch("contentType") === ArticleType.Mdx ? (
@@ -297,24 +307,52 @@ const SwitchEditor = () => {
                   source: value ?? "",
                 },
               }));
+              if (editFields.mode === "create" && editFields.token.length > 0) {
+                setState({
+                  content: {
+                    [ArticleType.Mdx]: {
+                      content: value ?? "",
+                      source: value ?? "",
+                    },
+                  },
+                });
+              }
             }}
-            value={editFields.content.mdx.content}
+            value={
+              editFields.content.mdx.content || getState().content?.mdx?.content
+            }
           />
         </div>
       ) : (
         <Editor
           editable={!editFields.disabled}
           onUpdate={(e) => {
+            const content = e.editor.storage.markdown.getMarkdown();
+            const source = JSON.stringify(e.editor.getJSON());
             editFields.setContent((prev) => ({
               ...prev,
               [ArticleType.Tiptap]: {
-                content: e.editor.storage.markdown.getMarkdown(),
-                source: JSON.stringify(e.editor.getJSON()),
+                content,
+                source,
               },
             }));
+            if (editFields.mode === "create" && editFields.token.length > 0) {
+              setState({
+                content: {
+                  [ArticleType.Tiptap]: {
+                    content,
+                    source,
+                  },
+                },
+              });
+            }
           }}
           className="min-h-[700px]"
-          initialContent={JSON.parse(editFields.content.tiptap.source || "{}")}
+          initialContent={JSON.parse(
+            editFields.content.tiptap.source ||
+              getState().content?.tiptap?.source ||
+              "{}"
+          )}
         />
       )}
     </>
@@ -346,6 +384,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
   }));
   const form = useFormContext<CreateFeedInput>();
   const [content, setContent] = useState(DEFAULT_EDIT_FIELDS_CONTEXT.content);
+
   return (
     <EditFieldsContext.Provider
       value={{
@@ -354,6 +393,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
         content,
         setContent,
         mode,
+        token: props.token ?? "",
       }}>
       <div className={cn("flex flex-col", props.className)}>
         <MetadataFields />
