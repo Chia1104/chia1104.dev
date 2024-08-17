@@ -64,7 +64,7 @@
   "dependencies": {
     "dayjs": "^1.11.12",
     "graphql-request": "^7.1.0",
-    "ky": "^1.6.0",
+    "ky": "^1.7.0",
     "lodash": "^4.17.21",
     "superjson": "2.2.1",
     "zod": "^3.23.8"
