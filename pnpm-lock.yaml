@@ -170,8 +170,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       '@fumadocs/mdx-remote':
-        specifier: ^0.2.0
-        version: 0.2.1(fumadocs-core@13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        specifier: ^0.2.1
+        version: 0.2.1(fumadocs-core@13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.52.2(react@18.3.1))
@@ -212,14 +212,14 @@ importers:
         specifier: 11.3.28
         version: 11.3.28(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       fumadocs-core:
-        specifier: ^13.1.0
-        version: 13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^13.3.1
+        version: 13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       fumadocs-mdx:
-        specifier: ^9.0.0
-        version: 9.0.2(fumadocs-core@13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: ^9.0.2
+        version: 9.0.2(fumadocs-core@13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       fumadocs-ui:
-        specifier: ^13.1.0
-        version: 13.2.2(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
+        specifier: ^13.3.1
+        version: 13.3.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
@@ -236,8 +236,8 @@ importers:
         specifier: 5.0.0-beta.20
         version: 5.0.0-beta.20(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-safe-action:
-        specifier: 7.4.3
-        version: 7.4.3(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        specifier: 7.7.0
+        version: 7.7.0(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -263,13 +263,13 @@ importers:
         specifier: 1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.4.0
+        specifier: ^2.5.2
         version: 2.5.2
       usehooks-ts:
         specifier: ^3.1.0
         version: 3.1.0(react@18.3.1)
       zustand:
-        specifier: ^4.5.4
+        specifier: ^4.5.5
         version: 4.5.5(@types/react@18.3.3)(react@18.3.1)
     devDependencies:
       '@chia/eslint-config':
@@ -349,25 +349,25 @@ importers:
         version: link:../../packages/utils
       '@hono-rate-limiter/redis':
         specifier: ^0.1.4
-        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.5.5))
+        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.5.6))
       '@hono/auth-js':
         specifier: ^1.0.10
-        version: 1.0.10(@auth/core@0.34.2)(hono@4.5.5)(react@18.3.1)
+        version: 1.0.10(@auth/core@0.34.2)(hono@4.5.6)(react@18.3.1)
       '@hono/graphql-server':
         specifier: ^0.5.0
-        version: 0.5.0(hono@4.5.5)
+        version: 0.5.0(hono@4.5.6)
       '@hono/node-server':
         specifier: ^1.12.0
         version: 1.12.0
       '@hono/sentry':
         specifier: ^1.2.0
-        version: 1.2.0(hono@4.5.5)
+        version: 1.2.0(hono@4.5.6)
       '@hono/trpc-server':
         specifier: ^0.3.2
-        version: 0.3.2(@trpc/server@11.0.0-rc.477)(hono@4.5.5)
+        version: 0.3.2(@trpc/server@11.0.0-rc.477)(hono@4.5.6)
       '@hono/zod-validator':
         specifier: ^0.2.2
-        version: 0.2.2(hono@4.5.5)(zod@3.23.8)
+        version: 0.2.2(hono@4.5.6)(zod@3.23.8)
       '@t3-oss/env-core':
         specifier: ^0.11.0
         version: 0.11.0(typescript@5.5.4)(zod@3.23.8)
@@ -378,11 +378,11 @@ importers:
         specifier: ^16.9.0
         version: 16.9.0
       hono:
-        specifier: ^4.5.4
-        version: 4.5.5
+        specifier: ^4.5.6
+        version: 4.5.6
       hono-rate-limiter:
         specifier: ^0.4.0
-        version: 0.4.0(hono@4.5.5)
+        version: 0.4.0(hono@4.5.6)
       rate-limit-redis:
         specifier: ^4.2.0
         version: 4.2.0(express-rate-limit@7.4.0(express@4.19.2))
@@ -436,8 +436,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/utils
       '@fumadocs/mdx-remote':
-        specifier: ^0.2.0
-        version: 0.2.1(fumadocs-core@13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
+        specifier: ^0.2.1
+        version: 0.2.1(fumadocs-core@13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@giscus/react':
         specifier: ^3.0.0
         version: 3.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -502,14 +502,14 @@ importers:
         specifier: 11.3.28
         version: 11.3.28(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       fumadocs-core:
-        specifier: ^13.1.0
-        version: 13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^13.3.1
+        version: 13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       fumadocs-mdx:
-        specifier: ^9.0.0
-        version: 9.0.2(fumadocs-core@13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: ^9.0.2
+        version: 9.0.2(fumadocs-core@13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       fumadocs-ui:
-        specifier: ^13.1.0
-        version: 13.2.2(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
+        specifier: ^13.3.1
+        version: 13.3.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
@@ -550,8 +550,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       resend:
-        specifier: ^3.5.0
-        version: 3.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^4.0.0
+        version: 4.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       schema-dts:
         specifier: 1.1.2
         version: 1.1.2(typescript@5.5.4)
@@ -1004,8 +1004,8 @@ importers:
         specifier: ^1.8.1
         version: 1.8.1(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       '@iconify/json':
-        specifier: ^2.2.237
-        version: 2.2.237
+        specifier: ^2.2.238
+        version: 2.2.238
       '@tailwindcss/typography':
         specifier: ^0.5.14
         version: 0.5.14(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
@@ -1115,7 +1115,7 @@ importers:
         specifier: 1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.4.0
+        specifier: ^2.5.2
         version: 2.5.2
       usehooks-ts:
         specifier: ^3.1.0
@@ -2472,8 +2472,8 @@ packages:
     resolution: {integrity: sha512-d2CGZR2o7fS6sWB7DG/3a95bGKQyHMACZ5aW8qGkkqQpUoZV6C0X7Pc7l4ZNMZkfNBf4VWNe9E1jRsf0G146Ew==}
     engines: {node: '>=18.18'}
 
-  '@iconify/json@2.2.237':
-    resolution: {integrity: sha512-lMK5I9JX90L2LR18Lz6C5XrivxxAGejdJvFQI7TQkj03WcaxRJlciPbQb6z4nX+DS1T6k591ZQ2/hyRVbjqrgA==}
+  '@iconify/json@2.2.238':
+    resolution: {integrity: sha512-wtsUtPGeHH4Jy0Z+oIKyD9ldrFISAEzfGs1SM+PthhHRywDDiZsP2iVn6d2Vzn03wVTB7b8882zoztWWPl1ZmA==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -4604,13 +4604,6 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^18.2.0
-
-  '@react-email/render@0.0.16':
-    resolution: {integrity: sha512-wDaMy27xAq1cJHtSFptp0DTKPuV2GYhloqia95ub/DH9Dea1aWYsbdM918MOc/b/HvVS3w1z8DWzfAk13bGStQ==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      react: ^18.2.0
-      react-dom: ^18.2.0
 
   '@react-email/render@0.0.17':
     resolution: {integrity: sha512-xBQ+/73+WsGuXKY7r1U73zMBNV28xdV0cp9cFjhNYipBReDHhV97IpA6v7Hl0dDtDzt+yS/72dY5vYXrF1v8NA==}
@@ -7604,8 +7597,8 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
-  fumadocs-core@13.2.2:
-    resolution: {integrity: sha512-qG31vguI8vc4ZY+L5lnWNchZi6HfKnZ7/NBAQEFM2vezsl1jSc7bKLa874scTWwQlCYUzthmRkJapRG/tESFMw==}
+  fumadocs-core@13.3.1:
+    resolution: {integrity: sha512-DGKER16/9ykE6ssS9JxtOHp+dY+40ggFoIhGpDI+7/KsisUZDIlW8ZmnFbbo6hLE75chxyOOs2RJJelqRFaQpA==}
     peerDependencies:
       next: '>= 14.1.0'
       react: '>= 18'
@@ -7617,8 +7610,8 @@ packages:
       fumadocs-core: ^13.2.1
       next: '>= 14.1.0'
 
-  fumadocs-ui@13.2.2:
-    resolution: {integrity: sha512-ye+DQT4aye8v2eBcrj1Zb5ZscMaFwnrZIkwT+5QXhlEb6UWYqworv1FSwJWl7xOd5ZxHjx/wHG6zK+M/SFT6UA==}
+  fumadocs-ui@13.3.1:
+    resolution: {integrity: sha512-1o1QAl635p2MyC3ALiLEi/M+1xpziwdO0OW865fZSXwM/Nodf+paY4Yt34IbG07lMyi6OuoFk+4qCXOcoSi+xw==}
     peerDependencies:
       next: '>= 14.1.0'
       react: '>= 18'
@@ -7899,6 +7892,10 @@ packages:
 
   hono@4.5.5:
     resolution: {integrity: sha512-fXBXHqaVfimWofbelLXci8pZyIwBMkDIwCa4OwZvK+xVbEyYLELVP4DfbGaj1aEM6ZY3hHgs4qLvCO2ChkhgQw==}
+    engines: {node: '>=16.0.0'}
+
+  hono@4.5.6:
+    resolution: {integrity: sha512-9SuUC/zLQv8YAcnIxJko0KCeLI0Q6menPsDWuJ9jaH+r8ZkVXeLqeLs1QJXCPKKbURAWj9x0SJBSFh803EnAUw==}
     engines: {node: '>=16.0.0'}
 
   html-encoding-sniffer@4.0.0:
@@ -8658,8 +8655,8 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
-  lucide-react@0.427.0:
-    resolution: {integrity: sha512-lv9s6c5BDF/ccuA0EgTdskTxIe11qpwBDmzRZHJAKtp8LTewAvDvOM+pTES9IpbBuTqkjiMhOmGpJ/CB+mKjFw==}
+  lucide-react@0.428.0:
+    resolution: {integrity: sha512-rGrzslfEcgqwh+TLBC5qJ8wvVIXhLvAIXVFKNHndYyb1utSxxn9rXOC+1CNJLi6yNOooyPqIs6+3YCp6uSiEvg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
@@ -9146,10 +9143,11 @@ packages:
     peerDependencies:
       react: '>=16'
 
-  next-safe-action@7.4.3:
-    resolution: {integrity: sha512-wUVs5Leh6GWR4vnQuSdJDIJFAuz9YWuCYo7S4px1bofu+Pfg9Em/1zZxZvwaFmIqu+TJssOM5rsq64Og2owagQ==}
+  next-safe-action@7.7.0:
+    resolution: {integrity: sha512-kkzmySvcsJRC/2dOFhy19NIi/SRZoWZLZqtZGvNpoGrijrc3ZR8F2pmpA8e/u41xwhHfQBar089+cnnOi1Dzuw==}
     engines: {node: '>=18.17'}
     peerDependencies:
+      '@sinclair/typebox': '>= 0.33.3'
       next: '>= 14.0.0'
       react: '>= 18.2.0'
       react-dom: '>= 18.2.0'
@@ -9157,6 +9155,8 @@ packages:
       yup: '>= 1.0.0'
       zod: '>= 3.0.0'
     peerDependenciesMeta:
+      '@sinclair/typebox':
+        optional: true
       valibot:
         optional: true
       yup:
@@ -10222,8 +10222,8 @@ packages:
   requires-port@1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
 
-  resend@3.5.0:
-    resolution: {integrity: sha512-bKu4LhXSecP6krvhfDzyDESApYdNfjirD5kykkT1xO0Cj9TKSiGh5Void4pGTs3Am+inSnp4dg0B5XzdwHBJOQ==}
+  resend@4.0.0:
+    resolution: {integrity: sha512-rDX0rspl/XcmC2JV2V5obQvRX2arzxXUvNFUDMOv5ObBLR68+7kigCOysb7+dlkb0JE3erhQG0nHrbBt/ZCWIg==}
     engines: {node: '>=18'}
 
   resolve-alpn@1.2.1:
@@ -12588,13 +12588,13 @@ snapshots:
     dependencies:
       tslib: 2.6.3
 
-  '@fumadocs/mdx-remote@0.2.1(fumadocs-core@13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
+  '@fumadocs/mdx-remote@0.2.1(fumadocs-core@13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@mdx-js/mdx': 3.0.1
       bufferutil: 4.0.8
       chokidar: 3.6.0
       fast-glob: 3.3.2
-      fumadocs-core: 13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      fumadocs-core: 13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       gray-matter: 4.0.3
       micromatch: 4.0.7
       next: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -12641,36 +12641,36 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.5.5))':
+  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.5.6))':
     dependencies:
-      hono-rate-limiter: 0.4.0(hono@4.5.5)
+      hono-rate-limiter: 0.4.0(hono@4.5.6)
 
-  '@hono/auth-js@1.0.10(@auth/core@0.34.2)(hono@4.5.5)(react@18.3.1)':
+  '@hono/auth-js@1.0.10(@auth/core@0.34.2)(hono@4.5.6)(react@18.3.1)':
     dependencies:
       '@auth/core': 0.34.2
-      hono: 4.5.5
+      hono: 4.5.6
       react: 18.3.1
 
-  '@hono/graphql-server@0.5.0(hono@4.5.5)':
+  '@hono/graphql-server@0.5.0(hono@4.5.6)':
     dependencies:
       graphql: 16.9.0
-      hono: 4.5.5
+      hono: 4.5.6
 
   '@hono/node-server@1.12.0': {}
 
-  '@hono/sentry@1.2.0(hono@4.5.5)':
+  '@hono/sentry@1.2.0(hono@4.5.6)':
     dependencies:
-      hono: 4.5.5
+      hono: 4.5.6
       toucan-js: 4.0.0
 
-  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.477)(hono@4.5.5)':
+  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.477)(hono@4.5.6)':
     dependencies:
       '@trpc/server': 11.0.0-rc.477
-      hono: 4.5.5
+      hono: 4.5.6
 
-  '@hono/zod-validator@0.2.2(hono@4.5.5)(zod@3.23.8)':
+  '@hono/zod-validator@0.2.2(hono@4.5.6)(zod@3.23.8)':
     dependencies:
-      hono: 4.5.5
+      hono: 4.5.6
       zod: 3.23.8
 
   '@hookform/resolvers@3.9.0(react-hook-form@7.52.2(react@18.3.1))':
@@ -12681,7 +12681,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.3.0': {}
 
-  '@iconify/json@2.2.237':
+  '@iconify/json@2.2.238':
     dependencies:
       '@iconify/types': 2.0.0
       pathe: 1.1.2
@@ -15746,14 +15746,6 @@ snapshots:
   '@react-email/preview@0.0.10(react@18.3.1)':
     dependencies:
       react: 18.3.1
-
-  '@react-email/render@0.0.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      html-to-text: 9.0.5
-      js-beautify: 1.15.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      react-promise-suspense: 0.3.4
 
   '@react-email/render@0.0.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -19252,7 +19244,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  fumadocs-core@13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  fumadocs-core@13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@formatjs/intl-localematcher': 0.5.4
       '@shikijs/rehype': 1.13.0
@@ -19277,20 +19269,20 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  fumadocs-mdx@9.0.2(fumadocs-core@13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  fumadocs-mdx@9.0.2(fumadocs-core@13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
     dependencies:
       '@mdx-js/mdx': 3.0.1
       cross-spawn: 7.0.3
       estree-util-value-to-estree: 3.1.2
       fast-glob: 3.3.2
-      fumadocs-core: 13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      fumadocs-core: 13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       gray-matter: 4.0.3
       next: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zod: 3.23.8
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-ui@13.2.2(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4))):
+  fumadocs-ui@13.3.1(@types/react-dom@18.3.0)(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4))):
     dependencies:
       '@radix-ui/react-accordion': 1.2.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-collapsible': 1.1.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -19302,8 +19294,8 @@ snapshots:
       '@tailwindcss/typography': 0.5.14(tailwindcss@3.4.10(ts-node@10.9.2(@swc/core@1.7.11(@swc/helpers@0.5.12))(@types/node@22.4.0)(typescript@5.5.4)))
       class-variance-authority: 0.7.0
       cmdk: 1.0.0(@types/react-dom@18.3.0)(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      fumadocs-core: 13.2.2(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      lucide-react: 0.427.0(react@18.3.1)
+      fumadocs-core: 13.3.1(@types/react@18.3.3)(next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      lucide-react: 0.428.0(react@18.3.1)
       next: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-themes: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
@@ -19674,11 +19666,13 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.4.0(hono@4.5.5):
+  hono-rate-limiter@0.4.0(hono@4.5.6):
     dependencies:
-      hono: 4.5.5
+      hono: 4.5.6
 
   hono@4.5.5: {}
+
+  hono@4.5.6: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
@@ -20459,7 +20453,7 @@ snapshots:
     dependencies:
       react: 18.3.1
 
-  lucide-react@0.427.0(react@18.3.1):
+  lucide-react@0.428.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
@@ -21292,7 +21286,7 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  next-safe-action@7.4.3(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8):
+  next-safe-action@7.7.0(next@14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8):
     dependencies:
       next: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
@@ -22547,9 +22541,9 @@ snapshots:
 
   requires-port@1.0.0: {}
 
-  resend@3.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  resend@4.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@react-email/render': 0.0.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@react-email/render': 0.0.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - react
       - react-dom
