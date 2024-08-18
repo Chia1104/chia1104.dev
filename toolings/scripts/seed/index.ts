@@ -102,7 +102,7 @@ const seedPost = withReplicas(
           tagId: tags[1].id,
         },
       ]);
-      await trx.insert(schema.posts).values({
+      await trx.insert(schema.contents).values({
         feedId: feed[0].feedId,
         content: CONTENT,
       });
@@ -154,7 +154,7 @@ const seedNote = withReplicas(
           tagId: tags[1].id,
         },
       ]);
-      await trx.insert(schema.notes).values({
+      await trx.insert(schema.contents).values({
         feedId: feed[0].feedId,
         content: CONTENT,
       });

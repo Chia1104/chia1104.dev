@@ -50,10 +50,10 @@ const Page = async ({
           description: feed.description,
           updatedAt: dayjs(feed.updatedAt).valueOf(),
           createdAt: dayjs(feed.createdAt).valueOf(),
-          contentType: feed[searchParams.type as FeedType]?.type,
+          contentType: feed.contentType,
           published: feed.published,
-          content: feed[searchParams.type as FeedType]?.content,
-          source: feed[searchParams.type as FeedType]?.source,
+          content: feed.content?.content,
+          source: feed.content?.source,
         }}
       />
     </ErrorBoundary>

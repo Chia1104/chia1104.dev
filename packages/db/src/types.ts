@@ -12,15 +12,14 @@ export const FeedType = {
 
 export type FeedType = (typeof FeedType)[keyof typeof FeedType];
 
-export const ArticleType = {
+export const ContentType = {
   Mdx: "mdx",
-  Md: "md",
   Notion: "notion",
-  Sanity: "sanity",
   Tiptap: "tiptap",
+  Plate: "plate",
 } as const;
 
-export type ArticleType = (typeof ArticleType)[keyof typeof ArticleType];
+export type ContentType = (typeof ContentType)[keyof typeof ContentType];
 
 export const FeedOrderBy = {
   UpdatedAt: "updatedAt",

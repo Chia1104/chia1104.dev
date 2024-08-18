@@ -46,6 +46,7 @@ const adapter = DrizzleAdapter(getDB(), {
   accountsTable: schema.accounts,
   sessionsTable: schema.sessions,
   verificationTokensTable: schema.verificationTokens,
+  authenticatorsTable: schema.authenticators,
 });
 
 export const getConfig = (req?: NextRequest) => {

@@ -43,6 +43,7 @@ export const getConfig = (
       accountsTable: schema.accounts,
       sessionsTable: schema.sessions,
       verificationTokensTable: schema.verificationTokens,
+      authenticatorsTable: schema.authenticators,
     }),
     providers: [
       Google({

@@ -1,4 +1,5 @@
 import GithubSlugger from "github-slugger";
+import { z } from "zod";
 
 import {
   eq,
@@ -11,12 +12,8 @@ import {
   updateFeed,
   deleteFeed,
 } from "@chia/db";
-import { ArticleType } from "@chia/db/types";
-import {
-  infiniteSchema,
-  getPublicFeedBySlugSchema,
-  getFeedByIdSchema,
-} from "@chia/db/validator/feeds";
+import { ContentType } from "@chia/db/types";
+import { infiniteSchema } from "@chia/db/validator/feeds";
 
 import {
   createTRPCRouter,
@@ -53,20 +50,16 @@ export const feedsRouter = createTRPCRouter({
     }),
 
   getFeedBySlug: protectedProcedure
-    .input(getPublicFeedBySlugSchema)
+    .input(z.object({ slug: z.string() }))
     .query(async (opts) => {
-      return getFeedBySlug(opts.ctx.db, {
-        slug: opts.input.slug,
-        type: opts.input.type,
-      });
+      return getFeedBySlug(opts.ctx.db, opts.input.slug);
     }),
 
-  getFeedById: protectedProcedure.input(getFeedByIdSchema).query((opts) => {
-    return getFeedById(opts.ctx.db, {
-      feedId: opts.input.feedId,
-      type: opts.input.type,
-    });
-  }),
+  getFeedById: protectedProcedure
+    .input(z.object({ feedId: z.number() }))
+    .query((opts) => {
+      return getFeedById(opts.ctx.db, opts.input.feedId);
+    }),
 
   createFeed: onlyAdminProcedure
     .input(createFeedSchema)
@@ -74,9 +67,11 @@ export const feedsRouter = createTRPCRouter({
       await createFeed(opts.ctx.db, {
         slug: opts.input.slug
           ? slugger.slug(opts.input.slug)
-          : `${slugger.slug(opts.input.title)}-${crypto
-              .getRandomValues(new Uint32Array(1))[0]
-              .toString(16)}`,
+          : slugger.slug(
+              `${opts.input.title}-${crypto
+                .getRandomValues(new Uint32Array(1))[0]
+                .toString(16)}`
+            ),
         type: opts.input.type,
         title: opts.input.title,
         description: opts.input.description,
@@ -84,7 +79,9 @@ export const feedsRouter = createTRPCRouter({
         userId: opts.ctx.adminId,
         published: opts.input.published ?? false,
         content: opts.input.content,
-        contentType: opts.input.contentType ?? ArticleType.Mdx,
+        contentType: opts.input.contentType ?? ContentType.Mdx,
+        createdAt: opts.input.createdAt,
+        updatedAt: opts.input.updatedAt,
       });
     }),
 
@@ -100,7 +97,9 @@ export const feedsRouter = createTRPCRouter({
         excerpt: opts.input.excerpt || opts.input.description?.slice(0, 100),
         published: opts.input.published,
         content: opts.input.content,
-        contentType: opts.input.contentType,
+        contentType: opts.input.contentType ?? undefined,
+        createdAt: opts.input.createdAt,
+        updatedAt: opts.input.updatedAt,
       });
     }),
 
