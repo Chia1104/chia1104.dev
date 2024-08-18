@@ -3,8 +3,10 @@
   "name": "@chia/editor",
   "version": "0.0.0",
   "private": true,
-  "types": "./index.ts",
-  "main": "./index.ts",
+  "exports": {
+    ".": "./editor.tsx",
+    "./generate": "./generate.ts"
+  },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
     "lint": "eslint",
@@ -29,7 +31,8 @@
     "next": "14.2.5",
     "novel": "^0.5.0",
     "openai": "^4.56.0",
-    "react": "^18.3.1"
+    "react": "^18.3.1",
+    "tiptap-markdown": "^0.8.10"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

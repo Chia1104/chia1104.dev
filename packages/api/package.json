@@ -16,7 +16,8 @@
     "./spotify/types": "./spotify/types.d.ts",
     "./spotify/validator": "./spotify/validator.ts",
     "./trpc": "./trpc/index.ts",
-    "./trpc/utils": "./trpc/utils.ts"
+    "./trpc/utils": "./trpc/utils.ts",
+    "./trpc/validators": "./trpc/validators.ts"
   },
   "scripts": {
     "lint": "eslint",

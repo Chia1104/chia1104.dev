@@ -1,15 +1,19 @@
-import { Features, ErrorBoundary } from "@chia/ui";
+import { Suspense } from "react";
 
-import { env } from "@/env";
+import dynamic from "next/dynamic";
 
-import CreateTest from "./create-test";
+import { ErrorBoundary } from "@chia/ui";
+
+const CreateForm = dynamic(() => import("./create-form"), {
+  ssr: false,
+});
 
 const Page = () => {
-  return env.NODE_ENV === "production" ? (
-    <Features.ComingSoon />
-  ) : (
+  return (
     <ErrorBoundary>
-      <CreateTest />
+      <Suspense>
+        <CreateForm />
+      </Suspense>
     </ErrorBoundary>
   );
 };
