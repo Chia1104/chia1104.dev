@@ -16,17 +16,24 @@ import {
   Spinner,
   Spacer,
   Button,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useFormContext } from "react-hook-form";
+import { toast } from "sonner";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
 import { FeedType, ArticleType } from "@chia/db/types";
 import Editor from "@chia/editor";
 import { useTheme, ErrorBoundary } from "@chia/ui";
 import { FormControl, FormField, FormItem, FormMessage, cn } from "@chia/ui";
+
+import { api } from "@/trpc/client";
 
 import {
   EditFieldsContext,
@@ -50,6 +57,48 @@ export interface Ref {
     source: string;
   };
 }
+
+const DeleteButton = () => {
+  const form = useFormContext<CreateFeedInput>();
+  const router = useRouter();
+  const utils = api.useUtils();
+  const deleteFeed = api.feeds.deleteFeed.useMutation({
+    onSuccess: async () => {
+      toast.success("Feed deleted successfully");
+      await utils.feeds.invalidate();
+      router.push("/feed/posts");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+
+  return (
+    <Popover backdrop="blur">
+      <PopoverTrigger>
+        <Button isLoading={deleteFeed.isPending} color="danger" variant="flat">
+          <span className="text-xs">Delete</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-4 gap-3">
+        <div className="text-small font-bold">
+          Are you sure you want to delete this feed?
+        </div>
+        <Button
+          isLoading={deleteFeed.isPending}
+          color="danger"
+          variant="flat"
+          onPress={() =>
+            deleteFeed.mutate({
+              feedId: Number(form.getValues("id")),
+            })
+          }>
+          <span className="text-xs">Delete</span>
+        </Button>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 export const MetadataFields = () => {
   const form = useFormContext<CreateFeedInput>();
@@ -101,11 +150,7 @@ export const MetadataFields = () => {
             </FormItem>
           )}
         />
-        {editFields.mode === "edit" && (
-          <Button>
-            <span className="text-xs">Delete</span>
-          </Button>
-        )}
+        {editFields.mode === "edit" && <DeleteButton />}
       </div>
       <FormField<CreateFeedInput, "title">
         control={form.control}
@@ -173,7 +218,7 @@ export const MetadataFields = () => {
             <FormItem className="w-full md:w-1/2">
               <FormControl>
                 <DatePicker
-                  isDisabled={editFields.disabled}
+                  isDisabled
                   isInvalid={fieldState.invalid}
                   labelPlacement="outside"
                   className="w-full"
@@ -189,7 +234,7 @@ export const MetadataFields = () => {
                       : null
                   }
                   onChange={(date) => {
-                    field.onChange(dayjs(date.toString()).toDate());
+                    field.onChange(dayjs(date.toString()).valueOf());
                   }}
                 />
               </FormControl>
@@ -237,8 +282,8 @@ export const MetadataFields = () => {
                   <Switch
                     disabled={editFields.disabled}
                     color="secondary"
-                    checked={Boolean(field.value)}
-                    onChange={field.onChange}>
+                    isSelected={Boolean(field.value)}
+                    onValueChange={field.onChange}>
                     Published
                   </Switch>
                 </FormControl>
@@ -383,7 +428,41 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
     },
   }));
   const form = useFormContext<CreateFeedInput>();
-  const [content, setContent] = useState(DEFAULT_EDIT_FIELDS_CONTEXT.content);
+
+  const createDefaultContent = () => {
+    const contentType = form.getValues("contentType");
+    if (!contentType) {
+      return DEFAULT_EDIT_FIELDS_CONTEXT.content;
+    }
+    switch (contentType) {
+      case ArticleType.Mdx:
+        return {
+          mdx: {
+            content: form.getValues("content") ?? "",
+            source: form.getValues("source") ?? "",
+          },
+          tiptap: {
+            content: "",
+            source: "",
+          },
+        };
+      case ArticleType.Tiptap:
+        return {
+          mdx: {
+            content: "",
+            source: "",
+          },
+          tiptap: {
+            content: form.getValues("content") ?? "",
+            source: form.getValues("source") ?? "",
+          },
+        };
+      default:
+        return DEFAULT_EDIT_FIELDS_CONTEXT.content;
+    }
+  };
+
+  const [content, setContent] = useState(createDefaultContent());
 
   return (
     <EditFieldsContext.Provider

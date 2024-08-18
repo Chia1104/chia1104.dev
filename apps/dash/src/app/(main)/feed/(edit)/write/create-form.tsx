@@ -46,8 +46,8 @@ const CreateForm = ({ type = FeedType.Post }: { type?: FeedType }) => {
       title: "Untitled",
       ...draft.current,
       createdAt: draft.current?.createdAt
-        ? dayjs(draft.current.createdAt).toDate()
-        : dayjs().toDate(),
+        ? dayjs(draft.current.createdAt).valueOf()
+        : dayjs().valueOf(),
     },
     resolver: zodResolver(createFeedSchema),
   });

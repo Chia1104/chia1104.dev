@@ -47,17 +47,24 @@ export const useDraft = (token: string) =>
     )
   );
 
-export const useGetAllDrafts = () => {
+export const useGetAllDrafts = (triger: string) => {
   return useMemo(() => {
-    return Object.keys(localStorage)
-      .filter((key) => key.startsWith("CONTENT_DRAFT_"))
-      .map((key) => {
-        const value = localStorage.getItem(key);
-        return value
-          ? (JSON.parse(
-              JSON.parse(value) as string
-            ) as StorageValue<DraftState>)
-          : null;
-      });
-  }, []);
+    try {
+      return localStorage
+        ? Object.keys(localStorage)
+            .filter((key) => key.startsWith("CONTENT_DRAFT_"))
+            .map((key) => {
+              const value = localStorage.getItem(key);
+              return value
+                ? (JSON.parse(
+                    JSON.parse(value) as string
+                  ) as StorageValue<DraftState>)
+                : null;
+            })
+        : [];
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }, [triger]);
 };
