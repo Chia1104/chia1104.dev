@@ -52,8 +52,8 @@ importers:
         specifier: ^7.1.0
         version: 7.1.0(graphql@16.9.0)
       ky:
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: ^1.7.0
+        version: 1.7.0
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -8474,8 +8474,8 @@ packages:
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
-  ky@1.6.0:
-    resolution: {integrity: sha512-MG7hlH26oShC4Lysk5TYzXshHLfEY52IJ0ofOeCsifquqTymbXCSTx+g4rXO30XYxoM6Y1ed5pNnpULe9Rx19A==}
+  ky@1.7.0:
+    resolution: {integrity: sha512-g+S6ZMESSMuxrrbcDioBKSjBj8Xvam2WmLso+q1Ub7TTYCGS68XbSEM+eA3VSTmXJfR1uQjsTooC2tCsC3bW6g==}
     engines: {node: '>=18'}
 
   language-subtag-registry@0.3.23:
@@ -20283,7 +20283,7 @@ snapshots:
 
   kolorist@1.8.0: {}
 
-  ky@1.6.0: {}
+  ky@1.7.0: {}
 
   language-subtag-registry@0.3.23: {}
 
