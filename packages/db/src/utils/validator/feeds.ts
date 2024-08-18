@@ -27,6 +27,11 @@ export const getPublicFeedBySlugSchema = z.object({
   slug: z.string().min(1),
 });
 
+export const getFeedByIdSchema = z.object({
+  type: z.nativeEnum(FeedType).optional().default(FeedType.Post),
+  feedId: z.number(),
+});
+
 export type GetPublicFeedBySlugDTO = z.infer<typeof getPublicFeedBySlugSchema>;
 
 export const insertFeedSchema = createInsertSchema(feeds);

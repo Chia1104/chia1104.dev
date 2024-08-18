@@ -187,6 +187,7 @@ export const posts = pgTable(
     type: article_type("type").default("mdx"),
     content: text("content"),
     readTime: integer("readTime"),
+    source: text("source"),
   },
   (table) => {
     return {
@@ -204,6 +205,7 @@ export const notes = pgTable(
       .references(() => feeds.id, { onDelete: "cascade" }),
     type: article_type("type").default("mdx"),
     content: text("content"),
+    source: text("source"),
   },
   (table) => {
     return {

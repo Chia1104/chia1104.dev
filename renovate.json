@@ -51,6 +51,12 @@
     {
       "groupName": "playwright",
       "matchPackagePatterns": ["^@playwright/", "^mcr.microsoft.com/playwright"]
+    },
+    {
+      "groupName": "Hono",
+      "groupSlug": "hono",
+      "matchPackageNames": ["hono", "honox"],
+      "matchPackagePrefixes": ["@hono"]
     }
   ],
   "updateInternalDeps": true

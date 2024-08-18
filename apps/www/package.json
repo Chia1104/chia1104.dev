@@ -44,7 +44,7 @@
     "@nextui-org/react": "2.4.6",
     "@nextui-org/theme": "2.2.9",
     "@react-email/components": "^0.0.22",
-    "@sentry/nextjs": "^8.24.0",
+    "@sentry/nextjs": "^8.26.0",
     "@t3-oss/env-core": "^0.11.0",
     "@t3-oss/env-nextjs": "^0.11.0",
     "@tanstack/react-query": "catalog:",
@@ -78,10 +78,10 @@
     "resend": "^3.5.0",
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
-    "sharp": "0.33.4",
+    "sharp": "0.33.5",
     "sonner": "1.5.0",
     "usehooks-ts": "^3.1.0",
-    "zustand": "^4.5.4"
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

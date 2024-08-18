@@ -1,20 +1,10 @@
 {
+  "extends": ["tsconfig/base.json"],
   "compilerOptions": {
-    "composite": false,
-    "declaration": true,
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "inlineSources": false,
-    "isolatedModules": true,
-    "moduleResolution": "node10",
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "preserveWatchOutput": true,
-    "skipLibCheck": true,
-    "strict": true
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   },
-  "files": ["./index.ts"],
-  "include": ["index.ts"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts", "**/*.mts", "__tests__"],
+  "exclude": ["dist", "build", "node_modules"]
 }

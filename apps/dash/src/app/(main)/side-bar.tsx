@@ -26,7 +26,6 @@ const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
   const isMobile = useIsMobile();
   const [, startTransition] = useTransition();
   const selectedLayoutSegments = useSelectedLayoutSegments();
-  console.log(selectedLayoutSegments);
   return (
     <div className="grid h-screen w-full pl-[56px]">
       <motion.aside

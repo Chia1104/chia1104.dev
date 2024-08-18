@@ -1,4 +1,5 @@
 import type { SQLWrapper } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { cursorTransform, dateToTimestamp, withDTO } from "../";
 import { schema } from "../..";
@@ -13,6 +14,17 @@ export const getFeedBySlug = withDTO(
   (db, { slug, type }: { slug: string; type: FeedType }) => {
     return db.query.feeds.findFirst({
       where: (feeds, { eq }) => eq(feeds.slug, slug),
+      with: {
+        [type]: true,
+      },
+    });
+  }
+);
+
+export const getFeedById = withDTO(
+  (db, { feedId, type }: { feedId: number; type: FeedType }) => {
+    return db.query.feeds.findFirst({
+      where: (feeds, { eq }) => eq(feeds.id, feedId),
       with: {
         [type]: true,
       },
@@ -169,5 +181,45 @@ export const createFeed = withDTO<
       content: dto.content,
       type: dto.contentType,
     });
+  });
+});
+
+export const updateFeed = withDTO<
+  { feedId: number } & Partial<
+    InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">
+  >,
+  void
+>(async (db, dto) => {
+  await db.transaction(async (trx) => {
+    await trx
+      .update(schema.feeds)
+      .set({
+        slug: dto.slug,
+        title: dto.title,
+        excerpt: dto.excerpt,
+        description: dto.description,
+        published: dto.published,
+      })
+      .where(eq(schema.feeds.id, dto.feedId));
+    await trx
+      .update(dto.type === "note" ? schema.notes : schema.posts)
+      .set({
+        content: dto.content,
+        type: dto.contentType,
+      })
+      .where(
+        eq(
+          dto.type === "note" ? schema.notes.feedId : schema.posts.feedId,
+          dto.feedId
+        )
+      );
+  });
+});
+
+export const deleteFeed = withDTO<{ feedId: number }, void>(async (db, dto) => {
+  await db.transaction(async (trx) => {
+    await trx.delete(schema.feeds).where(eq(schema.feeds.id, dto.feedId));
+    await trx.delete(schema.posts).where(eq(schema.posts.feedId, dto.feedId));
+    await trx.delete(schema.notes).where(eq(schema.notes.feedId, dto.feedId));
   });
 });
