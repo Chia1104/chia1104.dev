@@ -81,7 +81,7 @@
     "sharp": "0.33.4",
     "sonner": "1.5.0",
     "usehooks-ts": "^3.1.0",
-    "zustand": "^4.5.4"
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
