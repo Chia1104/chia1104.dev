@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
 import { createFeedSchema } from "@chia/api/trpc/validators";
-import { FeedType, ArticleType } from "@chia/db/types";
+import { FeedType, ContentType } from "@chia/db/types";
 import { Form, SubmitForm } from "@chia/ui";
 
 import { api } from "@/trpc/client";
@@ -41,7 +41,7 @@ const CreateForm = ({ type = FeedType.Post }: { type?: FeedType }) => {
   });
   const form = useForm<CreateFeedInput>({
     defaultValues: {
-      contentType: ArticleType.Mdx,
+      contentType: ContentType.Mdx,
       type,
       title: "Untitled",
       ...draft.current,

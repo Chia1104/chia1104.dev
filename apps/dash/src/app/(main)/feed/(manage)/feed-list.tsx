@@ -141,7 +141,6 @@ export const PreviewFeedItem = ({
 
 const FeedList: FC<Props> = (props) => {
   const { initFeed, nextCursor, query = {} } = props;
-
   const {
     data,
     isSuccess,

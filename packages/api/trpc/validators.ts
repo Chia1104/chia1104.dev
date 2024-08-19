@@ -14,7 +14,7 @@ export const createFeedSchema = insertFeedSchema
   .omit({ userId: true, createdAt: true, updatedAt: true })
   .partial({ slug: true })
   .merge(
-    insertFeedContentSchema("post")
+    insertFeedContentSchema
       .omit({ feedId: true })
       .partial({ contentType: true })
   )
@@ -25,7 +25,7 @@ export type CreateFeedInput = z.infer<typeof createFeedSchema>;
 export const updateFeedSchema = insertFeedSchema
   .omit({ userId: true, createdAt: true, updatedAt: true })
   .partial()
-  .merge(insertFeedContentSchema("post").partial({ contentType: true }))
+  .merge(insertFeedContentSchema.partial({ contentType: true }))
   .merge(dateSchema);
 
 export const deleteFeedSchema = z.object({

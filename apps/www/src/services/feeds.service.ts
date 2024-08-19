@@ -31,6 +31,7 @@ export const getPosts = (limit = 10) =>
         sortOrder: "desc",
         type: "post",
         whereAnd: [eq(schema.feeds.published, true)],
+        withContent: false,
       });
     },
     keys.posts(limit),
@@ -40,13 +41,10 @@ export const getPosts = (limit = 10) =>
     }
   )();
 
-export const getPostBySlug = (slug: string, type?: "post" | "note") =>
+export const getPostBySlug = (slug: string) =>
   cache(
     async () => {
-      return await getFeedBySlug(database, {
-        slug,
-        type: type ?? "post",
-      });
+      return await getFeedBySlug(database, slug);
     },
     keys.post(slug),
     {
@@ -65,6 +63,7 @@ export const getNotes = (limit = 10) =>
         sortOrder: "desc",
         type: "note",
         whereAnd: [eq(schema.feeds.published, true)],
+        withContent: false,
       });
     },
     keys.notes(limit),
@@ -74,13 +73,10 @@ export const getNotes = (limit = 10) =>
     }
   )();
 
-export const getNoteBySlug = (slug: string, type?: "post" | "note") =>
+export const getNoteBySlug = (slug: string) =>
   cache(
     async () => {
-      return await getFeedBySlug(database, {
-        slug,
-        type: type ?? "note",
-      });
+      return await getFeedBySlug(database, slug);
     },
     keys.note(slug),
     {

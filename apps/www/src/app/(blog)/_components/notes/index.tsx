@@ -1,6 +1,7 @@
 "use client";
 
-import { FC, useMemo } from "react";
+import type { FC } from "react";
+import { useMemo } from "react";
 
 import dayjs from "dayjs";
 import Link from "next/link";

@@ -165,7 +165,10 @@ const PostDetailPage = async ({
               <ContentSkeletons />
             </div>
           }>
-          <Content type={note.note?.type} content={note.note?.content ?? ""} />
+          <Content
+            type={note.contentType}
+            content={note.content?.content ?? ""}
+          />
         </Suspense>
       </div>
       <script

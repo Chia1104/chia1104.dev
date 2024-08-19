@@ -29,13 +29,15 @@ api.get(
     }
   }),
   async (c) => {
-    const { type, limit, orderBy, sortOrder, cursor } = c.req.query();
+    const { type, limit, orderBy, sortOrder, nextCursor, withContent } =
+      c.req.query();
     const feeds = await getInfiniteFeeds(c.var.db, {
       type: type as GetFeedsWithMetaDTO["type"],
       limit: Number(limit),
       orderBy: orderBy as GetFeedsWithMetaDTO["orderBy"],
       sortOrder: sortOrder as GetFeedsWithMetaDTO["sortOrder"],
-      cursor: cursorTransform(cursor),
+      cursor: cursorTransform(nextCursor),
+      withContent: withContent === "true",
     });
     return c.json(feeds);
   }

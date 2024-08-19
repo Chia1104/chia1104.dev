@@ -2,6 +2,7 @@ import { compileMDX } from "@fumadocs/mdx-remote";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import { DocsBody } from "fumadocs-ui/page";
 
+import type { ContentType } from "@chia/db/types";
 import { cn } from "@chia/ui";
 
 import { fumadocsComponents } from "@/mdx-components";
@@ -12,7 +13,7 @@ interface BaseProps {
 }
 
 type Props = {
-  type?: "mdx" | "md" | "notion" | "sanity" | "tiptap" | null;
+  type?: ContentType;
 } & BaseProps;
 
 const MdxContent = async (props: BaseProps) => {

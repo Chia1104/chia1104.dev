@@ -6,8 +6,11 @@ import { numericStringSchema } from "@chia/utils";
 export const getFeedsWithMetaSchema = z
   .object({
     limit: numericStringSchema.optional().default("20"),
-    cursor: z.union([numericStringSchema, z.string()]).optional(),
+    nextCursor: z.union([numericStringSchema, z.string()]).optional(),
+    withContent: z.string().optional().default("false"),
   })
-  .merge(baseInfiniteSchema.omit({ cursor: true, limit: true }));
+  .merge(
+    baseInfiniteSchema.omit({ cursor: true, limit: true, withContent: true })
+  );
 
 export type GetFeedsWithMetaDTO = z.infer<typeof getFeedsWithMetaSchema>;
