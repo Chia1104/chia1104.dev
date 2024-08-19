@@ -178,10 +178,10 @@ export const MetadataFields = () => {
           <FormItem>
             <FormControl>
               <Input
-                disabled={editFields.disabled}
+                disabled={editFields.disabled || editFields.mode === "edit"}
                 label="Slug"
                 isInvalid={fieldState.invalid}
-                description="The slug will automatically be generated based on the title."
+                description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
                 {...field}
               />
             </FormControl>
@@ -211,37 +211,71 @@ export const MetadataFields = () => {
         )}
       />
       <div className="flex flex-col md:flex-row w-full gap-5">
-        <FormField<CreateFeedInput, "createdAt">
-          control={form.control}
-          name="createdAt"
-          render={({ field, fieldState }) => (
-            <FormItem className="w-full md:w-1/2">
-              <FormControl>
-                <DatePicker
-                  isDisabled
-                  isInvalid={fieldState.invalid}
-                  labelPlacement="outside"
-                  className="w-full"
-                  label="Create"
-                  value={
-                    field.value
-                      ? parseDate(
-                          dayjs(field.value).format(
-                            // ISO 8601 date string, with no time
-                            "YYYY-MM-DD"
+        <div className="flex gap-5 w-full md:w-1/2">
+          <FormField<CreateFeedInput, "createdAt">
+            control={form.control}
+            name="createdAt"
+            render={({ field, fieldState }) => (
+              <FormItem
+                className={cn(editFields.mode === "edit" ? "w-1/2" : "w-full")}>
+                <FormControl>
+                  <DatePicker
+                    isInvalid={fieldState.invalid}
+                    labelPlacement="outside"
+                    className="w-full"
+                    label="Create"
+                    value={
+                      field.value
+                        ? parseDate(
+                            dayjs(field.value).format(
+                              // ISO 8601 date string, with no time
+                              "YYYY-MM-DD"
+                            )
                           )
-                        )
-                      : null
-                  }
-                  onChange={(date) => {
-                    field.onChange(dayjs(date.toString()).valueOf());
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+                        : null
+                    }
+                    onChange={(date) => {
+                      field.onChange(dayjs(date.toString()).valueOf());
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {editFields.mode === "edit" && (
+            <FormField<CreateFeedInput, "updatedAt">
+              control={form.control}
+              name="updatedAt"
+              render={({ field, fieldState }) => (
+                <FormItem className="w-1/2">
+                  <FormControl>
+                    <DatePicker
+                      isInvalid={fieldState.invalid}
+                      labelPlacement="outside"
+                      className="w-full"
+                      label="Update"
+                      value={
+                        field.value
+                          ? parseDate(
+                              dayjs(field.value).format(
+                                // ISO 8601 date string, with no time
+                                "YYYY-MM-DD"
+                              )
+                            )
+                          : null
+                      }
+                      onChange={(date) => {
+                        field.onChange(dayjs(date.toString()).valueOf());
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           )}
-        />
+        </div>
         <div className="flex gap-5 items-end w-full md:w-1/2">
           <FormField<CreateFeedInput, "contentType">
             control={form.control}
