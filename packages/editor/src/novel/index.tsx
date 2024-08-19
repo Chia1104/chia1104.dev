@@ -17,7 +17,7 @@ import { cn } from "@chia/ui";
 import extensions, { suggestionItems } from "./extensions";
 import { NodeSelector } from "./selectors";
 
-const Editor: FC<
+const Novel: FC<
   Omit<
     ComponentPropsWithoutRef<typeof EditorContent>,
     "children" | "extensions"
@@ -36,7 +36,7 @@ const Editor: FC<
           ...editorProps,
         }}
         className={cn(
-          "c-bg-third m-0 min-w-full overflow-hidden rounded-2xl border border-gray-300 p-10 shadow-lg transition-all ease-in-out dark:border-gray-700",
+          "c-bg-third m-0 min-w-full overflow-hidden rounded-2xl border border-gray-300 p-7 shadow-lg transition-all ease-in-out dark:border-gray-700",
           className
         )}
         extensions={extensions}>
@@ -73,4 +73,4 @@ const Editor: FC<
   );
 };
 
-export default Editor;
+export default Novel;

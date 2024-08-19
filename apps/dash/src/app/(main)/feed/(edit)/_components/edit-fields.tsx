@@ -29,7 +29,7 @@ import { toast } from "sonner";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
 import { FeedType, ContentType } from "@chia/db/types";
-import Editor from "@chia/editor";
+import Novel from "@chia/editor/novel";
 import { useTheme, ErrorBoundary } from "@chia/ui";
 import { FormControl, FormField, FormItem, FormMessage, cn } from "@chia/ui";
 
@@ -403,7 +403,7 @@ const SwitchEditor = () => {
           />
         </div>
       ) : (
-        <Editor
+        <Novel
           editable={!editFields.disabled}
           onUpdate={(e) => {
             const content = e.editor.storage.markdown.getMarkdown();

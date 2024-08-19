@@ -204,7 +204,7 @@ export const suggestionItems = createSuggestionItems([
   },
 ]);
 
-const slashCommand = Command.configure({
+const _slashCommand = Command.configure({
   suggestion: {
     items: () => suggestionItems,
     render: renderItems,
@@ -223,7 +223,7 @@ const extensions: AnyExtension[] = [
   taskList,
   taskItem,
   horizontalRule,
-  slashCommand,
+  // slashCommand,
   markdown,
 ];
 

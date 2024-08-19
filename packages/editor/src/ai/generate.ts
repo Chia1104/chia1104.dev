@@ -10,10 +10,10 @@ import { errorGenerator, getAdminId, ParsedJSONError } from "@chia/utils";
  * Allow streaming responses up to 30 seconds
  * @example
  * ```ts
- * export const maxDuration = DEFAULT_MAX_DURATION;
+ * export { maxDuration } from "@chia/editor/ai/generate"
  * ```
  */
-export const DEFAULT_MAX_DURATION = 30;
+export const maxDuration = 30;
 
 // https://platform.openai.com/docs/models
 export const OpenAIModal = {
@@ -31,7 +31,7 @@ export const requestSchema = z.object({
 
 export type RequestDTO = z.infer<typeof requestSchema>;
 
-export const generate = auth(async (req) => {
+export const POST = auth(async (req) => {
   try {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "") {
       return NextResponse.json(errorGenerator(503), {
