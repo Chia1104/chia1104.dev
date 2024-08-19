@@ -12,13 +12,16 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 
-import { roles, feed_type, article_type } from "./enums";
+import { ContentType } from "../types";
+import { roles, feed_type, content_type } from "./enums";
 import { pgTable } from "./table";
 
 export const users = pgTable("user", {
-  id: text("id").notNull().primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
-  email: text("email").notNull(),
+  email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
   role: roles("role").default("user").notNull(),
@@ -49,7 +52,7 @@ export const accounts = pgTable(
 );
 
 export const sessions = pgTable("session", {
-  sessionToken: text("sessionToken").notNull().primaryKey(),
+  sessionToken: text("sessionToken").primaryKey(),
   userId: text("userId")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -65,6 +68,27 @@ export const verificationTokens = pgTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+  })
+);
+
+export const authenticators = pgTable(
+  "authenticator",
+  {
+    credentialID: text("credentialID").notNull().unique(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    providerAccountId: text("providerAccountId").notNull(),
+    credentialPublicKey: text("credentialPublicKey").notNull(),
+    counter: integer("counter").notNull(),
+    credentialDeviceType: text("credentialDeviceType").notNull(),
+    credentialBackedUp: boolean("credentialBackedUp").notNull(),
+    transports: text("transports"),
+  },
+  (authenticator) => ({
+    compositePK: primaryKey({
+      columns: [authenticator.userId, authenticator.credentialID],
+    }),
   })
 );
 
@@ -136,7 +160,9 @@ export const feeds = pgTable(
   {
     id: serial("id").primaryKey(),
     slug: text("slug").notNull().unique(),
+    readTime: integer("readTime"),
     type: feed_type("type").notNull(),
+    contentType: content_type("contentType").notNull().default(ContentType.Mdx),
     published: boolean("published").default(false),
     title: text("title").notNull(),
     excerpt: text("excerpt"),
@@ -177,42 +203,15 @@ export const feedsToTags = pgTable(
   })
 );
 
-export const posts = pgTable(
-  "post",
-  {
-    id: serial("id").primaryKey(),
-    feedId: integer("feedId")
-      .notNull()
-      .references(() => feeds.id, { onDelete: "cascade" }),
-    type: article_type("type").default("mdx"),
-    content: text("content"),
-    readTime: integer("readTime"),
-    source: text("source"),
-  },
-  (table) => {
-    return {
-      idIndex: uniqueIndex("post_id_index").on(table.id),
-    };
-  }
-);
-
-export const notes = pgTable(
-  "note",
-  {
-    id: serial("id").primaryKey(),
-    feedId: integer("feedId")
-      .notNull()
-      .references(() => feeds.id, { onDelete: "cascade" }),
-    type: article_type("type").default("mdx"),
-    content: text("content"),
-    source: text("source"),
-  },
-  (table) => {
-    return {
-      idIndex: uniqueIndex("note_id_index").on(table.id),
-    };
-  }
-);
+export const contents = pgTable("content", {
+  id: serial("id").primaryKey(),
+  feedId: integer("feedId")
+    .notNull()
+    .references(() => feeds.id, { onDelete: "cascade" }),
+  content: text("content"),
+  source: text("source"),
+  unstable_serializedSource: text("unstable_serializedSource"),
+});
 
 export const usersRelations = relations(users, ({ many }) => ({
   feeds: many(feeds),
@@ -220,8 +219,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const feedsRelations = relations(feeds, ({ one, many }) => ({
-  post: one(posts),
-  note: one(notes),
+  content: one(contents),
   user: one(users, {
     fields: [feeds.userId],
     references: [users.id],
@@ -237,16 +235,9 @@ export const assetsRelations = relations(assets, ({ one, many }) => ({
   assetsToTags: many(assetsToTags),
 }));
 
-export const postsRelations = relations(posts, ({ one }) => ({
+export const contentsRelations = relations(contents, ({ one }) => ({
   feed: one(feeds, {
-    fields: [posts.feedId],
-    references: [feeds.id],
-  }),
-}));
-
-export const notesRelations = relations(notes, ({ one }) => ({
-  feed: one(feeds, {
-    fields: [notes.feedId],
+    fields: [contents.feedId],
     references: [feeds.id],
   }),
 }));
@@ -277,8 +268,8 @@ export type User = InferSelectModel<typeof users>;
 export type Account = InferSelectModel<typeof accounts>;
 export type Session = InferSelectModel<typeof sessions>;
 export type VerificationToken = InferSelectModel<typeof verificationTokens>;
+export type Authenticator = InferSelectModel<typeof authenticators>;
 export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
-export type Post = InferSelectModel<typeof posts>;
-export type Note = InferSelectModel<typeof notes>;
+export type Content = InferSelectModel<typeof contents>;
 export type Tag = InferSelectModel<typeof tags>;

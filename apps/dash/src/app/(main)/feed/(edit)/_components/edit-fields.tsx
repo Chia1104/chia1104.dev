@@ -28,7 +28,7 @@ import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
-import { FeedType, ArticleType } from "@chia/db/types";
+import { FeedType, ContentType } from "@chia/db/types";
 import Editor from "@chia/editor";
 import { useTheme, ErrorBoundary } from "@chia/ui";
 import { FormControl, FormField, FormItem, FormMessage, cn } from "@chia/ui";
@@ -52,7 +52,7 @@ interface Props {
 
 export interface Ref {
   content: EditFieldsContext["content"];
-  getContent: (type?: ArticleType | null) => {
+  getContent: (type?: ContentType | null) => {
     content: string;
     source: string;
   };
@@ -104,8 +104,8 @@ export const MetadataFields = () => {
   const form = useFormContext<CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const articleType = useRef([
-    { key: ArticleType.Mdx, label: ArticleType.Mdx.toUpperCase() },
-    { key: ArticleType.Tiptap, label: ArticleType.Tiptap.toUpperCase() },
+    { key: ContentType.Mdx, label: ContentType.Mdx.toUpperCase() },
+    { key: ContentType.Tiptap, label: ContentType.Tiptap.toUpperCase() },
   ]);
   const [contentType, setContentType] = useState(
     new Set([form.getValues("contentType")])
@@ -178,10 +178,10 @@ export const MetadataFields = () => {
           <FormItem>
             <FormControl>
               <Input
-                disabled={editFields.disabled}
+                disabled={editFields.disabled || editFields.mode === "edit"}
                 label="Slug"
                 isInvalid={fieldState.invalid}
-                description="The slug will automatically be generated based on the title."
+                description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
                 {...field}
               />
             </FormControl>
@@ -211,37 +211,71 @@ export const MetadataFields = () => {
         )}
       />
       <div className="flex flex-col md:flex-row w-full gap-5">
-        <FormField<CreateFeedInput, "createdAt">
-          control={form.control}
-          name="createdAt"
-          render={({ field, fieldState }) => (
-            <FormItem className="w-full md:w-1/2">
-              <FormControl>
-                <DatePicker
-                  isDisabled
-                  isInvalid={fieldState.invalid}
-                  labelPlacement="outside"
-                  className="w-full"
-                  label="Create"
-                  value={
-                    field.value
-                      ? parseDate(
-                          dayjs(field.value).format(
-                            // ISO 8601 date string, with no time
-                            "YYYY-MM-DD"
+        <div className="flex gap-5 w-full md:w-1/2">
+          <FormField<CreateFeedInput, "createdAt">
+            control={form.control}
+            name="createdAt"
+            render={({ field, fieldState }) => (
+              <FormItem
+                className={cn(editFields.mode === "edit" ? "w-1/2" : "w-full")}>
+                <FormControl>
+                  <DatePicker
+                    isInvalid={fieldState.invalid}
+                    labelPlacement="outside"
+                    className="w-full"
+                    label="Create"
+                    value={
+                      field.value
+                        ? parseDate(
+                            dayjs(field.value).format(
+                              // ISO 8601 date string, with no time
+                              "YYYY-MM-DD"
+                            )
                           )
-                        )
-                      : null
-                  }
-                  onChange={(date) => {
-                    field.onChange(dayjs(date.toString()).valueOf());
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+                        : null
+                    }
+                    onChange={(date) => {
+                      field.onChange(dayjs(date.toString()).valueOf());
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {editFields.mode === "edit" && (
+            <FormField<CreateFeedInput, "updatedAt">
+              control={form.control}
+              name="updatedAt"
+              render={({ field, fieldState }) => (
+                <FormItem className="w-1/2">
+                  <FormControl>
+                    <DatePicker
+                      isInvalid={fieldState.invalid}
+                      labelPlacement="outside"
+                      className="w-full"
+                      label="Update"
+                      value={
+                        field.value
+                          ? parseDate(
+                              dayjs(field.value).format(
+                                // ISO 8601 date string, with no time
+                                "YYYY-MM-DD"
+                              )
+                            )
+                          : null
+                      }
+                      onChange={(date) => {
+                        field.onChange(dayjs(date.toString()).valueOf());
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           )}
-        />
+        </div>
         <div className="flex gap-5 items-end w-full md:w-1/2">
           <FormField<CreateFeedInput, "contentType">
             control={form.control}
@@ -301,7 +335,7 @@ const EditorInfo = memo(() => {
   const form = useFormContext<CreateFeedInput>();
   return (
     <>
-      {form.watch("contentType") === ArticleType.Mdx ? (
+      {form.watch("contentType") === ContentType.Mdx ? (
         <Callout type="info">
           You are using the markdown editor. You can use markdown syntax to
           write your content.
@@ -332,7 +366,7 @@ const SwitchEditor = () => {
   const { setState, getState } = useDraft(editFields.token);
   return (
     <>
-      {form.watch("contentType") === ArticleType.Mdx ? (
+      {form.watch("contentType") === ContentType.Mdx ? (
         <div
           className={cn(
             "relative w-full overflow-hidden rounded-2xl shadow-lg",
@@ -347,7 +381,7 @@ const SwitchEditor = () => {
             onChange={(value) => {
               editFields.setContent((prev) => ({
                 ...prev,
-                [ArticleType.Mdx]: {
+                [ContentType.Mdx]: {
                   content: value ?? "",
                   source: value ?? "",
                 },
@@ -355,7 +389,7 @@ const SwitchEditor = () => {
               if (editFields.mode === "create" && editFields.token.length > 0) {
                 setState({
                   content: {
-                    [ArticleType.Mdx]: {
+                    [ContentType.Mdx]: {
                       content: value ?? "",
                       source: value ?? "",
                     },
@@ -376,7 +410,7 @@ const SwitchEditor = () => {
             const source = JSON.stringify(e.editor.getJSON());
             editFields.setContent((prev) => ({
               ...prev,
-              [ArticleType.Tiptap]: {
+              [ContentType.Tiptap]: {
                 content,
                 source,
               },
@@ -384,7 +418,7 @@ const SwitchEditor = () => {
             if (editFields.mode === "create" && editFields.token.length > 0) {
               setState({
                 content: {
-                  [ArticleType.Tiptap]: {
+                  [ContentType.Tiptap]: {
                     content,
                     source,
                   },
@@ -409,12 +443,12 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
     content,
     getContent: (type) => {
       switch (type ?? form.watch("contentType")) {
-        case ArticleType.Mdx:
+        case ContentType.Mdx:
           return {
             content: content.mdx.content,
             source: content.mdx.source,
           };
-        case ArticleType.Tiptap:
+        case ContentType.Tiptap:
           return {
             content: content.tiptap.content,
             source: content.tiptap.source,
@@ -435,7 +469,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
       return DEFAULT_EDIT_FIELDS_CONTEXT.content;
     }
     switch (contentType) {
-      case ArticleType.Mdx:
+      case ContentType.Mdx:
         return {
           mdx: {
             content: form.getValues("content") ?? "",
@@ -446,7 +480,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
             source: "",
           },
         };
-      case ArticleType.Tiptap:
+      case ContentType.Tiptap:
         return {
           mdx: {
             content: "",

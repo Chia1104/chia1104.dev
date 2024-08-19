@@ -1,15 +1,16 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { feeds, posts, notes } from "../../schema";
-import { ArticleType, FeedOrderBy, FeedType } from "../../types";
+import { feeds, contents } from "../../schema";
+import { ContentType, FeedOrderBy, FeedType } from "../../types";
 
 export const baseInfiniteSchema = z.object({
   limit: z.number().max(50).optional().default(10),
   cursor: z.union([z.string(), z.number()]).nullish(),
   orderBy: z.nativeEnum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
-  type: z.nativeEnum(FeedType).optional().default(FeedType.Post),
+  type: z.nativeEnum(FeedType).optional(),
+  withContent: z.boolean().optional().default(false),
 });
 
 export const infiniteSchema = baseInfiniteSchema.optional().default({
@@ -17,50 +18,28 @@ export const infiniteSchema = baseInfiniteSchema.optional().default({
   cursor: null,
   orderBy: FeedOrderBy.UpdatedAt,
   sortOrder: "desc",
-  type: FeedType.Post,
 });
 
 export type InfiniteDTO = z.infer<typeof infiniteSchema>;
 
-export const getPublicFeedBySlugSchema = z.object({
-  type: z.nativeEnum(FeedType).optional().default(FeedType.Post),
-  slug: z.string().min(1),
+const internal_dateSchema = z.object({
+  createdAt: z.union([z.string(), z.number()]).optional(),
+  updatedAt: z.union([z.string(), z.number()]).optional(),
 });
 
-export const getFeedByIdSchema = z.object({
-  type: z.nativeEnum(FeedType).optional().default(FeedType.Post),
-  feedId: z.number(),
-});
-
-export type GetPublicFeedBySlugDTO = z.infer<typeof getPublicFeedBySlugSchema>;
-
-export const insertFeedSchema = createInsertSchema(feeds);
+export const insertFeedSchema = createInsertSchema(feeds)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .merge(internal_dateSchema);
 
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
 
-export const insertFeedContentSchema = (type: "post" | "note") =>
-  type === "post"
-    ? createInsertSchema(posts)
-        .omit({ type: true })
-        .merge(
-          z.object({
-            contentType: z
-              .nativeEnum(ArticleType)
-              .nullish()
-              .default(ArticleType.Mdx),
-          })
-        )
-    : createInsertSchema(notes)
-        .omit({ type: true })
-        .merge(
-          z.object({
-            contentType: z
-              .nativeEnum(ArticleType)
-              .nullish()
-              .default(ArticleType.Mdx),
-          })
-        );
+export const insertFeedContentSchema = createInsertSchema(contents).merge(
+  z.object({
+    contentType: z.nativeEnum(ContentType).optional().default(ContentType.Mdx),
+  })
+);
 
-export type InsertFeedContentDTO = z.infer<
-  ReturnType<typeof insertFeedContentSchema>
->;
+export type InsertFeedContentDTO = z.infer<typeof insertFeedContentSchema>;

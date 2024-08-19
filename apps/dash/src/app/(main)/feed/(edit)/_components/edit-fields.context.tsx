@@ -3,17 +3,17 @@
 import { createContext, useContext } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
-import { ArticleType } from "@chia/db/types";
+import { ContentType } from "@chia/db/types";
 
 export interface EditFieldsContext {
   disabled?: boolean;
   isPending?: boolean;
   content: {
-    [ArticleType.Tiptap]: {
+    [ContentType.Tiptap]: {
       content: string;
       source: string;
     };
-    [ArticleType.Mdx]: {
+    [ContentType.Mdx]: {
       content: string;
       source: string;
     };
@@ -25,11 +25,11 @@ export interface EditFieldsContext {
 
 export const DEFAULT_EDIT_FIELDS_CONTEXT = {
   content: {
-    [ArticleType.Mdx]: {
+    [ContentType.Mdx]: {
       content: "",
       source: "",
     },
-    [ArticleType.Tiptap]: {
+    [ContentType.Tiptap]: {
       content: "",
       source: "",
     },

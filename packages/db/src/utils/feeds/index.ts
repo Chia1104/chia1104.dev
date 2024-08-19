@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import type { SQLWrapper } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 
@@ -10,27 +11,23 @@ import type {
   InsertFeedContentDTO,
 } from "../validator/feeds";
 
-export const getFeedBySlug = withDTO(
-  (db, { slug, type }: { slug: string; type: FeedType }) => {
-    return db.query.feeds.findFirst({
-      where: (feeds, { eq }) => eq(feeds.slug, slug),
-      with: {
-        [type]: true,
-      },
-    });
-  }
-);
+export const getFeedBySlug = withDTO((db, slug: string) => {
+  return db.query.feeds.findFirst({
+    where: (feeds, { eq }) => eq(feeds.slug, slug),
+    with: {
+      content: true,
+    },
+  });
+});
 
-export const getFeedById = withDTO(
-  (db, { feedId, type }: { feedId: number; type: FeedType }) => {
-    return db.query.feeds.findFirst({
-      where: (feeds, { eq }) => eq(feeds.id, feedId),
-      with: {
-        [type]: true,
-      },
-    });
-  }
-);
+export const getFeedById = withDTO((db, feedId: number) => {
+  return db.query.feeds.findFirst({
+    where: (feeds, { eq }) => eq(feeds.id, feedId),
+    with: {
+      content: true,
+    },
+  });
+});
 
 export const getInfiniteFeeds = withDTO(
   async (
@@ -42,6 +39,7 @@ export const getInfiniteFeeds = withDTO(
       sortOrder = "desc",
       type = FeedType.Post,
       whereAnd = [],
+      withContent,
     }: InfiniteDTO & {
       whereAnd?: (SQLWrapper | undefined)[];
     }
@@ -59,14 +57,11 @@ export const getInfiniteFeeds = withDTO(
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
-      with:
-        type === FeedType.Post
-          ? ({
-              post: true,
-            } as const)
-          : ({
-              note: true,
-            } as const),
+      with: withContent
+        ? {
+            content: true,
+          }
+        : {},
       where: parsedCursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
@@ -104,6 +99,7 @@ export const getInfiniteFeedsByUserId = withDTO(
       type = FeedType.Post,
       userId,
       whereAnd = [],
+      withContent,
     }: InfiniteDTO & {
       userId: string;
       whereAnd?: (SQLWrapper | undefined)[];
@@ -122,14 +118,11 @@ export const getInfiniteFeedsByUserId = withDTO(
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
-      with:
-        type === FeedType.Post
-          ? ({
-              post: true,
-            } as const)
-          : ({
-              note: true,
-            } as const),
+      with: withContent
+        ? {
+            content: true,
+          }
+        : {},
       where: parsedCursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
@@ -163,23 +156,31 @@ export const createFeed = withDTO<
   void
 >(async (db, dto) => {
   await db.transaction(async (trx) => {
-    await trx.insert(dto.type === "note" ? schema.notes : schema.posts).values({
+    await trx.insert(schema.contents).values({
       feedId: (
         await trx
           .insert(schema.feeds)
           .values({
             slug: dto.slug,
             type: dto.type,
+            contentType: dto.contentType ?? undefined,
             title: dto.title,
             excerpt: dto.excerpt,
             description: dto.description,
             userId: dto.userId,
             published: dto.published,
+            createdAt: dto.createdAt
+              ? dayjs(dto.createdAt).toDate()
+              : undefined,
+            updatedAt: dto.updatedAt
+              ? dayjs(dto.updatedAt).toDate()
+              : undefined,
           })
           .returning({ feedId: schema.feeds.id })
       )[0].feedId,
       content: dto.content,
-      type: dto.contentType,
+      source: dto.source,
+      unstable_serializedSource: dto.unstable_serializedSource,
     });
   });
 });
@@ -195,31 +196,33 @@ export const updateFeed = withDTO<
       .update(schema.feeds)
       .set({
         slug: dto.slug,
+        type: dto.type,
+        contentType: dto.contentType ?? undefined,
         title: dto.title,
         excerpt: dto.excerpt,
         description: dto.description,
+        userId: dto.userId,
         published: dto.published,
+        createdAt: dto.createdAt ? dayjs(dto.createdAt).toDate() : undefined,
+        updatedAt: dto.updatedAt ? dayjs(dto.updatedAt).toDate() : undefined,
       })
       .where(eq(schema.feeds.id, dto.feedId));
     await trx
-      .update(dto.type === "note" ? schema.notes : schema.posts)
+      .update(schema.contents)
       .set({
         content: dto.content,
-        type: dto.contentType,
+        source: dto.source,
+        unstable_serializedSource: dto.unstable_serializedSource,
       })
-      .where(
-        eq(
-          dto.type === "note" ? schema.notes.feedId : schema.posts.feedId,
-          dto.feedId
-        )
-      );
+      .where(eq(schema.contents.feedId, dto.feedId));
   });
 });
 
 export const deleteFeed = withDTO<{ feedId: number }, void>(async (db, dto) => {
   await db.transaction(async (trx) => {
     await trx.delete(schema.feeds).where(eq(schema.feeds.id, dto.feedId));
-    await trx.delete(schema.posts).where(eq(schema.posts.feedId, dto.feedId));
-    await trx.delete(schema.notes).where(eq(schema.notes.feedId, dto.feedId));
+    await trx
+      .delete(schema.contents)
+      .where(eq(schema.contents.feedId, dto.feedId));
   });
 });
