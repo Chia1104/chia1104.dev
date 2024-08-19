@@ -17,6 +17,10 @@ export interface EditFieldsContext {
       content: string;
       source: string;
     };
+    [ContentType.Plate]: {
+      content: string;
+      source: string;
+    };
   };
   setContent: Dispatch<SetStateAction<EditFieldsContext["content"]>>;
   mode: "edit" | "create";
@@ -30,6 +34,10 @@ export const DEFAULT_EDIT_FIELDS_CONTEXT = {
       source: "",
     },
     [ContentType.Tiptap]: {
+      content: "",
+      source: "",
+    },
+    [ContentType.Plate]: {
       content: "",
       source: "",
     },
