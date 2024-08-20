@@ -9,10 +9,14 @@ import {
   Input,
 } from "@nextui-org/react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import type { Session } from "@chia/auth-core/types";
 import { FormControl, FormField, FormItem, FormMessage, Form } from "@chia/ui";
+
+import { api } from "@/trpc/client";
 
 const UserProfileForm = () => {
   const session = useSession();
@@ -24,8 +28,25 @@ const UserProfileForm = () => {
     },
   });
 
+  const router = useRouter();
+
+  const utils = api.useUtils();
+
+  const updateProfile = api.users.updateUserProfile.useMutation({
+    onError: () => toast.error("Failed to update profile"),
+    onSuccess: async () => {
+      toast.success("Profile updated");
+      router.refresh();
+      await utils.users.invalidate();
+    },
+  });
+
   const onSubmit = form.handleSubmit((values) => {
-    console.log(values);
+    updateProfile.mutate({
+      id: session.data?.user.id ?? "",
+      name: values.name,
+      image: values.image,
+    });
   });
 
   return (
@@ -53,6 +74,7 @@ const UserProfileForm = () => {
                   <FormControl>
                     <Input
                       placeholder="Name"
+                      disabled={updateProfile.isPending}
                       {...field}
                       value={field.value ?? undefined}
                     />
@@ -63,7 +85,28 @@ const UserProfileForm = () => {
             />
           </CardHeader>
           <CardBody>
-            <Button type="submit" className="w-fit" disabled>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      label="Email"
+                      placeholder="Email"
+                      disabled
+                      {...field}
+                      value={field.value ?? undefined}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="w-fit mt-5"
+              isLoading={updateProfile.isPending}>
               Save
             </Button>
           </CardBody>

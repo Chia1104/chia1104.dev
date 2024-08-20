@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { convertToCoreMessages, streamText } from "ai";
+import { convertToCoreMessages, streamText, APICallError } from "ai";
 import { JsonWebTokenError } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
@@ -89,6 +89,20 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json(errorGenerator(403), {
         status: 403,
       });
+    }
+    if (error instanceof APICallError) {
+      return NextResponse.json(
+        errorGenerator(400, [
+          {
+            field: "api_call",
+            message:
+              "Failed to call OpenAI API, please check your api settings",
+          },
+        ]),
+        {
+          status: 400,
+        }
+      );
     }
     console.error(error);
     return NextResponse.json(errorGenerator(500), {
