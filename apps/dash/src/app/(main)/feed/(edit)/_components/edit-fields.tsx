@@ -3,7 +3,6 @@
 import { useRef, useState, forwardRef, useImperativeHandle, memo } from "react";
 
 import { parseDate } from "@internationalized/date";
-import MEditor from "@monaco-editor/react";
 import {
   Input,
   Textarea,
@@ -19,17 +18,18 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
+  Skeleton,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
 import { FeedType, ContentType } from "@chia/db/types";
-import Editor from "@chia/editor";
 import { useTheme, ErrorBoundary } from "@chia/ui";
 import { FormControl, FormField, FormItem, FormMessage, cn } from "@chia/ui";
 
@@ -41,6 +41,16 @@ import {
   DEFAULT_EDIT_FIELDS_CONTEXT,
 } from "./edit-fields.context";
 import { useDraft } from "./use-draft";
+
+const MEditor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+  loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
+});
+
+const Novel = dynamic(() => import("@chia/editor/novel"), {
+  ssr: false,
+  loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
+});
 
 interface Props {
   disabled?: boolean;
@@ -294,6 +304,8 @@ export const MetadataFields = () => {
                     onChange={(value) => {
                       field.onChange(value);
                     }}
+                    isDisabled
+                    defaultSelectedKeys={[ContentType.Mdx]}
                     label="Content Type"
                     placeholder="Select a type"
                     labelPlacement="outside"
@@ -335,7 +347,7 @@ const EditorInfo = memo(() => {
   const form = useFormContext<CreateFeedInput>();
   return (
     <>
-      {form.watch("contentType") === ContentType.Mdx ? (
+      {form.watch("contentType") !== ContentType.Tiptap ? (
         <Callout type="info">
           You are using the markdown editor. You can use markdown syntax to
           write your content.
@@ -364,78 +376,97 @@ const SwitchEditor = () => {
   const editFields = useEditFieldsContext();
   const { isDarkMode } = useTheme();
   const { setState, getState } = useDraft(editFields.token);
-  return (
-    <>
-      {form.watch("contentType") === ContentType.Mdx ? (
-        <div
-          className={cn(
-            "relative w-full overflow-hidden rounded-2xl shadow-lg",
-            editFields.disabled && "pointer-events-none"
-          )}>
-          <MEditor
-            className={cn("py-5 dark:bg-[#1e1e1e] bg-white")}
-            height="700px"
-            defaultLanguage="markdown"
-            theme={isDarkMode ? "vs-dark" : "light"}
-            loading={<Spinner />}
-            onChange={(value) => {
+
+  const editorCreator = (contentType: ContentType) => {
+    switch (contentType) {
+      case ContentType.Mdx:
+        return (
+          <div
+            className={cn(
+              "relative w-full overflow-hidden rounded-2xl shadow-lg",
+              editFields.disabled && "pointer-events-none"
+            )}>
+            <MEditor
+              className={cn("py-5 dark:bg-[#1e1e1e] bg-white")}
+              height="700px"
+              defaultLanguage="markdown"
+              theme={isDarkMode ? "vs-dark" : "light"}
+              loading={<Spinner />}
+              onChange={(value) => {
+                editFields.setContent((prev) => ({
+                  ...prev,
+                  [ContentType.Mdx]: {
+                    content: value ?? "",
+                    source: value ?? "",
+                  },
+                }));
+                if (
+                  editFields.mode === "create" &&
+                  editFields.token.length > 0
+                ) {
+                  setState({
+                    content: {
+                      [ContentType.Mdx]: {
+                        content: value ?? "",
+                        source: value ?? "",
+                      },
+                    },
+                  });
+                }
+              }}
+              value={
+                editFields.content.mdx.content ||
+                getState().content?.mdx?.content
+              }
+              options={{
+                minimap: { enabled: false },
+                wordWrap: "on",
+                scrollBeyondLastLine: false,
+                scrollbar: { vertical: "auto" },
+                lineNumbers: "off",
+              }}
+            />
+          </div>
+        );
+      case ContentType.Tiptap:
+        return (
+          <Novel
+            editable={!editFields.disabled}
+            onUpdate={(e) => {
+              const content = e.editor.storage.markdown.getMarkdown();
+              const source = JSON.stringify(e.editor.getJSON());
               editFields.setContent((prev) => ({
                 ...prev,
-                [ContentType.Mdx]: {
-                  content: value ?? "",
-                  source: value ?? "",
+                [ContentType.Tiptap]: {
+                  content,
+                  source,
                 },
               }));
               if (editFields.mode === "create" && editFields.token.length > 0) {
                 setState({
                   content: {
-                    [ContentType.Mdx]: {
-                      content: value ?? "",
-                      source: value ?? "",
+                    [ContentType.Tiptap]: {
+                      content,
+                      source,
                     },
                   },
                 });
               }
             }}
-            value={
-              editFields.content.mdx.content || getState().content?.mdx?.content
-            }
+            className="min-h-[700px]"
+            initialContent={JSON.parse(
+              editFields.content.tiptap.source ||
+                getState().content?.tiptap?.source ||
+                "{}"
+            )}
           />
-        </div>
-      ) : (
-        <Editor
-          editable={!editFields.disabled}
-          onUpdate={(e) => {
-            const content = e.editor.storage.markdown.getMarkdown();
-            const source = JSON.stringify(e.editor.getJSON());
-            editFields.setContent((prev) => ({
-              ...prev,
-              [ContentType.Tiptap]: {
-                content,
-                source,
-              },
-            }));
-            if (editFields.mode === "create" && editFields.token.length > 0) {
-              setState({
-                content: {
-                  [ContentType.Tiptap]: {
-                    content,
-                    source,
-                  },
-                },
-              });
-            }
-          }}
-          className="min-h-[700px]"
-          initialContent={JSON.parse(
-            editFields.content.tiptap.source ||
-              getState().content?.tiptap?.source ||
-              "{}"
-          )}
-        />
-      )}
-    </>
-  );
+        );
+      default:
+        return null;
+    }
+  };
+
+  return <>{editorCreator(form.watch("contentType") ?? ContentType.Mdx)}</>;
 };
 
 const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {

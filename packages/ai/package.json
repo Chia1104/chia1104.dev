@@ -3,8 +3,12 @@
   "name": "@chia/ai",
   "version": "0.0.0",
   "private": true,
-  "types": "./index.ts",
-  "main": "./index.ts",
+  "exports": {
+    "./generate/handler": "./src/generate/handler.ts",
+    "./types": "./src/utils/types.ts",
+    "./constants": "./src/utils/constants.ts",
+    "./utils": "./src/utils/index.ts"
+  },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
     "lint": "eslint",
@@ -14,6 +18,10 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.48",
+    "@chia/utils": "workspace:*",
+    "ai": "^3.3.9",
+    "next": "14.2.5",
     "openai": "^4.56.0"
   },
   "devDependencies": {

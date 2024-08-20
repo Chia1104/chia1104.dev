@@ -35,6 +35,7 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
   transpilePackages: [
+    "@chia/ai",
     "@chia/api",
     "@chia/auth",
     "@chia/auth-core",
