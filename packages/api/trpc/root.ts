@@ -1,4 +1,5 @@
 import { feedsRouter } from "./routes/feeds";
+import { usersRouter } from "./routes/users";
 import { createTRPCRouter } from "./trpc";
 
 /**
@@ -8,6 +9,7 @@ import { createTRPCRouter } from "./trpc";
  */
 export const appRouter = createTRPCRouter({
   feeds: feedsRouter,
+  users: usersRouter,
 });
 
 // export type definition of API

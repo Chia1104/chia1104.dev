@@ -8,7 +8,9 @@
     "./types": "./src/types.ts",
     "./schema": "./src/schema/index.ts",
     "./utils/feeds": "./src/utils/feeds/index.ts",
-    "./validator/feeds": "./src/utils/validator/feeds.ts"
+    "./utils/users": "./src/utils/users/index.ts",
+    "./validator/feeds": "./src/utils/validator/feeds.ts",
+    "./validator/users": "./src/utils/validator/users.ts"
   },
   "scripts": {
     "db:start": "docker-compose up -d",
