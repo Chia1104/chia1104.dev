@@ -52,11 +52,6 @@ const Novel = dynamic(() => import("@chia/editor/novel"), {
   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
 });
 
-const PlateEditor = dynamic(() => import("@chia/editor/plate"), {
-  ssr: false,
-  loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
-});
-
 interface Props {
   disabled?: boolean;
   isPending?: boolean;
@@ -121,7 +116,6 @@ export const MetadataFields = () => {
   const articleType = useRef([
     { key: ContentType.Mdx, label: ContentType.Mdx.toUpperCase() },
     { key: ContentType.Tiptap, label: ContentType.Tiptap.toUpperCase() },
-    { key: ContentType.Plate, label: ContentType.Plate.toUpperCase() },
   ]);
   const [contentType, setContentType] = useState(
     new Set([form.getValues("contentType")])
@@ -310,6 +304,8 @@ export const MetadataFields = () => {
                     onChange={(value) => {
                       field.onChange(value);
                     }}
+                    isDisabled
+                    defaultSelectedKeys={[ContentType.Mdx]}
                     label="Content Type"
                     placeholder="Select a type"
                     labelPlacement="outside"
@@ -422,6 +418,13 @@ const SwitchEditor = () => {
                 editFields.content.mdx.content ||
                 getState().content?.mdx?.content
               }
+              options={{
+                minimap: { enabled: false },
+                wordWrap: "on",
+                scrollBeyondLastLine: false,
+                scrollbar: { vertical: "auto" },
+                lineNumbers: "off",
+              }}
             />
           </div>
         );
@@ -458,14 +461,6 @@ const SwitchEditor = () => {
             )}
           />
         );
-      case ContentType.Plate:
-        return (
-          <PlateEditor
-            editorProps={{
-              className: "min-h-[700px]",
-            }}
-          />
-        );
       default:
         return null;
     }
@@ -488,11 +483,6 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
           return {
             content: content.tiptap.content,
             source: content.tiptap.source,
-          };
-        case ContentType.Plate:
-          return {
-            content: content.plate.content,
-            source: content.plate.source,
           };
         default:
           return {
@@ -520,10 +510,6 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
             content: "",
             source: "",
           },
-          plate: {
-            content: "",
-            source: "",
-          },
         };
       case ContentType.Tiptap:
         return {
@@ -532,25 +518,6 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
             source: "",
           },
           tiptap: {
-            content: form.getValues("content") ?? "",
-            source: form.getValues("source") ?? "",
-          },
-          plate: {
-            content: "",
-            source: "",
-          },
-        };
-      case ContentType.Plate:
-        return {
-          mdx: {
-            content: "",
-            source: "",
-          },
-          tiptap: {
-            content: "",
-            source: "",
-          },
-          plate: {
             content: form.getValues("content") ?? "",
             source: form.getValues("source") ?? "",
           },
