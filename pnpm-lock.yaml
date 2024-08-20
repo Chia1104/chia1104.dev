@@ -233,8 +233,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.428.0
+        version: 0.428.0(react@18.3.1)
       million:
         specifier: ^3.1.11
         version: 3.1.11(rollup@4.20.0)
@@ -906,8 +906,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.428.0
+        version: 0.428.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1103,8 +1103,8 @@ importers:
         specifier: 11.3.28
         version: 11.3.28(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       lucide-react:
-        specifier: ^0.424.0
-        version: 0.424.0(react@18.3.1)
+        specifier: ^0.428.0
+        version: 0.428.0(react@18.3.1)
       next:
         specifier: 14.2.5
         version: 14.2.5(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -8704,11 +8704,6 @@ packages:
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
-
-  lucide-react@0.424.0:
-    resolution: {integrity: sha512-x2Nj2aytk1iOyHqt4hKenfVlySq0rYxNeEf8hE0o+Yh0iE36Rqz0rkngVdv2uQtjZ70LAE73eeplhhptYt9x4Q==}
-    peerDependencies:
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
   lucide-react@0.428.0:
     resolution: {integrity: sha512-rGrzslfEcgqwh+TLBC5qJ8wvVIXhLvAIXVFKNHndYyb1utSxxn9rXOC+1CNJLi6yNOooyPqIs6+3YCp6uSiEvg==}
@@ -20552,10 +20547,6 @@ snapshots:
       yallist: 3.1.1
 
   lru-cache@7.18.3: {}
-
-  lucide-react@0.424.0(react@18.3.1):
-    dependencies:
-      react: 18.3.1
 
   lucide-react@0.428.0(react@18.3.1):
     dependencies:
