@@ -5,12 +5,12 @@ packages:
   - "tests/*"
 
 catalog:
-  "@tanstack/react-query": ^5.51.23
-  "@trpc/client": ^11.0.0-rc.477
-  "@trpc/react-query": ^11.0.0-rc.477
-  "@trpc/server": ^11.0.0-rc.477
-  "@trpc/next": ^11.0.0-rc.477
-  eslint: ^9.8.0
+  "@tanstack/react-query": ^5.51.24
+  "@trpc/client": ^11.0.0-rc.482
+  "@trpc/react-query": ^11.0.0-rc.482
+  "@trpc/server": ^11.0.0-rc.482
+  "@trpc/next": ^11.0.0-rc.482
+  eslint: ^9.9.0
   typescript: ^5.5.4
 
 catalogs:

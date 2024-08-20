@@ -2,7 +2,7 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 import { env as spotify } from "@chia/api/spotify/env";
-import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
+import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
 
 export const getClientEnv = () => {
   if (process.env.NEXT_PUBLIC_ENV) {
@@ -35,6 +35,7 @@ export const env = createEnv({
     DATABASE_URL: z.string().optional(),
     BETA_DATABASE_URL: z.string().optional(),
     INTERNAL_SERVICE_ENDPOINT: z.string().optional(),
+    AI_AUTH_SECRET: z.string().optional(),
   },
 
   client: {
@@ -54,6 +55,7 @@ export const env = createEnv({
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
     NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
+    AI_AUTH_SECRET: process.env.AI_AUTH_SECRET,
   },
 
   skipValidation:

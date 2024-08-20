@@ -36,6 +36,14 @@
       "matchPackagePatterns": ["fumadocs-*"]
     },
     {
+      "groupName": "tiptap",
+      "matchPackagePatterns": ["@tiptap/*"]
+    },
+    {
+      "groupName": "plate",
+      "matchPackagePatterns": ["@udecode/plate-*"]
+    },
+    {
       "matchPackagePatterns": [
         "^@chia/*",
         "@chia/ui",

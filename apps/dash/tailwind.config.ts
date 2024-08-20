@@ -12,7 +12,7 @@ export default {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
-    "node_modules/@chia/editor/(editor|extensions).{js,ts,jsx,tsx}",
+    "node_modules/@chia/editor/src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
     "node_modules/fumadocs-ui/dist/**/*.js",
   ],

@@ -17,6 +17,7 @@
     "clean": "git clean -xdf .next .turbo node_modules"
   },
   "dependencies": {
+    "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
     "@chia/auth-core": "workspace:*",
@@ -41,11 +42,11 @@
     "@trpc/server": "catalog:",
     "clsx": "^2.1.1",
     "framer-motion": "11.3.28",
-    "fumadocs-core": "^13.3.1",
+    "fumadocs-core": "^13.3.2",
     "fumadocs-mdx": "^9.0.2",
-    "fumadocs-ui": "^13.3.1",
+    "fumadocs-ui": "^13.3.2",
     "lowlight": "^3.1.0",
-    "lucide-react": "^0.424.0",
+    "lucide-react": "^0.428.0",
     "million": "^3.1.11",
     "next": "14.2.5",
     "next-auth": "5.0.0-beta.20",

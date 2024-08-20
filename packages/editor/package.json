@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": "./editor.tsx",
-    "./generate": "./generate.ts"
+    "./novel": "./src/novel/index.tsx",
+    "./novel/extensions": "./src/novel/extensions.tsx",
+    "./ai/generate": "./src/ai/generate.ts"
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -16,18 +17,16 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.48",
-    "@chia/auth": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@nextui-org/react": "2.4.6",
-    "@tiptap/core": "^2.5.9",
-    "@tiptap/extension-code-block-lowlight": "^2.5.9",
-    "@tiptap/html": "^2.5.9",
-    "@tiptap/starter-kit": "^2.5.9",
-    "ai": "^3.3.9",
+    "@tiptap/core": "^2.6.4",
+    "@tiptap/extension-code-block-lowlight": "^2.6.4",
+    "@tiptap/html": "^2.6.4",
+    "@tiptap/starter-kit": "^2.6.4",
+    "class-variance-authority": "^0.7.0",
     "lowlight": "^3.1.0",
-    "lucide-react": "^0.424.0",
+    "lucide-react": "^0.428.0",
     "next": "14.2.5",
     "novel": "^0.5.0",
     "openai": "^4.56.0",
