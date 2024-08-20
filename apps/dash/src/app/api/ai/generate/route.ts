@@ -1,1 +1,1 @@
-export { POST, maxDuration } from "@chia/editor/ai/generate";
+export { POST, maxDuration } from "@chia/ai/generate/handler";

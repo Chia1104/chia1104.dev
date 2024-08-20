@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { env as githubEnv } from "@chia/api/github/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
-import { nodeEnvSchema, envSchema } from "@chia/utils/src/schema/schema.mjs";
+import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
 
 export const getClientEnv = () => {
   if (process.env.NEXT_PUBLIC_ENV) {
