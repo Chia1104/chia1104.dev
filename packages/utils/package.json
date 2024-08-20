@@ -17,6 +17,9 @@
     "./request": "./src/request/request.util.ts",
     "./schema": "./src/schema/index.ts",
     "./schema/mjs": "./src/schema/schema.mjs",
+    "./server/error-helper": "./src/server/error.helper.ts",
+    "./server/network": "./src/server/network.config.ts",
+    "./server/request": "./src/server/request.util.ts",
     "./url": "./src/url/url.ts"
   },
   "scripts": {

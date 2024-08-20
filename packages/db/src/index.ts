@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { switchEnv } from "@chia/utils";
+import { switchEnv } from "@chia/utils/config";
 
 import * as schema from "./schema";
 
