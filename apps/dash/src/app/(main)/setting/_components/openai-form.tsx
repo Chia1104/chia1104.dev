@@ -5,7 +5,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input, Button, Divider } from "@nextui-org/react";
 import { useMutation } from "@tanstack/react-query";
-import ky from "ky";
+import ky, { HTTPError } from "ky";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import {
   cn,
   Form,
 } from "@chia/ui";
+import type { ErrorResponse } from "@chia/utils";
 
 import { saveOpenaiApiKey } from "@/server/saveOpenaiApiKey";
 
@@ -43,8 +44,8 @@ const OpenaiForm = () => {
     onSuccess: () => {
       toast.success("API key saved successfully");
     },
-    onError: (err) => {
-      toast.error(err.message);
+    onError: () => {
+      toast.error("Failed to save API key");
     },
   });
 
@@ -56,7 +57,14 @@ const OpenaiForm = () => {
           messages: [{ role: "user", content: "Hello, AI!" }],
         },
       }),
-    onError: (err) => toast.error(err.message),
+    onError: async (err) => {
+      if (err instanceof HTTPError) {
+        const error = await err.response?.json<ErrorResponse>();
+        toast.error(error.errors?.[0].message ?? "Failed to check API key");
+        return;
+      }
+      toast.error("Failed to check API key");
+    },
     onSuccess: () => toast.success("API key is valid"),
   });
 
