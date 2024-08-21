@@ -15,6 +15,7 @@ import { ContentSkeletons } from "@/app/(blog)/notes/[slug]/loading";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
+import { getContentProps } from "@/services/fumadocs.service";
 
 export const generateStaticParams = async () => {
   const notes = await getNotes(100);
@@ -137,6 +138,15 @@ const PostDetailPage = async ({
     },
   };
 
+  const props = await getContentProps({
+    contentType: note.contentType,
+    content: {
+      content: note.content?.content,
+      source: note.content?.source,
+      unstable_serializedSource: note.content?.unstable_serializedSource,
+    },
+  });
+
   return (
     <>
       <div className="flex w-full flex-col items-center">
@@ -165,10 +175,7 @@ const PostDetailPage = async ({
               <ContentSkeletons />
             </div>
           }>
-          <Content
-            type={note.contentType}
-            content={note.content?.content ?? ""}
-          />
+          <Content updatedAt={note.updatedAt} {...props} />
         </Suspense>
       </div>
       <script
