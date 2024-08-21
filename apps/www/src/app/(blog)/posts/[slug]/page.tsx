@@ -14,6 +14,7 @@ import { ContentSkeletons } from "@/app/(blog)/posts/[slug]/loading";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
+import { getContentProps } from "@/services/fumadocs.service";
 
 import Content from "../../_components/content";
 
@@ -138,6 +139,15 @@ const PostDetailPage = async ({
     },
   };
 
+  const props = await getContentProps({
+    contentType: post.contentType,
+    content: {
+      content: post.content?.content,
+      source: post.content?.source,
+      unstable_serializedSource: post.content?.unstable_serializedSource,
+    },
+  });
+
   return (
     <>
       <div className="flex w-full flex-col items-center">
@@ -166,10 +176,7 @@ const PostDetailPage = async ({
               <ContentSkeletons />
             </div>
           }>
-          <Content
-            type={post.contentType}
-            content={post.content?.content ?? ""}
-          />
+          <Content updatedAt={post.updatedAt} {...props} />
         </Suspense>
       </div>
       <script
