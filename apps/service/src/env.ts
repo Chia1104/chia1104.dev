@@ -20,6 +20,8 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().optional(),
     SENTRY_DSN: z.string().optional(),
     ZEABUR_SERVICE_ID: z.string().optional(),
+    RATELIMIT_WINDOW_MS: z.number().optional().default(60000),
+    RATELIMIT_MAX: z.number().optional().default(87),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -36,6 +38,12 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     SENTRY_DSN: process.env.SENTRY_DSN,
     ZEABUR_SERVICE_ID: process.env.ZEABUR_SERVICE_ID,
+    RATELIMIT_WINDOW_MS: process.env.RATELIMIT_WINDOW_MS
+      ? Number(process.env.RATELIMIT_WINDOW_MS)
+      : 60000,
+    RATELIMIT_MAX: process.env.RATELIMIT_MAX
+      ? Number(process.env.RATELIMIT_MAX)
+      : 87,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
