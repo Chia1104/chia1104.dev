@@ -164,26 +164,29 @@ const NavMenu: FC = () => {
             aria-label="nav bar"
             className="w-fit"
             selectedKey={selectedLayoutSegments[0] ?? "/"}>
-            {Object.entries(navItems).map(([path, { name, icon }]) => {
-              return (
-                <Tab
-                  key={path.replace(/^\//, "")}
-                  title={
-                    <Link
-                      experimental={{
-                        enableViewTransition: true,
-                      }}
-                      key={path}
-                      href={path}>
-                      <span className="relative px-[10px] py-[5px]">
-                        <p className="hidden md:block">{name}</p>
-                        <div className="block md:hidden">{icon}</div>
-                      </span>
-                    </Link>
-                  }
-                />
-              );
-            })}
+            {Object.entries(navItems).map(
+              ([path, { name, icon, hiddenInMainMenu }]) => {
+                if (hiddenInMainMenu) return null;
+                return (
+                  <Tab
+                    key={path.replace(/^\//, "")}
+                    title={
+                      <Link
+                        experimental={{
+                          enableViewTransition: true,
+                        }}
+                        key={path}
+                        href={path}>
+                        <span className="relative px-[10px] py-[5px]">
+                          <p className="hidden md:block">{name}</p>
+                          <div className="block md:hidden">{icon}</div>
+                        </span>
+                      </Link>
+                    }
+                  />
+                );
+              }
+            )}
           </Tabs>
           <CMDK />
         </div>
