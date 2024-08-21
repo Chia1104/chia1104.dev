@@ -14,6 +14,8 @@ import CurrentPlaying from "@/app/_components/current-playing";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 
+import HugeThanks from "./huge-thanks";
+
 const Copyright: FC<{ className?: string }> = ({ className }) => (
   <p className={className}>
     © {new Date().getFullYear()} <span className="font-bold">{meta.name}</span>
@@ -30,11 +32,14 @@ const Footer: FC = () => {
     <RetroGrid
       data-testid="footer"
       className="c-bg-third relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden py-20">
-      <div className="c-container z-40 mb-10 flex w-full px-10">
+      <div className="c-container z-40 mb-10 flex w-full px-10 justify-between">
         <CurrentPlaying
           className="bg-white dark:bg-black"
           hoverCardContentClassName="bg-white/30 dark:bg-black/30 backdrop-blur-lg"
         />
+        <div className="md:w-1/3 flex md:justify-start justify-end">
+          <HugeThanks />
+        </div>
       </div>
 
       <div className="c-container z-20 flex w-full px-10">
