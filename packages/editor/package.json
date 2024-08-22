@@ -26,7 +26,7 @@
     "@tiptap/starter-kit": "^2.6.4",
     "class-variance-authority": "^0.7.0",
     "lowlight": "^3.1.0",
-    "lucide-react": "^0.428.0",
+    "lucide-react": "^0.429.0",
     "next": "14.2.6",
     "novel": "^0.5.0",
     "openai": "^4.56.0",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
-    "@types/react": "^18.3.3",
+    "@types/react": "^18.3.4",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"
