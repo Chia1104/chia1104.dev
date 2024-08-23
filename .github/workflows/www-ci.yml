@@ -55,7 +55,7 @@ jobs:
     name: Build & test
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www')) && !contains(github.event.head_commit.message, '[skip ci]') }}
 
     steps:
       - name: "🐙️ Check out code"
