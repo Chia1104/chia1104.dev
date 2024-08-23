@@ -98,7 +98,6 @@
     "@vitejs/plugin-react-swc": "^3.7.0",
     "autoprefixer": "^10.4.20",
     "eslint": "catalog:",
-    "next-sitemap": "^4.2.3",
     "postcss": "8.4.41",
     "postcss-import": "^16.1.0",
     "tailwind-scrollbar": "^3.1.0",
