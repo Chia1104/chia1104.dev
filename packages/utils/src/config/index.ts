@@ -133,12 +133,20 @@ export const getAdminId = (env?: string) => {
 export const getBaseUrl = (options?: {
   isServer?: boolean;
   baseUrl?: string;
+  useBaseUrl?: boolean;
 }) => {
   options ??= {};
-  const { isServer, baseUrl = `http://localhost:${process.env.PORT ?? 3000}` } =
-    options;
+  const {
+    isServer,
+    baseUrl = `http://localhost:${process.env.PORT ?? 3000}`,
+    useBaseUrl,
+  } = options;
   if (typeof window !== "undefined" && !isServer) {
     return "";
+  }
+
+  if (useBaseUrl) {
+    return baseUrl;
   }
 
   const RAILWAY_URL =

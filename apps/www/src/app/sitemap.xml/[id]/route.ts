@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getDB, getInfiniteFeedsByUserId } from "@chia/db";
+import { getDB, getInfiniteFeedsByUserId, schema, eq } from "@chia/db";
 import {
   getBaseUrl,
   WWW_BASE_URL,
@@ -51,6 +51,7 @@ export const GET = async (
       type: "all",
       withContent: false,
       userId: getAdminId(),
+      whereAnd: [eq(schema.feeds.published, true)],
     });
 
     const staticSitemapData = Object.entries(routes).map(
@@ -59,6 +60,7 @@ export const GET = async (
           url: `${getBaseUrl({
             isServer: true,
             baseUrl: WWW_BASE_URL,
+            useBaseUrl: true,
           })}${path}`,
           lastModified: new Date().toISOString(),
           priority: priority,
@@ -71,6 +73,7 @@ export const GET = async (
           url: `${getBaseUrl({
             isServer: true,
             baseUrl: WWW_BASE_URL,
+            useBaseUrl: true,
           })}/${feed.type}s/${feed.slug}`,
           lastModified: feed.updatedAt.toISOString(),
           priority: 0.8,
