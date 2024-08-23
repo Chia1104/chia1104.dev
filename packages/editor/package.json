@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
-    "@types/react": "^18.3.3",
+    "@types/react": "catalog:react18",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"

@@ -18,7 +18,7 @@ api.use("/", verifyAuth()).get(
   "/",
   zValidator("query", getFeedsWithMetaSchema, (result, c) => {
     if (!result.success) {
-      return c.json(errorResponse(result.error));
+      return c.json(errorResponse(result.error), 400);
     }
   }),
   async (c) => {
