@@ -86,15 +86,17 @@ const bootstrap = <TContext extends HonoContext>(
         limit: env.RATELIMIT_MAX,
         standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
         keyGenerator: (c) => {
-          let info: ReturnType<typeof getConnInfo> | null = null;
+          let info: string | null | undefined = null;
           try {
-            info = getConnInfo(c);
+            info =
+              c.req.raw.headers.get("X-Forwarded-For") ??
+              getConnInfo(c).remote.address;
           } catch (e) {
             console.error(e);
             info = null;
           }
-          console.log(`root-request:${info?.remote.address}`);
-          return `root-request:${info?.remote.address}`;
+          console.log(`root-request:${info}`);
+          return `root-request:${info}`;
         },
         // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
         store: new RedisStore({
