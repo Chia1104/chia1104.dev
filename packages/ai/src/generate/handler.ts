@@ -1,5 +1,4 @@
-import { createOpenAI } from "@ai-sdk/openai";
-import { convertToCoreMessages, streamText, APICallError } from "ai";
+import { APICallError } from "ai";
 import { JsonWebTokenError } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
@@ -11,7 +10,7 @@ import { errorGenerator, ParsedJSONError } from "@chia/utils";
 import { verifyApiKey } from "../utils";
 import { HEADER_AUTH_TOKEN } from "../utils/constants";
 import { baseRequestSchema } from "../utils/types";
-import { DEFAULT_SYSTEM_PROMPT } from "./utils";
+import { streamGeneratedText } from "./utils";
 
 /**
  * Allow streaming responses up to 30 seconds
@@ -54,15 +53,7 @@ export const POST = async (req: NextRequest) => {
       ).apiKey,
     });
 
-    return (
-      await streamText({
-        model: createOpenAI({
-          apiKey: request.authToken,
-        })(request.modal),
-        system: DEFAULT_SYSTEM_PROMPT,
-        messages: convertToCoreMessages(request.messages),
-      })
-    ).toDataStreamResponse();
+    return (await streamGeneratedText(request)).toDataStreamResponse();
   } catch (error) {
     if (error instanceof ParsedJSONError) {
       return NextResponse.json(errorGenerator(400, error.error.errors), {
