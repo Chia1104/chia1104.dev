@@ -65,11 +65,6 @@
       "outputs": ["coverage/**", "playwright-report/**"],
       "cache": true
     },
-    "next-sitemap": {
-      "dependsOn": ["^build"],
-      "outputs": ["public/**"],
-      "cache": false
-    },
     "db:seed": {
       "cache": false
     },
