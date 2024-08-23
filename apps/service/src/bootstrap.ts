@@ -90,6 +90,7 @@ const bootstrap = <TContext extends HonoContext>(
           try {
             info =
               c.req.raw.headers.get("X-Forwarded-For") ??
+              c.req.raw.headers.get("X-Real-IP") ??
               getConnInfo(c).remote.address;
           } catch (e) {
             console.error(e);
