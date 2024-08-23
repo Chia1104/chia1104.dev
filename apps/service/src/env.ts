@@ -25,6 +25,10 @@ export const env = createEnv({
       .optional()
       .default(15 * 60000),
     RATELIMIT_MAX: z.number().optional().default(87),
+    OPENAI_API_KEY: z.string().optional(),
+    AI_AUTH_SECRET: z.string().optional(),
+    IP_DENY_LIST: z.string().optional(),
+    IP_ALLOW_LIST: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -47,6 +51,10 @@ export const env = createEnv({
     RATELIMIT_MAX: process.env.RATELIMIT_MAX
       ? Number(process.env.RATELIMIT_MAX)
       : 87,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    AI_AUTH_SECRET: process.env.AI_AUTH_SECRET,
+    IP_DENY_LIST: process.env.IP_DENY_LIST,
+    IP_ALLOW_LIST: process.env.IP_ALLOW_LIST,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
