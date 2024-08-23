@@ -34,6 +34,7 @@ export const GET = async () => {
           `${getBaseUrl({
             isServer: true,
             baseUrl: WWW_BASE_URL,
+            useBaseUrl: true,
           })}/sitemap-${index}.xml`
       );
 

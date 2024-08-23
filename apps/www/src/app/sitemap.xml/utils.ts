@@ -8,13 +8,13 @@ export const getTotal = async () => {
     return (
       await serviceRequest({
         next: { revalidate: 10 },
-        // isInternal: true,
+        isInternal: true,
       })
         .get<{ total: number }>("admin/public/feeds:meta")
         .json()
     ).total;
   } catch (error) {
-    if (error instanceof HTTPError) {
+    if (error instanceof HTTPError || error instanceof Error) {
       return (
         await getDB()
           .select({ count: count(schema.feeds.published) })
