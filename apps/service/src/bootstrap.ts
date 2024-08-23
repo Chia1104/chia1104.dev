@@ -12,6 +12,7 @@ import { getConfig } from "@chia/auth-core";
 import { createRedis } from "@chia/cache";
 import { errorGenerator } from "@chia/utils";
 
+import adminRoutes from "@/controllers/admin.controller";
 import authRoutes from "@/controllers/auth.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
@@ -34,15 +35,7 @@ const bootstrap = <TContext extends HonoContext>(
   app.onError((e, c) => {
     console.error(e);
     if (e instanceof HTTPException) {
-      return c.json(
-        errorGenerator(e.status, [
-          {
-            field: e.name,
-            message: e.message,
-          },
-        ]),
-        e.status
-      );
+      return c.json(errorGenerator(e.status), e.status);
     }
     c.get("sentry").captureException(e);
     return c.json(errorGenerator(500), 500);
@@ -115,6 +108,7 @@ const bootstrap = <TContext extends HonoContext>(
    * Routes
    */
   app.route("/auth", authRoutes);
+  app.route("/admin", adminRoutes);
   app.route("/feeds", feedsRoutes);
   app.route("/trpc", trpcRoutes);
   app.route("/health", healthRoutes);
