@@ -86,7 +86,20 @@ export const GET = async (
     console.error(error);
 
     if (error instanceof z.ZodError) {
-      return { notFound: true };
+      return NextResponse.json(
+        errorGenerator(
+          400,
+          error.issues?.map((issue) => {
+            return {
+              field: "sitemap index",
+              message: issue.message,
+            };
+          })
+        ),
+        {
+          status: 400,
+        }
+      );
     }
 
     sentry.captureException(error);
