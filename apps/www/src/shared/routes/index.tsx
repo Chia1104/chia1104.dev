@@ -1,6 +1,7 @@
 const routes = {
   "/about": {
     name: "About",
+    priority: 0.7,
     hiddenInMainMenu: false,
     icon: (
       <svg
@@ -20,6 +21,7 @@ const routes = {
   },
   "/posts": {
     name: "Blog",
+    priority: 0.8,
     hiddenInMainMenu: false,
     icon: (
       <svg
@@ -39,6 +41,7 @@ const routes = {
   },
   "/projects": {
     name: "Projects",
+    priority: 0.7,
     hiddenInMainMenu: false,
     icon: (
       <svg
@@ -58,6 +61,7 @@ const routes = {
   },
   "/contact": {
     name: "Contact",
+    priority: 0.3,
     hiddenInMainMenu: true,
     icon: (
       <svg

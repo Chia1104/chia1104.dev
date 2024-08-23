@@ -10,12 +10,15 @@ test("test home og image", async ({ page }) => {
   await expect(response).toBeOK();
 });
 
-// test("test sitemap", async ({ page }) => {
-//   const response = await page.request.get(
-//     "/sitemap-0.xml"
-//   );
-//   await expect(response).toBeOK();
-// });
+test("test sitemap index", async ({ page }) => {
+  const response = await page.request.get("/sitemap.xml");
+  await expect(response).toBeOK();
+});
+
+test("test sitemap", async ({ page }) => {
+  const response = await page.request.get("/sitemap-0.xml");
+  await expect(response).toBeOK();
+});
 
 test("test robots.txt", async ({ page }) => {
   const response = await page.request.get("/robots.txt");

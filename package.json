@@ -48,7 +48,6 @@
     "db:seed": "turbo run db:seed --parallel",
     "db:studio": "turbo run db:studio --parallel",
     "test:e2e": "turbo run test:e2e",
-    "next-sitemap": "turbo run next-sitemap --parallel",
     "seed": "turbo run db:seed --filter seed",
     "service-graph": "turbo run build --filter service... --graph=graph/service-graph.html",
     "www-graph": "turbo run build --filter www... --graph=graph/www-graph.html",
@@ -60,7 +59,7 @@
     "node": ">=20.6",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@9.7.1",
+  "packageManager": "pnpm@9.8.0",
   "dependencies": {
     "dayjs": "^1.11.13",
     "graphql-request": "^7.1.0",
