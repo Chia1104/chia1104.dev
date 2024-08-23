@@ -37,7 +37,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'service:docker') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') }}
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'service:docker') || contains(github.event.pull_request.labels.*.name, 'service:enhancement')) && !contains(github.event.head_commit.message, '[skip ci]') }}
 
     steps:
       - name: Checkout

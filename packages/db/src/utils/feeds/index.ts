@@ -68,10 +68,11 @@ export const getInfiniteFeeds = withDTO(
               sortOrder === "asc"
                 ? gte(feeds[orderBy], parsedCursor)
                 : lte(feeds[orderBy], parsedCursor),
-              eq(feeds.type, type),
+              type === "all" ? undefined : eq(feeds.type, type),
               ...whereAnd
             )
-        : (feeds, { eq, and }) => and(eq(feeds.type, type), ...whereAnd),
+        : (feeds, { eq, and }) =>
+            and(type === "all" ? undefined : eq(feeds.type, type), ...whereAnd),
     });
     let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
     if (items.length > limit) {
@@ -129,12 +130,16 @@ export const getInfiniteFeedsByUserId = withDTO(
               sortOrder === "asc"
                 ? gte(feeds[orderBy], parsedCursor)
                 : lte(feeds[orderBy], parsedCursor),
-              eq(feeds.type, type),
+              type === "all" ? undefined : eq(feeds.type, type),
               eq(feeds.userId, userId),
               ...whereAnd
             )
         : (feeds, { eq, and }) =>
-            and(eq(feeds.type, type), eq(feeds.userId, userId), ...whereAnd),
+            and(
+              type === "all" ? undefined : eq(feeds.type, type),
+              eq(feeds.userId, userId),
+              ...whereAnd
+            ),
     });
     let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
     if (items.length > limit) {

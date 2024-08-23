@@ -8,6 +8,7 @@ export type Role = (typeof Role)[keyof typeof Role];
 export const FeedType = {
   Post: "post",
   Note: "note",
+  All: "all",
 } as const;
 
 export type FeedType = (typeof FeedType)[keyof typeof FeedType];

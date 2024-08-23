@@ -133,6 +133,12 @@ const nextConfig = {
     });
     return config;
   },
+  rewrites: async () => [
+    {
+      source: "/sitemap-:id.xml",
+      destination: "/sitemap.xml/:id",
+    },
+  ],
 };
 
 /** @type {Plugin[]} */

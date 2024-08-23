@@ -106,7 +106,6 @@ ENV TURBO_TEAM=${TURBO_TEAM} \
 
 RUN pnpm i
 RUN pnpm turbo run build --filter=www...
-RUN pnpm turbo run next-sitemap --filter=www
 
 FROM base AS runner
 

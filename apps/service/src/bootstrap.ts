@@ -12,6 +12,7 @@ import { getConfig } from "@chia/auth-core";
 import { createRedis } from "@chia/cache";
 import { errorGenerator } from "@chia/utils";
 
+import adminRoutes from "@/controllers/admin.controller";
 import authRoutes from "@/controllers/auth.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
@@ -34,15 +35,7 @@ const bootstrap = <TContext extends HonoContext>(
   app.onError((e, c) => {
     console.error(e);
     if (e instanceof HTTPException) {
-      return c.json(
-        errorGenerator(e.status, [
-          {
-            field: e.name,
-            message: e.message,
-          },
-        ]),
-        e.status
-      );
+      return c.json(errorGenerator(e.status), e.status);
     }
     c.get("sentry").captureException(e);
     return c.json(errorGenerator(500), 500);
@@ -93,15 +86,18 @@ const bootstrap = <TContext extends HonoContext>(
         limit: env.RATELIMIT_MAX,
         standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
         keyGenerator: (c) => {
-          let info: ReturnType<typeof getConnInfo> | null = null;
+          let info: string | null | undefined = null;
           try {
-            info = getConnInfo(c);
+            info =
+              c.req.raw.headers.get("X-Forwarded-For") ??
+              c.req.raw.headers.get("X-Real-IP") ??
+              getConnInfo(c).remote.address;
           } catch (e) {
             console.error(e);
             info = null;
           }
-          console.log(`root-request:${info?.remote.address}`);
-          return `root-request:${info?.remote.address}`;
+          console.log(`root-request:${info}`);
+          return `root-request:${info}`;
         },
         // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
         store: new RedisStore({
@@ -115,6 +111,7 @@ const bootstrap = <TContext extends HonoContext>(
    * Routes
    */
   app.route("/auth", authRoutes);
+  app.route("/admin", adminRoutes);
   app.route("/feeds", feedsRoutes);
   app.route("/trpc", trpcRoutes);
   app.route("/health", healthRoutes);
