@@ -2,10 +2,11 @@ import { Auth as InternalAuth } from "@auth/core";
 import type { AuthConfig } from "@auth/core";
 import Github from "@auth/core/providers/github";
 import Google from "@auth/core/providers/google";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
 
-import { getDB, schema } from "@chia/db";
+import { createRedis } from "@chia/cache";
+import { getDB } from "@chia/db";
 
+import { adapter } from "./adapter";
 import { env } from "./env";
 import { getBaseConfig } from "./utils";
 
@@ -38,12 +39,9 @@ export const getConfig = (
         AUTH_SECRET: env.AUTH_SECRET,
       },
     }),
-    adapter: DrizzleAdapter(getDB(), {
-      usersTable: schema.users,
-      accountsTable: schema.accounts,
-      sessionsTable: schema.sessions,
-      verificationTokensTable: schema.verificationTokens,
-      authenticatorsTable: schema.authenticators,
+    adapter: adapter({
+      db: getDB(),
+      redis: createRedis(),
     }),
     providers: [
       Google({

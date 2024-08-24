@@ -20,7 +20,11 @@ import type { Ref } from "../_components/edit-fields";
 import EditFields from "../_components/edit-fields";
 import { useDraft } from "../_components/use-draft";
 
-const CreateForm = ({ type = FeedType.Post }: { type?: FeedType }) => {
+const CreateForm = ({
+  type = FeedType.Post,
+}: {
+  type?: typeof FeedType.Note | typeof FeedType.Post;
+}) => {
   const editFieldsRef = useRef<Ref>(null);
   const router = useRouter();
   const searchParams = useSearchParams();

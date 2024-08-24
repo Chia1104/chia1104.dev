@@ -737,6 +737,9 @@ importers:
       '@chia/auth-core':
         specifier: workspace:*
         version: link:../auth-core
+      '@chia/cache':
+        specifier: workspace:*
+        version: link:../cache
       '@chia/db':
         specifier: workspace:*
         version: link:../db
@@ -786,6 +789,9 @@ importers:
       '@auth/drizzle-adapter':
         specifier: ^1.4.2
         version: 1.4.2
+      '@chia/cache':
+        specifier: workspace:*
+        version: link:../cache
       '@chia/db':
         specifier: workspace:*
         version: link:../db

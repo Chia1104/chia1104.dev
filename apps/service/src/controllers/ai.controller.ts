@@ -47,9 +47,7 @@ api.post(
   }
 );
 
-api.use(ai());
-
-api.post(
+api.use("/generate", ai()).post(
   "/generate",
   zValidator(
     "json",
