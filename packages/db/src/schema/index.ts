@@ -51,6 +51,9 @@ export const accounts = pgTable(
   })
 );
 
+/**
+ * @deprecated get sessions from Redis
+ */
 export const sessions = pgTable("session", {
   sessionToken: text("sessionToken").primaryKey(),
   userId: text("userId")

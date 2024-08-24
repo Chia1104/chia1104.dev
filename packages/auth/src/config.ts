@@ -1,5 +1,4 @@
 import type { DefaultSession } from "@auth/core/types";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import type { Session as NextAuthSession } from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
@@ -8,9 +7,11 @@ import Resend from "next-auth/providers/resend";
 import type { NextRequest } from "next/server";
 import crypto from "node:crypto";
 
+import { adapter } from "@chia/auth-core/adapter";
 import { env } from "@chia/auth-core/env";
 import { getBaseConfig } from "@chia/auth-core/utils";
-import { getDB, schema } from "@chia/db";
+import { createRedis } from "@chia/cache";
+import { getDB } from "@chia/db";
 import { AUTH_EMAIL } from "@chia/utils";
 
 import { sendVerificationRequest } from "./authSendRequest";
@@ -41,12 +42,9 @@ declare module "next-auth" {
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
-const adapter = DrizzleAdapter(getDB(), {
-  usersTable: schema.users,
-  accountsTable: schema.accounts,
-  sessionsTable: schema.sessions,
-  verificationTokensTable: schema.verificationTokens,
-  authenticatorsTable: schema.authenticators,
+const internal_adapter = adapter({
+  db: getDB(),
+  redis: createRedis(),
 });
 
 export const getConfig = (req?: NextRequest) => {
@@ -58,11 +56,11 @@ export const getConfig = (req?: NextRequest) => {
         AUTH_COOKIE_DOMAIN: env.AUTH_COOKIE_DOMAIN,
       },
     }),
+    adapter: internal_adapter,
     pages: {
       signIn: "/auth/signin",
       verifyRequest: "/auth/verify-request",
     },
-    adapter,
     providers: [
       Google({
         clientId: env.GOOGLE_CLIENT_ID,
@@ -91,7 +89,7 @@ export const validateToken = async (
   token: string
 ): Promise<NextAuthSession | null> => {
   const sessionToken = token.slice("Bearer ".length);
-  const session = await adapter.getSessionAndUser?.(sessionToken);
+  const session = await internal_adapter.getSessionAndUser?.(sessionToken);
   return session
     ? {
         user: {
@@ -103,5 +101,5 @@ export const validateToken = async (
 };
 
 export const invalidateSessionToken = async (token: string) => {
-  await adapter.deleteSession?.(token);
+  await internal_adapter.deleteSession?.(token);
 };

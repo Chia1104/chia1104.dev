@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./utils": "./src/utils.ts",
     "./env": "./src/env.ts",
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./adapter": "./src/adapter.ts"
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@auth/core": "^0.34.2",
     "@auth/drizzle-adapter": "^1.4.2",
+    "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",

@@ -12,3 +12,4 @@ export const createRedis = (config?: RedisConfig | string) => {
   }
   return new Redis(config?.url ?? env.REDIS_URI ?? env.REDIS_URL ?? "");
 };
+export { Redis };

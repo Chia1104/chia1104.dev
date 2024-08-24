@@ -3,6 +3,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import type { Session } from "@chia/auth-core/types";
+import { createRedis } from "@chia/cache";
 import { getDB } from "@chia/db";
 import { getAdminId } from "@chia/utils";
 
@@ -12,12 +13,15 @@ interface CreateContextOptions {
 
 const database = getDB();
 
+const redis = createRedis();
+
 const adminId = getAdminId();
 
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     db: database,
+    redis,
   };
 };
 
