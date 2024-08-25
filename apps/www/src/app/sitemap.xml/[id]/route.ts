@@ -79,7 +79,28 @@ export const GET = async (
           priority: 0.8,
         }) satisfies MetadataRoute.Sitemap[0]
     );
-    const xml = buildPagesSitemap([...staticSitemapData, ...feedsSitemapData]);
+    const xml = buildPagesSitemap([
+      {
+        url: getBaseUrl({
+          isServer: true,
+          baseUrl: WWW_BASE_URL,
+          useBaseUrl: true,
+        }),
+        lastModified: new Date().toISOString(),
+        priority: 0.7,
+      },
+      {
+        url: `${getBaseUrl({
+          isServer: true,
+          baseUrl: WWW_BASE_URL,
+          useBaseUrl: true,
+        })}/notes`,
+        lastModified: new Date().toISOString(),
+        priority: 0.8,
+      },
+      ...staticSitemapData,
+      ...feedsSitemapData,
+    ]);
     return new NextResponse(xml, {
       headers: {
         "Content-Type": "application/xml",
