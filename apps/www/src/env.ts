@@ -47,6 +47,7 @@ export const env = createEnv({
     BETA_ADMIN_ID: z.string().optional(),
     DATABASE_URL: z.string().optional(),
     BETA_DATABASE_URL: z.string().optional(),
+    INTERNAL_SERVICE_ENDPOINT: z.string().min(1),
   },
 
   client: {
@@ -62,6 +63,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GISCUS_THEME: z.string().optional().default("dark_dimmed"),
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
+    NEXT_PUBLIC_SERVICE_ENDPOINT: z.string().min(1),
   },
 
   runtimeEnv: {
@@ -99,6 +101,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
+    NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
+    INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

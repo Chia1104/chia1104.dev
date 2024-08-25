@@ -178,36 +178,33 @@ export const getServiceEndPoint = (env?: string) => {
   const isServer = typeof window === "undefined";
   return switchEnv(env, {
     prod: () => {
-      if (
-        !process.env.NEXT_PUBLIC_SERVICE_ENDPOINT ||
-        !process.env.INTERNAL_SERVICE_ENDPOINT
-      )
-        throw new Error(
-          "Missing env variables INTERNAL_SERVICE_ENDPOINT or NEXT_PUBLIC_SERVICE_ENDPOINT"
-        );
       if (isServer) {
+        if (!process.env.INTERNAL_SERVICE_ENDPOINT)
+          throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
         return process.env.INTERNAL_SERVICE_ENDPOINT;
       }
+      if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
+        throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
       return process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
     },
     beta: () => {
-      if (
-        !process.env.NEXT_PUBLIC_SERVICE_ENDPOINT ||
-        !process.env.INTERNAL_SERVICE_ENDPOINT
-      )
-        throw new Error(
-          "Missing env variables INTERNAL_SERVICE_ENDPOINT or NEXT_PUBLIC_SERVICE_ENDPOINT"
-        );
       if (isServer) {
+        if (!process.env.INTERNAL_SERVICE_ENDPOINT)
+          throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
         return process.env.INTERNAL_SERVICE_ENDPOINT;
       }
+      if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
+        throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
       return process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
     },
     local: () => {
+      if (isServer) {
+        if (!process.env.INTERNAL_SERVICE_ENDPOINT)
+          throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
+        return process.env.INTERNAL_SERVICE_ENDPOINT;
+      }
       if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
-        throw new Error(
-          "Missing env variables INTERNAL_SERVICE_ENDPOINT or NEXT_PUBLIC_ENDPOINT"
-        );
+        throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
       return process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
     },
   });

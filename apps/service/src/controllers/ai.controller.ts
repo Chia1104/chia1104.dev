@@ -7,6 +7,7 @@ import { streamText } from "hono/streaming";
 import { HEADER_AUTH_TOKEN } from "@chia/ai/constants";
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
+import { encodeApiKey } from "@chia/ai/utils";
 import { errorGenerator } from "@chia/utils";
 
 import { env } from "@/env";
@@ -40,7 +41,7 @@ api.post(
     await setSignedCookie(
       c,
       HEADER_AUTH_TOKEN,
-      c.req.valid("json").authToken,
+      encodeApiKey(c.req.valid("json").authToken, env.AI_AUTH_SECRET),
       env.AI_AUTH_SECRET
     );
     return c.json({ message: "API key saved successfully" });
