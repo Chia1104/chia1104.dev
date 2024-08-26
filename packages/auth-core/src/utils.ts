@@ -6,6 +6,13 @@ export const useSecureCookies = process.env.NODE_ENV === "production";
 export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 export const DEFAULT_COOKIE_DOMAIN = ".chia1104.dev";
 
+export const SESSION_TOKEN = useSecureCookies
+  ? "__Secure-authjs.session-token"
+  : "authjs.session-token";
+
+export const SESSION_MAX_AGE = 2592000; // 30 days
+export const SESSION_UPDATE_AGE = 86400; // 1 day
+
 export const getCookieDomain = <TRequest extends Request = Request>(options?: {
   /**
    * @deprecated use `env` instead
@@ -29,26 +36,32 @@ export const getCookieDomain = <TRequest extends Request = Request>(options?: {
   );
 };
 
+export const sessionCookieOptions = (env?: Partial<typeof internalEnv>) =>
+  ({
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: useSecureCookies,
+    domain: getCookieDomain({ env }),
+  }) as const;
+
 export const getBaseConfig = <TRequest extends Request = Request>(options?: {
+  /**
+   * @deprecated use `env` instead
+   */
   req?: TRequest;
   env?: Partial<typeof internalEnv>;
   config?: Partial<Omit<AuthConfig, "raw">>;
 }) => {
   options ??= {};
-  const { req, env, config } = options;
+  const { env, config } = options;
   return {
     trustHost: true,
     useSecureCookies,
     cookies: {
       sessionToken: {
-        name: `${cookiePrefix}authjs.session-token`,
-        options: {
-          httpOnly: true,
-          sameSite: "lax",
-          path: "/",
-          secure: useSecureCookies,
-          domain: getCookieDomain({ req, env }),
-        },
+        name: SESSION_TOKEN,
+        options: sessionCookieOptions(env),
       },
     },
     callbacks: {

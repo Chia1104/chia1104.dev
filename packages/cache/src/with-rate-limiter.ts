@@ -1,7 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import type { RatelimitConfig } from "@upstash/ratelimit";
 import type { Redis as Upstash } from "@upstash/redis";
-import type Redis from "ioredis";
 
 import { getIP } from "./utils";
 
@@ -16,7 +15,7 @@ export const withRateLimiter = <
     ip: string
   ) => TResponse | Promise<TResponse> | void | Promise<void>,
   config: {
-    client: Upstash | Redis;
+    client: Upstash;
     onLimitReached?: ({
       limit,
       remaining,
@@ -41,7 +40,7 @@ export const withRateLimiter = <
 ) => {
   try {
     return async (req: TRequest, res: TResponse) => {
-      const client = config.client as Upstash;
+      const client = config.client;
       const ratelimit =
         config?.ratelimit instanceof Ratelimit
           ? config.ratelimit

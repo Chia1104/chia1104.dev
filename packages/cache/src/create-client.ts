@@ -15,22 +15,27 @@ export type Config =
   | string;
 
 export const createClient = (config?: Config) => {
-  if (typeof config === "string") {
-    return new Redis(config);
-  }
-  switch (config?.provider ?? env.CACHE_PROVIDER) {
-    case "upstash": {
-      return new Upstash({
-        url: config?.url ?? env.REDIS_URL,
-        token: config?.token ?? env.UPSTASH_TOKEN,
-        ...config,
-      });
+  try {
+    if (typeof config === "string") {
+      return new Redis(config);
     }
-    case "redis": {
-      return new Redis(config?.url ?? env.REDIS_URI ?? env.REDIS_URL ?? "");
+    switch (config?.provider ?? env.CACHE_PROVIDER) {
+      case "upstash": {
+        return new Upstash({
+          url: config?.url ?? env.REDIS_URL,
+          token: config?.token ?? env.UPSTASH_TOKEN,
+          ...config,
+        });
+      }
+      case "redis": {
+        return new Redis(config?.url ?? env.REDIS_URI ?? env.REDIS_URL ?? "");
+      }
+      default: {
+        return new Redis(config?.url ?? env.REDIS_URI ?? env.REDIS_URL ?? "");
+      }
     }
-    default: {
-      return new Redis(config?.url ?? env.REDIS_URI ?? env.REDIS_URL ?? "");
-    }
+  } catch (error) {
+    console.error("Error creating Redis client:", error);
+    return null;
   }
 };

@@ -2,9 +2,9 @@ import { serve } from "@hono/node-server";
 import { getRuntimeKey } from "hono/adapter";
 
 import bootstrap from "@/bootstrap";
-import drizzleFactory from "@/factories/drizzle.factory";
+import dbFactory from "@/factories/db.factory";
 
-export const app = drizzleFactory.createApp();
+export const app = dbFactory.createApp();
 
 const port = Number(process.env.PORT) || 3005;
 

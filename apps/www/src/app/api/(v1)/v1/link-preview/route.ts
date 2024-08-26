@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { withRateLimiter, createClient, Upstash } from "@chia/cache";
+import { withRateLimiter, createUpstash, Upstash } from "@chia/cache";
 import { request } from "@chia/utils";
 import { errorGenerator, isUrl, enhanceHandleZodError } from "@chia/utils";
 
@@ -141,7 +141,7 @@ export const POST = withRateLimiter<
     }
   },
   {
-    client: createClient(),
+    client: createUpstash(),
     onError: (error) => {
       console.error("Rate Limiter: ", error);
       Sentry.captureException(error);
