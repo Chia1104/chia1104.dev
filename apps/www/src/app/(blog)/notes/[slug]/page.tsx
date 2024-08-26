@@ -7,7 +7,7 @@ import { createHmac } from "node:crypto";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Image } from "@chia/ui";
-import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
+import { WWW_BASE_URL } from "@chia/utils";
 import { setSearchParams } from "@chia/utils";
 
 import Content from "@/app/(blog)/_components/content";
@@ -64,10 +64,7 @@ export const generateMetadata = async ({
                 token: token,
               },
               {
-                baseUrl: `${getBaseUrl({
-                  isServer: true,
-                  baseUrl: WWW_BASE_URL,
-                })}/api/og`,
+                baseUrl: `${WWW_BASE_URL}/api/og`,
               }
             ),
             width: 1200,
@@ -89,10 +86,7 @@ export const generateMetadata = async ({
               token: token,
             },
             {
-              baseUrl: `${getBaseUrl({
-                isServer: true,
-                baseUrl: WWW_BASE_URL,
-              })}/api/og`,
+              baseUrl: `${WWW_BASE_URL}/api/og`,
             }
           ),
         ],
