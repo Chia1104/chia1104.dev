@@ -5,7 +5,7 @@ export const IS_TEST = process.env.NODE_ENV === "test";
 
 export const WWW_BASE_URL =
   config.ENV === "production" || config.ENV === "prod"
-    ? "https://chia1104.dev"
+    ? "https://www.chia1104.dev"
     : "http://localhost:3000";
 
 export const DASH_BASE_URL =
