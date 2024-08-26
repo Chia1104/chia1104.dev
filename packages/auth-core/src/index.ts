@@ -8,7 +8,7 @@ import { getDB } from "@chia/db";
 
 import { adapter } from "./adapter";
 import { env } from "./env";
-import { getBaseConfig } from "./utils";
+import { getBaseConfig, SESSION_MAX_AGE, SESSION_UPDATE_AGE } from "./utils";
 
 declare module "@auth/core/types" {
   interface Session extends DefaultSession {
@@ -53,6 +53,10 @@ export const getConfig = (
         clientSecret: env.GITHUB_CLIENT_SECRET,
       }),
     ],
+    session: {
+      maxAge: SESSION_MAX_AGE,
+      updateAge: SESSION_UPDATE_AGE,
+    },
     ...config,
   } satisfies AuthConfig;
 };

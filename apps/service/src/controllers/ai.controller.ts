@@ -17,7 +17,8 @@ import { errorResponse } from "@/utils/error.util";
 const api = new Hono<HonoContext>();
 
 /**
- * TODO: Bun body issues
+ * TODO: remove verifyAuth()
+ * (issue: https://github.com/honojs/middleware/issues/665)
  */
 api.use(verifyAuth());
 
