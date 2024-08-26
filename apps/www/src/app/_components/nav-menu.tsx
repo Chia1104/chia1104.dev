@@ -39,7 +39,11 @@ const CMDK = () => {
           </Kbd>
         }
         placement="bottom">
-        <Button size="sm" isIconOnly onPress={() => setOpen(true)}>
+        <Button
+          size="sm"
+          isIconOnly
+          onPress={() => setOpen(true)}
+          aria-label="CMD">
           <div className="i-mdi-hamburger size-4" />
         </Button>
       </Tooltip>
@@ -51,6 +55,7 @@ const CMDK = () => {
             {Object.entries(navItems).map(([path, { name }]) => {
               return (
                 <CommandItem
+                  aria-label={name}
                   className="gap-5"
                   key={path}
                   onSelect={() => {

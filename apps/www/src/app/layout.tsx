@@ -10,7 +10,7 @@ import "react-medium-image-zoom/dist/styles.css";
 
 import meta from "@chia/meta";
 import { ScrollYProgress } from "@chia/ui";
-import { getBaseUrl, WWW_BASE_URL } from "@chia/utils";
+import { WWW_BASE_URL } from "@chia/utils";
 
 import { env } from "@/env";
 
@@ -27,17 +27,10 @@ export const viewport: Viewport = {
   ],
   colorScheme: "dark",
   width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    getBaseUrl({
-      isServer: true,
-      baseUrl: WWW_BASE_URL,
-    })
-  ),
+  metadataBase: new URL(WWW_BASE_URL),
   title: {
     default: `${meta.name} | ${meta.title}`,
     template: `%s | ${meta.name}`,
@@ -56,14 +49,6 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
-  },
-  verification: {
-    google: "google",
-    yandex: "yandex",
-    yahoo: "yahoo",
-    other: {
-      me: ["my-email", "my-link"],
-    },
   },
 };
 
