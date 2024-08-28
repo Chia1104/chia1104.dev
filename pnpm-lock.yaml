@@ -260,8 +260,8 @@ importers:
         specifier: ^7.53.0
         version: 7.53.0(react@18.3.1)
       react-medium-image-zoom:
-        specifier: ^5.2.8
-        version: 5.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^5.2.9
+        version: 5.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
@@ -550,8 +550,8 @@ importers:
         specifier: ^7.53.0
         version: 7.53.0(react@18.3.1)
       react-medium-image-zoom:
-        specifier: ^5.2.8
-        version: 5.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^5.2.9
+        version: 5.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       resend:
         specifier: ^4.0.0
         version: 4.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1118,8 +1118,8 @@ importers:
         specifier: ^7.53.0
         version: 7.53.0(react@18.3.1)
       react-medium-image-zoom:
-        specifier: ^5.2.8
-        version: 5.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^5.2.9
+        version: 5.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -10042,8 +10042,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  react-medium-image-zoom@5.2.8:
-    resolution: {integrity: sha512-ivnubZi/2GQcMTneQy5gjLxEQLenKu081844qqZ7/JvLxSh5YPF1TLq7s+5rc54dKa0jjPT8Zm2tiC0Sda6eIA==}
+  react-medium-image-zoom@5.2.9:
+    resolution: {integrity: sha512-NtjuwWdvjyjIo+IBv2Ka/oQwYMDlPM0M1nHYM3Ga1QBnr/YwpjyrEWKQB2FlGCmgiBmgIMsb6Dij2RTWxKkY+w==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
@@ -19362,7 +19362,7 @@ snapshots:
       next-themes: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-medium-image-zoom: 5.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-medium-image-zoom: 5.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       swr: 2.2.5(react@18.3.1)
       tailwind-merge: 2.5.2
     transitivePeerDependencies:
@@ -19389,7 +19389,7 @@ snapshots:
       next-themes: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-medium-image-zoom: 5.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-medium-image-zoom: 5.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       swr: 2.2.5(react@18.3.1)
       tailwind-merge: 2.5.2
     transitivePeerDependencies:
@@ -22286,7 +22286,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  react-medium-image-zoom@5.2.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-medium-image-zoom@5.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
