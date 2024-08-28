@@ -28,10 +28,10 @@
     "@hono/sentry": "^1.2.0",
     "@hono/trpc-server": "^0.3.2",
     "@hono/zod-validator": "^0.2.2",
-    "@t3-oss/env-core": "^0.11.0",
+    "@t3-oss/env-core": "^0.11.1",
     "drizzle-graphql": "^0.8.5",
     "graphql": "^16.9.0",
-    "hono": "^4.5.8",
+    "hono": "^4.5.9",
     "hono-rate-limiter": "^0.4.0",
     "rate-limit-redis": "^4.2.0"
   },

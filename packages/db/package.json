@@ -32,8 +32,8 @@
     "@auth/core": "^0.34.2",
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@types/pg": "^8.11.6",
-    "drizzle-kit": "^0.24.1",
+    "@types/pg": "^8.11.7",
+    "drizzle-kit": "^0.24.2",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"
