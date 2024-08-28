@@ -1,19 +1,19 @@
 import { cache } from "react";
 
-import { compileMDX } from "@fumadocs/mdx-remote";
-import "server-only";
+import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
 
 import type { schema } from "@chia/db";
 import { ContentType } from "@chia/db/types";
 
-import type { Props } from "@/app/(blog)/_components/content";
-import { fumadocsComponents } from "@/mdx-components";
+import { FumadocsComponents, V1MDXComponents } from "./mdx-components";
+import type { ContentProps } from "./types";
 
-export const compileFeed = cache(async (content: string) => {
-  return compileMDX({
+export const compileMDX = cache(async (content: string) => {
+  return _compileMDX({
     source: content,
     components: {
-      ...fumadocsComponents,
+      ...FumadocsComponents,
+      ...V1MDXComponents,
     },
   });
 });
@@ -29,18 +29,18 @@ export const getContentProps = async ({
 }) => {
   switch (contentType) {
     case ContentType.Mdx: {
-      const compiled = await compileFeed(content.content ?? "");
+      const compiled = await compileMDX(content.content ?? "");
       return {
         type: ContentType.Mdx,
         toc: compiled.toc,
         content: compiled.content,
-      } satisfies Props;
+      } satisfies ContentProps;
     }
     default: {
       return {
         type: contentType,
         content: content.content,
-      } satisfies Props;
+      } satisfies ContentProps;
     }
   }
 };
