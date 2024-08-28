@@ -43,7 +43,7 @@
     "@nextui-org/theme": "2.2.9",
     "@react-email/components": "^0.0.22",
     "@sentry/nextjs": "^8.26.0",
-    "@t3-oss/env-core": "^0.11.0",
+    "@t3-oss/env-core": "^0.11.1",
     "@t3-oss/env-nextjs": "^0.11.0",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",
