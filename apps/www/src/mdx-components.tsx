@@ -34,6 +34,14 @@ export const fumadocsComponents = {
       {props.children}
     </div>
   ),
+  ImageWrapperWithMaxWidth: (props: any) => (
+    <div className="relative w-full overflow-hidden rounded-lg max-w-[250px]">
+      {props.children}
+    </div>
+  ),
+  FlexCenter: (props: any) => (
+    <div className="flex w-full justify-center">{props.children}</div>
+  ),
   Image: (props: any) => (
     <Image
       {...props}
