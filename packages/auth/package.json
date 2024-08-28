@@ -28,7 +28,7 @@
     "@chia/utils": "workspace:*",
     "@react-email/render": "^0.0.17",
     "@t3-oss/env-core": "^0.11.0",
-    "next": "14.2.6",
+    "next": "14.2.7",
     "next-auth": "5.0.0-beta.20",
     "react": "catalog:react18"
   },
