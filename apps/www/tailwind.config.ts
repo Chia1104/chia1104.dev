@@ -13,6 +13,7 @@ const config: Config = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@chia/mdx/src/**/*.tsx",
     "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
     "node_modules/fumadocs-ui/dist/**/*.js",
     "!./src/**/*.test.{js,ts,jsx,tsx}",

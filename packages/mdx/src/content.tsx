@@ -85,6 +85,7 @@ export const MdxContent = (props: BaseProps) => {
         <div className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit gap-2 flex-col pl-5">
           <span>On this page</span>
           <MDXTableOfContents containerRef={containerRef} />
+          <hr className="border-gray-500 dark:border-gray-400" />
           {/* TODO: Fix date hydration issue */}
           {props.updatedAt ? (
             <>
