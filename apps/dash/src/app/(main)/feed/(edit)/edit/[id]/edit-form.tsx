@@ -43,9 +43,7 @@ const EditForm = ({
       createdAt: defaultValues?.createdAt
         ? dayjs(defaultValues.createdAt).valueOf()
         : dayjs().valueOf(),
-      updatedAt: defaultValues?.updatedAt
-        ? dayjs(defaultValues.updatedAt).valueOf()
-        : dayjs().valueOf(),
+      updatedAt: dayjs().valueOf(),
     },
     resolver: zodResolver(createFeedSchema),
   });

@@ -87,15 +87,15 @@ export const List: FC<{
     if ((!isSuccess && !data) || isError) return [];
     return data.pages.flatMap((page) =>
       page.items.map((item) => {
-        const { id, title, updatedAt, excerpt, slug } = item;
+        const { id, title, createdAt, excerpt, slug } = item;
         return {
           id,
           title,
           titleProps: {
             className: "line-clamp-1",
           },
-          subtitle: dayjs(updatedAt).format("MMMM D, YYYY"),
-          startDate: updatedAt,
+          subtitle: dayjs(createdAt).format("MMMM D, YYYY"),
+          startDate: createdAt,
           content: excerpt,
           link: `/notes/${slug}`,
         } satisfies TimelineTypes.Data;
