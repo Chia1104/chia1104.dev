@@ -6,16 +6,16 @@ import { notFound } from "next/navigation";
 import { createHmac } from "node:crypto";
 import type { Blog, WithContext } from "schema-dts";
 
+import { Content, ContentProvider } from "@chia/mdx/content";
+import { getContentProps } from "@chia/mdx/services";
 import { Image } from "@chia/ui";
 import { WWW_BASE_URL } from "@chia/utils";
 import { setSearchParams } from "@chia/utils";
 
-import Content from "@/app/(blog)/_components/content";
 import { ContentSkeletons } from "@/app/(blog)/notes/[slug]/loading";
 import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
-import { getContentProps } from "@/services/fumadocs.service";
 
 export const generateStaticParams = async () => {
   const notes = await getNotes(100);
@@ -169,7 +169,9 @@ const PostDetailPage = async ({
               <ContentSkeletons />
             </div>
           }>
-          <Content updatedAt={note.updatedAt} {...props} />
+          <ContentProvider {...props}>
+            <Content updatedAt={note.updatedAt} {...props} />
+          </ContentProvider>
         </Suspense>
       </div>
       <script

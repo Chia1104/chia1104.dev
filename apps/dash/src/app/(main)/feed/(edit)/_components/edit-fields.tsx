@@ -40,6 +40,7 @@ import {
   useEditFieldsContext,
   DEFAULT_EDIT_FIELDS_CONTEXT,
 } from "./edit-fields.context";
+import Preview from "./preview";
 import { useDraft } from "./use-draft";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
@@ -345,26 +346,23 @@ export const MetadataFields = () => {
 
 const EditorInfo = memo(() => {
   const form = useFormContext<CreateFeedInput>();
+  const editFields = useEditFieldsContext();
   return (
     <>
       {form.watch("contentType") !== ContentType.Tiptap ? (
         <Callout type="info">
           You are using the markdown editor. You can use markdown syntax to
-          write your content.
+          write your content. <br />
+          Currently, the preview feature is only available for basic markdown
+          syntax
           <Spacer />
-          <Button variant="ghost" size="sm">
-            Preview <span className="text-xs">(Coming soon)</span>
-          </Button>
+          <Preview content={editFields.content.mdx.content} />
         </Callout>
       ) : (
         <Callout type="warn">
           You are using <strong className="font-bold">UNSTABLE</strong> Tiptap
           editor. Please be aware that this feature is still in development and
           may not work as expected.
-          <Spacer />
-          <Button variant="ghost" size="sm">
-            Preview <span className="text-xs">(Coming soon)</span>
-          </Button>
         </Callout>
       )}
     </>
