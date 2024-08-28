@@ -530,7 +530,7 @@ importers:
         version: 24.1.1(bufferutil@4.0.8)
       million:
         specifier: ^3.1.11
-        version: 3.1.11(rollup@3.29.4)
+        version: 3.1.11(rollup@4.20.0)
       next:
         specifier: 14.2.7
         version: 14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -591,7 +591,7 @@ importers:
         version: link:../../packages/tailwind
       '@million/lint':
         specifier: 1.0.0-rc.84
-        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)
+        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)
       '@next/bundle-analyzer':
         specifier: 14.2.7
         version: 14.2.7(bufferutil@4.0.8)
@@ -753,8 +753,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@react-email/render':
-        specifier: ^0.0.17
-        version: 0.0.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^1.0.0
+        version: 1.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@t3-oss/env-core':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.5.4)(zod@3.23.8)
@@ -4634,6 +4634,13 @@ packages:
     peerDependencies:
       react: ^18.2.0
       react-dom: ^18.2.0
+
+  '@react-email/render@1.0.0':
+    resolution: {integrity: sha512-seN2p3JRUSZhwIUiymh9N6ZfhRZ14ywOraQqAokY63DkDeHZW2pA2a6nWpNc/igfOcNyt09Wsoi1Aj0esxhdzw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@react-email/row@0.0.9':
     resolution: {integrity: sha512-ZDASHVvyKrWBS00o5pSH5khfMf46UtZhrHcSAfPSiC4nj7R8A0bf+3Wmbk8YmsaV+qWXUCUSHWwIAAlMRnJoAA==}
@@ -13031,39 +13038,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)':
-    dependencies:
-      '@axiomhq/js': 1.0.0-rc.3
-      '@babel/core': 7.24.6
-      '@babel/types': 7.24.6
-      '@hono/node-server': 1.12.0
-      '@million/install': 0.0.18
-      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
-      '@rrweb/types': 2.0.0-alpha.16
-      babel-plugin-syntax-hermes-parser: 0.21.1
-      ci-info: 4.0.0
-      esbuild: 0.20.2
-      hono: 4.5.5
-      isomorphic-fetch: 3.0.0
-      nanoid: 5.0.7
-      pako: 2.1.0
-      pathe: 1.1.2
-      piscina: 4.6.1
-      pretty-ms: 8.0.0
-      rrweb: 2.0.0-alpha.4
-      rrweb-player: 1.0.0-alpha.4
-      semver: 7.6.3
-      socket.io-client: 4.7.5(bufferutil@4.0.8)
-      tmp: 0.2.3
-      unplugin: 1.12.2
-      update-notifier-cjs: 5.1.6
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - rollup
-      - supports-color
-      - utf-8-validate
-
   '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
@@ -15829,6 +15803,14 @@ snapshots:
       react: 18.3.1
 
   '@react-email/render@0.0.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      html-to-text: 9.0.5
+      js-beautify: 1.15.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-promise-suspense: 0.3.4
+
+  '@react-email/render@1.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       html-to-text: 9.0.5
       js-beautify: 1.15.1
@@ -21295,18 +21277,6 @@ snapshots:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.1
-
-  million@3.1.11(rollup@3.29.4):
-    dependencies:
-      '@babel/core': 7.25.2
-      '@babel/types': 7.25.2
-      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
-      kleur: 4.1.5
-      undici: 6.19.7
-      unplugin: 1.12.2
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
 
   million@3.1.11(rollup@4.20.0):
     dependencies:
