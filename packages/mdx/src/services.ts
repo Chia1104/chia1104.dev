@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
+import type { MDXComponents } from "mdx/types";
 
 import type { schema } from "@chia/db";
 import { ContentType } from "@chia/db/types";
@@ -8,15 +9,18 @@ import { ContentType } from "@chia/db/types";
 import { FumadocsComponents, V1MDXComponents } from "./mdx-components";
 import type { ContentProps } from "./types";
 
-export const compileMDX = cache(async (content: string) => {
-  return _compileMDX({
-    source: content,
-    components: {
-      ...FumadocsComponents,
-      ...V1MDXComponents,
-    },
-  });
-});
+export const compileMDX = cache(
+  async (content: string, components?: MDXComponents) => {
+    return await _compileMDX({
+      source: content,
+      components: {
+        ...FumadocsComponents,
+        ...V1MDXComponents,
+        ...components,
+      },
+    });
+  }
+);
 
 export const getContentProps = async ({
   contentType,

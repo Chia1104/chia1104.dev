@@ -56,12 +56,20 @@ const Preview = ({ content }: { content: string }) => {
                 <Skeleton className="h-[10px] min-w-full rounded-full" />
               </>
             ) : isError ? (
-              <p>
+              <p className="text-warning">
                 An error occurred while trying to preview the content. Please
                 try again later.
               </p>
             ) : (
-              <ErrorBoundary>{data}</ErrorBoundary>
+              <ErrorBoundary
+                errorElement={
+                  <p className="text-warning">
+                    An error occurred while trying to preview the content.
+                    Please try again later.
+                  </p>
+                }>
+                {data}
+              </ErrorBoundary>
             )}
           </ModalBody>
         </ModalContent>
