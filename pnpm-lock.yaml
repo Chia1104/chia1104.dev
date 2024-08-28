@@ -493,8 +493,8 @@ importers:
         specifier: 'catalog:'
         version: 11.0.0-rc.482
       '@upstash/ratelimit':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.0.2
+        version: 2.0.2
       '@vercel/analytics':
         specifier: 1.3.1
         version: 1.3.1(next@14.2.7(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -530,7 +530,7 @@ importers:
         version: 24.1.1(bufferutil@4.0.8)
       million:
         specifier: ^3.1.11
-        version: 3.1.11(rollup@4.20.0)
+        version: 3.1.11(rollup@3.29.4)
       next:
         specifier: 14.2.7
         version: 14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -591,7 +591,7 @@ importers:
         version: link:../../packages/tailwind
       '@million/lint':
         specifier: 1.0.0-rc.84
-        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)
+        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)
       '@next/bundle-analyzer':
         specifier: 14.2.7
         version: 14.2.7(bufferutil@4.0.8)
@@ -820,8 +820,8 @@ importers:
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.5.4)(zod@3.23.8)
       '@upstash/ratelimit':
-        specifier: 2.0.1
-        version: 2.0.1
+        specifier: 2.0.2
+        version: 2.0.2
       '@upstash/redis':
         specifier: 1.34.0
         version: 1.34.0
@@ -5960,8 +5960,8 @@ packages:
     resolution: {integrity: sha512-7qJHGxpQgQr9/vmeS1PktEwvNAF7TI4iJDi8Pu2CFZ9YUGHZH4fOP5TfYlZ4aVxfopnELiE4BS4FBjyK7V1/xQ==}
     engines: {node: '>=16.0.0'}
 
-  '@upstash/ratelimit@2.0.1':
-    resolution: {integrity: sha512-J+0hlkvWUjlVrjcBQhWx7gbaUGsvFF59i+GAx7YQk8L0E0MQ93xzCPu02uaXhGDJGkxiar7nRRPqj3hs+CdAJg==}
+  '@upstash/ratelimit@2.0.2':
+    resolution: {integrity: sha512-1J5Szbu5r9OTV2F95SinFVo5DQ7jm1Gmal9xD7HrcBlOxyn7YXToEsK2j6lSNJEhklvKl96Ntzzd3Q/yR9GB2A==}
 
   '@upstash/redis@1.34.0':
     resolution: {integrity: sha512-TrXNoJLkysIl8SBc4u9bNnyoFYoILpCcFJcLyWCccb/QSUmaVKdvY0m5diZqc3btExsapcMbaw/s/wh9Sf1pJw==}
@@ -13029,6 +13029,39 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)':
+    dependencies:
+      '@axiomhq/js': 1.0.0-rc.3
+      '@babel/core': 7.24.6
+      '@babel/types': 7.24.6
+      '@hono/node-server': 1.12.0
+      '@million/install': 0.0.18
+      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
+      '@rrweb/types': 2.0.0-alpha.16
+      babel-plugin-syntax-hermes-parser: 0.21.1
+      ci-info: 4.0.0
+      esbuild: 0.20.2
+      hono: 4.5.5
+      isomorphic-fetch: 3.0.0
+      nanoid: 5.0.7
+      pako: 2.1.0
+      pathe: 1.1.2
+      piscina: 4.6.1
+      pretty-ms: 8.0.0
+      rrweb: 2.0.0-alpha.4
+      rrweb-player: 1.0.0-alpha.4
+      semver: 7.6.3
+      socket.io-client: 4.7.5(bufferutil@4.0.8)
+      tmp: 0.2.3
+      unplugin: 1.12.2
+      update-notifier-cjs: 5.1.6
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - rollup
+      - supports-color
+      - utf-8-validate
+
   '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
@@ -17344,7 +17377,7 @@ snapshots:
     dependencies:
       '@upstash/redis': 1.34.0
 
-  '@upstash/ratelimit@2.0.1':
+  '@upstash/ratelimit@2.0.2':
     dependencies:
       '@upstash/core-analytics': 0.0.10
 
@@ -21262,6 +21295,18 @@ snapshots:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.1
+
+  million@3.1.11(rollup@3.29.4):
+    dependencies:
+      '@babel/core': 7.25.2
+      '@babel/types': 7.25.2
+      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
+      kleur: 4.1.5
+      undici: 6.19.7
+      unplugin: 1.12.2
+    transitivePeerDependencies:
+      - rollup
+      - supports-color
 
   million@3.1.11(rollup@4.20.0):
     dependencies:
