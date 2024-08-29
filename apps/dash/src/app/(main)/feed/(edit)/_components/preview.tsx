@@ -37,7 +37,7 @@ const Preview = ({ content }: { content: string }) => {
 
   return (
     <>
-      <Button variant="ghost" size="sm" onPress={handleCompile}>
+      <Button variant="ghost" size="sm" onPress={handleCompile} isDisabled>
         Preview<span className="text-xs">(Experimental Feature)</span>
       </Button>
       <Modal backdrop="blur" isOpen={isOpen} onClose={onClose} size="4xl">
