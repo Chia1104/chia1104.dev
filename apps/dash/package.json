@@ -67,7 +67,7 @@
     "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:*",
     "@million/lint": "1.0.0-rc.84",
-    "@testing-library/react": "^16.0.0",
+    "@testing-library/react": "^16.0.1",
     "@types/mdx": "^2.0.13",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
