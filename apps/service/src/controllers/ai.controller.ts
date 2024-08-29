@@ -1,4 +1,3 @@
-import { verifyAuth } from "@hono/auth-js";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setSignedCookie } from "hono/cookie";
@@ -12,14 +11,11 @@ import { errorGenerator } from "@chia/utils";
 
 import { env } from "@/env";
 import { ai, AI_AUTH_TOKEN } from "@/middlewares/ai.middleware";
+import { verifyAuth } from "@/middlewares/auth.middleware";
 import { errorResponse } from "@/utils/error.util";
 
 const api = new Hono<HonoContext>();
 
-/**
- * TODO: remove verifyAuth()
- * (issue: https://github.com/honojs/middleware/issues/665)
- */
 api.use(verifyAuth());
 
 api.post(

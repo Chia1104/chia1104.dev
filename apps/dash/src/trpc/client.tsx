@@ -9,7 +9,7 @@ import { createTRPCReact } from "@trpc/react-query";
 import SuperJSON from "superjson";
 
 import type { AppRouter } from "@chia/api/trpc";
-import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
+import { getServiceEndPoint } from "@chia/utils";
 
 import { createQueryClient } from "@/utils/query-client";
 
@@ -44,17 +44,13 @@ export function TRPCReactProvider(props: {
         }),
         unstable_httpBatchStreamLink({
           transformer: SuperJSON,
-          // TODO: use service endpoint
-          url: `${getBaseUrl({
-            baseUrl: DASH_BASE_URL,
-          })}/api/trpc`,
-          // TODO: use service endpoint
-          // fetch(url, options) {
-          //   return fetch(url, {
-          //     ...options,
-          //     credentials: "include",
-          //   });
-          // },
+          url: `${getServiceEndPoint()}/trpc`,
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: "include",
+            });
+          },
         }),
       ],
     })
