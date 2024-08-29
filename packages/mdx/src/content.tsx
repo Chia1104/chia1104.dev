@@ -4,6 +4,7 @@ import type { ReactNode, RefObject } from "react";
 import { useRef } from "react";
 
 import dayjs from "dayjs";
+import tz from "dayjs/plugin/timezone";
 import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import { DocsBody } from "fumadocs-ui/page";
@@ -13,6 +14,8 @@ import { cn } from "@chia/ui";
 
 import { ContentContext, useContent } from "./content.context";
 import type { ContentProps, BaseProps, BasePropsWithType } from "./types";
+
+dayjs.extend(tz);
 
 export const ContentProvider = ({
   children,
@@ -86,12 +89,12 @@ export const MdxContent = (props: BaseProps) => {
           <span>On this page</span>
           <MDXTableOfContents containerRef={containerRef} />
           <hr className="border-gray-500 dark:border-gray-400" />
-          {/* TODO: Fix date hydration issue */}
+          {/* TODO: i18n */}
           {props.updatedAt ? (
             <>
               <span className="self-start text-sm flex gap-1 items-center">
                 Last updated:{" "}
-                {dayjs(props.updatedAt).format("YYYY-MM-DD HH:mm")}
+                {dayjs(props.updatedAt).tz("UTC").format("YYYY-MM-DD HH:mm")}
                 <span className="i-mdi-pencil" />
               </span>
             </>
