@@ -242,8 +242,8 @@ importers:
         specifier: 5.0.0-beta.20
         version: 5.0.0-beta.20(next@14.2.7(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       next-safe-action:
-        specifier: 7.8.0
-        version: 7.8.0(next@14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
+        specifier: 7.8.1
+        version: 7.8.1(next@14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8)
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -9181,8 +9181,8 @@ packages:
       nodemailer:
         optional: true
 
-  next-safe-action@7.8.0:
-    resolution: {integrity: sha512-IbQ3rx+nAYuDs/nqyFin+sPtCgWVF9AMe4v1tZra0wFdVAHHlcz333nhfJ37dPGX5Zw7zt5fYTV9BXnWCbWu0g==}
+  next-safe-action@7.8.1:
+    resolution: {integrity: sha512-hjbJoJAhsboXGL1uIYWBolc8fIIpI4wKV8d0IJKWjdyNQJWPL3GeJIouZWhGYZszdSE8cYWPzcGQwMlgCmd6Ig==}
     engines: {node: '>=18.17'}
     peerDependencies:
       '@sinclair/typebox': '>= 0.33.3'
@@ -21339,7 +21339,7 @@ snapshots:
       next: 14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
 
-  next-safe-action@7.8.0(next@14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8):
+  next-safe-action@7.8.1(next@14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@3.23.8):
     dependencies:
       next: 14.2.7(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
