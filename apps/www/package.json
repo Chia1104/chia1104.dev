@@ -59,7 +59,7 @@
     "framer-motion": "11.3.31",
     "fumadocs-mdx": "^9.0.4",
     "fumadocs-ui": "^13.4.1",
-    "jsdom": "^24.1.1",
+    "jsdom": "^25.0.0",
     "million": "^3.1.11",
     "next": "14.2.7",
     "next-auth": "5.0.0-beta.20",
