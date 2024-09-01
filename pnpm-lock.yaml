@@ -93,7 +93,7 @@ importers:
         version: 22.4.0
       '@vitest/coverage-v8':
         specifier: ^2.0.5
-        version: 2.0.5(vitest@2.0.5(@types/node@22.4.0)(happy-dom@15.7.2)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6))
+        version: 2.0.5(vitest@2.0.5(@types/node@22.4.0)(happy-dom@15.7.3)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6))
       bun-types:
         specifier: ^1.1.26
         version: 1.1.26
@@ -101,8 +101,8 @@ importers:
         specifier: ^16.4.5
         version: 16.4.5
       happy-dom:
-        specifier: ^15.7.2
-        version: 15.7.2
+        specifier: ^15.7.3
+        version: 15.7.3
       husky:
         specifier: ^9.1.5
         version: 9.1.5
@@ -141,7 +141,7 @@ importers:
         version: 5.5.4
       vitest:
         specifier: ^2.0.5
-        version: 2.0.5(@types/node@22.4.0)(happy-dom@15.7.2)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6)
+        version: 2.0.5(@types/node@22.4.0)(happy-dom@15.7.3)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6)
 
   apps/dash:
     dependencies:
@@ -7823,8 +7823,8 @@ packages:
     engines: {node: '>=0.4.7'}
     hasBin: true
 
-  happy-dom@15.7.2:
-    resolution: {integrity: sha512-ZU4a27Sj+J7fgd+Kx3PVZ5NbANQxQS4gGZ1SaNMA4zvSDB5ZNkXg4UHLCkMko0fogg9XowI4f51p5FzgDfhVeQ==}
+  happy-dom@15.7.3:
+    resolution: {integrity: sha512-w3RUaYNXFJX5LiNVhOJLK4GqCB1bFj1FvELtpon3HrN8gUpS09V0Vvm4/BBRRj7mLUE1+ch8PKv1JxEp/0IHjA==}
     engines: {node: '>=18.0.0'}
 
   has-bigints@1.0.2:
@@ -17333,7 +17333,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitest/coverage-v8@2.0.5(vitest@2.0.5(@types/node@22.4.0)(happy-dom@15.7.2)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6))':
+  '@vitest/coverage-v8@2.0.5(vitest@2.0.5(@types/node@22.4.0)(happy-dom@15.7.3)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -17347,7 +17347,7 @@ snapshots:
       std-env: 3.7.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.0.5(@types/node@22.4.0)(happy-dom@15.7.2)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6)
+      vitest: 2.0.5(@types/node@22.4.0)(happy-dom@15.7.3)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -19597,7 +19597,7 @@ snapshots:
     optionalDependencies:
       uglify-js: 3.19.2
 
-  happy-dom@15.7.2:
+  happy-dom@15.7.3:
     dependencies:
       entities: 4.5.0
       webidl-conversions: 7.0.0
@@ -23855,7 +23855,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.31.6
 
-  vitest@2.0.5(@types/node@22.4.0)(happy-dom@15.7.2)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6):
+  vitest@2.0.5(@types/node@22.4.0)(happy-dom@15.7.3)(jsdom@25.0.0(bufferutil@4.0.8))(terser@5.31.6):
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@vitest/expect': 2.0.5
@@ -23878,7 +23878,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.4.0
-      happy-dom: 15.7.2
+      happy-dom: 15.7.3
       jsdom: 25.0.0(bufferutil@4.0.8)
     transitivePeerDependencies:
       - less
