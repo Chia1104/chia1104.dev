@@ -168,7 +168,11 @@ const NavMenu: FC = () => {
             variant="light"
             aria-label="nav bar"
             className="w-fit"
-            selectedKey={selectedLayoutSegments[0] ?? "/"}>
+            selectedKey={
+              selectedLayoutSegments[0] === "(blog)"
+                ? "posts"
+                : (selectedLayoutSegments[0] ?? "/")
+            }>
             {Object.entries(navItems).map(
               ([path, { name, icon, hiddenInMainMenu }]) => {
                 if (hiddenInMainMenu) return null;

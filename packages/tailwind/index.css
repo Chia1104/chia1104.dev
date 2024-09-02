@@ -180,7 +180,7 @@
   }
 
   .dark .c-background::before {
-    background-image: radial-gradient(#535353 0.5px, transparent 0);
+    background-image: radial-gradient(#3e3e3e 0.5px, transparent 0);
   }
 
   .animated-feature-cards::before {

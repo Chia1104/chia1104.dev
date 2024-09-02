@@ -102,6 +102,21 @@ const config = {
             ".dark a:hover": {
               textDecoration: "#fff underline",
             },
+            code: {
+              padding: "3px",
+              border: "solid 1px",
+              fontSize: "13px",
+              borderRadius: "5px",
+              fontWeight: "400",
+              borderColor: "hsl(0 0% 89.8%)",
+              background: "hsl(0 0% 96.1%)",
+            },
+            ".dark code": {
+              borderColor: "hsl(0 0% 15%)",
+              background: "hsl(0 0% 12.9%)",
+            },
+            "code::after": false,
+            "code::before": false,
           },
         },
       },

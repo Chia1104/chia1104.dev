@@ -37,7 +37,7 @@ export const Item: FC<ListItemProps> = ({
 }) => {
   const { defaultOpen = true, titleProps, subtitleProps, linkProps } = data;
   return (
-    <motion.li
+    <motion.div
       ref={isLastItem ? refTarget : undefined}
       whileInView={{
         opacity: 1,
@@ -98,7 +98,7 @@ export const Item: FC<ListItemProps> = ({
           </AccordionItem>
         </Accordion>
       )}
-    </motion.li>
+    </motion.div>
   );
 };
 
@@ -111,7 +111,7 @@ export const List: FC<ListProps> = ({
   experimental,
   ...props
 }) => (
-  <motion.ul
+  <motion.div
     className={cn("relative flex flex-col gap-1", className)}
     {...props}>
     <Year year={year} className="absolute -top-4 left-0" />
@@ -126,7 +126,7 @@ export const List: FC<ListProps> = ({
         isLastItem={isLastGroup && data.length - 1 === index}
       />
     ))}
-  </motion.ul>
+  </motion.div>
 );
 
 export const LoadingSkeletons = () => (
@@ -153,7 +153,7 @@ export const GroupList: FC<GroupListProps> = ({
   asyncDataStatus,
   experimental,
 }) => {
-  const { ref } = useInfiniteScroll<HTMLLIElement>({
+  const { ref } = useInfiniteScroll<HTMLDivElement>({
     onLoadMore: onEndReached,
     isLoading: asyncDataStatus?.isLoading,
     isError: asyncDataStatus?.isError,
