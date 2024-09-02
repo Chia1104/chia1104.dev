@@ -43,7 +43,7 @@ const Timeline: FC<TimelineProps> = ({
     }, [] as GroupData[]);
   }, [props.data, groupTemplate]);
   return (
-    <TimelineContext.Provider value={{ groupTemplate, ...props }}>
+    <TimelineContext.Provider value={{ groupTemplate, tz, ...props }}>
       <div
         className={cn("my-2 flex flex-col gap-5", props.className)}
         {...props}>
