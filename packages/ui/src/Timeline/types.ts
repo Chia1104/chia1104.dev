@@ -28,31 +28,6 @@ export interface GroupData {
   data: Data[];
 }
 
-/**
- * @deprecated
- * ```ts
- * const timelineData = {
- *  "2023": [
- *      {
- *          title: "Bachelor of Science in Computer Science",
- *          subtitle: "National Taiwan University",
- *          startDate: new Date("2023-09-01"),
- *          content: "I will be studying computer science at NTU.",
- *      }
- *  ],
- *  "2022": [
- *      {
- *          title: "Bachelor of Science in Computer Science",
- *          subtitle: "National Taiwan University",
- *          startDate: new Date("2023-09-01"),
- *          content: "I will be studying computer science at NTU.",
- *      }
- *  ]
- * }
- * ```
- */
-export type TimelineData = Record<string, Data[]>;
-
 export interface AsyncDataStatus {
   isLoading?: boolean;
   isError?: boolean;
@@ -64,9 +39,11 @@ export interface TimelineProps extends ComponentPropsWithoutRef<"div"> {
   enableSort?: boolean;
   onEndReached?: () => void;
   asyncDataStatus?: AsyncDataStatus;
-  experimental?: {
-    enableViewTransition?: boolean;
-  };
+  groupTemplate?: string;
+  /**
+   * @todo
+   */
+  tz?: string;
 }
 
 export interface ListItemProps
@@ -76,27 +53,18 @@ export interface ListItemProps
   data: Data;
   isLastItem: boolean;
   refTarget?: (node: HTMLDivElement) => void;
-  experimental?: {
-    enableViewTransition?: boolean;
-  };
 }
 
 export type ListProps = ComponentPropsWithoutRef<
-  ForwardRefComponent<"div", HTMLMotionProps<"div">>
+  ForwardRefComponent<"ul", HTMLMotionProps<"ul">>
 > &
   GroupData & {
     isLastGroup: boolean;
     refTarget?: (node: HTMLDivElement) => void;
-    experimental?: {
-      enableViewTransition?: boolean;
-    };
   };
 
 export interface GroupListProps {
   data: GroupData[];
   onEndReached?: () => void;
   asyncDataStatus?: AsyncDataStatus;
-  experimental?: {
-    enableViewTransition?: boolean;
-  };
 }

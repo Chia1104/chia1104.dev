@@ -33,7 +33,7 @@ export { default as Back } from "./Back";
 export { default as Cursor } from "./Cursor";
 export { default as ImageZoom } from "./ImageZoom";
 export { default as Timeline } from "./Timeline";
-export * as TimelineTypes from "./Timeline/types.d";
+export * as TimelineTypes from "./Timeline/types";
 export { default as Age } from "./Age";
 export { default as FadeIn } from "./FadeIn";
 export * from "./NavigationMenu";
