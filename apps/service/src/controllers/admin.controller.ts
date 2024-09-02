@@ -1,21 +1,20 @@
 import { Hono } from "hono";
 
-import { eq, schema, count } from "@chia/db";
-import { getAdminId } from "@chia/utils";
+import { getPublicFeedsTotal } from "@chia/db/utils/public/feeds";
+import { errorGenerator, getAdminId } from "@chia/utils";
 
 const api = new Hono<HonoContext>();
 
-/**
- * TODO: handle caching
- */
 api.get("/public/feeds:meta", async (c) => {
+  let total = 0;
+  try {
+    total = await getPublicFeedsTotal(c.var.db, getAdminId());
+  } catch (err) {
+    c.var.sentry.captureException(err);
+    return c.json(errorGenerator(500), 500);
+  }
   return c.json({
-    total: (
-      await c.var.db
-        .select({ count: count(schema.feeds.published) })
-        .from(schema.feeds)
-        .where(eq(schema.feeds.userId, getAdminId()))
-    )[0].count,
+    total,
   });
 });
 

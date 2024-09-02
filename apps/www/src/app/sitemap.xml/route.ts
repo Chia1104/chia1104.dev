@@ -1,9 +1,16 @@
 import * as sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { getDB } from "~/packages/db/src";
 
-import { getBaseUrl, WWW_BASE_URL, errorGenerator } from "@chia/utils";
+import { getPublicFeedsTotal } from "@chia/db/utils/public/feeds";
+import {
+  getBaseUrl,
+  WWW_BASE_URL,
+  errorGenerator,
+  getAdminId,
+} from "@chia/utils";
 
-import { getTotal, URLS_PER_SITEMAP } from "./utils";
+import { URLS_PER_SITEMAP } from "./utils";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +30,8 @@ function buildSitemapIndex(sitemaps: string[]) {
 
 export const GET = async () => {
   try {
-    const total = await getTotal();
+    const db = getDB();
+    const total = await getPublicFeedsTotal(db, getAdminId());
 
     const amountOfSitemapFiles = Math.ceil(total / URLS_PER_SITEMAP);
 
