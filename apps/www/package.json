@@ -17,7 +17,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "type:check": "tsc --noEmit",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
