@@ -41,7 +41,7 @@ const nextConfig = {
     "@chia/auth-core",
     "@chia/db",
     "@chia/editor",
-    "@chia/mdx",
+    "@chia/contents",
     "@chia/ui",
     "@chia/utils",
   ],

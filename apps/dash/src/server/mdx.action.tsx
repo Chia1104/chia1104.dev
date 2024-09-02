@@ -2,7 +2,7 @@
 
 import { DocsBody } from "fumadocs-ui/page";
 
-import { compileMDX } from "@chia/mdx/services";
+import { compileMDX } from "@chia/contents/services";
 
 export const compile = async (mdx: string) => {
   const { content } = await compileMDX(mdx);
