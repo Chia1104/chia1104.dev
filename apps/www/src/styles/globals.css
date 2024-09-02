@@ -53,18 +53,5 @@ body {
 }
 
 :root {
-  /* hsl colors */
-  /* use whitespace instead of comma */
   --fd--background: unset;
-  --fd--foreground: unset;
-
-  --fd--muted: unset;
-  --fd--muted-foreground: unset;
-
-  --fd--popover: unset;
-  --fd--popover-foreground: unset;
-}
-
-#nd-sidebar {
-  display: none;
 }

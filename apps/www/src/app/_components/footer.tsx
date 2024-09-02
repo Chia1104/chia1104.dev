@@ -54,14 +54,16 @@ const Footer: FC = () => {
             variant="light"
             aria-label="nav bar"
             className="w-fit"
-            classNames={{
-              tabList: "flex-col items-start",
-            }}
-            selectedKey={selectedLayoutSegments[0] ?? "/"}>
+            isVertical
+            selectedKey={
+              selectedLayoutSegments[0] === "(blog)"
+                ? "posts"
+                : (selectedLayoutSegments[0] ?? "/")
+            }>
             {Object.entries(navItems).map(([path, { name }]) => {
               return (
                 <Tab
-                  className="w-fit text-start"
+                  className="w-fit"
                   key={path.replace(/^\//, "")}
                   title={
                     <Link

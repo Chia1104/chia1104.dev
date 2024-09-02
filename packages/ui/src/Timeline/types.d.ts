@@ -71,22 +71,22 @@ export interface TimelineProps extends ComponentPropsWithoutRef<"div"> {
 
 export interface ListItemProps
   extends ComponentProps<
-    ForwardRefComponent<HTMLLIElement, HTMLMotionProps<"li">>
+    ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>
   > {
   data: Data;
   isLastItem: boolean;
-  refTarget?: (node: HTMLLIElement) => void;
+  refTarget?: (node: HTMLDivElement) => void;
   experimental?: {
     enableViewTransition?: boolean;
   };
 }
 
 export type ListProps = ComponentPropsWithoutRef<
-  ForwardRefComponent<"ul", HTMLMotionProps<"ul">>
+  ForwardRefComponent<"div", HTMLMotionProps<"div">>
 > &
   GroupData & {
     isLastGroup: boolean;
-    refTarget?: (node: HTMLLIElement) => void;
+    refTarget?: (node: HTMLDivElement) => void;
     experimental?: {
       enableViewTransition?: boolean;
     };
