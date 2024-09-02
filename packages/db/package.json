@@ -9,6 +9,7 @@
     "./schema": "./src/schema/index.ts",
     "./utils/feeds": "./src/utils/feeds/index.ts",
     "./utils/users": "./src/utils/users/index.ts",
+    "./utils/public/feeds": "./src/utils/public/feeds.ts",
     "./validator/feeds": "./src/utils/validator/feeds.ts",
     "./validator/users": "./src/utils/validator/users.ts"
   },
