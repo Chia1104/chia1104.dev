@@ -94,7 +94,7 @@ export const List: FC<{
           titleProps: {
             className: "line-clamp-1",
           },
-          subtitle: dayjs(createdAt).format("MMMM D, YYYY"),
+          subtitle: dayjs(createdAt).tz("UTC").format("MMMM D, YYYY"),
           startDate: createdAt,
           content: excerpt,
           link: `/notes/${slug}`,
@@ -105,9 +105,6 @@ export const List: FC<{
 
   return (
     <Timeline
-      experimental={{
-        enableViewTransition: true,
-      }}
       data={transformData}
       enableSort={false}
       asyncDataStatus={{

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { FC } from "react";
 
 import dayjs from "dayjs";
+import tz from "dayjs/plugin/timezone";
 import { useRouter } from "next/navigation";
 
 import type { RouterOutputs, RouterInputs } from "@chia/api";
@@ -21,6 +22,8 @@ import type { TimelineTypes } from "@chia/ui";
 import { api } from "@/trpc/client";
 
 import ListItem from "../list-item";
+
+dayjs.extend(tz);
 
 export const PostNavigation: FC<{
   posts?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
@@ -115,7 +118,7 @@ export const List: FC<{
           titleProps: {
             className: "line-clamp-1",
           },
-          subtitle: dayjs(createdAt).format("MMMM D, YYYY"),
+          subtitle: dayjs(createdAt).tz("UTC").format("MMMM D, YYYY"),
           startDate: createdAt,
           content: excerpt,
           link: `/posts/${slug}`,
@@ -126,9 +129,6 @@ export const List: FC<{
 
   return (
     <Timeline
-      experimental={{
-        enableViewTransition: true,
-      }}
       data={transformData}
       enableSort={false}
       asyncDataStatus={{
