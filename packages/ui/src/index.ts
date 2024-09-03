@@ -61,3 +61,5 @@ export const Features = {
 export { default as SubmitForm } from "./SubmitForm";
 export * from "./Form";
 export { default as Label } from "./Label";
+export * from "./TextPath";
+export * from "./NeonGradientCard";

@@ -17,6 +17,8 @@ import type { OgDTO } from "@/app/api/(v1)/og/utils";
 import { env } from "@/env";
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
 
+import WrittenBy from "../../_components/written-by";
+
 export const generateStaticParams = async () => {
   const notes = await getNotes(100);
 
@@ -173,6 +175,10 @@ const PostDetailPage = async ({
             <Content updatedAt={note.updatedAt} {...props} />
           </ContentProvider>
         </Suspense>
+        <WrittenBy
+          className="w-full flex justify-start mt-10 relative"
+          author="Chia1104"
+        />
       </div>
       <script
         type="application/ld+json"

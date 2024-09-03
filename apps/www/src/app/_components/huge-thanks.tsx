@@ -10,7 +10,7 @@ import {
   Chip,
 } from "@nextui-org/react";
 
-import { Image } from "@chia/ui";
+import { Image, NeonGradientCard } from "@chia/ui";
 
 const techStack = {
   Frameworks: [
@@ -151,11 +151,17 @@ const HugeThanks = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button
-        onPress={onOpen}
-        className="text-white c-bg-gradient-purple-to-pink w-fit">
-        Huge Thanks
-      </Button>
+      <NeonGradientCard
+        className="w-fit h-fit p-0"
+        innerBoxProps={{
+          className: "p-0",
+        }}>
+        <Button
+          onPress={onOpen}
+          className="dark:text-white text-black bg-transparent w-fit">
+          Huge Thanks
+        </Button>
+      </NeonGradientCard>
       <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1 text-center text-xl">

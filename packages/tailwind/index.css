@@ -152,6 +152,14 @@
     background-image: linear-gradient(transparent 60%, #8086ba 55%);
   }
 
+  .c-text-bg-purple-half {
+    background-image: linear-gradient(transparent 60%, #904fd2 55%);
+  }
+
+  .c-text-bg-pink-half {
+    background-image: linear-gradient(transparent 60%, #fecaca 55%);
+  }
+
   .modal {
     position: fixed;
     top: 0;
