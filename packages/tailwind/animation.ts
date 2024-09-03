@@ -82,6 +82,10 @@ const config = (options?: Options) => {
               transform: "translate(-50%,-40%) scale(1)",
             },
           },
+          "cia-background-position-spin": {
+            "0%": { backgroundPosition: "top center" },
+            "100%": { backgroundPosition: "bottom center" },
+          },
         },
         animation: {
           "accordion-down": "accordion-down 0.2s ease-out",
@@ -98,6 +102,8 @@ const config = (options?: Options) => {
             "cia-spin-around calc(var(--speed) * 2) infinite linear",
           "cia-slide": "cia-slide var(--speed) ease-in-out infinite alternate",
           "cia-spotlight": "cia-spotlight 2s ease .75s 1 forwards",
+          "cia-backgroundPositionSpin":
+            "cia-background-position-spin 3000ms infinite alternate",
         },
       },
     },

@@ -1,19 +1,26 @@
 "use client";
 
-import type { FC, ComponentProps } from "react";
+import type { FC, ComponentProps, ReactNode } from "react";
+import { useRef } from "react";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
 
 import { cn } from "../utils";
 
-type FadeInProps = ComponentProps<
-  ForwardRefComponent<HTMLSpanElement, HTMLMotionProps<"span">>
->;
+type FadeInProps = Omit<
+  ComponentProps<ForwardRefComponent<HTMLSpanElement, HTMLMotionProps<"span">>>,
+  "children"
+> & {
+  children?: ReactNode | ((isInView: boolean) => ReactNode);
+};
 
 const FadeIn: FC<FadeInProps> = ({ className, children, ...props }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref);
   return (
     <motion.span
+      ref={ref}
       className={cn("flex w-fit", className)}
       whileInView={{
         opacity: 1,
@@ -27,7 +34,7 @@ const FadeIn: FC<FadeInProps> = ({ className, children, ...props }) => {
         y: 20,
       }}
       {...props}>
-      {children}
+      {typeof children === "function" ? children(isInView) : children}
     </motion.span>
   );
 };

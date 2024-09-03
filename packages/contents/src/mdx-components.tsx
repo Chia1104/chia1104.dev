@@ -106,4 +106,9 @@ export const V1MDXComponents: MDXComponents = {
       {props.children}
     </td>
   ),
+  strong: (props: any) => (
+    <strong className="dark:c-text-bg-purple-half c-text-bg-pink-half">
+      {props.children}
+    </strong>
+  ),
 };
