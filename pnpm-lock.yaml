@@ -55,8 +55,8 @@ importers:
         specifier: ^9.0.2
         version: 9.0.2
       ky:
-        specifier: ^1.7.1
-        version: 1.7.1
+        specifier: ^1.7.2
+        version: 1.7.2
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -8486,8 +8486,8 @@ packages:
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
-  ky@1.7.1:
-    resolution: {integrity: sha512-KJ/IXXkFhTDqxcN8wKqMXk1/UoOpc0UnOB6H7QcqlPInh/M2B5Mlj+i9exez1w4RSwJhNFmHiUDPriAYFwb5VA==}
+  ky@1.7.2:
+    resolution: {integrity: sha512-OzIvbHKKDpi60TnF9t7UUVAF1B4mcqc02z5PIvrm08Wyb+yOcz63GRvEuVxNT18a9E1SrNouhB4W2NNLeD7Ykg==}
     engines: {node: '>=18'}
 
   language-subtag-registry@0.3.23:
@@ -20327,7 +20327,7 @@ snapshots:
 
   kolorist@1.8.0: {}
 
-  ky@1.7.1: {}
+  ky@1.7.2: {}
 
   language-subtag-registry@0.3.23: {}
 
