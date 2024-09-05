@@ -41,7 +41,7 @@
     "@trpc/server": "catalog:",
     "ai": "^3.3.26",
     "clsx": "^2.1.1",
-    "framer-motion": "11.5.2",
+    "framer-motion": "11.5.4",
     "fumadocs-mdx": "^9.0.4",
     "fumadocs-ui": "^13.4.1",
     "lowlight": "^3.1.0",
