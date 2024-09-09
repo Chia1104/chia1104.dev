@@ -25,7 +25,7 @@
     "@fumadocs/mdx-remote": "^0.2.1",
     "@mdx-js/react": "^3.0.1",
     "fumadocs-core": "^13.4.1",
-    "fumadocs-mdx": "^9.0.4",
+    "fumadocs-mdx": "^10.0.2",
     "fumadocs-ui": "^13.4.1",
     "next": "14.2.8",
     "react": "^18.3.1",
