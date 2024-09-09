@@ -1,6 +1,6 @@
 module image-resize
 
-go 1.22.5
+go 1.23.1
 
 require github.com/anthonynsimon/bild v0.14.0
 
