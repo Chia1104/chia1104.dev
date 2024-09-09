@@ -37,7 +37,7 @@
     "cmdk": "1.0.0",
     "framer-motion": "11.5.4",
     "lucide-react": "^0.439.0",
-    "next": "14.2.8",
+    "next": "14.2.9",
     "next-themes": "^0.3.0",
     "next-view-transitions": "^0.3.0",
     "react": "catalog:react18",
