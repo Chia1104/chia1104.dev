@@ -52,7 +52,8 @@
         "@chia/db",
         "@chia/auth",
         "tsconfig",
-        "node"
+        "node",
+        "go"
       ],
       "enabled": false
     },

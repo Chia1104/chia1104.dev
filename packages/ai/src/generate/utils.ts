@@ -14,6 +14,6 @@ export const streamGeneratedText = (request: BaseRequest) =>
     model: createOpenAI({
       apiKey: request.authToken,
     })(request.modal),
-    system: DEFAULT_SYSTEM_PROMPT,
+    system: request.system ?? DEFAULT_SYSTEM_PROMPT,
     messages: convertToCoreMessages(request.messages),
   });

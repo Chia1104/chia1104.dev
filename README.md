@@ -7,15 +7,30 @@
 
 > The project is still under development.
 
-This is my personal website, a monorepo managed using Turborepo. The development is based on the app structure of NextJS, with the use of TailwindCSS and Typescript. For backend functionalities, PostgreSQL and Redis are utilized to store articles and limit API traffic.
+This is my personal website, developed using Next.js for both the front-end and back-end, with Hono as the back-end service. All projects are managed using Turborepo.
 
-Finally, the website is deployed to the Zeabur platform using Docker, and GitHub Actions are used for integration testing.
+## ✨ Features
+
+- 🚀 Next.js 14 with App Router
+- 🔥 Hono - backend services
+- 📦 Monorepo - using [Turborepo](https://turbo.build/)
+- 📄 MDX - using [Fumadocs](https://fumadocs.vercel.app/) for MDX components
+- 📝 CMS - custom CMS for managing content
+- 🎨 Tailwind CSS styles
+- 🧪 Vitest - unit tests
+- 🎭 Playwright - end-to-end tests
+- ✍️ Husky & Lint Staged - format code before committing
+- 🔒 Auth.js - authorization
+- 🌧️ Drizzle - ORM
+- 🗄️ Redis - for caching
+- 🧠 PG vector search - AI vector search (WIP)
+- ✏️ AI editor - for text generation (WIP)
 
 ## 🔨 Languages and Tools
 
 ![typescript](https://img.shields.io/badge/-Typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![nextjs](https://img.shields.io/badge/-NextJS-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![nestjs](https://img.shields.io/badge/-NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![hono](https://img.shields.io/badge/-Hono-FF0080?style=for-the-badge&logo=hono&logoColor=white)
 ![turborepo](https://img.shields.io/badge/-Turborepo-FF0080?style=for-the-badge&logo=turborepo&logoColor=white)
 ![tailwindcss](https://img.shields.io/badge/-TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![framer-motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
@@ -24,19 +39,6 @@ Finally, the website is deployed to the Zeabur platform using Docker, and GitHub
 ![docker](https://img.shields.io/badge/-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![redis](https://img.shields.io/badge/-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![postgresql](https://img.shields.io/badge/-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
-
-## 🌐 Deployments
-
-### www
-
-- [Vercel](https://chia1104.dev/)
-- [Zeabur](https://chia1104.zeabur.app/)
-- [Railway](https://chia1104.up.railway.app/)
-
-### dash
-
-- [Zeabur](https://dash.chia1104.dev/)
-- [Railway](https://dash-chia1104.up.railway.app/)
 
 ## 🚀 Deploy your own
 
@@ -71,21 +73,21 @@ you can deploy `www`, `dash` and `service` applications to Zeabur, and make sure
 ```bash
 chia1104.dev
 ├── apps
-│   ├── service (NestJS)
+│   ├── service (Hono)
 │   ├── dash (NextJS)
 │   └── www (NextJS)
 ├── packages
-│   ├── api (tRPC API, for nextjs)
+|   ├── ai (AI vector search / text generation)
+│   ├── api (tRPC API)
 │   ├── auth (AuthJS)
-│   ├── utils (shared utilities)
-│   ├── ui (shared components)
-│   └── db (prisma orm)
-├── toolings
+│   ├── cache (Redis cache)
+│   ├── contents (MDX functionality)
+│   ├── db (Drizzle orm)
 │   ├── tailwind (tailwind config and css files)
-│   └── tsconfig (base, nextjs, react)
+│   ├── ui (shared components)
+│   └── utils (shared utilities)
 └── tests
-    ├── www-e2e (playwright e2e tests)
-    └── dash-e2e (WIP)
+    └── www-e2e (playwright e2e tests)
 ```
 
 ## 🎉 Get Started
@@ -113,6 +115,6 @@ pnpm test && pnpm test:e2e
 Build the docker image
 
 ```bash
-docker build -f ./apps/www/Dockerfile -t web:v2 .
-docker run -p 8080:8080 web:v2
+docker build -f ./apps/www/Dockerfile -t www .
+docker run -p 8080:8080 www
 ```

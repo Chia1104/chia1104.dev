@@ -40,6 +40,11 @@ import {
   useEditFieldsContext,
   DEFAULT_EDIT_FIELDS_CONTEXT,
 } from "./edit-fields.context";
+import {
+  GenerateFeedSlug,
+  GenerateFeedDescription,
+  GenerateFeedContent,
+} from "./generate";
 import Preview from "./preview";
 import { useDraft } from "./use-draft";
 
@@ -193,6 +198,14 @@ export const MetadataFields = () => {
                 label="Slug"
                 isInvalid={fieldState.invalid}
                 description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
+                endContent={
+                  <GenerateFeedSlug
+                    title={form.watch("title")}
+                    onSuccess={(data) => {
+                      field.onChange(data);
+                    }}
+                  />
+                }
                 {...field}
               />
             </FormControl>
@@ -213,6 +226,14 @@ export const MetadataFields = () => {
                 placeholder="Description"
                 minRows={7}
                 isInvalid={fieldState.invalid}
+                endContent={
+                  <GenerateFeedDescription
+                    input={form.watch("title")}
+                    onSuccess={(data) => {
+                      field.onChange(data);
+                    }}
+                  />
+                }
                 {...field}
                 value={field.value ?? ""}
               />
@@ -384,6 +405,17 @@ const SwitchEditor = () => {
               "relative w-full overflow-hidden rounded-2xl shadow-lg",
               editFields.disabled && "pointer-events-none"
             )}>
+            <GenerateFeedContent
+              className="absolute top-3 right-3 z-30"
+              input={{
+                title: form.watch("title"),
+                description: form.watch("description") ?? "",
+                content: editFields.content.mdx.content,
+              }}
+              onSuccess={(data) => {
+                console.log(data);
+              }}
+            />
             <MEditor
               className={cn("py-5 dark:bg-[#1e1e1e] bg-white")}
               height="700px"
