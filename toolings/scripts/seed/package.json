@@ -16,7 +16,7 @@
   "devDependencies": {
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@faker-js/faker": "^8.4.1",
+    "@faker-js/faker": "^9.0.0",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"

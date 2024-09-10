@@ -8,7 +8,7 @@
     "clean": "git clean -xdf .turbo node_modules coverage"
   },
   "devDependencies": {
-    "start-server-and-test": "^2.0.5",
+    "start-server-and-test": "^2.0.7",
     "tsconfig": "workspace:*",
     "typescript": "catalog:",
     "www": "workspace:*"
