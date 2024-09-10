@@ -5,7 +5,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input, Button, Divider } from "@nextui-org/react";
 import { useMutation } from "@tanstack/react-query";
-import ky, { HTTPError } from "ky";
+import { HTTPError } from "ky";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -21,8 +21,7 @@ import {
   Form,
 } from "@chia/ui";
 import type { ErrorResponse } from "@chia/utils";
-
-import { saveOpenaiApiKey } from "@/server/saveOpenaiApiKey";
+import { serviceRequest } from "@chia/utils";
 
 const openaiApiKeySchema = z.object({
   apiKey: z.string().min(1),
@@ -40,7 +39,10 @@ const OpenaiForm = () => {
   });
 
   const saveApiKey = useMutation<any, Error, SaveOpenaiApiKeyDTO>({
-    mutationFn: async (dto) => saveOpenaiApiKey(dto),
+    mutationFn: async (dto) =>
+      serviceRequest().post("ai/key:signed", {
+        json: dto,
+      }),
     onSuccess: () => {
       toast.success("API key saved successfully");
     },
@@ -51,7 +53,7 @@ const OpenaiForm = () => {
 
   const checkApiKey = useMutation({
     mutationFn: async () =>
-      await ky.post("/api/ai/generate", {
+      await serviceRequest().post("ai/generate", {
         json: {
           modal: OpenAIModal["gpt-3.5-turbo"],
           messages: [{ role: "user", content: "Hello, AI!" }],

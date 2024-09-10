@@ -31,6 +31,7 @@ export const baseRequestSchema = z.object({
     .default(OpenAIModal["gpt-4o-mini"]),
   messages: z.array(messageSchema).min(1),
   authToken: z.string().min(1),
+  system: z.string().optional(),
 });
 
 export type BaseRequest = z.infer<typeof baseRequestSchema>;
