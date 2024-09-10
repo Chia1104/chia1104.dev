@@ -39,6 +39,7 @@ api.post(
       encodeApiKey(c.req.valid("json").apiKey, env.AI_AUTH_SECRET),
       {
         domain: getCookieDomain({ env: c.env }),
+        secure: c.env.NODE_ENV === "production",
       }
     );
     return c.json({ message: "API key saved successfully" });
