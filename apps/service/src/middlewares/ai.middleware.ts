@@ -1,4 +1,4 @@
-import { getSignedCookie } from "hono/cookie";
+import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
 import { HEADER_AUTH_TOKEN } from "@chia/ai/constants";
@@ -18,14 +18,7 @@ export const ai = () =>
     }
     const authToken =
       c.req.raw.headers.get(HEADER_AUTH_TOKEN) ??
-      (
-        await getSignedCookie(
-          c,
-          env.AI_AUTH_SECRET,
-          HEADER_AUTH_TOKEN,
-          "secure"
-        )
-      )?.toString();
+      getCookie(c, HEADER_AUTH_TOKEN)?.toString();
     if (!authToken) {
       return c.json(
         errorGenerator(401, [
