@@ -363,25 +363,25 @@ importers:
         version: link:../../packages/utils
       '@hono-rate-limiter/redis':
         specifier: ^0.1.4
-        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.5.11))
+        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.6.1))
       '@hono/auth-js':
         specifier: ^1.0.10
-        version: 1.0.10(@auth/core@0.34.2)(hono@4.5.11)(react@18.3.1)
+        version: 1.0.10(@auth/core@0.34.2)(hono@4.6.1)(react@18.3.1)
       '@hono/graphql-server':
         specifier: ^0.5.1
-        version: 0.5.1(hono@4.5.11)
+        version: 0.5.1(hono@4.6.1)
       '@hono/node-server':
         specifier: ^1.12.0
         version: 1.12.0
       '@hono/sentry':
         specifier: ^1.2.0
-        version: 1.2.0(hono@4.5.11)
+        version: 1.2.0(hono@4.6.1)
       '@hono/trpc-server':
         specifier: ^0.3.2
-        version: 0.3.2(@trpc/server@11.0.0-rc.482)(hono@4.5.11)
+        version: 0.3.2(@trpc/server@11.0.0-rc.482)(hono@4.6.1)
       '@hono/zod-validator':
         specifier: ^0.2.2
-        version: 0.2.2(hono@4.5.11)(zod@3.23.8)
+        version: 0.2.2(hono@4.6.1)(zod@3.23.8)
       '@t3-oss/env-core':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.5.4)(zod@3.23.8)
@@ -392,11 +392,11 @@ importers:
         specifier: ^16.9.0
         version: 16.9.0
       hono:
-        specifier: ^4.5.11
-        version: 4.5.11
+        specifier: ^4.6.1
+        version: 4.6.1
       hono-rate-limiter:
         specifier: ^0.4.0
-        version: 0.4.0(hono@4.5.11)
+        version: 0.4.0(hono@4.6.1)
       rate-limit-redis:
         specifier: ^4.2.0
         version: 4.2.0(express-rate-limit@7.4.0(express@4.19.2))
@@ -7951,12 +7951,12 @@ packages:
     peerDependencies:
       hono: ^4.1.1
 
-  hono@4.5.11:
-    resolution: {integrity: sha512-62FcjLPtjAFwISVBUshryl+vbHOjg8rE4uIK/dxyR8GpLztunZpwFmfEvmJCUI7xoGh/Sr3CGCDPCmYxVw7wUQ==}
-    engines: {node: '>=16.0.0'}
-
   hono@4.5.5:
     resolution: {integrity: sha512-fXBXHqaVfimWofbelLXci8pZyIwBMkDIwCa4OwZvK+xVbEyYLELVP4DfbGaj1aEM6ZY3hHgs4qLvCO2ChkhgQw==}
+    engines: {node: '>=16.0.0'}
+
+  hono@4.6.1:
+    resolution: {integrity: sha512-6NGwvttY1+HAFii08VYiEKI6ETPAFbpLntpm2M/MogEsAFWdZV74UNT+2M4bmqX90cIQhjlpBSP+tO+CfB0uww==}
     engines: {node: '>=16.0.0'}
 
   html-encoding-sniffer@4.0.0:
@@ -12700,36 +12700,36 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.5.11))':
+  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.6.1))':
     dependencies:
-      hono-rate-limiter: 0.4.0(hono@4.5.11)
+      hono-rate-limiter: 0.4.0(hono@4.6.1)
 
-  '@hono/auth-js@1.0.10(@auth/core@0.34.2)(hono@4.5.11)(react@18.3.1)':
+  '@hono/auth-js@1.0.10(@auth/core@0.34.2)(hono@4.6.1)(react@18.3.1)':
     dependencies:
       '@auth/core': 0.34.2
-      hono: 4.5.11
+      hono: 4.6.1
       react: 18.3.1
 
-  '@hono/graphql-server@0.5.1(hono@4.5.11)':
+  '@hono/graphql-server@0.5.1(hono@4.6.1)':
     dependencies:
       graphql: 16.9.0
-      hono: 4.5.11
+      hono: 4.6.1
 
   '@hono/node-server@1.12.0': {}
 
-  '@hono/sentry@1.2.0(hono@4.5.11)':
+  '@hono/sentry@1.2.0(hono@4.6.1)':
     dependencies:
-      hono: 4.5.11
+      hono: 4.6.1
       toucan-js: 4.0.0
 
-  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.482)(hono@4.5.11)':
+  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.482)(hono@4.6.1)':
     dependencies:
       '@trpc/server': 11.0.0-rc.482
-      hono: 4.5.11
+      hono: 4.6.1
 
-  '@hono/zod-validator@0.2.2(hono@4.5.11)(zod@3.23.8)':
+  '@hono/zod-validator@0.2.2(hono@4.6.1)(zod@3.23.8)':
     dependencies:
-      hono: 4.5.11
+      hono: 4.6.1
       zod: 3.23.8
 
   '@hookform/resolvers@3.9.0(react-hook-form@7.53.0(react@18.3.1))':
@@ -19794,13 +19794,13 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.4.0(hono@4.5.11):
+  hono-rate-limiter@0.4.0(hono@4.6.1):
     dependencies:
-      hono: 4.5.11
-
-  hono@4.5.11: {}
+      hono: 4.6.1
 
   hono@4.5.5: {}
+
+  hono@4.6.1: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
