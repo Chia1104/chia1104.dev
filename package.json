@@ -78,7 +78,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/lodash": "^4.17.7",
     "@types/node": "^22.1.0",
-    "@vitest/coverage-v8": "^2.0.5",
+    "@vitest/coverage-v8": "^2.1.0",
     "bun-types": "^1.1.27",
     "dotenv": "^16.4.5",
     "happy-dom": "^15.7.4",
@@ -94,7 +94,7 @@
     "tsx": "^4.19.1",
     "turbo": "2.1.1",
     "typescript": "catalog:",
-    "vitest": "^2.0.5"
+    "vitest": "^2.1.0"
   },
   "manypkg": {
     "workspaceProtocol": "require"
