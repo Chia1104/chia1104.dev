@@ -2,7 +2,8 @@ import { z } from "zod";
 
 // https://platform.openai.com/docs/models
 export const OpenAIModal = {
-  "gpt-4o": "gpt-4o",
+  "gpt-4o": "gpt-4o-2024-08-06",
+  "gpt-4o-2024-08-06": "gpt-4o-2024-08-06",
   "gpt-4o-mini": "gpt-4o-mini",
   "gpt-4": "gpt-4",
   "gpt-3.5-turbo": "gpt-3.5-turbo",
