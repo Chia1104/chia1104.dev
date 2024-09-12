@@ -6,6 +6,6 @@
  */
 
 :root {
-  --borders-new-border: 4px;
-  --borders-borders-2: 8px;
+  --borders-sm: 4px;
+  --borders-md: 8px;
 }
