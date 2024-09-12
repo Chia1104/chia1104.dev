@@ -526,7 +526,7 @@ importers:
         version: 25.0.0(bufferutil@4.0.8)
       million:
         specifier: ^3.1.11
-        version: 3.1.11(rollup@3.29.4)
+        version: 3.1.11(rollup@4.20.0)
       next:
         specifier: 14.2.10
         version: 14.2.10(@babel/core@7.25.2)(@opentelemetry/api@1.9.0)(@playwright/test@1.47.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -584,7 +584,7 @@ importers:
         version: link:../../packages/tailwind
       '@million/lint':
         specifier: 1.0.0-rc.84
-        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)
+        version: 1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)
       '@next/bundle-analyzer':
         specifier: 14.2.10
         version: 14.2.10(bufferutil@4.0.8)
@@ -1196,8 +1196,8 @@ importers:
   toolings/eslint:
     dependencies:
       '@next/eslint-plugin-next':
-        specifier: ^14.2.9
-        version: 14.2.9
+        specifier: ^14.2.10
+        version: 14.2.10
       eslint-config-turbo:
         specifier: ^2.1.1
         version: 2.1.1(eslint@9.10.0(jiti@1.21.6))
@@ -2744,8 +2744,8 @@ packages:
   '@next/env@14.2.10':
     resolution: {integrity: sha512-dZIu93Bf5LUtluBXIv4woQw2cZVZ2DJTjax5/5DOs3lzEOeKLy7GxRSr4caK9/SCPdaW6bCgpye6+n4Dh9oJPw==}
 
-  '@next/eslint-plugin-next@14.2.9':
-    resolution: {integrity: sha512-tmLXuDNfPTqoFuSfsd9Q4R96SS/UCKTPtBnnR+cKDcbh8xZU+126vZnRWH1WEpOmS4Vl2Hy/X6SPmgOGZzn+hA==}
+  '@next/eslint-plugin-next@14.2.10':
+    resolution: {integrity: sha512-LqJcPP5QkmKewpwO3zX8SoVfWwKn5NKwfcs/j52oJa5EsEDyUsqjsmj5IRzmAJA0FSuB4umhjG55AGayY306fw==}
 
   '@next/swc-darwin-arm64@14.2.10':
     resolution: {integrity: sha512-V3z10NV+cvMAfxQUMhKgfQnPbjw+Ew3cnr64b0lr8MDiBJs3eLnM6RpGC46nhfMZsiXgQngCJKWGTC/yDcgrDQ==}
@@ -13007,39 +13007,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@3.29.4)':
-    dependencies:
-      '@axiomhq/js': 1.0.0-rc.3
-      '@babel/core': 7.24.6
-      '@babel/types': 7.24.6
-      '@hono/node-server': 1.12.0
-      '@million/install': 0.0.18
-      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
-      '@rrweb/types': 2.0.0-alpha.16
-      babel-plugin-syntax-hermes-parser: 0.21.1
-      ci-info: 4.0.0
-      esbuild: 0.20.2
-      hono: 4.5.5
-      isomorphic-fetch: 3.0.0
-      nanoid: 5.0.7
-      pako: 2.1.0
-      pathe: 1.1.2
-      piscina: 4.6.1
-      pretty-ms: 8.0.0
-      rrweb: 2.0.0-alpha.4
-      rrweb-player: 1.0.0-alpha.4
-      semver: 7.6.3
-      socket.io-client: 4.7.5(bufferutil@4.0.8)
-      tmp: 0.2.3
-      unplugin: 1.12.2
-      update-notifier-cjs: 5.1.6
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - rollup
-      - supports-color
-      - utf-8-validate
-
   '@million/lint@1.0.0-rc.84(bufferutil@4.0.8)(rollup@4.20.0)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
@@ -13127,7 +13094,7 @@ snapshots:
 
   '@next/env@14.2.10': {}
 
-  '@next/eslint-plugin-next@14.2.9':
+  '@next/eslint-plugin-next@14.2.10':
     dependencies:
       glob: 10.3.10
 
@@ -21291,18 +21258,6 @@ snapshots:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.1
-
-  million@3.1.11(rollup@3.29.4):
-    dependencies:
-      '@babel/core': 7.25.2
-      '@babel/types': 7.25.2
-      '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
-      kleur: 4.1.5
-      undici: 6.19.7
-      unplugin: 1.12.2
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
 
   million@3.1.11(rollup@4.20.0):
     dependencies:
