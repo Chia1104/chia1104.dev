@@ -23,7 +23,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.59",
     "@chia/utils": "workspace:*",
-    "ai": "^3.3.34",
+    "ai": "^3.3.35",
     "next": "14.2.10",
     "openai": "^4.60.0"
   },
