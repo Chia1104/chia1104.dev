@@ -1,0 +1,24 @@
+services:
+  postgres:
+    container_name: chia-postgres
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5433:5432"
+    volumes:
+      - chia-postgres:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env.global
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+  redis:
+    container_name: chia-redis
+    image: redis:alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - chia-redis:/data
+
+volumes:
+  chia-postgres:
+  chia-redis:
