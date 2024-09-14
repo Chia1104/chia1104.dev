@@ -71,21 +71,21 @@
   },
   "devDependencies": {
     "@manypkg/cli": "^0.21.4",
-    "@playwright/test": "^1.47.0",
+    "@playwright/test": "^1.47.1",
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@turbo/gen": "^2.1.2",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/lodash": "^4.17.7",
     "@types/node": "^22.1.0",
-    "@vitest/coverage-v8": "^2.1.0",
+    "@vitest/coverage-v8": "^2.1.1",
     "bun-types": "^1.1.27",
     "dotenv": "^16.4.5",
     "happy-dom": "^15.7.4",
     "husky": "^9.1.6",
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.10",
-    "msw": "^2.4.5",
+    "msw": "^2.4.6",
     "nx": "^19.7.3",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6",
@@ -94,7 +94,7 @@
     "tsx": "^4.19.1",
     "turbo": "2.1.2",
     "typescript": "catalog:",
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.1"
   },
   "manypkg": {
     "workspaceProtocol": "require"
