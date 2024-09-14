@@ -17,7 +17,7 @@
   "dependencies": {
     "@chia/utils": "workspace:*",
     "@hookform/resolvers": "^3.9.0",
-    "@nextui-org/react": "2.4.6",
+    "@nextui-org/react": "2.4.7",
     "@radix-ui/react-accordion": "1.2.0",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-dialog": "^1.1.1",
