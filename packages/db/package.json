@@ -14,19 +14,20 @@
     "./validator/users": "./src/utils/validator/users.ts"
   },
   "scripts": {
-    "db:start": "docker-compose up -d",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules",
     "db:check": "tsx --env-file=../../.env.global check.ts",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "migrate:run": "tsx --env-file=../../.env.global migrate.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
     "pg": "^8.12.0",
+    "pgvector": "^0.2.0",
     "postgres": "^3.4.4"
   },
   "devDependencies": {

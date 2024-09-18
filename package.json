@@ -42,6 +42,7 @@
     "test:watch": "turbo run test:watch --parallel",
     "test:cov": "turbo run test:cov --parallel",
     "test:debug": "turbo run test:debug --parallel",
+    "db:up": "docker-compose -f db.docker-compose.yaml up",
     "db:generate": "turbo run db:generate",
     "db:push": "cd packages/db && pnpm run db:push",
     "db:init": "turbo run db:init --parallel",

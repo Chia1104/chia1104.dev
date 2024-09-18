@@ -12,8 +12,11 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 
-import { ContentType } from "../types";
-import { roles, feed_type, content_type } from "./enums";
+import {
+  feedsWithEmbeddingColumns,
+  feedsWithEmbeddingExtraConfig,
+} from "../utils/schema-columns";
+import { roles } from "./enums";
 import { pgTable } from "./table";
 
 export const users = pgTable("user", {
@@ -160,33 +163,8 @@ export const assetsToTags = pgTable(
 
 export const feeds = pgTable(
   "feed",
-  {
-    id: serial("id").primaryKey(),
-    slug: text("slug").notNull().unique(),
-    readTime: integer("readTime"),
-    type: feed_type("type").notNull(),
-    contentType: content_type("contentType").notNull().default(ContentType.Mdx),
-    published: boolean("published").default(false),
-    title: text("title").notNull(),
-    excerpt: text("excerpt"),
-    description: text("description"),
-    createdAt: timestamp("created_at", { mode: "date" })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updatedAt", { mode: "date" })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id),
-  },
-  (table) => {
-    return {
-      idIndex: uniqueIndex("feed_id_index").on(table.id),
-      slugIndex: uniqueIndex("feed_slug_index").on(table.slug),
-      titleIndex: index("feed_title_index").on(table.title),
-    };
-  }
+  feedsWithEmbeddingColumns,
+  feedsWithEmbeddingExtraConfig
 );
 
 export const feedsToTags = pgTable(
@@ -228,6 +206,13 @@ export const feedsRelations = relations(feeds, ({ one, many }) => ({
     references: [users.id],
   }),
   feedsToTags: many(feedsToTags),
+}));
+
+export const authenticatorsRelations = relations(authenticators, ({ one }) => ({
+  user: one(users, {
+    fields: [authenticators.userId],
+    references: [users.id],
+  }),
 }));
 
 export const assetsRelations = relations(assets, ({ one, many }) => ({

@@ -1,6 +1,7 @@
 import * as _dotenv from "dotenv/config";
 import { drizzle } from "drizzle-orm/postgres-js";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+// import pgvector from "pgvector/pg";
 import postgres from "postgres";
 
 import { switchEnv } from "@chia/utils/config";
@@ -39,9 +40,24 @@ export * from "./utils/feeds";
 export * from "./utils/validator/feeds";
 export * from "./schema/enums";
 
-export const getDB = (env?: string) =>
-  switchEnv(env, {
+export const getDB = (env?: string) => {
+  // await switchEnv(env, {
+  //   prod: async () => await pgvector.registerTypes(queryClient),
+  //   beta: async () => await pgvector.registerTypes(betaQueryClient),
+  //   local: async () => await pgvector.registerTypes(localQueryClient),
+  // });
+
+  return switchEnv(env, {
     prod: () => db,
     beta: () => betaDb,
     local: () => localDb,
   });
+};
+
+export const closeClient = async (env?: string) => {
+  await switchEnv(env, {
+    prod: async () => await queryClient.end(),
+    beta: async () => await betaQueryClient.end(),
+    local: async () => await localQueryClient.end(),
+  });
+};
