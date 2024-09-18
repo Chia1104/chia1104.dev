@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
 import type { SQLWrapper } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { eq, sql, cosineDistance, desc, gt } from "drizzle-orm";
+
+import { generateEmbedding } from "@chia/ai/embeddings/openai";
+import type { Options } from "@chia/ai/embeddings/openai";
 
 import { cursorTransform, dateToTimestamp, withDTO } from "../";
 import { schema } from "../..";
@@ -231,3 +234,34 @@ export const deleteFeed = withDTO<{ feedId: number }, void>(async (db, dto) => {
       .where(eq(schema.contents.feedId, dto.feedId));
   });
 });
+
+export const searchFeeds = withDTO(
+  async (
+    db,
+    dto: Options & { input: string; limit?: number; comparison?: number }
+  ) => {
+    const embedding = await generateEmbedding(dto.input, dto);
+    const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
+
+    return db
+      .select({
+        id: schema.feeds.id,
+        userId: schema.feeds.userId,
+        type: schema.feeds.type,
+        slug: schema.feeds.slug,
+        description: schema.feeds.description,
+        createdAt: schema.feeds.createdAt,
+        updatedAt: schema.feeds.updatedAt,
+        readTime: schema.feeds.readTime,
+        contentType: schema.feeds.contentType,
+        published: schema.feeds.published,
+        title: schema.feeds.title,
+        excerpt: schema.feeds.excerpt,
+        similarity,
+      })
+      .from(schema.feeds)
+      .where(gt(similarity, dto.comparison ?? 0.5))
+      .orderBy((t) => desc(t.similarity))
+      .limit(dto.limit ?? 5);
+  }
+);

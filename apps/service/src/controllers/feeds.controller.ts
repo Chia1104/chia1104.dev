@@ -1,16 +1,22 @@
-import { verifyAuth } from "@hono/auth-js";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
+import { createOpenAI } from "@chia/ai";
 import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
   eq,
   schema,
+  searchFeeds,
 } from "@chia/db";
 
+import { ai, AI_AUTH_TOKEN } from "@/middlewares/ai.middleware";
+import { verifyAuth } from "@/middlewares/auth.middleware";
 import { errorResponse } from "@/utils/error.util";
-import { getFeedsWithMetaSchema } from "@/validators/feeds.validator";
+import {
+  getFeedsWithMetaSchema,
+  searchFeedsSchema,
+} from "@/validators/feeds.validator";
 
 const api = new Hono<HonoContext>();
 
@@ -59,5 +65,30 @@ api.get(
     return c.json(feeds);
   }
 );
+
+api
+  .use("/search", verifyAuth(true))
+  .use("/search", ai())
+  .get(
+    "/search",
+    zValidator("query", searchFeedsSchema, (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }),
+    async (c) => {
+      const client = createOpenAI({
+        apiKey: c.get(AI_AUTH_TOKEN),
+      });
+      const { keyword, model } = c.req.valid("query");
+      const feeds = await searchFeeds(c.var.db, {
+        input: keyword ?? "",
+        limit: 5,
+        model,
+        client,
+      });
+      return c.json(feeds);
+    }
+  );
 
 export default api;

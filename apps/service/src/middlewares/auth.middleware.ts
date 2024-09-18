@@ -4,7 +4,7 @@
  */
 import type { AuthUser } from "@hono/auth-js";
 import dayjs from "dayjs";
-import { Context } from "hono";
+import type { Context } from "hono";
 import { getCookie, deleteCookie, setCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
@@ -17,7 +17,7 @@ import {
   SESSION_UPDATE_AGE,
   sessionCookieOptions,
 } from "@chia/auth-core/utils";
-import { errorGenerator } from "@chia/utils";
+import { errorGenerator, getAdminId } from "@chia/utils";
 
 import { env } from "@/env";
 
@@ -94,7 +94,7 @@ export const sessionAction = async (args: SessionActionArgs) => {
   }
 };
 
-export const verifyAuth = () =>
+export const verifyAuth = (adminOnly?: boolean) =>
   createMiddleware<HonoContext>(async (c, next) => {
     try {
       const { getSessionAndUser, deleteSession, updateSession } = adapter({
@@ -106,6 +106,10 @@ export const verifyAuth = () =>
         return c.json(errorGenerator(401), 401);
       }
       let userAndSession = await getSessionAndUser(sessionToken);
+
+      if (adminOnly && userAndSession?.user.id !== getAdminId()) {
+        return c.json(errorGenerator(403), 403);
+      }
 
       /**
        * TODO: maybe remove this block, redis should handle session expiration
