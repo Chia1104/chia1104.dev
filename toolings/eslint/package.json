@@ -13,7 +13,7 @@
     "format": "prettier --check . --ignore-path ../../.gitignore"
   },
   "dependencies": {
-    "@next/eslint-plugin-next": "^14.2.11",
+    "@next/eslint-plugin-next": "^14.2.13",
     "eslint-config-turbo": "^2.1.2",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-jsx-a11y": "^6.10.0",
@@ -23,6 +23,6 @@
     "typescript-eslint": "^8.6.0"
   },
   "devDependencies": {
-    "eslint": "^9.10.0"
+    "eslint": "^9.11.0"
   }
 }
