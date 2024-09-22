@@ -93,7 +93,7 @@ importers:
         version: 22.4.0
       '@vitest/coverage-v8':
         specifier: ^2.1.1
-        version: 2.1.1(vitest@2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.8(typescript@5.5.4))(terser@5.31.6))
+        version: 2.1.1(vitest@2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.9(typescript@5.5.4))(terser@5.31.6))
       bun-types:
         specifier: ^1.1.29
         version: 1.1.29
@@ -113,8 +113,8 @@ importers:
         specifier: ^15.2.10
         version: 15.2.10
       msw:
-        specifier: ^2.4.8
-        version: 2.4.8(typescript@5.5.4)
+        specifier: ^2.4.9
+        version: 2.4.9(typescript@5.5.4)
       nx:
         specifier: ^19.7.4
         version: 19.7.4(@swc/core@1.7.11(@swc/helpers@0.5.12))
@@ -141,7 +141,7 @@ importers:
         version: 5.5.4
       vitest:
         specifier: ^2.1.1
-        version: 2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.8(typescript@5.5.4))(terser@5.31.6)
+        version: 2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.9(typescript@5.5.4))(terser@5.31.6)
 
   apps/dash:
     dependencies:
@@ -2731,8 +2731,8 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
 
-  '@mswjs/interceptors@0.35.6':
-    resolution: {integrity: sha512-PpD687w7qLxVMK176bpQjbzU9O0VC75QnBK5U1lKd29s4hIuxfTItUD6raNKyQ6BN8b64/8HE34RuYTkwH9uPQ==}
+  '@mswjs/interceptors@0.35.8':
+    resolution: {integrity: sha512-PFfqpHplKa7KMdoQdj5td03uG05VK2Ng1dG0sP4pT9h0dGSX2v9txYt/AnrzPb/vAmfyBBC0NQV7VaBEX+efgQ==}
     engines: {node: '>=18'}
 
   '@napi-rs/wasm-runtime@0.2.4':
@@ -9187,8 +9187,8 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  msw@2.4.8:
-    resolution: {integrity: sha512-a+FUW1m5yT8cV9GBy0L/cbNg0EA4//SKEzgu3qFrpITrWYeZmqfo7dqtM74T2lAl69jjUjjCaEhZKaxG2Ns8DA==}
+  msw@2.4.9:
+    resolution: {integrity: sha512-1m8xccT6ipN4PTqLinPwmzhxQREuxaEJYdx4nIbggxP8aM7r1e71vE7RtOUSQoAm1LydjGfZKy7370XD/tsuYg==}
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
@@ -13139,7 +13139,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@mswjs/interceptors@0.35.6':
+  '@mswjs/interceptors@0.35.8':
     dependencies:
       '@open-draft/deferred-promise': 2.2.0
       '@open-draft/logger': 0.3.0
@@ -17472,7 +17472,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitest/coverage-v8@2.1.1(vitest@2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.8(typescript@5.5.4))(terser@5.31.6))':
+  '@vitest/coverage-v8@2.1.1(vitest@2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.9(typescript@5.5.4))(terser@5.31.6))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -17486,7 +17486,7 @@ snapshots:
       std-env: 3.7.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.8(typescript@5.5.4))(terser@5.31.6)
+      vitest: 2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.9(typescript@5.5.4))(terser@5.31.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -17497,13 +17497,13 @@ snapshots:
       chai: 5.1.1
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.1(@vitest/spy@2.1.1)(msw@2.4.8(typescript@5.5.4))(vite@5.4.1(@types/node@22.4.0)(terser@5.31.6))':
+  '@vitest/mocker@2.1.1(@vitest/spy@2.1.1)(msw@2.4.9(typescript@5.5.4))(vite@5.4.1(@types/node@22.4.0)(terser@5.31.6))':
     dependencies:
       '@vitest/spy': 2.1.1
       estree-walker: 3.0.3
       magic-string: 0.30.11
     optionalDependencies:
-      msw: 2.4.8(typescript@5.5.4)
+      msw: 2.4.9(typescript@5.5.4)
       vite: 5.4.1(@types/node@22.4.0)(terser@5.31.6)
 
   '@vitest/pretty-format@2.1.1':
@@ -21425,13 +21425,13 @@ snapshots:
 
   ms@2.1.3: {}
 
-  msw@2.4.8(typescript@5.5.4):
+  msw@2.4.9(typescript@5.5.4):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.0
       '@bundled-es-modules/statuses': 1.0.1
       '@bundled-es-modules/tough-cookie': 0.1.6
       '@inquirer/confirm': 3.1.22
-      '@mswjs/interceptors': 0.35.6
+      '@mswjs/interceptors': 0.35.8
       '@open-draft/until': 2.1.0
       '@types/cookie': 0.6.0
       '@types/statuses': 2.0.5
@@ -23990,10 +23990,10 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.31.6
 
-  vitest@2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.8(typescript@5.5.4))(terser@5.31.6):
+  vitest@2.1.1(@types/node@22.4.0)(happy-dom@15.7.4)(jsdom@25.0.0(bufferutil@4.0.8))(msw@2.4.9(typescript@5.5.4))(terser@5.31.6):
     dependencies:
       '@vitest/expect': 2.1.1
-      '@vitest/mocker': 2.1.1(@vitest/spy@2.1.1)(msw@2.4.8(typescript@5.5.4))(vite@5.4.1(@types/node@22.4.0)(terser@5.31.6))
+      '@vitest/mocker': 2.1.1(@vitest/spy@2.1.1)(msw@2.4.9(typescript@5.5.4))(vite@5.4.1(@types/node@22.4.0)(terser@5.31.6))
       '@vitest/pretty-format': 2.1.1
       '@vitest/runner': 2.1.1
       '@vitest/snapshot': 2.1.1
