@@ -20,9 +20,9 @@
     "eslint-plugin-react": "^7.36.1",
     "eslint-plugin-react-hooks": "5.1.0-rc-fb9a90fa48-20240614",
     "eslint-plugin-turbo": "^2.1.2",
-    "typescript-eslint": "^8.6.0"
+    "typescript-eslint": "^8.7.0"
   },
   "devDependencies": {
-    "eslint": "^9.11.0"
+    "eslint": "^9.11.1"
   }
 }
