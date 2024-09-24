@@ -88,7 +88,7 @@
     "msw": "^2.4.9",
     "nx": "^19.8.0",
     "prettier": "^3.3.3",
-    "prettier-plugin-tailwindcss": "^0.6.6",
+    "prettier-plugin-tailwindcss": "^0.6.8",
     "shell-quote": "^1.8.1",
     "tsup": "^8.3.0",
     "tsx": "^4.19.1",
