@@ -56,7 +56,6 @@ export const getBaseConfig = <TRequest extends Request = Request>(options?: {
   options ??= {};
   const { env, config } = options;
   return {
-    trustHost: true,
     useSecureCookies,
     cookies: {
       sessionToken: {
