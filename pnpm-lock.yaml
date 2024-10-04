@@ -1247,7 +1247,7 @@ importers:
   toolings/vitest:
     devDependencies:
       '@vitejs/plugin-react-swc':
-        specifier: ^3.7.0
+        specifier: ^3.7.1
         version: 3.7.1(@swc/helpers@0.5.13)(vite@5.4.8(@types/node@22.7.4)(terser@5.34.1))
       tsconfig:
         specifier: workspace:*
