@@ -29,13 +29,12 @@ const CreateForm = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = useRef(searchParams.get("token") ?? crypto.randomUUID());
-  const { destroy, getState, setState } = useDraft(token.current);
+  const { getState, setState } = useDraft(token.current);
   const draft = useRef(getState().draft);
   const utils = api.useUtils();
   const create = api.feeds.createFeed.useMutation({
     async onSuccess(_data, { type }) {
       toast.success("Feed created successfully");
-      destroy();
       router.push(`/feed/${type}s`);
       await utils.feeds.invalidate();
     },

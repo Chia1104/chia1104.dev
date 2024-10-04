@@ -19,9 +19,10 @@ const getGroupName = (data: Data, template = "YYYY", timezone?: string) =>
 const Timeline: FC<TimelineProps> = ({
   groupTemplate = "YYYY",
   tz = "UTC",
+  enableSort,
   ...props
 }) => {
-  if (props.enableSort)
+  if (enableSort)
     props.data.sort(
       (a, b) =>
         dayjs(b.startDate).tz(tz).valueOf() -

@@ -60,7 +60,7 @@ const horizontalRule = HorizontalRule.configure({
   },
 });
 
-const starterKit = StarterKit.configure({
+const _starterKit = StarterKit.configure({
   bulletList: {
     HTMLAttributes: {
       class: cn("list-disc list-outside leading-3 -mt-2"),
@@ -217,7 +217,7 @@ const markdown = Markdown.configure({
 
 const extensions: AnyExtension[] = [
   codeBlockLowlight,
-  starterKit,
+  // starterKit,
   placeholder,
   tiptapLink,
   taskList,
