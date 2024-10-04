@@ -53,10 +53,10 @@ const MEditor = dynamic(() => import("@monaco-editor/react"), {
   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
 });
 
-const Novel = dynamic(() => import("@chia/editor/novel"), {
-  ssr: false,
-  loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
-});
+// const Novel = dynamic(() => import("@chia/editor/novel"), {
+//   ssr: false,
+//   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
+// });
 
 interface Props {
   disabled?: boolean;
@@ -458,39 +458,39 @@ const SwitchEditor = () => {
             />
           </div>
         );
-      case ContentType.Tiptap:
-        return (
-          <Novel
-            editable={!editFields.disabled}
-            onUpdate={(e) => {
-              const content = e.editor.storage.markdown.getMarkdown();
-              const source = JSON.stringify(e.editor.getJSON());
-              editFields.setContent((prev) => ({
-                ...prev,
-                [ContentType.Tiptap]: {
-                  content,
-                  source,
-                },
-              }));
-              if (editFields.mode === "create" && editFields.token.length > 0) {
-                setState({
-                  content: {
-                    [ContentType.Tiptap]: {
-                      content,
-                      source,
-                    },
-                  },
-                });
-              }
-            }}
-            className="min-h-[700px]"
-            initialContent={JSON.parse(
-              editFields.content.tiptap.source ||
-                getState().content?.tiptap?.source ||
-                "{}"
-            )}
-          />
-        );
+      // case ContentType.Tiptap:
+      //   return (
+      //     <Novel
+      //       editable={!editFields.disabled}
+      //       onUpdate={(e) => {
+      //         const content = e.editor.storage.markdown.getMarkdown();
+      //         const source = JSON.stringify(e.editor.getJSON());
+      //         editFields.setContent((prev) => ({
+      //           ...prev,
+      //           [ContentType.Tiptap]: {
+      //             content,
+      //             source,
+      //           },
+      //         }));
+      //         if (editFields.mode === "create" && editFields.token.length > 0) {
+      //           setState({
+      //             content: {
+      //               [ContentType.Tiptap]: {
+      //                 content,
+      //                 source,
+      //               },
+      //             },
+      //           });
+      //         }
+      //       }}
+      //       className="min-h-[700px]"
+      //       initialContent={JSON.parse(
+      //         editFields.content.tiptap.source ||
+      //           getState().content?.tiptap?.source ||
+      //           "{}"
+      //       )}
+      //     />
+      //   );
       default:
         return null;
     }

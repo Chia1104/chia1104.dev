@@ -23,7 +23,6 @@
     "@chia/auth-core": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
-    "@chia/editor": "workspace:*",
     "@chia/contents": "workspace:*",
     "@chia/meta": "workspace:*",
     "@chia/ui": "workspace:*",
