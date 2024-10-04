@@ -1,7 +1,7 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig((opts) => ({
-  entry: ["src/**/*.ts"],
+  entry: ["src/server.ts"],
   clean: true,
   minify: !opts.watch,
   dts: false,
