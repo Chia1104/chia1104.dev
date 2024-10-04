@@ -1230,7 +1230,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/utils
       '@faker-js/faker':
-        specifier: ^9.0.2
+        specifier: ^9.0.3
         version: 9.0.3
       eslint:
         specifier: 'catalog:'
