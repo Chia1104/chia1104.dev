@@ -2,10 +2,7 @@
  * @typedef {import('next').NextConfig} NextConfig
  * @typedef {(config: NextConfig) => NextConfig} Plugin
  */
-import createMDX from "fumadocs-mdx/config";
 import million from "million/compiler";
-
-const withMDX = createMDX();
 
 const securityHeaders = [
   {
@@ -80,6 +77,6 @@ const nextComposePlugins = plugins.reduce(
 );
 
 // @ts-expect-error
-export default million.next(withMDX(nextComposePlugins), {
+export default million.next(nextComposePlugins, {
   rsc: true,
 });
