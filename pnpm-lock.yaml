@@ -285,8 +285,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/tailwind
       '@million/lint':
-        specifier: 1.0.8
-        version: 1.0.8(bufferutil@4.0.8)(rollup@4.24.0)(webpack-sources@3.2.3)
+        specifier: 1.0.9
+        version: 1.0.9(bufferutil@4.0.8)(rollup@4.24.0)(webpack-sources@3.2.3)
       '@testing-library/react':
         specifier: ^16.0.1
         version: 16.0.1(@testing-library/dom@10.4.0)(@types/react-dom@18.3.0)(@types/react@18.3.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -580,8 +580,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/tailwind
       '@million/lint':
-        specifier: 1.0.8
-        version: 1.0.8(bufferutil@4.0.8)(rollup@3.29.5)(webpack-sources@3.2.3)
+        specifier: 1.0.9
+        version: 1.0.9(bufferutil@4.0.8)(rollup@3.29.5)(webpack-sources@3.2.3)
       '@next/bundle-analyzer':
         specifier: 14.2.14
         version: 14.2.14(bufferutil@4.0.8)
@@ -2734,12 +2734,12 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@million/install@1.0.8':
-    resolution: {integrity: sha512-v3hAMjE1BvPh4UMRTpwx2okj4XOsNTOIvX3MEyscP5mLKXwNiBjhS+aiHFhNU8BSTRBhlIrrX3sebrSVx/AywA==}
+  '@million/install@1.0.9':
+    resolution: {integrity: sha512-tJk7azrjsIkHl/xTppFw8K7M/CIrqa1y9J75By+dtW6jZBQi51DQlsp5J1SuAcTR89XwpGEuhN29HOvHosblPw==}
     hasBin: true
 
-  '@million/lint@1.0.8':
-    resolution: {integrity: sha512-DrdqkNdKamxb3YjOcDeVe1tt6SWpxVvbw9y9LxeIvJVOP4YvFHg2ZzfEX5o0we/xFDTip4D05YWvmAZl76gPhQ==}
+  '@million/lint@1.0.9':
+    resolution: {integrity: sha512-sKqdKUb0zfF2DUXAWuhbxIm+0j7CqG+689azpcSVEdW3zn9ezj3AoL7ne229Q9ElJAmr8Z0zCM73tH5QtyfXzA==}
     hasBin: true
 
   '@molt/command@0.9.0':
@@ -9362,9 +9362,6 @@ packages:
   mlly@1.7.1:
     resolution: {integrity: sha512-rrVRZRELyQzrIUAVMHxP97kv+G786pHmOKzuFII8zDYahFBS7qnHh2AlYSl1GAHhaMPCz6/oHjVMcfFYgFYHgA==}
 
-  modern-screenshot@4.4.39:
-    resolution: {integrity: sha512-p+I4yLZUDnoJMa5zoi+71nLQmoLQ6WRU4W8vZu1BZk2PlIYOz5mGnj9/7t2lGWKYeOr4zo6pajhY0/9TS5Zcdw==}
-
   module-details-from-path@1.0.3:
     resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
 
@@ -12206,7 +12203,7 @@ snapshots:
       '@babel/parser': 7.25.7
       '@babel/template': 7.25.7
       '@babel/traverse': 7.25.7
-      '@babel/types': 7.25.2
+      '@babel/types': 7.25.7
       convert-source-map: 2.0.0
       debug: 4.3.7
       gensync: 1.0.0-beta.2
@@ -13262,7 +13259,7 @@ snapshots:
       '@types/react': 18.3.10
       react: 18.3.1
 
-  '@million/install@1.0.8':
+  '@million/install@1.0.9':
     dependencies:
       '@antfu/ni': 0.21.12
       '@axiomhq/js': 1.0.0-rc.3
@@ -13276,13 +13273,13 @@ snapshots:
       recast: 0.23.9
       xycolors: 0.1.2
 
-  '@million/lint@1.0.8(bufferutil@4.0.8)(rollup@3.29.5)(webpack-sources@3.2.3)':
+  '@million/lint@1.0.9(bufferutil@4.0.8)(rollup@3.29.5)(webpack-sources@3.2.3)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
       '@babel/core': 7.25.2
       '@babel/types': 7.25.2
       '@hono/node-server': 1.13.1(hono@4.6.3)
-      '@million/install': 1.0.8
+      '@million/install': 1.0.9
       '@rollup/pluginutils': 5.1.2(rollup@3.29.5)
       '@rrweb/types': 2.0.0-alpha.16
       babel-plugin-syntax-hermes-parser: 0.21.1
@@ -13291,7 +13288,6 @@ snapshots:
       faster-babel-types: 0.1.0(@babel/types@7.25.2)
       hono: 4.6.3
       isomorphic-fetch: 3.0.0
-      modern-screenshot: 4.4.39
       nanoid: 5.0.7
       pako: 2.1.0
       pathe: 1.1.2
@@ -13312,13 +13308,13 @@ snapshots:
       - utf-8-validate
       - webpack-sources
 
-  '@million/lint@1.0.8(bufferutil@4.0.8)(rollup@4.24.0)(webpack-sources@3.2.3)':
+  '@million/lint@1.0.9(bufferutil@4.0.8)(rollup@4.24.0)(webpack-sources@3.2.3)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
       '@babel/core': 7.25.2
       '@babel/types': 7.25.2
       '@hono/node-server': 1.13.1(hono@4.6.3)
-      '@million/install': 1.0.8
+      '@million/install': 1.0.9
       '@rollup/pluginutils': 5.1.2(rollup@4.24.0)
       '@rrweb/types': 2.0.0-alpha.16
       babel-plugin-syntax-hermes-parser: 0.21.1
@@ -13327,7 +13323,6 @@ snapshots:
       faster-babel-types: 0.1.0(@babel/types@7.25.2)
       hono: 4.6.3
       isomorphic-fetch: 3.0.0
-      modern-screenshot: 4.4.39
       nanoid: 5.0.7
       pako: 2.1.0
       pathe: 1.1.2
@@ -21824,8 +21819,6 @@ snapshots:
       pathe: 1.1.2
       pkg-types: 1.2.0
       ufo: 1.5.4
-
-  modern-screenshot@4.4.39: {}
 
   module-details-from-path@1.0.3: {}
 
