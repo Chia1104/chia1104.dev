@@ -338,8 +338,8 @@ importers:
         specifier: ^0.36.0
         version: 0.36.0
       '@auth/drizzle-adapter':
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: ^1.6.1
+        version: 1.6.1
       '@chia/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -722,8 +722,8 @@ importers:
         specifier: ^0.36.0
         version: 0.36.0
       '@auth/drizzle-adapter':
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: ^1.6.1
+        version: 1.6.1
       '@chia/auth-core':
         specifier: workspace:*
         version: link:../auth-core
@@ -777,8 +777,8 @@ importers:
         specifier: ^0.36.0
         version: 0.36.0
       '@auth/drizzle-adapter':
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: ^1.6.1
+        version: 1.6.1
       '@chia/cache':
         specifier: workspace:*
         version: link:../cache
@@ -1457,8 +1457,8 @@ packages:
       nodemailer:
         optional: true
 
-  '@auth/drizzle-adapter@1.6.0':
-    resolution: {integrity: sha512-9fxXDeWItF0qqukUN90yCo2p8mZ+BKWi9yAOK1+gVVrkseAwF5wearQABWi22RCvJ3JcUxK2i76UnXDstwF0lA==}
+  '@auth/drizzle-adapter@1.6.1':
+    resolution: {integrity: sha512-BbWjTFuNXrAIPa7uj9mDhmiHQPABIu74TqzslIkfMgcblMgXruVSVxoPeFJCQjZE25O3bLO2riX83VEbG1K29w==}
 
   '@axiomhq/js@1.0.0-rc.3':
     resolution: {integrity: sha512-Zm10TczcMLounWqC42nMkXQ7XKLqjzLrd5ia022oBKDUZqAFVg2y9d1quQVNV4FlXyg9MKDdfMjpKQRmzEGaog==}
@@ -12165,7 +12165,7 @@ snapshots:
       preact: 10.11.3
       preact-render-to-string: 5.2.3(preact@10.11.3)
 
-  '@auth/drizzle-adapter@1.6.0':
+  '@auth/drizzle-adapter@1.6.1':
     dependencies:
       '@auth/core': 0.36.0
     transitivePeerDependencies:
