@@ -362,8 +362,8 @@ importers:
         specifier: ^0.1.4
         version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.6.3))
       '@hono/auth-js':
-        specifier: ^1.0.11
-        version: 1.0.11(@auth/core@0.36.0)(hono@4.6.3)(react@18.3.1)
+        specifier: ^1.0.10
+        version: 1.0.10(@auth/core@0.36.0)(hono@4.6.3)(react@18.3.1)
       '@hono/graphql-server':
         specifier: ^0.5.1
         version: 0.5.1(hono@4.6.3)
@@ -2456,8 +2456,8 @@ packages:
     peerDependencies:
       hono-rate-limiter: ^0.2.1
 
-  '@hono/auth-js@1.0.11':
-    resolution: {integrity: sha512-eF5GTIVfwjWTx2YeWMGuEfI6Sgo68aTZP+B0q94Dj0HStF3lGvS0dQhW7D+nYLUQFZ8U6tUt5Nm4UYzodcgDLQ==}
+  '@hono/auth-js@1.0.10':
+    resolution: {integrity: sha512-hnkZzPMHveX2GzX/zS53uP6OqzB6SCtJCaimXdjewCWWiNi4FFtv1jcsca3PV7haiaLKict5JPZWzfMq+t3Bzw==}
     engines: {node: '>=18.4.0'}
     peerDependencies:
       '@auth/core': 0.*
@@ -12949,7 +12949,7 @@ snapshots:
     dependencies:
       hono-rate-limiter: 0.4.0(hono@4.6.3)
 
-  '@hono/auth-js@1.0.11(@auth/core@0.36.0)(hono@4.6.3)(react@18.3.1)':
+  '@hono/auth-js@1.0.10(@auth/core@0.36.0)(hono@4.6.3)(react@18.3.1)':
     dependencies:
       '@auth/core': 0.36.0
       hono: 4.6.3
