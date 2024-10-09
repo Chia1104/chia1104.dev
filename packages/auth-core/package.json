@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@auth/core": "^0.37.0",
-    "@auth/drizzle-adapter": "^1.6.1",
+    "@auth/drizzle-adapter": "^1.7.0",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/eslint-config": "workspace:*",
