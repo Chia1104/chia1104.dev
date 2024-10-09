@@ -24,7 +24,7 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
-    "drizzle-orm": "^0.33.0",
+    "drizzle-orm": "^0.34.1",
     "drizzle-zod": "^0.5.1",
     "pg": "^8.13.0",
     "postgres": "^3.4.4"
