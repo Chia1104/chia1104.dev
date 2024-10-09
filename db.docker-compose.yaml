@@ -10,6 +10,7 @@ services:
       - .env.global
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
+      - DEBUG=true
 
   redis:
     container_name: chia-redis

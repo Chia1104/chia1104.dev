@@ -5,7 +5,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getDB, getInfiniteFeedsByUserId, schema, eq } from "@chia/db";
+import { getDB, schema, eq } from "@chia/db";
+import { getInfiniteFeedsByUserId } from "@chia/db/repos/feeds";
 import {
   getBaseUrl,
   WWW_BASE_URL,

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 
-import { getPublicFeedsTotal } from "@chia/db/utils/public/feeds";
+import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId } from "@chia/utils";
 
 const api = new Hono<HonoContext>();

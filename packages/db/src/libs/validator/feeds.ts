@@ -1,8 +1,9 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { feeds, contents } from "../../schema";
+import { contents } from "../../schema";
 import { ContentType, FeedOrderBy, FeedType } from "../../types";
+import { internal_feedsOmitEmbedding } from "../internal_schema";
 
 export const baseInfiniteSchema = z.object({
   limit: z.number().max(50).optional().default(10),
@@ -27,7 +28,7 @@ const internal_dateSchema = z.object({
   updatedAt: z.union([z.string(), z.number()]).optional(),
 });
 
-export const insertFeedSchema = createInsertSchema(feeds)
+export const insertFeedSchema = createInsertSchema(internal_feedsOmitEmbedding)
   .omit({
     createdAt: true,
     updatedAt: true,

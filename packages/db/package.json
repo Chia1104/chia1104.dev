@@ -7,26 +7,28 @@
     ".": "./src/index.ts",
     "./types": "./src/types.ts",
     "./schema": "./src/schema/index.ts",
-    "./utils/feeds": "./src/utils/feeds/index.ts",
-    "./utils/users": "./src/utils/users/index.ts",
-    "./utils/public/feeds": "./src/utils/public/feeds.ts",
-    "./validator/feeds": "./src/utils/validator/feeds.ts",
-    "./validator/users": "./src/utils/validator/users.ts"
+    "./repos/feeds": "./src/libs/feeds/index.ts",
+    "./repos/users": "./src/libs/users/index.ts",
+    "./repos/public/feeds": "./src/libs/public/feeds.ts",
+    "./validator/feeds": "./src/libs/validator/feeds.ts",
+    "./validator/users": "./src/libs/validator/users.ts"
   },
   "scripts": {
-    "db:start": "docker-compose up -d",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules",
     "db:check": "tsx --env-file=../../.env.global check.ts",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "migrate:run": "tsx --env-file=../../.env.global migrate.ts"
   },
   "dependencies": {
-    "drizzle-orm": "^0.33.0",
+    "@chia/ai": "workspace:*",
+    "drizzle-orm": "^0.34.1",
     "drizzle-zod": "^0.5.1",
     "pg": "^8.13.0",
+    "pgvector": "^0.2.0",
     "postgres": "^3.4.4"
   },
   "devDependencies": {
@@ -34,7 +36,7 @@
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.24.2",
+    "drizzle-kit": "^0.25.0",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"

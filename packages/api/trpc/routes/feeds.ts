@@ -1,9 +1,8 @@
 import GithubSlugger from "github-slugger";
 import { z } from "zod";
 
+import { eq, schema } from "@chia/db";
 import {
-  eq,
-  schema,
   getInfiniteFeeds,
   getInfiniteFeedsByUserId,
   getFeedBySlug,
@@ -11,7 +10,7 @@ import {
   createFeed,
   updateFeed,
   deleteFeed,
-} from "@chia/db";
+} from "@chia/db/repos/feeds";
 import { ContentType } from "@chia/db/types";
 import { infiniteSchema } from "@chia/db/validator/feeds";
 
