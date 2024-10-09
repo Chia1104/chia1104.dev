@@ -24,8 +24,8 @@
     "@ai-sdk/openai": "^0.0.66",
     "@chia/utils": "workspace:*",
     "ai": "^3.4.9",
-    "next": "14.2.14",
-    "openai": "^4.67.2"
+    "next": "14.2.15",
+    "openai": "^4.67.3"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

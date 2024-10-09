@@ -18,8 +18,8 @@
     "clean": "git clean -xdf .turbo node_modules"
   },
   "dependencies": {
-    "@auth/core": "^0.36.0",
-    "@auth/drizzle-adapter": "^1.6.1",
+    "@auth/core": "^0.37.0",
+    "@auth/drizzle-adapter": "^1.7.0",
     "@chia/auth-core": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
@@ -28,7 +28,7 @@
     "@chia/utils": "workspace:*",
     "@react-email/render": "^1.0.1",
     "@t3-oss/env-core": "^0.11.1",
-    "next": "14.2.14",
+    "next": "14.2.15",
     "next-auth": "5.0.0-beta.22",
     "react": "catalog:react18"
   },
