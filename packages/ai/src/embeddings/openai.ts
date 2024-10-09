@@ -3,8 +3,6 @@ import { z } from "zod";
 
 import { createOpenAI } from "..";
 
-const openai = createOpenAI();
-
 export const TextEmbeddingModel = {
   "ada-002": "text-embedding-ada-002",
   "3-small": "text-embedding-3-small",
@@ -25,7 +23,8 @@ export const generateEmbedding = async (
   options?: Options
 ): Promise<number[]> => {
   options ??= {};
-  const { client = openai, model = TextEmbeddingModel["ada-002"] } = options;
+  const { client = createOpenAI(), model = TextEmbeddingModel["ada-002"] } =
+    options;
   const input = value.replaceAll("\n", " ");
 
   const { data } = await client.embeddings.create({
