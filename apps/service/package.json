@@ -9,7 +9,8 @@
     "node:start": "node dist/server.mjs",
     "start": "bun run --bun dist/server.mjs",
     "node:preview": "node --env-file=.env dist/server.mjs",
-    "test": "NODE_ENV=test bun test"
+    "test": "NODE_ENV=test bun test",
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@apollo/server": "^4.11.0",
@@ -22,7 +23,7 @@
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
     "@hono-rate-limiter/redis": "^0.1.4",
-    "@hono/auth-js": "^1.0.10",
+    "@hono/auth-js": "^1.0.11",
     "@hono/graphql-server": "^0.5.1",
     "@hono/node-server": "^1.13.1",
     "@hono/sentry": "^1.2.0",
