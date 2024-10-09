@@ -17,9 +17,7 @@ export const cursorTransform = (
   }
 };
 
-export const dateToTimestamp = (
-  date: string | number | Date | dayjs.Dayjs | null | undefined
-) => {
+export const dateToTimestamp = (date: dayjs.ConfigType) => {
   return dayjs(date).valueOf();
 };
 

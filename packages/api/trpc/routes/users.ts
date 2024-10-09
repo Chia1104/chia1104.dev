@@ -1,5 +1,5 @@
 import { updateCacheUser } from "@chia/auth-core/adapter";
-import { updateUserProfile } from "@chia/db/utils/users";
+import { updateUserProfile } from "@chia/db/repos/users";
 import { insertUserSchema } from "@chia/db/validator/users";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";

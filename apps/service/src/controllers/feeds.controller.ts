@@ -2,13 +2,12 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
 import { createOpenAI } from "@chia/ai";
+import { eq, schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
-  eq,
-  schema,
   searchFeeds,
-} from "@chia/db";
+} from "@chia/db/repos/feeds";
 
 import { ai, AI_AUTH_TOKEN } from "@/middlewares/ai.middleware";
 import { verifyAuth } from "@/middlewares/auth.middleware";

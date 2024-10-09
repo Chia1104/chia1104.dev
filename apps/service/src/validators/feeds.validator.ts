@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 import { textEmbeddingModelSchema } from "@chia/ai/embeddings/openai";
-import { baseInfiniteSchema } from "@chia/db";
 import { FeedOrderBy } from "@chia/db/types";
+import { baseInfiniteSchema } from "@chia/db/validator/feeds";
 import { numericStringSchema } from "@chia/utils";
 
 export const getFeedsWithMetaSchema = z

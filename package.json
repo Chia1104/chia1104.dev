@@ -54,7 +54,8 @@
     "www-graph": "turbo run build --filter www... --graph=graph/www-graph.html",
     "dash-graph": "turbo run build --filter dash... --graph=graph/dash-graph.html",
     "graph": "nx graph",
-    "ui-add": "turbo run ui-add"
+    "ui-add": "turbo run ui-add",
+    "update-deps:all": "pnpm up --latest --filter '@chia/*' --filter www --filter dash --filter service"
   },
   "engines": {
     "node": ">=20.6",

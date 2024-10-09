@@ -8,14 +8,18 @@ import {
   integer,
   serial,
   index,
-  uniqueIndex,
-  boolean,
+  uniqueIndex, // boolean,
 } from "drizzle-orm/pg-core";
 
 import {
-  feedsWithEmbeddingColumns,
-  feedsWithEmbeddingExtraConfig,
-} from "../utils/schema-columns";
+  /**
+   * @TODO: Uncomment when we support pgvector
+   */
+  // feedsWithEmbeddingColumns,
+  // feedsWithEmbeddingExtraConfig,
+  baseFeedsColumns,
+  baseFeedsExtraConfig,
+} from "../libs/schema-columns";
 import { roles } from "./enums";
 import { pgTable } from "./table";
 
@@ -77,26 +81,26 @@ export const verificationTokens = pgTable(
   })
 );
 
-export const authenticators = pgTable(
-  "authenticator",
-  {
-    credentialID: text("credentialID").notNull().unique(),
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    providerAccountId: text("providerAccountId").notNull(),
-    credentialPublicKey: text("credentialPublicKey").notNull(),
-    counter: integer("counter").notNull(),
-    credentialDeviceType: text("credentialDeviceType").notNull(),
-    credentialBackedUp: boolean("credentialBackedUp").notNull(),
-    transports: text("transports"),
-  },
-  (authenticator) => ({
-    compositePK: primaryKey({
-      columns: [authenticator.userId, authenticator.credentialID],
-    }),
-  })
-);
+// export const authenticators = pgTable(
+//   "authenticator",
+//   {
+//     credentialID: text("credentialID").notNull().unique(),
+//     userId: text("userId")
+//       .notNull()
+//       .references(() => users.id, { onDelete: "cascade" }),
+//     providerAccountId: text("providerAccountId").notNull(),
+//     credentialPublicKey: text("credentialPublicKey").notNull(),
+//     counter: integer("counter").notNull(),
+//     credentialDeviceType: text("credentialDeviceType").notNull(),
+//     credentialBackedUp: boolean("credentialBackedUp").notNull(),
+//     transports: text("transports"),
+//   },
+//   (authenticator) => ({
+//     compositePK: primaryKey({
+//       columns: [authenticator.userId, authenticator.credentialID],
+//     }),
+//   })
+// );
 
 export const tags = pgTable(
   "tag",
@@ -161,11 +165,7 @@ export const assetsToTags = pgTable(
   })
 );
 
-export const feeds = pgTable(
-  "feed",
-  feedsWithEmbeddingColumns,
-  feedsWithEmbeddingExtraConfig
-);
+export const feeds = pgTable("feed", baseFeedsColumns, baseFeedsExtraConfig);
 
 export const feedsToTags = pgTable(
   "feeds_to_tags",
@@ -208,12 +208,12 @@ export const feedsRelations = relations(feeds, ({ one, many }) => ({
   feedsToTags: many(feedsToTags),
 }));
 
-export const authenticatorsRelations = relations(authenticators, ({ one }) => ({
-  user: one(users, {
-    fields: [authenticators.userId],
-    references: [users.id],
-  }),
-}));
+// export const authenticatorsRelations = relations(authenticators, ({ one }) => ({
+//   user: one(users, {
+//     fields: [authenticators.userId],
+//     references: [users.id],
+//   }),
+// }));
 
 export const assetsRelations = relations(assets, ({ one, many }) => ({
   user: one(users, {
@@ -256,7 +256,7 @@ export type User = InferSelectModel<typeof users>;
 export type Account = InferSelectModel<typeof accounts>;
 export type Session = InferSelectModel<typeof sessions>;
 export type VerificationToken = InferSelectModel<typeof verificationTokens>;
-export type Authenticator = InferSelectModel<typeof authenticators>;
+// export type Authenticator = InferSelectModel<typeof authenticators>;
 export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type Content = InferSelectModel<typeof contents>;

@@ -1,8 +1,13 @@
 import dayjs from "dayjs";
 import type { SQLWrapper } from "drizzle-orm";
-import { eq, sql, cosineDistance, desc, gt } from "drizzle-orm";
+import {
+  eq, // sql,
+  // cosineDistance,
+  // desc,
+  // gt
+} from "drizzle-orm";
 
-import { generateEmbedding } from "@chia/ai/embeddings/openai";
+// import { generateEmbedding } from "@chia/ai/embeddings/openai";
 import type { Options } from "@chia/ai/embeddings/openai";
 
 import { cursorTransform, dateToTimestamp, withDTO } from "../";
@@ -82,7 +87,7 @@ export const getInfiniteFeeds = withDTO(
       const nextItem = items.pop();
       nextCursor =
         orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-          ? dateToTimestamp(nextItem?.[orderBy])
+          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
           : nextItem?.[orderBy];
     }
     return {
@@ -149,7 +154,7 @@ export const getInfiniteFeedsByUserId = withDTO(
       const nextItem = items.pop();
       nextCursor =
         orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-          ? dateToTimestamp(nextItem?.[orderBy])
+          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
           : nextItem?.[orderBy];
     }
     return {
@@ -240,28 +245,30 @@ export const searchFeeds = withDTO(
     db,
     dto: Options & { input: string; limit?: number; comparison?: number }
   ) => {
-    const embedding = await generateEmbedding(dto.input, dto);
-    const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
+    // const embedding = await generateEmbedding(dto.input, dto);
+    // const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
 
-    return db
-      .select({
-        id: schema.feeds.id,
-        userId: schema.feeds.userId,
-        type: schema.feeds.type,
-        slug: schema.feeds.slug,
-        description: schema.feeds.description,
-        createdAt: schema.feeds.createdAt,
-        updatedAt: schema.feeds.updatedAt,
-        readTime: schema.feeds.readTime,
-        contentType: schema.feeds.contentType,
-        published: schema.feeds.published,
-        title: schema.feeds.title,
-        excerpt: schema.feeds.excerpt,
-        similarity,
-      })
-      .from(schema.feeds)
-      .where(gt(similarity, dto.comparison ?? 0.5))
-      .orderBy((t) => desc(t.similarity))
-      .limit(dto.limit ?? 5);
+    return (
+      db
+        .select({
+          id: schema.feeds.id,
+          userId: schema.feeds.userId,
+          type: schema.feeds.type,
+          slug: schema.feeds.slug,
+          description: schema.feeds.description,
+          createdAt: schema.feeds.createdAt,
+          updatedAt: schema.feeds.updatedAt,
+          readTime: schema.feeds.readTime,
+          contentType: schema.feeds.contentType,
+          published: schema.feeds.published,
+          title: schema.feeds.title,
+          excerpt: schema.feeds.excerpt,
+          // similarity,
+        })
+        .from(schema.feeds)
+        // .where(gt(similarity, dto.comparison ?? 0.5))
+        // .orderBy((t) => desc(t.similarity))
+        .limit(dto.limit ?? 5)
+    );
   }
 );
