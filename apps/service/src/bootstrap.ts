@@ -33,6 +33,17 @@ const bootstrap = <TContext extends HonoContext>(
   app.use(logger());
 
   /**
+   * Sentry middleware
+   */
+  app.use(
+    "*",
+    sentry({
+      dsn: env.SENTRY_DSN,
+      enabled: env.NODE_ENV === "production" && !!env.ZEABUR_SERVICE_ID,
+    })
+  );
+
+  /**
    * Global error handler
    */
   app.onError((e, c) => {
@@ -51,17 +62,6 @@ const bootstrap = <TContext extends HonoContext>(
     cors({
       origin: getCORSAllowedOrigin(),
       credentials: true,
-    })
-  );
-
-  /**
-   * Sentry middleware
-   */
-  app.use(
-    "*",
-    sentry({
-      dsn: env.SENTRY_DSN,
-      enabled: env.NODE_ENV === "production" && !!env.ZEABUR_SERVICE_ID,
     })
   );
 
