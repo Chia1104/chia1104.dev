@@ -32,7 +32,7 @@ export const adapter = ({
     accountsTable: schema.accounts,
     sessionsTable: schema.sessions,
     verificationTokensTable: schema.verificationTokens,
-    authenticatorsTable: schema.authenticators,
+    // authenticatorsTable: schema.authenticators,
   });
 
   const setObjectAsJson = async <TData = unknown>(

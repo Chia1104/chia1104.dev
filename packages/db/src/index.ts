@@ -35,8 +35,6 @@ export { schema };
 export * from "drizzle-orm";
 export { pgTable as tableCreator } from "./schema/table";
 
-export * from "./utils/feeds";
-export * from "./utils/validator/feeds";
 export * from "./schema/enums";
 
 export const getDB = (env?: string) =>
@@ -45,3 +43,11 @@ export const getDB = (env?: string) =>
     beta: () => betaDb,
     local: () => localDb,
   });
+
+export const closeClient = async (env?: string) => {
+  await switchEnv(env, {
+    prod: async () => await queryClient.end(),
+    beta: async () => await betaQueryClient.end(),
+    local: async () => await localQueryClient.end(),
+  });
+};

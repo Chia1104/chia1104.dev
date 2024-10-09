@@ -1,8 +1,8 @@
 import * as sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getDB } from "~/packages/db/src";
 
-import { getPublicFeedsTotal } from "@chia/db/utils/public/feeds";
+import { getDB } from "@chia/db";
+import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import {
   getBaseUrl,
   WWW_BASE_URL,

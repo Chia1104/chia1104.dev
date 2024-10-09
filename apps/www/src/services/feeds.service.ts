@@ -1,13 +1,8 @@
 import { unstable_cache as cache } from "next/cache";
 import "server-only";
 
-import {
-  getDB,
-  getInfiniteFeedsByUserId,
-  eq,
-  schema,
-  getFeedBySlug,
-} from "@chia/db";
+import { getDB, eq, schema } from "@chia/db";
+import { getInfiniteFeedsByUserId, getFeedBySlug } from "@chia/db/repos/feeds";
 import { getAdminId } from "@chia/utils";
 
 export const keys = {

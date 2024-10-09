@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-import { baseInfiniteSchema } from "@chia/db";
+import { textEmbeddingModelSchema } from "@chia/ai/embeddings/openai";
 import { FeedOrderBy } from "@chia/db/types";
+import { baseInfiniteSchema } from "@chia/db/validator/feeds";
 import { numericStringSchema } from "@chia/utils";
 
 export const getFeedsWithMetaSchema = z
@@ -44,3 +45,8 @@ export const getFeedsWithMetaSchema = z
   );
 
 export type GetFeedsWithMetaDTO = z.infer<typeof getFeedsWithMetaSchema>;
+
+export const searchFeedsSchema = z.object({
+  keyword: z.string().optional(),
+  model: textEmbeddingModelSchema.optional(),
+});
