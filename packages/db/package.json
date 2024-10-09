@@ -30,7 +30,7 @@
     "postgres": "^3.4.4"
   },
   "devDependencies": {
-    "@auth/core": "^0.36.0",
+    "@auth/core": "^0.37.0",
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@types/pg": "^8.11.10",
