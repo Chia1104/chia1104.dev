@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@auth/core": "^0.37.0",
-    "@auth/drizzle-adapter": "^1.6.1",
+    "@auth/drizzle-adapter": "^1.7.0",
     "@chia/auth-core": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
