@@ -360,25 +360,25 @@ importers:
         version: link:../../packages/utils
       '@hono-rate-limiter/redis':
         specifier: ^0.1.4
-        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.6.3))
+        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.6.4))
       '@hono/auth-js':
         specifier: ^1.0.11
-        version: 1.0.11(@auth/core@0.37.0)(hono@4.6.3)(react@18.3.1)
+        version: 1.0.11(@auth/core@0.37.0)(hono@4.6.4)(react@18.3.1)
       '@hono/graphql-server':
         specifier: ^0.5.1
-        version: 0.5.1(hono@4.6.3)
+        version: 0.5.1(hono@4.6.4)
       '@hono/node-server':
         specifier: ^1.13.1
-        version: 1.13.1(hono@4.6.3)
+        version: 1.13.1(hono@4.6.4)
       '@hono/sentry':
         specifier: ^1.2.0
-        version: 1.2.0(hono@4.6.3)
+        version: 1.2.0(hono@4.6.4)
       '@hono/trpc-server':
         specifier: ^0.3.2
-        version: 0.3.2(@trpc/server@11.0.0-rc.566)(hono@4.6.3)
+        version: 0.3.2(@trpc/server@11.0.0-rc.566)(hono@4.6.4)
       '@hono/zod-validator':
         specifier: ^0.4.1
-        version: 0.4.1(hono@4.6.3)(zod@3.23.8)
+        version: 0.4.1(hono@4.6.4)(zod@3.23.8)
       '@t3-oss/env-core':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.6.3)(zod@3.23.8)
@@ -389,11 +389,11 @@ importers:
         specifier: ^16.9.0
         version: 16.9.0
       hono:
-        specifier: ^4.6.3
-        version: 4.6.3
+        specifier: ^4.6.4
+        version: 4.6.4
       hono-rate-limiter:
         specifier: ^0.4.0
-        version: 0.4.0(hono@4.6.3)
+        version: 0.4.0(hono@4.6.4)
       rate-limit-redis:
         specifier: ^4.2.0
         version: 4.2.0(express-rate-limit@7.4.1(express@4.21.1))
@@ -8147,6 +8147,10 @@ packages:
     resolution: {integrity: sha512-0LeEuBNFeSHGqZ9sNVVgZjB1V5fmhkBSB0hZrpqStSMLOWgfLy0dHOvrjbJh0H2khsjet6rbHfWTHY0kpYThKQ==}
     engines: {node: '>=16.9.0'}
 
+  hono@4.6.4:
+    resolution: {integrity: sha512-T5WqBkTOcIQblqBKB5mpzaH/A+dSpvVe938xZJCHOmOuYfF7DSwE/9/10+BMvwSPq9N/f6LiQ38HxrZSQOsXKw==}
+    engines: {node: '>=16.9.0'}
+
   html-encoding-sniffer@4.0.0:
     resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
     engines: {node: '>=18'}
@@ -12918,38 +12922,42 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.6.3))':
+  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.6.4))':
     dependencies:
-      hono-rate-limiter: 0.4.0(hono@4.6.3)
+      hono-rate-limiter: 0.4.0(hono@4.6.4)
 
-  '@hono/auth-js@1.0.11(@auth/core@0.37.0)(hono@4.6.3)(react@18.3.1)':
+  '@hono/auth-js@1.0.11(@auth/core@0.37.0)(hono@4.6.4)(react@18.3.1)':
     dependencies:
       '@auth/core': 0.37.0
-      hono: 4.6.3
+      hono: 4.6.4
       react: 18.3.1
 
-  '@hono/graphql-server@0.5.1(hono@4.6.3)':
+  '@hono/graphql-server@0.5.1(hono@4.6.4)':
     dependencies:
       graphql: 16.9.0
-      hono: 4.6.3
+      hono: 4.6.4
 
   '@hono/node-server@1.13.1(hono@4.6.3)':
     dependencies:
       hono: 4.6.3
 
-  '@hono/sentry@1.2.0(hono@4.6.3)':
+  '@hono/node-server@1.13.1(hono@4.6.4)':
     dependencies:
-      hono: 4.6.3
+      hono: 4.6.4
+
+  '@hono/sentry@1.2.0(hono@4.6.4)':
+    dependencies:
+      hono: 4.6.4
       toucan-js: 4.0.0
 
-  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.566)(hono@4.6.3)':
+  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.566)(hono@4.6.4)':
     dependencies:
       '@trpc/server': 11.0.0-rc.566
-      hono: 4.6.3
+      hono: 4.6.4
 
-  '@hono/zod-validator@0.4.1(hono@4.6.3)(zod@3.23.8)':
+  '@hono/zod-validator@0.4.1(hono@4.6.4)(zod@3.23.8)':
     dependencies:
-      hono: 4.6.3
+      hono: 4.6.4
       zod: 3.23.8
 
   '@hookform/resolvers@3.9.0(react-hook-form@7.53.0(react@18.3.1))':
@@ -20141,11 +20149,13 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.4.0(hono@4.6.3):
+  hono-rate-limiter@0.4.0(hono@4.6.4):
     dependencies:
-      hono: 4.6.3
+      hono: 4.6.4
 
   hono@4.6.3: {}
+
+  hono@4.6.4: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
