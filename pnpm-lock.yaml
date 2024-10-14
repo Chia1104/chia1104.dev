@@ -209,8 +209,8 @@ importers:
         specifier: 'catalog:'
         version: 11.0.0-rc.566
       ai:
-        specifier: ^3.4.9
-        version: 3.4.9(openai@4.67.3(zod@3.23.8))(react@18.3.1)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.5.11(typescript@5.6.3))(zod@3.23.8)
+        specifier: ^3.4.10
+        version: 3.4.10(openai@4.67.3(zod@3.23.8))(react@18.3.1)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.5.11(typescript@5.6.3))(zod@3.23.8)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -652,8 +652,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       ai:
-        specifier: ^3.4.9
-        version: 3.4.9(openai@4.67.3(zod@3.23.8))(react@18.3.1)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.5.11(typescript@5.6.3))(zod@3.23.8)
+        specifier: ^3.4.10
+        version: 3.4.10(openai@4.67.3(zod@3.23.8))(react@18.3.1)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.5.11(typescript@5.6.3))(zod@3.23.8)
       next:
         specifier: 14.2.15
         version: 14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -6392,8 +6392,8 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ai@3.4.9:
-    resolution: {integrity: sha512-wmVzpIHNGjCEjIJ/3945a/DIkz+gwObjC767ZRgO8AmtIZMO5KqvqNr7n2KF+gQrCPCMC8fM1ICQFXSvBZnBlA==}
+  ai@3.4.10:
+    resolution: {integrity: sha512-K+Nm8+AsVWEJDd/DsezSlAteIvcA+HjCUDQhuXKVTBU4z+4lpyji6j9wsyaGBhwFDqGZgNzR/D0r5FQLasA4Jg==}
     engines: {node: '>=18'}
     peerDependencies:
       openai: ^4.42.0
@@ -18046,7 +18046,7 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@3.4.9(openai@4.67.3(zod@3.23.8))(react@18.3.1)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.5.11(typescript@5.6.3))(zod@3.23.8):
+  ai@3.4.10(openai@4.67.3(zod@3.23.8))(react@18.3.1)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.5.11(typescript@5.6.3))(zod@3.23.8):
     dependencies:
       '@ai-sdk/provider': 0.0.24
       '@ai-sdk/provider-utils': 1.0.20(zod@3.23.8)
