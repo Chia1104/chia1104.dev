@@ -44,7 +44,7 @@
     "fumadocs-mdx": "^10.0.2",
     "fumadocs-ui": "^13.4.10",
     "lowlight": "^3.1.0",
-    "lucide-react": "^0.452.0",
+    "lucide-react": "^0.453.0",
     "million": "^3.1.11",
     "next": "14.2.15",
     "next-auth": "5.0.0-beta.22",
