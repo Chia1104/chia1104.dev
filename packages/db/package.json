@@ -36,7 +36,7 @@
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.26.0",
+    "drizzle-kit": "^0.26.1",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"
