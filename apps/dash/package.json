@@ -38,7 +38,7 @@
     "@trpc/next": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
-    "ai": "^3.4.10",
+    "ai": "^3.4.11",
     "clsx": "^2.1.1",
     "framer-motion": "11.11.9",
     "fumadocs-mdx": "^10.0.2",
