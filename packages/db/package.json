@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
-    "drizzle-orm": "^0.34.1",
+    "drizzle-orm": "^0.35.0",
     "drizzle-zod": "^0.5.1",
     "pg": "^8.13.0",
     "pgvector": "^0.2.0",
@@ -36,7 +36,7 @@
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.26.0",
+    "drizzle-kit": "^0.26.1",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"

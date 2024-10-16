@@ -14,7 +14,7 @@ const api = new Hono<HonoContext>();
 
 api.use("*", async (c) =>
   fetchRequestHandler({
-    endpoint: "/trpc",
+    endpoint: "/api/v1/trpc",
     router: appRouter,
     createContext: async () => {
       const { getSessionAndUser, deleteSession, updateSession } = adapter({

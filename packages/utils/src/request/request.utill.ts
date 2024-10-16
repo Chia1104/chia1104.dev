@@ -1,6 +1,8 @@
 import ky from "ky";
 import type { Options, HTTPError, SearchParamsOption } from "ky";
 
+import { getServiceEndPoint } from "../config";
+
 export type { HTTPError };
 
 export interface ErrorResponse {
@@ -48,9 +50,9 @@ export const serviceRequest = (
 ) => {
   return request({
     ...defaultOptions,
-    prefixUrl: defaultOptions?.isInternal
-      ? process.env.INTERNAL_SERVICE_ENDPOINT
-      : process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
+    prefixUrl: getServiceEndPoint(undefined, {
+      isInternal: defaultOptions?.isInternal,
+    }),
   });
 };
 
