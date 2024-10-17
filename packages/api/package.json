@@ -36,7 +36,9 @@
     "@trpc/server": "catalog:",
     "eslint": "catalog:",
     "github-slugger": "^2.0.0",
-    "server-only": "^0.0.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
     "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }

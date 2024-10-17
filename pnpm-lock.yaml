@@ -709,6 +709,7 @@ importers:
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
+    devDependencies:
       tsconfig:
         specifier: workspace:*
         version: link:../../toolings/tsconfig
@@ -772,7 +773,7 @@ importers:
         version: 5.6.3
 
   packages/auth-core:
-    devDependencies:
+    dependencies:
       '@auth/core':
         specifier: ^0.37.0
         version: 0.37.0
@@ -794,6 +795,7 @@ importers:
       '@t3-oss/env-core':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.6.3)(zod@3.23.8)
+    devDependencies:
       eslint:
         specifier: 'catalog:'
         version: 9.12.0(jiti@1.21.6)
@@ -889,9 +891,15 @@ importers:
 
   packages/db:
     dependencies:
+      '@auth/core':
+        specifier: ^0.37.0
+        version: 0.37.0
       '@chia/ai':
         specifier: workspace:*
         version: link:../ai
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
       drizzle-orm:
         specifier: ^0.35.0
         version: 0.35.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.11)(bun-types@1.1.30)(pg@8.13.0)(postgres@3.4.4)(react@18.3.1)
@@ -908,15 +916,9 @@ importers:
         specifier: ^3.4.4
         version: 3.4.4
     devDependencies:
-      '@auth/core':
-        specifier: ^0.37.0
-        version: 0.37.0
       '@chia/eslint-config':
         specifier: workspace:*
         version: link:../../toolings/eslint
-      '@chia/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@types/pg':
         specifier: ^8.11.10
         version: 8.11.10
