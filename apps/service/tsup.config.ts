@@ -7,12 +7,12 @@ export default defineConfig((opts) => ({
   dts: false,
   format: ["esm"],
   tsconfig: "tsconfig.build.json",
-  noExternal: [
-    "@chia/ai",
-    "@chia/auth-core",
-    "@chia/cache",
-    "@chia/db",
-    "@chia/utils",
-    "@chia/api",
-  ],
+  // noExternal: [
+  //   "@chia/ai",
+  //   "@chia/auth-core",
+  //   "@chia/cache",
+  //   "@chia/db",
+  //   "@chia/utils",
+  //   "@chia/api",
+  // ],
 }));

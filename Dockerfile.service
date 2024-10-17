@@ -57,8 +57,7 @@ RUN pnpm i --prod --ignore-scripts
 FROM runner-base as runner
 
 COPY --from=builder /app/apps/service/dist ./apps/service/dist
-COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
-COPY --from=prod /app/node_modules ./node_modules
+COPY --from=prod /app .
 
 ENV NODE_ENV=production \
     PORT=8080
