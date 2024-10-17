@@ -44,24 +44,13 @@ ENV TURBO_TEAM=$TURBO_TEAM \
 
 RUN pnpm i
 
-RUN pnpm turbo run build --filter=service...
-
-FROM builder-base as prod
-
-COPY --from=pre-builder /app/out/json/ .
-COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=pre-builder /app/out/full/ .
-
-RUN pnpm i --prod --ignore-scripts
-
 FROM runner-base as runner
 
-COPY --from=builder /app/apps/service/dist ./apps/service/dist
-COPY --from=prod /app .
+COPY --from=builder /app .
 
 ENV NODE_ENV=production \
     PORT=8080
 
 EXPOSE 8080
 
-CMD [ "bun", "apps/service/dist/server.mjs" ]
+CMD [ "bun", "apps/service/src/server.ts" ]
