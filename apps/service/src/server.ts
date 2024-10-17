@@ -17,7 +17,4 @@ if (getRuntimeKey() === "node") {
   });
 }
 
-export default {
-  fetch: app.fetch,
-  port,
-};
+export default app;
