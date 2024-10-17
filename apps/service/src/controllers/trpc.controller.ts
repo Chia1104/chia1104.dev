@@ -14,13 +14,13 @@ import { sessionAction } from "@/middlewares/auth.middleware";
 const api = new Hono<HonoContext>();
 
 api.use("*", async (c) => {
-  if (getRuntimeKey() === "bun") {
-    Bun.gc(true);
-  }
   return fetchRequestHandler({
     endpoint: "/api/v1/trpc",
     router: appRouter,
     createContext: async () => {
+      if (getRuntimeKey() === "bun") {
+        Bun.gc(true);
+      }
       const { getSessionAndUser, deleteSession, updateSession } = adapter({
         db: c.var.db,
         redis: c.var.redis,
