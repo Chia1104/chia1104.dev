@@ -18,14 +18,16 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests"
   },
-  "devDependencies": {
+  "dependencies": {
     "@auth/core": "^0.37.0",
     "@auth/drizzle-adapter": "^1.7.0",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
-    "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@t3-oss/env-core": "^0.11.1",
+    "@t3-oss/env-core": "^0.11.1"
+  },
+  "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"
