@@ -1,3 +1,4 @@
+import { getRuntimeKey } from "hono/adapter";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
@@ -11,6 +12,9 @@ export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
 
 export const ai = () =>
   createMiddleware(async (c, next) => {
+    if (getRuntimeKey() === "bun") {
+      Bun.gc(true);
+    }
     if (!env.AI_AUTH_SECRET || !env.OPENAI_API_KEY) {
       return c.json(errorGenerator(503), 503, {
         "Retry-After": "3600",

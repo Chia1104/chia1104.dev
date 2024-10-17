@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { Hono } from "hono";
+import { getRuntimeKey } from "hono/adapter";
 import { getCookie } from "hono/cookie";
 
 import { appRouter, createTRPCContext } from "@chia/api/trpc";
@@ -12,8 +13,11 @@ import { sessionAction } from "@/middlewares/auth.middleware";
 
 const api = new Hono<HonoContext>();
 
-api.use("*", async (c) =>
-  fetchRequestHandler({
+api.use("*", async (c) => {
+  if (getRuntimeKey() === "bun") {
+    Bun.gc(true);
+  }
+  return fetchRequestHandler({
     endpoint: "/api/v1/trpc",
     router: appRouter,
     createContext: async () => {
@@ -49,7 +53,7 @@ api.use("*", async (c) =>
       console.error(`>>> tRPC Error on '${path}'`, error);
     },
     req: c.req.raw,
-  }).then((res) => c.body(res.body, res))
-);
+  }).then((res) => c.body(res.body, res));
+});
 
 export default api;

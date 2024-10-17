@@ -5,6 +5,7 @@
 import type { AuthUser } from "@hono/auth-js";
 import dayjs from "dayjs";
 import type { Context } from "hono";
+import { getRuntimeKey } from "hono/adapter";
 import { getCookie, deleteCookie, setCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
@@ -43,6 +44,9 @@ function fromDate(time: number, date = Date.now()) {
 }
 
 export const sessionAction = async (args: SessionActionArgs) => {
+  if (getRuntimeKey() === "bun") {
+    Bun.gc(true);
+  }
   let userAndSession = await args.getSessionAndUser(args.sessionToken);
   /**
    * TODO: maybe remove this block, redis should handle session expiration
@@ -96,6 +100,9 @@ export const sessionAction = async (args: SessionActionArgs) => {
 
 export const verifyAuth = (adminOnly?: boolean) =>
   createMiddleware<HonoContext>(async (c, next) => {
+    if (getRuntimeKey() === "bun") {
+      Bun.gc(true);
+    }
     try {
       const { getSessionAndUser, deleteSession, updateSession } = adapter({
         db: c.var.db,
