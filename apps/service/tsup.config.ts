@@ -15,5 +15,4 @@ export default defineConfig((opts) => ({
     "@chia/utils",
     "@chia/api",
   ],
-  shims: true,
 }));
