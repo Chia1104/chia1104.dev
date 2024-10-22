@@ -41,7 +41,7 @@
     "ai": "^3.4.18",
     "clsx": "^2.1.1",
     "framer-motion": "12.0.0-alpha.1",
-    "fumadocs-mdx": "^10.1.0",
+    "fumadocs-mdx": "^11.0.0",
     "fumadocs-ui": "^14.0.1",
     "lowlight": "^3.1.0",
     "lucide-react": "^0.453.0",

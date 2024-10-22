@@ -221,8 +221,8 @@ importers:
         specifier: 12.0.0-alpha.1
         version: 12.0.0-alpha.1(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       fumadocs-mdx:
-        specifier: ^10.1.0
-        version: 10.1.0(acorn@8.13.0)(fumadocs-core@14.0.1(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(types-react@19.0.0-rc.1))(next@15.0.0(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))
+        specifier: ^11.0.0
+        version: 11.0.0(acorn@8.13.0)(fumadocs-core@14.0.1(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(types-react@19.0.0-rc.1))(next@15.0.0(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))
       fumadocs-ui:
         specifier: ^14.0.1
         version: 14.0.1(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(next@15.0.0(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)(ts-node@10.9.2(@swc/core@1.7.36(@swc/helpers@0.5.13))(@types/node@22.7.8)(typescript@5.6.3))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
@@ -519,8 +519,8 @@ importers:
         specifier: 12.0.0-alpha.1
         version: 12.0.0-alpha.1(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       fumadocs-mdx:
-        specifier: ^10.1.0
-        version: 10.1.0(acorn@8.13.0)(fumadocs-core@14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(types-react@19.0.0-rc.1))(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))
+        specifier: ^11.0.0
+        version: 11.0.0(acorn@8.13.0)(fumadocs-core@14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(types-react@19.0.0-rc.1))(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))
       fumadocs-ui:
         specifier: ^14.0.1
         version: 14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)(ts-node@10.9.2(@swc/core@1.7.36(@swc/helpers@0.5.13))(@types/node@22.7.8)(typescript@5.6.3))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
@@ -861,8 +861,8 @@ importers:
         specifier: ^14.0.1
         version: 14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(types-react@19.0.0-rc.1)
       fumadocs-mdx:
-        specifier: ^10.1.0
-        version: 10.1.0(acorn@8.13.0)(fumadocs-core@14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(types-react@19.0.0-rc.1))(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))
+        specifier: ^11.0.0
+        version: 11.0.0(acorn@8.13.0)(fumadocs-core@14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(types-react@19.0.0-rc.1))(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))
       fumadocs-ui:
         specifier: ^14.0.1
         version: 14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)(ts-node@10.9.2(@swc/core@1.7.36(@swc/helpers@0.5.13))(@types/node@22.7.8)(typescript@5.6.3))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
@@ -8059,12 +8059,11 @@ packages:
   fumadocs-core@14.0.1:
     resolution: {integrity: sha512-6f9+lwVpok+qW/PnBrNLo/MsRYRxEG6s7oLACVGDL8xXfqNI/aIZJgjImdl7i3XpAiJaCdCxAWhobGCBPW7uBQ==}
 
-  fumadocs-mdx@10.1.0:
-    resolution: {integrity: sha512-EKetIV7z/J/GL6n7AN8krWXADt9nmrvkRHm130eJh3aYbI3BAFOm1+smwzfYAecy4jCCrCDT02EF3mjU5nk2pQ==}
-    deprecated: this package has been deprecated
+  fumadocs-mdx@11.0.0:
+    resolution: {integrity: sha512-HF8arG+SN+Qnit4wo00YYYPlfKYpXuYcIpqnKf7E/N7TRdpuf9vq3NVNW29oTiF6x//JELgWzkcrvG9EqEv65A==}
     hasBin: true
     peerDependencies:
-      fumadocs-core: ^13.2.1 || ^14.0.0
+      fumadocs-core: ^14.0.0
       next: 14.x.x || 15.x.x
 
   fumadocs-ui@14.0.1:
@@ -20154,7 +20153,7 @@ snapshots:
       - sass
       - supports-color
 
-  fumadocs-mdx@10.1.0(acorn@8.13.0)(fumadocs-core@14.0.1(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(types-react@19.0.0-rc.1))(next@15.0.0(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)):
+  fumadocs-mdx@11.0.0(acorn@8.13.0)(fumadocs-core@14.0.1(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(types-react@19.0.0-rc.1))(next@15.0.0(@babel/core@7.25.8)(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(babel-plugin-react-compiler@19.0.0-beta-8a03594-20241020)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)):
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.13.0)
       chokidar: 4.0.1
@@ -20171,7 +20170,7 @@ snapshots:
       - acorn
       - supports-color
 
-  fumadocs-mdx@10.1.0(acorn@8.13.0)(fumadocs-core@14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(types-react@19.0.0-rc.1))(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)):
+  fumadocs-mdx@11.0.0(acorn@8.13.0)(fumadocs-core@14.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(types-react@19.0.0-rc.1))(next@15.0.0(@opentelemetry/api@1.9.0)(@playwright/test@1.48.1)(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)):
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.13.0)
       chokidar: 4.0.1
