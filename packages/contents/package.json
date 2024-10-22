@@ -28,14 +28,14 @@
     "fumadocs-mdx": "^10.1.0",
     "fumadocs-ui": "^14.0.0",
     "next": "15.0.0",
-    "react": "catalog:react18",
-    "react-dom": "catalog:react18"
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@types/mdx": "^2.0.13",
-    "@types/react": "catalog:react18",
-    "@types/react-dom": "catalog:react18",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"

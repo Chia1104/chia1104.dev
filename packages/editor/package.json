@@ -30,12 +30,12 @@
     "next": "15.0.0",
     "novel": "^0.5.0",
     "openai": "^4.68.1",
-    "react": "catalog:react18",
+    "react": "catalog:react19",
     "tiptap-markdown": "^0.8.10"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
-    "@types/react": "catalog:react18",
+    "@types/react": "catalog:react19",
     "eslint": "catalog:",
     "tsconfig": "workspace:*",
     "typescript": "catalog:"
