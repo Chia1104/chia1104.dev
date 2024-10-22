@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { GoogleTagManager } from "@next/third-parties/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "@total-typescript/ts-reset";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -19,6 +20,7 @@ import Background from "./_components/background";
 import Footer from "./_components/footer";
 import NavMenu from "./_components/nav-menu";
 import RootProvider from "./_components/root-provider";
+import { WebVitals } from "./_components/web-vitals";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -73,9 +75,15 @@ const ChiaWEB = ({
             </main>
             <Footer />
           </RootProvider>
-          <VercelAnalytics />
-          <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID ?? ""} />
-          <SpeedInsights />
+          {env.NEXT_PUBLIC_ENV === "production" && (
+            <>
+              <VercelAnalytics />
+              <WebVitals />
+              <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID ?? ""} />
+              <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID ?? ""} />
+              <SpeedInsights />
+            </>
+          )}
         </body>
       </html>
     </ViewTransitions>

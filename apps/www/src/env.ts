@@ -51,6 +51,7 @@ export const env = createEnv({
     NEXT_PUBLIC_RE_CAPTCHA_KEY: z.string().min(1),
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
+    NEXT_PUBLIC_GA_ID: z.string().optional(),
     NEXT_PUBLIC_SERVICE_ENDPOINT: z.string().min(1),
   },
 
@@ -80,6 +81,7 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
+    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
     NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
   },
