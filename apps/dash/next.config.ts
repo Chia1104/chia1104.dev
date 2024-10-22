@@ -1,8 +1,9 @@
-/**
- * @typedef {import('next').NextConfig} NextConfig
- * @typedef {(config: NextConfig) => NextConfig} Plugin
- */
 import million from "million/compiler";
+import { NextConfig } from "next";
+
+import "@/env";
+
+type Plugin = (config: NextConfig) => NextConfig;
 
 const securityHeaders = [
   {
@@ -27,8 +28,7 @@ const securityHeaders = [
   },
 ];
 
-/** @type {NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   transpilePackages: [
@@ -44,6 +44,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@nextui-org/react"],
     webpackBuildWorker: true,
+    reactCompiler: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -67,8 +68,7 @@ const nextConfig = {
   },
 };
 
-/** @type {Plugin[]} */
-const plugins = [];
+const plugins: Plugin[] = [];
 
 const nextComposePlugins = plugins.reduce(
   (acc, plugin) => plugin(acc),

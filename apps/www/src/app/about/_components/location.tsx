@@ -7,6 +7,7 @@ import type {
   ReactNode,
   PointerEvent,
   TouchEvent,
+  RefObject,
 } from "react";
 
 import createGlobe from "cobe";
@@ -28,6 +29,8 @@ type LocationProps = {
   fallbackElement?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<"canvas">, "width" | "height">;
 
+type Globe = ReturnType<typeof createGlobe>;
+
 const Location: FC<LocationProps> = ({
   className,
   location,
@@ -41,13 +44,14 @@ const Location: FC<LocationProps> = ({
 }) => {
   const [isError, setIsError] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const globe = useRef<ReturnType<typeof createGlobe>>();
+  // @ts-expect-error - TODO: update ref type
+  const globe = useRef<Globe>();
   const pointerXInteracting = useRef<number | null>(null);
   const pointerYInteracting = useRef<number | null>(null);
   const pointerXInteractionMovement = useRef(0);
   const pointerYInteractionMovement = useRef(0);
   const { width, height } = useResizeObserver({
-    ref: canvasRef,
+    ref: canvasRef as RefObject<HTMLCanvasElement>,
     box: "border-box",
   });
   const x = useMotionValue(0);

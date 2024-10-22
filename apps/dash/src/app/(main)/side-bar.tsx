@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useTransition } from "react";
-import type { FC, ReactNode } from "react";
+import type { FC, ReactNode, RefObject } from "react";
 
 import {
   Avatar,
@@ -21,8 +21,8 @@ import { Link, cn, useIsMobile, ThemeSelector } from "@chia/ui";
 import AuthGuard from "@/components/auth-guard/index.client";
 
 const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
-  const asideRef = useRef(null);
-  const isHover = useHover(asideRef);
+  const asideRef = useRef<HTMLElement>(null);
+  const isHover = useHover(asideRef as RefObject<HTMLElement>);
   const isMobile = useIsMobile();
   const [, startTransition] = useTransition();
   const selectedLayoutSegments = useSelectedLayoutSegments();

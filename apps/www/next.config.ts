@@ -1,10 +1,11 @@
-/**
- * @typedef {import('next').NextConfig} NextConfig
- * @typedef {(config: NextConfig) => NextConfig} Plugin
- */
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import million from "million/compiler";
+import { NextConfig } from "next";
+
+import "@/env";
+
+type Plugin = (config: NextConfig) => NextConfig;
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
@@ -33,8 +34,7 @@ const securityHeaders = [
   },
 ];
 
-/** @type {NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   transpilePackages: [
@@ -50,7 +50,7 @@ const nextConfig = {
   ],
   experimental: {
     optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
-    typedRoutes: false,
+    reactCompiler: true,
     webpackBuildWorker: true,
   },
   eslint: {
@@ -137,8 +137,7 @@ const nextConfig = {
   ],
 };
 
-/** @type {Plugin[]} */
-const plugins = [withBundleAnalyzer];
+const plugins: Plugin[] = [withBundleAnalyzer];
 
 const nextComposePlugins = plugins.reduce(
   (acc, plugin) => plugin(acc),
