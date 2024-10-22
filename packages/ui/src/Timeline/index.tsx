@@ -20,6 +20,8 @@ const Timeline: FC<TimelineProps> = ({
   groupTemplate = "YYYY",
   tz = "UTC",
   enableSort,
+  asyncDataStatus,
+  onEndReached,
   ...props
 }) => {
   if (enableSort)
@@ -50,8 +52,8 @@ const Timeline: FC<TimelineProps> = ({
         {...props}>
         <GroupList
           data={groupData}
-          onEndReached={props.onEndReached}
-          asyncDataStatus={props.asyncDataStatus}
+          onEndReached={onEndReached}
+          asyncDataStatus={asyncDataStatus}
         />
       </div>
     </TimelineContext.Provider>

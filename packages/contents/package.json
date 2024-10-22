@@ -22,12 +22,12 @@
   "dependencies": {
     "@chia/db": "workspace:*",
     "@chia/ui": "workspace:*",
-    "@fumadocs/mdx-remote": "^0.2.2",
-    "@mdx-js/react": "^3.0.1",
-    "fumadocs-core": "^13.4.10",
-    "fumadocs-mdx": "^10.0.2",
-    "fumadocs-ui": "^13.4.10",
-    "next": "14.2.15",
+    "@fumadocs/mdx-remote": "^0.2.3",
+    "@mdx-js/react": "^3.1.0",
+    "fumadocs-core": "^14.0.0",
+    "fumadocs-mdx": "^10.1.0",
+    "fumadocs-ui": "^14.0.0",
+    "next": "15.0.0",
     "react": "catalog:react18",
     "react-dom": "catalog:react18"
   },

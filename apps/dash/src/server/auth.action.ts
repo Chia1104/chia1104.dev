@@ -39,4 +39,4 @@ export const signInAction = async (options?: SignInOptions) => {
   }
 };
 
-export const signOutAction = () => signOut();
+export const signOutAction = async () => await signOut();
