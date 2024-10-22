@@ -3,18 +3,13 @@ import { Suspense } from "react";
 import dayjs from "dayjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createHmac } from "node:crypto";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content, ContentProvider } from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
 import { Image } from "@chia/ui";
-import { WWW_BASE_URL } from "@chia/utils";
-import { setSearchParams } from "@chia/utils";
 
 import { ContentSkeletons } from "@/app/(blog)/posts/[slug]/loading";
-import type { OgDTO } from "@/app/api/(v1)/og/utils";
-import { env } from "@/env";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 
 import WrittenBy from "../../_components/written-by";
@@ -29,12 +24,6 @@ export const generateStaticParams = async () => {
 export const dynamicParams = true;
 export const revalidate = 60;
 
-const getToken = (id: string): string => {
-  const hmac = createHmac("sha256", env.SHA_256_HASH);
-  hmac.update(JSON.stringify({ title: id }));
-  return hmac.digest("hex");
-};
-
 export const generateMetadata = async ({
   params,
 }: {
@@ -46,54 +35,9 @@ export const generateMetadata = async ({
   try {
     const post = await getPostBySlug(slug);
     if (!post) return {};
-    const token = getToken(post.title);
     return {
       title: post.title,
       description: post.excerpt,
-      openGraph: {
-        type: "article",
-        locale: "zh_TW",
-        url: `https://chia1104.dev/posts/${post.slug}`,
-        siteName: "Chia",
-        title: post.title,
-        description: post.excerpt ?? "",
-        images: [
-          {
-            url: setSearchParams<OgDTO>(
-              {
-                title: post.title,
-                excerpt: post.excerpt,
-                subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
-                token: token,
-              },
-              {
-                baseUrl: `${WWW_BASE_URL}/api/og`,
-              }
-            ),
-            width: 1200,
-            height: 630,
-          },
-        ],
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: "Chia",
-        description: post.excerpt ?? "",
-        creator: "@chia1104",
-        images: [
-          setSearchParams<OgDTO>(
-            {
-              title: post.title,
-              excerpt: post.excerpt,
-              subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
-              token: token,
-            },
-            {
-              baseUrl: `${WWW_BASE_URL}/api/og`,
-            }
-          ),
-        ],
-      },
     };
   } catch (error) {
     console.error(error);
@@ -115,7 +59,6 @@ const PostDetailPage = async ({
     notFound();
   }
 
-  const token = getToken(post.slug);
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
     "@type": "Blog",
@@ -124,12 +67,6 @@ const PostDetailPage = async ({
     dateModified: dayjs(post.updatedAt).format("MMMM D, YYYY"),
     name: post.title,
     description: post.excerpt ?? "",
-    image: `/api/og?${setSearchParams<OgDTO>({
-      title: post.title,
-      excerpt: post.excerpt,
-      subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
-      token: token,
-    })}`,
     author: {
       "@type": "Person",
       name: "Chia1104",
