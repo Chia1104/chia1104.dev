@@ -14,26 +14,28 @@ export const dynamic = "force-dynamic";
 
 const schema = z.object({
   id: numericStringSchema,
-  type: z.nativeEnum(FeedType),
+  type: z.nativeEnum(FeedType).nullish(),
 });
 
 const Page = async ({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: Record<string, string | string[] | undefined>;
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) => {
+  const { id } = await params;
+  const { type } = await searchParams;
   if (
     !schema.safeParse({
-      id: params.id,
-      type: searchParams.type,
+      id,
+      type,
     }).success
   ) {
     notFound();
   }
   const feed = await api.feeds.getFeedById({
-    feedId: Number(params.id),
+    feedId: Number(id),
   });
   if (!feed) {
     notFound();
