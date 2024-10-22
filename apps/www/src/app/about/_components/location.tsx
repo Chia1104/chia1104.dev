@@ -44,7 +44,7 @@ const Location: FC<LocationProps> = ({
 }) => {
   const [isError, setIsError] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // @ts-expect-error
+  // @ts-expect-error - TODO: update ref type
   const globe = useRef<Globe>();
   const pointerXInteracting = useRef<number | null>(null);
   const pointerYInteracting = useRef<number | null>(null);
