@@ -11,8 +11,7 @@
   },
   "scripts": {
     "analyze": "cross-env ANALYZE=true npm run build",
-    "dev": "pnpm env:check-local && next dev",
-    "dev:turbo": "next dev --turbo",
+    "dev": "pnpm env:check-local && next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

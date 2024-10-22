@@ -5,6 +5,7 @@
     "build": {
       "env": [
         "NEXT_PUBLIC_GTM_ID",
+        "NEXT_PUBLIC_GA_ID",
         "SHA_256_HASH",
         "GH_PUBLIC_TOKEN",
         "NEXT_PUBLIC_RE_CAPTCHA_KEY",

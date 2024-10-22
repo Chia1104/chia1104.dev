@@ -3,16 +3,16 @@ import type { Config } from "tailwindcss";
 // @ts-ignore
 import { default as flattenColorPalette } from "tailwindcss/lib/util/flattenColorPalette";
 
-function addVariablesForColors({ addBase, theme }: any) {
-  let allColors = flattenColorPalette(theme("colors"));
-  let newVars = Object.fromEntries(
-    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-  );
+// function addVariablesForColors({ addBase, theme }: any) {
+//   let allColors = flattenColorPalette(theme("colors"));
+//   let newVars = Object.fromEntries(
+//     Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+//   );
 
-  addBase({
-    ":root": newVars,
-  });
-}
+//   addBase({
+//     ":root": newVars,
+//   });
+// }
 
 const config = {
   theme: {
@@ -136,7 +136,7 @@ const config = {
     },
   },
   darkMode: ["class", ".dark-theme"],
-  plugins: [typography, addVariablesForColors],
+  plugins: [typography],
 } satisfies Partial<Config>;
 
 export default config;
