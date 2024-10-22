@@ -93,6 +93,7 @@
     "@types/react-google-recaptcha": "^2.1.9",
     "@vitejs/plugin-react-swc": "^3.7.1",
     "autoprefixer": "^10.4.20",
+    "babel-plugin-react-compiler": "19.0.0-beta-8a03594-20241020",
     "eslint": "catalog:",
     "postcss": "8.4.47",
     "postcss-import": "^16.1.0",

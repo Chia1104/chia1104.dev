@@ -44,6 +44,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@nextui-org/react"],
     webpackBuildWorker: true,
+    reactCompiler: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
