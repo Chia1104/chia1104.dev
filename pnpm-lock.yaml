@@ -34,6 +34,9 @@ catalogs:
     '@types/react-dom':
       specifier: npm:types-react-dom@rc
       version: 19.0.0-rc.1
+    babel-plugin-react-compiler:
+      specifier: beta
+      version: 19.0.0-beta-8a03594-20241020
     react:
       specifier: rc
       version: 19.0.0-rc-69d4b800-20241021
@@ -306,7 +309,7 @@ importers:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.47)
       babel-plugin-react-compiler:
-        specifier: 19.0.0-beta-8a03594-20241020
+        specifier: catalog:react19
         version: 19.0.0-beta-8a03594-20241020
       eslint:
         specifier: 'catalog:'
@@ -622,7 +625,7 @@ importers:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.47)
       babel-plugin-react-compiler:
-        specifier: 19.0.0-beta-8a03594-20241020
+        specifier: catalog:react19
         version: 19.0.0-beta-8a03594-20241020
       eslint:
         specifier: 'catalog:'
