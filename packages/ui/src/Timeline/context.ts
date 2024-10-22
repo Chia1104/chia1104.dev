@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 
 import type { TimelineProps } from "./types";
 
@@ -11,7 +11,7 @@ export const TimelineContext = createContext<TimelineContext>(
 );
 
 export const useTimeline = () => {
-  const context = useContext(TimelineContext);
+  const context = use(TimelineContext);
   if (!context) {
     throw new Error("useTimeline must be used within a TimelineProvider");
   }

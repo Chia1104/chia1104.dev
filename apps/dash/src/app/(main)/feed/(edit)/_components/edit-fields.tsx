@@ -560,7 +560,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
   const [content, setContent] = useState(createDefaultContent());
 
   return (
-    <EditFieldsContext.Provider
+    <EditFieldsContext
       value={{
         isPending: props.isPending,
         disabled: props.disabled,
@@ -576,7 +576,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
           <SwitchEditor />
         </ErrorBoundary>
       </div>
-    </EditFieldsContext.Provider>
+    </EditFieldsContext>
   );
 });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { FC, ComponentPropsWithoutRef } from "react";
+import type { FC, ComponentPropsWithoutRef, RefObject } from "react";
 
 import dayjs from "dayjs";
 import { useInView, useMotionValue, useSpring } from "framer-motion";
@@ -25,7 +25,10 @@ const Age: FC<Props> = ({
     damping: 60,
     stiffness: 100,
   });
-  const isInView = useInView(ref, { once: true, margin: "0px" });
+  const isInView = useInView(ref, {
+    once: true,
+    margin: "0px",
+  });
   useEffect(() => {
     if (isInView)
       setTimeout(() => {
