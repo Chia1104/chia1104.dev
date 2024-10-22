@@ -43,7 +43,6 @@ const nextConfig = {
   ],
   experimental: {
     optimizePackageImports: ["@nextui-org/react"],
-    serverComponentsExternalPackages: [],
     webpackBuildWorker: true,
   },
   eslint: {
