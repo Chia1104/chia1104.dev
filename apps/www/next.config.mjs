@@ -50,10 +50,8 @@ const nextConfig = {
   ],
   experimental: {
     optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
-    serverComponentsExternalPackages: [],
     typedRoutes: false,
     webpackBuildWorker: true,
-    instrumentationHook: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

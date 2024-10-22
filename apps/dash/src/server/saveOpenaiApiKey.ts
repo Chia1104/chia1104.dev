@@ -16,9 +16,8 @@ const openaiApiKeySchema = z.object({
 
 export const saveOpenaiApiKey = action
   .schema(openaiApiKeySchema)
-  // eslint-disable-next-line @typescript-eslint/require-await
   .action(async ({ parsedInput: { apiKey } }) => {
-    cookies().set(
+    (await cookies()).set(
       HEADER_AUTH_TOKEN,
       encodeApiKey(apiKey, env.AI_AUTH_SECRET ?? ""),
       {

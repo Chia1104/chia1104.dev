@@ -25,14 +25,14 @@
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
-    "drizzle-orm": "^0.35.1",
+    "drizzle-orm": "^0.35.3",
     "drizzle-zod": "^0.5.1",
     "pg": "^8.13.0",
     "pgvector": "^0.2.0",
     "postgres": "^3.4.4"
   },
   "devDependencies": {
-    "@auth/core": "^0.37.0",
+    "@auth/core": "^0.37.2",
     "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@types/pg": "^8.11.10",

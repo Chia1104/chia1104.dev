@@ -47,7 +47,7 @@ export const POST = async (req: NextRequest) => {
       ...(await json),
       authToken: verifyApiKey(
         req.headers.get(HEADER_AUTH_TOKEN) ??
-          cookies().get(HEADER_AUTH_TOKEN)?.value ??
+          (await cookies()).get(HEADER_AUTH_TOKEN)?.value ??
           "",
         process.env.AI_AUTH_SECRET
       ).apiKey,

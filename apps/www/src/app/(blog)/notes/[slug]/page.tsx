@@ -3,18 +3,13 @@ import { Suspense } from "react";
 import dayjs from "dayjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createHmac } from "node:crypto";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content, ContentProvider } from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
 import { Image } from "@chia/ui";
-import { WWW_BASE_URL } from "@chia/utils";
-import { setSearchParams } from "@chia/utils";
 
 import { ContentSkeletons } from "@/app/(blog)/notes/[slug]/loading";
-import type { OgDTO } from "@/app/api/(v1)/og/utils";
-import { env } from "@/env";
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
 
 import WrittenBy from "../../_components/written-by";
@@ -29,70 +24,20 @@ export const generateStaticParams = async () => {
 export const dynamicParams = true;
 export const revalidate = 60;
 
-const getToken = (id: string): string => {
-  const hmac = createHmac("sha256", env.SHA_256_HASH);
-  hmac.update(JSON.stringify({ title: id }));
-  return hmac.digest("hex");
-};
-
 export const generateMetadata = async ({
   params,
 }: {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }): Promise<Metadata> => {
+  const { slug } = await params;
   try {
-    const note = await getNoteBySlug(params.slug);
+    const note = await getNoteBySlug(slug);
     if (!note) notFound();
-    const token = getToken(note.title);
     return {
       title: note.title,
       description: note.excerpt,
-      openGraph: {
-        type: "article",
-        locale: "zh_TW",
-        url: `https://chia1104.dev/notes/${note.slug}`,
-        siteName: "Chia",
-        title: note.title,
-        description: note.excerpt ?? "",
-        images: [
-          {
-            url: setSearchParams<OgDTO>(
-              {
-                title: note.title,
-                excerpt: note.excerpt,
-                subtitle: dayjs(note.updatedAt).format("MMMM D, YYYY"),
-                token: token,
-              },
-              {
-                baseUrl: `${WWW_BASE_URL}/api/og`,
-              }
-            ),
-            width: 1200,
-            height: 630,
-          },
-        ],
-      },
-      twitter: {
-        card: "summary_large_image",
-        title: "Chia",
-        description: note.excerpt ?? "",
-        creator: "@chia1104",
-        images: [
-          setSearchParams<OgDTO>(
-            {
-              title: note.title,
-              excerpt: note.excerpt,
-              subtitle: dayjs(note.updatedAt).format("MMMM D, YYYY"),
-              token: token,
-            },
-            {
-              baseUrl: `${WWW_BASE_URL}/api/og`,
-            }
-          ),
-        ],
-      },
     };
   } catch (error) {
     console.error(error);
@@ -103,17 +48,17 @@ export const generateMetadata = async ({
 const PostDetailPage = async ({
   params,
 }: {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }) => {
-  const note = await getNoteBySlug(params.slug);
+  const { slug } = await params;
+  const note = await getNoteBySlug(slug);
 
   if (!note) {
     notFound();
   }
 
-  const token = getToken(note.slug);
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
     "@type": "Blog",
@@ -122,12 +67,6 @@ const PostDetailPage = async ({
     dateModified: dayjs(note.updatedAt).format("MMMM D, YYYY"),
     name: note.title,
     description: note.excerpt ?? "",
-    image: `/api/og?${setSearchParams<OgDTO>({
-      title: note.title,
-      excerpt: note.excerpt,
-      subtitle: dayjs(note.updatedAt).format("MMMM D, YYYY"),
-      token: token,
-    })}`,
     author: {
       "@type": "Person",
       name: "Chia1104",
