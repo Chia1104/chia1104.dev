@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { FC, ComponentPropsWithoutRef, RefObject } from "react";
+import type { FC, ComponentPropsWithoutRef } from "react";
 
 import dayjs from "dayjs";
 import { useInView, useMotionValue, useSpring } from "framer-motion";
