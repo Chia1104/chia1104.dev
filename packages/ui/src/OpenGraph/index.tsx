@@ -10,10 +10,6 @@ interface Props {
     backgroundImage?: string;
     filter?: CSSProperties;
     title?: CSSProperties;
-    /**
-     * @deprecated typo
-     */
-    expert?: CSSProperties;
     excerpt?: CSSProperties;
     subtitle?: CSSProperties;
   };

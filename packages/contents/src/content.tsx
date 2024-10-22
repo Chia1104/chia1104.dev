@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode, RefObject } from "react";
+import type { ReactNode, Ref, RefObject } from "react";
 import { useRef } from "react";
 
 import dayjs from "dayjs";
@@ -21,9 +21,7 @@ export const ContentProvider = ({
   children,
   ...props
 }: ContentProps & { children: ReactNode }) => {
-  return (
-    <ContentContext.Provider value={props}>{children}</ContentContext.Provider>
-  );
+  return <ContentContext value={props}>{children}</ContentContext>;
 };
 
 export const MDXInlineTOC = () => {
@@ -51,13 +49,14 @@ export const MDXBody = (props: { className?: string }) => {
 };
 
 export const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
-  containerRef: RefObject<TContainer>;
+  containerRef: Ref<TContainer>;
 }) => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
     return (
       <Base.AnchorProvider toc={content.toc} single={false}>
-        <Base.ScrollProvider containerRef={props.containerRef}>
+        <Base.ScrollProvider
+          containerRef={props.containerRef as RefObject<TContainer>}>
           {content.toc.map((item) => (
             <Base.TOCItem
               key={item.url}

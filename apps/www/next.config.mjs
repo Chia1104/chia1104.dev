@@ -50,7 +50,7 @@ const nextConfig = {
   ],
   experimental: {
     optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
-    typedRoutes: false,
+    reactCompiler: true,
     webpackBuildWorker: true,
   },
   eslint: {

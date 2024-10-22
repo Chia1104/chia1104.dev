@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
 import { ContentType } from "@chia/db/types";
@@ -45,7 +45,7 @@ export const EditFieldsContext = createContext<EditFieldsContext>(
 );
 
 export const useEditFieldsContext = () => {
-  const ctx = useContext(EditFieldsContext);
+  const ctx = use(EditFieldsContext);
   if (!ctx) {
     throw new Error(
       "useEditFieldsContext must be used within a EditFieldsProvider"

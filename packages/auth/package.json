@@ -29,10 +29,10 @@
     "@react-email/render": "^1.0.1",
     "@t3-oss/env-core": "^0.11.1",
     "next-auth": "5.0.0-beta.25",
-    "react": "catalog:react18"
+    "react": "catalog:react19"
   },
   "devDependencies": {
-    "@types/react": "catalog:react18",
+    "@types/react": "catalog:react19",
     "eslint": "catalog:",
     "next": "15.0.0",
     "tsconfig": "workspace:*",

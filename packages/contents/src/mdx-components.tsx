@@ -11,7 +11,7 @@ import defaultComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 import Image from "next/image";
 
-export const FumadocsComponents: MDXComponents = {
+export const FumadocsComponents = {
   ...defaultComponents,
   Tabs,
   Tab,
@@ -60,7 +60,7 @@ export const FumadocsComponents: MDXComponents = {
   h6: (props: any) => (
     <Heading as="h6" {...props} className="prose-a:no-underline" />
   ),
-};
+} as MDXComponents;
 
 /**
  * V1 MDX Components
