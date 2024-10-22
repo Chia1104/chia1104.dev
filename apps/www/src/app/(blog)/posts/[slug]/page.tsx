@@ -38,12 +38,13 @@ const getToken = (id: string): string => {
 export const generateMetadata = async ({
   params,
 }: {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }): Promise<Metadata> => {
+  const { slug } = await params;
   try {
-    const post = await getPostBySlug(params.slug);
+    const post = await getPostBySlug(slug);
     if (!post) return {};
     const token = getToken(post.title);
     return {
@@ -103,11 +104,12 @@ export const generateMetadata = async ({
 const PostDetailPage = async ({
   params,
 }: {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }) => {
-  const post = await getPostBySlug(params.slug);
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     notFound();
