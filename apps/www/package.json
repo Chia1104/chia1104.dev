@@ -10,7 +10,7 @@
     "url": "https://github.com/chia1104"
   },
   "scripts": {
-    "analyze": "cross-env ANALYZE=true npm run build",
+    "analyze": "ANALYZE=true pnpm build",
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
