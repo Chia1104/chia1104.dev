@@ -24,10 +24,10 @@
     "@chia/ui": "workspace:*",
     "@fumadocs/mdx-remote": "^0.2.3",
     "@mdx-js/react": "^3.1.0",
-    "fumadocs-core": "^14.0.1",
+    "fumadocs-core": "^14.0.2",
     "fumadocs-mdx": "^11.0.0",
-    "fumadocs-ui": "^14.0.1",
-    "next": "15.0.0",
+    "fumadocs-ui": "^14.0.2",
+    "next": "15.0.1",
     "react": "catalog:react19",
     "react-dom": "catalog:react19"
   },
