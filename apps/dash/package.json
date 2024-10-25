@@ -69,7 +69,7 @@
     "@chia/tailwind": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@million/lint": "1.0.11",
-    "@next/bundle-analyzer": "15.0.0",
+    "@next/bundle-analyzer": "15.0.1",
     "@testing-library/react": "^16.0.1",
     "@types/mdx": "^2.0.13",
     "@types/react": "catalog:react19",
