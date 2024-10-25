@@ -13,8 +13,8 @@
   "dependencies": {},
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
-    "eslint": "catalog:",
     "@chia/tsconfig": "workspace:*",
+    "eslint": "catalog:",
     "typescript": "catalog:"
   }
 }
