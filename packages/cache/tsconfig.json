@@ -1,5 +1,5 @@
 {
-  "extends": ["tsconfig/nextjs.json"],
-  "include": ["**/*.ts", "**/*.mts", "__tests__"],
-  "exclude": ["dist", "build", "node_modules"]
+  "extends": "@chia/tsconfig/internal-package.json",
+  "include": ["src", "vitest.config.mts", "__tests__"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -15,7 +15,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules"
+    "clean": "git clean -xdf .turbo node_modules dist"
   },
   "dependencies": {
     "@auth/core": "^0.37.2",
@@ -32,10 +32,10 @@
     "react": "catalog:react19"
   },
   "devDependencies": {
+    "@chia/tsconfig": "workspace:*",
     "@types/react": "catalog:react19",
     "eslint": "catalog:",
     "next": "15.0.0",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

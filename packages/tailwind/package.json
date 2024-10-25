@@ -13,7 +13,7 @@
     "./shadcn-ui": "./shadcn-ui.ts"
   },
   "scripts": {
-    "clean": "git clean -xdf .turbo node_modules"
+    "clean": "git clean -xdf .turbo node_modules dist"
   },
   "devDependencies": {
     "@egoist/tailwindcss-icons": "^1.8.1",
@@ -21,7 +21,7 @@
     "@tailwindcss/typography": "^0.5.15",
     "tailwindcss": "^3.4.14",
     "tailwindcss-animate": "1.0.7",
-    "tsconfig": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

@@ -169,28 +169,28 @@ export const createFeed = withDTO<
   void
 >(async (db, dto) => {
   await db.transaction(async (trx) => {
+    const feedId = (
+      await trx
+        .insert(schema.feeds)
+        .values({
+          slug: dto.slug,
+          type: dto.type,
+          contentType: dto.contentType ?? undefined,
+          title: dto.title,
+          excerpt: dto.excerpt,
+          description: dto.description,
+          userId: dto.userId,
+          published: dto.published,
+          createdAt: dto.createdAt ? dayjs(dto.createdAt).toDate() : undefined,
+          updatedAt: dto.updatedAt ? dayjs(dto.updatedAt).toDate() : undefined,
+        })
+        .returning({ feedId: schema.feeds.id })
+    )[0]?.feedId;
+    if (!feedId) {
+      throw new Error("Failed to create feed");
+    }
     await trx.insert(schema.contents).values({
-      feedId: (
-        await trx
-          .insert(schema.feeds)
-          .values({
-            slug: dto.slug,
-            type: dto.type,
-            contentType: dto.contentType ?? undefined,
-            title: dto.title,
-            excerpt: dto.excerpt,
-            description: dto.description,
-            userId: dto.userId,
-            published: dto.published,
-            createdAt: dto.createdAt
-              ? dayjs(dto.createdAt).toDate()
-              : undefined,
-            updatedAt: dto.updatedAt
-              ? dayjs(dto.updatedAt).toDate()
-              : undefined,
-          })
-          .returning({ feedId: schema.feeds.id })
-      )[0].feedId,
+      feedId,
       content: dto.content,
       source: dto.source,
       unstable_serializedSource: dto.unstable_serializedSource,

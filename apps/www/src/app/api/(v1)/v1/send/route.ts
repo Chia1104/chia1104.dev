@@ -2,8 +2,8 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-import { createUpstash } from "@chia/cache/src/create-upstash";
-import { withRateLimiter } from "@chia/cache/src/with-rate-limiter";
+import { createUpstash } from "@chia/cache/create-upstash";
+import { withRateLimiter } from "@chia/cache/with-rate-limiter";
 import meta from "@chia/meta";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { errorGenerator, CONTACT_EMAIL } from "@chia/utils";

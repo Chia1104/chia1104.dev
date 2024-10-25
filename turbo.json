@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
     },
     "www#build": {
       "dependsOn": ["^build"],
@@ -21,10 +21,11 @@
     },
     "lint": {
       "dependsOn": ["^build"],
-      "cache": true
+      "outputs": [".cache/.eslintcache"]
     },
     "lint:fix": {
-      "cache": false
+      "dependsOn": ["^build"],
+      "outputs": [".cache/.eslintcache"]
     },
     "type:check": {
       "cache": true

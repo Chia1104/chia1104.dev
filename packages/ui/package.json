@@ -3,15 +3,36 @@
   "name": "@chia/ui",
   "version": "0.0.0",
   "private": true,
-  "types": "./src/index.ts",
-  "main": "src/index.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./features/AuthEmailTemplate": {
+      "types": "./features/AuthEmailTemplate/index.tsx",
+      "default": "./features/AuthEmailTemplate/index.tsx"
+    },
+    "./features/ComingSoon": {
+      "types": "./features/ComingSoon/index.tsx",
+      "default": "./features/ComingSoon/index.tsx"
+    },
+    "./features/Error": {
+      "types": "./features/Error/index.tsx",
+      "default": "./features/Error/index.tsx"
+    },
+    "./features/NotFound": {
+      "types": "./features/NotFound/index.tsx",
+      "default": "./features/NotFound/index.tsx"
+    }
+  },
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "git clean -xdf .turbo node_modules",
+    "clean": "git clean -xdf .turbo node_modules dist",
     "ui-add": "pnpm dlx shadcn-ui add && prettier src --write --list-different"
   },
   "dependencies": {
@@ -51,12 +72,12 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@testing-library/react": "^16.0.1",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "@vitejs/plugin-react-swc": "^3.7.1",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

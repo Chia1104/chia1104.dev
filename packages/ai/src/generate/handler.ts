@@ -44,7 +44,7 @@ export const POST = async (req: NextRequest) => {
     });
 
     const request = baseRequestSchema.parse({
-      ...(await json),
+      ...((await json) as any),
       authToken: verifyApiKey(
         req.headers.get(HEADER_AUTH_TOKEN) ??
           (await cookies()).get(HEADER_AUTH_TOKEN)?.value ??

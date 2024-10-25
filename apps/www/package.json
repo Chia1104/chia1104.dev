@@ -4,6 +4,7 @@
   "private": true,
   "sideEffects": false,
   "license": "MIT",
+  "type": "module",
   "author": {
     "name": "Chia1104",
     "email": "yuyuchia7423@gmail.com",
@@ -58,6 +59,7 @@
     "framer-motion": "12.0.0-alpha.1",
     "fumadocs-mdx": "^11.0.0",
     "fumadocs-ui": "^14.0.2",
+    "import-in-the-middle": "^1.11.2",
     "jsdom": "^25.0.1",
     "million": "^3.1.11",
     "next": "15.0.0",
@@ -69,6 +71,7 @@
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.53.1",
     "react-medium-image-zoom": "^5.2.10",
+    "require-in-the-middle": "^7.4.0",
     "resend": "^4.0.0",
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
@@ -80,6 +83,7 @@
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@million/lint": "1.0.11",
     "@next/bundle-analyzer": "15.0.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
@@ -99,7 +103,6 @@
     "postcss-import": "^16.1.0",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.14",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:",
     "vitest-shared": "workspace:*"
   },

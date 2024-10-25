@@ -1,10 +1,17 @@
 {
   "extends": "@chia/tsconfig/internal-package.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "dom", "dom.iterable"],
+    "jsx": "preserve",
+    "rootDir": "."
+  },
   "include": ["src"],
   "exclude": [
     "node_modules",
     "**/*.test.ts",
     "**/*.spec.ts",
+    "**/*.test.tsx",
+    "**/*.spec.tsx",
     "**/*.test.mts",
     "**/*.spec.mts"
   ]
