@@ -86,7 +86,7 @@ jobs:
         run: pnpm build:www
 
       - name: Analyze bundle
-        run: cd apps/www && pnpm analyze
+        run: cd apps/www && npx -p nextjs-bundle-analysis report
 
       - name: Upload bundle
         uses: actions/upload-artifact@v3
