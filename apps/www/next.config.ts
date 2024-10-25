@@ -35,7 +35,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
   transpilePackages: [
     "@chia/api",
@@ -151,6 +151,7 @@ export default million.next(
     authToken: process.env.SENTRY_AUTH_TOKEN,
     silent: true,
     hideSourceMaps: true,
+    disableLogger: true,
   }),
   {
     rsc: true,

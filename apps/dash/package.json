@@ -5,6 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "analyze": "ANALYZE=true pnpm build",
     "dev": "next dev --port 3001 --turbo",
     "build": "next build",
     "start": "next start",
@@ -68,6 +69,7 @@
     "@chia/tailwind": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@million/lint": "1.0.11",
+    "@next/bundle-analyzer": "15.0.0",
     "@testing-library/react": "^16.0.1",
     "@types/mdx": "^2.0.13",
     "@types/react": "catalog:react19",

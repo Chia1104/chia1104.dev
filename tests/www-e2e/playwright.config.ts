@@ -1,9 +1,13 @@
-import { PlaywrightTestConfig, devices, defineConfig } from "@playwright/test";
+import { devices, defineConfig } from "@playwright/test";
 import path from "path";
+import { fileURLToPath } from "url";
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "127.0.0.1";
 const BASE_URL = `http://${HOST}:${PORT}`;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   timeout: 30 * 1000,

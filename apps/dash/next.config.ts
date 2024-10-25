@@ -1,9 +1,14 @@
+import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import million from "million/compiler";
 import { NextConfig } from "next";
 
 import "@/env";
 
 type Plugin = (config: NextConfig) => NextConfig;
+
+const withBundleAnalyzer = withBundleAnalyzerImport({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const securityHeaders = [
   {
@@ -68,7 +73,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-const plugins: Plugin[] = [];
+const plugins: Plugin[] = [withBundleAnalyzer];
 
 const nextComposePlugins = plugins.reduce(
   (acc, plugin) => plugin(acc),
