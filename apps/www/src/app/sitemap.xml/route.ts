@@ -1,4 +1,4 @@
-import * as sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 import { getDB } from "@chia/db";
@@ -55,7 +55,7 @@ export const GET = async () => {
     });
   } catch (error) {
     console.error(error);
-    sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(errorGenerator(500), {
       status: 500,
     });
