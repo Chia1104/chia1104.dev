@@ -8,8 +8,8 @@
     "dev": "bun run --watch --bun src/server.ts",
     "build": "tsup",
     "node:start": "node dist/server.mjs",
-    "start": "bun run --bun dist/server.mjs",
-    "node:preview": "node --env-file=.env dist/server.mjs",
+    "start": "bun run --bun dist/server.js",
+    "node:preview": "node --env-file=.env dist/server.js",
     "test": "NODE_ENV=test bun test",
     "type:check": "tsc --noEmit"
   },
