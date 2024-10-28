@@ -36,16 +36,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  transpilePackages: [
-    "@chia/ai",
-    "@chia/api",
-    "@chia/auth",
-    "@chia/auth-core",
-    "@chia/db",
-    "@chia/contents",
-    "@chia/ui",
-    "@chia/utils",
-  ],
+  transpilePackages: ["@chia/*"],
   experimental: {
     optimizePackageImports: ["@nextui-org/react"],
     webpackBuildWorker: true,

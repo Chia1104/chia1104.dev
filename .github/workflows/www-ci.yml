@@ -53,8 +53,8 @@ env:
   NEXT_PUBLIC_SERVICE_ENDPOINT: ${{ secrets.NEXT_PUBLIC_SERVICE_ENDPOINT }}
 
 jobs:
-  ci:
-    name: Build & test
+  www-lint:
+    name: "www lint"
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www')) && !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -63,19 +63,55 @@ jobs:
       - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
-      - name: "💽️  Init"
+      - name: "💽️  Setup"
         id: dash-init
-        uses: ./.github/actions/install
-        with:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
+        uses: ./.github/actions/setup
 
-      - name: "🧹  Lint & Type check & Test"
+      - name: "🧹 ES Lint"
         shell: bash
         run: |
-          pnpm lint type:check test --filter www...
+          pnpm lint:www
+
+  www-type-check:
+    name: "www type check"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
+
+      - name: "💽️  Setup"
+        id: dash-init
+        uses: ./.github/actions/setup
+
+      - name: "🧹 Type check"
+        shell: bash
+        run: |
+          pnpm type:check --filter www...
+
+  www-test:
+    name: "www test"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
+
+      - name: "💽️  Setup"
+        id: dash-init
+        uses: ./.github/actions/setup
+
+      - name: "🧹 Test"
+        shell: bash
+        run: |
+          pnpm test --filter www...
 
   e2e-tests:
-    name: "E2E tests"
+    name: "www e2e tests"
     timeout-minutes: 20
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'area:www') || contains(github.event.pull_request.labels.*.name, 'www:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-www') }}
@@ -86,11 +122,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: "📦  Install"
+      - name: "📦  Setup"
         id: pull-install
-        uses: "./.github/actions/install"
-        with:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
+        uses: "./.github/actions/setup"
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4
