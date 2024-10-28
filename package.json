@@ -96,7 +96,7 @@
     "prettier-plugin-tailwindcss": "^0.6.8",
     "shell-quote": "^1.8.1",
     "tsup": "^8.3.0",
-    "tsx": "^4.19.1",
+    "tsx": "^4.19.2",
     "turbo": "2.2.3",
     "typescript": "catalog:",
     "vitest": "^2.1.3"
