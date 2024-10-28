@@ -30,7 +30,8 @@ export const POST = auth(async (req) => {
       );
     }
     const dto: Partial<GenerateAuthorizeUrlDTO> = {
-      redirectUri: getRedirectUri(req),
+      // TODO: NextAuth `NextAuthRequest` type issue
+      redirectUri: getRedirectUri(req as any),
     };
     await req
       .json()
