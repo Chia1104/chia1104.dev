@@ -21,10 +21,10 @@ export const dateToTimestamp = (date: dayjs.ConfigType) => {
   return dayjs(date).valueOf();
 };
 
-export const withDTO = <TDto = unknown, TResult = unknown>(
-  fn: (db: DB, dto: TDto) => Promise<TResult>
+export const withDTO = <TDto, TDB extends DB, TResult>(
+  fn: (db: TDB, dto: TDto) => Promise<TResult>
 ) => {
-  return async (db: DB, dto: TDto) => {
+  return async (db: TDB, dto: TDto) => {
     return await fn(db, dto);
   };
 };

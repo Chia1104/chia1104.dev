@@ -4,7 +4,8 @@ import dayjs from "dayjs";
 
 import type { Redis } from "@chia/cache";
 import type { DB } from "@chia/db";
-import { schema, eq } from "@chia/db";
+import { eq } from "@chia/db";
+import * as schema from "@chia/db/schema";
 
 const SESSION_PREFIX = "__auth_session:";
 
@@ -116,13 +117,17 @@ export const adapter = ({
       const userShouldRevalidate = await redis.get(
         `${sessionPrefix}user-revalidate:${cacheSession.user.id}`
       );
+      const _user = (
+        await db
+          .select()
+          .from(schema.users)
+          .where(eq(schema.users.id, cacheSession.user.id))
+      )[0];
+      if (!_user) {
+        return null;
+      }
       if (userShouldRevalidate === "true") {
-        user = (
-          await db
-            .select()
-            .from(schema.users)
-            .where(eq(schema.users.id, cacheSession.user.id))
-        )[0];
+        user = _user;
         await setSession(
           {
             ...cacheSession.session,

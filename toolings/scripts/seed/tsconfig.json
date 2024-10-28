@@ -1,10 +1,5 @@
 {
-  "extends": ["tsconfig/base.json"],
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler"
-  },
-  "include": ["**/*.ts", "**/*.mts", "__tests__"],
-  "exclude": ["dist", "build", "node_modules"]
+  "extends": "@chia/tsconfig/base.json",
+  "include": ["."],
+  "exclude": ["node_modules"]
 }

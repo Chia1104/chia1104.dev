@@ -4,7 +4,6 @@ import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 
 import { Button } from "@nextui-org/react";
-import * as Sentry from "@sentry/nextjs";
 
 interface Props<TError> {
   children: ReactNode;
@@ -21,6 +20,9 @@ interface Props<TError> {
       }) => ReactNode)
     | ReactNode;
   onError?: (error: TError, errorInfo: ErrorInfo) => void;
+  /**
+   * @deprecated
+   */
   disableSentry?: boolean;
 }
 
@@ -46,9 +48,6 @@ export class ErrorBoundary<TError extends Error> extends Component<
   public componentDidCatch(error: TError, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
     this.props.onError?.(error, errorInfo);
-    if (!this.props.disableSentry) {
-      Sentry.captureException(error);
-    }
     this.setState({ error });
   }
 

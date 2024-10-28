@@ -51,3 +51,5 @@ playwright-report
 tsconfig.tsbuildinfo
 
 .nx
+
+.cache

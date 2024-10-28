@@ -164,13 +164,10 @@ export const getInfiniteFeedsByUserId = withDTO(
   }
 );
 
-export const createFeed = withDTO<
-  InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">,
-  void
->(async (db, dto) => {
-  await db.transaction(async (trx) => {
-    await trx.insert(schema.contents).values({
-      feedId: (
+export const createFeed = withDTO(
+  async (db, dto: InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">) => {
+    await db.transaction(async (trx) => {
+      const feedId = (
         await trx
           .insert(schema.feeds)
           .values({
@@ -190,48 +187,56 @@ export const createFeed = withDTO<
               : undefined,
           })
           .returning({ feedId: schema.feeds.id })
-      )[0].feedId,
-      content: dto.content,
-      source: dto.source,
-      unstable_serializedSource: dto.unstable_serializedSource,
-    });
-  });
-});
-
-export const updateFeed = withDTO<
-  { feedId: number } & Partial<
-    InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">
-  >,
-  void
->(async (db, dto) => {
-  await db.transaction(async (trx) => {
-    await trx
-      .update(schema.feeds)
-      .set({
-        slug: dto.slug,
-        type: dto.type,
-        contentType: dto.contentType ?? undefined,
-        title: dto.title,
-        excerpt: dto.excerpt,
-        description: dto.description,
-        userId: dto.userId,
-        published: dto.published,
-        createdAt: dto.createdAt ? dayjs(dto.createdAt).toDate() : undefined,
-        updatedAt: dto.updatedAt ? dayjs(dto.updatedAt).toDate() : undefined,
-      })
-      .where(eq(schema.feeds.id, dto.feedId));
-    await trx
-      .update(schema.contents)
-      .set({
+      )[0]?.feedId;
+      if (!feedId) {
+        throw new Error("Failed to create feed");
+      }
+      await trx.insert(schema.contents).values({
+        feedId,
         content: dto.content,
         source: dto.source,
         unstable_serializedSource: dto.unstable_serializedSource,
-      })
-      .where(eq(schema.contents.feedId, dto.feedId));
-  });
-});
+      });
+    });
+  }
+);
 
-export const deleteFeed = withDTO<{ feedId: number }, void>(async (db, dto) => {
+export const updateFeed = withDTO(
+  async (
+    db,
+    dto: { feedId: number } & Partial<
+      InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">
+    >
+  ) => {
+    await db.transaction(async (trx) => {
+      await trx
+        .update(schema.feeds)
+        .set({
+          slug: dto.slug,
+          type: dto.type,
+          contentType: dto.contentType ?? undefined,
+          title: dto.title,
+          excerpt: dto.excerpt,
+          description: dto.description,
+          userId: dto.userId,
+          published: dto.published,
+          createdAt: dto.createdAt ? dayjs(dto.createdAt).toDate() : undefined,
+          updatedAt: dto.updatedAt ? dayjs(dto.updatedAt).toDate() : undefined,
+        })
+        .where(eq(schema.feeds.id, dto.feedId));
+      await trx
+        .update(schema.contents)
+        .set({
+          content: dto.content,
+          source: dto.source,
+          unstable_serializedSource: dto.unstable_serializedSource,
+        })
+        .where(eq(schema.contents.feedId, dto.feedId));
+    });
+  }
+);
+
+export const deleteFeed = withDTO(async (db, dto: { feedId: number }) => {
   await db.transaction(async (trx) => {
     await trx.delete(schema.feeds).where(eq(schema.feeds.id, dto.feedId));
     await trx

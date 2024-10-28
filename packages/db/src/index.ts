@@ -10,17 +10,23 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
 
-export const db: DB = drizzle(process.env.DATABASE_URL, {
+export const db = drizzle<typeof schema>(process.env.DATABASE_URL, {
   schema,
 });
 
-export const localDb: DB = drizzle(process.env.LOCAL_DATABASE_URL ?? "", {
-  schema,
-});
+export const localDb = drizzle<typeof schema>(
+  process.env.LOCAL_DATABASE_URL ?? "",
+  {
+    schema,
+  }
+);
 
-export const betaDb: DB = drizzle(process.env.BETA_DATABASE_URL ?? "", {
-  schema,
-});
+export const betaDb = drizzle<typeof schema>(
+  process.env.BETA_DATABASE_URL ?? "",
+  {
+    schema,
+  }
+);
 
 export type DB = PostgresJsDatabase<typeof schema>;
 
@@ -30,7 +36,7 @@ export { pgTable as tableCreator } from "./schema/table";
 
 export * from "./schema/enums";
 
-export const getDB = (env?: string) =>
+export const getDB = (env?: string): DB =>
   switchEnv(env, {
     prod: () => db,
     beta: () => betaDb,

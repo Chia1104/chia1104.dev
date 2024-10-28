@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { Env } from "../schema";
 
 const getInternalEnv = () => {
@@ -141,6 +142,7 @@ export const getBaseUrl = (options?: {
     baseUrl = `http://localhost:${process.env.PORT ?? 3000}`,
     useBaseUrl,
   } = options;
+  // @ts-ignore
   if (typeof window !== "undefined" && !isServer) {
     return "";
   }
@@ -199,6 +201,7 @@ export const getServiceEndPoint = (
   env?: string,
   options?: GetServiceEndPointOptions
 ) => {
+  // @ts-ignore
   const isServer = typeof window === "undefined";
   const {
     proxyEndpoint = process.env.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT,

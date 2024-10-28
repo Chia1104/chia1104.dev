@@ -3,14 +3,36 @@
   "name": "@chia/ai",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./generate/handler": "./src/generate/handler.ts",
-    "./generate/utils": "./src/generate/utils.ts",
-    "./types": "./src/utils/types.ts",
-    "./constants": "./src/utils/constants.ts",
-    "./utils": "./src/utils/index.ts",
-    "./embeddings/openai": "./src/embeddings/openai.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./generate/handler": {
+      "types": "./src/generate/handler.ts",
+      "default": "./src/generate/handler.ts"
+    },
+    "./generate/utils": {
+      "types": "./src/generate/utils.ts",
+      "default": "./src/generate/utils.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/utils/types.ts"
+    },
+    "./constants": {
+      "types": "./src/utils/constants.ts",
+      "default": "./src/utils/constants.ts"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "default": "./src/utils/index.ts"
+    },
+    "./embeddings/openai": {
+      "types": "./src/embeddings/openai.ts",
+      "default": "./src/embeddings/openai.ts"
+    }
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -29,8 +51,8 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

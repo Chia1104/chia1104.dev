@@ -35,19 +35,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
-  transpilePackages: [
-    "@chia/api",
-    "@chia/auth",
-    "@chia/cache",
-    "@chia/db",
-    "@chia/editor",
-    "@chia/contents",
-    "@chia/meta",
-    "@chia/ui",
-    "@chia/utils",
-  ],
+  transpilePackages: ["@chia/*"],
   experimental: {
     optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
     reactCompiler: true,
@@ -152,6 +142,7 @@ export default million.next(
     authToken: process.env.SENTRY_AUTH_TOKEN,
     silent: true,
     hideSourceMaps: true,
+    disableLogger: true,
   }),
   {
     rsc: true,

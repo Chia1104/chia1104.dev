@@ -3,8 +3,45 @@
   "name": "@chia/cache",
   "version": "0.0.0",
   "private": true,
-  "types": "./index.ts",
-  "main": "./index.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./create-client": {
+      "types": "./src/create-client.ts",
+      "default": "./src/create-client.ts"
+    },
+    "./create-redis": {
+      "types": "./src/create-redis.ts",
+      "default": "./src/create-redis.ts"
+    },
+    "./create-upstash": {
+      "types": "./src/create-upstash.ts",
+      "default": "./src/create-upstash.ts"
+    },
+    "./env": {
+      "types": "./src/env.ts",
+      "default": "./src/env.ts"
+    },
+    "./rate-limiter": {
+      "types": "./src/rate-limiter.ts",
+      "default": "./src/rate-limiter.ts"
+    },
+    "./upstash-core": {
+      "types": "./src/upstash-core.ts",
+      "default": "./src/upstash-core.ts"
+    },
+    "./utils": {
+      "types": "./src/utils.ts",
+      "default": "./src/utils.ts"
+    },
+    "./with-rate-limiter": {
+      "types": "./src/with-rate-limiter.ts",
+      "default": "./src/with-rate-limiter.ts"
+    }
+  },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
     "lint": "eslint",
@@ -21,8 +58,8 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

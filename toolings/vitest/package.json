@@ -10,8 +10,8 @@
     "clean": "git clean -xdf .turbo node_modules dist"
   },
   "devDependencies": {
+    "@chia/tsconfig": "workspace:*",
     "@vitejs/plugin-react-swc": "^3.7.1",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

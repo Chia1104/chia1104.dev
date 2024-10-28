@@ -39,10 +39,11 @@ function buildPagesSitemap(sitemapData: MetadataRoute.Sitemap) {
 export const GET = async (
   request: NextRequest,
   // sitemap index
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
-    numericStringSchema.parse(params.id);
+    const storedParams = await params;
+    numericStringSchema.parse(storedParams.id);
 
     // handle sitemap index
     const feeds = await getInfiniteFeedsByUserId(getDB(), {

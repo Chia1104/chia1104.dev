@@ -38,8 +38,8 @@ env:
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
-  ci:
-    name: Build & test
+  service-lint:
+    name: "service lint"
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service')) && !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -48,11 +48,9 @@ jobs:
       - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
-      - name: "💽️  Init"
+      - name: "💽️  Setup"
         id: dash-init
-        uses: ./.github/actions/install
-        with:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
+        uses: ./.github/actions/setup
 
       - name: "🔥 Init bun"
         run: pnpm add -g bun
@@ -60,4 +58,48 @@ jobs:
       - name: "🧹  Lint & Type check & Test"
         shell: bash
         run: |
-          pnpm lint type:check test --filter service...
+          pnpm lint:service
+
+  service-type-check:
+    name: "service type check"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
+
+      - name: "💽️  Setup"
+        id: dash-init
+        uses: ./.github/actions/setup
+
+      - name: "🔥 Init bun"
+        run: pnpm add -g bun
+
+      - name: "🧹 Type check"
+        shell: bash
+        run: |
+          pnpm type:check --filter service...
+
+  service-test:
+    name: "service test"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:service') || contains(github.event.pull_request.labels.*.name, 'service:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-service')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
+
+      - name: "💽️  Setup"
+        id: dash-init
+        uses: ./.github/actions/setup
+
+      - name: "🔥 Init bun"
+        run: pnpm add -g bun
+
+      - name: "🧹 Test"
+        shell: bash
+        run: |
+          pnpm test --filter service...

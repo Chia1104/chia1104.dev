@@ -3,10 +3,20 @@
   "name": "@chia/editor",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
-    "./novel": "./src/novel/index.tsx",
-    "./novel/extensions": "./src/novel/extensions.tsx",
-    "./ai/generate": "./src/ai/generate.ts"
+    "./novel": {
+      "types": "./src/novel/index.ts",
+      "default": "./src/novel/index.tsx"
+    },
+    "./novel/extensions": {
+      "types": "./src/novel/extensions.ts",
+      "default": "./src/novel/extensions.tsx"
+    },
+    "./ai/generate": {
+      "types": "./src/ai/generate.ts",
+      "default": "./src/ai/generate.ts"
+    }
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -35,9 +45,9 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@types/react": "catalog:react19",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }
