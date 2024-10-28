@@ -1,3 +1,3 @@
-import { Features } from "@chia/ui";
+import NotFound from "@chia/ui/features/NotFound";
 
-export default Features.NotFound;
+export default NotFound;

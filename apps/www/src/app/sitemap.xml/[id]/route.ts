@@ -1,4 +1,4 @@
-import * as sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import dayjs from "dayjs";
 import type { MetadataRoute } from "next";
 import type { NextRequest } from "next/server";
@@ -128,7 +128,7 @@ export const GET = async (
       );
     }
 
-    sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(errorGenerator(500), {
       status: 500,
     });
