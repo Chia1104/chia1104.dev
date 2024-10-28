@@ -3,10 +3,20 @@
   "name": "@chia/editor",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
-    "./novel": "./src/novel/index.tsx",
-    "./novel/extensions": "./src/novel/extensions.tsx",
-    "./ai/generate": "./src/ai/generate.ts"
+    "./novel": {
+      "types": "./src/novel/index.ts",
+      "default": "./src/novel/index.tsx"
+    },
+    "./novel/extensions": {
+      "types": "./src/novel/extensions.ts",
+      "default": "./src/novel/extensions.tsx"
+    },
+    "./ai/generate": {
+      "types": "./src/ai/generate.ts",
+      "default": "./src/ai/generate.ts"
+    }
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -20,24 +30,24 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@nextui-org/react": "2.4.8",
-    "@tiptap/core": "^2.9.0",
-    "@tiptap/extension-code-block-lowlight": "^2.9.0",
-    "@tiptap/html": "^2.9.0",
-    "@tiptap/starter-kit": "^2.9.0",
+    "@tiptap/core": "^2.9.1",
+    "@tiptap/extension-code-block-lowlight": "^2.9.1",
+    "@tiptap/html": "^2.9.1",
+    "@tiptap/starter-kit": "^2.9.1",
     "class-variance-authority": "^0.7.0",
     "lowlight": "^3.1.0",
     "lucide-react": "^0.453.0",
     "next": "15.0.1",
     "novel": "^0.5.0",
-    "openai": "^4.68.2",
+    "openai": "^4.68.4",
     "react": "catalog:react19",
     "tiptap-markdown": "^0.8.10"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@types/react": "catalog:react19",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

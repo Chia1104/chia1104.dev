@@ -1,4 +1,4 @@
-ARG BUN_VERSION=1.1.32
+ARG BUN_VERSION=1.1.33
 ARG NODE_VERSION=20
 
 FROM oven/bun:$BUN_VERSION as runner-base
@@ -65,4 +65,4 @@ ENV NODE_ENV=production \
 
 EXPOSE 8080
 
-CMD [ "bun", "apps/service/dist/server.mjs" ]
+CMD [ "bun", "apps/service/dist/server.js" ]

@@ -1,5 +1,5 @@
 {
-  "extends": ["tsconfig/base.json"],
-  "include": ["**/*.ts"],
-  "exclude": ["dist", "build", "node_modules"]
+  "extends": "@chia/tsconfig/internal-package.json",
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
 }

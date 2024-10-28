@@ -3,13 +3,32 @@
   "name": "@chia/contents",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./content-context": "./src/content.context.ts",
-    "./content": "./src/content.tsx",
-    "./mdx-components": "./src/mdx-components.tsx",
-    "./services": "./src/services.ts",
-    "./types": "./src/types.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./content-context": {
+      "types": "./src/content.context.ts",
+      "default": "./src/content.context.ts"
+    },
+    "./content": {
+      "types": "./src/content.ts",
+      "default": "./src/content.tsx"
+    },
+    "./mdx-components": {
+      "types": "./src/mdx-components.ts",
+      "default": "./src/mdx-components.tsx"
+    },
+    "./services": {
+      "types": "./src/services.ts",
+      "default": "./src/services.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    }
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -25,7 +44,7 @@
     "@fumadocs/mdx-remote": "^0.2.3",
     "@mdx-js/react": "^3.1.0",
     "fumadocs-core": "^14.0.2",
-    "fumadocs-mdx": "^11.0.0",
+    "fumadocs-mdx": "^11.1.0",
     "fumadocs-ui": "^14.0.2",
     "next": "15.0.1",
     "react": "catalog:react19",
@@ -33,11 +52,11 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@types/mdx": "^2.0.13",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

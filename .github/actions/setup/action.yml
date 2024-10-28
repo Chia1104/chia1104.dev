@@ -3,7 +3,7 @@ description: "Localized Install"
 
 inputs:
   NODE_VERSION:
-    description: "node version"
+    description: "~~node version~~ deprecated"
     default: "20"
     required: false
   OPTIONAL_INSTALL_COMMAND:
@@ -22,7 +22,7 @@ runs:
       id: node-setup
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ inputs.NODE_VERSION }}
+        node-version-file: ".nvmrc"
         cache: "pnpm"
     - name: "📦️ Install dependencies"
       id: dependencies

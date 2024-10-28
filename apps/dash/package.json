@@ -3,7 +3,9 @@
   "name": "dash",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
+    "analyze": "ANALYZE=true pnpm build",
     "dev": "next dev --port 3001 --turbo",
     "build": "next build",
     "start": "next start",
@@ -38,17 +40,17 @@
     "@trpc/next": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
-    "ai": "^3.4.18",
+    "ai": "^3.4.21",
     "clsx": "^2.1.1",
     "framer-motion": "12.0.0-alpha.1",
-    "fumadocs-mdx": "^11.0.0",
+    "fumadocs-mdx": "^11.1.0",
     "fumadocs-ui": "^14.0.2",
     "lowlight": "^3.1.0",
     "lucide-react": "^0.453.0",
     "million": "^3.1.11",
     "next": "15.0.1",
     "next-auth": "5.0.0-beta.25",
-    "next-safe-action": "7.9.6",
+    "next-safe-action": "7.9.7",
     "next-themes": "^0.3.0",
     "next-view-transitions": "^0.3.2",
     "react": "catalog:react19",
@@ -65,7 +67,9 @@
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@million/lint": "1.0.11",
+    "@next/bundle-analyzer": "15.0.1",
     "@testing-library/react": "^16.0.1",
     "@types/mdx": "^2.0.13",
     "@types/react": "catalog:react19",
@@ -78,7 +82,6 @@
     "postcss-import": "^16.1.0",
     "tailwind-scrollbar": "^3.1.0",
     "tailwindcss": "^3.4.14",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

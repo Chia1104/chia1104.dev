@@ -3,8 +3,7 @@
   "name": "seed",
   "version": "0.0.0",
   "private": true,
-  "types": "./index.ts",
-  "main": "index.ts",
+  "type": "module",
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -15,10 +14,10 @@
   },
   "devDependencies": {
     "@chia/db": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@faker-js/faker": "^9.0.3",
+    "@faker-js/faker": "^9.1.0",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

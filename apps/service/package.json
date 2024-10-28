@@ -2,13 +2,14 @@
   "name": "service",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "node:dev": "tsx watch --env-file=.env src/server.ts",
     "dev": "bun run --watch --bun src/server.ts",
     "build": "tsup",
     "node:start": "node dist/server.mjs",
-    "start": "bun run --bun dist/server.mjs",
-    "node:preview": "node --env-file=.env dist/server.mjs",
+    "start": "bun run --bun dist/server.js",
+    "node:preview": "node --env-file=.env dist/server.js",
     "test": "NODE_ENV=test bun test",
     "type:check": "tsc --noEmit"
   },
@@ -23,7 +24,7 @@
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
     "@hono-rate-limiter/redis": "^0.1.4",
-    "@hono/auth-js": "^1.0.12",
+    "@hono/auth-js": "^1.0.13",
     "@hono/graphql-server": "^0.5.1",
     "@hono/node-server": "^1.13.2",
     "@hono/sentry": "^1.2.0",
@@ -32,18 +33,18 @@
     "@t3-oss/env-core": "^0.11.1",
     "drizzle-graphql": "^0.8.5",
     "graphql": "^16.9.0",
-    "hono": "^4.6.6",
+    "hono": "^4.6.7",
     "hono-rate-limiter": "^0.4.0",
     "rate-limit-redis": "^4.2.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tailwind": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "eslint": "catalog:",
     "postcss": "8.4.47",
     "postcss-import": "^16.1.0",
     "tailwindcss": "^3.4.14",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

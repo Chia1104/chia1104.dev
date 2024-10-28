@@ -18,10 +18,7 @@ export interface Options {
   model?: TextEmbeddingModel;
 }
 
-export const generateEmbedding = async (
-  value: string,
-  options?: Options
-): Promise<number[]> => {
+export const generateEmbedding = async (value: string, options?: Options) => {
   options ??= {};
   const { client = createOpenAI(), model = TextEmbeddingModel["ada-002"] } =
     options;
@@ -32,5 +29,5 @@ export const generateEmbedding = async (
     input,
   });
 
-  return data[0].embedding;
+  return data[0]?.embedding;
 };

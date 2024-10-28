@@ -15,11 +15,11 @@ export const toHex = (arrayBuffer: ArrayBuffer) => {
     .join("");
 };
 
-export const verifyInput = async (key: CryptoKey, input: string) =>
-  toHex(
-    await crypto.subtle.sign(
-      "HMAC",
-      key,
-      new TextEncoder().encode(JSON.stringify({ input }))
-    )
-  );
+// export const verifyInput = async (key: CryptoKey, input: string) =>
+//   toHex(
+//     await crypto.subtle.sign(
+//       "HMAC",
+//       key,
+//       new TextEncoder().encode(JSON.stringify({ input }))
+//     )
+//   );

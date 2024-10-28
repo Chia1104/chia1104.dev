@@ -1,9 +1,14 @@
+import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import million from "million/compiler";
 import { NextConfig } from "next";
 
 import "@/env";
 
 type Plugin = (config: NextConfig) => NextConfig;
+
+const withBundleAnalyzer = withBundleAnalyzerImport({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const securityHeaders = [
   {
@@ -31,16 +36,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  transpilePackages: [
-    "@chia/ai",
-    "@chia/api",
-    "@chia/auth",
-    "@chia/auth-core",
-    "@chia/db",
-    "@chia/contents",
-    "@chia/ui",
-    "@chia/utils",
-  ],
+  transpilePackages: ["@chia/*"],
   experimental: {
     optimizePackageImports: ["@nextui-org/react"],
     webpackBuildWorker: true,
@@ -68,7 +64,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-const plugins: Plugin[] = [];
+const plugins: Plugin[] = [withBundleAnalyzer];
 
 const nextComposePlugins = plugins.reduce(
   (acc, plugin) => plugin(acc),

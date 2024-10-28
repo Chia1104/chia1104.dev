@@ -7,5 +7,5 @@ export const getPublicFeedsTotal = withDTO(async (db, userID: string) => {
       .select({ count: count(schema.feeds.published) })
       .from(schema.feeds)
       .where(eq(schema.feeds.userId, userID))
-  )[0].count;
+  )[0]?.count;
 });

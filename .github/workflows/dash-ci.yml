@@ -33,8 +33,8 @@ env:
   TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
-  ci:
-    name: Build & test
+  dash-lint:
+    name: "dash lint"
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-dash')) && !contains(github.event.head_commit.message, '[skip ci]') }}
@@ -43,13 +43,49 @@ jobs:
       - name: "🐙️ Check out code"
         uses: actions/checkout@v4
 
-      - name: "💽️  Init"
+      - name: "💽️ Setup"
         id: dash-init
-        uses: ./.github/actions/install
-        with:
-          NODE_VERSION: ${{ env.NODE_VERSION }}
+        uses: ./.github/actions/setup
 
-      - name: "🧹  Lint & Type check & Test"
+      - name: "🧹 ES Lint"
         shell: bash
         run: |
-          pnpm lint type:check test --filter dash...
+          pnpm lint:dash
+
+  dash-type-check:
+    name: "dash type check"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-dash')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
+
+      - name: "💽️ Setup"
+        id: dash-init
+        uses: ./.github/actions/setup
+
+      - name: "🧹 Type check"
+        shell: bash
+        run: |
+          pnpm type:check --filter dash...
+
+  dash-test:
+    name: "dash test"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'area:dash') || contains(github.event.pull_request.labels.*.name, 'dash:enhancement') || contains(github.event.pull_request.labels.*.name, 'area-dash')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
+
+      - name: "💽️  Setup"
+        id: dash-init
+        uses: ./.github/actions/setup
+
+      - name: "🧹 Test"
+        shell: bash
+        run: |
+          pnpm test --filter dash...
