@@ -50,7 +50,7 @@
     "million": "^3.1.11",
     "next": "15.0.2",
     "next-auth": "5.0.0-beta.25",
-    "next-safe-action": "7.9.7",
+    "next-safe-action": "7.9.9",
     "next-themes": "^0.3.0",
     "next-view-transitions": "^0.3.2",
     "react": "catalog:react19",
