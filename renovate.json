@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "labels": ["dependencies", "renovate"],
   "rebaseWhen": "conflicted",
   "rangeStrategy": "bump",
@@ -8,64 +8,66 @@
   "packageRules": [
     {
       "groupName": "eslint",
-      "matchPackagePatterns": ["eslint", "eslint-*", "@types/eslint"]
+      "matchPackageNames": ["/eslint/", "/eslint-*/", "/@types/eslint/"]
     },
     {
       "groupName": "prettier",
-      "matchPackagePatterns": ["prettier", "prettier-*", "@types/prettier"]
+      "matchPackageNames": ["/prettier/", "/prettier-*/", "/@types/prettier/"]
     },
     {
       "groupName": "react",
-      "matchPackagePatterns": [
-        "react",
-        "react-dom",
-        "@types/react",
-        "@types/react-dom"
+      "matchPackageNames": [
+        "/react/",
+        "/react-dom/",
+        "/@types/react/",
+        "/@types/react-dom/"
       ]
     },
     {
       "groupName": "trpc",
-      "matchPackagePatterns": ["@trpc/*"]
+      "matchPackageNames": ["/@trpc/*/"]
     },
     {
       "groupName": "typescript-eslint",
-      "matchPackagePatterns": ["@typescript-eslint/*"]
+      "matchPackageNames": ["/@typescript-eslint/*/"]
     },
     {
       "groupName": "fumadocs",
-      "matchPackagePatterns": ["fumadocs-*"]
+      "matchPackageNames": ["/fumadocs-*/"]
     },
     {
       "groupName": "tiptap",
-      "matchPackagePatterns": ["@tiptap/*"]
+      "matchPackageNames": ["/@tiptap/*/"]
     },
     {
       "groupName": "plate",
-      "matchPackagePatterns": ["@udecode/plate-*"]
+      "matchPackageNames": ["/@udecode/plate-*/"]
     },
     {
-      "matchPackagePatterns": [
-        "^@chia/*",
-        "@chia/ui",
-        "@chia/utils",
-        "@chia/api",
-        "@chia/db",
-        "@chia/auth",
-        "tsconfig",
-        "node",
-        "go"
-      ],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": [
+        "/^@chia/*/",
+        "/@chia/ui/",
+        "/@chia/utils/",
+        "/@chia/api/",
+        "/@chia/db/",
+        "/@chia/auth/",
+        "/tsconfig/",
+        "/node/",
+        "/go/"
+      ]
     },
     {
       "groupName": "playwright",
-      "matchPackagePatterns": ["^@playwright/", "^mcr.microsoft.com/playwright"]
+      "matchPackageNames": [
+        "/^@playwright//",
+        "/^mcr.microsoft.com/playwright/"
+      ]
     },
     {
       "groupName": "Hono",
       "groupSlug": "hono",
-      "matchPackageNames": ["hono", "honox"],
-      "matchPackagePrefixes": ["@hono"]
+      "matchPackageNames": ["hono", "honox", "@hono{/,}**"]
     }
   ],
   "updateInternalDeps": true
