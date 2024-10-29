@@ -46,7 +46,7 @@
     "@ai-sdk/openai": "^0.0.70",
     "@chia/utils": "workspace:*",
     "ai": "^3.4.21",
-    "next": "15.0.1",
+    "next": "15.0.2",
     "openai": "^4.68.4"
   },
   "devDependencies": {
