@@ -37,7 +37,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@giscus/react": "^3.0.0",
-    "@hookform/resolvers": "^3.9.0",
+    "@hookform/resolvers": "^3.9.1",
     "@next/third-parties": "^15.0.2",
     "@nextui-org/react": "2.4.8",
     "@nextui-org/theme": "2.2.11",
