@@ -40,7 +40,7 @@
     "@trpc/next": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
-    "ai": "^3.4.27",
+    "ai": "^3.4.29",
     "clsx": "^2.1.1",
     "framer-motion": "12.0.0-alpha.1",
     "fumadocs-mdx": "^11.1.1",
@@ -62,7 +62,7 @@
     "sonner": "1.5.0",
     "tailwind-merge": "^2.5.4",
     "usehooks-ts": "^3.1.0",
-    "zustand": "5.0.0"
+    "zustand": "5.0.1"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
