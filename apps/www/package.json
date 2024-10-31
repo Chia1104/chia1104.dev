@@ -41,7 +41,7 @@
     "@next/third-parties": "^15.0.2",
     "@nextui-org/react": "2.4.8",
     "@nextui-org/theme": "2.2.11",
-    "@react-email/components": "^0.0.25",
+    "@react-email/components": "^0.0.26",
     "@sentry/nextjs": "^8.35.0",
     "@t3-oss/env-core": "^0.11.1",
     "@t3-oss/env-nextjs": "^0.11.1",
