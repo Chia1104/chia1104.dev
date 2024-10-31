@@ -89,8 +89,8 @@ importers:
         specifier: ^9.0.7
         version: 9.0.7
       '@types/lodash':
-        specifier: ^4.17.12
-        version: 4.17.12
+        specifier: ^4.17.13
+        version: 4.17.13
       '@types/node':
         specifier: ^22.8.1
         version: 22.8.1
@@ -6303,8 +6303,8 @@ packages:
   '@types/lodash.debounce@4.0.9':
     resolution: {integrity: sha512-Ma5JcgTREwpLRwMM+XwBR7DaWe96nC38uCBDFKZWbNKD+osjVzdpnUSwBcqCptrp16sSOLBAUb50Car5I0TCsQ==}
 
-  '@types/lodash@4.17.12':
-    resolution: {integrity: sha512-sviUmCE8AYdaF/KIHLDJBQgeYzPBI0vf/17NaYehBJfYD1j6/L95Slh07NlyK2iNyBNaEkb3En2jRt+a8y3xZQ==}
+  '@types/lodash@4.17.13':
+    resolution: {integrity: sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==}
 
   '@types/long@4.0.2':
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
@@ -19256,9 +19256,9 @@ snapshots:
 
   '@types/lodash.debounce@4.0.9':
     dependencies:
-      '@types/lodash': 4.17.12
+      '@types/lodash': 4.17.13
 
-  '@types/lodash@4.17.12': {}
+  '@types/lodash@4.17.13': {}
 
   '@types/long@4.0.2': {}
 
