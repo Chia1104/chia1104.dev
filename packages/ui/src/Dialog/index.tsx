@@ -34,10 +34,14 @@ const DialogContent = ({
   className,
   children,
   ref,
+  Title = {},
   ...props
-}: React.ComponentPropsWithRef<typeof DialogPrimitive.Content>) => (
+}: React.ComponentPropsWithRef<typeof DialogPrimitive.Content> & {
+  Title?: React.ComponentPropsWithRef<typeof DialogPrimitive.Title>;
+}) => (
   <DialogPortal>
     <DialogOverlay />
+    <DialogPrimitive.Title {...Title} />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(

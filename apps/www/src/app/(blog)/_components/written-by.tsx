@@ -12,23 +12,25 @@ const WrittenBy = ({
   className?: string;
 }) => {
   return (
-    <FadeIn className={className}>
-      {(isInView) => (
-        <AnimatePresence>
-          <span className="w-full max-w-[300px]">
-            {isInView && (
-              <TextPath
-                text={author}
-                svgProps={{
-                  viewBox: "0 0 320 100",
-                }}
-              />
-            )}
-          </span>
-          <p className="absolute bottom-0 left-0 text-xs">{`Written by: ${author}`}</p>
-        </AnimatePresence>
-      )}
-    </FadeIn>
+    <AnimatePresence>
+      <FadeIn className={className}>
+        {(isInView) => (
+          <>
+            <span className="w-full max-w-[300px]">
+              {isInView && (
+                <TextPath
+                  text={author}
+                  svgProps={{
+                    viewBox: "0 0 320 100",
+                  }}
+                />
+              )}
+            </span>
+            <p className="absolute bottom-0 left-0 text-xs">{`Written by: ${author}`}</p>
+          </>
+        )}
+      </FadeIn>
+    </AnimatePresence>
   );
 };
 
