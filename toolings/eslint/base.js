@@ -1,7 +1,9 @@
 /// <reference types="./types.d.ts" />
+import { includeIgnoreFile } from "@eslint/compat";
 import eslint from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
 import turboPlugin from "eslint-plugin-turbo";
+import * as path from "node:path";
 import tseslint from "typescript-eslint";
 
 /**
@@ -32,6 +34,7 @@ export const restrictEnvAccess = tseslint.config({
 });
 
 export default tseslint.config(
+  includeIgnoreFile(path.join(import.meta.dirname, "../../.gitignore")),
   {
     // Globally ignored files
     ignores: ["**/*.config.*", "dist/**", "build/**", "node_modules/**"],
