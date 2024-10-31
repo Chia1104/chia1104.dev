@@ -51,17 +51,13 @@
   "dependencies": {
     "@chia/ai": "workspace:*",
     "drizzle-orm": "^0.36.0",
-    "drizzle-zod": "^0.5.1",
-    "pg": "^8.13.1",
-    "pgvector": "^0.2.0",
-    "postgres": "^3.4.5"
+    "drizzle-zod": "^0.5.1"
   },
   "devDependencies": {
     "@auth/core": "^0.37.2",
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.27.0",
     "eslint": "catalog:",
     "typescript": "catalog:"
