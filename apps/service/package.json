@@ -7,7 +7,7 @@
     "node:dev": "tsx watch --env-file=.env src/server.ts",
     "dev": "bun run --watch --bun src/server.ts",
     "build": "tsup",
-    "node:start": "node dist/server.mjs",
+    "node:start": "node dist/server.js",
     "start": "bun run --bun dist/server.js",
     "node:preview": "node --env-file=.env dist/server.js",
     "test": "NODE_ENV=test bun test",
