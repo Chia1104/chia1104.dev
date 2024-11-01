@@ -67,7 +67,7 @@
   "packageManager": "pnpm@9.12.3",
   "dependencies": {
     "dayjs": "^1.11.13",
-    "graphql-request": "^7.1.0",
+    "graphql-request": "^7.1.1",
     "jsonwebtoken": "^9.0.2",
     "ky": "^1.7.2",
     "lodash": "^4.17.21",
@@ -91,7 +91,7 @@
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.10",
     "msw": "^2.6.0",
-    "nx": "^20.0.6",
+    "nx": "^20.0.7",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "shell-quote": "^1.8.1",
