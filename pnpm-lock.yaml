@@ -269,8 +269,8 @@ importers:
         specifier: 0.33.5
         version: 0.33.5
       sonner:
-        specifier: 1.5.0
-        version: 1.5.0(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101)
+        specifier: 1.6.1
+        version: 1.6.1(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101)
       tailwind-merge:
         specifier: ^2.5.4
         version: 2.5.4
@@ -570,8 +570,8 @@ importers:
         specifier: ^0.0.1
         version: 0.0.1
       sonner:
-        specifier: 1.5.0
-        version: 1.5.0(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101)
+        specifier: 1.6.1
+        version: 1.6.1(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101)
       usehooks-ts:
         specifier: ^3.1.0
         version: 3.1.0(react@19.0.0-rc-7c8e5e7a-20241101)
@@ -1125,8 +1125,8 @@ importers:
         specifier: ^5.2.10
         version: 5.2.10(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101)
       sonner:
-        specifier: 1.5.0
-        version: 1.5.0(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101)
+        specifier: 1.6.1
+        version: 1.6.1(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101)
       tailwind-merge:
         specifier: ^2.5.4
         version: 2.5.4
@@ -10644,11 +10644,11 @@ packages:
     resolution: {integrity: sha512-l5x7VUUWbjVFbafGLxPWkYsHIhEvmF85tbIeFZWc8ZPtoMyybuEhL7Jye/ooC4/d48FgOjSJXgsF/AJPYCW8Zw==}
     engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
 
-  sonner@1.5.0:
-    resolution: {integrity: sha512-FBjhG/gnnbN6FY0jaNnqZOMmB73R+5IiyYAw8yBj7L54ER7HB3fOSE5OFiQiE2iXWxeXKvg6fIP4LtVppHEdJA==}
+  sonner@1.6.1:
+    resolution: {integrity: sha512-0iD+eDJHyJitl069BC6wVDykQD56FMKk4TD6XkcCcikcDYaGsFKlSU0mZQXYWKPpFof3jlV/u4vGZc2KCqz8OQ==}
     peerDependencies:
-      react: ^18.0.0
-      react-dom: ^18.0.0
+      react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -23217,7 +23217,7 @@ snapshots:
       ip-address: 9.0.5
       smart-buffer: 4.2.0
 
-  sonner@1.5.0(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101):
+  sonner@1.6.1(react-dom@19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101))(react@19.0.0-rc-7c8e5e7a-20241101):
     dependencies:
       react: 19.0.0-rc-7c8e5e7a-20241101
       react-dom: 19.0.0-rc-7c8e5e7a-20241101(react@19.0.0-rc-7c8e5e7a-20241101)
