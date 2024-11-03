@@ -17,14 +17,6 @@
       "types": "./src/constants/index.ts",
       "default": "./src/constants/index.ts"
     },
-    "./crypto/node": {
-      "types": "./src/crypto/node.ts",
-      "default": "./src/crypto/node.ts"
-    },
-    "./crypto/edge": {
-      "types": "./src/crypto/edge.ts",
-      "default": "./src/crypto/edge.ts"
-    },
     "./day": {
       "types": "./src/day/day.ts",
       "default": "./src/day/day.util.ts"
