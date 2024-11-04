@@ -16,7 +16,7 @@
     "@chia/db": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@faker-js/faker": "^9.1.0",
+    "@faker-js/faker": "^9.2.0",
     "eslint": "catalog:",
     "typescript": "catalog:"
   }
