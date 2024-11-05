@@ -39,7 +39,7 @@
     "lucide-react": "^0.454.0",
     "next": "15.0.2",
     "novel": "^0.5.0",
-    "openai": "^4.70.2",
+    "openai": "^4.71.0",
     "react": "catalog:react19",
     "tiptap-markdown": "^0.8.10"
   },
