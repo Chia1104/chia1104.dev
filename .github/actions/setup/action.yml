@@ -1,5 +1,5 @@
-name: "📦  Install"
-description: "Localized Install"
+name: "📦  Set Up"
+description: "Localized Set Up"
 
 inputs:
   NODE_VERSION:
