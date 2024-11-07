@@ -929,8 +929,8 @@ importers:
         specifier: ^8.11.10
         version: 8.11.10
       drizzle-kit:
-        specifier: ^0.27.1
-        version: 0.27.1
+        specifier: ^0.28.0
+        version: 0.28.0
       eslint:
         specifier: 'catalog:'
         version: 9.13.0(jiti@1.21.6)
@@ -7237,8 +7237,8 @@ packages:
       drizzle-orm: '>=0.30.9'
       graphql: '>=16.3.0'
 
-  drizzle-kit@0.27.1:
-    resolution: {integrity: sha512-4BNA0T2blN+jW5wSwhtc+FIlCMuxYSMWCnYYdOBi5rttwq8aVXRUid0d0NCzcBKtZQSPZGAUxy+TXr7Q1OgEug==}
+  drizzle-kit@0.28.0:
+    resolution: {integrity: sha512-KqI+CS2Ga9GYIrXpxpCDUJJrH/AT/k4UY0Pb4oRgQEGkgN1EdCnqp664cXgwPWjDr5RBtTsjZipw8+8C//K63A==}
     hasBin: true
 
   drizzle-orm@0.36.1:
@@ -19934,7 +19934,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-kit@0.27.1:
+  drizzle-kit@0.28.0:
     dependencies:
       '@drizzle-team/brocli': 0.10.2
       '@esbuild-kit/esm-loader': 2.6.5
