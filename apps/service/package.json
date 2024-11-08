@@ -24,7 +24,7 @@
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
     "@hono-rate-limiter/redis": "^0.1.4",
-    "@hono/auth-js": "^1.0.14",
+    "@hono/auth-js": "^1.0.15",
     "@hono/graphql-server": "^0.5.1",
     "@hono/node-server": "^1.13.2",
     "@hono/sentry": "^1.2.0",
