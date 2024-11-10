@@ -91,7 +91,7 @@
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.10",
     "msw": "^2.6.2",
-    "nx": "^20.0.11",
+    "nx": "^20.0.12",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "shell-quote": "^1.8.1",
