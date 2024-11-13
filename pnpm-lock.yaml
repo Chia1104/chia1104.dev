@@ -369,25 +369,25 @@ importers:
         version: link:../../packages/utils
       '@hono-rate-limiter/redis':
         specifier: ^0.1.4
-        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.6.9))
+        version: 0.1.4(hono-rate-limiter@0.4.0(hono@4.6.10))
       '@hono/auth-js':
         specifier: ^1.0.15
-        version: 1.0.15(@auth/core@0.37.3)(hono@4.6.9)(react@19.0.0-rc-7c8e5e7a-20241101)
+        version: 1.0.15(@auth/core@0.37.3)(hono@4.6.10)(react@19.0.0-rc-7c8e5e7a-20241101)
       '@hono/graphql-server':
         specifier: ^0.5.1
-        version: 0.5.1(hono@4.6.9)
+        version: 0.5.1(hono@4.6.10)
       '@hono/node-server':
         specifier: ^1.13.2
-        version: 1.13.3(hono@4.6.9)
+        version: 1.13.3(hono@4.6.10)
       '@hono/sentry':
         specifier: ^1.2.0
-        version: 1.2.0(hono@4.6.9)
+        version: 1.2.0(hono@4.6.10)
       '@hono/trpc-server':
         specifier: ^0.3.2
-        version: 0.3.2(@trpc/server@11.0.0-rc.604)(hono@4.6.9)
+        version: 0.3.2(@trpc/server@11.0.0-rc.604)(hono@4.6.10)
       '@hono/zod-validator':
         specifier: ^0.4.1
-        version: 0.4.1(hono@4.6.9)(zod@3.23.8)
+        version: 0.4.1(hono@4.6.10)(zod@3.23.8)
       '@t3-oss/env-core':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.6.3)(zod@3.23.8)
@@ -398,11 +398,11 @@ importers:
         specifier: ^16.9.0
         version: 16.9.0
       hono:
-        specifier: ^4.6.9
-        version: 4.6.9
+        specifier: ^4.6.10
+        version: 4.6.10
       hono-rate-limiter:
         specifier: ^0.4.0
-        version: 0.4.0(hono@4.6.9)
+        version: 0.4.0(hono@4.6.10)
       rate-limit-redis:
         specifier: ^4.2.0
         version: 4.2.0(express-rate-limit@7.4.1(express@4.21.1))
@@ -8172,6 +8172,10 @@ packages:
     peerDependencies:
       hono: ^4.1.1
 
+  hono@4.6.10:
+    resolution: {integrity: sha512-IXXNfRAZEahFnWBhUUlqKEGF9upeE6hZoRZszvNkyAz/CYp+iVbxm3viMvStlagRJohjlBRGOQ7f4jfcV0XMGg==}
+    engines: {node: '>=16.9.0'}
+
   hono@4.6.9:
     resolution: {integrity: sha512-p/pN5yZLuZaHzyAOT2nw2/Ud6HhJHYmDNGH6Ck1OWBhPMVeM1r74jbCRwNi0gyFRjjbsGgoHbOyj7mT1PDNbTw==}
     engines: {node: '>=16.9.0'}
@@ -13004,38 +13008,42 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.6.9))':
+  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.0(hono@4.6.10))':
     dependencies:
-      hono-rate-limiter: 0.4.0(hono@4.6.9)
+      hono-rate-limiter: 0.4.0(hono@4.6.10)
 
-  '@hono/auth-js@1.0.15(@auth/core@0.37.3)(hono@4.6.9)(react@19.0.0-rc-7c8e5e7a-20241101)':
+  '@hono/auth-js@1.0.15(@auth/core@0.37.3)(hono@4.6.10)(react@19.0.0-rc-7c8e5e7a-20241101)':
     dependencies:
       '@auth/core': 0.37.3
-      hono: 4.6.9
+      hono: 4.6.10
       react: 19.0.0-rc-7c8e5e7a-20241101
 
-  '@hono/graphql-server@0.5.1(hono@4.6.9)':
+  '@hono/graphql-server@0.5.1(hono@4.6.10)':
     dependencies:
       graphql: 16.9.0
-      hono: 4.6.9
+      hono: 4.6.10
+
+  '@hono/node-server@1.13.3(hono@4.6.10)':
+    dependencies:
+      hono: 4.6.10
 
   '@hono/node-server@1.13.3(hono@4.6.9)':
     dependencies:
       hono: 4.6.9
 
-  '@hono/sentry@1.2.0(hono@4.6.9)':
+  '@hono/sentry@1.2.0(hono@4.6.10)':
     dependencies:
-      hono: 4.6.9
+      hono: 4.6.10
       toucan-js: 4.0.0
 
-  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.604)(hono@4.6.9)':
+  '@hono/trpc-server@0.3.2(@trpc/server@11.0.0-rc.604)(hono@4.6.10)':
     dependencies:
       '@trpc/server': 11.0.0-rc.604
-      hono: 4.6.9
+      hono: 4.6.10
 
-  '@hono/zod-validator@0.4.1(hono@4.6.9)(zod@3.23.8)':
+  '@hono/zod-validator@0.4.1(hono@4.6.10)(zod@3.23.8)':
     dependencies:
-      hono: 4.6.9
+      hono: 4.6.10
       zod: 3.23.8
 
   '@hookform/resolvers@3.9.1(react-hook-form@7.53.2(react@19.0.0-rc-2ec26bc4-20241111))':
@@ -21156,9 +21164,11 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.4.0(hono@4.6.9):
+  hono-rate-limiter@0.4.0(hono@4.6.10):
     dependencies:
-      hono: 4.6.9
+      hono: 4.6.10
+
+  hono@4.6.10: {}
 
   hono@4.6.9: {}
 
