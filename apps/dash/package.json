@@ -56,7 +56,7 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-hook-form": "^7.53.2",
-    "react-medium-image-zoom": "^5.2.10",
+    "react-medium-image-zoom": "^5.2.11",
     "server-only": "^0.0.1",
     "sharp": "0.33.5",
     "sonner": "1.7.0",

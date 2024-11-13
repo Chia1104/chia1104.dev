@@ -69,7 +69,7 @@
     "react-dom": "catalog:react19",
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.53.2",
-    "react-medium-image-zoom": "^5.2.10",
+    "react-medium-image-zoom": "^5.2.11",
     "resend": "^4.0.0",
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
