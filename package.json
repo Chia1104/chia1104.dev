@@ -64,7 +64,7 @@
     "node": ">=20.6",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@9.13.0",
+  "packageManager": "pnpm@9.13.2",
   "dependencies": {
     "dayjs": "^1.11.13",
     "graphql-request": "^7.1.2",
@@ -79,7 +79,7 @@
     "@playwright/test": "^1.48.2",
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@turbo/gen": "^2.2.3",
+    "@turbo/gen": "^2.3.0",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/lodash": "^4.17.13",
     "@types/node": "^22.8.1",
@@ -91,13 +91,13 @@
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.10",
     "msw": "^2.6.4",
-    "nx": "^20.1.0",
+    "nx": "^20.1.1",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "shell-quote": "^1.8.1",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
-    "turbo": "2.2.3",
+    "turbo": "2.3.0",
     "typescript": "catalog:",
     "vitest": "^2.1.5"
   },
