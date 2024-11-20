@@ -16,7 +16,7 @@
   "dependencies": {
     "@apollo/server": "^4.11.2",
     "@auth/core": "^0.37.4",
-    "@auth/drizzle-adapter": "^1.7.3",
+    "@auth/drizzle-adapter": "^1.7.4",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth-core": "workspace:*",

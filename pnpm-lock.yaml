@@ -347,8 +347,8 @@ importers:
         specifier: ^0.37.4
         version: 0.37.4
       '@auth/drizzle-adapter':
-        specifier: ^1.7.3
-        version: 1.7.3
+        specifier: ^1.7.4
+        version: 1.7.4
       '@chia/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -732,8 +732,8 @@ importers:
         specifier: ^0.37.4
         version: 0.37.4
       '@auth/drizzle-adapter':
-        specifier: ^1.7.3
-        version: 1.7.3
+        specifier: ^1.7.4
+        version: 1.7.4
       '@chia/auth-core':
         specifier: workspace:*
         version: link:../auth-core
@@ -787,8 +787,8 @@ importers:
         specifier: ^0.37.4
         version: 0.37.4
       '@auth/drizzle-adapter':
-        specifier: ^1.7.3
-        version: 1.7.3
+        specifier: ^1.7.4
+        version: 1.7.4
       '@chia/cache':
         specifier: workspace:*
         version: link:../cache
@@ -1496,20 +1496,6 @@ packages:
       nodemailer:
         optional: true
 
-  '@auth/core@0.37.3':
-    resolution: {integrity: sha512-qcffDLwxB9iUYH8GHq68w/KU8jtjAbjjk9xnpoKhjX3+QcntaQ2MKVSkTTocmA6ElpL5vK2xR9CXfQ98dvGnyg==}
-    peerDependencies:
-      '@simplewebauthn/browser': ^9.0.1
-      '@simplewebauthn/server': ^9.0.2
-      nodemailer: ^6.8.0
-    peerDependenciesMeta:
-      '@simplewebauthn/browser':
-        optional: true
-      '@simplewebauthn/server':
-        optional: true
-      nodemailer:
-        optional: true
-
   '@auth/core@0.37.4':
     resolution: {integrity: sha512-HOXJwXWXQRhbBDHlMU0K/6FT1v+wjtzdKhsNg0ZN7/gne6XPsIrjZ4daMcFnbq0Z/vsAbYBinQhhua0d77v7qw==}
     peerDependencies:
@@ -1524,8 +1510,8 @@ packages:
       nodemailer:
         optional: true
 
-  '@auth/drizzle-adapter@1.7.3':
-    resolution: {integrity: sha512-0BuGgRjcghoFJQH8796BaLCFXqh77lhizXuDliVK7cF2hs1nXo7eKZ/m5ddFa7ATTOwQ3gncQLHFJ1ap8dOoew==}
+  '@auth/drizzle-adapter@1.7.4':
+    resolution: {integrity: sha512-OPZQakWWm5Hbx6okVMbtgI08WBliz/dCbFUXiPg9TThpp3Wh7MME/ubg4fW1oOp8P0gul6MkFvMVO733sVtd2w==}
 
   '@axiomhq/js@1.0.0-rc.3':
     resolution: {integrity: sha512-Zm10TczcMLounWqC42nMkXQ7XKLqjzLrd5ia022oBKDUZqAFVg2y9d1quQVNV4FlXyg9MKDdfMjpKQRmzEGaog==}
@@ -7018,10 +7004,6 @@ packages:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
-  cookie@1.0.1:
-    resolution: {integrity: sha512-Xd8lFX4LM9QEEwxQpF9J9NTUh8pmdJO0cyRJhFiDoLTk2eH8FXlRv2IFGYVadZpqI3j8fhNrSdKCeYPxiAhLXw==}
-    engines: {node: '>=18'}
-
   copy-anything@3.0.5:
     resolution: {integrity: sha512-yCEafptTtb4bk7GLEQoM8KVJpxAfdBJYaXyzQEgQQQgYrZiDp8SJmGKlYza6CYjEDNstAdNdKA3UuoULlEbS6w==}
     engines: {node: '>=12.13'}
@@ -12218,15 +12200,6 @@ snapshots:
       preact: 10.11.3
       preact-render-to-string: 5.2.3(preact@10.11.3)
 
-  '@auth/core@0.37.3':
-    dependencies:
-      '@panva/hkdf': 1.2.1
-      cookie: 1.0.1
-      jose: 5.9.6
-      oauth4webapi: 3.1.2
-      preact: 10.24.3
-      preact-render-to-string: 6.5.11(preact@10.24.3)
-
   '@auth/core@0.37.4':
     dependencies:
       '@panva/hkdf': 1.2.1
@@ -12235,9 +12208,9 @@ snapshots:
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
 
-  '@auth/drizzle-adapter@1.7.3':
+  '@auth/drizzle-adapter@1.7.4':
     dependencies:
-      '@auth/core': 0.37.3
+      '@auth/core': 0.37.4
     transitivePeerDependencies:
       - '@simplewebauthn/browser'
       - '@simplewebauthn/server'
@@ -19752,8 +19725,6 @@ snapshots:
   cookie@0.7.1: {}
 
   cookie@0.7.2: {}
-
-  cookie@1.0.1: {}
 
   copy-anything@3.0.5:
     dependencies:

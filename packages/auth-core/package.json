@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@auth/core": "^0.37.4",
-    "@auth/drizzle-adapter": "^1.7.3",
+    "@auth/drizzle-adapter": "^1.7.4",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
