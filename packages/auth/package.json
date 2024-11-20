@@ -18,7 +18,7 @@
     "clean": "git clean -xdf .turbo node_modules dist"
   },
   "dependencies": {
-    "@auth/core": "^0.37.3",
+    "@auth/core": "^0.37.4",
     "@auth/drizzle-adapter": "^1.7.3",
     "@chia/auth-core": "workspace:*",
     "@chia/cache": "workspace:*",
