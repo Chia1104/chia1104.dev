@@ -49,13 +49,13 @@ const internal_adapter = adapter({
 
 export const getConfig = (req?: NextRequest) => {
   return {
-    ...getBaseConfig({
+    ...(getBaseConfig({
       req,
       env: {
         AUTH_URL,
         AUTH_COOKIE_DOMAIN: env.AUTH_COOKIE_DOMAIN,
       },
-    }),
+    }) as NextAuthConfig),
     adapter: internal_adapter,
     pages: {
       signIn: "/auth/signin",

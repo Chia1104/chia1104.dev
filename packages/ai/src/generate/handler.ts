@@ -53,7 +53,7 @@ export const POST = async (req: NextRequest) => {
       ).apiKey,
     });
 
-    return (await streamGeneratedText(request)).toDataStreamResponse();
+    return streamGeneratedText(request).toDataStreamResponse();
   } catch (error) {
     if (error instanceof ParsedJSONError) {
       return NextResponse.json(errorGenerator(400, error.error.errors), {
