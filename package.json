@@ -102,6 +102,9 @@
     "vitest": "^2.1.5"
   },
   "manypkg": {
+    "ignoredRules": [
+      "ROOT_HAS_PROD_DEPENDENCIES"
+    ],
     "workspaceProtocol": "require"
   },
   "lint-staged": {
