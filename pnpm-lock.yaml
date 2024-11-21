@@ -71,8 +71,8 @@ importers:
         version: 3.23.8
     devDependencies:
       '@manypkg/cli':
-        specifier: ^0.22.0
-        version: 0.22.0
+        specifier: ^0.23.0
+        version: 0.23.0
       '@playwright/test':
         specifier: ^1.49.0
         version: 1.49.0
@@ -2872,8 +2872,8 @@ packages:
   '@lit/reactive-element@2.0.4':
     resolution: {integrity: sha512-GFn91inaUa2oHLak8awSIigYz0cU0Payr1rcFsrkf5OJ5eSPxElyZfKh0f2p9FsTiZWXQdWGJeXZICEfXXYSXQ==}
 
-  '@manypkg/cli@0.22.0':
-    resolution: {integrity: sha512-HwONx0Pr9ucehlrMvFMSuztLiKfwPYkjRDc0ymL5RiGYBk1slX8k3RWy+F01f1T+JLbImthSGMwY04Ojt20nTA==}
+  '@manypkg/cli@0.23.0':
+    resolution: {integrity: sha512-9N0GuhUZhrDbOS2rer1/ZWaO8RvPOUI+kKTwlq74iQXomL+725E9Vfvl9U64FYwnLkQCxCmPZ9nBs/u8JwFnSw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -13206,7 +13206,7 @@ snapshots:
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.2.1
 
-  '@manypkg/cli@0.22.0':
+  '@manypkg/cli@0.23.0':
     dependencies:
       '@manypkg/get-packages': 2.2.2
       detect-indent: 6.1.0
