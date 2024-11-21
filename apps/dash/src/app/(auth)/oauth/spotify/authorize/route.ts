@@ -30,6 +30,7 @@ export const POST = auth(async (req) => {
       );
     }
     const dto: Partial<GenerateAuthorizeUrlDTO> = {
+      // @ts-expect-error: Next.js issue - https://github.com/vercel/next.js/issues/59823
       redirectUri: getRedirectUri(req),
     };
     await req
