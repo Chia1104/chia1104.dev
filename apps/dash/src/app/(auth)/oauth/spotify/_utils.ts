@@ -4,14 +4,14 @@ import { getAdminId } from "@chia/utils";
 
 import { env } from "@/env";
 
-export const getRedirectUri = (req: NextRequest) => {
+export const getRedirectUri = <TRequest extends NextRequest>(req: TRequest) => {
   return (
     env.SPOTIFY_REDIRECT_URI ??
     `${req.nextUrl.protocol}//${req.nextUrl.host}/oauth/spotify/callback`
   );
 };
 
-export const getSiteUrl = (req: NextRequest) => {
+export const getSiteUrl = <TRequest extends NextRequest>(req: TRequest) => {
   if (env.SPOTIFY_REDIRECT_URI) {
     const url = new URL(env.SPOTIFY_REDIRECT_URI);
     return `${url.protocol}//${url.host}`;

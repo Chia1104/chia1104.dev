@@ -8,15 +8,11 @@ import { ImageZoom } from "fumadocs-ui/components/image-zoom";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { TypeTable } from "fumadocs-ui/components/type-table";
 import defaultComponents from "fumadocs-ui/mdx";
-import { Popup, PopupContent, PopupTrigger } from "fumadocs-ui/twoslash/popup";
 import type { MDXComponents } from "mdx/types";
 import Image from "next/image";
 
-export const FumadocsComponents: MDXComponents = {
+export const FumadocsComponents = {
   ...defaultComponents,
-  Popup,
-  PopupContent,
-  PopupTrigger,
   Tabs,
   Tab,
   Callout,
@@ -64,7 +60,7 @@ export const FumadocsComponents: MDXComponents = {
   h6: (props: any) => (
     <Heading as="h6" {...props} className="prose-a:no-underline" />
   ),
-};
+} as MDXComponents;
 
 /**
  * V1 MDX Components

@@ -1,9 +1,9 @@
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-import { createUpstash } from "@chia/cache/src/create-upstash";
-import { withRateLimiter } from "@chia/cache/src/with-rate-limiter";
+import { createUpstash } from "@chia/cache/create-upstash";
+import { withRateLimiter } from "@chia/cache/with-rate-limiter";
 import meta from "@chia/meta";
 import { setSearchParams, handleZodError } from "@chia/utils";
 import { errorGenerator, CONTACT_EMAIL } from "@chia/utils";
@@ -95,7 +95,7 @@ export const POST = withRateLimiter(
       });
       if (result.error) {
         console.error(result.error.message);
-        Sentry.captureException(result.error);
+        captureException(result.error);
         return NextResponse.json(
           errorGenerator(500, [
             {
@@ -111,7 +111,7 @@ export const POST = withRateLimiter(
       return NextResponse.json({ success: true });
     } catch (error: any) {
       console.error(error);
-      Sentry.captureException(error);
+      captureException(error);
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });
@@ -121,7 +121,7 @@ export const POST = withRateLimiter(
     client: createUpstash(),
     onError: (error) => {
       console.error(error);
-      Sentry.captureException(error);
+      captureException(error);
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });

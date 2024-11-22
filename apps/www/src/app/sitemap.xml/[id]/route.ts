@@ -1,4 +1,4 @@
-import * as sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 import dayjs from "dayjs";
 import type { MetadataRoute } from "next";
 import type { NextRequest } from "next/server";
@@ -39,10 +39,11 @@ function buildPagesSitemap(sitemapData: MetadataRoute.Sitemap) {
 export const GET = async (
   request: NextRequest,
   // sitemap index
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
-    numericStringSchema.parse(params.id);
+    const storedParams = await params;
+    numericStringSchema.parse(storedParams.id);
 
     // handle sitemap index
     const feeds = await getInfiniteFeedsByUserId(getDB(), {
@@ -127,7 +128,7 @@ export const GET = async (
       );
     }
 
-    sentry.captureException(error);
+    captureException(error);
     return NextResponse.json(errorGenerator(500), {
       status: 500,
     });

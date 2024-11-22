@@ -118,20 +118,19 @@ const bootstrap = <TContext extends HonoContext>(
     "*",
     initAuthConfig(() =>
       getConfig(undefined, {
-        basePath: "/auth",
+        basePath: "/api/v1/auth",
       })
     )
   );
-
   /**
    * Routes
    */
-  app.route("/auth", authRoutes);
-  app.route("/admin", adminRoutes);
-  app.route("/feeds", feedsRoutes);
-  app.route("/trpc", trpcRoutes);
-  app.route("/health", healthRoutes);
-  app.route("/ai", aiRoutes);
+  app.route("/api/v1/auth", authRoutes);
+  app.route("/api/v1/admin", adminRoutes);
+  app.route("/api/v1/feeds", feedsRoutes);
+  app.route("/api/v1/trpc", trpcRoutes);
+  app.route("/api/v1/health", healthRoutes);
+  app.route("/api/v1/ai", aiRoutes);
 
   console.log(
     `Server is running on port ${port}, go to http://localhost:${port}`

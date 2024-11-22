@@ -20,6 +20,8 @@ const Timeline: FC<TimelineProps> = ({
   groupTemplate = "YYYY",
   tz = "UTC",
   enableSort,
+  asyncDataStatus,
+  onEndReached,
   ...props
 }) => {
   if (enableSort)
@@ -44,17 +46,17 @@ const Timeline: FC<TimelineProps> = ({
     }, [] as GroupData[]);
   }, [props.data, groupTemplate]);
   return (
-    <TimelineContext.Provider value={{ groupTemplate, tz, ...props }}>
+    <TimelineContext value={{ groupTemplate, tz, ...props }}>
       <div
         className={cn("my-2 flex flex-col gap-5", props.className)}
         {...props}>
         <GroupList
           data={groupData}
-          onEndReached={props.onEndReached}
-          asyncDataStatus={props.asyncDataStatus}
+          onEndReached={onEndReached}
+          asyncDataStatus={asyncDataStatus}
         />
       </div>
-    </TimelineContext.Provider>
+    </TimelineContext>
   );
 };
 

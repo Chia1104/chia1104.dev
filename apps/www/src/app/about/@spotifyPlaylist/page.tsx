@@ -123,7 +123,7 @@ export default async function Page() {
         </div>
         <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
       </div>
-      <p className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mt-5">
         <span>
           Check out the{" "}
           <Link preview href={href}>
@@ -132,7 +132,7 @@ export default async function Page() {
           on my Spotify.
         </span>
         <span className="i-mdi-spotify size-8 text-[#1DB954]" />
-      </p>
+      </div>
     </FadeIn>
   );
 }

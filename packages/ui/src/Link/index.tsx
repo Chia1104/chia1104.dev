@@ -94,7 +94,9 @@ const PreviewDetail: FC<
       {isError ? (
         <div className="bg-danger/30 z-[999] flex w-full max-w-60 items-center justify-center space-x-2 rounded-md px-1">
           <div className="text-danger i-mdi-alert ml-2 size-7" />
-          <p className="pr-2">{callbackError ?? "Failed to fetch preview"}</p>
+          <span className="pr-2">
+            {callbackError ?? "Failed to fetch preview"}
+          </span>
         </div>
       ) : !!data && isSuccess ? (
         <div className="flex min-w-0 flex-col gap-3">
@@ -117,10 +119,12 @@ const PreviewDetail: FC<
               <AvatarFallback>FI</AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1">
-              <h4 className="mt-2 line-clamp-1 text-sm font-semibold">
+              <span className="mt-2 line-clamp-1 text-sm font-semibold">
                 {data?.title}
-              </h4>
-              <p className="mb-0 line-clamp-3 text-sm">{data?.description}</p>
+              </span>
+              <span className="mb-0 line-clamp-3 text-sm">
+                {data?.description}
+              </span>
             </div>
           </div>
         </div>
@@ -128,10 +132,10 @@ const PreviewDetail: FC<
         <div className="z-[999] flex flex-col gap-3">
           <div className="h-[120px] w-60 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
           <div className="mt-3 flex justify-between space-x-4">
-            <div className="size-10 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
+            <span className="size-10 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
             <div className="space-y-1">
-              <div className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
-              <div className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+              <span className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+              <span className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
             </div>
           </div>
         </div>

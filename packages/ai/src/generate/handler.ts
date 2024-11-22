@@ -44,16 +44,16 @@ export const POST = async (req: NextRequest) => {
     });
 
     const request = baseRequestSchema.parse({
-      ...(await json),
+      ...((await json) as any),
       authToken: verifyApiKey(
         req.headers.get(HEADER_AUTH_TOKEN) ??
-          cookies().get(HEADER_AUTH_TOKEN)?.value ??
+          (await cookies()).get(HEADER_AUTH_TOKEN)?.value ??
           "",
         process.env.AI_AUTH_SECRET
       ).apiKey,
     });
 
-    return (await streamGeneratedText(request)).toDataStreamResponse();
+    return streamGeneratedText(request).toDataStreamResponse();
   } catch (error) {
     if (error instanceof ParsedJSONError) {
       return NextResponse.json(errorGenerator(400, error.error.errors), {

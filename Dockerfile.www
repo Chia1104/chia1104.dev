@@ -1,4 +1,4 @@
-ARG NODE_VERSION=20
+ARG NODE_VERSION=22
 
 FROM node:${NODE_VERSION}-alpine AS base
 
@@ -118,7 +118,6 @@ RUN adduser --system --uid 1001 nextjs
 
 USER nextjs
 
-COPY --from=installer /app/apps/www/next.config.mjs .
 COPY --from=installer /app/apps/www/package.json .
 COPY --from=installer /app/apps/www/public ./apps/www/public
 

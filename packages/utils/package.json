@@ -3,24 +3,64 @@
   "name": "@chia/utils",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./config": "./src/config/index.ts",
-    "./constants": "./src/constants/index.ts",
-    "./crypto/node": "./src/crypto/node.ts",
-    "./crypto/edge": "./src/crypto/edge.ts",
-    "./day": "./src/day/day.util.ts",
-    "./generate-slug": "./src/generate-slug/generate-slug.util.ts",
-    "./handle-zod-error": "./src/handle-zod-error/handle-zod-error.ts",
-    "./handle-zod-error/enhance": "./src/handle-zod-error/enhance-handle-zod-error.ts",
-    "./is-url": "./src/is-url/index.ts",
-    "./request": "./src/request/request.util.ts",
-    "./schema": "./src/schema/index.ts",
-    "./schema/mjs": "./src/schema/schema.mjs",
-    "./server/error-helper": "./src/server/error.helper.ts",
-    "./server/network": "./src/server/network.config.ts",
-    "./server/request": "./src/server/request.util.ts",
-    "./url": "./src/url/url.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./config": {
+      "types": "./src/config/index.ts",
+      "default": "./src/config/index.ts"
+    },
+    "./constants": {
+      "types": "./src/constants/index.ts",
+      "default": "./src/constants/index.ts"
+    },
+    "./day": {
+      "types": "./src/day/day.ts",
+      "default": "./src/day/day.util.ts"
+    },
+    "./generate-slug": {
+      "types": "./src/generate-slug/generate-slug.ts",
+      "default": "./src/generate-slug/generate-slug.util.ts"
+    },
+    "./handle-zod-error": {
+      "types": "./src/handle-zod-error/handle-zod-error.ts",
+      "default": "./src/handle-zod-error/handle-zod-error.ts"
+    },
+    "./handle-zod-error/enhance": {
+      "types": "./src/handle-zod-error/enhance-handle-zod-error.ts",
+      "default": "./src/handle-zod-error/enhance-handle-zod-error.ts"
+    },
+    "./is-url": {
+      "types": "./src/is-url/is-url.ts",
+      "default": "./src/is-url/index.ts"
+    },
+    "./request": {
+      "types": "./src/request/request.ts",
+      "default": "./src/request/request.util.ts"
+    },
+    "./schema": {
+      "types": "./src/schema/index.ts",
+      "default": "./src/schema/index.ts"
+    },
+    "./schema/mjs": {
+      "types": "./src/schema/schema.mjs",
+      "default": "./src/schema/schema.mjs"
+    },
+    "./server/error-helper": {
+      "types": "./src/server/error-helper.ts",
+      "default": "./src/server/error.helper.ts"
+    },
+    "./server/network": {
+      "types": "./src/server/network.ts",
+      "default": "./src/server/network.config.ts"
+    },
+    "./url": {
+      "types": "./src/url/url.ts",
+      "default": "./src/url/url.ts"
+    }
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist",
@@ -32,9 +72,9 @@
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
     "@types/express": "^5.0.0",
     "eslint": "catalog:",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:"
   }
 }

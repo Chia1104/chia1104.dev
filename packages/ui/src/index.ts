@@ -16,7 +16,6 @@ export { default as Link } from "./Link";
 export * from "./Link";
 export * from "./Textarea";
 export * from "./Textarea";
-export * from "./MDXComponents";
 export * from "./utils";
 export { default as ThemeSelector } from "./Theme";
 export {

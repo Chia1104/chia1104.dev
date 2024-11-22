@@ -1,7 +1,6 @@
 import * as _dotenv from "dotenv/config";
-import { drizzle } from "drizzle-orm/postgres-js";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { switchEnv } from "@chia/utils/config";
 
@@ -11,25 +10,25 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not set");
 }
 
-export const queryClient = postgres(process.env.DATABASE_URL);
-
-export const localQueryClient = postgres(process.env.LOCAL_DATABASE_URL ?? "");
-
-export const betaQueryClient = postgres(process.env.BETA_DATABASE_URL ?? "");
-
-export const db: DB = drizzle(queryClient, {
+export const db = drizzle<typeof schema>(process.env.DATABASE_URL, {
   schema,
 });
 
-export const localDb: DB = drizzle(localQueryClient, {
-  schema,
-});
+export const localDb = drizzle<typeof schema>(
+  process.env.LOCAL_DATABASE_URL ?? "",
+  {
+    schema,
+  }
+);
 
-export const betaDb: DB = drizzle(betaQueryClient, {
-  schema,
-});
+export const betaDb = drizzle<typeof schema>(
+  process.env.BETA_DATABASE_URL ?? "",
+  {
+    schema,
+  }
+);
 
-export type DB = PostgresJsDatabase<typeof schema>;
+export type DB = NodePgDatabase<typeof schema>;
 
 export { schema };
 export * from "drizzle-orm";
@@ -37,17 +36,9 @@ export { pgTable as tableCreator } from "./schema/table";
 
 export * from "./schema/enums";
 
-export const getDB = (env?: string) =>
+export const getDB = (env?: string): DB =>
   switchEnv(env, {
     prod: () => db,
     beta: () => betaDb,
     local: () => localDb,
   });
-
-export const closeClient = async (env?: string) => {
-  await switchEnv(env, {
-    prod: async () => await queryClient.end(),
-    beta: async () => await betaQueryClient.end(),
-    local: async () => await localQueryClient.end(),
-  });
-};

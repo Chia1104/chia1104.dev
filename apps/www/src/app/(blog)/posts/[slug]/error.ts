@@ -1,12 +1,12 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 
-import { Features } from "@chia/ui";
+import Error from "@chia/ui/features/Error";
 
-export default Features.Error({
+export default Error({
   onError(error) {
-    Sentry.captureException(error);
+    captureException(error);
     console.error(error);
   },
   className: "w-full",

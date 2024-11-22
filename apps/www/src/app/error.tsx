@@ -1,6 +1,6 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
+import { captureException } from "@sentry/nextjs";
 
 import { Image, withError } from "@chia/ui";
 
@@ -30,7 +30,7 @@ const Error = withError(
   },
   {
     onError(error) {
-      Sentry.captureException(error);
+      captureException(error);
       console.error(error);
     },
   }

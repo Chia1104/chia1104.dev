@@ -3,13 +3,14 @@
   "name": "www-e2e",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "test:e2e": "pnpm exec playwright test",
     "clean": "git clean -xdf .turbo node_modules coverage"
   },
   "devDependencies": {
+    "@chia/tsconfig": "workspace:*",
     "start-server-and-test": "^2.0.8",
-    "tsconfig": "workspace:*",
     "typescript": "catalog:",
     "www": "workspace:*"
   }

@@ -3,41 +3,78 @@
   "name": "@chia/api",
   "version": "0.0.0",
   "private": true,
-  "types": "index.ts",
-  "main": "index.ts",
+  "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./github": "./github/index.ts",
-    "./github/query": "./github/query/index.ts",
-    "./github/env": "./github/env.ts",
-    "./github/types": "./github/types.d.ts",
-    "./spotify": "./spotify/index.ts",
-    "./spotify/env": "./spotify/env.ts",
-    "./spotify/types": "./spotify/types.d.ts",
-    "./spotify/validator": "./spotify/validator.ts",
-    "./trpc": "./trpc/index.ts",
-    "./trpc/utils": "./trpc/utils.ts",
-    "./trpc/validators": "./trpc/validators.ts"
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    },
+    "./github": {
+      "types": "./github/index.ts",
+      "default": "./github/index.ts"
+    },
+    "./github/query": {
+      "types": "./github/query/index.ts",
+      "default": "./github/query/index.ts"
+    },
+    "./github/env": {
+      "types": "./github/env.ts",
+      "default": "./github/env.ts"
+    },
+    "./github/types": {
+      "types": "./github/types.d.ts",
+      "default": "./github/types.d.ts"
+    },
+    "./spotify": {
+      "types": "./spotify/index.ts",
+      "default": "./spotify/index.ts"
+    },
+    "./spotify/env": {
+      "types": "./spotify/env.ts",
+      "default": "./spotify/env.ts"
+    },
+    "./spotify/types": {
+      "types": "./spotify/types.d.ts",
+      "default": "./spotify/types.d.ts"
+    },
+    "./spotify/validator": {
+      "types": "./spotify/validator.ts",
+      "default": "./spotify/validator.ts"
+    },
+    "./trpc": {
+      "types": "./trpc/index.ts",
+      "default": "./trpc/index.ts"
+    },
+    "./trpc/utils": {
+      "types": "./trpc/utils.ts",
+      "default": "./trpc/utils.ts"
+    },
+    "./trpc/validators": {
+      "types": "./trpc/validators.ts",
+      "default": "./trpc/validators.ts"
+    }
   },
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules"
+    "clean": "git clean -xdf .turbo node_modules dist"
   },
   "dependencies": {
     "@chia/auth-core": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
-    "@chia/eslint-config": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "^0.11.1",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "eslint": "catalog:",
     "github-slugger": "^2.0.0",
-    "server-only": "^0.0.1",
-    "tsconfig": "workspace:*",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
+    "eslint": "catalog:",
     "typescript": "catalog:"
   }
 }

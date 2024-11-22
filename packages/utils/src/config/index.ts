@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { Env } from "../schema";
 
 const getInternalEnv = () => {
@@ -141,6 +142,7 @@ export const getBaseUrl = (options?: {
     baseUrl = `http://localhost:${process.env.PORT ?? 3000}`,
     useBaseUrl,
   } = options;
+  // @ts-ignore
   if (typeof window !== "undefined" && !isServer) {
     return "";
   }
@@ -170,42 +172,94 @@ export const getBaseUrl = (options?: {
   return baseUrl?.replace(/\/$/, "");
 };
 
+type ServiceVersion = "v1";
+
+interface GetServiceEndPointOptions {
+  proxyEndpoint?: string;
+  version?: ServiceVersion;
+  isInternal?: boolean;
+}
+
+function removeEndSlash(url: string) {
+  return url.replace(/\/$/, "");
+}
+
+function switchServiceVersion(version: ServiceVersion, url: string) {
+  switch (version) {
+    case "v1":
+      return removeEndSlash(url) + "/api/v1";
+    default:
+      return removeEndSlash(url);
+  }
+}
+
 /**
  * the url of the service endpoint (including the protocol)
  * @param env
  */
-export const getServiceEndPoint = (env?: string) => {
+export const getServiceEndPoint = (
+  env?: string,
+  options?: GetServiceEndPointOptions
+) => {
+  // @ts-ignore
   const isServer = typeof window === "undefined";
+  const {
+    proxyEndpoint = process.env.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT,
+    version = "v1",
+    isInternal,
+  } = options ?? {};
+
   return switchEnv(env, {
     prod: () => {
-      if (isServer) {
+      if (isServer || isInternal) {
         if (!process.env.INTERNAL_SERVICE_ENDPOINT)
           throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
-        return process.env.INTERNAL_SERVICE_ENDPOINT;
+        return switchServiceVersion(
+          version,
+          process.env.INTERNAL_SERVICE_ENDPOINT
+        );
+      }
+      if (proxyEndpoint) {
+        return switchServiceVersion(version, proxyEndpoint);
       }
       if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
         throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
-      return process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
+      return switchServiceVersion(
+        version,
+        process.env.NEXT_PUBLIC_SERVICE_ENDPOINT
+      );
     },
     beta: () => {
-      if (isServer) {
+      if (isServer || isInternal) {
         if (!process.env.INTERNAL_SERVICE_ENDPOINT)
           throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
-        return process.env.INTERNAL_SERVICE_ENDPOINT;
+        return switchServiceVersion(
+          version,
+          process.env.INTERNAL_SERVICE_ENDPOINT
+        );
       }
       if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
         throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
-      return process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
+      return switchServiceVersion(
+        version,
+        process.env.NEXT_PUBLIC_SERVICE_ENDPOINT
+      );
     },
     local: () => {
-      if (isServer) {
+      if (isServer || isInternal) {
         if (!process.env.INTERNAL_SERVICE_ENDPOINT)
           throw new Error("Missing env variables INTERNAL_SERVICE_ENDPOINT");
-        return process.env.INTERNAL_SERVICE_ENDPOINT;
+        return switchServiceVersion(
+          version,
+          process.env.INTERNAL_SERVICE_ENDPOINT
+        );
       }
       if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
         throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
-      return process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
+      return switchServiceVersion(
+        version,
+        process.env.NEXT_PUBLIC_SERVICE_ENDPOINT
+      );
     },
   });
 };

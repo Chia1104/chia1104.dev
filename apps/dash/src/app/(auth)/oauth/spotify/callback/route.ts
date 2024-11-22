@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { codeAuthorization } from "@chia/api/spotify";
 import type { CodeAuthorizationDTO } from "@chia/api/spotify/validator";
 import { codeAuthorizationSchema } from "@chia/api/spotify/validator";
-import { createUpstash } from "@chia/cache/src/create-upstash";
+import { createUpstash } from "@chia/cache/create-upstash";
 import { errorGenerator, handleZodError } from "@chia/utils";
 
 import {

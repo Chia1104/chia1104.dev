@@ -92,6 +92,12 @@ const seedPost = withReplicas(
           published: true,
         })
         .returning({ feedId: schema.feeds.id });
+      if (!feed[0]?.feedId) {
+        throw new Error("Feed ID not found");
+      }
+      if (!tags[0]?.id || !tags[1]?.id) {
+        throw new Error("Tag ID not found");
+      }
       await trx.insert(schema.feedsToTags).values([
         {
           feedId: feed[0].feedId,
@@ -144,6 +150,12 @@ const seedNote = withReplicas(
           published: true,
         })
         .returning({ feedId: schema.feeds.id });
+      if (!feed[0]?.feedId) {
+        throw new Error("Feed ID not found");
+      }
+      if (!tags[0]?.id || !tags[1]?.id) {
+        throw new Error("Tag ID not found");
+      }
       await trx.insert(schema.feedsToTags).values([
         {
           feedId: feed[0].feedId,

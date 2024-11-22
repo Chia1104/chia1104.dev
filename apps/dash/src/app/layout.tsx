@@ -39,7 +39,7 @@ export default async function RootLayout({
     <ViewTransitions>
       <html lang="en" suppressHydrationWarning>
         <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden">
-          <RootProvider session={session} headers={headers()}>
+          <RootProvider session={session} headers={await headers()}>
             {children}
           </RootProvider>
         </body>

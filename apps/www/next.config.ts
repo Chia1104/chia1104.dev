@@ -1,10 +1,11 @@
-/**
- * @typedef {import('next').NextConfig} NextConfig
- * @typedef {(config: NextConfig) => NextConfig} Plugin
- */
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import million from "million/compiler";
+import { NextConfig } from "next";
+
+import "@/env";
+
+type Plugin = (config: NextConfig) => NextConfig;
 
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
@@ -33,27 +34,14 @@ const securityHeaders = [
   },
 ];
 
-/** @type {NextConfig} */
-const nextConfig = {
-  output: "standalone",
+const nextConfig: NextConfig = {
+  output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
-  transpilePackages: [
-    "@chia/api",
-    "@chia/auth",
-    "@chia/cache",
-    "@chia/db",
-    "@chia/editor",
-    "@chia/contents",
-    "@chia/meta",
-    "@chia/ui",
-    "@chia/utils",
-  ],
+  transpilePackages: ["@chia/*"],
   experimental: {
     optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
-    serverComponentsExternalPackages: [],
-    typedRoutes: false,
+    reactCompiler: true,
     webpackBuildWorker: true,
-    instrumentationHook: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -139,8 +127,7 @@ const nextConfig = {
   ],
 };
 
-/** @type {Plugin[]} */
-const plugins = [withBundleAnalyzer];
+const plugins: Plugin[] = [withBundleAnalyzer];
 
 const nextComposePlugins = plugins.reduce(
   (acc, plugin) => plugin(acc),
@@ -155,6 +142,7 @@ export default million.next(
     authToken: process.env.SENTRY_AUTH_TOKEN,
     silent: true,
     hideSourceMaps: true,
+    disableLogger: true,
   }),
   {
     rsc: true,

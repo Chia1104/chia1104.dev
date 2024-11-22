@@ -1,7 +1,7 @@
 "use client";
 
-import { Features } from "@chia/ui";
+import Error from "@chia/ui/features/Error";
 
-export default Features.Error({
+export default Error({
   className: "w-full",
 });

@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
     },
     "www#build": {
       "dependsOn": ["^build"],
@@ -21,10 +21,11 @@
     },
     "lint": {
       "dependsOn": ["^build"],
-      "cache": true
+      "outputs": [".cache/.eslintcache"]
     },
     "lint:fix": {
-      "cache": false
+      "dependsOn": ["^build"],
+      "outputs": [".cache/.eslintcache"]
     },
     "type:check": {
       "cache": true
@@ -128,7 +129,8 @@
     "GOOGLE_CLIENT_SECRET",
     "AUTH_SECRET",
     "INTERNAL_SERVICE_ENDPOINT",
-    "NEXT_PUBLIC_SERVICE_ENDPOINT"
+    "NEXT_PUBLIC_SERVICE_ENDPOINT",
+    "NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT"
   ],
   "globalPassThroughEnv": [
     "NEXT_PUBLIC_GTM_ID",
@@ -154,6 +156,7 @@
     "NEXT_PUBLIC_GISCUS_CATEGORY",
     "NEXT_PUBLIC_GISCUS_THEME",
     "INTERNAL_SERVICE_ENDPOINT",
-    "NEXT_PUBLIC_SERVICE_ENDPOINT"
+    "NEXT_PUBLIC_SERVICE_ENDPOINT",
+    "NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT"
   ]
 }
