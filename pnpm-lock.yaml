@@ -221,11 +221,11 @@ importers:
         specifier: 12.0.0-alpha.2
         version: 12.0.0-alpha.2(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       fumadocs-mdx:
-        specifier: ^11.1.1
-        version: 11.1.1(acorn@8.14.0)(fumadocs-core@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))
+        specifier: ^11.1.2
+        version: 11.1.2(acorn@8.14.0)(fumadocs-core@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))
       fumadocs-ui:
-        specifier: ^14.5.2
-        version: 14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+        specifier: ^14.5.3
+        version: 14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       lowlight:
         specifier: ^3.1.0
         version: 3.1.0
@@ -522,11 +522,11 @@ importers:
         specifier: 12.0.0-alpha.2
         version: 12.0.0-alpha.2(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       fumadocs-mdx:
-        specifier: ^11.1.1
-        version: 11.1.1(acorn@8.14.0)(fumadocs-core@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))
+        specifier: ^11.1.2
+        version: 11.1.2(acorn@8.14.0)(fumadocs-core@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))
       fumadocs-ui:
-        specifier: ^14.5.2
-        version: 14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+        specifier: ^14.5.3
+        version: 14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1(bufferutil@4.0.8)
@@ -853,19 +853,19 @@ importers:
         version: link:../ui
       '@fumadocs/mdx-remote':
         specifier: ^0.2.3
-        version: 0.2.3(acorn@8.14.0)(fumadocs-core@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)
+        version: 0.2.3(acorn@8.14.0)(fumadocs-core@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       '@mdx-js/react':
         specifier: ^3.1.0
         version: 3.1.0(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       fumadocs-core:
-        specifier: ^14.5.2
-        version: 14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+        specifier: ^14.5.3
+        version: 14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       fumadocs-mdx:
-        specifier: ^11.1.1
-        version: 11.1.1(acorn@8.14.0)(fumadocs-core@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))
+        specifier: ^11.1.2
+        version: 11.1.2(acorn@8.14.0)(fumadocs-core@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))
       fumadocs-ui:
-        specifier: ^14.5.2
-        version: 14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+        specifier: ^14.5.3
+        version: 14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       next:
         specifier: 15.0.3
         version: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
@@ -7008,6 +7008,10 @@ packages:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
 
+  cross-spawn@7.0.6:
+    resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
+    engines: {node: '>= 8'}
+
   crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
 
@@ -7657,8 +7661,8 @@ packages:
   estree-util-to-js@2.0.0:
     resolution: {integrity: sha512-WDF+xj5rRWmD5tj6bIqRi6CkLIXbbNQUcxQHzGysQzvHmdYG2G7p/Tf0J0gpxGgkeMZNTIjT/AoSvC9Xehcgdg==}
 
-  estree-util-value-to-estree@3.1.2:
-    resolution: {integrity: sha512-S0gW2+XZkmsx00tU2uJ4L9hUT7IFabbml9pHh2WQqFmAbxit++YGZne0sKJbNwkj9Wvg9E4uqWl4nCIFQMmfag==}
+  estree-util-value-to-estree@3.2.1:
+    resolution: {integrity: sha512-Vt2UOjyPbNQQgT5eJh+K5aATti0OjCIAGc9SgMdOFYbohuifsWclR74l0iZTJwePMgWYdX1hlVS+dedH9XV8kw==}
 
   estree-util-visit@2.0.0:
     resolution: {integrity: sha512-m5KgiH85xAhhW8Wta0vShLcUvOsh3LLPI2YVwcbio1l7E09NTLL1EyMZFM1OyWowoH0skScNbhOPl4kcBgzTww==}
@@ -7891,8 +7895,8 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
-  fumadocs-core@14.5.2:
-    resolution: {integrity: sha512-I3CDExyt4nI3ShHquIzS5oud0r/hcYR3n8ergzRTY4II4bvM510ysjByKtvczW14QslSFmF+OyLADPScx/46Kg==}
+  fumadocs-core@14.5.3:
+    resolution: {integrity: sha512-bO+ROy3QqDmxEKiHYnI5TfOo5bVtpbthTUQbo6iucos9TF84EcZq/iwg+yhmXSgQx1nF2NS58vgokwVlYXhwSA==}
     peerDependencies:
       '@oramacloud/client': 1.x.x
       algoliasearch: 4.24.0
@@ -7911,15 +7915,15 @@ packages:
       react-dom:
         optional: true
 
-  fumadocs-mdx@11.1.1:
-    resolution: {integrity: sha512-78Nu/PHfBaRnPWTDTGVVZrG+A7rfK3NU7DX1aCEnZHEfwuY0NmuIOtDIYcoidZxjc88DnoewV+cJoBNn7I/D8Q==}
+  fumadocs-mdx@11.1.2:
+    resolution: {integrity: sha512-FvZKXCk8c9YPXSfeC9mcvbls1Zy/bzZ+nGgnibeujUJ+x6k24cUZrBqKABsLb6yNrNrB8yGiCC3asuwlppHn/g==}
     hasBin: true
     peerDependencies:
       fumadocs-core: ^14.0.0
       next: 14.x.x || 15.x.x
 
-  fumadocs-ui@14.5.2:
-    resolution: {integrity: sha512-mMa//sCTpK5vILgKyHgX3RfW2C3hIPsg9lSMKdgdqY+ttc17N+xy00XIkBPL3l8q6I53eoaw+g7Pfc6Yu7rNdg==}
+  fumadocs-ui@14.5.3:
+    resolution: {integrity: sha512-R9AWJD66XZLOVtaTF/rANXQQT/sXsz/sYBVpTgmwA5asT0Hk7/AnZPyfldj2ZZRYSFFMEJSxEpURxSIBpatgUg==}
     peerDependencies:
       next: 14.x.x || 15.x.x
       react: '>= 18'
@@ -12909,13 +12913,13 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@fumadocs/mdx-remote@0.2.3(acorn@8.14.0)(fumadocs-core@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)':
+  '@fumadocs/mdx-remote@0.2.3(acorn@8.14.0)(fumadocs-core@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)':
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.14.0)
       bufferutil: 4.0.8
       chokidar: 4.0.1
       fast-glob: 3.3.2
-      fumadocs-core: 14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+      fumadocs-core: 14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       gray-matter: 4.0.3
       micromatch: 4.0.8
       next: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
@@ -19721,6 +19725,12 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
+  cross-spawn@7.0.6:
+    dependencies:
+      path-key: 3.1.1
+      shebang-command: 2.0.0
+      which: 2.0.2
+
   crypto-js@4.2.0: {}
 
   crypto-random-string@2.0.0: {}
@@ -20519,7 +20529,7 @@ snapshots:
       astring: 1.9.0
       source-map: 0.7.4
 
-  estree-util-value-to-estree@3.1.2:
+  estree-util-value-to-estree@3.2.1:
     dependencies:
       '@types/estree': 1.0.6
 
@@ -20792,7 +20802,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  fumadocs-core@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1):
+  fumadocs-core@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1):
     dependencies:
       '@formatjs/intl-localematcher': 0.5.7
       '@orama/orama': 3.0.1
@@ -20817,15 +20827,15 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  fumadocs-mdx@11.1.1(acorn@8.14.0)(fumadocs-core@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)):
+  fumadocs-mdx@11.1.2(acorn@8.14.0)(fumadocs-core@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1))(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)):
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.14.0)
       chokidar: 4.0.1
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.6
       esbuild: 0.24.0
-      estree-util-value-to-estree: 3.1.2
+      estree-util-value-to-estree: 3.2.1
       fast-glob: 3.3.2
-      fumadocs-core: 14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+      fumadocs-core: 14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       gray-matter: 4.0.3
       micromatch: 4.0.8
       next: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
@@ -20834,7 +20844,7 @@ snapshots:
       - acorn
       - supports-color
 
-  fumadocs-ui@14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1):
+  fumadocs-ui@14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.40(@swc/helpers@0.5.13))(@types/node@22.9.0)(typescript@5.6.3)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1):
     dependencies:
       '@radix-ui/react-accordion': 1.2.1(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       '@radix-ui/react-collapsible': 1.1.1(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
@@ -20846,7 +20856,7 @@ snapshots:
       '@radix-ui/react-slot': 1.1.0(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       '@radix-ui/react-tabs': 1.1.1(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       class-variance-authority: 0.7.0
-      fumadocs-core: 14.5.2(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+      fumadocs-core: 14.5.3(algoliasearch@4.24.0)(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       lodash.merge: 4.6.2
       lucide-react: 0.460.0(react@19.0.0-rc.1)
       next: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
