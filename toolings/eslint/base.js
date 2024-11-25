@@ -33,7 +33,7 @@ export const restrictEnvAccess = tseslint.config({
   },
 });
 
-export default tseslint.config(
+export const baseConfig = tseslint.config(
   includeIgnoreFile(path.join(import.meta.dirname, "../../.gitignore")),
   {
     // Globally ignored files
@@ -79,3 +79,5 @@ export default tseslint.config(
     languageOptions: { parserOptions: { project: true } },
   }
 );
+
+export default baseConfig;
