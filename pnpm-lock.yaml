@@ -230,8 +230,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       lucide-react:
-        specifier: ^0.460.0
-        version: 0.460.0(react@19.0.0-rc.1)
+        specifier: ^0.461.0
+        version: 0.461.0(react@19.0.0-rc.1)
       million:
         specifier: ^3.1.11
         version: 3.1.11(rollup@4.27.4)
@@ -309,8 +309,8 @@ importers:
         specifier: catalog:react19
         version: types-react-dom@19.0.0-rc.1
       '@vitejs/plugin-react-swc':
-        specifier: ^3.7.1
-        version: 3.7.1(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
+        specifier: ^3.7.2
+        version: 3.7.2(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
@@ -622,8 +622,8 @@ importers:
         specifier: ^2.1.9
         version: 2.1.9
       '@vitejs/plugin-react-swc':
-        specifier: ^3.7.1
-        version: 3.7.1(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
+        specifier: ^3.7.2
+        version: 3.7.2(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
@@ -968,8 +968,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       lucide-react:
-        specifier: ^0.460.0
-        version: 0.460.0(react@19.0.0-rc.1)
+        specifier: ^0.461.0
+        version: 0.461.0(react@19.0.0-rc.1)
       next:
         specifier: 15.0.3
         version: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-df7b47d-20241124)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
@@ -1101,8 +1101,8 @@ importers:
         specifier: 12.0.0-alpha.2
         version: 12.0.0-alpha.2(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       lucide-react:
-        specifier: ^0.460.0
-        version: 0.460.0(react@19.0.0-rc.1)
+        specifier: ^0.461.0
+        version: 0.461.0(react@19.0.0-rc.1)
       next:
         specifier: 15.0.3
         version: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-df7b47d-20241124)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
@@ -1153,8 +1153,8 @@ importers:
         specifier: catalog:react19
         version: types-react-dom@19.0.0-rc.1
       '@vitejs/plugin-react-swc':
-        specifier: ^3.7.1
-        version: 3.7.1(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
+        specifier: ^3.7.2
+        version: 3.7.2(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
       eslint:
         specifier: 'catalog:'
         version: 9.15.0(jiti@1.21.6)
@@ -1258,8 +1258,8 @@ importers:
         specifier: workspace:*
         version: link:../tsconfig
       '@vitejs/plugin-react-swc':
-        specifier: ^3.7.1
-        version: 3.7.1(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
+        specifier: ^3.7.2
+        version: 3.7.2(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
@@ -6194,10 +6194,10 @@ packages:
       vue-router:
         optional: true
 
-  '@vitejs/plugin-react-swc@3.7.1':
-    resolution: {integrity: sha512-vgWOY0i1EROUK0Ctg1hwhtC3SdcDjZcdit4Ups4aPkDcB1jYhmo+RMYWY87cmXMhvtD5uf8lV89j2w16vkdSVg==}
+  '@vitejs/plugin-react-swc@3.7.2':
+    resolution: {integrity: sha512-y0byko2b2tSVVf5Gpng1eEhX1OvPC7x8yns1Fx8jDzlJp4LS6CMkCPfLw47cjyoMrshQDoQw4qcgjsU9VvlCew==}
     peerDependencies:
-      vite: ^4 || ^5
+      vite: ^4 || ^5 || ^6
 
   '@vitest/coverage-v8@2.1.6':
     resolution: {integrity: sha512-qItJVYDbG3MUFO68dOZUz+rWlqe9LMzotERXFXKg25s2A/kSVsyS9O0yNGrITfBd943GsnBeQZkBUu7Pc+zVeA==}
@@ -8826,6 +8826,11 @@ packages:
 
   lucide-react@0.460.0:
     resolution: {integrity: sha512-BVtq/DykVeIvRTJvRAgCsOwaGL8Un3Bxh8MbDxMhEWlZay3T4IpEKDEpwt5KZ0KJMHzgm6jrltxlT5eXOWXDHg==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
+
+  lucide-react@0.461.0:
+    resolution: {integrity: sha512-Scpw3D/dV1bgVRC5Kh774RCm99z0iZpPv75M6kg7QL1lLvkQ1rmI1Sjjic1aGp1ULBwd7FokV6ry0g+d6pMB+w==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
@@ -17456,7 +17461,7 @@ snapshots:
       next: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-df7b47d-20241124)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       react: 19.0.0-rc.1
 
-  '@vitejs/plugin-react-swc@3.7.1(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))':
+  '@vitejs/plugin-react-swc@3.7.2(@swc/helpers@0.5.15)(vite@5.4.11(@types/node@22.9.3)(terser@5.36.0))':
     dependencies:
       '@swc/core': 1.9.3(@swc/helpers@0.5.15)
       vite: 5.4.11(@types/node@22.9.3)(terser@5.36.0)
@@ -20464,6 +20469,10 @@ snapshots:
   lru-cache@7.18.3: {}
 
   lucide-react@0.460.0(react@19.0.0-rc.1):
+    dependencies:
+      react: 19.0.0-rc.1
+
+  lucide-react@0.461.0(react@19.0.0-rc.1):
     dependencies:
       react: 19.0.0-rc.1
 

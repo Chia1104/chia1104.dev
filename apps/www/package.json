@@ -92,7 +92,7 @@
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "@types/react-google-recaptcha": "^2.1.9",
-    "@vitejs/plugin-react-swc": "^3.7.1",
+    "@vitejs/plugin-react-swc": "^3.7.2",
     "autoprefixer": "^10.4.20",
     "babel-plugin-react-compiler": "catalog:react19",
     "eslint": "catalog:",
