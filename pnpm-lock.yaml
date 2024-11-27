@@ -272,7 +272,7 @@ importers:
         specifier: 1.7.0
         version: 1.7.0(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       tailwind-merge:
-        specifier: ^2.5.4
+        specifier: ^2.5.5
         version: 2.5.5
       usehooks-ts:
         specifier: ^3.1.0
@@ -1128,7 +1128,7 @@ importers:
         specifier: 1.7.0
         version: 1.7.0(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       tailwind-merge:
-        specifier: ^2.5.4
+        specifier: ^2.5.5
         version: 2.5.5
       usehooks-ts:
         specifier: ^3.1.0
