@@ -58,7 +58,9 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules dist"
+    "clean": "git clean -xdf .turbo node_modules dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@chia/auth-core": "workspace:*",
