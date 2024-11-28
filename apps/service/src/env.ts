@@ -1,6 +1,8 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+import { env as spotifyEnv } from "@chia/api/spotify/env";
+
 export const env = createEnv({
   server: {
     PORT: z.number().optional().default(3005),
@@ -59,6 +61,7 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
+  extends: [spotifyEnv],
 });
 
 export type ENV = typeof env;

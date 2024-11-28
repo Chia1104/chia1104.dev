@@ -18,6 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  APP_CODE: service
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -27,14 +28,14 @@ env:
   SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
   SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
-  SPOTIFY_REDIRECT_URI: http://localhost:3003
+  SPOTIFY_REDIRECT_URI: http://localhost:3005
   REDIS_URI: ${{ secrets.REDIS_URI }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
   ENV: beta
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_URL: http://localhost:3003
+  AUTH_URL: http://localhost:3005
   NODE_VERSION: 20
   TURBO_TELEMETRY_DISABLED: 1
 

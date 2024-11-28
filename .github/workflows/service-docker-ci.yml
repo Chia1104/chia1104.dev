@@ -15,6 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  APP_CODE: service
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}

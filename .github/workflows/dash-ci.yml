@@ -14,6 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  APP_CODE: dash
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
@@ -28,7 +29,6 @@ env:
   NEXT_PUBLIC_ENV: beta
   SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
   SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-  SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
   SPOTIFY_REDIRECT_URI: http://localhost:3001
   NODE_VERSION: 20
   TURBO_TELEMETRY_DISABLED: 1
