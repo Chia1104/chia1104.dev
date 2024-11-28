@@ -8,7 +8,9 @@ vi.mock("server-only", () => {
 
 describe("test spotify api", () => {
   test("getPlayList", async () => {
-    const result = await getPlayList();
+    const result = await getPlayList({
+      playlistId: "4cPPG7mh2a8EZ2jlhJfj9u",
+    });
     expect(result).toBeDefined();
   });
 
