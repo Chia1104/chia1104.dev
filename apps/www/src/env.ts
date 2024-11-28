@@ -3,7 +3,6 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 import { env as githubEnv } from "@chia/api/github/env";
-import { env as spotifyEnv } from "@chia/api/spotify/env";
 import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
 
 export const getClientEnv = () => {
@@ -44,6 +43,8 @@ export const env = createEnv({
     DATABASE_URL: z.string().optional(),
     BETA_DATABASE_URL: z.string().optional(),
     INTERNAL_SERVICE_ENDPOINT: z.string().min(1),
+    SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
+    INTERNAL_REQUEST_SECRET: z.string().min(1),
   },
 
   client: {
@@ -84,10 +85,12 @@ export const env = createEnv({
     NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
     NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
+    SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
+    INTERNAL_REQUEST_SECRET: process.env.INTERNAL_REQUEST_SECRET,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
   emptyStringAsUndefined: true,
-  extends: [vercel(), spotifyEnv, githubEnv],
+  extends: [vercel(), githubEnv],
 });

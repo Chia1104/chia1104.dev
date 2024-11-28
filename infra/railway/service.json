@@ -10,7 +10,7 @@
       "/infra/railway/service.json",
       "package.json"
     ],
-    "dockerfilePath": "./apps/service/Dockerfile"
+    "dockerfilePath": "Dockerfile.service"
   },
   "deploy": {
     "numReplicas": 1,

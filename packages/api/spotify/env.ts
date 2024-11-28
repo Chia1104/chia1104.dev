@@ -5,11 +5,7 @@ export const env = createEnv({
   server: {
     SPOTIFY_CLIENT_ID: z.string().min(1),
     SPOTIFY_CLIENT_SECRET: z.string().min(1),
-    SPOTIFY_FAVORITE_PLAYLIST_ID: z
-      .string()
-      .optional()
-      // .default("37i9dQZF1Epyg7jBW9q502"),
-      .default("4cPPG7mh2a8EZ2jlhJfj9u"),
+    SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
     SPOTIFY_REFRESH_TOKEN: z.string().optional(),
     SPOTIFY_REDIRECT_URI: z.string().optional(),
     /**
@@ -33,10 +29,10 @@ export const env = createEnv({
     SPOTIFY_FAVORITE_PLAYLIST_ID:
       process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
       process.env.SPOTIFY_FAVORITE_PLAYLIST_ID ??
-      "37i9dQZF1Epyg7jBW9q502",
+      "4cPPG7mh2a8EZ2jlhJfj9u",
     NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID:
       process.env.NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID ??
-      "37i9dQZF1Epyg7jBW9q502",
+      "4cPPG7mh2a8EZ2jlhJfj9u",
     SPOTIFY_REFRESH_TOKEN: process.env.SPOTIFY_REFRESH_TOKEN,
     SPOTIFY_REDIRECT_URI: process.env.SPOTIFY_REDIRECT_URI,
     /**
@@ -52,10 +48,7 @@ export const env = createEnv({
       process.env.SPOTIFY_TOKEN_URL ?? "https://accounts.spotify.com/api/token",
   },
   client: {
-    NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID: z
-      .string()
-      .optional()
-      .default("37i9dQZF1Epyg7jBW9q502"),
+    NEXT_PUBLIC_SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
   },
   clientPrefix: "NEXT_PUBLIC_",
   skipValidation:

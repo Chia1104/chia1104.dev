@@ -1,7 +1,8 @@
 import type { FC } from "react";
 
-import { getPlayList } from "@chia/api/spotify";
+import type { getPlayList } from "@chia/api/spotify";
 import { Image, cn, ImageZoom, FadeIn, Link } from "@chia/ui";
+import { serviceRequest } from "@chia/utils";
 
 import { env } from "@/env";
 
@@ -105,11 +106,14 @@ const getTop4 = (data: Awaited<ReturnType<typeof getPlayList>>) => {
 };
 
 export default async function Page() {
-  const playlist = await getPlayList({
-    revalidate: 60 * 30,
-  });
+  const playlist = await serviceRequest({
+    isInternal: true,
+    internal_requestSecret: env.INTERNAL_REQUEST_SECRET,
+  })
+    .get(`spotify/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default"}`)
+    .json<Awaited<ReturnType<typeof getPlayList>>>();
   const data = getTop4(playlist);
-  const href = `https://open.spotify.com/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID}`;
+  const href = `https://open.spotify.com/playlist/${playlist.id}`;
   return (
     <FadeIn className="w-full flex-col">
       <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7 sm:grid-cols-2 sm:py-3">

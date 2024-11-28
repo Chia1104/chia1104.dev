@@ -9,7 +9,7 @@
       "/infra/railway/www.json",
       "package.json"
     ],
-    "dockerfilePath": "./apps/www/Dockerfile"
+    "dockerfilePath": "Dockerfile.www"
   },
   "deploy": {
     "numReplicas": 1,
