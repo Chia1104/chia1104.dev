@@ -31,7 +31,7 @@ import {
   experimental_getImgAverageRGB,
   getBrightness,
 } from "@chia/ui";
-import { get } from "@chia/utils";
+import { serviceRequest } from "@chia/utils";
 
 interface ExtendsProps {
   className?: string;
@@ -322,13 +322,11 @@ const CurrentPlaying: FC<Props> = ({
     ...queryOptions,
     queryKey: ["spotify-current-playing"],
     queryFn: async ({ signal }) => {
-      return await get<CurrentPlaying, undefined>(
-        "/api/v1/spotify/playing",
-        undefined,
-        {
+      return await serviceRequest()
+        .get("spotify/playing", {
           signal,
-        }
-      );
+        })
+        .json<CurrentPlaying>();
     },
   });
 

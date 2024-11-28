@@ -80,6 +80,8 @@
     }
   },
   "globalEnv": [
+    "INTERNAL_REQUEST_SECRET",
+    "APP_CODE",
     "BASE_URL",
     "SITE_URL",
     "HOST",
@@ -133,6 +135,8 @@
     "NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT"
   ],
   "globalPassThroughEnv": [
+    "INTERNAL_REQUEST_SECRET",
+    "APP_CODE",
     "NEXT_PUBLIC_GTM_ID",
     "SHA_256_HASH",
     "GH_PUBLIC_TOKEN",

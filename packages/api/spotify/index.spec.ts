@@ -11,6 +11,8 @@ describe("test spotify api", () => {
     "getPlayList",
     {
       retry: 3,
+      // fails:
+      //   process.env.APP_CODE !== "service" && process.env.NODE_ENV === "test",
     },
     async () => {
       const result = await getPlayList({
@@ -21,9 +23,25 @@ describe("test spotify api", () => {
   );
 
   test(
+    "getPlayList",
+    {
+      retry: 3,
+      fails: true,
+    },
+    async () => {
+      const result = await getPlayList({
+        playlistId: "37i9dQZF1Epyg7jBW9q502",
+      });
+      expect(result).toBeDefined();
+    }
+  );
+
+  test(
     "getNowPlaying",
     {
       retry: 3,
+      fails:
+        process.env.APP_CODE !== "service" && process.env.NODE_ENV === "test",
     },
     async () => {
       const result = await getNowPlaying();

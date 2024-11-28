@@ -43,16 +43,28 @@ const request = (defaultOptions?: Options) => {
   });
 };
 
-export const serviceRequest = (
-  defaultOptions?: Options & {
-    isInternal?: boolean;
-  }
-) => {
+type ServiceRequestOptions = Options &
+  (
+    | {
+        isInternal?: false;
+      }
+    | {
+        isInternal: true;
+        internal_requestSecret: string;
+      }
+  );
+
+export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
   return request({
     ...defaultOptions,
     prefixUrl: getServiceEndPoint(undefined, {
       isInternal: defaultOptions?.isInternal,
     }),
+    headers: {
+      "x-internal-request-secret": defaultOptions?.isInternal
+        ? defaultOptions.internal_requestSecret
+        : undefined,
+    },
   });
 };
 

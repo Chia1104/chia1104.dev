@@ -8,7 +8,7 @@
       "/infra/railway/dash.json",
       "package.json"
     ],
-    "dockerfilePath": "./apps/dash/Dockerfile"
+    "dockerfilePath": "Dockerfile.dash"
   },
   "deploy": {
     "numReplicas": 1,
