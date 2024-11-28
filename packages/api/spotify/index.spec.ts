@@ -12,7 +12,7 @@ describe("test spotify api", () => {
     {
       retry: 3,
       fails:
-        process.env.APP_CODE !== "service" && process.env.NODE_ENV !== "test",
+        process.env.APP_CODE !== "service" && process.env.NODE_ENV === "test",
     },
     async () => {
       const result = await getPlayList({
@@ -41,7 +41,7 @@ describe("test spotify api", () => {
     {
       retry: 3,
       fails:
-        process.env.APP_CODE !== "service" && process.env.NODE_ENV !== "test",
+        process.env.APP_CODE !== "service" && process.env.NODE_ENV === "test",
     },
     async () => {
       const result = await getNowPlaying();
