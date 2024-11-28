@@ -8,7 +8,8 @@ export const env = createEnv({
     SPOTIFY_FAVORITE_PLAYLIST_ID: z
       .string()
       .optional()
-      .default("37i9dQZF1Epyg7jBW9q502"),
+      // .default("37i9dQZF1Epyg7jBW9q502"),
+      .default("4cPPG7mh2a8EZ2jlhJfj9u"),
     SPOTIFY_REFRESH_TOKEN: z.string().optional(),
     SPOTIFY_REDIRECT_URI: z.string().optional(),
     /**
