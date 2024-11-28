@@ -227,8 +227,8 @@ importers:
         specifier: ^14.5.4
         version: 14.5.4(next@15.0.3(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@22.9.3)(typescript@5.7.2)))(types-react-dom@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       lowlight:
-        specifier: ^3.1.0
-        version: 3.1.0
+        specifier: ^3.2.0
+        version: 3.2.0
       lucide-react:
         specifier: ^0.462.0
         version: 0.462.0(react@19.0.0-rc.1)
@@ -954,7 +954,7 @@ importers:
         version: 2.10.3(@tiptap/pm@2.10.2)
       '@tiptap/extension-code-block-lowlight':
         specifier: ^2.10.3
-        version: 2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)(highlight.js@11.9.0)(lowlight@3.1.0)
+        version: 2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)(highlight.js@11.10.0)(lowlight@3.2.0)
       '@tiptap/html':
         specifier: ^2.10.3
         version: 2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)
@@ -965,8 +965,8 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       lowlight:
-        specifier: ^3.1.0
-        version: 3.1.0
+        specifier: ^3.2.0
+        version: 3.2.0
       lucide-react:
         specifier: ^0.462.0
         version: 0.462.0(react@19.0.0-rc.1)
@@ -975,7 +975,7 @@ importers:
         version: 15.0.3(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.0)(babel-plugin-react-compiler@19.0.0-beta-df7b47d-20241124)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
       novel:
         specifier: ^0.5.0
-        version: 0.5.0(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(highlight.js@11.9.0)(lowlight@3.1.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
+        version: 0.5.0(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(highlight.js@11.10.0)(lowlight@3.2.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       openai:
         specifier: ^4.73.1
         version: 4.73.1(zod@3.23.8)
@@ -8082,8 +8082,8 @@ packages:
   hermes-parser@0.21.1:
     resolution: {integrity: sha512-ANsRSBqQHzca7AXbsuwKApSQhAdljPip63MgqLebSVzNUI+A3NDzfiH9Ny4df4fA7Ndso3kPR1V/x1YEc7BYxA==}
 
-  highlight.js@11.9.0:
-    resolution: {integrity: sha512-fJ7cW7fQGCYAkgv4CPfwFHrfd/cLS4Hau96JuJ+ZTOWhjnhoeN1ub1tFmALm/+lW5z4WCAuAV9bm05AP0mS6Gw==}
+  highlight.js@11.10.0:
+    resolution: {integrity: sha512-SYVnVFswQER+zu1laSya563s+F8VDGt7o35d4utbamowvUNLLMovFqwCLSocpZTz3MgaSRA1IbqRWZv97dtErQ==}
     engines: {node: '>=12.0.0'}
 
   hoist-non-react-statics@3.3.2:
@@ -8828,8 +8828,8 @@ packages:
   lower-case@1.1.4:
     resolution: {integrity: sha512-2Fgx1Ycm599x+WGpIYwJOvsjmXFzTSc34IwDWALRA/8AopUKAVPwfJ+h5+f85BCp0PWmmJcWzEpxOpoXycMpdA==}
 
-  lowlight@3.1.0:
-    resolution: {integrity: sha512-CEbNVoSikAxwDMDPjXlqlFYiZLkDJHwyGu/MfOsJnF3d7f3tds5J3z8s/l9TMXhzfsJCCJEAsD78842mwmg0PQ==}
+  lowlight@3.2.0:
+    resolution: {integrity: sha512-8Me8xHTCBYEXwcJIPcurnXTeERl3plwb4207v6KPye48kX/oaYDiwXy+OCm3M/pyAPUrkMhalKsbYPm24f/UDg==}
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
@@ -16834,13 +16834,13 @@ snapshots:
       '@tiptap/core': 2.10.3(@tiptap/pm@2.10.2)
       '@tiptap/pm': 2.10.2
 
-  '@tiptap/extension-code-block-lowlight@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)(highlight.js@11.9.0)(lowlight@3.1.0)':
+  '@tiptap/extension-code-block-lowlight@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)(highlight.js@11.10.0)(lowlight@3.2.0)':
     dependencies:
       '@tiptap/core': 2.10.3(@tiptap/pm@2.10.2)
       '@tiptap/extension-code-block': 2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)
       '@tiptap/pm': 2.10.2
-      highlight.js: 11.9.0
-      lowlight: 3.1.0
+      highlight.js: 11.10.0
+      lowlight: 3.2.0
 
   '@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)':
     dependencies:
@@ -19756,7 +19756,7 @@ snapshots:
     dependencies:
       hermes-estree: 0.21.1
 
-  highlight.js@11.9.0: {}
+  highlight.js@11.10.0: {}
 
   hoist-non-react-statics@3.3.2:
     dependencies:
@@ -20514,11 +20514,11 @@ snapshots:
 
   lower-case@1.1.4: {}
 
-  lowlight@3.1.0:
+  lowlight@3.2.0:
     dependencies:
       '@types/hast': 3.0.4
       devlop: 1.1.0
-      highlight.js: 11.9.0
+      highlight.js: 11.10.0
 
   lru-cache@10.4.3: {}
 
@@ -21438,12 +21438,12 @@ snapshots:
 
   normalize-range@0.1.2: {}
 
-  novel@0.5.0(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(highlight.js@11.9.0)(lowlight@3.1.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1):
+  novel@0.5.0(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(highlight.js@11.10.0)(lowlight@3.2.0)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)(types-react@19.0.0-rc.1):
     dependencies:
       '@radix-ui/react-slot': 1.1.0(react@19.0.0-rc.1)(types-react@19.0.0-rc.1)
       '@tiptap/core': 2.10.3(@tiptap/pm@2.10.2)
       '@tiptap/extension-character-count': 2.10.2(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)
-      '@tiptap/extension-code-block-lowlight': 2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)(highlight.js@11.9.0)(lowlight@3.1.0)
+      '@tiptap/extension-code-block-lowlight': 2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/extension-code-block@2.10.3(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)(highlight.js@11.10.0)(lowlight@3.2.0)
       '@tiptap/extension-color': 2.10.2(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/extension-text-style@2.10.2(@tiptap/core@2.10.3(@tiptap/pm@2.10.2)))
       '@tiptap/extension-highlight': 2.10.2(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))
       '@tiptap/extension-horizontal-rule': 2.10.2(@tiptap/core@2.10.3(@tiptap/pm@2.10.2))(@tiptap/pm@2.10.2)
