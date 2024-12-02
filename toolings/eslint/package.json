@@ -22,7 +22,7 @@
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-turbo": "^2.3.3",
-    "typescript-eslint": "^8.16.0"
+    "typescript-eslint": "^8.17.0"
   },
   "devDependencies": {
     "eslint": "catalog:"
