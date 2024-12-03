@@ -3,31 +3,11 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import type { Session } from "@chia/auth-core/types";
-import { createRedis } from "@chia/cache";
 import type { Redis } from "@chia/cache";
 import type { DB } from "@chia/db";
-import { getDB } from "@chia/db";
 import { getAdminId } from "@chia/utils";
 
-interface CreateContextOptions {
-  session: Session | null;
-  db?: DB;
-  redis?: Redis;
-}
-
-const database = getDB();
-
-const redis = createRedis();
-
 const adminId = getAdminId();
-
-const createInnerTRPCContext = (opts: CreateContextOptions) => {
-  return {
-    session: opts.session,
-    db: database,
-    redis,
-  };
-};
 
 export const createTRPCContext = (opts: {
   /**
@@ -35,22 +15,16 @@ export const createTRPCContext = (opts: {
    */
   req?: Request;
   auth?: Session | null;
-  db?: DB;
-  redis?: Redis;
+  db: DB;
+  redis: Redis;
 }) => {
   const session = opts.auth ?? null;
 
-  if (opts.db && opts.redis) {
-    return {
-      session,
-      db: opts.db,
-      redis: opts.redis,
-    };
-  }
-
-  return createInnerTRPCContext({
+  return {
     session,
-  });
+    db: opts.db,
+    redis: opts.redis,
+  };
 };
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
