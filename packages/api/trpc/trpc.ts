@@ -4,11 +4,15 @@ import { ZodError } from "zod";
 
 import type { Session } from "@chia/auth-core/types";
 import { createRedis } from "@chia/cache";
+import type { Redis } from "@chia/cache";
+import type { DB } from "@chia/db";
 import { getDB } from "@chia/db";
 import { getAdminId } from "@chia/utils";
 
 interface CreateContextOptions {
   session: Session | null;
+  db?: DB;
+  redis?: Redis;
 }
 
 const database = getDB();
@@ -31,8 +35,18 @@ export const createTRPCContext = (opts: {
    */
   req?: Request;
   auth?: Session | null;
+  db?: DB;
+  redis?: Redis;
 }) => {
   const session = opts.auth ?? null;
+
+  if (opts.db && opts.redis) {
+    return {
+      session,
+      db: opts.db,
+      redis: opts.redis,
+    };
+  }
 
   return createInnerTRPCContext({
     session,

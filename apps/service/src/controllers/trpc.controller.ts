@@ -1,6 +1,5 @@
 import dayjs from "dayjs";
 import { Hono } from "hono";
-import { getRuntimeKey } from "hono/adapter";
 import { getCookie } from "hono/cookie";
 
 import { appRouter, createTRPCContext } from "@chia/api/trpc";
@@ -14,37 +13,49 @@ import { sessionAction } from "@/middlewares/auth.middleware";
 const api = new Hono<HonoContext>();
 
 api.use("*", async (c) => {
+  const { getSessionAndUser, deleteSession, updateSession } = adapter({
+    db: c.var.db,
+    redis: c.var.redis,
+  });
+  let session: Session | null = null;
+  const sessionToken = getCookie(c, SESSION_TOKEN);
+  if (!sessionToken) {
+    session = null;
+  } else {
+    const sessionAndUser = await sessionAction({
+      c,
+      sessionToken,
+      getSessionAndUser,
+      deleteSession,
+      updateSession,
+    });
+    session = sessionAndUser
+      ? {
+          user: sessionAndUser.user,
+          expires: dayjs(sessionAndUser.session.expires).toISOString(),
+        }
+      : null;
+  }
+
+  const bodyProps = new Set([
+    "arrayBuffer",
+    "blob",
+    "formData",
+    "json",
+    "text",
+  ] as const);
+  type BodyProp = typeof bodyProps extends Set<infer T> ? T : never;
+  const canWithBody = c.req.method === "GET" || c.req.method === "HEAD";
+
   return fetchRequestHandler({
     endpoint: "/api/v1/trpc",
     router: appRouter,
-    createContext: async () => {
-      if (getRuntimeKey() === "bun") {
-        Bun.gc(true);
-      }
-      const { getSessionAndUser, deleteSession, updateSession } = adapter({
+    createContext: () => {
+      return createTRPCContext({
+        auth: session,
         db: c.var.db,
         redis: c.var.redis,
       });
-      let session: Session | null = null;
-      const sessionToken = getCookie(c, SESSION_TOKEN);
-      if (!sessionToken) {
-        session = null;
-      } else {
-        const sessionAndUser = await sessionAction({
-          c,
-          sessionToken,
-          getSessionAndUser,
-          deleteSession,
-          updateSession,
-        });
-        session = sessionAndUser
-          ? {
-              user: sessionAndUser.user,
-              expires: dayjs(sessionAndUser.session.expires).toISOString(),
-            }
-          : null;
-      }
-      return createTRPCContext({ auth: session });
     },
     onError: ({ error, path }) => {
       if (error.code == "INTERNAL_SERVER_ERROR") {
@@ -52,7 +63,16 @@ api.use("*", async (c) => {
       }
       console.error(`>>> tRPC Error on '${path}'`, error);
     },
-    req: c.req.raw,
+    req: canWithBody
+      ? c.req.raw
+      : new Proxy(c.req.raw, {
+          get(t, p, _r) {
+            if (bodyProps.has(p as BodyProp)) {
+              return () => c.req[p as BodyProp]();
+            }
+            return Reflect.get(t, p, t);
+          },
+        }),
   }).then((res) => c.body(res.body, res));
 });
 
