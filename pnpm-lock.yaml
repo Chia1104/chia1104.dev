@@ -101,8 +101,8 @@ importers:
         specifier: ^1.1.38
         version: 1.1.38
       dotenv:
-        specifier: ^16.4.5
-        version: 16.4.5
+        specifier: ^16.4.6
+        version: 16.4.6
       happy-dom:
         specifier: ^15.11.7
         version: 15.11.7
@@ -7170,8 +7170,8 @@ packages:
     resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
     engines: {node: '>=12'}
 
-  dotenv@16.4.5:
-    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+  dotenv@16.4.6:
+    resolution: {integrity: sha512-JhcR/+KIjkkjiU8yEpaB/USlzVi3i5whwOjpIRNGi9svKEXZSe+Qp6IWAjFjv+2GViAoDRCUv/QLNziQxsLqDg==}
     engines: {node: '>=12'}
 
   drizzle-graphql@0.8.5:
@@ -16447,7 +16447,7 @@ snapshots:
       '@babel/core': 7.26.0
       '@sentry/babel-plugin-component-annotate': 2.22.6
       '@sentry/cli': 2.39.0
-      dotenv: 16.4.5
+      dotenv: 16.4.6
       find-up: 5.0.0
       glob: 9.3.5
       magic-string: 0.30.8
@@ -18507,11 +18507,11 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.4.5
+      dotenv: 16.4.6
 
   dotenv@16.0.3: {}
 
-  dotenv@16.4.5: {}
+  dotenv@16.4.6: {}
 
   drizzle-graphql@0.8.5(drizzle-orm@0.36.4(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@18.3.12)(bun-types@1.1.38)(pg@8.13.1)(react@19.0.0-rc.1))(graphql@16.9.0):
     dependencies:
@@ -21480,7 +21480,7 @@ snapshots:
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
       cliui: 8.0.1
-      dotenv: 16.4.5
+      dotenv: 16.4.6
       dotenv-expand: 11.0.7
       enquirer: 2.3.6
       figures: 3.2.0
