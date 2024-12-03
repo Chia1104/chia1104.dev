@@ -389,8 +389,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(hono@4.6.12)
       '@hono/trpc-server':
-        specifier: ^0.3.3
-        version: 0.3.3(@trpc/server@11.0.0-rc.648(typescript@5.7.2))(hono@4.6.12)
+        specifier: ^0.3.4
+        version: 0.3.4(@trpc/server@11.0.0-rc.648(typescript@5.7.2))(hono@4.6.12)
       '@hono/zod-validator':
         specifier: ^0.4.1
         version: 0.4.1(hono@4.6.12)(zod@3.23.8)
@@ -2622,8 +2622,8 @@ packages:
     peerDependencies:
       hono: '>=3.*'
 
-  '@hono/trpc-server@0.3.3':
-    resolution: {integrity: sha512-LGxAB3hlNSxF4lAedZyzHMRmL958bZxvMSu/z0i1rLSZ0i8qKOYlVnboa7bKFoksEC+DODFpLHadpzUHs+Bl6A==}
+  '@hono/trpc-server@0.3.4':
+    resolution: {integrity: sha512-xFOPjUPnII70FgicDzOJy1ufIoBTu8eF578zGiDOrYOrYN8CJe140s9buzuPkX+SwJRYK8LjEBHywqZtxdm8aA==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       '@trpc/server': ^10.10.0 || >11.0.0-rc
@@ -12811,7 +12811,7 @@ snapshots:
       hono: 4.6.12
       toucan-js: 4.0.0
 
-  '@hono/trpc-server@0.3.3(@trpc/server@11.0.0-rc.648(typescript@5.7.2))(hono@4.6.12)':
+  '@hono/trpc-server@0.3.4(@trpc/server@11.0.0-rc.648(typescript@5.7.2))(hono@4.6.12)':
     dependencies:
       '@trpc/server': 11.0.0-rc.648(typescript@5.7.2)
       hono: 4.6.12
