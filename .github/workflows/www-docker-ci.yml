@@ -70,7 +70,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./apps/www/Dockerfile
+          file: Dockerfile.www
           push: false
           load: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-www:${{ env.GIT_HASH }}

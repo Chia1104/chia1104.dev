@@ -54,7 +54,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./apps/dash/Dockerfile
+          file: Dockerfile.dash
           push: false
           load: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-dash:${{ env.GIT_HASH }}
