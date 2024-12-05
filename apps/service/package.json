@@ -35,7 +35,7 @@
     "formdata-node": "^6.0.3",
     "graphql": "^16.9.0",
     "hono": "^4.6.12",
-    "hono-rate-limiter": "^0.4.0",
+    "hono-rate-limiter": "^0.4.2",
     "rate-limit-redis": "^4.2.0",
     "web-streams-polyfill": "^4.0.0"
   },
