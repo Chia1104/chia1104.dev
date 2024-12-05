@@ -81,7 +81,7 @@ importers:
         version: 0.6.1
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^4.3.0
-        version: 4.3.0(prettier@3.4.1)
+        version: 4.3.0(prettier@3.4.2)
       '@turbo/gen':
         specifier: ^2.3.3
         version: 2.3.3(@swc/core@1.9.3(@swc/helpers@0.5.15))(@types/node@22.9.3)(typescript@5.7.2)
@@ -122,11 +122,11 @@ importers:
         specifier: ^20.1.4
         version: 20.1.4(@swc/core@1.9.3(@swc/helpers@0.5.15))
       prettier:
-        specifier: ^3.4.1
-        version: 3.4.1
+        specifier: ^3.4.2
+        version: 3.4.2
       prettier-plugin-tailwindcss:
         specifier: ^0.6.9
-        version: 0.6.9(@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.1))(prettier@3.4.1)
+        version: 0.6.9(@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.2))(prettier@3.4.2)
       shell-quote:
         specifier: ^1.8.2
         version: 1.8.2
@@ -1298,15 +1298,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
-
-  '@ai-sdk/provider-utils@2.0.2':
-    resolution: {integrity: sha512-IAvhKhdlXqiSmvx/D4uNlFYCl8dWT+M9K+IuEcSgnE2Aj27GWu8sDIpAf4r4Voc+wOUkOECVKQhFo8g9pozdjA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
 
   '@ai-sdk/provider-utils@2.0.3':
     resolution: {integrity: sha512-Cyk7GlFEse2jQ4I3FWYuZ1Zhr5w1mD9SHMJTYm/in1rd7r89nmEoQiOy3h8YV2ZvTa2/6aR10xZ4M0k4B3BluA==}
@@ -9992,8 +9983,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  prettier@3.4.1:
-    resolution: {integrity: sha512-G+YdqtITVZmOJje6QkXQWzl3fSfMxFwm1tjTyo9exhkmWSqC4Yhd1+lug++IlR2mvRVAxEDDWYkQdeSztajqgg==}
+  prettier@3.4.2:
+    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -11817,15 +11808,6 @@ snapshots:
     dependencies:
       '@ai-sdk/provider': 1.0.1
       '@ai-sdk/provider-utils': 2.0.3(zod@3.23.8)
-      zod: 3.23.8
-
-  '@ai-sdk/provider-utils@2.0.2(zod@3.23.8)':
-    dependencies:
-      '@ai-sdk/provider': 1.0.1
-      eventsource-parser: 3.0.0
-      nanoid: 3.3.7
-      secure-json-parse: 2.7.0
-    optionalDependencies:
       zod: 3.23.8
 
   '@ai-sdk/provider-utils@2.0.3(zod@3.23.8)':
@@ -17096,7 +17078,7 @@ snapshots:
 
   '@total-typescript/ts-reset@0.6.1': {}
 
-  '@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.1)':
+  '@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.2)':
     dependencies:
       '@babel/generator': 7.17.7
       '@babel/parser': 7.26.2
@@ -17104,7 +17086,7 @@ snapshots:
       '@babel/types': 7.17.0
       javascript-natural-sort: 0.7.1
       lodash: 4.17.21
-      prettier: 3.4.1
+      prettier: 3.4.2
     transitivePeerDependencies:
       - supports-color
 
@@ -22026,15 +22008,15 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-tailwindcss@0.6.9(@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.1))(prettier@3.4.1):
+  prettier-plugin-tailwindcss@0.6.9(@trivago/prettier-plugin-sort-imports@4.3.0(prettier@3.4.2))(prettier@3.4.2):
     dependencies:
-      prettier: 3.4.1
+      prettier: 3.4.2
     optionalDependencies:
-      '@trivago/prettier-plugin-sort-imports': 4.3.0(prettier@3.4.1)
+      '@trivago/prettier-plugin-sort-imports': 4.3.0(prettier@3.4.2)
 
   prettier@3.3.3: {}
 
-  prettier@3.4.1: {}
+  prettier@3.4.2: {}
 
   pretty-format@27.5.1:
     dependencies:
