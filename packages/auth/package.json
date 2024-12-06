@@ -35,7 +35,7 @@
     "@chia/tsconfig": "workspace:*",
     "@types/react": "catalog:react19",
     "eslint": "catalog:",
-    "next": "15.0.3",
+    "next": "15.0.4",
     "typescript": "catalog:"
   }
 }
