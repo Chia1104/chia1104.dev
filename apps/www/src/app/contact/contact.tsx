@@ -25,7 +25,6 @@ import { env } from "@/env";
 import { contactSchema } from "@/shared/validator";
 import type { Contact } from "@/shared/validator";
 
-// @ts-expect-error - legacy class component
 const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
   ssr: false,
 });
