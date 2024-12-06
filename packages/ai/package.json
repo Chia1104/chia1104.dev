@@ -43,11 +43,11 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.0.5",
+    "@ai-sdk/openai": "^1.0.7",
     "@chia/utils": "workspace:*",
-    "ai": "^4.0.10",
-    "next": "15.0.3",
-    "openai": "^4.74.0"
+    "ai": "^4.0.12",
+    "next": "15.0.4",
+    "openai": "^4.76.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
