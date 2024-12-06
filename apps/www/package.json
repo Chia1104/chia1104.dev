@@ -79,7 +79,7 @@
     "shiki": "^1.24.0",
     "sonner": "1.7.0",
     "usehooks-ts": "^3.1.0",
-    "zustand": "5.0.1"
+    "zustand": "5.0.2"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
