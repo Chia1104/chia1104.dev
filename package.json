@@ -90,7 +90,7 @@
     "husky": "^9.1.7",
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.10",
-    "msw": "^2.6.6",
+    "msw": "^2.6.7",
     "nx": "^20.1.4",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
