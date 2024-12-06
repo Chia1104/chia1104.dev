@@ -29,7 +29,7 @@
   "dependencies": {
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@nextui-org/react": "2.4.8",
+    "@nextui-org/react": "2.6.2",
     "@tiptap/core": "^2.10.3",
     "@tiptap/extension-code-block-lowlight": "^2.10.3",
     "@tiptap/html": "^2.10.3",
