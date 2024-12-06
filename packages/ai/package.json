@@ -47,7 +47,7 @@
     "@chia/utils": "workspace:*",
     "ai": "^4.0.12",
     "next": "15.0.4",
-    "openai": "^4.74.0"
+    "openai": "^4.76.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
