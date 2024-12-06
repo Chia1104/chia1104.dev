@@ -64,8 +64,8 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       superjson:
-        specifier: 2.2.1
-        version: 2.2.1
+        specifier: 2.2.2
+        version: 2.2.2
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -10855,8 +10855,8 @@ packages:
   sugar-high@0.7.5:
     resolution: {integrity: sha512-lfGxo0il0Mx4WLdXEt0WsJ8V3QkQWssXnolj5xBurzlGJW07LuwmJWKtS0B2WJ5XWz1439RHngXAmzsnLD0rFA==}
 
-  superjson@2.2.1:
-    resolution: {integrity: sha512-8iGv75BYOa0xRJHK5vRLEjE2H/i4lulTjzpUXic3Eg8akftYjkmQDa8JARQ42rlczXyFR3IeRoeFCc7RxHsYZA==}
+  superjson@2.2.2:
+    resolution: {integrity: sha512-5JRxVqC8I8NuOUjzBbvVJAKNM8qoVuH0O77h4WInc/qC2q5IreqKxYwgkga3PfA22OayK2ikceb/B26dztPl+Q==}
     engines: {node: '>=16'}
 
   supports-color@5.5.0:
@@ -23176,7 +23176,7 @@ snapshots:
 
   sugar-high@0.7.5: {}
 
-  superjson@2.2.1:
+  superjson@2.2.2:
     dependencies:
       copy-anything: 3.0.5
 
