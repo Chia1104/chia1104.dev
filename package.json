@@ -64,7 +64,7 @@
     "node": ">=20.6",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@9.14.4",
+  "packageManager": "pnpm@9.15.0",
   "dependencies": {
     "dayjs": "^1.11.13",
     "graphql-request": "^7.1.2",
@@ -90,8 +90,8 @@
     "husky": "^9.1.7",
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.10",
-    "msw": "^2.6.7",
-    "nx": "^20.2.0",
+    "msw": "^2.6.8",
+    "nx": "^20.2.1",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
     "shell-quote": "^1.8.2",
