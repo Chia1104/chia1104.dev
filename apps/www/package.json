@@ -77,7 +77,7 @@
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
     "shiki": "^1.24.1",
-    "sonner": "1.7.0",
+    "sonner": "1.7.1",
     "usehooks-ts": "^3.1.0",
     "zustand": "5.0.2"
   },
