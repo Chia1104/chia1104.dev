@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
-    "@nextui-org/react": "2.6.4",
+    "@nextui-org/react": "2.6.5",
     "@radix-ui/react-accordion": "1.2.1",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
@@ -62,7 +62,7 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-hook-form": "^7.54.0",
-    "react-medium-image-zoom": "^5.2.11",
+    "react-medium-image-zoom": "^5.2.12",
     "sonner": "1.7.0",
     "tailwind-merge": "^2.5.5",
     "usehooks-ts": "^3.1.0",
