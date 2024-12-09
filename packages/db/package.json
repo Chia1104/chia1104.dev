@@ -60,7 +60,7 @@
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
     "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.29.1",
+    "drizzle-kit": "^0.30.0",
     "eslint": "catalog:",
     "typescript": "catalog:"
   }
