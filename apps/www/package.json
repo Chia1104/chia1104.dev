@@ -40,7 +40,7 @@
     "@hookform/resolvers": "^3.9.1",
     "@next/third-parties": "^15.0.4",
     "@nextui-org/react": "2.6.5",
-    "@nextui-org/theme": "2.4.1",
+    "@nextui-org/theme": "2.4.3",
     "@react-email/components": "^0.0.30",
     "@sentry/nextjs": "^8.42.0",
     "@t3-oss/env-core": "^0.11.1",
