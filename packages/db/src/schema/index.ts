@@ -51,11 +51,11 @@ export const accounts = pgTable(
     id_token: text("id_token"),
     session_state: text("session_state"),
   },
-  (account) => ({
-    compoundKey: primaryKey({
+  (account) => [
+    primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-  })
+  ]
 );
 
 /**
@@ -76,9 +76,7 @@ export const verificationTokens = pgTable(
     token: text("token").notNull(),
     expires: timestamp("expires", { mode: "date" }).notNull(),
   },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
 );
 
 // export const authenticators = pgTable(
@@ -110,13 +108,11 @@ export const tags = pgTable(
     slug: text("slug").notNull().unique(),
     description: text("description"),
   },
-  (table) => {
-    return {
-      idIndex: uniqueIndex("tag_id_index").on(table.id),
-      slugIndex: uniqueIndex("tag_slug_index").on(table.slug),
-      nameIndex: index("tag_name_index").on(table.name),
-    };
-  }
+  (table) => [
+    uniqueIndex("tag_id_index").on(table.id),
+    uniqueIndex("tag_slug_index").on(table.slug),
+    index("tag_name_index").on(table.name),
+  ]
 );
 
 export const tagsRelation = relations(tags, ({ many }) => ({
@@ -141,11 +137,7 @@ export const assets = pgTable(
       .notNull()
       .references(() => users.id),
   },
-  (table) => {
-    return {
-      idIndex: uniqueIndex("asset_id_index").on(table.id),
-    };
-  }
+  (table) => [uniqueIndex("asset_id_index").on(table.id)]
 );
 
 export const assetsToTags = pgTable(
@@ -158,11 +150,11 @@ export const assetsToTags = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
   },
-  (t) => ({
-    pk: primaryKey({
+  (t) => [
+    primaryKey({
       columns: [t.assetId, t.tagId],
     }),
-  })
+  ]
 );
 
 export const feeds = pgTable("feed", baseFeedsColumns, baseFeedsExtraConfig);
@@ -177,11 +169,11 @@ export const feedsToTags = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
   },
-  (t) => ({
-    pk: primaryKey({
+  (t) => [
+    primaryKey({
       columns: [t.feedId, t.tagId],
     }),
-  })
+  ]
 );
 
 export const contents = pgTable("content", {
