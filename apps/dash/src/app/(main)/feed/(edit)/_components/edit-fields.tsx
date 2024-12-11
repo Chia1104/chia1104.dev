@@ -267,7 +267,7 @@ export const MetadataFields = () => {
                         : null
                     }
                     onChange={(date) => {
-                      field.onChange(dayjs(date.toString()).valueOf());
+                      field.onChange(dayjs(date?.toString()).valueOf());
                     }}
                   />
                 </FormControl>
@@ -298,7 +298,7 @@ export const MetadataFields = () => {
                           : null
                       }
                       onChange={(date) => {
-                        field.onChange(dayjs(date.toString()).valueOf());
+                        field.onChange(dayjs(date?.toString()).valueOf());
                       }}
                     />
                   </FormControl>

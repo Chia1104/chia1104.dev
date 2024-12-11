@@ -42,6 +42,9 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
     reactCompiler: true,
     webpackBuildWorker: true,
+    // dynamicIO: true,
+    // ppr: true,
+    authInterrupts: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
