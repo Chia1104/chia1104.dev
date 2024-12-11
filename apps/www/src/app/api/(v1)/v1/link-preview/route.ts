@@ -1,7 +1,7 @@
 import { captureException } from "@sentry/nextjs";
 import { JSDOM } from "jsdom";
 import { HTTPError } from "ky";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -134,7 +134,9 @@ export const POST = withRateLimiter<
           status: error.response.status,
         });
       }
-      captureException(error);
+      after(() => {
+        captureException(error);
+      });
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });
@@ -144,7 +146,9 @@ export const POST = withRateLimiter<
     client: createUpstash(),
     onError: (error) => {
       console.error("Rate Limiter: ", error);
-      captureException(error);
+      after(() => {
+        captureException(error);
+      });
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });
