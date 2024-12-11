@@ -5,17 +5,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getDB, schema, eq } from "@chia/db";
-import { getInfiniteFeedsByUserId } from "@chia/db/repos/feeds";
 import {
   getBaseUrl,
   WWW_BASE_URL,
-  getAdminId,
   errorGenerator,
   numericStringSchema,
 } from "@chia/utils";
 
 import routes from "@/shared/routes";
+import { api } from "@/trpc/rsc";
 
 export const dynamic = "force-dynamic";
 
@@ -45,15 +43,13 @@ export const GET = async (
     const storedParams = await params;
     numericStringSchema.parse(storedParams.id);
 
-    // handle sitemap index
-    const feeds = await getInfiniteFeedsByUserId(getDB(), {
-      limit: 1000,
+    const feeds = await api.feeds.getFeedsWithMetaByAdminId({
+      limit: "1000",
+      type: "all",
       orderBy: "updatedAt",
       sortOrder: "desc",
-      type: "all",
-      withContent: false,
-      userId: getAdminId(),
-      whereAnd: [eq(schema.feeds.published, true)],
+      withContent: "false",
+      published: "true",
     });
 
     const staticSitemapData = Object.entries(routes).map(

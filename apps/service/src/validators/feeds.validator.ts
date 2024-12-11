@@ -10,6 +10,7 @@ export const getFeedsWithMetaSchema = z
     limit: numericStringSchema.optional().default("20"),
     nextCursor: numericStringSchema.optional(),
     withContent: z.string().optional().default("false"),
+    published: z.string().optional().default("false"),
     orderBy: z
       .enum([FeedOrderBy.CreatedAt, FeedOrderBy.UpdatedAt, FeedOrderBy.Id])
       .optional()
@@ -29,6 +30,7 @@ export const getFeedsWithMetaSchema = z
         limit: numericStringSchema.optional().default("20"),
         nextCursor: z.string().optional(),
         withContent: z.string().optional().default("false"),
+        published: z.string().optional().default("false"),
         orderBy: z
           .enum([FeedOrderBy.Slug, FeedOrderBy.Title])
           .optional()

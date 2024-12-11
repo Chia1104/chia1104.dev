@@ -1,6 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
+import { eq } from "@chia/db";
+import { schema } from "@chia/db";
 import { getInfiniteFeedsByUserId, getFeedBySlug } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId } from "@chia/utils";
@@ -32,8 +34,15 @@ api.get(
     }
   }),
   async (c) => {
-    const { type, limit, orderBy, sortOrder, nextCursor, withContent } =
-      c.req.valid("query");
+    const {
+      type,
+      limit,
+      orderBy,
+      sortOrder,
+      nextCursor,
+      withContent,
+      published,
+    } = c.req.valid("query");
     const feeds = await getInfiniteFeedsByUserId(c.var.db, {
       type,
       limit,
@@ -42,6 +51,7 @@ api.get(
       cursor: nextCursor,
       withContent: withContent === "true",
       userId: adminId,
+      whereAnd: [eq(schema.feeds.published, published === "true")],
     });
     return c.json(feeds);
   }

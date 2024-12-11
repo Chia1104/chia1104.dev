@@ -19,6 +19,7 @@ const getFeedsWithMetaSchema = z
     limit: numericStringSchema.optional().default("20"),
     nextCursor: numericStringSchema.optional(),
     withContent: z.string().optional().default("false"),
+    published: z.string().optional().default("false"),
     orderBy: z
       .enum([FeedOrderBy.CreatedAt, FeedOrderBy.UpdatedAt, FeedOrderBy.Id])
       .optional()
@@ -38,6 +39,7 @@ const getFeedsWithMetaSchema = z
         limit: numericStringSchema.optional().default("20"),
         nextCursor: z.string().optional(),
         withContent: z.string().optional().default("false"),
+        published: z.string().optional().default("false"),
         orderBy: z
           .enum([FeedOrderBy.Slug, FeedOrderBy.Title])
           .optional()
@@ -68,6 +70,7 @@ export const feedsRouter = external_createTRPCRouter({
             orderBy: opts.input.orderBy?.toString() ?? "",
             sortOrder: opts.input.sortOrder?.toString() ?? "",
             type: opts.input.type?.toString() ?? "",
+            published: opts.input.published?.toString() ?? "",
           },
         })
         .json<ReturnType<typeof getInfiniteFeedsByUserId>>();
@@ -83,4 +86,13 @@ export const feedsRouter = external_createTRPCRouter({
         .get(`admin/public/feeds/${opts.input.slug}`)
         .json<ReturnType<typeof getFeedBySlug>>();
     }),
+
+  getMeta: external_procedure.query(async (opts) => {
+    return await serviceRequest({
+      isInternal: true,
+      internal_requestSecret: opts.ctx.internal_requestSecret,
+    })
+      .get(`admin/public/feeds:meta`)
+      .json<{ total: number }>();
+  }),
 });
