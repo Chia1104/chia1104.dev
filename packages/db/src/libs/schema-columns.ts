@@ -39,11 +39,11 @@ export const baseFeedsColumns = {
 export const baseFeedsExtraConfig = (
   table: BuildExtraConfigColumns<"feed", typeof baseFeedsColumns, "pg">
 ) => {
-  return {
-    idIndex: uniqueIndex("feed_id_index").on(table.id),
-    slugIndex: uniqueIndex("feed_slug_index").on(table.slug),
-    titleIndex: index("feed_title_index").on(table.title),
-  };
+  return [
+    uniqueIndex("feed_id_index").on(table.id),
+    uniqueIndex("feed_slug_index").on(table.slug),
+    index("feed_title_index").on(table.title),
+  ];
 };
 
 export const feedsWithEmbeddingColumns = {
@@ -54,11 +54,11 @@ export const feedsWithEmbeddingColumns = {
 export const feedsWithEmbeddingExtraConfig = (
   table: BuildExtraConfigColumns<"feed", typeof feedsWithEmbeddingColumns, "pg">
 ) => {
-  return {
+  return [
     ...baseFeedsExtraConfig(table),
-    embeddingIndex: index("feed_embedding_index").using(
+    index("feed_embedding_index").using(
       "hnsw",
       table.embedding.op("vector_cosine_ops")
     ),
-  };
+  ];
 };
