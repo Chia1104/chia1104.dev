@@ -111,7 +111,9 @@ export const POST = withRateLimiter(
       return NextResponse.json({ success: true });
     } catch (error: any) {
       console.error(error);
-      captureException(error);
+      after(() => {
+        captureException(error);
+      });
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });
