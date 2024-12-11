@@ -37,7 +37,14 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
-  transpilePackages: ["@chia/*"],
+  transpilePackages: [
+    "@chia/api",
+    "@chia/cache",
+    "@chia/contents",
+    "@chia/meta",
+    "@chia/ui",
+    "@chia/utils",
+  ],
   experimental: {
     optimizePackageImports: ["@nextui-org/react", "@react-email/components"],
     reactCompiler: true,
