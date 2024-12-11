@@ -52,7 +52,8 @@
     "@chia/ai": "workspace:*",
     "drizzle-orm": "^0.38.0",
     "drizzle-zod": "^0.6.0",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "postgres": "^3.4.5"
   },
   "devDependencies": {
     "@auth/core": "^0.37.4",

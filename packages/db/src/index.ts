@@ -1,6 +1,6 @@
 import * as _dotenv from "dotenv/config";
-import { drizzle } from "drizzle-orm/node-postgres";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 import { switchEnv } from "@chia/utils/config";
 
@@ -28,7 +28,7 @@ export const betaDb = drizzle<typeof schema>(
   }
 );
 
-export type DB = NodePgDatabase<typeof schema>;
+export type DB = PostgresJsDatabase<typeof schema>;
 
 export { schema };
 export * from "drizzle-orm";
