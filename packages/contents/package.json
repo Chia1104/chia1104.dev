@@ -41,12 +41,12 @@
   "dependencies": {
     "@chia/db": "workspace:*",
     "@chia/ui": "workspace:*",
-    "@fumadocs/mdx-remote": "^0.2.3",
+    "@fumadocs/mdx-remote": "^0.2.4",
     "@mdx-js/react": "^3.1.0",
-    "fumadocs-core": "^14.5.6",
+    "fumadocs-core": "^14.6.0",
     "fumadocs-mdx": "^11.1.2",
-    "fumadocs-ui": "^14.5.6",
-    "next": "15.0.4",
+    "fumadocs-ui": "^14.6.0",
+    "next": "15.1.0",
     "react": "catalog:react19",
     "react-dom": "catalog:react19"
   },
