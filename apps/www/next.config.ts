@@ -46,6 +46,7 @@ const nextConfig: NextConfig = {
     // ppr: true,
     authInterrupts: true,
   },
+  serverExternalPackages: ["@chia/db", "@chia/auth"],
   eslint: {
     ignoreDuringBuilds: true,
   },

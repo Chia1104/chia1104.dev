@@ -1,5 +1,4 @@
 import type { FC, ReactNode } from "react";
-import { cache } from "react";
 
 import type { RouterOutputs } from "@chia/api";
 import { NavigationMenu, NavigationMenuList } from "@chia/ui";
@@ -23,16 +22,8 @@ const Navigation: FC<{
   );
 };
 
-const cachedPost = cache(async () => {
-  return await getPosts(4);
-});
-
-const cachedNote = cache(async () => {
-  return await getNotes(4);
-});
-
 const Layout: FC<{ children: ReactNode }> = async ({ children }) => {
-  const [posts, notes] = await Promise.all([cachedPost(), cachedNote()]);
+  const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
   return (
     <article className="main c-container prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start">
       <div className="z-30">

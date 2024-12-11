@@ -6,11 +6,7 @@ import { switchEnv } from "@chia/utils/config";
 
 import * as schema from "./schema";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not set");
-}
-
-export const db = drizzle<typeof schema>(process.env.DATABASE_URL, {
+export const db = drizzle<typeof schema>(process.env.DATABASE_URL ?? "", {
   schema,
 });
 
