@@ -1210,8 +1210,8 @@ importers:
         specifier: workspace:*
         version: link:../../toolings/tsconfig
       start-server-and-test:
-        specifier: ^2.0.8
-        version: 2.0.8
+        specifier: ^2.0.9
+        version: 2.0.9
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
@@ -10556,8 +10556,8 @@ packages:
   standard-as-callback@2.1.0:
     resolution: {integrity: sha512-qoRRSyROncaz1z0mvYqIE4lCd9p2R90i6GxW3uZv5ucSu8tU7B5HXUP1gG8pVZsYNVaXjk8ClXHPttLyxAL48A==}
 
-  start-server-and-test@2.0.8:
-    resolution: {integrity: sha512-v2fV6NV2F7tL1ocwfI4Wpait+IKjRbT5l3ZZ+ZikXdMLmxYsS8ynGAsCQAUVXkVyGyS+UibsRnvgHkMvJIvCsw==}
+  start-server-and-test@2.0.9:
+    resolution: {integrity: sha512-DDceIvc4wdpr+z3Aqkot2QMho8TcUBh5qH0wEHDpEexBTzlheOcmh53d3dExABY4J5C7qS2UbSXqRWLtxpbWIQ==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -17473,9 +17473,9 @@ snapshots:
 
   axe-core@4.10.2: {}
 
-  axios@1.7.9(debug@4.3.7):
+  axios@1.7.9(debug@4.4.0):
     dependencies:
-      follow-redirects: 1.15.9(debug@4.3.7)
+      follow-redirects: 1.15.9(debug@4.4.0)
       form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -18904,9 +18904,9 @@ snapshots:
 
   flatted@3.3.2: {}
 
-  follow-redirects@1.15.9(debug@4.3.7):
+  follow-redirects@1.15.9(debug@4.4.0):
     optionalDependencies:
-      debug: 4.3.7
+      debug: 4.4.0
 
   for-each@0.3.3:
     dependencies:
@@ -21060,7 +21060,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.2
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.7.9(debug@4.3.7)
+      axios: 1.7.9(debug@4.4.0)
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -22577,16 +22577,16 @@ snapshots:
 
   standard-as-callback@2.1.0: {}
 
-  start-server-and-test@2.0.8:
+  start-server-and-test@2.0.9:
     dependencies:
       arg: 5.0.2
       bluebird: 3.7.2
       check-more-types: 2.24.0
-      debug: 4.3.7
+      debug: 4.4.0
       execa: 5.1.1
       lazy-ass: 1.6.0
       ps-tree: 1.2.0
-      wait-on: 8.0.1(debug@4.3.7)
+      wait-on: 8.0.1(debug@4.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -23459,9 +23459,9 @@ snapshots:
     dependencies:
       xml-name-validator: 5.0.0
 
-  wait-on@8.0.1(debug@4.3.7):
+  wait-on@8.0.1(debug@4.4.0):
     dependencies:
-      axios: 1.7.9(debug@4.3.7)
+      axios: 1.7.9(debug@4.4.0)
       joi: 17.13.3
       lodash: 4.17.21
       minimist: 1.2.8
