@@ -449,18 +449,12 @@ importers:
       '@chia/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@chia/auth':
-        specifier: workspace:*
-        version: link:../../packages/auth
       '@chia/cache':
         specifier: workspace:*
         version: link:../../packages/cache
       '@chia/contents':
         specifier: workspace:*
         version: link:../../packages/contents
-      '@chia/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@chia/meta':
         specifier: workspace:*
         version: link:../../packages/meta

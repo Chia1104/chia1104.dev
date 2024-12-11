@@ -1,57 +1,77 @@
 import { cache } from "react";
 
+import { unstable_cache as nextCache } from "next/cache";
 import "server-only";
 
-import { getDB, eq, schema } from "@chia/db";
-import { getInfiniteFeedsByUserId, getFeedBySlug } from "@chia/db/repos/feeds";
-import { getAdminId } from "@chia/utils";
+import { api } from "@/trpc/rsc";
 
-const database = getDB();
+export const FEEDS_CACHE_TAGS = {
+  getPosts: (limit: number) => [
+    "ADMIN_FEEDS_ISR",
+    "getPosts",
+    limit.toString(),
+  ],
+  getPostBySlug: (slug: string) => ["ADMIN_FEEDS_ISR", "getPostBySlug", slug],
+  getNotes: (limit: number) => [
+    "ADMIN_FEEDS_ISR",
+    "getNotes",
+    limit.toString(),
+  ],
+  getNoteBySlug: (slug: string) => ["ADMIN_FEEDS_ISR", "getNoteBySlug", slug],
+};
 
-const adminId = getAdminId();
+export const getPosts = (limit = 10) =>
+  cache(
+    nextCache(
+      async () =>
+        await api.feeds.getFeedsWithMetaByAdminId({
+          limit: limit.toString(),
+          type: "post",
+        }),
+      FEEDS_CACHE_TAGS.getPosts(limit),
+      {
+        revalidate: 60,
+        tags: FEEDS_CACHE_TAGS.getPosts(limit),
+      }
+    )
+  )();
 
-/**
- * @deprecated use fetch instead
- */
-export const getPosts = cache(
-  async (limit = 10) =>
-    await getInfiniteFeedsByUserId(database, {
-      userId: adminId,
-      limit,
-      orderBy: "id",
-      sortOrder: "desc",
-      type: "post",
-      whereAnd: [eq(schema.feeds.published, true)],
-      withContent: false,
-    })
-);
+export const getPostBySlug = (slug: string) =>
+  cache(
+    nextCache(
+      async () => await api.feeds.getFeedBySlug({ slug }),
+      FEEDS_CACHE_TAGS.getPostBySlug(slug),
+      {
+        revalidate: 60,
+        tags: FEEDS_CACHE_TAGS.getPostBySlug(slug),
+      }
+    )
+  )();
 
-/**
- * @deprecated use fetch instead
- */
-export const getPostBySlug = cache(
-  async (slug: string) => await getFeedBySlug(database, slug)
-);
+export const getNotes = (limit = 10) =>
+  cache(
+    nextCache(
+      async () =>
+        await api.feeds.getFeedsWithMetaByAdminId({
+          limit: limit.toString(),
+          type: "note",
+        }),
+      FEEDS_CACHE_TAGS.getNotes(limit),
+      {
+        revalidate: 60,
+        tags: FEEDS_CACHE_TAGS.getNotes(limit),
+      }
+    )
+  )();
 
-/**
- * @deprecated use fetch instead
- */
-export const getNotes = cache(
-  async (limit = 10) =>
-    await getInfiniteFeedsByUserId(database, {
-      userId: adminId,
-      limit,
-      orderBy: "id",
-      sortOrder: "desc",
-      type: "note",
-      whereAnd: [eq(schema.feeds.published, true)],
-      withContent: false,
-    })
-);
-
-/**
- * @deprecated use fetch instead
- */
-export const getNoteBySlug = cache(
-  async (slug: string) => await getFeedBySlug(database, slug)
-);
+export const getNoteBySlug = (slug: string) =>
+  cache(
+    nextCache(
+      async () => await api.feeds.getFeedBySlug({ slug }),
+      FEEDS_CACHE_TAGS.getNoteBySlug(slug),
+      {
+        revalidate: 60,
+        tags: FEEDS_CACHE_TAGS.getNoteBySlug(slug),
+      }
+    )
+  )();
