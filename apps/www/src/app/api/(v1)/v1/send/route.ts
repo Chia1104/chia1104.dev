@@ -1,5 +1,5 @@
 import { captureException } from "@sentry/nextjs";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { Resend } from "resend";
 
 import { createUpstash } from "@chia/cache/create-upstash";
@@ -121,7 +121,9 @@ export const POST = withRateLimiter(
     client: createUpstash(),
     onError: (error) => {
       console.error(error);
-      captureException(error);
+      after(() => {
+        captureException(error);
+      });
       return NextResponse.json(errorGenerator(500), {
         status: 500,
       });
