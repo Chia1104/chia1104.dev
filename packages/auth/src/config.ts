@@ -1,4 +1,5 @@
 import type { DefaultSession } from "@auth/core/types";
+import dayjs from "dayjs";
 import type { Session as NextAuthSession } from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
@@ -95,7 +96,7 @@ export const validateToken = async (
         user: {
           ...session.user,
         },
-        expires: session.session.expires.toISOString(),
+        expires: dayjs(session.session.expires).toISOString(),
       }
     : null;
 };

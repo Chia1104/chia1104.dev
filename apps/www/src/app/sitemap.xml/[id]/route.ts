@@ -73,7 +73,7 @@ export const GET = async (
             baseUrl: WWW_BASE_URL,
             useBaseUrl: true,
           })}/${feed.type}s/${feed.slug}`,
-          lastModified: feed.updatedAt.toISOString(),
+          lastModified: dayjs(feed.updatedAt).toISOString(),
           priority: 0.8,
         }) satisfies MetadataRoute.Sitemap[0]
     );
