@@ -27,6 +27,9 @@ export const getPosts = (limit = 10) =>
         await api.feeds.getFeedsWithMetaByAdminId({
           limit: limit.toString(),
           type: "post",
+          published: "true",
+          orderBy: "id",
+          sortOrder: "desc",
         }),
       FEEDS_CACHE_TAGS.getPosts(limit),
       {
@@ -55,6 +58,9 @@ export const getNotes = (limit = 10) =>
         await api.feeds.getFeedsWithMetaByAdminId({
           limit: limit.toString(),
           type: "note",
+          published: "true",
+          orderBy: "id",
+          sortOrder: "desc",
         }),
       FEEDS_CACHE_TAGS.getNotes(limit),
       {
