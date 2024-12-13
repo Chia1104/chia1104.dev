@@ -35,7 +35,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: !process.env.VERCEL ? "standalone" : undefined,
+  output: "standalone",
   reactStrictMode: true,
   transpilePackages: ["@chia/*"],
   experimental: {
