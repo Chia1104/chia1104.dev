@@ -209,8 +209,8 @@ export const Drafts = () => {
               key={i}
               feed={{
                 ...draft.state.draft,
-                createdAt: dayjs(draft.state.draft.createdAt).toDate(),
-                updatedAt: dayjs(draft.state.draft.updatedAt).toDate(),
+                createdAt: dayjs(draft.state.draft.createdAt).toISOString(),
+                updatedAt: dayjs(draft.state.draft.updatedAt).toISOString(),
               }}
               token={draft.state.token}
               onRemove={() => {
