@@ -24,7 +24,7 @@ import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
 import { splitString } from "./utils";
 
-const bootstrap = <TContext extends HonoContext>(
+const bootstrap = async <TContext extends HonoContext>(
   app: Hono<TContext>,
   port: number
 ) => {
@@ -112,16 +112,15 @@ const bootstrap = <TContext extends HonoContext>(
       })
     );
 
+  const authConfig = await getConfig(undefined, {
+    basePath: "/api/v1/auth",
+  });
   /**
    * Auth.js middleware
    */
   app.use(
     "*",
-    initAuthConfig(() =>
-      getConfig(undefined, {
-        basePath: "/api/v1/auth",
-      })
-    )
+    initAuthConfig(() => authConfig)
   );
   /**
    * Routes
