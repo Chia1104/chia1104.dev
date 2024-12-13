@@ -12,52 +12,52 @@ import { DocsBody } from "fumadocs-ui/page";
 import { ContentType } from "@chia/db/types";
 import { cn } from "@chia/ui";
 
-import { ContentContext, useContent } from "./content.context";
-import type { ContentProps, BaseProps, BasePropsWithType } from "./types";
+import type { ContentProps } from "./types";
 
 dayjs.extend(tz);
 
+/**
+ * @deprecated remove context
+ */
 export const ContentProvider = ({
   children,
-  ...props
 }: ContentProps & { children?: ReactNode }) => {
-  return <ContentContext value={props}>{children}</ContentContext>;
+  return children;
 };
 
-export const MDXInlineTOC = () => {
-  const content = useContent();
-  if (content.type === ContentType.Mdx) {
-    return <InlineTOC items={content.toc} />;
+export const MDXInlineTOC = (props: ContentProps) => {
+  if (props.type === ContentType.Mdx) {
+    return <InlineTOC items={props.toc} />;
   }
   return null;
 };
 
-export const MDXBody = (props: { className?: string }) => {
-  const content = useContent();
-  if (content.type === ContentType.Mdx) {
+export const MDXBody = (props: { className?: string } & ContentProps) => {
+  if (props.type === ContentType.Mdx) {
     return (
       <DocsBody
         className={cn(
           props.className,
           "prose dark:prose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]"
         )}>
-        {content.content}
+        {props.content}
       </DocsBody>
     );
   }
   return null;
 };
 
-export const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
-  containerRef: Ref<TContainer>;
-}) => {
-  const content = useContent();
-  if (content.type === ContentType.Mdx) {
+export const MDXTableOfContents = <TContainer extends HTMLElement>(
+  props: {
+    containerRef: Ref<TContainer>;
+  } & ContentProps
+) => {
+  if (props.type === ContentType.Mdx) {
     return (
-      <Base.AnchorProvider toc={content.toc} single={false}>
+      <Base.AnchorProvider toc={props.toc} single={false}>
         <Base.ScrollProvider
           containerRef={props.containerRef as RefObject<TContainer>}>
-          {content.toc.map((item) => (
+          {props.toc.map((item) => (
             <Base.TOCItem
               key={item.url}
               href={item.url}
@@ -75,18 +75,18 @@ export const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
   return null;
 };
 
-export const MdxContent = (props: BaseProps) => {
+export const MdxContent = (props: ContentProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   return (
     <div className="w-full">
       <div className="[&>*]:w-full mb-14 w-full">
-        <MDXInlineTOC />
+        <MDXInlineTOC {...props} />
       </div>
       <div className="flex w-full relative" ref={containerRef}>
-        <MDXBody className={props.className} />
+        <MDXBody {...props} className={props.className} />
         <div className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit gap-2 flex-col pl-5">
           <span>On this page</span>
-          <MDXTableOfContents containerRef={containerRef} />
+          <MDXTableOfContents {...props} containerRef={containerRef} />
           <hr className="border-gray-500 dark:border-gray-400" />
           {/* TODO: i18n */}
           {props.updatedAt ? (
@@ -104,8 +104,8 @@ export const MdxContent = (props: BaseProps) => {
   );
 };
 
-export const Content = ({ type, ...props }: BasePropsWithType) => {
-  switch (type) {
+export const Content = (props: ContentProps) => {
+  switch (props.type) {
     case "mdx": {
       return <MdxContent {...props} />;
     }

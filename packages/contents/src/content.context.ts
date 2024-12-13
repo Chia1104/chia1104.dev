@@ -4,8 +4,14 @@ import { createContext, use } from "react";
 
 import type { ContentProps } from "./types";
 
+/**
+ * @deprecated remove context
+ */
 export const ContentContext = createContext<ContentProps>({} as ContentProps);
 
+/**
+ * @deprecated remove context
+ */
 export const useContent = () => {
   const context = use(ContentContext);
   if (!context) {
