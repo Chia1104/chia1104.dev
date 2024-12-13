@@ -1,5 +1,3 @@
-import { Suspense } from "react";
-
 import dayjs from "dayjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -9,7 +7,6 @@ import { Content, ContentProvider } from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
 import { Image } from "@chia/ui";
 
-import { ContentSkeletons } from "@/app/(blog)/posts/[slug]/loading";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 
 import WrittenBy from "../../_components/written-by";
@@ -104,16 +101,9 @@ const PostDetailPage = async ({
             {dayjs(post.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <Suspense
-          fallback={
-            <div className="flex flex-col items-center">
-              <ContentSkeletons />
-            </div>
-          }>
-          <ContentProvider {...props}>
-            <Content updatedAt={post.updatedAt} {...props} />
-          </ContentProvider>
-        </Suspense>
+        <ContentProvider {...props}>
+          <Content updatedAt={post.updatedAt} {...props} />
+        </ContentProvider>
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"
