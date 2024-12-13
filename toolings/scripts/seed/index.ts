@@ -1,7 +1,8 @@
 import { faker } from "@faker-js/faker";
 
-import { schema, getDB } from "@chia/db";
+import { schema } from "@chia/db";
 import type { DB } from "@chia/db";
+import { connectDatabase } from "@chia/db/client";
 import { getAdminId } from "@chia/utils";
 
 const withReplicas = (
@@ -12,7 +13,7 @@ const withReplicas = (
 ) => {
   const env = options?.env ?? process.env.NODE_ENV;
   return async () => {
-    await fun(getDB(env), getAdminId(env), env);
+    await fun(await connectDatabase(env), getAdminId(env), env);
   };
 };
 

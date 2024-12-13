@@ -6,7 +6,12 @@ import { getConfig } from "./config";
 
 export type { Session } from "next-auth";
 
-const { handlers, auth: defaultAuth, signIn, signOut } = NextAuth(getConfig());
+const {
+  handlers,
+  auth: defaultAuth,
+  signIn,
+  signOut,
+} = NextAuth(() => getConfig());
 
 const auth = cache(defaultAuth);
 

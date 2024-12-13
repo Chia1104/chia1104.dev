@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
+import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
 import { eq } from "@chia/db";
 import { schema } from "@chia/db";
 import { getInfiniteFeedsByUserId, getFeedBySlug } from "@chia/db/repos/feeds";
@@ -8,7 +9,6 @@ import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId } from "@chia/utils";
 
 import { errorResponse } from "@/utils/error.util";
-import { getFeedsWithMetaSchema } from "@/validators/feeds.validator";
 
 const api = new Hono<HonoContext>();
 const adminId = getAdminId();

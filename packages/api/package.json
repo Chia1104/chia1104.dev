@@ -52,6 +52,14 @@
     "./trpc/validators": {
       "types": "./trpc/validators.ts",
       "default": "./trpc/validators.ts"
+    },
+    "./services/validators": {
+      "types": "./services/validators.ts",
+      "default": "./services/validators.ts"
+    },
+    "./services/feeds": {
+      "types": "./services/feeds/index.ts",
+      "default": "./services/feeds/index.ts"
     }
   },
   "scripts": {

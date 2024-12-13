@@ -1,9 +1,10 @@
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
+import { getMeta } from "@chia/api/services/feeds";
 import { getBaseUrl, WWW_BASE_URL, errorGenerator } from "@chia/utils";
 
-import { api } from "@/trpc/rsc";
+import { env } from "@/env";
 
 import { URLS_PER_SITEMAP } from "./utils";
 
@@ -25,7 +26,7 @@ function buildSitemapIndex(sitemaps: string[]) {
 
 export const GET = async () => {
   try {
-    const { total } = await api.feeds.getMeta();
+    const { total } = await getMeta(env.INTERNAL_REQUEST_SECRET, null);
 
     const amountOfSitemapFiles = Math.ceil(total / URLS_PER_SITEMAP);
 

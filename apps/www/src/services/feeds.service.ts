@@ -1,22 +1,12 @@
-import { cache } from "react";
-
 import "server-only";
 
-import type { ExternalRouterOutputs } from "@chia/api";
-import { serviceRequest } from "@chia/utils";
+import {
+  getFeedBySlug,
+  getFeedsWithMetaByAdminId,
+} from "@chia/api/services/feeds";
 
 import { env } from "@/env";
 
-// import { api } from "@/trpc/rsc";
-
-type FeedsWithMeta =
-  ExternalRouterOutputs["feeds"]["getFeedsWithMetaByAdminId"];
-
-type Feed = ExternalRouterOutputs["feeds"]["getFeedBySlug"];
-
-/**
- * @deprecated
- */
 export const FEEDS_CACHE_TAGS = {
   getPosts: (limit: number) => [
     "ADMIN_FEEDS_ISR",
@@ -32,74 +22,68 @@ export const FEEDS_CACHE_TAGS = {
   getNoteBySlug: (slug: string) => ["ADMIN_FEEDS_ISR", "getNoteBySlug", slug],
 };
 
-export const getPosts = cache(async (limit = 10) => {
-  // return await api.feeds.getFeedsWithMetaByAdminId({
-  //   limit: limit.toString(),
-  //   type: "post",
-  //   published: "true",
-  //   orderBy: "id",
-  //   sortOrder: "desc",
-  // })
-  return serviceRequest({
-    isInternal: true,
-    internal_requestSecret: env.INTERNAL_REQUEST_SECRET,
-  })
-    .get(`admin/public/feeds`, {
-      searchParams: {
-        limit: limit.toString(),
-        type: "post",
-        published: "true",
-        orderBy: "id",
-        sortOrder: "desc",
-      },
-      next: { revalidate: 60 },
-    })
-    .json<FeedsWithMeta>();
-});
+export const getPosts = async (limit = 10) => {
+  return await getFeedsWithMetaByAdminId(
+    env.INTERNAL_REQUEST_SECRET,
+    {
+      limit,
+      type: "post",
+      published: "true",
+      orderBy: "id",
+      sortOrder: "desc",
+      withContent: "false",
+    }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getPosts(limit),
+    //   },
+    // }
+  );
+};
 
-export const getPostBySlug = cache(async (slug: string) => {
-  // return await api.feeds.getFeedBySlug({ slug })
-  return serviceRequest({
-    isInternal: true,
-    internal_requestSecret: env.INTERNAL_REQUEST_SECRET,
-    next: { revalidate: 60 },
-  })
-    .get(`admin/public/feeds/${slug}`)
-    .json<Feed>();
-});
+export const getPostBySlug = async (slug: string) => {
+  return await getFeedBySlug(
+    env.INTERNAL_REQUEST_SECRET,
+    { slug }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getPostBySlug(slug),
+    //   },
+    // }
+  );
+};
 
-export const getNotes = cache(async (limit = 10) => {
-  // return await api.feeds.getFeedsWithMetaByAdminId({
-  //   limit: limit.toString(),
-  //   type: "note",
-  //   published: "true",
-  //   orderBy: "id",
-  //   sortOrder: "desc",
-  // })
-  return serviceRequest({
-    isInternal: true,
-    internal_requestSecret: env.INTERNAL_REQUEST_SECRET,
-  })
-    .get(`admin/public/feeds`, {
-      searchParams: {
-        limit: limit.toString(),
-        type: "note",
-        published: "true",
-        orderBy: "id",
-        sortOrder: "desc",
-      },
-      next: { revalidate: 60 },
-    })
-    .json<FeedsWithMeta>();
-});
+export const getNotes = async (limit = 10) => {
+  return await getFeedsWithMetaByAdminId(
+    env.INTERNAL_REQUEST_SECRET,
+    {
+      limit,
+      type: "note",
+      published: "true",
+      orderBy: "id",
+      sortOrder: "desc",
+      withContent: "false",
+    }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getNotes(limit),
+    //   },
+    // }
+  );
+};
 
-export const getNoteBySlug = cache(async (slug: string) => {
-  // return await api.feeds.getFeedBySlug({ slug })
-  return serviceRequest({
-    isInternal: true,
-    internal_requestSecret: env.INTERNAL_REQUEST_SECRET,
-    next: { revalidate: 60 },
-  })
-    .get(`admin/public/feeds/${slug}`)
-    .json<Feed>();
-});
+export const getNoteBySlug = async (slug: string) => {
+  return await getFeedBySlug(
+    env.INTERNAL_REQUEST_SECRET,
+    { slug }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getNoteBySlug(slug),
+    //   },
+    // }
+  );
+};

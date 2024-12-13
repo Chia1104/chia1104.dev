@@ -12,7 +12,7 @@ import { adapter } from "@chia/auth-core/adapter";
 import { env } from "@chia/auth-core/env";
 import { getBaseConfig } from "@chia/auth-core/utils";
 import { createRedis } from "@chia/cache";
-import { getDB } from "@chia/db";
+import { connectDatabase } from "@chia/db/client";
 import { AUTH_EMAIL } from "@chia/utils";
 
 import { sendVerificationRequest } from "./authSendRequest";
@@ -43,12 +43,13 @@ declare module "next-auth" {
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
-const internal_adapter = adapter({
-  db: getDB(),
-  redis: createRedis(),
-});
+const internal_adapter = (async () =>
+  adapter({
+    db: await connectDatabase(),
+    redis: createRedis(),
+  }))();
 
-export const getConfig = (req?: NextRequest) => {
+export const getConfig = async (req?: NextRequest) => {
   return {
     ...(getBaseConfig({
       req,
@@ -57,7 +58,7 @@ export const getConfig = (req?: NextRequest) => {
         AUTH_COOKIE_DOMAIN: env.AUTH_COOKIE_DOMAIN,
       },
     }) as NextAuthConfig),
-    adapter: internal_adapter,
+    adapter: await internal_adapter,
     pages: {
       signIn: "/auth/signin",
       verifyRequest: "/auth/verify-request",
@@ -90,7 +91,9 @@ export const validateToken = async (
   token: string
 ): Promise<NextAuthSession | null> => {
   const sessionToken = token.slice("Bearer ".length);
-  const session = await internal_adapter.getSessionAndUser?.(sessionToken);
+  const session = await (
+    await internal_adapter
+  ).getSessionAndUser?.(sessionToken);
   return session
     ? {
         user: {
@@ -102,5 +105,5 @@ export const validateToken = async (
 };
 
 export const invalidateSessionToken = async (token: string) => {
-  await internal_adapter.deleteSession?.(token);
+  await (await internal_adapter).deleteSession?.(token);
 };
