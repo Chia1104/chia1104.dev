@@ -4,7 +4,7 @@ import Github from "@auth/core/providers/github";
 import Google from "@auth/core/providers/google";
 
 import { createRedis } from "@chia/cache";
-import { getDB } from "@chia/db";
+import { connectDatabase } from "@chia/db/client";
 
 import { adapter } from "./adapter";
 import { env } from "./env";
@@ -26,7 +26,7 @@ const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
 export const name = "auth-core";
 
-export const getConfig = (
+export const getConfig = async (
   req?: Request,
   config?: Partial<Omit<AuthConfig, "raw">>
 ) => {
@@ -40,7 +40,7 @@ export const getConfig = (
       },
     }),
     adapter: adapter({
-      db: getDB(),
+      db: await connectDatabase(),
       redis: createRedis(),
     }),
     providers: [
@@ -64,5 +64,5 @@ export const getConfig = (
 export const Auth = (
   request: Request,
   config?: Partial<Omit<AuthConfig, "raw">>
-) => InternalAuth(request, getConfig(request, config));
+) => (async () => InternalAuth(request, await getConfig(request, config)))();
 export type { Session } from "@auth/core/types";

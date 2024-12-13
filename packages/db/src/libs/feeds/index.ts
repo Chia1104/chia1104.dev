@@ -19,22 +19,38 @@ import type {
   InsertFeedContentDTO,
 } from "../validator/feeds";
 
-export const getFeedBySlug = withDTO((db, slug: string) => {
-  return db.query.feeds.findFirst({
+export const getFeedBySlug = withDTO(async (db, slug: string) => {
+  const feed = await db.query.feeds.findFirst({
     where: (feeds, { eq }) => eq(feeds.slug, slug),
     with: {
       content: true,
     },
   });
+  if (!feed) {
+    return null;
+  }
+  return {
+    ...feed,
+    createdAt: dayjs(feed.createdAt).toISOString(),
+    updatedAt: dayjs(feed.updatedAt).toISOString(),
+  };
 });
 
-export const getFeedById = withDTO((db, feedId: number) => {
-  return db.query.feeds.findFirst({
+export const getFeedById = withDTO(async (db, feedId: number) => {
+  const feed = await db.query.feeds.findFirst({
     where: (feeds, { eq }) => eq(feeds.id, feedId),
     with: {
       content: true,
     },
   });
+  if (!feed) {
+    return null;
+  }
+  return {
+    ...feed,
+    createdAt: dayjs(feed.createdAt).toISOString(),
+    updatedAt: dayjs(feed.updatedAt).toISOString(),
+  };
 });
 
 export const getInfiniteFeeds = withDTO(
@@ -90,8 +106,13 @@ export const getInfiniteFeeds = withDTO(
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
           : nextItem?.[orderBy];
     }
+    const serializedItems = items.map((item) => ({
+      ...item,
+      createdAt: dayjs(item.createdAt).toISOString(),
+      updatedAt: dayjs(item.updatedAt).toISOString(),
+    }));
     return {
-      items,
+      items: serializedItems,
       nextCursor,
     };
   }
@@ -157,8 +178,13 @@ export const getInfiniteFeedsByUserId = withDTO(
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
           : nextItem?.[orderBy];
     }
+    const serializedItems = items.map((item) => ({
+      ...item,
+      createdAt: dayjs(item.createdAt).toISOString(),
+      updatedAt: dayjs(item.updatedAt).toISOString(),
+    }));
     return {
-      items,
+      items: serializedItems,
       nextCursor,
     };
   }

@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { getFeedsWithMetaByAdminId } from "@chia/api/services/feeds";
 import {
   getBaseUrl,
   WWW_BASE_URL,
@@ -12,8 +13,8 @@ import {
   numericStringSchema,
 } from "@chia/utils";
 
+import { env } from "@/env";
 import routes from "@/shared/routes";
-import { api } from "@/trpc/rsc";
 
 export const dynamic = "force-dynamic";
 
@@ -43,8 +44,8 @@ export const GET = async (
     const storedParams = await params;
     numericStringSchema.parse(storedParams.id);
 
-    const feeds = await api.feeds.getFeedsWithMetaByAdminId({
-      limit: "1000",
+    const feeds = await getFeedsWithMetaByAdminId(env.INTERNAL_REQUEST_SECRET, {
+      limit: 1000,
       type: "all",
       orderBy: "updatedAt",
       sortOrder: "desc",
