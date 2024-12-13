@@ -1,3 +1,5 @@
+import { captureException } from "@sentry/nextjs";
+import { HTTPError } from "ky";
 import "server-only";
 
 import {
@@ -23,67 +25,57 @@ export const FEEDS_CACHE_TAGS = {
 };
 
 export const getPosts = async (limit = 10) => {
-  return await getFeedsWithMetaByAdminId(
-    env.INTERNAL_REQUEST_SECRET,
-    {
+  try {
+    return await getFeedsWithMetaByAdminId(env.INTERNAL_REQUEST_SECRET, {
       limit,
       type: "post",
       published: "true",
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    }
-    // {
-    //   next: {
-    //     revalidate: 60,
-    //     tags: FEEDS_CACHE_TAGS.getPosts(limit),
-    //   },
-    // }
-  );
+    });
+  } catch (error) {
+    captureException(error);
+    throw error;
+  }
 };
 
 export const getPostBySlug = async (slug: string) => {
-  return await getFeedBySlug(
-    env.INTERNAL_REQUEST_SECRET,
-    { slug }
-    // {
-    //   next: {
-    //     revalidate: 60,
-    //     tags: FEEDS_CACHE_TAGS.getPostBySlug(slug),
-    //   },
-    // }
-  );
+  try {
+    return await getFeedBySlug(env.INTERNAL_REQUEST_SECRET, { slug });
+  } catch (error) {
+    if (error instanceof HTTPError && error.response.status === 404) {
+      return null;
+    }
+    captureException(error);
+    throw error;
+  }
 };
 
 export const getNotes = async (limit = 10) => {
-  return await getFeedsWithMetaByAdminId(
-    env.INTERNAL_REQUEST_SECRET,
-    {
+  try {
+    return await getFeedsWithMetaByAdminId(env.INTERNAL_REQUEST_SECRET, {
       limit,
       type: "note",
       published: "true",
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    }
-    // {
-    //   next: {
-    //     revalidate: 60,
-    //     tags: FEEDS_CACHE_TAGS.getNotes(limit),
-    //   },
-    // }
-  );
+    });
+  } catch (error) {
+    captureException(error);
+    throw error;
+  }
 };
 
 export const getNoteBySlug = async (slug: string) => {
-  return await getFeedBySlug(
-    env.INTERNAL_REQUEST_SECRET,
-    { slug }
-    // {
-    //   next: {
-    //     revalidate: 60,
-    //     tags: FEEDS_CACHE_TAGS.getNoteBySlug(slug),
-    //   },
-    // }
-  );
+  try {
+    return await getFeedBySlug(env.INTERNAL_REQUEST_SECRET, { slug });
+  } catch (error) {
+    if (error instanceof HTTPError && error.response.status === 404) {
+      return null;
+    }
+    captureException(error);
+    throw error;
+  }
 };
