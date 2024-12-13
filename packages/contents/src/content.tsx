@@ -20,7 +20,7 @@ dayjs.extend(tz);
 export const ContentProvider = ({
   children,
   ...props
-}: ContentProps & { children: ReactNode }) => {
+}: ContentProps & { children?: ReactNode }) => {
   return <ContentContext value={props}>{children}</ContentContext>;
 };
 
