@@ -1,5 +1,3 @@
-import { cache } from "react";
-
 import "server-only";
 
 import {
@@ -24,7 +22,7 @@ export const FEEDS_CACHE_TAGS = {
   getNoteBySlug: (slug: string) => ["ADMIN_FEEDS_ISR", "getNoteBySlug", slug],
 };
 
-export const getPosts = cache(async (limit = 10) => {
+export const getPosts = async (limit = 10) => {
   return await getFeedsWithMetaByAdminId(
     env.INTERNAL_REQUEST_SECRET,
     {
@@ -34,30 +32,30 @@ export const getPosts = cache(async (limit = 10) => {
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    },
-    {
-      next: {
-        revalidate: 60,
-        tags: FEEDS_CACHE_TAGS.getPosts(limit),
-      },
     }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getPosts(limit),
+    //   },
+    // }
   );
-});
+};
 
-export const getPostBySlug = cache(async (slug: string) => {
+export const getPostBySlug = async (slug: string) => {
   return await getFeedBySlug(
     env.INTERNAL_REQUEST_SECRET,
-    { slug },
-    {
-      next: {
-        revalidate: 60,
-        tags: FEEDS_CACHE_TAGS.getPostBySlug(slug),
-      },
-    }
+    { slug }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getPostBySlug(slug),
+    //   },
+    // }
   );
-});
+};
 
-export const getNotes = cache(async (limit = 10) => {
+export const getNotes = async (limit = 10) => {
   return await getFeedsWithMetaByAdminId(
     env.INTERNAL_REQUEST_SECRET,
     {
@@ -67,25 +65,25 @@ export const getNotes = cache(async (limit = 10) => {
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    },
-    {
-      next: {
-        revalidate: 60,
-        tags: FEEDS_CACHE_TAGS.getNotes(limit),
-      },
     }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getNotes(limit),
+    //   },
+    // }
   );
-});
+};
 
-export const getNoteBySlug = cache(async (slug: string) => {
+export const getNoteBySlug = async (slug: string) => {
   return await getFeedBySlug(
     env.INTERNAL_REQUEST_SECRET,
-    { slug },
-    {
-      next: {
-        revalidate: 60,
-        tags: FEEDS_CACHE_TAGS.getNoteBySlug(slug),
-      },
-    }
+    { slug }
+    // {
+    //   next: {
+    //     revalidate: 60,
+    //     tags: FEEDS_CACHE_TAGS.getNoteBySlug(slug),
+    //   },
+    // }
   );
-});
+};
