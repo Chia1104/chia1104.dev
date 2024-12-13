@@ -297,8 +297,8 @@ importers:
         specifier: workspace:*
         version: link:../../toolings/tsconfig
       '@million/lint':
-        specifier: 1.0.13
-        version: 1.0.13(bufferutil@4.0.8)(rollup@4.28.1)
+        specifier: 1.0.14
+        version: 1.0.14(bufferutil@4.0.8)(rollup@4.28.1)
       '@next/bundle-analyzer':
         specifier: 15.1.0
         version: 15.1.0(bufferutil@4.0.8)
@@ -607,8 +607,8 @@ importers:
         specifier: workspace:*
         version: link:../../toolings/tsconfig
       '@million/lint':
-        specifier: 1.0.13
-        version: 1.0.13(bufferutil@4.0.8)(rollup@3.29.5)
+        specifier: 1.0.14
+        version: 1.0.14(bufferutil@4.0.8)(rollup@3.29.5)
       '@next/bundle-analyzer':
         specifier: 15.1.0
         version: 15.1.0(bufferutil@4.0.8)
@@ -2851,8 +2851,8 @@ packages:
     resolution: {integrity: sha512-xZvj4AEHc5hyn8RCiLl9dYNqggj2fa0lgNvUkCiJyhRJPNE2hZrUa/Ka0Weu82VpBaO//zujG0YErk7osjNXPA==}
     hasBin: true
 
-  '@million/lint@1.0.13':
-    resolution: {integrity: sha512-jYQMz0GK5FzfwsQZDxs58V2GeUPqma9af7vkLVrdKHzXTpV1cVXxIjSL8+rvDM8iuzVA2BEtunZ0k3bIYAmvIA==}
+  '@million/lint@1.0.14':
+    resolution: {integrity: sha512-u6/kglVwZRu5+GMmtkNlGLqJVkgTl0TtM+hLa9rBg7pldx+5NG5bk45NvL37uZmAr2Xfa1C6qHb7GrFwfP372g==}
     hasBin: true
 
   '@monaco-editor/loader@1.4.0':
@@ -12051,7 +12051,7 @@ snapshots:
       '@babel/parser': 7.26.3
       '@babel/template': 7.25.9
       '@babel/traverse': 7.26.4
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
       convert-source-map: 2.0.0
       debug: 4.4.0
       gensync: 1.0.0-beta.2
@@ -12120,7 +12120,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/parser': 7.26.3
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@babel/traverse@7.26.4':
     dependencies:
@@ -13110,7 +13110,7 @@ snapshots:
       recast: 0.23.9
       xycolors: 0.1.2
 
-  '@million/lint@1.0.13(bufferutil@4.0.8)(rollup@3.29.5)':
+  '@million/lint@1.0.14(bufferutil@4.0.8)(rollup@3.29.5)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
       '@babel/core': 7.26.0
@@ -13147,7 +13147,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@million/lint@1.0.13(bufferutil@4.0.8)(rollup@4.28.1)':
+  '@million/lint@1.0.14(bufferutil@4.0.8)(rollup@4.28.1)':
     dependencies:
       '@axiomhq/js': 1.0.0-rc.3
       '@babel/core': 7.26.0
