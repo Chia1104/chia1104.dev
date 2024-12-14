@@ -178,6 +178,9 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@fumadocs/mdx-remote':
+        specifier: ^0.2.4
+        version: 0.2.4(acorn@8.14.0)(fumadocs-core@14.6.1(@types/react@19.0.0)(next@15.1.0(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(next@15.1.0(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.9.1(react-hook-form@7.54.1(react@19.0.0))
@@ -464,6 +467,9 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@fumadocs/mdx-remote':
+        specifier: ^0.2.4
+        version: 0.2.4(acorn@8.14.0)(fumadocs-core@14.6.1(@types/react@19.0.0)(next@15.1.0(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(next@15.1.0(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       '@giscus/react':
         specifier: ^3.0.0
         version: 3.0.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)

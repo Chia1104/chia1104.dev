@@ -34,6 +34,7 @@
     "@chia/meta": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
+    "@fumadocs/mdx-remote": "^0.2.4",
     "@giscus/react": "^3.0.0",
     "@hookform/resolvers": "^3.9.1",
     "@next/third-parties": "^15.1.0",

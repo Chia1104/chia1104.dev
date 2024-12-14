@@ -1,31 +1,31 @@
-import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
-import type { MDXComponents } from "mdx/types";
+import type { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
 
 import type { Content } from "@chia/db/schema";
 import { ContentType } from "@chia/db/types";
 
-import { FumadocsComponents, V1MDXComponents } from "./mdx-components";
 import type { ContentProps } from "./types";
 
 type CompileResult = ReturnType<typeof _compileMDX>;
 
-export const compileMDX: (
-  content: string,
-  components?: MDXComponents
-) => CompileResult = (content: string, components?: MDXComponents) =>
-  _compileMDX({
-    source: content,
-    components: {
-      ...FumadocsComponents,
-      ...V1MDXComponents,
-      ...components,
-    },
-  });
+// export const compileMDX: (
+//   content: string,
+//   components?: MDXComponents
+// ) => CompileResult = (content: string, components?: MDXComponents) =>
+//   _compileMDX({
+//     source: content,
+//     components: {
+//       ...FumadocsComponents,
+//       ...V1MDXComponents,
+//       ...components,
+//     },
+//   });
 
 export const getContentProps = async ({
   contentType,
   content,
+  compileResult,
 }: {
+  compileResult: CompileResult;
   contentType: ContentType;
   content: Partial<
     Pick<Content, "content" | "source" | "unstable_serializedSource">
@@ -33,7 +33,7 @@ export const getContentProps = async ({
 }) => {
   switch (contentType) {
     case ContentType.Mdx: {
-      const compiled = await compileMDX(content.content ?? "");
+      const compiled = await compileResult;
       return {
         type: ContentType.Mdx,
         toc: compiled.toc,

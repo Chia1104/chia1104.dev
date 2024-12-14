@@ -17,6 +17,7 @@
     "tests/*"
   ],
   "scripts": {
+    "postinstall": "manypkg check",
     "prepare": "husky",
     "build": "turbo run build",
     "build:www": "turbo run build --filter www...",
