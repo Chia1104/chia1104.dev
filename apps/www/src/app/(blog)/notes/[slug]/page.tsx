@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
+import FeedContent from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
 import { Image } from "@chia/ui";
 
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
 
-import FeedContent from "../../_components/feed-content";
 import WrittenBy from "../../_components/written-by";
 
 export const generateStaticParams = async () => {
@@ -101,7 +101,7 @@ const PostDetailPage = async ({
             {dayjs(note.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <FeedContent {...props} createdAt={note.createdAt} />
+        <FeedContent {...props} updatedAt={note.updatedAt} />
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"

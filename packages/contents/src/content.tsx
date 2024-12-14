@@ -17,22 +17,21 @@ import type { ContentProps, BaseProps, BasePropsWithType } from "./types";
 
 dayjs.extend(tz);
 
-export const ContentProvider = ({
+const ContentProvider = ({
   children,
   ...props
 }: ContentProps & { children?: ReactNode }) => {
   return <ContentContext value={props}>{children}</ContentContext>;
 };
 
-export const MDXInlineTOC = () => {
+const MDXInlineTOC = () => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
     return <InlineTOC items={content.toc} />;
   }
   return null;
 };
-
-export const MDXBody = (props: { className?: string }) => {
+const MDXBody = (props: { className?: string }) => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
     return (
@@ -48,7 +47,7 @@ export const MDXBody = (props: { className?: string }) => {
   return null;
 };
 
-export const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
+const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
   containerRef: Ref<TContainer>;
 }) => {
   const content = useContent();
@@ -75,8 +74,9 @@ export const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
   return null;
 };
 
-export const MdxContent = (props: BaseProps) => {
+const MdxContent = (props: BaseProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const content = useContent();
   return (
     <div className="w-full">
       <div className="[&>*]:w-full mb-14 w-full">
@@ -93,7 +93,9 @@ export const MdxContent = (props: BaseProps) => {
             <>
               <span className="self-start text-sm flex gap-1 items-center">
                 Last updated:{" "}
-                {dayjs(props.updatedAt).tz("UTC").format("YYYY-MM-DD HH:mm")}
+                {dayjs(props.updatedAt)
+                  .tz(content.tz ?? "UTC")
+                  .format("YYYY-MM-DD HH:mm")}
                 <span className="i-mdi-pencil" />
               </span>
             </>
@@ -104,7 +106,7 @@ export const MdxContent = (props: BaseProps) => {
   );
 };
 
-export const Content = ({ type, ...props }: BasePropsWithType) => {
+const Content = ({ type, ...props }: BasePropsWithType) => {
   switch (type) {
     case "mdx": {
       return <MdxContent {...props} />;
@@ -113,3 +115,13 @@ export const Content = ({ type, ...props }: BasePropsWithType) => {
       return null;
   }
 };
+
+const Index = (props: ContentProps) => {
+  return (
+    <ContentProvider {...props}>
+      <Content {...props} />
+    </ContentProvider>
+  );
+};
+
+export default Index;

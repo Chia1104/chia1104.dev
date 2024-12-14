@@ -7,6 +7,7 @@ import type { ContentType } from "@chia/db/types";
 export interface BaseProps {
   className?: string;
   updatedAt?: Date | string | number;
+  tz?: string;
 }
 
 export interface BasePropsWithType extends BaseProps {
