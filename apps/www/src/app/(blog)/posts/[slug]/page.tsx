@@ -79,6 +79,8 @@ const PostDetailPage = async ({
     },
   });
 
+  console.log(props);
+
   return (
     <>
       <div className="flex w-full flex-col items-center">
@@ -101,7 +103,7 @@ const PostDetailPage = async ({
             {dayjs(post.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <FeedContent {...props} updatedAt={post.updatedAt} />
+        {/* <FeedContent {...props} updatedAt={post.updatedAt} /> */}
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"
