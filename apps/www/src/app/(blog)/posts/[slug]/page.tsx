@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
-import FeedContent from "@chia/contents/content";
-import { getContentProps } from "@chia/contents/services";
+// import FeedContent from "@chia/contents/content";
+// import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
@@ -70,14 +70,14 @@ const PostDetailPage = async ({
     },
   };
 
-  const props = await getContentProps({
-    contentType: post.contentType,
-    content: {
-      content: post.content?.content,
-      source: post.content?.source,
-      unstable_serializedSource: post.content?.unstable_serializedSource,
-    },
-  });
+  // const props = await getContentProps({
+  //   contentType: post.contentType,
+  //   content: {
+  //     content: post.content?.content,
+  //     source: post.content?.source,
+  //     unstable_serializedSource: post.content?.unstable_serializedSource,
+  //   },
+  // });
 
   return (
     <>
@@ -101,7 +101,8 @@ const PostDetailPage = async ({
             {dayjs(post.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <FeedContent {...props} updatedAt={post.updatedAt} />
+        {post.title}
+        {/* <FeedContent {...props} updatedAt={post.updatedAt} /> */}
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"
