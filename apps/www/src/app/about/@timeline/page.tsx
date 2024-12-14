@@ -1,5 +1,5 @@
 import meta from "@chia/meta";
-import Timeline from "@chia/ui/timeline/index";
+import Timeline from "@chia/ui/timeline";
 import type { Data } from "@chia/ui/timeline/types";
 
 const TimelineParallel = () => {
