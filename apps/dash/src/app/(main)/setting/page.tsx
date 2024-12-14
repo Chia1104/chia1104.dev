@@ -2,7 +2,7 @@
 
 import { Accordion, AccordionItem } from "@nextui-org/react";
 
-import { ErrorBoundary } from "@chia/ui";
+import { ErrorBoundary } from "@chia/ui/error-boundary";
 
 import OpenaiForm from "./_components/openai-form";
 import ProfileForm from "./_components/profile-form";

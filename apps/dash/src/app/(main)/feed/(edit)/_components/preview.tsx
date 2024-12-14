@@ -14,7 +14,7 @@ import {
 } from "@nextui-org/react";
 import { useMutation } from "@tanstack/react-query";
 
-import { ErrorBoundary } from "@chia/ui";
+import { ErrorBoundary } from "@chia/ui/error-boundary";
 
 import { compile } from "@/server/mdx.action";
 

@@ -5,7 +5,7 @@ import type { ComponentProps, FC } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { cn } from "@chia/ui";
+import { cn } from "@chia/ui/utils/cn.util";
 import { get } from "@chia/utils";
 import type { HTTPError } from "@chia/utils";
 

@@ -10,7 +10,8 @@ import { toast } from "sonner";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
 import { createFeedSchema } from "@chia/api/trpc/validators";
-import { Form, SubmitForm } from "@chia/ui";
+import { Form } from "@chia/ui/form";
+import SubmitForm from "@chia/ui/submit-form";
 
 import { api } from "@/trpc/client";
 

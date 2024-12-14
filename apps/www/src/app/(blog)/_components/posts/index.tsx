@@ -8,16 +8,16 @@ import tz from "dayjs/plugin/timezone";
 import { useRouter } from "next/navigation";
 
 import type { RouterOutputs, RouterInputs } from "@chia/api";
+import Link from "@chia/ui/link";
 import {
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuTrigger,
-  cn,
-  Timeline,
-  Link,
-} from "@chia/ui";
-import type { TimelineTypes } from "@chia/ui";
+  NavigationMenuLink,
+} from "@chia/ui/navigation-menu";
+import Timeline from "@chia/ui/timeline";
+import type { Data } from "@chia/ui/timeline/types";
+import { cn } from "@chia/ui/utils/cn.util";
 
 import { api } from "@/trpc/client";
 
@@ -122,7 +122,7 @@ export const List: FC<{
           startDate: createdAt,
           content: excerpt,
           link: `/posts/${slug}`,
-        } satisfies TimelineTypes.Data;
+        } satisfies Data;
       })
     );
   }, [data, isSuccess, isError]);

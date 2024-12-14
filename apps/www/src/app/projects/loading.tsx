@@ -1,4 +1,4 @@
-import { Card } from "@chia/ui";
+import Card from "@chia/ui/card";
 
 const LoadingCard = () => (
   <Card className="relative flex h-full min-h-[442px] flex-col">

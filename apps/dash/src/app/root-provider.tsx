@@ -9,8 +9,8 @@ import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Toaster as ST } from "sonner";
 
-import type { Theme } from "@chia/ui";
-import { useTheme } from "@chia/ui";
+import type { Theme } from "@chia/ui/theme";
+import useTheme from "@chia/ui/utils/use-theme";
 
 import { TRPCReactProvider } from "@/trpc/client";
 

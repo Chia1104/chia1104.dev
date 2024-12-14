@@ -1,5 +1,5 @@
 import { Provider } from "@chia/auth-core/types";
-import { Card } from "@chia/ui";
+import Card from "@chia/ui/card";
 
 const Page = ({
   searchParams,

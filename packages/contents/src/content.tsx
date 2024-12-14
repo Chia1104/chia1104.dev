@@ -10,7 +10,7 @@ import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import { DocsBody } from "fumadocs-ui/page";
 
 import { ContentType } from "@chia/db/types";
-import { cn } from "@chia/ui";
+import { cn } from "@chia/ui/utils/cn.util";
 
 import { ContentContext, useContent } from "./content.context";
 import type { ContentProps, BaseProps, BasePropsWithType } from "./types";

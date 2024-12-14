@@ -1,1 +1,5 @@
-export { type DocResponse, type PreviewDTO, previewSchema } from "@chia/ui";
+export {
+  type DocResponse,
+  type PreviewDTO,
+  previewSchema,
+} from "@chia/ui/link";

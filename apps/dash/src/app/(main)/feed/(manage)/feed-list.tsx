@@ -10,7 +10,9 @@ import { useRouter } from "next/navigation";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";
-import { useInfiniteScroll, Image, Card as CHCard } from "@chia/ui";
+import CHCard from "@chia/ui/card";
+import Image from "@chia/ui/image";
+import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 
 import { useGetAllDrafts } from "@/app/(main)/feed/(edit)/_components/use-draft";
 import { api } from "@/trpc/client";

@@ -2,7 +2,9 @@
 
 import type { FC } from "react";
 
-import { Image, cn, ImageZoom } from "@chia/ui";
+import Image from "@chia/ui/image";
+import ImageZoom from "@chia/ui/image-zoom";
+import { cn } from "@chia/ui/utils/cn.util";
 
 const images = [
   {

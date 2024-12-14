@@ -15,12 +15,10 @@ import {
   CommandList,
   CommandSeparator,
   useCMD,
-  Theme,
-  MotionThemeIcon,
-  defaultThemeVariants,
-  useTheme,
-  Link,
-} from "@chia/ui";
+} from "@chia/ui/cmd";
+import Link from "@chia/ui/link";
+import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
+import useTheme from "@chia/ui/utils/use-theme";
 
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";

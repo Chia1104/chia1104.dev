@@ -7,7 +7,7 @@ import {
   TextRevealCard,
   TextRevealCardDescription,
   TextRevealCardTitle,
-} from "../../src/TextRevealCard";
+} from "../../src/text-reveal-card";
 
 export default function NotFound() {
   const router = useRouter();

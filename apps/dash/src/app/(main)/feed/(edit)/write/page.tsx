@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import dynamic from "next/dynamic";
 
-import { ErrorBoundary } from "@chia/ui";
+import { ErrorBoundary } from "@chia/ui/error-boundary";
 
 const CreateForm = dynamic(() => import("./create-form"), {
   ssr: false,

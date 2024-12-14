@@ -6,13 +6,14 @@ import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 
+import { cn } from "../../utils/cn.util";
+import useInfiniteScroll from "../../utils/use-infinite-scroll";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../Accordion";
-import { cn, useInfiniteScroll } from "../utils";
+} from "../accordion";
 import { useTimeline } from "./context";
 import type { ListItemProps, ListProps, GroupListProps } from "./types";
 

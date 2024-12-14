@@ -5,7 +5,8 @@ import Link from "next/link";
 
 import { getPinnedRepos } from "@chia/api/github";
 import meta from "@chia/meta";
-import { Image, Card } from "@chia/ui";
+import Card from "@chia/ui/card";
+import Image from "@chia/ui/image";
 
 const RepoCard: FC<{
   image: string;

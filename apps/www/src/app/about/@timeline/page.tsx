@@ -1,6 +1,6 @@
 import meta from "@chia/meta";
-import { Timeline } from "@chia/ui";
-import type { TimelineTypes } from "@chia/ui";
+import Timeline from "@chia/ui/timeline";
+import type { Data } from "@chia/ui/timeline/types";
 
 const TimelineParallel = () => {
   const transformData = meta.timeline.map((item) => ({
@@ -16,7 +16,7 @@ const TimelineParallel = () => {
       </ul>
     ),
     link: item.link,
-  })) satisfies TimelineTypes.Data[];
+  })) satisfies Data[];
   return <Timeline data={transformData} />;
 };
 

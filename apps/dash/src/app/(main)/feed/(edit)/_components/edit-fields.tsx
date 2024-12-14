@@ -30,8 +30,10 @@ import { toast } from "sonner";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
 import { FeedType, ContentType } from "@chia/db/types";
-import { useTheme, ErrorBoundary } from "@chia/ui";
-import { FormControl, FormField, FormItem, FormMessage, cn } from "@chia/ui";
+import { ErrorBoundary } from "@chia/ui/error-boundary";
+import { FormControl, FormField, FormItem, FormMessage } from "@chia/ui/form";
+import { cn } from "@chia/ui/utils/cn.util";
+import useTheme from "@chia/ui/utils/use-theme";
 
 import { api } from "@/trpc/client";
 

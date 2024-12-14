@@ -10,7 +10,7 @@
     "./react": "./react.js"
   },
   "scripts": {
-    "clean": "rm -rf .turbo node_modules",
+    "clean": "rm -rf .turbo node_modules .cache",
     "format": "prettier --check . --ignore-path ../../.gitignore"
   },
   "dependencies": {
