@@ -367,6 +367,9 @@ importers:
       '@chia/cache':
         specifier: workspace:*
         version: link:../../packages/cache
+      '@chia/contents':
+        specifier: workspace:*
+        version: link:../../packages/contents
       '@chia/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -385,6 +388,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.13.7(hono@4.6.14)
+      '@hono/react-renderer':
+        specifier: ^0.2.1
+        version: 0.2.1(hono@4.6.14)
       '@hono/sentry':
         specifier: ^1.2.0
         version: 1.2.0(hono@4.6.14)
@@ -415,6 +421,12 @@ importers:
       rate-limit-redis:
         specifier: ^4.2.0
         version: 4.2.0(express-rate-limit@7.4.1(express@4.21.2))
+      react:
+        specifier: catalog:react19
+        version: 19.0.0
+      react-dom:
+        specifier: catalog:react19
+        version: 19.0.0(react@19.0.0)
       web-streams-polyfill:
         specifier: ^4.0.0
         version: 4.0.0
@@ -428,6 +440,12 @@ importers:
       '@chia/tsconfig':
         specifier: workspace:*
         version: link:../../toolings/tsconfig
+      '@types/react':
+        specifier: catalog:react19
+        version: 19.0.0
+      '@types/react-dom':
+        specifier: catalog:react19
+        version: 19.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.17.0(jiti@1.21.6)
@@ -2504,6 +2522,12 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
+
+  '@hono/react-renderer@0.2.1':
+    resolution: {integrity: sha512-neF3WNwtUGYR6uO8T/RDMaQkUIQWrSBC0VsPJNOwb87fs1FvK52wlAzUc6v+RYVvoer+ymPRzsBZQ56S6eirJg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      hono: '*'
 
   '@hono/sentry@1.2.0':
     resolution: {integrity: sha512-9mS8GrkGtR4YxM1CViL4Ft8LFQ9YhCoXeqKnUA1AUmrvA5PhUU/V+xoo8Autw0nVriin3liX5/lPrwWz3muwiw==}
@@ -11855,6 +11879,10 @@ snapshots:
       hono: 4.6.14
 
   '@hono/node-server@1.13.7(hono@4.6.14)':
+    dependencies:
+      hono: 4.6.14
+
+  '@hono/react-renderer@0.2.1(hono@4.6.14)':
     dependencies:
       hono: 4.6.14
 
