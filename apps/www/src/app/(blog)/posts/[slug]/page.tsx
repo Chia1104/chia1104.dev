@@ -1,14 +1,9 @@
-import { compileMDX } from "@fumadocs/mdx-remote";
 import dayjs from "dayjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
 import FeedContent from "@chia/contents/content";
-import {
-  V1MDXComponents,
-  FumadocsComponents,
-} from "@chia/contents/mdx-components";
 import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 
@@ -75,16 +70,7 @@ const PostDetailPage = async ({
     },
   };
 
-  const compiled = compileMDX({
-    source: post.content?.content ?? "",
-    components: {
-      ...FumadocsComponents,
-      ...V1MDXComponents,
-    },
-  });
-
   const props = await getContentProps({
-    compileResult: compiled,
     contentType: post.contentType,
     content: {
       content: post.content?.content,

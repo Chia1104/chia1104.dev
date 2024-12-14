@@ -29,7 +29,6 @@
     "@chia/meta": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@fumadocs/mdx-remote": "^0.2.4",
     "@hookform/resolvers": "^3.9.1",
     "@internationalized/date": "^3.6.0",
     "@monaco-editor/react": "^4.6.0",
