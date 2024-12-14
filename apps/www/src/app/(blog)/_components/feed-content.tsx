@@ -8,9 +8,6 @@ type Props = ComponentPropsWithoutRef<typeof ContentProvider> & {
   createdAt: string;
 };
 
-/**
- * @deprecated remove context
- */
 const FeedContent = ({ createdAt, ...props }: Props) => {
   return (
     <ContentProvider {...props}>
