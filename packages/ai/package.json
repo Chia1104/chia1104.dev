@@ -35,7 +35,7 @@
     }
   },
   "scripts": {
-    "clean": "git clean -xdf .turbo node_modules dist",
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
@@ -45,9 +45,9 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.0.8",
     "@chia/utils": "workspace:*",
-    "ai": "^4.0.16",
+    "ai": "^4.0.18",
     "next": "15.1.0",
-    "openai": "^4.76.2"
+    "openai": "^4.76.3"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

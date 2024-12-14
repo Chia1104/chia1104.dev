@@ -27,7 +27,7 @@
     }
   },
   "scripts": {
-    "clean": "git clean -xdf .turbo node_modules dist",
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",

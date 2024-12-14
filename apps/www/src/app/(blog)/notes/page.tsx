@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ImageZoom, Image } from "@chia/ui";
+import Image from "@chia/ui/image";
+import ImageZoom from "@chia/ui/image-zoom";
 
 import { getNotes } from "@/services/feeds.service";
 

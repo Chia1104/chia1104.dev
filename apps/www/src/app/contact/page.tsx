@@ -3,7 +3,7 @@ import type { FC, ReactNode } from "react";
 import type { Metadata } from "next";
 
 import meta from "@chia/meta";
-import { Link } from "@chia/ui";
+import Link from "@chia/ui/link";
 
 import Contact from "./contact";
 import "./style.css";

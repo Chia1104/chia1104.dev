@@ -16,7 +16,10 @@ import { signOut } from "next-auth/react";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { useHover } from "usehooks-ts";
 
-import { Link, cn, useIsMobile, ThemeSelector } from "@chia/ui";
+import Link from "@chia/ui/link";
+import ThemeSelector from "@chia/ui/theme";
+import { cn } from "@chia/ui/utils/cn.util";
+import useIsMobile from "@chia/ui/utils/use-is-mobile";
 
 import AuthGuard from "@/components/auth-guard/index.client";
 

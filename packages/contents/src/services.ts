@@ -1,9 +1,7 @@
-import { cache } from "react";
-
 import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
 import type { MDXComponents } from "mdx/types";
 
-import type * as schema from "@chia/db/schema";
+import type { Content } from "@chia/db/schema";
 import { ContentType } from "@chia/db/types";
 
 import { FumadocsComponents, V1MDXComponents } from "./mdx-components";
@@ -14,18 +12,15 @@ type CompileResult = ReturnType<typeof _compileMDX>;
 export const compileMDX: (
   content: string,
   components?: MDXComponents
-) => CompileResult = cache(
-  async (content: string, components?: MDXComponents) => {
-    return await _compileMDX({
-      source: content,
-      components: {
-        ...FumadocsComponents,
-        ...V1MDXComponents,
-        ...components,
-      },
-    });
-  }
-);
+) => CompileResult = (content: string, components?: MDXComponents) =>
+  _compileMDX({
+    source: content,
+    components: {
+      ...FumadocsComponents,
+      ...V1MDXComponents,
+      ...components,
+    },
+  });
 
 export const getContentProps = async ({
   contentType,
@@ -33,7 +28,7 @@ export const getContentProps = async ({
 }: {
   contentType: ContentType;
   content: Partial<
-    Pick<schema.Content, "content" | "source" | "unstable_serializedSource">
+    Pick<Content, "content" | "source" | "unstable_serializedSource">
   >;
 }) => {
   switch (contentType) {

@@ -1,11 +1,12 @@
 "use client";
 
 import { forwardRef } from "react";
-import type { ElementRef, ComponentPropsWithoutRef } from "react";
+import type { ComponentRef, ComponentPropsWithoutRef } from "react";
 
-import { NavigationMenuLink, cn } from "@chia/ui";
+import { NavigationMenuLink } from "@chia/ui/navigation-menu";
+import { cn } from "@chia/ui/utils/cn.util";
 
-const ListItem = forwardRef<ElementRef<"a">, ComponentPropsWithoutRef<"a">>(
+const ListItem = forwardRef<ComponentRef<"a">, ComponentPropsWithoutRef<"a">>(
   ({ className, title, children, ...props }, ref) => {
     return (
       <li>

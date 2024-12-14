@@ -7,7 +7,7 @@ import type {
 import type { Dayjs } from "dayjs";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
 
-import type { LinkProps } from "../Link";
+import type { LinkProps } from "../link";
 
 export interface Data {
   id: number;

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { FeedType } from "@chia/db/types";
-import { ErrorBoundary } from "@chia/ui";
+import { ErrorBoundary } from "@chia/ui/error-boundary";
 import { numericStringSchema } from "@chia/utils";
 
 import { api } from "@/trpc/rsc";

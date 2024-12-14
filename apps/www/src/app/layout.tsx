@@ -10,7 +10,7 @@ import { ViewTransitions } from "next-view-transitions";
 import "react-medium-image-zoom/dist/styles.css";
 
 import meta from "@chia/meta";
-import { ScrollYProgress } from "@chia/ui";
+import ScrollYProgress from "@chia/ui/scroll-y-progess";
 import { WWW_BASE_URL } from "@chia/utils";
 
 import { env } from "@/env";

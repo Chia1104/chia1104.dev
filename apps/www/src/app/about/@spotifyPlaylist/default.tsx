@@ -1,4 +1,5 @@
-import { Image, ImageZoom } from "@chia/ui";
+import Image from "@chia/ui/image";
+import ImageZoom from "@chia/ui/image-zoom";
 
 export default function Error() {
   return (

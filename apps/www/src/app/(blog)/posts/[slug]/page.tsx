@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
-import { Content } from "@chia/contents/content";
+import FeedContent from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
-import { Image } from "@chia/ui";
+import Image from "@chia/ui/image";
 
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 
@@ -101,7 +101,7 @@ const PostDetailPage = async ({
             {dayjs(post.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <Content {...props} updatedAt={post.updatedAt} />
+        <FeedContent {...props} updatedAt={post.updatedAt} />
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"

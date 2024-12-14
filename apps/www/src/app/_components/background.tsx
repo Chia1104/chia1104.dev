@@ -2,7 +2,9 @@
 
 import type { FC } from "react";
 
-import { Spotlight, useTheme, useIsMounted } from "@chia/ui";
+import Spotlight from "@chia/ui/spotlight";
+import useIsMounted from "@chia/ui/utils/use-is-mounted";
+import useTheme from "@chia/ui/utils/use-theme";
 
 const Background: FC = () => {
   const { isDarkMode } = useTheme();

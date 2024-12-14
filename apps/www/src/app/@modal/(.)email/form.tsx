@@ -15,11 +15,11 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  cn,
-  Meteors,
-  ShimmerButton,
-} from "@chia/ui";
-import { Link } from "@chia/ui";
+} from "@chia/ui/drawer";
+import Link from "@chia/ui/link";
+import { Meteors } from "@chia/ui/meteors";
+import ShimmerButton from "@chia/ui/shimmer-button";
+import { cn } from "@chia/ui/utils/cn.util";
 
 import { Form } from "@/app/contact/contact";
 

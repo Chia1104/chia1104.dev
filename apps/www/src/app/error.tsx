@@ -2,7 +2,8 @@
 
 import { captureException } from "@sentry/nextjs";
 
-import { Image, withError } from "@chia/ui";
+import { withError } from "@chia/ui/hoc/with-error";
+import Image from "@chia/ui/image";
 
 const Error = withError(
   () => {

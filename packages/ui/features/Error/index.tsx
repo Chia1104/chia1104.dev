@@ -2,12 +2,12 @@
 
 import { Button } from "@nextui-org/react";
 
-import { withError } from "../../src/Error";
+import { withError } from "../../hoc/with-error";
 import {
   TextRevealCard,
   TextRevealCardDescription,
   TextRevealCardTitle,
-} from "../../src/TextRevealCard";
+} from "../../src/text-reveal-card";
 
 const Error = ({
   onError,

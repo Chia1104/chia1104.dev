@@ -66,7 +66,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules dist",
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
     "test": "vitest run",
     "test:watch": "vitest"
   },

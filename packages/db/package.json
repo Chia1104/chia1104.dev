@@ -46,7 +46,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules dist",
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
     "db:check": "tsx --env-file=../../.env.global check.ts",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
-    "drizzle-orm": "^0.38.1",
+    "drizzle-orm": "^0.38.2",
     "drizzle-zod": "^0.6.0",
     "pg": "^8.13.1"
   },
@@ -64,7 +64,7 @@
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
     "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.30.0",
+    "drizzle-kit": "^0.30.1",
     "eslint": "catalog:",
     "typescript": "catalog:"
   }

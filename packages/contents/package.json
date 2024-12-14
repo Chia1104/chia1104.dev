@@ -31,7 +31,7 @@
     }
   },
   "scripts": {
-    "clean": "git clean -xdf .turbo node_modules dist",
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
@@ -43,9 +43,9 @@
     "@chia/ui": "workspace:*",
     "@fumadocs/mdx-remote": "^0.2.4",
     "@mdx-js/react": "^3.1.0",
-    "fumadocs-core": "^14.6.0",
+    "fumadocs-core": "^14.6.1",
     "fumadocs-mdx": "^11.1.2",
-    "fumadocs-ui": "^14.6.0",
+    "fumadocs-ui": "^14.6.1",
     "next": "15.1.0",
     "react": "catalog:react19",
     "react-dom": "catalog:react19"

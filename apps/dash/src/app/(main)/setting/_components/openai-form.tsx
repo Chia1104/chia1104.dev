@@ -17,9 +17,9 @@ import {
   FormField,
   FormItem,
   FormMessage,
-  cn,
   Form,
-} from "@chia/ui";
+} from "@chia/ui/form";
+import { cn } from "@chia/ui/utils/cn.util";
 import type { ErrorResponse } from "@chia/utils";
 import { serviceRequest } from "@chia/utils";
 
