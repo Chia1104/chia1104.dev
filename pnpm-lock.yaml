@@ -922,7 +922,7 @@ importers:
         specifier: workspace:*
         version: link:../ai
       drizzle-orm:
-        specifier: ^0.38.1
+        specifier: ^0.38.2
         version: 0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.38)(pg@8.13.1)(react@19.0.0)
       drizzle-zod:
         specifier: ^0.6.0
