@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
 import FeedContent from "@chia/contents/content";
-// import { getContentProps } from "@chia/contents/services";
+import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
@@ -70,20 +70,14 @@ const PostDetailPage = async ({
     },
   };
 
-  // const props = await getContentProps({
-  //   contentType: post.contentType,
-  //   content: {
-  //     content: post.content?.content,
-  //     source: post.content?.source,
-  //     unstable_serializedSource: post.content?.unstable_serializedSource,
-  //   },
-  // });
-
-  const props = {
-    type: "mdx",
-    toc: [],
-    content: "",
-  };
+  const props = await getContentProps({
+    contentType: post.contentType,
+    content: {
+      content: post.content?.content,
+      source: post.content?.source,
+      unstable_serializedSource: post.content?.unstable_serializedSource,
+    },
+  });
 
   return (
     <>
