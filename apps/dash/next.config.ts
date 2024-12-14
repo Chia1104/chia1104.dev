@@ -36,7 +36,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  transpilePackages: ["@chia/*", "@fumadocs/mdx-remote"],
+  transpilePackages: ["@chia/*"],
   experimental: {
     optimizePackageImports: ["@nextui-org/react"],
     webpackBuildWorker: true,
