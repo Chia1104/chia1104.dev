@@ -15,7 +15,7 @@ import {
   NavigationMenuTrigger,
   NavigationMenuLink,
 } from "@chia/ui/navigation-menu";
-import Timeline from "@chia/ui/timeline/index";
+import Timeline from "@chia/ui/timeline";
 import type { Data } from "@chia/ui/timeline/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
