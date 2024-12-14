@@ -10,16 +10,16 @@
       "default": "./src/*.tsx"
     },
     "./timeline": {
-      "types": "./src/timeline/index.tsx",
-      "default": "./src/timeline/index.tsx"
+      "types": "./src/Timeline/index.tsx",
+      "default": "./src/Timeline/index.tsx"
     },
     "./timeline/context": {
-      "types": "./src/timeline/context.ts",
-      "default": "./src/timeline/context.ts"
+      "types": "./src/Timeline/context.ts",
+      "default": "./src/Timeline/context.ts"
     },
     "./timeline/types": {
-      "types": "./src/timeline/types.ts",
-      "default": "./src/timeline/types.ts"
+      "types": "./src/Timeline/types.ts",
+      "default": "./src/Timeline/types.ts"
     },
     "./hoc/*": {
       "types": "./hoc/*.tsx",
