@@ -11,6 +11,10 @@ import { getPosts, getPostBySlug } from "@/services/feeds.service";
 
 import WrittenBy from "../../_components/written-by";
 
+export const dynamicParams = true;
+export const revalidate = 60;
+export const maxDuration = 60;
+
 export const generateStaticParams = async () => {
   const posts = await getPosts(100);
 
@@ -18,8 +22,6 @@ export const generateStaticParams = async () => {
     slug: post.slug,
   }));
 };
-export const dynamicParams = true;
-export const revalidate = 60;
 
 export const generateMetadata = async ({
   params,
