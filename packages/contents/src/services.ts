@@ -1,5 +1,3 @@
-import { cache } from "react";
-
 import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
 import type { MDXComponents } from "mdx/types";
 
@@ -14,18 +12,15 @@ type CompileResult = ReturnType<typeof _compileMDX>;
 export const compileMDX: (
   content: string,
   components?: MDXComponents
-) => CompileResult = cache(
-  async (content: string, components?: MDXComponents) => {
-    return await _compileMDX({
-      source: content,
-      components: {
-        ...FumadocsComponents,
-        ...V1MDXComponents,
-        ...components,
-      },
-    });
-  }
-);
+) => CompileResult = (content: string, components?: MDXComponents) =>
+  _compileMDX({
+    source: content,
+    components: {
+      ...FumadocsComponents,
+      ...V1MDXComponents,
+      ...components,
+    },
+  });
 
 export const getContentProps = async ({
   contentType,
