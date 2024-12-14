@@ -11,6 +11,10 @@ import { getNotes, getNoteBySlug } from "@/services/feeds.service";
 
 import WrittenBy from "../../_components/written-by";
 
+export const dynamicParams = true;
+export const revalidate = 60;
+export const maxDuration = 60;
+
 export const generateStaticParams = async () => {
   const notes = await getNotes(100);
 
@@ -18,8 +22,6 @@ export const generateStaticParams = async () => {
     slug: note.slug,
   }));
 };
-export const dynamicParams = true;
-export const revalidate = 60;
 
 export const generateMetadata = async ({
   params,
