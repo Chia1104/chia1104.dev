@@ -13,7 +13,7 @@
     "./shadcn-ui": "./shadcn-ui.ts"
   },
   "scripts": {
-    "clean": "git clean -xdf .turbo node_modules dist"
+    "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",

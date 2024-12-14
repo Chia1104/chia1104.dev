@@ -46,7 +46,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules dist",
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
     "db:check": "tsx --env-file=../../.env.global check.ts",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

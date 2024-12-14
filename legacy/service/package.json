@@ -16,7 +16,7 @@
     "test:debug": "vitest --inspect-brk --inspect --logHeapUsage --threads=false",
     "test:e2e": "vitest run -c ./vitest.config.e2e.ts",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf dist .turbo node_modules"
+    "clean": "git clean -xdf dist .turbo node_modules .cache"
   },
   "dependencies": {
     "@apollo/server": "^4.10.5",

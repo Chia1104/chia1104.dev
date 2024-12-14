@@ -23,7 +23,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "format:docs": "prettier --write \"**/*.{md,mdx}\"",
     "docs:check": "prettier --check \"**/*.{md,mdx}\"",
-    "clean": "git clean -xdf .next .turbo node_modules",
+    "clean": "git clean -xdf .next .turbo node_modules .cache",
     "env:check-local": "node --import=tsx --env-file=./.env ./src/env.ts",
     "env:check": "tsx ./src/env.ts"
   },

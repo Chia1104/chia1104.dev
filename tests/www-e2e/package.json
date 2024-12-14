@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test:e2e": "pnpm exec playwright test",
-    "clean": "git clean -xdf .turbo node_modules coverage"
+    "clean": "git clean -xdf .turbo node_modules coverage .cache"
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",
