@@ -8,8 +8,10 @@ import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Toaster as ST } from "sonner";
 
-import type { Theme } from "@chia/ui";
-import { Cursor, useTheme, useCMD } from "@chia/ui";
+import { useCMD } from "@chia/ui/cmd";
+import Cursor from "@chia/ui/cursor";
+import type { Theme } from "@chia/ui/theme";
+import useTheme from "@chia/ui/utils/use-theme";
 
 import { TRPCReactProvider } from "@/trpc/client";
 

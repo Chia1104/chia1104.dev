@@ -5,7 +5,8 @@ import { useTransition } from "react";
 import { Input, Divider, Button } from "@nextui-org/react";
 
 import { Provider } from "@chia/auth-core/types";
-import { Card, SubmitForm } from "@chia/ui";
+import Card from "@chia/ui/card";
+import SubmitForm from "@chia/ui/submit-form";
 
 import { signInAction } from "@/server/auth.action";
 

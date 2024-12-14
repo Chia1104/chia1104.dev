@@ -6,7 +6,7 @@ import type { FC } from "react";
 import dayjs from "dayjs";
 import tz from "dayjs/plugin/timezone";
 
-import { cn } from "../utils";
+import { cn } from "../../utils/cn.util";
 import { GroupList } from "./client";
 import { TimelineContext } from "./context";
 import type { TimelineProps, Data, GroupData } from "./types";

@@ -10,7 +10,8 @@ import {
   Chip,
 } from "@nextui-org/react";
 
-import { Image, NeonGradientCard } from "@chia/ui";
+import Image from "@chia/ui/image";
+import { NeonGradientCard } from "@chia/ui/neon-gradient-card";
 
 const techStack = {
   Frameworks: [

@@ -15,7 +15,9 @@ import type { COBEOptions } from "cobe";
 import { useSpring, useMotionValue } from "framer-motion";
 import { useResizeObserver } from "usehooks-ts";
 
-import { cn, useTheme, Image } from "@chia/ui";
+import Image from "@chia/ui/image";
+import { cn } from "@chia/ui/utils/cn.util";
+import useTheme from "@chia/ui/utils/use-theme";
 
 type LocationProps = {
   location: [number, number];

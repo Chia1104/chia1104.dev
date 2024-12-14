@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { ImageResponse } from "next/og";
 import { NextResponse } from "next/server";
 
-import { OpenGraph } from "@chia/ui";
+import OpenGraph from "@chia/ui/open-graph";
 import { errorGenerator } from "@chia/utils";
 
 import { getNoteBySlug } from "@/services/feeds.service";

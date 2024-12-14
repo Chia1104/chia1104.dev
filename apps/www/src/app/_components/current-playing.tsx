@@ -17,20 +17,20 @@ import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
 import type { HTTPError } from "ky";
 
 import type { CurrentPlaying } from "@chia/api/spotify/types";
+import { ErrorBoundary } from "@chia/ui/error-boundary";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-  cn,
-  ErrorBoundary,
-  Link,
-  Progress,
-  Marquee,
-  TextShimmer,
-  Image,
-  experimental_getImgAverageRGB,
-  getBrightness,
-} from "@chia/ui";
+} from "@chia/ui/hover-card";
+import Image from "@chia/ui/image";
+import Link from "@chia/ui/link";
+import Marquee from "@chia/ui/marquee";
+import { Progress } from "@chia/ui/progress";
+import TextShimmer from "@chia/ui/text-shimmer";
+import { cn } from "@chia/ui/utils/cn.util";
+import { getBrightness } from "@chia/ui/utils/get-brightness";
+import { experimental_getImgAverageRGB } from "@chia/ui/utils/get-img-average-rgb";
 import { serviceRequest } from "@chia/utils";
 
 interface ExtendsProps {

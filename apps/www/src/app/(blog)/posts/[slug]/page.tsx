@@ -5,7 +5,7 @@ import type { Blog, WithContext } from "schema-dts";
 
 import FeedContent from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
-import { Image } from "@chia/ui";
+import Image from "@chia/ui/image";
 
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 

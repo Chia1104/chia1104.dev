@@ -2,7 +2,8 @@
 
 import { AnimatePresence } from "framer-motion";
 
-import { TextPath, FadeIn } from "@chia/ui";
+import FadeIn from "@chia/ui/fade-in";
+import { TextPath } from "@chia/ui/text-path";
 
 const WrittenBy = ({
   author,

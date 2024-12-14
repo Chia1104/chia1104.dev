@@ -1,7 +1,11 @@
 import type { FC } from "react";
 
 import type { getPlayList } from "@chia/api/spotify";
-import { Image, cn, ImageZoom, FadeIn, Link } from "@chia/ui";
+import FadeIn from "@chia/ui/fade-in";
+import Image from "@chia/ui/image";
+import ImageZoom from "@chia/ui/image-zoom";
+import Link from "@chia/ui/link";
+import { cn } from "@chia/ui/utils/cn.util";
 import { serviceRequest } from "@chia/utils";
 
 import { env } from "@/env";

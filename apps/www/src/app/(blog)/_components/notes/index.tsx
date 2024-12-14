@@ -12,10 +12,10 @@ import {
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuTrigger,
-  cn,
-  Timeline,
-} from "@chia/ui";
-import type { TimelineTypes } from "@chia/ui";
+} from "@chia/ui/navigation-menu";
+import Timeline from "@chia/ui/timeline/index";
+import type { Data } from "@chia/ui/timeline/types";
+import { cn } from "@chia/ui/utils/cn.util";
 
 import { api } from "@/trpc/client";
 
@@ -98,7 +98,7 @@ export const List: FC<{
           startDate: createdAt,
           content: excerpt,
           link: `/notes/${slug}`,
-        } satisfies TimelineTypes.Data;
+        } satisfies Data;
       })
     );
   }, [data, isSuccess, isError]);

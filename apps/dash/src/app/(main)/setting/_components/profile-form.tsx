@@ -14,7 +14,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { Session } from "@chia/auth-core/types";
-import { FormControl, FormField, FormItem, FormMessage, Form } from "@chia/ui";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+  Form,
+} from "@chia/ui/form";
 
 import { api } from "@/trpc/client";
 

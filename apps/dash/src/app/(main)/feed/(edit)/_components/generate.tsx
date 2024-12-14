@@ -2,7 +2,7 @@ import { Button, Tooltip } from "@nextui-org/react";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-import { cn } from "@chia/ui";
+import { cn } from "@chia/ui/utils/cn.util";
 
 import {
   useGenerateFeedSlug,

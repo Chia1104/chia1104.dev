@@ -16,8 +16,10 @@ import { useForm, Controller } from "react-hook-form";
 import type { Control } from "react-hook-form";
 import { toast } from "sonner";
 
-import { cn } from "@chia/ui";
-import { Card, useTheme, ShimmerButton } from "@chia/ui";
+import Card from "@chia/ui/card";
+import ShimmerButton from "@chia/ui/shimmer-button";
+import { cn } from "@chia/ui/utils/cn.util";
+import useTheme from "@chia/ui/utils/use-theme";
 import { post, handleKyError } from "@chia/utils";
 import type { HTTPError } from "@chia/utils";
 

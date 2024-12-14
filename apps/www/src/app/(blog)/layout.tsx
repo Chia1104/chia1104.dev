@@ -1,7 +1,7 @@
 import type { FC, ReactNode } from "react";
 
 import type { RouterOutputs } from "@chia/api";
-import { NavigationMenu, NavigationMenuList } from "@chia/ui";
+import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import { getPosts, getNotes } from "@/services/feeds.service";
 

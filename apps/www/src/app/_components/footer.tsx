@@ -7,8 +7,11 @@ import { motion } from "framer-motion";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import meta from "@chia/meta";
-import { cn, Link, ThemeSelector } from "@chia/ui";
-import { Image, RetroGrid } from "@chia/ui";
+import Image from "@chia/ui/image";
+import Link from "@chia/ui/link";
+import RetroGrid from "@chia/ui/retro-grid";
+import ThemeSelector from "@chia/ui/theme";
+import { cn } from "@chia/ui/utils/cn.util";
 
 import CurrentPlaying from "@/app/_components/current-playing";
 import contact from "@/shared/contact";
