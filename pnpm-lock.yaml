@@ -407,7 +407,7 @@ importers:
         specifier: ^16.9.0
         version: 16.9.0
       hono:
-        specifier: ^4.6.13
+        specifier: ^4.6.14
         version: 4.6.14
       hono-rate-limiter:
         specifier: ^0.4.2
