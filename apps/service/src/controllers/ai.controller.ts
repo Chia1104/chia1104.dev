@@ -59,7 +59,7 @@ api.use("/generate", ai()).post(
   ),
   (c) => {
     return streamText(c, async (stream) => {
-      const result = await streamGeneratedText({
+      const result = streamGeneratedText({
         modal: c.req.valid("json").modal,
         messages: c.req.valid("json").messages,
         authToken: c.get(AI_AUTH_TOKEN),
