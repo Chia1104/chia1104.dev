@@ -54,8 +54,8 @@ api.get(
     ({ children }) => {
       return (
         <html>
-          <body>
-            <div>{children}</div>
+          <body className="main c-container prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start">
+            <div className="flex w-full flex-col items-center">{children}</div>
           </body>
         </html>
       );
@@ -66,9 +66,16 @@ api.get(
   )
 );
 
-api.get("/compile", async (c) => {
+/**
+ * EXPERIMENTAL FEATURES
+ */
+api.get("/preview", async (c) => {
   const compiled = await compileMDX(CONTENT);
-  return c.render(<div>{compiled.content}</div>);
+  return c.render(
+    <div className="prose dark:prose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]">
+      {compiled.content}
+    </div>
+  );
 });
 
 export default api;

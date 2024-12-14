@@ -1,10 +1,9 @@
 import type { Config } from "tailwindcss";
 
-import baseConfig, {
-  egoistIcons,
-  animation,
-  shadcnConfig,
-} from "@chia/tailwind";
+import baseConfig from "@chia/tailwind";
+import animation from "@chia/tailwind/animation";
+import egoistIcons from "@chia/tailwind/egoist-icons";
+import shadcnConfig from "@chia/tailwind/shadcn-ui";
 
 export default {
   content: ["./**/*.{jsx,tsx}"],
