@@ -94,7 +94,7 @@ const MdxContent = (props: BaseProps) => {
               <span className="self-start text-sm flex gap-1 items-center">
                 Last updated:{" "}
                 {dayjs(props.updatedAt)
-                  .tz(content.tz ?? "UTC")
+                  .tz(content.tz)
                   .format("YYYY-MM-DD HH:mm")}
                 <span className="i-mdi-pencil" />
               </span>

@@ -3,9 +3,6 @@
 import { useMemo } from "react";
 import type { FC } from "react";
 
-import dayjs from "dayjs";
-import tz from "dayjs/plugin/timezone";
-
 import type { RouterOutputs, RouterInputs } from "@chia/api";
 import Link from "@chia/ui/link";
 import {
@@ -18,13 +15,12 @@ import Timeline from "@chia/ui/timeline";
 import type { Data } from "@chia/ui/timeline/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useDate } from "@/hooks/use-date";
 import { useRouter } from "@/i18n/routing";
 import { api } from "@/trpc/client";
 import { I18N } from "@/utils/i18n";
 
 import ListItem from "../list-item";
-
-dayjs.extend(tz);
 
 export const PostNavigation: FC<{
   posts?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
@@ -97,6 +93,7 @@ export const List: FC<{
   nextCursor?: string | number | Date;
   locale?: I18N;
 }> = ({ initialData, nextCursor, query = {}, locale }) => {
+  const { dayjs } = useDate();
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     api.feeds.getFeedsWithMetaByAdminId.useInfiniteQuery(
       { ...query, type: "post" },
@@ -125,14 +122,14 @@ export const List: FC<{
           titleProps: {
             className: "line-clamp-1",
           },
-          subtitle: dayjs(createdAt).tz("UTC").format("MMMM D, YYYY"),
+          subtitle: dayjs(createdAt).format("MMMM D, YYYY"),
           startDate: createdAt,
           content: excerpt,
           link: `/${locale}/posts/${slug}`,
         } satisfies Data;
       })
     );
-  }, [data, isSuccess, isError]);
+  }, [isSuccess, data, isError, locale]);
 
   return (
     <Timeline

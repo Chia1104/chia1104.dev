@@ -1,5 +1,3 @@
-import dayjs from "dayjs";
-import tz from "dayjs/plugin/timezone";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
@@ -7,13 +5,12 @@ import type { Blog, WithContext } from "schema-dts";
 import FeedContent from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
+import dayjs from "@chia/utils/day";
 
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
-import { PageParamsWithLocale, localeToTimeZone } from "@/utils/i18n";
+import { PageParamsWithLocale } from "@/utils/i18n";
 
 import WrittenBy from "../../_components/written-by";
-
-dayjs.extend(tz);
 
 export const dynamicParams = true;
 export const revalidate = 60;
@@ -55,7 +52,7 @@ const PostDetailPage = async ({
     slug: string;
   }>;
 }) => {
-  const { slug, locale } = await params;
+  const { slug } = await params;
   const post = await getPostBySlug(slug);
 
   if (!post) {
@@ -104,16 +101,10 @@ const PostDetailPage = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(post.createdAt)
-              .tz(localeToTimeZone(locale))
-              .format("MMMM D, YYYY")}
+            {dayjs(post.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <FeedContent
-          {...props}
-          updatedAt={post.updatedAt}
-          tz={localeToTimeZone(locale)}
-        />
+        <FeedContent {...props} updatedAt={post.updatedAt} />
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"

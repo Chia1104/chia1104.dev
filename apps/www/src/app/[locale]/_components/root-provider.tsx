@@ -13,6 +13,7 @@ import Cursor from "@chia/ui/cursor";
 import type { Theme } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
+import { InitDayjs } from "@/components/common/init-dayjs";
 import { TRPCReactProvider } from "@/trpc/client";
 
 const Toaster: FC = () => {
@@ -52,6 +53,7 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
               }}
             />
             <ContactCMD />
+            <InitDayjs enabled={false} />
             {children}
           </TRPCReactProvider>
         </FDProvider>

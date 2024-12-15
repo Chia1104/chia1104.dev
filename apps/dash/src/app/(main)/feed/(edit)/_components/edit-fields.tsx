@@ -20,7 +20,6 @@ import {
   PopoverContent,
   Skeleton,
 } from "@nextui-org/react";
-import dayjs from "dayjs";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -34,6 +33,7 @@ import { ErrorBoundary } from "@chia/ui/error-boundary";
 import { FormControl, FormField, FormItem, FormMessage } from "@chia/ui/form";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
+import dayjs from "@chia/utils/day";
 
 import { api } from "@/trpc/client";
 

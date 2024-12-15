@@ -7,7 +7,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTimeZone } from "next-intl/server";
 import { setRequestLocale } from "next-intl/server";
 import { ViewTransitions } from "next-view-transitions";
 import { notFound } from "next/navigation";
@@ -19,6 +19,7 @@ import { WWW_BASE_URL } from "@chia/utils";
 
 import { env } from "@/env";
 import { routing } from "@/i18n/routing";
+import { initDayjs } from "@/utils/dayjs";
 import type { I18N } from "@/utils/i18n";
 
 import "../../styles/globals.css";
@@ -80,11 +81,14 @@ const Layout = async ({
 
   setRequestLocale(locale);
   const messages = await getMessages();
+  const timeZone = await getTimeZone();
+
+  initDayjs(locale, timeZone);
 
   return (
     <ViewTransitions>
       <html lang={locale} suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={messages} timeZone={timeZone}>
           <body className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
             <RootProvider>
               <Background />

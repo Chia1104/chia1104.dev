@@ -3,7 +3,6 @@
 import type { FC } from "react";
 import { useMemo } from "react";
 
-import dayjs from "dayjs";
 import Link from "next/link";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
@@ -16,6 +15,7 @@ import Timeline from "@chia/ui/timeline";
 import type { Data } from "@chia/ui/timeline/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useDate } from "@/hooks/use-date";
 import { useRouter } from "@/i18n/routing";
 import { api } from "@/trpc/client";
 import { I18N } from "@/utils/i18n";
@@ -72,6 +72,7 @@ export const List: FC<{
   nextCursor?: string | number | Date;
   locale?: I18N;
 }> = ({ initialData, nextCursor, query = {}, locale }) => {
+  const { dayjs } = useDate();
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     api.feeds.getFeedsWithMetaByAdminId.useInfiniteQuery(
       { ...query, type: "note" },
@@ -100,14 +101,14 @@ export const List: FC<{
           titleProps: {
             className: "line-clamp-1",
           },
-          subtitle: dayjs(createdAt).tz("UTC").format("MMMM D, YYYY"),
+          subtitle: dayjs(createdAt).format("MMMM D, YYYY"),
           startDate: createdAt,
           content: excerpt,
           link: `/${locale}/notes/${slug}`,
         } satisfies Data;
       })
     );
-  }, [data, isSuccess, isError]);
+  }, [isSuccess, data, isError, locale]);
 
   return (
     <Timeline

@@ -9,6 +9,10 @@ export type PropsWithLocale<T = unknown> = T & { locale?: I18N };
 
 export type PageParamsWithLocale<T = unknown> = Promise<T & { locale: I18N }>;
 
+/**
+ * @deprecated
+ * @param locale
+ */
 export const localeToTimeZone = (locale: I18N) => {
   switch (locale) {
     case I18N.ZH_TW:

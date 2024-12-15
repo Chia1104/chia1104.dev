@@ -1,5 +1,4 @@
 import type { DefaultSession } from "@auth/core/types";
-import dayjs from "dayjs";
 import type { Session as NextAuthSession } from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
@@ -14,6 +13,7 @@ import { getBaseConfig } from "@chia/auth-core/utils";
 import { createRedis } from "@chia/cache";
 import { connectDatabase } from "@chia/db/client";
 import { AUTH_EMAIL } from "@chia/utils";
+import dayjs from "@chia/utils/day";
 
 import { sendVerificationRequest } from "./authSendRequest";
 

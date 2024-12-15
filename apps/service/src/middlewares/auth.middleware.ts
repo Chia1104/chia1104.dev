@@ -3,7 +3,6 @@
  * (issue: https://github.com/honojs/middleware/issues/665)
  */
 import type { AuthUser } from "@hono/auth-js";
-import dayjs from "dayjs";
 import type { Context } from "hono";
 import { getRuntimeKey } from "hono/adapter";
 import { getCookie, deleteCookie, setCookie } from "hono/cookie";
@@ -19,6 +18,7 @@ import {
   sessionCookieOptions,
 } from "@chia/auth-core/utils";
 import { errorGenerator, getAdminId } from "@chia/utils";
+import dayjs from "@chia/utils/day";
 
 import { env } from "@/env";
 

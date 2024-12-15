@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
@@ -6,9 +5,10 @@ import type { Blog, WithContext } from "schema-dts";
 import FeedContent from "@chia/contents/content";
 import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
+import dayjs from "@chia/utils/day";
 
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
-import { PageParamsWithLocale, localeToTimeZone } from "@/utils/i18n";
+import { PageParamsWithLocale } from "@/utils/i18n";
 
 import WrittenBy from "../../_components/written-by";
 
@@ -101,16 +101,10 @@ const PostDetailPage = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(note.createdAt)
-              .tz(localeToTimeZone(locale))
-              .format("MMMM D, YYYY")}
+            {dayjs(note.createdAt).format("MMMM D, YYYY")}
           </span>
         </header>
-        <FeedContent
-          {...props}
-          updatedAt={note.updatedAt}
-          tz={localeToTimeZone(locale)}
-        />
+        <FeedContent {...props} updatedAt={note.updatedAt} />
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"
