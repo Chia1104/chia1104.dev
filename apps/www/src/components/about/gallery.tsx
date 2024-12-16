@@ -15,7 +15,7 @@ const images = [
   {
     id: 2,
     alt: "me-2",
-    src: "/me/me.JPG",
+    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/me.JPG",
   },
   {
     id: 3,

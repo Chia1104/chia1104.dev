@@ -100,7 +100,7 @@ const Page = async ({ params }: { params: Promise<{ locale: I18N }> }) => {
           <ImageZoom>
             <div className="not-prose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">
               <Image
-                src="/me/me.JPG"
+                src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/me.JPG"
                 alt={meta.name}
                 className="object-cover"
                 fill
