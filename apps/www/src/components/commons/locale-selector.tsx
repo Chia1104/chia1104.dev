@@ -1,5 +1,7 @@
 "use client";
 
+import { useTransition } from "react";
+
 import {
   Button,
   Dropdown,
@@ -10,23 +12,23 @@ import {
 import type { ButtonProps } from "@nextui-org/react";
 import { useTranslations } from "next-intl";
 
-import { useRouter, usePathname } from "@/i18n/routing";
+import { setUserLocale } from "@/services/locale.service";
 import { I18N } from "@/utils/i18n";
 
+const DISABLED_I18N = true;
+
 const LocaleSelector = (props: ButtonProps) => {
+  const [isPending, setTransitioning] = useTransition();
   const t = useTranslations("locale");
-  const router = useRouter();
-  const pathname = usePathname();
   const changeLocale = (locale: I18N) => {
-    router.push(pathname, { locale });
-    router.refresh();
-    // document.cookie = `NEXT_LOCALE=${locale};`;
-    // window.location.reload();
+    setTransitioning(async () => {
+      await setUserLocale(locale);
+    });
   };
   return (
-    <Dropdown className="not-prose">
+    <Dropdown className="not-prose" isDisabled={DISABLED_I18N || isPending}>
       <DropdownTrigger>
-        <Button variant="flat" size="sm" {...props}>
+        <Button variant="flat" size="sm" loading={isPending} {...props}>
           {t("label")}
         </Button>
       </DropdownTrigger>

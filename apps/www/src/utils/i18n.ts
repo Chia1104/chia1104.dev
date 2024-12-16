@@ -5,6 +5,8 @@ export const I18N = {
 
 export type I18N = (typeof I18N)[keyof typeof I18N];
 
+export const DEFAULT_LOCALE = I18N.EN;
+
 export type PropsWithLocale<T = unknown> = T & { locale?: I18N };
 
 export type PageParamsWithLocale<T = unknown> = Promise<T & { locale: I18N }>;

@@ -10,7 +10,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTimeZone, getLocale } from "next-intl/server";
 import { setRequestLocale } from "next-intl/server";
 import { ViewTransitions } from "next-view-transitions";
-import { notFound } from "next/navigation";
 import "react-medium-image-zoom/dist/styles.css";
 
 import meta from "@chia/meta";
@@ -24,8 +23,8 @@ import RootLayout from "@/components/commons/root-layout";
 import RootProvider from "@/components/commons/root-provider";
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
-import { routing } from "@/i18n/routing";
 import "@/styles/globals.css";
+import { initDayjs } from "@/utils/dayjs";
 import type { I18N } from "@/utils/i18n";
 
 export const viewport: Viewport = {
@@ -60,10 +59,6 @@ export const metadata: Metadata = {
   },
 };
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
-
 const Layout = async ({
   children,
   modal,
@@ -72,13 +67,12 @@ const Layout = async ({
   modal: ReactNode;
 }) => {
   const locale = (await getLocale()) as I18N;
-  if (!routing.locales.includes(locale)) {
-    notFound();
-  }
 
   setRequestLocale(locale);
   const messages = await getMessages();
   const timeZone = await getTimeZone();
+
+  initDayjs(locale, timeZone);
 
   return (
     <ViewTransitions>
@@ -86,13 +80,13 @@ const Layout = async ({
         <NextIntlClientProvider messages={messages} timeZone={timeZone}>
           <RootProvider>
             <Background />
-            <NavMenu locale={locale} />
+            <NavMenu />
             <ScrollYProgress className="fixed top-0 z-[999]" />
             <main>
               {children}
               {modal}
             </main>
-            <Footer locale={locale} />
+            <Footer />
           </RootProvider>
           {env.NEXT_PUBLIC_ENV === "production" && (
             <>

@@ -9,7 +9,6 @@ import dayjs from "@chia/utils/day";
 
 import WrittenBy from "@/components/blog/written-by";
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
-import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const dynamicParams = true;
 export const revalidate = 60;
@@ -26,7 +25,7 @@ export const generateStaticParams = async () => {
 export const generateMetadata = async ({
   params,
 }: {
-  params: PageParamsWithLocale<{
+  params: Promise<{
     slug: string;
   }>;
 }): Promise<Metadata> => {
@@ -47,7 +46,7 @@ export const generateMetadata = async ({
 const PostDetailPage = async ({
   params,
 }: {
-  params: PageParamsWithLocale<{
+  params: Promise<{
     slug: string;
   }>;
 }) => {

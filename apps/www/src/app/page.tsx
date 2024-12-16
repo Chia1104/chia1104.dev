@@ -50,15 +50,13 @@ const LinkItem: FC<{
   );
 };
 
-const Page = async ({ params }: { params: Promise<{ locale: I18N }> }) => {
-  const { locale } = await params;
+const Page = async () => {
   const t = await getTranslations("home");
-  const test = t("section1");
   return (
     <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <FadeIn className="w-full flex-col">
         <h1 className="text-start font-bold">{meta.name}</h1>
-        <p>{test}</p>
+        <p>{t("section1")}</p>
         <p>
           Working at{" "}
           <Link preview href={meta.link.leadbest} target="_blank">
@@ -117,7 +115,7 @@ const Page = async ({ params }: { params: Promise<{ locale: I18N }> }) => {
               <li className="text-sm">
                 <span className="font-bold">Email: </span>
                 <span>
-                  <Link scroll={false} href="/email" locale={locale}>
+                  <Link scroll={false} href="/email">
                     {meta.email}
                   </Link>
                 </span>
