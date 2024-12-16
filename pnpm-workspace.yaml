@@ -10,7 +10,7 @@ catalog:
   "@trpc/react-query": ^11.0.0-rc.660
   "@trpc/server": ^11.0.0-rc.660
   "@trpc/next": ^11.0.0-rc.660
-  eslint: ^9.16.0
+  eslint: ^9.17.0
   typescript: ^5.7.2
 
 catalogs:
