@@ -149,12 +149,22 @@ const MotionThemeIcon: FC<{
 const ThemeSelector: FC<
   Props & {
     label?: string;
+    themeLabel?: {
+      system?: string;
+      dark?: string;
+      light?: string;
+    };
     enableCMD?: boolean;
     buttonProps?: ButtonProps;
   }
 > = ({
   variants = defaultThemeVariants,
   label = "Theme",
+  themeLabel = {
+    system: "System",
+    dark: "Dark",
+    light: "Light",
+  },
   enableCMD = false,
   buttonProps,
 }) => {
@@ -181,7 +191,7 @@ const ThemeSelector: FC<
               <MotionThemeIcon theme={Theme.SYSTEM} variants={variants} />
             }
             onPress={() => setTheme(Theme.SYSTEM)}>
-            System
+            {themeLabel.system}
           </DropdownItem>
           <DropdownItem
             key="dark"
@@ -189,7 +199,7 @@ const ThemeSelector: FC<
               <MotionThemeIcon theme={Theme.DARK} variants={variants} />
             }
             onPress={() => setTheme(Theme.DARK)}>
-            Dark
+            {themeLabel.dark}
           </DropdownItem>
           <DropdownItem
             key="light"
@@ -197,7 +207,7 @@ const ThemeSelector: FC<
               <MotionThemeIcon theme={Theme.LIGHT} variants={variants} />
             }
             onPress={() => setTheme(Theme.LIGHT)}>
-            Light
+            {themeLabel.light}
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/commons";
 
 import type { DB } from "@chia/db";
 

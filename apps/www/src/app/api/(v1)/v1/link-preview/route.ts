@@ -93,12 +93,12 @@ export const POST = withRateLimiter<
 
         const favicon = postparsedFavicon
           ? isUrl(postparsedFavicon)
-            ? postparsedFavicon
+            ? postparsedFavicon.toString()
             : url.origin + "/" + postparsedFavicon.replace(/^\//, "") // remove leading slash
           : undefined;
         const ogImage = postparsedOgImage
           ? isUrl(postparsedOgImage)
-            ? postparsedOgImage
+            ? postparsedOgImage.toString()
             : url.origin + "/" + postparsedOgImage.replace(/^\//, "") // remove leading slash
           : undefined;
         await upstash.set(

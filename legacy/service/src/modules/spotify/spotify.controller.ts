@@ -7,7 +7,7 @@ import {
   Query,
   Body,
   UseGuards,
-} from "@nestjs/common";
+} from "@nestjs/commons";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { HTTPError } from "ky";
 

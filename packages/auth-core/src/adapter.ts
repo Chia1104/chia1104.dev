@@ -1,11 +1,11 @@
 import type { Adapter, AdapterSession, AdapterUser } from "@auth/core/adapters";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import dayjs from "dayjs";
 
 import type { Redis } from "@chia/cache";
 import type { DB } from "@chia/db";
 import { eq } from "@chia/db";
 import * as schema from "@chia/db/schema";
+import dayjs from "@chia/utils/day";
 
 const SESSION_PREFIX = "__auth_session:";
 

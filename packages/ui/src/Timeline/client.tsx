@@ -2,9 +2,10 @@
 
 import type { FC } from "react";
 
-import dayjs from "dayjs";
 import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
+
+import dayjs from "@chia/utils/day";
 
 import { cn } from "../../utils/cn.util";
 import useInfiniteScroll from "../../utils/use-infinite-scroll";

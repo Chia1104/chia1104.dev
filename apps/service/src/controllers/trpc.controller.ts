@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 
@@ -7,6 +6,7 @@ import { fetchRequestHandler } from "@chia/api/trpc/utils";
 import type { Session } from "@chia/auth-core";
 import { adapter } from "@chia/auth-core/adapter";
 import { SESSION_TOKEN } from "@chia/auth-core/utils";
+import dayjs from "@chia/utils/day";
 
 import { sessionAction } from "@/middlewares/auth.middleware";
 

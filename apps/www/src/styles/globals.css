@@ -55,3 +55,15 @@ body {
 :root {
   --fd--background: unset;
 }
+
+.recaptcha-style {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 5px;
+  min-height: 73px;
+  box-shadow: 0 0 0 1px #a7a7a7;
+}
+
+.recaptcha-style > * {
+  margin: -2px -2px -10px; /*remove borders*/
+}

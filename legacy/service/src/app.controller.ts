@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get } from "@nestjs/commons";
 import { ApiTags } from "@nestjs/swagger";
 
 @ApiTags("Index")

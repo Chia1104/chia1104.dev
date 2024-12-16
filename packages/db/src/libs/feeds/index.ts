@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import type { SQLWrapper } from "drizzle-orm";
 import {
   eq, // sql,
@@ -9,6 +8,7 @@ import {
 
 // import { generateEmbedding } from "@chia/ai/embeddings/openai";
 import type { Options } from "@chia/ai/embeddings/openai";
+import dayjs from "@chia/utils/day";
 
 import { cursorTransform, dateToTimestamp, withDTO } from "../";
 import { schema } from "../..";
