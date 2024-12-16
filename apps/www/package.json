@@ -31,6 +31,7 @@
     "@chia/api": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/contents": "workspace:*",
+    "@chia/db": "workspace:*",
     "@chia/meta": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",

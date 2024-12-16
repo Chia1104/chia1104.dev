@@ -8,6 +8,10 @@ export interface BaseProps {
   className?: string;
   updatedAt?: Date | string | number;
   tz?: string;
+  tocContents?: {
+    label?: string;
+    updated?: string;
+  };
 }
 
 export interface BasePropsWithType extends BaseProps {

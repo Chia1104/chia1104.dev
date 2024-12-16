@@ -452,6 +452,9 @@ importers:
       '@chia/contents':
         specifier: workspace:*
         version: link:../../packages/contents
+      '@chia/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@chia/meta':
         specifier: workspace:*
         version: link:../../packages/meta
@@ -872,6 +875,9 @@ importers:
       '@mdx-js/react':
         specifier: ^3.1.0
         version: 3.1.0(@types/react@19.0.0)(react@19.0.0)
+      '@nextui-org/react':
+        specifier: 2.6.8
+        version: 2.6.8(@types/react@19.0.0)(framer-motion@12.0.0-alpha.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.10.2)(typescript@5.7.2)))
       fumadocs-core:
         specifier: ^14.6.1
         version: 14.6.1(@types/react@19.0.0)(next@15.1.0(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)

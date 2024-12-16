@@ -3,6 +3,13 @@
 import type { ReactNode, Ref, RefObject } from "react";
 import { useRef } from "react";
 
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Divider,
+} from "@nextui-org/react";
 import dayjs from "dayjs";
 import tz from "dayjs/plugin/timezone";
 import * as Base from "fumadocs-core/toc";
@@ -84,23 +91,26 @@ const MdxContent = (props: BaseProps) => {
       </div>
       <div className="flex w-full relative" ref={containerRef}>
         <MDXBody className={props.className} />
-        <div className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit gap-2 flex-col pl-5">
-          <span>On this page</span>
-          <MDXTableOfContents containerRef={containerRef} />
-          <hr className="border-gray-500 dark:border-gray-400" />
-          {/* TODO: i18n */}
+        <Card className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit ml-2">
+          <CardHeader>
+            {content.tocContents?.label ?? "On this page"}
+          </CardHeader>
+          <CardBody className="pl-0 pt-0 gap-1">
+            <MDXTableOfContents containerRef={containerRef} />
+          </CardBody>
+          <Divider />
           {props.updatedAt ? (
-            <>
+            <CardFooter>
               <span className="self-start text-sm flex gap-1 items-center">
-                Last updated:{" "}
+                {content.tocContents?.updated ?? "Last updated"}:{" "}
                 {dayjs(props.updatedAt)
                   .tz(content.tz)
                   .format("YYYY-MM-DD HH:mm")}
                 <span className="i-mdi-pencil" />
               </span>
-            </>
+            </CardFooter>
           ) : null}
-        </div>
+        </Card>
       </div>
     </div>
   );
