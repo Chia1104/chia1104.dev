@@ -33,7 +33,7 @@
     "@t3-oss/env-core": "^0.11.1",
     "drizzle-graphql": "^0.8.5",
     "formdata-node": "^6.0.3",
-    "graphql": "^16.9.0",
+    "graphql": "^16.10.0",
     "hono": "^4.6.14",
     "hono-rate-limiter": "^0.4.2",
     "rate-limit-redis": "^4.2.0",

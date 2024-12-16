@@ -3,7 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   Inject,
-} from "@nestjs/common";
+} from "@nestjs/commons";
 import type { Request } from "express";
 
 import { Auth, env } from "@chia/auth-core";

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module } from "@nestjs/commons";
 
 import SpotifyController from "./spotify.controller";
 import SpotifyService from "./spotify.service";

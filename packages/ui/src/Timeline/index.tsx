@@ -3,22 +3,19 @@
 import { useMemo } from "react";
 import type { FC } from "react";
 
-import dayjs from "dayjs";
-import tz from "dayjs/plugin/timezone";
+import dayjs from "@chia/utils/day";
 
 import { cn } from "../../utils/cn.util";
 import { GroupList } from "./client";
 import { TimelineContext } from "./context";
 import type { TimelineProps, Data, GroupData } from "./types";
 
-dayjs.extend(tz);
-
 const getGroupName = (data: Data, template = "YYYY", timezone?: string) =>
   dayjs(data.startDate).tz(timezone).format(template);
 
 const Timeline: FC<TimelineProps> = ({
   groupTemplate = "YYYY",
-  tz = "UTC",
+  tz,
   enableSort,
   asyncDataStatus,
   onEndReached,

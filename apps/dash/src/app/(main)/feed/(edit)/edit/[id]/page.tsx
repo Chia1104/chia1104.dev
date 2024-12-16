@@ -1,10 +1,10 @@
-import dayjs from "dayjs";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { FeedType } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import { numericStringSchema } from "@chia/utils";
+import dayjs from "@chia/utils/day";
 
 import { api } from "@/trpc/rsc";
 

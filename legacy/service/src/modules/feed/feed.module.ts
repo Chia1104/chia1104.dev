@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module } from "@nestjs/commons";
 
 import FeedController from "./feed.controller";
 import FeedResolver from "./feed.resolver";

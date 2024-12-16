@@ -4,7 +4,6 @@ import { forwardRef, useMemo, memo, useState } from "react";
 import type { FC } from "react";
 
 import { Card, CardBody, CardHeader, Chip, Button } from "@nextui-org/react";
-import dayjs from "dayjs";
 import { Pencil, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -13,6 +12,7 @@ import { FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
 import Image from "@chia/ui/image";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
+import dayjs from "@chia/utils/day";
 
 import { useGetAllDrafts } from "@/app/(main)/feed/(edit)/_components/use-draft";
 import { api } from "@/trpc/client";

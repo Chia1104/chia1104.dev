@@ -1,4 +1,4 @@
-import type { FactoryProvider } from "@nestjs/common";
+import type { FactoryProvider } from "@nestjs/commons";
 
 import { db, localDb, betaDb } from "@chia/db";
 import { getDb } from "@chia/utils";

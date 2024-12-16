@@ -1,4 +1,4 @@
-import { Inject } from "@nestjs/common";
+import { Inject } from "@nestjs/commons";
 import {
   Resolver,
   Query,

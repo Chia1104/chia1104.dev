@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module } from "@nestjs/commons";
 
 import DrizzleProvider from "@/modules/drizzle/drizzle.provider";
 

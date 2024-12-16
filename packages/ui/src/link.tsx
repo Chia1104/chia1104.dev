@@ -11,7 +11,7 @@ import NextLink from "next/link";
 import type { LinkProps as NextLinkProps } from "next/link";
 import { z } from "zod";
 
-import { post, isUrl, handleKyError } from "@chia/utils";
+import { post, isUrl, handleKyError, isURLInstance } from "@chia/utils";
 
 import { cn } from "../utils/cn.util";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
@@ -21,15 +21,17 @@ const TransitionLink = dynamic(() =>
   import("next-view-transitions").then((mod) => mod.Link)
 );
 
-type InternalLinkProps = NextLinkProps & ComponentPropsWithoutRef<"a">;
+type InternalLinkProps = NextLinkProps &
+  Omit<ComponentPropsWithoutRef<"a">, "href">;
 
 interface LinkPropsWithoutPreview extends InternalLinkProps {
-  href: string;
+  href: URL | string;
   children?: ReactNode;
   isInternalLink?: boolean;
   experimental?: {
     enableViewTransition?: boolean;
   };
+  locale?: string;
 }
 
 type LinkProps =
@@ -152,6 +154,7 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
   endpoint = "/api/v1/link-preview",
   preview: _preview,
   experimental: _experimental,
+  locale: _locale,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -163,7 +166,7 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
       return await post<DocResponse, PreviewDTO>(
         endpoint,
         {
-          href,
+          href: href.toString(),
         },
         {
           signal,
@@ -175,7 +178,11 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
   return (
     <HoverCard onOpenChange={setIsOpen}>
       <HoverCardTrigger asChild className="z-10">
-        <a target="_blank" rel="noopener noreferrer" {...props} href={href}>
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          {...props}
+          href={href.toString()}>
           {typeof children === "function" ? children(result) : children}
         </a>
       </HoverCardTrigger>
@@ -211,28 +218,49 @@ const Link: FC<LinkProps> = (props) => {
     isInternalLink: _isInternalLink,
     preview,
     experimental,
+    locale,
     ...rest
   } = props;
+  let serializedHref = href;
+  if (locale && !preview) {
+    if (isURLInstance(serializedHref)) {
+      serializedHref = new URL(serializedHref);
+      serializedHref.pathname = `/${locale}${serializedHref.pathname}`;
+    } else {
+      serializedHref = `/${locale}/${serializedHref.replace(/^\//, "")}`;
+    }
+  }
   const isInternalLink =
-    _isInternalLink ?? (href.startsWith("/") || href.startsWith("#"));
+    _isInternalLink ??
+    (serializedHref.toString().startsWith("/") ||
+      serializedHref.toString().startsWith("#"));
 
   if (isInternalLink && !preview && !experimental?.enableViewTransition) {
     return (
-      <NextLink prefetch={false} passHref scroll {...rest} href={href}>
+      <NextLink
+        prefetch={false}
+        passHref
+        scroll
+        {...rest}
+        href={serializedHref}>
         {children}
       </NextLink>
     );
   } else if (isInternalLink && !preview && experimental?.enableViewTransition) {
     return (
-      <TransitionLink passHref {...rest} href={href}>
+      <TransitionLink passHref {...rest} href={serializedHref}>
         {children}
       </TransitionLink>
     );
-  } else if (preview && isUrl(href)) {
+  } else if (preview && isUrl(serializedHref)) {
     return <PreviewCard {...props} />;
   } else if (!preview) {
     return (
-      <a target="_blank" rel="noopener noreferrer" {...rest} href={href}>
+      <a
+        target="_blank"
+        rel="noopener noreferrer"
+        {...rest}
+        href={serializedHref.toString()}>
         {children}
       </a>
     );

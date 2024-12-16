@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from "@nestjs/common";
+import { ExecutionContext, Injectable } from "@nestjs/commons";
 import { GqlExecutionContext } from "@nestjs/graphql";
 import { ThrottlerGuard } from "@nestjs/throttler";
 

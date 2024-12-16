@@ -3,7 +3,6 @@
 import { useRef } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -12,6 +11,7 @@ import type { CreateFeedInput } from "@chia/api/trpc/validators";
 import { createFeedSchema } from "@chia/api/trpc/validators";
 import { Form } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
+import dayjs from "@chia/utils/day";
 
 import { api } from "@/trpc/client";
 

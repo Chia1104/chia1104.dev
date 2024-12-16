@@ -2,6 +2,7 @@ import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import million from "million/compiler";
 import { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 import "@/env";
 
@@ -10,6 +11,8 @@ type Plugin = (config: NextConfig) => NextConfig;
 const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
 });
+
+const withNextIntl = createNextIntlPlugin();
 
 const securityHeaders = [
   {
@@ -52,30 +55,6 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
-  },
-  async redirects() {
-    return [
-      {
-        source: "/portfolio",
-        destination: "/projects",
-        permanent: false,
-      },
-      {
-        source: "/post",
-        destination: "/posts",
-        permanent: false,
-      },
-      {
-        source: "/post/:id",
-        destination: "/posts/:id",
-        permanent: false,
-      },
-      {
-        source: "/posts/:slug/amp.html",
-        destination: "/posts/:slug/",
-        statusCode: 301,
-      },
-    ];
   },
   images: {
     remotePatterns: [
@@ -140,7 +119,7 @@ const nextComposePlugins = plugins.reduce(
 
 export default million.next(
   // @ts-ignore
-  withSentryConfigImport(nextComposePlugins, {
+  withSentryConfigImport(withNextIntl(nextComposePlugins), {
     org: process.env.SENTRY_ORG,
     project: process.env.SENTRY_PROJECT,
     authToken: process.env.SENTRY_AUTH_TOKEN,

@@ -1,5 +1,4 @@
 import { captureException } from "@sentry/nextjs";
-import dayjs from "dayjs";
 import type { MetadataRoute } from "next";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -12,6 +11,7 @@ import {
   errorGenerator,
   numericStringSchema,
 } from "@chia/utils";
+import dayjs from "@chia/utils/day";
 
 import { env } from "@/env";
 import routes from "@/shared/routes";

@@ -21,10 +21,6 @@
       "types": "./src/day/day.ts",
       "default": "./src/day/day.util.ts"
     },
-    "./generate-slug": {
-      "types": "./src/generate-slug/generate-slug.ts",
-      "default": "./src/generate-slug/generate-slug.util.ts"
-    },
     "./handle-zod-error": {
       "types": "./src/handle-zod-error/handle-zod-error.ts",
       "default": "./src/handle-zod-error/handle-zod-error.ts"
