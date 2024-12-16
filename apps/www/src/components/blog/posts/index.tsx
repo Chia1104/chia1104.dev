@@ -18,7 +18,7 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { useDate } from "@/hooks/use-date";
 import { useRouter } from "@/i18n/routing";
 import { api } from "@/trpc/client";
-import { I18N } from "@/utils/i18n";
+import type { I18N } from "@/utils/i18n";
 
 import ListItem from "../list-item";
 

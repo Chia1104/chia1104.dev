@@ -9,7 +9,7 @@ import dayjs from "@chia/utils/day";
 
 import WrittenBy from "@/components/blog/written-by";
 import { getNotes, getNoteBySlug } from "@/services/feeds.service";
-import { PageParamsWithLocale } from "@/utils/i18n";
+import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const dynamicParams = true;
 export const revalidate = 60;
@@ -51,7 +51,7 @@ const PostDetailPage = async ({
     slug: string;
   }>;
 }) => {
-  const { slug, locale } = await params;
+  const { slug } = await params;
   const note = await getNoteBySlug(slug);
 
   if (!note) {

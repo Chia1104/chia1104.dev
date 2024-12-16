@@ -6,7 +6,7 @@ import ImageZoom from "@chia/ui/image-zoom";
 
 import { List } from "@/components/blog/notes";
 import { getNotes } from "@/services/feeds.service";
-import { PageParamsWithLocale } from "@/utils/i18n";
+import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const metadata: Metadata = {
   title: "Notes",

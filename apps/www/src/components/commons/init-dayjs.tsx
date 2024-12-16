@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useLocale, useTimeZone } from "next-intl";
 
 import { initDayjs } from "@/utils/dayjs";
-import { I18N } from "@/utils/i18n";
+import type { I18N } from "@/utils/i18n";
 
 interface Props {
   enabled?: boolean;

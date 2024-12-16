@@ -23,7 +23,7 @@ import useTheme from "@chia/ui/utils/use-theme";
 import { useRouter } from "@/i18n/routing";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
-import { PropsWithLocale } from "@/utils/i18n";
+import type { PropsWithLocale } from "@/utils/i18n";
 
 const CMDK = (props: PropsWithLocale) => {
   const [open, setOpen] = useCMD();

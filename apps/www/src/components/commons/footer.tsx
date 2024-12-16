@@ -18,7 +18,7 @@ import CurrentPlaying from "@/components/commons/current-playing";
 import LocaleSelector from "@/components/commons/locale-selector";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
-import { I18N } from "@/utils/i18n";
+import type { I18N } from "@/utils/i18n";
 
 import HugeThanks from "./huge-thanks";
 

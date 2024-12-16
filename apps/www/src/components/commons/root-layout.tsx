@@ -4,7 +4,7 @@ import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { I18N } from "@/utils/i18n";
+import type { I18N } from "@/utils/i18n";
 
 interface Props {
   children: ReactNode;

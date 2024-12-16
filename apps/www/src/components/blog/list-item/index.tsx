@@ -1,6 +1,7 @@
 "use client";
 
-import Link, { LinkProps } from "@chia/ui/link";
+import type { LinkProps } from "@chia/ui/link";
+import Link from "@chia/ui/link";
 import { NavigationMenuLink } from "@chia/ui/navigation-menu";
 import { cn } from "@chia/ui/utils/cn.util";
 

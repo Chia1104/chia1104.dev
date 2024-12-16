@@ -8,7 +8,7 @@ import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 import Link from "@chia/ui/link";
 
-import { I18N } from "@/utils/i18n";
+import type { I18N } from "@/utils/i18n";
 
 const contact = {
   github: {

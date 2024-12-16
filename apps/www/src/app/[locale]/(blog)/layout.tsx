@@ -6,7 +6,7 @@ import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 import { NoteNavigation } from "@/components/blog/notes";
 import { PostNavigation } from "@/components/blog/posts";
 import { getPosts, getNotes } from "@/services/feeds.service";
-import { PageParamsWithLocale, I18N } from "@/utils/i18n";
+import type { PageParamsWithLocale, I18N } from "@/utils/i18n";
 
 const Navigation: FC<{
   posts?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];

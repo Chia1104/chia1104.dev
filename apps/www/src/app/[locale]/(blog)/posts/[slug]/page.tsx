@@ -9,7 +9,7 @@ import dayjs from "@chia/utils/day";
 
 import WrittenBy from "@/components/blog/written-by";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
-import { PageParamsWithLocale } from "@/utils/i18n";
+import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const dynamicParams = true;
 export const revalidate = 60;
