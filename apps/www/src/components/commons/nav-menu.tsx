@@ -5,7 +5,6 @@ import type { FC } from "react";
 import { Tabs, Tab, Tooltip, Button, Kbd } from "@nextui-org/react";
 import capitalize from "lodash/capitalize";
 import { useSelectedLayoutSegments } from "next/navigation";
-import { useRouter } from "next/navigation";
 
 import {
   CommandDialog,
@@ -21,11 +20,12 @@ import Link from "@chia/ui/link";
 import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
+import { useRouter } from "@/i18n/routing";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 import type { PropsWithLocale } from "@/utils/i18n";
 
-const CMDK = () => {
+const CMDK = (props: PropsWithLocale) => {
   const [open, setOpen] = useCMD();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -59,7 +59,7 @@ const CMDK = () => {
                   className="gap-5"
                   key={path}
                   onSelect={() => {
-                    router.push(path);
+                    router.push(path, { locale: props.locale });
                     setOpen(false);
                   }}>
                   <div className="i-mdi-paper size-5" />
@@ -147,7 +147,7 @@ const CMDK = () => {
   );
 };
 
-const NavMenu: FC<PropsWithLocale> = () => {
+const NavMenu: FC<PropsWithLocale> = (props) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   return (
     <nav className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
@@ -181,6 +181,7 @@ const NavMenu: FC<PropsWithLocale> = () => {
                     key={path.replace(/^\//, "")}
                     title={
                       <Link
+                        locale={props.locale}
                         experimental={{
                           enableViewTransition: true,
                         }}

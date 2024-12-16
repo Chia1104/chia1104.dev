@@ -4,29 +4,31 @@ import Link from "next/link";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 
-import { List } from "@/components/blog/posts";
-import { getPosts } from "@/services/feeds.service";
-import { I18N } from "@/utils/i18n";
+import { List } from "@/components/blog/notes";
+import { getNotes } from "@/services/feeds.service";
+import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const metadata: Metadata = {
-  title: "Blog",
+  title: "Notes",
 };
 
-const Page = async () => {
-  const posts = await getPosts(20);
-  const hasPosts = Array.isArray(posts.items) && posts.items.length > 0;
+const Page = async ({ params }: { params: PageParamsWithLocale }) => {
+  const { locale } = await params;
+  const notes = await getNotes(20);
+  const hasNotes = Array.isArray(notes.items) && notes.items.length > 0;
   return (
     <div className="w-full">
-      <h1>Posts</h1>
-      {hasPosts ? (
+      <h1>Notes</h1>
+      {hasNotes ? (
         <List
-          initialData={posts.items}
-          nextCursor={posts.nextCursor}
+          locale={locale}
+          initialData={notes.items}
+          nextCursor={notes.nextCursor}
           query={{
             limit: 10,
             orderBy: "id",
             sortOrder: "desc",
-            type: "post",
+            type: "note",
           }}
         />
       ) : (

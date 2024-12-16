@@ -4,7 +4,6 @@ import type { FC } from "react";
 import { useMemo } from "react";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import {
@@ -17,6 +16,7 @@ import type { Data } from "@chia/ui/timeline/types";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useDate } from "@/hooks/use-date";
+import { useRouter } from "@/i18n/routing";
 import { api } from "@/trpc/client";
 import type { I18N } from "@/utils/i18n";
 
@@ -30,7 +30,7 @@ export const NoteNavigation: FC<{
   const router = useRouter();
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger onClick={() => router.push("/notes")}>
+      <NavigationMenuTrigger onClick={() => router.push("/notes", { locale })}>
         Notes
       </NavigationMenuTrigger>
       <NavigationMenuContent>
@@ -104,11 +104,11 @@ export const List: FC<{
           subtitle: dayjs(createdAt).format("MMMM D, YYYY"),
           startDate: createdAt,
           content: excerpt,
-          link: locale ? `/${locale}/notes/${slug}` : `/notes/${slug}`,
+          link: `/${locale}/notes/${slug}`,
         } satisfies Data;
       })
     );
-  }, [isSuccess, data, isError, dayjs, locale]);
+  }, [isSuccess, data, isError, locale]);
 
   return (
     <Timeline

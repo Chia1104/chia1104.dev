@@ -4,35 +4,41 @@ import Link from "next/link";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 
-import { List } from "@/components/blog/notes";
-import { getNotes } from "@/services/feeds.service";
+import { List } from "@/components/blog/posts";
+import { getPosts } from "@/services/feeds.service";
+import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const metadata: Metadata = {
-  title: "Notes",
+  title: "Blog",
 };
 
-const Page = async () => {
-  const notes = await getNotes(20);
-  const hasNotes = Array.isArray(notes.items) && notes.items.length > 0;
+const Page = async ({ params }: { params: PageParamsWithLocale }) => {
+  const locale = (await params).locale;
+  const posts = await getPosts(20);
+  const hasPosts = Array.isArray(posts.items) && posts.items.length > 0;
   return (
     <div className="w-full">
-      <h1>Notes</h1>
-      {hasNotes ? (
+      <h1>Posts</h1>
+      {hasPosts ? (
         <List
-          initialData={notes.items}
-          nextCursor={notes.nextCursor}
+          locale={locale}
+          initialData={posts.items}
+          nextCursor={posts.nextCursor}
           query={{
             limit: 10,
             orderBy: "id",
             sortOrder: "desc",
-            type: "note",
+            type: "post",
           }}
         />
       ) : (
         <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
           <p>
             Coming soon. In the meantime, check out more{" "}
-            <Link href="/about">Information</Link> about me.
+            <Link href="/about" locale={locale}>
+              Information
+            </Link>{" "}
+            about me.
           </p>
           <ImageZoom>
             <div className="not-prose aspect-h-1 aspect-w-1 relative w-[100px]">

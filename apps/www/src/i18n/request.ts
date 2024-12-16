@@ -2,7 +2,7 @@ import { getRequestConfig } from "next-intl/server";
 
 // import { headers } from "next/headers";
 
-import { I18N, DEFAULT_LOCALE } from "@/utils/i18n";
+import { routing } from "./routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // This typically corresponds to the `[locale]` segment
@@ -12,9 +12,11 @@ export default getRequestConfig(async ({ requestLocale }) => {
   // let timeZone = headersList.get("x-vercel-ip-timezone");
   let timeZone = "Asia/Taipei";
 
+  console.log("Client TimeZone: ", timeZone);
+
   // Ensure that a valid locale is used
-  if (!locale || !Object.values(I18N).includes(locale)) {
-    locale = DEFAULT_LOCALE;
+  if (!locale || !routing.locales.includes(locale)) {
+    locale = routing.defaultLocale;
   }
 
   if (!timeZone) {

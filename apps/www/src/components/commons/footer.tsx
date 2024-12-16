@@ -18,6 +18,7 @@ import CurrentPlaying from "@/components/commons/current-playing";
 import LocaleSelector from "@/components/commons/locale-selector";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
+import type { I18N } from "@/utils/i18n";
 
 import HugeThanks from "./huge-thanks";
 
@@ -31,7 +32,7 @@ const Logo = () => (
   <Image src="/icon.png" alt="logo" width={60} height={60} loading="lazy" />
 );
 
-const Footer = () => {
+const Footer: FC<{ locale?: I18N }> = ({ locale }) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   const t = useTranslations("theme");
   return (
@@ -82,6 +83,7 @@ const Footer = () => {
                   key={path.replace(/^\//, "")}
                   title={
                     <Link
+                      locale={locale}
                       experimental={{
                         enableViewTransition: true,
                       }}
