@@ -6,7 +6,6 @@ import { withError } from "@chia/ui/hoc/with-error";
 import Image from "@chia/ui/image";
 
 import RootLayout from "@/components/commons/root-layout";
-import "@/styles/globals.css";
 
 const GlobalError = withError(
   () => {

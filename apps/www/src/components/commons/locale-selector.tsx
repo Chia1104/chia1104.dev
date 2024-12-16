@@ -19,6 +19,9 @@ const LocaleSelector = (props: ButtonProps) => {
   const pathname = usePathname();
   const changeLocale = (locale: I18N) => {
     router.push(pathname, { locale });
+    router.refresh();
+    // document.cookie = `NEXT_LOCALE=${locale};`;
+    // window.location.reload();
   };
   return (
     <Dropdown className="not-prose">
