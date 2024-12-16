@@ -78,7 +78,7 @@ const FeedNavigation: FC<Props> = ({ feeds, type }) => {
   };
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger onClick={() => router.push("/notes")}>
+      <NavigationMenuTrigger onClick={() => router.push(getLinkPrefix())}>
         {getTranslations().title}
       </NavigationMenuTrigger>
       <NavigationMenuContent>
