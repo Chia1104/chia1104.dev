@@ -7,7 +7,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTimeZone, getLocale } from "next-intl/server";
+import { getMessages, getTimeZone } from "next-intl/server";
 import { setRequestLocale } from "next-intl/server";
 import { ViewTransitions } from "next-view-transitions";
 import { notFound } from "next/navigation";
@@ -27,7 +27,7 @@ import { env } from "@/env";
 import { routing } from "@/i18n/routing";
 import "@/styles/globals.css";
 import { initDayjs } from "@/utils/dayjs";
-import type { I18N } from "@/utils/i18n";
+import { PageParamsWithLocale } from "@/utils/i18n";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -68,11 +68,13 @@ export function generateStaticParams() {
 const Layout = async ({
   children,
   modal,
+  params,
 }: {
   children: ReactNode;
   modal: ReactNode;
+  params: PageParamsWithLocale;
 }) => {
-  const locale = (await getLocale()) as I18N;
+  const locale = (await params).locale;
   if (!routing.locales.includes(locale)) {
     notFound();
   }
