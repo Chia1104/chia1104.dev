@@ -29,7 +29,13 @@ const Copyright: FC<{ className?: string }> = ({ className }) => (
 );
 
 const Logo = () => (
-  <Image src="/icon.png" alt="logo" width={60} height={60} loading="lazy" />
+  <Image
+    src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/icon.png"
+    alt="logo"
+    width={60}
+    height={60}
+    loading="lazy"
+  />
 );
 
 const Footer: FC<{ locale?: I18N }> = ({ locale }) => {

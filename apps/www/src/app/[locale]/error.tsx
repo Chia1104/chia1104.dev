@@ -16,7 +16,7 @@ const Error = withError(
           <div>
             <div className="not-prose aspect-h-1 aspect-w-1 relative w-[200px]">
               <Image
-                src="/memo.png"
+                src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/memo.png"
                 alt="memo"
                 className="object-cover"
                 fill
