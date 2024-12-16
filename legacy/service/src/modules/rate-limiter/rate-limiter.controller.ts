@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards } from "@nestjs/common";
+import { Controller, Post, UseGuards } from "@nestjs/commons";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { ThrottlerBehindProxyGuard } from "@/commons/guard/throttler.guard";

@@ -14,8 +14,8 @@ import RetroGrid from "@chia/ui/retro-grid";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";
 
-import CurrentPlaying from "@/app/[locale]/_components/current-playing";
-import LocaleSelector from "@/app/[locale]/_components/locale-selector";
+import CurrentPlaying from "@/components/commons/current-playing";
+import LocaleSelector from "@/components/commons/locale-selector";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 import { I18N } from "@/utils/i18n";

@@ -4,8 +4,8 @@ import Card from "@chia/ui/card";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import FadeIn from "@chia/ui/fade-in";
 
-import Gallery from "./_components/gallery";
-import Location from "./_components/location";
+import Gallery from "@/components/about/gallery";
+import Location from "@/components/about/location";
 
 const AboutPage = () => {
   return (

@@ -13,7 +13,7 @@ import Cursor from "@chia/ui/cursor";
 import type { Theme } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
-import { InitDayjs } from "@/components/common/init-dayjs";
+import { InitDayjs } from "@/components/commons/init-dayjs";
 import { TRPCReactProvider } from "@/trpc/client";
 
 const Toaster: FC = () => {

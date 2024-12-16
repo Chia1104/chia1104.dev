@@ -3,11 +3,10 @@ import type { FC, ReactNode } from "react";
 import type { RouterOutputs } from "@chia/api";
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
+import { NoteNavigation } from "@/components/blog/notes";
+import { PostNavigation } from "@/components/blog/posts";
 import { getPosts, getNotes } from "@/services/feeds.service";
 import { PageParamsWithLocale, I18N } from "@/utils/i18n";
-
-import { NoteNavigation } from "./_components/notes";
-import { PostNavigation } from "./_components/posts";
 
 const Navigation: FC<{
   posts?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];

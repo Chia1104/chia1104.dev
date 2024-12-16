@@ -7,10 +7,9 @@ import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
 
+import WrittenBy from "@/components/blog/written-by";
 import { getPosts, getPostBySlug } from "@/services/feeds.service";
 import { PageParamsWithLocale } from "@/utils/i18n";
-
-import WrittenBy from "../../_components/written-by";
 
 export const dynamicParams = true;
 export const revalidate = 60;

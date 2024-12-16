@@ -1,4 +1,4 @@
-import { Module, Global } from "@nestjs/common";
+import { Module, Global } from "@nestjs/commons";
 
 import ConfigModule from "@/config";
 import AuthModule from "@/modules/auth/auth.module";

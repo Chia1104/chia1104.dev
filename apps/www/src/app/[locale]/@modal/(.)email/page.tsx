@@ -1,5 +1,3 @@
-import "@/app/[locale]/contact/style.css";
-
 import Form from "./form";
 
 const Page = () => {

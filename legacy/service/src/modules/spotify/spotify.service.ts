@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/commons";
 import { Buffer } from "buffer";
 import ky from "ky";
 

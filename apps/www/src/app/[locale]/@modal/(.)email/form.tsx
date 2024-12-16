@@ -21,7 +21,7 @@ import { Meteors } from "@chia/ui/meteors";
 import ShimmerButton from "@chia/ui/shimmer-button";
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { Form } from "@/app/[locale]/contact/contact";
+import { Form } from "@/components/contact/contact";
 
 const ContactForm = () => {
   const router = useRouter();

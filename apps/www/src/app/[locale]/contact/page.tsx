@@ -5,8 +5,7 @@ import type { Metadata } from "next";
 import meta from "@chia/meta";
 import Link from "@chia/ui/link";
 
-import Contact from "./contact";
-import "./style.css";
+import Contact from "@/components/contact/contact";
 
 export const metadata: Metadata = {
   title: "Contact Me",

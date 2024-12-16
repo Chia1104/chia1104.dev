@@ -7,7 +7,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTimeZone } from "next-intl/server";
+import { getMessages, getTimeZone, getLocale } from "next-intl/server";
 import { setRequestLocale } from "next-intl/server";
 import { ViewTransitions } from "next-view-transitions";
 import { notFound } from "next/navigation";
@@ -17,17 +17,16 @@ import meta from "@chia/meta";
 import ScrollYProgress from "@chia/ui/scroll-y-progess";
 import { WWW_BASE_URL } from "@chia/utils";
 
+import Background from "@/components/commons/background";
+import Footer from "@/components/commons/footer";
+import NavMenu from "@/components/commons/nav-menu";
+import RootProvider from "@/components/commons/root-provider";
+import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
 import { routing } from "@/i18n/routing";
+import "@/styles/globals.css";
 import { initDayjs } from "@/utils/dayjs";
 import type { I18N } from "@/utils/i18n";
-
-import "../../styles/globals.css";
-import Background from "./_components/background";
-import Footer from "./_components/footer";
-import NavMenu from "./_components/nav-menu";
-import RootProvider from "./_components/root-provider";
-import { WebVitals } from "./_components/web-vitals";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -68,13 +67,11 @@ export function generateStaticParams() {
 const Layout = async ({
   children,
   modal,
-  params,
 }: {
   children: ReactNode;
   modal: ReactNode;
-  params: Promise<{ locale: I18N }>;
 }) => {
-  const locale = (await params).locale;
+  const locale = (await getLocale()) as I18N;
   if (!routing.locales.includes(locale)) {
     notFound();
   }

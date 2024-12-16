@@ -4,10 +4,9 @@ import Link from "next/link";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 
+import { List } from "@/components/blog/posts";
 import { getPosts } from "@/services/feeds.service";
 import { PageParamsWithLocale } from "@/utils/i18n";
-
-import { List } from "../_components/posts";
 
 export const metadata: Metadata = {
   title: "Blog",

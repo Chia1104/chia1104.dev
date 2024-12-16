@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import type { Metadata } from "next";
 
-import CurrentPlaying from "@/app/[locale]/_components/current-playing";
+import CurrentPlaying from "@/components/commons/current-playing";
 
 export const metadata: Metadata = {
   title: "About",
