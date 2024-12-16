@@ -1,27 +1,26 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 
-import { List } from "@/components/blog/notes";
+import FeedList from "@/components/blog/feed-list";
 import { getNotes } from "@/services/feeds.service";
-import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const metadata: Metadata = {
   title: "Notes",
 };
 
-const Page = async ({ params }: { params: PageParamsWithLocale }) => {
-  const { locale } = await params;
+const Page = async () => {
   const notes = await getNotes(20);
   const hasNotes = Array.isArray(notes.items) && notes.items.length > 0;
+  const t = await getTranslations("blog.note");
   return (
     <div className="w-full">
-      <h1>Notes</h1>
+      <h1>{t("doc-title")}</h1>
       {hasNotes ? (
-        <List
-          locale={locale}
+        <FeedList
+          type="note"
           initialData={notes.items}
           nextCursor={notes.nextCursor}
           query={{
@@ -33,10 +32,7 @@ const Page = async ({ params }: { params: PageParamsWithLocale }) => {
         />
       ) : (
         <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
-          <p>
-            Coming soon. In the meantime, check out more{" "}
-            <Link href="/about">Information</Link> about me.
-          </p>
+          <p>{t("no-content")}</p>
           <ImageZoom>
             <div className="not-prose aspect-h-1 aspect-w-1 relative w-[100px]">
               <Image
