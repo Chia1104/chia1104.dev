@@ -26,7 +26,6 @@ import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
 import { routing } from "@/i18n/routing";
 import "@/styles/globals.css";
-import { initDayjs } from "@/utils/dayjs";
 import type { I18N } from "@/utils/i18n";
 
 export const viewport: Viewport = {
@@ -80,8 +79,6 @@ const Layout = async ({
   setRequestLocale(locale);
   const messages = await getMessages();
   const timeZone = await getTimeZone();
-
-  initDayjs(locale, timeZone);
 
   return (
     <ViewTransitions>
