@@ -12,5 +12,22 @@
   },
   "home": {
     "section1": "I am a full-stack engineer with one year of experience in web development, including experience in real business production. My expertise lies in NextJS frontend development and backend services management. I excel in project management, code review, feature planning, and testing."
+  },
+  "blog": {
+    "not-translated": "此頁面尚未翻譯。或是你可以換成 {locale}。",
+    "doc-title": "部落格",
+    "toc": "目錄",
+    "otp": "在此頁面",
+    "last-updated": "最後更新",
+    "post": {
+      "doc-title": "文章",
+      "no-content": "尚無文章。",
+      "view-all": "查看全部文章"
+    },
+    "note": {
+      "doc-title": "筆記",
+      "no-content": "尚無筆記。",
+      "view-all": "查看全部筆記"
+    }
   }
 }

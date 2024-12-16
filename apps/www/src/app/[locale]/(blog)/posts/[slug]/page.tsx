@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
@@ -7,8 +8,11 @@ import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
 
+import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
-import { getPosts, getPostBySlug } from "@/services/feeds.service";
+import DateFormat from "@/components/commons/date-format";
+import { getPosts, getFeedBySlug } from "@/services/feeds.service";
+import { I18N } from "@/utils/i18n";
 import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const dynamicParams = true;
@@ -32,7 +36,7 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { slug } = await params;
   try {
-    const post = await getPostBySlug(slug);
+    const post = await getFeedBySlug(slug);
     if (!post) return {};
     return {
       title: post.title,
@@ -44,15 +48,16 @@ export const generateMetadata = async ({
   }
 };
 
-const PostDetailPage = async ({
+const Page = async ({
   params,
 }: {
   params: PageParamsWithLocale<{
     slug: string;
   }>;
 }) => {
-  const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const { slug, locale } = await params;
+  const post = await getFeedBySlug(slug);
+  const t = await getTranslations("blog");
 
   if (!post) {
     notFound();
@@ -84,7 +89,8 @@ const PostDetailPage = async ({
   return (
     <>
       <div className="flex w-full flex-col items-center">
-        <header className="mb-5 w-full self-center">
+        {locale !== I18N.ZH_TW && <FeedTranslationWarning />}
+        <header className="mb-5 w-full self-center mt-5">
           <h1
             style={{
               viewTransitionName: `view-transition-link-${post.id}`,
@@ -100,10 +106,17 @@ const PostDetailPage = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            {dayjs(post.createdAt).format("MMMM D, YYYY")}
+            <DateFormat date={post.createdAt} format="MMMM D, YYYY" />
           </span>
         </header>
-        <FeedContent {...props} updatedAt={post.updatedAt} />
+        <FeedContent
+          {...props}
+          updatedAt={post.updatedAt}
+          tocContents={{
+            label: t("otp"),
+            updated: t("last-updated"),
+          }}
+        />
         <WrittenBy
           className="w-full flex justify-start mt-10 relative"
           author="Chia1104"
@@ -117,4 +130,4 @@ const PostDetailPage = async ({
   );
 };
 
-export default PostDetailPage;
+export default Page;
