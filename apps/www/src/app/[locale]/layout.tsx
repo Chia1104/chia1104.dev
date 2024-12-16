@@ -20,6 +20,7 @@ import { WWW_BASE_URL } from "@chia/utils";
 import Background from "@/components/commons/background";
 import Footer from "@/components/commons/footer";
 import NavMenu from "@/components/commons/nav-menu";
+import RootLayout from "@/components/commons/root-layout";
 import RootProvider from "@/components/commons/root-provider";
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
@@ -84,31 +85,29 @@ const Layout = async ({
 
   return (
     <ViewTransitions>
-      <html lang={locale} suppressHydrationWarning>
+      <RootLayout locale={locale}>
         <NextIntlClientProvider messages={messages} timeZone={timeZone}>
-          <body className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full">
-            <RootProvider>
-              <Background />
-              <NavMenu locale={locale} />
-              <ScrollYProgress className="fixed top-0 z-[999]" />
-              <main>
-                {children}
-                {modal}
-              </main>
-              <Footer locale={locale} />
-            </RootProvider>
-            {env.NEXT_PUBLIC_ENV === "production" && (
-              <>
-                <VercelAnalytics />
-                <WebVitals />
-                <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID ?? ""} />
-                <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID ?? ""} />
-                <SpeedInsights />
-              </>
-            )}
-          </body>
+          <RootProvider>
+            <Background />
+            <NavMenu locale={locale} />
+            <ScrollYProgress className="fixed top-0 z-[999]" />
+            <main>
+              {children}
+              {modal}
+            </main>
+            <Footer locale={locale} />
+          </RootProvider>
+          {env.NEXT_PUBLIC_ENV === "production" && (
+            <>
+              <VercelAnalytics />
+              <WebVitals />
+              <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID ?? ""} />
+              <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID ?? ""} />
+              <SpeedInsights />
+            </>
+          )}
         </NextIntlClientProvider>
-      </html>
+      </RootLayout>
     </ViewTransitions>
   );
 };
