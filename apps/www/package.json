@@ -57,7 +57,7 @@
     "framer-motion": "12.0.0-alpha.2",
     "fumadocs-mdx": "^11.1.2",
     "fumadocs-ui": "^14.6.1",
-    "import-in-the-middle": "^1.11.3",
+    "import-in-the-middle": "^1.12.0",
     "jsdom": "^25.0.1",
     "million": "^3.1.11",
     "next": "15.1.0",
