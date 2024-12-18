@@ -1,3 +1,4 @@
+import { Popup, PopupContent, PopupTrigger } from "fumadocs-twoslash/ui";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
@@ -13,6 +14,9 @@ import Image from "next/image";
 
 export const FumadocsComponents = {
   ...defaultComponents,
+  Popup,
+  PopupContent,
+  PopupTrigger,
   Tabs,
   Tab,
   Callout,

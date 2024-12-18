@@ -5,6 +5,8 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import "@total-typescript/ts-reset";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import "fumadocs-twoslash/twoslash.css";
+import "katex/dist/katex.css";
 import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTimeZone } from "next-intl/server";
