@@ -1,5 +1,8 @@
 import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
+// import { remarkMermaid } from "@theguild/remark-mermaid";
 import type { MDXComponents } from "mdx/types";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
 
 import type { Content } from "@chia/db/schema";
 import { ContentType } from "@chia/db/types";
@@ -19,6 +22,14 @@ export const compileMDX: (
       ...FumadocsComponents,
       ...V1MDXComponents,
       ...components,
+    },
+    mdxOptions: {
+      remarkPlugins: [
+        remarkMath,
+        // remarkMermaid
+      ],
+      // Place it at first so that it won't be changed by syntax highlighter
+      rehypePlugins: (v) => [rehypeKatex, ...v],
     },
   });
 
