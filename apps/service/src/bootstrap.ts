@@ -17,6 +17,7 @@ import aiRoutes from "@/controllers/ai.controller";
 import authRoutes from "@/controllers/auth.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
+import mdxRoutes from "@/controllers/mdx.controller";
 import spotifyRoutes from "@/controllers/spotify.controller";
 import trpcRoutes from "@/controllers/trpc.controller";
 import { env } from "@/env";
@@ -132,6 +133,7 @@ const bootstrap = async <TContext extends HonoContext>(
   app.route("/api/v1/health", healthRoutes);
   app.route("/api/v1/ai", aiRoutes);
   app.route("/api/v1/spotify", spotifyRoutes);
+  app.route("/api/v1/mdx", mdxRoutes);
 
   console.log(
     `Server is running on port ${port}, go to http://localhost:${port}`
