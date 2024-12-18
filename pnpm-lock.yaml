@@ -98,7 +98,7 @@ importers:
         specifier: ^2.1.8
         version: 2.1.8(vitest@2.1.8(@types/node@22.10.2)(happy-dom@15.11.7)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0))
       bun-types:
-        specifier: ^1.1.39
+        specifier: ^1.1.40
         version: 1.1.40
       dotenv:
         specifier: ^16.4.7
@@ -11597,7 +11597,7 @@ snapshots:
   '@babel/helpers@7.26.0':
     dependencies:
       '@babel/template': 7.25.9
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@babel/parser@7.26.3':
     dependencies:
