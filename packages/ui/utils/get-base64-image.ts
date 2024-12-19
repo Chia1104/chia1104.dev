@@ -10,5 +10,5 @@ export const getBase64Image = (
     ctx?.drawImage(img, 0, 0);
   }
   const dataURL = _canvas.toDataURL("image/png");
-  return dataURL.replace(/^data:image\/?[A-z]*;base64,/, "");
+  return dataURL.replace(/^data:image\/?[A-Za-z]*;base64,/, "");
 };
