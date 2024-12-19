@@ -58,8 +58,8 @@ importers:
         specifier: ^9.0.2
         version: 9.0.2
       ky:
-        specifier: ^1.7.3
-        version: 1.7.3
+        specifier: ^1.7.4
+        version: 1.7.4
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -8407,8 +8407,8 @@ packages:
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
-  ky@1.7.3:
-    resolution: {integrity: sha512-Sz49ZWR/BjNOq+2UK1k9ONZUVq8eyuCj30Zgc8VrRNtFlTBZduzuvehUd5kjQF6/Fms3Ir3EYqzJryw9tRvsSw==}
+  ky@1.7.4:
+    resolution: {integrity: sha512-zYEr/gh7uLW2l4su11bmQ2M9xLgQLjyvx58UyNM/6nuqyWFHPX5ktMjvpev3F8QWdjSsHUpnWew4PBCswBNuMQ==}
     engines: {node: '>=18'}
 
   langium@3.0.0:
@@ -19629,7 +19629,7 @@ snapshots:
 
   kolorist@1.8.0: {}
 
-  ky@1.7.3: {}
+  ky@1.7.4: {}
 
   langium@3.0.0:
     dependencies:
@@ -20798,7 +20798,7 @@ snapshots:
 
   package-json@10.0.1:
     dependencies:
-      ky: 1.7.3
+      ky: 1.7.4
       registry-auth-token: 5.0.3
       registry-url: 6.0.1
       semver: 7.6.3
