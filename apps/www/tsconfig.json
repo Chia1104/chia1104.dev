@@ -11,5 +11,5 @@
     "module": "esnext"
   },
   "include": [".", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".next"]
+  "exclude": ["node_modules", ".next", "vitest.config.mts.timestamp-*.mjs"]
 }

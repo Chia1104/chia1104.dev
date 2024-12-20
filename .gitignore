@@ -54,3 +54,5 @@ tsconfig.tsbuildinfo
 
 .cache
 .vercel
+
+vitest.config.mts.timestamp-*.mjs
