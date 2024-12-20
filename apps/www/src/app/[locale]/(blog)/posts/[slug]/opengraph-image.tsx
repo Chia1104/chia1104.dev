@@ -5,7 +5,7 @@ import OpenGraph from "@chia/ui/open-graph";
 import { errorGenerator } from "@chia/utils";
 import dayjs from "@chia/utils/day";
 
-import { getPostBySlug } from "@/services/feeds.service";
+import { getFeedBySlug } from "@/services/feeds.service";
 
 export const alt = "Blog";
 export const size = {
@@ -15,7 +15,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function og({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug);
+  const post = await getFeedBySlug(params.slug);
   if (!post) {
     return NextResponse.json(errorGenerator(404), { status: 404 });
   }
