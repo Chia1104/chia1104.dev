@@ -180,7 +180,7 @@ importers:
         version: link:../../packages/utils
       '@hookform/resolvers':
         specifier: ^3.9.1
-        version: 3.9.1(react-hook-form@7.54.1(react@19.0.0))
+        version: 3.9.1(react-hook-form@7.54.2(react@19.0.0))
       '@internationalized/date':
         specifier: ^3.6.0
         version: 3.6.0
@@ -227,8 +227,8 @@ importers:
         specifier: ^14.6.2
         version: 14.6.2(@types/react-dom@19.0.0)(@types/react@19.0.0)(next@15.1.2(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.10.2)(typescript@5.7.2)))
       lucide-react:
-        specifier: ^0.468.0
-        version: 0.468.0(react@19.0.0)
+        specifier: ^0.469.0
+        version: 0.469.0(react@19.0.0)
       million:
         specifier: ^3.1.11
         version: 3.1.11(rollup@4.28.1)
@@ -257,8 +257,8 @@ importers:
         specifier: catalog:react19
         version: 19.0.0(react@19.0.0)
       react-hook-form:
-        specifier: ^7.54.1
-        version: 7.54.1(react@19.0.0)
+        specifier: ^7.54.2
+        version: 7.54.2(react@19.0.0)
       react-medium-image-zoom:
         specifier: ^5.2.12
         version: 5.2.12(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -466,7 +466,7 @@ importers:
         version: link:../../packages/utils
       '@hookform/resolvers':
         specifier: ^3.9.1
-        version: 3.9.1(react-hook-form@7.54.1(react@19.0.0))
+        version: 3.9.1(react-hook-form@7.54.2(react@19.0.0))
       '@next/third-parties':
         specifier: ^15.1.2
         version: 15.1.2(next@15.1.2(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(babel-plugin-react-compiler@19.0.0-beta-201e55d-20241215)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
@@ -570,8 +570,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(react@19.0.0)
       react-hook-form:
-        specifier: ^7.54.1
-        version: 7.54.1(react@19.0.0)
+        specifier: ^7.54.2
+        version: 7.54.2(react@19.0.0)
       react-medium-image-zoom:
         specifier: ^5.2.12
         version: 5.2.12(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1073,8 +1073,8 @@ importers:
         specifier: 12.0.0-alpha.2
         version: 12.0.0-alpha.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       lucide-react:
-        specifier: ^0.468.0
-        version: 0.468.0(react@19.0.0)
+        specifier: ^0.469.0
+        version: 0.469.0(react@19.0.0)
       next:
         specifier: 15.1.2
         version: 15.1.2(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.49.1)(babel-plugin-react-compiler@19.0.0-beta-201e55d-20241215)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1091,8 +1091,8 @@ importers:
         specifier: catalog:react19
         version: 19.0.0(react@19.0.0)
       react-hook-form:
-        specifier: ^7.54.1
-        version: 7.54.1(react@19.0.0)
+        specifier: ^7.54.2
+        version: 7.54.2(react@19.0.0)
       react-medium-image-zoom:
         specifier: ^5.2.12
         version: 5.2.12(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -8585,6 +8585,11 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
+  lucide-react@0.469.0:
+    resolution: {integrity: sha512-28vvUnnKQ/dBwiCQtwJw7QauYnE7yd2Cyp4tTTJpvglX4EMpbflcdBgrgToX2j71B3YvugK/NH3BGUk+E/p/Fw==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -9755,8 +9760,8 @@ packages:
     peerDependencies:
       react: '>=16.4.1'
 
-  react-hook-form@7.54.1:
-    resolution: {integrity: sha512-PUNzFwQeQ5oHiiTUO7GO/EJXGEtuun2Y1A59rLnZBBj+vNEOWt/3ERTiG1/zt7dVeJEM+4vDX/7XQ/qanuvPMg==}
+  react-hook-form@7.54.2:
+    resolution: {integrity: sha512-eHpAUgUjWbZocoQYUHposymRb4ZP6d0uwUnooL2uOybA9/3tPUvoAKqEWK1WaSiTxxOfTpffNZP7QwlnM3/gEg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -12339,9 +12344,9 @@ snapshots:
       hono: 4.6.14
       zod: 3.24.1
 
-  '@hookform/resolvers@3.9.1(react-hook-form@7.54.1(react@19.0.0))':
+  '@hookform/resolvers@3.9.1(react-hook-form@7.54.2(react@19.0.0))':
     dependencies:
-      react-hook-form: 7.54.1(react@19.0.0)
+      react-hook-form: 7.54.2(react@19.0.0)
 
   '@humanfs/core@0.19.1': {}
 
@@ -19826,6 +19831,10 @@ snapshots:
     dependencies:
       react: 19.0.0
 
+  lucide-react@0.469.0(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+
   lz-string@1.5.0: {}
 
   magic-string@0.30.17:
@@ -21262,7 +21271,7 @@ snapshots:
       react: 19.0.0
       react-async-script: 1.2.0(react@19.0.0)
 
-  react-hook-form@7.54.1(react@19.0.0):
+  react-hook-form@7.54.2(react@19.0.0):
     dependencies:
       react: 19.0.0
 
