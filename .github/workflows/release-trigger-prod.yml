@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-  paths:
-    - "apps/trigger/**"
-    - ".github/workflows/release-trigger-prod.yml"
+    paths:
+      - "apps/trigger/**"
+      - ".github/workflows/release-trigger-prod.yml"
 
 concurrency:
   group: pull-${{ github.ref }}-release-trigger-prod
