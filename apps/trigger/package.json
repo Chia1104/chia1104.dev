@@ -7,7 +7,7 @@
   "license": "ISC",
   "scripts": {
     "dev": "pnpm dlx trigger.dev@latest dev",
-    "deploy:trigger:dev": "pnpm dlx trigger.dev@latest deploy --env dev",
+    "deploy:trigger:staging": "pnpm dlx trigger.dev@latest deploy --env staging",
     "deploy:trigger": "pnpm dlx trigger.dev@latest deploy"
   },
   "dependencies": {
