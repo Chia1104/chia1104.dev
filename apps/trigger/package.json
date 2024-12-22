@@ -1,0 +1,19 @@
+{
+  "name": "trigger",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "dev": "pnpm dlx trigger.dev@latest dev",
+    "deploy:trigger:staging": "pnpm dlx trigger.dev@latest deploy --env staging",
+    "deploy:trigger": "pnpm dlx trigger.dev@latest deploy"
+  },
+  "dependencies": {
+    "@trigger.dev/sdk": "^3.3.7"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "^3.3.7"
+  }
+}
