@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd ../.. && pnpm build:dash",
-  "installCommand": "cd ../.. && rm -r apps/service && rm -r apps/www && rm -r tests && pnpm install --store=node_modules/.pnpm-store",
+  "installCommand": "cd ../.. && rm -r apps/trigger && rm -r apps/service && rm -r apps/www && rm -r tests && pnpm install --store=node_modules/.pnpm-store",
   "git": {
     "deploymentEnabled": {
       "develop": false

@@ -1,0 +1,32 @@
+name: Deploy to Trigger.dev (dev)
+
+# Requires manually calling the workflow from a branch / commit to deploy to staging
+on:
+  workflow_dispatch:
+  paths:
+    - "apps/trigger/**"
+    - ".github/workflows/release-trigger-staging.yml"
+
+concurrency:
+  group: pull-${{ github.ref }}-release-trigger-staging
+  cancel-in-progress: true
+
+env:
+  TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v4
+
+      - name: "💽️ Setup"
+        uses: ./.github/actions/setup
+
+      - name: 🚀 Deploy Trigger.dev
+        env:
+          TRIGGER_ACCESS_TOKEN: ${{ env.TRIGGER_ACCESS_TOKEN }}
+        run: |
+          cd apps/trigger && pnpm deploy:trigger:dev
