@@ -1,8 +1,16 @@
 name: Deploy to Trigger.dev (production)
 
-# Requires manually calling the workflow from a branch / commit to deploy to staging
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+  paths:
+    - "apps/trigger/**"
+    - ".github/workflows/release-trigger-prod.yml"
+
+concurrency:
+  group: pull-${{ github.ref }}-release-trigger-prod
+  cancel-in-progress: true
 
 env:
   TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
