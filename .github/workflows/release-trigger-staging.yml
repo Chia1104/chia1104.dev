@@ -3,9 +3,9 @@ name: Deploy to Trigger.dev (dev)
 # Requires manually calling the workflow from a branch / commit to deploy to staging
 on:
   workflow_dispatch:
-  paths:
-    - "apps/trigger/**"
-    - ".github/workflows/release-trigger-staging.yml"
+    paths:
+      - "apps/trigger/**"
+      - ".github/workflows/release-trigger-staging.yml"
 
 concurrency:
   group: pull-${{ github.ref }}-release-trigger-staging
