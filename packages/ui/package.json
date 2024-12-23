@@ -84,7 +84,7 @@
     "react-hook-form": "^7.54.2",
     "react-medium-image-zoom": "^5.2.12",
     "sonner": "1.7.1",
-    "tailwind-merge": "^2.5.5",
+    "tailwind-merge": "^2.6.0",
     "usehooks-ts": "^3.1.0",
     "vaul": "^1.1.2"
   },
