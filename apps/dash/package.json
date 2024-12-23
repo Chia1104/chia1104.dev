@@ -61,7 +61,7 @@
     "sharp": "0.33.5",
     "shiki": "^1.24.4",
     "sonner": "1.7.1",
-    "tailwind-merge": "^2.5.5",
+    "tailwind-merge": "^2.6.0",
     "usehooks-ts": "^3.1.0",
     "zustand": "5.0.2"
   },
