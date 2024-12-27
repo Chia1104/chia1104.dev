@@ -87,7 +87,7 @@
     "@vitest/coverage-v8": "^2.1.8",
     "bun-types": "^1.1.42",
     "dotenv": "^16.4.7",
-    "happy-dom": "^15.11.7",
+    "happy-dom": "^16.0.1",
     "husky": "^9.1.7",
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.11",
