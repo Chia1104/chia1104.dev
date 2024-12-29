@@ -953,8 +953,8 @@ importers:
         specifier: ^0.38.3
         version: 0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
       drizzle-zod:
-        specifier: ^0.6.0
-        version: 0.6.0(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1)
+        specifier: ^0.6.1
+        version: 0.6.1(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1)
       pg:
         specifier: ^8.13.1
         version: 8.13.1
@@ -7346,8 +7346,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.6.0:
-    resolution: {integrity: sha512-7K1k7Y/5Jw9D4cTlrHL3mRTLg3oaglbi4VvBIYmSAtMvYkgqvusPtra7cnntMCe1r1cBcwxhlEkfiNdU23lp2g==}
+  drizzle-zod@0.6.1:
+    resolution: {integrity: sha512-huEbUgnsuR8tupnmLiyB2F1I2H9dswI3GfM36IbIqx9i0YUeYjRsDpJVyFVeziUvI1ogT9JHRL2Q03cC4QmvxA==}
     peerDependencies:
       drizzle-orm: '>=0.36.0'
       zod: '>=3.0.0'
@@ -14203,7 +14203,7 @@ snapshots:
       color2k: 2.0.3
       deepmerge: 4.3.1
       flat: 5.0.2
-      tailwind-merge: 2.5.5
+      tailwind-merge: 2.6.0
       tailwind-variants: 0.1.20(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.10.2)(typescript@5.7.2)))
       tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.10.2)(typescript@5.7.2))
 
@@ -18530,7 +18530,7 @@ snapshots:
       pg: 8.13.1
       react: 19.0.0
 
-  drizzle-zod@0.6.0(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1):
+  drizzle-zod@0.6.1(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1):
     dependencies:
       drizzle-orm: 0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
       zod: 3.24.1
