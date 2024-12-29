@@ -396,7 +396,7 @@ importers:
         version: 0.11.1(typescript@5.7.2)(zod@3.24.1)
       drizzle-graphql:
         specifier: ^0.8.5
-        version: 0.8.5(drizzle-orm@0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(graphql@16.10.0)
+        version: 0.8.5(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(graphql@16.10.0)
       formdata-node:
         specifier: ^6.0.3
         version: 6.0.3
@@ -950,11 +950,11 @@ importers:
         specifier: workspace:*
         version: link:../ai
       drizzle-orm:
-        specifier: ^0.38.2
-        version: 0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
+        specifier: ^0.38.3
+        version: 0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
       drizzle-zod:
         specifier: ^0.6.0
-        version: 0.6.0(drizzle-orm@0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1)
+        version: 0.6.0(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1)
       pg:
         specifier: ^8.13.1
         version: 8.13.1
@@ -7246,8 +7246,8 @@ packages:
     resolution: {integrity: sha512-HmA/NeewvHywhJ2ENXD3KvOuM/+K2dGLJfxVfIHsGwaqKICJnS+Ke2L6UcSrSrtMJLJaT0Im1Qv4TFXfaZShyw==}
     hasBin: true
 
-  drizzle-orm@0.38.2:
-    resolution: {integrity: sha512-eCE3yPRAskLo1WpM9OHpFaM70tBEDsWhwR/0M3CKyztAXKR9Qs3asZlcJOEliIcUSg8GuwrlY0dmYDgmm6y5GQ==}
+  drizzle-orm@0.38.3:
+    resolution: {integrity: sha512-w41Y+PquMpSff/QDRGdItG0/aWca+/J3Sda9PPGkTxBtjWQvgU1jxlFBXdjog5tYvTu58uvi3PwR1NuCx0KeZg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -18471,9 +18471,9 @@ snapshots:
 
   dotenv@16.4.7: {}
 
-  drizzle-graphql@0.8.5(drizzle-orm@0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(graphql@16.10.0):
+  drizzle-graphql@0.8.5(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(graphql@16.10.0):
     dependencies:
-      drizzle-orm: 0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
+      drizzle-orm: 0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
       graphql: 16.10.0
       graphql-parse-resolve-info: 4.13.0(graphql@16.10.0)
     transitivePeerDependencies:
@@ -18488,7 +18488,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0):
+  drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.11.10
@@ -18497,9 +18497,9 @@ snapshots:
       pg: 8.13.1
       react: 19.0.0
 
-  drizzle-zod@0.6.0(drizzle-orm@0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1):
+  drizzle-zod@0.6.0(drizzle-orm@0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0))(zod@3.24.1):
     dependencies:
-      drizzle-orm: 0.38.2(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
+      drizzle-orm: 0.38.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.10)(@types/react@19.0.0)(bun-types@1.1.42)(pg@8.13.1)(react@19.0.0)
       zod: 3.24.1
 
   dunder-proto@1.0.1:
