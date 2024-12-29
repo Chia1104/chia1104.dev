@@ -90,7 +90,7 @@
     "happy-dom": "^16.0.1",
     "husky": "^9.1.7",
     "jest-extended": "^4.0.2",
-    "lint-staged": "^15.2.11",
+    "lint-staged": "^15.3.0",
     "msw": "^2.7.0",
     "nx": "^20.3.0",
     "prettier": "^3.4.2",
