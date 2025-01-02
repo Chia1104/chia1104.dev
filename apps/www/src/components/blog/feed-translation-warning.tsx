@@ -20,11 +20,11 @@ const FeedTranslationWarning = (props: Props) => {
   return (
     <Alert
       className={props.className}
-      type="warning"
       color="warning"
-      title={t("not-translated", { locale: tl("zh-tw") })}
+      title={"Warning"}
+      description={t("not-translated", { locale: tl("zh-tw") })}
       onClose={() => setVisible(false)}
-      visible={visible}
+      isVisible={visible}
       endContent={
         <Button size="sm" onPress={() => changeLocale("zh-tw")}>
           {tl("zh-tw")}
