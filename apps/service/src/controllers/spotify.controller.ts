@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { HTTPError } from "ky";
 
 import { getPlayList, getNowPlaying } from "@chia/api/spotify";
 import { errorGenerator } from "@chia/utils";
@@ -16,15 +15,7 @@ api.get("/playlist/:id", async (c) => {
   } catch (err) {
     console.error(err);
     c.get("sentry").captureException(err);
-    if (err instanceof HTTPError) {
-      const { response } = err;
-      return c.json(errorGenerator(response.status), {
-        status: response.status,
-      });
-    }
-    return c.json(errorGenerator(500), {
-      status: 500,
-    });
+    return c.json(errorGenerator(500), 500);
   }
 });
 
@@ -35,15 +26,7 @@ api.get("/playing", async (c) => {
   } catch (err) {
     console.error(err);
     c.get("sentry").captureException(err);
-    if (err instanceof HTTPError) {
-      const { response } = err;
-      return c.json(errorGenerator(response.status), {
-        status: response.status,
-      });
-    }
-    return c.json(errorGenerator(500), {
-      status: 500,
-    });
+    return c.json(errorGenerator(500), 500);
   }
 });
 

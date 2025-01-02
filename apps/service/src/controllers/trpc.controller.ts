@@ -73,7 +73,7 @@ api.use("*", async (c) => {
             return Reflect.get(t, p, t);
           },
         }),
-  }).then((res) => c.body(res.body, res));
+  }).then((res) => c.body(res.body ?? "No body provided", res));
 });
 
 export default api;
