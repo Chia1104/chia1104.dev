@@ -14,7 +14,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@apollo/server": "^4.11.2",
+    "@apollo/server": "^4.11.3",
     "@auth/core": "^0.37.4",
     "@auth/drizzle-adapter": "^1.7.4",
     "@chia/ai": "workspace:*",
