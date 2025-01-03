@@ -20,7 +20,7 @@ import {
   baseFeedsColumns,
   baseFeedsExtraConfig,
 } from "../libs/schema-columns";
-import { roles } from "./enums";
+import { roles, i18n } from "./enums";
 import { pgTable } from "./table";
 
 export const users = pgTable("user", {
@@ -186,6 +186,16 @@ export const contents = pgTable("content", {
   unstable_serializedSource: text("unstable_serializedSource"),
 });
 
+export const feedMeta = pgTable("feed_meta", {
+  id: serial("id").primaryKey(),
+  feedId: integer("feedId")
+    .notNull()
+    .references(() => feeds.id, { onDelete: "cascade" }),
+  mainI18n: i18n("mainI18n"),
+  mainImage: text("mainImage"),
+  summary: text("summary"),
+});
+
 export const usersRelations = relations(users, ({ many }) => ({
   feeds: many(feeds),
   assets: many(assets),
@@ -253,3 +263,4 @@ export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type Content = InferSelectModel<typeof contents>;
 export type Tag = InferSelectModel<typeof tags>;
+export type FeedMeta = InferSelectModel<typeof feedMeta>;

@@ -31,3 +31,10 @@ export const FeedOrderBy = {
 } as const;
 
 export type FeedOrderBy = (typeof FeedOrderBy)[keyof typeof FeedOrderBy];
+
+export const I18N = {
+  En: "en",
+  ZH_TW: "zh-TW",
+} as const;
+
+export type I18N = (typeof I18N)[keyof typeof I18N];

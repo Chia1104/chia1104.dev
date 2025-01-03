@@ -9,11 +9,17 @@ export const DEFAULT_SYSTEM_PROMPT =
   "Limit your response to no more than 200 characters, but make sure to construct complete sentences." +
   "Use Markdown formatting when appropriate.";
 
-export const streamGeneratedText = (request: BaseRequest) =>
+type Options = Parameters<typeof streamText>[0];
+
+export const streamGeneratedText = (
+  request: BaseRequest,
+  oprions?: Partial<Options>
+) =>
   streamText({
     model: createOpenAI({
       apiKey: request.authToken,
     })(request.modal),
     system: request.system ?? DEFAULT_SYSTEM_PROMPT,
     messages: convertToCoreMessages(request.messages),
+    ...oprions,
   });

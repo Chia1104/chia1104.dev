@@ -11,9 +11,14 @@
     "deploy:trigger": "pnpm dlx trigger.dev@latest deploy"
   },
   "dependencies": {
-    "@trigger.dev/sdk": "^3.3.7"
+    "@chia/ai": "workspace:*",
+    "@trigger.dev/core": "^3.3.7",
+    "@trigger.dev/sdk": "^3.3.7",
+    "openai": "^4.77.0"
   },
   "devDependencies": {
-    "@trigger.dev/build": "^3.3.7"
+    "@chia/tsconfig": "workspace:*",
+    "@trigger.dev/build": "^3.3.7",
+    "typescript": "catalog:"
   }
 }
