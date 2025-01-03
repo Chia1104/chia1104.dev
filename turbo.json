@@ -77,6 +77,14 @@
     "ui-add": {
       "cache": false,
       "interactive": true
+    },
+    "db:migrate": {
+      "cache": false,
+      "interactive": true
+    },
+    "db:pull": {
+      "cache": false,
+      "interactive": true
     }
   },
   "globalEnv": [

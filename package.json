@@ -48,6 +48,8 @@
     "test:debug": "turbo run test:debug --parallel",
     "db:up": "docker-compose -f db.docker-compose.yaml up",
     "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "db:pull": "turbo run db:pull",
     "db:push": "cd packages/db && pnpm run db:push",
     "db:init": "turbo run db:init --parallel",
     "db:seed": "turbo run db:seed --parallel",
