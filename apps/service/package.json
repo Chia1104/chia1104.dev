@@ -34,7 +34,7 @@
     "drizzle-graphql": "^0.8.5",
     "formdata-node": "^6.0.3",
     "graphql": "^16.10.0",
-    "hono": "^4.6.15",
+    "hono": "^4.6.16",
     "hono-rate-limiter": "^0.4.2",
     "rate-limit-redis": "^4.2.0",
     "web-streams-polyfill": "^4.0.0"
