@@ -43,7 +43,7 @@
     "@chia/ui": "workspace:*",
     "@fumadocs/mdx-remote": "^0.2.4",
     "@mdx-js/react": "^3.1.0",
-    "@nextui-org/react": "2.6.10",
+    "@nextui-org/react": "2.6.11",
     "@theguild/remark-mermaid": "^0.2.0",
     "fumadocs-core": "^14.7.0",
     "fumadocs-mdx": "^11.2.2",
