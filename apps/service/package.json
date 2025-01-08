@@ -37,7 +37,7 @@
     "hono": "^4.6.16",
     "hono-rate-limiter": "^0.4.2",
     "rate-limit-redis": "^4.2.0",
-    "web-streams-polyfill": "^4.0.0"
+    "web-streams-polyfill": "^4.1.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
