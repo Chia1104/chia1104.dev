@@ -96,7 +96,7 @@ importers:
         version: 22.10.2
       '@vitest/coverage-v8':
         specifier: ^2.1.8
-        version: 2.1.8(vitest@2.1.8(@types/node@22.10.2)(happy-dom@16.5.2)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0))
+        version: 2.1.8(vitest@2.1.8(@types/node@22.10.2)(happy-dom@16.5.3)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0))
       bun-types:
         specifier: ^1.1.42
         version: 1.1.42
@@ -104,8 +104,8 @@ importers:
         specifier: ^16.4.7
         version: 16.4.7
       happy-dom:
-        specifier: ^16.5.2
-        version: 16.5.2
+        specifier: ^16.5.3
+        version: 16.5.3
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -144,7 +144,7 @@ importers:
         version: 5.7.2
       vitest:
         specifier: ^2.1.8
-        version: 2.1.8(@types/node@22.10.2)(happy-dom@16.5.2)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0)
+        version: 2.1.8(@types/node@22.10.2)(happy-dom@16.5.3)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0)
 
   apps/dash:
     dependencies:
@@ -8102,8 +8102,8 @@ packages:
     engines: {node: '>=0.4.7'}
     hasBin: true
 
-  happy-dom@16.5.2:
-    resolution: {integrity: sha512-XWXjbbNjog3Me13Q9FQ5L1D7p4bCUdxrJndLVdsCIsCZgHpKz7HUQzAy+R2TidjKEz2Spe3gaqNpPPxOOkepyg==}
+  happy-dom@16.5.3:
+    resolution: {integrity: sha512-7zGnyROZuntn+5X84MQ535qiQ3ccm45uHl+Q7EFAcPP0NhkbrfPitqprz0GgszX91/QqsZKQ7nTYkyObCTDUjg==}
     engines: {node: '>=18.0.0'}
 
   has-bigints@1.0.2:
@@ -17284,7 +17284,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  '@vitest/coverage-v8@2.1.8(vitest@2.1.8(@types/node@22.10.2)(happy-dom@16.5.2)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0))':
+  '@vitest/coverage-v8@2.1.8(vitest@2.1.8(@types/node@22.10.2)(happy-dom@16.5.3)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -17298,7 +17298,7 @@ snapshots:
       std-env: 3.8.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.8(@types/node@22.10.2)(happy-dom@16.5.2)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0)
+      vitest: 2.1.8(@types/node@22.10.2)(happy-dom@16.5.3)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -19676,7 +19676,7 @@ snapshots:
     optionalDependencies:
       uglify-js: 3.19.3
 
-  happy-dom@16.5.2:
+  happy-dom@16.5.3:
     dependencies:
       webidl-conversions: 7.0.0
       whatwg-mimetype: 3.0.0
@@ -23629,7 +23629,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.37.0
 
-  vitest@2.1.8(@types/node@22.10.2)(happy-dom@16.5.2)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0):
+  vitest@2.1.8(@types/node@22.10.2)(happy-dom@16.5.3)(jsdom@25.0.1(bufferutil@4.0.8))(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(terser@5.37.0):
     dependencies:
       '@vitest/expect': 2.1.8
       '@vitest/mocker': 2.1.8(msw@2.7.0(@types/node@22.10.2)(typescript@5.7.2))(vite@5.4.11(@types/node@22.10.2)(terser@5.37.0))
@@ -23653,7 +23653,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.10.2
-      happy-dom: 16.5.2
+      happy-dom: 16.5.3
       jsdom: 25.0.1(bufferutil@4.0.8)
     transitivePeerDependencies:
       - less
