@@ -87,7 +87,7 @@
     "@types/lodash": "^4.17.14",
     "@types/node": "^22.10.1",
     "@vitest/coverage-v8": "^2.1.8",
-    "bun-types": "^1.1.42",
+    "bun-types": "^1.1.43",
     "dotenv": "^16.4.7",
     "happy-dom": "^16.5.3",
     "husky": "^9.1.7",
