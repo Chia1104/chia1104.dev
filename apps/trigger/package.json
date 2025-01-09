@@ -11,7 +11,7 @@
     "deploy:trigger": "pnpm dlx trigger.dev@latest deploy"
   },
   "dependencies": {
-    "@trigger.dev/sdk": "^3.3.7"
+    "@trigger.dev/sdk": "^3.3.8"
   },
   "devDependencies": {
     "@trigger.dev/build": "^3.3.7"
