@@ -444,8 +444,8 @@ importers:
   apps/trigger:
     dependencies:
       '@trigger.dev/sdk':
-        specifier: ^3.3.8
-        version: 3.3.8(bufferutil@4.0.8)(zod@3.23.8)
+        specifier: ^3.3.9
+        version: 3.3.9(bufferutil@4.0.8)(zod@3.23.8)
     devDependencies:
       '@trigger.dev/build':
         specifier: ^3.3.7
@@ -5589,12 +5589,12 @@ packages:
     resolution: {integrity: sha512-K5mAYXYbhSi8TP57VorfTlbNcbR4WIhUfjCsuSwL5tl6rVIM88ZJDdTN034XlZBh0FhAKIIIp8MUG1wt3bRjkA==}
     engines: {node: '>=18.20.0'}
 
-  '@trigger.dev/core@3.3.8':
-    resolution: {integrity: sha512-p4cnBl0NM0bSYNjJYan15dePfmitnRrMJpat0JZp4vwZNANHZUtlQ7PQjkzzbWRScjUnaRaZRd1qttLscPa8yw==}
+  '@trigger.dev/core@3.3.9':
+    resolution: {integrity: sha512-EjVkywvVlVQZU3dxBvSrN0WezgkUmhr7zzXsO1i1CtxouPG3U0/BHi2jXm0UAAMjvb/ZpbkLrOoe9bjlr3yiDQ==}
     engines: {node: '>=18.20.0'}
 
-  '@trigger.dev/sdk@3.3.8':
-    resolution: {integrity: sha512-Ztnbsrj8Ry4PWnJJZEA1AQhWl4MkQwuIXPSeh98JLYGeuxqFkBpbDOxqsE5yrWwkzyfVEsl+QADkKzblzcQ0rQ==}
+  '@trigger.dev/sdk@3.3.9':
+    resolution: {integrity: sha512-Ady71pQPuv6wTb50iGedqCeWBID5rMAgC8XK4MnyDCUKBHo+e1hqsZtXXiUsbXf54nEqyVfRpo6jIrtJ2xhoGA==}
     engines: {node: '>=18.20.0'}
     peerDependencies:
       zod: ^3.0.0
@@ -16715,7 +16715,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@trigger.dev/core@3.3.8(bufferutil@4.0.8)':
+  '@trigger.dev/core@3.3.9(bufferutil@4.0.8)':
     dependencies:
       '@electric-sql/client': 1.0.0-beta.1
       '@google-cloud/precise-date': 4.0.0
@@ -16747,12 +16747,12 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@trigger.dev/sdk@3.3.8(bufferutil@4.0.8)(zod@3.23.8)':
+  '@trigger.dev/sdk@3.3.9(bufferutil@4.0.8)(zod@3.23.8)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.52.1
       '@opentelemetry/semantic-conventions': 1.25.1
-      '@trigger.dev/core': 3.3.8(bufferutil@4.0.8)
+      '@trigger.dev/core': 3.3.9(bufferutil@4.0.8)
       chalk: 5.4.1
       cronstrue: 2.52.0
       debug: 4.4.0
