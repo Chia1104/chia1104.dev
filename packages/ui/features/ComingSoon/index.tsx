@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Code } from "@nextui-org/react";
+import { Button, Code } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
 import {

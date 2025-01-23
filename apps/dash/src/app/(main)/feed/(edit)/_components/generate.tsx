@@ -1,4 +1,4 @@
-import { Button, Tooltip } from "@nextui-org/react";
+import { Button, Tooltip } from "@heroui/react";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 

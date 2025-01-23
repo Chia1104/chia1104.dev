@@ -38,7 +38,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@chia/*"],
   experimental: {
-    optimizePackageImports: ["@nextui-org/react"],
+    optimizePackageImports: ["@heroui/react"],
     webpackBuildWorker: true,
     reactCompiler: true,
     // dynamicIO: true,

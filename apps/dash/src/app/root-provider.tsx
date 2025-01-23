@@ -2,7 +2,7 @@
 
 import type { FC, ReactNode } from "react";
 
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
@@ -31,10 +31,10 @@ const RootProvider: FC<Props> = ({ session, children, headers }) => {
     <SessionProvider session={session}>
       <TRPCReactProvider headers={headers}>
         <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-          <NextUIProvider navigate={void router.push}>
+          <HeroUIProvider navigate={void router.push}>
             <Toaster />
             {children}
-          </NextUIProvider>
+          </HeroUIProvider>
         </ThemeProvider>
       </TRPCReactProvider>
     </SessionProvider>

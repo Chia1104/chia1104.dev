@@ -3,7 +3,7 @@
 import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 
 interface Props<TError> {
   children: ReactNode;

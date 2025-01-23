@@ -3,14 +3,14 @@
 import { useId } from "react";
 import type { FC } from "react";
 
-import type { ButtonProps } from "@nextui-org/react";
+import type { ButtonProps } from "@heroui/react";
 import {
   Button,
   Dropdown,
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { motion } from "framer-motion";
 import type { Variant } from "framer-motion";
 

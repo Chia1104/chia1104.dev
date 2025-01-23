@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 
-import { Tabs, Tab, Tooltip, Button, Kbd } from "@nextui-org/react";
+import { Tabs, Tab, Tooltip, Button, Kbd } from "@heroui/react";
 import capitalize from "lodash/capitalize";
 import { useSelectedLayoutSegments } from "next/navigation";
 

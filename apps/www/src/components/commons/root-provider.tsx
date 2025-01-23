@@ -2,7 +2,7 @@
 
 import type { FC, ReactNode } from "react";
 
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import { RootProvider as FDProvider } from "fumadocs-ui/provider";
 import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
@@ -38,7 +38,7 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
   const router = useRouter();
   return (
     <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-      <NextUIProvider navigate={void router.push}>
+      <HeroUIProvider navigate={void router.push}>
         <FDProvider
           search={{
             enabled: false,
@@ -55,7 +55,7 @@ const RootProvider: FC<{ children: ReactNode; headers?: Headers }> = ({
             {children}
           </TRPCReactProvider>
         </FDProvider>
-      </NextUIProvider>
+      </HeroUIProvider>
     </ThemeProvider>
   );
 };

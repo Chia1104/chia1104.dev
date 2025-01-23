@@ -1,4 +1,4 @@
-import { nextui } from "@nextui-org/react";
+import { heroui } from "@heroui/react";
 import aspectRatio from "@tailwindcss/aspect-ratio";
 import { docsUi } from "fumadocs-ui/tailwind-plugin";
 import tailwindScrollbar from "tailwind-scrollbar";
@@ -14,7 +14,7 @@ const config: Config = {
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/contents/src/**/*.tsx",
-    "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
     "node_modules/fumadocs-ui/dist/**/*.js",
     "!./src/**/*.test.{js,ts,jsx,tsx}",
     "!./src/**/*.spec.{js,ts,jsx,tsx}",
@@ -65,7 +65,7 @@ const config: Config = {
     aspectRatio: false,
   },
   plugins: [
-    nextui({
+    heroui({
       themes: {
         light: {
           colors: {

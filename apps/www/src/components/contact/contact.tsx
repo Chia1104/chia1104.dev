@@ -8,8 +8,8 @@ import type {
   ReactElement,
 } from "react";
 
+import { Input, Textarea } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input, Textarea } from "@nextui-org/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";

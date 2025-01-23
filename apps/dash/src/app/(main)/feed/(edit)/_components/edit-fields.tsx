@@ -2,7 +2,6 @@
 
 import { useRef, useState, forwardRef, useImperativeHandle, memo } from "react";
 
-import { parseDate } from "@internationalized/date";
 import {
   Input,
   Textarea,
@@ -19,7 +18,8 @@ import {
   PopoverTrigger,
   PopoverContent,
   Skeleton,
-} from "@nextui-org/react";
+} from "@heroui/react";
+import { parseDate } from "@internationalized/date";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
 import dynamic from "next/dynamic";
