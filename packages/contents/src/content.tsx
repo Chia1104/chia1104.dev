@@ -47,7 +47,8 @@ const MDXBody = (props: { className?: string }) => {
           props.className,
           "prose dark:prose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]"
         )}>
-        {content.content}
+        {/* TODO: FIX the type */}
+        {content.content as React.ReactNode}
       </DocsBody>
     );
   }

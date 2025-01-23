@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 
 import type { TableOfContents } from "fumadocs-core/server";
+import type { MDXContent } from "mdx/types";
 
 import type { ContentType } from "@chia/db/types";
 
@@ -23,7 +24,7 @@ export type ContentProps = BaseProps &
     | {
         type: typeof ContentType.Mdx;
         toc: TableOfContents;
-        content: ReactElement;
+        content: ReactElement | MDXContent;
       }
     | {
         type: typeof ContentType.Tiptap;

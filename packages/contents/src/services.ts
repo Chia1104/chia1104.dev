@@ -48,7 +48,7 @@ export const getContentProps = async ({
       return {
         type: ContentType.Mdx,
         toc: compiled.toc,
-        content: compiled.content,
+        content: compiled.body,
       } satisfies ContentProps;
     }
     default: {
