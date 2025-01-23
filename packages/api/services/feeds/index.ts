@@ -3,6 +3,7 @@ import type { z } from "zod";
 import type {
   getInfiniteFeedsByUserId,
   getFeedBySlug as TgetFeedBySlug,
+  getFeedMetaById as TgetFeedMetaById,
 } from "@chia/db/repos/feeds";
 import { serviceRequest } from "@chia/utils";
 
@@ -31,6 +32,8 @@ export type FeedDetailDBSource = Required<
 >;
 
 export type FeedDetail = FeedDetailDBSource;
+
+export type FeedMetaResult = Awaited<ReturnType<typeof TgetFeedMetaById>>;
 
 export const getFeedsWithMetaByAdminId = withInternalRequest<
   FeedWithMeta,
@@ -75,3 +78,15 @@ export const getMeta = withInternalRequest<{ total: number }>(
       .json<{ total: number }>();
   }
 );
+
+export const getFeedMetaById = withInternalRequest<
+  FeedMetaResult | null,
+  { id: string }
+>(async (internal_requestSecret, { id }, options) => {
+  return await serviceRequest({
+    isInternal: true,
+    internal_requestSecret,
+  })
+    .get(`admin/public/feeds:meta/${id}`, options)
+    .json<FeedMetaResult | null>();
+});

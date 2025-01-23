@@ -17,4 +17,4 @@ export const content_type = pgEnum("content_type", [
   "plate",
 ]);
 
-export const i18n = pgEnum("i18n", ["en", "zh-TW"]);
+export const i18n = pgEnum("i18n", ["en", "zh-tw"]);

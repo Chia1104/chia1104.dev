@@ -4,8 +4,10 @@ import { z } from "zod";
 
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
+import { getFeedMetaById } from "@chia/api/services/feeds";
 
 import { TaskID } from "./tasks.constant";
+import { env } from "./utils/env";
 
 export type STREAMS = {
   openai: OpenAI.ChatCompletionChunk; // The type of the chunk is determined by the provider
@@ -22,9 +24,20 @@ export const feedSummarizeTask = schemaTask({
   id: TaskID.FeedSummarize,
   schema: requestSchema,
   run: async ({ modal, messages, system, feedID }) => {
+    const feedMeta = await getFeedMetaById(env.INTERNAL_REQUEST_SECRET, {
+      id: feedID,
+    });
+
+    /**
+     * TODO: handle data revalidation
+     */
+    if (feedMeta) {
+      return;
+    }
+
     const completion = streamGeneratedText({
       modal,
-      authToken: process.env.OPENAI_API_KEY ?? "",
+      authToken: env.OPENAI_API_KEY,
       messages,
       system: system ?? SYSTEM_PROMPT,
     });

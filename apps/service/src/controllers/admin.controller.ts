@@ -1,12 +1,17 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { z } from "zod";
 
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
 import { eq } from "@chia/db";
 import { schema } from "@chia/db";
-import { getInfiniteFeedsByUserId, getFeedBySlug } from "@chia/db/repos/feeds";
+import {
+  getInfiniteFeedsByUserId,
+  getFeedBySlug,
+  getFeedMetaById,
+} from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
-import { errorGenerator, getAdminId } from "@chia/utils";
+import { errorGenerator, getAdminId, numericStringSchema } from "@chia/utils";
 
 import { errorResponse } from "@/utils/error.util";
 
@@ -67,5 +72,30 @@ api.get("/public/feeds/:slug", async (c) => {
   }
   return c.json(feed);
 });
+
+api.get(
+  "/public/feeds:meta/:id",
+  zValidator(
+    "param",
+    z.object({
+      id: numericStringSchema,
+    }),
+    (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }
+  ),
+  async (c) => {
+    const id = c.req.valid("param").id;
+    const feed = await getFeedMetaById(c.var.db, {
+      feedId: id,
+    });
+    if (!feed) {
+      return c.json(null);
+    }
+    return c.json(feed);
+  }
+);
 
 export default api;

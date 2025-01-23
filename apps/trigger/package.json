@@ -5,6 +5,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "module",
   "scripts": {
     "dev": "pnpm dlx trigger.dev@latest dev",
     "deploy:trigger:staging": "pnpm dlx trigger.dev@latest deploy --env staging",
@@ -12,9 +13,13 @@
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
+    "@chia/api": "workspace:^",
+    "@chia/utils": "workspace:^",
+    "@t3-oss/env-core": "^0.11.1",
     "@trigger.dev/core": "^3.3.7",
     "@trigger.dev/sdk": "^3.3.7",
-    "openai": "^4.77.0"
+    "openai": "^4.77.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",

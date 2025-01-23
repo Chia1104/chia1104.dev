@@ -202,12 +202,19 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const feedsRelations = relations(feeds, ({ one, many }) => ({
-  content: one(contents),
+  content: one(contents, {
+    fields: [feeds.id],
+    references: [contents.feedId],
+  }),
   user: one(users, {
     fields: [feeds.userId],
     references: [users.id],
   }),
   feedsToTags: many(feedsToTags),
+  feedMeta: one(feedMeta, {
+    fields: [feeds.id],
+    references: [feedMeta.feedId],
+  }),
 }));
 
 // export const authenticatorsRelations = relations(authenticators, ({ one }) => ({
@@ -251,6 +258,13 @@ export const feedsToTagsRelations = relations(feedsToTags, ({ one }) => ({
   tag: one(tags, {
     fields: [feedsToTags.tagId],
     references: [tags.id],
+  }),
+}));
+
+export const feedMetaRelations = relations(feedMeta, ({ one }) => ({
+  feed: one(feeds, {
+    fields: [feedMeta.feedId],
+    references: [feeds.id],
   }),
 }));
 
