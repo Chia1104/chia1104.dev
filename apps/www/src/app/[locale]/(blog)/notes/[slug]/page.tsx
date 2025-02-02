@@ -106,7 +106,7 @@ const Page = async ({
             content: note.content,
           })}
           context={{
-            updatedAt: note.updatedAt,
+            updatedAt: dayjs(note.updatedAt).format("YYYY-MM-DD HH:mm"),
             type: note.contentType,
             tocContents: {
               label: t("otp"),
