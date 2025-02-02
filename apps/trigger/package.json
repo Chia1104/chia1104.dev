@@ -14,6 +14,6 @@
     "@trigger.dev/sdk": "^3.3.9"
   },
   "devDependencies": {
-    "@trigger.dev/build": "^3.3.9"
+    "@trigger.dev/build": "^3.3.12"
   }
 }
