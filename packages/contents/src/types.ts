@@ -1,3 +1,4 @@
+import type { ConfigType } from "dayjs";
 import type { TableOfContents } from "fumadocs-core/server";
 import type { MDXContent } from "mdx/types";
 
@@ -6,7 +7,7 @@ import type { ContentType } from "@chia/db/types";
 
 export interface BaseProps {
   className?: string;
-  updatedAt?: Date | string | number;
+  updatedAt?: ConfigType;
   tz?: string;
   tocContents?: {
     label?: string;

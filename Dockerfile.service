@@ -1,4 +1,4 @@
-ARG BUN_VERSION=1.1.43
+ARG BUN_VERSION=1.2.2
 ARG NODE_VERSION=22
 
 FROM oven/bun:$BUN_VERSION as runner-base
@@ -19,6 +19,7 @@ RUN apk update && \
     build-base \
     gcc \
     libc6-compat && \
+    npm install -g corepack@latest && \
     corepack enable pnpm && \
     pnpm add -g turbo && \
     ln -sf /usr/bin/python3 /usr/bin/python

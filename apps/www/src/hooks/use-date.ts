@@ -24,7 +24,7 @@ export function useDate() {
         return dayjs(date).toISOString();
       },
     };
-  }, [locale]);
+  }, [_timezone, locale]);
 
   return memoizedDateUtils;
 }

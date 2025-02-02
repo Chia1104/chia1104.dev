@@ -9,7 +9,7 @@ const Template = async ({ children }: { children: ReactNode }) => {
   const locale = (await getLocale()) as I18N;
   const timeZone = await getTimeZone();
   initDayjs(locale, timeZone);
-  return children;
+  return <>{children}</>;
 };
 
 export default Template;
