@@ -4,12 +4,11 @@ import type { ReactNode, Ref, RefObject } from "react";
 import { useRef } from "react";
 
 import { Card, CardHeader, CardBody, CardFooter, Divider } from "@heroui/react";
-import dayjs from "dayjs";
-import tz from "dayjs/plugin/timezone";
 import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 
 import { ContentType } from "@chia/db/types";
+import dayjs from "@chia/utils/day";
 
 import { ContentContext, useContent } from "./content.context";
 import type {
@@ -17,8 +16,6 @@ import type {
   BasePropsWithType,
   ContentContextProps,
 } from "./types";
-
-dayjs.extend(tz);
 
 const ContentProvider = ({
   children,
@@ -84,9 +81,7 @@ const MdxContent = (props: BaseProps) => {
             <CardFooter>
               <span className="self-start text-sm flex gap-1 items-center">
                 {content.tocContents?.updated ?? "Last updated"}:{" "}
-                {dayjs(props.updatedAt)
-                  .tz(content.tz)
-                  .format("YYYY-MM-DD HH:mm")}
+                {dayjs(props.updatedAt).format("YYYY-MM-DD HH:mm")}
                 <span className="i-mdi-pencil" />
               </span>
             </CardFooter>
