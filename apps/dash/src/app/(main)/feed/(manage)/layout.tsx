@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import { Tabs, Tab, Button } from "@nextui-org/react";
+import { Tabs, Tab, Button } from "@heroui/react";
 import { useTransitionRouter } from "next-view-transitions";
 import { useSelectedLayoutSegments } from "next/navigation";
 

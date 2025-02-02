@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 
-import { Input, Divider, Button } from "@nextui-org/react";
+import { Input, Divider, Button } from "@heroui/react";
 
 import { Provider } from "@chia/auth-core/types";
 import Card from "@chia/ui/card";

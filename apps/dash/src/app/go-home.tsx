@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
 const GoHome: FC = () => {

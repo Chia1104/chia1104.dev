@@ -1,4 +1,4 @@
-import { nextui } from "@nextui-org/react";
+import { heroui } from "@heroui/react";
 import { docsUi } from "fumadocs-ui/tailwind-plugin";
 import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
@@ -13,7 +13,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}",
     "node_modules/@chia/contents/src/**/*.tsx",
-    "node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
     "node_modules/fumadocs-ui/dist/**/*.js",
   ],
   theme: {
@@ -29,7 +29,7 @@ export default {
     },
   },
   plugins: [
-    nextui(),
+    heroui(),
     tailwindScrollbar({ nocompatible: true }),
     docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
   ],

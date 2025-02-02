@@ -2,8 +2,8 @@
 
 import type { FC, ReactNode } from "react";
 
-import { Button } from "@nextui-org/react";
-import type { ButtonProps } from "@nextui-org/react";
+import { Button } from "@heroui/react";
+import type { ButtonProps } from "@heroui/react";
 import { useFormStatus } from "react-dom";
 
 interface Props extends Omit<ButtonProps, "children"> {
