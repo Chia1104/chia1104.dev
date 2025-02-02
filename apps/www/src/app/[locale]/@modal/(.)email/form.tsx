@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 
-import { Input, Textarea } from "@nextui-org/react";
+import { Input, Textarea } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Controller } from "react-hook-form";

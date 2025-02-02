@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 
-import { Skeleton as NSkeleton } from "@nextui-org/react";
+import { Skeleton as NSkeleton } from "@heroui/react";
 
 const Skeleton: FC = () => {
   return (

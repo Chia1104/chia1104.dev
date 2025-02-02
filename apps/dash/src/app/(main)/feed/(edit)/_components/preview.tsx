@@ -11,7 +11,7 @@ import {
   Button,
   useDisclosure,
   Skeleton,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 
 import { ErrorBoundary } from "@chia/ui/error-boundary";

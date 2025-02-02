@@ -1,5 +1,3 @@
-import type { FC } from "react";
-
 import {
   Body,
   Button,
@@ -23,12 +21,7 @@ export interface Props {
   ip?: string;
 }
 
-const EmailTemplate: FC<Props> = ({
-  title = "Untitled",
-  message,
-  email,
-  ip,
-}) => {
+const EmailTemplate = ({ title = "Untitled", message, email, ip }: Props) => {
   const previewText = `You have received a message from ${email}`;
   const fromEmail = `mailto:${email}`;
   return (

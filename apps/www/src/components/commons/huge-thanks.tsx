@@ -8,7 +8,7 @@ import {
   Button,
   useDisclosure,
   Chip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import Image from "@chia/ui/image";
 import { NeonGradientCard } from "@chia/ui/neon-gradient-card";

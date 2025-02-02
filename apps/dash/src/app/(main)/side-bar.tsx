@@ -9,7 +9,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { motion } from "framer-motion";
 import { Boxes, Pencil, Settings2, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";

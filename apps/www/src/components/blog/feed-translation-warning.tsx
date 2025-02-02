@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Alert, Button } from "@nextui-org/react";
+import { Alert, Button } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
 import { useChangeLocale } from "@/hooks/use-change-locale";
