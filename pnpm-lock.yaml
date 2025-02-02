@@ -1015,19 +1015,19 @@ importers:
         version: link:../../toolings/tsconfig
       '@egoist/tailwindcss-icons':
         specifier: ^1.9.0
-        version: 1.9.0(tailwindcss@4.0.3)
+        version: 1.9.0(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3)))
       '@iconify/json':
         specifier: ^2.2.302
         version: 2.2.302
       '@tailwindcss/typography':
         specifier: ^0.5.16
-        version: 0.5.16(tailwindcss@4.0.3)
+        version: 0.5.16(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3)))
       tailwindcss:
-        specifier: 4.0.3
-        version: 4.0.3
+        specifier: 'catalog:'
+        version: 3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3))
       tailwindcss-animate:
         specifier: 1.0.7
-        version: 1.0.7(tailwindcss@4.0.3)
+        version: 1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3)))
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -12209,10 +12209,10 @@ snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
 
-  '@egoist/tailwindcss-icons@1.9.0(tailwindcss@4.0.3)':
+  '@egoist/tailwindcss-icons@1.9.0(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3)))':
     dependencies:
       '@iconify/utils': 2.2.1
-      tailwindcss: 4.0.3
+      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3))
     transitivePeerDependencies:
       - supports-color
 
@@ -17738,13 +17738,13 @@ snapshots:
     dependencies:
       tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3))
 
-  '@tailwindcss/typography@0.5.16(tailwindcss@4.0.3)':
+  '@tailwindcss/typography@0.5.16(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3)))':
     dependencies:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.0.3
+      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3))
 
   '@tanstack/query-core@5.66.0': {}
 
@@ -24375,9 +24375,9 @@ snapshots:
       tailwind-merge: 1.14.0
       tailwindcss: 4.0.3
 
-  tailwindcss-animate@1.0.7(tailwindcss@4.0.3):
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3))):
     dependencies:
-      tailwindcss: 4.0.3
+      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3))
 
   tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.12(@swc/helpers@0.5.15))(@types/node@22.13.0)(typescript@5.7.3)):
     dependencies:
