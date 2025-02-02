@@ -67,7 +67,7 @@
     "node": ">=20.6",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@9.15.5",
+  "packageManager": "pnpm@9.15.4",
   "dependencies": {
     "dayjs": "^1.11.13",
     "graphql-request": "^7.1.2",
