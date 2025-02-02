@@ -26,15 +26,15 @@
     "@hono-rate-limiter/redis": "^0.1.4",
     "@hono/auth-js": "^1.0.15",
     "@hono/graphql-server": "^0.5.1",
-    "@hono/node-server": "^1.13.7",
+    "@hono/node-server": "^1.13.8",
     "@hono/sentry": "^1.2.0",
     "@hono/trpc-server": "^0.3.4",
     "@hono/zod-validator": "^0.4.2",
-    "@t3-oss/env-core": "^0.11.1",
+    "@t3-oss/env-core": "^0.12.0",
     "drizzle-graphql": "^0.8.5",
     "formdata-node": "^6.0.3",
     "graphql": "^16.10.0",
-    "hono": "^4.6.18",
+    "hono": "^4.6.20",
     "hono-rate-limiter": "^0.4.2",
     "rate-limit-redis": "^4.2.0",
     "web-streams-polyfill": "^4.1.0"
@@ -46,7 +46,7 @@
     "eslint": "catalog:",
     "postcss": "8.5.1",
     "postcss-import": "^16.1.0",
-    "tailwindcss": "3.4.17",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }
 }

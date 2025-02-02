@@ -5,13 +5,14 @@ packages:
   - "tests/*"
 
 catalog:
-  "@tanstack/react-query": ^5.64.2
-  "@trpc/client": ^11.0.0-rc.718
-  "@trpc/react-query": ^11.0.0-rc.718
-  "@trpc/server": ^11.0.0-rc.718
-  "@trpc/next": ^11.0.0-rc.718
-  eslint: ^9.18.0
+  "@tanstack/react-query": ^5.66.0
+  "@trpc/client": ^11.0.0-rc.730
+  "@trpc/react-query": ^11.0.0-rc.730
+  "@trpc/server": ^11.0.0-rc.730
+  "@trpc/next": ^11.0.0-rc.730
+  eslint: ^9.19.0
   typescript: ^5.7.3
+  tailwindcss: 3.4.17
 
 catalogs:
   react18:
@@ -22,6 +23,6 @@ catalogs:
   react19:
     react: 19.0.0
     react-dom: 19.0.0
-    "@types/react": 19.0.0
-    "@types/react-dom": 19.0.0
+    "@types/react": 19.0.8
+    "@types/react-dom": 19.0.3
     "babel-plugin-react-compiler": beta
