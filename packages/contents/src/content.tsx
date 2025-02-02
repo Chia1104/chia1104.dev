@@ -3,13 +3,7 @@
 import type { ReactNode, Ref, RefObject } from "react";
 import { useRef } from "react";
 
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Divider,
-} from "@nextui-org/react";
+import { Card, CardHeader, CardBody, CardFooter, Divider } from "@heroui/react";
 import dayjs from "dayjs";
 import tz from "dayjs/plugin/timezone";
 import * as Base from "fumadocs-core/toc";

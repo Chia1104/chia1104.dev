@@ -14,7 +14,7 @@ const config = {
         "ion",
         "simple-icons",
       ]),
-    }),
+    }) as any,
   ],
 } satisfies Partial<Config>;
 

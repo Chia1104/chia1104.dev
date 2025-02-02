@@ -1,5 +1,4 @@
 import { heroui } from "@heroui/react";
-import { docsUi } from "fumadocs-ui/tailwind-plugin";
 import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
 
@@ -28,11 +27,7 @@ export default {
       },
     },
   },
-  plugins: [
-    heroui(),
-    tailwindScrollbar({ nocompatible: true }),
-    docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
-  ],
+  plugins: [heroui(), tailwindScrollbar({ nocompatible: true })],
   darkMode: "class",
   presets: [
     shadcnConfig,
