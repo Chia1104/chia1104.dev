@@ -17,6 +17,10 @@
       "types": "./src/content.ts",
       "default": "./src/content.tsx"
     },
+    "./content.rsc": {
+      "types": "./src/content.rsc.ts",
+      "default": "./src/content.rsc.tsx"
+    },
     "./mdx-components": {
       "types": "./src/mdx-components.ts",
       "default": "./src/mdx-components.tsx"

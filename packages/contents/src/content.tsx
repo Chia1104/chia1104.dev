@@ -14,20 +14,22 @@ import dayjs from "dayjs";
 import tz from "dayjs/plugin/timezone";
 import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
-import { DocsBody } from "fumadocs-ui/page";
 
 import { ContentType } from "@chia/db/types";
-import { cn } from "@chia/ui/utils/cn.util";
 
 import { ContentContext, useContent } from "./content.context";
-import type { ContentProps, BaseProps, BasePropsWithType } from "./types";
+import type {
+  BaseProps,
+  BasePropsWithType,
+  ContentContextProps,
+} from "./types";
 
 dayjs.extend(tz);
 
 const ContentProvider = ({
   children,
   ...props
-}: ContentProps & { children?: ReactNode }) => {
+}: ContentContextProps & { children?: ReactNode }) => {
   return <ContentContext value={props}>{children}</ContentContext>;
 };
 
@@ -35,22 +37,6 @@ const MDXInlineTOC = () => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
     return <InlineTOC items={content.toc} />;
-  }
-  return null;
-};
-const MDXBody = (props: { className?: string }) => {
-  const content = useContent();
-  if (content.type === ContentType.Mdx) {
-    return (
-      <DocsBody
-        className={cn(
-          props.className,
-          "prose dark:prose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]"
-        )}>
-        {/* TODO: FIX the type */}
-        {content.content as React.ReactNode}
-      </DocsBody>
-    );
   }
   return null;
 };
@@ -91,7 +77,7 @@ const MdxContent = (props: BaseProps) => {
         <MDXInlineTOC />
       </div>
       <div className="flex w-full relative" ref={containerRef}>
-        <MDXBody className={props.className} />
+        {props.children}
         <Card className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit ml-2">
           <CardHeader>
             {content.tocContents?.label ?? "On this page"}
@@ -127,7 +113,7 @@ const Content = ({ type, ...props }: BasePropsWithType) => {
   }
 };
 
-const Index = (props: ContentProps) => {
+const Index = (props: ContentContextProps) => {
   return (
     <ContentProvider {...props}>
       <Content {...props} />

@@ -2,9 +2,11 @@
 
 import { createContext, use } from "react";
 
-import type { ContentProps } from "./types";
+import type { ContentContextProps } from "./types";
 
-export const ContentContext = createContext<ContentProps>({} as ContentProps);
+export const ContentContext = createContext<ContentContextProps | undefined>(
+  undefined
+);
 
 export const useContent = () => {
   const context = use(ContentContext);
