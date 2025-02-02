@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",
-    "start-server-and-test": "^2.0.9",
+    "start-server-and-test": "^2.0.10",
     "typescript": "catalog:",
     "www": "workspace:*"
   }
