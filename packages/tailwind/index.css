@@ -164,48 +164,6 @@
   @apply dark:bg-dark/90 bg-white/90 backdrop-blur-sm transition ease-in-out;
 }
 
-/* @utility c-background::before {
-  content: "";
-  display: block;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: transparent radial-gradient(#bfbfbf 0.5px, transparent 0);
-  background-size: 11px 11px;
-  z-index: -4;
-} */
-
-/* @utility dark .c-background::before {
-  background-image: radial-gradient(#3e3e3e 0.5px, transparent 0);
-} */
-
-/* @utility animated-feature-cards::before {
-  @apply pointer-events-none absolute select-none rounded-3xl opacity-0 transition-opacity duration-300 hover:opacity-100;
-  background: radial-gradient(
-    1000px circle at var(--x) var(--y),
-    #f9c851 0,
-    #fca5a5 25%,
-    #fecaca 50%,
-    transparent 80%
-  );
-  z-index: -1;
-  content: "";
-  inset: -1px;
-} */
-
-/* @utility dark .animated-feature-cards::before {
-  background: radial-gradient(
-    1000px circle at var(--x) var(--y),
-    #db2777 0,
-    #c084fc 25%,
-    rgba(255, 255, 255, 0) 50%,
-    transparent 80%
-  );
-} */
-
 @layer base {
   :root {
     @apply transition-colors ease-in-out;
@@ -219,6 +177,48 @@
 
   .footer {
     @apply c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8;
+  }
+
+  .c-background::before {
+    content: "";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: transparent radial-gradient(#bfbfbf 0.5px, transparent 0);
+    background-size: 11px 11px;
+    z-index: -4;
+  }
+
+  .dark .c-background::before {
+    background-image: radial-gradient(#3e3e3e 0.5px, transparent 0);
+  }
+
+  .animated-feature-cards::before {
+    @apply pointer-events-none absolute select-none rounded-3xl opacity-0 transition-opacity duration-300 hover:opacity-100;
+    background: radial-gradient(
+      1000px circle at var(--x) var(--y),
+      #f9c851 0,
+      #fca5a5 25%,
+      #fecaca 50%,
+      transparent 80%
+    );
+    z-index: -1;
+    content: "";
+    inset: -1px;
+  }
+
+  .dark .animated-feature-cards::before {
+    background: radial-gradient(
+      1000px circle at var(--x) var(--y),
+      #db2777 0,
+      #c084fc 25%,
+      rgba(255, 255, 255, 0) 50%,
+      transparent 80%
+    );
   }
 }
 
