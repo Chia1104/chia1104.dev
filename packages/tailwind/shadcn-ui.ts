@@ -55,4 +55,7 @@ const config = {
   },
 } satisfies Partial<Config>;
 
+/**
+ * @deprecated use shadcn-ui.css instead
+ */
 export default config;

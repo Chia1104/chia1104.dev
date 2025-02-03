@@ -2,9 +2,26 @@
 @import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/shadcn-ui.css";
 @import "@chia/tailwind/novel.css";
-@import "@chia/tailwind/index.css";
+@import "@chia/tailwind/preset.css";
 
-@config "../../tailwind.config.ts";
+@source "./src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/contents/src/**/*.tsx";
+@source "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+
+/* @plugin "@chia/tailwind/animations"
+@plugin "@chia/tailwind/animations" {
+  disableTailwindAnimation: true
+} */
+
+@theme {
+  --color-primary: #00e1ff;
+  --color-secondary: #ff00e1;
+  --color-sec-text: #444444;
+  --color-bgPurple: rgba(111,66,193,0.65);
+  --color-bgPink: rgba(255,107,237,0.35);
+  --color-bgBlue: rgba(117,149,255,0.3)
+}
 
 @layer components {
   .animated-feature-cards::before {

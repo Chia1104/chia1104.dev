@@ -5,16 +5,11 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": {
-      "default": "./index.ts"
-    },
-    "./index.css": "./index.css",
-    "./animation": "./animation.ts",
-    "./egoist-icons": "./egoist-icons.ts",
-    "./shadcn-ui": "./shadcn-ui.ts",
+    "./preset.css": "./preset.css",
+    "./animations": "./animations.ts",
+    "./egoist-icons.css": "./egoist-icons.css",
     "./shadcn-ui.css": "./shadcn-ui.css",
     "./novel.css": "./novel.css",
-    "./borders.css": "./borders.css",
     "./colors.css": "./colors.css"
   },
   "scripts": {

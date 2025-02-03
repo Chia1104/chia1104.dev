@@ -1,14 +1,83 @@
 @import "tailwindcss";
 @import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/shadcn-ui.css";
-@import "@chia/tailwind/index.css";
+@import "@chia/tailwind/preset.css";
+/* TODO: fix the css */
+@import "@chia/tailwind/egoist-icons.css";
 
-@config "../../tailwind.config.ts";
+@plugin "@tailwindcss/aspect-ratio";
+@plugin "tailwind-scrollbar";
+/* TODO: fix the plugin */
+@plugin "@chia/tailwind/animations";
+
+@source "./src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/contents/src/**/*.tsx";
+@source "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/fumadocs-ui/dist/**/*.js";
+
+@theme {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 992px;
+  --breakpoint-2xl: 992px;
+
+  --color-sec-text: #444444;
+  --color-success: #4caf50;
+  --color-info: #2196f3;
+  --color-warning: #ff9800;
+  --color-danger: #f44336;
+  --color-light: #fafafa;
+  --color-dark: #212121;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-code: #24292e;
+  --color-bgPurple: rgba(111, 66, 193, 0.65);
+  --color-bgPink: rgba(255, 107, 237, 0.35);
+  --color-bgBlue: rgba(117, 149, 255, 0.3);
+
+  --animate-waving-hand: wave 3.5s ease 1s infinite;
+
+  @keyframes wave {
+    0%: {
+      transform: rotate(0.0deg)
+    }
+
+    10%: {
+      transform: rotate(14deg)
+    }
+
+    20%: {
+      transform: rotate(-8deg)
+    }
+
+    30%: {
+      transform: rotate(14deg)
+    }
+
+    40%: {
+      transform: rotate(-4deg)
+    }
+
+    50%: {
+      transform: rotate(10.0deg)
+    }
+
+    60%: {
+      transform: rotate(0.0deg)
+    }
+
+    100%: {
+      transform: rotate(0.0deg)
+    }
+  }
+}
 
 @layer components {
-  .c-scroll-bar {
+  /* .c-scroll-bar {
     @apply scrollbar-thin scrollbar-thumb-secondary scrollbar-thumb-rounded-full;
-  }
+  } */
 }
 
 html,
@@ -64,6 +133,7 @@ body {
   box-shadow: 0 0 0 1px #a7a7a7;
 }
 
-.recaptcha-style > * {
-  margin: -2px -2px -10px; /*remove borders*/
+.recaptcha-style>* {
+  /*remove borders*/
+  margin: -2px -2px -10px;
 }

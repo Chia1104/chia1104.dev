@@ -1,0 +1,6 @@
+@plugin "@egoist/tailwindcss-icons";
+
+@plugin "@egoist/tailwindcss-icons" {
+  /* TODO: fix the collections */
+  collections: "mdi", "lucide", "devicon", "logos", "ion", "simple-icons";
+}
