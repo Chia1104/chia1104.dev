@@ -1,6 +1,5 @@
-import { heroui } from "@heroui/react";
+// import { heroui } from "@heroui/react";
 import aspectRatio from "@tailwindcss/aspect-ratio";
-import { docsUi } from "fumadocs-ui/tailwind-plugin";
 import tailwindScrollbar from "tailwind-scrollbar";
 import type { Config } from "tailwindcss";
 
@@ -61,24 +60,21 @@ const config: Config = {
       },
     },
   },
-  corePlugins: {
-    aspectRatio: false,
-  },
   plugins: [
-    heroui({
-      themes: {
-        light: {
-          colors: {
-            background: {
-              DEFAULT: "#dddddd",
-            },
-          },
-        },
-      },
-    }),
+    // HeroUI issue - #4644 (https://github.com/heroui-inc/heroui/issues/4644)
+    // heroui({
+    //   themes: {
+    //     light: {
+    //       colors: {
+    //         background: {
+    //           DEFAULT: "#dddddd",
+    //         },
+    //       },
+    //     },
+    //   },
+    // }),
     aspectRatio,
     tailwindScrollbar({ nocompatible: true }),
-    docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
   ],
   darkMode: "class",
   presets: [shadcnConfig, animation(), baseConfig, egoistIcons],

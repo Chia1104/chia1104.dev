@@ -1,9 +1,9 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/shadcn-ui.css";
 @import "@chia/tailwind/index.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../../tailwind.config.ts";
 
 @layer components {
   .c-scroll-bar {
