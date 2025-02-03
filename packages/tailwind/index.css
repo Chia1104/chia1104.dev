@@ -78,26 +78,6 @@
   @apply text-sec-text dark:bg-dark/80 rounded bg-white/80 px-5 py-3 text-2xl backdrop-blur-md transition ease-in-out dark:text-white;
 }
 
-@utility main {
-  @apply flex min-h-screen flex-1 flex-col items-center justify-center px-[1rem] py-[4rem] md:px-[2rem];
-}
-
-@utility code {
-  background: #fafafa;
-  border-radius: 5px;
-  padding: 0.75rem;
-  font-size: 1.1rem;
-  font-family:
-    Menlo,
-    Monaco,
-    Lucida Console,
-    Liberation Mono,
-    DejaVu Sans Mono,
-    Bitstream Vera Sans Mono,
-    Courier New,
-    monospace;
-}
-
 @utility c-link-active {
   border-bottom-width: 0;
   background-size: 100% 3px;
@@ -122,11 +102,6 @@
   background-image: linear-gradient(transparent, transparent),
     linear-gradient(#ff9b1a, #ff9b1a);
 }
-
-/* @utility c-link-underline:hover {
-  background-size: 100% 3px;
-  background-position: 0 100%;
-} */
 
 @utility c-text-bg-primary-half {
   background-image: linear-gradient(transparent 60%, #2b2e4a 55%);
@@ -193,6 +168,11 @@
     z-index: -4;
   }
 
+  .c-link-underline:hover {
+    background-size: 100% 3px;
+    background-position: 0 100%;
+  }
+
   .dark .c-background::before {
     background-image: radial-gradient(#3e3e3e 0.5px, transparent 0);
   }
@@ -219,6 +199,26 @@
       rgba(255, 255, 255, 0) 50%,
       transparent 80%
     );
+  }
+
+  main {
+    @apply flex min-h-screen flex-1 flex-col items-center justify-center px-[1rem] py-[4rem] md:px-[2rem];
+  }
+
+  code {
+    background: #fafafa;
+    border-radius: 5px;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    font-family:
+      Menlo,
+      Monaco,
+      Lucida Console,
+      Liberation Mono,
+      DejaVu Sans Mono,
+      Bitstream Vera Sans Mono,
+      Courier New,
+      monospace;
   }
 }
 
