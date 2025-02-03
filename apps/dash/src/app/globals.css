@@ -1,14 +1,13 @@
+@import "tailwindcss";
 @import "@chia/tailwind/shadcn-ui.css";
 @import "@chia/tailwind/novel.css";
-@import "@chia/tailwind/index.css";
+/* @import "@chia/tailwind/index.css"; */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@config "../../tailwind.config.ts";
 
 @layer components {
   .animated-feature-cards::before {
-    @apply pointer-events-none absolute select-none rounded-3xl opacity-0 transition-opacity duration-300 hover:opacity-100;
+    @apply pointer-events-none absolute select-none rounded-2xl opacity-0 transition-opacity duration-300;
     background: radial-gradient(
       1000px circle at var(--x) var(--y),
       #3aecf8 0,

@@ -35,6 +35,7 @@
     "@internationalized/date": "^3.7.0",
     "@monaco-editor/react": "^4.6.0",
     "@t3-oss/env-nextjs": "^0.12.0",
+    "@tailwindcss/postcss": "^4.0.3",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/next": "catalog:",
@@ -80,7 +81,6 @@
     "babel-plugin-react-compiler": "catalog:react19",
     "eslint": "catalog:",
     "postcss": "8.5.1",
-    "postcss-import": "^16.1.0",
     "tailwind-scrollbar": "^4.0.0",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

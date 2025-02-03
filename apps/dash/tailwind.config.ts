@@ -28,18 +28,18 @@ export default {
       },
     },
   },
-  plugins: [
-    heroui(),
-    tailwindScrollbar({ nocompatible: true }),
-    docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
-  ],
+  // plugins: [
+  //   heroui(),
+  //   tailwindScrollbar({ nocompatible: true }),
+  //   docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
+  // ],
   darkMode: "class",
-  presets: [
-    shadcnConfig,
-    animation({
-      disableTailwindAnimation: true,
-    }),
-    baseConfig,
-    egoistIcons,
-  ],
+  // presets: [
+  //   shadcnConfig,
+  //   animation({
+  //     disableTailwindAnimation: true,
+  //   }),
+  //   baseConfig,
+  //   egoistIcons,
+  // ],
 } satisfies Config;

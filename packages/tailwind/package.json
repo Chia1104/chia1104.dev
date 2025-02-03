@@ -8,9 +8,14 @@
     ".": {
       "default": "./index.ts"
     },
+    "./index.css": "./index.css",
     "./animation": "./animation.ts",
     "./egoist-icons": "./egoist-icons.ts",
-    "./shadcn-ui": "./shadcn-ui.ts"
+    "./shadcn-ui": "./shadcn-ui.ts",
+    "./shadcn-ui.css": "./shadcn-ui.css",
+    "./novel.css": "./novel.css",
+    "./borders.css": "./borders.css",
+    "./colors.css": "./colors.css"
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
