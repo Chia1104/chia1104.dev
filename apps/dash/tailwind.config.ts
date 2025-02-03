@@ -1,6 +1,4 @@
-import { heroui } from "@heroui/react";
-import { docsUi } from "fumadocs-ui/tailwind-plugin";
-import tailwindScrollbar from "tailwind-scrollbar";
+// import { heroui } from "@heroui/react";
 import type { Config } from "tailwindcss";
 
 import baseConfig from "@chia/tailwind";
@@ -28,18 +26,17 @@ export default {
       },
     },
   },
-  // plugins: [
-  //   heroui(),
-  //   tailwindScrollbar({ nocompatible: true }),
-  //   docsUi({ modifyContainer: false, cssPrefix: "fd-" }),
-  // ],
+  plugins: [
+    // HeroUI issue - #4644 (https://github.com/heroui-inc/heroui/issues/4644)
+    // heroui(),
+  ],
   darkMode: "class",
-  // presets: [
-  //   shadcnConfig,
-  //   animation({
-  //     disableTailwindAnimation: true,
-  //   }),
-  //   baseConfig,
-  //   egoistIcons,
-  // ],
+  presets: [
+    shadcnConfig,
+    animation({
+      disableTailwindAnimation: true,
+    }),
+    baseConfig,
+    egoistIcons,
+  ],
 } satisfies Config;
