@@ -73,7 +73,7 @@
     "react-hook-form": "^7.54.2",
     "react-medium-image-zoom": "^5.2.13",
     "require-in-the-middle": "^7.5.0",
-    "resend": "^4.1.1",
+    "resend": "^4.1.2",
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
     "shiki": "^2.2.0",
