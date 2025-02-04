@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { FeedOrderBy } from "@chia/db/types";
-import { baseInfiniteSchema } from "@chia/db/validator/feeds";
+import {
+  baseInfiniteSchema,
+  insertFeedMetaSchema,
+} from "@chia/db/validator/feeds";
 import { numericStringSchema } from "@chia/utils";
 
 export const getFeedsWithMetaSchema = z
@@ -44,3 +47,5 @@ export const getFeedsWithMetaSchema = z
         })
       )
   );
+
+export const insertFeedMetaRequestSchema = insertFeedMetaSchema;

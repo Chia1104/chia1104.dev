@@ -1,7 +1,7 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { contents } from "../../schema";
+import { contents, feedMeta } from "../../schema";
 import { ContentType, FeedOrderBy, FeedType } from "../../types";
 import { internal_feedsOmitEmbedding } from "../internal_schema";
 
@@ -44,3 +44,7 @@ export const insertFeedContentSchema = createInsertSchema(contents).merge(
 );
 
 export type InsertFeedContentDTO = z.infer<typeof insertFeedContentSchema>;
+
+export const insertFeedMetaSchema = createInsertSchema(feedMeta);
+
+export type InsertFeedMetaDTO = z.infer<typeof insertFeedMetaSchema>;

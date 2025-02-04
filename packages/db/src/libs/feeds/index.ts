@@ -17,6 +17,7 @@ import type {
   InfiniteDTO,
   InsertFeedDTO,
   InsertFeedContentDTO,
+  InsertFeedMetaDTO,
 } from "../validator/feeds";
 
 export const getFeedBySlug = withDTO(async (db, slug: string) => {
@@ -211,7 +212,7 @@ export const createFeed = withDTO(
           .returning({ feedId: schema.feeds.id })
       )[0]?.feedId;
       if (!feedId) {
-        throw new Error("Failed to create feed");
+        trx.rollback();
       }
       await trx.insert(schema.contents).values({
         feedId,
@@ -331,3 +332,12 @@ export const getFeedMetaById = withDTO(
     };
   }
 );
+
+export const createFeedMeta = withDTO(async (db, dto: InsertFeedMetaDTO) => {
+  await db.transaction(async (trx) => {
+    await trx.insert(schema.feedMeta).values({
+      feedId: dto.feedId,
+      summary: dto.summary,
+    });
+  });
+});

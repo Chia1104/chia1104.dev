@@ -1,14 +1,21 @@
+/**
+ * TODO: implement OIDC auth flow
+ */
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 
-import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
+import {
+  getFeedsWithMetaSchema,
+  insertFeedMetaRequestSchema,
+} from "@chia/api/services/validators";
 import { eq } from "@chia/db";
 import { schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
   getFeedMetaById,
+  // createFeedMeta,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId, numericStringSchema } from "@chia/utils";
@@ -95,6 +102,24 @@ api.get(
       return c.json(null);
     }
     return c.json(feed);
+  }
+);
+
+api.post(
+  "/public/feeds:meta",
+  zValidator("json", insertFeedMetaRequestSchema, (result, c) => {
+    if (!result.success) {
+      return c.json(errorResponse(result.error), 400);
+    }
+  }),
+  (c) => {
+    return c.json(errorGenerator(501), 501);
+    // const { feedId, summary } = c.req.valid("json");
+    // await createFeedMeta(c.var.db, {
+    //   feedId,
+    //   summary,
+    // });
+    // return c.body(null, 204);
   }
 );
 
