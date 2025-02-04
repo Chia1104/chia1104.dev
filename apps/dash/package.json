@@ -59,7 +59,7 @@
     "react-medium-image-zoom": "^5.2.13",
     "server-only": "^0.0.1",
     "sharp": "0.33.5",
-    "shiki": "^2.2.0",
+    "shiki": "^2.3.0",
     "sonner": "1.7.4",
     "tailwind-merge": "^3.0.1",
     "usehooks-ts": "^3.1.0",

@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 
 import { createOpenAI } from "@chia/ai";
+import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
 import { eq, schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
@@ -12,10 +13,7 @@ import {
 import { ai, AI_AUTH_TOKEN } from "@/middlewares/ai.middleware";
 import { verifyAuth } from "@/middlewares/auth.middleware";
 import { errorResponse } from "@/utils/error.util";
-import {
-  getFeedsWithMetaSchema,
-  searchFeedsSchema,
-} from "@/validators/feeds.validator";
+import { searchFeedsSchema } from "@/validators/feeds.validator";
 
 const api = new Hono<HonoContext>();
 

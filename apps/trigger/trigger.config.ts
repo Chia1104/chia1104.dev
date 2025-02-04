@@ -4,8 +4,7 @@ export default defineConfig({
   project: "proj_xrcchuyhkluewviwoqts",
   runtime: "node",
   logLevel: "log",
-  // Set the maxDuration to 300 seconds for all tasks. See https://trigger.dev/docs/runs/max-duration
-  // maxDuration: 300,
+  maxDuration: 300,
   retries: {
     enabledInDev: true,
     default: {

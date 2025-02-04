@@ -20,7 +20,7 @@ import {
   baseFeedsColumns,
   baseFeedsExtraConfig,
 } from "../libs/schema-columns";
-import { roles } from "./enums";
+import { roles, i18n } from "./enums";
 import { pgTable } from "./table";
 
 export const users = pgTable("user", {
@@ -186,18 +186,35 @@ export const contents = pgTable("content", {
   unstable_serializedSource: text("unstable_serializedSource"),
 });
 
+export const feedMeta = pgTable("feed_meta", {
+  id: serial("id").primaryKey(),
+  feedId: integer("feedId")
+    .notNull()
+    .references(() => feeds.id, { onDelete: "cascade" }),
+  mainI18n: i18n("mainI18n"),
+  mainImage: text("mainImage"),
+  summary: text("summary"),
+});
+
 export const usersRelations = relations(users, ({ many }) => ({
   feeds: many(feeds),
   assets: many(assets),
 }));
 
 export const feedsRelations = relations(feeds, ({ one, many }) => ({
-  content: one(contents),
+  content: one(contents, {
+    fields: [feeds.id],
+    references: [contents.feedId],
+  }),
   user: one(users, {
     fields: [feeds.userId],
     references: [users.id],
   }),
   feedsToTags: many(feedsToTags),
+  feedMeta: one(feedMeta, {
+    fields: [feeds.id],
+    references: [feedMeta.feedId],
+  }),
 }));
 
 // export const authenticatorsRelations = relations(authenticators, ({ one }) => ({
@@ -244,6 +261,13 @@ export const feedsToTagsRelations = relations(feedsToTags, ({ one }) => ({
   }),
 }));
 
+export const feedMetaRelations = relations(feedMeta, ({ one }) => ({
+  feed: one(feeds, {
+    fields: [feedMeta.feedId],
+    references: [feeds.id],
+  }),
+}));
+
 export type User = InferSelectModel<typeof users>;
 export type Account = InferSelectModel<typeof accounts>;
 export type Session = InferSelectModel<typeof sessions>;
@@ -253,3 +277,4 @@ export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type Content = InferSelectModel<typeof contents>;
 export type Tag = InferSelectModel<typeof tags>;
+export type FeedMeta = InferSelectModel<typeof feedMeta>;
