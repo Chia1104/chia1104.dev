@@ -1,3 +1,4 @@
+import { syncEnvVars } from "@trigger.dev/build/extensions/core";
 import { defineConfig } from "@trigger.dev/sdk/v3";
 
 export default defineConfig({
@@ -16,4 +17,15 @@ export default defineConfig({
     },
   },
   dirs: ["tasks"],
+  build: {
+    extensions: [
+      syncEnvVars(() => {
+        return {
+          OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+          INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
+          INTERNAL_REQUEST_SECRET: process.env.INTERNAL_REQUEST_SECRET,
+        };
+      }),
+    ],
+  },
 });
