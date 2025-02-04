@@ -1,14 +1,11 @@
 @import "tailwindcss";
 @import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/shadcn-ui.css";
+@import "@chia/tailwind/animations.css";
 @import "@chia/tailwind/preset.css";
-/* TODO: fix the css */
-@import "@chia/tailwind/egoist-icons.css";
 
 @plugin "@tailwindcss/aspect-ratio";
 @plugin "tailwind-scrollbar";
-/* TODO: fix the plugin */
-@plugin "@chia/tailwind/animations";
 
 @source "./src/**/*.{js,ts,jsx,tsx}";
 @source "../../node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}";

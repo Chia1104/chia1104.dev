@@ -6,8 +6,7 @@
   "private": true,
   "exports": {
     "./preset.css": "./preset.css",
-    "./animations": "./animations.ts",
-    "./egoist-icons.css": "./egoist-icons.css",
+    "./animations.css": "./animations.css",
     "./shadcn-ui.css": "./shadcn-ui.css",
     "./novel.css": "./novel.css",
     "./colors.css": "./colors.css"

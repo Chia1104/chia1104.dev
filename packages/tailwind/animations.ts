@@ -5,6 +5,9 @@ type Options = {
   disableTailwindAnimation?: boolean;
 };
 
+/**
+ * @deprecated use `animations.css` instead
+ */
 const config = (options?: Options) => {
   options ??= {};
   const { disableTailwindAnimation = false } = options;

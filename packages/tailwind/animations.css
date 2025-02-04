@@ -1,0 +1,150 @@
+@plugin "tailwindcss-animate";
+
+@theme {
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+    --animate-cia-marquee: cia-marquee var(--duration) linear infinite;
+    --animate-cia-marquee-vertical: cia-marquee-vertical var(--duration) linear infinite;
+    --animate-cia-shimmer: cia-shimmer 8s infinite;
+    --animate-cia-grid: cia-grid 15s linear infinite;
+    --animate-cia-meteor: cia-meteor 5s linear infinite;
+    --animate-cia-border-beam: cia-border-beam calc(var(--duration)*1s) infinite linear;
+    --animate-cia-spin-around: cia-spin-around calc(var(--speed) * 2) infinite linear;
+    --animate-cia-slide: cia-slide var(--speed) ease-in-out infinite alternate;
+    --animate-cia-spotlight: cia-spotlight 2s ease .75s 1 forwards;
+    --animate-cia-background-position-spin: cia-background-position-spin 3000ms infinite alternate;
+
+    @keyframes accordion-down {
+        from {
+            height: 0;
+        }
+
+        to {
+            height: var(--radix-accordion-content-height);
+        }
+    }
+
+    @keyframes accordion-up {
+        from {
+            height: var(--radix-accordion-content-height);
+        }
+
+        to {
+            height: 0;
+        }
+    }
+
+    @keyframes cia-marquee {
+        from {
+            transform: translateX(0);
+        }
+
+        to {
+            transform: translateX(calc(-100% - var(--gap)));
+        }
+    }
+
+    @keyframes cia-marquee-vertical {
+        from {
+            transform: translateY(0);
+        }
+
+        to {
+            transform: translateY(calc(-100% - var(--gap)));
+        }
+    }
+
+    @keyframes cia-shimmer {
+
+        0%,
+        90%,
+        100% {
+            background-position: calc(-100% - var(--shimmer-width)) 0;
+        }
+
+        30%,
+        60% {
+            background-position: calc(100% + var(--shimmer-width)) 0;
+        }
+    }
+
+    @keyframes cia-grid {
+        0% {
+            transform: translateY(-50%);
+        }
+
+        100% {
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes cia-meteor {
+        0% {
+            transform: rotate(215deg) translateX(0);
+            opacity: 1;
+        }
+
+        70% {
+            opacity: 1;
+        }
+
+        100% {
+            transform: rotate(215deg) translateX(-500px);
+            opacity: 0;
+        }
+    }
+
+    @keyframes cia-border-beam {
+        100% {
+            offset-distance: 100%;
+        }
+    }
+
+    @keyframes cia-spin-around {
+        0% {
+            transform: translateZ(0) rotate(0);
+        }
+
+        15%,
+        35% {
+            transform: translateZ(0) rotate(90deg);
+        }
+
+        65%,
+        85% {
+            transform: translateZ(0) rotate(270deg);
+        }
+
+        100% {
+            transform: translateZ(0) rotate(360deg);
+        }
+    }
+
+    @keyframes cia-slide {
+        to {
+            transform: translate(calc(100cqw - 100%), 0);
+        }
+    }
+
+    @keyframes cia-spotlight {
+        0% {
+            opacity: 0;
+            transform: translate(-72%, -62%) scale(0.5);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translate(-50%, -40%) scale(1);
+        }
+    }
+
+    @keyframes cia-background-position-spin {
+        0% {
+            background-position: top center;
+        }
+
+        100% {
+            background-position: bottom center;
+        }
+    }
+}
