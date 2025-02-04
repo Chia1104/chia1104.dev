@@ -35,4 +35,4 @@ catalogs:
   triggerdotdev:
     "@trigger.dev/core": 3.3.12
     "@trigger.dev/sdk": 3.3.12
-    "@trigger.dev/build": 3.3.12
+    "@trigger.dev/build": 3.3.13
