@@ -573,7 +573,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
         mode,
         token: props.token ?? "",
       }}>
-      <div className={cn("flex flex-col", props.className)}>
+      <div className={cn("flex flex-col gap-10", props.className)}>
         <MetadataFields />
         <EditorInfo />
         <ErrorBoundary>

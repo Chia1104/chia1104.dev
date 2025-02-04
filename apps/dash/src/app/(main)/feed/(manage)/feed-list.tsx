@@ -56,7 +56,7 @@ const FeedItem = forwardRef<
     <Card ref={ref} className="dark:bg-dark/90 grid-cols-1">
       <CardHeader>
         <h4
-          className="font-medium text-large line-clamp-2"
+          className="font-medium text-xl line-clamp-2"
           style={{
             viewTransitionName: `view-transition-link-${feed.id}`,
           }}>
@@ -64,10 +64,8 @@ const FeedItem = forwardRef<
         </h4>
       </CardHeader>
       <CardBody className="gap-2">
-        <p className="text-tiny font-bold mt-auto line-clamp-2">
-          {feed.excerpt}
-        </p>
-        <span className="text-tiny font-bold flex justify-between items-center">
+        <p className="text-xs font-bold mt-auto line-clamp-2">{feed.excerpt}</p>
+        <span className="text-xs font-bold flex justify-between items-center">
           {dayjs(feed.createdAt).format("MMMM D, YYYY")}
           <span className="flex gap-2 items-center">
             <Button
@@ -110,7 +108,7 @@ export const PreviewFeedItem = ({
     <Card className="dark:bg-dark/90 grid-cols-1">
       <CardHeader>
         <h4
-          className="font-medium text-large line-clamp-2"
+          className="font-medium text-xl line-clamp-2"
           style={{
             viewTransitionName: `view-transition-link-${token}`,
           }}>
@@ -118,10 +116,10 @@ export const PreviewFeedItem = ({
         </h4>
       </CardHeader>
       <CardBody className="gap-2">
-        <p className="text-tiny font-bold mt-auto line-clamp-2">
+        <p className="text-xs font-bold mt-auto line-clamp-2">
           {feed.description}
         </p>
-        <span className="text-tiny font-bold flex justify-between items-center">
+        <span className="text-sm font-bold flex justify-between items-center">
           {dayjs(feed.createdAt).format("MMMM D, YYYY")}
           <span className="flex gap-2 items-center">
             <Button
