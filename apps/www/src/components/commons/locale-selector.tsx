@@ -6,8 +6,8 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-} from "@nextui-org/react";
-import type { ButtonProps } from "@nextui-org/react";
+} from "@heroui/react";
+import type { ButtonProps } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
 import { useRouter, usePathname } from "@/i18n/routing";

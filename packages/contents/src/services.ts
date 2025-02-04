@@ -4,11 +4,10 @@ import type { MDXComponents } from "mdx/types";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 
-import type { Content } from "@chia/db/schema";
 import { ContentType } from "@chia/db/types";
 
 import { FumadocsComponents, V1MDXComponents } from "./mdx-components";
-import type { ContentProps } from "./types";
+import type { GetContentPropsArgs, GetContentPropsReturn } from "./types";
 
 type CompileResult = ReturnType<typeof _compileMDX>;
 
@@ -36,26 +35,24 @@ export const compileMDX: (
 export const getContentProps = async ({
   contentType,
   content,
-}: {
-  contentType: ContentType;
-  content: Partial<
-    Pick<Content, "content" | "source" | "unstable_serializedSource">
-  >;
-}) => {
+}: GetContentPropsArgs): GetContentPropsReturn => {
   switch (contentType) {
     case ContentType.Mdx: {
-      const compiled = await compileMDX(content.content ?? "");
+      if (content.content == null) {
+        throw new Error("Content must have a content property");
+      }
+      const compiled = await compileMDX(content.content);
       return {
         type: ContentType.Mdx,
         toc: compiled.toc,
-        content: compiled.content,
-      } satisfies ContentProps;
+        content: compiled.body,
+      };
     }
     default: {
       return {
         type: contentType,
         content: content.content,
-      } satisfies ContentProps;
+      };
     }
   }
 };

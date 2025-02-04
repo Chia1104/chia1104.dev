@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
-import FeedContent from "@chia/contents/content";
+import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
@@ -59,7 +59,7 @@ const Page = async ({
   const note = await getFeedBySlug(slug);
   const t = await getTranslations("blog");
 
-  if (!note) {
+  if (!note?.content) {
     notFound();
   }
 
@@ -76,15 +76,6 @@ const Page = async ({
       name: "Chia1104",
     },
   };
-
-  const props = await getContentProps({
-    contentType: note.contentType,
-    content: {
-      content: note.content?.content,
-      source: note.content?.source,
-      unstable_serializedSource: note.content?.unstable_serializedSource,
-    },
-  });
 
   return (
     <>
@@ -109,12 +100,18 @@ const Page = async ({
             <DateFormat date={note.createdAt} format="MMMM D, YYYY" />
           </span>
         </header>
-        <FeedContent
-          {...props}
-          updatedAt={note.updatedAt}
-          tocContents={{
-            label: t("otp"),
-            updated: t("last-updated"),
+        <Content
+          content={getContentProps({
+            contentType: note.contentType,
+            content: note.content,
+          })}
+          context={{
+            updatedAt: dayjs(note.updatedAt).format("YYYY-MM-DD HH:mm"),
+            type: note.contentType,
+            tocContents: {
+              label: t("otp"),
+              updated: t("last-updated"),
+            },
           }}
         />
         <WrittenBy

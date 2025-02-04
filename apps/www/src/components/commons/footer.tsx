@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 
-import { Tabs, Tab, Button } from "@nextui-org/react";
+import { Tabs, Tab, Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useSelectedLayoutSegments } from "next/navigation";
@@ -54,7 +54,6 @@ const Footer: FC<{ locale?: I18N }> = ({ locale }) => {
           <HugeThanks />
         </div>
       </div>
-
       <div className="c-container z-20 flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />

@@ -1,4 +1,3 @@
-import { vercel } from "@t3-oss/env-core/presets";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
@@ -52,6 +51,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
     NEXT_PUBLIC_GA_ID: z.string().optional(),
     NEXT_PUBLIC_SERVICE_ENDPOINT: z.string().min(1),
+    NEXT_PUBLIC_DEFAULT_TIME_ZONE: z.string().min(1),
   },
 
   runtimeEnv: {
@@ -83,10 +83,12 @@ export const env = createEnv({
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
     SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
     INTERNAL_REQUEST_SECRET: process.env.INTERNAL_REQUEST_SECRET,
+    NEXT_PUBLIC_DEFAULT_TIME_ZONE:
+      process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
   emptyStringAsUndefined: true,
-  extends: [vercel(), githubEnv],
+  extends: [githubEnv],
 });

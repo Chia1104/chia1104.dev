@@ -17,6 +17,10 @@
       "types": "./src/content.ts",
       "default": "./src/content.tsx"
     },
+    "./content.rsc": {
+      "types": "./src/content.rsc.ts",
+      "default": "./src/content.rsc.tsx"
+    },
     "./mdx-components": {
       "types": "./src/mdx-components.ts",
       "default": "./src/mdx-components.tsx"
@@ -41,15 +45,16 @@
   "dependencies": {
     "@chia/db": "workspace:*",
     "@chia/ui": "workspace:*",
-    "@fumadocs/mdx-remote": "^0.2.4",
+    "@chia/utils": "workspace:*",
+    "@fumadocs/mdx-remote": "^1.1.3",
+    "@heroui/react": "2.6.14",
     "@mdx-js/react": "^3.1.0",
-    "@nextui-org/react": "2.6.10",
     "@theguild/remark-mermaid": "^0.2.0",
-    "fumadocs-core": "^14.6.8",
-    "fumadocs-mdx": "^11.2.1",
-    "fumadocs-ui": "^14.6.8",
-    "katex": "^0.16.19",
-    "next": "15.1.3",
+    "fumadocs-core": "catalog:",
+    "fumadocs-mdx": "^11.4.0",
+    "fumadocs-ui": "catalog:",
+    "katex": "^0.16.21",
+    "next": "15.1.6",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "rehype-katex": "^7.0.1",

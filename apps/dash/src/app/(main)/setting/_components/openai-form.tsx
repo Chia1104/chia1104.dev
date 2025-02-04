@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
+import { Input, Button, Divider } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input, Button, Divider } from "@nextui-org/react";
 import { useMutation } from "@tanstack/react-query";
 import { HTTPError } from "ky";
 import { Eye, EyeOff } from "lucide-react";

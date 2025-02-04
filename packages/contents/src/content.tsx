@@ -3,31 +3,24 @@
 import type { ReactNode, Ref, RefObject } from "react";
 import { useRef } from "react";
 
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Divider,
-} from "@nextui-org/react";
-import dayjs from "dayjs";
-import tz from "dayjs/plugin/timezone";
+import { Card, CardHeader, CardBody, CardFooter, Divider } from "@heroui/react";
 import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
-import { DocsBody } from "fumadocs-ui/page";
 
 import { ContentType } from "@chia/db/types";
-import { cn } from "@chia/ui/utils/cn.util";
+import dayjs from "@chia/utils/day";
 
 import { ContentContext, useContent } from "./content.context";
-import type { ContentProps, BaseProps, BasePropsWithType } from "./types";
-
-dayjs.extend(tz);
+import type {
+  BaseProps,
+  BasePropsWithType,
+  ContentContextProps,
+} from "./types";
 
 const ContentProvider = ({
   children,
   ...props
-}: ContentProps & { children?: ReactNode }) => {
+}: ContentContextProps & { children?: ReactNode }) => {
   return <ContentContext value={props}>{children}</ContentContext>;
 };
 
@@ -35,21 +28,6 @@ const MDXInlineTOC = () => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
     return <InlineTOC items={content.toc} />;
-  }
-  return null;
-};
-const MDXBody = (props: { className?: string }) => {
-  const content = useContent();
-  if (content.type === ContentType.Mdx) {
-    return (
-      <DocsBody
-        className={cn(
-          props.className,
-          "prose dark:prose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]"
-        )}>
-        {content.content}
-      </DocsBody>
-    );
   }
   return null;
 };
@@ -90,7 +68,7 @@ const MdxContent = (props: BaseProps) => {
         <MDXInlineTOC />
       </div>
       <div className="flex w-full relative" ref={containerRef}>
-        <MDXBody className={props.className} />
+        {props.children}
         <Card className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit ml-2">
           <CardHeader>
             {content.tocContents?.label ?? "On this page"}
@@ -103,9 +81,7 @@ const MdxContent = (props: BaseProps) => {
             <CardFooter>
               <span className="self-start text-sm flex gap-1 items-center">
                 {content.tocContents?.updated ?? "Last updated"}:{" "}
-                {dayjs(props.updatedAt)
-                  .tz(content.tz)
-                  .format("YYYY-MM-DD HH:mm")}
+                {dayjs(props.updatedAt).format("YYYY-MM-DD HH:mm")}
                 <span className="i-mdi-pencil" />
               </span>
             </CardFooter>
@@ -126,7 +102,7 @@ const Content = ({ type, ...props }: BasePropsWithType) => {
   }
 };
 
-const Index = (props: ContentProps) => {
+const Index = (props: ContentContextProps) => {
   return (
     <ContentProvider {...props}>
       <Content {...props} />

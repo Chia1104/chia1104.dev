@@ -36,9 +36,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  transpilePackages: ["@chia/*"],
+  transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
-    optimizePackageImports: ["@nextui-org/react"],
+    optimizePackageImports: ["@heroui/react"],
     webpackBuildWorker: true,
     reactCompiler: true,
     // dynamicIO: true,

@@ -7,7 +7,7 @@ import {
   Button,
   CardBody,
   Input,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
