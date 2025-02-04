@@ -34,5 +34,5 @@ catalogs:
     tailwindcss: 4.0.3
   triggerdotdev:
     "@trigger.dev/core": 3.3.12
-    "@trigger.dev/sdk": 3.3.12
+    "@trigger.dev/sdk": 3.3.13
     "@trigger.dev/build": 3.3.12
