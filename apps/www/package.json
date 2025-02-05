@@ -76,7 +76,7 @@
     "resend": "^4.1.2",
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
-    "shiki": "^2.3.0",
+    "shiki": "^2.3.1",
     "sonner": "1.7.4",
     "usehooks-ts": "^3.1.0",
     "zustand": "5.0.3"
