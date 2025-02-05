@@ -1,8 +1,11 @@
-import { authHandler } from "@hono/auth-js";
 import { Hono } from "hono";
+
+import { auth } from "@chia/auth-core";
 
 const api = new Hono<HonoContext>();
 
-api.use("*", authHandler());
+api.on(["GET", "POST"], "*", (c) => {
+  return auth.handler(c.req.raw);
+});
 
 export default api;

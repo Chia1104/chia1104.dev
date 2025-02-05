@@ -1,7 +1,10 @@
 "use server";
 
+import { createAuthClient } from "better-auth/client";
+
 import { signIn, signOut } from "@chia/auth";
 import { Provider } from "@chia/auth-core/types";
+import { getServiceEndPoint } from "@chia/utils";
 
 type SignInOptions =
   | {
@@ -13,6 +16,8 @@ type SignInOptions =
       redirectTo?: string;
       formData: FormData;
     };
+
+const betterAuthClient = createAuthClient();
 
 export const signInAction = async (options?: SignInOptions) => {
   options ??= { provider: Provider.google };
@@ -40,3 +45,9 @@ export const signInAction = async (options?: SignInOptions) => {
 };
 
 export const signOutAction = async () => await signOut();
+
+export const betterAuthGoogleSignIn = async () => {
+  await betterAuthClient.signIn.social({
+    provider: "google",
+  });
+};

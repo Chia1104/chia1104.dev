@@ -8,7 +8,7 @@ import { Provider } from "@chia/auth-core/types";
 import Card from "@chia/ui/card";
 import SubmitForm from "@chia/ui/submit-form";
 
-import { signInAction } from "@/server/auth.action";
+import { signInAction, betterAuthGoogleSignIn } from "@/server/auth.action";
 
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
@@ -54,14 +54,7 @@ const LoginForm = () => {
       <p className="text-center text-xs">Or sign in with social media</p>
       <div className="flex w-full justify-center gap-5">
         <Button
-          onPress={() =>
-            startTransition(() =>
-              signInAction({
-                provider: Provider.google,
-                redirectTo: "/",
-              })
-            )
-          }
+          onPress={() => startTransition(() => betterAuthGoogleSignIn())}
           isLoading={isPending}
           variant="flat"
           color="primary"

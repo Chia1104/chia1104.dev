@@ -9,6 +9,7 @@ import { logger } from "hono/logger";
 import { RedisStore } from "rate-limit-redis";
 
 import { getConfig } from "@chia/auth-core";
+import { auth } from "@chia/auth-core";
 import { createRedis } from "@chia/cache";
 import { errorGenerator } from "@chia/utils";
 
@@ -115,13 +116,33 @@ const bootstrap = async <TContext extends HonoContext>(
   const authConfig = await getConfig(undefined, {
     basePath: "/api/v1/auth",
   });
+
   /**
+   * @deprecated
    * Auth.js middleware
    */
   app.use(
     "*",
     initAuthConfig(() => authConfig)
   );
+
+  /**
+   * better-auth middleware
+   */
+  app.use("*", async (c, next) => {
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+    if (!session) {
+      c.set("user", null);
+      c.set("session", null);
+      return next();
+    }
+
+    c.set("user", session.user);
+    c.set("session", session.session);
+    return next();
+  });
+
   /**
    * Routes
    */

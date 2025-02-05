@@ -43,12 +43,18 @@ declare module "next-auth" {
 
 const AUTH_URL = env.AUTH_URL?.replace(/\/api\/auth$/, "");
 
+/**
+ * @deprecated use `better-auth` instead
+ */
 const internal_adapter = (async () =>
   adapter({
     db: await connectDatabase(),
     redis: createRedis(),
   }))();
 
+/**
+ * @deprecated use `better-auth` instead
+ */
 export const getConfig = async (req?: NextRequest) => {
   return {
     ...(getBaseConfig({
@@ -87,6 +93,9 @@ export const getConfig = async (req?: NextRequest) => {
   } satisfies NextAuthConfig;
 };
 
+/**
+ * @deprecated use `better-auth` instead
+ */
 export const validateToken = async (
   token: string
 ): Promise<NextAuthSession | null> => {
@@ -104,6 +113,9 @@ export const validateToken = async (
     : null;
 };
 
+/**
+ * @deprecated use `better-auth` instead
+ */
 export const invalidateSessionToken = async (token: string) => {
   await (await internal_adapter).deleteSession?.(token);
 };
