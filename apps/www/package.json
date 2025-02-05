@@ -55,7 +55,7 @@
     "cobe": "^0.6.3",
     "cross-env": "7.0.3",
     "framer-motion": "12.3.1",
-    "fumadocs-mdx": "^11.4.0",
+    "fumadocs-mdx": "^11.5.0",
     "fumadocs-ui": "catalog:",
     "import-in-the-middle": "^1.12.0",
     "jsdom": "^26.0.0",
