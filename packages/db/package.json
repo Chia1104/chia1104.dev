@@ -62,7 +62,6 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "@auth/core": "^0.37.4",
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",

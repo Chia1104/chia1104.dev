@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import Background from "./background";
+import Background from "../components/commons/background";
 
 const RootTemplate = ({ children }: { children: ReactNode }) => {
   return (

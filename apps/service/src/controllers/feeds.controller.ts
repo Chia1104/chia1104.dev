@@ -34,7 +34,7 @@ api.use("/", verifyAuth()).get(
       sortOrder,
       cursor: nextCursor,
       withContent: withContent === "true",
-      userId: c.get("authUser").user?.id ?? "",
+      userId: c.get("user")?.id ?? "",
     });
     return c.json(feeds);
   }

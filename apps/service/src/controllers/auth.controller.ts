@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 
-import { auth } from "@chia/auth-core";
+import { auth } from "@chia/auth";
 
 const api = new Hono<HonoContext>();
 

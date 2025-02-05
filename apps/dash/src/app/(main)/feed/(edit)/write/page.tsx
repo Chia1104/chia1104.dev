@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 
-const CreateForm = dynamic(() => import("./create-form"), {
+const CreateForm = dynamic(() => import("@/components/feed/create-form"), {
   ssr: false,
 });
 

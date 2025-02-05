@@ -71,7 +71,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@chia/auth-core": "workspace:*",
+    "@chia/auth": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
