@@ -13,11 +13,11 @@ interface Props {
 const AuthGuard = ({ children, fallback }: Props) => {
   const { data, isPending } = authClient.useSession();
 
-  if (!isPending && data) {
-    return typeof children === "function" ? children(data) : children;
+  if (isPending || !data || typeof window === "undefined") {
+    return fallback ?? null;
   }
 
-  return fallback ?? null;
+  return typeof children === "function" ? children(data) : children;
 };
 
 export default AuthGuard;

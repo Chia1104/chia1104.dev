@@ -49,20 +49,20 @@ const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
               fallback={
                 <Avatar
                   isBordered
-                  as="button"
                   className="transition-transform"
                   color="secondary"
                   size="sm"
+                  showFallback
                 />
               }>
               {(session) => (
                 <>
                   <Avatar
                     isBordered
-                    as="button"
                     className="transition-transform"
                     color="secondary"
                     size="sm"
+                    showFallback={!session.user?.image}
                     src={session.user?.image ?? ""}
                   />
                   {isMobile ? null : isHover ? (
