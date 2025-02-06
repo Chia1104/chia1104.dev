@@ -83,7 +83,9 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: [WWW_BASE_URL, DASH_BASE_URL, SERVICE_BASE_URL],
+  trustedOrigins: env.CORS_ALLOWED_ORIGIN
+    ? env.CORS_ALLOWED_ORIGIN.split(",")
+    : [],
 
   plugins: [
     magicLink({
