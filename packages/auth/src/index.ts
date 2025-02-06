@@ -1,17 +1,26 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
+import { Resend } from "resend";
 
 import { connectDatabase } from "@chia/db/client";
 import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
-import { WWW_BASE_URL, DASH_BASE_URL, SERVICE_BASE_URL } from "@chia/utils";
+import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
+import {
+  WWW_BASE_URL,
+  DASH_BASE_URL,
+  SERVICE_BASE_URL,
+  CONTACT_EMAIL,
+} from "@chia/utils";
 import { getServiceEndPoint } from "@chia/utils";
 
 import { env } from "./env";
 import { useSecureCookies, getCookieDomain } from "./utils";
 
 export const name = "auth-core";
+
+const resend = new Resend(env.RESEND_API_KEY);
 
 export const auth = betterAuth({
   socialProviders: {
@@ -78,8 +87,17 @@ export const auth = betterAuth({
 
   plugins: [
     magicLink({
-      sendMagicLink: async ({ email, token, url }, request) => {
-        // send email to user
+      sendMagicLink: async ({ email, url }) => {
+        await resend.emails.send({
+          from: CONTACT_EMAIL,
+          to: email,
+          subject: "Sign in to Chia1104.dev",
+          text: "Please click the link below to sign in",
+          react: EmailTemplate({
+            url,
+            host: new URL(url).host,
+          }),
+        });
       },
     }),
   ],

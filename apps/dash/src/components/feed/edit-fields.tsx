@@ -48,7 +48,6 @@ import {
   GenerateFeedDescription,
   GenerateFeedContent,
 } from "./generate";
-import Preview from "./preview";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -270,6 +269,8 @@ export const MetadataFields = () => {
                         : null
                     }
                     onChange={(date) => {
+                      // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                       field.onChange(dayjs(date?.toString()).valueOf());
                     }}
                   />
@@ -302,6 +303,8 @@ export const MetadataFields = () => {
                           : null
                       }
                       onChange={(date) => {
+                        // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         field.onChange(dayjs(date?.toString()).valueOf());
                       }}
                     />
@@ -371,7 +374,6 @@ export const MetadataFields = () => {
 
 const EditorInfo = memo(() => {
   const form = useFormContext<CreateFeedInput>();
-  const editFields = useEditFieldsContext();
   return (
     <>
       {form.watch("contentType") !== ContentType.Tiptap ? (
@@ -381,7 +383,6 @@ const EditorInfo = memo(() => {
           Currently, the preview feature is only available for basic markdown
           syntax
           <Spacer />
-          <Preview content={editFields.content.mdx.content} />
         </Callout>
       ) : (
         <Callout type="warn">

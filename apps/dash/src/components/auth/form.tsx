@@ -26,17 +26,17 @@ const LoginForm = () => {
       </p>
       <form
         className="flex w-4/5 flex-col gap-2"
-        // action={(e) =>
-        //   startTransition(async () => {
-        //     await authClient.signIn.magicLink({
-        //       email: e.get("email") ?? "",
-        //       callbackURL: "/",
-        //     });
-        //   })
-        // }
-      >
+        action={(formData) =>
+          startTransition(async () => {
+            const email = formData.get("email");
+            if (!email) return;
+            await authClient.signIn.magicLink({
+              email: email as string,
+              callbackURL: getCurrentDomain(),
+            });
+          })
+        }>
         <Input
-          isDisabled
           isRequired
           required
           disabled={isPending}
@@ -46,6 +46,9 @@ const LoginForm = () => {
           className="w-full"
         />
         <SubmitForm
+          /**
+           * TODO: fix the drizzle schema
+           */
           isDisabled
           variant="flat"
           color="primary"
@@ -61,7 +64,7 @@ const LoginForm = () => {
           onPress={() =>
             startTransition(async () => {
               await authClient.signIn.social({
-                provider: "google",
+                provider: Provider.google,
                 callbackURL: getCurrentDomain(),
               });
             })
@@ -77,7 +80,7 @@ const LoginForm = () => {
           onPress={() =>
             startTransition(async () => {
               await authClient.signIn.social({
-                provider: "github",
+                provider: Provider.github,
                 callbackURL: getCurrentDomain(),
               });
             })
