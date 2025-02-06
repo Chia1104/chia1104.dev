@@ -101,7 +101,7 @@ export interface PlayList {
           images: Image[];
           name: string;
           popularity: number;
-          type: artist;
+          type: "artist";
           uri: string;
         }[];
         available_markets: string[];
@@ -126,7 +126,7 @@ export interface PlayList {
         popularity: number;
         preview_url: string;
         track_number: number;
-        type: track;
+        type: "track";
         uri: string;
         is_local: boolean;
       };
