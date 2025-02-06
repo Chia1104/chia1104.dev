@@ -1,6 +1,6 @@
+import { createAuthClient } from "better-auth/client";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/react";
 
 import { Role } from "@chia/db/types";
 import { getServiceEndPoint, X_INTERNAL_REQUEST_SECRET } from "@chia/utils";
