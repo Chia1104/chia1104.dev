@@ -25,10 +25,6 @@
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/types.ts"
-    },
-    "./adapter": {
-      "types": "./src/adapter.ts",
-      "default": "./src/adapter.ts"
     }
   },
   "scripts": {
