@@ -7,12 +7,7 @@ import { connectDatabase } from "@chia/db/client";
 import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
-import {
-  WWW_BASE_URL,
-  DASH_BASE_URL,
-  SERVICE_BASE_URL,
-  CONTACT_EMAIL,
-} from "@chia/utils";
+import { CONTACT_EMAIL } from "@chia/utils";
 import { getServiceEndPoint } from "@chia/utils";
 
 import { env } from "./env";
