@@ -8,8 +8,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { CreateFeedInput } from "@chia/api/trpc/validators";
 
-import type { EditFieldsContext } from "./edit-fields.context";
-import { DEFAULT_EDIT_FIELDS_CONTEXT } from "./edit-fields.context";
+import type { EditFieldsContext } from "@/components/feed/edit-fields.context";
+import { DEFAULT_EDIT_FIELDS_CONTEXT } from "@/components/feed/edit-fields.context";
 
 export interface DraftState {
   draft: Partial<CreateFeedInput>;

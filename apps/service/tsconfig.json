@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "types": ["node", "bun-types"],
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
+    "jsxImportSource": "react",
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]

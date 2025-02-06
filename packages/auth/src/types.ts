@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { auth } from "./";
+
 export const Provider = {
   google: "google",
   github: "github",
@@ -10,5 +12,4 @@ export type Provider = (typeof Provider)[keyof typeof Provider];
 
 export const providerSchema = z.nativeEnum(Provider);
 
-export type { Session } from "@auth/core/types";
-export type { Adapter, AdapterSession, AdapterUser } from "@auth/core/adapters";
+export type Session = typeof auth.$Infer.Session;

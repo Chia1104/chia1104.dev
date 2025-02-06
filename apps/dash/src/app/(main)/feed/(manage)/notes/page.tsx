@@ -1,6 +1,6 @@
 import "server-only";
 
-import FeedList from "../feed-list";
+import FeedList from "@/components/feed/feed-list";
 
 export const dynamic = "force-dynamic";
 

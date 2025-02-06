@@ -2,9 +2,8 @@
 
 import type { ReactNode } from "react";
 
-import { useSession } from "next-auth/react";
-
-import type { Session } from "@chia/auth";
+import { authClient } from "@chia/auth/client";
+import type { Session } from "@chia/auth/types";
 
 interface Props {
   children: ReactNode | ((session: Session) => ReactNode);
@@ -12,9 +11,9 @@ interface Props {
 }
 
 const AuthGuard = ({ children, fallback }: Props) => {
-  const { status, data } = useSession();
+  const { data, isPending } = authClient.useSession();
 
-  if (status === "authenticated") {
+  if (!isPending && data) {
     return typeof children === "function" ? children(data) : children;
   }
 

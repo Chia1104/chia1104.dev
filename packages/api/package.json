@@ -22,8 +22,8 @@
       "default": "./github/env.ts"
     },
     "./github/types": {
-      "types": "./github/types.d.ts",
-      "default": "./github/types.d.ts"
+      "types": "./github/types.ts",
+      "default": "./github/types.ts"
     },
     "./spotify": {
       "types": "./spotify/index.ts",
@@ -34,8 +34,8 @@
       "default": "./spotify/env.ts"
     },
     "./spotify/types": {
-      "types": "./spotify/types.d.ts",
-      "default": "./spotify/types.d.ts"
+      "types": "./spotify/types.ts",
+      "default": "./spotify/types.ts"
     },
     "./spotify/validator": {
       "types": "./spotify/validator.ts",
@@ -71,7 +71,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@chia/auth-core": "workspace:*",
+    "@chia/auth": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",

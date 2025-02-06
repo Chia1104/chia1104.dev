@@ -8,12 +8,11 @@ import {
   CardBody,
   Input,
 } from "@heroui/react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import type { Session } from "@chia/auth-core/types";
+import type { Session } from "@chia/auth/types";
 import {
   FormControl,
   FormField,
@@ -24,14 +23,11 @@ import {
 
 import { api } from "@/trpc/client";
 
-const UserProfileForm = () => {
-  const session = useSession();
-  const form = useForm<Session["user"]>({
-    defaultValues: {
-      image: session.data?.user.image,
-      name: session.data?.user.name,
-      email: session.data?.user.email,
-    },
+const UserProfileForm = (props: {
+  defaultValues: Partial<Session["user"]>;
+}) => {
+  const form = useForm<Partial<Session["user"]>>({
+    defaultValues: props.defaultValues,
   });
 
   const router = useRouter();
@@ -49,7 +45,7 @@ const UserProfileForm = () => {
 
   const onSubmit = form.handleSubmit((values) => {
     updateProfile.mutate({
-      id: session.data?.user.id ?? "",
+      id: props.defaultValues.id ?? "",
       name: values.name,
       image: values.image,
     });

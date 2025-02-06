@@ -4,38 +4,50 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "//": "https://github.com/reactjs/rfcs/blob/main/text/0227-server-module-conventions.md#poisoned-imports",
   "exports": {
     ".": {
-      "react-server": "./src/index.rsc.ts",
+      "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./src/client.ts",
+      "react-server": "./src/client.rsc.ts"
+    },
+    "./utils": {
+      "types": "./src/utils.ts",
+      "default": "./src/utils.ts"
+    },
+    "./env": {
+      "types": "./src/env.ts",
+      "default": "./src/env.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
     }
   },
   "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules dist .cache"
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@auth/core": "^0.37.4",
-    "@auth/drizzle-adapter": "^1.7.4",
-    "@chia/auth-core": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
-    "@chia/eslint-config": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@react-email/render": "^1.0.4",
     "@t3-oss/env-core": "^0.12.0",
-    "next-auth": "5.0.0-beta.25",
-    "react": "catalog:react19"
+    "better-auth": "^1.1.15",
+    "resend": "^4.1.2"
   },
   "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
-    "@types/react": "catalog:react19",
     "eslint": "catalog:",
-    "next": "15.1.6",
     "typescript": "catalog:"
   }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "chia_account" ALTER COLUMN "type" DROP NOT NULL;

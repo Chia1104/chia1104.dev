@@ -15,6 +15,8 @@ catalog:
   tailwindcss: 3.4.17
   fumadocs-core: 14.7.7
   fumadocs-ui: 14.7.7
+  "@fumadocs/mdx-remote": 1.1.2
+  fumadocs-mdx: 11.3.1
 
 catalogs:
   react18:

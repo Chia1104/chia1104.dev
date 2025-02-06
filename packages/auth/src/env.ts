@@ -12,10 +12,10 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string().min(1)
         : z.string().min(1).optional(),
-    AUTH_REDIRECT_PROXY_URL: z.string().optional(),
     AUTH_URL: z.string().optional(),
     AUTH_COOKIE_DOMAIN: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
+    INTERNAL_REQUEST_SECRET: z.string().optional(),
   },
   runtimeEnv: {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -23,10 +23,10 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     AUTH_SECRET: process.env.AUTH_SECRET,
-    AUTH_REDIRECT_PROXY_URL: process.env.AUTH_REDIRECT_PROXY_URL,
     AUTH_URL: process.env.AUTH_URL,
     AUTH_COOKIE_DOMAIN: process.env.AUTH_COOKIE_DOMAIN ?? ".chia1104.dev",
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    INTERNAL_REQUEST_SECRET: process.env.INTERNAL_REQUEST_SECRET,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

@@ -15,8 +15,8 @@ import dayjs from "@chia/utils/day";
 
 import { api } from "@/trpc/client";
 
-import type { Ref } from "../../_components/edit-fields";
-import EditFields from "../../_components/edit-fields";
+import type { Ref } from "./edit-fields";
+import EditFields from "./edit-fields";
 
 const EditForm = ({
   defaultValues,

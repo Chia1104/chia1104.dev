@@ -1,5 +1,3 @@
-import type { AuthConfig } from "@auth/core";
-
 import type { env as internalEnv } from "./env";
 
 export const useSecureCookies = process.env.NODE_ENV === "production";
@@ -44,36 +42,3 @@ export const sessionCookieOptions = (env?: Partial<typeof internalEnv>) =>
     secure: useSecureCookies,
     domain: getCookieDomain({ env }),
   }) as const;
-
-export const getBaseConfig = <TRequest extends Request = Request>(options?: {
-  /**
-   * @deprecated use `env` instead
-   */
-  req?: TRequest;
-  env?: Partial<typeof internalEnv>;
-  config?: Partial<Omit<AuthConfig, "raw">>;
-}) => {
-  options ??= {};
-  const { env, config } = options;
-  return {
-    useSecureCookies,
-    cookies: {
-      sessionToken: {
-        name: SESSION_TOKEN,
-        options: sessionCookieOptions(env),
-      },
-    },
-    callbacks: {
-      session: ({ session, user }) => ({
-        ...session,
-        user: {
-          ...session.user,
-          role: user.role,
-          id: user.id,
-        },
-      }),
-    },
-    secret: env?.AUTH_SECRET,
-    ...config,
-  } satisfies Omit<AuthConfig, "adapter" | "providers">;
-};

@@ -12,16 +12,17 @@ import {
 } from "@heroui/react";
 import { motion } from "framer-motion";
 import { Boxes, Pencil, Settings2, LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
 import { useSelectedLayoutSegments } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useHover } from "usehooks-ts";
 
+import { authClient } from "@chia/auth/client";
 import Link from "@chia/ui/link";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";
 import useIsMobile from "@chia/ui/utils/use-is-mobile";
 
-import AuthGuard from "@/components/auth-guard/index.client";
+import AuthGuard from "@/components/commons/auth-guard";
 
 const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
   const asideRef = useRef<HTMLElement>(null);
@@ -29,6 +30,7 @@ const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
   const isMobile = useIsMobile();
   const [, startTransition] = useTransition();
   const selectedLayoutSegments = useSelectedLayoutSegments();
+  const router = useRouter();
   return (
     <div className="grid h-screen w-full pl-[56px]">
       <motion.aside
@@ -165,7 +167,17 @@ const SideBar: FC<{ children?: ReactNode }> = ({ children }) => {
               <Button
                 color="danger"
                 variant="flat"
-                onPress={() => startTransition(() => signOut())}>
+                onPress={() =>
+                  startTransition(async () => {
+                    await authClient.signOut({
+                      fetchOptions: {
+                        onSuccess: () => {
+                          router.push("/auth/signin"); // redirect to login page
+                        },
+                      },
+                    });
+                  })
+                }>
                 Sign Out
               </Button>
             </PopoverContent>

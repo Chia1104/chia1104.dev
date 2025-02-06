@@ -15,11 +15,11 @@ import { Form } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import dayjs from "@chia/utils/day";
 
+import { useDraft } from "@/hooks/use-draft";
 import { api } from "@/trpc/client";
 
-import type { Ref } from "../_components/edit-fields";
-import EditFields from "../_components/edit-fields";
-import { useDraft } from "../_components/use-draft";
+import type { Ref } from "./edit-fields";
+import EditFields from "./edit-fields";
 
 const CreateForm = ({
   type = FeedType.Post,

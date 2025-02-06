@@ -4,14 +4,16 @@ import { useTransition } from "react";
 
 import { Input, Divider, Button } from "@heroui/react";
 
-import { Provider } from "@chia/auth-core/types";
+import { authClient } from "@chia/auth/client";
+import { Provider } from "@chia/auth/types";
 import Card from "@chia/ui/card";
 import SubmitForm from "@chia/ui/submit-form";
 
-import { signInAction } from "@/server/auth.action";
-
 const LoginForm = () => {
   const [isPending, startTransition] = useTransition();
+  const getCurrentDomain = () => {
+    return window.location.origin;
+  };
   return (
     <Card
       wrapperProps={{
@@ -24,14 +26,15 @@ const LoginForm = () => {
       </p>
       <form
         className="flex w-4/5 flex-col gap-2"
-        action={(e) =>
-          startTransition(() =>
-            signInAction({
-              provider: Provider.resend,
-              redirectTo: "/",
-              formData: e,
-            })
-          )
+        action={(formData) =>
+          startTransition(async () => {
+            const email = formData.get("email");
+            if (!email) return;
+            await authClient.signIn.magicLink({
+              email: email as string,
+              callbackURL: getCurrentDomain(),
+            });
+          })
         }>
         <Input
           isRequired
@@ -43,6 +46,10 @@ const LoginForm = () => {
           className="w-full"
         />
         <SubmitForm
+          /**
+           * TODO: fix the drizzle schema
+           */
+          isDisabled
           variant="flat"
           color="primary"
           className="w-full"
@@ -55,12 +62,12 @@ const LoginForm = () => {
       <div className="flex w-full justify-center gap-5">
         <Button
           onPress={() =>
-            startTransition(() =>
-              signInAction({
+            startTransition(async () => {
+              await authClient.signIn.social({
                 provider: Provider.google,
-                redirectTo: "/",
-              })
-            )
+                callbackURL: getCurrentDomain(),
+              });
+            })
           }
           isLoading={isPending}
           variant="flat"
@@ -71,12 +78,12 @@ const LoginForm = () => {
         </Button>
         <Button
           onPress={() =>
-            startTransition(() =>
-              signInAction({
+            startTransition(async () => {
+              await authClient.signIn.social({
                 provider: Provider.github,
-                redirectTo: "/",
-              })
-            )
+                callbackURL: getCurrentDomain(),
+              });
+            })
           }
           isLoading={isPending}
           variant="flat"

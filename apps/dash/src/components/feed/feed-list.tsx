@@ -14,7 +14,7 @@ import Image from "@chia/ui/image";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import dayjs from "@chia/utils/day";
 
-import { useGetAllDrafts } from "@/app/(main)/feed/(edit)/_components/use-draft";
+import { useGetAllDrafts } from "@/hooks/use-draft";
 import { api } from "@/trpc/client";
 
 import Skeleton from "./skeleton";
@@ -101,7 +101,10 @@ export const PreviewFeedItem = ({
   token,
   onRemove,
 }: {
-  feed: Partial<RouterOutputs["feeds"]["getFeedsWithMeta"]["items"][0]>;
+  feed: Omit<
+    Partial<RouterOutputs["feeds"]["getFeedsWithMeta"]["items"][0]>,
+    "content"
+  >;
   token: string;
   onRemove?: () => void;
 }) => {
