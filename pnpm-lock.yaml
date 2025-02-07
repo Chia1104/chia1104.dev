@@ -13,13 +13,13 @@ catalogs:
       specifier: ^5.66.0
       version: 5.66.0
     '@trpc/client':
-      specifier: ^11.0.0-rc.745
+      specifier: ^11.0.0-rc.746
       version: 11.0.0-rc.746
     '@trpc/next':
-      specifier: ^11.0.0-rc.745
+      specifier: ^11.0.0-rc.746
       version: 11.0.0-rc.746
     '@trpc/react-query':
-      specifier: ^11.0.0-rc.745
+      specifier: ^11.0.0-rc.746
       version: 11.0.0-rc.746
     '@trpc/server':
       specifier: ^11.0.0-rc.746
