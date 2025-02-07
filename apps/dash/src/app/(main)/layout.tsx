@@ -6,7 +6,7 @@ import "server-only";
 
 import { authClient } from "@chia/auth/client";
 
-import SideBar from "@/components/commons/side-bar";
+import DashLayout from "@/components/commons/dash-layout";
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const session = await authClient.getSession({
@@ -17,9 +17,5 @@ export default async function Layout({ children }: { children: ReactNode }) {
   if (!session.data) {
     unauthorized();
   }
-  return (
-    <SideBar>
-      <main>{children}</main>
-    </SideBar>
-  );
+  return <DashLayout>{children}</DashLayout>;
 }

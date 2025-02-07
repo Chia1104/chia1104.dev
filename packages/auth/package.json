@@ -41,7 +41,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "^0.12.0",
-    "better-auth": "^1.1.15",
+    "better-auth": "^1.1.16",
     "resend": "^4.1.2"
   },
   "devDependencies": {
