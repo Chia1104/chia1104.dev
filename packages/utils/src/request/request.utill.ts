@@ -54,6 +54,8 @@ type ServiceRequestOptions = Options &
       }
   );
 
+export const X_INTERNAL_REQUEST_SECRET = "x-internal-request-secret";
+
 export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
   return request({
     ...defaultOptions,
@@ -61,7 +63,7 @@ export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
       isInternal: defaultOptions?.isInternal,
     }),
     headers: {
-      "x-internal-request-secret": defaultOptions?.isInternal
+      [X_INTERNAL_REQUEST_SECRET]: defaultOptions?.isInternal
         ? defaultOptions.internal_requestSecret
         : undefined,
     },

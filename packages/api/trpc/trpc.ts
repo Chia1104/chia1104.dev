@@ -2,7 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import type { Session } from "@chia/auth-core/types";
+import type { Session } from "@chia/auth/types";
 import type { Redis } from "@chia/cache";
 import type { DB } from "@chia/db";
 import { getAdminId } from "@chia/utils";
@@ -10,21 +10,11 @@ import { getAdminId } from "@chia/utils";
 const adminId = getAdminId();
 
 export const createTRPCContext = (opts: {
-  /**
-   * @deprecated
-   */
-  req?: Request;
-  auth?: Session | null;
+  session?: Session | null;
   db: DB;
   redis: Redis;
 }) => {
-  const session = opts.auth ?? null;
-
-  return {
-    session,
-    db: opts.db,
-    redis: opts.redis,
-  };
+  return opts;
 };
 
 const t = initTRPC.context<typeof createTRPCContext>().create({

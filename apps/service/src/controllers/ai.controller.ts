@@ -8,7 +8,7 @@ import { HEADER_AUTH_TOKEN } from "@chia/ai/constants";
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
 import { encodeApiKey } from "@chia/ai/utils";
-import { getCookieDomain } from "@chia/auth-core/utils";
+import { getCookieDomain } from "@chia/auth/utils";
 import { errorGenerator } from "@chia/utils";
 
 import { env } from "@/env";

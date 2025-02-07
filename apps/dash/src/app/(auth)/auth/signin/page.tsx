@@ -1,13 +1,18 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import "server-only";
 
-import { auth } from "@chia/auth";
+import { authClient } from "@chia/auth/client";
 
-import Form from "./form";
+import Form from "@/components/auth/form";
 
 const LoginPage = async () => {
-  const session = await auth();
-  if (session) {
+  const session = await authClient.getSession({
+    fetchOptions: {
+      headers: await headers(),
+    },
+  });
+  if (session.data) {
     redirect("/");
   }
   return (

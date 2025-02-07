@@ -6,7 +6,7 @@
       "/apps/service",
       "/packages/db",
       "/packages/utils",
-      "/packages/auth-core",
+      "/packages/auth",
       "/infra/railway/service.json",
       "package.json"
     ],

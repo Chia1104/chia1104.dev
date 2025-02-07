@@ -6,15 +6,17 @@ packages:
 
 catalog:
   "@tanstack/react-query": ^5.66.0
-  "@trpc/client": ^11.0.0-rc.730
-  "@trpc/react-query": ^11.0.0-rc.730
-  "@trpc/server": ^11.0.0-rc.730
-  "@trpc/next": ^11.0.0-rc.730
+  "@trpc/client": ^11.0.0-rc.741
+  "@trpc/react-query": ^11.0.0-rc.741
+  "@trpc/server": ^11.0.0-rc.741
+  "@trpc/next": ^11.0.0-rc.741
   eslint: ^9.19.0
   typescript: ^5.7.3
   tailwindcss: 3.4.17
   fumadocs-core: 14.7.7
   fumadocs-ui: 14.7.7
+  "@fumadocs/mdx-remote": 1.1.2
+  fumadocs-mdx: 11.3.1
 
 catalogs:
   react18:
