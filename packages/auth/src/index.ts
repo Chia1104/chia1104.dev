@@ -8,7 +8,6 @@ import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
 import { CONTACT_EMAIL } from "@chia/utils";
-import { getServiceEndPoint } from "@chia/utils";
 
 import { env } from "./env";
 import { useSecureCookies, getCookieDomain } from "./utils";
@@ -16,6 +15,13 @@ import { useSecureCookies, getCookieDomain } from "./utils";
 export const name = "auth-core";
 
 const resend = new Resend(env.RESEND_API_KEY);
+
+const getOrigin = (url?: string) => {
+  if (!url) {
+    return undefined;
+  }
+  return new URL(url).origin;
+};
 
 export const auth = betterAuth({
   socialProviders: {
@@ -59,10 +65,10 @@ export const auth = betterAuth({
   /**
    * base path for all auth routes
    */
-  basePath: process.env.APP_CODE !== "service" ? "/auth" : "/api/v1/auth",
+  basePath: "/api/v1/auth",
 
-  baseURL:
-    process.env.APP_CODE !== "service" ? getServiceEndPoint() : undefined,
+  baseURL: getOrigin(env.AUTH_URL),
+  secret: env.AUTH_SECRET,
 
   /**
    * advanced configuration
