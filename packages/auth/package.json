@@ -11,8 +11,8 @@
     },
     "./client": {
       "types": "./src/client.ts",
-      "default": "./src/client.ts",
-      "react-server": "./src/client.rsc.ts"
+      "react-server": "./src/client.rsc.ts",
+      "default": "./src/client.ts"
     },
     "./utils": {
       "types": "./src/utils.ts",
