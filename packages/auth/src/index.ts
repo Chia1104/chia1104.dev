@@ -59,7 +59,7 @@ export const auth = betterAuth({
   /**
    * base path for all auth routes
    */
-  basePath: process.env.APP_CODE !== "service" ? "/auth" : "/api/v1/auth",
+  basePath: "/api/v1/auth",
 
   baseURL: env.AUTH_URL,
   secret: env.AUTH_SECRET,
