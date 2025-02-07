@@ -237,8 +237,8 @@ importers:
         specifier: 'catalog:'
         version: 11.0.0-rc.746(typescript@5.7.3)
       ai:
-        specifier: ^4.1.24
-        version: 4.1.24(react@19.0.0)(zod@3.24.1)
+        specifier: ^4.1.25
+        version: 4.1.25(react@19.0.0)(zod@3.24.1)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -744,8 +744,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       ai:
-        specifier: ^4.1.24
-        version: 4.1.24(react@19.0.0)(zod@3.24.1)
+        specifier: ^4.1.25
+        version: 4.1.25(react@19.0.0)(zod@3.24.1)
       next:
         specifier: 15.1.6
         version: 15.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-714736e-20250131)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -6403,8 +6403,8 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ai@4.1.24:
-    resolution: {integrity: sha512-QJLU9lIrwxZqNz6C3m+MLbtklPyBVUNWDHmk38M8ZstHhHezHGEo0FLjDlKYo3cysshdSz8TFXBvXh+429Yopw==}
+  ai@4.1.25:
+    resolution: {integrity: sha512-gBdx5QqM3EK97F9/opVicP3WMHfiR0/cc96xdNnsFLpcuPBXPtm6lcK56G6ok19+NZggnVcS+KIHzFtp0aHC+g==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -18172,7 +18172,7 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@4.1.24(react@19.0.0)(zod@3.24.1):
+  ai@4.1.25(react@19.0.0)(zod@3.24.1):
     dependencies:
       '@ai-sdk/provider': 1.0.7
       '@ai-sdk/provider-utils': 2.1.6(zod@3.24.1)
