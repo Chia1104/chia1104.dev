@@ -61,8 +61,8 @@ export const auth = betterAuth({
    */
   basePath: process.env.APP_CODE !== "service" ? "/auth" : "/api/v1/auth",
 
-  baseURL:
-    process.env.APP_CODE !== "service" ? getServiceEndPoint() : undefined,
+  baseURL: env.AUTH_URL,
+  secret: env.AUTH_SECRET,
 
   /**
    * advanced configuration
