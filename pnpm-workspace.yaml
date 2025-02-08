@@ -12,7 +12,7 @@ catalog:
   "@trpc/next": ^11.0.0-rc.746
   eslint: ^9.19.0
   typescript: ^5.7.3
-  tailwindcss: 3.4.17
+  tailwindcss: 4.0.5
   fumadocs-core: 14.7.7
   fumadocs-ui: 14.7.7
   "@fumadocs/mdx-remote": 1.1.2
@@ -31,7 +31,7 @@ catalogs:
     "@types/react-dom": 19.0.3
     "babel-plugin-react-compiler": beta
   tailwindcss3:
-    tailwindcss: 3.4.17
+    tailwindcss: 4.0.5
   tailwindcss4:
     tailwindcss: 4.0.3
   triggerdotdev:
