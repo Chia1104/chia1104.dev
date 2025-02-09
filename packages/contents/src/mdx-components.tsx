@@ -26,7 +26,7 @@ export const FumadocsComponents = {
   Files,
   pre: (props: CodeBlockProps) => (
     <CodeBlock {...props}>
-      <Pre className="max-h-[400px] bg-content1">{props.children}</Pre>
+      <Pre className="bg-content1">{props.children}</Pre>
     </CodeBlock>
   ),
   blockquote: (props: any) => <Callout>{props.children}</Callout>,
