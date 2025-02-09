@@ -75,7 +75,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "framer-motion": "12.4.1",
-    "lucide-react": "^0.474.0",
+    "lucide-react": "^0.475.0",
     "next": "15.1.6",
     "next-themes": "^0.4.4",
     "next-view-transitions": "^0.3.4",
@@ -94,7 +94,7 @@
     "@testing-library/react": "^16.2.0",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "@vitejs/plugin-react-swc": "^3.7.2",
+    "@vitejs/plugin-react-swc": "^3.8.0",
     "eslint": "catalog:",
     "typescript": "catalog:"
   }
