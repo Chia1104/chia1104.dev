@@ -64,6 +64,13 @@
       "when": 1739182800179,
       "tag": "0008_rename_account_session",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1739197165275,
+      "tag": "0009_passkey",
+      "breakpoints": true
     }
   ]
 }

@@ -1,9 +1,20 @@
+import type { createAuthClient } from "better-auth/client";
+import { inferAdditionalFields } from "better-auth/client/plugins";
+import { magicLinkClient } from "better-auth/client/plugins";
+import { passkeyClient } from "better-auth/client/plugins";
+
+import { Role } from "@chia/db/types";
+import { getServiceEndPoint } from "@chia/utils";
+
 import type { env as internalEnv } from "./env";
 
 export const useSecureCookies = process.env.NODE_ENV === "production";
 export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 export const DEFAULT_COOKIE_DOMAIN = ".chia1104.dev";
 
+/**
+ * @deprecated
+ */
 export const SESSION_TOKEN = useSecureCookies
   ? "__Secure-authjs.session-token"
   : "authjs.session-token";
@@ -11,16 +22,12 @@ export const SESSION_TOKEN = useSecureCookies
 export const SESSION_MAX_AGE = 2592000; // 30 days
 export const SESSION_UPDATE_AGE = 86400; // 1 day
 
-export const getCookieDomain = <TRequest extends Request = Request>(options?: {
-  /**
-   * @deprecated use `env` instead
-   */
-  req?: TRequest;
+export const getCookieDomain = (options?: {
   env?: Partial<typeof internalEnv>;
 }): string => {
   options ??= {};
   const { env } = options;
-  const AUTH_URL = env?.AUTH_URL?.replace(/\/api\/auth$/, "");
+  const AUTH_URL = env?.AUTH_URL?.replace(/\/api\/v1\/auth$/, "");
   if (
     AUTH_URL?.includes("localhost") ??
     process.env.NODE_ENV === "development"
@@ -42,3 +49,25 @@ export const sessionCookieOptions = (env?: Partial<typeof internalEnv>) =>
     secure: useSecureCookies,
     domain: getCookieDomain({ env }),
   }) as const;
+
+export const baseAuthClient = (
+  config?: Parameters<typeof createAuthClient>[0]
+) => {
+  return Object.assign(config ?? {}, {
+    baseURL: `${getServiceEndPoint()}/auth`,
+    plugins: [
+      inferAdditionalFields({
+        user: {
+          role: {
+            type: [Role.User, Role.Admin],
+            required: true,
+            defaultValue: Role.User,
+            input: true,
+          },
+        },
+      }),
+      magicLinkClient(),
+      passkeyClient(),
+    ],
+  });
+};
