@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@chia/ui/error-boundary";
 
 import AuthGuard from "@/components/commons/auth-guard";
 import OpenaiForm from "@/components/setting/openai-form";
+import PasskeyForm from "@/components/setting/passkey-form";
 import ProfileForm from "@/components/setting/profile-form";
 
 const Page = () => {
@@ -27,6 +28,11 @@ const Page = () => {
       <AccordionItem key="openai" title="Openai">
         <ErrorBoundary>
           <OpenaiForm />
+        </ErrorBoundary>
+      </AccordionItem>
+      <AccordionItem key="passkeys" title="Passkeys">
+        <ErrorBoundary>
+          <PasskeyForm />
         </ErrorBoundary>
       </AccordionItem>
     </Accordion>

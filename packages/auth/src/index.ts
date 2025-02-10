@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
+import { passkey } from "better-auth/plugins/passkey";
 import { Resend } from "resend";
 
 import { createRedis } from "@chia/cache";
@@ -57,6 +58,12 @@ export const auth = betterAuth({
     },
   }),
 
+  /**
+   * comment the following if you want to run the migration script
+   * ```sh
+   * pnpm auth-schema:generate
+   * ```
+   */
   user: {
     additionalFields: {
       role: {
@@ -123,5 +130,6 @@ export const auth = betterAuth({
         });
       },
     }),
+    passkey(),
   ],
 });
