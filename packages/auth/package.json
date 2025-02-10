@@ -33,7 +33,8 @@
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --passWithNoTests"
+    "test:watch": "vitest --passWithNoTests",
+    "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config src/index.ts"
   },
   "dependencies": {
     "@chia/cache": "workspace:*",
