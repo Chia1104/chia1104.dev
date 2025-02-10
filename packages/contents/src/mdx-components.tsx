@@ -3,6 +3,7 @@ import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
 import { CodeBlock, Pre } from "fumadocs-ui/components/codeblock";
 import type { CodeBlockProps } from "fumadocs-ui/components/codeblock";
+import { File, Folder, Files } from "fumadocs-ui/components/files";
 import { Heading } from "fumadocs-ui/components/heading";
 import { ImageZoom } from "fumadocs-ui/components/image-zoom";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
@@ -20,9 +21,12 @@ export const FumadocsComponents = {
   Accordion,
   Accordions,
   Banner,
+  File,
+  Folder,
+  Files,
   pre: (props: CodeBlockProps) => (
     <CodeBlock {...props}>
-      <Pre className="max-h-[400px] bg-content1">{props.children}</Pre>
+      <Pre className="bg-content1">{props.children}</Pre>
     </CodeBlock>
   ),
   blockquote: (props: any) => <Callout>{props.children}</Callout>,

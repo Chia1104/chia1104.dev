@@ -196,6 +196,9 @@ function switchServiceVersion(version: ServiceVersion, url: string) {
 /**
  * the url of the service endpoint (including the protocol)
  * @param env
+ * @param options {proxyEndpoint, version, isInternal}
+ * @default version = "v1"
+ * if you are use `v1` version, the url path will be `/api/v1` (e.g. `https://example.com/api/v1`)
  */
 export const getServiceEndPoint = (
   env?: string,

@@ -1,5 +1,0 @@
-{
-  "extends": "@chia/tsconfig/internal-package.json",
-  "include": ["src", "vitest.config.mts"],
-  "exclude": ["node_modules", "dist"]
-}

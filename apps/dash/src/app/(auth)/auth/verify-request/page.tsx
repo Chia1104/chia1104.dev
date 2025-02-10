@@ -1,4 +1,4 @@
-import { Provider } from "@chia/auth-core/types";
+import { Provider } from "@chia/auth/types";
 import Card from "@chia/ui/card";
 
 const Page = ({

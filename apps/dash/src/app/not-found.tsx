@@ -1,5 +1,5 @@
-import Background from "./background";
-import GoHome from "./go-home";
+import Background from "../components/commons/background";
+import GoHome from "../components/commons/go-home";
 
 const NotFound = () => {
   return (

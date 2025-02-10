@@ -16,3 +16,5 @@ export const content_type = pgEnum("content_type", [
   "tiptap",
   "plate",
 ]);
+
+export const i18n = pgEnum("i18n", ["en", "zh-tw"]);

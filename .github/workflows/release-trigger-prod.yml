@@ -14,6 +14,9 @@ concurrency:
 
 env:
   TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  INTERNAL_SERVICE_ENDPOINT: ${{ secrets.INTERNAL_SERVICE_ENDPOINT }}
+  INTERNAL_REQUEST_SECRET: ${{ secrets.INTERNAL_REQUEST_SECRET }}
 
 jobs:
   deploy:
@@ -29,5 +32,8 @@ jobs:
       - name: 🚀 Deploy Trigger.dev
         env:
           TRIGGER_ACCESS_TOKEN: ${{ env.TRIGGER_ACCESS_TOKEN }}
+          OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+          INTERNAL_SERVICE_ENDPOINT: ${{ env.INTERNAL_SERVICE_ENDPOINT }}
+          INTERNAL_REQUEST_SECRET: ${{ env.INTERNAL_REQUEST_SECRET }}
         run: |
           cd apps/trigger && pnpm deploy:trigger

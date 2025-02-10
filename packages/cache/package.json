@@ -53,8 +53,8 @@
   "dependencies": {
     "@t3-oss/env-core": "^0.12.0",
     "@upstash/ratelimit": "2.0.5",
-    "@upstash/redis": "1.34.3",
-    "ioredis": "^5.4.2"
+    "@upstash/redis": "1.34.4",
+    "ioredis": "^5.5.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

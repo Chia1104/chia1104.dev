@@ -1,42 +1,12 @@
 import { Hono } from "hono";
-import { getCookie } from "hono/cookie";
 
 import { appRouter, createTRPCContext } from "@chia/api/trpc";
 import { fetchRequestHandler } from "@chia/api/trpc/utils";
-import type { Session } from "@chia/auth-core";
-import { adapter } from "@chia/auth-core/adapter";
-import { SESSION_TOKEN } from "@chia/auth-core/utils";
-import dayjs from "@chia/utils/day";
-
-import { sessionAction } from "@/middlewares/auth.middleware";
+import type { Session } from "@chia/auth/types";
 
 const api = new Hono<HonoContext>();
 
 api.use("*", async (c) => {
-  const { getSessionAndUser, deleteSession, updateSession } = adapter({
-    db: c.var.db,
-    redis: c.var.redis,
-  });
-  let session: Session | null = null;
-  const sessionToken = getCookie(c, SESSION_TOKEN);
-  if (!sessionToken) {
-    session = null;
-  } else {
-    const sessionAndUser = await sessionAction({
-      c,
-      sessionToken,
-      getSessionAndUser,
-      deleteSession,
-      updateSession,
-    });
-    session = sessionAndUser
-      ? {
-          user: sessionAndUser.user,
-          expires: dayjs(sessionAndUser.session.expires).toISOString(),
-        }
-      : null;
-  }
-
   const bodyProps = new Set([
     "arrayBuffer",
     "blob",
@@ -47,12 +17,26 @@ api.use("*", async (c) => {
   type BodyProp = typeof bodyProps extends Set<infer T> ? T : never;
   const canWithBody = c.req.method === "GET" || c.req.method === "HEAD";
 
+  const userSession = c.get("session");
+  const user = c.get("user");
+
+  let session: Session | null = null;
+
+  if (!userSession || !user) {
+    session = null;
+  } else {
+    session = {
+      user,
+      session: userSession,
+    };
+  }
+
   return fetchRequestHandler({
     endpoint: "/api/v1/trpc",
     router: appRouter,
     createContext: () => {
       return createTRPCContext({
-        auth: session,
+        session,
         db: c.var.db,
         redis: c.var.redis,
       });

@@ -126,6 +126,9 @@ export default million.next(
     silent: true,
     hideSourceMaps: true,
     disableLogger: true,
+    sourcemaps: {
+      deleteSourcemapsAfterUpload: true,
+    },
   }),
   {
     rsc: true,

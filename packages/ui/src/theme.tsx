@@ -175,6 +175,7 @@ const ThemeSelector: FC<
       <Dropdown className="not-prose">
         <DropdownTrigger>
           <Button
+            type="button"
             variant="flat"
             size="sm"
             startContent={

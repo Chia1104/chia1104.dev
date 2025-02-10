@@ -7,7 +7,7 @@ on:
       - "apps/service/**"
       - "packages/db/**"
       - "packages/utils/**"
-      - "packages/auth-core/**"
+      - "packages/auth/**"
       - "packages/cache/**"
       - "packages/api/**"
       - ".github/workflows/service-ci.yml"

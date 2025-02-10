@@ -68,6 +68,11 @@
       "groupName": "Hono",
       "groupSlug": "hono",
       "matchPackageNames": ["hono", "honox", "@hono{/,}**"]
+    },
+    {
+      "groupName": "trigger.dev",
+      "groupSlug": "triggerdotdev",
+      "matchPackageNames": ["@trigger.dev{/,}**"]
     }
   ],
   "updateInternalDeps": true

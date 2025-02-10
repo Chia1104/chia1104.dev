@@ -25,14 +25,20 @@ export const FEEDS_CACHE_TAGS = {
 
 export const getPosts = async (limit = 10) => {
   try {
-    return await getFeedsWithMetaByAdminId(env.INTERNAL_REQUEST_SECRET, {
-      limit,
-      type: "post",
-      published: "true",
-      orderBy: "id",
-      sortOrder: "desc",
-      withContent: "false",
-    });
+    return await getFeedsWithMetaByAdminId(
+      env.INTERNAL_REQUEST_SECRET,
+      {
+        limit,
+        type: "post",
+        published: "true",
+        orderBy: "id",
+        sortOrder: "desc",
+        withContent: "false",
+      },
+      {
+        next: { tags: FEEDS_CACHE_TAGS.getPosts(limit) },
+      }
+    );
   } catch (error) {
     captureException(error);
     throw error;
@@ -41,14 +47,20 @@ export const getPosts = async (limit = 10) => {
 
 export const getNotes = async (limit = 10) => {
   try {
-    return await getFeedsWithMetaByAdminId(env.INTERNAL_REQUEST_SECRET, {
-      limit,
-      type: "note",
-      published: "true",
-      orderBy: "id",
-      sortOrder: "desc",
-      withContent: "false",
-    });
+    return await getFeedsWithMetaByAdminId(
+      env.INTERNAL_REQUEST_SECRET,
+      {
+        limit,
+        type: "note",
+        published: "true",
+        orderBy: "id",
+        sortOrder: "desc",
+        withContent: "false",
+      },
+      {
+        next: { tags: FEEDS_CACHE_TAGS.getNotes(limit) },
+      }
+    );
   } catch (error) {
     captureException(error);
     throw error;
@@ -57,7 +69,13 @@ export const getNotes = async (limit = 10) => {
 
 export const getFeedBySlug = async (slug: string) => {
   try {
-    return await _getFeedBySlug(env.INTERNAL_REQUEST_SECRET, { slug });
+    return await _getFeedBySlug(
+      env.INTERNAL_REQUEST_SECRET,
+      { slug },
+      {
+        next: { tags: FEEDS_CACHE_TAGS.getFeedBySlug(slug) },
+      }
+    );
   } catch (error) {
     if (error instanceof HTTPError && error.response.status === 404) {
       return null;

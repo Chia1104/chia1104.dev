@@ -1,4 +1,4 @@
-import Skeleton from "../skeleton";
+import Skeleton from "@/components/feed/skeleton";
 
 const Loading = () => {
   return (

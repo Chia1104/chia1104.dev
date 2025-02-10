@@ -1,10 +1,11 @@
 import { cache } from "react";
 
 import { createHydrationHelpers } from "@trpc/react-query/rsc";
+import { headers } from "next/headers";
 
 import type { AppRouter } from "@chia/api/trpc";
 import { createCaller, createTRPCContext } from "@chia/api/trpc";
-import { auth } from "@chia/auth";
+import { authClient } from "@chia/auth/client";
 import { createRedis } from "@chia/cache";
 import { connectDatabase } from "@chia/db/client";
 
@@ -16,7 +17,14 @@ import { createQueryClient } from "@/utils/query-client";
  */
 const createContext = cache(async () => {
   return createTRPCContext({
-    auth: await auth(),
+    session:
+      (
+        await authClient.getSession({
+          fetchOptions: {
+            headers: await headers(),
+          },
+        })
+      ).data ?? null,
     db: await connectDatabase(),
     redis: createRedis(),
   });

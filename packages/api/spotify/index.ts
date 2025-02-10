@@ -1,4 +1,3 @@
-// import "server-only";
 import { post, request } from "@chia/utils";
 
 import { env } from "./env";
@@ -13,9 +12,18 @@ interface NextFetchRequestConfig {
   tags?: string[];
 }
 
+type RequestCache =
+  | "default"
+  | "force-cache"
+  | "no-cache"
+  | "no-store"
+  | "only-if-cached"
+  | "reload";
+
 declare module "ky" {
   interface Options {
     next?: NextFetchRequestConfig | undefined;
+    cache?: RequestCache;
   }
 }
 

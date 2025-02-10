@@ -7,6 +7,9 @@ import FeedNavigation from "@/components/blog/feed-navigation";
 import { getPosts, getNotes } from "@/services/feeds.service";
 import type { PageParamsWithLocale } from "@/utils/i18n";
 
+export const revalidate = 120;
+export const maxDuration = 60;
+
 const Navigation: FC<{
   posts?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
   notes?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];

@@ -1,10 +1,12 @@
 import { HTTPError } from "ky";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { generateAuthorizeUrl } from "@chia/api/spotify";
 import type { GenerateAuthorizeUrlDTO } from "@chia/api/spotify/validator";
 import { generateAuthorizeUrlSchema } from "@chia/api/spotify/validator";
-import { auth } from "@chia/auth";
+import { authClient } from "@chia/auth/client";
 import { createUpstash } from "@chia/cache";
 import { errorGenerator, getAdminId, handleZodError } from "@chia/utils";
 
@@ -14,9 +16,14 @@ export const runtime = "nodejs";
 
 const upstash = () => createUpstash();
 
-export const POST = auth(async (req) => {
+export const POST = async (req: NextRequest) => {
   try {
-    if (req.auth?.user.id !== getAdminId()) {
+    const session = await authClient.getSession({
+      fetchOptions: {
+        headers: await headers(),
+      },
+    });
+    if (session.data?.user.id !== getAdminId()) {
       return NextResponse.json(
         errorGenerator(403, [
           {
@@ -97,4 +104,4 @@ export const POST = auth(async (req) => {
       status: 500,
     });
   }
-});
+};

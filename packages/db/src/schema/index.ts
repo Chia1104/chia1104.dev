@@ -1,4 +1,3 @@
-import type { AdapterAccount } from "@auth/core/adapters";
 import { relations, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import {
@@ -20,7 +19,7 @@ import {
   baseFeedsColumns,
   baseFeedsExtraConfig,
 } from "../libs/schema-columns";
-import { roles } from "./enums";
+import { roles, i18n } from "./enums";
 import { pgTable } from "./table";
 
 export const users = pgTable("user", {
@@ -40,7 +39,7 @@ export const accounts = pgTable(
     userId: text("userId")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    type: text("type"),
     provider: text("provider").notNull(),
     providerAccountId: text("providerAccountId").notNull(),
     refresh_token: text("refresh_token"),
@@ -67,6 +66,37 @@ export const sessions = pgTable("session", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),
+});
+
+export const betterSession = pgTable("better_session", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+});
+
+export const betterAccount = pgTable("better_account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
 });
 
 export const verificationTokens = pgTable(
@@ -186,18 +216,44 @@ export const contents = pgTable("content", {
   unstable_serializedSource: text("unstable_serializedSource"),
 });
 
+export const feedMeta = pgTable("feed_meta", {
+  id: serial("id").primaryKey(),
+  feedId: integer("feedId")
+    .notNull()
+    .references(() => feeds.id, { onDelete: "cascade" }),
+  mainI18n: i18n("mainI18n"),
+  mainImage: text("mainImage"),
+  summary: text("summary"),
+});
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at"),
+  updatedAt: timestamp("updated_at"),
+});
+
 export const usersRelations = relations(users, ({ many }) => ({
   feeds: many(feeds),
   assets: many(assets),
 }));
 
 export const feedsRelations = relations(feeds, ({ one, many }) => ({
-  content: one(contents),
+  content: one(contents, {
+    fields: [feeds.id],
+    references: [contents.feedId],
+  }),
   user: one(users, {
     fields: [feeds.userId],
     references: [users.id],
   }),
   feedsToTags: many(feedsToTags),
+  feedMeta: one(feedMeta, {
+    fields: [feeds.id],
+    references: [feedMeta.feedId],
+  }),
 }));
 
 // export const authenticatorsRelations = relations(authenticators, ({ one }) => ({
@@ -244,6 +300,13 @@ export const feedsToTagsRelations = relations(feedsToTags, ({ one }) => ({
   }),
 }));
 
+export const feedMetaRelations = relations(feedMeta, ({ one }) => ({
+  feed: one(feeds, {
+    fields: [feedMeta.feedId],
+    references: [feeds.id],
+  }),
+}));
+
 export type User = InferSelectModel<typeof users>;
 export type Account = InferSelectModel<typeof accounts>;
 export type Session = InferSelectModel<typeof sessions>;
@@ -253,3 +316,7 @@ export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type Content = InferSelectModel<typeof contents>;
 export type Tag = InferSelectModel<typeof tags>;
+export type FeedMeta = InferSelectModel<typeof feedMeta>;
+export type Verification = InferSelectModel<typeof verification>;
+export type BetterSession = InferSelectModel<typeof betterSession>;
+export type BetterAccount = InferSelectModel<typeof betterAccount>;

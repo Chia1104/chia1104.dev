@@ -32,10 +32,7 @@ export const env = createEnv({
     ZEABUR_URL: z.string().optional(),
     ADMIN_ID: z.string().optional(),
     BETA_ADMIN_ID: z.string().optional(),
-    DATABASE_URL: z.string().optional(),
-    BETA_DATABASE_URL: z.string().optional(),
     INTERNAL_SERVICE_ENDPOINT: z.string().optional(),
-    AI_AUTH_SECRET: z.string().optional(),
   },
 
   client: {
@@ -51,11 +48,8 @@ export const env = createEnv({
     ZEABUR_URL: process.env.ZEABUR_URL,
     ADMIN_ID: process.env.ADMIN_ID,
     BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
-    DATABASE_URL: process.env.DATABASE_URL,
-    BETA_DATABASE_URL: process.env.BETA_DATABASE_URL,
     NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
-    AI_AUTH_SECRET: process.env.AI_AUTH_SECRET,
   },
 
   skipValidation:

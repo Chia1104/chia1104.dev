@@ -17,6 +17,7 @@ import type {
   InfiniteDTO,
   InsertFeedDTO,
   InsertFeedContentDTO,
+  InsertFeedMetaDTO,
 } from "../validator/feeds";
 
 export const getFeedBySlug = withDTO(async (db, slug: string) => {
@@ -81,11 +82,9 @@ export const getInfiniteFeeds = withDTO(
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
-      with: withContent
-        ? {
-            content: true,
-          }
-        : {},
+      with: {
+        content: withContent ? true : undefined,
+      },
       where: parsedCursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
@@ -148,11 +147,9 @@ export const getInfiniteFeedsByUserId = withDTO(
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
       limit: limit + 1,
-      with: withContent
-        ? {
-            content: true,
-          }
-        : {},
+      with: {
+        content: withContent ? true : undefined,
+      },
       where: parsedCursor
         ? (feeds, { gte, lte, eq, and }) =>
             and(
@@ -215,7 +212,7 @@ export const createFeed = withDTO(
           .returning({ feedId: schema.feeds.id })
       )[0]?.feedId;
       if (!feedId) {
-        throw new Error("Failed to create feed");
+        trx.rollback();
       }
       await trx.insert(schema.contents).values({
         feedId,
@@ -303,3 +300,44 @@ export const searchFeeds = withDTO(
     );
   }
 );
+
+export const getFeedMetaById = withDTO(
+  async (
+    db,
+    dto: {
+      feedId: number;
+      withContent?: boolean;
+    }
+  ) => {
+    const feedMeta = await db.query.feedMeta.findFirst({
+      where: (feeds, { eq }) => eq(feeds.feedId, dto.feedId),
+      with: {
+        feed: {
+          with: {
+            content: dto.withContent ? true : undefined,
+          },
+        },
+      },
+    });
+    if (!feedMeta) {
+      return null;
+    }
+    return {
+      ...feedMeta,
+      feed: {
+        ...feedMeta.feed,
+        createdAt: dayjs(feedMeta.feed.createdAt).toISOString(),
+        updatedAt: dayjs(feedMeta.feed.updatedAt).toISOString(),
+      },
+    };
+  }
+);
+
+export const createFeedMeta = withDTO(async (db, dto: InsertFeedMetaDTO) => {
+  await db.transaction(async (trx) => {
+    await trx.insert(schema.feedMeta).values({
+      feedId: dto.feedId,
+      summary: dto.summary,
+    });
+  });
+});
