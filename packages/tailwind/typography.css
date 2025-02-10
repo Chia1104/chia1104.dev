@@ -1,0 +1,41 @@
+@layer components {
+    .typography {
+        a {
+            text-decoration: rgb(55, 65, 81, 0.7) underline;
+            transition: all 0.3s ease-in-out;
+            text-underline-offset: 5px;
+        }
+
+        &.dark a {
+            text-decoration: rgb(209, 213, 219, 0.7) underline;
+        }
+
+        a:hover {
+            text-decoration: #000 underline;
+        }
+
+        &.dark a:hover {
+            text-decoration: #fff underline;
+        }
+
+        code {
+            padding: 3px;
+            border: solid 1px;
+            font-size: 13px;
+            border-radius: 5px;
+            font-weight: 400;
+            border-color: hsl(0 0% 89.8%);
+            background: hsl(0 0% 96.1%);
+        }
+
+        &.dark code {
+            border-color: hsl(0 0% 15%);
+            background: hsl(0 0% 12.9%);
+        }
+
+        code::after,
+        code::before {
+            display: none;
+        }
+    }
+}
