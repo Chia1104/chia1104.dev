@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import {
   CardHeader,
   Card,
@@ -12,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { authClient } from "@chia/auth/client";
 import type { Session } from "@chia/auth/types";
 import {
   FormControl,
@@ -21,34 +24,36 @@ import {
   Form,
 } from "@chia/ui/form";
 
-import { api } from "@/trpc/client";
-
 const UserProfileForm = (props: {
   defaultValues: Partial<Session["user"]>;
 }) => {
   const form = useForm<Partial<Session["user"]>>({
     defaultValues: props.defaultValues,
   });
-
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
-  const utils = api.useUtils();
-
-  const updateProfile = api.users.updateUserProfile.useMutation({
-    onError: () => toast.error("Failed to update profile"),
-    onSuccess: async () => {
-      toast.success("Profile updated");
-      router.refresh();
-      await utils.users.invalidate();
-    },
-  });
-
   const onSubmit = form.handleSubmit((values) => {
-    updateProfile.mutate({
-      id: props.defaultValues.id ?? "",
-      name: values.name,
-      image: values.image,
-    });
+    void authClient.updateUser(
+      {
+        name: values.name,
+        image: values.image,
+      },
+      {
+        onError: () => {
+          toast.error("Failed to update profile");
+          setIsPending(false);
+        },
+        onSuccess: () => {
+          toast.success("Profile updated");
+          setIsPending(false);
+          router.refresh();
+        },
+        onRequest: () => {
+          setIsPending(true);
+        },
+      }
+    );
   });
 
   return (
@@ -75,8 +80,8 @@ const UserProfileForm = (props: {
                 <FormItem>
                   <FormControl>
                     <Input
+                      disabled={isPending}
                       placeholder="Name"
-                      disabled={updateProfile.isPending}
                       {...field}
                       value={field.value ?? undefined}
                     />
@@ -105,10 +110,7 @@ const UserProfileForm = (props: {
                 </FormItem>
               )}
             />
-            <Button
-              type="submit"
-              className="w-fit mt-5"
-              isLoading={updateProfile.isPending}>
+            <Button isLoading={isPending} type="submit" className="w-fit mt-5">
               Save
             </Button>
           </CardBody>
