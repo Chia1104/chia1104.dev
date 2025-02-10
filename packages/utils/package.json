@@ -56,6 +56,10 @@
     "./url": {
       "types": "./src/url/url.ts",
       "default": "./src/url/url.ts"
+    },
+    "./string": {
+      "types": "./src/string/index.ts",
+      "default": "./src/string/index.ts"
     }
   },
   "scripts": {
