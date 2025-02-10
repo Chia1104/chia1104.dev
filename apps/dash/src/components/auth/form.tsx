@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 
 import { Input, Divider, Button } from "@heroui/react";
+import { toast } from "sonner";
 
 import { authClient } from "@chia/auth/client";
 import { Provider } from "@chia/auth/types";
@@ -30,10 +31,20 @@ const LoginForm = () => {
           startTransition(async () => {
             const email = formData.get("email");
             if (!email) return;
-            await authClient.signIn.magicLink({
-              email: email as string,
-              callbackURL: getCurrentDomain(),
-            });
+            await authClient.signIn.magicLink(
+              {
+                email: email as string,
+                callbackURL: getCurrentDomain(),
+              },
+              {
+                onSuccess: () => {
+                  toast.success("Check your email for the magic link");
+                },
+                onError: () => {
+                  toast.error("An error occurred, please try again");
+                },
+              }
+            );
           })
         }>
         <Input
@@ -46,15 +57,11 @@ const LoginForm = () => {
           className="w-full"
         />
         <SubmitForm
-          /**
-           * TODO: fix the drizzle schema
-           */
-          isDisabled
           variant="flat"
           color="primary"
           className="w-full"
           isLoading={isPending}>
-          Sign in with email
+          Send magic link
         </SubmitForm>
       </form>
       <Divider className="mb-3 mt-7 w-4/5" />

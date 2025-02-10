@@ -78,6 +78,10 @@
       "cache": false,
       "interactive": true
     },
+    "db:generate": {
+      "cache": false,
+      "interactive": true
+    },
     "db:migrate": {
       "cache": false,
       "interactive": true
