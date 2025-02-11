@@ -49,7 +49,7 @@
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
     "@upstash/ratelimit": "2.0.5",
-    "@vercel/analytics": "1.4.1",
+    "@vercel/analytics": "1.5.0",
     "@vercel/edge-config": "^1.4.0",
     "@vercel/speed-insights": "^1.1.0",
     "cobe": "^0.6.3",
