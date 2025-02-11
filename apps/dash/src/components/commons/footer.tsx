@@ -2,13 +2,17 @@
 
 import React from "react";
 
-import { Chip, Divider } from "@heroui/react";
+import { Chip, Divider, Skeleton } from "@heroui/react";
+import dynamic from "next/dynamic";
 
 import dayjs from "@chia/utils/day";
 
-import ThemeSwitch from "@/components/commons/theme-switch";
-
 import { AcmeIcon } from "./acme";
+
+const ThemeSwitch = dynamic(() => import("./theme-switch"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-[100px]" />,
+});
 
 const Footer = () => {
   return (
