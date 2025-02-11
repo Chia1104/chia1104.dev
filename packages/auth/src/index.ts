@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
+import { passkey } from "better-auth/plugins/passkey";
 import { Resend } from "resend";
 
+import { createRedis } from "@chia/cache";
 import { connectDatabase } from "@chia/db/client";
 import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
@@ -15,6 +17,8 @@ import { useSecureCookies, getCookieDomain } from "./utils";
 export const name = "auth-core";
 
 const resend = new Resend(env.RESEND_API_KEY);
+const database = await connectDatabase();
+const redis = createRedis();
 
 const getOrigin = (url?: string) => {
   if (!url) {
@@ -24,6 +28,8 @@ const getOrigin = (url?: string) => {
 };
 
 export const auth = betterAuth({
+  appName: "Chia1104.dev",
+
   socialProviders: {
     github:
       env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
@@ -32,25 +38,32 @@ export const auth = betterAuth({
             clientSecret: env.GITHUB_CLIENT_SECRET,
           }
         : undefined,
-    google: {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    },
+    google:
+      env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+        ? {
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+          }
+        : undefined,
   },
 
   /**
    * database adapter
    */
-  database: drizzleAdapter(await connectDatabase(), {
+  database: drizzleAdapter(database, {
     provider: "pg",
     schema: {
       ...schemas,
       user: schemas.users,
-      account: schemas.betterAccount,
-      session: schemas.betterSession,
     },
   }),
 
+  /**
+   * comment the following if you want to run the migration script
+   * ```sh
+   * pnpm auth-schema:generate
+   * ```
+   */
   user: {
     additionalFields: {
       role: {
@@ -59,6 +72,20 @@ export const auth = betterAuth({
         defaultValue: Role.User,
         input: true,
       },
+    },
+  },
+
+  secondaryStorage: {
+    get: async (key) => {
+      const value = await redis.get(key);
+      return value ? value : null;
+    },
+    set: async (key, value, ttl) => {
+      if (ttl) await redis.set(key, value, "EX", ttl);
+      else await redis.set(key, value);
+    },
+    delete: async (key) => {
+      await redis.del(key);
     },
   },
 
@@ -103,5 +130,6 @@ export const auth = betterAuth({
         });
       },
     }),
+    passkey(),
   ],
 });
