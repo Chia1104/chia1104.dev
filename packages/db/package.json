@@ -59,7 +59,7 @@
     "@chia/ai": "workspace:*",
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.0",
-    "pg": "^8.13.1"
+    "pg": "^8.13.2"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
