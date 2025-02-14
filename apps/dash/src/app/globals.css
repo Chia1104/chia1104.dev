@@ -10,6 +10,8 @@
 @source "../../node_modules/@chia/contents/src/**/*.tsx";
 @source "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
 
+@config "../../tailwind.config.ts";
+
 @theme {
   --color-primary: #00e1ff;
   --color-secondary: #ff00e1;

@@ -13,6 +13,8 @@
 @source "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
 @source "../../node_modules/fumadocs-ui/dist/**/*.js";
 
+@config "../../tailwind.config.ts";
+
 @theme {
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
