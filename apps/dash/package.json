@@ -33,7 +33,7 @@
     "@hookform/resolvers": "^4.0.0",
     "@iconify/react": "^5.2.0",
     "@internationalized/date": "^3.7.0",
-    "@monaco-editor/react": "^4.6.0",
+    "@monaco-editor/react": "^4.7.0",
     "@t3-oss/env-nextjs": "^0.12.0",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",
