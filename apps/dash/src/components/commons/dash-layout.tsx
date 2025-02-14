@@ -23,8 +23,8 @@ import {
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import _ from "lodash";
+import { useTransitionRouter } from "next-view-transitions";
 import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
 import { authClient } from "@chia/auth/client";
@@ -47,7 +47,7 @@ const DashLayout = (props: Props) => {
   const pathname = usePathname();
   const [isPending, startTransition] = React.useTransition();
 
-  const router = useRouter();
+  const router = useTransitionRouter();
 
   const currentItem = React.useMemo(() => {
     return routeItems.find(

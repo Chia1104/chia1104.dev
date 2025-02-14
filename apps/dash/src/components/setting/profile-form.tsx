@@ -57,66 +57,71 @@ const UserProfileForm = (props: {
   });
 
   return (
-    <Form {...form}>
-      <form onSubmit={onSubmit} className="w-full flex flex-col gap-5">
-        <Card>
-          <CardHeader className="gap-5">
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Avatar src={field.value ?? ""} size="lg" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="Name"
-                      {...field}
-                      value={field.value ?? undefined}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardHeader>
-          <CardBody>
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      label="Email"
-                      placeholder="Email"
-                      disabled
-                      {...field}
-                      value={field.value ?? undefined}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button isLoading={isPending} type="submit" className="w-fit mt-5">
-              Save
-            </Button>
-          </CardBody>
-        </Card>
-      </form>
-    </Form>
+    <section className="w-full flex flex-col gap-5">
+      <Card>
+        <Form {...form}>
+          <form onSubmit={onSubmit}>
+            <CardHeader className="gap-5">
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Avatar src={field.value ?? ""} size="lg" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        disabled={isPending}
+                        placeholder="Name"
+                        {...field}
+                        value={field.value ?? undefined}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardHeader>
+            <CardBody>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        label="Email"
+                        placeholder="Email"
+                        disabled
+                        {...field}
+                        value={field.value ?? undefined}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                isLoading={isPending}
+                type="submit"
+                className="w-fit mt-5">
+                Save
+              </Button>
+            </CardBody>
+          </form>
+        </Form>
+      </Card>
+    </section>
   );
 };
 
