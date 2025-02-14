@@ -93,7 +93,7 @@ const OpenaiForm = () => {
                     <Button
                       isIconOnly
                       variant="light"
-                      onClick={() => setShow(!show)}>
+                      onPress={() => setShow(!show)}>
                       {show ? <EyeOff /> : <Eye />}
                     </Button>
                   }

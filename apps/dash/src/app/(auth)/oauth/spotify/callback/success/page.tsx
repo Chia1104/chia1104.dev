@@ -1,9 +1,7 @@
+import { redirect } from "next/navigation";
+
 const Page = () => {
-  return (
-    <div>
-      <h1>Spotify Callback Success</h1>
-    </div>
-  );
+  redirect("/");
 };
 
 export default Page;
