@@ -43,7 +43,7 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.1.10",
+    "@ai-sdk/openai": "^1.1.11",
     "@chia/utils": "workspace:*",
     "ai": "^4.1.36",
     "next": "15.1.7",
