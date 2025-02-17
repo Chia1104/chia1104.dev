@@ -37,7 +37,7 @@
     "@chia/utils": "workspace:*",
     "@heroui/react": "2.6.14",
     "@heroui/theme": "2.4.6",
-    "@hookform/resolvers": "^4.0.0",
+    "@hookform/resolvers": "^4.1.0",
     "@next/third-parties": "^15.1.7",
     "@react-email/components": "^0.0.33",
     "@sentry/nextjs": "^9.1.0",
