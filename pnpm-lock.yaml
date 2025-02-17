@@ -399,8 +399,8 @@ importers:
         specifier: ^1.13.8
         version: 1.13.8(hono@4.7.1)
       '@hono/react-renderer':
-        specifier: ^0.2.1
-        version: 0.2.1(hono@4.7.1)
+        specifier: ^0.3.0
+        version: 0.3.0(hono@4.7.1)
       '@hono/sentry':
         specifier: ^1.2.0
         version: 1.2.0(hono@4.7.1)
@@ -2962,8 +2962,8 @@ packages:
     peerDependencies:
       hono: ^4
 
-  '@hono/react-renderer@0.2.1':
-    resolution: {integrity: sha512-neF3WNwtUGYR6uO8T/RDMaQkUIQWrSBC0VsPJNOwb87fs1FvK52wlAzUc6v+RYVvoer+ymPRzsBZQ56S6eirJg==}
+  '@hono/react-renderer@0.3.0':
+    resolution: {integrity: sha512-K5g0shsuoMOT6CGfM76cdBp1Of5ucINzVEvELfeFHzC07rjYTAAiPBn6+bqeV6yOZ/ojWCye5q52C95Wi9l3XA==}
     engines: {node: '>=18'}
     peerDependencies:
       hono: '*'
@@ -13979,7 +13979,7 @@ snapshots:
     dependencies:
       hono: 4.7.1
 
-  '@hono/react-renderer@0.2.1(hono@4.7.1)':
+  '@hono/react-renderer@0.3.0(hono@4.7.1)':
     dependencies:
       hono: 4.7.1
 
