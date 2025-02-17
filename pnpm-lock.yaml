@@ -408,8 +408,8 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4(@trpc/server@11.0.0-rc.768(typescript@5.7.3))(hono@4.7.1)
       '@hono/zod-validator':
-        specifier: ^0.4.2
-        version: 0.4.2(hono@4.7.1)(zod@3.24.2)
+        specifier: ^0.4.3
+        version: 0.4.3(hono@4.7.1)(zod@3.24.2)
       '@t3-oss/env-core':
         specifier: ^0.12.0
         version: 0.12.0(typescript@5.7.3)(zod@3.24.2)
@@ -2980,8 +2980,8 @@ packages:
       '@trpc/server': ^10.10.0 || >11.0.0-rc
       hono: '>=4.*'
 
-  '@hono/zod-validator@0.4.2':
-    resolution: {integrity: sha512-1rrlBg+EpDPhzOV4hT9pxr5+xDVmKuz6YJl+la7VCwK6ass5ldyKm5fD+umJdV2zhHD6jROoCCv8NbTwyfhT0g==}
+  '@hono/zod-validator@0.4.3':
+    resolution: {integrity: sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ==}
     peerDependencies:
       hono: '>=3.9.0'
       zod: ^3.19.1
@@ -13987,7 +13987,7 @@ snapshots:
       '@trpc/server': 11.0.0-rc.768(typescript@5.7.3)
       hono: 4.7.1
 
-  '@hono/zod-validator@0.4.2(hono@4.7.1)(zod@3.24.2)':
+  '@hono/zod-validator@0.4.3(hono@4.7.1)(zod@3.24.2)':
     dependencies:
       hono: 4.7.1
       zod: 3.24.2
