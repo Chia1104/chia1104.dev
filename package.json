@@ -86,7 +86,7 @@
     "@types/jsonwebtoken": "^9.0.8",
     "@types/lodash": "^4.17.15",
     "@types/node": "^22.13.0",
-    "@vitest/coverage-v8": "^3.0.5",
+    "@vitest/coverage-v8": "^3.0.6",
     "bun-types": "^1.2.2",
     "dotenv": "^16.4.7",
     "happy-dom": "^17.1.0",
@@ -102,7 +102,7 @@
     "tsx": "^4.19.2",
     "turbo": "2.4.2",
     "typescript": "catalog:",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.6"
   },
   "manypkg": {
     "ignoredRules": [
