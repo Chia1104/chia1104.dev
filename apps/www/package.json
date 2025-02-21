@@ -71,7 +71,7 @@
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.54.2",
     "react-medium-image-zoom": "^5.2.14",
-    "require-in-the-middle": "^7.5.1",
+    "require-in-the-middle": "^7.5.2",
     "resend": "^4.1.2",
     "schema-dts": "1.1.2",
     "server-only": "^0.0.1",
