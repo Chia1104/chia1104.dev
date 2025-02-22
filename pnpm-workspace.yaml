@@ -6,10 +6,10 @@ packages:
 
 catalog:
   "@tanstack/react-query": ^5.66.9
-  "@trpc/client": ^11.0.0-rc.795
-  "@trpc/react-query": ^11.0.0-rc.795
-  "@trpc/server": ^11.0.0-rc.795
-  "@trpc/next": ^11.0.0-rc.795
+  "@trpc/client": ^11.0.0-rc.802
+  "@trpc/react-query": ^11.0.0-rc.802
+  "@trpc/server": ^11.0.0-rc.802
+  "@trpc/next": ^11.0.0-rc.802
   eslint: ^9.20.1
   typescript: ^5.7.3
   tailwindcss: 3.4.17
