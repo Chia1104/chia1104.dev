@@ -123,8 +123,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(vitest@3.0.6(@types/debug@4.1.12)(@types/node@22.13.1)(happy-dom@17.1.2)(jiti@1.21.7)(jsdom@26.0.0)(msw@2.7.1(@types/node@22.13.1)(typescript@5.7.3))(terser@5.38.0)(tsx@4.19.3)(yaml@2.7.0))
       bun-types:
-        specifier: ^1.2.2
-        version: 1.2.2
+        specifier: ^1.2.3
+        version: 1.2.3
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -415,7 +415,7 @@ importers:
         version: 0.12.0(typescript@5.7.3)(zod@3.24.2)
       drizzle-graphql:
         specifier: ^0.8.5
-        version: 0.8.5(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3))(graphql@16.10.0)
+        version: 0.8.5(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3))(graphql@16.10.0)
       formdata-node:
         specifier: ^6.0.3
         version: 6.0.3
@@ -957,10 +957,10 @@ importers:
         version: link:../ai
       drizzle-orm:
         specifier: ^0.39.3
-        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3)
+        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3)
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.0(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3))(zod@3.24.2)
+        version: 0.7.0(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3))(zod@3.24.2)
       pg:
         specifier: ^8.13.3
         version: 8.13.3
@@ -6590,8 +6590,8 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
-  bun-types@1.2.2:
-    resolution: {integrity: sha512-RCbMH5elr9gjgDGDhkTTugA21XtJAy/9jkKe/G3WR2q17VPGhcquf9Sir6uay9iW+7P/BV0CAHA1XlHXMAVKHg==}
+  bun-types@1.2.3:
+    resolution: {integrity: sha512-P7AeyTseLKAvgaZqQrvp3RqFM3yN9PlcLuSTe7SoJOfZkER73mLdT2vEQi8U64S1YvM/ldcNiQjn0Sn7H9lGgg==}
 
   bundle-require@5.1.0:
     resolution: {integrity: sha512-3WrrOuZiyaaZPWiEt4G3+IffISVC9HYlWueJEBWED4ZH4aIAC2PnkdnuRrR94M+w6yGWn4AglWtJtBI8YqvgoA==}
@@ -18315,7 +18315,7 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bun-types@1.2.2:
+  bun-types@1.2.3:
     dependencies:
       '@types/node': 22.13.1
       '@types/ws': 8.5.14
@@ -19046,9 +19046,9 @@ snapshots:
 
   dotenv@16.4.7: {}
 
-  drizzle-graphql@0.8.5(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3))(graphql@16.10.0):
+  drizzle-graphql@0.8.5(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3))(graphql@16.10.0):
     dependencies:
-      drizzle-orm: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3)
+      drizzle-orm: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3)
       graphql: 16.10.0
       graphql-parse-resolve-info: 4.13.0(graphql@16.10.0)
     transitivePeerDependencies:
@@ -19063,17 +19063,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3):
+  drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.11.11
-      bun-types: 1.2.2
+      bun-types: 1.2.3
       kysely: 0.27.5
       pg: 8.13.3
 
-  drizzle-zod@0.7.0(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3))(zod@3.24.2):
+  drizzle-zod@0.7.0(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(kysely@0.27.5)(pg@8.13.3)
+      drizzle-orm: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.3)(kysely@0.27.5)(pg@8.13.3)
       zod: 3.24.2
 
   dunder-proto@1.0.1:
