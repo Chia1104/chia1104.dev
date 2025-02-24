@@ -7,8 +7,15 @@ import "server-only";
 import { authClient } from "@chia/auth/client";
 
 import DashLayout from "@/components/commons/dash-layout";
+import Footer from "@/components/commons/footer";
 
-export default async function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({
+  children,
+  themeSwitch,
+}: {
+  children: ReactNode;
+  themeSwitch: ReactNode;
+}) {
   const session = await authClient.getSession({
     fetchOptions: {
       headers: await headers(),
@@ -17,5 +24,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
   if (!session.data) {
     unauthorized();
   }
-  return <DashLayout>{children}</DashLayout>;
+  return (
+    <DashLayout footer={<Footer inject={{ themeSwitch }} />}>
+      {children}
+    </DashLayout>
+  );
 }

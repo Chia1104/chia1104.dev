@@ -60,6 +60,22 @@
     "./services/feeds": {
       "types": "./services/feeds/index.ts",
       "default": "./services/feeds/index.ts"
+    },
+    "./betterstack/types": {
+      "types": "./betterstack/types.ts",
+      "default": "./betterstack/types.ts"
+    },
+    "./betterstack/env": {
+      "types": "./betterstack/env.ts",
+      "default": "./betterstack/env.ts"
+    },
+    "./betterstack/utils": {
+      "types": "./betterstack/utils.ts",
+      "default": "./betterstack/utils.ts"
+    },
+    "./betterstack/uptime": {
+      "types": "./betterstack/uptime/index.ts",
+      "default": "./betterstack/uptime/index.ts"
     }
   },
   "scripts": {
