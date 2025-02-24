@@ -1,12 +1,14 @@
 import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import pg from "pg";
 
 import { switchEnv } from "@chia/utils/config";
 
 import type { DB } from ".";
 import * as schema from "./schema";
 
-let pool: Pool | null = null;
+const { Pool } = pg;
+
+let pool: pg.Pool | null = null;
 let db: DB | null = null;
 
 export async function getConnection(url: string) {
