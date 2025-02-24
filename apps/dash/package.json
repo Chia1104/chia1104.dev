@@ -30,7 +30,7 @@
     "@chia/utils": "workspace:*",
     "@heroui/react": "2.7.2",
     "@heroui/theme": "2.4.9",
-    "@hookform/resolvers": "^4.1.1",
+    "@hookform/resolvers": "^4.1.2",
     "@iconify/react": "^5.2.0",
     "@internationalized/date": "^3.7.0",
     "@monaco-editor/react": "^4.7.0",
