@@ -32,12 +32,12 @@ import { authClient } from "@chia/auth/client";
 import { AcmeIcon } from "@/components/commons/acme";
 import AuthGuard from "@/components/commons/auth-guard";
 import Drawer from "@/components/commons/drawer";
-import Footer from "@/components/commons/footer";
 import SideBar from "@/components/commons/side-bar";
 import { routeItems } from "@/shared/routes";
 
 interface Props {
   children?: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
 const DashLayout = (props: Props) => {
@@ -375,7 +375,7 @@ const DashLayout = (props: Props) => {
           )}
           {props.children}
         </main>
-        <Footer />
+        {props.footer}
       </div>
     </div>
   );
