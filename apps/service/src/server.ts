@@ -8,7 +8,7 @@ export const app = dbFactory.createApp();
 
 const port = Number(process.env.PORT) || 3005;
 
-await bootstrap(app, port);
+bootstrap(app, port);
 
 if (getRuntimeKey() === "node") {
   serve({
@@ -17,4 +17,7 @@ if (getRuntimeKey() === "node") {
   });
 }
 
-export default app;
+export default {
+  port,
+  fetch: app.fetch,
+};

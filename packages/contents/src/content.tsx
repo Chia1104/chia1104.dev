@@ -44,11 +44,14 @@ const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
           {content.toc.map((item) => (
             <span
               key={item.url}
-              className="text-sm transition-colors dark:text-gray-400 text-gray-500 [&[data-active='true']]:text-black dark:[&[data-active='true']]:text-white"
               style={{
                 paddingLeft: `${item.depth * 0.5}rem`,
               }}>
-              <Base.TOCItem href={item.url}>{item.title}</Base.TOCItem>
+              <Base.TOCItem
+                href={item.url}
+                className="text-sm transition-colors dark:text-gray-400 text-gray-500 [&[data-active='true']]:text-black dark:[&[data-active='true']]:text-white">
+                {item.title}
+              </Base.TOCItem>
             </span>
           ))}
         </Base.ScrollProvider>

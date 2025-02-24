@@ -257,7 +257,6 @@ export const MetadataFields = () => {
                     labelPlacement="outside"
                     className="w-full"
                     label="Create"
-                    // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
                     value={
                       field.value
                         ? parseDate(
@@ -269,8 +268,6 @@ export const MetadataFields = () => {
                         : null
                     }
                     onChange={(date) => {
-                      // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
-                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                       field.onChange(dayjs(date?.toString()).valueOf());
                     }}
                   />
@@ -291,7 +288,6 @@ export const MetadataFields = () => {
                       labelPlacement="outside"
                       className="w-full"
                       label="Update"
-                      // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
                       value={
                         field.value
                           ? parseDate(
@@ -303,8 +299,6 @@ export const MetadataFields = () => {
                           : null
                       }
                       onChange={(date) => {
-                        // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         field.onChange(dayjs(date?.toString()).valueOf());
                       }}
                     />
