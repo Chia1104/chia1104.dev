@@ -3,11 +3,12 @@ import { Suspense } from "react";
 
 import { Divider } from "@heroui/react";
 
+import { ErrorBoundary } from "@chia/ui/error-boundary";
 import dayjs from "@chia/utils/day";
 
 import { AcmeIcon } from "./acme";
 import { ServiceStatus } from "./service-status.rsc";
-import { Loading } from "./status-chip";
+import { LoadingFallback, ErrorFallback } from "./status-chip";
 
 const Footer = ({
   inject,
@@ -29,9 +30,11 @@ const Footer = ({
               <span className="text-small font-medium">Chia1104.dev</span>
             </div>
             <Divider className="h-4" orientation="vertical" />
-            <Suspense fallback={<Loading />}>
-              <ServiceStatus />
-            </Suspense>
+            <ErrorBoundary errorElement={<ErrorFallback />}>
+              <Suspense fallback={<LoadingFallback />}>
+                <ServiceStatus />
+              </Suspense>
+            </ErrorBoundary>
           </div>
           <p className="text-center text-tiny text-default-400 md:text-start">
             &copy; {dayjs().format("YYYY")} Chia1104.dev. All rights reserved.

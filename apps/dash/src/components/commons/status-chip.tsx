@@ -6,13 +6,24 @@ import { Chip, Skeleton, Tooltip, Link } from "@heroui/react";
 
 import type { Monitors, Monitor } from "@chia/api/betterstack/types";
 
-export const Loading = () => {
+export const LoadingFallback = () => {
   return (
     <Chip
       className="border-none px-0 text-default-500"
       color="default"
       variant="dot">
       <Skeleton className="h-4 w-20 rounded-full" />
+    </Chip>
+  );
+};
+
+export const ErrorFallback = () => {
+  return (
+    <Chip
+      className="border-none px-0 text-default-500"
+      color="danger"
+      variant="dot">
+      Service Error
     </Chip>
   );
 };
