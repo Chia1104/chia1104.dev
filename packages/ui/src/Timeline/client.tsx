@@ -2,6 +2,7 @@
 
 import type { FC } from "react";
 
+import { CircularProgress } from "@heroui/react";
 import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 
@@ -167,7 +168,11 @@ export const GroupList: FC<GroupListProps> = ({
       ))}
       {
         // Show loading skeletons when loading more data
-        asyncDataStatus?.isLoading && <LoadingSkeletons />
+        asyncDataStatus?.isLoading && (
+          <span className="flex justify-center w-full">
+            <CircularProgress color="secondary" />
+          </span>
+        )
       }
     </>
   );
