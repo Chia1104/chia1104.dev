@@ -30,7 +30,7 @@ export interface Paginated<T = unknown> {
 
 const request = (defaultOptions?: Options) => {
   return ky.extend({
-    timeout: 10000,
+    timeout: 30_000,
     credentials: "include",
     hooks: {
       beforeRequest: [
