@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
+  skipTrailingSlashRedirect: true,
   experimental: {
     optimizePackageImports: ["@heroui/react"],
     webpackBuildWorker: true,
