@@ -60,6 +60,14 @@
     "./string": {
       "types": "./src/string/index.ts",
       "default": "./src/string/index.ts"
+    },
+    "./try-catch": {
+      "types": "./src/try-catch/try-catch.ts",
+      "default": "./src/try-catch/try-catch.ts"
+    },
+    "./delay": {
+      "types": "./src/delay/delay.ts",
+      "default": "./src/delay/delay.ts"
     }
   },
   "scripts": {

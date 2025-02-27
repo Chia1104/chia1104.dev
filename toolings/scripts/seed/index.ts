@@ -1,9 +1,11 @@
 import { faker } from "@faker-js/faker";
 
-import { schema } from "@chia/db";
+import { generateEmbedding } from "@chia/ai/embeddings/openai";
+import { schema, eq } from "@chia/db";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
 import { getAdminId } from "@chia/utils";
+import { tryCatch } from "@chia/utils/try-catch";
 
 const withReplicas = (
   fun: (database: DB, adminId: string, env?: string) => Promise<void> | void,
@@ -15,6 +17,18 @@ const withReplicas = (
   return async () => {
     await fun(await connectDatabase(env), getAdminId(env), env);
   };
+};
+
+const getCLIOptions = <TOptions extends Record<string, string>>(): TOptions => {
+  const args = process.argv.slice(2);
+  const options: Record<string, string> = {};
+
+  args.forEach((arg) => {
+    const [key, value] = arg.split("=");
+    options[key] = value;
+  });
+
+  return options as TOptions;
 };
 
 const CONTENT =
@@ -113,10 +127,35 @@ const seedPost = withReplicas(
         feedId: feed[0].feedId,
         content: CONTENT,
       });
+
+      const withEmbedding =
+        getCLIOptions().withEmbedding === "true" ||
+        getCLIOptions().withEmbedding === "1";
+
+      const { data, error } = await tryCatch(
+        withEmbedding
+          ? generateEmbedding(CONTENT)
+          : // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/prefer-promise-reject-errors
+            Promise.reject("disable embedding")
+      );
+      if (error) {
+        console.info("Failed to generate embedding:", error);
+      } else {
+        await trx
+          .update(schema.feeds)
+          .set({
+            /**
+             * TODO: integrate with pg_vector
+             */
+            // @ts-expect-error - embedding work in progress
+            embedding: data,
+          })
+          .where(eq(schema.feeds.id, feed[0].feedId));
+      }
     });
   },
   {
-    env: process.argv[3] ?? "local",
+    env: getCLIOptions().env ?? "local",
   }
 );
 
@@ -171,10 +210,35 @@ const seedNote = withReplicas(
         feedId: feed[0].feedId,
         content: CONTENT,
       });
+
+      const withEmbedding =
+        getCLIOptions().withEmbedding === "true" ||
+        getCLIOptions().withEmbedding === "1";
+
+      const { data, error } = await tryCatch(
+        withEmbedding
+          ? generateEmbedding(CONTENT)
+          : // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/prefer-promise-reject-errors
+            Promise.reject("disable embedding")
+      );
+      if (error) {
+        console.info("Failed to generate embedding:", error);
+      } else {
+        await trx
+          .update(schema.feeds)
+          .set({
+            /**
+             * TODO: integrate with pg_vector
+             */
+            // @ts-expect-error - embedding work in progress
+            embedding: data,
+          })
+          .where(eq(schema.feeds.id, feed[0].feedId));
+      }
     });
   },
   {
-    env: process.argv[3] ?? "local",
+    env: getCLIOptions().env ?? "local",
   }
 );
 
@@ -190,7 +254,7 @@ const seedActions = [
 ];
 
 const seed = async () => {
-  const action = process.argv[2];
+  const action = getCLIOptions().action;
   if (!action) {
     throw new Error("No action provided");
   }

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { env as spotifyEnv } from "@chia/api/spotify/env";
 import { env as authEnv } from "@chia/auth/env";
+import { numericStringSchema } from "@chia/utils";
 
 export const env = createEnv({
   server: {
@@ -26,6 +27,9 @@ export const env = createEnv({
     AI_AUTH_SECRET: z.string().optional(),
     IP_DENY_LIST: z.string().optional(),
     IP_ALLOW_LIST: z.string().optional(),
+    MAINTENANCE_MODE: z.string().optional().default("false"),
+    MAINTENANCE_BYPASS_TOKEN: z.string().optional(),
+    TIMEOUT_MS: numericStringSchema,
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -46,6 +50,13 @@ export const env = createEnv({
     AI_AUTH_SECRET: process.env.AI_AUTH_SECRET,
     IP_DENY_LIST: process.env.IP_DENY_LIST,
     IP_ALLOW_LIST: process.env.IP_ALLOW_LIST,
+    MAINTENANCE_MODE:
+      process.env.MAINTENANCE_MODE === "true" ||
+      process.env.MAINTENANCE_MODE === "1"
+        ? "true"
+        : "false",
+    MAINTENANCE_BYPASS_TOKEN: process.env.MAINTENANCE_BYPASS_TOKEN,
+    TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

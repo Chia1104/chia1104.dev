@@ -13,6 +13,7 @@
     "tsc:config": "tsc --showConfig"
   },
   "devDependencies": {
+    "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",

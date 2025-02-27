@@ -36,6 +36,10 @@ import useTheme from "@chia/ui/utils/use-theme";
 import dayjs from "@chia/utils/day";
 
 import { useDraft } from "@/hooks/use-draft";
+import {
+  useGenerateFeedDescription,
+  useGenerateFeedSlug,
+} from "@/services/ai/hooks";
 import { api } from "@/trpc/client";
 
 import {
@@ -117,6 +121,86 @@ const DeleteButton = () => {
   );
 };
 
+const SlugField = () => {
+  const form = useFormContext<CreateFeedInput>();
+  const editFields = useEditFieldsContext();
+  const { completion } = useGenerateFeedSlug();
+
+  return (
+    <FormField<CreateFeedInput, "slug">
+      control={form.control}
+      name="slug"
+      render={({ field, fieldState }) => (
+        <FormItem>
+          <FormControl>
+            <Input
+              disabled={editFields.disabled || editFields.mode === "edit"}
+              label="Slug"
+              isInvalid={fieldState.invalid}
+              description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
+              endContent={
+                <GenerateFeedSlug
+                  title={form.watch("title")}
+                  onSuccess={(data) => {
+                    field.onChange(data);
+                  }}
+                  preGenerate={() => {
+                    field.onChange("");
+                  }}
+                />
+              }
+              {...field}
+              placeholder={completion}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
+
+const DescriptionField = () => {
+  const form = useFormContext<CreateFeedInput>();
+  const editFields = useEditFieldsContext();
+  const { completion } = useGenerateFeedDescription();
+
+  return (
+    <FormField<CreateFeedInput, "description">
+      control={form.control}
+      name="description"
+      render={({ field, fieldState }) => (
+        <FormItem>
+          <FormControl>
+            <Textarea
+              disabled={editFields.disabled}
+              label="Description"
+              labelPlacement="outside"
+              placeholder={completion || "Description"}
+              minRows={7}
+              isInvalid={fieldState.invalid}
+              endContent={
+                <GenerateFeedDescription
+                  input={form.watch("title")}
+                  onSuccess={(data) => {
+                    field.onChange(data);
+                  }}
+                  preGenerate={() => {
+                    field.onChange("");
+                  }}
+                />
+              }
+              {...field}
+              value={field.value ?? ""}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
+
 export const MetadataFields = () => {
   const form = useFormContext<CreateFeedInput>();
   const editFields = useEditFieldsContext();
@@ -127,6 +211,7 @@ export const MetadataFields = () => {
   const [contentType, setContentType] = useState(
     new Set([form.getValues("contentType")])
   );
+
   return (
     <div className="w-full flex flex-col gap-5">
       <div className="flex justify-between">
@@ -188,61 +273,8 @@ export const MetadataFields = () => {
           </FormItem>
         )}
       />
-      <FormField<CreateFeedInput, "slug">
-        control={form.control}
-        name="slug"
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormControl>
-              <Input
-                disabled={editFields.disabled || editFields.mode === "edit"}
-                label="Slug"
-                isInvalid={fieldState.invalid}
-                description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
-                endContent={
-                  <GenerateFeedSlug
-                    title={form.watch("title")}
-                    onSuccess={(data) => {
-                      field.onChange(data);
-                    }}
-                  />
-                }
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField<CreateFeedInput, "description">
-        control={form.control}
-        name="description"
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormControl>
-              <Textarea
-                disabled={editFields.disabled}
-                label="Description"
-                labelPlacement="outside"
-                placeholder="Description"
-                minRows={7}
-                isInvalid={fieldState.invalid}
-                endContent={
-                  <GenerateFeedDescription
-                    input={form.watch("title")}
-                    onSuccess={(data) => {
-                      field.onChange(data);
-                    }}
-                  />
-                }
-                {...field}
-                value={field.value ?? ""}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <SlugField />
+      <DescriptionField />
       <div className="flex flex-col md:flex-row w-full gap-5">
         <div className="flex gap-5 w-full md:w-1/2">
           <FormField<CreateFeedInput, "createdAt">
@@ -453,6 +485,7 @@ const SwitchEditor = () => {
                 scrollBeyondLastLine: false,
                 scrollbar: { vertical: "auto" },
                 lineNumbers: "off",
+                quickSuggestions: false,
               }}
             />
           </div>

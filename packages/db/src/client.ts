@@ -23,6 +23,7 @@ export async function getConnection(url: string) {
 
     pool = new Pool({
       connectionString: url,
+      connectionTimeoutMillis: 10_000,
     });
     db = drizzle(pool, { schema });
     return db;

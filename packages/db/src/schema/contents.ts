@@ -10,7 +10,12 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-import { baseFeedsColumns, baseFeedsExtraConfig } from "../libs/schema-columns";
+import {
+  baseFeedsColumns,
+  baseFeedsExtraConfig,
+  // feedsWithEmbeddingColumns,
+  // feedsWithEmbeddingExtraConfig,
+} from "../libs/schema-columns";
 import { i18n } from "./enums";
 import { pgTable } from "./table";
 import { users } from "./users";
@@ -51,6 +56,13 @@ export const assets = pgTable(
 );
 
 export const feeds = pgTable("feed", baseFeedsColumns, baseFeedsExtraConfig);
+
+// with embedding
+// export const feeds = pgTable(
+//   "feed",
+//   feedsWithEmbeddingColumns,
+//   feedsWithEmbeddingExtraConfig
+// );
 
 export const contents = pgTable("content", {
   id: serial("id").primaryKey(),

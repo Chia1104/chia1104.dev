@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { ipRestriction } from "hono/ip-restriction";
 import { logger } from "hono/logger";
+import { timeout } from "hono/timeout";
 import { RedisStore } from "rate-limit-redis";
 
 import { auth } from "@chia/auth";
@@ -19,6 +20,7 @@ import healthRoutes from "@/controllers/health.controller";
 import spotifyRoutes from "@/controllers/spotify.controller";
 import trpcRoutes from "@/controllers/trpc.controller";
 import { env } from "@/env";
+import { maintenance } from "@/middlewares/maintenance.middleware";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
 import { splitString } from "./utils";
@@ -27,6 +29,7 @@ const bootstrap = <TContext extends HonoContext>(
   app: Hono<TContext>,
   port: number
 ) => {
+  app.use("*", timeout(env.TIMEOUT_MS));
   /**
    * logger middleware
    */
@@ -54,6 +57,18 @@ const bootstrap = <TContext extends HonoContext>(
     c.get("sentry").captureException(e);
     return c.json(errorGenerator(500), 500);
   });
+
+  /**
+   * Maintenance mode middleware
+   */
+  app.use(
+    "*",
+    maintenance({
+      enabled: env.MAINTENANCE_MODE === "true",
+      allowedPaths: ["/api/v1/health"],
+      bypassToken: env.MAINTENANCE_BYPASS_TOKEN,
+    })
+  );
 
   /**
    * CORS middleware
