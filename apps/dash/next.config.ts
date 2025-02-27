@@ -41,8 +41,7 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@heroui/react"],
     webpackBuildWorker: true,
     reactCompiler: true,
-    // dynamicIO: true,
-    // ppr: true,
+    viewTransition: true,
     authInterrupts: true,
   },
   eslint: {
