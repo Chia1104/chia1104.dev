@@ -1216,6 +1216,9 @@ importers:
 
   toolings/scripts/seed:
     devDependencies:
+      '@chia/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
       '@chia/db':
         specifier: workspace:*
         version: link:../../../packages/db
