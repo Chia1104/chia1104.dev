@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "go run main.go",
     "build": "go build -o bin/image-resize main.go"
   }
 }
