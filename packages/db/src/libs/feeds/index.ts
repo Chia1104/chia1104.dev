@@ -269,12 +269,6 @@ export const searchFeeds = withDTO(
     dto: Options & { input: string; limit?: number; comparison?: number }
   ) => {
     const embedding = await generateEmbedding(dto.input, dto);
-
-    /**
-     * TODO: integrate with pg_vector
-     */
-    // @ts-expect-error - embedding work in progress
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
 
     return db

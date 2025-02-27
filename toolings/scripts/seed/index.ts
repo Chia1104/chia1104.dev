@@ -144,10 +144,6 @@ const seedPost = withReplicas(
         await trx
           .update(schema.feeds)
           .set({
-            /**
-             * TODO: integrate with pg_vector
-             */
-            // @ts-expect-error - embedding work in progress
             embedding: data,
           })
           .where(eq(schema.feeds.id, feed[0].feedId));
@@ -227,10 +223,6 @@ const seedNote = withReplicas(
         await trx
           .update(schema.feeds)
           .set({
-            /**
-             * TODO: integrate with pg_vector
-             */
-            // @ts-expect-error - embedding work in progress
             embedding: data,
           })
           .where(eq(schema.feeds.id, feed[0].feedId));
