@@ -43,7 +43,7 @@ export const GenerateFeedSlug = ({
         isIconOnly
         onPress={() => {
           preGenerate?.();
-          generate.complete(`My current title is ${title}`);
+          void generate.complete(`My current title is ${title}`);
         }}>
         <Sparkles className="size-4" />
       </Button>
@@ -82,7 +82,7 @@ export const GenerateFeedDescription = ({
         isIconOnly
         onPress={() => {
           preGenerate?.();
-          generate.complete(`My current title is ${input}`);
+          void generate.complete(`My current title is ${input}`);
         }}>
         <Sparkles className="size-4" />
       </Button>
