@@ -13,9 +13,11 @@ import {
 export const GenerateFeedSlug = ({
   title,
   onSuccess,
+  preGenerate,
 }: {
   title: string;
   onSuccess?: (data: string) => void;
+  preGenerate?: () => void;
 }) => {
   const generate = useGenerateFeedSlug(
     { title },
@@ -24,7 +26,7 @@ export const GenerateFeedSlug = ({
         console.error(error);
         toast.error("Failed to generate feed slug");
       },
-      onFinish(prompt, completion) {
+      onFinish(prompt, completion: string) {
         if (completion) {
           onSuccess?.(completion);
         }
@@ -39,7 +41,10 @@ export const GenerateFeedSlug = ({
         variant="flat"
         color="primary"
         isIconOnly
-        onPress={() => generate.complete(`My current title is ${title}`)}>
+        onPress={() => {
+          preGenerate?.();
+          generate.complete(`My current title is ${title}`);
+        }}>
         <Sparkles className="size-4" />
       </Button>
     </Tooltip>
@@ -49,16 +54,18 @@ export const GenerateFeedSlug = ({
 export const GenerateFeedDescription = ({
   input,
   onSuccess,
+  preGenerate,
 }: {
   input: string;
   onSuccess?: (data: string) => void;
+  preGenerate?: () => void;
 }) => {
   const generate = useGenerateFeedDescription(input, {
     onError: (error) => {
       console.error(error);
       toast.error("Failed to generate feed description");
     },
-    onFinish(prompt, completion) {
+    onFinish(prompt, completion: string) {
       if (completion) {
         onSuccess?.(completion);
       }
@@ -73,7 +80,10 @@ export const GenerateFeedDescription = ({
         variant="flat"
         color="primary"
         isIconOnly
-        onPress={() => generate.complete(`My current input is ${input}`)}>
+        onPress={() => {
+          preGenerate?.();
+          generate.complete(`My current title is ${input}`);
+        }}>
         <Sparkles className="size-4" />
       </Button>
     </Tooltip>
@@ -94,7 +104,7 @@ export const GenerateFeedContent = ({
       console.error(error);
       toast.error("Failed to generate feed content");
     },
-    onFinish(prompt, completion) {
+    onFinish(prompt, completion: string) {
       if (completion) {
         onSuccess?.(completion);
       }

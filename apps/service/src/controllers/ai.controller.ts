@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
-import { streamText } from "hono/streaming";
+import { stream } from "hono/streaming";
 import { z } from "zod";
 
 import { HEADER_AUTH_TOKEN } from "@chia/ai/constants";
@@ -58,18 +58,14 @@ api.use("/generate", ai()).post(
     }
   ),
   (c) => {
-    return streamText(c, async (stream) => {
-      const result = streamGeneratedText({
-        modal: c.req.valid("json").modal,
-        messages: c.req.valid("json").messages,
-        authToken: c.get(AI_AUTH_TOKEN),
-        system: c.req.valid("json").system,
-      });
-
-      for await (const textPart of result.textStream) {
-        await stream.write(textPart);
-      }
+    c.header("Content-Type", "text/plain; charset=utf-8");
+    const result = streamGeneratedText({
+      modal: c.req.valid("json").modal,
+      messages: c.req.valid("json").messages,
+      authToken: c.get(AI_AUTH_TOKEN),
+      system: c.req.valid("json").system,
     });
+    return stream(c, (stream) => stream.pipe(result.toDataStream()));
   }
 );
 
