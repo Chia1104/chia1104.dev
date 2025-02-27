@@ -485,6 +485,7 @@ const SwitchEditor = () => {
                 scrollBeyondLastLine: false,
                 scrollbar: { vertical: "auto" },
                 lineNumbers: "off",
+                quickSuggestions: false,
               }}
             />
           </div>
