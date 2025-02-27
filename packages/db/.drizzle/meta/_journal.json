@@ -71,6 +71,13 @@
       "when": 1739197165275,
       "tag": "0009_passkey",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1740665656508,
+      "tag": "0010_feed-embedding",
+      "breakpoints": true
     }
   ]
 }
