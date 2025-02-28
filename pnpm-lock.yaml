@@ -496,8 +496,8 @@ importers:
         specifier: catalog:triggerdotdev
         version: 3.3.16(zod@3.24.2)
       openai:
-        specifier: ^4.85.4
-        version: 4.85.4(ws@8.18.0)(zod@3.24.2)
+        specifier: ^4.86.1
+        version: 4.86.1(ws@8.18.0)(zod@3.24.2)
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -756,8 +756,8 @@ importers:
         specifier: 15.2.0
         version: 15.2.0(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       openai:
-        specifier: ^4.85.4
-        version: 4.85.4(ws@8.18.0)(zod@3.24.2)
+        specifier: ^4.86.1
+        version: 4.86.1(ws@8.18.0)(zod@3.24.2)
     devDependencies:
       '@chia/eslint-config':
         specifier: workspace:*
@@ -9781,8 +9781,8 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@4.85.4:
-    resolution: {integrity: sha512-Nki51PBSu+Aryo7WKbdXvfm0X/iKkQS2fq3O0Uqb/O3b4exOZFid2te1BZ52bbO5UwxQZ5eeHJDCTqtrJLPw0w==}
+  openai@4.86.1:
+    resolution: {integrity: sha512-x3iCLyaC3yegFVZaxOmrYJjitKxZ9hpVbLi+ZlT5UHuHTMlEQEbKXkGOM78z9qm2T5GF+XRUZCP2/aV4UPFPJQ==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -22463,7 +22463,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.85.4(ws@8.18.0)(zod@3.24.2):
+  openai@4.86.1(ws@8.18.0)(zod@3.24.2):
     dependencies:
       '@types/node': 18.19.75
       '@types/node-fetch': 2.6.12
