@@ -232,7 +232,7 @@ importers:
         version: 4.7.0(monaco-editor@0.52.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@t3-oss/env-nextjs':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.66.11(react@19.0.0)
@@ -274,7 +274,7 @@ importers:
         version: 15.2.0(@babel/core@7.26.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next-safe-action:
         specifier: 7.10.4
-        version: 7.10.4(next@15.2.0(@babel/core@7.26.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.2)
+        version: 7.10.4(next@15.2.0(@babel/core@7.26.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       next-themes:
         specifier: ^0.4.4
         version: 0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -418,7 +418,7 @@ importers:
         version: 0.4.3(hono@4.7.2)(zod@3.24.2)
       '@t3-oss/env-core':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       drizzle-graphql:
         specifier: ^0.8.5
         version: 0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3))(graphql@16.10.0)
@@ -491,7 +491,7 @@ importers:
         version: link:../../packages/utils
       '@t3-oss/env-core':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.23.8)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.23.8)
       '@trigger.dev/core':
         specifier: catalog:triggerdotdev
         version: 3.3.16
@@ -555,10 +555,10 @@ importers:
         version: 9.3.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(next@15.2.0(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)(webpack@5.97.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(esbuild@0.25.0))
       '@t3-oss/env-core':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       '@t3-oss/env-nextjs':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.66.11(react@19.0.0)
@@ -773,7 +773,7 @@ importers:
         version: link:../utils
       '@t3-oss/env-core':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.0.0-rc.819(@trpc/server@11.0.0-rc.819(typescript@5.8.2))(typescript@5.8.2)
@@ -816,10 +816,10 @@ importers:
         version: link:../utils
       '@t3-oss/env-core':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       better-auth:
-        specifier: ^1.1.21
-        version: 1.1.21
+        specifier: ^1.2.0
+        version: 1.2.0(typescript@5.8.2)
       resend:
         specifier: ^4.1.2
         version: 4.1.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -841,7 +841,7 @@ importers:
     dependencies:
       '@t3-oss/env-core':
         specifier: ^0.12.0
-        version: 0.12.0(typescript@5.8.2)(zod@3.24.2)
+        version: 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
       '@upstash/ratelimit':
         specifier: 2.0.5
         version: 2.0.5(@upstash/redis@1.34.4)
@@ -1264,18 +1264,6 @@ packages:
     resolution: {integrity: sha512-jie6ZJT2ZR0uVOVCDc9R2xCX5I/Dum/wEK28lx21PJx6ZnFAN9EzD2WsPhcDWfCgGx3OAZZ0GyM3CEobXpa9LA==}
     engines: {node: '>=18'}
 
-  '@ai-sdk/react@1.1.18':
-    resolution: {integrity: sha512-2wlWug6NVAc8zh3pgqtvwPkSNTdA6Q4x9CmrNXCeHcXfJkJ+MuHFQz/I7Wb7mLRajf0DAxsFLIhHyBCEuTkDNw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      react: ^18 || ^19 || ^19.0.0-rc
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      react:
-        optional: true
-      zod:
-        optional: true
-
   '@ai-sdk/react@1.1.19':
     resolution: {integrity: sha512-zqSOWmJxpB45ZrwZ04+Q7Uo3xeGM0tva2eUYz2T4gv9Yk6MQAfOBA6+scsKg8CyIuUy4M4/C4pCY3eWQf7sfQg==}
     engines: {node: '>=18'}
@@ -1504,8 +1492,8 @@ packages:
   '@better-auth/utils@0.2.3':
     resolution: {integrity: sha512-Ap1GaSmo6JYhJhxJOpUB0HobkKPTNzfta+bLV89HfpyCAHN7p8ntCrmNFHNAVD0F6v0mywFVEUg1FUhNCc81Rw==}
 
-  '@better-fetch/fetch@1.1.12':
-    resolution: {integrity: sha512-B3bfloI/2UBQWIATRN6qmlORrvx3Mp0kkNjmXLv0b+DtbtR+pP4/I5kQA/rDUv+OReLywCCldf6co4LdDmh8JA==}
+  '@better-fetch/fetch@1.1.15':
+    resolution: {integrity: sha512-0Bl8YYj1f8qCTNHeSn5+1DWv2hy7rLBrQ8rS8Y9XYloiwZEfc3k4yspIG0llRxafxqhGCwlGRg+F8q1HZRCMXA==}
 
   '@braintree/sanitize-url@7.1.1':
     resolution: {integrity: sha512-i1L7noDNxtFyL5DmZafWy1wRVhGehQmzZaz1HiN5e7iylJMSZR7ekOV7NsIqa5qBldlLrsKv4HbgFUVlQrz8Mw==}
@@ -6670,11 +6658,11 @@ packages:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
 
-  better-auth@1.1.21:
-    resolution: {integrity: sha512-scyrQn8O9XL4oKmTt7nnA50P0v0RnI39yKevlMa0mI3646hXq/QOThjUrYy+cYCoq4tNLVsctQa9yUUMN9ZzhA==}
+  better-auth@1.2.0:
+    resolution: {integrity: sha512-eIRGOXfix25bh4fgs8jslZAZssufpIkxfEeEokQu5G4wICoDee1wPctkFb8v80PvhtI4dPm28SuAoZaAdRc6Wg==}
 
-  better-call@0.3.3:
-    resolution: {integrity: sha512-N4lDVm0NGmFfDJ0XMQ4O83Zm/3dPlvIQdxvwvgSLSkjFX5PM4GUYSVAuxNzXN27QZMHDkrJTWUqxBrm4tPC3eA==}
+  better-call@1.0.3:
+    resolution: {integrity: sha512-DUKImKoDIy5UtCvQbHTg0wuBRse6gu1Yvznn7+1B3I5TeY8sclRPFce0HI+4WF2bcb+9PqmkET8nXZubrHQh9A==}
 
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
@@ -10777,6 +10765,9 @@ packages:
   server-only@0.0.1:
     resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
 
+  set-cookie-parser@2.7.1:
+    resolution: {integrity: sha512-IOc8uWeOZgnb3ptbCURJWNjWUPcO3ZnTTdzsurqERrP6nPyv+paC55vJM0LpOlT2ne+Ix+9+CRG1MNLlyZ4GjQ==}
+
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
     engines: {node: '>= 0.4'}
@@ -11664,6 +11655,14 @@ packages:
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
+  valibot@1.0.0-beta.15:
+    resolution: {integrity: sha512-BKy8XosZkDHWmYC+cJG74LBzP++Gfntwi33pP3D3RKztz2XV9jmFWnkOi21GoqARP8wAWARwhV6eTr1JcWzjGw==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   validate-npm-package-name@5.0.1:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
@@ -12096,16 +12095,6 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@1.1.18(react@19.0.0)(zod@3.24.2)':
-    dependencies:
-      '@ai-sdk/provider-utils': 2.1.10(zod@3.24.2)
-      '@ai-sdk/ui-utils': 1.1.16(zod@3.24.2)
-      swr: 2.3.2(react@19.0.0)
-      throttleit: 2.1.0
-    optionalDependencies:
-      react: 19.0.0
-      zod: 3.24.2
-
   '@ai-sdk/react@1.1.19(react@19.0.0)(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider-utils': 2.1.10(zod@3.24.2)
@@ -12424,7 +12413,7 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  '@better-fetch/fetch@1.1.12': {}
+  '@better-fetch/fetch@1.1.15': {}
 
   '@braintree/sanitize-url@7.1.1': {}
 
@@ -17345,21 +17334,24 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
 
-  '@t3-oss/env-core@0.12.0(typescript@5.8.2)(zod@3.23.8)':
+  '@t3-oss/env-core@0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.23.8)':
     optionalDependencies:
       typescript: 5.8.2
+      valibot: 1.0.0-beta.15(typescript@5.8.2)
       zod: 3.23.8
 
-  '@t3-oss/env-core@0.12.0(typescript@5.8.2)(zod@3.24.2)':
+  '@t3-oss/env-core@0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)':
     optionalDependencies:
       typescript: 5.8.2
+      valibot: 1.0.0-beta.15(typescript@5.8.2)
       zod: 3.24.2
 
-  '@t3-oss/env-nextjs@0.12.0(typescript@5.8.2)(zod@3.24.2)':
+  '@t3-oss/env-nextjs@0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)':
     dependencies:
-      '@t3-oss/env-core': 0.12.0(typescript@5.8.2)(zod@3.24.2)
+      '@t3-oss/env-core': 0.12.0(typescript@5.8.2)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2)
     optionalDependencies:
       typescript: 5.8.2
+      valibot: 1.0.0-beta.15(typescript@5.8.2)
       zod: 3.24.2
 
   '@tailwindcss/aspect-ratio@0.4.2(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@22.13.5)(typescript@5.8.2)))':
@@ -18500,27 +18492,30 @@ snapshots:
 
   basic-ftp@5.0.5: {}
 
-  better-auth@1.1.21:
+  better-auth@1.2.0(typescript@5.8.2):
     dependencies:
       '@better-auth/utils': 0.2.3
-      '@better-fetch/fetch': 1.1.12
+      '@better-fetch/fetch': 1.1.15
       '@noble/ciphers': 0.6.0
       '@noble/hashes': 1.7.1
       '@simplewebauthn/browser': 13.1.0
       '@simplewebauthn/server': 13.1.1
-      better-call: 0.3.3
+      better-call: 1.0.3
       defu: 6.1.4
       jose: 5.10.0
       kysely: 0.27.5
       nanostores: 0.11.4
+      valibot: 1.0.0-beta.15(typescript@5.8.2)
       zod: 3.24.2
+    transitivePeerDependencies:
+      - typescript
 
-  better-call@0.3.3:
+  better-call@1.0.3:
     dependencies:
-      '@better-fetch/fetch': 1.1.12
+      '@better-fetch/fetch': 1.1.15
       rou3: 0.5.1
+      set-cookie-parser: 2.7.1
       uncrypto: 0.1.3
-      zod: 3.24.2
 
   binary-extensions@2.3.0: {}
 
@@ -22181,12 +22176,13 @@ snapshots:
       react: 19.0.0
       use-intl: 3.26.5(react@19.0.0)
 
-  next-safe-action@7.10.4(next@15.2.0(@babel/core@7.26.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(zod@3.24.2):
+  next-safe-action@7.10.4(next@15.2.0(@babel/core@7.26.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(valibot@1.0.0-beta.15(typescript@5.8.2))(zod@3.24.2):
     dependencies:
       next: 15.2.0(@babel/core@7.26.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(babel-plugin-react-compiler@19.0.0-beta-e1e972c-20250221)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
     optionalDependencies:
+      valibot: 1.0.0-beta.15(typescript@5.8.2)
       zod: 3.24.2
 
   next-themes@0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
@@ -23594,6 +23590,8 @@ snapshots:
 
   server-only@0.0.1: {}
 
+  set-cookie-parser@2.7.1: {}
+
   set-function-length@1.2.2:
     dependencies:
       define-data-property: 1.1.4
@@ -24642,6 +24640,10 @@ snapshots:
   uuid@9.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
+
+  valibot@1.0.0-beta.15(typescript@5.8.2):
+    optionalDependencies:
+      typescript: 5.8.2
 
   validate-npm-package-name@5.0.1: {}
 
