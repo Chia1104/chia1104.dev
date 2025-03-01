@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/client";
+import "server-only";
 
 import { X_INTERNAL_REQUEST_SECRET } from "@chia/utils";
 
