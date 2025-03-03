@@ -43,7 +43,7 @@
     "@trpc/server": "catalog:",
     "ai": "^4.1.47",
     "clsx": "^2.1.1",
-    "framer-motion": "12.4.7",
+    "framer-motion": "12.4.10",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
     "lucide-react": "^0.477.0",
