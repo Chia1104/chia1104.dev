@@ -22,6 +22,10 @@
       "types": "./src/env.ts",
       "default": "./src/env.ts"
     },
+    "./env.client": {
+      "types": "./src/env.client.ts",
+      "default": "./src/env.client.ts"
+    },
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/types.ts"

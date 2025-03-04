@@ -1,5 +1,6 @@
 import { createFactory } from "hono/factory";
 
+import { getClientIP } from "@chia/api/utils";
 import { createRedis } from "@chia/cache";
 import { connectDatabase } from "@chia/db/client";
 import { errorGenerator } from "@chia/utils";
@@ -16,6 +17,7 @@ export default createFactory<HonoContext>({
         return c.json(errorGenerator(503));
       }
 
+      c.set("clientIP", getClientIP(c.req.raw));
       c.set("db", db);
       c.set("redis", redis);
       await next();

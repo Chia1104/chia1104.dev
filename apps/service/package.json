@@ -21,6 +21,8 @@
     "@chia/auth": "workspace:*",
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/meta": "workspace:*",
+    "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@hono-rate-limiter/redis": "^0.1.4",
     "@hono/graphql-server": "^0.5.1",
@@ -37,6 +39,7 @@
     "rate-limit-redis": "^4.2.0",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
+    "resend": "^4.1.2",
     "web-streams-polyfill": "^4.1.0"
   },
   "devDependencies": {

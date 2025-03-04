@@ -44,6 +44,10 @@
     "./features/NotFound": {
       "types": "./features/NotFound/index.tsx",
       "default": "./features/NotFound/index.tsx"
+    },
+    "./features/EmailTemplate": {
+      "types": "./features/EmailTemplate/index.tsx",
+      "default": "./features/EmailTemplate/index.tsx"
     }
   },
   "scripts": {
