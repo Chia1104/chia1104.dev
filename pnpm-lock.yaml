@@ -60,14 +60,14 @@ catalogs:
       version: 19.0.0
   triggerdotdev:
     '@trigger.dev/build':
-      specifier: 3.3.16
-      version: 3.3.16
+      specifier: 3.3.17
+      version: 3.3.17
     '@trigger.dev/core':
-      specifier: 3.3.16
-      version: 3.3.16
+      specifier: 3.3.17
+      version: 3.3.17
     '@trigger.dev/sdk':
-      specifier: 3.3.16
-      version: 3.3.16
+      specifier: 3.3.17
+      version: 3.3.17
 
 importers:
 
@@ -500,10 +500,10 @@ importers:
         version: link:../../packages/utils
       '@trigger.dev/core':
         specifier: catalog:triggerdotdev
-        version: 3.3.16
+        version: 3.3.17
       '@trigger.dev/sdk':
         specifier: catalog:triggerdotdev
-        version: 3.3.16(zod@3.23.8)
+        version: 3.3.17(zod@3.23.8)
       openai:
         specifier: ^4.86.1
         version: 4.86.1(ws@8.18.0)(zod@3.23.8)
@@ -513,7 +513,7 @@ importers:
         version: link:../../toolings/tsconfig
       '@trigger.dev/build':
         specifier: catalog:triggerdotdev
-        version: 3.3.16(typescript@5.8.2)
+        version: 3.3.17(typescript@5.8.2)
       typescript:
         specifier: 'catalog:'
         version: 5.8.2
@@ -5771,16 +5771,16 @@ packages:
   '@total-typescript/ts-reset@0.6.1':
     resolution: {integrity: sha512-cka47fVSo6lfQDIATYqb/vO1nvFfbPw7uWLayIXIhGETj0wcOOlrlkobOMDNQOFr9QOafegUPq13V2+6vtD7yg==}
 
-  '@trigger.dev/build@3.3.16':
-    resolution: {integrity: sha512-PATGwN8bvDlOESmOgJO3mofulxActkSClBCdlsTT3NYzT6umFFXOieWzq5fLrPpaHsujrkazTERSiHOEdxEXxw==}
+  '@trigger.dev/build@3.3.17':
+    resolution: {integrity: sha512-dfreMuVeLAcZypS3kkUA9nWNviiuOPIQ3ldy2ywPCmwmbHyd0BE8tI5D3A4kmVq/f53TdRMls4c+cYafxlwubQ==}
     engines: {node: '>=18.20.0'}
 
-  '@trigger.dev/core@3.3.16':
-    resolution: {integrity: sha512-OCxl9A7QvqLnGlnl195p8lw0pTY7hJQyaY35Sdy2GuYcm28ktwzx3F2Iu3ulgcmDlKQTpf1VZsSA5wP/enRRpQ==}
+  '@trigger.dev/core@3.3.17':
+    resolution: {integrity: sha512-KjnRxCuHq4R+MnE0zPvIQ7EIz4QSpJL+1Yn74n2cCGjyHYgQ/g8rcARn0Nxf2s8jzE38CnyRufjUrwG8k+DJrw==}
     engines: {node: '>=18.20.0'}
 
-  '@trigger.dev/sdk@3.3.16':
-    resolution: {integrity: sha512-vObHP0P5ugyZNKiAOLTD1rWeHKiX97K82aj06HaOceRZxwztbBnuhD3AXAODISvroKguySUcrLDCMOSTpXUung==}
+  '@trigger.dev/sdk@3.3.17':
+    resolution: {integrity: sha512-wjIjlQWKybYWw/J7LxFIOO1pXzxXoj9lxbFMvjb51JtfebxnQnh6aExN47nOGhVhV38wHYstfBI/8ClWwBnFYw==}
     engines: {node: '>=18.20.0'}
     peerDependencies:
       zod: ^3.0.0
@@ -8863,9 +8863,6 @@ packages:
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
-  jose@5.9.6:
-    resolution: {integrity: sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==}
-
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
@@ -9912,9 +9909,6 @@ packages:
 
   pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
-
-  pathe@2.0.2:
-    resolution: {integrity: sha512-15Ztpk+nov8DR524R4BF7uEuzESgzUEAV4Ah7CUMNGXdE5ELuvxElxGXndBl32vMSsWa1jpNf22Z+Er3sKwq+w==}
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
@@ -11211,10 +11205,6 @@ packages:
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
 
-  tinyglobby@0.2.10:
-    resolution: {integrity: sha512-Zc+8eJlFMvgatPZTl6A9L/yht8QqdmUNtURHaKZLmKBE12hNPSrqNkUp2cs3M/UKmNVVAMFQYSjYIVHDjW5zew==}
-    engines: {node: '>=12.0.0'}
-
   tinyglobby@0.2.12:
     resolution: {integrity: sha512-qkf4trmKSIiMTs/E63cxH+ojC2unam7rJ0WrauAzpT3ECNTxGRMlaXxVbfxMUC/w0LaYk6jQ4y/nGR9uBO3tww==}
     engines: {node: '>=12.0.0'}
@@ -12496,7 +12486,7 @@ snapshots:
 
   '@electric-sql/client@1.0.0-beta.1':
     optionalDependencies:
-      '@rollup/rollup-darwin-arm64': 4.34.3
+      '@rollup/rollup-darwin-arm64': 4.34.8
 
   '@emnapi/core@1.3.1':
     dependencies:
@@ -17422,11 +17412,11 @@ snapshots:
 
   '@total-typescript/ts-reset@0.6.1': {}
 
-  '@trigger.dev/build@3.3.16(typescript@5.8.2)':
+  '@trigger.dev/build@3.3.17(typescript@5.8.2)':
     dependencies:
-      '@trigger.dev/core': 3.3.16
+      '@trigger.dev/core': 3.3.17
       pkg-types: 1.3.1
-      tinyglobby: 0.2.10
+      tinyglobby: 0.2.12
       tsconfck: 3.1.3(typescript@5.8.2)
     transitivePeerDependencies:
       - bufferutil
@@ -17434,7 +17424,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@trigger.dev/core@3.3.16':
+  '@trigger.dev/core@3.3.17':
     dependencies:
       '@electric-sql/client': 1.0.0-beta.1
       '@google-cloud/precise-date': 4.0.0
@@ -17455,7 +17445,7 @@ snapshots:
       eventsource-parser: 3.0.0
       execa: 8.0.1
       humanize-duration: 3.32.1
-      jose: 5.9.6
+      jose: 5.10.0
       nanoid: 3.3.8
       socket.io-client: 4.7.5
       superjson: 2.2.2
@@ -17467,12 +17457,12 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@trigger.dev/sdk@3.3.16(zod@3.23.8)':
+  '@trigger.dev/sdk@3.3.17(zod@3.23.8)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.52.1
       '@opentelemetry/semantic-conventions': 1.25.1
-      '@trigger.dev/core': 3.3.16
+      '@trigger.dev/core': 3.3.17
       chalk: 5.4.1
       cronstrue: 2.54.0
       debug: 4.4.0
@@ -21179,8 +21169,6 @@ snapshots:
 
   jose@5.10.0: {}
 
-  jose@5.9.6: {}
-
   joycon@3.1.1: {}
 
   js-beautify@1.15.1:
@@ -22637,8 +22625,6 @@ snapshots:
 
   pathe@1.1.2: {}
 
-  pathe@2.0.2: {}
-
   pathe@2.0.3: {}
 
   pathval@2.0.0: {}
@@ -22722,7 +22708,7 @@ snapshots:
     dependencies:
       confbox: 0.1.8
       mlly: 1.7.4
-      pathe: 2.0.2
+      pathe: 2.0.3
 
   playwright-core@1.50.1: {}
 
@@ -24154,11 +24140,6 @@ snapshots:
   tinycolor2@1.6.0: {}
 
   tinyexec@0.3.2: {}
-
-  tinyglobby@0.2.10:
-    dependencies:
-      fdir: 6.4.3(picomatch@4.0.2)
-      picomatch: 4.0.2
 
   tinyglobby@0.2.12:
     dependencies:
