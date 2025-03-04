@@ -2,6 +2,7 @@ import type { createAuthClient } from "better-auth/client";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { passkeyClient } from "better-auth/client/plugins";
+import { apiKeyClient } from "better-auth/client/plugins";
 
 import { Role } from "@chia/db/types";
 import { getServiceEndPoint } from "@chia/utils";
@@ -68,6 +69,7 @@ export const baseAuthClient = (
       }),
       magicLinkClient(),
       passkeyClient(),
+      apiKeyClient(),
     ],
   });
 };
