@@ -54,7 +54,7 @@
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
     "katex": "^0.16.21",
-    "next": "15.2.0",
+    "next": "15.2.1",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "rehype-katex": "^7.0.1",
