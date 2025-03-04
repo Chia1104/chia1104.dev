@@ -1,3 +1,5 @@
+import { unstable_ViewTransition as ViewTransition } from "react";
+
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -82,12 +84,9 @@ const Page = async ({
       <div className="flex w-full flex-col items-center">
         {locale !== I18N.ZH_TW && <FeedTranslationWarning />}
         <header className="mb-5 w-full self-center mt-5">
-          <h1
-            style={{
-              viewTransitionName: `view-transition-link-${post.id}`,
-            }}>
-            {post.title}
-          </h1>
+          <ViewTransition name={`view-transition-link-${post.id}`}>
+            <h1>{post.title}</h1>
+          </ViewTransition>
           <p>{post.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image

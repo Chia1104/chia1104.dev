@@ -87,13 +87,7 @@ const Footer: FC<{ locale?: I18N }> = ({ locale }) => {
                   className="w-fit"
                   key={path.replace(/^\//, "")}
                   title={
-                    <Link
-                      locale={locale}
-                      experimental={{
-                        enableViewTransition: true,
-                      }}
-                      key={path}
-                      href={path}>
+                    <Link locale={locale} key={path} href={path}>
                       <span className="relative px-[10px] py-[5px]">
                         <p>{name}</p>
                       </span>

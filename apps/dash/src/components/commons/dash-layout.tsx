@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { unstable_ViewTransition as ViewTransition } from "react";
 
 import {
   Avatar,
@@ -23,7 +24,7 @@ import {
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import _ from "lodash";
-import { useTransitionRouter } from "next-view-transitions";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -47,7 +48,7 @@ const DashLayout = (props: Props) => {
   const pathname = usePathname();
   const [isPending, startTransition] = React.useTransition();
 
-  const router = useTransitionRouter();
+  const router = useRouter();
 
   const currentItem = React.useMemo(() => {
     return routeItems.find(
@@ -373,7 +374,7 @@ const DashLayout = (props: Props) => {
               )}
             </ScrollShadow>
           )}
-          {props.children}
+          <ViewTransition>{props.children}</ViewTransition>
         </main>
         {props.footer}
       </div>

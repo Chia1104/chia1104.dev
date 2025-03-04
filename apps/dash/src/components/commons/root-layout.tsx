@@ -2,8 +2,6 @@
 
 import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
 
-import { ViewTransitions } from "next-view-transitions";
-
 import { cn } from "@chia/ui/utils/cn.util";
 
 interface Props {
@@ -14,18 +12,16 @@ interface Props {
 
 const RootLayout: FC<Props> = ({ children, htmlProps, bodyProps }) => {
   return (
-    <ViewTransitions>
-      <html lang="en" suppressHydrationWarning {...htmlProps}>
-        <body
-          {...bodyProps}
-          className={cn(
-            "scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden",
-            bodyProps?.className
-          )}>
-          {children}
-        </body>
-      </html>
-    </ViewTransitions>
+    <html lang="en" suppressHydrationWarning {...htmlProps}>
+      <body
+        {...bodyProps}
+        className={cn(
+          "scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden",
+          bodyProps?.className
+        )}>
+        {children}
+      </body>
+    </html>
   );
 };
 

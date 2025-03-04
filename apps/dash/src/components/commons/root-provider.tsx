@@ -4,7 +4,7 @@ import type { FC, ReactNode } from "react";
 
 import { HeroUIProvider } from "@heroui/react";
 import { ThemeProvider } from "next-themes";
-import { useTransitionRouter } from "next-view-transitions";
+import { useRouter } from "next/navigation";
 import { Toaster as ST } from "sonner";
 
 import type { Theme } from "@chia/ui/theme";
@@ -23,7 +23,7 @@ const Toaster: FC = () => {
 };
 
 const RootProvider: FC<Props> = ({ children, headers }) => {
-  const router = useTransitionRouter();
+  const router = useRouter();
   return (
     <TRPCReactProvider headers={headers}>
       <ThemeProvider defaultTheme="system" enableSystem attribute="class">
