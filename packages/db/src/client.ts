@@ -1,9 +1,11 @@
 import { drizzle } from "drizzle-orm/node-postgres";
+import { withReplicas } from "drizzle-orm/pg-core";
 import pg from "pg";
 
 import { switchEnv } from "@chia/utils/config";
 
 import type { DB } from ".";
+import { env as _env } from "./env";
 import * as schema from "./schema";
 
 const { Pool } = pg;
@@ -43,8 +45,12 @@ export async function closeConnection() {
 
 export const connectDatabase = async (env?: string): Promise<DB> =>
   await switchEnv(env, {
-    prod: async () => await getConnection(process.env.DATABASE_URL ?? ""),
-    beta: async () => await getConnection(process.env.BETA_DATABASE_URL ?? ""),
-    local: async () =>
-      await getConnection(process.env.LOCAL_DATABASE_URL ?? ""),
+    prod: async () =>
+      _env.DATABASE_URL_REPLICA_1
+        ? withReplicas(await getConnection(_env.DATABASE_URL), [
+            await getConnection(_env.DATABASE_URL_REPLICA_1),
+          ])
+        : await getConnection(_env.DATABASE_URL ?? ""),
+    beta: async () => await getConnection(_env.BETA_DATABASE_URL ?? ""),
+    local: async () => await getConnection(_env.LOCAL_DATABASE_URL ?? ""),
   });

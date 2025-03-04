@@ -1,8 +1,10 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+import { env as captchaEnv } from "@chia/api/captcha/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
 import { env as authEnv } from "@chia/auth/env";
+import { env as dbEnv } from "@chia/db/env";
 import { numericStringSchema } from "@chia/utils";
 
 export const env = createEnv({
@@ -15,7 +17,7 @@ export const env = createEnv({
     REDIS_URL: z.string().optional(),
     REDIS_URI: z.string().optional(),
     CORS_ALLOWED_ORIGIN: z.string().optional(),
-    RESEND_API_KEY: z.string().optional(),
+    RESEND_API_KEY: z.string().min(1),
     SENTRY_DSN: z.string().optional(),
     ZEABUR_SERVICE_ID: z.string().optional(),
     RATELIMIT_WINDOW_MS: z
@@ -61,7 +63,7 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [spotifyEnv, authEnv],
+  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv],
 });
 
 export type ENV = typeof env;

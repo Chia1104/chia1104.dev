@@ -76,6 +76,22 @@
     "./betterstack/uptime": {
       "types": "./betterstack/uptime/index.ts",
       "default": "./betterstack/uptime/index.ts"
+    },
+    "./utils": {
+      "types": "./utils/index.ts",
+      "default": "./utils/index.ts"
+    },
+    "./captcha": {
+      "types": "./captcha/index.ts",
+      "default": "./captcha/index.ts"
+    },
+    "./captcha/env": {
+      "types": "./captcha/env.ts",
+      "default": "./captcha/env.ts"
+    },
+    "./captcha/env.client": {
+      "types": "./captcha/env.client.ts",
+      "default": "./captcha/env.client.ts"
     }
   },
   "scripts": {
@@ -91,11 +107,9 @@
     "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@t3-oss/env-core": "^0.12.0",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "github-slugger": "^2.0.0",
-    "server-only": "^0.0.1"
+    "github-slugger": "^2.0.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

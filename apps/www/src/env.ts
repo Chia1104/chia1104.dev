@@ -1,6 +1,7 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { env as githubEnv } from "@chia/api/github/env";
 import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
 
@@ -30,9 +31,7 @@ export const env = createEnv({
     RAILWAY_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
     SITE_URL: z.string().optional().default("https://www.chia1104.dev"),
-    RE_CAPTCHA_KEY: z.string().min(1),
     SHA_256_HASH: z.string().min(1),
-    RESEND_API_KEY: z.string().min(1),
     EDGE_CONFIG: z.string().optional(),
     SENTRY_AUTH_TOKEN: z.string().optional(),
     SENTRY_ORG: z.string().optional(),
@@ -46,7 +45,6 @@ export const env = createEnv({
 
   client: {
     NEXT_PUBLIC_ENV: envSchema,
-    NEXT_PUBLIC_RE_CAPTCHA_KEY: z.string().min(1),
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
     NEXT_PUBLIC_GA_ID: z.string().optional(),
@@ -60,16 +58,7 @@ export const env = createEnv({
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
     SITE_URL: process.env.SITE_URL,
-    RE_CAPTCHA_KEY:
-      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-        ? "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
-        : process.env.RE_CAPTCHA_KEY,
     SHA_256_HASH: process.env.SHA_256_HASH,
-    RESEND_API_KEY: process.env.RESEND_API_KEY,
-    NEXT_PUBLIC_RE_CAPTCHA_KEY:
-      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-        ? "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-        : process.env.NEXT_PUBLIC_RE_CAPTCHA_KEY,
     EDGE_CONFIG: process.env.EDGE_CONFIG,
     SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -90,5 +79,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
   emptyStringAsUndefined: true,
-  extends: [githubEnv],
+  extends: [githubEnv, captchaEnv],
 });

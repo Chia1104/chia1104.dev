@@ -15,6 +15,7 @@ import { errorGenerator } from "@chia/utils";
 import adminRoutes from "@/controllers/admin.controller";
 import aiRoutes from "@/controllers/ai.controller";
 import authRoutes from "@/controllers/auth.controller";
+import emailRoutes from "@/controllers/email.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
 import spotifyRoutes from "@/controllers/spotify.controller";
@@ -23,7 +24,7 @@ import { env } from "@/env";
 import { maintenance } from "@/middlewares/maintenance.middleware";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
-import { splitString } from "./utils";
+import { splitString, getClientIP } from "./utils";
 
 const bootstrap = <TContext extends HonoContext>(
   app: Hono<TContext>,
@@ -81,16 +82,10 @@ const bootstrap = <TContext extends HonoContext>(
   );
 
   app.use(
-    ipRestriction(
-      (c) =>
-        c.req.raw.headers.get("X-Forwarded-For")?.split(",")[0] ??
-        c.req.raw.headers.get("X-Real-IP") ??
-        "anonymous",
-      {
-        denyList: splitString(env.IP_DENY_LIST),
-        allowList: splitString(env.IP_ALLOW_LIST),
-      }
-    )
+    ipRestriction((c) => getClientIP(c.req.raw), {
+      denyList: splitString(env.IP_DENY_LIST),
+      allowList: splitString(env.IP_ALLOW_LIST),
+    })
   );
 
   /**
@@ -153,6 +148,7 @@ const bootstrap = <TContext extends HonoContext>(
   app.route("/api/v1/health", healthRoutes);
   app.route("/api/v1/ai", aiRoutes);
   app.route("/api/v1/spotify", spotifyRoutes);
+  app.route("/api/v1/email", emailRoutes);
 
   console.log(
     `Server is running on port ${port}, go to http://localhost:${port}`
