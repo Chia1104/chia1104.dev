@@ -29,7 +29,6 @@
     "@hono/sentry": "^1.2.0",
     "@hono/trpc-server": "^0.3.4",
     "@hono/zod-validator": "^0.4.3",
-    "@t3-oss/env-core": "^0.12.0",
     "drizzle-graphql": "^0.8.5",
     "formdata-node": "^6.0.3",
     "graphql": "^16.10.0",

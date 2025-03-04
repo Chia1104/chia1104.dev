@@ -15,7 +15,6 @@
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:^",
     "@chia/utils": "workspace:^",
-    "@t3-oss/env-core": "^0.12.0",
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
     "openai": "^4.86.1"

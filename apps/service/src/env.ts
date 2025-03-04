@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { env as spotifyEnv } from "@chia/api/spotify/env";
 import { env as authEnv } from "@chia/auth/env";
+import { env as dbEnv } from "@chia/db/env";
 import { numericStringSchema } from "@chia/utils";
 
 export const env = createEnv({
@@ -61,7 +62,7 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [spotifyEnv, authEnv],
+  extends: [spotifyEnv, authEnv, dbEnv],
 });
 
 export type ENV = typeof env;
