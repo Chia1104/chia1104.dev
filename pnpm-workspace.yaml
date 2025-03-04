@@ -5,7 +5,7 @@ packages:
   - "tests/*"
 
 catalog:
-  "@tanstack/react-query": ^5.66.11
+  "@tanstack/react-query": ^5.67.1
   "@trpc/client": ^11.0.0-rc.824
   "@trpc/react-query": ^11.0.0-rc.824
   "@trpc/server": ^11.0.0-rc.824
