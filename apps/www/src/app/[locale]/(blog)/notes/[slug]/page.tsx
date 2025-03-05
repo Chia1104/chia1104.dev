@@ -8,6 +8,7 @@ import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
 
+import FeedTitle from "@/components/blog/feed-title";
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
 import DateFormat from "@/components/commons/date-format";
@@ -82,12 +83,7 @@ const Page = async ({
       <div className="flex w-full flex-col items-center">
         {locale !== I18N.ZH_TW && <FeedTranslationWarning />}
         <header className="mb-14 w-full self-center mt-5">
-          <h1
-            style={{
-              viewTransitionName: `view-transition-link-${note.id}`,
-            }}>
-            {note.title}
-          </h1>
+          <FeedTitle feed={note} />
           <p>{note.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image

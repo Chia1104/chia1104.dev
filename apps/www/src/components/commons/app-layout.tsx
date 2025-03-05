@@ -1,3 +1,5 @@
+import { unstable_ViewTransition as ViewTransition } from "react";
+
 import ScrollYProgress from "@chia/ui/scroll-y-progess";
 
 import Background from "@/components/commons/background";
@@ -16,7 +18,9 @@ const AppLayout = ({
       <Background />
       <NavMenu locale={locale} />
       <ScrollYProgress className="fixed top-0 z-[999]" />
-      <main>{children}</main>
+      <main>
+        <ViewTransition>{children}</ViewTransition>
+      </main>
     </>
   );
 };

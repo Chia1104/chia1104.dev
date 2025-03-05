@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@heroui/react";
-import { useTransitionRouter } from "next-view-transitions";
+import { useRouter } from "next/navigation";
 
 import { setSearchParams } from "@chia/utils";
 
 const CreateFeed = () => {
-  const router = useTransitionRouter();
+  const router = useRouter();
   return (
     <Button
       onPress={() =>

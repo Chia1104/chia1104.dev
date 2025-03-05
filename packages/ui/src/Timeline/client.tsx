@@ -1,10 +1,11 @@
 "use client";
 
 import type { FC } from "react";
+import { unstable_ViewTransition as ViewTransition } from "react";
 
 import { CircularProgress } from "@heroui/react";
 import { motion } from "framer-motion";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 
 import dayjs from "@chia/utils/day";
 
@@ -61,20 +62,18 @@ export const Item: FC<ListItemProps> = ({
           {...titleProps}
           className={cn("text-lg font-bold", titleProps?.className)}>
           {data.link ? (
-            <Link
-              href={data.link}
-              {...linkProps}
-              style={{
-                viewTransitionName: `view-transition-link-${data.id}`,
-                ...linkProps?.style,
-              }}
-              className={cn(linkProps?.className)}>
-              {data.title}
-            </Link>
+            <ViewTransition name={`view-transition-link-${data.id}`}>
+              <Link
+                href={data.link}
+                {...linkProps}
+                className={cn(linkProps?.className)}>
+                {data.title}
+              </Link>
+            </ViewTransition>
           ) : (
             data.title
           )}
-        </span>{" "}
+        </span>
         <span
           {...subtitleProps}
           className={cn("text-sm text-gray-500", subtitleProps?.className)}>
