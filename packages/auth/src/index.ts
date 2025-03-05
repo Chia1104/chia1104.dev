@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
+import { apiKey } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { Resend } from "resend";
 
@@ -131,5 +132,6 @@ export const auth = betterAuth({
       },
     }),
     passkey(),
+    apiKey(),
   ],
 });
