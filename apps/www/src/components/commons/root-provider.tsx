@@ -1,7 +1,6 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { unstable_ViewTransition as ViewTransition } from "react";
 
 import { HeroUIProvider as _HeroUIProvider } from "@heroui/react";
 import { RootProvider as FDProvider } from "fumadocs-ui/provider";
@@ -38,9 +37,7 @@ const RootProvider: FC<{
             search={{
               enabled: false,
             }}>
-            <TRPCReactProvider headers={headers}>
-              <ViewTransition>{children}</ViewTransition>
-            </TRPCReactProvider>
+            <TRPCReactProvider headers={headers}>{children}</TRPCReactProvider>
           </FDProvider>
         </HeroUIProvider>
       </ThemeProvider>

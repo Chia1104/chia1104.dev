@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { unstable_ViewTransition as ViewTransition } from "react";
 
 import {
   Avatar,
@@ -374,7 +373,7 @@ const DashLayout = (props: Props) => {
               )}
             </ScrollShadow>
           )}
-          <ViewTransition>{props.children}</ViewTransition>
+          {props.children}
         </main>
         {props.footer}
       </div>

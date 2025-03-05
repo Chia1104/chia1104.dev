@@ -1,5 +1,3 @@
-import { unstable_ViewTransition as ViewTransition } from "react";
-
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -10,6 +8,7 @@ import { getContentProps } from "@chia/contents/services";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
 
+import FeedTitle from "@/components/blog/feed-title";
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
 import DateFormat from "@/components/commons/date-format";
@@ -84,9 +83,7 @@ const Page = async ({
       <div className="flex w-full flex-col items-center">
         {locale !== I18N.ZH_TW && <FeedTranslationWarning />}
         <header className="mb-14 w-full self-center mt-5">
-          <ViewTransition name={`view-transition-link-${note.id}`}>
-            <h1>{note.title}</h1>
-          </ViewTransition>
+          <FeedTitle feed={note} />
           <p>{note.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image

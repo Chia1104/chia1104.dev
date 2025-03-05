@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { unstable_ViewTransition as ViewTransition } from "react";
 
 import { headers } from "next/headers";
 import { unauthorized } from "next/navigation";
@@ -26,7 +27,7 @@ export default async function Layout({
   }
   return (
     <DashLayout footer={<Footer inject={{ themeSwitch }} />}>
-      {children}
+      <ViewTransition>{children}</ViewTransition>
     </DashLayout>
   );
 }
