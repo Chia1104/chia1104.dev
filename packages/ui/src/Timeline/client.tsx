@@ -73,7 +73,7 @@ export const Item: FC<ListItemProps> = ({
           ) : (
             data.title
           )}
-        </span>{" "}
+        </span>
         <span
           {...subtitleProps}
           className={cn("text-sm text-gray-500", subtitleProps?.className)}>
