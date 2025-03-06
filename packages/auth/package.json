@@ -45,7 +45,7 @@
     "@chia/db": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "better-auth": "^1.2.2",
+    "better-auth": "^1.2.3",
     "resend": "^4.1.2"
   },
   "devDependencies": {

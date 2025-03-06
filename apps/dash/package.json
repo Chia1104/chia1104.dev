@@ -19,7 +19,7 @@
     "clean": "git clean -xdf .next .turbo node_modules .cache"
   },
   "dependencies": {
-    "@ai-sdk/react": "^1.1.20",
+    "@ai-sdk/react": "^1.1.21",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
@@ -41,7 +41,7 @@
     "@trpc/next": "catalog:",
     "@trpc/react-query": "catalog:",
     "@trpc/server": "catalog:",
-    "ai": "^4.1.51",
+    "ai": "^4.1.53",
     "clsx": "^2.1.1",
     "framer-motion": "12.4.10",
     "fumadocs-mdx": "catalog:",

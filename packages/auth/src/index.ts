@@ -9,7 +9,7 @@ import { connectDatabase } from "@chia/db/client";
 import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
-import { CONTACT_EMAIL } from "@chia/utils";
+import { AUTH_EMAIL } from "@chia/utils";
 
 import { env } from "./env";
 import { useSecureCookies, getCookieDomain } from "./utils";
@@ -119,7 +119,7 @@ export const auth = betterAuth({
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         await resend.emails.send({
-          from: CONTACT_EMAIL,
+          from: AUTH_EMAIL,
           to: email,
           subject: "Sign in to Chia1104.dev",
           text: "Please click the link below to sign in",
