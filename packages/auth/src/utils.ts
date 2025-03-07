@@ -4,6 +4,7 @@ import { magicLinkClient } from "better-auth/client/plugins";
 import { passkeyClient } from "better-auth/client/plugins";
 import { apiKeyClient } from "better-auth/client/plugins";
 import { organizationClient } from "better-auth/client/plugins";
+import { adminClient } from "better-auth/client/plugins";
 
 import { Role } from "@chia/db/types";
 import { getServiceEndPoint } from "@chia/utils";
@@ -62,7 +63,7 @@ export const baseAuthClient = (
       inferAdditionalFields({
         user: {
           role: {
-            type: [Role.User, Role.Admin],
+            type: [Role.User, Role.Admin, Role.Root],
             required: true,
             defaultValue: Role.User,
             input: true,
@@ -73,6 +74,7 @@ export const baseAuthClient = (
       passkeyClient(),
       apiKeyClient(),
       organizationClient(),
+      adminClient(),
     ],
   });
 };
