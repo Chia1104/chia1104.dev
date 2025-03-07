@@ -990,8 +990,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@22.13.5)(typescript@5.8.2)))
       '@iconify/json':
-        specifier: ^2.2.313
-        version: 2.2.313
+        specifier: ^2.2.314
+        version: 2.2.314
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@22.13.5)(typescript@5.8.2)))
@@ -3025,8 +3025,8 @@ packages:
     resolution: {integrity: sha512-xeO57FpIu4p1Ri3Jq/EXq4ClRm86dVF2z/+kvFnyqVYRavTZmaFaUBbWCOuuTh0o/g7DSsk6kc2vrS4Vl5oPOQ==}
     engines: {node: '>=18.18'}
 
-  '@iconify/json@2.2.313':
-    resolution: {integrity: sha512-lzZ0KFpb0/IN4TVp/9lkUQQx6pmDqe6UD6lWiwkjnPMUVfFXYFMOfy6Qna5zb2cKwVQLTcOUgKk82Ah4qilKlw==}
+  '@iconify/json@2.2.314':
+    resolution: {integrity: sha512-yikVmts2jl9Z5ozNekFhEv5ovZBGOC24ugMrcobOr6gnOHuRrr9XCZvpY5lmUT2TIT0NGWKVAaPbhmRkJIukUw==}
 
   '@iconify/react@5.2.0':
     resolution: {integrity: sha512-7Sdjrqq3fkkQNks9SY3adGC37NQTHsBJL2PRKlQd455PoDi9s+Es9AUTY+vGLFOYs5yO9w9yCE42pmxCwG26WA==}
@@ -14147,7 +14147,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.2': {}
 
-  '@iconify/json@2.2.313':
+  '@iconify/json@2.2.314':
     dependencies:
       '@iconify/types': 2.0.0
       pathe: 1.1.2
