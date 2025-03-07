@@ -68,6 +68,10 @@
     "./delay": {
       "types": "./src/delay/delay.ts",
       "default": "./src/delay/delay.ts"
+    },
+    "./get-client-ip": {
+      "types": "./src/get-client-ip/index.ts",
+      "default": "./src/get-client-ip/index.ts"
     }
   },
   "scripts": {

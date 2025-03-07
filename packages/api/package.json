@@ -77,10 +77,6 @@
       "types": "./betterstack/uptime/index.ts",
       "default": "./betterstack/uptime/index.ts"
     },
-    "./utils": {
-      "types": "./utils/index.ts",
-      "default": "./utils/index.ts"
-    },
     "./captcha": {
       "types": "./captcha/index.ts",
       "default": "./captcha/index.ts"

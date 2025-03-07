@@ -11,6 +11,7 @@ import { RedisStore } from "rate-limit-redis";
 import { auth } from "@chia/auth";
 import { createRedis } from "@chia/cache";
 import { errorGenerator } from "@chia/utils";
+import { getClientIP } from "@chia/utils/get-client-ip";
 
 import adminRoutes from "@/controllers/admin.controller";
 import aiRoutes from "@/controllers/ai.controller";
@@ -24,7 +25,7 @@ import { env } from "@/env";
 import { maintenance } from "@/middlewares/maintenance.middleware";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
-import { splitString, getClientIP } from "./utils";
+import { splitString } from "./utils";
 
 const bootstrap = <TContext extends HonoContext>(
   app: Hono<TContext>,
@@ -102,10 +103,7 @@ const bootstrap = <TContext extends HonoContext>(
         keyGenerator: (c) => {
           let info: string | null | undefined = null;
           try {
-            info =
-              c.req.raw.headers.get("X-Forwarded-For")?.split(",")[0] ??
-              c.req.raw.headers.get("X-Real-IP") ??
-              "anonymous";
+            info = getClientIP(c.req.raw);
           } catch (e) {
             console.error(e);
             info = null;

@@ -18,5 +18,5 @@ export const SERVICE_BASE_URL =
     ? "https://service.chia1104.dev"
     : "http://localhost:3003";
 
-export const CONTACT_EMAIL = "contact@chia1104.dev";
-export const AUTH_EMAIL = "auth@chia1104.dev";
+export const CONTACT_EMAIL = "contact@notify.chia1104.dev";
+export const AUTH_EMAIL = "no-reply@notify.chia1104.dev";
