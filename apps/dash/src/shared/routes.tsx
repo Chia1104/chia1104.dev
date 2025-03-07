@@ -24,7 +24,6 @@ export const routeItems: SidebarItem[] = [
         width={24}
       />
     ),
-    isDisabled: true,
   },
   {
     key: "feed",

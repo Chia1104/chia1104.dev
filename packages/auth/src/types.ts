@@ -15,4 +15,6 @@ export const providerSchema = z.nativeEnum(Provider);
 
 export type Session = typeof auth.$Infer.Session;
 
+export type Organization = typeof auth.$Infer.Organization;
+
 export { APIError };
