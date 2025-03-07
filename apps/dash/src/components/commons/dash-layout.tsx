@@ -24,7 +24,7 @@ import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import _ from "lodash";
 import { useTransitionRouter } from "next-view-transitions";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
 import { authClient } from "@chia/auth/client";
@@ -38,6 +38,7 @@ import { routeItems } from "@/shared/routes";
 interface Props {
   children?: React.ReactNode;
   footer?: React.ReactNode;
+  org: string;
 }
 
 const DashLayout = (props: Props) => {
@@ -45,6 +46,7 @@ const DashLayout = (props: Props) => {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const pathname = usePathname();
+  const _params = useParams<{ org: string }>();
   const [isPending, startTransition] = React.useTransition();
 
   const router = useTransitionRouter();
@@ -126,7 +128,7 @@ const DashLayout = (props: Props) => {
                   "w-0 opacity-0": isCollapsed,
                 }
               )}>
-              Chia1104.dev
+              {props.org}
             </span>
             <div className={cn("flex-end flex", { hidden: isCollapsed })}>
               <Icon

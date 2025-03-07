@@ -1,3 +1,4 @@
+import { APIError } from "better-auth/api";
 import { z } from "zod";
 
 import type { auth } from "./";
@@ -13,3 +14,5 @@ export type Provider = (typeof Provider)[keyof typeof Provider];
 export const providerSchema = z.nativeEnum(Provider);
 
 export type Session = typeof auth.$Infer.Session;
+
+export { APIError };

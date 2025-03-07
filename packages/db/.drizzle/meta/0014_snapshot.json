@@ -1,6 +1,6 @@
 {
-  "id": "3e2e8b8e-6501-42da-ae3d-76d25ee6edaa",
-  "prevId": "f8183893-a2ff-4c30-866a-ad5942474e39",
+  "id": "9399f862-3a0f-42d7-900c-6203cf54d04d",
+  "prevId": "3e2e8b8e-6501-42da-ae3d-76d25ee6edaa",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1126,11 +1126,9 @@
         },
         "role": {
           "name": "role",
-          "type": "role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "default": "'user'"
+          "notNull": false
         },
         "status": {
           "name": "status",
@@ -1202,11 +1200,9 @@
         },
         "role": {
           "name": "role",
-          "type": "role",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'user'"
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",

@@ -36,6 +36,7 @@ api.use("*", async (c) => {
     router: appRouter,
     createContext: () => {
       return createTRPCContext({
+        headers: c.req.raw.headers,
         session,
         db: c.var.db,
         redis: c.var.redis,

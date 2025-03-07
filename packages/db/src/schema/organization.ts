@@ -1,8 +1,6 @@
-import { relations } from "drizzle-orm";
-import { text, timestamp } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import { text, timestamp, serial } from "drizzle-orm/pg-core";
 
-import { Role } from "../types";
-import { roles } from "./enums";
 import { pgTable } from "./table";
 import { users as user } from "./users";
 
@@ -23,7 +21,7 @@ export const member = pgTable("member", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  role: roles("role").default(Role.User).notNull(),
+  role: text("role"),
   createdAt: timestamp("created_at").notNull(),
 });
 
@@ -33,7 +31,7 @@ export const invitation = pgTable("invitation", {
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
-  role: roles("role").default(Role.User),
+  role: text("role"),
   status: text("status").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   inviterId: text("inviter_id")
@@ -42,13 +40,18 @@ export const invitation = pgTable("invitation", {
 });
 
 export const project = pgTable("project", {
-  id: text("id").primaryKey(),
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").unique(),
   logo: text("logo"),
-  createdAt: timestamp("created_at").notNull(),
-  deletedAt: timestamp("deleted_at"),
+  createdAt: timestamp("created_at", { mode: "date" })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  deletedAt: timestamp("deleted_at", { mode: "date" }),
   metadata: text("metadata"),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
 });
 
 export const organizationRelations = relations(organization, ({ many }) => ({
@@ -57,7 +60,7 @@ export const organizationRelations = relations(organization, ({ many }) => ({
 
 export const projectRelations = relations(project, ({ one }) => ({
   organizations: one(organization, {
-    fields: [project.id],
+    fields: [project.organizationId],
     references: [organization.id],
   }),
 }));

@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 
 import { headers } from "next/headers";
-import { unauthorized } from "next/navigation";
-import "server-only";
+import { notFound } from "next/navigation";
 
 import { authClient } from "@chia/auth/client";
 
@@ -12,20 +11,31 @@ import Footer from "@/components/commons/footer";
 export default async function Layout({
   children,
   themeSwitch,
+  params,
 }: {
   children: ReactNode;
   themeSwitch: ReactNode;
+  params: Promise<{ org: string }>;
 }) {
-  const session = await authClient.getSession({
+  const parsedParams = await params;
+
+  const org = await authClient.organization.getFullOrganization({
     fetchOptions: {
       headers: await headers(),
     },
+    query: {
+      organizationSlug: parsedParams.org,
+    },
   });
-  if (!session.data) {
-    unauthorized();
+
+  if (org.error || !org.data) {
+    notFound();
   }
+
   return (
-    <DashLayout footer={<Footer inject={{ themeSwitch }} />}>
+    <DashLayout
+      footer={<Footer inject={{ themeSwitch }} />}
+      org={org.data.name}>
       {children}
     </DashLayout>
   );
