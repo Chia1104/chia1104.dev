@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
 import { apiKey } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
+import { organization } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { Resend } from "resend";
 
@@ -145,5 +146,6 @@ export const auth = betterAuth({
         env.LOCAL_ADMIN_ID,
       ].filter(Boolean) as string[],
     }),
+    organization(),
   ],
 });
