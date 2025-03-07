@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
 import { apiKey } from "better-auth/plugins";
+import { admin } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { Resend } from "resend";
 
@@ -13,7 +14,7 @@ import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
 import { AUTH_EMAIL } from "@chia/utils";
 
 import { env } from "./env";
-import { useSecureCookies, getCookieDomain } from "./utils";
+import { useSecureCookies, getCookieDomain, X_CH_API_KEY } from "./utils";
 
 export const name = "auth-core";
 
@@ -68,7 +69,7 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        type: [Role.User, Role.Admin],
+        type: [Role.User, Role.Admin, Role.Root],
         required: true,
         defaultValue: Role.User,
         input: true,
@@ -132,6 +133,17 @@ export const auth = betterAuth({
       },
     }),
     passkey(),
-    apiKey(),
+    apiKey({
+      apiKeyHeaders: X_CH_API_KEY,
+      defaultPrefix: "ch_",
+    }),
+    admin({
+      adminRoles: ["admin", "root"],
+      adminUserIds: [
+        env.ADMIN_ID,
+        env.BETA_ADMIN_ID,
+        env.LOCAL_ADMIN_ID,
+      ].filter(Boolean) as string[],
+    }),
   ],
 });

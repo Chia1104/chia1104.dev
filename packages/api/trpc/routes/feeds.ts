@@ -18,7 +18,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
   adminProcedure,
-  onlyAdminProcedure,
+  onlyRootAdminProcedure,
 } from "../trpc";
 import {
   createFeedSchema,
@@ -60,7 +60,7 @@ export const feedsRouter = createTRPCRouter({
       return getFeedById(opts.ctx.db, opts.input.feedId);
     }),
 
-  createFeed: onlyAdminProcedure
+  createFeed: onlyRootAdminProcedure
     .input(createFeedSchema)
     .mutation(async (opts) => {
       await createFeed(opts.ctx.db, {
@@ -86,7 +86,7 @@ export const feedsRouter = createTRPCRouter({
       });
     }),
 
-  updateFeed: onlyAdminProcedure
+  updateFeed: onlyRootAdminProcedure
     .input(updateFeedSchema)
     .mutation(async (opts) => {
       await updateFeed(opts.ctx.db, {
@@ -106,7 +106,7 @@ export const feedsRouter = createTRPCRouter({
       });
     }),
 
-  deleteFeed: onlyAdminProcedure
+  deleteFeed: onlyRootAdminProcedure
     .input(deleteFeedSchema)
     .mutation(async (opts) => {
       await deleteFeed(opts.ctx.db, {

@@ -5,6 +5,7 @@ import { ZodError } from "zod";
 import type { Session } from "@chia/auth/types";
 import type { Redis } from "@chia/cache";
 import type { DB } from "@chia/db";
+import { Role } from "@chia/db/types";
 import { getAdminId } from "@chia/utils";
 
 const adminId = getAdminId();
@@ -62,15 +63,19 @@ export const authGuard = (input?: string): input is string => !!input;
 
 export const adminProcedure = t.procedure.use(dangerous_isAdmin);
 
-export const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
-  if (!ctx.session?.user || !ctx.session || ctx.session.user.id !== adminId) {
+export const enforceUserIsRootAdmin = t.middleware(({ ctx, next }) => {
+  if (
+    !ctx.session?.user ||
+    !ctx.session ||
+    ctx.session.user.role === Role.Root
+  ) {
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next();
 });
 
-export const onlyAdminProcedure = t.procedure
-  .use(enforceUserIsAdmin)
+export const onlyRootAdminProcedure = t.procedure
+  .use(enforceUserIsRootAdmin)
   .use(dangerous_isAdmin);
 
 export const external_createTRPCContext = (opts: {

@@ -85,6 +85,13 @@
       "when": 1741111319371,
       "tag": "0011_apikey",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1741335020331,
+      "tag": "0012_admin",
+      "breakpoints": true
     }
   ]
 }

@@ -12,6 +12,7 @@ import type { env as internalEnv } from "./env";
 export const useSecureCookies = process.env.NODE_ENV === "production";
 export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 export const DEFAULT_COOKIE_DOMAIN = ".chia1104.dev";
+export const X_CH_API_KEY = "x-ch-api-key";
 
 /**
  * @deprecated
