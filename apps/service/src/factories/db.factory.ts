@@ -17,7 +17,7 @@ export default createFactory<HonoContext>({
         return c.json(errorGenerator(503));
       }
 
-      c.set("clientIP", getClientIP(c.req.raw) as string);
+      c.set("clientIP", getClientIP(c.req.raw));
       c.set("db", db);
       c.set("redis", redis);
       await next();

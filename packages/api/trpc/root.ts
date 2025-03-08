@@ -1,6 +1,7 @@
 // external
 import { feedsRouter as external_feedsRouter } from "./routes/external/feeds";
 import { feedsRouter } from "./routes/feeds";
+import { organizationRouter } from "./routes/organization";
 import { usersRouter } from "./routes/users";
 import { createTRPCRouter, external_createTRPCRouter } from "./trpc";
 
@@ -12,6 +13,7 @@ import { createTRPCRouter, external_createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   feeds: feedsRouter,
   users: usersRouter,
+  organization: organizationRouter,
 });
 
 // export type definition of API

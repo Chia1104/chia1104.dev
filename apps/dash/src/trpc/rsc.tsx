@@ -17,6 +17,7 @@ import { createQueryClient } from "@/utils/query-client";
  */
 const createContext = cache(async () => {
   return createTRPCContext({
+    headers: await headers(),
     session:
       (
         await authClient.getSession({

@@ -2,6 +2,9 @@ import type { createAuthClient } from "better-auth/client";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { passkeyClient } from "better-auth/client/plugins";
+import { apiKeyClient } from "better-auth/client/plugins";
+import { organizationClient } from "better-auth/client/plugins";
+import { adminClient } from "better-auth/client/plugins";
 
 import { Role } from "@chia/db/types";
 import { getServiceEndPoint } from "@chia/utils";
@@ -11,6 +14,7 @@ import type { env as internalEnv } from "./env";
 export const useSecureCookies = process.env.NODE_ENV === "production";
 export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 export const DEFAULT_COOKIE_DOMAIN = ".chia1104.dev";
+export const X_CH_API_KEY = "x-ch-api-key";
 
 /**
  * @deprecated
@@ -59,7 +63,7 @@ export const baseAuthClient = (
       inferAdditionalFields({
         user: {
           role: {
-            type: [Role.User, Role.Admin],
+            type: [Role.User, Role.Admin, Role.Root],
             required: true,
             defaultValue: Role.User,
             input: true,
@@ -68,6 +72,9 @@ export const baseAuthClient = (
       }),
       magicLinkClient(),
       passkeyClient(),
+      apiKeyClient(),
+      organizationClient(),
+      adminClient(),
     ],
   });
 };

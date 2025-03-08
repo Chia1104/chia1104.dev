@@ -5,7 +5,7 @@ import type { FC } from "react";
 
 import { Card, CardBody, CardHeader, Chip, Button } from "@heroui/react";
 import { Pencil, Trash } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";

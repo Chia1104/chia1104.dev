@@ -3,9 +3,10 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 
 import { auth } from "@chia/auth";
-import { errorGenerator, getAdminId } from "@chia/utils";
+import { Role } from "@chia/db/types";
+import { errorGenerator } from "@chia/utils";
 
-export const verifyAuth = (adminOnly?: boolean) =>
+export const verifyAuth = (rootOnly?: boolean) =>
   createMiddleware<HonoContext>(async (c, next) => {
     if (getRuntimeKey() === "bun") {
       Bun.gc(true);
@@ -16,7 +17,7 @@ export const verifyAuth = (adminOnly?: boolean) =>
         return c.json(errorGenerator(401), 401);
       }
 
-      if (adminOnly && session.user.id !== getAdminId()) {
+      if (rootOnly && session.user.role === Role.Root) {
         return c.json(errorGenerator(403), 403);
       }
 
