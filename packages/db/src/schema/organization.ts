@@ -1,4 +1,5 @@
 import { relations, sql } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 import { text, timestamp, serial } from "drizzle-orm/pg-core";
 
 import { pgTable } from "./table";
@@ -64,3 +65,8 @@ export const projectRelations = relations(project, ({ one }) => ({
     references: [organization.id],
   }),
 }));
+
+export type Organization = InferSelectModel<typeof organization>;
+export type Member = InferSelectModel<typeof member>;
+export type Invitation = InferSelectModel<typeof invitation>;
+export type Project = InferSelectModel<typeof project>;

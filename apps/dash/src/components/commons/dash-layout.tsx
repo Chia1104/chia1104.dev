@@ -92,6 +92,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
                 startTransition(async () => {
                   await setCurrentOrg(org.slug);
                   router.refresh();
+                  router.push("/");
                   onClose?.();
                 });
               }}>
@@ -130,6 +131,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
                     onSuccess={() => {
                       onClose();
                       router.refresh();
+                      router.push("/");
                     }}
                   />
                 </Card>

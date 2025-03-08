@@ -1,13 +1,14 @@
 "use client";
 
-import { Spinner } from "@heroui/react";
+import { useSelectedLayoutSegments } from "next/navigation";
 
+import AppLoading from "@/components/commons/app-loading";
 import ProjectLayout from "@/components/projects/project-layout";
 import { useOrganizationStore } from "@/store/organization.store";
 import { api } from "@/trpc/client";
 
 const Layout = ({
-  children: _children,
+  children,
   list,
   create,
 }: {
@@ -15,6 +16,7 @@ const Layout = ({
   list: React.ReactNode;
   create: React.ReactNode;
 }) => {
+  const segments = useSelectedLayoutSegments();
   const { currentOrgId } = useOrganizationStore((state) => state);
   const { data, isLoading } = api.organization.getProjectsWithMeta.useQuery({
     organizationId: currentOrgId,
@@ -23,15 +25,17 @@ const Layout = ({
   if (isLoading || !data?.items)
     return (
       <ProjectLayout>
-        <Spinner />
+        <AppLoading />
       </ProjectLayout>
     );
 
-  if (data.items.length > 0) {
+  if (data.items.length > 0 && segments.length === 0) {
     return <ProjectLayout>{list}</ProjectLayout>;
-  } else {
+  } else if (data.items.length === 0 && segments.length === 0) {
     return <ProjectLayout>{create}</ProjectLayout>;
   }
+
+  return <ProjectLayout>{children}</ProjectLayout>;
 };
 
 export default Layout;
