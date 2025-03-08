@@ -1,10 +1,12 @@
 "use client";
 
 import { Card, CardHeader, Divider } from "@heroui/react";
+import { useTransitionRouter } from "next-view-transitions";
 
 import OnboardingForm from "@/components/auth/onboarding-form";
 
 const Default = () => {
+  const router = useTransitionRouter();
   return (
     <div className="c-container main flex-col gap-5 px-5">
       <Card className="w-full max-w-md">
@@ -17,7 +19,7 @@ const Default = () => {
           </p>
         </CardHeader>
         <Divider />
-        <OnboardingForm />
+        <OnboardingForm onSuccess={() => router.push("/projects")} />
       </Card>
     </div>
   );

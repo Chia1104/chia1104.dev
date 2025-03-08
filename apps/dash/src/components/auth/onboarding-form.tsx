@@ -2,11 +2,11 @@
 
 import { Input, CardBody, CardFooter, Divider, Form } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import type { Organization } from "@chia/auth/types";
 import { Form as FormCtx, FormField } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 
@@ -19,8 +19,11 @@ const schema = z.object({
   logo: z.string().optional(),
 });
 
-const OnboardingForm = () => {
-  const router = useRouter();
+interface Props {
+  onSuccess?: (data: Organization) => void;
+}
+
+const OnboardingForm = (props: Props) => {
   const form = useForm({
     resolver: zodResolver(schema),
   });
@@ -29,7 +32,7 @@ const OnboardingForm = () => {
     onSuccess: async (data) => {
       if (data) {
         await setCurrentOrg(data.slug);
-        router.push(`/${data.slug}/project`);
+        props?.onSuccess?.(data);
       }
     },
     onError: (error) => {

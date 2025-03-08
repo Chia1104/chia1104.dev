@@ -20,7 +20,7 @@ const OrgItem = ({ org }: { org: Organization }) => {
       onPress={() => {
         startTransition(async () => {
           await setCurrentOrg(org.slug);
-          router.push(`/${org.slug}/project`);
+          router.push(`/projects`);
         });
       }}>
       <CardHeader>
@@ -41,7 +41,7 @@ const OrgItem = ({ org }: { org: Organization }) => {
 
 const OrgList = ({ orgs }: { orgs: Organization[] }) => {
   return (
-    <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+    <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full">
       {orgs.map((org) => (
         <OrgItem key={org.id} org={org} />
       ))}

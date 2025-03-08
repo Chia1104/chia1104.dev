@@ -17,6 +17,37 @@ import {
 const slugger = new GithubSlugger();
 
 export const organizationRouter = createTRPCRouter({
+  getOrganization: onlyRootAdminProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async (opts) => {
+      const { data, error } = await tryCatch(
+        auth.api.getFullOrganization({
+          query: {
+            organizationSlug: opts.input.slug,
+          },
+          headers: opts.ctx.headers,
+        })
+      );
+
+      if (error) {
+        if (error instanceof APIError) {
+          switch (error.statusCode) {
+            case 401:
+              throw new TRPCError({ code: "UNAUTHORIZED" });
+            case 403:
+              throw new TRPCError({ code: "FORBIDDEN" });
+            case 409:
+              throw new TRPCError({ code: "CONFLICT" });
+          }
+
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        }
+
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+      return data;
+    }),
+
   createOrganization: onlyRootAdminProcedure
     .input(
       z.object({
@@ -67,6 +98,38 @@ export const organizationRouter = createTRPCRouter({
       }
 
       return org;
+    }),
+
+  deleteOrganization: onlyRootAdminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async (opts) => {
+      const { data, error } = await tryCatch(
+        auth.api.deleteOrganization({
+          body: {
+            organizationId: opts.input.id,
+          },
+          headers: opts.ctx.headers,
+        })
+      );
+
+      if (error) {
+        if (error instanceof APIError) {
+          switch (error.statusCode) {
+            case 401:
+              throw new TRPCError({ code: "UNAUTHORIZED" });
+            case 403:
+              throw new TRPCError({ code: "FORBIDDEN" });
+            case 404:
+              throw new TRPCError({ code: "NOT_FOUND" });
+          }
+
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        }
+
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+
+      return data;
     }),
 
   createProject: adminProcedureWithACL({
