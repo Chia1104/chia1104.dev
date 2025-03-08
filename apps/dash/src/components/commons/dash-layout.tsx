@@ -91,6 +91,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
               onPress={() => {
                 startTransition(async () => {
                   await setCurrentOrg(org.slug);
+                  router.refresh();
                   onClose?.();
                 });
               }}>
@@ -481,11 +482,11 @@ const DashLayout = (props: Props) => {
             </Breadcrumbs>
           )}
         </Navbar>
-        <main className="c-container flex-1 p-4">
+        <main className="c-container flex-1 p-4 relative">
           {currentItem?.items && currentItem.items.length > 0 && (
             <ScrollShadow
               hideScrollBar
-              className="-mx-2 flex w-full justify-between gap-8"
+              className="px-10 flex w-full justify-between gap-8 c-bg-third absolute inset-0 h-20 items-center"
               orientation="horizontal">
               <Tabs
                 aria-label="Navigation Tabs"
@@ -507,6 +508,9 @@ const DashLayout = (props: Props) => {
                 </div>
               )}
             </ScrollShadow>
+          )}
+          {currentItem?.items && currentItem.items.length > 0 && (
+            <Spacer y={10} />
           )}
           {props.children}
         </main>

@@ -6,7 +6,6 @@ import { redirect, unauthorized } from "next/navigation";
 import DashLayout from "@/components/commons/dash-layout";
 import Footer from "@/components/commons/footer";
 import { getSession, getFullOrganization } from "@/services/auth/resources.rsc";
-import { OrganizationStoreProvider } from "@/store/organization.store";
 
 export default async function Layout({
   children,
@@ -27,19 +26,13 @@ export default async function Layout({
     redirect("/onboarding");
   }
 
+  const org = await getFullOrganization(currentOrg.value);
+
   return (
     <DashLayout
       footer={<Footer inject={{ themeSwitch }} />}
-      org={
-        (await getFullOrganization(currentOrg.value)).data?.name ??
-        "Chia1104.dev"
-      }>
-      <OrganizationStoreProvider
-        values={{
-          currentOrgSlug: currentOrg.value,
-        }}>
-        {children}
-      </OrganizationStoreProvider>
+      org={org.data?.name ?? "Chia1104.dev"}>
+      {children}
     </DashLayout>
   );
 }
