@@ -2,6 +2,23 @@ import { createEnv } from "@t3-oss/env-core";
 import { vercel } from "@t3-oss/env-core/presets-zod";
 import { z } from "zod";
 
+export const adminEnv = createEnv({
+  server: {
+    ADMIN_ID: z.string().optional(),
+    BETA_ADMIN_ID: z.string().optional(),
+    LOCAL_ADMIN_ID: z.string().optional(),
+  },
+  runtimeEnv: {
+    ADMIN_ID: process.env.ADMIN_ID,
+    BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
+    LOCAL_ADMIN_ID: process.env.LOCAL_ADMIN_ID,
+  },
+  skipValidation:
+    process.env.SKIP_ENV_VALIDATION === "true" ||
+    process.env.SKIP_ENV_VALIDATION === "1",
+  emptyStringAsUndefined: true,
+});
+
 export const env = createEnv({
   server: {
     GOOGLE_CLIENT_ID: z.string().min(1),
@@ -38,5 +55,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1" ||
     process.env.APP_CODE !== "service",
-  extends: [vercel()],
+  extends: [vercel(), adminEnv],
 });

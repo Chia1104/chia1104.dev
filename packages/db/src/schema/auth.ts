@@ -50,7 +50,7 @@ export const passkey = pgTable("passkey", {
   publicKey: text("public_key").notNull(),
   userId: text("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   credentialID: text("credential_i_d").notNull(),
   counter: integer("counter").notNull(),
   deviceType: text("device_type").notNull(),
@@ -59,7 +59,34 @@ export const passkey = pgTable("passkey", {
   createdAt: timestamp("created_at"),
 });
 
+export const apikey = pgTable("apikey", {
+  id: text("id").primaryKey(),
+  name: text("name"),
+  start: text("start"),
+  prefix: text("prefix"),
+  key: text("key").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  refillInterval: integer("refill_interval"),
+  refillAmount: integer("refill_amount"),
+  lastRefillAt: timestamp("last_refill_at"),
+  enabled: boolean("enabled"),
+  rateLimitEnabled: boolean("rate_limit_enabled"),
+  rateLimitTimeWindow: integer("rate_limit_time_window"),
+  rateLimitMax: integer("rate_limit_max"),
+  requestCount: integer("request_count"),
+  remaining: integer("remaining"),
+  lastRequest: timestamp("last_request"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  permissions: text("permissions"),
+  metadata: text("metadata"),
+});
+
 export type Verification = InferSelectModel<typeof verification>;
 export type Session = InferSelectModel<typeof session>;
 export type Account = InferSelectModel<typeof account>;
 export type Passkey = InferSelectModel<typeof passkey>;
+export type ApiKey = InferSelectModel<typeof apikey>;

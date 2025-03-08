@@ -35,7 +35,7 @@ export class CaptchaError extends Error {
 const captchaRequestDTO = (request: Request, options?: Options) => {
   const headers = request.headers;
   const token = headers.get(X_CAPTCHA_RESPONSE);
-  const ip = getClientIP(request) as string;
+  const ip = getClientIP(request);
 
   if (!token) {
     options?.onError?.(ErrorCode.CaptchaRequired);

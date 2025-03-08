@@ -33,6 +33,10 @@
       "types": "./src/libs/public/feeds/index.ts",
       "default": "./src/libs/public/feeds.ts"
     },
+    "./repos/organization": {
+      "types": "./src/libs/organization/index.ts",
+      "default": "./src/libs/organization/index.ts"
+    },
     "./validator/feeds": {
       "types": "./src/libs/validator/feeds.ts",
       "default": "./src/libs/validator/feeds.ts"
@@ -40,6 +44,10 @@
     "./validator/users": {
       "types": "./src/libs/validator/users.ts",
       "default": "./src/libs/validator/users.ts"
+    },
+    "./validator/organization": {
+      "types": "./src/libs/validator/organization.ts",
+      "default": "./src/libs/validator/organization.ts"
     },
     "./env": {
       "types": "./src/env.ts",

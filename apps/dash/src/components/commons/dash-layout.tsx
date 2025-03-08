@@ -19,6 +19,13 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
+  Divider,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalContent,
+  Card,
 } from "@heroui/react";
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
@@ -33,15 +40,118 @@ import { AcmeIcon } from "@/components/commons/acme";
 import AuthGuard from "@/components/commons/auth-guard";
 import Drawer from "@/components/commons/drawer";
 import SideBar from "@/components/commons/side-bar";
+import { revokeCurrentOrg } from "@/server/org.action";
+import { setCurrentOrg } from "@/server/org.action";
 import { routeItems } from "@/shared/routes";
+
+import OnboardingForm from "../auth/onboarding-form";
 
 interface Props {
   children?: React.ReactNode;
   footer?: React.ReactNode;
+  org: string | Promise<string>;
 }
+
+const OrgList = ({ onClose }: { onClose?: () => void }) => {
+  const { data, isPending: isLoading } = authClient.useListOrganizations();
+  const [isPending, startTransition] = React.useTransition();
+  const { isOpen, onOpen, onOpenChange } = useDisclosure({
+    id: "org-modal",
+    onOpen: () => {
+      // onClose?.();
+    },
+  });
+  const router = useTransitionRouter();
+
+  if (!data || isLoading) {
+    return (
+      <ul className="w-full flex flex-col gap-1">
+        {Array(3).map((_, index) => (
+          <li key={index} className="w-full">
+            <Skeleton className="h-8 w-20 rounded-full" />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <div className="w-full flex flex-col gap-2 pb-2">
+      <ul className="w-full flex flex-col gap-1 pt-2">
+        {data.map((org) => (
+          <li key={org.id} className="w-full">
+            <Button
+              size="sm"
+              fullWidth
+              className="pl-5 justify-start"
+              variant="light"
+              isDisabled={isPending}
+              onPress={() => {
+                startTransition(async () => {
+                  await setCurrentOrg(org.slug);
+                  onClose?.();
+                });
+              }}>
+              {org.name}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <Divider />
+      <Button
+        onPress={() => {
+          onOpen();
+        }}
+        className="pl-5 justify-start"
+        variant="light"
+        size="sm"
+        startContent={
+          <Icon
+            className="text-default-400"
+            icon="solar:add-circle-line-duotone"
+          />
+        }>
+        Create New Organization
+      </Button>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Create New Organization
+              </ModalHeader>
+              <ModalBody>
+                <Card>
+                  <OnboardingForm
+                    onSuccess={() => {
+                      onClose();
+                      router.refresh();
+                    }}
+                  />
+                </Card>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" variant="flat" onPress={onClose}>
+                  Close
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </div>
+  );
+};
 
 const DashLayout = (props: Props) => {
   const { isOpen, onOpenChange } = useDisclosure();
+  const {
+    isOpen: isPopoverOpen,
+    onClose: onPopoverClose,
+    onOpenChange: onPopoverOpenChange,
+  } = useDisclosure({
+    id: "org-popover",
+  });
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const pathname = usePathname();
@@ -116,18 +226,34 @@ const DashLayout = (props: Props) => {
             className={cn("flex items-center gap-3 pl-2", {
               "justify-center gap-0 pl-0": isCollapsed,
             })}>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
-              <AcmeIcon className="text-background" />
-            </div>
-            <span
-              className={cn(
-                "w-full text-small font-bold uppercase opacity-100",
-                {
-                  "w-0 opacity-0": isCollapsed,
-                }
-              )}>
-              Chia1104.dev
-            </span>
+            <Popover isOpen={isPopoverOpen} onOpenChange={onPopoverOpenChange}>
+              <PopoverTrigger>
+                <Button
+                  variant="light"
+                  isIconOnly={isCollapsed}
+                  startContent={
+                    !isCollapsed ? (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
+                        <AcmeIcon className="text-background" />
+                      </div>
+                    ) : null
+                  }
+                  className={cn(
+                    "w-full text-small font-bold uppercase opacity-100 pl-1 justify-start"
+                  )}>
+                  {isCollapsed ? (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
+                      <AcmeIcon className="text-background" />
+                    </div>
+                  ) : (
+                    <React.Suspense>{props.org}</React.Suspense>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[250px]">
+                <OrgList onClose={onPopoverClose} />
+              </PopoverContent>
+            </Popover>
             <div className={cn("flex-end flex", { hidden: isCollapsed })}>
               <Icon
                 className="cursor-pointer dark:text-primary-foreground/60 [&>g]:stroke-[1px]"
@@ -289,6 +415,7 @@ const DashLayout = (props: Props) => {
                   variant="flat"
                   onPress={() =>
                     startTransition(async () => {
+                      await revokeCurrentOrg(); // revoke current organization
                       await authClient.signOut({
                         fetchOptions: {
                           onSuccess: () => {

@@ -2,6 +2,7 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 import { env as spotify } from "@chia/api/spotify/env";
+import { adminEnv } from "@chia/auth/env";
 import { env as dbEnv } from "@chia/db/env";
 import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
 
@@ -31,8 +32,6 @@ export const env = createEnv({
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
-    ADMIN_ID: z.string().optional(),
-    BETA_ADMIN_ID: z.string().optional(),
     INTERNAL_SERVICE_ENDPOINT: z.string().optional(),
   },
 
@@ -47,8 +46,6 @@ export const env = createEnv({
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
-    ADMIN_ID: process.env.ADMIN_ID,
-    BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
     NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
   },
@@ -57,5 +54,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
 
-  extends: [spotify, dbEnv],
+  extends: [spotify, dbEnv, adminEnv],
 });
