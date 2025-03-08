@@ -4,8 +4,14 @@ import { z } from "zod";
 
 import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
-import { createProject } from "@chia/db/repos/organization";
+import {
+  createProject,
+  getInfiniteProjectsByOrganizationId,
+  getProjectById,
+  getProjectBySlug,
+} from "@chia/db/repos/organization";
 import { insertProjectSchema } from "@chia/db/validator/organization";
+import { baseInfiniteSchema } from "@chia/db/validator/organization";
 import { tryCatch } from "@chia/utils/try-catch";
 
 import {
@@ -146,6 +152,38 @@ export const organizationRouter = createTRPCRouter({
                 .getRandomValues(new Uint32Array(1))[0]
                 .toString(16)}`
             ),
+      });
+    }),
+
+  getProjectById: adminProcedureWithACL({
+    project: ["read"],
+  })
+    .input(z.object({ id: z.number() }))
+    .query((opts) => {
+      return getProjectById(opts.ctx.db, opts.input.id);
+    }),
+
+  getProjectBySlug: adminProcedureWithACL({
+    project: ["read"],
+  })
+    .input(z.object({ slug: z.string() }))
+    .query((opts) => {
+      return getProjectBySlug(opts.ctx.db, opts.input.slug);
+    }),
+
+  getProjectsWithMeta: adminProcedureWithACL({
+    project: ["read"],
+  })
+    .input(
+      z.object({
+        ...baseInfiniteSchema.shape,
+        organizationId: z.string(),
+      })
+    )
+    .query((opts) => {
+      return getInfiniteProjectsByOrganizationId(opts.ctx.db, {
+        ...opts.input,
+        organizationId: opts.input.organizationId,
       });
     }),
 });

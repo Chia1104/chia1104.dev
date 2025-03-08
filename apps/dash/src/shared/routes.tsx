@@ -49,6 +49,18 @@ export const routeItems: SidebarItem[] = [
         icon: "solar:pen-new-square-line-duotone",
         title: "Drafts",
       },
+      // {
+      //   key: "write",
+      //   icon: "solar:pen-new-square-line-duotone",
+      //   title: "Write",
+      //   hiddenInMenu: true,
+      // },
+      {
+        key: "edit",
+        icon: "solar:pen-new-square-line-duotone",
+        title: "Edit",
+        hiddenInMenu: true,
+      },
     ],
     action: <CreateFeed />,
   },

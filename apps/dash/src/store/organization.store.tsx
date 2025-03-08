@@ -8,12 +8,16 @@ import { createStore } from "zustand/vanilla";
 
 export interface OrganizationState {
   currentOrgSlug: string;
+  currentOrgId: string;
+  currentOrgName: string;
 }
 
 export type OrganizationStore = OrganizationState;
 
 export const defaultInitState: OrganizationState = {
   currentOrgSlug: "",
+  currentOrgId: "",
+  currentOrgName: "",
 };
 
 export const createOrganizationStore = (

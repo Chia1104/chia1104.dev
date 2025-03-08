@@ -27,7 +27,7 @@ const RootProvider: FC<Props> = ({ children, headers }) => {
   return (
     <TRPCReactProvider headers={headers}>
       <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-        <HeroUIProvider navigate={void router.push}>
+        <HeroUIProvider navigate={router.push}>
           <Toaster />
           {children}
         </HeroUIProvider>
