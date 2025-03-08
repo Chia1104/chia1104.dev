@@ -15,7 +15,9 @@ import type { I18N } from "@/utils/i18n";
 const HeroUIProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   return (
-    <_HeroUIProvider navigate={void router.push}>{children}</_HeroUIProvider>
+    <_HeroUIProvider navigate={(...args) => router.push(...args)}>
+      {children}
+    </_HeroUIProvider>
   );
 };
 

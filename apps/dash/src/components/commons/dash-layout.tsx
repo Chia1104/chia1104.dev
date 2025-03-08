@@ -40,6 +40,7 @@ import { AcmeIcon } from "@/components/commons/acme";
 import AuthGuard from "@/components/commons/auth-guard";
 import Drawer from "@/components/commons/drawer";
 import SideBar from "@/components/commons/side-bar";
+import type { SidebarItem } from "@/components/commons/side-bar";
 import { revokeCurrentOrg } from "@/server/org.action";
 import { setCurrentOrg } from "@/server/org.action";
 import { routeItems } from "@/shared/routes";
@@ -81,6 +82,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
         {data.map((org) => (
           <li key={org.id} className="w-full">
             <Button
+              aria-label={org.name}
               size="sm"
               fullWidth
               className="pl-5 justify-start"
@@ -99,6 +101,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
       </ul>
       <Divider />
       <Button
+        aria-label="Create New Organization"
         onPress={() => {
           onOpen();
         }}
@@ -131,7 +134,11 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
                 </Card>
               </ModalBody>
               <ModalFooter>
-                <Button color="primary" variant="flat" onPress={onClose}>
+                <Button
+                  aria-label="Close Modal"
+                  color="primary"
+                  variant="flat"
+                  onPress={onClose}>
                   Close
                 </Button>
               </ModalFooter>
@@ -164,6 +171,10 @@ const DashLayout = (props: Props) => {
       (item) => item.href === pathname || _.some(item.items, { href: pathname })
     );
   }, [pathname]);
+
+  const filterHiddenInMenu = React.useCallback((items: SidebarItem[]) => {
+    return Array.from(items).filter((item) => !item.hiddenInMenu);
+  }, []);
 
   const onToggle = React.useCallback(() => {
     setIsCollapsed((prev) => !prev);
@@ -309,9 +320,6 @@ const DashLayout = (props: Props) => {
               title: "group-data-[selected=true]:text-default-50",
             }}
             items={routeItems}
-            onSelect={(key) => {
-              router.push(key as string);
-            }}
           />
 
           <Spacer y={8} />
@@ -489,7 +497,7 @@ const DashLayout = (props: Props) => {
                 onSelectionChange={(key) => router.push(key as string)}
                 radius="full"
                 variant="light">
-                {currentItem.items.map((item) => (
+                {filterHiddenInMenu(currentItem.items).map((item) => (
                   <Tab key={item.href} title={item.title} />
                 ))}
               </Tabs>
