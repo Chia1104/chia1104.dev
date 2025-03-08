@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getFullOrganization } from "@/services/auth/resources.rsc";
 import { OrganizationStoreProvider } from "@/store/organization.store";
 
-export default async function Layout({
+export default async function Template({
   children,
 }: {
   children: React.ReactNode;

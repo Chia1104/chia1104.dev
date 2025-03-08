@@ -7,7 +7,7 @@ import DashLayout from "@/components/commons/dash-layout";
 import Footer from "@/components/commons/footer";
 import { getSession, getFullOrganization } from "@/services/auth/resources.rsc";
 
-export default async function Template({
+export default async function Layout({
   children,
   themeSwitch,
 }: {
