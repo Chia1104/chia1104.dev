@@ -73,16 +73,12 @@ export const getInfiniteApiKeysByProjectId = withDTO(
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
           : nextItem?.[orderBy];
     }
-    // const serializedItems = items.map((item) => ({
-    //   ...item,
-    //   createdAt: dayjs(item.createdAt).toISOString(),
-    //   updatedAt: dayjs(item.updatedAt).toISOString(),
-    //   expiresAt: dayjs(item.expiresAt).toISOString(),
-    //   lastRefillAt: dayjs(item.lastRefillAt).toISOString(),
-    //   lastRequest: dayjs(item.lastRequest).toISOString(),
-    // }));
+    const serializedItems = items.map((item) => ({
+      ...item,
+      key: undefined,
+    }));
     return {
-      items: items,
+      items: serializedItems,
       nextCursor,
     };
   }
