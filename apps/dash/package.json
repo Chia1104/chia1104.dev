@@ -75,7 +75,7 @@
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "@vitejs/plugin-react-swc": "^3.8.0",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10.4.21",
     "babel-plugin-react-compiler": "catalog:react19",
     "eslint": "catalog:",
     "postcss": "8.5.3",
