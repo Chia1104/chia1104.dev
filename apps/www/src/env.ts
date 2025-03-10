@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { env as githubEnv } from "@chia/api/github/env";
+import { env as serviceEnv } from "@chia/api/services/env";
 import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
 
 export const getClientEnv = () => {
@@ -40,7 +41,6 @@ export const env = createEnv({
     BETA_ADMIN_ID: z.string().optional(),
     INTERNAL_SERVICE_ENDPOINT: z.string().min(1),
     SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
-    INTERNAL_REQUEST_SECRET: z.string().min(1),
   },
 
   client: {
@@ -71,7 +71,6 @@ export const env = createEnv({
     NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
     INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
     SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
-    INTERNAL_REQUEST_SECRET: process.env.INTERNAL_REQUEST_SECRET,
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
   },
@@ -79,5 +78,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
   emptyStringAsUndefined: true,
-  extends: [githubEnv, captchaEnv],
+  extends: [githubEnv, captchaEnv, serviceEnv],
 });

@@ -50,11 +50,14 @@ type ServiceRequestOptions = Options &
       }
     | {
         isInternal: true;
-        internal_requestSecret: string;
+        internal_requestSecret: {
+          cfBypassToken: string;
+          apiKey: string;
+        };
       }
   );
 
-export const X_INTERNAL_REQUEST_SECRET = "x-internal-request-secret";
+export const X_CF_BYPASS_TOKEN = "x-cf-bypass-token";
 
 export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
   return request({
@@ -63,8 +66,11 @@ export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
       isInternal: defaultOptions?.isInternal,
     }),
     headers: {
-      [X_INTERNAL_REQUEST_SECRET]: defaultOptions?.isInternal
-        ? defaultOptions.internal_requestSecret
+      [X_CF_BYPASS_TOKEN]: defaultOptions?.isInternal
+        ? defaultOptions.internal_requestSecret.cfBypassToken
+        : undefined,
+      "x-ch-api-key": defaultOptions?.isInternal
+        ? defaultOptions.internal_requestSecret.apiKey
         : undefined,
     },
   });

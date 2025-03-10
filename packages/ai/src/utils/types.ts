@@ -7,6 +7,7 @@ export const OpenAIModal = {
   "gpt-4o-mini": "gpt-4o-mini",
   "gpt-4": "gpt-4",
   "gpt-3.5-turbo": "gpt-3.5-turbo",
+  "o3-mini": "o3-mini",
 } as const;
 
 export type OpenAIModal = (typeof OpenAIModal)[keyof typeof OpenAIModal];
@@ -26,10 +27,7 @@ export const messageSchema = z.object({
 export type Message = z.infer<typeof messageSchema>;
 
 export const baseRequestSchema = z.object({
-  modal: z
-    .nativeEnum(OpenAIModal)
-    .optional()
-    .default(OpenAIModal["gpt-4o-mini"]),
+  modal: z.nativeEnum(OpenAIModal).optional().default(OpenAIModal["o3-mini"]),
   messages: z.array(messageSchema).min(1),
   authToken: z.string().min(1),
   system: z.string().optional(),
