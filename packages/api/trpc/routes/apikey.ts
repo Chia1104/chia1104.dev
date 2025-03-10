@@ -31,6 +31,7 @@ export const apiKeyRouter = createTRPCRouter({
       const { data, error } = await tryCatch(
         auth.api.createApiKey({
           body: {
+            rateLimitEnabled: false,
             ...opts.input,
             userId: opts.ctx.session?.session.userId,
           },

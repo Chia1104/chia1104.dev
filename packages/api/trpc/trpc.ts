@@ -111,7 +111,10 @@ export const adminProcedureWithACL = (
 ) => t.procedure.use(adminACLMiddleware(permission, rootOnly));
 
 export const external_createTRPCContext = (opts: {
-  internal_requestSecret: string;
+  internal_requestSecret: {
+    cfBypassToken: string;
+    apiKey: string;
+  };
 }) => {
   return {
     internal_requestSecret: opts.internal_requestSecret,

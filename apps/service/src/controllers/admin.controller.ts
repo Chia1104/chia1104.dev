@@ -1,6 +1,3 @@
-/**
- * TODO: implement OIDC auth flow
- */
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -15,15 +12,24 @@ import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
   getFeedMetaById,
-  // createFeedMeta,
+  createFeedMeta,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId, numericStringSchema } from "@chia/utils";
 
+import { env } from "@/env";
+import { apikeyVerify } from "@/guards/apikey-verify.guard";
 import { errorResponse } from "@/utils/error.util";
 
 const api = new Hono<HonoContext>();
 const adminId = getAdminId();
+
+api.use(
+  "*",
+  apikeyVerify({
+    projectId: env.PROJECT_ID,
+  })
+);
 
 api.get("/public/feeds:meta", async (c) => {
   let total = 0;
@@ -112,14 +118,13 @@ api.post(
       return c.json(errorResponse(result.error), 400);
     }
   }),
-  (c) => {
-    return c.json(errorGenerator(501), 501);
-    // const { feedId, summary } = c.req.valid("json");
-    // await createFeedMeta(c.var.db, {
-    //   feedId,
-    //   summary,
-    // });
-    // return c.body(null, 204);
+  async (c) => {
+    const { feedId, summary } = c.req.valid("json");
+    await createFeedMeta(c.var.db, {
+      feedId,
+      summary,
+    });
+    return c.body(null, 204);
   }
 );
 

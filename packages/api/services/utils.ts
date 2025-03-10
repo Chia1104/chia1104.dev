@@ -2,13 +2,19 @@ import type { Options } from "ky";
 
 export const withInternalRequest = <TResult = unknown, TDto = unknown>(
   fn: (
-    internal_requestSecret: string,
+    internal_requestSecret: {
+      cfBypassToken: string;
+      apiKey: string;
+    },
     dto: TDto,
     options?: Options
   ) => Promise<TResult>
 ) => {
   return async (
-    internal_requestSecret: string,
+    internal_requestSecret: {
+      cfBypassToken: string;
+      apiKey: string;
+    },
     dto: TDto,
     options?: Options
   ) => {

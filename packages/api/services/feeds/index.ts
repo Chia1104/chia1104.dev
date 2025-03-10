@@ -5,7 +5,7 @@ import type {
   getFeedBySlug as TgetFeedBySlug,
   getFeedMetaById as TgetFeedMetaById,
 } from "@chia/db/repos/feeds";
-import { InsertFeedMetaDTO } from "@chia/db/validator/feeds";
+import type { InsertFeedMetaDTO } from "@chia/db/validator/feeds";
 import { serviceRequest } from "@chia/utils";
 
 import { withInternalRequest } from "../utils";

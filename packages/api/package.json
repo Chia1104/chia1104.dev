@@ -61,6 +61,10 @@
       "types": "./services/feeds/index.ts",
       "default": "./services/feeds/index.ts"
     },
+    "./services/env": {
+      "types": "./services/env.ts",
+      "default": "./services/env.ts"
+    },
     "./betterstack/types": {
       "types": "./betterstack/types.ts",
       "default": "./betterstack/types.ts"

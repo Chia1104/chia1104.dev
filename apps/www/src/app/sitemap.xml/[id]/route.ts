@@ -44,14 +44,20 @@ export const GET = async (
     const storedParams = await params;
     numericStringSchema.parse(storedParams.id);
 
-    const feeds = await getFeedsWithMetaByAdminId(env.INTERNAL_REQUEST_SECRET, {
-      limit: 1000,
-      type: "all",
-      orderBy: "updatedAt",
-      sortOrder: "desc",
-      withContent: "false",
-      published: "true",
-    });
+    const feeds = await getFeedsWithMetaByAdminId(
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY ?? "",
+      },
+      {
+        limit: 1000,
+        type: "all",
+        orderBy: "updatedAt",
+        sortOrder: "desc",
+        withContent: "false",
+        published: "true",
+      }
+    );
 
     const staticSitemapData = Object.entries(routes).map(
       ([path, { priority }]) =>

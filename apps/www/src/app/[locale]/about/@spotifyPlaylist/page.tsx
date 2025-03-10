@@ -112,7 +112,10 @@ const getTop4 = (data: Awaited<ReturnType<typeof getPlayList>>) => {
 export default async function Page() {
   const playlist = await serviceRequest({
     isInternal: true,
-    internal_requestSecret: env.INTERNAL_REQUEST_SECRET,
+    internal_requestSecret: {
+      cfBypassToken: env.CF_BYPASS_TOKEN,
+      apiKey: env.CH_API_KEY ?? "",
+    },
   })
     .get(`spotify/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default"}`)
     .json<Awaited<ReturnType<typeof getPlayList>>>();

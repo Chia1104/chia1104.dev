@@ -26,7 +26,13 @@ function buildSitemapIndex(sitemaps: string[]) {
 
 export const GET = async () => {
   try {
-    const { total } = await getMeta(env.INTERNAL_REQUEST_SECRET, null);
+    const { total } = await getMeta(
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY ?? "",
+      },
+      null
+    );
 
     const amountOfSitemapFiles = Math.ceil(total / URLS_PER_SITEMAP);
 
