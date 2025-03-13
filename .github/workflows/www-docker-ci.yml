@@ -73,4 +73,4 @@ jobs:
             INTERNAL_SERVICE_ENDPOINT=${{ env.INTERNAL_SERVICE_ENDPOINT }}
             NEXT_PUBLIC_SERVICE_ENDPOINT=${{ env.NEXT_PUBLIC_SERVICE_ENDPOINT }}
             CF_BYPASS_TOKEN=${{ env.CF_BYPASS_TOKEN }}
-            CH_API_KEY=${{ env.WWW_CH_API_KEY }}
+            CH_API_KEY=${{ env.CH_API_KEY }}
