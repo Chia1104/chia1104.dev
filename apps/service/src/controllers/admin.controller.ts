@@ -103,6 +103,7 @@ api.get(
     const id = c.req.valid("param").id;
     const feed = await getFeedMetaById(c.var.db, {
       feedId: id,
+      withContent: true,
     });
     if (!feed) {
       return c.json(null);
