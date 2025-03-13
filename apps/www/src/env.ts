@@ -39,6 +39,7 @@ export const env = createEnv({
     SENTRY_PROJECT: z.string().optional(),
     ADMIN_ID: z.string().optional(),
     BETA_ADMIN_ID: z.string().optional(),
+    SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
   },
 
   client: {
@@ -67,6 +68,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
+    SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
