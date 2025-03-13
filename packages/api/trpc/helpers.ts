@@ -2,6 +2,9 @@ import { TRPCError } from "@trpc/server";
 
 import { APIError } from "@chia/auth/types";
 
+/**
+ * TODO: fix return type
+ */
 export const authError = (error: unknown): never => {
   if (error instanceof APIError) {
     switch (error.statusCode) {
