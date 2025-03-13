@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { text, timestamp, serial } from "drizzle-orm/pg-core";
 
+import { apikey } from "./apikey";
 import { pgTable } from "./table";
 import { users as user } from "./users";
 
@@ -59,11 +60,12 @@ export const organizationRelations = relations(organization, ({ many }) => ({
   projects: many(project),
 }));
 
-export const projectRelations = relations(project, ({ one }) => ({
+export const projectRelations = relations(project, ({ one, many }) => ({
   organizations: one(organization, {
     fields: [project.organizationId],
     references: [organization.id],
   }),
+  apikeys: many(apikey),
 }));
 
 export type Organization = InferSelectModel<typeof organization>;

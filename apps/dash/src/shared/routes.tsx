@@ -26,6 +26,12 @@ export const routeItems: SidebarItem[] = [
     ),
   },
   {
+    key: "api-key",
+    href: "/api-key",
+    icon: "solar:key-square-2-line-duotone",
+    title: "Api Keys",
+  },
+  {
     key: "feed",
     href: "/feed",
     icon: "solar:bookmark-broken",

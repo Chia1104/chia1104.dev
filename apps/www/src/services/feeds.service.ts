@@ -26,7 +26,10 @@ export const FEEDS_CACHE_TAGS = {
 export const getPosts = async (limit = 10) => {
   try {
     return await getFeedsWithMetaByAdminId(
-      env.INTERNAL_REQUEST_SECRET,
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY ?? "",
+      },
       {
         limit,
         type: "post",
@@ -48,7 +51,10 @@ export const getPosts = async (limit = 10) => {
 export const getNotes = async (limit = 10) => {
   try {
     return await getFeedsWithMetaByAdminId(
-      env.INTERNAL_REQUEST_SECRET,
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY ?? "",
+      },
       {
         limit,
         type: "note",
@@ -70,7 +76,10 @@ export const getNotes = async (limit = 10) => {
 export const getFeedBySlug = async (slug: string) => {
   try {
     return await _getFeedBySlug(
-      env.INTERNAL_REQUEST_SECRET,
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY ?? "",
+      },
       { slug },
       {
         next: { tags: FEEDS_CACHE_TAGS.getFeedBySlug(slug) },

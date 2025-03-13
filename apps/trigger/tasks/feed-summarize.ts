@@ -25,9 +25,15 @@ export const feedSummarizeTask = schemaTask({
   id: TaskID.FeedSummarize,
   schema: requestSchema,
   run: async ({ modal, system, feedID }) => {
-    const feedMeta = await getFeedMetaById(env.INTERNAL_REQUEST_SECRET, {
-      id: feedID,
-    });
+    const feedMeta = await getFeedMetaById(
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY,
+      },
+      {
+        id: feedID,
+      }
+    );
 
     /**
      * TODO: handle data revalidation
@@ -62,9 +68,15 @@ export const feedSummarizeTask = schemaTask({
       text += chunk;
     }
 
-    await insertFeedMeta(env.INTERNAL_REQUEST_SECRET, {
-      feedId: Number(feedID),
-      summary: text,
-    });
+    await insertFeedMeta(
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY,
+      },
+      {
+        feedId: Number(feedID),
+        summary: text,
+      }
+    );
   },
 });
