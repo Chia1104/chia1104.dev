@@ -94,7 +94,7 @@ const CreateForm = (props: { projectId?: number }) => {
       onSuccess: async (data) => {
         if (data) {
           toast.success("API Key created successfully");
-          await utils.apiKey.getApiKeys.invalidate();
+          await utils.apiKey.invalidate();
         }
       },
       onError: (error) => {
@@ -319,6 +319,7 @@ const ApiKeyTable = (props: Props) => {
       hasNextPage={hasNextPage}
       isLoading={isLoading || isFetchingNextPage}
       onLoadMore={() => fetchNextPage()}
+      projectId={props.projectId}
     />
   );
 };
