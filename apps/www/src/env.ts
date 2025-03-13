@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { env as githubEnv } from "@chia/api/github/env";
-import { env as serviceEnv } from "@chia/api/services/env";
+import { externalInfraEnv as serviceEnv } from "@chia/api/services/env";
 import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
 
 export const getClientEnv = () => {
@@ -39,8 +39,6 @@ export const env = createEnv({
     SENTRY_PROJECT: z.string().optional(),
     ADMIN_ID: z.string().optional(),
     BETA_ADMIN_ID: z.string().optional(),
-    INTERNAL_SERVICE_ENDPOINT: z.string().min(1),
-    SPOTIFY_FAVORITE_PLAYLIST_ID: z.string().optional(),
   },
 
   client: {
@@ -48,7 +46,6 @@ export const env = createEnv({
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
     NEXT_PUBLIC_GA_ID: z.string().optional(),
-    NEXT_PUBLIC_SERVICE_ENDPOINT: z.string().min(1),
     NEXT_PUBLIC_DEFAULT_TIME_ZONE: z.string().min(1),
   },
 
@@ -68,9 +65,6 @@ export const env = createEnv({
     BETA_ADMIN_ID: process.env.BETA_ADMIN_ID,
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
     NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
-    NEXT_PUBLIC_SERVICE_ENDPOINT: process.env.NEXT_PUBLIC_SERVICE_ENDPOINT,
-    INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
-    SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
   },
