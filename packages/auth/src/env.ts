@@ -32,10 +32,11 @@ export const env = createEnv({
     AUTH_URL: z.string().optional(),
     AUTH_COOKIE_DOMAIN: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
-    INTERNAL_REQUEST_SECRET: z.string().optional(),
     CORS_ALLOWED_ORIGIN: z.string().optional(),
     REDIS_URL: z.string().optional(),
     REDIS_URI: z.string().optional(),
+    CF_BYPASS_TOKEN: z.string().optional(),
+    CH_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -46,10 +47,11 @@ export const env = createEnv({
     AUTH_URL: process.env.AUTH_URL,
     AUTH_COOKIE_DOMAIN: process.env.AUTH_COOKIE_DOMAIN ?? ".chia1104.dev",
     RESEND_API_KEY: process.env.RESEND_API_KEY ?? "re_123",
-    INTERNAL_REQUEST_SECRET: process.env.INTERNAL_REQUEST_SECRET,
     CORS_ALLOWED_ORIGIN: process.env.CORS_ALLOWED_ORIGIN,
     REDIS_URL: process.env.REDIS_URL,
     REDIS_URI: process.env.REDIS_URI,
+    CF_BYPASS_TOKEN: process.env.CF_BYPASS_TOKEN,
+    CH_API_KEY: process.env.CH_API_KEY,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

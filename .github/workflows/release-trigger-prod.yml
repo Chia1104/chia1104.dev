@@ -16,7 +16,8 @@ env:
   TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   INTERNAL_SERVICE_ENDPOINT: ${{ secrets.INTERNAL_SERVICE_ENDPOINT }}
-  INTERNAL_REQUEST_SECRET: ${{ secrets.INTERNAL_REQUEST_SECRET }}
+  CF_BYPASS_TOKEN: ${{ secrets.CF_BYPASS_TOKEN }}
+  CH_API_KEY: ${{ secrets.TRIGGER_CH_API_KEY }}
 
 jobs:
   deploy:
@@ -34,6 +35,7 @@ jobs:
           TRIGGER_ACCESS_TOKEN: ${{ env.TRIGGER_ACCESS_TOKEN }}
           OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
           INTERNAL_SERVICE_ENDPOINT: ${{ env.INTERNAL_SERVICE_ENDPOINT }}
-          INTERNAL_REQUEST_SECRET: ${{ env.INTERNAL_REQUEST_SECRET }}
+          CH_API_KEY: ${{ env.CH_API_KEY }}
+          CF_BYPASS_TOKEN: ${{ env.CF_BYPASS_TOKEN }}
         run: |
           cd apps/trigger && pnpm deploy:trigger

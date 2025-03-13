@@ -32,6 +32,7 @@ export const env = createEnv({
     MAINTENANCE_MODE: z.string().optional().default("false"),
     MAINTENANCE_BYPASS_TOKEN: z.string().optional(),
     TIMEOUT_MS: numericStringSchema,
+    PROJECT_ID: numericStringSchema.optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -59,6 +60,7 @@ export const env = createEnv({
         : "false",
     MAINTENANCE_BYPASS_TOKEN: process.env.MAINTENANCE_BYPASS_TOKEN,
     TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
+    PROJECT_ID: process.env.PROJECT_ID,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

@@ -41,24 +41,46 @@ import { truncateMiddle } from "@chia/utils/string";
 
 import { api } from "@/trpc/client";
 
+const headersWithProject = [
+  { name: "Name", uid: "name" },
+  { name: "Created At", uid: "createdAt" },
+  { name: "Project", uid: "project" },
+  { name: "Action", uid: "id" },
+];
+
 const headers = [
   { name: "Name", uid: "name" },
   { name: "Created At", uid: "createdAt" },
   { name: "Action", uid: "id" },
 ];
 
-type ApiKeys = RouterOutputs["apiKey"]["getApiKeys"]["items"];
+type ApiKeysWithoutProject = RouterOutputs["apiKey"]["getApiKeys"]["items"];
+
+type ApiKeysWithProject =
+  RouterOutputs["apiKey"]["getAllApiKeysWithMeta"]["items"];
+
+type ApiKeys<TWithProject extends boolean = false> = TWithProject extends true
+  ? ApiKeysWithProject
+  : ApiKeysWithoutProject;
 
 type Query = RouterInputs["apiKey"]["getApiKeys"];
 
+type AllKeysQuery = RouterInputs["apiKey"]["getAllApiKeysWithMeta"];
+
 interface Props {
-  initApiKey?: ApiKeys;
+  initApiKey?: ApiKeysWithoutProject;
   nextCursor?: string | number | null;
   projectId: number;
   query?: Partial<Query>;
 }
 
-const CreateForm = (props: { projectId: number }) => {
+interface AllKeysProps {
+  initApiKey?: ApiKeysWithProject;
+  nextCursor?: string | number | null;
+  query?: Partial<AllKeysQuery>;
+}
+
+const CreateForm = (props: { projectId?: number }) => {
   const utils = api.useUtils();
   const form = useForm({
     resolver: zodResolver(
@@ -124,7 +146,7 @@ const CreateForm = (props: { projectId: number }) => {
   );
 };
 
-const CreateAction = (props: { projectId: number }) => {
+const CreateAction = (props: { projectId?: number }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
@@ -151,6 +173,109 @@ const CreateAction = (props: { projectId: number }) => {
         </ModalContent>
       </Modal>
     </>
+  );
+};
+
+export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
+  data,
+  hasNextPage,
+  isLoading,
+  onLoadMore,
+  projectId,
+  withProject,
+}: {
+  data: ApiKeys<TWithProject>;
+  hasNextPage?: boolean;
+  isLoading?: boolean;
+  onLoadMore?: () => void;
+  projectId?: number;
+  withProject?: TWithProject;
+}) => {
+  const { ref } = useInfiniteScroll<HTMLDivElement>({
+    hasMore: hasNextPage,
+    isLoading,
+    onLoadMore,
+  });
+
+  const renderCell = useCallback(
+    (item: ApiKeys<TWithProject>[0], key: keyof ApiKeys<TWithProject>[0]) => {
+      switch (key) {
+        case "name":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-sm">{item.name}</p>
+            </div>
+          );
+        case "createdAt":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-sm">
+                {dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}
+              </p>
+            </div>
+          );
+        case "id":
+          return (
+            <div className="flex gap-2">
+              <Button isIconOnly variant="flat">
+                <PencilIcon size={16} />
+              </Button>
+              <Button isIconOnly color="danger" variant="flat">
+                <Trash2Icon size={16} />
+              </Button>
+            </div>
+          );
+        case "project":
+          return withProject ? (
+            <div className="flex flex-col">
+              {/* @ts-expect-error - TODO: Fix the type issue */}
+              <p className="text-bold text-sm">{item?.project?.name}</p>
+            </div>
+          ) : null;
+        default:
+          return null;
+      }
+    },
+    [withProject]
+  );
+
+  return (
+    <div className="w-full flex flex-col gap-5">
+      <div className="flex gap-5 justify-between">
+        <h3 className="text-lg font-bold">ApiKey</h3>
+        <CreateAction projectId={projectId} />
+      </div>
+      <Table
+        bottomContent={
+          hasNextPage ? (
+            <div className="flex w-full justify-center">
+              <Spinner ref={ref} />
+            </div>
+          ) : null
+        }
+        aria-label="ApiKey table ">
+        <TableHeader columns={withProject ? headersWithProject : headers}>
+          {(column) => (
+            <TableColumn key={column.uid}>{column.name}</TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          isLoading={isLoading}
+          loadingContent={<Spinner />}
+          items={data}
+          emptyContent={isLoading ? <Spinner /> : "No ApiKey data"}>
+          {(item) => (
+            <TableRow key={item.id}>
+              {(columnKey) => (
+                <TableCell>
+                  {renderCell(item, columnKey as keyof ApiKeys[0])}
+                </TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
@@ -188,81 +313,52 @@ const ApiKeyTable = (props: Props) => {
     return data.pages.flatMap((page) => page.items);
   }, [data, isSuccess]);
 
-  const { ref } = useInfiniteScroll<HTMLDivElement>({
-    hasMore: hasNextPage,
-    isLoading: isFetchingNextPage,
-    onLoadMore: () => void fetchNextPage(),
+  return (
+    <ApiKeyTablePrimitive
+      data={flatData}
+      hasNextPage={hasNextPage}
+      isLoading={isLoading || isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
+    />
+  );
+};
+
+export const GlobalApiKeyTable = (props: AllKeysProps) => {
+  const {
+    data,
+    isSuccess,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = api.apiKey.getAllApiKeysWithMeta.useInfiniteQuery(props.query ?? {}, {
+    getNextPageParam: (lastPage) => lastPage?.nextCursor,
+    initialData: props.initApiKey
+      ? {
+          pages: [
+            {
+              items: props.initApiKey,
+              nextCursor: props.nextCursor?.toString(),
+            },
+          ],
+          pageParams: [props.nextCursor?.toString()],
+        }
+      : undefined,
   });
 
-  const renderCell = useCallback((item: ApiKeys[0], key: keyof ApiKeys[0]) => {
-    switch (key) {
-      case "name":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-sm">{item.name}</p>
-          </div>
-        );
-      case "createdAt":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-sm">
-              {dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}
-            </p>
-          </div>
-        );
-      case "id":
-        return (
-          <div className="flex gap-2">
-            <Button isIconOnly variant="flat">
-              <PencilIcon size={16} />
-            </Button>
-            <Button isIconOnly color="danger" variant="flat">
-              <Trash2Icon size={16} />
-            </Button>
-          </div>
-        );
-      default:
-        return null;
-    }
-  }, []);
+  const flatData = useMemo(() => {
+    if (!isSuccess || !data) return [];
+    return data.pages.flatMap((page) => page.items);
+  }, [data, isSuccess]);
 
   return (
-    <div className="w-full flex flex-col gap-5">
-      <div className="flex gap-5 justify-between">
-        <h3 className="text-lg font-bold">ApiKey</h3>
-        <CreateAction projectId={props.projectId} />
-      </div>
-      <Table
-        bottomContent={
-          hasNextPage ? (
-            <div className="flex w-full justify-center">
-              <Spinner ref={ref} />
-            </div>
-          ) : null
-        }
-        aria-label="ApiKey table ">
-        <TableHeader columns={headers}>
-          {(column) => (
-            <TableColumn key={column.uid}>{column.name}</TableColumn>
-          )}
-        </TableHeader>
-        <TableBody
-          isLoading={isLoading}
-          loadingContent={<Spinner />}
-          items={flatData ?? []}
-          emptyContent={isLoading ? <Spinner /> : "No ApiKey data"}>
-          {(item) => (
-            <TableRow key={item.id}>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(item, columnKey as keyof ApiKeys[0])}
-                </TableCell>
-              )}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+    <ApiKeyTablePrimitive
+      data={flatData}
+      hasNextPage={hasNextPage}
+      isLoading={isLoading || isFetchingNextPage}
+      onLoadMore={() => fetchNextPage()}
+      withProject={props.query?.withProject}
+    />
   );
 };
 

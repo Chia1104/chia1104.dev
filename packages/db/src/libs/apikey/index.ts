@@ -83,3 +83,63 @@ export const getInfiniteApiKeysByProjectId = withDTO(
     };
   }
 );
+
+export const getInfiniteApiKeys = withDTO(
+  async (
+    db,
+    {
+      limit = 10,
+      cursor,
+      orderBy = FeedOrderBy.CreatedAt,
+      sortOrder = "desc",
+      whereAnd = [],
+      withProject,
+    }: Partial<InfiniteDTO> & {
+      whereAnd?: (SQLWrapper | undefined)[];
+      withProject?: boolean;
+    }
+  ) => {
+    const parsedCursor = cursor
+      ? cursorTransform(
+          cursor,
+          orderBy === FeedOrderBy.CreatedAt ? "timestamp" : "default"
+        )
+      : null;
+    const items = await db.query.apikey.findMany({
+      orderBy: (apikey, { asc, desc }) => [
+        sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
+      ],
+      limit: limit + 1,
+      where: parsedCursor
+        ? (apikey, { gte, lte, and }) =>
+            and(
+              sortOrder === "asc"
+                ? gte(apikey[orderBy], dayjs(parsedCursor).toISOString())
+                : lte(apikey[orderBy], dayjs(parsedCursor).toISOString()),
+              ...whereAnd
+            )
+        : (apikey, { and }) => and(...whereAnd),
+      with: withProject
+        ? {
+            project: true,
+          }
+        : undefined,
+    });
+    let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
+    if (items.length > limit) {
+      const nextItem = items.pop();
+      nextCursor =
+        orderBy === FeedOrderBy.CreatedAt
+          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
+          : nextItem?.[orderBy];
+    }
+    const serializedItems = items.map((item) => ({
+      ...item,
+      key: undefined,
+    }));
+    return {
+      items: serializedItems,
+      nextCursor,
+    };
+  }
+);
