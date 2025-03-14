@@ -13,7 +13,7 @@ export type STREAMS = {
   openai: OpenAI.ChatCompletionChunk; // The type of the chunk is determined by the provider
 };
 
-const requestSchema = z.object({
+export const requestSchema = z.object({
   ...baseRequestSchema.omit({ authToken: true, messages: true }).shape,
   feedID: z.string(),
 });
