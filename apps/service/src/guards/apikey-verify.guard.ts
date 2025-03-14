@@ -1,6 +1,7 @@
 import { createMiddleware } from "hono/factory";
 
 import { auth } from "@chia/auth";
+import { APIError } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
 import type { ApiKey } from "@chia/db/schema";
 import { errorGenerator } from "@chia/utils";
@@ -23,7 +24,61 @@ export const apikeyVerify = (options?: {
     );
 
     if (apiKeyError || apiKey.error) {
-      console.error(apiKeyError ?? apiKey.error);
+      if (apiKeyError instanceof APIError) {
+        return c.json(errorGenerator(apiKeyError.statusCode), 403);
+      }
+      switch (apiKey?.error?.code) {
+        case "KEY_NOT_FOUND":
+          return c.json(
+            errorGenerator(404, [
+              {
+                field: "api_key",
+                message: "API key not found",
+              },
+            ]),
+            404
+          );
+        case "KEY_DISABLED":
+          return c.json(
+            errorGenerator(403, [
+              {
+                field: "api_key",
+                message: "API key is disabled",
+              },
+            ]),
+            403
+          );
+        case "KEY_EXPIRED":
+          return c.json(
+            errorGenerator(403, [
+              {
+                field: "api_key",
+                message: "API key is expired",
+              },
+            ]),
+            403
+          );
+        case "RATE_LIMITED":
+          return c.json(
+            errorGenerator(429, [
+              {
+                field: "api_key",
+                message: "API key is rate limited",
+              },
+            ]),
+            429
+          );
+        case "USAGE_EXCEEDED":
+          return c.json(
+            errorGenerator(403, [
+              {
+                field: "api_key",
+                message: "API key usage exceeded",
+              },
+            ]),
+            403
+          );
+      }
       return c.json(errorGenerator(500), 500);
     }
 
