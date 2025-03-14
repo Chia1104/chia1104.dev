@@ -12,8 +12,7 @@ import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
 import DateFormat from "@/components/commons/date-format";
 import { getPosts, getFeedBySlug } from "@/services/feeds.service";
-import { I18N } from "@/utils/i18n";
-import type { PageParamsWithLocale } from "@/utils/i18n";
+import { Locale } from "@/utils/i18n";
 
 export const dynamicParams = true;
 export const revalidate = 60;
@@ -80,7 +79,7 @@ const Page = async ({
   return (
     <>
       <div className="flex w-full flex-col items-center">
-        {locale !== I18N.ZH_TW && <FeedTranslationWarning />}
+        {locale !== Locale.ZH_TW && <FeedTranslationWarning />}
         <header className="mb-5 w-full self-center mt-5">
           <h1
             style={{

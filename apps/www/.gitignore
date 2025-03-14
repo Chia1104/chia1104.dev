@@ -48,3 +48,5 @@ public/sitemap-0.xml
 cypress/videos
 
 .map.ts
+
+messages/*.d.json.ts

@@ -2,15 +2,14 @@
 
 import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
 
+import type { Locale } from "next-intl";
 import { ViewTransitions } from "next-view-transitions";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
-import type { I18N } from "@/utils/i18n";
-
 interface Props {
   children: ReactNode;
-  locale?: I18N;
+  locale?: Locale;
   htmlProps?: ComponentPropsWithoutRef<"html">;
   bodyProps?: ComponentPropsWithoutRef<"body">;
 }

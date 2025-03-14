@@ -1,14 +1,14 @@
 import { createNavigation } from "next-intl/navigation";
 import { defineRouting } from "next-intl/routing";
 
-import { I18N } from "@/utils/i18n";
+import { Locale } from "@/utils/i18n";
 
 export const routing = defineRouting({
   // A list of all locales that are supported
-  locales: Object.values(I18N),
+  locales: Object.values(Locale),
 
   // Used when no locale matches
-  defaultLocale: I18N.EN,
+  defaultLocale: Locale.EN,
 
   localePrefix: "never",
 });

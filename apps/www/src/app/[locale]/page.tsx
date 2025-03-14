@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from "react";
 
+import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import meta from "@chia/meta";
@@ -7,8 +8,6 @@ import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 import Link from "@chia/ui/link";
-
-import type { I18N } from "@/utils/i18n";
 
 const contact = {
   github: {
@@ -33,7 +32,7 @@ const LinkItem: FC<{
   icon: ReactNode;
   name: string;
   showIcon?: boolean;
-  locale?: I18N;
+  locale?: Locale;
 }> = ({ path, icon, name, showIcon: _showIcon, locale }) => {
   return (
     <Link
@@ -50,7 +49,7 @@ const LinkItem: FC<{
   );
 };
 
-const Page = async ({ params }: { params: Promise<{ locale: I18N }> }) => {
+const Page = async ({ params }: { params: PageParamsWithLocale }) => {
   const { locale } = await params;
   const t = await getTranslations("home");
   const test = t("section1");
