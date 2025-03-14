@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "pnpm dlx trigger.dev@latest dev",
     "deploy:trigger:staging": "pnpm dlx trigger.dev@latest deploy --env staging",
-    "deploy:trigger": "pnpm dlx trigger.dev@latest deploy"
+    "deploy:trigger": "pnpm dlx trigger.dev@latest deploy",
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
