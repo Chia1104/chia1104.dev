@@ -430,7 +430,7 @@ importers:
         version: 0.4.3(hono@4.7.4)(zod@3.24.2)
       drizzle-graphql:
         specifier: ^0.8.5
-        version: 0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3))(graphql@16.10.0)
+        version: 0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3))(graphql@16.10.0)
       formdata-node:
         specifier: ^6.0.3
         version: 6.0.3
@@ -815,8 +815,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       better-auth:
-        specifier: ^1.2.3
-        version: 1.2.3(typescript@5.8.2)
+        specifier: ^1.2.4
+        version: 1.2.4(typescript@5.8.2)
       resend:
         specifier: ^4.1.2
         version: 4.1.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -939,10 +939,10 @@ importers:
         version: link:../ai
       drizzle-orm:
         specifier: ^0.40.0
-        version: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3)
+        version: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3)
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3))(zod@3.24.2)
+        version: 0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3))(zod@3.24.2)
       pg:
         specifier: ^8.13.3
         version: 8.13.3
@@ -6523,8 +6523,8 @@ packages:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
 
-  better-auth@1.2.3:
-    resolution: {integrity: sha512-y97/ah2SOWaW81IRg36m7xMSMVl7ATaHie/nhQ0in/reVlEX/6juVPszNqq0gcTwQtFsB8oe15wQKgdf4yHP9Q==}
+  better-auth@1.2.4:
+    resolution: {integrity: sha512-/ZK2jbUjm8JwdeCLFrUWUBmexPyI9PkaLVXWLWtN60sMDHTY8B5G72wcHglo1QMFBaw4G0qFkP5ayl9k6XfDaA==}
 
   better-call@1.0.3:
     resolution: {integrity: sha512-DUKImKoDIy5UtCvQbHTg0wuBRse6gu1Yvznn7+1B3I5TeY8sclRPFce0HI+4WF2bcb+9PqmkET8nXZubrHQh9A==}
@@ -8849,8 +8849,8 @@ packages:
     resolution: {integrity: sha512-HzhziW6sc5m0pwi5M196+7cEBtbt0lCYi67wNsiwMUmz833wloE0gbzJPWKs1gliFKQb34huItDQX97LyOdPdA==}
     engines: {node: '>=18'}
 
-  kysely@0.27.5:
-    resolution: {integrity: sha512-s7hZHcQeSNKpzCkHRm8yA+0JPLjncSWnjb+2TIElwS2JAqYr+Kv3Ess+9KFfJS0C1xcQ1i9NkNHpWwCYpHMWsA==}
+  kysely@0.27.6:
+    resolution: {integrity: sha512-FIyV/64EkKhJmjgC0g2hygpBv5RNWVPyNCqSAD7eTCv6eFWNIi4PN1UvdSJGicN/o35bnevgis4Y0UDC0qi8jQ==}
     engines: {node: '>=14.0.0'}
 
   langium@3.0.0:
@@ -18144,7 +18144,7 @@ snapshots:
 
   basic-ftp@5.0.5: {}
 
-  better-auth@1.2.3(typescript@5.8.2):
+  better-auth@1.2.4(typescript@5.8.2):
     dependencies:
       '@better-auth/utils': 0.2.3
       '@better-fetch/fetch': 1.1.15
@@ -18155,7 +18155,7 @@ snapshots:
       better-call: 1.0.3
       defu: 6.1.4
       jose: 5.10.0
-      kysely: 0.27.5
+      kysely: 0.27.6
       nanostores: 0.11.4
       valibot: 1.0.0-beta.15(typescript@5.8.2)
       zod: 3.24.2
@@ -18967,9 +18967,9 @@ snapshots:
 
   dotenv@16.4.7: {}
 
-  drizzle-graphql@0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3))(graphql@16.10.0):
+  drizzle-graphql@0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3))(graphql@16.10.0):
     dependencies:
-      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3)
+      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3)
       graphql: 16.10.0
       graphql-parse-resolve-info: 4.13.0(graphql@16.10.0)
     transitivePeerDependencies:
@@ -18985,18 +18985,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3):
+  drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.11.11
       bun-types: 1.2.5
       gel: 2.0.0
-      kysely: 0.27.5
+      kysely: 0.27.6
       pg: 8.13.3
 
-  drizzle-zod@0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3))(zod@3.24.2):
+  drizzle-zod@0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.5)(pg@8.13.3)
+      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.13.3)
       zod: 3.24.2
 
   dunder-proto@1.0.1:
@@ -20033,7 +20033,7 @@ snapshots:
       lodash.merge: 4.6.2
       lucide-react: 0.473.0(react@19.0.0)
       next: 15.2.1(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(babel-plugin-react-compiler@19.0.0-beta-bafa41b-20250307)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      next-themes: 0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next-themes: 0.4.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       postcss-selector-parser: 7.0.0
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
@@ -21033,7 +21033,7 @@ snapshots:
 
   ky@1.7.5: {}
 
-  kysely@0.27.5: {}
+  kysely@0.27.6: {}
 
   langium@3.0.0:
     dependencies:
