@@ -46,7 +46,7 @@
     "framer-motion": "12.5.0",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
-    "lucide-react": "^0.479.0",
+    "lucide-react": "^0.482.0",
     "million": "^3.1.11",
     "next": "15.2.2",
     "next-safe-action": "7.10.4",
