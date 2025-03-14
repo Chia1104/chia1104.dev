@@ -20,6 +20,7 @@ export const getFeedBySlug = withDTO(async (db, slug: string) => {
     where: (feeds, { eq }) => eq(feeds.slug, slug),
     with: {
       content: true,
+      feedMeta: true,
     },
   });
   if (!feed) {
@@ -37,6 +38,7 @@ export const getFeedById = withDTO(async (db, feedId: number) => {
     where: (feeds, { eq }) => eq(feeds.id, feedId),
     with: {
       content: true,
+      feedMeta: true,
     },
   });
   if (!feed) {
@@ -328,9 +330,15 @@ export const getFeedMetaById = withDTO(
 
 export const createFeedMeta = withDTO(async (db, dto: InsertFeedMetaDTO) => {
   await db.transaction(async (trx) => {
-    await trx.insert(schema.feedMeta).values({
-      feedId: dto.feedId,
-      summary: dto.summary,
-    });
+    await trx.insert(schema.feedMeta).values(dto);
+  });
+});
+
+export const updateFeedMeta = withDTO(async (db, dto: InsertFeedMetaDTO) => {
+  await db.transaction(async (trx) => {
+    await trx
+      .update(schema.feedMeta)
+      .set(dto)
+      .where(eq(schema.feedMeta.feedId, dto.feedId));
   });
 });

@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
-import { getFeedMetaById, insertFeedMeta } from "@chia/api/services/feeds";
+import { insertFeedMeta, getFeedById } from "@chia/api/services/feeds";
 
 import { TaskID } from "./tasks.constant";
 import { env } from "./utils/env";
@@ -19,13 +19,13 @@ const requestSchema = z.object({
 });
 
 const SYSTEM_PROMPT =
-  "請幫我總結這篇文章的內容，並依照這篇文章的語言生成，需要有助於 SEO 的內容，最後不可超過 300 字。";
+  "請幫我總結這篇文章的內容，並依照這篇文章的語言生成，需要有助於 SEO 的內容，最後不可超過 250 字。";
 
 export const feedSummarizeTask = schemaTask({
   id: TaskID.FeedSummarize,
   schema: requestSchema,
   run: async ({ modal, system, feedID }) => {
-    const feedMeta = await getFeedMetaById(
+    const feed = await getFeedById(
       {
         cfBypassToken: env.CF_BYPASS_TOKEN,
         apiKey: env.CH_API_KEY,
@@ -35,10 +35,7 @@ export const feedSummarizeTask = schemaTask({
       }
     );
 
-    /**
-     * TODO: handle data revalidation
-     */
-    if (feedMeta?.summary) {
+    if (feed?.feedMeta?.summary || !feed?.published) {
       return;
     }
 
@@ -49,7 +46,7 @@ export const feedSummarizeTask = schemaTask({
         {
           role: "user",
           content: `目前的文章內容為：
-          ${feedMeta?.feed.content.source}
+          ${feed?.content.source}
         `,
         },
       ],

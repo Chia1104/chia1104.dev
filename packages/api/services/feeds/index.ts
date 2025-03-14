@@ -69,6 +69,17 @@ export const getFeedBySlug = withInternalRequest<FeedDetail, { slug: string }>(
   }
 );
 
+export const getFeedById = withInternalRequest<FeedDetail, { id: string }>(
+  async (internal_requestSecret, { id }, options) => {
+    return await serviceRequest({
+      isInternal: true,
+      internal_requestSecret,
+    })
+      .get(`admin/public/feeds:id/${id}`, options)
+      .json<FeedDetail>();
+  }
+);
+
 export const getMeta = withInternalRequest<{ total: number }>(
   async (internal_requestSecret, _dto, options) => {
     return await serviceRequest({

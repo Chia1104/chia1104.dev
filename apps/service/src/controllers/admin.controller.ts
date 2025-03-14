@@ -13,6 +13,7 @@ import {
   getFeedBySlug,
   getFeedMetaById,
   createFeedMeta,
+  getFeedById,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId, numericStringSchema } from "@chia/utils";
@@ -85,6 +86,29 @@ api.get("/public/feeds/:slug", async (c) => {
   }
   return c.json(feed);
 });
+
+api.get(
+  "/public/feeds:id/:id",
+  zValidator(
+    "param",
+    z.object({
+      id: numericStringSchema,
+    }),
+    (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }
+  ),
+  async (c) => {
+    const id = c.req.valid("param").id;
+    const feed = await getFeedById(c.var.db, id);
+    if (!feed) {
+      return c.json(errorGenerator(404), 404);
+    }
+    return c.json(feed);
+  }
+);
 
 api.get(
   "/public/feeds:meta/:id",
