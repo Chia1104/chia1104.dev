@@ -5,6 +5,7 @@ import type { FC } from "react";
 import { Tabs, Tab, Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import type { Locale } from "next-intl";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import meta from "@chia/meta";
@@ -18,7 +19,6 @@ import CurrentPlaying from "@/components/commons/current-playing";
 import LocaleSelector from "@/components/commons/locale-selector";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
-import type { I18N } from "@/utils/i18n";
 
 import HugeThanks from "./huge-thanks";
 
@@ -38,7 +38,7 @@ const Logo = () => (
   />
 );
 
-const Footer: FC<{ locale?: I18N }> = ({ locale }) => {
+const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   const t = useTranslations("theme");
   return (

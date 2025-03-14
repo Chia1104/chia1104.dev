@@ -5,7 +5,6 @@ import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import FeedNavigation from "@/components/blog/feed-navigation";
 import { getPosts, getNotes } from "@/services/feeds.service";
-import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const revalidate = 120;
 export const maxDuration = 60;
