@@ -8,7 +8,7 @@ export default defineConfig((opts) => ({
   format: ["esm"],
   tsconfig: "tsconfig.build.json",
   external: [/!^@chia\//],
-  noExternal: [/^@chia\//],
+  noExternal: [/^@chia\//, /^trigger\//],
   banner: {
     js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
   },

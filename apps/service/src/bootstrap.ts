@@ -20,6 +20,7 @@ import emailRoutes from "@/controllers/email.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
 import spotifyRoutes from "@/controllers/spotify.controller";
+import triggerRoutes from "@/controllers/trigger.controller";
 import trpcRoutes from "@/controllers/trpc.controller";
 import { env } from "@/env";
 import { maintenance } from "@/middlewares/maintenance.middleware";
@@ -147,6 +148,7 @@ const bootstrap = <TContext extends HonoContext>(
   app.route("/api/v1/ai", aiRoutes);
   app.route("/api/v1/spotify", spotifyRoutes);
   app.route("/api/v1/email", emailRoutes);
+  app.route("/api/v1/trigger", triggerRoutes);
 
   console.log(
     `Server is running on port ${port}, go to http://localhost:${port}`

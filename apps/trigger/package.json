@@ -23,5 +23,15 @@
     "@chia/tsconfig": "workspace:*",
     "@trigger.dev/build": "catalog:triggerdotdev",
     "typescript": "catalog:"
+  },
+  "exports": {
+    "./feed-summarize": {
+      "import": "./tasks/feed-summarize.ts",
+      "types": "./tasks/feed-summarize.ts"
+    },
+    "./constant": {
+      "import": "./tasks/tasks.constant.ts",
+      "types": "./tasks/tasks.constant.ts"
+    }
   }
 }
