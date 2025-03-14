@@ -34,6 +34,7 @@ export const apikeyVerify = (options?: {
               {
                 field: "api_key",
                 message: "API key not found",
+                code: "KEY_NOT_FOUND",
               },
             ]),
             404
@@ -44,6 +45,7 @@ export const apikeyVerify = (options?: {
               {
                 field: "api_key",
                 message: "API key is disabled",
+                code: "KEY_DISABLED",
               },
             ]),
             403
@@ -54,6 +56,7 @@ export const apikeyVerify = (options?: {
               {
                 field: "api_key",
                 message: "API key is expired",
+                code: "KEY_EXPIRED",
               },
             ]),
             403
@@ -64,6 +67,7 @@ export const apikeyVerify = (options?: {
               {
                 field: "api_key",
                 message: "API key is rate limited",
+                code: "RATE_LIMITED",
               },
             ]),
             429
@@ -74,6 +78,7 @@ export const apikeyVerify = (options?: {
               {
                 field: "api_key",
                 message: "API key usage exceeded",
+                code: "USAGE_EXCEEDED",
               },
             ]),
             403
