@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "pnpm dlx trigger.dev@latest dev",
     "deploy:trigger:staging": "pnpm dlx trigger.dev@latest deploy --env staging",
-    "deploy:trigger": "pnpm dlx trigger.dev@latest deploy"
+    "deploy:trigger": "pnpm dlx trigger.dev@latest deploy",
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
@@ -23,5 +24,15 @@
     "@chia/tsconfig": "workspace:*",
     "@trigger.dev/build": "catalog:triggerdotdev",
     "typescript": "catalog:"
+  },
+  "exports": {
+    "./feed-summarize": {
+      "import": "./tasks/feed-summarize.ts",
+      "types": "./tasks/feed-summarize.ts"
+    },
+    "./constant": {
+      "import": "./tasks/tasks.constant.ts",
+      "types": "./tasks/tasks.constant.ts"
+    }
   }
 }

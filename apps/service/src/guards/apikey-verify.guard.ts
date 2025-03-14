@@ -13,11 +13,25 @@ export const apikeyVerify = (options?: {
 }) =>
   createMiddleware<HonoContext>(async (c, next) => {
     const { permissions, projectId } = options ?? {};
+    const chApiKey = c.req.raw.headers.get(X_CH_API_KEY);
+
+    if (!chApiKey) {
+      return c.json(
+        errorGenerator(401, [
+          {
+            field: "api_key",
+            message: "Missing or invalid API key",
+          },
+        ]),
+        401
+      );
+    }
+
     const { data: apiKey, error: apiKeyError } = await tryCatch(
       auth.api.verifyApiKey({
         headers: c.req.raw.headers,
         body: {
-          key: c.req.raw.headers.get(X_CH_API_KEY) ?? "",
+          key: chApiKey,
           permissions,
         },
       })
@@ -84,7 +98,8 @@ export const apikeyVerify = (options?: {
             403
           );
       }
-      return c.json(errorGenerator(500), 500);
+      c.var.sentry.captureException(apiKeyError);
+      return c.json(errorGenerator(403), 403);
     }
 
     if (!apiKey.valid || !apiKey.key) {
