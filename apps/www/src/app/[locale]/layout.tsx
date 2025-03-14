@@ -15,7 +15,6 @@ import RootLayout from "@/components/commons/root-layout";
 import RootProvider from "@/components/commons/root-provider";
 import { routing } from "@/i18n/routing";
 import { initDayjs } from "@/utils/dayjs";
-import type { PageParamsWithLocale } from "@/utils/i18n";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -71,6 +70,7 @@ const Layout = async ({
   const messages = await getMessages();
   const timeZone = await getTimeZone();
   initDayjs(locale, timeZone);
+
   return (
     <RootLayout locale={locale}>
       <RootProvider messages={messages} timeZone={timeZone} locale={locale}>
@@ -79,8 +79,8 @@ const Layout = async ({
           {modal}
         </AppLayout>
         <Footer locale={locale} />
+        <AppPlugins />
       </RootProvider>
-      <AppPlugins />
     </RootLayout>
   );
 };

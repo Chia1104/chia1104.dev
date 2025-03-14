@@ -6,6 +6,7 @@ import { Alert, Button } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
 import { useChangeLocale } from "@/hooks/use-change-locale";
+import { Locale } from "@/utils/i18n";
 
 interface Props {
   className?: string;
@@ -22,12 +23,12 @@ const FeedTranslationWarning = (props: Props) => {
       className={props.className}
       color="warning"
       title={"Warning"}
-      description={t("not-translated", { locale: tl("zh-tw") })}
+      description={t("not-translated", { locale: tl(Locale.ZH_TW) })}
       onClose={() => setVisible(false)}
       isVisible={visible}
       endContent={
-        <Button size="sm" onPress={() => changeLocale("zh-tw")}>
-          {tl("zh-tw")}
+        <Button size="sm" onPress={() => changeLocale(Locale.ZH_TW)}>
+          {tl(Locale.ZH_TW)}
         </Button>
       }
     />

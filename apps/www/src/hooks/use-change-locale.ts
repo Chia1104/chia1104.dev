@@ -1,10 +1,11 @@
+import type { Locale } from "next-intl";
+
 import { useRouter, usePathname } from "@/i18n/routing";
-import { I18N } from "@/utils/i18n";
 
 export const useChangeLocale = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const changeLocale = (locale: I18N) => {
+  const changeLocale = (locale: Locale) => {
     router.push(pathname, { locale });
     router.refresh();
   };

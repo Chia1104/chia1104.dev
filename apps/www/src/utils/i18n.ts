@@ -1,23 +1,27 @@
-export const I18N = {
-  EN: "en",
-  ZH_TW: "zh-tw",
+import type { Locale as _Locale } from "next-intl";
+
+export const Locale = {
+  EN: "en-US",
+  ZH_TW: "zh-TW",
 } as const;
 
-export type I18N = (typeof I18N)[keyof typeof I18N];
-
-export type PropsWithLocale<T = unknown> = T & { locale?: I18N };
-
-export type PageParamsWithLocale<T = unknown> = Promise<T & { locale: I18N }>;
+/**
+ * @deprecated Use `Locale` from "next-intl" instead
+ * ```ts
+ * import type { Locale } from "next-intl";
+ * ```
+ */
+export type Locale = (typeof Locale)[keyof typeof Locale];
 
 /**
  * @deprecated
  * @param locale
  */
-export const localeToTimeZone = (locale: I18N) => {
+export const localeToTimeZone = (locale: _Locale) => {
   switch (locale) {
-    case I18N.ZH_TW:
+    case Locale.ZH_TW:
       return "Asia/Taipei";
-    case I18N.EN:
+    case Locale.EN:
       return "America/New_York";
   }
 };
