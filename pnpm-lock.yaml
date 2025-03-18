@@ -511,8 +511,8 @@ importers:
         specifier: catalog:triggerdotdev
         version: 3.3.17(zod@3.23.8)
       openai:
-        specifier: ^4.87.3
-        version: 4.87.3(ws@8.18.0)(zod@3.23.8)
+        specifier: ^4.87.4
+        version: 4.87.4(ws@8.18.0)(zod@3.23.8)
     devDependencies:
       '@chia/tsconfig':
         specifier: workspace:*
@@ -750,8 +750,8 @@ importers:
         specifier: 15.2.3
         version: 15.2.3(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(babel-plugin-react-compiler@19.0.0-beta-3229e95-20250315)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       openai:
-        specifier: ^4.87.3
-        version: 4.87.3(ws@8.18.0)(zod@3.24.2)
+        specifier: ^4.87.4
+        version: 4.87.4(ws@8.18.0)(zod@3.24.2)
     devDependencies:
       '@chia/eslint-config':
         specifier: workspace:*
@@ -9740,8 +9740,8 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@4.87.3:
-    resolution: {integrity: sha512-d2D54fzMuBYTxMW8wcNmhT1rYKcTfMJ8t+4KjH2KtvYenygITiGBgHoIrzHwnDQWW+C5oCA+ikIR2jgPCFqcKQ==}
+  openai@4.87.4:
+    resolution: {integrity: sha512-lsfM20jZY4A0lNexfoUAkfmrEXxaTXvv8OKYicpeAJUNHObpRgkvC7pxPgMnB6gc9ID8OCwzzhEhBpNy69UR7w==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -17567,13 +17567,13 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 22.13.5
+      '@types/node': 22.13.10
 
   '@types/cookie@0.6.0': {}
 
   '@types/cors@2.8.17':
     dependencies:
-      '@types/node': 22.13.5
+      '@types/node': 22.13.10
 
   '@types/css-font-loading-module@0.0.7': {}
 
@@ -17749,7 +17749,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 22.13.5
+      '@types/node': 22.13.10
 
   '@types/hast@3.0.4':
     dependencies:
@@ -17861,7 +17861,7 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 22.13.5
+      '@types/node': 22.13.10
 
   '@types/serve-static@1.15.7':
     dependencies:
@@ -17879,7 +17879,7 @@ snapshots:
 
   '@types/through@0.0.33':
     dependencies:
-      '@types/node': 22.13.5
+      '@types/node': 22.13.10
 
   '@types/tinycolor2@1.4.6': {}
 
@@ -22384,7 +22384,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.87.3(ws@8.18.0)(zod@3.23.8):
+  openai@4.87.4(ws@8.18.0)(zod@3.23.8):
     dependencies:
       '@types/node': 18.19.75
       '@types/node-fetch': 2.6.12
@@ -22399,7 +22399,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  openai@4.87.3(ws@8.18.0)(zod@3.24.2):
+  openai@4.87.4(ws@8.18.0)(zod@3.24.2):
     dependencies:
       '@types/node': 18.19.75
       '@types/node-fetch': 2.6.12
@@ -22849,7 +22849,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 22.13.5
+      '@types/node': 22.13.10
       long: 5.2.4
 
   proxy-addr@2.0.7:
