@@ -77,7 +77,7 @@
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
-    "drizzle-orm": "^0.40.0",
+    "drizzle-orm": "^0.40.1",
     "drizzle-zod": "^0.7.0",
     "pg": "^8.14.1"
   },
