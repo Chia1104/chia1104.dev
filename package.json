@@ -83,7 +83,7 @@
   },
   "devDependencies": {
     "@manypkg/cli": "^0.23.0",
-    "@playwright/test": "^1.51.0",
+    "@playwright/test": "^1.51.1",
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@turbo/gen": "^2.4.4",
