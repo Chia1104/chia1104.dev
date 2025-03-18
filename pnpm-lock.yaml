@@ -430,7 +430,7 @@ importers:
         version: 0.4.3(hono@4.7.4)(zod@3.24.2)
       drizzle-graphql:
         specifier: ^0.8.5
-        version: 0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0))(graphql@16.10.0)
+        version: 0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1))(graphql@16.10.0)
       formdata-node:
         specifier: ^6.0.3
         version: 6.0.3
@@ -942,13 +942,13 @@ importers:
         version: link:../ai
       drizzle-orm:
         specifier: ^0.40.0
-        version: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0)
+        version: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1)
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0))(zod@3.24.2)
+        version: 0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1))(zod@3.24.2)
       pg:
-        specifier: ^8.14.0
-        version: 8.14.0
+        specifier: ^8.14.1
+        version: 8.14.1
     devDependencies:
       '@chia/eslint-config':
         specifier: workspace:*
@@ -9933,9 +9933,6 @@ packages:
   pg-protocol@1.7.0:
     resolution: {integrity: sha512-hTK/mE36i8fDDhgDFjy6xNOG+LCorxLG3WO17tku+ij6sVHXh1jQUJ8hYAnRhNla4QVD2H8er/FOjc/+EgC6yQ==}
 
-  pg-protocol@1.7.1:
-    resolution: {integrity: sha512-gjTHWGYWsEgy9MsY0Gp6ZJxV24IjDqdpTW7Eh0x+WfJLFsm/TJx1MzL6T0D88mBvkpxotCQ6TwW6N+Kko7lhgQ==}
-
   pg-protocol@1.8.0:
     resolution: {integrity: sha512-jvuYlEkL03NRvOoyoRktBK7+qU5kOvlAwvmrH8sr3wbLrOdVWsRxQfz8mMy9sZFsqJ1hEWNfdWKI4SAmoL+j7g==}
 
@@ -9947,8 +9944,8 @@ packages:
     resolution: {integrity: sha512-cRL3JpS3lKMGsKaWndugWQoLOCoP+Cic8oseVcbr0qhPzYD5DWXK+RZ9LY9wxRf7RQia4SCwQlXk0q6FCPrVng==}
     engines: {node: '>=10'}
 
-  pg@8.14.0:
-    resolution: {integrity: sha512-nXbVpyoaXVmdqlKEzToFf37qzyeeh7mbiXsnoWvstSqohj88yaa/I/Rq/HEVn2QPSZEuLIJa/jSpRDyzjEx4FQ==}
+  pg@8.14.1:
+    resolution: {integrity: sha512-0TdbqfjwIun9Fm/r89oB7RFQ0bLgduAhiIqIXOsyKoiC/L54DbuAAzIEN/9Op0f1Po9X7iCPXGoa/Ah+2aI8Xw==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -17840,7 +17837,7 @@ snapshots:
   '@types/pg@8.6.1':
     dependencies:
       '@types/node': 22.13.5
-      pg-protocol: 1.7.1
+      pg-protocol: 1.8.0
       pg-types: 2.2.0
 
   '@types/prismjs@1.26.5': {}
@@ -19280,9 +19277,9 @@ snapshots:
 
   dotenv@16.4.7: {}
 
-  drizzle-graphql@0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0))(graphql@16.10.0):
+  drizzle-graphql@0.8.5(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1))(graphql@16.10.0):
     dependencies:
-      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0)
+      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1)
       graphql: 16.10.0
       graphql-parse-resolve-info: 4.13.0(graphql@16.10.0)
     transitivePeerDependencies:
@@ -19298,18 +19295,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0):
+  drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.11.11
       bun-types: 1.2.5
       gel: 2.0.0
       kysely: 0.27.6
-      pg: 8.14.0
+      pg: 8.14.1
 
-  drizzle-zod@0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0))(zod@3.24.2):
+  drizzle-zod@0.7.0(drizzle-orm@0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.0)
+      drizzle-orm: 0.40.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.0)(kysely@0.27.6)(pg@8.14.1)
       zod: 3.24.2
 
   dunder-proto@1.0.1:
@@ -22607,13 +22604,11 @@ snapshots:
 
   pg-numeric@1.0.2: {}
 
-  pg-pool@3.8.0(pg@8.14.0):
+  pg-pool@3.8.0(pg@8.14.1):
     dependencies:
-      pg: 8.14.0
+      pg: 8.14.1
 
   pg-protocol@1.7.0: {}
-
-  pg-protocol@1.7.1: {}
 
   pg-protocol@1.8.0: {}
 
@@ -22635,10 +22630,10 @@ snapshots:
       postgres-interval: 3.0.0
       postgres-range: 1.1.4
 
-  pg@8.14.0:
+  pg@8.14.1:
     dependencies:
       pg-connection-string: 2.7.0
-      pg-pool: 3.8.0(pg@8.14.0)
+      pg-pool: 3.8.0(pg@8.14.1)
       pg-protocol: 1.8.0
       pg-types: 2.2.0
       pgpass: 1.0.5
