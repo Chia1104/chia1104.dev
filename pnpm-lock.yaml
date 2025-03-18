@@ -883,8 +883,8 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(@types/react@19.0.11)(react@19.0.0)
       '@theguild/remark-mermaid':
-        specifier: ^0.2.0
-        version: 0.2.0(react@19.0.0)
+        specifier: ^0.3.0
+        version: 0.3.0(react@19.0.0)
       fumadocs-core:
         specifier: 'catalog:'
         version: 14.7.7(@types/react@19.0.11)(next@15.2.3(@opentelemetry/api@1.9.0)(@playwright/test@1.51.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -5736,10 +5736,10 @@ packages:
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
 
-  '@theguild/remark-mermaid@0.2.0':
-    resolution: {integrity: sha512-o8n57TJy0OI4PCrNw8z6S+vpHtrwoQZzTA5Y3fL0U1NDRIoMg/78duWgEBFsCZcWM1G6zjE91yg1aKCsDwgE2Q==}
+  '@theguild/remark-mermaid@0.3.0':
+    resolution: {integrity: sha512-Fy1J4FSj8totuHsHFpaeWyWRaRSIvpzGTRoEfnNJc1JmLV9uV70sYE3zcT+Jj5Yw20Xq4iCsiT+3Ho49BBZcBQ==}
     peerDependencies:
-      react: ^18.2.0
+      react: ^18.2.0 || ^19.0.0
 
   '@tootallnate/quickjs-emscripten@0.23.0':
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
@@ -17373,7 +17373,7 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.0
 
-  '@theguild/remark-mermaid@0.2.0(react@19.0.0)':
+  '@theguild/remark-mermaid@0.3.0(react@19.0.0)':
     dependencies:
       mermaid: 11.4.1
       react: 19.0.0

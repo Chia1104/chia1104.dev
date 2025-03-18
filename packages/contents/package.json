@@ -49,7 +49,7 @@
     "@fumadocs/mdx-remote": "catalog:",
     "@heroui/react": "2.7.5",
     "@mdx-js/react": "^3.1.0",
-    "@theguild/remark-mermaid": "^0.2.0",
+    "@theguild/remark-mermaid": "^0.3.0",
     "fumadocs-core": "catalog:",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
