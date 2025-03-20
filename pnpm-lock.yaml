@@ -738,8 +738,8 @@ importers:
   packages/ai:
     dependencies:
       '@ai-sdk/openai':
-        specifier: ^1.2.6
-        version: 1.2.6(zod@3.24.2)
+        specifier: ^1.2.7
+        version: 1.2.7(zod@3.24.2)
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1242,8 +1242,8 @@ packages:
   '@adobe/css-tools@4.4.1':
     resolution: {integrity: sha512-12WGKBQzjUAI4ayyF4IAtfw2QR/IDoqk6jTddXDhtYTJF9ASmoE1zst7cVtP0aL/F1jUJL5r+JxKXKEgHNbEUQ==}
 
-  '@ai-sdk/openai@1.2.6':
-    resolution: {integrity: sha512-0HxWjE3NDABAxu6u33Q253a4N+xxOCD/M2HeZuALC1O2gjmzLeytxjSbDA6QU0PnVN0uaYLOc2YT/keFF5eGrg==}
+  '@ai-sdk/openai@1.2.7':
+    resolution: {integrity: sha512-0yYAr7wFrRAoP4BnZ5g4kL6BpsLzDN4m4cmw8C273FZn3Sqz7LsJ3h2YJv2EVB12GZDsgzmsRlMkLeKZI5JCPw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -12187,10 +12187,10 @@ snapshots:
 
   '@adobe/css-tools@4.4.1': {}
 
-  '@ai-sdk/openai@1.2.6(zod@3.24.2)':
+  '@ai-sdk/openai@1.2.7(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.0.12
-      '@ai-sdk/provider-utils': 2.1.14(zod@3.24.2)
+      '@ai-sdk/provider-utils': 2.1.15(zod@3.24.2)
       zod: 3.24.2
 
   '@ai-sdk/provider-utils@2.1.14(zod@3.24.2)':
