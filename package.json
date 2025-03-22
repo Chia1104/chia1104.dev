@@ -69,7 +69,7 @@
   },
   "packageManager": "pnpm@10.6.5",
   "dependencies": {
-    "@better-fetch/fetch": "^1.1.15",
+    "@better-fetch/fetch": "^1.1.17",
     "@t3-oss/env-core": "^0.12.0",
     "client-only": "^0.0.1",
     "dayjs": "^1.11.13",
