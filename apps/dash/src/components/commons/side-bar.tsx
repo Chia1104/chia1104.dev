@@ -11,6 +11,7 @@ import type {
 import { Listbox, Tooltip, ListboxItem, ListboxSection } from "@heroui/react";
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 
 export const SidebarItemType = {
@@ -100,6 +101,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
         return (
           <ListboxItem
             {...item}
+            as={Link}
             href={isNestType ? undefined : href}
             key={item.key}
             classNames={{
@@ -221,6 +223,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
         return (
           <ListboxItem
             {...item}
+            as={Link}
             key={href}
             href={href}
             endContent={

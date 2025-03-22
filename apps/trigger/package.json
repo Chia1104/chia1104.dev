@@ -18,7 +18,7 @@
     "@chia/utils": "workspace:^",
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
-    "openai": "^4.87.3"
+    "openai": "^4.89.0"
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",

@@ -67,9 +67,9 @@
     "node": ">=20.6",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@10.6.4",
+  "packageManager": "pnpm@10.6.5",
   "dependencies": {
-    "@better-fetch/fetch": "^1.1.15",
+    "@better-fetch/fetch": "^1.1.17",
     "@t3-oss/env-core": "^0.12.0",
     "client-only": "^0.0.1",
     "dayjs": "^1.11.13",
@@ -99,7 +99,7 @@
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.5.0",
     "msw": "^2.7.3",
-    "nx": "^20.6.1",
+    "nx": "^20.6.2",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "shell-quote": "^1.8.2",
