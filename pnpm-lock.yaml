@@ -135,8 +135,8 @@ importers:
         specifier: ^3.0.9
         version: 3.0.9(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.13.1)(happy-dom@17.4.4)(jiti@1.21.7)(jsdom@26.0.0)(msw@2.7.3(@types/node@22.13.1)(typescript@5.8.2))(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.0))
       bun-types:
-        specifier: ^1.2.5
-        version: 1.2.5
+        specifier: ^1.2.6
+        version: 1.2.6
       cross-env:
         specifier: 7.0.3
         version: 7.0.3
@@ -430,7 +430,7 @@ importers:
         version: 0.4.3(hono@4.7.5)(zod@3.24.2)
       drizzle-graphql:
         specifier: ^0.8.5
-        version: 0.8.5(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(graphql@16.10.0)
+        version: 0.8.5(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(graphql@16.10.0)
       formdata-node:
         specifier: ^6.0.3
         version: 6.0.3
@@ -942,10 +942,10 @@ importers:
         version: link:../ai
       drizzle-orm:
         specifier: ^0.41.0
-        version: 0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1)
+        version: 0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1)
       drizzle-zod:
         specifier: ^0.7.0
-        version: 0.7.0(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(zod@3.24.2)
+        version: 0.7.0(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(zod@3.24.2)
       pg:
         specifier: ^8.14.1
         version: 8.14.1
@@ -6059,9 +6059,6 @@ packages:
   '@types/node@22.13.11':
     resolution: {integrity: sha512-iEUCUJoU0i3VnrCmgoWCXttklWcvoCIx4jzcP22fioIVSdTmjgoEvmAO/QPw6TcS9k5FrNgn4w7q5lGOd1CT5g==}
 
-  '@types/node@22.13.5':
-    resolution: {integrity: sha512-+lTU0PxZXn0Dr1NBtC7Y8cR21AJr87dLLU953CWA6pMxxv/UDc7jYAY90upcrie1nRcD6XNG5HOYEDtgW5TxAg==}
-
   '@types/pg-pool@2.0.6':
     resolution: {integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ==}
 
@@ -6690,8 +6687,8 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
-  bun-types@1.2.5:
-    resolution: {integrity: sha512-3oO6LVGGRRKI4kHINx5PIdIgnLRb7l/SprhzqXapmoYkFl5m4j6EvALvbDVuuBFaamB46Ap6HCUxIXNLCGy+tg==}
+  bun-types@1.2.6:
+    resolution: {integrity: sha512-FbCKyr5KDiPULUzN/nm5oqQs9nXCHD8dVc64BArxJadCvbNzAI6lUWGh9fSJZWeDIRD38ikceBU8Kj/Uh+53oQ==}
 
   bundle-require@5.1.0:
     resolution: {integrity: sha512-3WrrOuZiyaaZPWiEt4G3+IffISVC9HYlWueJEBWED4ZH4aIAC2PnkdnuRrR94M+w6yGWn4AglWtJtBI8YqvgoA==}
@@ -17752,7 +17749,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 22.13.1
+      '@types/node': 22.13.11
 
   '@types/hast@3.0.4':
     dependencies:
@@ -17808,7 +17805,7 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 18.19.81
+      '@types/node': 22.13.11
       form-data: 4.0.2
 
   '@types/node@18.19.81':
@@ -17820,10 +17817,6 @@ snapshots:
       undici-types: 6.20.0
 
   '@types/node@22.13.11':
-    dependencies:
-      undici-types: 6.20.0
-
-  '@types/node@22.13.5':
     dependencies:
       undici-types: 6.20.0
 
@@ -17882,7 +17875,7 @@ snapshots:
 
   '@types/through@0.0.33':
     dependencies:
-      '@types/node': 22.13.1
+      '@types/node': 22.13.11
 
   '@types/tinycolor2@1.4.6': {}
 
@@ -17897,7 +17890,7 @@ snapshots:
 
   '@types/ws@8.5.14':
     dependencies:
-      '@types/node': 22.13.1
+      '@types/node': 22.13.11
 
   '@typescript-eslint/eslint-plugin@8.28.0(@typescript-eslint/parser@8.28.0(eslint@9.23.0(jiti@1.21.7))(typescript@5.8.2))(eslint@9.23.0(jiti@1.21.7))(typescript@5.8.2)':
     dependencies:
@@ -18551,9 +18544,9 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bun-types@1.2.5:
+  bun-types@1.2.6:
     dependencies:
-      '@types/node': 22.13.5
+      '@types/node': 22.13.11
       '@types/ws': 8.5.14
 
   bundle-require@5.1.0(esbuild@0.25.0):
@@ -19282,9 +19275,9 @@ snapshots:
 
   dotenv@16.4.7: {}
 
-  drizzle-graphql@0.8.5(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(graphql@16.10.0):
+  drizzle-graphql@0.8.5(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(graphql@16.10.0):
     dependencies:
-      drizzle-orm: 0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1)
+      drizzle-orm: 0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1)
       graphql: 16.10.0
       graphql-parse-resolve-info: 4.13.0(graphql@16.10.0)
     transitivePeerDependencies:
@@ -19300,18 +19293,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1):
+  drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.11.11
-      bun-types: 1.2.5
+      bun-types: 1.2.6
       gel: 2.0.1
       kysely: 0.27.6
       pg: 8.14.1
 
-  drizzle-zod@0.7.0(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(zod@3.24.2):
+  drizzle-zod@0.7.0(drizzle-orm@0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.5)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1)
+      drizzle-orm: 0.41.0(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.6)(gel@2.0.1)(kysely@0.27.6)(pg@8.14.1)
       zod: 3.24.2
 
   dunder-proto@1.0.1:
