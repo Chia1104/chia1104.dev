@@ -5,7 +5,7 @@ packages:
   - "tests/*"
 
 catalog:
-  "@tanstack/react-query": ^5.69.0
+  "@tanstack/react-query": ^5.70.0
   "@trpc/client": ^11.0.1
   "@trpc/react-query": ^11.0.1
   "@trpc/server": ^11.0.1
@@ -25,8 +25,8 @@ catalogs:
     "@types/react": ^18.3.20
     "@types/react-dom": ^18.3.5
   react19:
-    react: 19.0.0
-    react-dom: 19.0.0
+    react: 19.1.0
+    react-dom: 19.1.0
     "@types/react": 19.0.12
     "@types/react-dom": 19.0.4
     "babel-plugin-react-compiler": beta
