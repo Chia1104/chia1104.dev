@@ -420,8 +420,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0(hono@4.7.5)
       '@hono/sentry':
-        specifier: ^1.2.0
-        version: 1.2.0(hono@4.7.5)
+        specifier: ^1.2.1
+        version: 1.2.1(hono@4.7.5)
       '@hono/trpc-server':
         specifier: ^0.3.4
         version: 0.3.4(@trpc/server@11.0.1(typescript@5.8.2))(hono@4.7.5)
@@ -2995,8 +2995,8 @@ packages:
     peerDependencies:
       hono: '*'
 
-  '@hono/sentry@1.2.0':
-    resolution: {integrity: sha512-9mS8GrkGtR4YxM1CViL4Ft8LFQ9YhCoXeqKnUA1AUmrvA5PhUU/V+xoo8Autw0nVriin3liX5/lPrwWz3muwiw==}
+  '@hono/sentry@1.2.1':
+    resolution: {integrity: sha512-nH72brmJDSmX9jeNhHAMcdW/QCYKH00G0BMSDKiE2FuGQaR4pONPuzzM24qirjqyHcL8NDdwBJ3irE9/IsDptA==}
     peerDependencies:
       hono: '>=3.*'
 
@@ -14138,7 +14138,7 @@ snapshots:
     dependencies:
       hono: 4.7.5
 
-  '@hono/sentry@1.2.0(hono@4.7.5)':
+  '@hono/sentry@1.2.1(hono@4.7.5)':
     dependencies:
       hono: 4.7.5
       toucan-js: 4.1.1
