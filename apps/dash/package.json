@@ -19,7 +19,7 @@
     "clean": "git clean -xdf .next .turbo node_modules .cache"
   },
   "dependencies": {
-    "@ai-sdk/react": "^1.2.2",
+    "@ai-sdk/react": "^1.2.3",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
@@ -46,7 +46,7 @@
     "framer-motion": "12.6.2",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
-    "lucide-react": "^0.484.0",
+    "lucide-react": "^0.485.0",
     "million": "^3.1.11",
     "next": "15.2.4",
     "next-safe-action": "7.10.4",
@@ -54,7 +54,7 @@
     "next-view-transitions": "^0.3.4",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "react-hook-form": "^7.54.2",
+    "react-hook-form": "^7.55.0",
     "react-medium-image-zoom": "^5.2.14",
     "recharts": "^2.15.1",
     "sharp": "0.33.5",
