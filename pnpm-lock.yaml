@@ -367,8 +367,8 @@ importers:
         specifier: ^16.1.0
         version: 16.1.0(postcss@8.5.3)
       tailwind-scrollbar:
-        specifier: ^4.0.1
-        version: 4.0.1(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2)))
+        specifier: ^4.0.2
+        version: 4.0.2(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2)))
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2))
@@ -723,8 +723,8 @@ importers:
         specifier: ^16.1.0
         version: 16.1.0(postcss@8.5.3)
       tailwind-scrollbar:
-        specifier: ^4.0.1
-        version: 4.0.1(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2)))
+        specifier: ^4.0.2
+        version: 4.0.2(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2)))
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2))
@@ -11098,8 +11098,8 @@ packages:
   tailwind-merge@3.0.2:
     resolution: {integrity: sha512-l7z+OYZ7mu3DTqrL88RiKrKIqO3NcpEO8V/Od04bNpvk0kiIFndGEoqfuzvj4yuhRkHKjRkII2z+KS2HfPcSxw==}
 
-  tailwind-scrollbar@4.0.1:
-    resolution: {integrity: sha512-j2ZfUI7p8xmSQdlqaCxEb4Mha8ErvWjDVyu2Ke4IstWprQ/6TmIz1GSLE62vsTlXwnMLYhuvbFbIFzaJGOGtMg==}
+  tailwind-scrollbar@4.0.2:
+    resolution: {integrity: sha512-wAQiIxAPqk0MNTPptVe/xoyWi27y+NRGnTwvn4PQnbvB9kp8QUBiGl/wsfoVBHnQxTmhXJSNt9NHTmcz9EivFA==}
     engines: {node: '>=12.13.0'}
     peerDependencies:
       tailwindcss: 4.x
@@ -24004,7 +24004,7 @@ snapshots:
 
   tailwind-merge@3.0.2: {}
 
-  tailwind-scrollbar@4.0.1(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2))):
+  tailwind-scrollbar@4.0.2(react@19.1.0)(tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2))):
     dependencies:
       prism-react-renderer: 2.4.1(react@19.1.0)
       tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.11.11(@swc/helpers@0.5.15))(@types/node@22.13.11)(typescript@5.8.2))
