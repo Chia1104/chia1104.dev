@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "hash",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "rsa-hash": "node rsa-hash.js",
+    "buffer-key": "node --env-file=.env buffer-key.js"
+  }
+}
