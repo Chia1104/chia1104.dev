@@ -15,24 +15,24 @@ export const DEFAULT_SYSTEM_PROMPT =
 
 type Options = Parameters<typeof streamText>[0];
 
-export const createModal = (request: BaseRequest) => {
-  switch (request.modal.provider) {
+export const createModel = (request: BaseRequest) => {
+  switch (request.model.provider) {
     case Provider.OpenAI:
       return createOpenAI({
         apiKey: request.authToken,
-      })(request.modal.id);
+      })(request.model.id);
     case Provider.Anthropic:
       return createAnthropic({
         apiKey: request.authToken,
-      })(request.modal.id);
+      })(request.model.id);
     case Provider.Google:
       return createGoogleGenerativeAI({
         apiKey: request.authToken,
-      })(request.modal.id);
+      })(request.model.id);
     case Provider.DeepSeek:
       return createDeepSeek({
         apiKey: request.authToken,
-      })(request.modal.id);
+      })(request.model.id);
     default:
       throw new Error("Invalid provider");
   }
@@ -43,7 +43,7 @@ export const streamGeneratedText = (
   options?: Partial<Options>
 ) =>
   streamText({
-    model: createModal(request),
+    model: createModel(request),
     system: request.system ?? DEFAULT_SYSTEM_PROMPT,
     messages: convertToCoreMessages(request.messages),
     ...options,

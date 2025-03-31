@@ -91,7 +91,7 @@ api.post(
   (c) => {
     c.header("Content-Type", "text/plain; charset=utf-8");
     const result = streamGeneratedText({
-      modal: c.req.valid("json").modal,
+      model: c.req.valid("json").model,
       messages: c.req.valid("json").messages,
       authToken: c.get(AI_AUTH_TOKEN),
       system: c.req.valid("json").system,

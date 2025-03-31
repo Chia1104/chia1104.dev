@@ -44,10 +44,10 @@ export const ai = (provider?: Provider) =>
       });
     }
     const { data: json } = await tryCatch(
-      c.req.json<{ modal: { provider: Provider } }>()
+      c.req.json<{ model: { provider: Provider } }>()
     );
     const { data: authToken } = await tryCatch(
-      getApiKey(c, provider ?? json?.modal?.provider)
+      getApiKey(c, provider ?? json?.model?.provider)
     );
     if (!authToken) {
       return c.json(

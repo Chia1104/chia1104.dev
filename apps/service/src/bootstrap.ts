@@ -32,7 +32,6 @@ const bootstrap = <TContext extends HonoContext>(
   app: Hono<TContext>,
   port: number
 ) => {
-  app.use("*", timeout(env.TIMEOUT_MS));
   /**
    * logger middleware
    */
@@ -140,15 +139,31 @@ const bootstrap = <TContext extends HonoContext>(
   /**
    * Routes
    */
-  app.route("/api/v1/auth", authRoutes);
-  app.route("/api/v1/admin", adminRoutes);
-  app.route("/api/v1/feeds", feedsRoutes);
-  app.route("/api/v1/trpc", trpcRoutes);
-  app.route("/api/v1/health", healthRoutes);
+  app
+    .use("/api/v1/auth", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/auth", authRoutes);
+  app
+    .use("/api/v1/admin", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/admin", adminRoutes);
+  app
+    .use("/api/v1/feeds", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/feeds", feedsRoutes);
+  app
+    .use("/api/v1/trpc", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/trpc", trpcRoutes);
+  app
+    .use("/api/v1/health", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/health", healthRoutes);
   app.route("/api/v1/ai", aiRoutes);
-  app.route("/api/v1/spotify", spotifyRoutes);
-  app.route("/api/v1/email", emailRoutes);
-  app.route("/api/v1/trigger", triggerRoutes);
+  app
+    .use("/api/v1/spotify", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/spotify", spotifyRoutes);
+  app
+    .use("/api/v1/email", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/email", emailRoutes);
+  app
+    .use("/api/v1/trigger", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/trigger", triggerRoutes);
 
   console.log(
     `Server is running on port ${port}, go to http://localhost:${port}`

@@ -9,7 +9,7 @@ import {
 } from "@/services/ai/hooks";
 import { useAIStore } from "@/store/ai.store";
 
-import { Modal } from "../ai/modal";
+import { Model } from "../ai/model";
 
 export const GenerateFeedSlug = ({
   title,
@@ -22,7 +22,7 @@ export const GenerateFeedSlug = ({
 }) => {
   const action = useAIStore((state) => state);
   const generate = useGenerateFeedSlug(
-    action.getModal("feed-slug"),
+    action.getModel("feed-slug"),
     { title },
     {
       onError: (error) => {
@@ -38,7 +38,7 @@ export const GenerateFeedSlug = ({
   );
 
   return (
-    <Modal
+    <Model
       isLoading={generate.isLoading}
       size="sm"
       variant="flat"
@@ -57,13 +57,13 @@ export const GenerateFeedDescription = ({
   onSuccess,
   preGenerate,
 }: {
-  input: string;
+  input: { title?: string; content?: string };
   onSuccess?: (data: string) => void;
   preGenerate?: () => void;
 }) => {
   const action = useAIStore((state) => state);
   const generate = useGenerateFeedDescription(
-    action.getModal("feed-description"),
+    action.getModel("feed-description"),
     input,
     {
       onError: (error) => {
@@ -79,7 +79,7 @@ export const GenerateFeedDescription = ({
   );
 
   return (
-    <Modal
+    <Model
       isLoading={generate.isLoading}
       size="sm"
       variant="flat"
@@ -88,7 +88,9 @@ export const GenerateFeedDescription = ({
       isIconOnly
       onAction={() => {
         preGenerate?.();
-        void generate.complete(`My current title is ${input}`);
+        void generate.complete(
+          `my current title is ${input.title} and my current content is ${input.content}`
+        );
       }}
     />
   );
@@ -105,7 +107,7 @@ export const GenerateFeedContent = ({
 }) => {
   const action = useAIStore((state) => state);
   const generate = useGenerateFeedContent(
-    action.getModal("feed-content"),
+    action.getModel("feed-content"),
     input,
     {
       onError: (error) => {
@@ -121,7 +123,7 @@ export const GenerateFeedContent = ({
   );
 
   return (
-    <Modal
+    <Model
       workspace="feed-content"
       isLoading={generate.isLoading}
       size="sm"

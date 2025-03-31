@@ -1,6 +1,6 @@
 "use client";
 
-import { DeepSeekModal } from "@chia/ai/types";
+import { DeepSeekModel } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 
@@ -10,9 +10,9 @@ const Default = () => {
   return (
     <ErrorBoundary>
       <AiForm
-        modal={{
+        model={{
           provider: Provider.DeepSeek,
-          id: DeepSeekModal["deepseek-r1"],
+          id: DeepSeekModel["deepseek-r1"],
         }}
       />
     </ErrorBoundary>
