@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 
 import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
 
+import Background from "@/components/commons/background";
 import RootLayout from "@/components/commons/root-layout";
 
 import RootProvider from "../components/commons/root-provider";
@@ -32,7 +33,11 @@ export const metadata: Metadata = {
 export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <RootLayout>
-      <RootProvider headers={await headers()}>{children}</RootProvider>
+      <RootProvider headers={await headers()}>
+        {" "}
+        <Background />
+        {children}
+      </RootProvider>
     </RootLayout>
   );
 }
