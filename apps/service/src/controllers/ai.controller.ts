@@ -19,7 +19,7 @@ import { errorGenerator } from "@chia/utils";
 
 import { env } from "@/env";
 import { ai, AI_AUTH_TOKEN } from "@/guards/ai.guard";
-import { verifyAuth } from "@/middlewares/auth.middleware";
+import { verifyAuth } from "@/guards/auth.guard";
 import { errorResponse } from "@/utils/error.util";
 
 const api = new Hono<HonoContext>();
