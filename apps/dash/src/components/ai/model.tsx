@@ -11,13 +11,15 @@ import {
   PopoverContent,
   ScrollShadow,
   Tooltip,
+  Chip,
 } from "@heroui/react";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, Eye, FileText, Brain, Globe } from "lucide-react";
 
 import type { Model as TModel } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import useDarkMode from "@chia/ui/utils/use-theme";
 
+import type { ModelFeatures } from "@/store/ai.store";
 import type { Workspace } from "@/store/ai.store";
 import { useAIStore } from "@/store/ai.store";
 
@@ -47,6 +49,42 @@ const Icon = ({ provider }: { provider: Provider }) => {
     default:
       return isDarkMode ? <OpenAI /> : <OpenAILight />;
   }
+};
+
+const FeaturesList = ({ features }: { features?: ModelFeatures }) => {
+  if (!features) return null;
+  return (
+    <div className="flex items-center gap-2">
+      {features.reasoning && (
+        <Tooltip content="Reasoning">
+          <Chip color="primary" variant="flat" size="sm" aria-label="Reasoning">
+            <Brain size={12} />
+          </Chip>
+        </Tooltip>
+      )}
+      {features.image && (
+        <Tooltip content="Image">
+          <Chip color="secondary" variant="flat" size="sm" aria-label="Image">
+            <Eye size={12} />
+          </Chip>
+        </Tooltip>
+      )}
+      {features.pdf && (
+        <Tooltip content="PDF">
+          <Chip color="warning" variant="flat" size="sm" aria-label="PDF">
+            <FileText size={12} />
+          </Chip>
+        </Tooltip>
+      )}
+      {features.search && (
+        <Tooltip content="Search">
+          <Chip color="success" variant="flat" size="sm" aria-label="Search">
+            <Globe size={12} />
+          </Chip>
+        </Tooltip>
+      )}
+    </div>
+  );
 };
 
 export const Model = ({
@@ -104,13 +142,19 @@ export const Model = ({
               {options.map((option) => (
                 <MenuItem
                   key={option.id}
-                  description={option.provider}
-                  isReadOnly={!option.enabled}>
-                  <span className="flex items-center gap-2">
-                    <Icon provider={option.provider} />
-                    {option.name}
-                  </span>
-                </MenuItem>
+                  classNames={{
+                    wrapper: "gap-2",
+                  }}
+                  description={<FeaturesList features={option.features} />}
+                  title={
+                    <span className="flex items-center gap-2">
+                      <Icon provider={option.provider} />
+                      {option.name}
+                    </span>
+                  }
+                  isReadOnly={!option.enabled}
+                  aria-label={option.name}
+                />
               ))}
             </Menu>
           </ScrollShadow>

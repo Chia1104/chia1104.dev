@@ -17,7 +17,8 @@ export type Workspace =
   | "feed-description"
   | "feed-image"
   | "feed-slug"
-  | "feed-content";
+  | "feed-content"
+  | "chat";
 
 const DEFAULT_MODAL: Record<Workspace, Model> = {
   "feed-title": {
@@ -40,6 +41,10 @@ const DEFAULT_MODAL: Record<Workspace, Model> = {
     provider: Provider.OpenAI,
     id: OpenAIModel["gpt-4o-mini"],
   },
+  chat: {
+    provider: Provider.OpenAI,
+    id: OpenAIModel["gpt-4o-mini"],
+  },
 };
 
 const DEFAULT_OPTIONS: ModalOption[] = [
@@ -48,18 +53,22 @@ const DEFAULT_OPTIONS: ModalOption[] = [
     name: "Gemini 2.0 Flash",
     provider: Provider.Google,
     id: GoogleModel["gemini-2.0-flash"],
+    features: {
+      image: true,
+      search: true,
+      pdf: true,
+    },
   },
   {
     enabled: true,
     name: "Claude 3.7 Sonnet",
     provider: Provider.Anthropic,
     id: AnthropicModel["claude-3-7-sonnet"],
-  },
-  {
-    enabled: true,
-    name: "Claude 3.5 Haiku",
-    provider: Provider.Anthropic,
-    id: AnthropicModel["claude-3-5-haiku"],
+    features: {
+      image: true,
+      search: true,
+      pdf: true,
+    },
   },
   {
     enabled: true,
@@ -72,43 +81,60 @@ const DEFAULT_OPTIONS: ModalOption[] = [
     name: "gpt 4o",
     provider: Provider.OpenAI,
     id: OpenAIModel["gpt-4o"],
-  },
-  {
-    enabled: true,
-    name: "gpt 4",
-    provider: Provider.OpenAI,
-    id: OpenAIModel["gpt-4"],
+    features: {
+      image: true,
+    },
   },
   {
     enabled: true,
     name: "o3 mini",
     provider: Provider.OpenAI,
     id: OpenAIModel["o3-mini"],
+    features: {
+      reasoning: true,
+    },
   },
   {
     enabled: true,
     name: "o1 mini",
     provider: Provider.OpenAI,
     id: OpenAIModel["o1-mini"],
+    features: {
+      reasoning: true,
+    },
   },
   {
-    enabled: true,
+    enabled: false,
     name: "o1",
     provider: Provider.OpenAI,
     id: OpenAIModel.o1,
+    features: {
+      reasoning: true,
+    },
   },
   {
-    enabled: true,
+    enabled: false,
     name: "DeepSeek R1",
     provider: Provider.DeepSeek,
     id: DeepSeekModel["deepseek-r1"],
+    features: {
+      reasoning: true,
+    },
   },
 ];
+
+export interface ModelFeatures {
+  reasoning?: boolean;
+  image?: boolean;
+  pdf?: boolean;
+  search?: boolean;
+}
 
 type ModalOption = {
   enabled: boolean;
   name: string;
   description?: string;
+  features?: ModelFeatures;
 } & Model;
 
 export interface AIAction {
