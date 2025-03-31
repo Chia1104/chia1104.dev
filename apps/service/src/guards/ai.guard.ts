@@ -40,9 +40,11 @@ export const ai = (provider?: Provider) =>
         "Retry-After": "3600",
       });
     }
-    const { data: json } = await tryCatch(c.req.json<{ provider: Provider }>());
+    const { data: json } = await tryCatch(
+      c.req.json<{ modal: { provider: Provider } }>()
+    );
     const { data: authToken } = await tryCatch(
-      getApiKey(c, provider ?? json?.provider)
+      getApiKey(c, provider ?? json?.modal?.provider)
     );
     if (!authToken) {
       return c.json(

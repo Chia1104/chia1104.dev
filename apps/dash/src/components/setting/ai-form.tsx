@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Input, Button, Divider } from "@heroui/react";
+import { Input, Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { HTTPError } from "ky";
@@ -11,7 +11,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { OpenAIModal, Provider } from "@chia/ai/types";
+import type { BaseRequest } from "@chia/ai/types";
+import { Provider } from "@chia/ai/types";
 import {
   FormControl,
   FormField,
@@ -25,15 +26,21 @@ import { serviceRequest } from "@chia/utils";
 
 const openaiApiKeySchema = z.object({
   apiKey: z.string().min(1),
+  provider: z.nativeEnum(Provider).optional(),
 });
 
 type SaveOpenaiApiKeyDTO = z.infer<typeof openaiApiKeySchema>;
 
-const OpenaiForm = () => {
+interface Props {
+  modal: BaseRequest["modal"];
+}
+
+const AiForm = ({ modal }: Props) => {
   const [show, setShow] = useState(false);
   const form = useForm<SaveOpenaiApiKeyDTO>({
     defaultValues: {
       apiKey: "",
+      provider: modal.provider,
     },
     resolver: zodResolver(openaiApiKeySchema),
   });
@@ -56,8 +63,8 @@ const OpenaiForm = () => {
       await serviceRequest().post("ai/generate", {
         json: {
           modal: {
-            provider: Provider.OpenAI,
-            id: OpenAIModal["gpt-4o-mini"],
+            provider: modal.provider,
+            id: modal.id,
           },
           messages: [{ role: "user", content: "Hello, AI!" }],
         },
@@ -88,7 +95,7 @@ const OpenaiForm = () => {
             <FormItem>
               <FormControl>
                 <Input
-                  label="Openai API Key"
+                  label="API Key"
                   labelPlacement="outside"
                   placeholder="API Key"
                   isInvalid={fieldState.invalid}
@@ -114,7 +121,6 @@ const OpenaiForm = () => {
           isLoading={saveApiKey.isPending}>
           Save
         </Button>
-        <Divider className="w-full" />
         <div className="w-full flex justify-between items-center">
           <label className={cn("text-sm text-gray-500")}>
             Check the API key
@@ -131,4 +137,4 @@ const OpenaiForm = () => {
   );
 };
 
-export default OpenaiForm;
+export default AiForm;
