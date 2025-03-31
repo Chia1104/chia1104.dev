@@ -14,7 +14,7 @@ import {
 } from "@heroui/react";
 import { ChevronDownIcon } from "lucide-react";
 
-import type { Modal as TModal } from "@chia/ai/types";
+import type { Model as TModel } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import useDarkMode from "@chia/ui/utils/use-theme";
 
@@ -30,7 +30,7 @@ import OpenAILight from "../icon/openai.light";
 
 interface Props {
   workspace: Workspace;
-  onAction: (modal: TModal) => void;
+  onAction: (modal: TModel) => void;
 }
 
 const Icon = ({ provider }: { provider: Provider }) => {
@@ -49,7 +49,7 @@ const Icon = ({ provider }: { provider: Provider }) => {
   }
 };
 
-export const Modal = ({
+export const Model = ({
   workspace,
   onAction,
   ...props
@@ -58,7 +58,7 @@ export const Modal = ({
   const options = useAIStore((state) => state.options);
 
   const handlePress = () => {
-    onAction(action.getModal(workspace));
+    onAction(action.getModel(workspace));
   };
 
   return (
@@ -67,13 +67,13 @@ export const Modal = ({
       variant="flat"
       color="primary"
       isDisabled={props.isDisabled || props.isLoading}>
-      <Tooltip content={action.getModal(workspace).id}>
+      <Tooltip content={action.getModel(workspace).id}>
         <Button
           isIconOnly
           onPress={handlePress}
           aria-label="AI Model"
           {...props}>
-          <Icon provider={action.getModal(workspace).provider} />
+          <Icon provider={action.getModel(workspace).provider} />
         </Button>
       </Tooltip>
       <Popover placement="bottom-end">
@@ -88,14 +88,14 @@ export const Modal = ({
               disallowEmptySelection
               aria-label="AI Model"
               className="max-w-[300px]"
-              selectedKeys={new Set([action.getModal(workspace).id])}
+              selectedKeys={new Set([action.getModel(workspace).id])}
               selectionMode="single"
               onSelectionChange={(keys) => {
                 const selectedOption = options.find((option) =>
                   (keys as Set<string>).has(option.id)
                 );
                 if (selectedOption) {
-                  action.setModal(workspace, selectedOption);
+                  action.setModel(workspace, selectedOption);
                 }
               }}
               disabledKeys={options

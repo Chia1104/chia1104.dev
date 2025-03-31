@@ -57,7 +57,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
   const { data, isPending: isLoading } = authClient.useListOrganizations();
   const [isPending, startTransition] = React.useTransition();
   const { isOpen, onOpen, onOpenChange } = useDisclosure({
-    id: "org-modal",
+    id: "org-model",
     onOpen: () => {
       // onClose?.();
     },
@@ -138,7 +138,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
               </ModalBody>
               <ModalFooter>
                 <Button
-                  aria-label="Close Modal"
+                  aria-label="Close Model"
                   color="primary"
                   variant="flat"
                   onPress={onClose}>

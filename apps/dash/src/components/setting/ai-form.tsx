@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import type { BaseRequest } from "@chia/ai/types";
+import type { Model } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import {
   FormControl,
@@ -32,15 +32,15 @@ const openaiApiKeySchema = z.object({
 type SaveOpenaiApiKeyDTO = z.infer<typeof openaiApiKeySchema>;
 
 interface Props {
-  modal: BaseRequest["modal"];
+  model: Model;
 }
 
-const AiForm = ({ modal }: Props) => {
+const AiForm = ({ model }: Props) => {
   const [show, setShow] = useState(false);
   const form = useForm<SaveOpenaiApiKeyDTO>({
     defaultValues: {
       apiKey: "",
-      provider: modal.provider,
+      provider: model.provider,
     },
     resolver: zodResolver(openaiApiKeySchema),
   });
@@ -62,10 +62,7 @@ const AiForm = ({ modal }: Props) => {
     mutationFn: async () =>
       await serviceRequest().post("ai/generate", {
         json: {
-          modal: {
-            provider: modal.provider,
-            id: modal.id,
-          },
+          model,
           messages: [{ role: "user", content: "Hello, AI!" }],
         },
       }),

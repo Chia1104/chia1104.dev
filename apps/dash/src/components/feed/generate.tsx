@@ -9,7 +9,7 @@ import {
 } from "@/services/ai/hooks";
 import { useAIStore } from "@/store/ai.store";
 
-import { Modal } from "../ai/modal";
+import { Model } from "../ai/model";
 
 export const GenerateFeedSlug = ({
   title,
@@ -22,7 +22,7 @@ export const GenerateFeedSlug = ({
 }) => {
   const action = useAIStore((state) => state);
   const generate = useGenerateFeedSlug(
-    action.getModal("feed-slug"),
+    action.getModel("feed-slug"),
     { title },
     {
       onError: (error) => {
@@ -38,7 +38,7 @@ export const GenerateFeedSlug = ({
   );
 
   return (
-    <Modal
+    <Model
       isLoading={generate.isLoading}
       size="sm"
       variant="flat"
@@ -63,7 +63,7 @@ export const GenerateFeedDescription = ({
 }) => {
   const action = useAIStore((state) => state);
   const generate = useGenerateFeedDescription(
-    action.getModal("feed-description"),
+    action.getModel("feed-description"),
     input,
     {
       onError: (error) => {
@@ -79,7 +79,7 @@ export const GenerateFeedDescription = ({
   );
 
   return (
-    <Modal
+    <Model
       isLoading={generate.isLoading}
       size="sm"
       variant="flat"
@@ -105,7 +105,7 @@ export const GenerateFeedContent = ({
 }) => {
   const action = useAIStore((state) => state);
   const generate = useGenerateFeedContent(
-    action.getModal("feed-content"),
+    action.getModel("feed-content"),
     input,
     {
       onError: (error) => {
@@ -121,7 +121,7 @@ export const GenerateFeedContent = ({
   );
 
   return (
-    <Modal
+    <Model
       workspace="feed-content"
       isLoading={generate.isLoading}
       size="sm"

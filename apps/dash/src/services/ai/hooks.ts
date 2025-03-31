@@ -2,14 +2,14 @@
 
 import { useCompletion } from "@ai-sdk/react";
 
-import type { BaseRequest, Modal } from "@chia/ai/types";
-import { OpenAIModal, Provider } from "@chia/ai/types";
+import type { BaseRequest, Model } from "@chia/ai/types";
+import { OpenAIModel, Provider } from "@chia/ai/types";
 import { getServiceEndPoint } from "@chia/utils";
 
 type UseCompletionOptions = Parameters<typeof useCompletion>[0];
 
 export const useGenerateFeedSlug = (
-  modal?: Modal,
+  model?: Model,
   input?: { title: string },
   options?: Partial<UseCompletionOptions>
 ) => {
@@ -19,9 +19,9 @@ export const useGenerateFeedSlug = (
     id: "ai-generate-feed-slug",
     streamProtocol: "data",
     body: {
-      modal: modal ?? {
+      model: model ?? {
         provider: Provider.OpenAI,
-        id: OpenAIModal["gpt-4o-mini"],
+        id: OpenAIModel["gpt-4o-mini"],
       },
       messages: [{ role: "user", content: input?.title ?? "" }],
       system:
@@ -35,7 +35,7 @@ export const useGenerateFeedSlug = (
 };
 
 export const useGenerateFeedDescription = (
-  modal?: Modal,
+  model?: Model,
   input?: string,
   options?: Partial<UseCompletionOptions>
 ) => {
@@ -45,9 +45,9 @@ export const useGenerateFeedDescription = (
     id: "ai-generate-feed-description",
     streamProtocol: "data",
     body: {
-      modal: modal ?? {
+      model: model ?? {
         provider: Provider.OpenAI,
-        id: OpenAIModal["gpt-4o-mini"],
+        id: OpenAIModel["gpt-4o-mini"],
       },
       messages: [{ role: "user", content: input ?? "" }],
       system:
@@ -63,7 +63,7 @@ export const useGenerateFeedDescription = (
 };
 
 export const useGenerateFeedContent = (
-  modal?: Modal,
+  model?: Model,
   input?: { title?: string; description?: string; content: string },
   options?: Partial<UseCompletionOptions>
 ) => {
@@ -73,9 +73,9 @@ export const useGenerateFeedContent = (
     id: "ai-generate-feed-content",
     streamProtocol: "data",
     body: {
-      modal: modal ?? {
+      model: model ?? {
         provider: Provider.OpenAI,
-        id: OpenAIModal["gpt-4o-mini"],
+        id: OpenAIModel["gpt-4o-mini"],
       },
       messages: [
         { role: "user", content: `my current title is ${input?.title ?? ""}` },

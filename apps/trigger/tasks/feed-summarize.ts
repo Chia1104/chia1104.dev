@@ -24,7 +24,7 @@ const SYSTEM_PROMPT =
 export const feedSummarizeTask = schemaTask({
   id: TaskID.FeedSummarize,
   schema: requestSchema,
-  run: async ({ modal, system, feedID }) => {
+  run: async ({ model, system, feedID }) => {
     const feed = await getFeedById(
       {
         cfBypassToken: env.CF_BYPASS_TOKEN,
@@ -40,7 +40,7 @@ export const feedSummarizeTask = schemaTask({
     }
 
     const completion = streamGeneratedText({
-      modal,
+      model,
       authToken: env.OPENAI_API_KEY,
       messages: [
         {

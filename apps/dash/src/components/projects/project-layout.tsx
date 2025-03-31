@@ -24,7 +24,7 @@ import CreateForm from "./create-form";
 const Create = () => {
   const utils = api.useUtils();
   const { isOpen, onOpen, onOpenChange } = useDisclosure({
-    id: "create-modal",
+    id: "create-model",
   });
   const { currentOrgId } = useOrganizationStore((state) => state);
 

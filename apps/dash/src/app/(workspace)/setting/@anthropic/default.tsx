@@ -1,6 +1,6 @@
 "use client";
 
-import { AnthropicModal } from "@chia/ai/types";
+import { AnthropicModel } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 
@@ -10,9 +10,9 @@ const Default = () => {
   return (
     <ErrorBoundary>
       <AiForm
-        modal={{
+        model={{
           provider: Provider.Anthropic,
-          id: AnthropicModal["claude-3-5-haiku"],
+          id: AnthropicModel["claude-3-5-haiku"],
         }}
       />
     </ErrorBoundary>
