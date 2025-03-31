@@ -1,4 +1,5 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
+import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { convertToCoreMessages, streamText } from "ai";
@@ -26,6 +27,10 @@ export const createModal = (request: BaseRequest) => {
       })(request.modal.id);
     case Provider.Google:
       return createGoogleGenerativeAI({
+        apiKey: request.authToken,
+      })(request.modal.id);
+    case Provider.DeepSeek:
+      return createDeepSeek({
         apiKey: request.authToken,
       })(request.modal.id);
     default:

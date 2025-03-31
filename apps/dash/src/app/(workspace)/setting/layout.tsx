@@ -7,6 +7,7 @@ const Layout = ({
   openai,
   anthropic,
   google,
+  deepseek,
   passkey,
   profile,
   organization,
@@ -14,6 +15,7 @@ const Layout = ({
   openai: React.ReactNode;
   anthropic: React.ReactNode;
   google: React.ReactNode;
+  deepseek: React.ReactNode;
   passkey: React.ReactNode;
   profile: React.ReactNode;
   organization: React.ReactNode;
@@ -37,6 +39,9 @@ const Layout = ({
           <Divider className="my-5" />
           <h3 className="text-lg font-bold my-5">Google</h3>
           {google}
+          <Divider className="my-5" />
+          <h3 className="text-lg font-bold my-5">DeepSeek</h3>
+          {deepseek}
         </AccordionItem>
         <AccordionItem key="passkeys" title="Passkeys">
           {passkey}

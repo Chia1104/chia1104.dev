@@ -740,6 +740,9 @@ importers:
       '@ai-sdk/anthropic':
         specifier: ^1.2.2
         version: 1.2.2(zod@3.24.2)
+      '@ai-sdk/deepseek':
+        specifier: ^0.2.3
+        version: 0.2.3(zod@3.24.2)
       '@ai-sdk/google':
         specifier: ^1.2.3
         version: 1.2.3(zod@3.24.2)
@@ -1211,6 +1214,8 @@ importers:
         specifier: 'catalog:'
         version: 9.23.0(jiti@1.21.7)
 
+  toolings/scripts/hash: {}
+
   toolings/scripts/seed:
     devDependencies:
       '@chia/ai':
@@ -1260,8 +1265,20 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
+  '@ai-sdk/deepseek@0.2.3':
+    resolution: {integrity: sha512-avwDyUUK0+8IxyKLrBSVM8V9Cos5Q9HeOSium/lEFfTV9h8HN+BHI7+cBha7vCNgqLJcKlfIrKce9svB0qID+Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
   '@ai-sdk/google@1.2.3':
     resolution: {integrity: sha512-zsgwko7T+MFIdEfhg4fIXv6O2dnzTLFr6BOpAA21eo/moOBA5szVzOto1jTwIwoBYsF2ixPGNZBoc+k/fQ2AWw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
+  '@ai-sdk/openai-compatible@0.2.3':
+    resolution: {integrity: sha512-q2rSf/Kp5Gsp/t8UKGBPukGFoJUMZOOtjqaqRgRtkUihEmAdV9s6xRufxxe/v+BPfgsGHjOCdqkBrFbtS+VJKw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -1274,6 +1291,12 @@ packages:
 
   '@ai-sdk/provider-utils@2.2.1':
     resolution: {integrity: sha512-BuExLp+NcpwsAVj1F4bgJuQkSqO/+roV9wM7RdIO+NVrcT8RBUTdXzf5arHt5T58VpK7bZyB2V9qigjaPHE+Dg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.23.8
+
+  '@ai-sdk/provider-utils@2.2.2':
+    resolution: {integrity: sha512-DgjbBseR6e5oRcXOF0LH9owj3eKDfZNMdyHM8HBfcfQg0IVL2KqL1lK40pQynuI3/u72YM+vvbtAZ78PRj6jCA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.23.8
@@ -12127,10 +12150,23 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.1(zod@3.24.2)
       zod: 3.24.2
 
+  '@ai-sdk/deepseek@0.2.3(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 0.2.3(zod@3.24.2)
+      '@ai-sdk/provider': 1.1.0
+      '@ai-sdk/provider-utils': 2.2.2(zod@3.24.2)
+      zod: 3.24.2
+
   '@ai-sdk/google@1.2.3(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.1.0
       '@ai-sdk/provider-utils': 2.2.1(zod@3.24.2)
+      zod: 3.24.2
+
+  '@ai-sdk/openai-compatible@0.2.3(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.0
+      '@ai-sdk/provider-utils': 2.2.2(zod@3.24.2)
       zod: 3.24.2
 
   '@ai-sdk/openai@1.3.4(zod@3.24.2)':
@@ -12140,6 +12176,13 @@ snapshots:
       zod: 3.24.2
 
   '@ai-sdk/provider-utils@2.2.1(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.0
+      nanoid: 3.3.11
+      secure-json-parse: 2.7.0
+      zod: 3.24.2
+
+  '@ai-sdk/provider-utils@2.2.2(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.1.0
       nanoid: 3.3.11

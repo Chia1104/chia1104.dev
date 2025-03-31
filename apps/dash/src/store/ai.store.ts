@@ -9,6 +9,7 @@ import {
   OpenAIModal,
   AnthropicModal,
   GoogleModal,
+  DeepSeekModal,
 } from "@chia/ai/types";
 
 export type Workspace =
@@ -95,6 +96,12 @@ const DEFAULT_OPTIONS: ModalOption[] = [
     name: "o1",
     provider: Provider.OpenAI,
     id: OpenAIModal.o1,
+  },
+  {
+    enabled: true,
+    name: "DeepSeek R1",
+    provider: Provider.DeepSeek,
+    id: DeepSeekModal["deepseek-r1"],
   },
 ];
 

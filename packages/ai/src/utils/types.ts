@@ -4,6 +4,7 @@ export const Provider = {
   OpenAI: "openai",
   Anthropic: "anthropic",
   Google: "google",
+  DeepSeek: "deep-seek",
 } as const;
 
 export type Provider = (typeof Provider)[keyof typeof Provider];
@@ -39,6 +40,12 @@ export const Role = {
   Assistant: "assistant",
 } as const;
 
+export const DeepSeekModal = {
+  "deepseek-r1": "deepseek-reasoner",
+} as const;
+
+export type DeepSeekModal = (typeof DeepSeekModal)[keyof typeof DeepSeekModal];
+
 export type Role = (typeof Role)[keyof typeof Role];
 
 export const messageSchema = z.object({
@@ -61,6 +68,10 @@ export const modalSchema = z
     z.object({
       provider: z.literal(Provider.Google),
       id: z.nativeEnum(GoogleModal),
+    }),
+    z.object({
+      provider: z.literal(Provider.DeepSeek),
+      id: z.nativeEnum(DeepSeekModal),
     }),
   ])
   .optional()

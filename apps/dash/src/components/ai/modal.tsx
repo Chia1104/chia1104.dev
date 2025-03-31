@@ -22,6 +22,7 @@ import { useAIStore } from "@/store/ai.store";
 
 import Anthropic from "../icon/anthropic";
 import AnthropicLight from "../icon/anthropic.light";
+import DeepSeek from "../icon/deep-seek";
 import Gemini from "../icon/gemini";
 import OpenAI from "../icon/openai";
 import OpenAILight from "../icon/openai.light";
@@ -40,6 +41,8 @@ const Icon = ({ provider }: { provider: Provider }) => {
       return isDarkMode ? <Anthropic /> : <AnthropicLight />;
     case Provider.Google:
       return <Gemini />;
+    case Provider.DeepSeek:
+      return <DeepSeek />;
     default:
       return isDarkMode ? <OpenAI /> : <OpenAILight />;
   }

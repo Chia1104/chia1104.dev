@@ -9,6 +9,7 @@ import {
   OPENAI_API_KEY,
   ANTHROPIC_API_KEY,
   GOOGLE_API_KEY,
+  DEEPSEEK_API_KEY,
 } from "@chia/ai/constants";
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
@@ -32,6 +33,8 @@ const cookieName = (provider?: Provider) => {
       return ANTHROPIC_API_KEY;
     case Provider.Google:
       return GOOGLE_API_KEY;
+    case Provider.DeepSeek:
+      return DEEPSEEK_API_KEY;
     default:
       return HEADER_AUTH_TOKEN;
   }
