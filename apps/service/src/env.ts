@@ -26,7 +26,8 @@ export const env = createEnv({
       .default(15 * 60000),
     RATELIMIT_MAX: z.number().optional().default(87),
     OPENAI_API_KEY: z.string().optional(),
-    AI_AUTH_SECRET: z.string().optional(),
+    AI_AUTH_PUBLIC_KEY: z.string().optional(),
+    AI_AUTH_PRIVATE_KEY: z.string().optional(),
     IP_DENY_LIST: z.string().optional(),
     IP_ALLOW_LIST: z.string().optional(),
     MAINTENANCE_MODE: z.string().optional().default("false"),
@@ -34,6 +35,8 @@ export const env = createEnv({
     TIMEOUT_MS: numericStringSchema,
     PROJECT_ID: numericStringSchema.optional(),
     TRIGGER_SECRET_KEY: z.string().optional(),
+    ANTHROPIC_API_KEY: z.string().optional(),
+    GOOGLE_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -51,7 +54,8 @@ export const env = createEnv({
       ? Number(process.env.RATELIMIT_MAX)
       : 87,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    AI_AUTH_SECRET: process.env.AI_AUTH_SECRET,
+    AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
+    AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     IP_DENY_LIST: process.env.IP_DENY_LIST,
     IP_ALLOW_LIST: process.env.IP_ALLOW_LIST,
     MAINTENANCE_MODE:
@@ -63,6 +67,8 @@ export const env = createEnv({
     TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
     PROJECT_ID: process.env.PROJECT_ID,
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

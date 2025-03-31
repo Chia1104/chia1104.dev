@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { OpenAIModal } from "@chia/ai/types";
+import { OpenAIModal, Provider } from "@chia/ai/types";
 import {
   FormControl,
   FormField,
@@ -55,7 +55,10 @@ const OpenaiForm = () => {
     mutationFn: async () =>
       await serviceRequest().post("ai/generate", {
         json: {
-          modal: OpenAIModal["gpt-3.5-turbo"],
+          modal: {
+            provider: Provider.OpenAI,
+            id: OpenAIModal["gpt-4o-mini"],
+          },
           messages: [{ role: "user", content: "Hello, AI!" }],
         },
       }),
@@ -93,7 +96,7 @@ const OpenaiForm = () => {
                     <Button
                       isIconOnly
                       variant="light"
-                      onClick={() => setShow(!show)}>
+                      onPress={() => setShow(!show)}>
                       {show ? <EyeOff /> : <Eye />}
                     </Button>
                   }

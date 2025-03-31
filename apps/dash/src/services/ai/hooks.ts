@@ -3,7 +3,7 @@
 import { useCompletion } from "@ai-sdk/react";
 
 import type { BaseRequest } from "@chia/ai/types";
-import { OpenAIModal } from "@chia/ai/types";
+import { OpenAIModal, Provider } from "@chia/ai/types";
 import { getServiceEndPoint } from "@chia/utils";
 
 type UseCompletionOptions = Parameters<typeof useCompletion>[0];
@@ -18,7 +18,10 @@ export const useGenerateFeedSlug = (
     id: "ai-generate-feed-slug",
     streamProtocol: "data",
     body: {
-      modal: OpenAIModal["gpt-4o-mini"],
+      modal: {
+        provider: Provider.OpenAI,
+        id: OpenAIModal["gpt-4o-mini"],
+      },
       messages: [{ role: "user", content: input?.title ?? "" }],
       system:
         "Please help me generate a feed slug based on this title." +
@@ -40,7 +43,10 @@ export const useGenerateFeedDescription = (
     id: "ai-generate-feed-description",
     streamProtocol: "data",
     body: {
-      modal: OpenAIModal["gpt-4o-mini"],
+      modal: {
+        provider: Provider.OpenAI,
+        id: OpenAIModal["gpt-4o-mini"],
+      },
       messages: [{ role: "user", content: input ?? "" }],
       system:
         "Please help me generate a feed description based on this content." +
@@ -64,7 +70,10 @@ export const useGenerateFeedContent = (
     id: "ai-generate-feed-content",
     streamProtocol: "data",
     body: {
-      modal: OpenAIModal["gpt-4o-mini"],
+      modal: {
+        provider: Provider.OpenAI,
+        id: OpenAIModal["gpt-4o-mini"],
+      },
       messages: [
         { role: "user", content: `my current title is ${input?.title ?? ""}` },
         {

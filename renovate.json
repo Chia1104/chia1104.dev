@@ -17,10 +17,10 @@
     {
       "groupName": "react",
       "matchPackageNames": [
-        "/react/",
-        "/react-dom/",
-        "/@types/react/",
-        "/@types/react-dom/"
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom"
       ]
     },
     {
@@ -42,6 +42,18 @@
     {
       "groupName": "plate",
       "matchPackageNames": ["/@udecode/plate-*/"]
+    },
+    {
+      "groupName": "anthropic",
+      "matchPackageNames": ["@ai-sdk/anthropic", "@anthropic-ai/sdk"]
+    },
+    {
+      "groupName": "genai",
+      "matchPackageNames": ["@ai-sdk/google", "@google/genai"]
+    },
+    {
+      "groupName": "openai",
+      "matchPackageNames": ["@ai-sdk/openai", "openai"]
     },
     {
       "enabled": false,
