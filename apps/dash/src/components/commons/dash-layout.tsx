@@ -57,7 +57,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
   const { data, isPending: isLoading } = authClient.useListOrganizations();
   const [isPending, startTransition] = React.useTransition();
   const { isOpen, onOpen, onOpenChange } = useDisclosure({
-    id: "org-model",
+    id: "org-modal",
     onOpen: () => {
       // onClose?.();
     },
