@@ -81,9 +81,7 @@ const AiForm = ({ modal }: Props) => {
   });
 
   const onSubmit = form.handleSubmit((values) => {
-    saveApiKey.mutate({
-      apiKey: values.apiKey,
-    });
+    saveApiKey.mutate(values);
   });
   return (
     <Form {...form}>

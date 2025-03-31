@@ -1,5 +1,3 @@
-import { Button, Tooltip } from "@heroui/react";
-import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@chia/ui/utils/cn.util";
@@ -9,6 +7,9 @@ import {
   useGenerateFeedDescription,
   useGenerateFeedContent,
 } from "@/services/ai/hooks";
+import { useAIStore } from "@/store/ai.store";
+
+import { Modal } from "../ai/modal";
 
 export const GenerateFeedSlug = ({
   title,
@@ -19,7 +20,9 @@ export const GenerateFeedSlug = ({
   onSuccess?: (data: string) => void;
   preGenerate?: () => void;
 }) => {
+  const action = useAIStore((state) => state);
   const generate = useGenerateFeedSlug(
+    action.getModal("feed-slug"),
     { title },
     {
       onError: (error) => {
@@ -33,21 +36,19 @@ export const GenerateFeedSlug = ({
       },
     }
   );
+
   return (
-    <Tooltip content="Generate Feed Slug based on the title">
-      <Button
-        isLoading={generate.isLoading}
-        size="sm"
-        variant="flat"
-        color="primary"
-        isIconOnly
-        onPress={() => {
-          preGenerate?.();
-          void generate.complete(`My current title is ${title}`);
-        }}>
-        <Sparkles className="size-4" />
-      </Button>
-    </Tooltip>
+    <Modal
+      isLoading={generate.isLoading}
+      size="sm"
+      variant="flat"
+      color="primary"
+      workspace="feed-slug"
+      onAction={() => {
+        preGenerate?.();
+        void generate.complete(`My current title is ${title}`);
+      }}
+    />
   );
 };
 
@@ -60,33 +61,36 @@ export const GenerateFeedDescription = ({
   onSuccess?: (data: string) => void;
   preGenerate?: () => void;
 }) => {
-  const generate = useGenerateFeedDescription(input, {
-    onError: (error) => {
-      console.error(error);
-      toast.error("Failed to generate feed description");
-    },
-    onFinish(prompt, completion: string) {
-      if (completion) {
-        onSuccess?.(completion);
-      }
-    },
-  });
+  const action = useAIStore((state) => state);
+  const generate = useGenerateFeedDescription(
+    action.getModal("feed-description"),
+    input,
+    {
+      onError: (error) => {
+        console.error(error);
+        toast.error("Failed to generate feed description");
+      },
+      onFinish(prompt, completion: string) {
+        if (completion) {
+          onSuccess?.(completion);
+        }
+      },
+    }
+  );
 
   return (
-    <Tooltip content="Generate Feed Description based on the title">
-      <Button
-        isLoading={generate.isLoading}
-        size="sm"
-        variant="flat"
-        color="primary"
-        isIconOnly
-        onPress={() => {
-          preGenerate?.();
-          void generate.complete(`My current title is ${input}`);
-        }}>
-        <Sparkles className="size-4" />
-      </Button>
-    </Tooltip>
+    <Modal
+      isLoading={generate.isLoading}
+      size="sm"
+      variant="flat"
+      color="primary"
+      workspace="feed-description"
+      isIconOnly
+      onAction={() => {
+        preGenerate?.();
+        void generate.complete(`My current title is ${input}`);
+      }}
+    />
   );
 };
 
@@ -99,32 +103,33 @@ export const GenerateFeedContent = ({
   onSuccess?: (data: string) => void;
   className?: string;
 }) => {
-  const generate = useGenerateFeedContent(input, {
-    onError: (error) => {
-      console.error(error);
-      toast.error("Failed to generate feed content");
-    },
-    onFinish(prompt, completion: string) {
-      if (completion) {
-        onSuccess?.(completion);
-      }
-    },
-  });
+  const action = useAIStore((state) => state);
+  const generate = useGenerateFeedContent(
+    action.getModal("feed-content"),
+    input,
+    {
+      onError: (error) => {
+        console.error(error);
+        toast.error("Failed to generate feed content");
+      },
+      onFinish(prompt, completion: string) {
+        if (completion) {
+          onSuccess?.(completion);
+        }
+      },
+    }
+  );
 
   return (
-    <Tooltip content="Generate Feed Content based on the previously content">
-      <Button
-        isLoading={generate.isLoading}
-        size="sm"
-        variant="flat"
-        color="primary"
-        className={cn(className)}
-        isIconOnly
-        onPress={() =>
-          generate.complete(`My current input is ${input.content}`)
-        }>
-        <Sparkles className="size-4" />
-      </Button>
-    </Tooltip>
+    <Modal
+      workspace="feed-content"
+      isLoading={generate.isLoading}
+      size="sm"
+      variant="flat"
+      color="primary"
+      className={cn(className)}
+      isIconOnly
+      onAction={() => generate.complete(`My current input is ${input.content}`)}
+    />
   );
 };

@@ -47,21 +47,35 @@ import {
   useEditFieldsContext,
   DEFAULT_EDIT_FIELDS_CONTEXT,
 } from "./edit-fields.context";
-import {
-  GenerateFeedSlug,
-  GenerateFeedDescription,
-  GenerateFeedContent,
-} from "./generate";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
 });
 
-// const Novel = dynamic(() => import("@chia/editor/novel"), {
-//   ssr: false,
-//   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
-// });
+const GenerateFeedSlug = dynamic(
+  () => import("./generate").then((mod) => mod.GenerateFeedSlug),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+  }
+);
+
+const GenerateFeedDescription = dynamic(
+  () => import("./generate").then((mod) => mod.GenerateFeedDescription),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+  }
+);
+
+const GenerateFeedContent = dynamic(
+  () => import("./generate").then((mod) => mod.GenerateFeedContent),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+  }
+);
 
 interface Props {
   disabled?: boolean;
@@ -436,17 +450,18 @@ const SwitchEditor = () => {
               "relative w-full overflow-hidden rounded-2xl shadow-lg",
               editFields.disabled && "pointer-events-none"
             )}>
-            <GenerateFeedContent
-              className="absolute top-3 right-3 z-30"
-              input={{
-                title: form.watch("title"),
-                description: form.watch("description") ?? "",
-                content: editFields.content.mdx.content,
-              }}
-              onSuccess={(data) => {
-                console.log(data);
-              }}
-            />
+            <div className="absolute top-3 right-3 z-30">
+              <GenerateFeedContent
+                input={{
+                  title: form.watch("title"),
+                  description: form.watch("description") ?? "",
+                  content: editFields.content.mdx.content,
+                }}
+                onSuccess={(data) => {
+                  console.log(data);
+                }}
+              />
+            </div>
             <MEditor
               className={cn("py-5 dark:bg-[#1e1e1e] bg-white")}
               height="700px"

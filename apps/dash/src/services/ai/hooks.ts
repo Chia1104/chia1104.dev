@@ -2,13 +2,14 @@
 
 import { useCompletion } from "@ai-sdk/react";
 
-import type { BaseRequest } from "@chia/ai/types";
+import type { BaseRequest, Modal } from "@chia/ai/types";
 import { OpenAIModal, Provider } from "@chia/ai/types";
 import { getServiceEndPoint } from "@chia/utils";
 
 type UseCompletionOptions = Parameters<typeof useCompletion>[0];
 
 export const useGenerateFeedSlug = (
+  modal?: Modal,
   input?: { title: string },
   options?: Partial<UseCompletionOptions>
 ) => {
@@ -18,7 +19,7 @@ export const useGenerateFeedSlug = (
     id: "ai-generate-feed-slug",
     streamProtocol: "data",
     body: {
-      modal: {
+      modal: modal ?? {
         provider: Provider.OpenAI,
         id: OpenAIModal["gpt-4o-mini"],
       },
@@ -34,6 +35,7 @@ export const useGenerateFeedSlug = (
 };
 
 export const useGenerateFeedDescription = (
+  modal?: Modal,
   input?: string,
   options?: Partial<UseCompletionOptions>
 ) => {
@@ -43,7 +45,7 @@ export const useGenerateFeedDescription = (
     id: "ai-generate-feed-description",
     streamProtocol: "data",
     body: {
-      modal: {
+      modal: modal ?? {
         provider: Provider.OpenAI,
         id: OpenAIModal["gpt-4o-mini"],
       },
@@ -61,6 +63,7 @@ export const useGenerateFeedDescription = (
 };
 
 export const useGenerateFeedContent = (
+  modal?: Modal,
   input?: { title?: string; description?: string; content: string },
   options?: Partial<UseCompletionOptions>
 ) => {
@@ -70,7 +73,7 @@ export const useGenerateFeedContent = (
     id: "ai-generate-feed-content",
     streamProtocol: "data",
     body: {
-      modal: {
+      modal: modal ?? {
         provider: Provider.OpenAI,
         id: OpenAIModal["gpt-4o-mini"],
       },
