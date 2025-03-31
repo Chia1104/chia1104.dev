@@ -747,8 +747,8 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3(zod@3.24.2)
       '@ai-sdk/openai':
-        specifier: ^1.3.4
-        version: 1.3.4(zod@3.24.2)
+        specifier: ^1.3.5
+        version: 1.3.5(zod@3.24.2)
       '@anthropic-ai/sdk':
         specifier: ^0.39.0
         version: 0.39.0
@@ -1283,8 +1283,8 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
-  '@ai-sdk/openai@1.3.4':
-    resolution: {integrity: sha512-BOw7dQpiTlpaqi1u/NU4Or2+jA6buzl6GOUuYyu/uFI7dxJs1zPkY8IjAp4DQhi+kQGH6GGbEPw0LkIbeK4BVA==}
+  '@ai-sdk/openai@1.3.5':
+    resolution: {integrity: sha512-kNXftkURozvxm54Jb+5/mIBR9TYVVwZODRL4lJCCTyj/9bp0w1aArz6cGbI4hHQx1vkXG9U10eKvWIV/lsHzUA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -12169,10 +12169,10 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.2(zod@3.24.2)
       zod: 3.24.2
 
-  '@ai-sdk/openai@1.3.4(zod@3.24.2)':
+  '@ai-sdk/openai@1.3.5(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.1.0
-      '@ai-sdk/provider-utils': 2.2.1(zod@3.24.2)
+      '@ai-sdk/provider-utils': 2.2.2(zod@3.24.2)
       zod: 3.24.2
 
   '@ai-sdk/provider-utils@2.2.1(zod@3.24.2)':
