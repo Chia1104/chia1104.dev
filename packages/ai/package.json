@@ -50,7 +50,7 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "@chia/utils": "workspace:*",
     "@google/genai": "^0.7.0",
-    "ai": "^4.2.8",
+    "ai": "^4.2.9",
     "next": "15.2.4",
     "openai": "^4.90.0"
   },
