@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
   PopoverContent,
   ScrollShadow,
+  Tooltip,
 } from "@heroui/react";
 import { ChevronDownIcon } from "lucide-react";
 
@@ -66,9 +67,15 @@ export const Modal = ({
       variant="flat"
       color="primary"
       isDisabled={props.isDisabled || props.isLoading}>
-      <Button isIconOnly onPress={handlePress} aria-label="AI Model" {...props}>
-        <Icon provider={action.getModal(workspace).provider} />
-      </Button>
+      <Tooltip content={action.getModal(workspace).id}>
+        <Button
+          isIconOnly
+          onPress={handlePress}
+          aria-label="AI Model"
+          {...props}>
+          <Icon provider={action.getModal(workspace).provider} />
+        </Button>
+      </Tooltip>
       <Popover placement="bottom-end">
         <PopoverTrigger>
           <Button isIconOnly aria-label="AI Model">
