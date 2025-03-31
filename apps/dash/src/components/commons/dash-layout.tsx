@@ -138,7 +138,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
               </ModalBody>
               <ModalFooter>
                 <Button
-                  aria-label="Close Model"
+                  aria-label="Close Modal"
                   color="primary"
                   variant="flat"
                   onPress={onClose}>
