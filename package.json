@@ -75,7 +75,7 @@
     "dayjs": "^1.11.13",
     "graphql-request": "^7.1.2",
     "jsonwebtoken": "^9.0.2",
-    "ky": "^1.7.5",
+    "ky": "^1.8.0",
     "lodash": "^4.17.21",
     "server-only": "^0.0.1",
     "superjson": "2.2.2",

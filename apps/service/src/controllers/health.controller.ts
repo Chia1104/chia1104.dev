@@ -6,7 +6,7 @@ import { z } from "zod";
 import { numericStringSchema } from "@chia/utils";
 import { delay } from "@chia/utils/delay";
 
-import { verifyAuth } from "@/middlewares/auth.middleware";
+import { verifyAuth } from "@/guards/auth.guard";
 import { IS_MAINTENANCE_MODE } from "@/middlewares/maintenance.middleware";
 import { errorResponse } from "@/utils/error.util";
 

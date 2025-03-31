@@ -1,6 +1,6 @@
 "use client";
 
-import { OpenAIModal } from "@chia/ai/types";
+import { GoogleModal } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 
@@ -10,7 +10,10 @@ const Default = () => {
   return (
     <ErrorBoundary>
       <AiForm
-        modal={{ provider: Provider.OpenAI, id: OpenAIModal["gpt-4o-mini"] }}
+        modal={{
+          provider: Provider.Google,
+          id: GoogleModal["gemini-2.0-flash"],
+        }}
       />
     </ErrorBoundary>
   );
