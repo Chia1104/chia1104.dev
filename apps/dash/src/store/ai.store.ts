@@ -51,15 +51,15 @@ const DEFAULT_OPTIONS: ModalOption[] = [
   },
   {
     enabled: true,
-    name: "Claude 3.5 Sonnet",
-    provider: Provider.Anthropic,
-    id: AnthropicModal["claude-3-5-sonnet"],
-  },
-  {
-    enabled: true,
     name: "Claude 3.7 Sonnet",
     provider: Provider.Anthropic,
     id: AnthropicModal["claude-3-7-sonnet"],
+  },
+  {
+    enabled: true,
+    name: "Claude 3.5 Haiku",
+    provider: Provider.Anthropic,
+    id: AnthropicModal["claude-3-5-haiku"],
   },
   {
     enabled: true,

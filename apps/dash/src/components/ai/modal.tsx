@@ -90,9 +90,15 @@ export const Modal = ({
                 if (selectedOption) {
                   action.setModal(workspace, selectedOption);
                 }
-              }}>
+              }}
+              disabledKeys={options
+                .filter((option) => !option.enabled)
+                .map((option) => option.id)}>
               {options.map((option) => (
-                <MenuItem key={option.id} description={option.provider}>
+                <MenuItem
+                  key={option.id}
+                  description={option.provider}
+                  isReadOnly={!option.enabled}>
                   <span className="flex items-center gap-2">
                     <Icon provider={option.provider} />
                     {option.name}

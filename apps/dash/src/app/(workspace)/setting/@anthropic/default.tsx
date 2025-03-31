@@ -12,7 +12,7 @@ const Default = () => {
       <AiForm
         modal={{
           provider: Provider.Anthropic,
-          id: AnthropicModal["claude-3-5-sonnet"],
+          id: AnthropicModal["claude-3-5-haiku"],
         }}
       />
     </ErrorBoundary>

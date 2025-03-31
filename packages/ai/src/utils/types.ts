@@ -21,9 +21,10 @@ export const OpenAIModal = {
 
 export type OpenAIModal = (typeof OpenAIModal)[keyof typeof OpenAIModal];
 
+// https://docs.anthropic.com/en/docs/about-claude/models/all-models
 export const AnthropicModal = {
-  "claude-3-5-sonnet": "claude-3-5-sonnet",
-  "claude-3-7-sonnet": "claude-3-7-sonnet",
+  "claude-3-5-haiku": "claude-3-5-haiku-latest",
+  "claude-3-7-sonnet": "claude-3-7-sonnet-latest",
 } as const;
 
 export type AnthropicModal =
