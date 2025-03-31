@@ -195,7 +195,10 @@ const DescriptionField = () => {
               isInvalid={fieldState.invalid}
               endContent={
                 <GenerateFeedDescription
-                  input={form.watch("title")}
+                  input={{
+                    title: form.watch("title"),
+                    content: form.watch("content") ?? undefined,
+                  }}
                   onSuccess={(data) => {
                     field.onChange(data);
                   }}

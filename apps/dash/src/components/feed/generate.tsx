@@ -57,7 +57,7 @@ export const GenerateFeedDescription = ({
   onSuccess,
   preGenerate,
 }: {
-  input: string;
+  input: { title?: string; content?: string };
   onSuccess?: (data: string) => void;
   preGenerate?: () => void;
 }) => {
@@ -88,7 +88,9 @@ export const GenerateFeedDescription = ({
       isIconOnly
       onAction={() => {
         preGenerate?.();
-        void generate.complete(`My current title is ${input}`);
+        void generate.complete(
+          `my current title is ${input.title} and my current content is ${input.content}`
+        );
       }}
     />
   );

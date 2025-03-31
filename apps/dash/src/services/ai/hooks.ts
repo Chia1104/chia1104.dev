@@ -36,7 +36,7 @@ export const useGenerateFeedSlug = (
 
 export const useGenerateFeedDescription = (
   model?: Model,
-  input?: string,
+  input?: { title?: string; content?: string },
   options?: Partial<UseCompletionOptions>
 ) => {
   return useCompletion({
@@ -49,7 +49,10 @@ export const useGenerateFeedDescription = (
         provider: Provider.OpenAI,
         id: OpenAIModel["gpt-4o-mini"],
       },
-      messages: [{ role: "user", content: input ?? "" }],
+      messages: [
+        { role: "user", content: `my current title is ${input?.title ?? ""}` },
+        { role: "user", content: `my current content is ${input?.content}` },
+      ],
       system:
         "Please help me generate a feed description based on this content." +
         "And only return the value of the feed description." +
