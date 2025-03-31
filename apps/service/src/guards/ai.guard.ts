@@ -6,7 +6,7 @@ import {
   HEADER_AUTH_TOKEN,
   OPENAI_API_KEY,
   ANTHROPIC_API_KEY,
-  GOOGLE_API_KEY,
+  GENAI_API_KEY,
   DEEPSEEK_API_KEY,
 } from "@chia/ai/constants";
 import { Provider } from "@chia/ai/types";
@@ -28,7 +28,7 @@ const getApiKey = (c: Context, provider?: Provider) => {
     case Provider.Anthropic:
       return getCookie(c, ANTHROPIC_API_KEY)?.toString();
     case Provider.Google:
-      return getCookie(c, GOOGLE_API_KEY)?.toString();
+      return getCookie(c, GENAI_API_KEY)?.toString();
     case Provider.DeepSeek:
       return getCookie(c, DEEPSEEK_API_KEY)?.toString();
     default:

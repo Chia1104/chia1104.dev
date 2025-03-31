@@ -36,7 +36,7 @@ export const env = createEnv({
     PROJECT_ID: numericStringSchema.optional(),
     TRIGGER_SECRET_KEY: z.string().optional(),
     ANTHROPIC_API_KEY: z.string().optional(),
-    GOOGLE_API_KEY: z.string().optional(),
+    GENAI_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -68,7 +68,7 @@ export const env = createEnv({
     PROJECT_ID: process.env.PROJECT_ID,
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-    GOOGLE_API_KEY: process.env.GOOGLE_API_KEY,
+    GENAI_API_KEY: process.env.GENAI_API_KEY,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
