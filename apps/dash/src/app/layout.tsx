@@ -34,7 +34,6 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <RootLayout>
       <RootProvider headers={await headers()}>
-        {" "}
         <Background />
         {children}
       </RootProvider>
