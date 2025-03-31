@@ -10,7 +10,7 @@ import {
   searchFeeds,
 } from "@chia/db/repos/feeds";
 
-import { ai, AI_AUTH_TOKEN } from "@/middlewares/ai.middleware";
+import { ai, AI_AUTH_TOKEN } from "@/guards/ai.guard";
 import { verifyAuth } from "@/middlewares/auth.middleware";
 import { errorResponse } from "@/utils/error.util";
 import { searchFeedsSchema } from "@/validators/feeds.validator";
