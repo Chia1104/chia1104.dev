@@ -48,7 +48,7 @@ COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
 
-RUN pnpm i --prod --ignore-scripts
+RUN pnpm i --prod --ignore-scripts --filter=service
 
 FROM base as runner
 
