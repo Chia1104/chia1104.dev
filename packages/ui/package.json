@@ -104,6 +104,7 @@
     "@types/react-dom": "catalog:react19",
     "@vitejs/plugin-react-swc": "^3.9.0",
     "eslint": "catalog:",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }
 }

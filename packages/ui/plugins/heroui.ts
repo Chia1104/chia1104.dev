@@ -1,3 +1,6 @@
 import { heroui } from "@heroui/react";
+import type { PluginsConfig } from "tailwindcss/plugin";
 
-export default heroui;
+const plugin: PluginsConfig = heroui();
+
+export default plugin;
