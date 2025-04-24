@@ -29,7 +29,7 @@ const Layout: FC<{
 }> = async ({ children }) => {
   const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
   return (
-    <section className="prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start min-w-full">
+    <section className="prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start min-w-full min-h-[calc(100vh-140px)] flex flex-col">
       <div className="z-30">
         <Navigation posts={posts.items} notes={notes.items} />
       </div>
