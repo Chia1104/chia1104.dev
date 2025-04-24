@@ -3,7 +3,7 @@ import type { FC, ReactNode } from "react";
 import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
-import meta from "@chia/meta";
+import meta, { getLatestWork, getWorkDuration } from "@chia/meta";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
@@ -52,30 +52,27 @@ const LinkItem: FC<{
 const Page = async ({ params }: { params: PageParamsWithLocale }) => {
   const { locale } = await params;
   const t = await getTranslations("home");
-  const test = t("section1");
+  const latestWork = getLatestWork(meta.timeline);
+  const workDuration = getWorkDuration(meta.timeline);
   return (
     <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <FadeIn className="w-full flex-col">
         <h1 className="text-start font-bold">{meta.name}</h1>
-        <p>{test}</p>
-        <p>
+        <p>{t("section1", { year: workDuration.toString() })}</p>
+        <div>
           Working at{" "}
-          <Link preview href={meta.link.leadbest} target="_blank">
-            LeadBest
+          <Link
+            preview
+            href={latestWork?.link || meta.link.leadbest}
+            target="_blank">
+            {latestWork?.company || "LeadBest"}
           </Link>
-          . I am responsible for the development of the company's official
-          website and maintaining related modules.
-        </p>
+          . {latestWork?.description}
+        </div>
         <ul>
-          <li>
-            Adopting the Scrum development process and effectively fulfilling
-            customer requirements with the help and communication of
-            cross-functional teams.
-          </li>
-          <li>
-            Creating new frontend projects using internal templates and
-            maintaining related modules.
-          </li>
+          {latestWork?.detail?.map((detail, index) => (
+            <li key={index}>{detail}</li>
+          ))}
         </ul>
       </FadeIn>
 

@@ -14,7 +14,7 @@
     "en-US": "English"
   },
   "home": {
-    "section1": "I am a full-stack engineer with one year of experience in web development, including experience in real business production. My expertise lies in NextJS frontend development and backend services management. I excel in project management, code review, feature planning, and testing."
+    "section1": "I am a full-stack engineer with {year} years of experience in web development, including experience in real business production. My expertise lies in NextJS frontend development and backend services management. I excel in project management, code review, feature planning, and testing."
   },
   "blog": {
     "not-translated": "This page is not translated yet. Or you can switch to {locale}.",
