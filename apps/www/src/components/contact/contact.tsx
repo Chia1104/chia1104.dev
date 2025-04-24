@@ -247,6 +247,7 @@ export const Form: FC<
                     onBlur={onBlur}
                     placeholder="Your message"
                     errorMessage={error?.message}
+                    minRows={10}
                   />
                 )}
               />
@@ -271,9 +272,9 @@ const Contact: FC = () => {
   return (
     <Card
       wrapperProps={{
-        className: "w-full max-w-[700px]",
+        className: "w-full max-w-[600px] justify-self-center",
       }}
-      className="flex w-full max-w-[700px] flex-col items-center justify-start px-5 py-10 md:p-10">
+      className="flex w-full max-w-[600px] flex-col items-center justify-start px-5 py-10 md:p-10">
       <Form />
     </Card>
   );

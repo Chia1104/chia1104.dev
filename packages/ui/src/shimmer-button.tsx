@@ -40,7 +40,7 @@ const ShimmerButton = ({
         } as CSSProperties
       }
       className={cn(
-        "opcity-65 dark:opcity-1 dark:c-bg-gradient-black-to-dark-gray c-bg-gradient-yellow-to-pink group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap border border-white/10 px-6 py-3 text-neutral-500 [border-radius:var(--radius)] dark:text-white",
+        "dark:c-bg-gradient-black-to-dark-gray c-bg-gradient-yellow-to-pink group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap border border-white/10 px-6 py-3 text-neutral-500 [border-radius:var(--radius)] dark:text-white",
         "transform-gpu transition-transform duration-300 ease-in-out active:translate-y-[1px]",
         className
       )}

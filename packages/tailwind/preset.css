@@ -1,0 +1,243 @@
+@import "./colors.css";
+@import "./typography.css";
+
+@plugin "@tailwindcss/typography";
+@plugin "./plugins/egoist-icons";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark-theme (&:where(.dark-theme, .dark-theme *));
+
+/* deprecated */
+@utility c-container {
+  @apply container mx-auto;
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  @apply 2xl:max-w-[1400px];
+}
+
+@utility c-hover-link {
+  @apply border-primary transition ease-in-out hover:border-b-2;
+}
+
+@utility c-text-primary {
+  @apply text-black transition ease-in-out dark:text-white;
+}
+
+@utility c-text-secondary {
+  @apply text-sec-text transition ease-in-out dark:text-white;
+}
+
+@utility c-description {
+  @apply text-sec-text text-lg transition ease-in-out dark:text-gray-400;
+}
+
+@utility c-bg-primary {
+  @apply bg-[#dddddd] text-black transition ease-in-out dark:bg-black dark:text-white;
+}
+
+@utility c-bg-secondary {
+  @apply text-sec-text dark:bg-dark/80 bg-white/80 backdrop-blur-md transition ease-in-out dark:text-white;
+}
+
+@utility c-bg-third {
+  @apply text-sec-text dark:bg-dark/10 bg-white/10 backdrop-blur-lg transition ease-in-out dark:text-white;
+}
+
+@utility c-border-primary {
+  @apply border-gray-200 dark:border-gray-800;
+}
+
+@utility c-text-purple-to-blue {
+  @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8] bg-clip-text text-transparent;
+}
+
+@utility c-bg-gradient-purple-to-blue {
+  @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8];
+}
+
+@utility c-text-purple-to-pink {
+  @apply bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent;
+}
+
+@utility c-bg-gradient-purple-to-pink {
+  @apply bg-gradient-to-r from-purple-400 via-pink-400 to-pink-600;
+}
+
+@utility c-text-green-to-purple {
+  @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA] bg-clip-text text-transparent;
+}
+
+@utility c-bg-gradient-green-to-purple {
+  @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA];
+}
+
+@utility c-text-yellow-to-pink {
+  @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA] bg-clip-text text-transparent;
+}
+
+@utility c-bg-gradient-yellow-to-pink {
+  @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA];
+}
+
+@utility c-bg-gradient-black-to-dark-gray {
+  @apply bg-gradient-to-r from-black via-gray-900 to-gray-900;
+}
+
+@utility c-button-primary {
+  @apply bg-primary hover:bg-secondary flex items-center justify-center rounded-full px-3 py-1 text-white drop-shadow-lg transition ease-in-out;
+}
+
+@utility c-button-secondary {
+  @apply text-sec-text dark:bg-dark/80 rounded bg-white/80 px-5 py-3 text-2xl backdrop-blur-md transition ease-in-out dark:text-white;
+}
+
+@utility c-link-active {
+  border-bottom-width: 0;
+  background-size: 100% 3px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.2s ease-in-out;
+  background-image: linear-gradient(transparent, transparent),
+    linear-gradient(#ff9b1a, #ff9b1a);
+}
+
+@utility c-link-underline {
+  border-bottom-width: 0;
+  background-image: linear-gradient(transparent, transparent),
+    linear-gradient(#fff, #fff);
+  background-size: 0 3px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.2s ease-in-out;
+}
+
+@utility c-link-underline-secondary {
+  background-image: linear-gradient(transparent, transparent),
+    linear-gradient(#ff9b1a, #ff9b1a);
+}
+
+@utility c-text-bg-primary-half {
+  background-image: linear-gradient(transparent 60%, #2b2e4a 55%);
+}
+
+@utility c-text-bg-sec-half {
+  background-image: linear-gradient(transparent 60%,
+      rgba(255, 155, 26, 0.8) 55%);
+}
+
+@utility c-text-bg-info-half {
+  background-image: linear-gradient(transparent 60%, #8086ba 55%);
+}
+
+@utility c-text-bg-purple-half {
+  background-image: linear-gradient(transparent 60%, #904fd2 55%);
+}
+
+@utility c-text-bg-pink-half {
+  background-image: linear-gradient(transparent 60%, #fecaca 55%);
+}
+
+@utility modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  @apply dark:bg-dark/90 bg-white/90 backdrop-blur-sm transition ease-in-out;
+}
+
+@utility view-transition-link {
+  view-transition-name: link-title;
+  width: fit-content;
+}
+
+@layer components {
+  .c-link {
+    @apply c-link-underline c-link-underline-secondary;
+  }
+
+  .footer {
+    @apply c-bg-third relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden py-8;
+  }
+
+  .c-background::before {
+    content: "";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: transparent radial-gradient(#bfbfbf 0.5px, transparent 0);
+    background-size: 11px 11px;
+    z-index: -4;
+  }
+
+  .c-link-underline:hover {
+    background-size: 100% 3px;
+    background-position: 0 100%;
+  }
+
+  .animated-feature-cards {
+    @apply hover:before:opacity-100 before:pointer-events-none before:absolute before:select-none before:rounded-2xl before:opacity-0 before:transition-opacity before:duration-300 before:z-[-1] before:inset-[-1px];
+  }
+
+  .dark .c-background::before {
+    background-image: radial-gradient(#3e3e3e 0.5px, transparent 0);
+  }
+
+  .animated-feature-cards::before {
+    background: radial-gradient(1000px circle at var(--x) var(--y),
+        #f9c851 0,
+        #fca5a5 25%,
+        #fecaca 50%,
+        transparent 80%);
+    content: "";
+  }
+
+  .dark .animated-feature-cards::before {
+    background: radial-gradient(1000px circle at var(--x) var(--y),
+        #db2777 0,
+        #c084fc 25%,
+        rgba(255, 255, 255, 0) 50%,
+        transparent 80%);
+    content: "";
+  }
+
+  .main {
+    @apply flex min-h-screen flex-1 flex-col items-center justify-center px-[1rem] py-[4rem] md:px-[2rem];
+  }
+}
+
+@layer base {
+
+  html,
+  body {
+    padding: 0;
+    margin: 0;
+    scroll-behavior: smooth;
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    @apply transition-colors ease-in-out;
+  }
+}

@@ -36,6 +36,9 @@ const RootProvider: FC<{
       <ThemeProvider defaultTheme="system" enableSystem attribute="class">
         <HeroUIProvider>
           <FDProvider
+            theme={{
+              enabled: true,
+            }}
             search={{
               enabled: false,
             }}>

@@ -133,11 +133,11 @@ const PreviewDetail: FC<
       ) : (
         <div className="z-[999] flex flex-col gap-3">
           <div className="h-[120px] w-60 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
-          <div className="mt-3 flex justify-between space-x-4">
+          <div className="mt-3 flex space-x-4 items-center">
             <span className="size-10 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
-            <div className="space-y-1">
-              <span className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
-              <span className="h-4 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+            <div className="space-y-2 flex flex-col">
+              <span className="h-3 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
+              <span className="h-3 w-30 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
             </div>
           </div>
         </div>

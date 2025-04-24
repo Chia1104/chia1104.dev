@@ -12,11 +12,11 @@ catalog:
   "@trpc/next": ^11.1.1
   eslint: ^9.25.1
   typescript: ^5.8.3
-  tailwindcss: 3.4.17
-  fumadocs-core: 14.7.7
-  fumadocs-ui: 14.7.7
-  "@fumadocs/mdx-remote": 1.1.2
-  fumadocs-mdx: 11.3.1
+  tailwindcss: 4.1.4
+  fumadocs-core: 15.2.10
+  fumadocs-ui: 15.2.10
+  "@fumadocs/mdx-remote": 1.3.0
+  fumadocs-mdx: 11.6.1
 
 catalogs:
   react18:
@@ -30,11 +30,10 @@ catalogs:
     "@types/react": 19.1.2
     "@types/react-dom": 19.1.2
     "babel-plugin-react-compiler": 19.1.0-rc.1
-  tailwindcss3:
-    tailwindcss: 3.4.17
-  tailwindcss4:
-    tailwindcss: 4.0.9
   triggerdotdev:
     "@trigger.dev/core": 3.3.17
     "@trigger.dev/sdk": 3.3.17
     "@trigger.dev/build": 3.3.17
+  heroui:
+    "@heroui/react": beta
+    "@heroui/theme": beta
