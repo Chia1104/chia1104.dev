@@ -9,6 +9,10 @@ on:
       - ".github/workflows/dash-ci.yml"
       - "package.json"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: pull-${{ github.ref }}-dash-ci
   cancel-in-progress: true
