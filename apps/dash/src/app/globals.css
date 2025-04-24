@@ -1,6 +1,7 @@
 @import "tailwindcss";
-@import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/shadcn-ui.css";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/novel.css";
 @import "@chia/tailwind/animations.css";
 @import "@chia/tailwind/preset.css";
@@ -54,10 +55,11 @@
   border-radius: 8px;
 }
 
-:root {
-  --fd--background: unset;
-}
-
 ::selection {
   background: #8884;
+}
+
+:root {
+  /* --color-fd-background: hsl(0, 0%, 100%); */
+  --color-fd-background: unset;
 }
