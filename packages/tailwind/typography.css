@@ -39,3 +39,10 @@
         }
     }
 }
+
+@layer base {
+    code::after,
+    code::before {
+        display: none;
+    }
+}

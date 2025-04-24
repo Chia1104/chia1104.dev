@@ -9,7 +9,8 @@
     "./animations.css": "./animations.css",
     "./shadcn-ui.css": "./shadcn-ui.css",
     "./novel.css": "./novel.css",
-    "./colors.css": "./colors.css"
+    "./colors.css": "./colors.css",
+    "./typography.css": "./typography.css"
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
