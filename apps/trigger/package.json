@@ -9,21 +9,31 @@
   "scripts": {
     "dev": "pnpm dlx trigger.dev@latest dev",
     "deploy:trigger:staging": "pnpm dlx trigger.dev@latest deploy --env staging",
-    "deploy:trigger": "pnpm dlx trigger.dev@latest deploy"
+    "deploy:trigger": "pnpm dlx trigger.dev@latest deploy",
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:^",
     "@chia/utils": "workspace:^",
-    "@t3-oss/env-core": "^0.12.0",
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
-    "openai": "^4.85.1",
-    "zod": "^3.24.2"
+    "openai": "^4.96.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",
     "@trigger.dev/build": "catalog:triggerdotdev",
     "typescript": "catalog:"
+  },
+  "exports": {
+    "./feed-summarize": {
+      "import": "./tasks/feed-summarize.ts",
+      "types": "./tasks/feed-summarize.ts"
+    },
+    "./constant": {
+      "import": "./tasks/tasks.constant.ts",
+      "types": "./tasks/tasks.constant.ts"
+    }
   }
 }

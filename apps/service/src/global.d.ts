@@ -6,6 +6,7 @@ type Variables = {
   AI_AUTH_TOKEN: string;
   user: import("@chia/auth/types").Session["user"] | null;
   session: import("@chia/auth/types").Session["session"] | null;
+  clientIP: string;
 };
 
 type HonoContext = {

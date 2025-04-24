@@ -33,6 +33,14 @@
       "types": "./src/libs/public/feeds/index.ts",
       "default": "./src/libs/public/feeds.ts"
     },
+    "./repos/organization": {
+      "types": "./src/libs/organization/index.ts",
+      "default": "./src/libs/organization/index.ts"
+    },
+    "./repos/apikey": {
+      "types": "./src/libs/apikey/index.ts",
+      "default": "./src/libs/apikey/index.ts"
+    },
     "./validator/feeds": {
       "types": "./src/libs/validator/feeds.ts",
       "default": "./src/libs/validator/feeds.ts"
@@ -40,6 +48,18 @@
     "./validator/users": {
       "types": "./src/libs/validator/users.ts",
       "default": "./src/libs/validator/users.ts"
+    },
+    "./validator/organization": {
+      "types": "./src/libs/validator/organization.ts",
+      "default": "./src/libs/validator/organization.ts"
+    },
+    "./validator/apikey": {
+      "types": "./src/libs/validator/apikey.ts",
+      "default": "./src/libs/validator/apikey.ts"
+    },
+    "./env": {
+      "types": "./src/env.ts",
+      "default": "./src/env.ts"
     }
   },
   "scripts": {
@@ -57,16 +77,16 @@
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
-    "drizzle-orm": "^0.39.3",
-    "drizzle-zod": "^0.7.0",
-    "pg": "^8.13.3"
+    "drizzle-orm": "^0.42.0",
+    "drizzle-zod": "^0.7.1",
+    "pg": "^8.15.5"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@types/pg": "^8.11.11",
-    "drizzle-kit": "^0.30.4",
+    "@types/pg": "^8.11.14",
+    "drizzle-kit": "^0.31.0",
     "eslint": "catalog:",
     "typescript": "catalog:"
   }

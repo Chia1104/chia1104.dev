@@ -9,15 +9,16 @@ import {
 } from "@heroui/react";
 import type { ButtonProps } from "@heroui/react";
 import { useTranslations } from "next-intl";
+import type { Locale as TLocale } from "next-intl";
 
 import { useRouter, usePathname } from "@/i18n/routing";
-import { I18N } from "@/utils/i18n";
+import { Locale } from "@/utils/i18n";
 
 const LocaleSelector = (props: ButtonProps) => {
   const t = useTranslations("locale");
   const router = useRouter();
   const pathname = usePathname();
-  const changeLocale = (locale: I18N) => {
+  const changeLocale = (locale: TLocale) => {
     router.push(pathname, { locale });
     router.refresh();
   };
@@ -29,7 +30,7 @@ const LocaleSelector = (props: ButtonProps) => {
         </Button>
       </DropdownTrigger>
       <DropdownMenu>
-        {Object.values(I18N).map((locale) => (
+        {Object.values(Locale).map((locale) => (
           <DropdownItem key={locale} onPress={() => changeLocale(locale)}>
             {t(locale)}
           </DropdownItem>

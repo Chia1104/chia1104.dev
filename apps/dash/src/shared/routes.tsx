@@ -24,7 +24,12 @@ export const routeItems: SidebarItem[] = [
         width={24}
       />
     ),
-    isDisabled: true,
+  },
+  {
+    key: "api-key",
+    href: "/api-key",
+    icon: "solar:key-square-2-line-duotone",
+    title: "Api Keys",
   },
   {
     key: "feed",
@@ -49,6 +54,18 @@ export const routeItems: SidebarItem[] = [
         href: "/feed/drafts",
         icon: "solar:pen-new-square-line-duotone",
         title: "Drafts",
+      },
+      // {
+      //   key: "write",
+      //   icon: "solar:pen-new-square-line-duotone",
+      //   title: "Write",
+      //   hiddenInMenu: true,
+      // },
+      {
+        key: "edit",
+        icon: "solar:pen-new-square-line-duotone",
+        title: "Edit",
+        hiddenInMenu: true,
       },
     ],
     action: <CreateFeed />,

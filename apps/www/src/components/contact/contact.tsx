@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, memo, useState } from "react";
+import { useId, memo } from "react";
 import type {
   FC,
   ComponentPropsWithoutRef,
@@ -10,18 +10,24 @@ import type {
 
 import { Input, Textarea } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { HTTPError } from "ky";
+import { useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import type { Control } from "react-hook-form";
 import { toast } from "sonner";
 
+import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha";
+import { ErrorCode as CaptchaErrorCode } from "@chia/api/captcha";
 import Card from "@chia/ui/card";
-import ShimmerButton from "@chia/ui/shimmer-button";
+import { Form as _Form, FormField, FormItem, FormMessage } from "@chia/ui/form";
+import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
+import { getServiceEndPoint } from "@chia/utils";
 import { post, handleKyError } from "@chia/utils";
-import type { HTTPError } from "@chia/utils";
 
 import { env } from "@/env";
 import { contactSchema } from "@/shared/validator";
@@ -30,26 +36,68 @@ import type { Contact } from "@/shared/validator";
 const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
   ssr: false,
 });
+const Turnstile = dynamic(() =>
+  import("@marsidev/react-turnstile").then((mod) => mod.Turnstile)
+);
+
+const CaptchaField = ({
+  control,
+}: {
+  control: Control<Contact, "captchaToken">;
+}) => {
+  const { isDarkMode } = useTheme();
+  const locale = useLocale();
+  return (
+    <FormField
+      control={control}
+      name="captchaToken"
+      render={({ field }) => (
+        <FormItem>
+          {env.NEXT_PUBLIC_CAPTCHA_PROVIDER === "google-recaptcha" ? (
+            <div className="recaptcha-style">
+              <ReCAPTCHA
+                key={isDarkMode ? "dark" : "light"}
+                theme={isDarkMode ? "dark" : "light"}
+                sitekey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
+                onChange={(value) => {
+                  field.onChange(value ?? "");
+                }}
+                onReset={() => {
+                  field.onChange("");
+                }}
+              />
+            </div>
+          ) : (
+            <Turnstile
+              options={{
+                theme: isDarkMode ? "dark" : "light",
+                language: locale,
+              }}
+              siteKey={env.NEXT_PUBLIC_CAPTCHA_SITE_KEY}
+              onSuccess={(data) => {
+                field.onChange(data);
+              }}
+              tw=""
+            />
+          )}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
 
 export const Form: FC<
   ComponentPropsWithoutRef<"form"> & {
     onSuccess?: () => void;
-    onError?: (error: HTTPError) => void;
+    onError?: (error: Error) => void;
     disableRouterRefresh?: boolean;
     render?: ({
       controller,
       isPending,
       ReCAPTCHA,
     }: {
-      controller: Control<
-        {
-          title: string;
-          message: string;
-          email: string;
-          reCaptchToken: string;
-        },
-        any
-      >;
+      controller: Control<Contact>;
       isPending: boolean;
       ReCAPTCHA: ReactElement;
     }) => ReactNode;
@@ -63,193 +111,159 @@ export const Form: FC<
   ...props
 }) => {
   const id = useId();
-  const { isDarkMode } = useTheme();
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { mutateAsync, isPending } = useMutation<void, Error, Contact>({
+    mutationFn: (data) =>
+      post<void, Omit<Contact, "captchaToken">>(
+        "email/send",
+        {
+          title: data.title,
+          email: data.email,
+          message: data.message,
+        },
+        {
+          headers: {
+            [X_CAPTCHA_RESPONSE]: data.captchaToken,
+          },
+          prefixUrl: getServiceEndPoint(),
+        }
+      ),
+  });
 
-  const {
-    control,
-    handleSubmit: onSubmit,
-    formState: { isSubmitting },
-  } = useForm<Contact>({
+  const form = useForm<Contact>({
     defaultValues: {
       email: "",
       title: "",
       message: "",
-      reCaptchToken: "",
+      captchaToken: "",
     },
     resolver: zodResolver(contactSchema),
   });
 
-  const handleSubmit = onSubmit((data) => {
-    setIsLoading(true);
-    const promise = () =>
-      post<void, Contact>("/api/v1/send", {
-        title: data.title,
-        email: data.email,
-        message: data.message,
-        reCaptchToken: data.reCaptchToken,
-      });
-    toast.promise<void>(promise, {
+  const handleSubmit = form.handleSubmit((data) => {
+    toast.promise<void>(() => mutateAsync(data), {
       loading: "Loading...",
       success: () => {
-        setIsLoading(false);
         if (!disableRouterRefresh) router.refresh();
         onSuccess?.();
         return "Message sent successfully.";
       },
-      error: async (_error: HTTPError) => {
-        const error = await handleKyError(_error);
+      error: async (_error: Error) => {
         onError?.(_error);
-        setIsLoading(false);
-        return error.code ?? "Sorry, something went wrong.";
+        if (_error instanceof HTTPError) {
+          const error = await handleKyError(_error);
+
+          switch (error.errors?.[0].message) {
+            case CaptchaErrorCode.CaptchaFailed:
+              return "Failed to validate captcha";
+            case CaptchaErrorCode.CaptchaProviderNotSupported:
+              return "Captcha provider not supported";
+            case CaptchaErrorCode.CaptchaRequired:
+              return "Captcha is required";
+            default:
+              return "Failed to send email";
+          }
+        }
       },
     });
   });
+
   return (
-    <form
-      id={id + "-contact-form"}
-      className={cn("flex w-full flex-col gap-4", className)}
-      {...props}
-      onSubmit={handleSubmit}>
-      {render ? (
-        render({
-          controller: control,
-          isPending: isLoading,
-          ReCAPTCHA: (
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field: { onChange } }) => (
-                <div className="recaptcha-style">
-                  <ReCAPTCHA
-                    theme={isDarkMode ? "dark" : "light"}
-                    sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY}
-                    onChange={(value) => {
-                      onChange(value ?? "");
-                    }}
+    <_Form {...form}>
+      <form
+        id={id + "-contact-form"}
+        className={cn("flex w-full flex-col gap-4", className)}
+        {...props}
+        onSubmit={handleSubmit}>
+        {render ? (
+          render({
+            controller: form.control,
+            isPending,
+            ReCAPTCHA: <CaptchaField control={form.control} />,
+          })
+        ) : (
+          <>
+            <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({
+                  field: { onChange, value, onBlur },
+                  fieldState: { invalid, error },
+                }) => (
+                  <Input
+                    isRequired
+                    type="email"
+                    label="Email"
+                    placeholder="Your email"
+                    isInvalid={invalid}
+                    errorMessage={error?.message}
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    name="email"
                   />
-                </div>
-              )}
-              name="reCaptchToken"
-            />
-          ),
-        })
-      ) : (
-        <>
-          <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({
-                field: { onChange, value, onBlur },
-                fieldState: { invalid, error },
-              }) => (
-                <Input
-                  isRequired
-                  type="email"
-                  label="Email"
-                  placeholder="Your email"
-                  isInvalid={invalid}
-                  errorMessage={error?.message}
-                  value={value}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  name="email"
-                />
-              )}
-              name="email"
-            />
-          </div>
-          <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({
-                field: { onChange, value, onBlur },
-                fieldState: { invalid, error },
-              }) => (
-                <Input
-                  isRequired
-                  isInvalid={invalid}
-                  errorMessage={error?.message}
-                  type="text"
-                  label="Title"
-                  placeholder="Your title"
-                  value={value}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  name="title"
-                />
-              )}
-              name="title"
-            />
-          </div>
-          <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({
-                field: { onChange, value, onBlur },
-                fieldState: { invalid, error },
-              }) => (
-                <Textarea
-                  isRequired
-                  isInvalid={invalid}
-                  label="Message"
-                  name="message"
-                  value={value}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  placeholder="Your message"
-                  errorMessage={error?.message}
-                />
-              )}
-              name="message"
-            />
-          </div>
-          <div className="w-fit self-center rounded-2xl">
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field: { onChange } }) => (
-                <div className="recaptcha-style">
-                  <ReCAPTCHA
-                    theme={isDarkMode ? "dark" : "light"}
-                    sitekey={env.NEXT_PUBLIC_RE_CAPTCHA_KEY}
-                    onChange={(value) => {
-                      onChange(value ?? "");
-                    }}
+                )}
+              />
+            </div>
+            <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({
+                  field: { onChange, value, onBlur },
+                  fieldState: { invalid, error },
+                }) => (
+                  <Input
+                    isRequired
+                    isInvalid={invalid}
+                    errorMessage={error?.message}
+                    type="text"
+                    label="Title"
+                    placeholder="Your title"
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    name="title"
                   />
-                </div>
-              )}
-              name="reCaptchToken"
-            />
-          </div>
-          <ShimmerButton
-            shimmerSize="0.1em"
-            id={id + "-contact-submit"}
-            type="submit"
-            disabled={isLoading || isSubmitting}
-            className={cn(
-              "w-fit self-center py-2",
-              isLoading && "cursor-not-allowed"
-            )}>
-            Send
-          </ShimmerButton>
-        </>
-      )}
-    </form>
+                )}
+              />
+            </div>
+            <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
+              <FormField
+                control={form.control}
+                name="message"
+                render={({
+                  field: { onChange, value, onBlur },
+                  fieldState: { invalid, error },
+                }) => (
+                  <Textarea
+                    isRequired
+                    isInvalid={invalid}
+                    label="Message"
+                    name="message"
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    placeholder="Your message"
+                    errorMessage={error?.message}
+                  />
+                )}
+              />
+            </div>
+            <div className="w-fit self-center rounded-2xl">
+              <CaptchaField control={form.control} />
+            </div>
+            <SubmitForm
+              id={id + "-contact-submit"}
+              type="submit"
+              className={cn("w-fit self-center py-2")}>
+              Send
+            </SubmitForm>
+          </>
+        )}
+      </form>
+    </_Form>
   );
 };
 

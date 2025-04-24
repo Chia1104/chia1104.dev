@@ -26,17 +26,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-type ChartData = {
+interface ChartData {
   weekday: string;
   [key: string]: string | number;
-};
+}
 
-type BarChartProps = {
+interface BarChartProps {
   title: string;
   color: ButtonProps["color"];
   categories: string[];
   chartData: ChartData[];
-};
+}
 
 const data: BarChartProps[] = [
   {
@@ -295,7 +295,7 @@ const BarChartCard = React.forwardRef<
               <div className="flex h-auto min-w-[120px] items-center gap-x-2 rounded-medium bg-background p-2 text-tiny shadow-small">
                 <div className="flex w-full flex-col gap-y-1">
                   <span className="font-medium text-foreground">
-                    {formatWeekday(label)}
+                    {formatWeekday(label as string)}
                   </span>
                   {payload?.map((p, index) => {
                     const name = p.name;

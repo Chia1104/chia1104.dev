@@ -5,7 +5,7 @@ import type {
   getFeedBySlug as TgetFeedBySlug,
   getFeedMetaById as TgetFeedMetaById,
 } from "@chia/db/repos/feeds";
-import { InsertFeedMetaDTO } from "@chia/db/validator/feeds";
+import type { InsertFeedMetaDTO } from "@chia/db/validator/feeds";
 import { serviceRequest } from "@chia/utils";
 
 import { withInternalRequest } from "../utils";
@@ -65,6 +65,17 @@ export const getFeedBySlug = withInternalRequest<FeedDetail, { slug: string }>(
       internal_requestSecret,
     })
       .get(`admin/public/feeds/${slug}`, options)
+      .json<FeedDetail>();
+  }
+);
+
+export const getFeedById = withInternalRequest<FeedDetail, { id: string }>(
+  async (internal_requestSecret, { id }, options) => {
+    return await serviceRequest({
+      isInternal: true,
+      internal_requestSecret,
+    })
+      .get(`admin/public/feeds:id/${id}`, options)
       .json<FeedDetail>();
   }
 );

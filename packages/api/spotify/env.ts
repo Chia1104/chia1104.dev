@@ -53,5 +53,6 @@ export const env = createEnv({
   clientPrefix: "NEXT_PUBLIC_",
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
-    process.env.SKIP_ENV_VALIDATION === "1",
+    process.env.SKIP_ENV_VALIDATION === "1" ||
+    process.env.NODE_ENV === "test",
 });

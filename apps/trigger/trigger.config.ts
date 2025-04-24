@@ -21,9 +21,11 @@ export default defineConfig({
     extensions: [
       syncEnvVars(() => {
         return {
-          OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-          INTERNAL_SERVICE_ENDPOINT: process.env.INTERNAL_SERVICE_ENDPOINT,
-          INTERNAL_REQUEST_SECRET: process.env.INTERNAL_REQUEST_SECRET,
+          OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "",
+          INTERNAL_SERVICE_ENDPOINT:
+            process.env.INTERNAL_SERVICE_ENDPOINT ?? "",
+          CF_BYPASS_TOKEN: process.env.CF_BYPASS_TOKEN ?? "",
+          CH_API_KEY: process.env.CH_API_KEY ?? "",
         };
       }),
     ],

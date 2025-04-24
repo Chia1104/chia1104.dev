@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
-import { getFeedMetaById, insertFeedMeta } from "@chia/api/services/feeds";
+import { insertFeedMeta, getFeedById } from "@chia/api/services/feeds";
 
 import { TaskID } from "./tasks.constant";
 import { env } from "./utils/env";
@@ -13,37 +13,40 @@ export type STREAMS = {
   openai: OpenAI.ChatCompletionChunk; // The type of the chunk is determined by the provider
 };
 
-const requestSchema = z.object({
+export const requestSchema = z.object({
   ...baseRequestSchema.omit({ authToken: true, messages: true }).shape,
   feedID: z.string(),
 });
 
 const SYSTEM_PROMPT =
-  "請幫我總結這篇文章的內容，並依照這篇文章的語言生成，需要有助於 SEO 的內容，最後不可超過 300 字。";
+  "請幫我總結這篇文章的內容，並依照這篇文章的語言生成，需要有助於 SEO 的內容，最後不可超過 250 字。";
 
 export const feedSummarizeTask = schemaTask({
   id: TaskID.FeedSummarize,
   schema: requestSchema,
-  run: async ({ modal, system, feedID }) => {
-    const feedMeta = await getFeedMetaById(env.INTERNAL_REQUEST_SECRET, {
-      id: feedID,
-    });
+  run: async ({ model, system, feedID }) => {
+    const feed = await getFeedById(
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY,
+      },
+      {
+        id: feedID,
+      }
+    );
 
-    /**
-     * TODO: handle data revalidation
-     */
-    if (feedMeta?.summary) {
+    if (feed?.feedMeta?.summary || !feed?.published) {
       return;
     }
 
     const completion = streamGeneratedText({
-      modal,
+      model,
       authToken: env.OPENAI_API_KEY,
       messages: [
         {
           role: "user",
           content: `目前的文章內容為：
-          ${feedMeta?.feed.content.source}
+          ${feed?.content.source}
         `,
         },
       ],
@@ -62,9 +65,15 @@ export const feedSummarizeTask = schemaTask({
       text += chunk;
     }
 
-    await insertFeedMeta(env.INTERNAL_REQUEST_SECRET, {
-      feedId: Number(feedID),
-      summary: text,
-    });
+    await insertFeedMeta(
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY,
+      },
+      {
+        feedId: Number(feedID),
+        summary: text,
+      }
+    );
   },
 });

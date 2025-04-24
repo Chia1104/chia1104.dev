@@ -36,6 +36,10 @@ import useTheme from "@chia/ui/utils/use-theme";
 import dayjs from "@chia/utils/day";
 
 import { useDraft } from "@/hooks/use-draft";
+import {
+  useGenerateFeedDescription,
+  useGenerateFeedSlug,
+} from "@/services/ai/hooks";
 import { api } from "@/trpc/client";
 
 import {
@@ -43,21 +47,35 @@ import {
   useEditFieldsContext,
   DEFAULT_EDIT_FIELDS_CONTEXT,
 } from "./edit-fields.context";
-import {
-  GenerateFeedSlug,
-  GenerateFeedDescription,
-  GenerateFeedContent,
-} from "./generate";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
 });
 
-// const Novel = dynamic(() => import("@chia/editor/novel"), {
-//   ssr: false,
-//   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
-// });
+const GenerateFeedSlug = dynamic(
+  () => import("./generate").then((mod) => mod.GenerateFeedSlug),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+  }
+);
+
+const GenerateFeedDescription = dynamic(
+  () => import("./generate").then((mod) => mod.GenerateFeedDescription),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+  }
+);
+
+const GenerateFeedContent = dynamic(
+  () => import("./generate").then((mod) => mod.GenerateFeedContent),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+  }
+);
 
 interface Props {
   disabled?: boolean;
@@ -117,6 +135,89 @@ const DeleteButton = () => {
   );
 };
 
+const SlugField = () => {
+  const form = useFormContext<CreateFeedInput>();
+  const editFields = useEditFieldsContext();
+  const { completion } = useGenerateFeedSlug();
+
+  return (
+    <FormField<CreateFeedInput, "slug">
+      control={form.control}
+      name="slug"
+      render={({ field, fieldState }) => (
+        <FormItem>
+          <FormControl>
+            <Input
+              disabled={editFields.disabled || editFields.mode === "edit"}
+              label="Slug"
+              isInvalid={fieldState.invalid}
+              description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
+              endContent={
+                <GenerateFeedSlug
+                  title={form.watch("title")}
+                  onSuccess={(data) => {
+                    field.onChange(data);
+                  }}
+                  preGenerate={() => {
+                    field.onChange("");
+                  }}
+                />
+              }
+              {...field}
+              placeholder={completion}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
+
+const DescriptionField = () => {
+  const form = useFormContext<CreateFeedInput>();
+  const editFields = useEditFieldsContext();
+  const { completion } = useGenerateFeedDescription();
+
+  return (
+    <FormField<CreateFeedInput, "description">
+      control={form.control}
+      name="description"
+      render={({ field, fieldState }) => (
+        <FormItem>
+          <FormControl>
+            <Textarea
+              disabled={editFields.disabled}
+              label="Description"
+              labelPlacement="outside"
+              placeholder={completion || "Description"}
+              minRows={7}
+              isInvalid={fieldState.invalid}
+              endContent={
+                <GenerateFeedDescription
+                  input={{
+                    title: form.watch("title"),
+                    content: form.watch("content") ?? undefined,
+                  }}
+                  onSuccess={(data) => {
+                    field.onChange(data);
+                  }}
+                  preGenerate={() => {
+                    field.onChange("");
+                  }}
+                />
+              }
+              {...field}
+              value={field.value ?? ""}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
+
 export const MetadataFields = () => {
   const form = useFormContext<CreateFeedInput>();
   const editFields = useEditFieldsContext();
@@ -127,6 +228,7 @@ export const MetadataFields = () => {
   const [contentType, setContentType] = useState(
     new Set([form.getValues("contentType")])
   );
+
   return (
     <div className="w-full flex flex-col gap-5">
       <div className="flex justify-between">
@@ -188,61 +290,8 @@ export const MetadataFields = () => {
           </FormItem>
         )}
       />
-      <FormField<CreateFeedInput, "slug">
-        control={form.control}
-        name="slug"
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormControl>
-              <Input
-                disabled={editFields.disabled || editFields.mode === "edit"}
-                label="Slug"
-                isInvalid={fieldState.invalid}
-                description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
-                endContent={
-                  <GenerateFeedSlug
-                    title={form.watch("title")}
-                    onSuccess={(data) => {
-                      field.onChange(data);
-                    }}
-                  />
-                }
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField<CreateFeedInput, "description">
-        control={form.control}
-        name="description"
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormControl>
-              <Textarea
-                disabled={editFields.disabled}
-                label="Description"
-                labelPlacement="outside"
-                placeholder="Description"
-                minRows={7}
-                isInvalid={fieldState.invalid}
-                endContent={
-                  <GenerateFeedDescription
-                    input={form.watch("title")}
-                    onSuccess={(data) => {
-                      field.onChange(data);
-                    }}
-                  />
-                }
-                {...field}
-                value={field.value ?? ""}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <SlugField />
+      <DescriptionField />
       <div className="flex flex-col md:flex-row w-full gap-5">
         <div className="flex gap-5 w-full md:w-1/2">
           <FormField<CreateFeedInput, "createdAt">
@@ -257,7 +306,7 @@ export const MetadataFields = () => {
                     labelPlacement="outside"
                     className="w-full"
                     label="Create"
-                    // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
+                    // @ts-expect-error - `@internationalized/date` version conflict
                     value={
                       field.value
                         ? parseDate(
@@ -269,7 +318,7 @@ export const MetadataFields = () => {
                         : null
                     }
                     onChange={(date) => {
-                      // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
+                      // @ts-expect-error - `@internationalized/date` version conflict
                       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                       field.onChange(dayjs(date?.toString()).valueOf());
                     }}
@@ -291,7 +340,7 @@ export const MetadataFields = () => {
                       labelPlacement="outside"
                       className="w-full"
                       label="Update"
-                      // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
+                      // @ts-expect-error - `@internationalized/date` version conflict
                       value={
                         field.value
                           ? parseDate(
@@ -303,7 +352,7 @@ export const MetadataFields = () => {
                           : null
                       }
                       onChange={(date) => {
-                        // @ts-expect-error - HeroUI issues #4567 (https://github.com/heroui-inc/heroui/issues/4567)
+                        // @ts-expect-error - `@internationalized/date` version conflict
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         field.onChange(dayjs(date?.toString()).valueOf());
                       }}
@@ -410,17 +459,18 @@ const SwitchEditor = () => {
               "relative w-full overflow-hidden rounded-2xl shadow-lg",
               editFields.disabled && "pointer-events-none"
             )}>
-            <GenerateFeedContent
-              className="absolute top-3 right-3 z-30"
-              input={{
-                title: form.watch("title"),
-                description: form.watch("description") ?? "",
-                content: editFields.content.mdx.content,
-              }}
-              onSuccess={(data) => {
-                console.log(data);
-              }}
-            />
+            <div className="absolute top-3 right-3 z-30">
+              <GenerateFeedContent
+                input={{
+                  title: form.watch("title"),
+                  description: form.watch("description") ?? "",
+                  content: editFields.content.mdx.content,
+                }}
+                onSuccess={(data) => {
+                  console.log(data);
+                }}
+              />
+            </div>
             <MEditor
               className={cn("py-5 dark:bg-[#1e1e1e] bg-white")}
               height="700px"
@@ -459,6 +509,7 @@ const SwitchEditor = () => {
                 scrollBeyondLastLine: false,
                 scrollbar: { vertical: "auto" },
                 lineNumbers: "off",
+                quickSuggestions: false,
               }}
             />
           </div>

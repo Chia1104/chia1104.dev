@@ -1,6 +1,3 @@
-/**
- * TODO: implement OIDC auth flow
- */
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -15,15 +12,25 @@ import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
   getFeedMetaById,
-  // createFeedMeta,
+  createFeedMeta,
+  getFeedById,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId, numericStringSchema } from "@chia/utils";
 
+import { env } from "@/env";
+import { apikeyVerify } from "@/guards/apikey-verify.guard";
 import { errorResponse } from "@/utils/error.util";
 
 const api = new Hono<HonoContext>();
 const adminId = getAdminId();
+
+api.use(
+  "*",
+  apikeyVerify({
+    projectId: env.PROJECT_ID,
+  })
+);
 
 api.get("/public/feeds:meta", async (c) => {
   let total = 0;
@@ -81,6 +88,29 @@ api.get("/public/feeds/:slug", async (c) => {
 });
 
 api.get(
+  "/public/feeds:id/:id",
+  zValidator(
+    "param",
+    z.object({
+      id: numericStringSchema,
+    }),
+    (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }
+  ),
+  async (c) => {
+    const id = c.req.valid("param").id;
+    const feed = await getFeedById(c.var.db, id);
+    if (!feed) {
+      return c.json(errorGenerator(404), 404);
+    }
+    return c.json(feed);
+  }
+);
+
+api.get(
   "/public/feeds:meta/:id",
   zValidator(
     "param",
@@ -97,6 +127,7 @@ api.get(
     const id = c.req.valid("param").id;
     const feed = await getFeedMetaById(c.var.db, {
       feedId: id,
+      withContent: true,
     });
     if (!feed) {
       return c.json(null);
@@ -112,14 +143,13 @@ api.post(
       return c.json(errorResponse(result.error), 400);
     }
   }),
-  (c) => {
-    return c.json(errorGenerator(501), 501);
-    // const { feedId, summary } = c.req.valid("json");
-    // await createFeedMeta(c.var.db, {
-    //   feedId,
-    //   summary,
-    // });
-    // return c.body(null, 204);
+  async (c) => {
+    const { feedId, summary } = c.req.valid("json");
+    await createFeedMeta(c.var.db, {
+      feedId,
+      summary,
+    });
+    return c.body(null, 204);
   }
 );
 

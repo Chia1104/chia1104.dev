@@ -22,6 +22,10 @@
       "types": "./src/env.ts",
       "default": "./src/env.ts"
     },
+    "./env.client": {
+      "types": "./src/env.client.ts",
+      "default": "./src/env.client.ts"
+    },
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/types.ts"
@@ -41,9 +45,8 @@
     "@chia/db": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@t3-oss/env-core": "^0.12.0",
-    "better-auth": "^1.1.18",
-    "resend": "^4.1.2"
+    "better-auth": "^1.2.7",
+    "resend": "^4.4.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

@@ -9,16 +9,16 @@ on:
       - ".github/workflows/dash-ci.yml"
       - "package.json"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: pull-${{ github.ref }}-dash-ci
   cancel-in-progress: true
 
 env:
   APP_CODE: dash
-  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_URL: http://localhost:3001
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -27,11 +27,9 @@ env:
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
   BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
   NEXT_PUBLIC_ENV: beta
-  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-  SPOTIFY_REDIRECT_URI: http://localhost:3001
-  NODE_VERSION: 20
   TURBO_TELEMETRY_DISABLED: 1
+  INTERNAL_SERVICE_ENDPOINT: ${{ secrets.BETA_INTERNAL_SERVICE_ENDPOINT }}
+  NEXT_PUBLIC_SERVICE_ENDPOINT: ${{ secrets.BETA_NEXT_PUBLIC_SERVICE_ENDPOINT }}
 
 jobs:
   dash-lint:

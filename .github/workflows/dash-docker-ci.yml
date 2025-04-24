@@ -9,6 +9,10 @@ on:
       - ".github/workflows/dash-docker.yml"
       - "package.json"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: pull-${{ github.ref }}-dash-docker-ci
   cancel-in-progress: true
@@ -17,10 +21,6 @@ env:
   APP_CODE: dash
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-  AUTH_URL: http://localhost:8080
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   GIT_HASH: ${{ github.sha }}
@@ -29,9 +29,8 @@ env:
   ADMIN_ID: ${{ secrets.ADMIN_ID }}
   BETA_ADMIN_ID: ${{ secrets.BETA_ADMIN_ID }}
   NEXT_PUBLIC_ENV: beta
-  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-  SPOTIFY_REDIRECT_URI: http://localhost:8080
+  INTERNAL_SERVICE_ENDPOINT: ${{ secrets.BETA_INTERNAL_SERVICE_ENDPOINT }}
+  NEXT_PUBLIC_SERVICE_ENDPOINT: ${{ secrets.BETA_NEXT_PUBLIC_SERVICE_ENDPOINT }}
 
 jobs:
   build:
@@ -61,10 +60,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
-            AUTH_SECRET=${{ env.AUTH_SECRET }}
-            AUTH_URL=${{ env.AUTH_URL }}
             TURBO_TEAM=${{ env.TURBO_TEAM }}
             TURBO_TOKEN=${{ env.TURBO_TOKEN }}
             DATABASE_URL=${{ env.DATABASE_URL }}
@@ -72,6 +67,5 @@ jobs:
             ADMIN_ID=${{ env.ADMIN_ID }}
             BETA_ADMIN_ID=${{ env.BETA_ADMIN_ID }}
             NEXT_PUBLIC_ENV=${{ env.NEXT_PUBLIC_ENV }}
-            SPOTIFY_CLIENT_ID=${{ env.SPOTIFY_CLIENT_ID }}
-            SPOTIFY_CLIENT_SECRET=${{ env.SPOTIFY_CLIENT_SECRET }}
-            SPOTIFY_REDIRECT_URI=${{ env.SPOTIFY_REDIRECT_URI }}
+            INTERNAL_SERVICE_ENDPOINT=${{ env.INTERNAL_SERVICE_ENDPOINT }}
+            NEXT_PUBLIC_SERVICE_ENDPOINT=${{ env.NEXT_PUBLIC_SERVICE_ENDPOINT }}

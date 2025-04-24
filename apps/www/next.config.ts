@@ -12,7 +12,12 @@ const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
 });
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin({
+  experimental: {
+    // Provide the path to the messages that you're using in `AppConfig`
+    createMessagesDeclaration: "./messages/en-US.json",
+  },
+});
 
 const securityHeaders = [
   {
@@ -45,9 +50,9 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@heroui/react", "@react-email/components"],
     reactCompiler: true,
     webpackBuildWorker: true,
-    // dynamicIO: true,
-    // ppr: true,
+    viewTransition: true,
     authInterrupts: true,
+    clientInstrumentationHook: true,
   },
   serverExternalPackages: ["@chia/db", "@chia/auth", "twoslash", "typescript"],
   eslint: {

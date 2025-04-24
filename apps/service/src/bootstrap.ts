@@ -5,20 +5,25 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { ipRestriction } from "hono/ip-restriction";
 import { logger } from "hono/logger";
+import { timeout } from "hono/timeout";
 import { RedisStore } from "rate-limit-redis";
 
 import { auth } from "@chia/auth";
 import { createRedis } from "@chia/cache";
 import { errorGenerator } from "@chia/utils";
+import { getClientIP } from "@chia/utils/get-client-ip";
 
 import adminRoutes from "@/controllers/admin.controller";
 import aiRoutes from "@/controllers/ai.controller";
 import authRoutes from "@/controllers/auth.controller";
+import emailRoutes from "@/controllers/email.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
 import spotifyRoutes from "@/controllers/spotify.controller";
+import triggerRoutes from "@/controllers/trigger.controller";
 import trpcRoutes from "@/controllers/trpc.controller";
 import { env } from "@/env";
+import { maintenance } from "@/middlewares/maintenance.middleware";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
 import { splitString } from "./utils";
@@ -56,6 +61,18 @@ const bootstrap = <TContext extends HonoContext>(
   });
 
   /**
+   * Maintenance mode middleware
+   */
+  app.use(
+    "*",
+    maintenance({
+      enabled: env.MAINTENANCE_MODE === "true",
+      allowedPaths: ["/api/v1/health"],
+      bypassToken: env.MAINTENANCE_BYPASS_TOKEN,
+    })
+  );
+
+  /**
    * CORS middleware
    */
   app.use(
@@ -66,16 +83,10 @@ const bootstrap = <TContext extends HonoContext>(
   );
 
   app.use(
-    ipRestriction(
-      (c) =>
-        c.req.raw.headers.get("X-Forwarded-For")?.split(",")[0] ??
-        c.req.raw.headers.get("X-Real-IP") ??
-        "anonymous",
-      {
-        denyList: splitString(env.IP_DENY_LIST),
-        allowList: splitString(env.IP_ALLOW_LIST),
-      }
-    )
+    ipRestriction((c) => getClientIP(c.req.raw), {
+      denyList: splitString(env.IP_DENY_LIST),
+      allowList: splitString(env.IP_ALLOW_LIST),
+    })
   );
 
   /**
@@ -92,10 +103,7 @@ const bootstrap = <TContext extends HonoContext>(
         keyGenerator: (c) => {
           let info: string | null | undefined = null;
           try {
-            info =
-              c.req.raw.headers.get("X-Forwarded-For")?.split(",")[0] ??
-              c.req.raw.headers.get("X-Real-IP") ??
-              "anonymous";
+            info = getClientIP(c.req.raw);
           } catch (e) {
             console.error(e);
             info = null;
@@ -131,13 +139,31 @@ const bootstrap = <TContext extends HonoContext>(
   /**
    * Routes
    */
-  app.route("/api/v1/auth", authRoutes);
-  app.route("/api/v1/admin", adminRoutes);
-  app.route("/api/v1/feeds", feedsRoutes);
-  app.route("/api/v1/trpc", trpcRoutes);
-  app.route("/api/v1/health", healthRoutes);
+  app
+    .use("/api/v1/auth", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/auth", authRoutes);
+  app
+    .use("/api/v1/admin", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/admin", adminRoutes);
+  app
+    .use("/api/v1/feeds", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/feeds", feedsRoutes);
+  app
+    .use("/api/v1/trpc", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/trpc", trpcRoutes);
+  app
+    .use("/api/v1/health", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/health", healthRoutes);
   app.route("/api/v1/ai", aiRoutes);
-  app.route("/api/v1/spotify", spotifyRoutes);
+  app
+    .use("/api/v1/spotify", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/spotify", spotifyRoutes);
+  app
+    .use("/api/v1/email", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/email", emailRoutes);
+  app
+    .use("/api/v1/trigger", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/trigger", triggerRoutes);
 
   console.log(
     `Server is running on port ${port}, go to http://localhost:${port}`

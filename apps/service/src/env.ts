@@ -1,8 +1,11 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
+import { env as captchaEnv } from "@chia/api/captcha/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
 import { env as authEnv } from "@chia/auth/env";
+import { env as dbEnv } from "@chia/db/env";
+import { numericStringSchema } from "@chia/utils";
 
 export const env = createEnv({
   server: {
@@ -14,7 +17,7 @@ export const env = createEnv({
     REDIS_URL: z.string().optional(),
     REDIS_URI: z.string().optional(),
     CORS_ALLOWED_ORIGIN: z.string().optional(),
-    RESEND_API_KEY: z.string().optional(),
+    RESEND_API_KEY: z.string().min(1),
     SENTRY_DSN: z.string().optional(),
     ZEABUR_SERVICE_ID: z.string().optional(),
     RATELIMIT_WINDOW_MS: z
@@ -23,9 +26,17 @@ export const env = createEnv({
       .default(15 * 60000),
     RATELIMIT_MAX: z.number().optional().default(87),
     OPENAI_API_KEY: z.string().optional(),
-    AI_AUTH_SECRET: z.string().optional(),
+    AI_AUTH_PUBLIC_KEY: z.string().optional(),
+    AI_AUTH_PRIVATE_KEY: z.string().optional(),
     IP_DENY_LIST: z.string().optional(),
     IP_ALLOW_LIST: z.string().optional(),
+    MAINTENANCE_MODE: z.string().optional().default("false"),
+    MAINTENANCE_BYPASS_TOKEN: z.string().optional(),
+    TIMEOUT_MS: numericStringSchema,
+    PROJECT_ID: numericStringSchema.optional(),
+    TRIGGER_SECRET_KEY: z.string().optional(),
+    ANTHROPIC_API_KEY: z.string().optional(),
+    GENAI_API_KEY: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -43,14 +54,26 @@ export const env = createEnv({
       ? Number(process.env.RATELIMIT_MAX)
       : 87,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    AI_AUTH_SECRET: process.env.AI_AUTH_SECRET,
+    AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
+    AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     IP_DENY_LIST: process.env.IP_DENY_LIST,
     IP_ALLOW_LIST: process.env.IP_ALLOW_LIST,
+    MAINTENANCE_MODE:
+      process.env.MAINTENANCE_MODE === "true" ||
+      process.env.MAINTENANCE_MODE === "1"
+        ? "true"
+        : "false",
+    MAINTENANCE_BYPASS_TOKEN: process.env.MAINTENANCE_BYPASS_TOKEN,
+    TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
+    PROJECT_ID: process.env.PROJECT_ID,
+    TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    GENAI_API_KEY: process.env.GENAI_API_KEY,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [spotifyEnv, authEnv],
+  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv],
 });
 
 export type ENV = typeof env;

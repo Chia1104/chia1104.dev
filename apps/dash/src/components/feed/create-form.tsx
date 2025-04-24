@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 

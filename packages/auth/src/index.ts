@@ -1,6 +1,9 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
+import { apiKey } from "better-auth/plugins";
+import { admin } from "better-auth/plugins";
+import { organization } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { Resend } from "resend";
 
@@ -9,10 +12,10 @@ import { connectDatabase } from "@chia/db/client";
 import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
-import { CONTACT_EMAIL } from "@chia/utils";
+import { AUTH_EMAIL } from "@chia/utils";
 
 import { env } from "./env";
-import { useSecureCookies, getCookieDomain } from "./utils";
+import { useSecureCookies, getCookieDomain, X_CH_API_KEY } from "./utils";
 
 export const name = "auth-core";
 
@@ -67,7 +70,7 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        type: [Role.User, Role.Admin],
+        type: [Role.User, Role.Admin, Role.Root],
         required: true,
         defaultValue: Role.User,
         input: true,
@@ -119,7 +122,7 @@ export const auth = betterAuth({
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         await resend.emails.send({
-          from: CONTACT_EMAIL,
+          from: AUTH_EMAIL,
           to: email,
           subject: "Sign in to Chia1104.dev",
           text: "Please click the link below to sign in",
@@ -131,5 +134,18 @@ export const auth = betterAuth({
       },
     }),
     passkey(),
+    apiKey({
+      apiKeyHeaders: X_CH_API_KEY,
+      defaultPrefix: "ch_",
+    }),
+    admin({
+      adminRoles: ["admin", "root"],
+      adminUserIds: [
+        env.ADMIN_ID,
+        env.BETA_ADMIN_ID,
+        env.LOCAL_ADMIN_ID,
+      ].filter(Boolean) as string[],
+    }),
+    organization(),
   ],
 });

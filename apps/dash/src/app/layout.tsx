@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 
 import type { Viewport, Metadata } from "next";
-import { ViewTransitions } from "next-view-transitions";
 import { headers } from "next/headers";
 
 import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
+
+import Background from "@/components/commons/background";
+import RootLayout from "@/components/commons/root-layout";
 
 import RootProvider from "../components/commons/root-provider";
 import "./globals.css";
@@ -28,18 +30,13 @@ export const metadata: Metadata = {
   description: "Chia1104's Dashboard",
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function Layout({ children }: { children: ReactNode }) {
   return (
-    <ViewTransitions>
-      <html lang="en" suppressHydrationWarning>
-        <body className="scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden">
-          <RootProvider headers={await headers()}>{children}</RootProvider>
-        </body>
-      </html>
-    </ViewTransitions>
+    <RootLayout>
+      <RootProvider headers={await headers()}>
+        <Background />
+        {children}
+      </RootProvider>
+    </RootLayout>
   );
 }

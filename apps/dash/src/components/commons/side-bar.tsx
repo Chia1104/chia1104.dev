@@ -11,6 +11,7 @@ import type {
 import { Listbox, Tooltip, ListboxItem, ListboxSection } from "@heroui/react";
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 
 export const SidebarItemType = {
@@ -32,6 +33,7 @@ export interface SidebarItem {
   className?: string;
   isDisabled?: boolean;
   action?: React.ReactNode;
+  hiddenInMenu?: boolean;
 }
 
 export type SidebarProps = Omit<ListboxProps<SidebarItem>, "children"> & {
@@ -42,6 +44,9 @@ export type SidebarProps = Omit<ListboxProps<SidebarItem>, "children"> & {
   sectionClasses?: ListboxSectionProps["classNames"];
   classNames?: ListboxProps["classNames"];
   defaultSelectedKey: string;
+  /**
+   * @deprecated
+   */
   onSelect?: (key: string) => void;
 };
 
@@ -50,7 +55,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
     {
       items,
       isCompact,
-      onSelect,
+      onSelect: _onSelect,
       hideEndContent,
       sectionClasses: sectionClassesProp = {},
       itemClasses: itemClassesProp = {},
@@ -85,6 +90,9 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
 
     const renderNestItem = React.useCallback(
       ({ href, ...item }: SidebarItem) => {
+        if (item.hiddenInMenu || !href || typeof href !== "string") {
+          return null;
+        }
         const isNestType =
           item.items &&
           item.items?.length > 0 &&
@@ -93,6 +101,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
         return (
           <ListboxItem
             {...item}
+            as={Link}
             href={isNestType ? undefined : href}
             key={item.key}
             classNames={{
@@ -198,6 +207,10 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
 
     const renderItem = React.useCallback(
       ({ href, ...item }: SidebarItem) => {
+        if (item.hiddenInMenu || !href || typeof href !== "string") {
+          return null;
+        }
+
         const isNestType =
           item.items &&
           item.items?.length > 0 &&
@@ -210,7 +223,9 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
         return (
           <ListboxItem
             {...item}
+            as={Link}
             key={href}
+            href={href}
             endContent={
               isCompact || hideEndContent ? null : (item.endContent ?? null)
             }
@@ -283,11 +298,11 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
         selectedKeys={[pathname] as unknown as Selection}
         selectionMode="single"
         variant="flat"
-        onSelectionChange={(keys) => {
-          const key = Array.from(keys)[0];
+        // onSelectionChange={(keys) => {
+        //   const key = Array.from(keys)[0];
 
-          onSelect?.(key as string);
-        }}
+        //   onSelect?.(key as string);
+        // }}
         {...props}>
         {(item) => {
           return item.items &&

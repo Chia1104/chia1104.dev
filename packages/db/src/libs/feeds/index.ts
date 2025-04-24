@@ -1,12 +1,7 @@
 import type { SQLWrapper } from "drizzle-orm";
-import {
-  eq, // sql,
-  // cosineDistance,
-  // desc,
-  // gt
-} from "drizzle-orm";
+import { eq, sql, cosineDistance, desc, gt } from "drizzle-orm";
 
-// import { generateEmbedding } from "@chia/ai/embeddings/openai";
+import { generateEmbedding } from "@chia/ai/embeddings/openai";
 import type { Options } from "@chia/ai/embeddings/openai";
 import dayjs from "@chia/utils/day";
 
@@ -25,6 +20,7 @@ export const getFeedBySlug = withDTO(async (db, slug: string) => {
     where: (feeds, { eq }) => eq(feeds.slug, slug),
     with: {
       content: true,
+      feedMeta: true,
     },
   });
   if (!feed) {
@@ -42,6 +38,7 @@ export const getFeedById = withDTO(async (db, feedId: number) => {
     where: (feeds, { eq }) => eq(feeds.id, feedId),
     with: {
       content: true,
+      feedMeta: true,
     },
   });
   if (!feed) {
@@ -273,31 +270,29 @@ export const searchFeeds = withDTO(
     db,
     dto: Options & { input: string; limit?: number; comparison?: number }
   ) => {
-    // const embedding = await generateEmbedding(dto.input, dto);
-    // const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
+    const embedding = await generateEmbedding(dto.input, dto);
+    const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
 
-    return (
-      db
-        .select({
-          id: schema.feeds.id,
-          userId: schema.feeds.userId,
-          type: schema.feeds.type,
-          slug: schema.feeds.slug,
-          description: schema.feeds.description,
-          createdAt: schema.feeds.createdAt,
-          updatedAt: schema.feeds.updatedAt,
-          readTime: schema.feeds.readTime,
-          contentType: schema.feeds.contentType,
-          published: schema.feeds.published,
-          title: schema.feeds.title,
-          excerpt: schema.feeds.excerpt,
-          // similarity,
-        })
-        .from(schema.feeds)
-        // .where(gt(similarity, dto.comparison ?? 0.5))
-        // .orderBy((t) => desc(t.similarity))
-        .limit(dto.limit ?? 5)
-    );
+    return db
+      .select({
+        id: schema.feeds.id,
+        userId: schema.feeds.userId,
+        type: schema.feeds.type,
+        slug: schema.feeds.slug,
+        description: schema.feeds.description,
+        createdAt: schema.feeds.createdAt,
+        updatedAt: schema.feeds.updatedAt,
+        readTime: schema.feeds.readTime,
+        contentType: schema.feeds.contentType,
+        published: schema.feeds.published,
+        title: schema.feeds.title,
+        excerpt: schema.feeds.excerpt,
+        similarity,
+      })
+      .from(schema.feeds)
+      .where(gt(similarity, dto.comparison ?? 0.5))
+      .orderBy((t) => desc(t.similarity))
+      .limit(dto.limit ?? 5);
   }
 );
 
@@ -335,9 +330,15 @@ export const getFeedMetaById = withDTO(
 
 export const createFeedMeta = withDTO(async (db, dto: InsertFeedMetaDTO) => {
   await db.transaction(async (trx) => {
-    await trx.insert(schema.feedMeta).values({
-      feedId: dto.feedId,
-      summary: dto.summary,
-    });
+    await trx.insert(schema.feedMeta).values(dto);
+  });
+});
+
+export const updateFeedMeta = withDTO(async (db, dto: InsertFeedMetaDTO) => {
+  await db.transaction(async (trx) => {
+    await trx
+      .update(schema.feedMeta)
+      .set(dto)
+      .where(eq(schema.feedMeta.feedId, dto.feedId));
   });
 });

@@ -16,10 +16,14 @@ export type Config =
 
 export const createClient = (config?: Config) => {
   try {
+    if (!config) {
+      return new Redis(env.REDIS_URI ?? env.REDIS_URL ?? "");
+    }
     if (typeof config === "string") {
       return new Redis(config);
     }
-    switch (config?.provider ?? env.CACHE_PROVIDER) {
+    config.provider = config.provider ?? env.CACHE_PROVIDER;
+    switch (config.provider) {
       case "upstash": {
         return new Upstash({
           url: config?.url ?? env.REDIS_URL,

@@ -1,20 +1,51 @@
 import { z } from "zod";
 
-// https://platform.openai.com/docs/models
-export const OpenAIModal = {
-  "gpt-4o": "gpt-4o-2024-08-06",
-  "gpt-4o-2024-08-06": "gpt-4o-2024-08-06",
-  "gpt-4o-mini": "gpt-4o-mini",
-  "gpt-4": "gpt-4",
-  "gpt-3.5-turbo": "gpt-3.5-turbo",
+export const Provider = {
+  OpenAI: "openai",
+  Anthropic: "anthropic",
+  Google: "google",
+  DeepSeek: "deep-seek",
 } as const;
 
-export type OpenAIModal = (typeof OpenAIModal)[keyof typeof OpenAIModal];
+export type Provider = (typeof Provider)[keyof typeof Provider];
+
+// https://platform.openai.com/docs/models
+export const OpenAIModel = {
+  "gpt-4o": "gpt-4o",
+  "gpt-4o-mini": "gpt-4o-mini",
+  "gpt-4": "gpt-4",
+  "o3-mini": "o3-mini",
+  o1: "o1",
+  "o1-mini": "o1-mini",
+} as const;
+
+export type OpenAIModel = (typeof OpenAIModel)[keyof typeof OpenAIModel];
+
+// https://docs.anthropic.com/en/docs/about-claude/models/all-models
+export const AnthropicModel = {
+  "claude-3-5-haiku": "claude-3-5-haiku-latest",
+  "claude-3-7-sonnet": "claude-3-7-sonnet-latest",
+} as const;
+
+export type AnthropicModel =
+  (typeof AnthropicModel)[keyof typeof AnthropicModel];
+
+export const GoogleModel = {
+  "gemini-2.0-flash": "gemini-2.0-flash",
+} as const;
+
+export type GoogleModel = (typeof GoogleModel)[keyof typeof GoogleModel];
 
 export const Role = {
   User: "user",
   Assistant: "assistant",
 } as const;
+
+export const DeepSeekModel = {
+  "deepseek-r1": "deepseek-reasoner",
+} as const;
+
+export type DeepSeekModel = (typeof DeepSeekModel)[keyof typeof DeepSeekModel];
 
 export type Role = (typeof Role)[keyof typeof Role];
 
@@ -25,11 +56,35 @@ export const messageSchema = z.object({
 
 export type Message = z.infer<typeof messageSchema>;
 
+export const modelSchema = z
+  .union([
+    z.object({
+      provider: z.literal(Provider.OpenAI),
+      id: z.nativeEnum(OpenAIModel),
+    }),
+    z.object({
+      provider: z.literal(Provider.Anthropic),
+      id: z.nativeEnum(AnthropicModel),
+    }),
+    z.object({
+      provider: z.literal(Provider.Google),
+      id: z.nativeEnum(GoogleModel),
+    }),
+    z.object({
+      provider: z.literal(Provider.DeepSeek),
+      id: z.nativeEnum(DeepSeekModel),
+    }),
+  ])
+  .optional()
+  .default({
+    provider: Provider.OpenAI,
+    id: OpenAIModel["o3-mini"],
+  });
+
+export type Model = z.infer<typeof modelSchema>;
+
 export const baseRequestSchema = z.object({
-  modal: z
-    .nativeEnum(OpenAIModal)
-    .optional()
-    .default(OpenAIModal["gpt-4o-mini"]),
+  model: modelSchema,
   messages: z.array(messageSchema).min(1),
   authToken: z.string().min(1),
   system: z.string().optional(),

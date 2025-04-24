@@ -3,7 +3,14 @@
 import type { ReactNode, Ref, RefObject } from "react";
 import { useRef } from "react";
 
-import { Card, CardHeader, CardBody, CardFooter, Divider } from "@heroui/react";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Divider,
+  ScrollShadow,
+} from "@heroui/react";
 import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 
@@ -42,14 +49,15 @@ const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
         <Base.ScrollProvider
           containerRef={props.containerRef as RefObject<TContainer>}>
           {content.toc.map((item) => (
-            <span
+            <Base.TOCItem
               key={item.url}
-              className="text-sm transition-colors dark:text-gray-400 text-gray-500 [&[data-active='true']]:text-black dark:[&[data-active='true']]:text-white"
               style={{
                 paddingLeft: `${item.depth * 0.5}rem`,
-              }}>
-              <Base.TOCItem href={item.url}>{item.title}</Base.TOCItem>
-            </span>
+              }}
+              href={item.url}
+              className="text-sm transition-colors dark:text-gray-400 text-gray-500 [&[data-active='true']]:text-black dark:[&[data-active='true']]:text-white">
+              {item.title}
+            </Base.TOCItem>
           ))}
         </Base.ScrollProvider>
       </Base.AnchorProvider>
@@ -72,9 +80,11 @@ const MdxContent = (props: BaseProps) => {
           <CardHeader>
             {content.tocContents?.label ?? "On this page"}
           </CardHeader>
-          <CardBody className="pl-0 pt-0 gap-1">
-            <MDXTableOfContents containerRef={containerRef} />
-          </CardBody>
+          <ScrollShadow className="w-full max-h-[300px]">
+            <CardBody className="pl-0 pt-0 gap-1">
+              <MDXTableOfContents containerRef={containerRef} />
+            </CardBody>
+          </ScrollShadow>
           <Divider />
           {props.updatedAt ? (
             <CardFooter>

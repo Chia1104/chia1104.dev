@@ -1,4 +1,4 @@
-ARG BUN_VERSION=1.2.2
+ARG BUN_VERSION=1.2.10
 ARG NODE_VERSION=22
 
 FROM oven/bun:$BUN_VERSION as runner-base
@@ -53,7 +53,7 @@ COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pre-builder /app/out/full/ .
 
-RUN pnpm i --prod --ignore-scripts
+RUN pnpm i --prod --ignore-scripts --filter=service
 
 FROM runner-base as runner
 
