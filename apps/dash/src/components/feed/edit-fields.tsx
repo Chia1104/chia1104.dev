@@ -319,6 +319,7 @@ export const MetadataFields = () => {
                     }
                     onChange={(date) => {
                       // @ts-expect-error - `@internationalized/date` version conflict
+                      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                       field.onChange(dayjs(date?.toString()).valueOf());
                     }}
                   />
@@ -352,6 +353,7 @@ export const MetadataFields = () => {
                       }
                       onChange={(date) => {
                         // @ts-expect-error - `@internationalized/date` version conflict
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         field.onChange(dayjs(date?.toString()).valueOf());
                       }}
                     />
