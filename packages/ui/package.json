@@ -48,6 +48,10 @@
     "./features/EmailTemplate": {
       "types": "./features/EmailTemplate/index.tsx",
       "default": "./features/EmailTemplate/index.tsx"
+    },
+    "./plugins/*": {
+      "types": "./plugins/*.ts",
+      "default": "./plugins/*.ts"
     }
   },
   "scripts": {
