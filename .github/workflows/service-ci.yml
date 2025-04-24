@@ -13,6 +13,10 @@ on:
       - ".github/workflows/service-ci.yml"
       - "package.json"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: pull-${{ github.ref }}-service-ci
   cancel-in-progress: true

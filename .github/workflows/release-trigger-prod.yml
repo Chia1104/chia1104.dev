@@ -8,6 +8,10 @@ on:
       - "apps/trigger/**"
       - ".github/workflows/release-trigger-prod.yml"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: pull-${{ github.ref }}-release-trigger-prod
   cancel-in-progress: true

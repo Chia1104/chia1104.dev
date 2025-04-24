@@ -52,6 +52,7 @@ const nextConfig: NextConfig = {
     webpackBuildWorker: true,
     viewTransition: true,
     authInterrupts: true,
+    clientInstrumentationHook: true,
   },
   serverExternalPackages: ["@chia/db", "@chia/auth", "twoslash", "typescript"],
   eslint: {
