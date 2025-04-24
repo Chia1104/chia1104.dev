@@ -306,6 +306,7 @@ export const MetadataFields = () => {
                     labelPlacement="outside"
                     className="w-full"
                     label="Create"
+                    // @ts-expect-error - `@internationalized/date` version conflict
                     value={
                       field.value
                         ? parseDate(
@@ -317,6 +318,7 @@ export const MetadataFields = () => {
                         : null
                     }
                     onChange={(date) => {
+                      // @ts-expect-error - `@internationalized/date` version conflict
                       field.onChange(dayjs(date?.toString()).valueOf());
                     }}
                   />
@@ -337,6 +339,7 @@ export const MetadataFields = () => {
                       labelPlacement="outside"
                       className="w-full"
                       label="Update"
+                      // @ts-expect-error - `@internationalized/date` version conflict
                       value={
                         field.value
                           ? parseDate(
@@ -348,6 +351,7 @@ export const MetadataFields = () => {
                           : null
                       }
                       onChange={(date) => {
+                        // @ts-expect-error - `@internationalized/date` version conflict
                         field.onChange(dayjs(date?.toString()).valueOf());
                       }}
                     />
