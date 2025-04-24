@@ -54,7 +54,7 @@ const Page = async ({ params }: { params: PageParamsWithLocale }) => {
   const t = await getTranslations("home");
   const test = t("section1");
   return (
-    <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
+    <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <FadeIn className="w-full flex-col">
         <h1 className="text-start font-bold">{meta.name}</h1>
         <p>{test}</p>

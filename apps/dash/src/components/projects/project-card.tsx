@@ -82,7 +82,7 @@ export default function ProjectCard({
       </CardHeader>
       <CardFooter className="px-6 pb-8 pt-4 absolute bottom-0 w-full">
         <div className="flex flex-col gap-2 items-start justify-end">
-          <p className="text-xl">{name}</p>
+          <p className="text-lg">{name}</p>
           <p className="text-small text-neutral-400">{description}</p>
         </div>
       </CardFooter>

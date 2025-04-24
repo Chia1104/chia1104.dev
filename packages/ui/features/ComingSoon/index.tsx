@@ -12,7 +12,7 @@ import {
 export default function Component() {
   const router = useRouter();
   return (
-    <div className="main c-container">
+    <div className="main container">
       <TextRevealCard revealText="Coming Soon" text="即將推出">
         <TextRevealCardTitle>Coming Soon</TextRevealCardTitle>
         <TextRevealCardDescription>

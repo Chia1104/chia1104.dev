@@ -270,7 +270,7 @@ const DashLayout = (props: Props) => {
             </Popover>
             <div className={cn("flex-end flex", { hidden: isCollapsed })}>
               <Icon
-                className="cursor-pointer dark:text-primary-foreground/60 [&>g]:stroke-[1px]"
+                className="cursor-pointer dark:text-white [&>g]:stroke-[1px]"
                 icon="solar:round-alt-arrow-left-line-duotone"
                 width={24}
                 onClick={isMobile ? onOpenChange : onToggle}
@@ -468,7 +468,7 @@ const DashLayout = (props: Props) => {
               width={20}
             />
           </Button>
-          <h1 className="text-3xl font-bold leading-9 text-default-foreground">
+          <h1 className="text-2xl font-bold leading-9 text-default-foreground">
             {currentItem?.title}
           </h1>
           {breadcrumbs.length > 1 && (
@@ -484,7 +484,7 @@ const DashLayout = (props: Props) => {
             </Breadcrumbs>
           )}
         </Navbar>
-        <main className="c-container flex-1 p-4 relative">
+        <main className="container flex-1 p-4 relative">
           {currentItem?.items && currentItem.items.length > 0 && (
             <ScrollShadow
               hideScrollBar

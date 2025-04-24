@@ -16,17 +16,8 @@
         "SENDGRID_KEY",
         "UPSTASH_TOKEN",
         "RESEND_API_KEY",
-        "NEXT_PUBLIC_UMAMI_WEBSITE_ID",
-        "NEXT_PUBLIC_UMAMI_URL",
-        "UMAMI_DB_URL",
-        "UMAMI_EDGE_DB_URL",
-        "YOUTUBE_ID",
-        "YOUTUBE_LIST_ID",
-        "NEXT_PUBLIC_GISCUS_REPO",
-        "NEXT_PUBLIC_GISCUS_REPO_ID",
-        "NEXT_PUBLIC_GISCUS_CATEGORY_ID",
-        "NEXT_PUBLIC_GISCUS_CATEGORY",
-        "NEXT_PUBLIC_GISCUS_THEME"
+        "CF_BYPASS_TOKEN",
+        "CH_API_KEY"
       ]
     }
   }

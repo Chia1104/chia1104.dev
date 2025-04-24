@@ -42,12 +42,12 @@ const ThemeRadioItem = ({ icon, ...props }: RadioProps & { icon: string }) => {
         className={cn(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           wrapperProps?.className,
-          "pointer-events-none h-8 w-8 rounded-full border-black border-opacity-10 ring-0 transition-transform group-data-[pressed=true]:scale-90",
+          "pointer-events-none h-8 w-8 rounded-full border-black border-opacity-10 ring-0 transition-transform group-data-[pressed=true]:scale-90 dark:border-default-400 border-1.5",
           {
             "bg-default-200 dark:bg-default-100": isSelected,
           }
         )}>
-        <Icon className="text-default-500" icon={icon} width={18} />
+        <Icon className="text-default-500" icon={icon} width={14} />
       </div>
     </Component>
   );

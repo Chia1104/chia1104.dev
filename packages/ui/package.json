@@ -48,6 +48,10 @@
     "./features/EmailTemplate": {
       "types": "./features/EmailTemplate/index.tsx",
       "default": "./features/EmailTemplate/index.tsx"
+    },
+    "./plugins/*": {
+      "types": "./plugins/*.ts",
+      "default": "./plugins/*.ts"
     }
   },
   "scripts": {
@@ -61,7 +65,7 @@
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
-    "@heroui/react": "2.7.6",
+    "@heroui/react": "catalog:heroui",
     "@radix-ui/react-accordion": "1.2.8",
     "@radix-ui/react-avatar": "^1.1.7",
     "@radix-ui/react-dialog": "^1.1.11",
@@ -100,6 +104,7 @@
     "@types/react-dom": "catalog:react19",
     "@vitejs/plugin-react-swc": "^3.9.0",
     "eslint": "catalog:",
+    "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }
 }

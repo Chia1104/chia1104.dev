@@ -14,7 +14,7 @@ const AboutPage = (props: {
   timeline: ReactNode;
 }) => {
   return (
-    <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
+    <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
       {props.children}
       <h2>Favorite Songs</h2>
       <p>Currently, I'm listening to this song.</p>

@@ -426,7 +426,7 @@ const EditorInfo = memo(() => {
   return (
     <>
       {form.watch("contentType") !== ContentType.Tiptap ? (
-        <Callout type="info">
+        <Callout type="info" className="my-0">
           You are using the markdown editor. You can use markdown syntax to
           write your content. <br />
           Currently, the preview feature is only available for basic markdown
@@ -434,7 +434,7 @@ const EditorInfo = memo(() => {
           <Spacer />
         </Callout>
       ) : (
-        <Callout type="warn">
+        <Callout type="warn" className="my-0">
           You are using <strong className="font-bold">UNSTABLE</strong> Tiptap
           editor. Please be aware that this feature is still in development and
           may not work as expected.
@@ -625,7 +625,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
         mode,
         token: props.token ?? "",
       }}>
-      <div className={cn("flex flex-col", props.className)}>
+      <div className={cn("flex flex-col gap-10", props.className)}>
         <MetadataFields />
         <EditorInfo />
         <ErrorBoundary>

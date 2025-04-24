@@ -5,12 +5,12 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    ".": {
-      "default": "./index.ts"
-    },
-    "./animation": "./animation.ts",
-    "./egoist-icons": "./egoist-icons.ts",
-    "./shadcn-ui": "./shadcn-ui.ts"
+    "./preset.css": "./preset.css",
+    "./animations.css": "./animations.css",
+    "./shadcn-ui.css": "./shadcn-ui.css",
+    "./novel.css": "./novel.css",
+    "./colors.css": "./colors.css",
+    "./typography.css": "./typography.css"
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
@@ -22,7 +22,7 @@
     "@iconify/json": "^2.2.330",
     "@tailwindcss/typography": "^0.5.16",
     "tailwindcss": "catalog:",
-    "tailwindcss-animate": "1.0.7",
+    "tw-animate-css": "^1.2.8",
     "typescript": "catalog:"
   }
 }
