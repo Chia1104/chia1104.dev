@@ -187,20 +187,21 @@
     background-position: 0 100%;
   }
 
+  .animated-feature-cards {
+    @apply hover:before:opacity-100 before:pointer-events-none before:absolute before:select-none before:rounded-2xl before:opacity-0 before:transition-opacity before:duration-300 before:z-[-1] before:inset-[-1px];
+  }
+
   .dark .c-background::before {
     background-image: radial-gradient(#3e3e3e 0.5px, transparent 0);
   }
 
   .animated-feature-cards::before {
-    @apply pointer-events-none absolute select-none rounded-3xl opacity-0 transition-opacity duration-300 hover:opacity-100;
     background: radial-gradient(1000px circle at var(--x) var(--y),
         #f9c851 0,
         #fca5a5 25%,
         #fecaca 50%,
         transparent 80%);
-    z-index: -1;
     content: "";
-    inset: -1px;
   }
 
   .dark .animated-feature-cards::before {
@@ -209,6 +210,7 @@
         #c084fc 25%,
         rgba(255, 255, 255, 0) 50%,
         transparent 80%);
+    content: "";
   }
 
   .main {

@@ -24,7 +24,6 @@
 
 @layer components {
   .animated-feature-cards::before {
-    @apply pointer-events-none absolute select-none rounded-2xl opacity-0 transition-opacity duration-300 hover:opacity-100;
     background: radial-gradient(
       1000px circle at var(--x) var(--y),
       #3aecf8 0,
@@ -32,9 +31,7 @@
       rgba(255, 255, 255, 0) 50%,
       transparent 80%
     );
-    z-index: -1;
     content: "";
-    inset: -1px;
   }
 }
 
