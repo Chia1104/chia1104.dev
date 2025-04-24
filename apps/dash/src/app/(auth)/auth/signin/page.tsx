@@ -10,7 +10,7 @@ const LoginPage = async () => {
     redirect("/");
   }
   return (
-    <div className="c-container main">
+    <div className="container main">
       <Form />
     </div>
   );

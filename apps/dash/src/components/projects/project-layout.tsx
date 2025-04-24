@@ -82,8 +82,7 @@ const ProjectLayout = ({ children }: { children: ReactNode }) => {
         </h2>
         <Create />
       </nav>
-      <section
-        className={cn("c-container main justify-start items-start mt-10")}>
+      <section className={cn("container main justify-start items-start mt-10")}>
         {children}
       </section>
     </>

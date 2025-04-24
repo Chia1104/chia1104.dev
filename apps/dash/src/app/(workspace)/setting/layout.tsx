@@ -21,7 +21,7 @@ const Layout = ({
   organization: React.ReactNode;
 }) => {
   return (
-    <article className="c-container main justify-start items-start">
+    <article className="container main justify-start items-start">
       <Accordion
         className="gap-5"
         variant="splitted"

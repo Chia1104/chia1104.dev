@@ -58,7 +58,7 @@ const LinkItem: FC<{
 
 const ContactPage = () => {
   return (
-    <article className="main c-container prose dark:prose-invert mt-20 max-w-[700px] items-start">
+    <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <h1>
         Contact{" "}
         <span className="animate-waving-hand inline-block origin-[70%_70%]">

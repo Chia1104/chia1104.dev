@@ -29,12 +29,12 @@ const Layout: FC<{
 }> = async ({ children }) => {
   const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
   return (
-    <article className="main c-container prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start">
+    <section className="prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start min-w-full">
       <div className="z-30">
         <Navigation posts={posts.items} notes={notes.items} />
       </div>
       {children}
-    </article>
+    </section>
   );
 };
 

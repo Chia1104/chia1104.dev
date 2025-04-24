@@ -49,14 +49,14 @@ const RepoCard: FC<{
         />
       </div>
       <div className="flex h-full flex-col p-4 pt-0">
-        <h2 className="mt-5 text-2xl font-bold">{name}</h2>
-        <p className="text-sm text-gray-500">{updatedAtText}</p>
-        <p className="mt-2 line-clamp-2 text-base">{description}</p>
+        <h2 className="mt-5 text-xl font-bold">{name}</h2>
+        <p className="text-xs text-gray-500">{updatedAtText}</p>
+        <p className="mt-2 line-clamp-2 text-sm">{description}</p>
         <div className="mt-2 flex flex-wrap space-x-2">
           {tags?.map((tag) => (
             <span
               key={tag}
-              className="rounded bg-gray-800 px-2 py-1 text-sm font-medium text-white">
+              className="rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white">
               {tag}
             </span>
           ))}
@@ -64,7 +64,7 @@ const RepoCard: FC<{
         <div className="mt-auto flex flex-wrap space-x-2">
           {language && (
             <span
-              className="rounded bg-gray-800 px-2 py-1 text-sm font-medium text-white"
+              className="rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white"
               style={{ backgroundColor: language.color }}>
               {language.name}
             </span>

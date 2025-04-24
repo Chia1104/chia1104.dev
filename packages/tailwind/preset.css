@@ -2,13 +2,21 @@
 @import "./typography.css";
 
 @plugin "@tailwindcss/typography";
-@plugin "@egoist/tailwindcss-icons";
+@plugin "./plugins/egoist-icons";
 
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant dark-theme (&:where(.dark-theme, .dark-theme *));
 
+/* deprecated */
 @utility c-container {
   @apply container mx-auto;
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  @apply 2xl:max-w-[1400px];
 }
 
 @utility c-hover-link {

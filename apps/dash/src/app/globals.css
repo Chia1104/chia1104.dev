@@ -60,6 +60,5 @@
 }
 
 :root {
-  /* --color-fd-background: hsl(0, 0%, 100%); */
   --color-fd-background: unset;
 }
