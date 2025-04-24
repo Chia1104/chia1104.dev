@@ -1,10 +1,8 @@
-@plugin "tailwindcss-animate";
+@import "tw-animate-css";
 
-@theme {
-    --animate-accordion-down: accordion-down 0.2s ease-out;
-    --animate-accordion-up: accordion-up 0.2s ease-out;
-    --animate-cia-marquee: cia-marquee var(--duration) linear infinite;
-    --animate-cia-marquee-vertical: cia-marquee-vertical var(--duration) linear infinite;
+@theme inline {
+    --animate-cia-marquee: cia-marquee var(--cia-marquee-duration) linear infinite;
+    --animate-cia-marquee-vertical: cia-marquee-vertical var(--cia-marquee-duration) linear infinite;
     --animate-cia-shimmer: cia-shimmer 8s infinite;
     --animate-cia-grid: cia-grid 15s linear infinite;
     --animate-cia-meteor: cia-meteor 5s linear infinite;
@@ -13,26 +11,6 @@
     --animate-cia-slide: cia-slide var(--speed) ease-in-out infinite alternate;
     --animate-cia-spotlight: cia-spotlight 2s ease .75s 1 forwards;
     --animate-cia-background-position-spin: cia-background-position-spin 3000ms infinite alternate;
-
-    @keyframes accordion-down {
-        from {
-            height: 0;
-        }
-
-        to {
-            height: var(--radix-accordion-content-height);
-        }
-    }
-
-    @keyframes accordion-up {
-        from {
-            height: var(--radix-accordion-content-height);
-        }
-
-        to {
-            height: 0;
-        }
-    }
 
     @keyframes cia-marquee {
         from {

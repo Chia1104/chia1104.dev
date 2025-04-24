@@ -1029,9 +1029,9 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 4.1.4
-      tailwindcss-animate:
-        specifier: 1.0.7
-        version: 1.0.7(tailwindcss@4.1.4)
+      tw-animate-css:
+        specifier: ^1.2.8
+        version: 1.2.8
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
@@ -11484,11 +11484,6 @@ packages:
     peerDependencies:
       tailwindcss: '*'
 
-  tailwindcss-animate@1.0.7:
-    resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
-    peerDependencies:
-      tailwindcss: '>=3.0.0 || insiders'
-
   tailwindcss@4.1.4:
     resolution: {integrity: sha512-1ZIUqtPITFbv/DxRmDr5/agPqJwF69d24m9qmM1939TJehgY539CtzeZRjbLt5G6fSy/7YqqYsfvoTEw9xUI2A==}
 
@@ -11748,6 +11743,9 @@ packages:
   turbo@2.5.1:
     resolution: {integrity: sha512-LT0wYyT+HY4StvmGMq1k2tHCIwauaWSXwyP+tCUked9vja5xEisW8b8NIJGi9BWH5HYH9Og1DysaQFTf8BiydQ==}
     hasBin: true
+
+  tw-animate-css@1.2.8:
+    resolution: {integrity: sha512-AxSnYRvyFnAiZCUndS3zQZhNfV/B77ZhJ+O7d3K6wfg/jKJY+yv6ahuyXwnyaYA9UdLqnpCwhTRv9pPTBnPR2g==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -12689,7 +12687,7 @@ snapshots:
   '@babel/helper-module-imports@7.25.9':
     dependencies:
       '@babel/traverse': 7.27.0
-      '@babel/types': 7.26.0
+      '@babel/types': 7.27.0
     transitivePeerDependencies:
       - supports-color
 
@@ -25415,10 +25413,6 @@ snapshots:
       tailwind-merge: 3.0.2
       tailwindcss: 4.1.4
 
-  tailwindcss-animate@1.0.7(tailwindcss@4.1.4):
-    dependencies:
-      tailwindcss: 4.1.4
-
   tailwindcss@4.1.4: {}
 
   tapable@2.2.1: {}
@@ -25669,6 +25663,8 @@ snapshots:
       turbo-linux-arm64: 2.5.1
       turbo-windows-64: 2.5.1
       turbo-windows-arm64: 2.5.1
+
+  tw-animate-css@1.2.8: {}
 
   type-check@0.4.0:
     dependencies:
