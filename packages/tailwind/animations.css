@@ -11,6 +11,7 @@
     --animate-cia-slide: cia-slide var(--speed) ease-in-out infinite alternate;
     --animate-cia-spotlight: cia-spotlight 2s ease .75s 1 forwards;
     --animate-cia-background-position-spin: cia-background-position-spin 3000ms infinite alternate;
+    --animate-cia-waving-hand: cia-waving-hand 3.5s ease 1s infinite;
 
     @keyframes cia-marquee {
         from {
@@ -125,4 +126,38 @@
             background-position: bottom center;
         }
     }
+
+    @keyframes cia-waving-hand {
+        0% {
+          transform: rotate(0.0deg);
+        }
+    
+        10% {
+          transform: rotate(14deg);
+        }
+    
+        20% {
+          transform: rotate(-8deg);
+        }
+    
+        30% {
+          transform: rotate(14deg);
+        }
+    
+        40% {
+          transform: rotate(-4deg);
+        }
+    
+        50% {
+          transform: rotate(10.0deg);
+        }
+    
+        60% {
+          transform: rotate(0.0deg);
+        }
+
+        100% {
+            transform: rotate(0.0deg);
+        }
+      }
 }

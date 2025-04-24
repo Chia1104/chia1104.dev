@@ -14,7 +14,7 @@ const Navigation: FC<{
   notes?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
 }> = ({ posts, notes }) => {
   return (
-    <NavigationMenu className="not-prose mb-5 md:mb-10">
+    <NavigationMenu className="not-prose mb-5 md:mb-10 z-20">
       <NavigationMenuList className="gap-5">
         <FeedNavigation feeds={posts} type="post" />
         <FeedNavigation feeds={notes} type="note" />
