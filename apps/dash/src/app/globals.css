@@ -6,7 +6,7 @@
 @import "@chia/tailwind/animations.css";
 @import "@chia/tailwind/preset.css";
 
-@plugin "@chia/ui/plugins/heroui";
+@plugin "../themes/heroui";
 
 @source "./src/**/*.{js,ts,jsx,tsx}";
 @source "../../node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}";
