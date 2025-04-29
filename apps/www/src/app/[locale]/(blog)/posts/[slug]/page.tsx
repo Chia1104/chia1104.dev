@@ -99,7 +99,11 @@ const Page = async ({
               alt="Chia1104"
             />
             <ViewTransition>
-              <DateFormat date={post.createdAt} format="MMMM D, YYYY" />
+              <DateFormat
+                date={post.createdAt}
+                format="MMMM D, YYYY"
+                locale={locale}
+              />
             </ViewTransition>
           </span>
         </header>
@@ -115,6 +119,7 @@ const Page = async ({
               label: t("otp"),
               updated: t("last-updated"),
             },
+            locale,
           }}
         />
         <WrittenBy

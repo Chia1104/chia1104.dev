@@ -3,6 +3,8 @@
 import type { FC } from "react";
 import { useMemo, useCallback } from "react";
 
+import { useLocale } from "next-intl";
+
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
@@ -19,6 +21,7 @@ interface Props {
 }
 
 const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
+  const locale = useLocale();
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     api.feeds.getFeedsWithMetaByAdminId.useInfiniteQuery(
       { ...query, type },
@@ -58,14 +61,20 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
           titleProps: {
             className: "line-clamp-1",
           },
-          subtitle: <DateFormat date={createdAt} format="MMMM D, YYYY" />,
+          subtitle: (
+            <DateFormat
+              date={createdAt}
+              format="MMMM D, YYYY"
+              locale={locale}
+            />
+          ),
           startDate: createdAt,
           content: excerpt,
           link: `${getLinkPrefix()}/${slug}`,
         } satisfies Data;
       })
     );
-  }, [isSuccess, data, isError, getLinkPrefix]);
+  }, [isSuccess, data, isError, locale, getLinkPrefix]);
 
   return (
     <Timeline

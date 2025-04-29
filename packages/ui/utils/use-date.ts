@@ -6,7 +6,7 @@ import type { ConfigType } from "dayjs";
 
 import _dayjs from "@chia/utils/day";
 
-interface Options {
+export interface Options {
   timezone?: string;
   locale?: string;
 }

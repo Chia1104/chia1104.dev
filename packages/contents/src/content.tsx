@@ -96,6 +96,7 @@ const MdxContent = (props: BaseProps) => {
                   <DateFormat
                     date={props.updatedAt}
                     format="YYYY-MM-DD HH:mm"
+                    locale={props.locale}
                   />
                 </ViewTransition>
                 <span className="i-mdi-pencil" />
