@@ -115,7 +115,7 @@ const techStack = {
           blur={false}
         />
       ),
-      link: "https://fumadocs.vercel.app/",
+      link: "https://fumadocs.dev/",
       classNames: {
         base: "bg-gradient-to-br from-blue-500 to-blue-700",
         content: "drop-shadow shadow-blue text-white",
