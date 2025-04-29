@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode, Ref, RefObject } from "react";
-import { useRef } from "react";
+import { useRef, unstable_ViewTransition as ViewTransition } from "react";
 
 import {
   Card,
@@ -15,7 +15,7 @@ import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 
 import { ContentType } from "@chia/db/types";
-import dayjs from "@chia/utils/day";
+import DateFormat from "@chia/ui/date-format";
 
 import { ContentContext, useContent } from "./content.context";
 import type {
@@ -92,7 +92,13 @@ const MdxContent = (props: BaseProps) => {
             <CardFooter>
               <span className="self-start text-sm flex gap-1 items-center">
                 {content.tocContents?.updated ?? "Last updated"}:{" "}
-                {dayjs(props.updatedAt).format("YYYY-MM-DD HH:mm")}
+                <ViewTransition>
+                  <DateFormat
+                    date={props.updatedAt}
+                    format="YYYY-MM-DD HH:mm"
+                    locale={props.locale}
+                  />
+                </ViewTransition>
                 <span className="i-mdi-pencil" />
               </span>
             </CardFooter>

@@ -9,6 +9,7 @@ export interface BaseProps {
   className?: string;
   updatedAt?: ConfigType;
   tz?: string;
+  locale?: string;
   tocContents?: {
     label?: string;
     updated?: string;

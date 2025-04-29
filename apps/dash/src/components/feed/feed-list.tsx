@@ -10,6 +10,7 @@ import { useTransitionRouter as useRouter } from "next-view-transitions";
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
+import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import dayjs from "@chia/utils/day";
@@ -66,7 +67,7 @@ const FeedItem = forwardRef<
       <CardBody className="gap-2">
         <p className="text-xs font-bold mt-auto line-clamp-2">{feed.excerpt}</p>
         <span className="text-xs font-bold flex justify-between items-center">
-          {dayjs(feed.createdAt).format("MMMM D, YYYY")}
+          <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
           <span className="flex gap-2 items-center">
             <Button
               variant="shadow"
@@ -123,7 +124,7 @@ export const PreviewFeedItem = ({
           {feed.description}
         </p>
         <span className="text-sm font-bold flex justify-between items-center">
-          {dayjs(feed.createdAt).format("MMMM D, YYYY")}
+          <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
           <span className="flex gap-2 items-center">
             <Button
               variant="shadow"

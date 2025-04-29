@@ -56,6 +56,11 @@
     "./icons/*": {
       "types": "./icons/*.tsx",
       "default": "./icons/*.tsx"
+    },
+    "./date-format": {
+      "types": "./src/date-format.tsx",
+      "react-server": "./src/date-format.client.tsx",
+      "default": "./src/date-format.client.tsx"
     }
   },
   "scripts": {
