@@ -1,3 +1,5 @@
+import { unstable_ViewTransition as ViewTransition } from "react";
+
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -96,7 +98,9 @@ const Page = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            <DateFormat date={post.createdAt} format="MMMM D, YYYY" />
+            <ViewTransition>
+              <DateFormat date={post.createdAt} format="MMMM D, YYYY" />
+            </ViewTransition>
           </span>
         </header>
         <Content
