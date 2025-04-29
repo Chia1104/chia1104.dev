@@ -47,7 +47,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@fumadocs/mdx-remote": "catalog:",
-    "@heroui/react": "2.7.6",
+    "@heroui/react": "2.7.8",
     "@mdx-js/react": "^3.1.0",
     "@theguild/remark-mermaid": "^0.3.0",
     "fumadocs-core": "catalog:",
