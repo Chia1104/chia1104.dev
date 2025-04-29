@@ -1,11 +1,11 @@
 "use client";
 
-import dayjs from "@chia/utils/day";
+import type { ConfigType } from "dayjs";
 
-import { useDate } from "@/hooks/use-date";
+import { useDate } from "../utils/use-date";
 
-interface Props {
-  date: dayjs.ConfigType;
+export interface Props {
+  date: ConfigType;
   format?: string;
 }
 

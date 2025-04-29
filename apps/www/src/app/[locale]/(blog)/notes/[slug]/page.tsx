@@ -5,12 +5,12 @@ import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
+import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
 
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
-import DateFormat from "@/components/commons/date-format";
 import { getNotes, getFeedBySlug } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
@@ -96,7 +96,7 @@ const Page = async ({
               className="rounded-full"
               alt="Chia1104"
             />
-            <DateFormat date={note.createdAt} format="MMMM D, YYYY" />
+            <DateFormat date={note.createdAt} format="YYYY-MM-DD HH:mm" />
           </span>
         </header>
         <Content
@@ -105,7 +105,7 @@ const Page = async ({
             content: note.content,
           })}
           context={{
-            updatedAt: dayjs(note.updatedAt).format("YYYY-MM-DD HH:mm"),
+            updatedAt: note.updatedAt,
             type: note.contentType,
             tocContents: {
               label: t("otp"),

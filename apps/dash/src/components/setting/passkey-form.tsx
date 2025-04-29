@@ -30,6 +30,7 @@ import { z } from "zod";
 
 import { authClient } from "@chia/auth/client";
 import type { Passkey } from "@chia/db/schema";
+import DateFormat from "@chia/ui/date-format";
 import {
   FormControl,
   FormField,
@@ -38,7 +39,6 @@ import {
   Form,
 } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
-import dayjs from "@chia/utils/day";
 import { truncateMiddle } from "@chia/utils/string";
 
 const headers = [
@@ -206,9 +206,12 @@ const PasskeyForm = () => {
         case "createdAt":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-sm capitalize">
-                {dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}
-              </p>
+              <span className="text-bold text-sm capitalize">
+                <DateFormat
+                  date={item.createdAt}
+                  format="YYYY-MM-DD HH:mm:ss"
+                />
+              </span>
             </div>
           );
         case "publicKey":

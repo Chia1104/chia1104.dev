@@ -5,12 +5,12 @@ import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
+import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
 
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
-import DateFormat from "@/components/commons/date-format";
 import { getPosts, getFeedBySlug } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
@@ -105,7 +105,7 @@ const Page = async ({
             content: post.content,
           })}
           context={{
-            updatedAt: dayjs(post.updatedAt).format("YYYY-MM-DD HH:mm"),
+            updatedAt: post.updatedAt,
             type: post.contentType,
             tocContents: {
               label: t("otp"),

@@ -1,14 +1,14 @@
 "use client";
 
 import type { FC } from "react";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";
+import DateFormat from "@chia/ui/date-format";
 import Timeline from "@chia/ui/timeline";
 import type { Data } from "@chia/ui/timeline/types";
 
-import DateFormat from "@/components/commons/date-format";
 import { api } from "@/trpc/client";
 
 interface Props {
@@ -36,7 +36,7 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
       }
     );
 
-  const getLinkPrefix = () => {
+  const getLinkPrefix = useCallback(() => {
     switch (type) {
       case FeedType.Note:
         return "/notes";
@@ -45,7 +45,7 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
       default:
         return "";
     }
-  };
+  }, [type]);
 
   const transformData = useMemo(() => {
     if ((!isSuccess && !data) || isError) return [];

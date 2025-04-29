@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
+import DateFormat from "@chia/ui/date-format";
 import {
   FormControl,
   FormField,
@@ -36,7 +37,6 @@ import {
 } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
-import dayjs from "@chia/utils/day";
 import { truncateMiddle } from "@chia/utils/string";
 
 import { api } from "@/trpc/client";
@@ -209,9 +209,12 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
         case "createdAt":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-sm">
-                {dayjs(item.createdAt).format("YYYY-MM-DD HH:mm:ss")}
-              </p>
+              <span className="text-bold text-sm">
+                <DateFormat
+                  date={item.createdAt}
+                  format="YYYY-MM-DD HH:mm:ss"
+                />
+              </span>
             </div>
           );
         case "id":
