@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode, Ref, RefObject } from "react";
-import { useRef } from "react";
+import { useRef, unstable_ViewTransition as ViewTransition } from "react";
 
 import {
   Card,
@@ -92,7 +92,12 @@ const MdxContent = (props: BaseProps) => {
             <CardFooter>
               <span className="self-start text-sm flex gap-1 items-center">
                 {content.tocContents?.updated ?? "Last updated"}:{" "}
-                <DateFormat date={props.updatedAt} format="YYYY-MM-DD HH:mm" />
+                <ViewTransition>
+                  <DateFormat
+                    date={props.updatedAt}
+                    format="YYYY-MM-DD HH:mm"
+                  />
+                </ViewTransition>
                 <span className="i-mdi-pencil" />
               </span>
             </CardFooter>
