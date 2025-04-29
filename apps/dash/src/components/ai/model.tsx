@@ -13,7 +13,14 @@ import {
   Tooltip,
   Chip,
 } from "@heroui/react";
-import { ChevronDownIcon, Eye, FileText, Brain, Globe } from "lucide-react";
+import {
+  ChevronDownIcon,
+  Eye,
+  FileText,
+  Brain,
+  Globe,
+  FlaskConical,
+} from "lucide-react";
 
 import type { Model as TModel } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
@@ -83,6 +90,13 @@ const FeaturesList = ({ features }: { features?: ModelFeatures }) => {
           </Chip>
         </Tooltip>
       )}
+      {features.preview && (
+        <Tooltip content="Preview">
+          <Chip color="warning" variant="flat" size="sm" aria-label="Preview">
+            <FlaskConical size={12} />
+          </Chip>
+        </Tooltip>
+      )}
     </div>
   );
 };
@@ -114,7 +128,11 @@ export const Model = ({
           <Icon provider={action.getModel(workspace).provider} />
         </Button>
       </Tooltip>
-      <Popover placement="bottom-end">
+      <Popover
+        placement="bottom-end"
+        classNames={{
+          content: "px-0",
+        }}>
         <PopoverTrigger>
           <Button isIconOnly aria-label="AI Model">
             <ChevronDownIcon size={16} />
@@ -126,6 +144,9 @@ export const Model = ({
               disallowEmptySelection
               aria-label="AI Model"
               className="max-w-[300px]"
+              classNames={{
+                list: "gap-2",
+              }}
               selectedKeys={new Set([action.getModel(workspace).id])}
               selectionMode="single"
               onSelectionChange={(keys) => {
@@ -143,7 +164,7 @@ export const Model = ({
                 <MenuItem
                   key={option.id}
                   classNames={{
-                    wrapper: "gap-2",
+                    wrapper: "gap-1",
                   }}
                   description={<FeaturesList features={option.features} />}
                   title={
