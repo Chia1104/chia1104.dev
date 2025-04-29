@@ -10,6 +10,8 @@ import {
   Chip,
 } from "@heroui/react";
 
+import BetterAuth from "@chia/ui/icons/better-auth";
+import Zeabur from "@chia/ui/icons/zeabur";
 import Image from "@chia/ui/image";
 import { NeonGradientCard } from "@chia/ui/neon-gradient-card";
 
@@ -75,15 +77,7 @@ const techStack = {
     },
     {
       name: "Zeabur",
-      icon: (
-        <Image
-          src="/assets/zeabur.svg"
-          width={10}
-          height={10}
-          alt="zeabur"
-          blur={false}
-        />
-      ),
+      icon: <Zeabur className="size-3" />,
       link: "https://zeabur.com/",
       classNames: {
         base: "bg-gradient-to-br from-purple-500 to-purple-700",
@@ -91,7 +85,16 @@ const techStack = {
       },
     },
   ],
-  Others: [
+  Techs: [
+    {
+      name: "BetterAuth",
+      icon: <BetterAuth className="size-3" />,
+      link: "https://www.better-auth.com/",
+      classNames: {
+        base: "bg-gradient-to-br from-black to-gray-900",
+        content: "drop-shadow shadow-black text-white",
+      },
+    },
     {
       name: "Drizzle",
       icon: <span className="i-simple-icons-drizzle" />,
@@ -119,9 +122,9 @@ const techStack = {
       },
     },
     {
-      name: "NextUI",
+      name: "HeroUI",
       icon: <span className="i-simple-icons-nextui" />,
-      link: "https://nextui.org/",
+      link: "https://www.heroui.com/",
       classNames: {
         base: "bg-gradient-to-br from-black to-gray-900",
         content: "drop-shadow shadow-black text-white",
@@ -129,7 +132,7 @@ const techStack = {
     },
     {
       name: "Shadcn/ui",
-      icon: <span className="i-simple-icons-shadcnui" />,
+      icon: <span className="i-simple-icons-shadcnui size-2" />,
       link: "https://ui.shadcn.com/",
       classNames: {
         base: "bg-gradient-to-br from-black to-gray-900",

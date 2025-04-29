@@ -7,9 +7,9 @@ const contact = {
     link: meta.link.github,
   },
   instagram: {
-    name: "Instagram",
-    icon: <span className="i-mdi-instagram size-6" />,
-    link: meta.link.instagram,
+    name: "BlueSky",
+    icon: <span className="i-simple-icons-bluesky size-5 m-0.5" />,
+    link: meta.link.bluesky,
   },
   linkedin: {
     name: "Linkedin",
