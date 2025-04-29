@@ -69,6 +69,8 @@ export default {
     github: "https://github.com/Chia1104",
     linkedin: "https://link.chia1104.dev/in",
     instagram: "https://link.chia1104.dev/ig",
+    x: "https://link.chia1104.dev/x",
+    bluesky: "https://link.chia1104.dev/bs",
     youtube_playlist:
       "https://www.youtube.com/playlist?list=PL7XkMe5ddX9Napk5747U6SIOAqWJBsqVM",
     google_photos: "https://photos.app.goo.gl/J1FobfgynJKW84Dm6",

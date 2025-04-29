@@ -15,10 +15,10 @@ const contact = {
     icon: <span className="i-mdi-github size-5" />,
     link: meta.link.github,
   },
-  instagram: {
-    name: "Instagram",
-    icon: <span className="i-mdi-instagram size-5" />,
-    link: meta.link.instagram,
+  bluesky: {
+    name: "BlueSky",
+    icon: <span className="i-simple-icons-bluesky size-4" />,
+    link: meta.link.bluesky,
   },
   linkedin: {
     name: "Linkedin",

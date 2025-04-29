@@ -1,5 +1,5 @@
 import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
-// import { remarkMermaid } from "@theguild/remark-mermaid";
+import { remarkAdmonition } from "fumadocs-core/mdx-plugins";
 import type { MDXComponents } from "mdx/types";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
@@ -23,10 +23,7 @@ export const compileMDX: (
       ...components,
     },
     mdxOptions: {
-      remarkPlugins: [
-        remarkMath,
-        // remarkMermaid
-      ],
+      remarkPlugins: [remarkMath, remarkAdmonition],
       // Place it at first so that it won't be changed by syntax highlighter
       rehypePlugins: (v) => [rehypeKatex, ...v],
     },

@@ -52,6 +52,10 @@
     "./plugins/*": {
       "types": "./plugins/*.ts",
       "default": "./plugins/*.ts"
+    },
+    "./icons/*": {
+      "types": "./icons/*.tsx",
+      "default": "./icons/*.tsx"
     }
   },
   "scripts": {

@@ -12,6 +12,8 @@ import defaultComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 import Image from "next/image";
 
+import { Mermaid } from "./components/mermaid";
+
 export const FumadocsComponents = {
   ...defaultComponents,
   Tabs,
@@ -111,4 +113,5 @@ export const V1MDXComponents: MDXComponents = {
       {props.children}
     </strong>
   ),
+  Mermaid,
 };

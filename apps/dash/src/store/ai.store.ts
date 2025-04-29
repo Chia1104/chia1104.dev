@@ -61,6 +61,18 @@ const DEFAULT_OPTIONS: ModalOption[] = [
   },
   {
     enabled: true,
+    name: "Gemini 2.5 Flash",
+    provider: Provider.Google,
+    id: GoogleModel["gemini-2.5-flash"],
+    features: {
+      image: true,
+      search: true,
+      pdf: true,
+      preview: true,
+    },
+  },
+  {
+    enabled: true,
     name: "Claude 3.7 Sonnet",
     provider: Provider.Anthropic,
     id: AnthropicModel["claude-3-7-sonnet"],
@@ -68,6 +80,15 @@ const DEFAULT_OPTIONS: ModalOption[] = [
       image: true,
       search: true,
       pdf: true,
+    },
+  },
+  {
+    enabled: true,
+    name: "gpt 4.1",
+    provider: Provider.OpenAI,
+    id: OpenAIModel["gpt-4.1"],
+    features: {
+      image: true,
     },
   },
   {
@@ -128,6 +149,7 @@ export interface ModelFeatures {
   image?: boolean;
   pdf?: boolean;
   search?: boolean;
+  preview?: boolean;
 }
 
 type ModalOption = {
