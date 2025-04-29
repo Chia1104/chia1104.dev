@@ -114,7 +114,7 @@ const Page = async ({
           }}
         />
         <WrittenBy
-          className="w-full flex justify-start mt-10 relative"
+          className="w-full flex justify-start mt-10 relative self-start"
           author="Chia1104"
         />
       </div>
