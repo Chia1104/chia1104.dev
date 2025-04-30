@@ -41,7 +41,7 @@
     "@marsidev/react-turnstile": "^1.1.0",
     "@next/third-parties": "^15.3.1",
     "@react-email/components": "^0.0.36",
-    "@sentry/nextjs": "^9.14.0",
+    "@sentry/nextjs": "^9.15.0",
     "@t3-oss/env-nextjs": "^0.13.0",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",
