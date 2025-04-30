@@ -70,7 +70,7 @@
   "packageManager": "pnpm@10.10.0",
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
-    "@t3-oss/env-core": "^0.13.0",
+    "@t3-oss/env-core": "^0.13.4",
     "client-only": "^0.0.1",
     "dayjs": "^1.11.13",
     "graphql-request": "^7.1.2",
