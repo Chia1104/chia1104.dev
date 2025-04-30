@@ -235,8 +235,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(react-hook-form@7.56.1(react@19.1.0))
       '@iconify/react':
-        specifier: ^5.2.1
-        version: 5.2.1(react@19.1.0)
+        specifier: ^6.0.0
+        version: 6.0.0(react@19.1.0)
       '@internationalized/date':
         specifier: ^3.8.0
         version: 3.8.0
@@ -2806,8 +2806,8 @@ packages:
   '@iconify/json@2.2.333':
     resolution: {integrity: sha512-GRp9JV9iUILIfeeWCAQRPirY6wP03l5EOeAfWca+qMPDyeCY/hb8LN/sdsGYsK6QAWvyKelkgx/DgcD3V6anEQ==}
 
-  '@iconify/react@5.2.1':
-    resolution: {integrity: sha512-37GDR3fYDZmnmUn9RagyaX+zca24jfVOMY8E1IXTqJuE8pxNtN51KWPQe3VODOWvuUurq7q9uUu3CFrpqj5Iqg==}
+  '@iconify/react@6.0.0':
+    resolution: {integrity: sha512-eqNscABVZS8eCpZLU/L5F5UokMS9mnCf56iS1nM9YYHdH8ZxqZL9zyjSwW60IOQFsXZkilbBiv+1paMXBhSQnw==}
     peerDependencies:
       react: '>=16'
 
@@ -13891,7 +13891,7 @@ snapshots:
       '@iconify/types': 2.0.0
       pathe: 1.1.2
 
-  '@iconify/react@5.2.1(react@19.1.0)':
+  '@iconify/react@6.0.0(react@19.1.0)':
     dependencies:
       '@iconify/types': 2.0.0
       react: 19.1.0
