@@ -53,7 +53,7 @@
     "@vercel/edge-config": "^1.4.0",
     "@vercel/speed-insights": "^1.2.0",
     "cobe": "^0.6.3",
-    "framer-motion": "12.9.2",
+    "framer-motion": "12.9.4",
     "fumadocs-mdx": "catalog:",
     "fumadocs-ui": "catalog:",
     "jsdom": "^26.1.0",
