@@ -82,7 +82,7 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
-    "@manypkg/cli": "^0.23.0",
+    "@manypkg/cli": "^0.24.0",
     "@playwright/test": "^1.52.0",
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
