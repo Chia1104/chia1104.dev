@@ -101,7 +101,7 @@ const Page = async ({
             <ViewTransition>
               <DateFormat
                 date={note.createdAt}
-                format="YYYY-MM-DD HH:mm"
+                format="MMMM D, YYYY"
                 locale={locale}
               />
             </ViewTransition>
