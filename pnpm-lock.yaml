@@ -196,8 +196,8 @@ importers:
   apps/dash:
     dependencies:
       '@ai-sdk/react':
-        specifier: ^1.2.10
-        version: 1.2.10(react@19.1.0)(zod@3.24.3)
+        specifier: ^1.2.11
+        version: 1.2.11(react@19.1.0)(zod@3.24.3)
       '@chia/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -1327,6 +1327,22 @@ packages:
     peerDependenciesMeta:
       zod:
         optional: true
+
+  '@ai-sdk/react@1.2.11':
+    resolution: {integrity: sha512-+kPqLkJ3TWP6czaJPV+vzAKSUcKQ1598BUrcLHt56sH99+LhmIIW3ylZp0OfC3O6TR3eO1Lt0Yzw4R0mK6g9Gw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18 || ^19 || ^19.0.0-rc
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
+  '@ai-sdk/ui-utils@1.2.10':
+    resolution: {integrity: sha512-GUj+LBoAlRQF1dL/M49jtufGqtLOMApxTpCmVjoRpIPt/dFALVL9RfqfvxwztyIwbK+IxGzcYjSGRsrWrj+86g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.23.8
 
   '@ai-sdk/ui-utils@1.2.9':
     resolution: {integrity: sha512-cbiLzgXDv3+460f61UVSykn3XdKOS+SHs/EANw+pdOQKwn8JN7rZJL/ggPyMuZ7D9lO3oWOfOJ1QS+9uClfVug==}
@@ -11926,6 +11942,23 @@ snapshots:
       throttleit: 2.1.0
     optionalDependencies:
       zod: 3.24.3
+
+  '@ai-sdk/react@1.2.11(react@19.1.0)(zod@3.24.3)':
+    dependencies:
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.3)
+      '@ai-sdk/ui-utils': 1.2.10(zod@3.24.3)
+      react: 19.1.0
+      swr: 2.3.3(react@19.1.0)
+      throttleit: 2.1.0
+    optionalDependencies:
+      zod: 3.24.3
+
+  '@ai-sdk/ui-utils@1.2.10(zod@3.24.3)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.3)
+      zod: 3.24.3
+      zod-to-json-schema: 3.24.5(zod@3.24.3)
 
   '@ai-sdk/ui-utils@1.2.9(zod@3.24.3)':
     dependencies:
