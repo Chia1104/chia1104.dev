@@ -22,12 +22,12 @@
     "toc": "Table of Contents",
     "otp": "On this page",
     "last-updated": "Last updated",
-    "post": {
+    "posts": {
       "doc-title": "Posts",
       "no-content": "No posts yet.",
       "view-all": "View all posts"
     },
-    "note": {
+    "notes": {
       "doc-title": "Notes",
       "no-content": "No notes yet.",
       "view-all": "View all notes"

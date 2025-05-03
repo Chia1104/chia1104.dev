@@ -5,29 +5,45 @@ import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 
 import FeedList from "@/components/blog/feed-list";
-import { getNotes } from "@/services/feeds.service";
+import { getFeedsWithType } from "@/services/feeds.service";
 
-export const metadata: Metadata = {
-  title: "Notes",
+export const dynamicParams = false;
+
+export const generateStaticParams = () => {
+  return [{ type: "posts" }, { type: "notes" }];
 };
 
-const Page = async () => {
-  const notes = await getNotes(20);
-  const hasNotes = Array.isArray(notes.items) && notes.items.length > 0;
-  const t = await getTranslations("blog.note");
+export async function generateMetadata({
+  params,
+}: PagePropsWithLocale<{ type: "posts" | "notes" }>): Promise<Metadata> {
+  const { type } = await params;
+  const t = await getTranslations(`blog.${type}`);
+  return {
+    title: t("doc-title"),
+  };
+}
+
+const Page = async (
+  props: PagePropsWithLocale<{ type: "posts" | "notes" }>
+) => {
+  const { type } = await props.params;
+  const formattedType = type === "posts" ? "post" : "note";
+  const feeds = await getFeedsWithType(formattedType, 20);
+  const hasFeeds = Array.isArray(feeds.items) && feeds.items.length > 0;
+  const t = await getTranslations(`blog.${type}`);
   return (
     <div className="w-full">
       <h1>{t("doc-title")}</h1>
-      {hasNotes ? (
+      {hasFeeds ? (
         <FeedList
-          type="note"
-          initialData={notes.items}
-          nextCursor={notes.nextCursor}
+          type={formattedType}
+          initialData={feeds.items}
+          nextCursor={feeds.nextCursor}
           query={{
             limit: 10,
             orderBy: "id",
             sortOrder: "desc",
-            type: "note",
+            type: formattedType,
           }}
         />
       ) : (
