@@ -18,7 +18,7 @@
     "@chia/utils": "workspace:^",
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
-    "openai": "^4.96.2",
+    "openai": "^4.97.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {
