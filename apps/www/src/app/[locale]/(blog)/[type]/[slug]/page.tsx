@@ -3,6 +3,7 @@ import { unstable_ViewTransition as ViewTransition } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { RedirectType } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
@@ -13,7 +14,8 @@ import dayjs from "@chia/utils/day";
 
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
-import { getPosts, getFeedBySlug } from "@/services/feeds.service";
+import { redirect } from "@/i18n/routing";
+import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
 export const dynamicParams = true;
@@ -21,10 +23,11 @@ export const revalidate = 60;
 export const maxDuration = 60;
 
 export const generateStaticParams = async () => {
-  const posts = await getPosts(100);
+  const feeds = await getFeeds(100);
 
-  return posts.items.map((post) => ({
-    slug: post.slug,
+  return feeds.items.map((feed) => ({
+    type: feed.type,
+    slug: feed.slug,
   }));
 };
 
@@ -37,11 +40,11 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { slug } = await params;
   try {
-    const post = await getFeedBySlug(slug);
-    if (!post) return {};
+    const feed = await getFeedBySlug(slug);
+    if (!feed) return {};
     return {
-      title: post.title,
-      description: post.excerpt,
+      title: feed.title,
+      description: feed.excerpt,
     };
   } catch (error) {
     console.error(error);
@@ -53,25 +56,34 @@ const Page = async ({
   params,
 }: {
   params: PageParamsWithLocale<{
+    type: "posts" | "notes";
     slug: string;
   }>;
 }) => {
-  const { slug, locale } = await params;
-  const post = await getFeedBySlug(slug);
+  const { slug, locale, type } = await params;
+  const feed = await getFeedBySlug(slug);
   const t = await getTranslations("blog");
 
-  if (!post?.content) {
+  if (!feed?.content) {
     notFound();
+  } else if (`${feed.type}s` !== type) {
+    redirect(
+      {
+        href: `/${feed.type}s/${feed.slug}`,
+        locale,
+      },
+      RedirectType.replace
+    );
   }
 
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    headline: post.title,
-    datePublished: dayjs(post.createdAt).format("MMMM D, YYYY"),
-    dateModified: dayjs(post.updatedAt).format("MMMM D, YYYY"),
-    name: post.title,
-    description: post.excerpt ?? "",
+    headline: feed.title,
+    datePublished: dayjs(feed.createdAt).format("MMMM D, YYYY"),
+    dateModified: dayjs(feed.updatedAt).format("MMMM D, YYYY"),
+    name: feed.title,
+    description: feed.excerpt ?? "",
     author: {
       "@type": "Person",
       name: "Chia1104",
@@ -85,11 +97,11 @@ const Page = async ({
         <header className="mb-5 w-full self-center mt-5">
           <h1
             style={{
-              viewTransitionName: `view-transition-link-${post.id}`,
+              viewTransitionName: `view-transition-link-${feed.id}`,
             }}>
-            {post.title}
+            {feed.title}
           </h1>
-          <p>{post.description}</p>
+          <p>{feed.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image
               src="https://avatars.githubusercontent.com/u/38397958?v=4"
@@ -100,7 +112,7 @@ const Page = async ({
             />
             <ViewTransition>
               <DateFormat
-                date={post.createdAt}
+                date={feed.createdAt}
                 format="MMMM D, YYYY"
                 locale={locale}
               />
@@ -109,12 +121,12 @@ const Page = async ({
         </header>
         <Content
           content={getContentProps({
-            contentType: post.contentType,
-            content: post.content,
+            contentType: feed.contentType,
+            content: feed.content,
           })}
           context={{
-            updatedAt: post.updatedAt,
-            type: post.contentType,
+            updatedAt: feed.updatedAt,
+            type: feed.contentType,
             tocContents: {
               label: t("otp"),
               updated: t("last-updated"),

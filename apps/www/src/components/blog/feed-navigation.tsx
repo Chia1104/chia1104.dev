@@ -26,8 +26,8 @@ interface Props {
 const FeedNavigation: FC<Props> = ({ feeds, type }) => {
   const hasFeeds = !!feeds && Array.isArray(feeds) && feeds.length > 0;
   const router = useRouter();
-  const tn = useTranslations("blog.note");
-  const tp = useTranslations("blog.post");
+  const tn = useTranslations("blog.notes");
+  const tp = useTranslations("blog.posts");
   const getTranslations = () => {
     switch (type) {
       case FeedType.Note:

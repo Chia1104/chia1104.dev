@@ -12,16 +12,20 @@ export const size = {
 export const contentType = "image/png";
 export const runtime = "edge";
 
-const TITLE = "Blog";
-
-export default async function og() {
-  const t = await getTranslations("home");
+export default async function og(
+  props: PagePropsWithLocale<{ type: "posts" | "notes" }>
+) {
+  const { type } = await props.params;
+  const [tFeed, t] = await Promise.all([
+    getTranslations(`blog.${type}`),
+    getTranslations("home"),
+  ]);
   const workDuration = getWorkDuration(meta.timeline);
   return new ImageResponse(
     (
       <OpenGraph
         metadata={{
-          title: TITLE,
+          title: tFeed("doc-title"),
           excerpt: t("section1", { year: workDuration.toString() }),
           subtitle: meta.bio,
         }}
