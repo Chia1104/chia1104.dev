@@ -39,7 +39,7 @@
     "rate-limit-redis": "^4.2.0",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "resend": "^4.5.0",
+    "resend": "^4.5.1",
     "trigger": "workspace:*",
     "web-streams-polyfill": "^4.1.0"
   },
