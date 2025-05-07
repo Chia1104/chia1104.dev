@@ -1205,11 +1205,11 @@ importers:
         specifier: ^1.2.9
         version: 1.2.9(eslint@9.26.0(jiti@2.4.2))
       '@next/eslint-plugin-next':
-        specifier: ^15.3.1
-        version: 15.3.1
+        specifier: ^15.3.2
+        version: 15.3.2
       eslint-config-turbo:
-        specifier: ^2.5.2
-        version: 2.5.2(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2)
+        specifier: ^2.5.3
+        version: 2.5.3(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2)
       eslint-plugin-import:
         specifier: ^2.31.0
         version: 2.31.0(@typescript-eslint/parser@8.32.0(eslint@9.26.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.26.0(jiti@2.4.2))
@@ -1223,8 +1223,8 @@ importers:
         specifier: ^5.2.0
         version: 5.2.0(eslint@9.26.0(jiti@2.4.2))
       eslint-plugin-turbo:
-        specifier: ^2.5.2
-        version: 2.5.2(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2)
+        specifier: ^2.5.3
+        version: 2.5.3(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2)
       typescript-eslint:
         specifier: ^8.32.0
         version: 8.32.0(eslint@9.26.0(jiti@2.4.2))(typescript@5.8.3)
@@ -3194,8 +3194,8 @@ packages:
   '@next/env@15.3.1':
     resolution: {integrity: sha512-cwK27QdzrMblHSn9DZRV+DQscHXRuJv6MydlJRpFSqJWZrTYMLzKDeyueJNN9MGd8NNiUKzDQADAf+dMLXX7YQ==}
 
-  '@next/eslint-plugin-next@15.3.1':
-    resolution: {integrity: sha512-oEs4dsfM6iyER3jTzMm4kDSbrQJq8wZw5fmT6fg2V3SMo+kgG+cShzLfEV20senZzv8VF+puNLheiGPlBGsv2A==}
+  '@next/eslint-plugin-next@15.3.2':
+    resolution: {integrity: sha512-ijVRTXBgnHT33aWnDtmlG+LJD+5vhc9AKTJPquGG5NKXjpKNjc62woIhFtrAcWdBobt8kqjCoaJ0q6sDQoX7aQ==}
 
   '@next/swc-darwin-arm64@15.3.1':
     resolution: {integrity: sha512-hjDw4f4/nla+6wysBL07z52Gs55Gttp5Bsk5/8AncQLJoisvTBP0pRIBK/B16/KqQyH+uN4Ww8KkcAqJODYH3w==}
@@ -7580,8 +7580,8 @@ packages:
     engines: {node: '>=6.0'}
     hasBin: true
 
-  eslint-config-turbo@2.5.2:
-    resolution: {integrity: sha512-aZdMUCJE5sC9UHZPOu6GiqCijw0HzlcxTbGZeESMFanYShhxrO6mAZy02zYOYK+y184HnxAngcfmtgDt8cIUxw==}
+  eslint-config-turbo@2.5.3:
+    resolution: {integrity: sha512-KuW20TUDfLooS38gSquL6Gi+ZjaMlno0N3hBe8c+F8+nRYUhbF2fNhuyzl9ScNHx6aJT2eVhLBfGELg7N5+sog==}
     peerDependencies:
       eslint: '>6.6.0'
       turbo: '>2.0.0'
@@ -7638,8 +7638,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
 
-  eslint-plugin-turbo@2.5.2:
-    resolution: {integrity: sha512-B+vdgOtBuDbRI3sIRayV3HZK1XcwlNuksmJJIgggkXTsNehMEbreJBkIda4qvA/STHnGAl2bUGev0Jx8Rijiwg==}
+  eslint-plugin-turbo@2.5.3:
+    resolution: {integrity: sha512-DlXZd+LgpDlxH/6IsiAXLhy82x0jeJDm0XBEqP6Le08uy0HBQkjCUt7SmXNp8esAtX9RYe6oDClbNbmI1jtK5g==}
     peerDependencies:
       eslint: '>6.6.0'
       turbo: '>2.0.0'
@@ -14472,7 +14472,7 @@ snapshots:
 
   '@next/env@15.3.1': {}
 
-  '@next/eslint-plugin-next@15.3.1':
+  '@next/eslint-plugin-next@15.3.2':
     dependencies:
       fast-glob: 3.3.1
 
@@ -19526,10 +19526,10 @@ snapshots:
     optionalDependencies:
       source-map: 0.6.1
 
-  eslint-config-turbo@2.5.2(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2):
+  eslint-config-turbo@2.5.3(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2):
     dependencies:
       eslint: 9.26.0(jiti@2.4.2)
-      eslint-plugin-turbo: 2.5.2(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2)
+      eslint-plugin-turbo: 2.5.3(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2)
       turbo: 2.5.2
 
   eslint-import-resolver-node@0.3.9:
@@ -19624,7 +19624,7 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-turbo@2.5.2(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2):
+  eslint-plugin-turbo@2.5.3(eslint@9.26.0(jiti@2.4.2))(turbo@2.5.2):
     dependencies:
       dotenv: 16.0.3
       eslint: 9.26.0(jiti@2.4.2)
