@@ -1,4 +1,4 @@
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { contents, feedMeta } from "../../schema";
@@ -28,22 +28,42 @@ const internal_dateSchema = z.object({
   updatedAt: z.union([z.string(), z.number()]).optional(),
 });
 
+const internal_embeddingSchema = z.object({
+  embedding: z.array(z.number()).optional(),
+});
+
 export const insertFeedSchema = createInsertSchema(internal_feedsOmitEmbedding)
   .omit({
     createdAt: true,
     updatedAt: true,
   })
-  .merge(internal_dateSchema);
+  .merge(internal_dateSchema)
+  .merge(internal_embeddingSchema);
+
+export const updateFeedSchema = createUpdateSchema(internal_feedsOmitEmbedding)
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .merge(internal_dateSchema)
+  .merge(internal_embeddingSchema);
 
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
+export type UpdateFeedDTO = z.infer<typeof updateFeedSchema>;
 
 export const insertFeedContentSchema = createInsertSchema(contents).merge(
   z.object({
     contentType: z.nativeEnum(ContentType).optional().default(ContentType.Mdx),
   })
 );
+export const updateFeedContentSchema = createUpdateSchema(contents).merge(
+  z.object({
+    contentType: z.nativeEnum(ContentType).optional().default(ContentType.Mdx),
+  })
+);
 
 export type InsertFeedContentDTO = z.infer<typeof insertFeedContentSchema>;
+export type UpdateFeedContentDTO = z.infer<typeof updateFeedContentSchema>;
 
 export const insertFeedMetaSchema = createInsertSchema(feedMeta);
 

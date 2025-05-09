@@ -6,6 +6,7 @@ import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth/types";
 import type { Redis } from "@chia/cache";
 import type { DB } from "@chia/db";
+import type { Feed } from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import { getAdminId } from "@chia/utils";
 
@@ -16,6 +17,13 @@ export const createTRPCContext = (opts: {
   session?: Session | null;
   db: DB;
   redis: Redis;
+  hooks?: {
+    onError?: (error: TRPCError) => void;
+    onUnauthorized?: (error: TRPCError) => void;
+    onForbidden?: (error: TRPCError) => void;
+    onFeedCreated?: (feed: Feed) => Promise<void>;
+    onFeedUpdated?: (feed: Feed) => Promise<void>;
+  };
 }) => {
   return opts;
 };
@@ -40,6 +48,9 @@ export const publicProcedure = t.procedure;
 
 const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user || !ctx.session) {
+    if (ctx.hooks?.onUnauthorized) {
+      ctx.hooks.onUnauthorized(new TRPCError({ code: "UNAUTHORIZED" }));
+    }
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({
@@ -69,6 +80,9 @@ export const enforceUserIsRootAdmin = t.middleware(({ ctx, next }) => {
     !ctx.session ||
     ctx.session.user.role !== Role.Root
   ) {
+    if (ctx.hooks?.onForbidden) {
+      ctx.hooks.onForbidden(new TRPCError({ code: "FORBIDDEN" }));
+    }
     throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next();
@@ -84,6 +98,9 @@ export const adminACLMiddleware = (
 ) =>
   t.middleware(async ({ ctx, next }) => {
     if (!ctx.session?.user || !ctx.session) {
+      if (ctx.hooks?.onUnauthorized) {
+        ctx.hooks.onUnauthorized(new TRPCError({ code: "UNAUTHORIZED" }));
+      }
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     const valid = await auth.api.userHasPermission({
@@ -94,6 +111,9 @@ export const adminACLMiddleware = (
     });
 
     if (!valid || (rootOnly && ctx.session.user.role !== Role.Root)) {
+      if (ctx.hooks?.onForbidden) {
+        ctx.hooks.onForbidden(new TRPCError({ code: "FORBIDDEN" }));
+      }
       throw new TRPCError({ code: "FORBIDDEN" });
     }
 

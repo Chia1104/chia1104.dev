@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   getFeedsWithMetaSchema,
   insertFeedMetaRequestSchema,
+  updateFeedRequestSchema,
 } from "@chia/api/services/validators";
 import { eq } from "@chia/db";
 import { schema } from "@chia/db";
@@ -14,6 +15,7 @@ import {
   getFeedMetaById,
   createFeedMeta,
   getFeedById,
+  updateFeed,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { errorGenerator, getAdminId, numericStringSchema } from "@chia/utils";
@@ -150,6 +152,23 @@ api.post(
       summary,
     });
     return c.body(null, 204);
+  }
+);
+
+api.post(
+  "/public/feeds/:id",
+  zValidator("json", updateFeedRequestSchema, (result, c) => {
+    if (!result.success) {
+      return c.json(errorResponse(result.error), 400);
+    }
+  }),
+  async (c) => {
+    const dto = c.req.valid("json");
+    const feed = await updateFeed(c.var.db, {
+      ...dto,
+      feedId: Number(c.req.param("id")),
+    });
+    return c.json(feed);
   }
 );
 

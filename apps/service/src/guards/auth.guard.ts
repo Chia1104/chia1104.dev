@@ -17,7 +17,7 @@ export const verifyAuth = (rootOnly?: boolean) =>
         return c.json(errorGenerator(401), 401);
       }
 
-      if (rootOnly && session.user.role === Role.Root) {
+      if (rootOnly && session.user.role !== Role.Root) {
         return c.json(errorGenerator(403), 403);
       }
 

@@ -63,7 +63,7 @@ export const feedsRouter = createTRPCRouter({
   createFeed: onlyRootAdminProcedure
     .input(createFeedSchema)
     .mutation(async (opts) => {
-      await createFeed(opts.ctx.db, {
+      const feed = await createFeed(opts.ctx.db, {
         slug: opts.input.slug
           ? slugger.slug(opts.input.slug)
           : slugger.slug(
@@ -84,12 +84,15 @@ export const feedsRouter = createTRPCRouter({
         createdAt: opts.input.createdAt,
         updatedAt: opts.input.updatedAt,
       });
+      if (opts.ctx.hooks?.onFeedCreated) {
+        await opts.ctx.hooks.onFeedCreated(feed);
+      }
     }),
 
   updateFeed: onlyRootAdminProcedure
     .input(updateFeedSchema)
     .mutation(async (opts) => {
-      await updateFeed(opts.ctx.db, {
+      const feed = await updateFeed(opts.ctx.db, {
         feedId: opts.input.feedId,
         // slug: opts.input.slug ? slugger.slug(opts.input.slug) : undefined,
         type: opts.input.type,
@@ -104,6 +107,9 @@ export const feedsRouter = createTRPCRouter({
         createdAt: opts.input.createdAt,
         updatedAt: opts.input.updatedAt,
       });
+      if (opts.ctx.hooks?.onFeedUpdated) {
+        await opts.ctx.hooks.onFeedUpdated(feed);
+      }
     }),
 
   deleteFeed: onlyRootAdminProcedure

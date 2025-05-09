@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { feedEmbeddingsTask } from "trigger/feed-embeddings";
 
 import { appRouter, createTRPCContext } from "@chia/api/trpc";
 import { fetchRequestHandler } from "@chia/api/trpc/utils";
@@ -40,6 +41,18 @@ api.use("*", async (c) => {
         session,
         db: c.var.db,
         redis: c.var.redis,
+        hooks: {
+          onFeedCreated: async (feed) => {
+            await feedEmbeddingsTask.trigger({
+              feedID: feed.id.toString(),
+            });
+          },
+          onFeedUpdated: async (feed) => {
+            await feedEmbeddingsTask.trigger({
+              feedID: feed.id.toString(),
+            });
+          },
+        },
       });
     },
     onError: ({ error, path }) => {

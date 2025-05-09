@@ -65,7 +65,7 @@ api.get(
 
 api
   .use("/search", verifyAuth(true))
-  .use("/search", ai())
+  .use("/search", ai("openai"))
   .get(
     "/search",
     zValidator("query", searchFeedsSchema, (result, c) => {

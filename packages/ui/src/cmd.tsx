@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { KeyboardEvent, Dispatch, DependencyList } from "react";
 
 import type { DialogProps } from "@radix-ui/react-dialog";
+import type { ClassValue } from "clsx";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
 
@@ -54,11 +55,22 @@ const Command = ({
 
 type CommandDialogProps = DialogProps;
 
-const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
+const CommandDialog = ({
+  children,
+  commandProps,
+  ...props
+}: CommandDialogProps & {
+  commandProps?: React.ComponentPropsWithRef<typeof Command>;
+}) => {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden border-[#FCA5A5]/50 p-0 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]">
-        <Command className="[&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:size-5">
+        <Command
+          className={cn(
+            "[&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:size-5",
+            commandProps?.className
+          )}
+          {...commandProps}>
           {children}
         </Command>
       </DialogContent>
@@ -78,20 +90,32 @@ const _CommandDialog = ({ children, ...props }: DialogProps) => {
   );
 };
 
+const CommandLoading = CommandPrimitive.Loading;
+
 const CommandInput = ({
   className,
   ref,
+  classNames,
   ...props
-}: React.ComponentPropsWithRef<typeof CommandPrimitive.Input>) => (
+}: React.ComponentPropsWithRef<typeof CommandPrimitive.Input> & {
+  classNames?: {
+    input?: ClassValue;
+    wrapper?: ClassValue;
+  };
+}) => (
   <div
-    className="border-default flex items-center border-b px-3"
+    className={cn(
+      "border-default flex items-center border-b px-3",
+      classNames?.wrapper
+    )}
     cmdk-input-wrapper="">
     <Search className="mr-2 size-4 shrink-0 opacity-50" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
         "placeholder:text-muted-foreground flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
-        className
+        className,
+        classNames?.input
       )}
       {...props}
     />
@@ -182,4 +206,5 @@ export {
   CommandItem,
   CommandShortcut,
   CommandSeparator,
+  CommandLoading,
 };
