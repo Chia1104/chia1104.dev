@@ -32,8 +32,6 @@ export const env = createEnv({
     RAILWAY_URL: z.string().optional(),
     VERCEL_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
-    CF_BYPASS_TOKEN: z.string().min(1),
-    CH_API_KEY: z.string().min(1),
   },
 
   client: {
@@ -46,8 +44,6 @@ export const env = createEnv({
     RAILWAY_URL: process.env.RAILWAY_STATIC_URL,
     VERCEL_URL: process.env.VERCEL_URL,
     ZEABUR_URL: process.env.ZEABUR_URL,
-    CF_BYPASS_TOKEN: process.env.CF_BYPASS_TOKEN,
-    CH_API_KEY: process.env.CH_API_KEY,
   },
 
   skipValidation:

@@ -15,7 +15,6 @@ import { Form } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import dayjs from "@chia/utils/day";
 
-import { generateFeedEmbedding } from "@/server/feed.action";
 import { api } from "@/trpc/client";
 
 import type { Ref } from "./edit-fields";
@@ -28,7 +27,7 @@ const EditForm = ({
   defaultValues: Partial<CreateFeedInput>;
   feedId: number;
 }) => {
-  const [isGenerating, startTransition] = useTransition();
+  const [isGenerating] = useTransition();
   const editFieldsRef = useRef<Ref>(null);
   const router = useRouter();
   const utils = api.useUtils();
@@ -73,14 +72,26 @@ const EditForm = ({
               size="sm"
               isIconOnly
               color="warning"
-              className="bg-warning-200"
+              className="bg-warning-200 text-warning"
               isLoading={isGenerating}
-              onPress={() =>
-                startTransition(async () => {
-                  await generateFeedEmbedding({ feedID: feedId.toString() });
-                  toast.success("Embedding generated successfully");
-                })
-              }>
+              // onPress={() =>
+              //   startTransition(async () => {
+              //     const result = await generateFeedEmbedding({
+              //       feedID: feedId.toString(),
+              //     });
+              //     if (
+              //       result?.serverError ||
+              //       result?.validationErrors ||
+              //       result?.bindArgsValidationErrors
+              //     ) {
+              //       console.error(result);
+              //       toast.error("Failed to generate embedding");
+              //     } else {
+              //       toast.success("Embedding generated successfully");
+              //     }
+              //   })
+              // }
+            >
               <Bubbles className="text-warning size-4" />
             </Button>
           </Tooltip>
