@@ -86,7 +86,7 @@
     "@playwright/test": "^1.52.0",
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "@turbo/gen": "^2.5.2",
+    "@turbo/gen": "^2.5.3",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/lodash": "^4.17.16",
     "@types/node": "^22.14.1",
@@ -105,7 +105,7 @@
     "shell-quote": "^1.8.2",
     "tsup": "^8.4.0",
     "tsx": "^4.19.4",
-    "turbo": "2.5.2",
+    "turbo": "2.5.3",
     "typescript": "catalog:",
     "vitest": "^3.1.3"
   },
