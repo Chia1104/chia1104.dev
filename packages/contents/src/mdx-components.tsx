@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
 import { CodeBlock, Pre } from "fumadocs-ui/components/codeblock";
-import type { CodeBlockProps } from "fumadocs-ui/components/codeblock";
 import { File, Folder, Files } from "fumadocs-ui/components/files";
 import { Heading } from "fumadocs-ui/components/heading";
 import { ImageZoom } from "fumadocs-ui/components/image-zoom";
@@ -26,7 +27,7 @@ export const FumadocsComponents = {
   File,
   Folder,
   Files,
-  pre: (props: CodeBlockProps) => (
+  pre: ({ ref: _ref, ...props }: any) => (
     <CodeBlock {...props}>
       <Pre className="bg-content1">{props.children}</Pre>
     </CodeBlock>
@@ -86,9 +87,11 @@ export const V1MDXComponents: MDXComponents = {
     <div className="flex w-full justify-center">{props.children}</div>
   ),
   table: (props: any) => (
-    <table className="min-w-full h-auto table-auto w-full not-prose my-10 bg-content1 overflow-auto rounded-large shadow-small">
-      {props.children}
-    </table>
+    <div className="max-w-full overflow-x-auto my-10">
+      <table className="min-w-full h-auto table-auto w-full not-prose bg-content1 overflow-hidden rounded-lg">
+        {props.children}
+      </table>
+    </div>
   ),
   thead: (props: any) => (
     <thead className="[&>tr]:first:rounded-lg">{props.children}</thead>
