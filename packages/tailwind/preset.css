@@ -216,6 +216,10 @@
   .main {
     @apply flex min-h-screen flex-1 flex-col items-center justify-center px-[1rem] py-[4rem] md:px-[2rem];
   }
+
+  .katex-display {
+    @apply max-w-full overflow-x-auto;
+  }
 }
 
 @layer base {
