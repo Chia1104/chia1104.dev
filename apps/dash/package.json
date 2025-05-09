@@ -55,7 +55,7 @@
     "pg": "^8.15.6",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "react-hook-form": "^7.56.2",
+    "react-hook-form": "^7.56.3",
     "react-medium-image-zoom": "^5.2.14",
     "recharts": "^2.15.3",
     "sharp": "0.34.1",
