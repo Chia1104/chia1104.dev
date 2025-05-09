@@ -419,25 +419,25 @@ importers:
         version: link:../../packages/utils
       '@hono-rate-limiter/redis':
         specifier: ^0.1.4
-        version: 0.1.4(hono-rate-limiter@0.4.2(hono@4.7.8))
+        version: 0.1.4(hono-rate-limiter@0.4.2(hono@4.7.9))
       '@hono/graphql-server':
         specifier: ^0.5.1
-        version: 0.5.1(hono@4.7.8)
+        version: 0.5.1(hono@4.7.9)
       '@hono/node-server':
         specifier: ^1.14.1
-        version: 1.14.1(hono@4.7.8)
+        version: 1.14.1(hono@4.7.9)
       '@hono/react-renderer':
         specifier: ^1.0.1
-        version: 1.0.1(hono@4.7.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 1.0.1(hono@4.7.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@hono/sentry':
         specifier: ^1.2.1
-        version: 1.2.1(hono@4.7.8)
+        version: 1.2.1(hono@4.7.9)
       '@hono/trpc-server':
         specifier: ^0.3.4
-        version: 0.3.4(@trpc/server@11.1.2(typescript@5.8.3))(hono@4.7.8)
+        version: 0.3.4(@trpc/server@11.1.2(typescript@5.8.3))(hono@4.7.9)
       '@hono/zod-validator':
         specifier: ^0.5.0
-        version: 0.5.0(hono@4.7.8)(zod@3.24.4)
+        version: 0.5.0(hono@4.7.9)(zod@3.24.4)
       drizzle-graphql:
         specifier: ^0.8.5
         version: 0.8.5(drizzle-orm@0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.15.1)(bun-types@1.2.12)(kysely@0.27.6)(pg@8.15.6))(graphql@16.11.0)
@@ -448,11 +448,11 @@ importers:
         specifier: ^16.11.0
         version: 16.11.0
       hono:
-        specifier: ^4.7.8
-        version: 4.7.8
+        specifier: ^4.7.9
+        version: 4.7.9
       hono-rate-limiter:
         specifier: ^0.4.2
-        version: 0.4.2(hono@4.7.8)
+        version: 0.4.2(hono@4.7.9)
       rate-limit-redis:
         specifier: ^4.2.0
         version: 4.2.0(express-rate-limit@7.5.0(express@5.1.0))
@@ -8173,8 +8173,8 @@ packages:
     resolution: {integrity: sha512-2PCpQRbN87Crty8/L/7akZN3UyZIAopSoRxCwRbJgUuV1+MHNFHzYFxZTg4v/03cXUm+jce/qa2VSBZpKBm3Qw==}
     engines: {node: '>=16.9.0'}
 
-  hono@4.7.8:
-    resolution: {integrity: sha512-PCibtFdxa7/Ldud9yddl1G81GjYaeMYYTq4ywSaNsYbB1Lug4mwtOMJf2WXykL0pntYwmpRJeOI3NmoDgD+Jxw==}
+  hono@4.7.9:
+    resolution: {integrity: sha512-/EsCoR5h7N4yu01TDu9GMCCJa6ZLk5ZJIWFFGNawAXmd1Tp53+Wir4xm0D2X19bbykWUlzQG0+BvPAji6p9E8Q==}
     engines: {node: '>=16.9.0'}
 
   html-encoding-sniffer@4.0.0:
@@ -13836,42 +13836,42 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.2(hono@4.7.8))':
+  '@hono-rate-limiter/redis@0.1.4(hono-rate-limiter@0.4.2(hono@4.7.9))':
     dependencies:
-      hono-rate-limiter: 0.4.2(hono@4.7.8)
+      hono-rate-limiter: 0.4.2(hono@4.7.9)
 
-  '@hono/graphql-server@0.5.1(hono@4.7.8)':
+  '@hono/graphql-server@0.5.1(hono@4.7.9)':
     dependencies:
       graphql: 16.11.0
-      hono: 4.7.8
+      hono: 4.7.9
 
   '@hono/node-server@1.14.1(hono@4.7.7)':
     dependencies:
       hono: 4.7.7
 
-  '@hono/node-server@1.14.1(hono@4.7.8)':
+  '@hono/node-server@1.14.1(hono@4.7.9)':
     dependencies:
-      hono: 4.7.8
+      hono: 4.7.9
 
-  '@hono/react-renderer@1.0.1(hono@4.7.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@hono/react-renderer@1.0.1(hono@4.7.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      hono: 4.7.8
+      hono: 4.7.9
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@hono/sentry@1.2.1(hono@4.7.8)':
+  '@hono/sentry@1.2.1(hono@4.7.9)':
     dependencies:
-      hono: 4.7.8
+      hono: 4.7.9
       toucan-js: 4.1.1
 
-  '@hono/trpc-server@0.3.4(@trpc/server@11.1.2(typescript@5.8.3))(hono@4.7.8)':
+  '@hono/trpc-server@0.3.4(@trpc/server@11.1.2(typescript@5.8.3))(hono@4.7.9)':
     dependencies:
       '@trpc/server': 11.1.2(typescript@5.8.3)
-      hono: 4.7.8
+      hono: 4.7.9
 
-  '@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.4)':
+  '@hono/zod-validator@0.5.0(hono@4.7.9)(zod@3.24.4)':
     dependencies:
-      hono: 4.7.8
+      hono: 4.7.9
       zod: 3.24.4
 
   '@hookform/resolvers@5.0.1(react-hook-form@7.56.3(react@19.1.0))':
@@ -20380,13 +20380,13 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.4.2(hono@4.7.8):
+  hono-rate-limiter@0.4.2(hono@4.7.9):
     dependencies:
-      hono: 4.7.8
+      hono: 4.7.9
 
   hono@4.7.7: {}
 
-  hono@4.7.8: {}
+  hono@4.7.9: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:
