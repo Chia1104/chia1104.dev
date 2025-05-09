@@ -19,7 +19,7 @@
     "clean": "git clean -xdf .next .turbo node_modules .cache"
   },
   "dependencies": {
-    "@ai-sdk/react": "^1.2.11",
+    "@ai-sdk/react": "^1.2.12",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
