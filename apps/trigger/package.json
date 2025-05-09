@@ -31,6 +31,10 @@
       "import": "./tasks/feed-summarize.ts",
       "types": "./tasks/feed-summarize.ts"
     },
+    "./feed-embeddings": {
+      "import": "./tasks/feed-embeddings.ts",
+      "types": "./tasks/feed-embeddings.ts"
+    },
     "./constant": {
       "import": "./tasks/tasks.constant.ts",
       "types": "./tasks/tasks.constant.ts"

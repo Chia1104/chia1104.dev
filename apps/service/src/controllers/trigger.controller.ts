@@ -1,7 +1,14 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { TaskID } from "trigger/constant";
-import { feedSummarizeTask, requestSchema } from "trigger/feed-summarize";
+import {
+  feedEmbeddingsTask,
+  requestSchema as feedEmbeddingsRequestSchema,
+} from "trigger/feed-embeddings";
+import {
+  feedSummarizeTask,
+  requestSchema as feedSummarizeRequestSchema,
+} from "trigger/feed-summarize";
 import { z } from "zod";
 
 import { errorGenerator } from "@chia/utils";
@@ -38,7 +45,7 @@ api.post(
     switch (id) {
       case TaskID.FeedSummarize: {
         const { data: dto, error } = await tryCatch(
-          requestSchema.parse(await c.req.json())
+          feedSummarizeRequestSchema.parse(await c.req.json())
         );
         if (error) {
           if (error instanceof z.ZodError) {
@@ -48,6 +55,20 @@ api.post(
           return c.json(errorGenerator(500), 500);
         }
         await feedSummarizeTask.trigger(dto);
+        return c.json(null);
+      }
+      case TaskID.FeedEmbeddings: {
+        const { data: dto, error } = await tryCatch(
+          feedEmbeddingsRequestSchema.parse(await c.req.json())
+        );
+        if (error) {
+          if (error instanceof z.ZodError) {
+            return c.json(errorResponse(error), 400);
+          }
+          c.var.sentry.captureException(error);
+          return c.json(errorGenerator(500), 500);
+        }
+        await feedEmbeddingsTask.trigger(dto);
         return c.json(null);
       }
       default:
