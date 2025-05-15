@@ -2,8 +2,9 @@
 
 import { useCallback } from "react";
 
-import { Form, Button, useDisclosure, Spinner } from "@heroui/react";
+import { Button, useDisclosure, Spinner } from "@heroui/react";
 import type { ButtonProps } from "@heroui/react";
+import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
 import { useTransitionRouter } from "next-view-transitions";
 
@@ -20,27 +21,23 @@ import { cn } from "@chia/ui/utils/cn.util";
 
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
 
-const SearchForm = () => {
+const SearchForm = ({
+  isOpen,
+  onOpenChange,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
   const router = useTransitionRouter();
   const { mutate: searchFeeds, data: feeds, isPending } = useSearchFeeds();
-  const handleSubmit = useCallback(
-    (
-      e:
-        | React.FormEvent<HTMLFormElement>
-        | React.KeyboardEvent<HTMLInputElement>,
-      dom: "form" | "input"
-    ) => {
-      e.preventDefault();
-      if (dom === "input") {
-        const value = (e.target as HTMLInputElement).value;
-        searchFeeds(value);
-        return;
-      }
-      const formData = new FormData(e.target as HTMLFormElement);
-      const query = formData.get("query") as string;
+  const handleSearch = useDebouncedCallback(
+    (query: string) => {
+      if (!query || query.length < 3) return;
       searchFeeds(query);
     },
-    [searchFeeds]
+    {
+      wait: 500, // Wait 500ms between executions
+    }
   );
 
   const handleSelect = useCallback(
@@ -51,22 +48,20 @@ const SearchForm = () => {
   );
 
   return (
-    <>
-      <Form className="w-full" onSubmit={(e) => handleSubmit(e, "form")}>
-        <CommandInput
-          placeholder="Search Feeds"
-          name="query"
-          classNames={{
-            wrapper: ["w-full", !feeds?.length && !isPending && "border-none"],
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSubmit(e, "input");
-            }
-          }}
-        />
-      </Form>
+    <CommandDialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+      commandProps={{
+        shouldFilter: false,
+      }}>
+      <CommandInput
+        placeholder="Search Feeds"
+        name="query"
+        classNames={{
+          wrapper: ["w-full", !feeds?.length && !isPending && "border-none"],
+        }}
+        onValueChange={(value) => handleSearch(value)}
+      />
       <CommandList>
         {isPending && (
           <CommandLoading className="w-full justify-center flex py-10">
@@ -83,7 +78,7 @@ const SearchForm = () => {
           </CommandItem>
         ))}
       </CommandList>
-    </>
+    </CommandDialog>
   );
 };
 
@@ -102,14 +97,7 @@ const SearchFeed = (props: ButtonProps) => {
         onPress={onOpen}>
         Search Feeds
       </Button>
-      <CommandDialog
-        open={isOpen}
-        onOpenChange={onOpenChange}
-        commandProps={{
-          shouldFilter: false,
-        }}>
-        <SearchForm />
-      </CommandDialog>
+      <SearchForm isOpen={isOpen} onOpenChange={onOpenChange} />
     </>
   );
 };
