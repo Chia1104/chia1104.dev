@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import snakecase from "lodash/snakecase";
+import snakeCase from "lodash/snakeCase";
 
 import { createOpenAI } from "@chia/ai";
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
@@ -80,7 +80,7 @@ api
       });
       const { keyword, model } = c.req.valid("query");
       const cache = c.var.redis;
-      const cacheKey = `feeds:search:${snakecase(keyword)}`;
+      const cacheKey = `feeds:search:${snakeCase(keyword)}`;
       const cached = await cache.get(cacheKey);
       if (cached) {
         const { items } = await searchFeeds(c.var.db, {
