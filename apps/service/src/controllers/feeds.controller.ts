@@ -1,5 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import snakeCase from "lodash/snakeCase";
 
 import { createOpenAI } from "@chia/ai";
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
@@ -65,7 +66,7 @@ api.get(
 
 api
   .use("/search", verifyAuth(true))
-  .use("/search", ai())
+  .use("/search", ai("openai"))
   .get(
     "/search",
     zValidator("query", searchFeedsSchema, (result, c) => {
@@ -78,13 +79,27 @@ api
         apiKey: c.get(AI_AUTH_TOKEN),
       });
       const { keyword, model } = c.req.valid("query");
-      const feeds = await searchFeeds(c.var.db, {
+      const cache = c.var.redis;
+      const cacheKey = `feeds:search:${snakeCase(keyword)}`;
+      const cached = await cache.get(cacheKey);
+      if (cached) {
+        const { items } = await searchFeeds(c.var.db, {
+          input: keyword ?? "",
+          limit: 5,
+          model,
+          client,
+          embedding: JSON.parse(cached) as number[],
+        });
+        return c.json(items);
+      }
+      const { items, embedding } = await searchFeeds(c.var.db, {
         input: keyword ?? "",
         limit: 5,
         model,
         client,
       });
-      return c.json(feeds);
+      await cache.set(cacheKey, JSON.stringify(embedding));
+      return c.json(items);
     }
   );
 

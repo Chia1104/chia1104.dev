@@ -24,7 +24,7 @@ import { useRouter } from "@/i18n/routing";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 
-const CMDK = (props: PropsWithLocale) => {
+const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
   const [open, setOpen] = useCMD();
   const { theme, setTheme } = useTheme();
   const router = useRouter();

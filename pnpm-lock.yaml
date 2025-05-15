@@ -246,6 +246,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.13.4
         version: 0.13.4(arktype@2.1.20)(typescript@5.8.3)(zod@3.24.4)
+      '@tanstack/react-pacer':
+        specifier: ^0.4.0
+        version: 0.4.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.75.5(react@19.1.0)
@@ -5471,8 +5474,19 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
+  '@tanstack/pacer@0.4.0':
+    resolution: {integrity: sha512-NWXm+fE1xrUmFZiA/BT69u+1FdQCijrds7uEc4yrcf37/8HJmT3ACF3GyevSMgzoSlaofJK8Ryr1q4IjVfiwSA==}
+    engines: {node: '>=18'}
+
   '@tanstack/query-core@5.75.5':
     resolution: {integrity: sha512-kPDOxtoMn2Ycycb76Givx2fi+2pzo98F9ifHL/NFiahEDpDwSVW6o12PRuQ0lQnBOunhRG5etatAhQij91M3MQ==}
+
+  '@tanstack/react-pacer@0.4.0':
+    resolution: {integrity: sha512-IU3Vc0Zy2wyyX6J2/loSWPJO7WUUWkIC5GhPsYjHvEdM/PZK70Yz+B+g1Ggfc4Fgw7cjIbNRDMhj39JneAk3xQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
 
   '@tanstack/react-query@5.75.5':
     resolution: {integrity: sha512-QrLCJe40BgBVlWdAdf2ZEVJ0cISOuEy/HKupId1aTKU6gPJZVhSvZpH+Si7csRflCJphzlQ77Yx6gUxGW9o0XQ==}
@@ -17024,7 +17038,15 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.5
 
+  '@tanstack/pacer@0.4.0': {}
+
   '@tanstack/query-core@5.75.5': {}
+
+  '@tanstack/react-pacer@0.4.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/pacer': 0.4.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@tanstack/react-query@5.75.5(react@19.1.0)':
     dependencies:

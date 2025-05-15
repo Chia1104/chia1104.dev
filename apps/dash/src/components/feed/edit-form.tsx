@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useTransition } from "react";
 
+import { Button, Tooltip } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Bubbles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -25,6 +27,7 @@ const EditForm = ({
   defaultValues: Partial<CreateFeedInput>;
   feedId: number;
 }) => {
+  const [isGenerating] = useTransition();
   const editFieldsRef = useRef<Ref>(null);
   const router = useRouter();
   const utils = api.useUtils();
@@ -63,6 +66,36 @@ const EditForm = ({
       <form
         onSubmit={onSubmit}
         className="w-full max-w-[700px] flex flex-col gap-10">
+        <section className="flex justify-start gap-2 self-start">
+          <Tooltip content="Generate Embedding (Experimental)">
+            <Button
+              size="sm"
+              isIconOnly
+              color="warning"
+              className="bg-warning-200 text-warning"
+              isLoading={isGenerating}
+              // onPress={() =>
+              //   startTransition(async () => {
+              //     const result = await generateFeedEmbedding({
+              //       feedID: feedId.toString(),
+              //     });
+              //     if (
+              //       result?.serverError ||
+              //       result?.validationErrors ||
+              //       result?.bindArgsValidationErrors
+              //     ) {
+              //       console.error(result);
+              //       toast.error("Failed to generate embedding");
+              //     } else {
+              //       toast.success("Embedding generated successfully");
+              //     }
+              //   })
+              // }
+            >
+              <Bubbles className="text-warning size-4" />
+            </Button>
+          </Tooltip>
+        </section>
         <EditFields ref={editFieldsRef} mode="edit" />
         <SubmitForm className="max-w-[150px] w-full">Update</SubmitForm>
       </form>
