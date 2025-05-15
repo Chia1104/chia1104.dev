@@ -301,12 +301,18 @@ export const deleteFeed = withDTO(async (db, dto: { feedId: number }) => {
 export const searchFeeds = withDTO(
   async (
     db,
-    dto: Options & { input: string; limit?: number; comparison?: number }
+    dto: Options & {
+      input: string;
+      limit?: number;
+      comparison?: number;
+      embedding?: number[];
+    }
   ) => {
-    const embedding = await generateEmbedding(dto.input, dto);
+    const embedding =
+      dto.embedding ?? (await generateEmbedding(dto.input, dto));
     const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
 
-    return db
+    const feeds = await db
       .select({
         id: schema.feeds.id,
         userId: schema.feeds.userId,
@@ -326,6 +332,11 @@ export const searchFeeds = withDTO(
       .where(gt(similarity, dto.comparison ?? 0.5))
       .orderBy((t) => desc(t.similarity))
       .limit(dto.limit ?? 5);
+
+    return {
+      items: feeds,
+      embedding,
+    };
   }
 );
 
