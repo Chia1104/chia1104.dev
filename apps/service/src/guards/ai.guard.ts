@@ -36,8 +36,14 @@ const getApiKey = (c: Context, provider?: Provider) => {
   }
 };
 
-export const ai = (provider?: Provider) =>
+export const ai = (
+  provider?: Provider,
+  enabled: (c: Context) => Promise<boolean> | boolean = () => true
+) =>
   createMiddleware(async (c, next) => {
+    if (!!enabled && !(await enabled(c))) {
+      return next();
+    }
     if (!env.AI_AUTH_PRIVATE_KEY) {
       return c.json(errorGenerator(503), 503, {
         "Retry-After": "3600",
