@@ -30,7 +30,6 @@ export const generateEmbedding = async (value: string, options?: Options) => {
     input,
   });
 
-  console.log(data);
 
   return data[0]?.embedding;
 };
