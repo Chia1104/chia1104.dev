@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createOpenAI } from "..";
 
+// https://platform.openai.com/docs/guides/embeddings
 export const TextEmbeddingModel = {
   "ada-002": "text-embedding-ada-002",
   "3-small": "text-embedding-3-small",
@@ -28,6 +29,8 @@ export const generateEmbedding = async (value: string, options?: Options) => {
     model,
     input,
   });
+
+  console.log(data);
 
   return data[0]?.embedding;
 };

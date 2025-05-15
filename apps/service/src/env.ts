@@ -37,6 +37,7 @@ export const env = createEnv({
     TRIGGER_SECRET_KEY: z.string().optional(),
     ANTHROPIC_API_KEY: z.string().optional(),
     GENAI_API_KEY: z.string().optional(),
+    OLLAMA_BASE_URL: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -69,6 +70,7 @@ export const env = createEnv({
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     GENAI_API_KEY: process.env.GENAI_API_KEY,
+    OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
