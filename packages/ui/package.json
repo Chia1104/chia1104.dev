@@ -86,7 +86,7 @@
     "@radix-ui/react-progress": "^1.1.6",
     "@radix-ui/react-slot": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.2.6",
-    "@react-email/components": "^0.0.38",
+    "@react-email/components": "^0.0.41",
     "@tanstack/react-query": "catalog:",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

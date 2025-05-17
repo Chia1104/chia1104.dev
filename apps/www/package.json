@@ -40,7 +40,7 @@
     "@hookform/resolvers": "^5.0.1",
     "@marsidev/react-turnstile": "^1.1.0",
     "@next/third-parties": "^15.3.2",
-    "@react-email/components": "^0.0.38",
+    "@react-email/components": "^0.0.41",
     "@sentry/nextjs": "^9.17.0",
     "@t3-oss/env-nextjs": "^0.13.4",
     "@tanstack/react-query": "catalog:",
