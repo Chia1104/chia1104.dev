@@ -83,13 +83,13 @@
     "@chia/ai": "workspace:*",
     "drizzle-orm": "^0.43.1",
     "drizzle-zod": "^0.7.1",
-    "pg": "^8.15.6"
+    "pg": "^8.16.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@types/pg": "^8.15.1",
+    "@types/pg": "^8.15.2",
     "drizzle-kit": "^0.31.1",
     "eslint": "catalog:",
     "typescript": "catalog:"

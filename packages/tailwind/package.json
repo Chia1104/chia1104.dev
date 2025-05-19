@@ -19,10 +19,10 @@
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",
     "@egoist/tailwindcss-icons": "^1.9.0",
-    "@iconify/json": "^2.2.336",
+    "@iconify/json": "^2.2.339",
     "@tailwindcss/typography": "^0.5.16",
     "tailwindcss": "catalog:",
-    "tw-animate-css": "^1.2.9",
+    "tw-animate-css": "^1.3.0",
     "typescript": "catalog:"
   }
 }
