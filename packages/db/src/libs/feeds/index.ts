@@ -1,8 +1,6 @@
 import type { SQLWrapper } from "drizzle-orm";
-import { eq, sql, cosineDistance, desc, gt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-import { generateEmbedding } from "@chia/ai/embeddings/openai";
-import type { Options } from "@chia/ai/embeddings/openai";
 import dayjs from "@chia/utils/day";
 
 import { cursorTransform, dateToTimestamp, withDTO } from "../";
@@ -13,6 +11,8 @@ import type {
   InsertFeedDTO,
   InsertFeedContentDTO,
   InsertFeedMetaDTO,
+  UpdateFeedDTO,
+  UpdateFeedContentDTO,
 } from "../validator/feeds";
 
 export const getFeedBySlug = withDTO(async (db, slug: string) => {
@@ -186,8 +186,8 @@ export const getInfiniteFeedsByUserId = withDTO(
 
 export const createFeed = withDTO(
   async (db, dto: InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">) => {
-    await db.transaction(async (trx) => {
-      const feedId = (
+    return await db.transaction(async (trx) => {
+      const feed = (
         await trx
           .insert(schema.feeds)
           .values({
@@ -205,18 +205,28 @@ export const createFeed = withDTO(
             updatedAt: dto.updatedAt
               ? dayjs(dto.updatedAt).toDate()
               : undefined,
+            embedding: dto.embedding,
           })
-          .returning({ feedId: schema.feeds.id })
-      )[0]?.feedId;
-      if (!feedId) {
+          .returning()
+      )[0];
+      if (!feed.id) {
         trx.rollback();
       }
-      await trx.insert(schema.contents).values({
-        feedId,
-        content: dto.content,
-        source: dto.source,
-        unstable_serializedSource: dto.unstable_serializedSource,
-      });
+      const content = (
+        await trx
+          .insert(schema.contents)
+          .values({
+            feedId: feed.id,
+            content: dto.content,
+            source: dto.source,
+            unstable_serializedSource: dto.unstable_serializedSource,
+          })
+          .returning()
+      )[0];
+      if (!content.id) {
+        trx.rollback();
+      }
+      return Object.assign(feed, content);
     });
   }
 );
@@ -225,33 +235,54 @@ export const updateFeed = withDTO(
   async (
     db,
     dto: { feedId: number } & Partial<
-      InsertFeedDTO & Omit<InsertFeedContentDTO, "feedId">
+      UpdateFeedDTO & Omit<UpdateFeedContentDTO, "feedId">
     >
   ) => {
-    await db.transaction(async (trx) => {
-      await trx
-        .update(schema.feeds)
-        .set({
-          slug: dto.slug,
-          type: dto.type,
-          contentType: dto.contentType ?? undefined,
-          title: dto.title,
-          excerpt: dto.excerpt,
-          description: dto.description,
-          userId: dto.userId,
-          published: dto.published,
-          createdAt: dto.createdAt ? dayjs(dto.createdAt).toDate() : undefined,
-          updatedAt: dto.updatedAt ? dayjs(dto.updatedAt).toDate() : undefined,
-        })
-        .where(eq(schema.feeds.id, dto.feedId));
-      await trx
-        .update(schema.contents)
-        .set({
-          content: dto.content,
-          source: dto.source,
-          unstable_serializedSource: dto.unstable_serializedSource,
-        })
-        .where(eq(schema.contents.feedId, dto.feedId));
+    return await db.transaction(async (trx) => {
+      const feed = (
+        await trx
+          .update(schema.feeds)
+          .set({
+            slug: dto.slug,
+            type: dto.type,
+            contentType: dto.contentType ?? undefined,
+            title: dto.title,
+            excerpt: dto.excerpt,
+            description: dto.description,
+            userId: dto.userId,
+            published: dto.published,
+            createdAt: dto.createdAt
+              ? dayjs(dto.createdAt).toDate()
+              : undefined,
+            updatedAt: dto.updatedAt
+              ? dayjs(dto.updatedAt).toDate()
+              : undefined,
+            embedding: dto.embedding,
+          })
+          .where(eq(schema.feeds.id, dto.feedId))
+          .returning()
+      )[0];
+      if (!feed.id) {
+        trx.rollback();
+      }
+      if (!dto.content || !dto.source || !dto.unstable_serializedSource) {
+        return feed;
+      }
+      const content = (
+        await trx
+          .update(schema.contents)
+          .set({
+            content: dto.content,
+            source: dto.source,
+            unstable_serializedSource: dto.unstable_serializedSource,
+          })
+          .where(eq(schema.contents.feedId, dto.feedId))
+          .returning()
+      )[0];
+      if (!content.id) {
+        trx.rollback();
+      }
+      return Object.assign(feed, content);
     });
   }
 );
@@ -264,37 +295,6 @@ export const deleteFeed = withDTO(async (db, dto: { feedId: number }) => {
       .where(eq(schema.contents.feedId, dto.feedId));
   });
 });
-
-export const searchFeeds = withDTO(
-  async (
-    db,
-    dto: Options & { input: string; limit?: number; comparison?: number }
-  ) => {
-    const embedding = await generateEmbedding(dto.input, dto);
-    const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
-
-    return db
-      .select({
-        id: schema.feeds.id,
-        userId: schema.feeds.userId,
-        type: schema.feeds.type,
-        slug: schema.feeds.slug,
-        description: schema.feeds.description,
-        createdAt: schema.feeds.createdAt,
-        updatedAt: schema.feeds.updatedAt,
-        readTime: schema.feeds.readTime,
-        contentType: schema.feeds.contentType,
-        published: schema.feeds.published,
-        title: schema.feeds.title,
-        excerpt: schema.feeds.excerpt,
-        similarity,
-      })
-      .from(schema.feeds)
-      .where(gt(similarity, dto.comparison ?? 0.5))
-      .orderBy((t) => desc(t.similarity))
-      .limit(dto.limit ?? 5);
-  }
-);
 
 export const getFeedMetaById = withDTO(
   async (

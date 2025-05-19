@@ -9,6 +9,18 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./ollama": {
+      "types": "./src/ollama/index.ts",
+      "default": "./src/ollama/index.ts"
+    },
+    "./ollama/types": {
+      "types": "./src/ollama/types.ts",
+      "default": "./src/ollama/types.ts"
+    },
+    "./ollama/utils": {
+      "types": "./src/ollama/utils.ts",
+      "default": "./src/ollama/utils.ts"
+    },
     "./generate/handler": {
       "types": "./src/generate/handler.ts",
       "default": "./src/generate/handler.ts"
@@ -32,6 +44,10 @@
     "./embeddings/openai": {
       "types": "./src/embeddings/openai.ts",
       "default": "./src/embeddings/openai.ts"
+    },
+    "./embeddings/ollama": {
+      "types": "./src/embeddings/ollama.ts",
+      "default": "./src/embeddings/ollama.ts"
     }
   },
   "scripts": {
@@ -52,6 +68,7 @@
     "@google/genai": "^0.10.0",
     "ai": "^4.3.15",
     "next": "15.3.2",
+    "ollama": "^0.5.15",
     "openai": "^4.98.0"
   },
   "devDependencies": {

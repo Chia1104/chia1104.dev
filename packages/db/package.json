@@ -25,6 +25,10 @@
       "types": "./src/libs/feeds/index.ts",
       "default": "./src/libs/feeds/index.ts"
     },
+    "./repos/feeds/embedding": {
+      "types": "./src/libs/feeds/embedding.ts",
+      "default": "./src/libs/feeds/embedding.ts"
+    },
     "./repos/users": {
       "types": "./src/libs/users/index.ts",
       "default": "./src/libs/users/index.ts"

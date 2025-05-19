@@ -1,14 +1,16 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import snakeCase from "lodash/snakeCase";
 
 import { createOpenAI } from "@chia/ai";
+import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
 import { eq, schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
-  searchFeeds,
 } from "@chia/db/repos/feeds";
+import { searchFeeds } from "@chia/db/repos/feeds/embedding";
 
 import { ai, AI_AUTH_TOKEN } from "@/guards/ai.guard";
 import { verifyAuth } from "@/guards/auth.guard";
@@ -64,8 +66,20 @@ api.get(
 );
 
 api
-  .use("/search", verifyAuth(true))
-  .use("/search", ai())
+  .use(
+    "/search",
+    verifyAuth((c) => {
+      const model = c.req.query("model");
+      return !isOllamaEmbeddingModel(model);
+    })
+  )
+  .use(
+    "/search",
+    ai("openai", (c) => {
+      const model = c.req.query("model");
+      return !isOllamaEmbeddingModel(model);
+    })
+  )
   .get(
     "/search",
     zValidator("query", searchFeedsSchema, (result, c) => {
@@ -78,13 +92,29 @@ api
         apiKey: c.get(AI_AUTH_TOKEN),
       });
       const { keyword, model } = c.req.valid("query");
-      const feeds = await searchFeeds(c.var.db, {
+      const cache = c.var.redis;
+      const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}`;
+      const cached = await cache.get(cacheKey);
+      if (cached) {
+        const { items } = await searchFeeds(c.var.db, {
+          input: keyword ?? "",
+          limit: 5,
+          model: isOllamaEmbeddingModel(model) ? undefined : model,
+          useOllama: isOllamaEmbeddingModel(model) ? { model } : undefined,
+          client,
+          embedding: JSON.parse(cached) as number[],
+        });
+        return c.json(items);
+      }
+      const { items, embedding } = await searchFeeds(c.var.db, {
         input: keyword ?? "",
         limit: 5,
-        model,
+        model: isOllamaEmbeddingModel(model) ? undefined : model,
+        useOllama: isOllamaEmbeddingModel(model) ? { model } : undefined,
         client,
       });
-      return c.json(feeds);
+      await cache.set(cacheKey, JSON.stringify(embedding));
+      return c.json(items);
     }
   );
 

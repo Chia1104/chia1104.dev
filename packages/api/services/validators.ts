@@ -4,6 +4,7 @@ import { FeedOrderBy } from "@chia/db/types";
 import {
   baseInfiniteSchema,
   insertFeedMetaSchema,
+  updateFeedSchema,
 } from "@chia/db/validator/feeds";
 import { numericStringSchema } from "@chia/utils";
 
@@ -49,3 +50,5 @@ export const getFeedsWithMetaSchema = z
   );
 
 export const insertFeedMetaRequestSchema = insertFeedMetaSchema;
+
+export const updateFeedRequestSchema = updateFeedSchema;

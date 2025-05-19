@@ -246,6 +246,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.13.4
         version: 0.13.4(arktype@2.1.20)(typescript@5.8.3)(zod@3.24.4)
+      '@tanstack/react-pacer':
+        specifier: ^0.4.0
+        version: 0.4.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.75.5(react@19.1.0)
@@ -777,6 +780,9 @@ importers:
       next:
         specifier: 15.3.2
         version: 15.3.2(@opentelemetry/api@1.9.0)(@playwright/test@1.52.0)(babel-plugin-react-compiler@19.1.0-rc.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      ollama:
+        specifier: ^0.5.15
+        version: 0.5.15
       openai:
         specifier: ^4.98.0
         version: 4.98.0(ws@8.18.1)(zod@3.24.4)
@@ -5471,8 +5477,19 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
+  '@tanstack/pacer@0.4.0':
+    resolution: {integrity: sha512-NWXm+fE1xrUmFZiA/BT69u+1FdQCijrds7uEc4yrcf37/8HJmT3ACF3GyevSMgzoSlaofJK8Ryr1q4IjVfiwSA==}
+    engines: {node: '>=18'}
+
   '@tanstack/query-core@5.75.5':
     resolution: {integrity: sha512-kPDOxtoMn2Ycycb76Givx2fi+2pzo98F9ifHL/NFiahEDpDwSVW6o12PRuQ0lQnBOunhRG5etatAhQij91M3MQ==}
+
+  '@tanstack/react-pacer@0.4.0':
+    resolution: {integrity: sha512-IU3Vc0Zy2wyyX6J2/loSWPJO7WUUWkIC5GhPsYjHvEdM/PZK70Yz+B+g1Ggfc4Fgw7cjIbNRDMhj39JneAk3xQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
 
   '@tanstack/react-query@5.75.5':
     resolution: {integrity: sha512-QrLCJe40BgBVlWdAdf2ZEVJ0cISOuEy/HKupId1aTKU6gPJZVhSvZpH+Si7csRflCJphzlQ77Yx6gUxGW9o0XQ==}
@@ -9560,6 +9577,9 @@ packages:
 
   ohash@1.1.6:
     resolution: {integrity: sha512-TBu7PtV8YkAZn0tSxobKY2n2aAQva936lhRrj6957aDaCf9IEtqsKbgMzXE/F/sjqYOwmrukeORHNLe5glk7Cg==}
+
+  ollama@0.5.15:
+    resolution: {integrity: sha512-TSaZSJyP7MQJFjSmmNsoJiriwa3U+/UJRw6+M8aucs5dTsaWNZsBIGpDb5rXnW6nXxJBB/z79gZY8IaiIQgelQ==}
 
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -17024,7 +17044,15 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.5
 
+  '@tanstack/pacer@0.4.0': {}
+
   '@tanstack/query-core@5.75.5': {}
+
+  '@tanstack/react-pacer@0.4.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/pacer': 0.4.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@tanstack/react-query@5.75.5(react@19.1.0)':
     dependencies:
@@ -22150,6 +22178,10 @@ snapshots:
   obuf@1.1.2: {}
 
   ohash@1.1.6: {}
+
+  ollama@0.5.15:
+    dependencies:
+      whatwg-fetch: 3.6.20
 
   on-finished@2.4.1:
     dependencies:
