@@ -59,7 +59,7 @@
     "react-hook-form": "^7.56.4",
     "react-medium-image-zoom": "^5.2.14",
     "recharts": "^2.15.3",
-    "sharp": "0.34.1",
+    "sharp": "0.34.2",
     "shiki": "^3.4.2",
     "sonner": "2.0.3",
     "tailwind-merge": "^3.3.0",
