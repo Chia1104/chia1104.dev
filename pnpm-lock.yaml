@@ -247,8 +247,8 @@ importers:
         specifier: ^0.13.4
         version: 0.13.4(arktype@2.1.20)(typescript@5.8.3)(zod@3.25.1)
       '@tanstack/react-pacer':
-        specifier: ^0.6.0
-        version: 0.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^0.7.0
+        version: 0.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.76.1(react@19.1.0)
@@ -5390,15 +5390,15 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
-  '@tanstack/pacer@0.6.0':
-    resolution: {integrity: sha512-uunCU7ABQoq4pgujY3gRerPa6jp+K7/taAikYcY/xJTH+PJZu0YzOulMpJRsLVBHFd2kz7cAs3eOq1jA4Q9rCQ==}
+  '@tanstack/pacer@0.7.0':
+    resolution: {integrity: sha512-/CB3dN05Vd6CxiuiqRYdVQDu9wO61kN9flQiPcbdojYF2hWhhuzwbqS+lbKxZjObWuiTQPsC559lnZn1lbpM9Q==}
     engines: {node: '>=18'}
 
   '@tanstack/query-core@5.76.0':
     resolution: {integrity: sha512-FN375hb8ctzfNAlex5gHI6+WDXTNpe0nbxp/d2YJtnP+IBM6OUm7zcaoCW6T63BawGOYZBbKC0iPvr41TteNVg==}
 
-  '@tanstack/react-pacer@0.6.0':
-    resolution: {integrity: sha512-f0U7oySn6yQKmbe+np0pxNt93PJGmhsWy5hxWpRpzVCbm/hUQyRrRXk2Ai2/KJiB0n7o/Q2KRofYWo6TthwksQ==}
+  '@tanstack/react-pacer@0.7.0':
+    resolution: {integrity: sha512-1QymYEkRnkcDxARJBb6pCMRtflIqMMsZExa27Qk9npl/StY3fQZZLH2wrNuzi1dyeMdqIxFjx8fm/LqZcxPP3Q==}
     engines: {node: '>=18'}
     peerDependencies:
       react: '>=16.8'
@@ -9417,6 +9417,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -16857,13 +16858,13 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.7
 
-  '@tanstack/pacer@0.6.0': {}
+  '@tanstack/pacer@0.7.0': {}
 
   '@tanstack/query-core@5.76.0': {}
 
-  '@tanstack/react-pacer@0.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@tanstack/react-pacer@0.7.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@tanstack/pacer': 0.6.0
+      '@tanstack/pacer': 0.7.0
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
