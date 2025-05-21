@@ -157,8 +157,8 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
       jest-extended:
-        specifier: ^5.0.1
-        version: 5.0.1
+        specifier: ^5.0.3
+        version: 5.0.3
       lint-staged:
         specifier: ^16.0.0
         version: 16.0.0
@@ -8533,8 +8533,8 @@ packages:
     resolution: {integrity: sha512-LMIgiIrhigmPrs03JHpxUh2yISK3vLFPkAodPeo0+BuF7wA2FoQbkEg1u8gBYBThncu7e1oEDUfIXVuTqLRUjw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
-  jest-extended@5.0.1:
-    resolution: {integrity: sha512-ZDY+KmVjRDN1dJi3KzxYSywb0JBFdxDdG3ZDsg/N02f8GAMj4VCsaQelAF4GV36iT47Ab6+yhoYnRMAA7WtrMg==}
+  jest-extended@5.0.3:
+    resolution: {integrity: sha512-sxrNxTvHd5S0qFSchkYdr7WhLQb55qhr5sHcllPaPXXGhv0kXy/0VTtFbrFUPOLHyZRDpNoEmhzcPRT7b90MZA==}
     engines: {node: ^18.12.0 || ^20.9.0 || ^22.11.0 || >=23.0.0}
     peerDependencies:
       jest: '>=27.2.5'
@@ -9417,6 +9417,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -20707,7 +20708,7 @@ snapshots:
       jest-get-type: 29.6.3
       pretty-format: 29.7.0
 
-  jest-extended@5.0.1:
+  jest-extended@5.0.3:
     dependencies:
       jest-diff: 29.7.0
 
