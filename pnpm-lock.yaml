@@ -1033,8 +1033,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0(tailwindcss@4.1.7)
       '@iconify/json':
-        specifier: ^2.2.339
-        version: 2.2.339
+        specifier: ^2.2.341
+        version: 2.2.341
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@4.1.7)
@@ -2818,8 +2818,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@iconify/json@2.2.339':
-    resolution: {integrity: sha512-8p+IZcJuic2CW8saJb6bktV5Tl0G4QqnhLfaof1v9hFpMI3KVSv8isN198Wu5sDVdFGAzXJ8uDsNEUyc6W1VDg==}
+  '@iconify/json@2.2.341':
+    resolution: {integrity: sha512-IwH6m5hbVRtjBcmcI7xI6/H3VV3Tt0rqzWO4UxV1L82Cv32CsnvwpykLe9a2DgC06/gnrCmp3vgEzPsEHzndqg==}
 
   '@iconify/react@6.0.0':
     resolution: {integrity: sha512-eqNscABVZS8eCpZLU/L5F5UokMS9mnCf56iS1nM9YYHdH8ZxqZL9zyjSwW60IOQFsXZkilbBiv+1paMXBhSQnw==}
@@ -9417,6 +9417,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -13834,7 +13835,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@iconify/json@2.2.339':
+  '@iconify/json@2.2.341':
     dependencies:
       '@iconify/types': 2.0.0
       pathe: 1.1.2
