@@ -33,7 +33,7 @@
     "@heroui/theme": "catalog:heroui",
     "@hookform/resolvers": "^5.0.1",
     "@iconify/react": "^6.0.0",
-    "@internationalized/date": "^3.8.0",
+    "@internationalized/date": "^3.8.2",
     "@monaco-editor/react": "^4.7.0",
     "@t3-oss/env-nextjs": "^0.13.4",
     "@tanstack/react-pacer": "^0.6.0",
