@@ -79,7 +79,7 @@
     "lodash": "^4.17.21",
     "server-only": "^0.0.1",
     "superjson": "2.2.2",
-    "zod": "^3.25.1"
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@manypkg/cli": "^0.24.0",
