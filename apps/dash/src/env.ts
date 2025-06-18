@@ -1,5 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { env as serviceEnv } from "@chia/api/services/env";
 import { adminEnv } from "@chia/auth/env";

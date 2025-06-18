@@ -3,7 +3,7 @@ import { JSDOM } from "jsdom";
 import { HTTPError } from "ky";
 import { NextResponse, after } from "next/server";
 import type { NextRequest } from "next/server";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { withRateLimiter, createUpstash, Upstash } from "@chia/cache";
 import { request } from "@chia/utils";

@@ -1,6 +1,6 @@
-import z from "zod";
+import z from "zod/v4";
 
-export const emailSchema = z.string().email();
+export const emailSchema = z.email();
 
 export const contactSchema = z.strictObject({
   email: emailSchema,

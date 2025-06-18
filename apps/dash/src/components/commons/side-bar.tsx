@@ -44,10 +44,6 @@ export type SidebarProps = Omit<ListboxProps<SidebarItem>, "children"> & {
   sectionClasses?: ListboxSectionProps["classNames"];
   classNames?: ListboxProps["classNames"];
   defaultSelectedKey: string;
-  /**
-   * @deprecated
-   */
-  onSelect?: (key: string) => void;
 };
 
 const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
@@ -55,7 +51,6 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
     {
       items,
       isCompact,
-      onSelect: _onSelect,
       hideEndContent,
       sectionClasses: sectionClassesProp = {},
       itemClasses: itemClassesProp = {},

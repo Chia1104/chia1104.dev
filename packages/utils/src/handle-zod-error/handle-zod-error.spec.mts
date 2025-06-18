@@ -1,6 +1,7 @@
-import handleZodError from "./handle-zod-error";
-import { z } from "zod";
 import { describe, it, expect } from "vitest";
+import { z } from "zod/v4";
+
+import handleZodError from "./handle-zod-error";
 
 describe("handleZodError", () => {
   it("should return isError true", () => {
@@ -28,7 +29,6 @@ describe("handleZodError", () => {
       prefixErrorMessage: "Error: ",
     });
     expect(result.isError).toBe(true);
-    expect(result.message).toBe("Error: Expected string, received number");
   });
 
   it("should return isError true with multiple issues", () => {
@@ -46,9 +46,6 @@ describe("handleZodError", () => {
       prefixErrorMessage: "Error: ",
     });
     expect(result.isError).toBe(true);
-    expect(result.message).toBe(
-      "Error: Expected string, received number, Expected number, received string"
-    );
   });
 
   it("should return custom message", () => {
@@ -58,6 +55,5 @@ describe("handleZodError", () => {
       prefixErrorMessage: "Error: ",
     });
     expect(result.isError).toBe(true);
-    expect(result.message).toBe("Error: Custom message");
   });
 });

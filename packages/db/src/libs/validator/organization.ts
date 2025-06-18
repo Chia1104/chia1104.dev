@@ -1,5 +1,5 @@
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { project } from "../../schema";
 import { FeedOrderBy } from "../../types";
@@ -9,12 +9,13 @@ const internal_dateSchema = z.object({
   deletedAt: z.union([z.string(), z.number()]).optional(),
 });
 
-export const insertProjectSchema = createInsertSchema(project)
-  .omit({
+export const insertProjectSchema = z.object({
+  ...createInsertSchema(project).omit({
     createdAt: true,
     deletedAt: true,
-  })
-  .merge(internal_dateSchema);
+  }).shape,
+  ...internal_dateSchema.shape,
+});
 
 export type InsertProjectDTO = z.infer<typeof insertProjectSchema>;
 

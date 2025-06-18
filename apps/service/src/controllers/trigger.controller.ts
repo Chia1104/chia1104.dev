@@ -9,7 +9,7 @@ import {
   feedSummarizeTask,
   requestSchema as feedSummarizeRequestSchema,
 } from "trigger/feed-summarize";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { errorGenerator } from "@chia/utils";
 import { tryCatch } from "@chia/utils/try-catch";
@@ -32,7 +32,7 @@ api.post(
   zValidator(
     "param",
     z.object({
-      id: z.nativeEnum(TaskID),
+      id: z.enum(TaskID),
     }),
     (result, c) => {
       if (!result.success) {

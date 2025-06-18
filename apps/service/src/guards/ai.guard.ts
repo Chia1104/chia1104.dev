@@ -3,7 +3,6 @@ import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
 import {
-  HEADER_AUTH_TOKEN,
   OPENAI_API_KEY,
   ANTHROPIC_API_KEY,
   GENAI_API_KEY,
@@ -21,10 +20,7 @@ export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
 const getApiKey = (c: Context, provider?: Provider) => {
   switch (provider) {
     case Provider.OpenAI:
-      return (
-        getCookie(c, OPENAI_API_KEY)?.toString() ??
-        getCookie(c, HEADER_AUTH_TOKEN)?.toString()
-      );
+      return getCookie(c, OPENAI_API_KEY)?.toString();
     case Provider.Anthropic:
       return getCookie(c, ANTHROPIC_API_KEY)?.toString();
     case Provider.Google:
@@ -32,7 +28,7 @@ const getApiKey = (c: Context, provider?: Provider) => {
     case Provider.DeepSeek:
       return getCookie(c, DEEPSEEK_API_KEY)?.toString();
     default:
-      return getCookie(c, HEADER_AUTH_TOKEN)?.toString();
+      return "";
   }
 };
 

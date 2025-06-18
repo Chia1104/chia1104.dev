@@ -2,10 +2,9 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { stream } from "hono/streaming";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import {
-  HEADER_AUTH_TOKEN,
   OPENAI_API_KEY,
   ANTHROPIC_API_KEY,
   GENAI_API_KEY,
@@ -36,7 +35,7 @@ const cookieName = (provider?: Provider) => {
     case Provider.DeepSeek:
       return DEEPSEEK_API_KEY;
     default:
-      return HEADER_AUTH_TOKEN;
+      return "";
   }
 };
 
@@ -48,7 +47,7 @@ api.post(
     "json",
     z.object({
       apiKey: z.string().min(1),
-      provider: z.nativeEnum(Provider).optional(),
+      provider: z.enum(Provider).optional(),
     }),
     (result, c) => {
       if (!result.success) {

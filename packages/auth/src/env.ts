@@ -1,6 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
-import { vercel } from "@t3-oss/env-core/presets-zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const adminEnv = createEnv({
   server: {
@@ -57,5 +56,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1" ||
     process.env.APP_CODE !== "service",
-  extends: [vercel(), adminEnv],
+  extends: [adminEnv],
 });

@@ -1,10 +1,9 @@
-import type { z } from "zod";
-import { ZodError } from "zod";
-import type { ZodIssue } from "zod";
+import type { z } from "zod/v4";
+import { ZodError } from "zod/v4";
 
 export interface HandleZodErrorReturn {
   message: string;
-  issues?: ZodIssue[];
+  issues?: z.core.$ZodIssue[];
   isError: boolean;
 }
 
@@ -14,7 +13,7 @@ export interface HandleZodErrorOptions<T> {
   prefixErrorMessage?: string;
   preParse?: (data: T) => void;
   postParse?: (data: T) => void;
-  onError?: (message: string, issues: ZodIssue[]) => void;
+  onError?: (message: string, issues: z.core.$ZodIssue[]) => void;
   onFinally?: () => void | HandleZodErrorReturn;
 }
 

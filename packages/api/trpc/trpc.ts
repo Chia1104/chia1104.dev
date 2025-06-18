@@ -1,6 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod";
+import { ZodError } from "zod/v4";
+import { treeifyError } from "zod/v4";
 
 import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth/types";
@@ -36,7 +37,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       data: {
         ...shape.data,
         zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+          error.cause instanceof ZodError ? treeifyError(error.cause) : null,
       },
     };
   },
@@ -151,7 +152,7 @@ const external_trpc = initTRPC
         data: {
           ...shape.data,
           zodError:
-            error.cause instanceof ZodError ? error.cause.flatten() : null,
+            error.cause instanceof ZodError ? treeifyError(error.cause) : null,
         },
       };
     },
