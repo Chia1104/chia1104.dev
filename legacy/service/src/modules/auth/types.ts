@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 /**
  * https://authjs.dev/guides/pages/error
@@ -12,7 +12,7 @@ export const AuthError = {
 
 export type AuthError = (typeof AuthError)[keyof typeof AuthError];
 
-export const authErrorSchema = z.nativeEnum(AuthError);
+export const authErrorSchema = z.enum(AuthError);
 
 export const OAuthProvider = {
   Google: "google",
@@ -22,4 +22,4 @@ export const OAuthProvider = {
 
 export type OAuthProvider = (typeof OAuthProvider)[keyof typeof OAuthProvider];
 
-export const oAuthProviderSchema = z.nativeEnum(OAuthProvider);
+export const oAuthProviderSchema = z.enum(OAuthProvider);

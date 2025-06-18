@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const Provider = {
   OpenAI: "openai",
@@ -54,7 +54,7 @@ export type DeepSeekModel = (typeof DeepSeekModel)[keyof typeof DeepSeekModel];
 export type Role = (typeof Role)[keyof typeof Role];
 
 export const messageSchema = z.object({
-  role: z.nativeEnum(Role).optional().default(Role.User),
+  role: z.enum(Role).optional().default(Role.User),
   content: z.string(),
 });
 
@@ -64,19 +64,19 @@ export const modelSchema = z
   .union([
     z.object({
       provider: z.literal(Provider.OpenAI),
-      id: z.nativeEnum(OpenAIModel),
+      id: z.enum(OpenAIModel),
     }),
     z.object({
       provider: z.literal(Provider.Anthropic),
-      id: z.nativeEnum(AnthropicModel),
+      id: z.enum(AnthropicModel),
     }),
     z.object({
       provider: z.literal(Provider.Google),
-      id: z.nativeEnum(GoogleModel),
+      id: z.enum(GoogleModel),
     }),
     z.object({
       provider: z.literal(Provider.DeepSeek),
-      id: z.nativeEnum(DeepSeekModel),
+      id: z.enum(DeepSeekModel),
     }),
   ])
   .optional()

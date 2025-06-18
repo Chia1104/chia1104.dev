@@ -1,6 +1,7 @@
-import handleZodError from "./handle-zod-error";
-import { z } from "zod";
 import { describe, it, expect } from "vitest";
+import { z } from "zod/v4";
+
+import handleZodError from "./handle-zod-error";
 
 describe("handleZodError", () => {
   it("should return isError true", () => {

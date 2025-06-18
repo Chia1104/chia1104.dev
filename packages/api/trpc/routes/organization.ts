@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import GithubSlugger from "github-slugger";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";

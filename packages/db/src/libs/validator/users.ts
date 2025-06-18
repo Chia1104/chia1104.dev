@@ -1,17 +1,14 @@
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { users } from "../../schema";
 
-export const insertUserSchema = createInsertSchema(users)
-  .omit({
+export const insertUserSchema = z.object({
+  ...createInsertSchema(users).omit({
     id: true,
     emailVerified: true,
-  })
-  .merge(
-    z.object({
-      id: z.string().uuid(),
-    })
-  );
+  }).shape,
+  id: z.uuid(),
+});
 
 export type InsertUserDTO = z.infer<typeof insertUserSchema>;

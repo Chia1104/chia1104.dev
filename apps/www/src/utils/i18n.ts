@@ -5,12 +5,6 @@ export const Locale = {
   ZH_TW: "zh-TW",
 } as const;
 
-/**
- * @deprecated Use `Locale` from "next-intl" instead
- * ```ts
- * import type { Locale } from "next-intl";
- * ```
- */
 export type Locale = (typeof Locale)[keyof typeof Locale];
 
 /**

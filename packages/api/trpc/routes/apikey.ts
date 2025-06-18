@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
@@ -22,11 +22,10 @@ export const apiKeyRouter = createTRPCRouter({
     project: ["update", "apikey.create"],
   })
     .input(
-      z
-        .object({
-          projectId: z.number().optional(),
-        })
-        .merge(createAPIKeySchema)
+      z.object({
+        projectId: z.number().optional(),
+        ...createAPIKeySchema.shape,
+      })
     )
     .mutation(async (opts) => {
       const { data, error } = await tryCatch(
@@ -112,12 +111,11 @@ export const apiKeyRouter = createTRPCRouter({
     project: ["read", "apikey.read"],
   })
     .input(
-      baseInfiniteSchema
-        .merge(
-          z.object({
-            withProject: z.boolean().optional(),
-          })
-        )
+      z
+        .object({
+          ...baseInfiniteSchema.shape,
+          withProject: z.boolean().optional(),
+        })
         .optional()
     )
     .query(async (opts) => {

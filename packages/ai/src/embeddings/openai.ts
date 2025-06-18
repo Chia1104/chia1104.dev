@@ -1,5 +1,5 @@
 import type OpenAI from "openai";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { createOpenAI } from "..";
 
@@ -10,7 +10,7 @@ export const TextEmbeddingModel = {
   "3-large": "text-embedding-3-large",
 } as const;
 
-export const textEmbeddingModelSchema = z.nativeEnum(TextEmbeddingModel);
+export const textEmbeddingModelSchema = z.enum(TextEmbeddingModel);
 
 export type TextEmbeddingModel = z.infer<typeof textEmbeddingModelSchema>;
 
@@ -29,7 +29,6 @@ export const generateEmbedding = async (value: string, options?: Options) => {
     model,
     input,
   });
-
 
   return data[0]?.embedding;
 };

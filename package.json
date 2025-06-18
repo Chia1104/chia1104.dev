@@ -71,6 +71,7 @@
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
     "@t3-oss/env-core": "^0.13.8",
+    "@zod/core": "^0.11.6",
     "client-only": "^0.0.1",
     "dayjs": "^1.11.13",
     "graphql-request": "^7.2.0",

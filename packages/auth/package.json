@@ -45,8 +45,8 @@
     "@chia/db": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "better-auth": "^1.2.8",
-    "resend": "^4.5.1"
+    "better-auth": "^1.2.9",
+    "resend": "^4.6.0"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",

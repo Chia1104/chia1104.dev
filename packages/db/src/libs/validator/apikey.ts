@@ -1,5 +1,5 @@
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { apikey } from "../../schema/apikey";
 import { FeedOrderBy } from "../../types";
@@ -10,13 +10,14 @@ const internal_dateSchema = z.object({
   expiresAt: z.union([z.string(), z.number()]).optional(),
 });
 
-export const insertApiKeySchema = createInsertSchema(apikey)
-  .omit({
+export const insertApiKeySchema = z.object({
+  ...createInsertSchema(apikey).omit({
     createdAt: true,
     updatedAt: true,
     expiresAt: true,
-  })
-  .merge(internal_dateSchema);
+  }).shape,
+  ...internal_dateSchema.shape,
+});
 
 export type InsertApiKeyDTO = z.infer<typeof insertApiKeySchema>;
 

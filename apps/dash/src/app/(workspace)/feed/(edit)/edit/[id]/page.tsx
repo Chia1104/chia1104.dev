@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { FeedType } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 const schema = z.object({
   id: numericStringSchema,
-  type: z.nativeEnum(FeedType).nullish(),
+  type: z.enum(FeedType).nullish(),
 });
 
 const Page = async ({

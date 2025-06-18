@@ -9,7 +9,7 @@ import { HTTPError } from "ky";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import type { Model } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
@@ -26,7 +26,7 @@ import { serviceRequest } from "@chia/utils";
 
 const openaiApiKeySchema = z.object({
   apiKey: z.string().min(1),
-  provider: z.nativeEnum(Provider).optional(),
+  provider: z.enum(Provider).optional(),
 });
 
 type SaveOpenaiApiKeyDTO = z.infer<typeof openaiApiKeySchema>;

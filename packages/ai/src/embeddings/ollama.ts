@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { ollama } from "../ollama";
 
@@ -9,14 +9,14 @@ export const OllamaEmbeddingModel = {
   "all-minilm": "all-minilm",
 } as const;
 
-export const ollamaEmbeddingModelSchema = z.nativeEnum(OllamaEmbeddingModel);
+export const ollamaEmbeddingModelSchema = z.enum(OllamaEmbeddingModel);
 
 export type OllamaEmbeddingModel = z.infer<typeof ollamaEmbeddingModelSchema>;
 
 export const isOllamaEmbeddingModel = (
   model?: unknown
 ): model is OllamaEmbeddingModel => {
-  return z.nativeEnum(OllamaEmbeddingModel).safeParse(model).success;
+  return z.enum(OllamaEmbeddingModel).safeParse(model).success;
 };
 
 export const ollamaEmbedding = async (

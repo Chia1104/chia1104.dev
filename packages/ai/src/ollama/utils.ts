@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { ollama } from ".";
 import { OllamaModel } from "./types";
 
 export const isOllamaModel = (model?: unknown): model is OllamaModel => {
-  return z.nativeEnum(OllamaModel).safeParse(model).success;
+  return z.enum(OllamaModel).safeParse(model).success;
 };
 
 export const isOllamaEnabled = async (model?: OllamaModel) => {

@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { Resend } from "resend";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import meta from "@chia/meta";
 import EmailTemplate from "@chia/ui/features/EmailTemplate";
@@ -20,7 +20,7 @@ api.use("/send", siteverify).post(
   zValidator(
     "json",
     z.strictObject({
-      email: z.string().email(),
+      email: z.email(),
       title: z.string().min(5, "Title must be at least 5 characters long"),
       message: z.string().min(5, "Message must be at least 5 characters long"),
     }),
