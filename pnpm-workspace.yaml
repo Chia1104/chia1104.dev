@@ -10,7 +10,7 @@ catalog:
   "@trpc/react-query": ^11.4.1
   "@trpc/server": ^11.4.1
   "@trpc/next": ^11.4.1
-  eslint: ^9.29.0
+  eslint: ^9.30.0
   typescript: ^5.8.3
   tailwindcss: 4.1.10
   fumadocs-core: 15.5.3
