@@ -1199,7 +1199,7 @@ importers:
         specifier: workspace:*
         version: link:../../toolings/tsconfig
       start-server-and-test:
-        specifier: ^2.0.11
+        specifier: ^2.0.12
         version: 2.0.12
       typescript:
         specifier: 'catalog:'
