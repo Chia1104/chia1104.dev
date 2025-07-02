@@ -19,7 +19,7 @@
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",
     "@egoist/tailwindcss-icons": "^1.9.0",
-    "@iconify/json": "^2.2.350",
+    "@iconify/json": "^2.2.354",
     "@tailwindcss/typography": "^0.5.16",
     "tailwindcss": "catalog:",
     "tw-animate-css": "^1.3.4",
