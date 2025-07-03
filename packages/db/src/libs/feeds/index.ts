@@ -265,7 +265,7 @@ export const updateFeed = withDTO(
       if (!feed.id) {
         trx.rollback();
       }
-      if (!dto.content || !dto.source || !dto.unstable_serializedSource) {
+      if (!dto.content && !dto.source && !dto.unstable_serializedSource) {
         return feed;
       }
       const content = (
