@@ -163,7 +163,7 @@ const DashLayout = (props: Props) => {
     id: "org-popover",
   });
   const [isCollapsed, setIsCollapsed] = React.useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery("(max-width: 40rem)");
   const pathname = usePathname();
   const [isPending, startTransition] = React.useTransition();
 
@@ -338,7 +338,7 @@ const DashLayout = (props: Props) => {
                 size="sm"
                 variant="light">
                 <Icon
-                  className="cursor-pointer dark:text-primary-foreground/60 [&>g]:stroke-[1px]"
+                  className="cursor-pointer dark:text-default-500 [&>g]:stroke-[1px]"
                   height={24}
                   icon="solar:round-alt-arrow-right-line-duotone"
                   width={24}

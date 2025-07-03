@@ -11,8 +11,9 @@ const dateSchema = z.object({
 });
 
 export const createFeedSchema = z.object({
-  ...insertFeedSchema.omit({ userId: true, createdAt: true, updatedAt: true })
-    .shape,
+  ...insertFeedSchema
+    .omit({ userId: true, createdAt: true, updatedAt: true })
+    .partial({ slug: true }).shape,
   ...insertFeedContentSchema
     .omit({ feedId: true })
     .partial({ contentType: true }).shape,
@@ -22,8 +23,12 @@ export const createFeedSchema = z.object({
 export type CreateFeedInput = z.infer<typeof createFeedSchema>;
 
 export const updateFeedSchema = z.object({
-  ...insertFeedSchema.omit({ userId: true, createdAt: true, updatedAt: true })
-    .shape,
+  ...insertFeedSchema.omit({
+    userId: true,
+    createdAt: true,
+    updatedAt: true,
+    slug: true,
+  }).shape,
   ...insertFeedContentSchema.partial({ contentType: true }).shape,
   ...dateSchema.shape,
 });
