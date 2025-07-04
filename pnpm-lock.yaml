@@ -932,8 +932,8 @@ importers:
         specifier: ^0.16.22
         version: 0.16.22
       mermaid:
-        specifier: ^11.7.0
-        version: 11.7.0
+        specifier: ^11.8.0
+        version: 11.8.0
       next:
         specifier: 15.3.4
         version: 15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.53.2)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -3094,8 +3094,8 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@mermaid-js/parser@0.5.0':
-    resolution: {integrity: sha512-AiaN7+VjXC+3BYE+GwNezkpjIcCI2qIMB/K4S2/vMWe0q/XJCBbx5+K7iteuz7VyltX9iAK4FmVTvGc9kjOV4w==}
+  '@mermaid-js/parser@0.6.0':
+    resolution: {integrity: sha512-7DNESgpyZ5WG1SIkrYafVBhWmImtmQuoxOO1lawI3gQYWxBX3v1FW3IyuuRfKJAO06XrZR71W0Kif5VEGGd4VA==}
 
   '@million/install@1.0.14':
     resolution: {integrity: sha512-xZvj4AEHc5hyn8RCiLl9dYNqggj2fa0lgNvUkCiJyhRJPNE2hZrUa/Ka0Weu82VpBaO//zujG0YErk7osjNXPA==}
@@ -9123,8 +9123,8 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  mermaid@11.7.0:
-    resolution: {integrity: sha512-/1/5R0rt0Z1Ak0CuznAnCF3HtQgayRXUz6SguzOwN4L+DuCobz0UxnQ+ZdTSZ3AugKVVh78tiVmsHpHWV25TCw==}
+  mermaid@11.8.0:
+    resolution: {integrity: sha512-uAZUwnBiqREZcUrFw3G5iQ5Pj3hTYUP95EZc3ec/nGBzHddJZydzYGE09tGZDBS1VoSoDn0symZ85FmypSTo5g==}
 
   methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
@@ -14134,7 +14134,7 @@ snapshots:
       '@types/react': 19.1.8
       react: 19.1.0
 
-  '@mermaid-js/parser@0.5.0':
+  '@mermaid-js/parser@0.6.0':
     dependencies:
       langium: 3.3.1
 
@@ -21378,11 +21378,11 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  mermaid@11.7.0:
+  mermaid@11.8.0:
     dependencies:
       '@braintree/sanitize-url': 7.1.1
       '@iconify/utils': 2.3.0
-      '@mermaid-js/parser': 0.5.0
+      '@mermaid-js/parser': 0.6.0
       '@types/d3': 7.4.3
       cytoscape: 3.32.0
       cytoscape-cose-bilkent: 4.1.0(cytoscape@3.32.0)
