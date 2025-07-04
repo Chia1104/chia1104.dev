@@ -34,7 +34,7 @@
     "drizzle-graphql": "^0.8.5",
     "formdata-node": "^6.0.3",
     "graphql": "^16.11.0",
-    "hono": "^4.8.3",
+    "hono": "^4.8.4",
     "hono-rate-limiter": "^0.4.2",
     "rate-limit-redis": "^4.2.1",
     "react": "catalog:react19",
