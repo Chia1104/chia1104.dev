@@ -19,7 +19,7 @@
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
     "openai": "^5.8.2",
-    "zod": "^3.25.72"
+    "zod": "^3.25.74"
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",
