@@ -67,7 +67,7 @@
     "@chia/utils": "workspace:*",
     "@google/genai": "^1.8.0",
     "ai": "^4.3.16",
-    "next": "15.3.4",
+    "next": "15.3.5",
     "ollama": "^0.5.16",
     "openai": "^5.8.2"
   },
