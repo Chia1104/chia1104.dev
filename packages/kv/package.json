@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/kv",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./clients": {
+      "types": "./src/clients.ts",
+      "default": "./src/clients.ts"
+    },
+    "./env": {
+      "types": "./src/env.ts",
+      "default": "./src/env.ts"
+    },
+    "./upstash": {
+      "types": "./src/upstash/client.ts",
+      "default": "./src/upstash/client.ts"
+    },
+    "./upstash/with-rate-limiter": {
+      "types": "./src/upstash/with-rate-limiter.ts",
+      "default": "./src/upstash/with-rate-limiter.ts"
+    },
+    "./drizzle/cache": {
+      "types": "./src/drizzle/cache.ts",
+      "default": "./src/drizzle/cache.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "type:check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@chia/eslint-config": "workspace:*",
+    "@chia/tsconfig": "workspace:*",
+    "@keyv/test-suite": "^2.0.8",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@chia/utils": "workspace:*",
+    "@keyv/postgres": "^2.1.6",
+    "@keyv/redis": "^4.5.0",
+    "@keyv/valkey": "^1.0.6",
+    "@t3-oss/env-core": "^0.13.8",
+    "@upstash/ratelimit": "2.0.5",
+    "@upstash/redis": "1.35.1",
+    "drizzle-orm": "^0.44.2",
+    "keyv": "^5.3.4"
+  }
+}
