@@ -66,7 +66,7 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-google-recaptcha": "^3.1.0",
-    "react-hook-form": "^7.59.0",
+    "react-hook-form": "^7.60.0",
     "react-medium-image-zoom": "^5.2.14",
     "schema-dts": "1.1.5",
     "shiki": "^3.7.0",
