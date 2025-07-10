@@ -8,7 +8,10 @@
       "/packages/utils",
       "/packages/auth",
       "/infra/railway/service.json",
-      "package.json"
+      "package.json",
+      "Dockerfile.node-service",
+      "Dockerfile.service",
+      "turbo.json"
     ],
     "dockerfilePath": "Dockerfile.node-service"
   },

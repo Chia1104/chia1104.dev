@@ -6,7 +6,9 @@
       "/apps/dash",
       "/packages/*",
       "/infra/railway/dash.json",
-      "package.json"
+      "package.json",
+      "Dockerfile.dash",
+      "turbo.json"
     ],
     "dockerfilePath": "Dockerfile.dash"
   },
