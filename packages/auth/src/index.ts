@@ -7,10 +7,10 @@ import { organization } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { Resend } from "resend";
 
-import { createRedis } from "@chia/cache";
 import { connectDatabase } from "@chia/db/client";
 import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
+import { kv } from "@chia/kv";
 import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
 import { AUTH_EMAIL } from "@chia/utils";
 
@@ -21,7 +21,6 @@ export const name = "auth-core";
 
 const resend = new Resend(env.RESEND_API_KEY);
 const database = await connectDatabase();
-const redis = createRedis();
 
 const getOrigin = (url?: string) => {
   if (!url) {
@@ -80,15 +79,15 @@ export const auth = betterAuth({
 
   secondaryStorage: {
     get: async (key) => {
-      const value = await redis.get(key);
+      const value = await kv.get<string>(key);
       return value ? value : null;
     },
     set: async (key, value, ttl) => {
-      if (ttl) await redis.set(key, value, "EX", ttl);
-      else await redis.set(key, value);
+      if (ttl) await kv.set(key, value, ttl);
+      else await kv.set(key, value);
     },
     delete: async (key) => {
-      await redis.del(key);
+      await kv.delete(key);
     },
   },
 

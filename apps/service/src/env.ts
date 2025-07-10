@@ -5,6 +5,7 @@ import { env as captchaEnv } from "@chia/api/captcha/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
 import { env as authEnv } from "@chia/auth/env";
 import { env as dbEnv } from "@chia/db/env";
+import { env as kvEnv } from "@chia/kv/env";
 import { numericStringSchema } from "@chia/utils";
 
 export const env = createEnv({
@@ -14,8 +15,6 @@ export const env = createEnv({
       .enum(["development", "production", "test"])
       .optional()
       .default("development"),
-    REDIS_URL: z.string().optional(),
-    REDIS_URI: z.string().optional(),
     CORS_ALLOWED_ORIGIN: z.string().optional(),
     RESEND_API_KEY: z.string().min(1),
     SENTRY_DSN: z.string().optional(),
@@ -42,8 +41,6 @@ export const env = createEnv({
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
     NODE_ENV: process.env.NODE_ENV ?? "development",
-    REDIS_URL: process.env.REDIS_URL,
-    REDIS_URI: process.env.REDIS_URI,
     CORS_ALLOWED_ORIGIN: process.env.CORS_ALLOWED_ORIGIN,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     SENTRY_DSN: process.env.SENTRY_DSN,
@@ -75,7 +72,7 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv],
+  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv, kvEnv],
 });
 
 export type ENV = typeof env;
