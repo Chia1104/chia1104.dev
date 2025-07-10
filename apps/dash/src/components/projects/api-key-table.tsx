@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import type { RouterInputs, RouterOutputs } from "@chia/api";
 import DateFormat from "@chia/ui/date-format";

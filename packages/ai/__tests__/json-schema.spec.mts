@@ -1,5 +1,5 @@
 import { zodResponseFormat } from "openai/helpers/zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 describe("json schema test", () => {
   it("test output json schema", () => {

@@ -1,6 +1,6 @@
-import { ZodError } from "zod/v4";
-import type { z } from "zod/v4";
-import type { ZodType } from "zod/v4";
+import { ZodError } from "zod";
+import type { z } from "zod";
+import type { ZodType } from "zod";
 
 export type HandleZodErrorReturn<TData> =
   | {

@@ -1,5 +1,5 @@
 import GithubSlugger from "github-slugger";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import { eq, schema } from "@chia/db";
 import {
