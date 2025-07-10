@@ -1,31 +1,41 @@
-import KeyvPostgres from "@keyv/postgres";
-import KeyvRedis from "@keyv/redis";
-import KeyvValkey from "@keyv/valkey";
+import { createKeyv as createPostgres } from "@keyv/postgres";
+import { createKeyv as createRedis } from "@keyv/redis";
+import { createKeyv as createValkey } from "@keyv/valkey";
+import type { Keyv } from "keyv";
 
 import { isUrl } from "@chia/utils/is-url";
 
 import { env } from "./env";
 
-export const redis = new KeyvRedis({
-  url: env.REDIS_URI ?? "redis://localhost:6379",
-});
+let kv: Keyv | null = null;
 
-export const valkey = new KeyvValkey(
-  env.VALKEY_URI ?? "valkey://localhost:6379"
-);
+export const createKeyv = () => {
+  if (kv) {
+    return kv;
+  }
 
-export const postgres = new KeyvPostgres(
-  env.POSTGRES_URI ?? "postgres://localhost:5432/postgres"
-);
-
-export const getClient = () => {
   switch (env.CACHE_PROVIDER) {
-    case "redis":
-      return redis;
-    case "valkey":
-      return valkey;
-    case "postgres":
-      return postgres;
+    case "redis": {
+      kv = createRedis(
+        env.CACHE_URI ?? env.REDIS_URI ?? "redis://localhost:6379"
+      );
+      break;
+    }
+    case "valkey": {
+      kv = createValkey(
+        env.CACHE_URI ?? env.VALKEY_URI ?? "valkey://localhost:6379"
+      );
+      break;
+    }
+    case "postgres": {
+      kv = createPostgres({
+        uri:
+          env.CACHE_URI ??
+          env.POSTGRES_URI ??
+          "postgres://localhost:5432/postgres",
+      });
+      break;
+    }
     case "auto": {
       const protocol =
         env.CACHE_URI &&
@@ -40,22 +50,37 @@ export const getClient = () => {
         })
           ? new URL(env.CACHE_URI).protocol.replace(":", "")
           : null;
-
       switch (protocol) {
         case "rediss":
-        case "redis":
-          return redis;
+        case "redis": {
+          kv = createRedis(
+            env.CACHE_URI ?? env.REDIS_URI ?? "redis://localhost:6379"
+          );
+          break;
+        }
         case "valkeys":
         case "valkey": {
-          return valkey;
+          kv = createValkey(
+            env.CACHE_URI ?? env.VALKEY_URI ?? "valkey://localhost:6379"
+          );
+          break;
         }
-        case "postgres":
-          return postgres;
+        case "postgres": {
+          kv = createPostgres({
+            uri:
+              env.CACHE_URI ??
+              env.POSTGRES_URI ??
+              "postgres://localhost:5432/postgres",
+          });
+          break;
+        }
         default:
           throw new Error(`Unsupported protocol: ${protocol}`);
       }
+      break;
     }
     default:
       throw new Error(`Unsupported provider: ${env.CACHE_PROVIDER}`);
   }
+  return kv;
 };

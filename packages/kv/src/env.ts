@@ -15,7 +15,7 @@ export const env = createEnv({
     CACHE_URI: z.string().optional(),
   },
   runtimeEnv: {
-    CACHE_PROVIDER: process.env.CACHE_PROVIDER ?? "upstash",
+    CACHE_PROVIDER: process.env.CACHE_PROVIDER ?? "auto",
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     REDIS_URI: process.env.REDIS_URI,

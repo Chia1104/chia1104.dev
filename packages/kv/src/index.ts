@@ -1,5 +1,6 @@
 import Keyv from "keyv";
 
-import { getClient } from "./clients";
+import { createKeyv } from "./clients";
 
-export const kv = new Keyv(getClient());
+export const kv = createKeyv();
+export { Keyv };

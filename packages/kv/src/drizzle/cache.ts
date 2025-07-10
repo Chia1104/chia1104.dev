@@ -1,3 +1,4 @@
+import type { TableConfig } from "drizzle-orm";
 import { Table } from "drizzle-orm";
 import { is } from "drizzle-orm";
 import { getTableName } from "drizzle-orm";
@@ -7,14 +8,25 @@ import type Keyv from "keyv";
 
 import { kv as defaultKv } from "..";
 
+interface Options {
+  ttl?: number;
+  strategy?: "explicit" | "all";
+}
+
 export class DrizzleCache extends Cache {
-  private globalTtl = 1000;
+  private globalTtl: number;
+  private _strategy: "explicit" | "all";
   // This object will be used to store which query keys were used
   // for a specific table, so we can later use it for invalidation.
   private usedTablesPerKey: Record<string, string[]> = {};
 
-  constructor(private kv: Keyv = defaultKv) {
+  constructor(
+    private kv: Keyv = defaultKv,
+    options?: Options
+  ) {
     super();
+    this.globalTtl = options?.ttl ?? 1000;
+    this._strategy = options?.strategy ?? "explicit";
   }
 
   // For the strategy, we have two options:
@@ -22,13 +34,15 @@ export class DrizzleCache extends Cache {
   // - 'all': All queries are cached globally.
   // The default behavior is 'explicit'.
   override strategy(): "explicit" | "all" {
-    return "all";
+    return this._strategy;
   }
 
   // This function accepts query and parameters that cached into key param,
   // allowing you to retrieve response values for this query from the cache.
-  override async get(key: string): Promise<any[] | undefined> {
-    const res = (await this.kv.get(key)) ?? undefined;
+  override async get<TResult = unknown>(
+    key: string
+  ): Promise<TResult | undefined> {
+    const res = (await this.kv.get<TResult>(key)) ?? undefined;
     return res;
   }
 
@@ -40,9 +54,9 @@ export class DrizzleCache extends Cache {
   // For example, if a query uses the "users" and "posts" tables, you can store this information. Later, when the app executes
   // any mutation statements on these tables, you can remove the corresponding key from the cache.
   // If you're okay with eventual consistency for your queries, you can skip this option.
-  override async put(
+  override async put<TResponse = unknown>(
     key: string,
-    response: any,
+    response: TResponse,
     tables: string[],
     isTag: boolean,
     config?: CacheConfig
@@ -67,7 +81,7 @@ export class DrizzleCache extends Cache {
   //   helping you track which tables have changed since the last cache update.
   override async onMutate(params: {
     tags: string | string[];
-    tables: string | string[] | Table<any> | Table<any>[];
+    tables: string | string[] | Table<TableConfig> | Table<TableConfig>[];
   }): Promise<void> {
     const tagsArray = params.tags
       ? Array.isArray(params.tags)
@@ -83,9 +97,7 @@ export class DrizzleCache extends Cache {
     const keysToDelete = new Set<string>();
 
     for (const table of tablesArray) {
-      const tableName = is(table, Table)
-        ? getTableName(table)
-        : (table as string);
+      const tableName = is(table, Table) ? getTableName(table) : table;
       const keys = this.usedTablesPerKey[tableName] ?? [];
       for (const key of keys) keysToDelete.add(key);
     }
@@ -98,9 +110,7 @@ export class DrizzleCache extends Cache {
       for (const key of keysToDelete) {
         await this.kv.delete(key);
         for (const table of tablesArray) {
-          const tableName = is(table, Table)
-            ? getTableName(table)
-            : (table as string);
+          const tableName = is(table, Table) ? getTableName(table) : table;
           this.usedTablesPerKey[tableName] = [];
         }
       }

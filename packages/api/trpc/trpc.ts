@@ -5,10 +5,10 @@ import { treeifyError } from "zod/v4";
 
 import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth/types";
-import type { Redis } from "@chia/cache";
 import type { DB } from "@chia/db";
 import type { Feed } from "@chia/db/schema";
 import { Role } from "@chia/db/types";
+import type { Keyv } from "@chia/kv";
 import { getAdminId } from "@chia/utils";
 
 const adminId = getAdminId();
@@ -17,7 +17,7 @@ export const createTRPCContext = (opts: {
   headers: Headers;
   session?: Session | null;
   db: DB;
-  redis: Redis;
+  redis: Keyv;
   hooks?: {
     onError?: (error: TRPCError) => void;
     onUnauthorized?: (error: TRPCError) => void;

@@ -104,8 +104,8 @@
   },
   "dependencies": {
     "@chia/auth": "workspace:*",
-    "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/kv": "workspace:*",
     "@chia/utils": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
