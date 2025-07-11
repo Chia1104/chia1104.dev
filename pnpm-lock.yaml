@@ -47,8 +47,8 @@ catalogs:
       specifier: 2.8.0-beta.13
       version: 2.8.0-beta.13
     '@heroui/theme':
-      specifier: 2.4.18-beta.5
-      version: 2.4.18-beta.5
+      specifier: 2.4.18-beta.7
+      version: 2.4.18-beta.7
   react19:
     '@types/react':
       specifier: ^19.1.8
@@ -233,7 +233,7 @@ importers:
         version: 2.8.0-beta.13(@types/react@19.1.8)(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
       '@heroui/theme':
         specifier: catalog:heroui
-        version: 2.4.18-beta.5(tailwindcss@4.1.11)
+        version: 2.4.18-beta.7(tailwindcss@4.1.11)
       '@hookform/resolvers':
         specifier: ^5.1.1
         version: 5.1.1(react-hook-form@7.60.0(react@19.1.0))
@@ -260,7 +260,7 @@ importers:
         version: 11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3)
       '@trpc/next':
         specifier: 'catalog:'
-        version: 11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/react-query@11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
+        version: 11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/react-query@11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
       '@trpc/react-query':
         specifier: 'catalog:'
         version: 11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
@@ -278,10 +278,10 @@ importers:
         version: 12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       fumadocs-mdx:
         specifier: 'catalog:'
-        version: 11.6.10(@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(vite@7.0.4(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
+        version: 11.6.10(@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(vite@7.0.4(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       fumadocs-ui:
         specifier: 'catalog:'
-        version: 15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
+        version: 15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@19.1.0)
@@ -290,16 +290,16 @@ importers:
         version: 3.1.11(rollup@4.44.2)
       next:
         specifier: 15.3.5
-        version: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-safe-action:
         specifier: 8.0.7
-        version: 8.0.7(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 8.0.7(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-view-transitions:
         specifier: ^0.3.4
-        version: 0.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 0.3.4(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -553,7 +553,7 @@ importers:
         version: 2.8.0-beta.13(@types/react@19.1.8)(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
       '@heroui/theme':
         specifier: catalog:heroui
-        version: 2.4.18-beta.5(tailwindcss@4.1.11)
+        version: 2.4.18-beta.7(tailwindcss@4.1.11)
       '@hookform/resolvers':
         specifier: ^5.1.1
         version: 5.1.1(react-hook-form@7.60.0(react@19.1.0))
@@ -562,13 +562,13 @@ importers:
         version: 1.1.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@next/third-parties':
         specifier: ^15.3.5
-        version: 15.3.5(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+        version: 15.3.5(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       '@react-email/components':
         specifier: ^0.2.0
         version: 0.2.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@sentry/nextjs':
         specifier: ^9.37.0
-        version: 9.37.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.6(@swc/core@1.12.11(@swc/helpers@0.5.17))(esbuild@0.25.6))
+        version: 9.37.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.6(@swc/core@1.12.11(@swc/helpers@0.5.17))(esbuild@0.25.6))
       '@t3-oss/env-nextjs':
         specifier: ^0.13.8
         version: 0.13.8(arktype@2.1.20)(typescript@5.8.3)(zod@4.0.5)
@@ -580,7 +580,7 @@ importers:
         version: 11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3)
       '@trpc/next':
         specifier: 'catalog:'
-        version: 11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/react-query@11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
+        version: 11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/react-query@11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
       '@trpc/react-query':
         specifier: 'catalog:'
         version: 11.4.3(@tanstack/react-query@5.82.0(react@19.1.0))(@trpc/client@11.4.3(@trpc/server@11.4.3(typescript@5.8.3))(typescript@5.8.3))(@trpc/server@11.4.3(typescript@5.8.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
@@ -592,13 +592,13 @@ importers:
         version: 2.0.5(@upstash/redis@1.35.1)
       '@vercel/analytics':
         specifier: 1.5.0
-        version: 1.5.0(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+        version: 1.5.0(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       '@vercel/edge-config':
         specifier: ^1.4.0
         version: 1.4.0(@opentelemetry/api@1.9.0)
       '@vercel/speed-insights':
         specifier: ^1.2.0
-        version: 1.2.0(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+        version: 1.2.0(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       cobe:
         specifier: ^0.6.4
         version: 0.6.4
@@ -607,10 +607,10 @@ importers:
         version: 12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       fumadocs-mdx:
         specifier: 'catalog:'
-        version: 11.6.10(@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(vite@7.0.4(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
+        version: 11.6.10(@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(vite@7.0.4(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       fumadocs-ui:
         specifier: 'catalog:'
-        version: 15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
+        version: 15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
       jsdom:
         specifier: ^26.1.0
         version: 26.1.0
@@ -622,16 +622,16 @@ importers:
         version: 3.1.11(rollup@4.35.0)
       next:
         specifier: 15.3.5
-        version: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-intl:
         specifier: ^4.3.4
-        version: 4.3.4(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
+        version: 4.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-view-transitions:
         specifier: ^0.3.4
-        version: 0.3.4(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 0.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react:
         specifier: catalog:react19
         version: 19.1.0
@@ -869,7 +869,7 @@ importers:
         version: link:../utils
       '@fumadocs/mdx-remote':
         specifier: 'catalog:'
-        version: 1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+        version: 1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       '@heroui/react':
         specifier: catalog:heroui
         version: 2.8.0-beta.13(@types/react@19.1.8)(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
@@ -878,13 +878,13 @@ importers:
         version: 3.1.0(@types/react@19.1.8)(react@19.1.0)
       fumadocs-core:
         specifier: 'catalog:'
-        version: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       fumadocs-mdx:
         specifier: 'catalog:'
         version: 11.6.10(@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0))(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(vite@6.3.5(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       fumadocs-ui:
         specifier: 'catalog:'
-        version: 15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
+        version: 15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11)
       katex:
         specifier: ^0.16.22
         version: 0.16.22
@@ -1127,7 +1127,7 @@ importers:
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-view-transitions:
         specifier: ^0.3.4
-        version: 0.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 0.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react:
         specifier: catalog:react19
         version: 19.1.0
@@ -2471,6 +2471,9 @@ packages:
   '@heroui/shared-utils@2.1.10-beta.6':
     resolution: {integrity: sha512-6guGN2Pd9cq7QnlnFemRiSNow6ZExbpQhP7B2ExmDmDR3w1/ayz7lQsa8849aEbD5RpZeFDERqddrL5R15hr1A==}
 
+  '@heroui/shared-utils@2.1.10-beta.7':
+    resolution: {integrity: sha512-D79Qtgx73rDwuM8ZThd7RU5giXRy5yAMfqRtS0AGI7VxpKdaQqx/WnX8wiSglZhwXUcvvWZkAGzPBGwfa0qvMA==}
+
   '@heroui/skeleton@2.2.15-beta.1':
     resolution: {integrity: sha512-NsD19BGcaGbGNYTfFBbL6OyLwPlt4iZhPwQgUEW5YQyNByzcyEsSor/v4FsZJmjnovV3YDsBOz0WlVxR6V6sCw==}
     peerDependencies:
@@ -2550,6 +2553,11 @@ packages:
 
   '@heroui/theme@2.4.18-beta.5':
     resolution: {integrity: sha512-ewnShHOi+7JEuTG/zSXIxHFO+D39rriHUo1xUpri49o+Ussum8s1IENI4VSQ2nmyzLjx5hIhaDwOfvARefw0cA==}
+    peerDependencies:
+      tailwindcss: '>=4.0.0'
+
+  '@heroui/theme@2.4.18-beta.7':
+    resolution: {integrity: sha512-PJX3ZBZWv48M3Fp4O2KuyDlq49venKB7+SL6fZE9xHzYH4+BNqnLqkiFVzow94gQv/+pRlz65tlRqTGNS+S3Ew==}
     peerDependencies:
       tailwindcss: '>=4.0.0'
 
@@ -12686,20 +12694,7 @@ snapshots:
   '@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@mdx-js/mdx': 3.1.0(acorn@8.15.0)
-      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      gray-matter: 4.0.3
-      react: 19.1.0
-      zod: 3.25.76
-    optionalDependencies:
-      '@types/react': 19.1.8
-    transitivePeerDependencies:
-      - acorn
-      - supports-color
-
-  '@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
-    dependencies:
-      '@mdx-js/mdx': 3.1.0(acorn@8.15.0)
-      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       gray-matter: 4.0.3
       react: 19.1.0
       zod: 3.25.76
@@ -12709,6 +12704,19 @@ snapshots:
       - acorn
       - supports-color
     optional: true
+
+  '@fumadocs/mdx-remote@1.3.4(@types/react@19.1.8)(acorn@8.15.0)(fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@mdx-js/mdx': 3.1.0(acorn@8.15.0)
+      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      gray-matter: 4.0.3
+      react: 19.1.0
+      zod: 3.25.76
+    optionalDependencies:
+      '@types/react': 19.1.8
+    transitivePeerDependencies:
+      - acorn
+      - supports-color
 
   '@gar/promisify@1.1.3':
     optional: true
@@ -12758,7 +12766,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-accordion': 2.2.14(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12776,7 +12784,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-stately/utils': 3.10.7(react@19.1.0)
       react: 19.1.0
@@ -12786,7 +12794,7 @@ snapshots:
 
   '@heroui/aria-utils@2.2.20-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/utils': 3.29.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-stately/collections': 3.12.5(react@19.1.0)
       '@react-types/overlays': 3.8.16(react@19.1.0)
@@ -12809,7 +12817,7 @@ snapshots:
       '@heroui/scroll-shadow': 2.3.16-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-safe-layout-effect': 2.1.8-beta.6(react@19.1.0)
       '@react-aria/combobox': 3.12.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12827,7 +12835,7 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-image': 2.1.11-beta.5(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12839,7 +12847,7 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
@@ -12849,7 +12857,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-aria/breadcrumbs': 3.5.26(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12863,7 +12871,7 @@ snapshots:
       '@heroui/ripple': 2.2.18-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
       '@heroui/spinner': 2.2.20-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-button': 2.2.17-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12881,7 +12889,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-button': 2.2.17-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@internationalized/date': 3.8.2
@@ -12905,7 +12913,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/ripple': 2.2.18-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-button': 2.2.17-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12920,7 +12928,7 @@ snapshots:
       '@heroui/form': 2.1.22-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-callback-ref': 2.1.8-beta.6(react@19.1.0)
       '@heroui/use-safe-layout-effect': 2.1.8-beta.6(react@19.1.0)
@@ -12939,7 +12947,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/interactions': 3.25.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12960,7 +12968,7 @@ snapshots:
       '@heroui/form': 2.1.22-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@internationalized/date': 3.8.2
       '@react-aria/datepicker': 3.14.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12982,7 +12990,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@internationalized/date': 3.8.2
       '@react-aria/datepicker': 3.14.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13014,7 +13022,7 @@ snapshots:
       '@heroui/modal': 2.2.20-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
@@ -13028,7 +13036,7 @@ snapshots:
       '@heroui/popover': 2.3.23-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/menu': 3.18.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13041,7 +13049,7 @@ snapshots:
   '@heroui/form@2.1.22-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-stately/form': 3.1.5(react@19.1.0)
       '@react-types/form': 3.7.13(react@19.1.0)
@@ -13051,7 +13059,7 @@ snapshots:
 
   '@heroui/framer-utils@2.1.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/use-measure': 2.1.8-beta.6(react@19.1.0)
       framer-motion: 12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
@@ -13063,7 +13071,7 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-image': 2.1.11-beta.5(react@19.1.0)
       react: 19.1.0
@@ -13074,7 +13082,7 @@ snapshots:
       '@heroui/form': 2.1.22-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-form-reset': 2.0.0-beta.3(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13092,7 +13100,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-safe-layout-effect': 2.1.8-beta.6(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13121,7 +13129,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-link': 2.2.17(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13135,7 +13143,7 @@ snapshots:
       '@heroui/divider': 2.2.16-beta.4(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-is-mobile': 2.2.11-beta.4(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13155,7 +13163,7 @@ snapshots:
       '@heroui/divider': 2.2.16-beta.4(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-is-mobile': 2.2.11-beta.4(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13176,7 +13184,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-button': 2.2.17-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/use-aria-modal-overlay': 2.2.16-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13197,7 +13205,7 @@ snapshots:
       '@heroui/framer-utils': 2.1.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-resize': 2.1.8-beta.6(react@19.1.0)
       '@heroui/use-scroll-position': 2.1.8-beta.6(react@19.1.0)
@@ -13218,7 +13226,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-safe-layout-effect': 2.1.8-beta.6(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13239,7 +13247,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-intersection-observer': 2.2.14-beta.4(react@19.1.0)
       '@heroui/use-pagination': 2.2.15-beta.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13258,7 +13266,7 @@ snapshots:
       '@heroui/framer-utils': 2.1.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-button': 2.2.17-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/use-aria-overlay': 2.0.1-beta.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13276,7 +13284,7 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-is-mounted': 2.1.8-beta.6(react@19.1.0)
       '@react-aria/progress': 3.4.24(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13289,7 +13297,7 @@ snapshots:
       '@heroui/form': 2.1.22-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/interactions': 3.25.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13355,7 +13363,7 @@ snapshots:
       '@heroui/spacer': 2.2.17-beta.4(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/spinner': 2.2.20-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/switch': 2.2.21-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/table': 2.2.22-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/tabs': 2.2.20-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
@@ -13374,7 +13382,7 @@ snapshots:
     dependencies:
       '@heroui/dom-animation': 2.1.10-beta.4(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       framer-motion: 12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
@@ -13384,7 +13392,7 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-data-scroll-overflow': 2.2.11-beta.6(react@19.1.0)
       react: 19.1.0
@@ -13401,7 +13409,7 @@ snapshots:
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
       '@heroui/spinner': 2.2.20-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-button': 2.2.17-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/use-aria-multiselect': 2.4.16-beta.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13423,10 +13431,12 @@ snapshots:
 
   '@heroui/shared-utils@2.1.10-beta.6': {}
 
+  '@heroui/shared-utils@2.1.10-beta.7': {}
+
   '@heroui/skeleton@2.2.15-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
@@ -13435,7 +13445,7 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/tooltip': 2.2.20-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13455,7 +13465,7 @@ snapshots:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/tooltip': 2.2.20-beta.1(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/use-clipboard': 2.1.9-beta.6(react@19.1.0)
@@ -13476,7 +13486,7 @@ snapshots:
   '@heroui/spinner@2.2.20-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/system-rsc': 2.3.16-beta.4(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       react: 19.1.0
@@ -13488,7 +13498,7 @@ snapshots:
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-safe-layout-effect': 2.1.8-beta.6(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13506,7 +13516,7 @@ snapshots:
       clsx: 1.2.1
       react: 19.1.0
 
-  '@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/system-rsc': 2.3.16-beta.4(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react@19.1.0)
@@ -13524,7 +13534,7 @@ snapshots:
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
       '@heroui/spacer': 2.2.17-beta.4(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/interactions': 3.25.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13543,7 +13553,7 @@ snapshots:
       '@heroui/aria-utils': 2.2.20-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-is-mounted': 2.1.8-beta.6(react@19.1.0)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13568,13 +13578,25 @@ snapshots:
       tailwind-variants: 1.0.0(tailwindcss@4.1.11)
       tailwindcss: 4.1.11
 
+  '@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11)':
+    dependencies:
+      '@heroui/shared-utils': 2.1.10-beta.7
+      clsx: 1.2.1
+      color: 4.2.3
+      color2k: 2.0.3
+      deepmerge: 4.3.1
+      flat: 5.0.2
+      tailwind-merge: 3.0.2
+      tailwind-variants: 1.0.0(tailwindcss@4.1.11)
+      tailwindcss: 4.1.11
+
   '@heroui/toast@2.0.13-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-icons': 2.1.10-beta.5(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
       '@heroui/spinner': 2.2.20-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-is-mobile': 2.2.11-beta.4(react@19.1.0)
       '@react-aria/interactions': 3.25.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -13591,7 +13613,7 @@ snapshots:
       '@heroui/framer-utils': 2.1.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@heroui/use-aria-overlay': 2.0.1-beta.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/use-safe-layout-effect': 2.1.8-beta.6(react@19.1.0)
@@ -13760,7 +13782,7 @@ snapshots:
       '@heroui/avatar': 2.2.19-beta.2(@heroui/system@2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/react-utils': 2.1.12-beta.4(react@19.1.0)
       '@heroui/shared-utils': 2.1.10-beta.6
-      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.5(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@heroui/system': 2.4.19-beta.1(@heroui/theme@2.4.18-beta.7(tailwindcss@4.1.11))(framer-motion@12.23.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroui/theme': 2.4.18-beta.5(tailwindcss@4.1.11)
       '@react-aria/focus': 3.20.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
@@ -14381,9 +14403,9 @@ snapshots:
   '@next/swc-win32-x64-msvc@15.3.5':
     optional: true
 
-  '@next/third-parties@15.3.5(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
+  '@next/third-parties@15.3.5(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
     dependencies:
-      next: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       third-party-capital: 1.0.20
 
@@ -16586,7 +16608,7 @@ snapshots:
 
   '@sentry/core@9.37.0': {}
 
-  '@sentry/nextjs@9.37.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.6(@swc/core@1.12.11(@swc/helpers@0.5.17))(esbuild@0.25.6))':
+  '@sentry/nextjs@9.37.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(encoding@0.1.13)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(webpack@5.99.6(@swc/core@1.12.11(@swc/helpers@0.5.17))(esbuild@0.25.6))':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/semantic-conventions': 1.36.0
@@ -16599,7 +16621,7 @@ snapshots:
       '@sentry/vercel-edge': 9.37.0(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))
       '@sentry/webpack-plugin': 3.5.0(encoding@0.1.13)(webpack@5.99.6(@swc/core@1.12.11(@swc/helpers@0.5.17))(esbuild@0.25.6))
       chalk: 3.0.0
-      next: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       resolve: 1.22.8
       rollup: 4.35.0
       stacktrace-parser: 0.1.11
@@ -17613,9 +17635,9 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  '@vercel/analytics@1.5.0(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
+  '@vercel/analytics@1.5.0(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
     optionalDependencies:
-      next: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
 
   '@vercel/edge-config-fs@0.1.0': {}
@@ -17626,9 +17648,9 @@ snapshots:
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
 
-  '@vercel/speed-insights@1.2.0(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
+  '@vercel/speed-insights@1.2.0(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
     optionalDependencies:
-      next: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
 
   '@vitejs/plugin-react-swc@3.10.2(@swc/helpers@0.5.17)(vite@7.0.4(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))':
@@ -19835,7 +19857,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  fumadocs-core@15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@formatjs/intl-localematcher': 0.6.1
       '@orama/orama': 3.1.10
@@ -19892,7 +19914,7 @@ snapshots:
       chokidar: 4.0.3
       esbuild: 0.25.6
       estree-util-value-to-estree: 3.4.0
-      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       js-yaml: 4.1.0
       lru-cache: 11.1.0
       picocolors: 1.1.1
@@ -19915,7 +19937,7 @@ snapshots:
       chokidar: 4.0.3
       esbuild: 0.25.6
       estree-util-value-to-estree: 3.4.0
-      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       js-yaml: 4.1.0
       lru-cache: 11.1.0
       picocolors: 1.1.1
@@ -19963,7 +19985,7 @@ snapshots:
       - algoliasearch
       - supports-color
 
-  fumadocs-ui@15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11):
+  fumadocs-ui@15.6.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.11):
     dependencies:
       '@radix-ui/react-accordion': 1.2.11(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-collapsible': 1.1.11(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -19976,7 +19998,7 @@ snapshots:
       '@radix-ui/react-slot': 1.2.3(@types/react@19.1.8)(react@19.1.0)
       '@radix-ui/react-tabs': 1.1.12(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       class-variance-authority: 0.7.1
-      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      fumadocs-core: 15.6.3(@types/react@19.1.8)(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       lodash.merge: 4.6.2
       next-themes: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       postcss-selector-parser: 7.1.0
@@ -22002,19 +22024,19 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  next-intl@4.3.4(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.8.3):
+  next-intl@4.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(typescript@5.8.3):
     dependencies:
       '@formatjs/intl-localematcher': 0.5.10
       negotiator: 1.0.0
-      next: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       use-intl: 4.3.4(react@19.1.0)
     optionalDependencies:
       typescript: 5.8.3
 
-  next-safe-action@8.0.7(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  next-safe-action@8.0.7(next@15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
-      next: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 15.3.5(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
@@ -22029,7 +22051,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  next-view-transitions@0.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  next-view-transitions@0.3.4(next@15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       next: 15.3.5(@opentelemetry/api@1.9.0)(@playwright/test@1.54.0)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
