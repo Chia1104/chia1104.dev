@@ -1,5 +1,5 @@
 import type OpenAI from "openai";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import { createOpenAI } from "..";
 

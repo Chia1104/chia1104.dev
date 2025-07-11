@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { stream } from "hono/streaming";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import {
   OPENAI_API_KEY,

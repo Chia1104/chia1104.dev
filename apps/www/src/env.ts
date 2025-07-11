@@ -1,5 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { env as githubEnv } from "@chia/api/github/env";

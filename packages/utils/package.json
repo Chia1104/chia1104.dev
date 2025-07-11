@@ -35,7 +35,7 @@
     },
     "./request": {
       "types": "./src/request/request.ts",
-      "default": "./src/request/request.util.ts"
+      "default": "./src/request/request.utill.ts"
     },
     "./schema": {
       "types": "./src/schema/index.ts",

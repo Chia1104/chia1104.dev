@@ -1,5 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const adminEnv = createEnv({
   server: {
@@ -32,8 +32,6 @@ export const env = createEnv({
     AUTH_COOKIE_DOMAIN: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
     CORS_ALLOWED_ORIGIN: z.string().optional(),
-    REDIS_URL: z.string().optional(),
-    REDIS_URI: z.string().optional(),
     CF_BYPASS_TOKEN: z.string().optional(),
     CH_API_KEY: z.string().optional(),
   },
@@ -47,8 +45,6 @@ export const env = createEnv({
     AUTH_COOKIE_DOMAIN: process.env.AUTH_COOKIE_DOMAIN ?? ".chia1104.dev",
     RESEND_API_KEY: process.env.RESEND_API_KEY ?? "re_123",
     CORS_ALLOWED_ORIGIN: process.env.CORS_ALLOWED_ORIGIN,
-    REDIS_URL: process.env.REDIS_URL,
-    REDIS_URI: process.env.REDIS_URI,
     CF_BYPASS_TOKEN: process.env.CF_BYPASS_TOKEN,
     CH_API_KEY: process.env.CH_API_KEY,
   },

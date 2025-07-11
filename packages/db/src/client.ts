@@ -2,6 +2,8 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { withReplicas } from "drizzle-orm/pg-core";
 import pg from "pg";
 
+import { kv } from "@chia/kv";
+import { DrizzleCache } from "@chia/kv/drizzle/cache";
 import { switchEnv } from "@chia/utils/config";
 
 import type { DB } from ".";
@@ -27,7 +29,12 @@ export async function getConnection(url: string) {
       connectionString: url,
       connectionTimeoutMillis: 10_000,
     });
-    db = drizzle(pool, { schema });
+    db = drizzle(pool, {
+      schema,
+      cache: new DrizzleCache(kv, {
+        strategy: "all",
+      }),
+    });
     return db;
   } catch (error) {
     console.error("Failed to create database connection:", error);

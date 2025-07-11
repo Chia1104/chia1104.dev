@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const generateAuthorizeUrlSchema = z.object({
   state: z.string().min(1),

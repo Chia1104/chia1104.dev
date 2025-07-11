@@ -7,8 +7,8 @@ import "server-only";
 import type { AppRouter } from "@chia/api/trpc";
 import { createCaller, createTRPCContext } from "@chia/api/trpc";
 import { authClient } from "@chia/auth/client";
-import { createRedis } from "@chia/cache";
 import { connectDatabase } from "@chia/db/client";
+import { kv } from "@chia/kv";
 
 import { createQueryClient } from "@/utils/query-client";
 
@@ -28,7 +28,7 @@ const createContext = cache(async () => {
         })
       ).data ?? null,
     db: await connectDatabase(),
-    redis: createRedis(),
+    redis: kv,
   });
 });
 

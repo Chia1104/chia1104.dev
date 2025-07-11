@@ -9,7 +9,7 @@ import type { HTTPError } from "ky";
 import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import type { LinkProps as NextLinkProps } from "next/link";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import { post, isUrl, handleKyError, isURLInstance } from "@chia/utils";
 

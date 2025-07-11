@@ -1,5 +1,5 @@
-import type { z } from "zod/v4";
-import { ZodError } from "zod/v4";
+import type { z } from "zod";
+import { ZodError } from "zod";
 
 export interface HandleZodErrorReturn {
   message: string;

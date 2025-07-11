@@ -41,8 +41,8 @@
     "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config src/index.ts"
   },
   "dependencies": {
-    "@chia/cache": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/kv": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "better-auth": "^1.2.12",

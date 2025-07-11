@@ -3,9 +3,10 @@ import { JSDOM } from "jsdom";
 import { HTTPError } from "ky";
 import { NextResponse, after } from "next/server";
 import type { NextRequest } from "next/server";
-import { z } from "zod/v4";
+import { z } from "zod";
 
-import { withRateLimiter, createUpstash, Upstash } from "@chia/cache";
+import { client } from "@chia/kv/upstash";
+import { withRateLimiter } from "@chia/kv/upstash/with-rate-limiter";
 import { request } from "@chia/utils";
 import { errorGenerator, isUrl, enhanceHandleZodError } from "@chia/utils";
 
@@ -63,11 +64,9 @@ export const POST = withRateLimiter<
 
       const url = new URL(result.data);
 
-      const upstash = new Upstash<DocResponse>({
-        prefix: "link-preview",
-      });
-
-      const cachedDoc = await upstash.get(result.data);
+      const cachedDoc = await client.get<DocResponse>(
+        `link-preview:${result.data}`
+      );
 
       if (!cachedDoc) {
         const res = await request({
@@ -101,8 +100,8 @@ export const POST = withRateLimiter<
             ? postparsedOgImage.toString()
             : url.origin + "/" + postparsedOgImage.replace(/^\//, "") // remove leading slash
           : undefined;
-        await upstash.set(
-          result.data,
+        await client.set(
+          `link-preview:${result.data}`,
           {
             title,
             description,
@@ -143,7 +142,7 @@ export const POST = withRateLimiter<
     }
   },
   {
-    client: createUpstash(),
+    client,
     onError: (error) => {
       console.error("Rate Limiter: ", error);
       after(() => {

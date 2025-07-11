@@ -1,15 +1,12 @@
 import { sentry } from "@hono/sentry";
 import type { Hono } from "hono";
-import { rateLimiter } from "hono-rate-limiter";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { ipRestriction } from "hono/ip-restriction";
 import { logger } from "hono/logger";
 import { timeout } from "hono/timeout";
-import { RedisStore } from "rate-limit-redis";
 
 import { auth } from "@chia/auth";
-import { createRedis } from "@chia/cache";
 import { errorGenerator } from "@chia/utils";
 import { getClientIP } from "@chia/utils/get-client-ip";
 
@@ -92,32 +89,24 @@ const bootstrap = <TContext extends HonoContext>(
   /**
    * Rate limiter middleware
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  env.NODE_ENV === "production" &&
-    !!env.ZEABUR_SERVICE_ID &&
-    app.use(
-      rateLimiter({
-        windowMs: env.RATELIMIT_WINDOW_MS,
-        limit: env.RATELIMIT_MAX,
-        standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-        keyGenerator: (c) => {
-          let info: string | null | undefined = null;
-          try {
-            info = getClientIP(c.req.raw);
-          } catch (e) {
-            console.error(e);
-            info = null;
-          }
-          console.log(`root-request:${info}`);
-          return `root-request:${info}`;
-        },
-        // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-        store: new RedisStore({
-          // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-          sendCommand: (...args: string[]) => createRedis().call(...args),
-        }),
-      })
-    );
+  // app.use(
+  //   rateLimiter({
+  //     windowMs: env.RATELIMIT_WINDOW_MS,
+  //     limit: env.RATELIMIT_MAX,
+  //     standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+  //     keyGenerator: (c) => {
+  //       let info: string | null | undefined = null;
+  //       try {
+  //         info = getClientIP(c.req.raw);
+  //       } catch (e) {
+  //         console.error(e);
+  //         info = null;
+  //       }
+  //       console.log(`root-request:${info}`);
+  //       return `root-request:${info}`;
+  //     },
+  //   })
+  // );
 
   /**
    * better-auth middleware

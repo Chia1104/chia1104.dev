@@ -94,7 +94,7 @@ api
       const { keyword, model } = c.req.valid("query");
       const cache = c.var.redis;
       const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}`;
-      const cached = await cache.get(cacheKey);
+      const cached = await cache.get<string>(cacheKey);
       if (cached) {
         const { items } = await searchFeeds(c.var.db, {
           input: keyword ?? "",
