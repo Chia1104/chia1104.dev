@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import { ollamaEmbeddingModelSchema } from "@chia/ai/embeddings/ollama";
 import { textEmbeddingModelSchema } from "@chia/ai/embeddings/openai";

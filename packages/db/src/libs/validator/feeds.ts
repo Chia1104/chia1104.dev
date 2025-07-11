@@ -1,5 +1,5 @@
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import { contents, feedMeta } from "../../schema";
 import { ContentType, FeedOrderBy, FeedType } from "../../types";

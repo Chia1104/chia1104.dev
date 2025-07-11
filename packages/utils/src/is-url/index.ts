@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const urlSchema = z.union([z.url(), z.instanceof(URL)]);
 

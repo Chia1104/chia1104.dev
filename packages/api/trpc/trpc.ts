@@ -1,7 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod/v4";
-import { treeifyError } from "zod/v4";
+import { ZodError } from "zod";
+import { treeifyError } from "zod";
 
 import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth/types";

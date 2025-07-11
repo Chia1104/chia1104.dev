@@ -4,7 +4,7 @@ import { Input, CardBody, CardFooter, Divider, Form } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 import type { Project } from "@chia/db/schema";
 import { Form as FormCtx, FormField } from "@chia/ui/form";
