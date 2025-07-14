@@ -941,11 +941,11 @@ importers:
         specifier: workspace:*
         version: link:../kv
       drizzle-orm:
-        specifier: ^0.44.2
-        version: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7)
+        specifier: ^0.44.3
+        version: 0.44.3(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7)
       drizzle-zod:
         specifier: ^0.8.2
-        version: 0.8.2(drizzle-orm@0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.0.5)
+        version: 0.8.2(drizzle-orm@0.44.3(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.0.5)
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -996,8 +996,8 @@ importers:
         specifier: 1.35.1
         version: 1.35.1
       drizzle-orm:
-        specifier: ^0.44.2
-        version: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7)
+        specifier: ^0.44.3
+        version: 0.44.3(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7)
       keyv:
         specifier: ^5.3.4
         version: 5.3.4
@@ -7177,8 +7177,8 @@ packages:
     resolution: {integrity: sha512-tCPWVZWZqWVx2XUsVpJRnH9Mx0ClVOf5YUHerZ5so1OKSlqww4zy1R5ksEdGRcO3tM3zj0PYN6V48TbQCL1RfA==}
     hasBin: true
 
-  drizzle-orm@0.44.2:
-    resolution: {integrity: sha512-zGAqBzWWkVSFjZpwPOrmCrgO++1kZ5H/rZ4qTGeGOe18iXGVJWf3WPfHOVwFIbmi8kHjfJstC6rJomzGx8g/dQ==}
+  drizzle-orm@0.44.3:
+    resolution: {integrity: sha512-8nIiYQxOpgUicEL04YFojJmvC4DNO4KoyXsEIqN44+g6gNBr6hmVpWk3uyAt4CaTiRGDwoU+alfqNNeonLAFOQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -18976,7 +18976,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7):
+  drizzle-orm@0.44.3(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.15.4
@@ -18986,9 +18986,9 @@ snapshots:
       pg: 8.16.3
       sqlite3: 5.1.7
 
-  drizzle-zod@0.8.2(drizzle-orm@0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.0.5):
+  drizzle-zod@0.8.2(drizzle-orm@0.44.3(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.0.5):
     dependencies:
-      drizzle-orm: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7)
+      drizzle-orm: 0.44.3(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(@upstash/redis@1.35.1)(bun-types@1.2.18(@types/react@19.1.8))(kysely@0.28.2)(pg@8.16.3)(sqlite3@5.1.7)
       zod: 4.0.5
 
   dunder-proto@1.0.1:
