@@ -53,7 +53,7 @@
     "@t3-oss/env-core": "^0.13.8",
     "@upstash/ratelimit": "2.0.5",
     "@upstash/redis": "1.35.1",
-    "drizzle-orm": "^0.44.2",
+    "drizzle-orm": "^0.44.3",
     "keyv": "^5.3.4"
   }
 }
