@@ -21,7 +21,7 @@ catalog:
 catalogs:
   heroui:
     '@heroui/react': 2.8.0-beta.15
-    '@heroui/theme': 2.4.18-beta.7
+    '@heroui/theme': 2.4.19
   react18:
     '@types/react': ^18.3.23
     '@types/react-dom': ^18.3.7
