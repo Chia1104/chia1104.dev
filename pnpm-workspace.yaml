@@ -12,16 +12,16 @@ catalog:
   '@trpc/react-query': ^11.4.3
   '@trpc/server': ^11.4.3
   eslint: ^9.31.0
-  fumadocs-core: 15.6.3
+  fumadocs-core: 15.6.4
   fumadocs-mdx: 11.6.11
-  fumadocs-ui: 15.6.3
+  fumadocs-ui: 15.6.4
   tailwindcss: 4.1.11
   typescript: ^5.8.3
 
 catalogs:
   heroui:
-    '@heroui/react': 2.8.0-beta.15
-    '@heroui/theme': 2.4.18-beta.7
+    '@heroui/react': 2.8.1
+    '@heroui/theme': 2.4.19
   react18:
     '@types/react': ^18.3.23
     '@types/react-dom': ^18.3.7
