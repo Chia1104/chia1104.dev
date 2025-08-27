@@ -250,8 +250,8 @@ importers:
         specifier: ^0.13.8
         version: 0.13.8(arktype@2.1.20)(typescript@5.8.3)(zod@4.0.5)
       '@tanstack/react-pacer':
-        specifier: ^0.10.0
-        version: 0.10.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^0.16.1
+        version: 0.16.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.83.0(react@19.1.0)
@@ -5319,15 +5319,19 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20 || >=4.0.0-beta.1'
 
-  '@tanstack/pacer@0.10.0':
-    resolution: {integrity: sha512-pJkQ3joa2R++kJ6d3iN6Pjji8qkDcfJF3KNQpOkaY2yHqSKfp0MsojtiZ7EVfFoAuALloH5HY2HVHHayiYLbiA==}
+  '@tanstack/devtools-event-client@0.2.2':
+    resolution: {integrity: sha512-EnVT9P4H8Z6wX9Z2WUT1K29AcRsDAo0GuOsJPgWi2khP/DB7ZUmQ+OUBO9xBbxYeHBJk6/nvMuucJgyYBwhYhA==}
+    engines: {node: '>=18'}
+
+  '@tanstack/pacer@0.15.1':
+    resolution: {integrity: sha512-Nf75WABNlMD1Qt+zFpUKzCAXdteSRMgyYnN9C2c1faV7m+g6wcTUSSYJXpJ1KvqcLrn8e0BSSB1HUvugJTFotA==}
     engines: {node: '>=18'}
 
   '@tanstack/query-core@5.83.0':
     resolution: {integrity: sha512-0M8dA+amXUkyz5cVUm/B+zSk3xkQAcuXuz5/Q/LveT4ots2rBpPTZOzd7yJa2Utsf8D2Upl5KyjhHRY+9lB/XA==}
 
-  '@tanstack/react-pacer@0.10.0':
-    resolution: {integrity: sha512-2bTh6VqcI4edGbJdq4tgGD2IMdTIC4YvH6/Jo1oydhnb+2+mHZQkQm+opWGKjrf5BUFvUYVjpHKftDEw4VdKrA==}
+  '@tanstack/react-pacer@0.16.1':
+    resolution: {integrity: sha512-GCPvVhVVhd0BkuUVHNVqkOW3L7disQxpy1a20R1FsUZX3RcAHvfYiktVWSpymuIutsVkCSOpFmRP7UgRuFTW9w==}
     engines: {node: '>=18'}
     peerDependencies:
       react: '>=16.8'
@@ -10686,6 +10690,7 @@ packages:
   source-map@0.8.0-beta.0:
     resolution: {integrity: sha512-2ymg6oRBpebeZi9UUNsgQ89bhx01TcTkmNTGnNO88imTmbSgy4nfujrgVEFKWpMTEGA11EDkTt7mqObTPdigIA==}
     engines: {node: '>= 8'}
+    deprecated: The work that was done in this beta branch won't be included in future versions
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
@@ -16764,15 +16769,18 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.11
 
-  '@tanstack/pacer@0.10.0':
+  '@tanstack/devtools-event-client@0.2.2': {}
+
+  '@tanstack/pacer@0.15.1':
     dependencies:
+      '@tanstack/devtools-event-client': 0.2.2
       '@tanstack/store': 0.7.2
 
   '@tanstack/query-core@5.83.0': {}
 
-  '@tanstack/react-pacer@0.10.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@tanstack/react-pacer@0.16.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@tanstack/pacer': 0.10.0
+      '@tanstack/pacer': 0.15.1
       '@tanstack/react-store': 0.7.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
