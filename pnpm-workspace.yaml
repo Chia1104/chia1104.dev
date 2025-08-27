@@ -11,7 +11,7 @@ catalog:
   '@trpc/next': ^11.4.3
   '@trpc/react-query': ^11.4.3
   '@trpc/server': ^11.4.3
-  eslint: ^9.31.0
+  eslint: ^9.34.0
   fumadocs-core: 15.6.4
   fumadocs-mdx: 11.6.11
   fumadocs-ui: 15.6.4
