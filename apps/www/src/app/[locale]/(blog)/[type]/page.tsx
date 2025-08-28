@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
 
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
@@ -17,6 +18,9 @@ export async function generateMetadata({
   params,
 }: PagePropsWithLocale<{ type: "posts" | "notes" }>): Promise<Metadata> {
   const { type } = await params;
+  if (!["posts", "notes"].includes(type)) {
+    return notFound();
+  }
   const t = await getTranslations(`blog.${type}`);
   return {
     title: t("doc-title"),
@@ -27,6 +31,9 @@ const Page = async (
   props: PagePropsWithLocale<{ type: "posts" | "notes" }>
 ) => {
   const { type } = await props.params;
+  if (!["posts", "notes"].includes(type)) {
+    notFound();
+  }
   const formattedType = type === "posts" ? "post" : "note";
   const feeds = await getFeedsWithType(formattedType, 20);
   const hasFeeds = Array.isArray(feeds.items) && feeds.items.length > 0;
