@@ -30,6 +30,7 @@ const CreateForm = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = useRef(searchParams.get("token") ?? crypto.randomUUID());
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const { getState, setState } = useDraft(token.current);
   const draft = useRef(getState().draft);
   const utils = api.useUtils();

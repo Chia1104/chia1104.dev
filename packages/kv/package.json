@@ -41,19 +41,19 @@
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
-    "@keyv/test-suite": "^2.1.0",
+    "@keyv/test-suite": "^2.1.1",
     "eslint": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
     "@keyv/postgres": "^2.1.7",
-    "@keyv/redis": "^5.0.0",
-    "@keyv/valkey": "^1.0.7",
+    "@keyv/redis": "^5.1.1",
+    "@keyv/valkey": "^1.0.8",
     "@t3-oss/env-core": "^0.13.8",
-    "@upstash/ratelimit": "2.0.5",
-    "@upstash/redis": "1.35.1",
-    "drizzle-orm": "^0.44.3",
-    "keyv": "^5.4.0"
+    "@upstash/ratelimit": "2.0.6",
+    "@upstash/redis": "1.35.3",
+    "drizzle-orm": "^0.44.5",
+    "keyv": "^5.5.0"
   }
 }

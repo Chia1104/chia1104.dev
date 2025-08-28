@@ -2,7 +2,8 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
-import { convertToCoreMessages, streamText } from "ai";
+import type { LanguageModel } from "ai";
+import { streamText } from "ai";
 
 import { Provider } from "../utils/types";
 import type { BaseRequest } from "../utils/types";
@@ -13,9 +14,12 @@ export const DEFAULT_SYSTEM_PROMPT =
   "Limit your response to no more than 200 characters, but make sure to construct complete sentences." +
   "Use Markdown formatting when appropriate.";
 
-type Options = Parameters<typeof streamText>[0];
+type Options = Omit<
+  Parameters<typeof streamText>[0],
+  "messages" | "model" | "system" | "prompt"
+>;
 
-export const createModel = (request: BaseRequest) => {
+export const createModel = (request: BaseRequest): LanguageModel => {
   switch (request.model.provider) {
     case Provider.OpenAI:
       return createOpenAI({
@@ -43,8 +47,8 @@ export const streamGeneratedText = (
   options?: Partial<Options>
 ) =>
   streamText({
+    ...options,
     model: createModel(request),
     system: request.system ?? DEFAULT_SYSTEM_PROMPT,
-    messages: convertToCoreMessages(request.messages),
-    ...options,
+    messages: request.messages,
   });
