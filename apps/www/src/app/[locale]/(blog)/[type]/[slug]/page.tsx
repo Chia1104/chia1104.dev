@@ -56,7 +56,7 @@ const Page = async ({
   params,
 }: {
   params: PageParamsWithLocale<{
-    type: "posts" | "notes";
+    type: "post" | "note";
     slug: string;
   }>;
 }) => {
@@ -66,10 +66,10 @@ const Page = async ({
 
   if (!feed?.content) {
     notFound();
-  } else if (`${feed.type}s` !== type) {
+  } else if (`${feed.type}` !== type) {
     redirect(
       {
-        href: `/${feed.type}s/${feed.slug}`,
+        href: `/${feed.type}/${feed.slug}`,
         locale,
       },
       RedirectType.replace
