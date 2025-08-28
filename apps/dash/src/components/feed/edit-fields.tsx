@@ -306,6 +306,7 @@ export const MetadataFields = () => {
                     labelPlacement="outside"
                     className="w-full"
                     label="Create"
+                    // @ts-expect-error - why CalendarDate ??
                     value={
                       field.value
                         ? parseDate(
@@ -337,6 +338,7 @@ export const MetadataFields = () => {
                       labelPlacement="outside"
                       className="w-full"
                       label="Update"
+                      // @ts-expect-error - why CalendarDate ??
                       value={
                         field.value
                           ? parseDate(
@@ -442,6 +444,7 @@ const SwitchEditor = () => {
   const form = useFormContext<CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const { isDarkMode } = useTheme();
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const { setState, getState } = useDraft(editFields.token);
 
   const editorCreator = (contentType: ContentType) => {

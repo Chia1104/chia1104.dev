@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: "💽️ Setup"
         uses: ./.github/actions/setup

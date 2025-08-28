@@ -1,4 +1,4 @@
-import { compileMDX as _compileMDX } from "@fumadocs/mdx-remote";
+import { createCompiler } from "@fumadocs/mdx-remote";
 import { remarkAdmonition } from "fumadocs-core/mdx-plugins";
 import type { MDXComponents } from "mdx/types";
 import rehypeKatex from "rehype-katex";
@@ -9,25 +9,21 @@ import { ContentType } from "@chia/db/types";
 import { FumadocsComponents, V1MDXComponents } from "./mdx-components";
 import type { GetContentPropsArgs, GetContentPropsReturn } from "./types";
 
-type CompileResult = ReturnType<typeof _compileMDX>;
+const compiler = createCompiler({
+  remarkPlugins: [remarkMath, remarkAdmonition],
+  rehypePlugins: (v) => [rehypeKatex, ...v],
+});
 
-export const compileMDX: (
-  content: string,
-  components?: MDXComponents
-) => CompileResult = (content: string, components?: MDXComponents) =>
-  _compileMDX({
+export const compileMDX = (content: string, components?: MDXComponents) => {
+  return compiler.compile({
     source: content,
     components: {
       ...FumadocsComponents,
       ...V1MDXComponents,
       ...components,
     },
-    mdxOptions: {
-      remarkPlugins: [remarkMath, remarkAdmonition],
-      // Place it at first so that it won't be changed by syntax highlighter
-      rehypePlugins: (v) => [rehypeKatex, ...v],
-    },
   });
+};
 
 export const getContentProps = async ({
   contentType,

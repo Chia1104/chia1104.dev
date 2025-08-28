@@ -1,7 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
-import { stream } from "hono/streaming";
 import { z } from "zod";
 
 import {
@@ -95,7 +94,7 @@ api.post(
       authToken: c.get(AI_AUTH_TOKEN),
       system: c.req.valid("json").system,
     });
-    return stream(c, (stream) => stream.pipe(result.toDataStream()));
+    return result.toUIMessageStreamResponse();
   }
 );
 

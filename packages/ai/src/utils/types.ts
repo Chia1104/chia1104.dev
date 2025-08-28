@@ -1,3 +1,4 @@
+import { modelMessageSchema } from "ai";
 import { z } from "zod";
 
 export const Provider = {
@@ -53,11 +54,14 @@ export type DeepSeekModel = (typeof DeepSeekModel)[keyof typeof DeepSeekModel];
 
 export type Role = (typeof Role)[keyof typeof Role];
 
-export const messageSchema = z.object({
-  role: z.enum(Role).optional().default(Role.User),
-  content: z.string(),
-});
+/**
+ * @deprecated Use `modelMessageSchema` from `ai` instead
+ */
+export const messageSchema = modelMessageSchema;
 
+/**
+ * @deprecated Use `modelMessageSchema` from `ai` instead
+ */
 export type Message = z.infer<typeof messageSchema>;
 
 export const modelSchema = z
@@ -89,7 +93,7 @@ export type Model = z.infer<typeof modelSchema>;
 
 export const baseRequestSchema = z.object({
   model: modelSchema,
-  messages: z.array(messageSchema).min(1),
+  messages: z.array(modelMessageSchema).min(1),
   authToken: z.string().min(1),
   system: z.string().optional(),
 });
