@@ -19,7 +19,7 @@ export async function generateMetadata({
 }: PagePropsWithLocale<{ type: "posts" | "notes" }>): Promise<Metadata> {
   const { type } = await params;
   if (!["posts", "notes"].includes(type)) {
-    return notFound();
+    notFound();
   }
   const t = await getTranslations(`blog.${type}`);
   return {
