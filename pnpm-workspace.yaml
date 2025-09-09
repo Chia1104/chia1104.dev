@@ -20,7 +20,7 @@ catalog:
 
 catalogs:
   heroui:
-    '@heroui/react': 2.8.2
+    '@heroui/react': 2.8.4
     '@heroui/theme': 2.4.20
   react18:
     '@types/react': ^18.3.24
