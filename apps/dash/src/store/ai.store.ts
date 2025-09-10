@@ -50,13 +50,13 @@ const DEFAULT_MODAL: Record<Workspace, Model> = {
 const DEFAULT_OPTIONS: ModalOption[] = [
   {
     enabled: true,
-    name: "Gemini 2.0 Flash",
+    name: "Gemini 2.5 Pro",
     provider: Provider.Google,
-    id: GoogleModel["gemini-2.0-flash"],
+    id: GoogleModel["gemini-2.5-pro"],
     features: {
-      image: true,
       search: true,
       pdf: true,
+      reasoning: true,
     },
   },
   {
@@ -65,10 +65,32 @@ const DEFAULT_OPTIONS: ModalOption[] = [
     provider: Provider.Google,
     id: GoogleModel["gemini-2.5-flash"],
     features: {
-      image: true,
       search: true,
       pdf: true,
       preview: true,
+      reasoning: true,
+    },
+  },
+  {
+    enabled: true,
+    name: "Claude 4.1 Opus",
+    provider: Provider.Anthropic,
+    id: AnthropicModel["claude-opus-4-1"],
+    features: {
+      image: true,
+      search: true,
+      pdf: true,
+    },
+  },
+  {
+    enabled: true,
+    name: "Claude 4 Sonnet",
+    provider: Provider.Anthropic,
+    id: AnthropicModel["claude-sonnet-4"],
+    features: {
+      image: true,
+      search: true,
+      pdf: true,
     },
   },
   {
@@ -80,6 +102,35 @@ const DEFAULT_OPTIONS: ModalOption[] = [
       image: true,
       search: true,
       pdf: true,
+    },
+  },
+  {
+    enabled: true,
+    name: "gpt 5",
+    provider: Provider.OpenAI,
+    id: OpenAIModel["gpt-5"],
+    features: {
+      reasoning: true,
+      search: true,
+    },
+  },
+  {
+    enabled: true,
+    name: "gpt 5 mini",
+    provider: Provider.OpenAI,
+    id: OpenAIModel["gpt-5-mini"],
+    features: {
+      reasoning: true,
+      search: true,
+    },
+  },
+  {
+    enabled: true,
+    name: "gpt 5 nano",
+    provider: Provider.OpenAI,
+    id: OpenAIModel["gpt-5-nano"],
+    features: {
+      reasoning: true,
     },
   },
   {
