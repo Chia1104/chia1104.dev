@@ -32,6 +32,14 @@ const getOrigin = (url?: string) => {
 export const auth = betterAuth({
   appName: "Chia1104.dev",
 
+  /**
+   * session configuration
+   */
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
+    updateAge: 60 * 60 * 24, // 1 day in seconds
+  },
+
   socialProviders: {
     github:
       env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
@@ -83,8 +91,11 @@ export const auth = betterAuth({
       return value ? value : null;
     },
     set: async (key, value, ttl) => {
-      if (ttl) await kv.set(key, value, ttl);
-      else await kv.set(key, value);
+      if (ttl) {
+        await kv.set(key, value, ttl * 1000);
+      } else {
+        await kv.set(key, value);
+      }
     },
     delete: async (key) => {
       await kv.delete(key);
