@@ -12,6 +12,9 @@ export type Provider = (typeof Provider)[keyof typeof Provider];
 
 // https://platform.openai.com/docs/models
 export const OpenAIModel = {
+  "gpt-5": "gpt-5",
+  "gpt-5-mini": "gpt-5-mini",
+  "gpt-5-nano": "gpt-5-nano",
   "gpt-4.1": "gpt-4.1",
   "gpt-4o": "gpt-4o",
   "gpt-4o-mini": "gpt-4o-mini",
@@ -27,6 +30,8 @@ export type OpenAIModel = (typeof OpenAIModel)[keyof typeof OpenAIModel];
 export const AnthropicModel = {
   "claude-3-5-haiku": "claude-3-5-haiku-latest",
   "claude-3-7-sonnet": "claude-3-7-sonnet-latest",
+  "claude-sonnet-4": "claude-sonnet-4-latest",
+  "claude-opus-4-1": "claude-opus-4-1-latest",
 } as const;
 
 export type AnthropicModel =
@@ -34,8 +39,8 @@ export type AnthropicModel =
 
 // https://ai.google.dev/gemini-api/docs/models
 export const GoogleModel = {
-  "gemini-2.5-flash": "gemini-2.5-flash-preview-04-17",
-  "gemini-2.5-pro": "gemini-2.5-pro-preview-03-25",
+  "gemini-2.5-flash": "gemini-2.5-flash",
+  "gemini-2.5-pro": "gemini-2.5-pro",
   "gemini-2.0-flash": "gemini-2.0-flash",
 } as const;
 
@@ -76,7 +81,7 @@ export const modelSchema = z
   .optional()
   .default({
     provider: Provider.OpenAI,
-    id: OpenAIModel["o3-mini"],
+    id: OpenAIModel["gpt-5-mini"],
   });
 
 export type Model = z.infer<typeof modelSchema>;
