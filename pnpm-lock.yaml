@@ -981,8 +981,8 @@ importers:
         specifier: ^2.1.7
         version: 2.1.7(keyv@5.5.0)
       '@keyv/redis':
-        specifier: ^5.1.1
-        version: 5.1.1(keyv@5.5.0)
+        specifier: ^5.1.2
+        version: 5.1.2(keyv@5.5.0)
       '@keyv/valkey':
         specifier: ^1.0.8
         version: 1.0.8
@@ -2994,11 +2994,11 @@ packages:
     peerDependencies:
       keyv: ^5.4.0
 
-  '@keyv/redis@5.1.1':
-    resolution: {integrity: sha512-bPypEnO2uSDjrgDP2whyewZ2R8aAJvoLM2440J1omjpJnzv1Awzs3RIztQGoDafNhPe0dZeI+44XKCdSiWkgTg==}
+  '@keyv/redis@5.1.2':
+    resolution: {integrity: sha512-ju+s33Gt8d8xW1aW69CdTvVTQBRmt82PHjcGWsbtsbOh0IcFJ2gsj3bWJVFjn/KYyoqxJSZEpUXlRyv/wq4FMA==}
     engines: {node: '>= 18'}
     peerDependencies:
-      keyv: ^5.5.0
+      keyv: ^5.5.1
 
   '@keyv/serialize@1.1.0':
     resolution: {integrity: sha512-RlDgexML7Z63Q8BSaqhXdCYNBy/JQnqYIwxofUrNLGCblOMHp+xux2Q8nLMLlPpgHQPoU0Do8Z6btCpRBEqZ8g==}
@@ -13913,7 +13913,7 @@ snapshots:
     transitivePeerDependencies:
       - pg-native
 
-  '@keyv/redis@5.1.1(keyv@5.5.0)':
+  '@keyv/redis@5.1.2(keyv@5.5.0)':
     dependencies:
       '@redis/client': 5.8.2
       cluster-key-slot: 1.1.2
