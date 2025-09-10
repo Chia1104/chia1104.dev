@@ -30,8 +30,8 @@ export type OpenAIModel = (typeof OpenAIModel)[keyof typeof OpenAIModel];
 export const AnthropicModel = {
   "claude-3-5-haiku": "claude-3-5-haiku-latest",
   "claude-3-7-sonnet": "claude-3-7-sonnet-latest",
-  "claude-sonnet-4": "claude-sonnet-4-latest",
-  "claude-opus-4-1": "claude-opus-4-1-latest",
+  "claude-sonnet-4": "claude-sonnet-4-0",
+  "claude-opus-4-1": "claude-opus-4-1",
 } as const;
 
 export type AnthropicModel =
