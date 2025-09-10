@@ -61,7 +61,11 @@ export class DrizzleCache extends Cache {
     isTag: boolean,
     config?: CacheConfig
   ): Promise<void> {
-    await this.kv.set(key, response, config ? config.ex : this.globalTtl);
+    await this.kv.set(
+      key,
+      response,
+      config?.ex ? config.ex * 1000 : this.globalTtl * 1000
+    );
     for (const table of tables) {
       const keys = this.usedTablesPerKey[table];
       if (keys === undefined) {
