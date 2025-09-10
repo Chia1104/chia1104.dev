@@ -54,16 +54,6 @@ export type DeepSeekModel = (typeof DeepSeekModel)[keyof typeof DeepSeekModel];
 
 export type Role = (typeof Role)[keyof typeof Role];
 
-/**
- * @deprecated Use `modelMessageSchema` from `ai` instead
- */
-export const messageSchema = modelMessageSchema;
-
-/**
- * @deprecated Use `modelMessageSchema` from `ai` instead
- */
-export type Message = z.infer<typeof messageSchema>;
-
 export const modelSchema = z
   .union([
     z.object({
