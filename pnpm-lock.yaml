@@ -512,8 +512,8 @@ importers:
         specifier: catalog:triggerdotdev
         version: 4.0.2(ai@5.0.39(zod@4.1.5))(zod@4.1.5)
       openai:
-        specifier: ^5.20.0
-        version: 5.20.0(ws@8.18.3)(zod@4.1.5)
+        specifier: ^5.20.2
+        version: 5.20.2(ws@8.18.3)(zod@4.1.5)
     devDependencies:
       '@chia/tsconfig':
         specifier: workspace:*
@@ -748,8 +748,8 @@ importers:
         specifier: ^2.0.13
         version: 2.0.13(zod@4.1.5)
       '@ai-sdk/openai':
-        specifier: ^2.0.27
-        version: 2.0.27(zod@4.1.5)
+        specifier: ^2.0.30
+        version: 2.0.30(zod@4.1.5)
       '@anthropic-ai/sdk':
         specifier: ^0.61.0
         version: 0.61.0
@@ -769,8 +769,8 @@ importers:
         specifier: ^0.5.17
         version: 0.5.17
       openai:
-        specifier: ^5.20.0
-        version: 5.20.0(ws@8.18.3)(zod@4.1.5)
+        specifier: ^5.20.2
+        version: 5.20.2(ws@8.18.3)(zod@4.1.5)
     devDependencies:
       '@chia/eslint-config':
         specifier: workspace:*
@@ -1323,14 +1323,20 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
-  '@ai-sdk/openai@2.0.27':
-    resolution: {integrity: sha512-5fUFBlE9qGFgezVIVkzQk87qZYkxsn5PsedtCFPoGxHK6c2QVYHuD1UcrVIKt0elr043Vx17Xo/gS5oJAR5YEQ==}
+  '@ai-sdk/openai@2.0.30':
+    resolution: {integrity: sha512-a9Vf64OT2dWEFyEGv+OxtCs69B18BsuzInvuyUxVPczbIiBLqUCt3zcD/8EwqbTPJwsFNsL8/9nbVZFmwA1+2A==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
 
   '@ai-sdk/provider-utils@3.0.8':
     resolution: {integrity: sha512-cDj1iigu7MW2tgAQeBzOiLhjHOUM9vENsgh4oAVitek0d//WdgfPCsKO3euP7m7LyO/j9a1vr/So+BGNdpFXYw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
+  '@ai-sdk/provider-utils@3.0.9':
+    resolution: {integrity: sha512-Pm571x5efqaI4hf9yW4KsVlDBDme8++UepZRnq+kqVBWWjgvGhQlzU8glaFq0YJEB9kkxZHbRRyVeHoV2sRYaQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -9584,8 +9590,8 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@5.20.0:
-    resolution: {integrity: sha512-Bmc2zLM/YWgFrDpXr9hwXqGGDdMmMpE9+qoZPsaHpn0Y/Qk1Vu26hNqXo7+nHdli+sLsXINvS1f8kR3NKhGKmA==}
+  openai@5.20.2:
+    resolution: {integrity: sha512-ZeBIEazj6W/XOulMw92L8iU5FblQeM5IxjPRCZNVArNXsoF+bLPnS7B2X4O0JSmpCM+F5Gdajr6bn4nAUj4LFQ==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -11908,13 +11914,20 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.8(zod@4.1.5)
       zod: 4.1.5
 
-  '@ai-sdk/openai@2.0.27(zod@4.1.5)':
+  '@ai-sdk/openai@2.0.30(zod@4.1.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.8(zod@4.1.5)
+      '@ai-sdk/provider-utils': 3.0.9(zod@4.1.5)
       zod: 4.1.5
 
   '@ai-sdk/provider-utils@3.0.8(zod@4.1.5)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.6
+      zod: 4.1.5
+
+  '@ai-sdk/provider-utils@3.0.9(zod@4.1.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
@@ -22083,7 +22096,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@5.20.0(ws@8.18.3)(zod@4.1.5):
+  openai@5.20.2(ws@8.18.3)(zod@4.1.5):
     optionalDependencies:
       ws: 8.18.3
       zod: 4.1.5
