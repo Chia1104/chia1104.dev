@@ -12,9 +12,9 @@ catalog:
   '@trpc/react-query': ^11.5.1
   '@trpc/server': ^11.5.1
   eslint: ^9.35.0
-  fumadocs-core: 15.7.10
-  fumadocs-mdx: 11.9.0
-  fumadocs-ui: 15.7.10
+  fumadocs-core: 15.7.13
+  fumadocs-mdx: 11.10.1
+  fumadocs-ui: 15.7.13
   tailwindcss: 4.1.13
   typescript: ^5.9.2
 
