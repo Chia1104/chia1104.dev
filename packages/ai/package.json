@@ -59,11 +59,11 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.15",
+    "@ai-sdk/anthropic": "^2.0.20",
     "@ai-sdk/deepseek": "^1.0.15",
     "@ai-sdk/google": "^2.0.13",
     "@ai-sdk/openai": "^2.0.27",
-    "@anthropic-ai/sdk": "^0.61.0",
+    "@anthropic-ai/sdk": "^0.64.0",
     "@chia/utils": "workspace:*",
     "@google/genai": "^1.19.0",
     "ai": "^5.0.39",
