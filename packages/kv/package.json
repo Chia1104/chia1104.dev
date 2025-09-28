@@ -54,6 +54,6 @@
     "@upstash/ratelimit": "2.0.6",
     "@upstash/redis": "1.35.4",
     "drizzle-orm": "^0.44.5",
-    "keyv": "^5.5.2"
+    "keyv": "^5.5.3"
   }
 }
