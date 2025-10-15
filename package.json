@@ -95,7 +95,7 @@
     "bun-types": "^1.2.22",
     "cross-env": "10.0.0",
     "dotenv": "^17.2.2",
-    "happy-dom": "^18.0.1",
+    "happy-dom": "^20.0.0",
     "husky": "^9.1.7",
     "jest-extended": "^6.0.0",
     "lint-staged": "^16.2.1",
