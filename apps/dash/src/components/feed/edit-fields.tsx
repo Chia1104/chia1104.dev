@@ -551,28 +551,6 @@ const SwitchEditor = () => {
 };
 
 const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
-  useImperativeHandle(ref, () => ({
-    content,
-    getContent: (type) => {
-      switch (type ?? form.watch("contentType")) {
-        case ContentType.Mdx:
-          return {
-            content: content.mdx.content,
-            source: content.mdx.source,
-          };
-        case ContentType.Tiptap:
-          return {
-            content: content.tiptap.content,
-            source: content.tiptap.source,
-          };
-        default:
-          return {
-            content: "",
-            source: "",
-          };
-      }
-    },
-  }));
   const form = useFormContext<CreateFeedInput>();
 
   const createDefaultContent = () => {
@@ -609,6 +587,29 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
   };
 
   const [content, setContent] = useState(createDefaultContent());
+
+  useImperativeHandle(ref, () => ({
+    content,
+    getContent: (type) => {
+      switch (type ?? form.watch("contentType")) {
+        case ContentType.Mdx:
+          return {
+            content: content.mdx.content,
+            source: content.mdx.source,
+          };
+        case ContentType.Tiptap:
+          return {
+            content: content.tiptap.content,
+            source: content.tiptap.source,
+          };
+        default:
+          return {
+            content: "",
+            source: "",
+          };
+      }
+    },
+  }));
 
   return (
     <EditFieldsContext

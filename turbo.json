@@ -20,11 +20,9 @@
       "env": ["DATABASE_URL"]
     },
     "lint": {
-      "dependsOn": ["^build"],
       "outputs": [".cache/.eslintcache"]
     },
     "lint:fix": {
-      "dependsOn": ["^build"],
       "outputs": [".cache/.eslintcache"]
     },
     "type:check": {

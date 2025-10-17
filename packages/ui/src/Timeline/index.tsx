@@ -31,7 +31,7 @@ const Timeline: FC<TimelineProps> = ({
     return props.data.reduce((acc, curr) => {
       const groupName = getGroupName(curr, groupTemplate);
       const lastGroup = acc[acc.length - 1];
-      if (lastGroup && lastGroup.year === groupName) {
+      if (lastGroup?.year === groupName) {
         lastGroup.data.push(curr);
       } else {
         acc.push({
