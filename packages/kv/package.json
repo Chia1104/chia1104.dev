@@ -48,12 +48,12 @@
   "dependencies": {
     "@chia/utils": "workspace:*",
     "@keyv/postgres": "^2.1.7",
-    "@keyv/redis": "^5.1.2",
-    "@keyv/valkey": "^1.0.8",
+    "@keyv/redis": "^5.1.3",
+    "@keyv/valkey": "^1.0.10",
     "@t3-oss/env-core": "^0.13.8",
     "@upstash/ratelimit": "2.0.6",
-    "@upstash/redis": "1.35.4",
-    "drizzle-orm": "^0.44.5",
-    "keyv": "^5.5.2"
+    "@upstash/redis": "1.35.6",
+    "drizzle-orm": "^0.44.6",
+    "keyv": "^5.5.3"
   }
 }

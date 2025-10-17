@@ -7,6 +7,9 @@ import { cn } from "../utils/cn.util";
 interface MeteorsProps {
   number?: number;
 }
+
+/* eslint-disable react-hooks/purity */
+// TODO: fix legacy code
 export const Meteors = ({ number = 20 }: MeteorsProps) => {
   const meteorStyles = useMemo(
     () =>

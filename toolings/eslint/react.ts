@@ -1,8 +1,8 @@
 import reactPlugin from "eslint-plugin-react";
 import hooksPlugin from "eslint-plugin-react-hooks";
+import { defineConfig } from "eslint/config";
 
-/** @type {Awaited<import('typescript-eslint').Config>} */
-export default [
+const reactConfig = defineConfig([
   {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
@@ -12,6 +12,7 @@ export default [
     rules: {
       ...reactPlugin.configs["jsx-runtime"].rules,
       ...hooksPlugin.configs.recommended.rules,
+      "react-hooks/refs": "warn",
     },
     languageOptions: {
       globals: {
@@ -19,4 +20,6 @@ export default [
       },
     },
   },
-];
+]);
+
+export default reactConfig;
