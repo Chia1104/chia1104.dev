@@ -2,8 +2,9 @@
 
 import type { FC } from "react";
 
+import { useIsMounted } from "usehooks-ts";
+
 import Spotlight from "@chia/ui/spotlight";
-import useIsMounted from "@chia/ui/utils/use-is-mounted";
 import useTheme from "@chia/ui/utils/use-theme";
 
 const Background: FC = () => {
@@ -14,7 +15,7 @@ const Background: FC = () => {
       <Spotlight
         className="fixed -top-40 left-0 -z-40 md:-top-20 md:left-60"
         fill={
-          isDarkMode && isMounted
+          isDarkMode && isMounted()
             ? "rgba(255, 255, 255, 0.7)"
             : "rgba(0, 0, 0, 0.5)"
         }

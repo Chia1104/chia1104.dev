@@ -5,9 +5,9 @@
   "type": "module",
   "types": "types.d.ts",
   "exports": {
-    "./base": "./base.js",
-    "./nextjs": "./nextjs.js",
-    "./react": "./react.js"
+    "./base": "./base.ts",
+    "./nextjs": "./nextjs.ts",
+    "./react": "./react.ts"
   },
   "scripts": {
     "clean": "rm -rf .turbo node_modules .cache",
@@ -25,6 +25,8 @@
     "typescript-eslint": "^8.46.1"
   },
   "devDependencies": {
-    "eslint": "catalog:"
+    "@chia/tsconfig": "workspace:*",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
   }
 }

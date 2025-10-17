@@ -133,6 +133,8 @@ export const TextRevealCardDescription = ({
   return <p className={cn("text-sm text-[#a9a9a9]", className)}>{children}</p>;
 };
 
+/* eslint-disable react-hooks/purity */
+// TODO: fix legacy code
 const Stars: FC<{ count?: number }> = ({ count = 140 }) => {
   const randomMove = () => Math.random() * 4 - 2;
   const randomOpacity = () => Math.random();
