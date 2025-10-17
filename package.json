@@ -102,7 +102,7 @@
     "msw": "^2.11.5",
     "nx": "^21.6.5",
     "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.7.0",
+    "prettier-plugin-tailwindcss": "^0.7.1",
     "shell-quote": "^1.8.3",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
