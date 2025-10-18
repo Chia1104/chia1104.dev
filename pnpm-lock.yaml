@@ -268,7 +268,7 @@ importers:
         specifier: 'catalog:'
         version: 11.6.0(typescript@5.9.3)
       ai:
-        specifier: ^5.0.75
+        specifier: ^5.0.76
         version: 5.0.76(zod@4.1.12)
       clsx:
         specifier: ^2.1.1
@@ -760,7 +760,7 @@ importers:
         specifier: ^1.25.0
         version: 1.25.0(encoding@0.1.13)
       ai:
-        specifier: ^5.0.75
+        specifier: ^5.0.76
         version: 5.0.76(zod@4.1.12)
       next:
         specifier: 15.5.6
