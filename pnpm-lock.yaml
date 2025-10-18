@@ -199,7 +199,7 @@ importers:
   apps/dash:
     dependencies:
       '@ai-sdk/react':
-        specifier: ^2.0.75
+        specifier: ^2.0.76
         version: 2.0.76(react@19.2.0)(zod@4.1.12)
       '@chia/ai':
         specifier: workspace:*
