@@ -1,5 +1,4 @@
-// @ts-expect-error - TODO: update nextjs to v16
-import { unstable_ViewTransition as ViewTransition } from "react";
+import { ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";

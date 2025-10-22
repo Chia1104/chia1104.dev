@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode, Ref, RefObject } from "react";
-// @ts-expect-error - TODO: update nextjs to v16
-import { useRef, unstable_ViewTransition as ViewTransition } from "react";
+// @ts-expect-error - nextjs types?
+import { useRef, ViewTransition } from "react";
 
 import {
   Card,

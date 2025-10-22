@@ -45,18 +45,15 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
+  reactCompiler: true,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
     optimizePackageImports: ["@heroui/react", "@react-email/components"],
-    reactCompiler: true,
     webpackBuildWorker: true,
     viewTransition: true,
     authInterrupts: true,
   },
   serverExternalPackages: ["@chia/db", "@chia/auth", "twoslash", "typescript"],
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
