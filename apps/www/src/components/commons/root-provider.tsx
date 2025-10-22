@@ -3,7 +3,7 @@
 import type { FC, ReactNode } from "react";
 
 import { HeroUIProvider as _HeroUIProvider } from "@heroui/react";
-import { RootProvider as FDProvider } from "fumadocs-ui/provider";
+import { RootProvider as FDProvider } from "fumadocs-ui/provider/next";
 import { NextIntlClientProvider } from "next-intl";
 import type { AbstractIntlMessages, Timezone } from "next-intl";
 import type { Locale } from "next-intl";

@@ -1,8 +1,9 @@
+/// <reference types="@types/react/canary" />
+
 "use client";
 
 import type { ReactNode, Ref, RefObject } from "react";
-// @ts-expect-error - TODO: update nextjs to v16
-import { useRef, unstable_ViewTransition as ViewTransition } from "react";
+import { useRef, ViewTransition } from "react";
 
 import {
   Card,
@@ -24,6 +25,10 @@ import type {
   BasePropsWithType,
   ContentContextProps,
 } from "./types";
+
+/// <reference types="@types/react/canary" />
+
+/// <reference types="@types/react/canary" />
 
 const ContentProvider = ({
   children,
