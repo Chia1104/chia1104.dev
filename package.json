@@ -67,7 +67,7 @@
     "node": ">=20.6",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@10.18.3",
+  "packageManager": "pnpm@10.19.0",
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
     "@t3-oss/env-core": "^0.13.8",
