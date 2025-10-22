@@ -1,5 +1,5 @@
 import type { ConfigType } from "dayjs";
-import type { TableOfContents } from "fumadocs-core/server";
+import type { TableOfContents } from "fumadocs-core/toc";
 import type { MDXContent } from "mdx/types";
 
 import type { Content } from "@chia/db/schema";
