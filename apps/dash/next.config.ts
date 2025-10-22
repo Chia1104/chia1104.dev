@@ -40,7 +40,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
     optimizePackageImports: ["@heroui/react"],
-    webpackBuildWorker: true,
     viewTransition: true,
     authInterrupts: true,
   },
@@ -54,12 +53,6 @@ const nextConfig: NextConfig = {
         headers: securityHeaders,
       },
     ];
-  },
-  webpack: (config) => {
-    config.externals.push({
-      "node:crypto": "commonjs crypto",
-    });
-    return config;
   },
 };
 
