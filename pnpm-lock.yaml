@@ -422,19 +422,19 @@ importers:
         version: link:../../packages/utils
       '@hono/node-server':
         specifier: ^1.19.5
-        version: 1.19.5(hono@4.10.0)
+        version: 1.19.5(hono@4.10.2)
       '@hono/react-renderer':
         specifier: ^1.0.1
-        version: 1.0.1(hono@4.10.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 1.0.1(hono@4.10.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@hono/sentry':
         specifier: ^1.2.2
-        version: 1.2.2(hono@4.10.0)
+        version: 1.2.2(hono@4.10.2)
       '@hono/trpc-server':
         specifier: ^0.4.0
-        version: 0.4.0(@trpc/server@11.6.0(typescript@5.9.3))(hono@4.10.0)
+        version: 0.4.0(@trpc/server@11.6.0(typescript@5.9.3))(hono@4.10.2)
       '@hono/zod-validator':
         specifier: ^0.7.4
-        version: 0.7.4(hono@4.10.0)(zod@4.1.12)
+        version: 0.7.4(hono@4.10.2)(zod@4.1.12)
       formdata-node:
         specifier: ^6.0.3
         version: 6.0.3
@@ -442,11 +442,11 @@ importers:
         specifier: ^16.11.0
         version: 16.11.0
       hono:
-        specifier: ^4.10.0
-        version: 4.10.0
+        specifier: ^4.10.2
+        version: 4.10.2
       hono-rate-limiter:
         specifier: ^0.4.2
-        version: 0.4.2(hono@4.10.0)
+        version: 0.4.2(hono@4.10.2)
       react:
         specifier: catalog:react19
         version: 19.2.0
@@ -8120,6 +8120,10 @@ packages:
     resolution: {integrity: sha512-V/S2IyKL6fk5+bEjiQzg74r5BglqAwU20IX3WjdTUFgvmtSqAZjSxN/Zb5lr6/JXVmH0aqkqOq++3UgzOi9+4Q==}
     engines: {node: '>=16.9.0'}
 
+  hono@4.10.2:
+    resolution: {integrity: sha512-p6fyzl+mQo6uhESLxbF5WlBOAJMDh36PljwlKtP5V1v09NxlqGru3ShK+4wKhSuhuYf8qxMmrivHOa/M7q0sMg==}
+    engines: {node: '>=16.9.0'}
+
   hookified@1.12.2:
     resolution: {integrity: sha512-aokUX1VdTpI0DUsndvW+OiwmBpKCu/NgRsSSkuSY0zq8PY6Q6a+lmOfAFDXAAOtBqJELvcWY9L1EVtzjbQcMdg==}
 
@@ -13594,25 +13598,29 @@ snapshots:
     dependencies:
       hono: 4.10.0
 
-  '@hono/react-renderer@1.0.1(hono@4.10.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@hono/node-server@1.19.5(hono@4.10.2)':
     dependencies:
-      hono: 4.10.0
+      hono: 4.10.2
+
+  '@hono/react-renderer@1.0.1(hono@4.10.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      hono: 4.10.2
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@hono/sentry@1.2.2(hono@4.10.0)':
+  '@hono/sentry@1.2.2(hono@4.10.2)':
     dependencies:
-      hono: 4.10.0
+      hono: 4.10.2
       toucan-js: 4.1.1
 
-  '@hono/trpc-server@0.4.0(@trpc/server@11.6.0(typescript@5.9.3))(hono@4.10.0)':
+  '@hono/trpc-server@0.4.0(@trpc/server@11.6.0(typescript@5.9.3))(hono@4.10.2)':
     dependencies:
       '@trpc/server': 11.6.0(typescript@5.9.3)
-      hono: 4.10.0
+      hono: 4.10.2
 
-  '@hono/zod-validator@0.7.4(hono@4.10.0)(zod@4.1.12)':
+  '@hono/zod-validator@0.7.4(hono@4.10.2)(zod@4.1.12)':
     dependencies:
-      hono: 4.10.0
+      hono: 4.10.2
       zod: 4.1.12
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.65.0(react@19.2.0))':
@@ -20064,11 +20072,13 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.4.2(hono@4.10.0):
+  hono-rate-limiter@0.4.2(hono@4.10.2):
     dependencies:
-      hono: 4.10.0
+      hono: 4.10.2
 
   hono@4.10.0: {}
+
+  hono@4.10.2: {}
 
   hookified@1.12.2: {}
 
