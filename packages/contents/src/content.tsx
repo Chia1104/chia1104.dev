@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode, Ref, RefObject } from "react";
-// @ts-expect-error - nextjs types?
 import { useRef, ViewTransition } from "react";
 
 import {
