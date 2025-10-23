@@ -1,5 +1,3 @@
-/// <reference types="@types/react/canary" />
-
 "use client";
 
 import type { ReactNode, Ref, RefObject } from "react";
@@ -25,10 +23,6 @@ import type {
   BasePropsWithType,
   ContentContextProps,
 } from "./types";
-
-/// <reference types="@types/react/canary" />
-
-/// <reference types="@types/react/canary" />
 
 const ContentProvider = ({
   children,
