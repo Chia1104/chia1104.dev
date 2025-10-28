@@ -1,4 +1,3 @@
-import * as React from "react";
 import type { SVGProps } from "react";
 
 const Gemini = (props: SVGProps<SVGSVGElement>) => (
@@ -12,7 +11,7 @@ const Gemini = (props: SVGProps<SVGSVGElement>) => (
     xmlns="http://www.w3.org/2000/svg"
     width="1em"
     {...props}>
-    <title>{"Gemini"}</title>
+    <title>Gemini</title>
     <defs>
       <linearGradient
         id="lobe-icons-gemini-fill"
