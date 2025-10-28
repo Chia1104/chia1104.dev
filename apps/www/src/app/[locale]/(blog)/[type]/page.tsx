@@ -8,8 +8,6 @@ import ImageZoom from "@chia/ui/image-zoom";
 import FeedList from "@/components/blog/feed-list";
 import { getFeedsWithType } from "@/services/feeds.service";
 
-export const dynamicParams = false;
-
 export const generateStaticParams = () => {
   return [{ type: "posts" }, { type: "notes" }];
 };

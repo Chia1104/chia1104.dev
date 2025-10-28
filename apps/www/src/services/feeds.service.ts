@@ -1,5 +1,6 @@
 import { captureException } from "@sentry/nextjs";
 import { HTTPError } from "ky";
+import { cacheTag, cacheLife } from "next/cache";
 import "server-only";
 
 import {
@@ -36,6 +37,12 @@ export const FEEDS_CACHE_TAGS = {
 };
 
 export const getPosts = async (limit = 10) => {
+  "use cache: remote";
+  cacheTag("getPosts");
+  cacheLife({
+    revalidate: 120,
+  });
+
   try {
     return await getFeedsWithMetaByAdminId(
       {
@@ -61,6 +68,12 @@ export const getPosts = async (limit = 10) => {
 };
 
 export const getNotes = async (limit = 10) => {
+  "use cache: remote";
+  cacheTag("getNotes");
+  cacheLife({
+    revalidate: 120,
+  });
+
   try {
     return await getFeedsWithMetaByAdminId(
       {

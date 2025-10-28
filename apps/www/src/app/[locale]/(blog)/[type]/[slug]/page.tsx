@@ -18,9 +18,9 @@ import { redirect } from "@/i18n/routing";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
-export const dynamicParams = true;
-export const revalidate = 60;
-export const maxDuration = 60;
+// export const dynamicParams = true;
+// export const revalidate = 60;
+// export const maxDuration = 60;
 
 export const generateStaticParams = async () => {
   const feeds = await getFeeds(100);
