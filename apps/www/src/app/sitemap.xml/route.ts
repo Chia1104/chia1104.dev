@@ -8,8 +8,6 @@ import { env } from "@/env";
 
 import { URLS_PER_SITEMAP } from "./utils";
 
-export const dynamic = "force-dynamic";
-
 function buildSitemapIndex(sitemaps: string[]) {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>';
   xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
