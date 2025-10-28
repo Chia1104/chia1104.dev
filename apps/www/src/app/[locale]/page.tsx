@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import type { FC, ReactNode } from "react";
 
 import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import { connection } from "next/server";
 
 import meta, { getLatestWork, getWorkDuration } from "@chia/meta";
 import FadeIn from "@chia/ui/fade-in";
@@ -49,16 +51,35 @@ const LinkItem: FC<{
   );
 };
 
+/**
+ * @TODO: Should I use cache here?
+ */
+const getWorkDuractionWithCache = async () => {
+  "use cache";
+
+  return Promise.resolve(getWorkDuration(meta.timeline));
+};
+
+/**
+ * @TODO: Should I use cache here?
+ */
+const WorkDuration = async () => {
+  await connection();
+  const t = await getTranslations("home");
+  const workDuration = await getWorkDuractionWithCache();
+  return <p>{t("section1", { year: workDuration.toString() })}</p>;
+};
+
 const Page = async ({ params }: { params: PageParamsWithLocale }) => {
   const { locale } = await params;
-  const t = await getTranslations("home");
   const latestWork = getLatestWork(meta.timeline);
-  const workDuration = getWorkDuration(meta.timeline);
   return (
     <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
       <FadeIn className="w-full flex-col">
         <h1 className="text-start font-bold">{meta.name}</h1>
-        <p>{t("section1", { year: workDuration.toString() })}</p>
+        <Suspense>
+          <WorkDuration />
+        </Suspense>
         <div>
           Working at{" "}
           <Link
