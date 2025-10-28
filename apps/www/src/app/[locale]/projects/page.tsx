@@ -1,12 +1,19 @@
+import { Suspense } from "react";
 import type { FC } from "react";
 
+import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
+import { connection } from "next/server";
 
 import { getPinnedRepos } from "@chia/api/github";
 import meta from "@chia/meta";
 import Card from "@chia/ui/card";
+import { ErrorBoundary } from "@chia/ui/error-boundary";
+import { ErrorFallback } from "@chia/ui/features/Error";
 import Image from "@chia/ui/image";
 import dayjs from "@chia/utils/day";
+
+import { LoadingCard } from "./loading";
 
 const RepoCard: FC<{
   image: string;
@@ -76,10 +83,20 @@ const RepoCard: FC<{
   );
 };
 
-export const revalidate = 60;
+const getPinnedReposWithCache = async () => {
+  "use cache: remote";
+  cacheTag("pinned-repos");
+  cacheLife({
+    revalidate: 60,
+  });
 
-const Page = async () => {
-  const repo = await getPinnedRepos(meta.name);
+  return await getPinnedRepos(meta.name);
+};
+
+const RepoList = async () => {
+  await connection();
+
+  const repo = await getPinnedReposWithCache();
   return (
     <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
       {repo.user.pinnedItems.edges.map((item) => (
@@ -94,6 +111,24 @@ const Page = async () => {
         />
       ))}
     </div>
+  );
+};
+
+const Page = () => {
+  return (
+    <ErrorBoundary errorElement={<ErrorFallback />}>
+      <Suspense
+        fallback={
+          <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+          </div>
+        }>
+        <RepoList />
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

@@ -1,6 +1,6 @@
 import Card from "@chia/ui/card";
 
-const LoadingCard = () => (
+export const LoadingCard = () => (
   <Card className="relative flex h-full min-h-[442px] flex-col">
     <div className="aspect-h-9 aspect-w-16 c-bg-primary not-prose w-full animate-pulse overflow-hidden rounded-t-2xl" />
     <div className="flex h-full flex-col p-4 pt-0">
