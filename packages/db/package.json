@@ -82,7 +82,7 @@
   "dependencies": {
     "@chia/ai": "workspace:*",
     "@chia/kv": "workspace:*",
-    "drizzle-orm": "^0.44.6",
+    "drizzle-orm": "^0.44.7",
     "drizzle-zod": "^0.8.3",
     "pg": "^8.16.3"
   },
@@ -90,8 +90,8 @@
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@types/pg": "^8.15.5",
-    "drizzle-kit": "^0.31.5",
+    "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.6",
     "eslint": "catalog:",
     "typescript": "catalog:"
   }
