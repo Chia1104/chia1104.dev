@@ -2,7 +2,7 @@ import meta from "@chia/meta";
 import Timeline from "@chia/ui/timeline";
 import type { Data } from "@chia/ui/timeline/types";
 
-const TimelineParallel = () => {
+export const TimelineHero = () => {
   const transformData = meta.timeline.map((item) => ({
     id: item.id,
     title: item.company,
@@ -17,7 +17,10 @@ const TimelineParallel = () => {
     ),
     link: item.link,
   })) satisfies Data[];
-  return <Timeline data={transformData} />;
+  return (
+    <>
+      <h2>Timeline</h2>
+      <Timeline data={transformData} />
+    </>
+  );
 };
-
-export default TimelineParallel;

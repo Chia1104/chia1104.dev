@@ -2,9 +2,9 @@
 
 import { captureException } from "@sentry/nextjs";
 
-import Error from "@chia/ui/features/Error";
+import ErrorComponent from "@chia/ui/features/Error";
 
-export default Error({
+export default ErrorComponent({
   onError(error) {
     captureException(error);
     console.error(error);

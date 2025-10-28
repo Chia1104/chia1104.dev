@@ -46,13 +46,16 @@ const nextConfig: NextConfig = {
   output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
   reactCompiler: true,
+  cacheComponents: true,
+  typedRoutes: true,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
     optimizePackageImports: ["@heroui/react", "@react-email/components"],
     viewTransition: true,
     authInterrupts: true,
+    isolatedDevBuild: true,
   },
-  serverExternalPackages: ["@chia/db", "@chia/auth", "twoslash", "typescript"],
+  serverExternalPackages: ["@chia/db", "@chia/auth"],
   typescript: {
     ignoreBuildErrors: true,
   },

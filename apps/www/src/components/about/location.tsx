@@ -211,7 +211,7 @@ const Location: FC<LocationProps> = ({
           onPointerOut={handlePointOut}
           onMouseMove={handleMouseMove}
           onTouchMove={handleTouchMove}
-          className={cn("h-full w-full [contain:layout_paint_size]", className)}
+          className={cn("h-full w-full contain-[layout_paint_size]", className)}
           {...props}
           style={{
             cursor: "auto",

@@ -16,7 +16,6 @@ const previewSchema = z.strictObject({
   href: z.string().min(1),
 });
 
-export const runtime = "nodejs";
 /**
  * Tokyo, Japan
  */

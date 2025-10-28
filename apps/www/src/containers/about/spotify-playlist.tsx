@@ -1,5 +1,8 @@
 import type { FC } from "react";
 
+import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
+
 import type { getPlayList } from "@chia/api/spotify";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
@@ -47,6 +50,7 @@ const PlayIcon: FC<{
       strokeWidth={1.5}
       stroke="currentColor"
       className="size-6">
+      <title>Play Icon</title>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -109,8 +113,12 @@ const getTop4 = (data: Awaited<ReturnType<typeof getPlayList>>) => {
   return data.tracks.items.slice(0, 4);
 };
 
-export default async function Page() {
-  const playlist = await serviceRequest({
+const getPlaylist = async () => {
+  "use cache: remote";
+  cacheTag("spotify-playlist");
+  cacheLife("default");
+
+  return await serviceRequest({
     isInternal: true,
     internal_requestSecret: {
       cfBypassToken: env.CF_BYPASS_TOKEN,
@@ -119,8 +127,15 @@ export default async function Page() {
   })
     .get(`spotify/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default"}`)
     .json<Awaited<ReturnType<typeof getPlayList>>>();
+};
+
+export async function SpotifyPlaylist() {
+  await connection();
+
+  const playlist = await getPlaylist();
   const data = getTop4(playlist);
   const href = `https://open.spotify.com/playlist/${playlist.id}`;
+
   return (
     <FadeIn className="w-full flex-col">
       <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7 sm:grid-cols-2 sm:py-3">
@@ -147,5 +162,3 @@ export default async function Page() {
     </FadeIn>
   );
 }
-
-export const revalidate = 1800;
