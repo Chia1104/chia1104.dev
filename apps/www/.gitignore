@@ -50,3 +50,8 @@ cypress/videos
 .map.ts
 
 messages/*.d.json.ts
+
+!.next/dev/types/
+.next/dev/types/*
+!.next/dev/types/routes.d.ts
+!.next/dev/types/link.d.ts
