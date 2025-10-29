@@ -1,4 +1,3 @@
-import * as React from "react";
 import type { SVGProps } from "react";
 
 const Zeabur = (props: SVGProps<SVGSVGElement>) => (
@@ -9,6 +8,7 @@ const Zeabur = (props: SVGProps<SVGSVGElement>) => (
     height="1em"
     preserveAspectRatio="xMidYMid"
     {...props}>
+    <title>Zeabur</title>
     <path fill="#fff" d="M114 145h179v84H0v-84h82l114-61H0V0h293v84l-179 61Z" />
     <path fill="#6300FF" d="M195 0H0v84h195V0Z" />
     <path fill="#F40" d="M293 145H115v84h178v-84Z" />

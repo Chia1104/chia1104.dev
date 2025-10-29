@@ -1,4 +1,3 @@
-import * as React from "react";
 import type { SVGProps } from "react";
 
 const BetterAuth = (props: SVGProps<SVGSVGElement>) => (
@@ -9,6 +8,7 @@ const BetterAuth = (props: SVGProps<SVGSVGElement>) => (
     width="1em"
     height="1em"
     {...props}>
+    <title>BetterAuth</title>
     <path fill="#fff" d="M0 0h500v500H0z" />
     <path fill="#000" d="M69 121h86.988v259H69zM337.575 121H430v259h-92.425z" />
     <path

@@ -7,15 +7,15 @@ packages:
 catalog:
   '@fumadocs/mdx-remote': 1.4.3
   '@tanstack/react-query': ^5.90.5
-  '@trpc/client': ^11.6.0
-  '@trpc/next': ^11.6.0
-  '@trpc/react-query': ^11.6.0
-  '@trpc/server': ^11.6.0
+  '@trpc/client': ^11.7.1
+  '@trpc/next': ^11.7.1
+  '@trpc/react-query': ^11.7.1
+  '@trpc/server': ^11.7.1
   eslint: ^9.38.0
-  fumadocs-core: 16.0.1
-  fumadocs-mdx: 13.0.0
-  fumadocs-ui: 16.0.1
-  tailwindcss: 4.1.15
+  fumadocs-core: 16.0.5
+  fumadocs-mdx: 13.0.2
+  fumadocs-ui: 16.0.5
+  tailwindcss: 4.1.16
   typescript: ^5.9.3
 
 catalogs:
@@ -34,6 +34,6 @@ catalogs:
     react: ^19.2.0
     react-dom: ^19.2.0
   triggerdotdev:
-    '@trigger.dev/build': 4.0.4
-    '@trigger.dev/core': 4.0.4
-    '@trigger.dev/sdk': 4.0.4
+    '@trigger.dev/build': 4.0.5
+    '@trigger.dev/core': 4.0.5
+    '@trigger.dev/sdk': 4.0.5
