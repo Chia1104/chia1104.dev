@@ -132,16 +132,21 @@ const Page = async ({
   };
 
   return (
-    <>
+    <ViewTransition>
       <div className="flex w-full flex-col items-center">
         {locale !== Locale.ZH_TW && <FeedTranslationWarning />}
         <header className="mb-5 w-full self-center mt-5">
-          <h1
-            style={{
-              viewTransitionName: `view-transition-link-${feed.id}`,
-            }}>
-            {feed.title}
-          </h1>
+          <div>
+            <ViewTransition name={`view-transition-link-${feed.id}`}>
+              <h1
+                className="inline-block"
+                style={{
+                  viewTransitionName: `view-transition-link-${feed.id}`,
+                }}>
+                {feed.title}
+              </h1>
+            </ViewTransition>
+          </div>
           <p>{feed.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image
@@ -179,7 +184,7 @@ const Page = async ({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-    </>
+    </ViewTransition>
   );
 };
 

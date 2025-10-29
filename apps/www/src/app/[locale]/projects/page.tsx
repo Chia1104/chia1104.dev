@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 import type { FC } from "react";
 
 import { cacheLife } from "next/cache";
@@ -112,19 +112,21 @@ const RepoList = async () => {
 
 const Page = () => {
   return (
-    <ErrorBoundary errorElement={<ErrorFallback />}>
-      <Suspense
-        fallback={
-          <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-          </div>
-        }>
-        <RepoList />
-      </Suspense>
-    </ErrorBoundary>
+    <ViewTransition>
+      <ErrorBoundary errorElement={<ErrorFallback />}>
+        <Suspense
+          fallback={
+            <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
+              <LoadingCard />
+              <LoadingCard />
+              <LoadingCard />
+              <LoadingCard />
+            </div>
+          }>
+          <RepoList />
+        </Suspense>
+      </ErrorBoundary>
+    </ViewTransition>
   );
 };
 

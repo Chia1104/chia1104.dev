@@ -1,3 +1,5 @@
+import { ViewTransition } from "react";
+
 import Card from "@chia/ui/card";
 
 export const LoadingCard = () => (
@@ -16,11 +18,13 @@ export const LoadingCard = () => (
 
 export default function Loading() {
   return (
-    <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
-      <LoadingCard />
-      <LoadingCard />
-      <LoadingCard />
-      <LoadingCard />
-    </div>
+    <ViewTransition>
+      <div className="grid w-full grid-cols-1 gap-10 md:grid-cols-2">
+        <LoadingCard />
+        <LoadingCard />
+        <LoadingCard />
+        <LoadingCard />
+      </div>
+    </ViewTransition>
   );
 }

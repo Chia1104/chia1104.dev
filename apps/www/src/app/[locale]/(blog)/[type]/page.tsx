@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
@@ -92,12 +92,14 @@ const Page = async (
 
   const t = await getTranslations(`blog.${type}`);
   return (
-    <div className="w-full">
-      <h1>{t("doc-title")}</h1>
-      <Suspense fallback={<AppLoading />}>
-        <CacheFeeds type={type} limit={20} />
-      </Suspense>
-    </div>
+    <ViewTransition>
+      <div className="w-full">
+        <h1>{t("doc-title")}</h1>
+        <Suspense fallback={<AppLoading />}>
+          <CacheFeeds type={type} limit={20} />
+        </Suspense>
+      </div>
+    </ViewTransition>
   );
 };
 

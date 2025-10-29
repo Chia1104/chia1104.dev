@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 
@@ -10,7 +10,7 @@ import { SpotifyPlaylist } from "@/containers/about/spotify-playlist";
 
 const AboutPage = () => {
   return (
-    <>
+    <ViewTransition>
       <AboutMe />
       <LocationHero />
       <FavoriteSongs />
@@ -20,7 +20,7 @@ const AboutPage = () => {
         </Suspense>
       </ErrorBoundary>
       <TimelineHero />
-    </>
+    </ViewTransition>
   );
 };
 

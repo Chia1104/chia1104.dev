@@ -1,5 +1,7 @@
 "use client";
 
+import { ViewTransition } from "react";
+
 import { Button } from "@heroui/react";
 
 import { withError } from "../../hoc/with-error";
@@ -41,7 +43,11 @@ const ErrorComponent = ({
 }) =>
   withError(
     ({ reset }) => {
-      return <ErrorFallback className={className} reset={reset} />;
+      return (
+        <ViewTransition>
+          <ErrorFallback className={className} reset={reset} />
+        </ViewTransition>
+      );
     },
     {
       onError,
