@@ -61,6 +61,40 @@ export const generateMetadata = async ({
   }
 };
 
+const ContentWithCache = async ({
+  feed,
+  locale,
+  tocContents,
+}: {
+  feed: NonNullable<Awaited<ReturnType<typeof getFeedBySlugWithCache>>>;
+  locale: Locale;
+  tocContents: {
+    label: string;
+    updated: string;
+  };
+}) => {
+  "use cache: remote";
+  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(feed.slug));
+  cacheLife({
+    revalidate: 120,
+  });
+
+  return (
+    <Content
+      content={getContentProps({
+        contentType: feed.contentType,
+        content: feed.content,
+      })}
+      context={{
+        updatedAt: feed.updatedAt,
+        type: feed.contentType,
+        tocContents,
+        locale,
+      }}
+    />
+  );
+};
+
 const Page = async ({
   params,
 }: {
@@ -130,19 +164,12 @@ const Page = async ({
             </ViewTransition>
           </span>
         </header>
-        <Content
-          content={getContentProps({
-            contentType: feed.contentType,
-            content: feed.content,
-          })}
-          context={{
-            updatedAt: feed.updatedAt,
-            type: feed.contentType,
-            tocContents: {
-              label: t("otp"),
-              updated: t("last-updated"),
-            },
-            locale,
+        <ContentWithCache
+          feed={feed}
+          locale={locale}
+          tocContents={{
+            label: t("otp"),
+            updated: t("last-updated"),
           }}
         />
         <WrittenBy
