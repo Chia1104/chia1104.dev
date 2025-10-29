@@ -1,10 +1,11 @@
 "use client";
 
 import type { FC } from "react";
+import { ViewTransition } from "react";
 
 import { CircularProgress } from "@heroui/react";
 import { motion } from "framer-motion";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 
 import dayjs from "@chia/utils/day";
 
@@ -56,11 +57,12 @@ export const Item: FC<ListItemProps> = ({
       }}
       className={cn("z-10 flex flex-col text-start", className)}
       {...props}>
-      <>
-        <span
-          {...titleProps}
-          className={cn("text-lg font-bold", titleProps?.className)}>
-          {data.link ? (
+      {" "}
+      <span
+        {...titleProps}
+        className={cn("text-lg font-bold", titleProps?.className)}>
+        {data.link ? (
+          <ViewTransition name={`view-transition-link-${data.id}`}>
             <Link
               href={data.link}
               {...linkProps}
@@ -68,19 +70,19 @@ export const Item: FC<ListItemProps> = ({
                 viewTransitionName: `view-transition-link-${data.id}`,
                 ...linkProps?.style,
               }}
-              className={cn(linkProps?.className)}>
+              className={cn("inline-block", linkProps?.className)}>
               {data.title}
             </Link>
-          ) : (
-            data.title
-          )}
-        </span>{" "}
-        <span
-          {...subtitleProps}
-          className={cn("text-sm text-gray-500", subtitleProps?.className)}>
-          {data.subtitle}
-        </span>
-      </>
+          </ViewTransition>
+        ) : (
+          data.title
+        )}
+      </span>{" "}
+      <span
+        {...subtitleProps}
+        className={cn("text-sm text-gray-500", subtitleProps?.className)}>
+        {data.subtitle}
+      </span>
       {data.content && (
         <Accordion
           type="single"

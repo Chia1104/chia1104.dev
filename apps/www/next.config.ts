@@ -1,7 +1,5 @@
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
-import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
-import million from "million/compiler";
-import { NextConfig } from "next";
+import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import "@/env";
@@ -46,13 +44,16 @@ const nextConfig: NextConfig = {
   output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
   reactCompiler: true,
+  cacheComponents: true,
+  typedRoutes: true,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
     optimizePackageImports: ["@heroui/react", "@react-email/components"],
     viewTransition: true,
     authInterrupts: true,
+    isolatedDevBuild: true,
   },
-  serverExternalPackages: ["@chia/db", "@chia/auth", "twoslash", "typescript"],
+  serverExternalPackages: ["@chia/db", "@chia/auth", "@sentry/nextjs"],
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -111,19 +112,21 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-export default million.next(
-  // @ts-ignore
-  withSentryConfigImport(withNextIntl(nextComposePlugins), {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    silent: true,
-    disableLogger: true,
-    sourcemaps: {
-      deleteSourcemapsAfterUpload: true,
-    },
-  }),
-  {
-    rsc: true,
-  }
-);
+// export default million.next(
+//   // @ts-ignore
+//   withSentryConfigImport(withNextIntl(nextComposePlugins), {
+//     org: process.env.SENTRY_ORG,
+//     project: process.env.SENTRY_PROJECT,
+//     authToken: process.env.SENTRY_AUTH_TOKEN,
+//     silent: true,
+//     disableLogger: true,
+//     sourcemaps: {
+//       deleteSourcemapsAfterUpload: true,
+//     },
+//   }),
+//   {
+//     rsc: true,
+//   }
+// );
+
+export default withNextIntl(nextComposePlugins);

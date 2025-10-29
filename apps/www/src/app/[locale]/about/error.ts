@@ -1,12 +1,10 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
+import ErrorPage from "@chia/ui/features/Error";
 
-import Error from "@chia/ui/features/Error";
-
-export default Error({
+export default ErrorPage({
   onError(error) {
-    captureException(error);
+    // captureException(error);
     console.error(error);
   },
 });

@@ -1,7 +1,8 @@
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 import { RedirectType } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
@@ -14,13 +15,19 @@ import dayjs from "@chia/utils/day";
 
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
+import AppLoading from "@/components/commons/app-loading";
 import { redirect } from "@/i18n/routing";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
-export const dynamicParams = true;
-export const revalidate = 60;
-export const maxDuration = 60;
+const getFeedBySlugWithCache = async (slug: string) => {
+  "use cache";
+  cacheLife({
+    revalidate: 120,
+  });
+
+  return getFeedBySlug(slug);
+};
 
 export const generateStaticParams = async () => {
   const feeds = await getFeeds(100);
@@ -40,7 +47,7 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { slug } = await params;
   try {
-    const feed = await getFeedBySlug(slug);
+    const feed = await getFeedBySlugWithCache(slug);
     if (!feed) return {};
     return {
       title: feed.title,
@@ -52,6 +59,40 @@ export const generateMetadata = async ({
   }
 };
 
+const ContentWithCache = async ({
+  feed,
+  locale,
+  tocContents,
+}: {
+  feed: NonNullable<Awaited<ReturnType<typeof getFeedBySlugWithCache>>>;
+  locale: Locale;
+  tocContents: {
+    label: string;
+    updated: string;
+  };
+  // eslint-disable-next-line @typescript-eslint/require-await
+}) => {
+  "use cache";
+  cacheLife({
+    revalidate: 120,
+  });
+
+  return (
+    <Content
+      content={getContentProps({
+        contentType: feed.contentType,
+        content: feed.content,
+      })}
+      context={{
+        updatedAt: feed.updatedAt,
+        type: feed.contentType,
+        tocContents,
+        locale,
+      }}
+    />
+  );
+};
+
 const Page = async ({
   params,
 }: {
@@ -61,7 +102,7 @@ const Page = async ({
   }>;
 }) => {
   const { slug, locale, type } = await params;
-  const feed = await getFeedBySlug(slug);
+  const feed = await getFeedBySlugWithCache(slug);
   const t = await getTranslations("blog");
 
   if (!feed?.content) {
@@ -91,16 +132,21 @@ const Page = async ({
   };
 
   return (
-    <>
+    <ViewTransition>
       <div className="flex w-full flex-col items-center">
         {locale !== Locale.ZH_TW && <FeedTranslationWarning />}
         <header className="mb-5 w-full self-center mt-5">
-          <h1
-            style={{
-              viewTransitionName: `view-transition-link-${feed.id}`,
-            }}>
-            {feed.title}
-          </h1>
+          <div>
+            <ViewTransition name={`view-transition-link-${feed.id}`}>
+              <h1
+                className="inline-block"
+                style={{
+                  viewTransitionName: `view-transition-link-${feed.id}`,
+                }}>
+                {feed.title}
+              </h1>
+            </ViewTransition>
+          </div>
           <p>{feed.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image
@@ -119,21 +165,16 @@ const Page = async ({
             </ViewTransition>
           </span>
         </header>
-        <Content
-          content={getContentProps({
-            contentType: feed.contentType,
-            content: feed.content,
-          })}
-          context={{
-            updatedAt: feed.updatedAt,
-            type: feed.contentType,
-            tocContents: {
+        <Suspense fallback={<AppLoading />}>
+          <ContentWithCache
+            feed={feed}
+            locale={locale}
+            tocContents={{
               label: t("otp"),
               updated: t("last-updated"),
-            },
-            locale,
-          }}
-        />
+            }}
+          />
+        </Suspense>
         <WrittenBy
           className="w-full flex justify-start mt-10 relative self-start"
           author="Chia1104"
@@ -143,7 +184,7 @@ const Page = async ({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-    </>
+    </ViewTransition>
   );
 };
 

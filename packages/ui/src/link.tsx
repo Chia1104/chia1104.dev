@@ -6,20 +6,16 @@ import type { FC, ReactNode, ComponentPropsWithoutRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
 import type { HTTPError } from "ky";
-import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import type { LinkProps as NextLinkProps } from "next/link";
-import { z } from "zod";
+import * as z from "zod";
 
-import { post, isUrl, handleKyError, isURLInstance } from "@chia/utils";
+import { isUrl, handleKyError, isURLInstance } from "@chia/utils";
+import { serviceRequest } from "@chia/utils";
 
 import { cn } from "../utils/cn.util";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card";
-
-const TransitionLink = dynamic(() =>
-  import("next-view-transitions").then((mod) => mod.Link)
-);
 
 type InternalLinkProps = NextLinkProps &
   Omit<ComponentPropsWithoutRef<"a">, "href">;
@@ -29,6 +25,10 @@ interface LinkPropsWithoutPreview extends InternalLinkProps {
   children?: ReactNode;
   isInternalLink?: boolean;
   experimental?: {
+    /**
+     * @deprecated
+     * Use React ViewTransition instead
+     */
     enableViewTransition?: boolean;
   };
   locale?: string;
@@ -43,12 +43,18 @@ type LinkProps =
     } & PreviewProps);
 
 interface NeverPreviewProps {
+  /**
+   * @deprecated
+   */
   endpoint?: never;
   previewContent?: never;
   queryOptions?: never;
 }
 
 interface PreviewProps {
+  /**
+   * @deprecated
+   */
   endpoint?: string;
   children?:
     | ReactNode
@@ -151,7 +157,8 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
   previewContent,
   children,
   href,
-  endpoint = "/api/v1/link-preview",
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  endpoint: _endpoint,
   preview: _preview,
   experimental: _experimental,
   locale: _locale,
@@ -163,15 +170,14 @@ const PreviewCard: FC<LinkProps & { preview: true }> = ({
     ...queryOptions,
     queryKey: ["link-preview", { href }],
     queryFn: async ({ signal }) => {
-      return await post<DocResponse, PreviewDTO>(
-        endpoint,
-        {
-          href: href.toString(),
-        },
-        {
+      return await serviceRequest()
+        .post("toolings/link-preview", {
+          json: {
+            href: href.toString(),
+          },
           signal,
-        }
-      );
+        })
+        .json<DocResponse>();
     },
     enabled: isOpen && isUrl(href),
   });
@@ -217,8 +223,8 @@ const Link: FC<LinkProps> = (props) => {
     children,
     isInternalLink: _isInternalLink,
     preview,
-    experimental,
     locale,
+    experimental: _experimental,
     ...rest
   } = props;
   let serializedHref = href;
@@ -235,7 +241,7 @@ const Link: FC<LinkProps> = (props) => {
     (serializedHref.toString().startsWith("/") ||
       serializedHref.toString().startsWith("#"));
 
-  if (isInternalLink && !preview && !experimental?.enableViewTransition) {
+  if (isInternalLink && !preview) {
     return (
       <NextLink
         prefetch={false}
@@ -245,12 +251,6 @@ const Link: FC<LinkProps> = (props) => {
         href={serializedHref}>
         {children}
       </NextLink>
-    );
-  } else if (isInternalLink && !preview && experimental?.enableViewTransition) {
-    return (
-      <TransitionLink passHref {...rest} href={serializedHref}>
-        {children}
-      </TransitionLink>
     );
   } else if (preview && isUrl(serializedHref)) {
     return <PreviewCard {...props} />;

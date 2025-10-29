@@ -1,7 +1,5 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
-
 import { withError } from "@chia/ui/hoc/with-error";
 import Image from "@chia/ui/image";
 
@@ -39,7 +37,7 @@ const GlobalError = withError(
   },
   {
     onError(error) {
-      Sentry.captureException(error);
+      // Sentry.captureException(error);
       console.error(error);
     },
   }

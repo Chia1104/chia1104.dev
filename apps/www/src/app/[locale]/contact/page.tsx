@@ -1,4 +1,5 @@
 import type { FC, ReactNode } from "react";
+import { ViewTransition } from "react";
 
 import type { Metadata } from "next";
 
@@ -58,33 +59,35 @@ const LinkItem: FC<{
 
 const ContactPage = () => {
   return (
-    <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
-      <h1>
-        Contact{" "}
-        <span className="animate-cia-waving-hand inline-block origin-[70%_70%]">
-          👋
-        </span>
-      </h1>
-      <p>
-        If you want to get in touch with me, you can send me an email first and
-        we can go from there. I'm always open to new opportunities and support
-        requests.
-      </p>
-      <h3>Find me on</h3>
-      <div className="mb-5 flex px-1">
-        {Object.entries(contact).map(([key, { name, icon, link }]) => (
-          <LinkItem
-            key={key}
-            path={link}
-            name={name}
-            icon={icon}
-            showIcon
-            preview={key === "github"}
-          />
-        ))}
-      </div>
-      <Contact />
-    </article>
+    <ViewTransition>
+      <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
+        <h1>
+          Contact{" "}
+          <span className="animate-cia-waving-hand inline-block origin-[70%_70%]">
+            👋
+          </span>
+        </h1>
+        <p>
+          If you want to get in touch with me, you can send me an email first
+          and we can go from there. I'm always open to new opportunities and
+          support requests.
+        </p>
+        <h3>Find me on</h3>
+        <div className="mb-5 flex px-1">
+          {Object.entries(contact).map(([key, { name, icon, link }]) => (
+            <LinkItem
+              key={key}
+              path={link}
+              name={name}
+              icon={icon}
+              showIcon
+              preview={key === "github"}
+            />
+          ))}
+        </div>
+        <Contact />
+      </article>
+    </ViewTransition>
   );
 };
 
