@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.38",
-    "@ai-sdk/deepseek": "^1.0.24",
+    "@ai-sdk/deepseek": "^1.0.25",
     "@ai-sdk/google": "^2.0.24",
     "@ai-sdk/openai": "^2.0.56",
     "@anthropic-ai/sdk": "^0.68.0",
