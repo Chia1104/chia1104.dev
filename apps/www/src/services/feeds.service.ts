@@ -8,6 +8,9 @@ import type { FeedType } from "@chia/db/types";
 
 import { env } from "@/env";
 
+/**
+ * @deprecated
+ */
 export const FEEDS_CACHE_TAGS = {
   getPosts: (limit: number) => [
     "ADMIN_FEEDS_ISR",
@@ -46,9 +49,6 @@ export const getPosts = async (limit = 10) => {
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    },
-    {
-      next: { tags: FEEDS_CACHE_TAGS.getPosts(limit) },
     }
   );
 };
@@ -66,9 +66,6 @@ export const getNotes = async (limit = 10) => {
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    },
-    {
-      next: { tags: FEEDS_CACHE_TAGS.getNotes(limit) },
     }
   );
 };
@@ -89,9 +86,6 @@ export const getFeedsWithType = async (
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    },
-    {
-      next: { tags: FEEDS_CACHE_TAGS.getFeedsWithType(type, limit) },
     }
   );
 };
@@ -109,9 +103,6 @@ export const getFeeds = async (limit = 10) => {
       orderBy: "id",
       sortOrder: "desc",
       withContent: "false",
-    },
-    {
-      next: { tags: FEEDS_CACHE_TAGS.getFeeds(limit) },
     }
   );
 };
@@ -122,9 +113,6 @@ export const getFeedBySlug = async (slug: string) => {
       cfBypassToken: env.CF_BYPASS_TOKEN,
       apiKey: env.CH_API_KEY ?? "",
     },
-    { slug },
-    {
-      next: { tags: FEEDS_CACHE_TAGS.getFeedBySlug(slug) },
-    }
+    { slug }
   );
 };
