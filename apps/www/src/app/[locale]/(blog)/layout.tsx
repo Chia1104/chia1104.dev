@@ -8,7 +8,7 @@ import FeedNavigation from "@/components/blog/feed-navigation";
 import { getPosts, getNotes, FEEDS_CACHE_TAGS } from "@/services/feeds.service";
 
 const getPostsWithCache = async () => {
-  "use cache: remote";
+  "use cache";
   cacheTag(...FEEDS_CACHE_TAGS.getPosts(4));
   cacheLife({
     revalidate: 120,
@@ -18,7 +18,7 @@ const getPostsWithCache = async () => {
 };
 
 const getNotesWithCache = async () => {
-  "use cache: remote";
+  "use cache";
   cacheTag(...FEEDS_CACHE_TAGS.getNotes(4));
   cacheLife({
     revalidate: 120,

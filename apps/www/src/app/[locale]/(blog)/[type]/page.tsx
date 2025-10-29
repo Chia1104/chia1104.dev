@@ -30,7 +30,7 @@ export async function generateMetadata({
 }
 
 const getFeedsWithTypeWithCache = async (type: "post" | "note", limit = 10) => {
-  "use cache: remote";
+  "use cache";
   cacheTag(...FEEDS_CACHE_TAGS.getFeedsWithType(type, limit));
   cacheLife({
     revalidate: 120,

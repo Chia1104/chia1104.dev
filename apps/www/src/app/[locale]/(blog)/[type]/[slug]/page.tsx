@@ -22,8 +22,8 @@ import { FEEDS_CACHE_TAGS } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
 const getFeedBySlugWithCache = async (slug: string) => {
-  "use cache: remote";
-  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(slug));
+  "use cache";
+  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(slug), "data");
   cacheLife({
     revalidate: 120,
   });
@@ -73,8 +73,8 @@ const ContentWithCache = async ({
     updated: string;
   };
 }) => {
-  "use cache: remote";
-  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(feed.slug));
+  "use cache";
+  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(feed.slug), "component");
   cacheLife({
     revalidate: 120,
   });
