@@ -1,4 +1,3 @@
-/// <reference types="./types.d.ts" />
 import { includeIgnoreFile } from "@eslint/compat";
 import eslint from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
