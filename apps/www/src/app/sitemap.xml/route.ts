@@ -1,4 +1,3 @@
-import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 import { getMeta } from "@chia/api/services/feeds";
@@ -54,7 +53,7 @@ export const GET = async () => {
     });
   } catch (error) {
     console.error(error);
-    captureException(error);
+    // captureException(error);
     return NextResponse.json(errorGenerator(500), {
       status: 500,
     });

@@ -1,6 +1,4 @@
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
-import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
-import million from "million/compiler";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -55,7 +53,7 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
     isolatedDevBuild: true,
   },
-  serverExternalPackages: ["@chia/db", "@chia/auth"],
+  serverExternalPackages: ["@chia/db", "@chia/auth", "@sentry/nextjs"],
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -114,19 +112,21 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-export default million.next(
-  // @ts-ignore
-  withSentryConfigImport(withNextIntl(nextComposePlugins), {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    silent: true,
-    disableLogger: true,
-    sourcemaps: {
-      deleteSourcemapsAfterUpload: true,
-    },
-  }),
-  {
-    rsc: true,
-  }
-);
+// export default million.next(
+//   // @ts-ignore
+//   withSentryConfigImport(withNextIntl(nextComposePlugins), {
+//     org: process.env.SENTRY_ORG,
+//     project: process.env.SENTRY_PROJECT,
+//     authToken: process.env.SENTRY_AUTH_TOKEN,
+//     silent: true,
+//     disableLogger: true,
+//     sourcemaps: {
+//       deleteSourcemapsAfterUpload: true,
+//     },
+//   }),
+//   {
+//     rsc: true,
+//   }
+// );
+
+export default withNextIntl(nextComposePlugins);

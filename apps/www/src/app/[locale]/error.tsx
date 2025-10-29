@@ -1,11 +1,9 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
-
 import { withError } from "@chia/ui/hoc/with-error";
 import Image from "@chia/ui/image";
 
-const Error = withError(
+const ErrorPage = withError(
   () => {
     return (
       <main className="main container prose dark:prose-invert">
@@ -31,10 +29,10 @@ const Error = withError(
   },
   {
     onError(error) {
-      captureException(error);
+      // captureException(error);
       console.error(error);
     },
   }
 );
 
-export default Error;
+export default ErrorPage;
