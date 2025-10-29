@@ -12,7 +12,14 @@ cypress/screenshots
 cypress/downloads
 
 # next.js
-.next/
+.next/*
+!.next/dev/
+.next/dev/*
+!.next/dev/types/
+.next/dev/types/*
+!.next/dev/types/routes.d.ts
+!.next/dev/types/link.d.ts
+
 out/
 build
 

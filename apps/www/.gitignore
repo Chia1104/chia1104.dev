@@ -9,7 +9,14 @@
 /coverage
 
 # next.js
-/.next/
+.next/*
+!.next/dev/
+.next/dev/*
+!.next/dev/types/
+.next/dev/types/*
+!.next/dev/types/routes.d.ts
+!.next/dev/types/link.d.ts
+
 /out/
 
 # production
@@ -50,8 +57,3 @@ cypress/videos
 .map.ts
 
 messages/*.d.json.ts
-
-!.next/dev/types/
-.next/dev/types/*
-!.next/dev/types/routes.d.ts
-!.next/dev/types/link.d.ts
