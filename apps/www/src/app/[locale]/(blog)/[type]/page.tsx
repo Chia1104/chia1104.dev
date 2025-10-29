@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { cacheTag, cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
@@ -47,8 +46,6 @@ const CacheFeeds = async ({
   type: "posts" | "notes";
   limit?: number;
 }) => {
-  await connection();
-
   const formattedType = type === "posts" ? "post" : "note";
   const feeds = await getFeedsWithTypeWithCache(formattedType, limit);
   const hasFeeds = Array.isArray(feeds.items) && feeds.items.length > 0;

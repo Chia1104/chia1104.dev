@@ -1,11 +1,10 @@
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { cacheTag, cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 import { RedirectType } from "next/navigation";
-import { connection } from "next/server";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
@@ -16,6 +15,7 @@ import dayjs from "@chia/utils/day";
 
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
+import AppLoading from "@/components/commons/app-loading";
 import { redirect } from "@/i18n/routing";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 import { FEEDS_CACHE_TAGS } from "@/services/feeds.service";
@@ -103,8 +103,6 @@ const Page = async ({
     slug: string;
   }>;
 }) => {
-  await connection();
-
   const { slug, locale, type } = await params;
   const feed = await getFeedBySlugWithCache(slug);
   const t = await getTranslations("blog");
@@ -164,14 +162,16 @@ const Page = async ({
             </ViewTransition>
           </span>
         </header>
-        <ContentWithCache
-          feed={feed}
-          locale={locale}
-          tocContents={{
-            label: t("otp"),
-            updated: t("last-updated"),
-          }}
-        />
+        <Suspense fallback={<AppLoading />}>
+          <ContentWithCache
+            feed={feed}
+            locale={locale}
+            tocContents={{
+              label: t("otp"),
+              updated: t("last-updated"),
+            }}
+          />
+        </Suspense>
         <WrittenBy
           className="w-full flex justify-start mt-10 relative self-start"
           author="Chia1104"

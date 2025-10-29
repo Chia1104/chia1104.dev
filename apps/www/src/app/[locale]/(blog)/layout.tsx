@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 
 import { cacheTag, cacheLife } from "next/cache";
-import { connection } from "next/server";
 
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
@@ -29,7 +28,6 @@ const getNotesWithCache = async () => {
 };
 
 const Navigation = async () => {
-  await connection();
   const [posts, notes] = await Promise.all([
     getPostsWithCache(),
     getNotesWithCache(),
