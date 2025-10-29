@@ -70,6 +70,7 @@ const ContentWithCache = async ({
     label: string;
     updated: string;
   };
+  // eslint-disable-next-line @typescript-eslint/require-await
 }) => {
   "use cache";
   cacheLife({

@@ -1,3 +1,4 @@
+import { isHTTPError } from "ky";
 import "server-only";
 
 import {
@@ -7,34 +8,6 @@ import {
 import type { FeedType } from "@chia/db/types";
 
 import { env } from "@/env";
-
-/**
- * @deprecated
- */
-export const FEEDS_CACHE_TAGS = {
-  getPosts: (limit: number) => [
-    "ADMIN_FEEDS_ISR",
-    "getPosts",
-    limit.toString(),
-  ],
-  getNotes: (limit: number) => [
-    "ADMIN_FEEDS_ISR",
-    "getNotes",
-    limit.toString(),
-  ],
-  getFeedsWithType: (type: "post" | "note", limit: number) => [
-    "ADMIN_FEEDS_ISR",
-    "getFeedsWithType",
-    type,
-    limit.toString(),
-  ],
-  getFeeds: (limit: number) => [
-    "ADMIN_FEEDS_ISR",
-    "getFeeds",
-    limit.toString(),
-  ],
-  getFeedBySlug: (slug: string) => ["ADMIN_FEEDS_ISR", "getFeedBySlug", slug],
-};
 
 export const getPosts = async (limit = 10) => {
   return await getFeedsWithMetaByAdminId(
@@ -108,11 +81,18 @@ export const getFeeds = async (limit = 10) => {
 };
 
 export const getFeedBySlug = async (slug: string) => {
-  return await _getFeedBySlug(
-    {
-      cfBypassToken: env.CF_BYPASS_TOKEN,
-      apiKey: env.CH_API_KEY ?? "",
-    },
-    { slug }
-  );
+  try {
+    return await _getFeedBySlug(
+      {
+        cfBypassToken: env.CF_BYPASS_TOKEN,
+        apiKey: env.CH_API_KEY ?? "",
+      },
+      { slug }
+    );
+  } catch (error) {
+    if (isHTTPError(error) && error.response.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 };
