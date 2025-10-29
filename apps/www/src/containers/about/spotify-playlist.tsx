@@ -1,7 +1,6 @@
 import type { FC } from "react";
 
 import { cacheLife } from "next/cache";
-import { connection } from "next/server";
 
 import type { getPlayList } from "@chia/api/spotify";
 import FadeIn from "@chia/ui/fade-in";
@@ -129,8 +128,6 @@ const getPlaylist = async () => {
 };
 
 export async function SpotifyPlaylist() {
-  await connection();
-
   const playlist = await getPlaylist();
   const data = getTop4(playlist);
   const href = `https://open.spotify.com/playlist/${playlist.id}`;

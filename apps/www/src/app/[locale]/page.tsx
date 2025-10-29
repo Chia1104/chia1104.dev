@@ -3,7 +3,6 @@ import type { FC, ReactNode } from "react";
 
 import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { connection } from "next/server";
 
 import meta, { getLatestWork, getWorkDuration } from "@chia/meta";
 import FadeIn from "@chia/ui/fade-in";
@@ -58,7 +57,6 @@ const getWorkDurationWithCache = async () => {
 };
 
 const WorkDuration = async () => {
-  await connection();
   const t = await getTranslations("home");
   const workDuration = await getWorkDurationWithCache();
   return <p>{t("section1", { year: workDuration.toString() })}</p>;

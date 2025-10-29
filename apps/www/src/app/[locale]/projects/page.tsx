@@ -3,7 +3,6 @@ import type { FC } from "react";
 
 import { cacheLife } from "next/cache";
 import Link from "next/link";
-import { connection } from "next/server";
 
 import { getPinnedRepos } from "@chia/api/github";
 import meta from "@chia/meta";
@@ -93,8 +92,6 @@ const getPinnedReposWithCache = async () => {
 };
 
 const RepoList = async () => {
-  await connection();
-
   const repo = await getPinnedReposWithCache();
   return (
     <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
