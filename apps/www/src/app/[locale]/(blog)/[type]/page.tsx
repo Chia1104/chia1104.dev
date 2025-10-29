@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { cacheTag, cacheLife } from "next/cache";
+import { cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 
 import Image from "@chia/ui/image";
@@ -10,7 +10,7 @@ import ImageZoom from "@chia/ui/image-zoom";
 
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
-import { FEEDS_CACHE_TAGS, getFeedsWithType } from "@/services/feeds.service";
+import { getFeedsWithType } from "@/services/feeds.service";
 
 export const generateStaticParams = () => {
   return [{ type: "posts" }, { type: "notes" }];
@@ -31,7 +31,6 @@ export async function generateMetadata({
 
 const getFeedsWithTypeWithCache = async (type: "post" | "note", limit = 10) => {
   "use cache";
-  cacheTag(...FEEDS_CACHE_TAGS.getFeedsWithType(type, limit));
   cacheLife({
     revalidate: 120,
   });

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { FC } from "react";
 
-import { cacheLife, cacheTag } from "next/cache";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { connection } from "next/server";
 
@@ -84,8 +84,7 @@ const RepoCard: FC<{
 };
 
 const getPinnedReposWithCache = async () => {
-  "use cache: remote";
-  cacheTag("pinned-repos");
+  "use cache";
   cacheLife({
     revalidate: 60,
   });

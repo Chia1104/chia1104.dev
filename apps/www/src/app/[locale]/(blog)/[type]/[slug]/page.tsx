@@ -2,7 +2,7 @@ import { Suspense, ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { cacheTag, cacheLife } from "next/cache";
+import { cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 import { RedirectType } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
@@ -18,12 +18,10 @@ import WrittenBy from "@/components/blog/written-by";
 import AppLoading from "@/components/commons/app-loading";
 import { redirect } from "@/i18n/routing";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
-import { FEEDS_CACHE_TAGS } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
 const getFeedBySlugWithCache = async (slug: string) => {
   "use cache";
-  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(slug), "data");
   cacheLife({
     revalidate: 120,
   });
@@ -74,7 +72,6 @@ const ContentWithCache = async ({
   };
 }) => {
   "use cache";
-  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(feed.slug), "component");
   cacheLife({
     revalidate: 120,
   });

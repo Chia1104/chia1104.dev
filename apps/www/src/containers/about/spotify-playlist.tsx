@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-import { cacheLife, cacheTag } from "next/cache";
+import { cacheLife } from "next/cache";
 import { connection } from "next/server";
 
 import type { getPlayList } from "@chia/api/spotify";
@@ -114,8 +114,7 @@ const getTop4 = (data: Awaited<ReturnType<typeof getPlayList>>) => {
 };
 
 const getPlaylist = async () => {
-  "use cache: remote";
-  cacheTag("spotify-playlist");
+  "use cache";
   cacheLife("default");
 
   return await serviceRequest({
