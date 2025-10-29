@@ -51,22 +51,16 @@ const LinkItem: FC<{
   );
 };
 
-/**
- * @TODO: Should I use cache here?
- */
-const getWorkDuractionWithCache = async () => {
+const getWorkDurationWithCache = async () => {
   "use cache";
 
   return Promise.resolve(getWorkDuration(meta.timeline));
 };
 
-/**
- * @TODO: Should I use cache here?
- */
 const WorkDuration = async () => {
   await connection();
   const t = await getTranslations("home");
-  const workDuration = await getWorkDuractionWithCache();
+  const workDuration = await getWorkDurationWithCache();
   return <p>{t("section1", { year: workDuration.toString() })}</p>;
 };
 

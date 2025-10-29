@@ -1,15 +1,39 @@
 import { Suspense } from "react";
 
+import { cacheTag, cacheLife } from "next/cache";
 import { connection } from "next/server";
 
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import FeedNavigation from "@/components/blog/feed-navigation";
-import { getPosts, getNotes } from "@/services/feeds.service";
+import { getPosts, getNotes, FEEDS_CACHE_TAGS } from "@/services/feeds.service";
+
+const getPostsWithCache = async () => {
+  "use cache: remote";
+  cacheTag(...FEEDS_CACHE_TAGS.getPosts(4));
+  cacheLife({
+    revalidate: 120,
+  });
+
+  return getPosts(4);
+};
+
+const getNotesWithCache = async () => {
+  "use cache: remote";
+  cacheTag(...FEEDS_CACHE_TAGS.getNotes(4));
+  cacheLife({
+    revalidate: 120,
+  });
+
+  return getNotes(4);
+};
 
 const Navigation = async () => {
   await connection();
-  const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
+  const [posts, notes] = await Promise.all([
+    getPostsWithCache(),
+    getNotesWithCache(),
+  ]);
   return (
     <NavigationMenu className="not-prose mb-5 md:mb-10 z-20">
       <NavigationMenuList className="gap-5">

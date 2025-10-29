@@ -1,6 +1,3 @@
-import { captureException } from "@sentry/nextjs";
-import { HTTPError } from "ky";
-import { cacheTag, cacheLife } from "next/cache";
 import "server-only";
 
 import {
@@ -37,137 +34,97 @@ export const FEEDS_CACHE_TAGS = {
 };
 
 export const getPosts = async (limit = 10) => {
-  "use cache: remote";
-  cacheTag("getPosts");
-  cacheLife({
-    revalidate: 120,
-  });
-
-  try {
-    return await getFeedsWithMetaByAdminId(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
-      },
-      {
-        limit,
-        type: "post",
-        published: "true",
-        orderBy: "id",
-        sortOrder: "desc",
-        withContent: "false",
-      },
-      {
-        next: { tags: FEEDS_CACHE_TAGS.getPosts(limit) },
-      }
-    );
-  } catch (error) {
-    captureException(error);
-    throw error;
-  }
+  return await getFeedsWithMetaByAdminId(
+    {
+      cfBypassToken: env.CF_BYPASS_TOKEN,
+      apiKey: env.CH_API_KEY ?? "",
+    },
+    {
+      limit,
+      type: "post",
+      published: "true",
+      orderBy: "id",
+      sortOrder: "desc",
+      withContent: "false",
+    },
+    {
+      next: { tags: FEEDS_CACHE_TAGS.getPosts(limit) },
+    }
+  );
 };
 
 export const getNotes = async (limit = 10) => {
-  "use cache: remote";
-  cacheTag("getNotes");
-  cacheLife({
-    revalidate: 120,
-  });
-
-  try {
-    return await getFeedsWithMetaByAdminId(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
-      },
-      {
-        limit,
-        type: "note",
-        published: "true",
-        orderBy: "id",
-        sortOrder: "desc",
-        withContent: "false",
-      },
-      {
-        next: { tags: FEEDS_CACHE_TAGS.getNotes(limit) },
-      }
-    );
-  } catch (error) {
-    captureException(error);
-    throw error;
-  }
+  return await getFeedsWithMetaByAdminId(
+    {
+      cfBypassToken: env.CF_BYPASS_TOKEN,
+      apiKey: env.CH_API_KEY ?? "",
+    },
+    {
+      limit,
+      type: "note",
+      published: "true",
+      orderBy: "id",
+      sortOrder: "desc",
+      withContent: "false",
+    },
+    {
+      next: { tags: FEEDS_CACHE_TAGS.getNotes(limit) },
+    }
+  );
 };
 
 export const getFeedsWithType = async (
   type: Exclude<FeedType, "all">,
   limit = 10
 ) => {
-  try {
-    return await getFeedsWithMetaByAdminId(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
-      },
-      {
-        limit,
-        type,
-        published: "true",
-        orderBy: "id",
-        sortOrder: "desc",
-        withContent: "false",
-      },
-      {
-        next: { tags: FEEDS_CACHE_TAGS.getFeedsWithType(type, limit) },
-      }
-    );
-  } catch (error) {
-    captureException(error);
-    throw error;
-  }
+  return await getFeedsWithMetaByAdminId(
+    {
+      cfBypassToken: env.CF_BYPASS_TOKEN,
+      apiKey: env.CH_API_KEY ?? "",
+    },
+    {
+      limit,
+      type,
+      published: "true",
+      orderBy: "id",
+      sortOrder: "desc",
+      withContent: "false",
+    },
+    {
+      next: { tags: FEEDS_CACHE_TAGS.getFeedsWithType(type, limit) },
+    }
+  );
 };
 
 export const getFeeds = async (limit = 10) => {
-  try {
-    return await getFeedsWithMetaByAdminId(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
-      },
-      {
-        limit,
-        type: "all",
-        published: "true",
-        orderBy: "id",
-        sortOrder: "desc",
-        withContent: "false",
-      },
-      {
-        next: { tags: FEEDS_CACHE_TAGS.getFeeds(limit) },
-      }
-    );
-  } catch (error) {
-    captureException(error);
-    throw error;
-  }
+  return await getFeedsWithMetaByAdminId(
+    {
+      cfBypassToken: env.CF_BYPASS_TOKEN,
+      apiKey: env.CH_API_KEY ?? "",
+    },
+    {
+      limit,
+      type: "all",
+      published: "true",
+      orderBy: "id",
+      sortOrder: "desc",
+      withContent: "false",
+    },
+    {
+      next: { tags: FEEDS_CACHE_TAGS.getFeeds(limit) },
+    }
+  );
 };
 
 export const getFeedBySlug = async (slug: string) => {
-  try {
-    return await _getFeedBySlug(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
-      },
-      { slug },
-      {
-        next: { tags: FEEDS_CACHE_TAGS.getFeedBySlug(slug) },
-      }
-    );
-  } catch (error) {
-    if (error instanceof HTTPError && error.response.status === 404) {
-      return null;
+  return await _getFeedBySlug(
+    {
+      cfBypassToken: env.CF_BYPASS_TOKEN,
+      apiKey: env.CH_API_KEY ?? "",
+    },
+    { slug },
+    {
+      next: { tags: FEEDS_CACHE_TAGS.getFeedBySlug(slug) },
     }
-    captureException(error);
-    throw error;
-  }
+  );
 };

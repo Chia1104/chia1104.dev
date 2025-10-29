@@ -2,8 +2,10 @@ import { ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { cacheTag, cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 import { RedirectType } from "next/navigation";
+import { connection } from "next/server";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
@@ -16,11 +18,18 @@ import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
 import { redirect } from "@/i18n/routing";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
+import { FEEDS_CACHE_TAGS } from "@/services/feeds.service";
 import { Locale } from "@/utils/i18n";
 
-// export const dynamicParams = true;
-// export const revalidate = 60;
-// export const maxDuration = 60;
+const getFeedBySlugWithCache = async (slug: string) => {
+  "use cache: remote";
+  cacheTag(...FEEDS_CACHE_TAGS.getFeedBySlug(slug));
+  cacheLife({
+    revalidate: 120,
+  });
+
+  return getFeedBySlug(slug);
+};
 
 export const generateStaticParams = async () => {
   const feeds = await getFeeds(100);
@@ -40,7 +49,7 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { slug } = await params;
   try {
-    const feed = await getFeedBySlug(slug);
+    const feed = await getFeedBySlugWithCache(slug);
     if (!feed) return {};
     return {
       title: feed.title,
@@ -60,8 +69,10 @@ const Page = async ({
     slug: string;
   }>;
 }) => {
+  await connection();
+
   const { slug, locale, type } = await params;
-  const feed = await getFeedBySlug(slug);
+  const feed = await getFeedBySlugWithCache(slug);
   const t = await getTranslations("blog");
 
   if (!feed?.content) {
