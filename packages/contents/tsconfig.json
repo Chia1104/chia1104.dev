@@ -1,6 +1,7 @@
 {
   "extends": "@chia/tsconfig/internal-package.json",
   "compilerOptions": {
+    "types": ["vitest/globals"],
     "lib": ["ES2022", "dom", "dom.iterable"],
     "jsx": "preserve",
     "rootDir": "."

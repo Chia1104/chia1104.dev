@@ -1,8 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "types": ["vitest/globals"],
-    /** Base Options */
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "ES2022",
@@ -11,14 +9,11 @@
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
-    /** Keep TSC performant in monorepos */
     "incremental": true,
     "disableSourceOfProjectReferenceRedirect": true,
     "tsBuildInfoFile": "${configDir}/.cache/tsbuildinfo.json",
-    /** Strictness */
     "strict": true,
     "checkJs": true,
-    /** Transpile using Bundler (not tsc) */
     "module": "Preserve",
     "moduleResolution": "Bundler",
     "noEmit": true

@@ -1,5 +1,8 @@
 {
   "extends": "@chia/tsconfig/internal-package.json",
   "include": ["src", "vitest.config.mts", "__tests__", "index.ts"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "types": ["vitest/globals"]
+  }
 }
