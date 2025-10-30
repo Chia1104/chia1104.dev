@@ -578,9 +578,6 @@ importers:
       '@trigger.dev/sdk':
         specifier: catalog:triggerdotdev
         version: 4.0.5(ai@5.0.82(zod@4.1.12))(zod@4.1.12)
-      lodash:
-        specifier: 'catalog:'
-        version: 4.17.21
       openai:
         specifier: ^6.7.0
         version: 6.7.0(ws@8.18.3)(zod@4.1.12)

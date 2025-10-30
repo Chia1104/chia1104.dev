@@ -1,5 +1,5 @@
 import { schemaTask, metadata, logger } from "@trigger.dev/sdk/v3";
-import type OpenAI from "openai";
+import OpenAI from "openai";
 import { z } from "zod";
 
 import { streamGeneratedText } from "@chia/ai/generate/utils";
