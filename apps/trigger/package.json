@@ -16,9 +16,11 @@
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:^",
     "@chia/utils": "workspace:^",
+    "@t3-oss/env-core": "catalog:",
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
-    "openai": "^6.7.0"
+    "openai": "^6.7.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",

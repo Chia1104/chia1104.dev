@@ -62,19 +62,20 @@
     "@ai-sdk/anthropic": "^2.0.39",
     "@ai-sdk/deepseek": "^1.0.25",
     "@ai-sdk/google": "^2.0.25",
-    "@ai-sdk/openai": "^2.0.57",
+    "@ai-sdk/openai": "^2.0.58",
     "@anthropic-ai/sdk": "^0.68.0",
     "@chia/utils": "workspace:*",
-    "@google/genai": "^1.27.0",
+    "@google/genai": "^1.28.0",
     "ai": "^5.0.82",
-    "next": "16.0.1",
+    "next": "catalog:next",
     "ollama": "^0.6.0",
-    "openai": "^6.7.0"
+    "openai": "^6.7.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }

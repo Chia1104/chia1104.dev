@@ -82,11 +82,17 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "dependencies": {
+    "dayjs": "catalog:",
+    "ky": "catalog:",
+    "lodash": "catalog:",
+    "zod": "catalog:"
+  },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@types/express": "^5.0.5",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }

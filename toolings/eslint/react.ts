@@ -1,3 +1,4 @@
+// @ts-nocheck
 import reactPlugin from "eslint-plugin-react";
 import hooksPlugin from "eslint-plugin-react-hooks";
 import { defineConfig } from "eslint/config";

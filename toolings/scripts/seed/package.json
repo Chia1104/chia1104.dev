@@ -15,10 +15,12 @@
   "devDependencies": {
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
     "@faker-js/faker": "^10.1.0",
-    "eslint": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }
