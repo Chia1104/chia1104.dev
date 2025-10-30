@@ -99,3 +99,27 @@ body {
   /*remove borders*/
   margin: -2px -2px -10px;
 }
+
+[data-support-yes],
+[data-support-no] {
+  display: none;
+}
+
+
+@supports (view-transition-name: test) {
+  [data-support] [data-support-yes] {
+      display: flex;
+  }
+  [data-support] [data-support-no] {
+    display: none;
+  }
+}
+
+@supports not (view-transition-name: test) {
+  [data-support] [data-support-yes] {
+      display: none;
+  }
+  [data-support] [data-support-no] {
+    display: flex;
+  }
+}

@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import snakeCase from "lodash/snakeCase";
+import _ from "lodash";
 
 import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
@@ -93,7 +93,7 @@ api
       });
       const { keyword, model } = c.req.valid("query");
       const cache = c.var.redis;
-      const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}`;
+      const cacheKey = `feeds:search:m:${model ?? "default"}:k:${_.snakeCase(keyword)}`;
       const cached = await cache.get<string>(cacheKey);
       if (cached) {
         const { items } = await searchFeeds(c.var.db, {

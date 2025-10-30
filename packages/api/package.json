@@ -107,14 +107,22 @@
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
-    "github-slugger": "^2.0.0"
+    "@t3-oss/env-core": "catalog:",
+    "@trpc/client": "catalog:trpc",
+    "@trpc/server": "catalog:trpc",
+    "client-only": "catalog:",
+    "dayjs": "catalog:",
+    "github-slugger": "^2.0.0",
+    "graphql-request": "catalog:",
+    "ky": "catalog:",
+    "server-only": "catalog:",
+    "superjson": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }

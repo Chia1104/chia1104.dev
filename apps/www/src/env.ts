@@ -48,6 +48,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
     NEXT_PUBLIC_GA_ID: z.string().optional(),
     NEXT_PUBLIC_DEFAULT_TIME_ZONE: z.string().min(1),
+    NEXT_PUBLIC_ENABLE_SENTRY: z.boolean().optional().default(true),
   },
 
   runtimeEnv: {
@@ -69,6 +70,9 @@ export const env = createEnv({
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
     SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
+    NEXT_PUBLIC_ENABLE_SENTRY:
+      process.env.NEXT_PUBLIC_ENABLE_SENTRY === "true" ||
+      process.env.NEXT_PUBLIC_ENABLE_SENTRY === "1",
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

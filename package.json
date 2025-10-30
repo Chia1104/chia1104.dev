@@ -68,31 +68,13 @@
     "pkl": ">=0.25.2"
   },
   "packageManager": "pnpm@10.20.0",
-  "dependencies": {
-    "@better-fetch/fetch": "^1.1.18",
-    "@t3-oss/env-core": "^0.13.8",
-    "@zod/core": "^0.11.6",
-    "client-only": "^0.0.1",
-    "dayjs": "^1.11.18",
-    "graphql-request": "^7.3.1",
-    "jsonwebtoken": "^9.0.2",
-    "ky": "^1.13.0",
-    "lodash": "^4.17.21",
-    "server-only": "^0.0.1",
-    "superjson": "2.2.5",
-    "zod": "^4.1.12"
-  },
   "devDependencies": {
     "@manypkg/cli": "^0.25.1",
     "@playwright/test": "^1.56.1",
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@turbo/gen": "^2.5.8",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/lodash": "^4.17.20",
-    "@types/node": "^24.9.2",
-    "@vitest/coverage-v8": "^4.0.4",
-    "bun-types": "^1.3.1",
+    "@vitest/coverage-v8": "^4.0.5",
     "cross-env": "10.1.0",
     "dotenv": "^17.2.3",
     "happy-dom": "^20.0.10",
@@ -103,12 +85,11 @@
     "nx": "^22.0.2",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
-    "shell-quote": "^1.8.3",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
     "turbo": "2.5.8",
     "typescript": "catalog:",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.5"
   },
   "manypkg": {
     "ignoredRules": [

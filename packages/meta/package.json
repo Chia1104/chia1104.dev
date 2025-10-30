@@ -10,11 +10,13 @@
     "build:meta": "pkl eval -f json -o meta.json meta.pkl",
     "build:timeline": "pkl eval -f json -o timeline.json timeline.pkl"
   },
-  "dependencies": {},
+  "dependencies": {
+    "dayjs": "catalog:"
+  },
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }

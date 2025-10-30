@@ -6,9 +6,11 @@ import { Tabs, Tab, Button } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { Locale } from "next-intl";
+import { useLocale } from "next-intl";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import meta from "@chia/meta";
+import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
 import Link from "@chia/ui/link";
 import RetroGrid from "@chia/ui/retro-grid";
@@ -22,11 +24,15 @@ import navItems from "@/shared/routes";
 
 import HugeThanks from "./huge-thanks";
 
-const Copyright: FC<{ className?: string }> = ({ className }) => (
-  <p className={className}>
-    © {new Date().getFullYear()} <span className="font-bold">{meta.name}</span>
-  </p>
-);
+const Copyright: FC<{ className?: string }> = ({ className }) => {
+  const locale = useLocale();
+  return (
+    <span className={className}>
+      © <DateFormat date={undefined} format="YYYY" locale={locale} />{" "}
+      <span className="font-bold">{meta.name}</span>
+    </span>
+  );
+};
 
 const Logo = () => (
   <Image
@@ -87,13 +93,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
                   className="w-fit"
                   key={path.replace(/^\//, "")}
                   title={
-                    <Link
-                      locale={locale}
-                      experimental={{
-                        enableViewTransition: true,
-                      }}
-                      key={path}
-                      href={path}>
+                    <Link locale={locale} key={path} href={path}>
                       <span className="relative px-[10px] py-[5px]">
                         <p>{name}</p>
                       </span>

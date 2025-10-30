@@ -1,4 +1,3 @@
-import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 import { getMeta } from "@chia/api/services/feeds";
@@ -7,8 +6,6 @@ import { getBaseUrl, WWW_BASE_URL, errorGenerator } from "@chia/utils";
 import { env } from "@/env";
 
 import { URLS_PER_SITEMAP } from "./utils";
-
-export const dynamic = "force-dynamic";
 
 function buildSitemapIndex(sitemaps: string[]) {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -56,7 +53,7 @@ export const GET = async () => {
     });
   } catch (error) {
     console.error(error);
-    captureException(error);
+    // captureException(error);
     return NextResponse.json(errorGenerator(500), {
       status: 500,
     });
