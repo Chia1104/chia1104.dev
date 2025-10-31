@@ -28,8 +28,8 @@ catalogs:
       specifier: ^0.0.1
       version: 0.0.1
     dayjs:
-      specifier: ^1.11.18
-      version: 1.11.18
+      specifier: ^1.11.19
+      version: 1.11.19
     graphql-request:
       specifier: ^7.3.1
       version: 7.3.1
@@ -288,7 +288,7 @@ importers:
         version: 2.1.1
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
       framer-motion:
         specifier: 12.23.24
         version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -671,7 +671,7 @@ importers:
         version: 0.6.5
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
       framer-motion:
         specifier: 12.23.24
         version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -895,7 +895,7 @@ importers:
         version: 0.0.1
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
       github-slugger:
         specifier: ^2.0.0
         version: 2.0.0
@@ -953,7 +953,7 @@ importers:
         version: 0.0.1
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
       resend:
         specifier: ^6.3.0
         version: 6.3.0(@react-email/render@1.4.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
@@ -999,7 +999,7 @@ importers:
         version: 3.1.1(@types/react@19.2.2)(react@19.2.0)
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
       fumadocs-core:
         specifier: catalog:fumadocs
         version: 16.0.6(@types/react@19.2.2)(lucide-react@0.548.0(react@19.2.0))(next@16.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1155,7 +1155,7 @@ importers:
     dependencies:
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
     devDependencies:
       '@chia/eslint-config':
         specifier: workspace:*
@@ -1252,7 +1252,7 @@ importers:
         version: 1.1.1(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
       framer-motion:
         specifier: 12.23.24
         version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1328,7 +1328,7 @@ importers:
     dependencies:
       dayjs:
         specifier: 'catalog:'
-        version: 1.11.18
+        version: 1.11.19
       ky:
         specifier: 'catalog:'
         version: 1.13.0
@@ -1477,12 +1477,6 @@ packages:
 
   '@ai-sdk/deepseek@1.0.25':
     resolution: {integrity: sha512-sGVWQVE4wf7KrsSuaBGSzwjW2QHgZLtCe8JRuqNS5dxmA1p9xrFdXVu4OeQabqY7+fcPl3zJBNu/IDXhp8NLgw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/gateway@2.0.3':
-    resolution: {integrity: sha512-/vCoMKtod+A74/BbkWsaAflWKz1ovhX5lmJpIaXQXtd6gyexZncjotBTbFM8rVJT9LKJ/Kx7iVVo3vh+KT+IJg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -6303,12 +6297,6 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ai@5.0.82:
-    resolution: {integrity: sha512-wmZZfsU40qB77umrcj3YzMSk6cUP5gxLXZDPfiSQLBLegTVXPUdSJC603tR7JB5JkhBDzN5VLaliuRKQGKpUXg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   ai@5.0.83:
     resolution: {integrity: sha512-tMc1wqc9khzETBN0X4/MHw9RbeP5uKFdoG5sUIUJ3p7lSgfDU6yZMwT6jrnA3Nk2AvxM0T43P1h2LfPlBSwGKA==}
     engines: {node: '>=18'}
@@ -7181,8 +7169,8 @@ packages:
     resolution: {integrity: sha512-BS8PfmtDGnrgYdOonGZQdLZslWIeCGFP9tpan0hi1Co2Zr2NKADsvGYA8XxuG/4UWgJ6Cjtv+YJnB6MM69QGlQ==}
     engines: {node: '>= 0.4'}
 
-  dayjs@1.11.18:
-    resolution: {integrity: sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==}
+  dayjs@1.11.19:
+    resolution: {integrity: sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw==}
 
   debounce@1.2.1:
     resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
@@ -12091,13 +12079,6 @@ snapshots:
       '@ai-sdk/openai-compatible': 1.0.24(zod@4.1.12)
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.14(zod@4.1.12)
-      zod: 4.1.12
-
-  '@ai-sdk/gateway@2.0.3(zod@4.1.12)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.14(zod@4.1.12)
-      '@vercel/oidc': 3.0.3
       zod: 4.1.12
 
   '@ai-sdk/gateway@2.0.4(zod@4.1.12)':
@@ -17918,14 +17899,6 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@5.0.82(zod@4.1.12):
-    dependencies:
-      '@ai-sdk/gateway': 2.0.3(zod@4.1.12)
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.14(zod@4.1.12)
-      '@opentelemetry/api': 1.9.0
-      zod: 4.1.12
-
   ai@5.0.83(zod@4.1.12):
     dependencies:
       '@ai-sdk/gateway': 2.0.4(zod@4.1.12)
@@ -18865,7 +18838,7 @@ snapshots:
       es-errors: 1.3.0
       is-data-view: 1.0.2
 
-  dayjs@1.11.18: {}
+  dayjs@1.11.19: {}
 
   debounce@1.2.1: {}
 
@@ -21502,7 +21475,7 @@ snapshots:
       d3: 7.9.0
       d3-sankey: 0.12.3
       dagre-d3-es: 7.0.13
-      dayjs: 1.11.18
+      dayjs: 1.11.19
       dompurify: 3.3.0
       katex: 0.16.25
       khroma: 2.1.0
