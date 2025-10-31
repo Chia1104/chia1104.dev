@@ -68,7 +68,7 @@
     "@google/genai": "^1.28.0",
     "ai": "^5.0.82",
     "next": "catalog:next",
-    "ollama": "^0.6.0",
+    "ollama": "^0.6.2",
     "openai": "^6.7.0",
     "zod": "catalog:"
   },

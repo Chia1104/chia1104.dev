@@ -845,8 +845,8 @@ importers:
         specifier: catalog:next
         version: 16.0.1(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       ollama:
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.6.2
+        version: 0.6.2
       openai:
         specifier: ^6.7.0
         version: 6.7.0(ws@8.18.3)(zod@4.1.12)
@@ -9753,8 +9753,8 @@ packages:
   ohash@1.1.6:
     resolution: {integrity: sha512-TBu7PtV8YkAZn0tSxobKY2n2aAQva936lhRrj6957aDaCf9IEtqsKbgMzXE/F/sjqYOwmrukeORHNLe5glk7Cg==}
 
-  ollama@0.6.0:
-    resolution: {integrity: sha512-FHjdU2Ok5x2HZsxPui/MBJZ5J+HzmxoWYa/p9wk736eT+uAhS8nvIICar5YgwlG5MFNjDR6UA5F3RSKq+JseOA==}
+  ollama@0.6.2:
+    resolution: {integrity: sha512-VcPZpBuz3kdoJIcyWpiDS1MSDSZKyQPM6f9wi405vdLOB5yZWiQ+m7NSTrYsntQyCp/s/Yy0quKiYerhq7Liog==}
 
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
@@ -22216,7 +22216,7 @@ snapshots:
 
   ohash@1.1.6: {}
 
-  ollama@0.6.0:
+  ollama@0.6.2:
     dependencies:
       whatwg-fetch: 3.6.20
 
