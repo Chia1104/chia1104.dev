@@ -23,8 +23,8 @@ catalog:
 
 catalogs:
   eslint:
-    '@eslint/js': 9.38.0
-    eslint: 9.38.0
+    '@eslint/js': 9.39.1
+    eslint: 9.39.1
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.3
     fumadocs-core: 16.0.6
