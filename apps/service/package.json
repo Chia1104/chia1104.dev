@@ -57,6 +57,7 @@
     "postcss": "8.5.6",
     "postcss-import": "^16.1.1",
     "tailwindcss": "catalog:tailwindcss",
+    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }
