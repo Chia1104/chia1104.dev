@@ -9,7 +9,4 @@ export default defineConfig((opts) => ({
   tsconfig: "tsconfig.build.json",
   external: [/!^@chia\//],
   noExternal: [/^@chia\//, /^trigger\//],
-  banner: {
-    js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
-  },
 }));
