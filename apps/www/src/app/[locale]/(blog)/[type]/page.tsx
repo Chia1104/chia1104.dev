@@ -41,14 +41,21 @@ const getFeedsWithTypeWithCache = async (type: "post" | "note", limit = 10) => {
 const CacheFeeds = async ({
   type,
   limit = 20,
+  locale,
 }: {
   type: "posts" | "notes";
   limit?: number;
+  locale: Locale;
 }) => {
+  "use cache";
+
   const formattedType = type === "posts" ? "post" : "note";
   const feeds = await getFeedsWithTypeWithCache(formattedType, limit);
   const hasFeeds = Array.isArray(feeds.items) && feeds.items.length > 0;
-  const t = await getTranslations(`blog.${type}`);
+  const t = await getTranslations({
+    locale,
+    namespace: `blog.${type}`,
+  });
 
   return hasFeeds ? (
     <FeedList
@@ -84,19 +91,25 @@ const CacheFeeds = async ({
 const Page = async (
   props: PagePropsWithLocale<{ type: "posts" | "notes" }>
 ) => {
-  const { type } = await props.params;
+  "use cache";
+
+  const { type, locale } = await props.params;
 
   if (!["posts", "notes"].includes(type)) {
     notFound();
   }
 
-  const t = await getTranslations(`blog.${type}`);
+  const t = await getTranslations({
+    locale,
+    namespace: `blog.${type}`,
+  });
+
   return (
     <ViewTransition>
       <div className="w-full">
         <h1>{t("doc-title")}</h1>
         <Suspense fallback={<AppLoading />}>
-          <CacheFeeds type={type} limit={20} />
+          <CacheFeeds type={type} limit={20} locale={locale} />
         </Suspense>
       </div>
     </ViewTransition>

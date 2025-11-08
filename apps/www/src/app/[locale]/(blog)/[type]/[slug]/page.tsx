@@ -101,9 +101,17 @@ const Page = async ({
     slug: string;
   }>;
 }) => {
+  "use cache";
+  cacheLife({
+    revalidate: 120,
+  });
+
   const { slug, locale, type } = await params;
   const feed = await getFeedBySlugWithCache(slug);
-  const t = await getTranslations("blog");
+  const t = await getTranslations({
+    locale,
+    namespace: "blog",
+  });
 
   if (!feed?.content) {
     notFound();

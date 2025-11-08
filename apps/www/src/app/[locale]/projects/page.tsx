@@ -1,7 +1,6 @@
 import { Suspense, ViewTransition } from "react";
 import type { FC } from "react";
 
-import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 import { getPinnedRepos } from "@chia/api/github";
@@ -84,9 +83,6 @@ const RepoCard: FC<{
 
 const getPinnedReposWithCache = async () => {
   "use cache";
-  cacheLife({
-    revalidate: 60,
-  });
 
   return await getPinnedRepos(meta.name);
 };
@@ -110,7 +106,10 @@ const RepoList = async () => {
   );
 };
 
-const Page = () => {
+// eslint-disable-next-line @typescript-eslint/require-await
+const Page = async () => {
+  "use cache";
+
   return (
     <ViewTransition>
       <ErrorBoundary errorElement={<ErrorFallback />}>

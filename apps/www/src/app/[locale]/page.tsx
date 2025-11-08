@@ -56,13 +56,19 @@ const getWorkDurationWithCache = async () => {
   return Promise.resolve(getWorkDuration(meta.timeline));
 };
 
-const WorkDuration = async () => {
-  const t = await getTranslations("home");
+const WorkDuration = async ({ locale }: { locale: Locale }) => {
+  "use cache";
+  const t = await getTranslations({
+    locale,
+    namespace: "home",
+  });
   const workDuration = await getWorkDurationWithCache();
   return <p>{t("section1", { year: workDuration.toString() })}</p>;
 };
 
 const Page = async ({ params }: { params: PageParamsWithLocale }) => {
+  "use cache";
+
   const { locale } = await params;
   const latestWork = getLatestWork(meta.timeline);
   return (
@@ -71,7 +77,7 @@ const Page = async ({ params }: { params: PageParamsWithLocale }) => {
         <FadeIn className="w-full flex-col">
           <h1 className="text-start font-bold">{meta.name}</h1>
           <Suspense>
-            <WorkDuration />
+            <WorkDuration locale={locale} />
           </Suspense>
           <div>
             Working at{" "}
