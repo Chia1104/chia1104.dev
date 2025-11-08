@@ -42,9 +42,7 @@ export const baseConfig = defineConfig(
   {
     files: ["**/*.js", "**/*.ts", "**/*.tsx"],
     plugins: {
-      // @ts-expect-error
       import: importPlugin,
-      // @ts-expect-error
       turbo: turboPlugin,
     },
     extends: [
