@@ -1,13 +1,14 @@
-import type { S3Client } from "@aws-sdk/client-s3";
+import type { S3Client, ObjectCannedACL } from "@aws-sdk/client-s3";
 import {
   GetObjectCommand,
   DeleteObjectCommand,
   DeleteObjectsCommand,
+  PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "./env";
-import { r2Client } from "./r2.client";
+import { r2Client } from "./s3.client";
 
 interface GlobalOptions {
   /**
@@ -18,9 +19,21 @@ interface GlobalOptions {
    * The bucket to use for the files.
    */
   bucket?: string;
+  /**
+   * Whether to use ACL for the files.
+   * @default false
+   * @description If true, the files will be public readable ("public-read").
+   */
+  useACL?: boolean;
 }
 
-export class R2Service {
+/**
+ * The S3 service.
+ * @param client - The client to use for the S3 service.
+ * @default r2Client
+ * @param options - The options to use for the S3 service.
+ */
+export class S3Service {
   constructor(
     private readonly client: S3Client = r2Client,
     private readonly options: GlobalOptions = {}
@@ -39,19 +52,67 @@ export class R2Service {
     return bucket ?? this.options.bucket ?? env.S3_BUCKET_NAME;
   }
 
+  private getACL(
+    useACL?: boolean,
+    acl?: ObjectCannedACL
+  ): ObjectCannedACL | undefined {
+    return useACL
+      ? "public-read"
+      : (acl ?? this.options.useACL)
+        ? "public-read"
+        : undefined;
+  }
+
   /**
-   * Get the signed URL for the file.
-   * @param key - The key to get the signed URL for.
+   * Create a signed URL for the file.
+   * Used for uploading the file.
+   * @param key - The key to create the pre-signed URL for.
    * @param bucket - The bucket to use for the file.
-   * @returns The signed URL.
+   * @returns The signed URL for uploading the file.
    */
-  public async getSignedUrl(key: string, bucket?: string): Promise<string> {
+  public async createSignedUrlForUpload(
+    key: string,
+    options?: {
+      bucket?: string;
+      expiresIn?: number;
+      useACL?: boolean;
+    }
+  ): Promise<string> {
+    return await getSignedUrl(
+      this.client,
+      new PutObjectCommand({
+        Bucket: this.getBucket(options?.bucket),
+        Key: this.getKey(key),
+        ACL: this.getACL(options?.useACL),
+      }),
+      {
+        expiresIn: options?.expiresIn ?? 3600,
+      }
+    );
+  }
+
+  /**
+   * Create a signed URL for the file.
+   * Used for previewing the file.
+   * @param key - The key to create the pre-signed URL for.
+   * @param bucket - The bucket to use for the file.
+   * @returns The signed URL for previewing the file.
+   */
+  public async createSignedUrlForPreview(
+    key: string,
+    options?: {
+      bucket?: string;
+      expiresIn?: number;
+    }
+  ): Promise<string> {
+    const { bucket, ...rest } = options ?? {};
     return await getSignedUrl(
       this.client,
       new GetObjectCommand({
         Bucket: this.getBucket(bucket),
         Key: this.getKey(key),
-      })
+      }),
+      rest
     );
   }
 
@@ -133,4 +194,4 @@ export class R2Service {
   }
 }
 
-export const r2Service = new R2Service();
+export const s3Service = new S3Service();
