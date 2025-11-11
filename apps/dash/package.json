@@ -87,7 +87,7 @@
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "@vitejs/plugin-react-swc": "^4.2.1",
-    "autoprefixer": "^10.4.21",
+    "autoprefixer": "^10.4.22",
     "babel-plugin-react-compiler": "catalog:react19",
     "eslint": "catalog:eslint",
     "postcss": "8.5.6",
