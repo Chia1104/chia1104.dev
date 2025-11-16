@@ -1,5 +1,5 @@
 import { createCompiler } from "@fumadocs/mdx-remote";
-import { remarkAdmonition } from "fumadocs-core/mdx-plugins";
+import { remarkDirectiveAdmonition } from "fumadocs-core/mdx-plugins";
 import type { MDXComponents } from "mdx/types";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
@@ -10,7 +10,7 @@ import { FumadocsComponents, V1MDXComponents } from "./mdx-components";
 import type { GetContentPropsArgs, GetContentPropsReturn } from "./types";
 
 const compiler = createCompiler({
-  remarkPlugins: [remarkMath, remarkAdmonition],
+  remarkPlugins: [remarkMath, remarkDirectiveAdmonition],
   rehypePlugins: (v) => [rehypeKatex, ...v],
 });
 
