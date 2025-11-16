@@ -61,7 +61,9 @@
     "dash-graph": "turbo run build --filter dash... --graph=graph/dash-graph.html",
     "graph": "nx graph",
     "ui-add": "turbo run ui-add",
-    "update-deps:all": "pnpm up --latest --filter '@chia/*' --filter www --filter dash --filter service --filter trigger"
+    "update-deps:all": "pnpm up --latest --filter '@chia/*' --filter www --filter dash --filter service --filter trigger",
+    "debug:build": "turbo run debug:build --parallel",
+    "debug:start": "turbo run debug:start --parallel"
   },
   "engines": {
     "node": ">=22",
