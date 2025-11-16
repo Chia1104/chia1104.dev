@@ -61,34 +61,36 @@
     "dash-graph": "turbo run build --filter dash... --graph=graph/dash-graph.html",
     "graph": "nx graph",
     "ui-add": "turbo run ui-add",
-    "update-deps:all": "pnpm up --latest --filter '@chia/*' --filter www --filter dash --filter service --filter trigger"
+    "update-deps:all": "pnpm up --latest --filter '@chia/*' --filter www --filter dash --filter service --filter trigger",
+    "debug:build": "turbo run debug:build --parallel",
+    "debug:start": "turbo run debug:start --parallel"
   },
   "engines": {
     "node": ">=22",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.22.0",
   "devDependencies": {
     "@manypkg/cli": "^0.25.1",
     "@playwright/test": "^1.56.1",
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^6.0.0",
-    "@turbo/gen": "^2.6.0",
-    "@vitest/coverage-v8": "^4.0.8",
+    "@turbo/gen": "^2.6.1",
+    "@vitest/coverage-v8": "^4.0.9",
     "cross-env": "10.1.0",
     "dotenv": "^17.2.3",
     "happy-dom": "^20.0.10",
     "husky": "^9.1.7",
     "jest-extended": "^7.0.0",
     "lint-staged": "^16.2.6",
-    "msw": "^2.12.0",
-    "nx": "^22.0.2",
+    "msw": "^2.12.2",
+    "nx": "^22.0.3",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "tsx": "^4.20.6",
-    "turbo": "2.6.0",
+    "turbo": "2.6.1",
     "typescript": "catalog:",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.9"
   },
   "manypkg": {
     "ignoredRules": [

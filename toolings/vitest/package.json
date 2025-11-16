@@ -12,7 +12,7 @@
   "devDependencies": {
     "@chia/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "@vitejs/plugin-react-swc": "^4.2.1",
+    "@vitejs/plugin-react-swc": "^4.2.2",
     "typescript": "catalog:"
   }
 }

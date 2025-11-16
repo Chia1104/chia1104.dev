@@ -6,6 +6,9 @@
       "dependsOn": ["^build"],
       "outputs": [".cache/tsbuildinfo.json", "dist/**"]
     },
+    "debug:build": {
+      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
+    },
     "www#build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
@@ -54,6 +57,10 @@
     },
     "start": {
       "dependsOn": ["^build"],
+      "cache": false
+    },
+    "debug:start": {
+      "dependsOn": ["^debug:build"],
       "cache": false
     },
     "clean": {

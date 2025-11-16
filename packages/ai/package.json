@@ -59,17 +59,17 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.42",
-    "@ai-sdk/deepseek": "^1.0.27",
-    "@ai-sdk/google": "^2.0.29",
-    "@ai-sdk/openai": "^2.0.64",
-    "@anthropic-ai/sdk": "^0.68.0",
+    "@ai-sdk/anthropic": "^2.0.44",
+    "@ai-sdk/deepseek": "^1.0.28",
+    "@ai-sdk/google": "^2.0.32",
+    "@ai-sdk/openai": "^2.0.67",
+    "@anthropic-ai/sdk": "^0.69.0",
     "@chia/utils": "workspace:*",
-    "@google/genai": "^1.29.0",
-    "ai": "^5.0.89",
+    "@google/genai": "^1.29.1",
+    "ai": "^5.0.93",
     "next": "catalog:next",
-    "ollama": "^0.6.2",
-    "openai": "^6.8.1",
+    "ollama": "^0.6.3",
+    "openai": "^6.9.0",
     "zod": "catalog:"
   },
   "devDependencies": {

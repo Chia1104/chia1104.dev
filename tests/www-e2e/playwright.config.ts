@@ -1,6 +1,6 @@
 import { devices, defineConfig } from "@playwright/test";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "127.0.0.1";
@@ -18,7 +18,7 @@ export default defineConfig({
   reporter: "html",
 
   webServer: {
-    command: "pnpm run start:www",
+    command: "pnpm run debug:start --filter www...",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
