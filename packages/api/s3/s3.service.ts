@@ -4,11 +4,15 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   PutObjectCommand,
+  CreateBucketCommand,
+  DeleteBucketCommand,
+  ListBucketsCommand,
+  ListObjectsCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "./env";
-import { r2Client } from "./s3.client";
+import { s3Client } from "./s3.client";
 
 interface GlobalOptions {
   /**
@@ -30,12 +34,11 @@ interface GlobalOptions {
 /**
  * The S3 service.
  * @param client - The client to use for the S3 service.
- * @default r2Client
  * @param options - The options to use for the S3 service.
  */
 export class S3Service {
   constructor(
-    private readonly client: S3Client = r2Client,
+    private readonly client: S3Client = s3Client,
     private readonly options: GlobalOptions = {}
   ) {}
 
@@ -191,6 +194,40 @@ export class S3Service {
     }
 
     return response.Body.transformToByteArray();
+  }
+
+  public async createBucket(bucket: string) {
+    return await this.client.send(new CreateBucketCommand({ Bucket: bucket }));
+  }
+
+  public async deleteBucket(bucket: string) {
+    return await this.client.send(new DeleteBucketCommand({ Bucket: bucket }));
+  }
+
+  public async listBuckets() {
+    return await this.client.send(new ListBucketsCommand({}));
+  }
+
+  public async listObjects(bucket: string) {
+    return await this.client.send(new ListObjectsCommand({ Bucket: bucket }));
+  }
+
+  public async getObject(bucket: string, key: string) {
+    return await this.client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: key })
+    );
+  }
+
+  public async putObject(bucket: string, key: string, body: string) {
+    return await this.client.send(
+      new PutObjectCommand({ Bucket: bucket, Key: key, Body: body })
+    );
+  }
+
+  public async deleteObject(bucket: string, key: string) {
+    return await this.client.send(
+      new DeleteObjectCommand({ Bucket: bucket, Key: key })
+    );
   }
 }
 
