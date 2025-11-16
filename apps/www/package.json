@@ -13,7 +13,7 @@
   "scripts": {
     "analyze": "ANALYZE=true pnpm build",
     "dev": "next dev",
-    "build": "next build -d --turbo",
+    "build": "next build --turbo",
     "debug:build": "next build -d --turbo",
     "start": "next start",
     "debug:start": "next start",
