@@ -36,7 +36,7 @@
     "@internationalized/date": "^3.10.0",
     "@monaco-editor/react": "^4.7.0",
     "@t3-oss/env-nextjs": "catalog:",
-    "@tanstack/react-pacer": "^0.17.2",
+    "@tanstack/react-pacer": "^0.17.3",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:trpc",
     "@trpc/next": "catalog:trpc",
