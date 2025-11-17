@@ -62,7 +62,7 @@
     "@ai-sdk/anthropic": "^2.0.44",
     "@ai-sdk/deepseek": "^1.0.28",
     "@ai-sdk/google": "^2.0.32",
-    "@ai-sdk/openai": "^2.0.67",
+    "@ai-sdk/openai": "^2.0.68",
     "@anthropic-ai/sdk": "^0.69.0",
     "@chia/utils": "workspace:*",
     "@google/genai": "^1.29.1",
