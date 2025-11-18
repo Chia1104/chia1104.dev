@@ -1117,8 +1117,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@keyv/postgres':
-        specifier: ^2.2.0
-        version: 2.2.0(keyv@5.5.4)
+        specifier: ^2.2.1
+        version: 2.2.1(keyv@5.5.4)
       '@keyv/redis':
         specifier: ^5.1.4
         version: 5.1.4(keyv@5.5.4)
@@ -3542,8 +3542,8 @@ packages:
   '@jsonhero/path@1.0.21':
     resolution: {integrity: sha512-gVUDj/92acpVoJwsVJ/RuWOaHyG4oFzn898WNGQItLCTQ+hOaVlEaImhwE1WqOTf+l3dGOUkbSiVKlb3q1hd1Q==}
 
-  '@keyv/postgres@2.2.0':
-    resolution: {integrity: sha512-/J0XUF9zETXGRVOWDwBNAM9t55C2wyLsqqRU/Kvrx4b/HqF4vvPic5nPnUYFHxqAiQmubwH1OGpReNycQyqRug==}
+  '@keyv/postgres@2.2.1':
+    resolution: {integrity: sha512-9/LHF0220ukiJJt95TMoNUJozZMrrLj8vD1fIVqSoJG3b5kxlZx+Ha4saBq8bNAe11LO58AQEBmGF0gHNhQvRQ==}
     engines: {node: '>= 18'}
     peerDependencies:
       keyv: ^5.5.4
@@ -15323,7 +15323,7 @@ snapshots:
 
   '@jsonhero/path@1.0.21': {}
 
-  '@keyv/postgres@2.2.0(keyv@5.5.4)':
+  '@keyv/postgres@2.2.1(keyv@5.5.4)':
     dependencies:
       keyv: 5.5.4
       pg: 8.16.3
