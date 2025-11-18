@@ -31,8 +31,8 @@ catalogs:
       specifier: ^1.11.19
       version: 1.11.19
     graphql-request:
-      specifier: ^7.3.3
-      version: 7.3.3
+      specifier: ^7.3.4
+      version: 7.3.4
     ky:
       specifier: ^1.14.0
       version: 1.14.0
@@ -910,7 +910,7 @@ importers:
         version: 2.0.0
       graphql-request:
         specifier: 'catalog:'
-        version: 7.3.3(graphql@16.12.0)
+        version: 7.3.4(graphql@16.12.0)
       ky:
         specifier: 'catalog:'
         version: 1.14.0
@@ -8904,8 +8904,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  graphql-request@7.3.3:
-    resolution: {integrity: sha512-I0ZSz53XTpDiQZ0/KGElwfnzIqsdNek/D6tcZgheL8QOVeSbkgE3qG7r1G/MKtnNenWtEjHbsDf2iPlXSWxFtw==}
+  graphql-request@7.3.4:
+    resolution: {integrity: sha512-kbpP5dw9hHIL5jN/2VS2JU0/Sc1hlsj7zrYBKSDiYd5iG8QfX7P79u26ZBi84eAijsqYVZEpLvCCwEzVxscWhg==}
     peerDependencies:
       graphql: 14 - 16
 
@@ -21796,7 +21796,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  graphql-request@7.3.3(graphql@16.12.0):
+  graphql-request@7.3.4(graphql@16.12.0):
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.12.0)
       graphql: 16.12.0
