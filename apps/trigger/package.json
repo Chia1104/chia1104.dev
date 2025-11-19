@@ -19,7 +19,7 @@
     "@t3-oss/env-core": "catalog:",
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
-    "openai": "^6.9.0",
+    "openai": "^6.9.1",
     "zod": "catalog:"
   },
   "devDependencies": {

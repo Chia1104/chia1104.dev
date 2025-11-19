@@ -582,8 +582,8 @@ importers:
         specifier: catalog:triggerdotdev
         version: 4.1.0(ai@5.0.93(zod@4.1.12))(typescript@5.9.3)(zod@4.1.12)
       openai:
-        specifier: ^6.9.0
-        version: 6.9.0(ws@8.18.3)(zod@4.1.12)
+        specifier: ^6.9.1
+        version: 6.9.1(ws@8.18.3)(zod@4.1.12)
       zod:
         specifier: 'catalog:'
         version: 4.1.12
@@ -830,8 +830,8 @@ importers:
         specifier: ^2.0.32
         version: 2.0.32(zod@4.1.12)
       '@ai-sdk/openai':
-        specifier: ^2.0.68
-        version: 2.0.68(zod@4.1.12)
+        specifier: ^2.0.69
+        version: 2.0.69(zod@4.1.12)
       '@anthropic-ai/sdk':
         specifier: ^0.69.0
         version: 0.69.0(zod@4.1.12)
@@ -851,8 +851,8 @@ importers:
         specifier: ^0.6.3
         version: 0.6.3
       openai:
-        specifier: ^6.9.0
-        version: 6.9.0(ws@8.18.3)(zod@4.1.12)
+        specifier: ^6.9.1
+        version: 6.9.1(ws@8.18.3)(zod@4.1.12)
       zod:
         specifier: 'catalog:'
         version: 4.1.12
@@ -1511,8 +1511,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/openai@2.0.68':
-    resolution: {integrity: sha512-qUSLFkqgUoFArzBwttu0KWVAZYjbsdZGOklSJXpfZ2nDC61yseHxtcnuG8u6tqKnGXDh4eakEgREDWU2sRht7A==}
+  '@ai-sdk/openai@2.0.69':
+    resolution: {integrity: sha512-UF9qZ1qiVOpWdbj/FGf8jz+PciMI2zxt8ZNKjsvyFtUfk1E5PIG8GYR65maGblVhwKrRR5zAAJ5BumNyDt2v4Q==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -5824,6 +5824,7 @@ packages:
   '@smithy/core@3.18.4':
     resolution: {integrity: sha512-o5tMqPZILBvvROfC8vC+dSVnWJl9a0u9ax1i1+Bq8515eYjUJqqk5XjjEsDLoeL5dSqGSh6WGdVx1eJ1E/Nwhw==}
     engines: {node: '>=18.0.0'}
+    deprecated: Please upgrade your lockfile to use the latest 3.x version of @smithy/core for various fixes, see https://github.com/smithy-lang/smithy-typescript/blob/main/packages/core/CHANGELOG.md
 
   '@smithy/credential-provider-imds@4.2.5':
     resolution: {integrity: sha512-BZwotjoZWn9+36nimwm/OLIcVe+KYRwzMjfhd4QT7QxPm9WY0HiOV8t/Wlh+HVUif0SBVV7ksq8//hPaBC/okQ==}
@@ -10456,8 +10457,8 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@6.9.0:
-    resolution: {integrity: sha512-n2sJRYmM+xfJ0l3OfH8eNnIyv3nQY7L08gZQu3dw6wSdfPtKAk92L83M2NIP5SS8Cl/bsBBG3yKzEOjkx0O+7A==}
+  openai@6.9.1:
+    resolution: {integrity: sha512-vQ5Rlt0ZgB3/BNmTa7bIijYFhz3YBceAA3Z4JuoMSBftBF9YqFHIEhZakSs+O/Ad7EaoEimZvHxD5ylRjN11Lg==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -12716,7 +12717,7 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.12)
       zod: 4.1.12
 
-  '@ai-sdk/openai@2.0.68(zod@4.1.12)':
+  '@ai-sdk/openai@2.0.69(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@4.1.12)
@@ -23826,7 +23827,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@6.9.0(ws@8.18.3)(zod@4.1.12):
+  openai@6.9.1(ws@8.18.3)(zod@4.1.12):
     optionalDependencies:
       ws: 8.18.3
       zod: 4.1.12
