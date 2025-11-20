@@ -27,7 +27,7 @@
     "@hono/react-renderer": "^1.0.1",
     "@hono/sentry": "^1.2.2",
     "@hono/trpc-server": "^0.4.0",
-    "@hono/zod-validator": "^0.7.4",
+    "@hono/zod-validator": "^0.7.5",
     "@t3-oss/env-core": "catalog:",
     "formdata-node": "^6.0.3",
     "graphql": "^16.12.0",
@@ -38,7 +38,7 @@
     "lodash": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "resend": "^6.4.2",
+    "resend": "^6.5.2",
     "trigger": "workspace:*",
     "web-streams-polyfill": "^4.2.0",
     "zod": "catalog:"

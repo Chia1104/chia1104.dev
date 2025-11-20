@@ -49,7 +49,7 @@
     "better-auth": "^1.3.34",
     "client-only": "catalog:",
     "dayjs": "catalog:",
-    "resend": "^6.4.2",
+    "resend": "^6.5.2",
     "server-only": "catalog:",
     "zod": "catalog:"
   },

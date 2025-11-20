@@ -26,6 +26,6 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-turbo": "^2.6.1",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.46.4"
+    "typescript-eslint": "^8.47.0"
   }
 }
