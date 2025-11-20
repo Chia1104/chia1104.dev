@@ -833,8 +833,8 @@ importers:
         specifier: ^2.0.69
         version: 2.0.69(zod@4.1.12)
       '@anthropic-ai/sdk':
-        specifier: ^0.70.0
-        version: 0.70.0(zod@4.1.12)
+        specifier: ^0.70.1
+        version: 0.70.1(zod@4.1.12)
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1558,8 +1558,8 @@ packages:
   '@antfu/utils@9.3.0':
     resolution: {integrity: sha512-9hFT4RauhcUzqOE4f1+frMKLZrgNog5b06I7VmZQV1BkvwvqrbC8EBZf3L1eEL2AKb6rNKjER0sEvJiSP1FXEA==}
 
-  '@anthropic-ai/sdk@0.70.0':
-    resolution: {integrity: sha512-FYIuhF/lSCa+pgtaMGgsTF14aOIiWtBnu3azXITDOELv6yxsDNJwcjjt+Zr7vwyuTUjZJE/YL7s9m5r1jXkoeQ==}
+  '@anthropic-ai/sdk@0.70.1':
+    resolution: {integrity: sha512-AGEhifuvE22VxfQ5ROxViTgM8NuVQzEvqcN8bttR4AP24ythmNE/cL/SrOz79xiv7/osrsmCyErjsistJi7Z8A==}
     hasBin: true
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
@@ -12901,7 +12901,7 @@ snapshots:
 
   '@antfu/utils@9.3.0': {}
 
-  '@anthropic-ai/sdk@0.70.0(zod@4.1.12)':
+  '@anthropic-ai/sdk@0.70.1(zod@4.1.12)':
     dependencies:
       json-schema-to-ts: 3.1.1
     optionalDependencies:
