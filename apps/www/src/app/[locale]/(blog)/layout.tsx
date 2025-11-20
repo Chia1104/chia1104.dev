@@ -13,7 +13,7 @@ const Navigation = async () => {
     revalidate: 120,
   });
 
-  const [posts, notes] = await Promise.all([getPosts(), getNotes()]);
+  const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
 
   return (
     <NavigationMenu className="not-prose mb-5 md:mb-10 z-20">
