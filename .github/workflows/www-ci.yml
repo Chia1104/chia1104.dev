@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "💽️  Setup"
         id: dash-init
@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "💽️  Setup"
         id: dash-init
@@ -82,7 +82,7 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "💽️  Setup"
         id: dash-init
@@ -101,7 +101,7 @@ jobs:
     steps:
       - name: "🐙️  Checkout"
         id: pull-checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
