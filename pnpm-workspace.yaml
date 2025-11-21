@@ -28,9 +28,9 @@ catalogs:
     eslint: 9.39.1
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.3
-    fumadocs-core: 16.0.14
-    fumadocs-mdx: 14.0.2
-    fumadocs-ui: 16.0.14
+    fumadocs-core: 16.1.0
+    fumadocs-mdx: 14.0.3
+    fumadocs-ui: 16.1.0
   heroui:
     '@heroui/react': 2.8.5
     '@heroui/theme': 2.4.23
