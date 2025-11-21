@@ -57,7 +57,10 @@ const LinkItem: FC<{
   );
 };
 
-const ContactPage = () => {
+// eslint-disable-next-line @typescript-eslint/require-await
+const ContactPage = async () => {
+  "use cache";
+
   return (
     <ViewTransition>
       <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
