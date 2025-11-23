@@ -66,7 +66,7 @@
     "@anthropic-ai/sdk": "^0.70.0",
     "@chia/utils": "workspace:*",
     "@google/genai": "^1.30.0",
-    "ai": "^5.0.97",
+    "ai": "^5.0.100",
     "next": "catalog:next",
     "ollama": "^0.6.3",
     "openai": "^6.9.1",
