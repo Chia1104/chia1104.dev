@@ -12,7 +12,7 @@ const Default = async () => {
   }
 
   return (
-    <div className="min-w-full py-20 prose dark:prose-invert px-8">
+    <div className="min-w-full py-20 chprose dark:chprose-invert px-8">
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-foreground">
         <AcmeIcon size={56} className="text-background" />
       </div>

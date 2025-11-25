@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <article className="prose dark:prose-invert mt-20 min-w-full">
+    <article className="chprose dark:chprose-invert mt-20 min-w-full">
       <h1>Projects</h1>
       <p>
         I love to build things. Here are some of the projects I've worked on

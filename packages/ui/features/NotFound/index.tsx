@@ -14,7 +14,7 @@ import {
 export default function NotFound() {
   return (
     <ViewTransition>
-      <div className="main container not-prose">
+      <div className="main container not-chprose">
         <TextRevealCard text="404 Not Found" revealText="出事拉，阿北！">
           <TextRevealCardTitle>Not Found</TextRevealCardTitle>
           <TextRevealCardDescription>

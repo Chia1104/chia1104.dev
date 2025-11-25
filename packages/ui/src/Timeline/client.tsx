@@ -91,7 +91,7 @@ export const Item: FC<ListItemProps> = ({
           defaultValue={defaultOpen ? data.id.toString() : undefined}>
           <AccordionItem
             value={data.id.toString()}
-            className="prose-h3:m-1 prose-h3:w-fit">
+            className="chprose-h3:m-1 chprose-h3:w-fit">
             <AccordionTrigger className="flex w-fit p-0 text-sm text-gray-500 dark:text-gray-300">
               MORE
             </AccordionTrigger>

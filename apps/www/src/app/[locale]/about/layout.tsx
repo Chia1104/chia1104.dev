@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 
 const AboutPage = (props: LayoutProps<"/[locale]/about">) => {
   return (
-    <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
+    <article className="chprose dark:chprose-invert mt-20 max-w-[700px] items-start">
       {props.children}
     </article>
   );

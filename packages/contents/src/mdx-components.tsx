@@ -50,22 +50,22 @@ export const FumadocsComponents = {
     />
   ),
   h1: (props: any) => (
-    <Heading as="h1" {...props} className="prose-a:no-underline" />
+    <Heading as="h1" {...props} className="chprose-a:no-underline" />
   ),
   h2: (props: any) => (
-    <Heading as="h2" {...props} className="prose-a:no-underline" />
+    <Heading as="h2" {...props} className="chprose-a:no-underline" />
   ),
   h3: (props: any) => (
-    <Heading as="h3" {...props} className="prose-a:no-underline" />
+    <Heading as="h3" {...props} className="chprose-a:no-underline" />
   ),
   h4: (props: any) => (
-    <Heading as="h4" {...props} className="prose-a:no-underline" />
+    <Heading as="h4" {...props} className="chprose-a:no-underline" />
   ),
   h5: (props: any) => (
-    <Heading as="h5" {...props} className="prose-a:no-underline" />
+    <Heading as="h5" {...props} className="chprose-a:no-underline" />
   ),
   h6: (props: any) => (
-    <Heading as="h6" {...props} className="prose-a:no-underline" />
+    <Heading as="h6" {...props} className="chprose-a:no-underline" />
   ),
 } as MDXComponents;
 
@@ -88,7 +88,7 @@ export const V1MDXComponents: MDXComponents = {
   ),
   table: (props: any) => (
     <div className="max-w-full overflow-x-auto my-10">
-      <table className="min-w-full h-auto table-auto w-full not-prose bg-content1 overflow-hidden rounded-lg">
+      <table className="min-w-full h-auto table-auto w-full not-chprose bg-content1 overflow-hidden rounded-lg">
         {props.children}
       </table>
     </div>

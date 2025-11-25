@@ -109,9 +109,9 @@ const PreviewDetail: FC<
       ) : !!data && isSuccess ? (
         <div className="flex min-w-0 flex-col gap-3">
           {data.ogImage && (
-            <div className="not-prose aspect-h-9 aspect-w-16 relative w-60 overflow-hidden rounded-md">
+            <div className="not-chprose aspect-h-9 aspect-w-16 relative w-60 overflow-hidden rounded-md">
               <img
-                className="not-prose w-full rounded-md bg-neutral-200 object-cover p-0 dark:bg-neutral-800"
+                className="not-chprose w-full rounded-md bg-neutral-200 object-cover p-0 dark:bg-neutral-800"
                 src={data.ogImage}
                 alt={data.title ?? "og-image"}
               />

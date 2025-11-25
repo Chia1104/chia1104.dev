@@ -75,10 +75,10 @@ const MdxContent = (props: BaseProps) => {
         <MDXInlineTOC />
       </div>
       <div
-        className="flex w-full relative prose-code:text-[13px] prose-code:font-normal"
+        className="flex w-full relative chprose-code:text-[13px] chprose-code:font-normal"
         ref={containerRef}>
         {props.children}
-        <Card className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit ml-2">
+        <Card className="hidden lg:flex w-[30%] not-chprose sticky top-24 h-fit ml-2">
           <CardHeader>
             {content.tocContents?.label ?? "On this page"}
           </CardHeader>

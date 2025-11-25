@@ -30,7 +30,7 @@ interface Props {
 const Empty = () => {
   return (
     <CHCard
-      className="prose dark:prose-invert flex w-full flex-col items-center justify-center px-1 py-12 sm:px-4 gap-5 max-w-full"
+      className="chprose dark:chprose-invert flex w-full flex-col items-center justify-center px-1 py-12 sm:px-4 gap-5 max-w-full"
       wrapperProps={{
         className: "w-full",
       }}>

@@ -171,7 +171,7 @@ const HugeThanks = () => {
           <ModalHeader className="flex flex-col gap-1 text-center text-xl">
             Huge Thanks to all the tech providers! 🎉
           </ModalHeader>
-          <ModalBody className="prose dark:prose-invert prose-img:m-0">
+          <ModalBody className="chprose dark:chprose-invert chprose-img:m-0">
             <ul>
               {Object.entries(techStack).map(([key, value]) => (
                 <li key={key}>

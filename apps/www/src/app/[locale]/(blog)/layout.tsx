@@ -16,7 +16,7 @@ const Navigation = async () => {
   const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
 
   return (
-    <NavigationMenu className="not-prose mb-5 md:mb-10 z-20">
+    <NavigationMenu className="not-chprose mb-5 md:mb-10 z-20">
       <NavigationMenuList className="gap-5">
         <FeedNavigation feeds={posts.items} type="post" />
         <FeedNavigation feeds={notes.items} type="note" />
@@ -27,7 +27,7 @@ const Navigation = async () => {
 
 const Layout = ({ children }: LayoutProps<"/[locale]">) => {
   return (
-    <section className="prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start min-w-full min-h-[calc(100vh-140px)] flex flex-col">
+    <section className="chprose dark:chprose-invert mt-10 md:mt-20 w-full items-start justify-start min-w-full min-h-[calc(100vh-140px)] flex flex-col">
       <div className="z-30">
         <Suspense>
           <Navigation />
