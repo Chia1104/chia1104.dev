@@ -76,7 +76,7 @@
     "@total-typescript/ts-reset": "0.6.1",
     "@trivago/prettier-plugin-sort-imports": "^6.0.0",
     "@turbo/gen": "^2.6.1",
-    "@vitest/coverage-v8": "^4.0.10",
+    "@vitest/coverage-v8": "^4.0.15",
     "cross-env": "10.1.0",
     "dotenv": "^17.2.3",
     "happy-dom": "^20.0.10",
@@ -90,7 +90,7 @@
     "tsx": "^4.20.6",
     "turbo": "2.6.1",
     "typescript": "catalog:",
-    "vitest": "^4.0.10"
+    "vitest": "^4.0.15"
   },
   "manypkg": {
     "ignoredRules": [
