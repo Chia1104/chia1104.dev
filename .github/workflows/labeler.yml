@@ -1,22 +1,16 @@
 name: "Pull Request Labeler"
 on:
-  - pull_request_target
-
-permissions:
-  contents: read
-  pull-requests: write
+  - pull_request
 
 jobs:
-  labeler:
+  triage:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
     runs-on: ubuntu-latest
     steps:
-      - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
       - uses: actions/labeler@v6
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           dot: true
-          configuration-path: ./.github/labeler.yml
