@@ -23,7 +23,7 @@ const LocaleSelector = (props: ButtonProps) => {
     router.refresh();
   };
   return (
-    <Dropdown className="not-prose">
+    <Dropdown className="not-chprose">
       <DropdownTrigger>
         <Button variant="flat" size="sm" {...props}>
           {t("label")}

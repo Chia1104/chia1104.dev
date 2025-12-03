@@ -6,7 +6,7 @@ permissions:
 
 on:
   pull_request:
-    types: [ opened, labeled, unlabeled, synchronize, reopened ]
+    types: [opened, labeled, unlabeled, synchronize, reopened]
 
 jobs:
   test:
@@ -18,6 +18,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PUBLIC_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LANGUAGE: Chinese
-          MODEL:
           top_p: 1
           temperature: 1

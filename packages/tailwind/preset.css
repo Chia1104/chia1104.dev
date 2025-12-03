@@ -1,7 +1,9 @@
 @import "./colors.css";
 @import "./typography.css";
 
-@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/typography" {
+  className: chprose;
+};
 @plugin "./plugins/egoist-icons";
 
 @custom-variant dark (&:where(.dark, .dark *));

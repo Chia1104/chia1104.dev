@@ -1,4 +1,5 @@
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
+import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -112,21 +113,15 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-// export default million.next(
-//   // @ts-ignore
-//   withSentryConfigImport(withNextIntl(nextComposePlugins), {
-//     org: process.env.SENTRY_ORG,
-//     project: process.env.SENTRY_PROJECT,
-//     authToken: process.env.SENTRY_AUTH_TOKEN,
-//     silent: true,
-//     disableLogger: true,
-//     sourcemaps: {
-//       deleteSourcemapsAfterUpload: true,
-//     },
-//   }),
-//   {
-//     rsc: true,
-//   }
-// );
-
-export default withNextIntl(nextComposePlugins);
+export default withNextIntl(
+  withSentryConfigImport(withNextIntl(nextComposePlugins), {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: true,
+    disableLogger: true,
+    sourcemaps: {
+      deleteSourcemapsAfterUpload: true,
+    },
+  })
+);

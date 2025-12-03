@@ -7,20 +7,20 @@ packages:
 catalog:
   '@t3-oss/env-core': ^0.13.8
   '@t3-oss/env-nextjs': ^0.13.8
-  '@tanstack/react-query': ^5.90.10
-  '@types/lodash': ^4.17.20
+  '@tanstack/react-query': ^5.90.11
+  '@types/lodash': ^4.17.21
   '@types/node': 24.10.1
-  bun-types: ^1.3.2
+  bun-types: ^1.3.3
   client-only: ^0.0.1
   dayjs: ^1.11.19
-  graphql-request: ^7.3.4
+  graphql-request: ^7.3.5
   ky: ^1.14.0
   lodash: ^4.17.21
   server-only: ^0.0.1
-  superjson: 2.2.5
-  tsdown: ^0.16.5
+  superjson: 2.2.6
+  tsdown: 0.17.0-beta.6
   typescript: ^5.9.3
-  zod: ^4.1.12
+  zod: ^4.1.13
 
 catalogs:
   eslint:
@@ -28,40 +28,40 @@ catalogs:
     eslint: 9.39.1
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.3
-    fumadocs-core: 16.0.14
-    fumadocs-mdx: 14.0.2
-    fumadocs-ui: 16.0.14
+    fumadocs-core: 16.2.2
+    fumadocs-mdx: 14.0.4
+    fumadocs-ui: 16.2.2
   heroui:
     '@heroui/react': 2.8.5
     '@heroui/theme': 2.4.23
   next:
-    '@next/bundle-analyzer': 16.0.3
-    '@next/eslint-plugin-next': 16.0.3
-    '@next/third-parties': 16.0.3
-    next: 16.0.3
+    '@next/bundle-analyzer': 16.0.7
+    '@next/eslint-plugin-next': 16.0.7
+    '@next/third-parties': 16.0.7
+    next: 16.0.7
   react18:
     '@types/react': ^18.3.27
     '@types/react-dom': ^18.3.7
     react: 18.3.1
     react-dom: 18.3.1
   react19:
-    '@types/react': ^19.2.6
+    '@types/react': ^19.2.7
     '@types/react-dom': ^19.2.3
     babel-plugin-react-compiler: 19.1.0-rc.3
-    react: ^19.2.0
-    react-dom: ^19.2.0
+    react: ^19.2.1
+    react-dom: ^19.2.1
   tailwindcss:
     '@tailwindcss/postcss': 4.1.17
     tailwindcss: 4.1.17
   triggerdotdev:
-    '@trigger.dev/build': 4.1.1
-    '@trigger.dev/core': 4.1.1
-    '@trigger.dev/sdk': 4.1.1
+    '@trigger.dev/build': 4.1.2
+    '@trigger.dev/core': 4.1.2
+    '@trigger.dev/sdk': 4.1.2
   trpc:
-    '@trpc/client': 11.7.1
-    '@trpc/next': 11.7.1
-    '@trpc/react-query': 11.7.1
-    '@trpc/server': 11.7.1
+    '@trpc/client': 11.7.2
+    '@trpc/next': 11.7.2
+    '@trpc/react-query': 11.7.2
+    '@trpc/server': 11.7.2
 
 linkWorkspacePackages: true
 

@@ -52,11 +52,11 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - name: "💽️  Setup"
-        id: dash-init
-        uses: ./.github/actions/setup
+      - name: "💽️ Setup"
+        id: service-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🔥 Init bun"
         run: pnpm add -g bun
@@ -74,11 +74,11 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - name: "💽️  Setup"
-        id: dash-init
-        uses: ./.github/actions/setup
+      - name: "💽️ Setup"
+        id: service-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🔥 Init bun"
         run: pnpm add -g bun
@@ -96,11 +96,11 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - name: "💽️  Setup"
-        id: dash-init
-        uses: ./.github/actions/setup
+      - name: "💽️ Setup"
+        id: service-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🔥 Init bun"
         run: pnpm add -g bun

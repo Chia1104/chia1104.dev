@@ -91,7 +91,7 @@
   "devDependencies": {
     "@chia/eslint-config": "workspace:*",
     "@chia/tsconfig": "workspace:*",
-    "@types/express": "^5.0.5",
+    "@types/express": "^5.0.6",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }

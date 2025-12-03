@@ -1,7 +1,7 @@
+import { passkeyClient } from "@better-auth/passkey/client";
 import type { createAuthClient } from "better-auth/client";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
-import { passkeyClient } from "better-auth/client/plugins";
 import { apiKeyClient } from "better-auth/client/plugins";
 import { organizationClient } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";

@@ -44,11 +44,11 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - name: "💽️  Setup"
-        id: dash-init
-        uses: ./.github/actions/setup
+      - name: "💽️ Setup"
+        id: www-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🧹 ES Lint"
         shell: bash
@@ -63,11 +63,11 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - name: "💽️  Setup"
-        id: dash-init
-        uses: ./.github/actions/setup
+      - name: "💽️ Setup"
+        id: www-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🧹 Type check"
         shell: bash
@@ -82,11 +82,11 @@ jobs:
 
     steps:
       - name: "🐙️ Check out code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - name: "💽️  Setup"
-        id: dash-init
-        uses: ./.github/actions/setup
+      - name: "💽️ Setup"
+        id: www-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🧹 Test"
         shell: bash
@@ -101,13 +101,13 @@ jobs:
     steps:
       - name: "🐙️  Checkout"
         id: pull-checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: "📦  Setup"
         id: pull-install
-        uses: "./.github/actions/setup"
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "📦  Next.js cache"
         uses: actions/cache@v4

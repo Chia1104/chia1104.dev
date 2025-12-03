@@ -15,7 +15,7 @@ export const MDXBody = (props: {
     <DocsBody
       className={cn(
         props.className,
-        "prose dark:prose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]"
+        "chprose dark:chprose-invert w-full min-w-full lg:w-[70%] lg:min-w-[70%]"
       )}>
       <props.MDXContent />
     </DocsBody>

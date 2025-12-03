@@ -20,7 +20,7 @@ const ImageItem: FC<{
   <ImageZoom>
     <div
       className={cn(
-        "not-prose relative w-full overflow-hidden rounded-lg shadow-md",
+        "not-chprose relative w-full overflow-hidden rounded-lg shadow-md",
         className
       )}>
       <Image

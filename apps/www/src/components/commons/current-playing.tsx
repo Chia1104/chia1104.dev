@@ -235,10 +235,10 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
 
   return (
     <HoverCard>
-      <HoverCardTrigger asChild className="prose dark:prose-invert z-10">
+      <HoverCardTrigger asChild className="chprose dark:chprose-invert z-10">
         <div
           className={cn(
-            "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
+            "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-chprose",
             props.className
           )}>
           <span className="i-mdi-spotify size-5 text-[#1DB954]" />
@@ -258,7 +258,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
                 : undefined,
           }}
           className={cn(
-            "z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-secondary/50 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
+            "z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-secondary/50 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-chprose",
             props.isError &&
               "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)]",
             props.experimental?.displayBackgroundColorFromImage && !isPending
@@ -273,8 +273,8 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
                 "overflow-hidden p-1",
                 props.experimental?.displayBackgroundColorFromImage &&
                   !isPending
-                  ? "not-prose"
-                  : "prose dark:prose-invert"
+                  ? "not-chprose"
+                  : "chprose dark:chprose-invert"
               )}>
               {MemoTitle}
               <p
@@ -338,7 +338,7 @@ const CurrentPlaying: FC<Props> = ({
     return (
       <div
         className={cn(
-          "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
+          "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-chprose",
           className
         )}>
         <span className="i-mdi-spotify size-5 text-[#1DB954]" />
