@@ -38,7 +38,7 @@ catalogs:
     '@next/bundle-analyzer': 16.0.3
     '@next/eslint-plugin-next': 16.0.3
     '@next/third-parties': 16.0.3
-    next: 16.0.3
+    next: 16.0.7
   react18:
     '@types/react': ^18.3.27
     '@types/react-dom': ^18.3.7
