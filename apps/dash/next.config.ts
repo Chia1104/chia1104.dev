@@ -1,5 +1,4 @@
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
-import million from "million/compiler";
 import type { NextConfig } from "next";
 
 import "@/env";
@@ -63,7 +62,4 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-// @ts-expect-error
-export default million.next(nextComposePlugins, {
-  rsc: true,
-});
+export default nextComposePlugins;

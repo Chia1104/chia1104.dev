@@ -1,10 +1,7 @@
 {
-  "extends": "@chia/tsconfig/internal-package.json",
+  "extends": "@chiastack/tsconfig/react.json",
   "compilerOptions": {
-    "types": ["vitest/globals"],
-    "lib": ["ES2022", "dom", "dom.iterable"],
-    "jsx": "preserve",
-    "rootDir": "."
+    "types": ["vitest/globals"]
   },
   "include": ["."],
   "exclude": ["node_modules", "dist"]

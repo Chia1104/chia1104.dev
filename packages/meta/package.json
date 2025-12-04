@@ -14,8 +14,8 @@
     "dayjs": "catalog:"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }

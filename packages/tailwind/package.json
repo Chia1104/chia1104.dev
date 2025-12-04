@@ -18,7 +18,7 @@
     "type:check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@egoist/tailwindcss-icons": "^1.9.0",
     "@iconify/json": "^2.2.414",
     "@tailwindcss/typography": "^0.5.19",

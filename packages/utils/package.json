@@ -78,9 +78,7 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "type:check": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "dayjs": "catalog:",
@@ -89,8 +87,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@types/express": "^5.0.6",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"

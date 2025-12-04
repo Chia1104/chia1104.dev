@@ -153,7 +153,7 @@ export const Form: FC<
         if (_error instanceof HTTPError) {
           const error = await handleKyError(_error);
 
-          switch (error.errors?.[0].message) {
+          switch (error.errors?.[0]?.message) {
             case CaptchaErrorCode.CaptchaFailed:
               return "Failed to validate captcha";
             case CaptchaErrorCode.CaptchaProviderNotSupported:

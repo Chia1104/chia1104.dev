@@ -19,11 +19,11 @@
     "@t3-oss/env-core": "catalog:",
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
-    "openai": "^6.9.1",
+    "openai": "^6.10.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@trigger.dev/build": "catalog:triggerdotdev",
     "typescript": "catalog:"
   },

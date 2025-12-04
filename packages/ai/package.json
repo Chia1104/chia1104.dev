@@ -54,27 +54,25 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "type:check": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --passWithNoTests"
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.53",
     "@ai-sdk/deepseek": "^1.0.31",
     "@ai-sdk/google": "^2.0.44",
     "@ai-sdk/openai": "^2.0.77",
-    "@anthropic-ai/sdk": "^0.71.0",
+    "@anthropic-ai/sdk": "^0.71.1",
     "@chia/utils": "workspace:*",
-    "@google/genai": "^1.30.0",
+    "@google/genai": "^1.31.0",
     "ai": "^5.0.106",
     "next": "catalog:next",
     "ollama": "^0.6.3",
-    "openai": "^6.9.1",
+    "openai": "^6.10.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }

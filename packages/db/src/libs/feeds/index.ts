@@ -209,8 +209,9 @@ export const createFeed = withDTO(
           })
           .returning()
       )[0];
-      if (!feed.id) {
+      if (!feed?.id) {
         trx.rollback();
+        return;
       }
       const content = (
         await trx
@@ -223,8 +224,9 @@ export const createFeed = withDTO(
           })
           .returning()
       )[0];
-      if (!content.id) {
+      if (!content?.id) {
         trx.rollback();
+        return;
       }
       return Object.assign(feed, { content });
     });
@@ -262,8 +264,9 @@ export const updateFeed = withDTO(
           .where(eq(schema.feeds.id, dto.feedId))
           .returning()
       )[0];
-      if (!feed.id) {
+      if (!feed?.id) {
         trx.rollback();
+        return;
       }
       if (!dto.content && !dto.source && !dto.unstable_serializedSource) {
         return Object.assign(feed, { content: null });
@@ -279,8 +282,9 @@ export const updateFeed = withDTO(
           .where(eq(schema.contents.feedId, dto.feedId))
           .returning()
       )[0];
-      if (!content.id) {
+      if (!content?.id) {
         trx.rollback();
+        return;
       }
       return Object.assign(feed, { content });
     });

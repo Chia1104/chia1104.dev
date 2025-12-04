@@ -1,4 +1,5 @@
 import GithubSlugger from "github-slugger";
+import crypto from "node:crypto";
 import { z } from "zod";
 
 import { eq, schema } from "@chia/db";
@@ -67,9 +68,7 @@ export const feedsRouter = createTRPCRouter({
         slug: opts.input.slug
           ? slugger.slug(opts.input.slug)
           : slugger.slug(
-              `${opts.input.title}-${crypto
-                .getRandomValues(new Uint32Array(1))[0]
-                .toString(16)}`
+              `${opts.input.title}-${crypto.getRandomValues(new Uint32Array(1))[0]?.toString(16)}`
             ),
         type: opts.input.type,
         title: opts.input.title,
@@ -84,7 +83,7 @@ export const feedsRouter = createTRPCRouter({
         createdAt: opts.input.createdAt,
         updatedAt: opts.input.updatedAt,
       });
-      if (opts.ctx.hooks?.onFeedCreated) {
+      if (opts.ctx.hooks?.onFeedCreated && feed) {
         await opts.ctx.hooks.onFeedCreated(feed);
       }
     }),
@@ -107,7 +106,7 @@ export const feedsRouter = createTRPCRouter({
         createdAt: opts.input.createdAt,
         updatedAt: opts.input.updatedAt,
       });
-      if (opts.ctx.hooks?.onFeedUpdated) {
+      if (opts.ctx.hooks?.onFeedUpdated && feed) {
         await opts.ctx.hooks.onFeedUpdated(feed);
       }
     }),

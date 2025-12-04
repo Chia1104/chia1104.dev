@@ -32,20 +32,15 @@
       "cache": true
     },
     "test": {
-      "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
       "cache": true
     },
     "test:watch": {
       "outputs": []
     },
-    "test:cov": {
-      "dependsOn": ["^build"],
+    "test:service": {
       "outputs": ["coverage/**"],
       "cache": true
-    },
-    "test:debug": {
-      "outputs": []
     },
     "dev": {
       "cache": false,

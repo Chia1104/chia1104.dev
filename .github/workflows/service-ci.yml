@@ -108,4 +108,4 @@ jobs:
       - name: "🧹 Test"
         shell: bash
         run: |
-          pnpm test --filter service...
+          pnpm test:service

@@ -1,5 +1,5 @@
 {
-  "extends": "@chia/tsconfig/internal-package.json",
+  "extends": "@chiastack/tsconfig/base.json",
   "include": ["tasks"],
   "exclude": ["node_modules", "dist", ".trigger"]
 }

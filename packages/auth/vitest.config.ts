@@ -3,9 +3,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     globals: true,
-    environment: "node",
-    passWithNoTests: true,
-    setupFiles: ["../../toolings/vitest/setup.ts"],
+    include: [
+      "src/**/*.{spec,test}.{ts,tsx}",
+      "__tests__/**/*.{spec,test}.{ts,tsx}",
+    ],
+    exclude: ["**/node_modules/**"],
     env: {
       DATABASE_URL: "postgres://postgres:password@localhost:5432/auth",
       GOOGLE_CLIENT_ID: "google-client-id",

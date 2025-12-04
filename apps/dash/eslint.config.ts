@@ -1,8 +1,7 @@
+import baseConfig from "@chiastack/eslint/base";
+import nextjsConfig from "@chiastack/eslint/nextjs";
+import reactConfig from "@chiastack/eslint/react";
 import { defineConfig } from "eslint/config";
-
-import baseConfig from "@chia/eslint-config/base";
-import nextjsConfig from "@chia/eslint-config/nextjs";
-import reactConfig from "@chia/eslint-config/react";
 
 export default defineConfig(
   {

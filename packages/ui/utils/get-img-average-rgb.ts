@@ -1,6 +1,6 @@
 interface Options {
   blockSize?: number;
-  defaultRGB?: number[];
+  defaultRGB?: [number, number, number];
   canvas?: HTMLCanvasElement;
   context?: CanvasRenderingContext2D;
 }
@@ -26,10 +26,11 @@ export const experimental_getImgAverageRGB = (
   }
 
   let data: Uint8ClampedArray;
-  const width = (canvas.width =
-    img.naturalWidth || img.offsetWidth || img.width);
-  const height = (canvas.height =
-    img.naturalHeight || img.offsetHeight || img.height);
+  const width = img.naturalWidth || img.offsetWidth || img.width;
+  const height = img.naturalHeight || img.offsetHeight || img.height;
+
+  canvas.width = width;
+  canvas.height = height;
 
   context.drawImage(img, 0, 0);
 
@@ -41,14 +42,14 @@ export const experimental_getImgAverageRGB = (
   }
 
   const length = data.length;
-  const rgb = defaultRGB;
+  const rgb: [number, number, number] = [...defaultRGB];
   let count = 0;
 
   for (let i = 0; i < length; i += blockSize * 4) {
     ++count;
-    rgb[0] += data[i];
-    rgb[1] += data[i + 1];
-    rgb[2] += data[i + 2];
+    rgb[0] += data[i] ?? 0;
+    rgb[1] += data[i + 1] ?? 0;
+    rgb[2] += data[i + 2] ?? 0;
   }
   rgb[0] = ~~(rgb[0] / count);
   rgb[1] = ~~(rgb[1] / count);

@@ -38,9 +38,7 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "type:check": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --passWithNoTests"
+    "type:check": "tsc --noEmit"
   },
   "dependencies": {
     "@chia/db": "workspace:*",
@@ -57,17 +55,17 @@
     "mermaid": "^11.12.2",
     "next": "catalog:next",
     "next-themes": "^0.4.6",
-    "react": "catalog:react19",
-    "react-dom": "catalog:react19",
+    "react": "catalog:react-is",
+    "react-dom": "catalog:react-is",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@types/mdx": "^2.0.13",
-    "@types/react": "catalog:react19",
-    "@types/react-dom": "catalog:react19",
+    "@types/react": "catalog:react-is",
+    "@types/react-dom": "catalog:react-is",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }

@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import GithubSlugger from "github-slugger";
+import crypto from "node:crypto";
 import { z } from "zod";
 
 import { auth } from "@chia/auth";
@@ -150,7 +151,7 @@ export const organizationRouter = createTRPCRouter({
           : slugger.slug(
               `${opts.input.name}-${crypto
                 .getRandomValues(new Uint32Array(1))[0]
-                .toString(16)}`
+                ?.toString(16)}`
             ),
       });
     }),

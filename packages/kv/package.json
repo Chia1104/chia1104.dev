@@ -34,13 +34,11 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "type:check": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "type:check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@keyv/test-suite": "^2.1.2",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
@@ -53,7 +51,7 @@
     "@t3-oss/env-core": "catalog:",
     "@upstash/ratelimit": "2.0.7",
     "@upstash/redis": "1.35.7",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.0",
     "keyv": "^5.5.5",
     "zod": "catalog:"
   }

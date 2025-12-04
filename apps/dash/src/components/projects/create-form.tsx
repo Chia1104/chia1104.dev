@@ -30,7 +30,7 @@ const CreateForm = (props: Props) => {
 
   const { mutate } = api.organization.createProject.useMutation({
     onSuccess: (data) => {
-      if (data) {
+      if (data[0]) {
         props?.onSuccess?.(data[0]);
       }
       toast.success("Project created successfully");

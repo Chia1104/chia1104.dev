@@ -1,3 +1,4 @@
-import baseConfig from "@chia/eslint-config/base";
+import baseConfig from "@chiastack/eslint/base";
+import { defineConfig } from "eslint/config";
 
-export default [...baseConfig];
+export default defineConfig(baseConfig);

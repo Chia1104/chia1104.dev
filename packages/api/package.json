@@ -98,9 +98,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "clean": "git clean -xdf .turbo node_modules dist .cache",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.943.0",
@@ -122,8 +120,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }

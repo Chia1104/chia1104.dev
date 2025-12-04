@@ -2,7 +2,7 @@ import type { FC } from "react";
 
 import { cacheLife } from "next/cache";
 
-import type { getPlayList } from "@chia/api/spotify";
+import type { PlayList } from "@chia/api/spotify/types";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
@@ -66,7 +66,7 @@ const First: FC<{
     <div className="flex w-full flex-col items-center sm:items-start">
       <span className="group relative w-2/3">
         <ImageItem
-          src={data.track.album.images[0].url}
+          src={data.track.album.images[0]?.url ?? ""}
           alt={data.track.album.name}
           className="aspect-h-1 aspect-w-1"
         />
@@ -78,7 +78,7 @@ const First: FC<{
         <PlayIcon className="absolute bottom-1 right-5 opacity-0 transition-all duration-300 ease-in-out group-hover:bottom-5 group-hover:opacity-100" />
       </span>
       <h3 className="line-clamp-2">
-        {data.track.name} - {data.track.artists[0].name}
+        {data.track.name} - {data.track.artists[0]?.name}
       </h3>
     </div>
   );
@@ -91,13 +91,13 @@ const Item: FC<{
     <div className="hover:dark:bg-dark/80 relative grid w-full grid-cols-3 items-center justify-center gap-3 rounded-lg transition-all hover:cursor-pointer hover:bg-white/80 hover:shadow-md">
       <span className="col-span-1">
         <ImageItem
-          src={data.track.album.images[0].url}
+          src={data.track.album.images[0]?.url ?? ""}
           alt={data.track.album.name}
           className="aspect-h-1 aspect-w-1"
         />
       </span>
       <p className="col-span-2 line-clamp-2">
-        {data.track.name} - {data.track.artists[0].name}
+        {data.track.name} - {data.track.artists[0]?.name}
       </p>
       <Link
         href={data.track.external_urls.spotify}
@@ -108,8 +108,13 @@ const Item: FC<{
   );
 };
 
-const getTop4 = (data: Awaited<ReturnType<typeof getPlayList>>) => {
-  return data.tracks.items.slice(0, 4);
+const getTop4 = (data: PlayList) => {
+  return data.tracks.items.slice(0, 4) as [
+    PlayList["tracks"]["items"][0],
+    PlayList["tracks"]["items"][1],
+    PlayList["tracks"]["items"][2],
+    PlayList["tracks"]["items"][3],
+  ];
 };
 
 const getPlaylist = async () => {
@@ -124,7 +129,7 @@ const getPlaylist = async () => {
     },
   })
     .get(`spotify/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default"}`)
-    .json<Awaited<ReturnType<typeof getPlayList>>>();
+    .json<PlayList>();
 };
 
 export async function SpotifyPlaylist() {
