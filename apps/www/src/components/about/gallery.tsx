@@ -32,7 +32,7 @@ const images = [
     alt: "graph-1",
     src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/graph-1.jpg",
   },
-];
+] as const;
 
 const ImageItem: FC<{
   src: string;

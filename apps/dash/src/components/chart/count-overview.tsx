@@ -176,7 +176,7 @@ const formatMonth = (month: string) => {
 const CountOverview = (props: { className?: string }) => {
   const [activeChart, setActiveChart] = React.useState<
     (typeof data)[number]["key"]
-  >(data[0].key);
+  >(data[0]?.key ?? "");
 
   const activeChartData = React.useMemo(() => {
     const chart = data.find((d) => d.key === activeChart);

@@ -25,6 +25,9 @@ const getCLIOptions = <TOptions extends Record<string, string>>(): TOptions => {
 
   args.forEach((arg) => {
     const [key, value] = arg.split("=");
+    if (!key || !value) {
+      return;
+    }
     options[key] = value;
   });
 

@@ -39,8 +39,8 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@keyv/test-suite": "^2.1.2",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"

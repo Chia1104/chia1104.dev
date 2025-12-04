@@ -9,7 +9,7 @@
     "clean": "git clean -xdf .turbo node_modules coverage .cache"
   },
   "devDependencies": {
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "start-server-and-test": "^2.1.3",
     "typescript": "catalog:",
     "www": "workspace:*"

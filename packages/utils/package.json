@@ -89,8 +89,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@types/express": "^5.0.6",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"

@@ -132,7 +132,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
     (img: HTMLImageElement) => {
       if (
         props.experimental?.displayBackgroundColorFromImage &&
-        props.data?.item.album.images[0].url
+        props.data?.item.album.images[0]?.url
       ) {
         startTransition(() => {
           const rgb = experimental_getImgAverageRGB(img);
@@ -160,7 +160,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
             blur={false}
             onLoad={(e) => handleImageLoad(e.target as HTMLImageElement)}
             ref={imgRef}
-            src={props.data.item.album.images[0].url}
+            src={props.data.item.album.images[0]?.url ?? ""}
             alt={props.data.item.album.name}
             className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
           />
@@ -221,7 +221,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
               href={props.data.item.external_urls.spotify}
               target="_blank">
               <TextShimmer className="m-0 flex w-full p-0">
-                {props.data.item.name} - {props.data.item.artists[0].name}
+                {props.data.item.name} - {props.data.item.artists[0]?.name}
               </TextShimmer>
             </Link>
           </Marquee>
@@ -287,7 +287,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
                       : "text-light"
                     : ""
                 )}>
-                {props.data.item.artists[0].name}
+                {props.data.item.artists[0]?.name}
               </p>
             </div>
           </div>

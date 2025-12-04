@@ -24,7 +24,6 @@ catalog:
 
 catalogs:
   eslint:
-    '@eslint/js': 9.39.1
     eslint: 9.39.1
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.3
@@ -36,15 +35,9 @@ catalogs:
     '@heroui/theme': 2.4.23
   next:
     '@next/bundle-analyzer': 16.0.7
-    '@next/eslint-plugin-next': 16.0.7
     '@next/third-parties': 16.0.7
     next: 16.0.7
-  react18:
-    '@types/react': ^18.3.27
-    '@types/react-dom': ^18.3.7
-    react: 18.3.1
-    react-dom: 18.3.1
-  react19:
+  react-is:
     '@types/react': ^19.2.7
     '@types/react-dom': ^19.2.3
     babel-plugin-react-compiler: 19.1.0-rc.3
@@ -62,6 +55,9 @@ catalogs:
     '@trpc/next': 11.7.2
     '@trpc/react-query': 11.7.2
     '@trpc/server': 11.7.2
+  chiastack:
+    '@chiastack/eslint': 2.0.2
+    '@chiastack/tsconfig': 2.0.3
 
 linkWorkspacePackages: true
 

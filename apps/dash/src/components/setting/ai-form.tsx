@@ -69,7 +69,7 @@ const AiForm = ({ model }: Props) => {
     onError: async (err) => {
       if (err instanceof HTTPError) {
         const error = await err.response?.json<ErrorResponse>();
-        toast.error(error.errors?.[0].message ?? "Failed to check API key");
+        toast.error(error.errors?.[0]?.message ?? "Failed to check API key");
         return;
       }
       toast.error("Failed to check API key");

@@ -1,8 +1,6 @@
-import type { Linter } from "eslint";
+import baseConfig from "@chiastack/eslint/base";
+import reactConfig from "@chiastack/eslint/react";
 import { defineConfig } from "eslint/config";
-
-import baseConfig from "@chia/eslint-config/base";
-import reactConfig from "@chia/eslint-config/react";
 
 export default defineConfig(
   {
@@ -10,4 +8,4 @@ export default defineConfig(
   },
   baseConfig,
   reactConfig
-) as Linter.Config;
+);

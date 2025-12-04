@@ -29,6 +29,12 @@ export const searchFeeds = withDTO(
           ? await ollamaEmbedding(dto.input, dto.useOllama.model)
           : await generateEmbedding(dto.input, dto)
         : await generateEmbedding(dto.input, dto));
+    if (!embedding) {
+      return {
+        items: [],
+        embedding: [],
+      };
+    }
     const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
 
     const feeds = await db

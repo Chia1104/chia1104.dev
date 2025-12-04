@@ -89,9 +89,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/eslint-config": "workspace:*",
-    "@chia/tsconfig": "workspace:*",
     "@chia/utils": "workspace:*",
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.7",
     "eslint": "catalog:eslint",

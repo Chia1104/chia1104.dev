@@ -1,5 +1,5 @@
 {
-  "extends": "@chia/tsconfig/base.json",
+  "extends": "@chiastack/tsconfig/base.json",
   "include": ["."],
   "exclude": ["node_modules"]
 }

@@ -23,7 +23,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/tsconfig": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
     "@trigger.dev/build": "catalog:triggerdotdev",
     "typescript": "catalog:"
   },
