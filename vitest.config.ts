@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     passWithNoTests: true,
-    projects: ["apps/*", "packages/*"],
+    projects: ["apps/www", "apps/dash", "packages/*"],
     coverage: {
       reporter: ["lcov", "html"],
       provider: "v8",
