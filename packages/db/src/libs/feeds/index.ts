@@ -226,7 +226,7 @@ export const createFeed = withDTO(
       if (!content.id) {
         trx.rollback();
       }
-      return Object.assign(feed, content);
+      return Object.assign(feed, { content });
     });
   }
 );
@@ -266,7 +266,7 @@ export const updateFeed = withDTO(
         trx.rollback();
       }
       if (!dto.content && !dto.source && !dto.unstable_serializedSource) {
-        return feed;
+        return Object.assign(feed, { content: null });
       }
       const content = (
         await trx
@@ -282,7 +282,7 @@ export const updateFeed = withDTO(
       if (!content.id) {
         trx.rollback();
       }
-      return Object.assign(feed, content);
+      return Object.assign(feed, { content });
     });
   }
 );
