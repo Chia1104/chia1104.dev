@@ -69,7 +69,7 @@
     "ai": "^5.0.106",
     "next": "catalog:next",
     "ollama": "^0.6.3",
-    "openai": "^6.9.1",
+    "openai": "^6.10.0",
     "zod": "catalog:"
   },
   "devDependencies": {

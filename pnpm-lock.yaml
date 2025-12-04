@@ -580,8 +580,8 @@ importers:
         specifier: catalog:triggerdotdev
         version: 4.1.2(ai@5.0.106(zod@4.1.13))(typescript@5.9.3)(zod@4.1.13)
       openai:
-        specifier: ^6.9.1
-        version: 6.9.1(ws@8.18.3)(zod@4.1.13)
+        specifier: ^6.10.0
+        version: 6.10.0(ws@8.18.3)(zod@4.1.13)
       zod:
         specifier: 'catalog:'
         version: 4.1.13
@@ -840,8 +840,8 @@ importers:
         specifier: ^0.6.3
         version: 0.6.3
       openai:
-        specifier: ^6.9.1
-        version: 6.9.1(ws@8.18.3)(zod@4.1.13)
+        specifier: ^6.10.0
+        version: 6.10.0(ws@8.18.3)(zod@4.1.13)
       zod:
         specifier: 'catalog:'
         version: 4.1.13
@@ -10401,8 +10401,8 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@6.9.1:
-    resolution: {integrity: sha512-vQ5Rlt0ZgB3/BNmTa7bIijYFhz3YBceAA3Z4JuoMSBftBF9YqFHIEhZakSs+O/Ad7EaoEimZvHxD5ylRjN11Lg==}
+  openai@6.10.0:
+    resolution: {integrity: sha512-ITxOGo7rO3XRMiKA5l7tQ43iNNu+iXGFAcf2t+aWVzzqRaS0i7m1K2BhxNdaveB+5eENhO0VY1FkiZzhBk4v3A==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -23821,7 +23821,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@6.9.1(ws@8.18.3)(zod@4.1.13):
+  openai@6.10.0(ws@8.18.3)(zod@4.1.13):
     optionalDependencies:
       ws: 8.18.3
       zod: 4.1.13
