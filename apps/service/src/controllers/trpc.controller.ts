@@ -56,7 +56,7 @@ api.use("*", async (c) => {
       });
     },
     onError: ({ error, path }) => {
-      if (error.code == "INTERNAL_SERVER_ERROR") {
+      if (error.code === "INTERNAL_SERVER_ERROR") {
         c.get("sentry").captureException(error);
       }
       console.error(`>>> tRPC Error on '${path}'`, error);

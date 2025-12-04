@@ -6,7 +6,7 @@ import { treeifyError } from "zod";
 import { auth } from "@chia/auth";
 import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
-import type { Feed } from "@chia/db/schema";
+import type { Feed, Content } from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import type { Keyv } from "@chia/kv";
 import { getAdminId } from "@chia/utils";
@@ -22,8 +22,8 @@ export const createTRPCContext = (opts: {
     onError?: (error: TRPCError) => void;
     onUnauthorized?: (error: TRPCError) => void;
     onForbidden?: (error: TRPCError) => void;
-    onFeedCreated?: (feed: Feed) => Promise<void>;
-    onFeedUpdated?: (feed: Feed) => Promise<void>;
+    onFeedCreated?: (feed: Feed & { content: Content }) => Promise<void>;
+    onFeedUpdated?: (feed: Feed & { content: Content | null }) => Promise<void>;
   };
 }) => {
   return opts;
