@@ -46,8 +46,8 @@ catalogs:
       specifier: 2.2.6
       version: 2.2.6
     tsdown:
-      specifier: 0.17.0-beta.6
-      version: 0.17.0-beta.6
+      specifier: 0.17.0
+      version: 0.17.0
     typescript:
       specifier: ^5.9.3
       version: 5.9.3
@@ -556,7 +556,7 @@ importers:
         version: 4.1.17
       tsdown:
         specifier: 'catalog:'
-        version: 0.17.0-beta.6(typescript@5.9.3)
+        version: 0.17.0(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -11972,8 +11972,8 @@ packages:
     resolution: {integrity: sha512-NoZ4roiN7LnbKn9QqE1amc9DJfzvZXxF4xDavcOWt1BPkdx+m+0gJuPM+S0vCe7zTJMYUP0R8pO2XMr+Y8oLIg==}
     engines: {node: '>=6'}
 
-  tsdown@0.17.0-beta.6:
-    resolution: {integrity: sha512-Hbuwzo4hg5759mnzzxZdCNT3hbqTwmXegCoB+60U57usOjVyqGx7rzngnKX/8u1VxXsmFipmBLHt+T4AaSMUbw==}
+  tsdown@0.17.0:
+    resolution: {integrity: sha512-NPZRrlC51X9Bb55ZTDwrWges8Dm1niCvNA5AYw7aix6pfnDnB4WR0neG5RPq75xIodg3hqlQUzzyrX7n4dmnJg==}
     engines: {node: '>=20.19.0'}
     hasBin: true
     peerDependencies:
@@ -25623,7 +25623,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tsdown@0.17.0-beta.6(typescript@5.9.3):
+  tsdown@0.17.0(typescript@5.9.3):
     dependencies:
       ansis: 4.2.0
       cac: 6.7.14

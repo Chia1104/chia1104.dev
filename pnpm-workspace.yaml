@@ -18,7 +18,7 @@ catalog:
   lodash: ^4.17.21
   server-only: ^0.0.1
   superjson: 2.2.6
-  tsdown: 0.17.0-beta.6
+  tsdown: 0.17.0
   typescript: ^5.9.3
   zod: ^4.1.13
 
