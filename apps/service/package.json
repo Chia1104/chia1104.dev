@@ -11,7 +11,8 @@
     "start": "bun run --bun dist/server.mjs",
     "node:preview": "node --env-file=.env dist/server.js",
     "type:check": "tsc --noEmit",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:service": "NODE_ENV=test bun test"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",

@@ -45,6 +45,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
+    "test:service": "turbo run test:service --filter service...",
     "db:up": "docker-compose -f db.docker-compose.yaml up",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
