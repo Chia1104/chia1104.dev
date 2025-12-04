@@ -44,7 +44,7 @@ const RepoCard: FC<{
           y: 20,
         },
       }}>
-      <div className="aspect-h-9 aspect-w-16 c-bg-gradient-green-to-purple not-chprose w-full overflow-hidden rounded-t-2xl">
+      <div className="aspect-h-9 aspect-w-16 c-bg-gradient-green-to-purple not-prose w-full overflow-hidden rounded-t-2xl">
         <Image
           src={image}
           alt={name}

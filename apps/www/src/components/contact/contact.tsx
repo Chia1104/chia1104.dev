@@ -183,7 +183,7 @@ export const Form: FC<
           })
         ) : (
           <>
-            <div className="chprose-p:m-0 mb-3 flex flex-col gap-2">
+            <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
               <FormField
                 control={form.control}
                 name="email"
@@ -206,7 +206,7 @@ export const Form: FC<
                 )}
               />
             </div>
-            <div className="chprose-p:m-0 mb-3 flex flex-col gap-2">
+            <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
               <FormField
                 control={form.control}
                 name="title"
@@ -229,7 +229,7 @@ export const Form: FC<
                 )}
               />
             </div>
-            <div className="chprose-p:m-0 mb-3 flex flex-col gap-2">
+            <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
               <FormField
                 control={form.control}
                 name="message"

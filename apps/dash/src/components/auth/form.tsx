@@ -26,7 +26,7 @@ const LoginForm = () => {
       wrapperProps={{
         className: "w-full max-w-[500px]",
       }}
-      className="chprose dark:chprose-invert flex w-full max-w-[500px] flex-col items-center justify-center px-1 py-12 sm:px-4">
+      className="prose dark:prose-invert flex w-full max-w-[500px] flex-col items-center justify-center px-1 py-12 sm:px-4">
       <h3>Sign in to your account</h3>
       <p className="mb-10 text-center text-xs">to continue to Chia1104.dev</p>
       <form

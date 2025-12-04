@@ -42,7 +42,7 @@ const ImageItem: FC<{
   <ImageZoom>
     <div
       className={cn(
-        "not-chprose relative w-full overflow-hidden rounded-lg",
+        "not-prose relative w-full overflow-hidden rounded-lg",
         className
       )}>
       <Image
@@ -58,7 +58,7 @@ const ImageItem: FC<{
 
 const Gallery = () => {
   return (
-    <div className="not-chprose grid w-full grid-cols-2 gap-2">
+    <div className="not-prose grid w-full grid-cols-2 gap-2">
       <span className="col-span-2 sm:col-span-1">
         <ImageItem
           src={images[4].src}

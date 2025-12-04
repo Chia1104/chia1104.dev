@@ -148,7 +148,7 @@ const Page = async ({
             </ViewTransition>
           </div>
           <p>{feed.description}</p>
-          <span className="mt-5 flex items-center gap-2 not-chprose">
+          <span className="mt-5 flex items-center gap-2 not-prose">
             <Image
               src="https://avatars.githubusercontent.com/u/38397958?v=4"
               width={40}
