@@ -17,18 +17,21 @@ catalog:
   lodash: ^4.17.21
   server-only: ^0.0.1
   superjson: 2.2.6
-  tsdown: 0.17.0-beta.6
+  tsdown: 0.17.0
   typescript: ^5.9.3
   zod: ^4.1.13
 
 catalogs:
+  chiastack:
+    '@chiastack/eslint': 2.0.2
+    '@chiastack/tsconfig': 2.0.3
   eslint:
     eslint: 9.39.1
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.3
-    fumadocs-core: 16.2.2
-    fumadocs-mdx: 14.0.4
-    fumadocs-ui: 16.2.2
+    fumadocs-core: 16.2.3
+    fumadocs-mdx: 14.1.0
+    fumadocs-ui: 16.2.3
   heroui:
     '@heroui/react': 2.8.5
     '@heroui/theme': 2.4.23
@@ -45,6 +48,18 @@ catalogs:
   tailwindcss:
     '@tailwindcss/postcss': 4.1.17
     tailwindcss: 4.1.17
+  tanstack:
+    '@tanstack/react-pacer': 0.17.3
+    '@tanstack/react-query': 5.90.12
+  testing-library:
+    '@testing-library/jest-dom': 6.9.1
+    '@testing-library/react': 16.3.0
+    '@testing-library/user-event': 14.6.1
+    '@vitejs/plugin-react-swc': 4.2.2
+    '@vitest/coverage-v8': 4.0.15
+    '@vitest/ui': 4.0.15
+    jest-extended: 7.0.0
+    vitest: 4.0.15
   triggerdotdev:
     '@trigger.dev/build': 4.1.2
     '@trigger.dev/core': 4.1.2
@@ -54,21 +69,6 @@ catalogs:
     '@trpc/next': 11.7.2
     '@trpc/react-query': 11.7.2
     '@trpc/server': 11.7.2
-  chiastack:
-    '@chiastack/eslint': 2.0.2
-    '@chiastack/tsconfig': 2.0.3
-  tanstack:
-    '@tanstack/react-query': 5.90.11
-    '@tanstack/react-pacer': 0.17.3
-  testing-library:
-    'vitest': 4.0.15
-    'jest-extended': 7.0.0
-    '@vitejs/plugin-react-swc': 4.2.2
-    '@testing-library/react': 16.3.0
-    '@testing-library/jest-dom': 6.9.1
-    '@testing-library/user-event': 14.6.1
-    '@vitest/coverage-v8': 4.0.15
-    '@vitest/ui': 4.0.15
 
 linkWorkspacePackages: true
 
