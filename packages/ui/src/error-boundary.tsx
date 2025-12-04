@@ -66,7 +66,7 @@ export class ErrorBoundary<TError extends Error> extends Component<
               this.props.errorElement
             )
           ) : (
-            <div className="y-container chprose dark:chprose-invert flex size-full flex-col items-center justify-center px-3 py-5">
+            <div className="y-container prose dark:prose-invert flex size-full flex-col items-center justify-center px-3 py-5">
               <h2>{this.props.errorMessage ?? "Oops, there is an error!"}</h2>
               <Button
                 onPress={() => this.setState({ hasError: false })}

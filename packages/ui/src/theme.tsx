@@ -172,7 +172,7 @@ const ThemeSelector: FC<
   return (
     <>
       {enableCMD && <ThemeCMD />}
-      <Dropdown className="not-chprose">
+      <Dropdown className="not-prose">
         <DropdownTrigger>
           <Button
             type="button"

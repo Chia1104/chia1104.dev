@@ -66,7 +66,7 @@ const CacheFeeds = async ({
     <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
       <p>{t("no-content")}</p>
       <ImageZoom>
-        <div className="not-chprose aspect-h-1 aspect-w-1 relative w-[100px]">
+        <div className="not-prose aspect-h-1 aspect-w-1 relative w-[100px]">
           <Image
             src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/memo.png"
             alt="memo"

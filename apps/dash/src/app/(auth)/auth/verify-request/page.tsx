@@ -11,12 +11,12 @@ const Page = ({
     default:
     case Provider.resend:
       return (
-        <div className="container main chprose dark:chprose-invert">
+        <div className="container main prose dark:prose-invert">
           <Card
             wrapperProps={{
               className: "w-full max-w-[500px]",
             }}
-            className="chprose dark:chprose-invert flex w-full max-w-[500px] flex-col items-center justify-center px-1 py-12 sm:px-4">
+            className="prose dark:prose-invert flex w-full max-w-[500px] flex-col items-center justify-center px-1 py-12 sm:px-4">
             <h2>Check your email</h2>
             <p>A sign in link has been sent to your email address.</p>
           </Card>

@@ -67,7 +67,7 @@ const Page = async ({ params }: { params: PageParamsWithLocale }) => {
   const latestWork = getLatestWork(meta.timeline);
   return (
     <ViewTransition>
-      <article className="chprose dark:chprose-invert mt-20 max-w-[700px] items-start">
+      <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
         <FadeIn className="w-full flex-col">
           <h1 className="text-start font-bold">{meta.name}</h1>
           <Suspense>
@@ -108,7 +108,7 @@ const Page = async ({ params }: { params: PageParamsWithLocale }) => {
         <FadeIn className="w-full">
           <div className="mt-5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
             <ImageZoom>
-              <div className="not-chprose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">
+              <div className="not-prose aspect-h-9 aspect-w-16 relative w-full overflow-hidden rounded-lg">
                 <Image
                   src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/me.JPG"
                   alt={meta.name}

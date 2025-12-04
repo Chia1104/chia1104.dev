@@ -44,7 +44,7 @@ const Page = () => {
               render={({ controller, isPending, ReCAPTCHA }) => (
                 <>
                   <div className="scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full flex h-[55vh] max-h-[550px] w-full max-w-[700px] flex-col gap-2 overflow-y-auto p-2">
-                    <div className="chprose-p:m-0 mb-3 flex flex-col gap-2">
+                    <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
                       <Controller
                         control={controller}
                         rules={{
@@ -70,7 +70,7 @@ const Page = () => {
                         name="email"
                       />
                     </div>
-                    <div className="chprose-p:m-0 mb-3 flex flex-col gap-2">
+                    <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
                       <Controller
                         control={controller}
                         rules={{
@@ -96,7 +96,7 @@ const Page = () => {
                         name="title"
                       />
                     </div>
-                    <div className="chprose-p:m-0 mb-3 flex flex-col gap-2">
+                    <div className="prose-p:m-0 mb-3 flex flex-col gap-2">
                       <Controller
                         control={controller}
                         rules={{
@@ -125,7 +125,7 @@ const Page = () => {
                       {ReCAPTCHA}
                     </div>
                   </div>
-                  <DrawerFooter className="chprose dark:chprose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 pb-5 pt-1">
+                  <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 pb-5 pt-1">
                     <ShimmerButton
                       shimmerSize="0.1em"
                       id={id + "-contact-submit"}
