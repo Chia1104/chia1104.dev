@@ -34,9 +34,7 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "type:check": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "type:check": "tsc --noEmit"
   },
   "devDependencies": {
     "@chiastack/eslint": "catalog:chiastack",

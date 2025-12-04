@@ -1,5 +1,3 @@
-import { expect, it, describe } from "bun:test";
-
 import { app } from "@/server";
 
 describe("Feeds Controller", () => {

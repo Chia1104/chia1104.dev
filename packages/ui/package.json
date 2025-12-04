@@ -67,8 +67,6 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "ui-add": "pnpm dlx shadcn-ui add && prettier src --write --list-different"
   },
@@ -87,7 +85,7 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^1.0.1",
-    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-query": "catalog:tanstack",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
@@ -110,7 +108,7 @@
   "devDependencies": {
     "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/react": "catalog:testing-library",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
     "eslint": "catalog:eslint",
