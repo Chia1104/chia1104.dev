@@ -1080,11 +1080,11 @@ importers:
         specifier: 'catalog:'
         version: 0.13.8(typescript@5.9.3)(zod@4.1.13)
       drizzle-orm:
-        specifier: ^0.44.7
-        version: 0.44.7(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7)
+        specifier: ^0.45.0
+        version: 0.45.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.1.13)
+        version: 0.8.3(drizzle-orm@0.45.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.1.13)
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -1138,8 +1138,8 @@ importers:
         specifier: 1.35.7
         version: 1.35.7
       drizzle-orm:
-        specifier: ^0.44.7
-        version: 0.44.7(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7)
+        specifier: ^0.45.0
+        version: 0.45.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7)
       keyv:
         specifier: ^5.5.5
         version: 5.5.5
@@ -8042,8 +8042,8 @@ packages:
     resolution: {integrity: sha512-hOzRGSdyKIU4FcTSFYGKdXEjFsncVwHZ43gY3WU5Bz9j5Iadp6Rh6hxLSQ1IWXpKLBKt/d5y1cpSPcV+FcoQ1A==}
     hasBin: true
 
-  drizzle-orm@0.44.7:
-    resolution: {integrity: sha512-quIpnYznjU9lHshEOAYLoZ9s3jweleHlZIAWR/jX9gAWNg/JhQ1wj0KGRf7/Zm+obRrYd9GjPVJg790QY9N5AQ==}
+  drizzle-orm@0.45.0:
+    resolution: {integrity: sha512-lyd9VRk3SXKRjV/gQckQzmJgkoYMvVG3A2JAV0vh3L+Lwk+v9+rK5Gj0H22y+ZBmxsrRBgJ5/RbQCN7DWd1dtQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -20599,7 +20599,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7):
+  drizzle-orm@0.45.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.15.6
@@ -20609,9 +20609,9 @@ snapshots:
       pg: 8.16.3
       sqlite3: 5.1.7
 
-  drizzle-zod@0.8.3(drizzle-orm@0.44.7(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.1.13):
+  drizzle-zod@0.8.3(drizzle-orm@0.45.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7))(zod@4.1.13):
     dependencies:
-      drizzle-orm: 0.44.7(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7)
+      drizzle-orm: 0.45.0(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(@upstash/redis@1.35.7)(bun-types@1.3.3)(kysely@0.28.8)(pg@8.16.3)(sqlite3@5.1.7)
       zod: 4.1.13
 
   dts-resolver@2.1.3: {}
