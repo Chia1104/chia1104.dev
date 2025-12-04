@@ -91,7 +91,7 @@ jobs:
       - name: "🧹 Test"
         shell: bash
         run: |
-          pnpm test --filter www...
+          pnpm test
 
   e2e-tests:
     name: "www e2e tests"
