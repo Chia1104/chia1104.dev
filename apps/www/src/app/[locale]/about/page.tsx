@@ -8,7 +8,9 @@ import { LocationHero } from "@/components/about/location-hero";
 import { TimelineHero } from "@/components/about/timeline-hero";
 import { SpotifyPlaylist } from "@/containers/about/spotify-playlist";
 
-const AboutPage = () => {
+// eslint-disable-next-line @typescript-eslint/require-await
+const AboutPage = async () => {
+  "use cache";
   return (
     <ViewTransition>
       <AboutMe />
