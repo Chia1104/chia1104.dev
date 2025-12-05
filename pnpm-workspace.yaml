@@ -61,9 +61,9 @@ catalogs:
     jest-extended: 7.0.0
     vitest: 4.0.15
   triggerdotdev:
-    '@trigger.dev/build': 4.1.2
-    '@trigger.dev/core': 4.1.2
-    '@trigger.dev/sdk': 4.1.2
+    '@trigger.dev/build': 4.2.0
+    '@trigger.dev/core': 4.2.0
+    '@trigger.dev/sdk': 4.2.0
   trpc:
     '@trpc/client': 11.7.2
     '@trpc/next': 11.7.2
