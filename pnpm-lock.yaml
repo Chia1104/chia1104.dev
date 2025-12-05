@@ -149,14 +149,14 @@ catalogs:
       version: 4.0.15
   triggerdotdev:
     '@trigger.dev/build':
-      specifier: 4.1.2
-      version: 4.1.2
+      specifier: 4.2.0
+      version: 4.2.0
     '@trigger.dev/core':
-      specifier: 4.1.2
-      version: 4.1.2
+      specifier: 4.2.0
+      version: 4.2.0
     '@trigger.dev/sdk':
-      specifier: 4.1.2
-      version: 4.1.2
+      specifier: 4.2.0
+      version: 4.2.0
   trpc:
     '@trpc/client':
       specifier: 11.7.2
@@ -303,7 +303,7 @@ importers:
         version: 11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3)
       '@trpc/next':
         specifier: catalog:trpc
-        version: 11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/react-query@11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3)
+        version: 11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/react-query@11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3)
       '@trpc/react-query':
         specifier: catalog:trpc
         version: 11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3)
@@ -327,10 +327,10 @@ importers:
         version: 12.23.25(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       fumadocs-mdx:
         specifier: catalog:fumadocs
-        version: 14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       fumadocs-ui:
         specifier: catalog:fumadocs
-        version: 16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13)
+        version: 16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13)
       ky:
         specifier: 'catalog:'
         version: 1.14.0
@@ -342,16 +342,16 @@ importers:
         version: 0.555.0(react@19.2.1)
       next:
         specifier: catalog:next
-        version: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        version: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       next-safe-action:
         specifier: 8.0.11
-        version: 8.0.11(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        version: 8.0.11(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       next-view-transitions:
         specifier: ^0.3.4
-        version: 0.3.4(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        version: 0.3.4(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -424,7 +424,7 @@ importers:
         version: 2.0.13
       '@types/node':
         specifier: 'catalog:'
-        version: 24.10.1
+        version: 24.10.0
       '@types/react':
         specifier: catalog:react-is
         version: 19.2.7
@@ -433,7 +433,7 @@ importers:
         version: 19.2.3(@types/react@19.2.7)
       '@vitejs/plugin-react-swc':
         specifier: catalog:testing-library
-        version: 4.2.2(@swc/helpers@0.5.17)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.2.2(@swc/helpers@0.5.17)(vite@7.2.6(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       autoprefixer:
         specifier: ^10.4.22
         version: 10.4.22(postcss@8.5.6)
@@ -559,7 +559,7 @@ importers:
         version: 4.17.21
       '@types/node':
         specifier: 'catalog:'
-        version: 24.10.1
+        version: 24.10.0
       '@types/react':
         specifier: catalog:react-is
         version: 19.2.7
@@ -604,10 +604,10 @@ importers:
         version: 0.13.8(typescript@5.9.3)(zod@4.1.13)
       '@trigger.dev/core':
         specifier: catalog:triggerdotdev
-        version: 4.1.2(typescript@5.9.3)
+        version: 4.2.0(typescript@5.9.3)
       '@trigger.dev/sdk':
         specifier: catalog:triggerdotdev
-        version: 4.1.2(ai@5.0.106(zod@4.1.13))(typescript@5.9.3)(zod@4.1.13)
+        version: 4.2.0(ai@5.0.106(zod@4.1.13))(typescript@5.9.3)(zod@4.1.13)
       openai:
         specifier: ^6.10.0
         version: 6.10.0(ws@8.18.3)(zod@4.1.13)
@@ -620,7 +620,7 @@ importers:
         version: 2.0.3
       '@trigger.dev/build':
         specifier: catalog:triggerdotdev
-        version: 4.1.2(typescript@5.9.3)
+        version: 4.2.0(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -707,10 +707,10 @@ importers:
         version: 12.23.25(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       fumadocs-mdx:
         specifier: catalog:fumadocs
-        version: 14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       fumadocs-ui:
         specifier: catalog:fumadocs
-        version: 16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13)
+        version: 16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13)
       katex:
         specifier: ^0.16.25
         version: 0.16.25
@@ -1020,7 +1020,7 @@ importers:
         version: link:../utils
       '@fumadocs/mdx-remote':
         specifier: catalog:fumadocs
-        version: 1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)
+        version: 1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)
       '@heroui/react':
         specifier: catalog:heroui
         version: 2.8.5(@types/react@19.2.7)(framer-motion@12.23.25(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)
@@ -1032,13 +1032,13 @@ importers:
         version: 1.11.19
       fumadocs-core:
         specifier: catalog:fumadocs
-        version: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
+        version: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
       fumadocs-mdx:
         specifier: catalog:fumadocs
-        version: 14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
       fumadocs-ui:
         specifier: catalog:fumadocs
-        version: 16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13)
+        version: 16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13)
       katex:
         specifier: ^0.16.25
         version: 0.16.25
@@ -1047,7 +1047,7 @@ importers:
         version: 11.12.2
       next:
         specifier: catalog:next
-        version: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        version: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -1294,7 +1294,7 @@ importers:
         version: 0.555.0(react@19.2.1)
       next:
         specifier: catalog:next
-        version: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+        version: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -5992,16 +5992,16 @@ packages:
   '@total-typescript/ts-reset@0.6.1':
     resolution: {integrity: sha512-cka47fVSo6lfQDIATYqb/vO1nvFfbPw7uWLayIXIhGETj0wcOOlrlkobOMDNQOFr9QOafegUPq13V2+6vtD7yg==}
 
-  '@trigger.dev/build@4.1.2':
-    resolution: {integrity: sha512-CwejY4n6nqls7Z2Vju3AF1FIRfBzGgogKxm22aqBKGlkjblfbvKcZE3kGSrJ+X6n90Fw5glZVoK3BiC32Sdv3g==}
+  '@trigger.dev/build@4.2.0':
+    resolution: {integrity: sha512-gCHVW2ZViIClkvnmJO0DQmnnXf2LesbU3HL4KLAVCYNUQa1mvBJK3RzHRZsrGDHYUKtRKtQ3A0oRu+V1w9/Y+g==}
     engines: {node: '>=18.20.0'}
 
-  '@trigger.dev/core@4.1.2':
-    resolution: {integrity: sha512-pQX1FA5zwB5jkcH2JGwpJllsA33t6sFI4dZKsPShrAKAdxb7/JHtcJwxeJSFJygxo4j4tP+o0wr6kX/lUpYCqg==}
+  '@trigger.dev/core@4.2.0':
+    resolution: {integrity: sha512-VcgZF3n77Wwfr0gD7JqoLnC46uK5bPnu73WBRuQRRdNS8MYijuEh9TpsmJ9ndkC9Ji+m5YwsqwEnqZPA7UYhag==}
     engines: {node: '>=18.20.0'}
 
-  '@trigger.dev/sdk@4.1.2':
-    resolution: {integrity: sha512-BQLcskVAlUvOM4jN91PNpXtcmgjsHOL8IFes3aEt/fnBfnDRzRNIUlO+H4KkBy5/66pAOgODLmevMSCKd0keYw==}
+  '@trigger.dev/sdk@4.2.0':
+    resolution: {integrity: sha512-OoZIN63qW1Qxsi8QqncWVt45n7wym9ZRvJZxeC/Ly/nhcTHJarRJFRBtyNnPJUDXIW+nRZZFh/Tt3Np3URnCnw==}
     engines: {node: '>=18.20.0'}
     peerDependencies:
       ai: ^4.2.0 || ^5.0.0
@@ -13295,23 +13295,10 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)':
+  '@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)':
     dependencies:
       '@mdx-js/mdx': 3.1.1
-      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
-      gray-matter: 4.0.3
-      react: 19.2.1
-      zod: 4.1.13
-    optionalDependencies:
-      '@types/react': 19.2.7
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
-
-  '@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)':
-    dependencies:
-      '@mdx-js/mdx': 3.1.1
-      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
+      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
       gray-matter: 4.0.3
       react: 19.2.1
       zod: 4.1.13
@@ -14944,7 +14931,7 @@ snapshots:
   '@opentelemetry/core@2.0.1(@opentelemetry/api@1.9.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
-      '@opentelemetry/semantic-conventions': 1.36.0
+      '@opentelemetry/semantic-conventions': 1.38.0
 
   '@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -15195,7 +15182,7 @@ snapshots:
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/semantic-conventions': 1.36.0
+      '@opentelemetry/semantic-conventions': 1.38.0
 
   '@opentelemetry/resources@2.2.0(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -15221,7 +15208,7 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 2.0.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/resources': 2.0.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/semantic-conventions': 1.36.0
+      '@opentelemetry/semantic-conventions': 1.38.0
 
   '@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0)':
     dependencies:
@@ -17809,10 +17796,10 @@ snapshots:
 
   '@total-typescript/ts-reset@0.6.1': {}
 
-  '@trigger.dev/build@4.1.2(typescript@5.9.3)':
+  '@trigger.dev/build@4.2.0(typescript@5.9.3)':
     dependencies:
       '@prisma/config': 6.19.0
-      '@trigger.dev/core': 4.1.2(typescript@5.9.3)
+      '@trigger.dev/core': 4.2.0(typescript@5.9.3)
       mlly: 1.8.0
       pkg-types: 1.3.1
       resolve: 1.22.11
@@ -17825,7 +17812,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@trigger.dev/core@4.1.2(typescript@5.9.3)':
+  '@trigger.dev/core@4.2.0(typescript@5.9.3)':
     dependencies:
       '@bugsnag/cuid': 3.2.1
       '@electric-sql/client': 1.0.14
@@ -17866,11 +17853,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@trigger.dev/sdk@4.1.2(ai@5.0.106(zod@4.1.13))(typescript@5.9.3)(zod@4.1.13)':
+  '@trigger.dev/sdk@4.2.0(ai@5.0.106(zod@4.1.13))(typescript@5.9.3)(zod@4.1.13)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/semantic-conventions': 1.36.0
-      '@trigger.dev/core': 4.1.2(typescript@5.9.3)
+      '@trigger.dev/core': 4.2.0(typescript@5.9.3)
       chalk: 5.6.2
       cronstrue: 2.59.0
       debug: 4.4.3
@@ -17913,18 +17900,6 @@ snapshots:
       '@trpc/client': 11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3)
       '@trpc/server': 11.7.2(typescript@5.9.3)
       next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      react: 19.2.1
-      react-dom: 19.2.1(react@19.2.1)
-      typescript: 5.9.3
-    optionalDependencies:
-      '@tanstack/react-query': 5.90.12(react@19.2.1)
-      '@trpc/react-query': 11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3)
-
-  '@trpc/next@11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/react-query@11.7.2(@tanstack/react-query@5.90.12(react@19.2.1))(@trpc/client@11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3))(@trpc/server@11.7.2(typescript@5.9.3))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.9.3)':
-    dependencies:
-      '@trpc/client': 11.7.2(@trpc/server@11.7.2(typescript@5.9.3))(typescript@5.9.3)
-      '@trpc/server': 11.7.2(typescript@5.9.3)
-      next: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
       react-dom: 19.2.1(react@19.2.1)
       typescript: 5.9.3
@@ -18417,6 +18392,14 @@ snapshots:
       next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
 
+  '@vitejs/plugin-react-swc@4.2.2(@swc/helpers@0.5.17)(vite@7.2.6(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
+    dependencies:
+      '@rolldown/pluginutils': 1.0.0-beta.47
+      '@swc/core': 1.15.3(@swc/helpers@0.5.17)
+      vite: 7.2.6(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
+    transitivePeerDependencies:
+      - '@swc/helpers'
+
   '@vitejs/plugin-react-swc@4.2.2(@swc/helpers@0.5.17)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.47
@@ -18879,7 +18862,7 @@ snapshots:
       nanostores: 1.1.0
       zod: 4.1.13
     optionalDependencies:
-      next: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
       react-dom: 19.2.1(react@19.2.1)
 
@@ -20456,7 +20439,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13):
+  fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13):
     dependencies:
       '@formatjs/intl-localematcher': 0.6.2
       '@orama/orama': 3.1.16
@@ -20486,44 +20469,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13):
-    dependencies:
-      '@formatjs/intl-localematcher': 0.6.2
-      '@orama/orama': 3.1.16
-      '@shikijs/rehype': 3.19.0
-      '@shikijs/transformers': 3.19.0
-      estree-util-value-to-estree: 3.5.0
-      github-slugger: 2.0.0
-      hast-util-to-estree: 3.1.3
-      hast-util-to-jsx-runtime: 2.3.6
-      image-size: 2.0.2
-      negotiator: 1.0.0
-      npm-to-yarn: 3.0.1
-      path-to-regexp: 8.3.0
-      remark: 15.0.1
-      remark-gfm: 4.0.1
-      remark-rehype: 11.1.2
-      scroll-into-view-if-needed: 3.1.0
-      shiki: 3.19.0
-      unist-util-visit: 5.0.0
-    optionalDependencies:
-      '@types/react': 19.2.7
-      lucide-react: 0.555.0(react@19.2.1)
-      next: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      react: 19.2.1
-      react-dom: 19.2.1(react@19.2.1)
-      zod: 4.1.13
-    transitivePeerDependencies:
-      - supports-color
-
-  fumadocs-mdx@14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
+  fumadocs-mdx@14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@mdx-js/mdx': 3.1.1
       '@standard-schema/spec': 1.0.0
       chokidar: 5.0.0
       esbuild: 0.27.1
       estree-util-value-to-estree: 3.5.0
-      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
+      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
       js-yaml: 4.1.1
       mdast-util-to-markdown: 2.1.2
       picocolors: 1.1.1
@@ -20537,21 +20490,21 @@ snapshots:
       vfile: 6.0.3
       zod: 4.1.13
     optionalDependencies:
-      '@fumadocs/mdx-remote': 1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)
+      '@fumadocs/mdx-remote': 1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)
       next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
-      vite: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 7.2.6(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-mdx@14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
+  fumadocs-mdx@14.1.0(@fumadocs/mdx-remote@1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1))(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@mdx-js/mdx': 3.1.1
       '@standard-schema/spec': 1.0.0
       chokidar: 5.0.0
       esbuild: 0.27.1
       estree-util-value-to-estree: 3.5.0
-      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
+      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
       js-yaml: 4.1.1
       mdast-util-to-markdown: 2.1.2
       picocolors: 1.1.1
@@ -20565,14 +20518,14 @@ snapshots:
       vfile: 6.0.3
       zod: 4.1.13
     optionalDependencies:
-      '@fumadocs/mdx-remote': 1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)
-      next: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      '@fumadocs/mdx-remote': 1.4.3(@types/react@19.2.7)(fumadocs-core@16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13))(react@19.2.1)
+      next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
       vite: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-ui@16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13):
+  fumadocs-ui@16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13):
     dependencies:
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       '@radix-ui/react-collapsible': 1.1.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -20585,7 +20538,7 @@ snapshots:
       '@radix-ui/react-slot': 1.2.4(@types/react@19.2.7)(react@19.2.1)
       '@radix-ui/react-tabs': 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       class-variance-authority: 0.7.1
-      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
+      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
       lodash.merge: 4.6.2
       next-themes: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       postcss-selector-parser: 7.1.1
@@ -20597,44 +20550,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
       next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      tailwindcss: 4.1.17
-    transitivePeerDependencies:
-      - '@mixedbread/sdk'
-      - '@orama/core'
-      - '@tanstack/react-router'
-      - '@types/react-dom'
-      - algoliasearch
-      - lucide-react
-      - react-router
-      - supports-color
-      - waku
-      - zod
-
-  fumadocs-ui@16.2.3(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(tailwindcss@4.1.17)(zod@4.1.13):
-    dependencies:
-      '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@radix-ui/react-collapsible': 1.1.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@radix-ui/react-dialog': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@radix-ui/react-direction': 1.1.1(@types/react@19.2.7)(react@19.2.1)
-      '@radix-ui/react-navigation-menu': 1.2.14(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@radix-ui/react-popover': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@radix-ui/react-presence': 1.1.5(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@radix-ui/react-scroll-area': 1.2.10(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      '@radix-ui/react-slot': 1.2.4(@types/react@19.2.7)(react@19.2.1)
-      '@radix-ui/react-tabs': 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      class-variance-authority: 0.7.1
-      fumadocs-core: 16.2.3(@types/react@19.2.7)(lucide-react@0.555.0(react@19.2.1))(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(zod@4.1.13)
-      lodash.merge: 4.6.2
-      next-themes: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      postcss-selector-parser: 7.1.1
-      react: 19.2.1
-      react-dom: 19.2.1(react@19.2.1)
-      react-medium-image-zoom: 5.4.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      scroll-into-view-if-needed: 3.1.0
-      tailwind-merge: 3.4.0
-    optionalDependencies:
-      '@types/react': 19.2.7
-      next: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       tailwindcss: 4.1.17
     transitivePeerDependencies:
       - '@mixedbread/sdk'
@@ -22514,9 +22429,9 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  next-safe-action@8.0.11(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
+  next-safe-action@8.0.11(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
     dependencies:
-      next: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
       react-dom: 19.2.1(react@19.2.1)
 
@@ -22525,39 +22440,13 @@ snapshots:
       react: 19.2.1
       react-dom: 19.2.1(react@19.2.1)
 
-  next-view-transitions@0.3.4(next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
+  next-view-transitions@0.3.4(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
     dependencies:
-      next: 16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      next: 16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react: 19.2.1
       react-dom: 19.2.1(react@19.2.1)
 
   next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
-    dependencies:
-      '@next/env': 16.0.7
-      '@swc/helpers': 0.5.15
-      caniuse-lite: 1.0.30001759
-      postcss: 8.4.31
-      react: 19.2.1
-      react-dom: 19.2.1(react@19.2.1)
-      styled-jsx: 5.1.6(@babel/core@7.28.5)(react@19.2.1)
-    optionalDependencies:
-      '@next/swc-darwin-arm64': 16.0.7
-      '@next/swc-darwin-x64': 16.0.7
-      '@next/swc-linux-arm64-gnu': 16.0.7
-      '@next/swc-linux-arm64-musl': 16.0.7
-      '@next/swc-linux-x64-gnu': 16.0.7
-      '@next/swc-linux-x64-musl': 16.0.7
-      '@next/swc-win32-arm64-msvc': 16.0.7
-      '@next/swc-win32-x64-msvc': 16.0.7
-      '@opentelemetry/api': 1.9.0
-      '@playwright/test': 1.57.0
-      babel-plugin-react-compiler: 19.1.0-rc.3
-      sharp: 0.34.5
-    transitivePeerDependencies:
-      - '@babel/core'
-      - babel-plugin-macros
-
-  next@16.0.7(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
     dependencies:
       '@next/env': 16.0.7
       '@swc/helpers': 0.5.15
@@ -24818,6 +24707,23 @@ snapshots:
       d3-shape: 3.2.0
       d3-time: 3.1.0
       d3-timer: 3.0.1
+
+  vite@7.2.6(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2):
+    dependencies:
+      esbuild: 0.25.12
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.53.3
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 24.10.0
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      lightningcss: 1.30.2
+      terser: 5.44.1
+      tsx: 4.21.0
+      yaml: 2.8.2
 
   vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
