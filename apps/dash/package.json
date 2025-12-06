@@ -40,7 +40,7 @@
     "@trpc/next": "catalog:trpc",
     "@trpc/react-query": "catalog:trpc",
     "@trpc/server": "catalog:trpc",
-    "ai": "^5.0.106",
+    "ai": "^5.0.108",
     "client-only": "catalog:",
     "clsx": "^2.1.1",
     "dayjs": "catalog:",
