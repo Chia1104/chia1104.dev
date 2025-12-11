@@ -52,7 +52,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@heroui/react", "@react-email/components"],
     viewTransition: true,
     authInterrupts: true,
-    isolatedDevBuild: true,
   },
   serverExternalPackages: ["@chia/db", "@chia/auth", "@sentry/nextjs"],
   typescript: {
