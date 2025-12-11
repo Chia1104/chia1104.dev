@@ -8,37 +8,37 @@ catalog:
   '@t3-oss/env-core': ^0.13.8
   '@t3-oss/env-nextjs': ^0.13.8
   '@types/lodash': ^4.17.21
-  '@types/node': 24.10.1
-  bun-types: ^1.3.3
+  '@types/node': 25.0.0
+  bun-types: ^1.3.4
   client-only: ^0.0.1
   dayjs: ^1.11.19
   graphql-request: ^7.3.5
-  ky: ^1.14.0
+  ky: ^1.14.1
   lodash: ^4.17.21
   server-only: ^0.0.1
   superjson: 2.2.6
-  tsdown: 0.17.0
+  tsdown: 0.17.2
   typescript: ^5.9.3
   zod: ^4.1.13
 
 catalogs:
   chiastack:
-    '@chiastack/eslint': 2.0.2
-    '@chiastack/tsconfig': 2.0.3
+    '@chiastack/eslint': 2.0.3
+    '@chiastack/tsconfig': 2.1.1
   eslint:
     eslint: 9.39.1
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.3
-    fumadocs-core: 16.2.3
+    fumadocs-core: 16.2.4
     fumadocs-mdx: 14.1.0
-    fumadocs-ui: 16.2.3
+    fumadocs-ui: 16.2.4
   heroui:
     '@heroui/react': 2.8.5
     '@heroui/theme': 2.4.23
   next:
-    '@next/bundle-analyzer': 16.0.7
-    '@next/third-parties': 16.0.7
-    next: 16.0.7
+    '@next/bundle-analyzer': 16.0.8
+    '@next/third-parties': 16.0.8
+    next: 16.0.8
   react-is:
     '@types/react': ^19.2.7
     '@types/react-dom': ^19.2.3
@@ -46,10 +46,10 @@ catalogs:
     react: ^19.2.1
     react-dom: ^19.2.1
   tailwindcss:
-    '@tailwindcss/postcss': 4.1.17
-    tailwindcss: 4.1.17
+    '@tailwindcss/postcss': 4.1.18
+    tailwindcss: 4.1.18
   tanstack:
-    '@tanstack/react-pacer': 0.17.3
+    '@tanstack/react-pacer': 0.17.4
     '@tanstack/react-query': 5.90.12
   testing-library:
     '@testing-library/jest-dom': 6.9.1
@@ -61,9 +61,9 @@ catalogs:
     jest-extended: 7.0.0
     vitest: 4.0.15
   triggerdotdev:
-    '@trigger.dev/build': 4.1.2
-    '@trigger.dev/core': 4.1.2
-    '@trigger.dev/sdk': 4.1.2
+    '@trigger.dev/build': 4.2.0
+    '@trigger.dev/core': 4.2.0
+    '@trigger.dev/sdk': 4.2.0
   trpc:
     '@trpc/client': 11.7.2
     '@trpc/next': 11.7.2

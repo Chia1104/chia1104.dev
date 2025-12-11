@@ -101,8 +101,8 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.943.0",
-    "@aws-sdk/s3-request-presigner": "^3.943.0",
+    "@aws-sdk/client-s3": "^3.948.0",
+    "@aws-sdk/s3-request-presigner": "^3.948.0",
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
