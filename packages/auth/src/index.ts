@@ -149,7 +149,7 @@ export const auth = betterAuth({
       defaultPrefix: "ch_",
     }),
     admin({
-      adminRoles: ["admin", "root"],
+      adminRoles: ["admin"],
       adminUserIds: [
         env.ADMIN_ID,
         env.BETA_ADMIN_ID,

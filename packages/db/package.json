@@ -83,7 +83,7 @@
     "@chia/ai": "workspace:*",
     "@chia/kv": "workspace:*",
     "@t3-oss/env-core": "catalog:",
-    "drizzle-orm": "^0.45.0",
+    "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "pg": "^8.16.3",
     "zod": "catalog:"
@@ -92,7 +92,7 @@
     "@chia/utils": "workspace:*",
     "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@types/pg": "^8.15.6",
+    "@types/pg": "^8.16.0",
     "drizzle-kit": "^0.31.8",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"

@@ -51,7 +51,7 @@
     "fumadocs-core": "catalog:fumadocs",
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
-    "katex": "^0.16.25",
+    "katex": "^0.16.27",
     "mermaid": "^11.12.2",
     "next": "catalog:next",
     "next-themes": "^0.4.6",
