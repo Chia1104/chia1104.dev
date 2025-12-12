@@ -49,7 +49,7 @@ catalogs:
     '@tailwindcss/postcss': 4.1.18
     tailwindcss: 4.1.18
   tanstack:
-    '@tanstack/react-pacer': 0.17.4
+    '@tanstack/react-pacer': 0.18.0
     '@tanstack/react-query': 5.90.12
   testing-library:
     '@testing-library/jest-dom': 6.9.1
