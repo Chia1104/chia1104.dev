@@ -14,7 +14,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default,
+    messages: (await import(`@chia/i18n/www/${locale}.json`)).default,
     timeZone: env.NEXT_PUBLIC_DEFAULT_TIME_ZONE,
     formats: {
       dateTime: {
