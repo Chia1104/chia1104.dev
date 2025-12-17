@@ -2,9 +2,9 @@ import { serve } from "@hono/node-server";
 import { getRuntimeKey } from "hono/adapter";
 
 import bootstrap from "@/bootstrap";
-import dbFactory from "@/factories/db.factory";
+import appFactory from "@/factories/app.factory";
 
-export const app = dbFactory.createApp();
+export const app = appFactory.createApp();
 
 const port = Number(process.env.PORT) || 3005;
 
