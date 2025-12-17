@@ -69,11 +69,6 @@ catalogs:
     '@trigger.dev/build': 4.2.0
     '@trigger.dev/core': 4.2.0
     '@trigger.dev/sdk': 4.2.0
-  trpc:
-    '@trpc/client': 11.7.2
-    '@trpc/next': 11.7.2
-    '@trpc/react-query': 11.7.2
-    '@trpc/server': 11.7.2
 
 linkWorkspacePackages: true
 

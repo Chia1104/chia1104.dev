@@ -13,8 +13,8 @@ import AppPlugins from "@/components/commons/app-plugins";
 import Footer from "@/components/commons/footer";
 import RootLayout from "@/components/commons/root-layout";
 import RootProvider from "@/components/commons/root-provider";
-import { routing } from "@/i18n/routing";
-import { initDayjs } from "@/utils/dayjs";
+import { routing } from "@/libs/i18n/routing";
+import { initDayjs } from "@/libs/utils/dayjs";
 
 export const viewport: Viewport = {
   themeColor: [

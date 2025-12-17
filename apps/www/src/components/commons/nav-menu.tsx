@@ -20,7 +20,7 @@ import Link from "@chia/ui/link";
 import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
-import { useRouter } from "@/i18n/routing";
+import { useRouter } from "@/libs/i18n/routing";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 

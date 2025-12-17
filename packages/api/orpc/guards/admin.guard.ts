@@ -4,31 +4,41 @@ import { getAdminId } from "@chia/utils";
 
 import { baseOS } from "../utils";
 
-export const adminGuard = (role: Role[] = [Role.Admin, Role.Root]) =>
+interface AdminGuardOptions {
+  role?: Role[];
+  enabled?: boolean;
+}
+
+export const adminGuard = (
+  options: AdminGuardOptions = { role: [Role.Admin, Role.Root], enabled: true }
+) =>
   baseOS
     .errors({
       UNAUTHORIZED: {},
       FORBIDDEN: {},
     })
     .middleware(async ({ next, context, errors }) => {
-      const sessionData =
-        context.session ??
-        (await auth.api.getSession({
-          headers: context.headers,
-        }));
+      let sessionData = context.session;
 
-      if (!sessionData?.session || !sessionData?.user) {
-        if (context.hooks?.onUnauthorized) {
-          context.hooks.onUnauthorized(errors.UNAUTHORIZED());
+      if (options.enabled) {
+        sessionData = await auth.api.getSession({
+          headers: context.headers,
+        });
+
+        if (!sessionData?.session || !sessionData?.user) {
+          if (context.hooks?.onUnauthorized) {
+            context.hooks.onUnauthorized(errors.UNAUTHORIZED());
+          }
+          throw errors.UNAUTHORIZED();
         }
-        throw errors.UNAUTHORIZED();
       }
 
       const adminId = getAdminId();
 
       if (
-        !role?.includes(sessionData.user.role) ||
-        sessionData.user.id !== adminId
+        sessionData &&
+        (!options.role?.includes(sessionData.user.role) ||
+          sessionData.user.id !== adminId)
       ) {
         if (context.hooks?.onForbidden) {
           context.hooks.onForbidden(errors.FORBIDDEN());

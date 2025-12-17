@@ -3,7 +3,7 @@ import type { Locale as TLocale } from "next-intl";
 import dayjs from "@chia/utils/day";
 
 import { env } from "@/env";
-import { Locale } from "@/utils/i18n";
+import { Locale } from "@/libs/utils/i18n";
 
 export const initDayjs = (
   locale: TLocale = Locale.ZH_TW,

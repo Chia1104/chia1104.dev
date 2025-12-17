@@ -11,8 +11,8 @@ import type { ButtonProps } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import type { Locale as TLocale } from "next-intl";
 
-import { useRouter, usePathname } from "@/i18n/routing";
-import { Locale } from "@/utils/i18n";
+import { useRouter, usePathname } from "@/libs/i18n/routing";
+import { Locale } from "@/libs/utils/i18n";
 
 const LocaleSelector = (props: ButtonProps) => {
   const t = useTranslations("locale");

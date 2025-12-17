@@ -3,40 +3,47 @@
 import type { FC } from "react";
 import { useMemo, useCallback } from "react";
 
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale } from "next-intl";
 
-import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
 import Timeline from "@chia/ui/timeline";
 import type { Data } from "@chia/ui/timeline/types";
+import dayjs from "@chia/utils/day";
 
-import { api } from "@/trpc/client";
+import { orpc } from "@/libs/orpc/client";
+import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
 interface Props {
-  initialData: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
-  query?: RouterInputs["feeds"]["getFeedsWithMetaByAdminId"];
-  nextCursor?: string | number | Date;
+  initialData: RouterOutputs["feeds"]["list"]["items"];
+  query?: RouterInputs["feeds"]["list"];
+  nextCursor?: string | number | null;
   type: FeedType;
 }
 
 const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
   const locale = useLocale();
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
-    api.feeds.getFeedsWithMetaByAdminId.useInfiniteQuery(
-      { ...query, type },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
+    useInfiniteQuery(
+      orpc.feeds["admin-list"].infiniteOptions({
+        input: (pageParam) => ({
+          ...query,
+          cursor: pageParam,
+        }),
+        getNextPageParam: (lastPage) =>
+          lastPage.nextCursor ? lastPage.nextCursor.toString() : null,
         initialData: {
           pages: [
             {
               items: initialData,
-              nextCursor: nextCursor?.toString(),
+              nextCursor: nextCursor?.toString() ?? null,
             },
           ],
-          pageParams: [nextCursor?.toString()],
+          pageParams: [nextCursor?.toString() ?? null],
         },
-      }
+        initialPageParam: nextCursor?.toString() ?? null,
+      })
     );
 
   const getLinkPrefix = useCallback(() => {
@@ -68,7 +75,7 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
               locale={locale}
             />
           ),
-          startDate: createdAt,
+          startDate: createdAt ? dayjs(createdAt) : null,
           content: excerpt,
           link: `${getLinkPrefix()}/${slug}`,
         } satisfies Data;

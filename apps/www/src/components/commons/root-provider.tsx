@@ -1,8 +1,9 @@
 "use client";
 
-import type { FC, ReactNode } from "react";
+import { useState } from "react";
 
 import { HeroUIProvider as _HeroUIProvider } from "@heroui/react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { RootProvider as FDProvider } from "fumadocs-ui/provider/next";
 import { NextIntlClientProvider } from "next-intl";
 import type { AbstractIntlMessages, Timezone } from "next-intl";
@@ -10,9 +11,9 @@ import type { Locale } from "next-intl";
 import { ThemeProvider } from "next-themes";
 import { useRouter } from "next/navigation";
 
-import { TRPCReactProvider } from "@/trpc/client";
+import { getQueryClient } from "@/libs/utils/query-client";
 
-const HeroUIProvider = ({ children }: { children: ReactNode }) => {
+const HeroUIProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   return (
     <_HeroUIProvider navigate={(...args) => router.push(...args)}>
@@ -21,13 +22,18 @@ const HeroUIProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-const RootProvider: FC<{
-  children: ReactNode;
-  headers?: Headers;
+const RootProvider = ({
+  children,
+  messages,
+  timeZone,
+  locale,
+}: {
+  children: React.ReactNode;
   messages: AbstractIntlMessages;
   timeZone: Timezone;
   locale: Locale;
-}> = ({ children, headers, messages, timeZone, locale }) => {
+}) => {
+  const [queryClient] = useState(() => getQueryClient());
   return (
     <NextIntlClientProvider
       messages={messages}
@@ -42,7 +48,9 @@ const RootProvider: FC<{
             search={{
               enabled: false,
             }}>
-            <TRPCReactProvider headers={headers}>{children}</TRPCReactProvider>
+            <QueryClientProvider client={queryClient}>
+              {children}
+            </QueryClientProvider>
           </FDProvider>
         </HeroUIProvider>
       </ThemeProvider>

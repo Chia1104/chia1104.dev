@@ -11,7 +11,7 @@ const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
 });
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin("./src/libs/i18n/request.ts");
 
 const securityHeaders = [
   {

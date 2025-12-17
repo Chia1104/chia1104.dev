@@ -30,7 +30,11 @@ export const getFeedsWithMetaRoute = contractOS.feeds.list
   });
 
 export const getFeedsWithMetaByAdminIdRoute = contractOS.feeds["admin-list"]
-  .use(adminGuard())
+  .use(
+    adminGuard({
+      enabled: false,
+    })
+  )
   .handler(async (opts) => {
     const data = await getInfiniteFeedsByUserId(opts.context.db, {
       ...opts.input,
