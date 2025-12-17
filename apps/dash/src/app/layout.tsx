@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
 import type { Viewport, Metadata } from "next";
-import { headers } from "next/headers";
 
 import { getBaseUrl, DASH_BASE_URL } from "@chia/utils";
 
 import Background from "@/components/commons/background";
 import RootLayout from "@/components/commons/root-layout";
+import "@/libs/orpc/client.rsc";
 
 import RootProvider from "../components/commons/root-provider";
 import "./globals.css";
@@ -30,10 +30,10 @@ export const metadata: Metadata = {
   description: "Chia1104's Dashboard",
 };
 
-export default async function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   return (
     <RootLayout>
-      <RootProvider headers={await headers()}>
+      <RootProvider>
         <Background />
         {children}
       </RootProvider>

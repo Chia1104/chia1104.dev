@@ -1,38 +1,34 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
-import type { ContractRouterClient } from "@orpc/contract";
+import type { RouterClient } from "@orpc/server";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
-import type { routerContract } from "@chia/api/orpc/contracts";
+import type { router } from "@chia/api/orpc/router";
+import { getServiceEndPoint } from "@chia/utils";
 
-import { authClient } from "@/libs/auth/client";
-import { withServiceUrl } from "@/utils/service-url";
+declare global {
+  var $client: RouterClient<typeof router> | undefined;
+}
 
 export const link = new RPCLink({
-  url: withServiceUrl("/rpc"),
-  async fetch(request, init) {
-    const { fetch } = await import("expo/fetch");
-
-    const resp = await fetch(request.url, {
-      body: await request.blob(),
-      headers: request.headers,
-      method: request.method,
-      signal: request.signal,
+  url: `${getServiceEndPoint()}/rpc`,
+  fetch: (request, init) => {
+    return globalThis.fetch(request, {
       ...init,
+      credentials: "include",
     });
-
-    return resp;
   },
-  headers: () => {
-    const cookies = authClient.getCookie();
-    return {
-      credentials: "omit",
-      Cookie: cookies,
-    };
+  headers: async () => {
+    if (typeof window !== "undefined") {
+      return {};
+    }
+
+    const { headers } = await import("next/headers");
+    return await headers();
   },
 });
 
-export const client: ContractRouterClient<typeof routerContract> =
-  createORPCClient(link);
+export const client: RouterClient<typeof router> =
+  globalThis.$client ?? createORPCClient(link);
 
 export const orpc = createTanstackQueryUtils(client);

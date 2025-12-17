@@ -21,12 +21,16 @@ import {
   Input,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import type { RouterInputs, RouterOutputs } from "@chia/api";
 import DateFormat from "@chia/ui/date-format";
 import {
   FormControl,
@@ -39,7 +43,8 @@ import SubmitForm from "@chia/ui/submit-form";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import { truncateMiddle } from "@chia/utils/string";
 
-import { api } from "@/trpc/client";
+import { orpc } from "@/libs/orpc/client";
+import type { RouterOutputs, RouterInputs } from "@/libs/orpc/types";
 
 const headersWithProject = [
   { name: "Name", uid: "name" },
@@ -54,18 +59,17 @@ const headers = [
   { name: "Action", uid: "id" },
 ];
 
-type ApiKeysWithoutProject = RouterOutputs["apiKey"]["getApiKeys"]["items"];
+type ApiKeysWithoutProject = RouterOutputs["apikey"]["list"]["items"];
 
-type ApiKeysWithProject =
-  RouterOutputs["apiKey"]["getAllApiKeysWithMeta"]["items"];
+type ApiKeysWithProject = RouterOutputs["apikey"]["list"]["items"];
 
 type ApiKeys<TWithProject extends boolean = false> = TWithProject extends true
   ? ApiKeysWithProject
   : ApiKeysWithoutProject;
 
-type Query = RouterInputs["apiKey"]["getApiKeys"];
+type Query = RouterInputs["apikey"]["list"];
 
-type AllKeysQuery = RouterInputs["apiKey"]["getAllApiKeysWithMeta"];
+type AllKeysQuery = RouterInputs["apikey"]["list"];
 
 interface Props {
   initApiKey?: ApiKeysWithoutProject;
@@ -81,7 +85,7 @@ interface AllKeysProps {
 }
 
 const CreateForm = (props: { projectId?: number }) => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
   const form = useForm({
     resolver: zodResolver(
       z.object({
@@ -89,18 +93,25 @@ const CreateForm = (props: { projectId?: number }) => {
       })
     ),
   });
-  const { mutate, isPending, isSuccess, data } =
-    api.apiKey.createAPIKey.useMutation({
+  const { mutate, isPending, isSuccess, data } = useMutation(
+    orpc.apikey.create.mutationOptions({
       onSuccess: async (data) => {
         if (data) {
           toast.success("API Key created successfully");
-          await utils.apiKey.invalidate();
+          await queryClient.invalidateQueries(
+            orpc.apikey.list.queryOptions({
+              input: {
+                projectId: props.projectId,
+              },
+            })
+          );
         }
       },
       onError: (error) => {
         toast.error(error.message);
       },
-    });
+    })
+  );
   const handleSubmit = form.handleSubmit((data) => {
     mutate({
       name: data.name,
@@ -290,13 +301,15 @@ const ApiKeyTable = (props: Props) => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = api.apiKey.getApiKeys.useInfiniteQuery(
-    {
-      ...props.query,
-      projectId: props.projectId,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage?.nextCursor,
+  } = useInfiniteQuery(
+    orpc.apikey["project-list"].infiniteOptions({
+      input: (pageParam) => ({
+        ...props.query,
+        projectId: props.projectId,
+        cursor: pageParam,
+      }),
+      getNextPageParam: (lastPage) =>
+        lastPage?.nextCursor ? lastPage.nextCursor.toString() : null,
       initialData: props.initApiKey
         ? {
             pages: [
@@ -305,10 +318,11 @@ const ApiKeyTable = (props: Props) => {
                 nextCursor: props.nextCursor?.toString() ?? null,
               },
             ],
-            pageParams: [props.nextCursor?.toString()],
+            pageParams: [props.nextCursor?.toString() ?? null],
           }
         : undefined,
-    }
+      initialPageParam: props.nextCursor?.toString() ?? null,
+    })
   );
 
   const flatData = useMemo(() => {
@@ -335,20 +349,28 @@ export const GlobalApiKeyTable = (props: AllKeysProps) => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = api.apiKey.getAllApiKeysWithMeta.useInfiniteQuery(props.query ?? {}, {
-    getNextPageParam: (lastPage) => lastPage?.nextCursor,
-    initialData: props.initApiKey
-      ? {
-          pages: [
-            {
-              items: props.initApiKey,
-              nextCursor: props.nextCursor?.toString(),
-            },
-          ],
-          pageParams: [props.nextCursor?.toString()],
-        }
-      : undefined,
-  });
+  } = useInfiniteQuery(
+    orpc.apikey.list.infiniteOptions({
+      input: (pageParam) => ({
+        ...props.query,
+        cursor: pageParam,
+      }),
+      getNextPageParam: (lastPage) =>
+        lastPage?.nextCursor ? lastPage.nextCursor.toString() : null,
+      initialData: props.initApiKey
+        ? {
+            pages: [
+              {
+                items: props.initApiKey,
+                nextCursor: props.nextCursor?.toString() ?? null,
+              },
+            ],
+            pageParams: [props.nextCursor?.toString() ?? null],
+          }
+        : undefined,
+      initialPageParam: props.nextCursor?.toString() ?? null,
+    })
+  );
 
   const flatData = useMemo(() => {
     if (!isSuccess || !data) return [];

@@ -6,15 +6,15 @@ import { create } from "zustand";
 import type { StateStorage, StorageValue } from "zustand/middleware";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { CreateFeedInput } from "@chia/api/trpc/validators";
+import type { feedsContracts } from "@chia/api/orpc/contracts";
 
 import type { EditFieldsContext } from "@/components/feed/edit-fields.context";
 import { DEFAULT_EDIT_FIELDS_CONTEXT } from "@/components/feed/edit-fields.context";
 
 export interface DraftState {
-  draft: Partial<CreateFeedInput>;
+  draft: Partial<feedsContracts.CreateFeedInput>;
   content: Partial<EditFieldsContext["content"]>;
-  setDraft: (draft: Partial<CreateFeedInput>) => void;
+  setDraft: (draft: Partial<feedsContracts.CreateFeedInput>) => void;
   token: string;
 }
 
@@ -47,7 +47,7 @@ export const useDraft = (token: string) =>
     )
   );
 
-export const useGetAllDrafts = (triger: string) => {
+export const useGetAllDrafts = (trigger: string) => {
   return useMemo(() => {
     try {
       return localStorage
@@ -66,5 +66,5 @@ export const useGetAllDrafts = (triger: string) => {
       console.error(error);
       return [];
     }
-  }, [triger]);
+  }, [trigger]);
 };

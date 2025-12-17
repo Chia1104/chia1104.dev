@@ -1,17 +1,17 @@
 "use client";
 
 import { Card, CardHeader } from "@heroui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTransitionRouter } from "next-view-transitions";
 
 import CreateForm from "@/components/projects/create-form";
+import { orpc } from "@/libs/orpc/client";
 import { useOrganizationStore } from "@/store/organization.store";
-import { api } from "@/trpc/client";
 
 const Default = () => {
   const { currentOrgId } = useOrganizationStore((state) => state);
   const router = useTransitionRouter();
-  const utils = api.useUtils();
-
+  const queryClient = useQueryClient();
   return (
     <Card className="w-full max-w-md self-center">
       <CardHeader className="flex flex-col items-center gap-2">
@@ -21,7 +21,13 @@ const Default = () => {
         organizationId={currentOrgId}
         onSuccess={async () => {
           router.refresh();
-          await utils.organization.getProjectsWithMeta.invalidate();
+          await queryClient.invalidateQueries(
+            orpc.organization.projects.list.queryOptions({
+              input: {
+                organizationId: currentOrgId,
+              },
+            })
+          );
         }}
       />
     </Card>

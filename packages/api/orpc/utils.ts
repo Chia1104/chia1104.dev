@@ -1,6 +1,7 @@
 import { implement } from "@orpc/server";
 import { os } from "@orpc/server";
 import type { ORPCError } from "@orpc/server";
+import GithubSlugger from "github-slugger";
 
 import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
@@ -26,3 +27,5 @@ export interface BaseOSContext {
 export const baseOS = os.$context<BaseOSContext>();
 
 export const contractOS = implement(routerContract).$context<BaseOSContext>();
+
+export const slugger = new GithubSlugger();

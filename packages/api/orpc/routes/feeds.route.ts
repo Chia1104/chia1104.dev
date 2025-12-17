@@ -1,4 +1,3 @@
-import GithubSlugger from "github-slugger";
 import crypto from "node:crypto";
 
 import { eq, schema } from "@chia/db";
@@ -15,9 +14,7 @@ import { ContentType } from "@chia/db/types";
 
 import { adminGuard } from "../guards/admin.guard";
 import { authGuard } from "../guards/auth.guard";
-import { contractOS } from "../utils";
-
-const slugger = new GithubSlugger();
+import { contractOS, slugger } from "../utils";
 
 export const getFeedsWithMetaRoute = contractOS.feeds.list
   .use(authGuard)

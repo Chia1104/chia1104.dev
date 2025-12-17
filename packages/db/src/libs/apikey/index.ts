@@ -75,7 +75,6 @@ export const getInfiniteApiKeysByProjectId = withDTO(
     }
     const serializedItems = items.map((item) => ({
       ...item,
-      key: undefined,
       updatedAt: dayjs(item.updatedAt).toISOString(),
       createdAt: dayjs(item.createdAt).toISOString(),
       lastRefillAt: item.lastRefillAt
@@ -144,7 +143,6 @@ export const getInfiniteApiKeys = withDTO(
     }
     const serializedItems = items.map((item) => ({
       ...item,
-      key: undefined,
       updatedAt: dayjs(item.updatedAt).toISOString(),
       createdAt: dayjs(item.createdAt).toISOString(),
       lastRefillAt: item.lastRefillAt

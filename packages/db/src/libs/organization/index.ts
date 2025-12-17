@@ -17,7 +17,11 @@ export const createProject = withDTO(async (db, dto: InsertProjectDTO) => {
       createdAt: dto.createdAt ? dayjs(dto.createdAt).toDate() : undefined,
     })
     .returning();
-  return project;
+  return project.map((item) => ({
+    ...item,
+    createdAt: dayjs(item.createdAt).toISOString(),
+    deletedAt: item.deletedAt ? dayjs(item.deletedAt).toISOString() : null,
+  }));
 });
 
 export const getInfiniteProjectsByOrganizationId = withDTO(
@@ -58,13 +62,13 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
         : (project, { eq, and }) =>
             and(eq(project.organizationId, organizationId), ...whereAnd),
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
+    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
     if (items.length > limit) {
       const nextItem = items.pop();
       nextCursor =
         orderBy === FeedOrderBy.CreatedAt
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : nextItem?.[orderBy];
+          : (nextItem?.[orderBy] ?? null);
     }
     const serializedItems = items.map((item) => ({
       ...item,

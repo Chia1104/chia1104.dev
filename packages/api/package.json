@@ -5,10 +5,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./index.ts",
-      "default": "./index.ts"
-    },
     "./github": {
       "types": "./github/index.ts",
       "default": "./github/index.ts"
@@ -40,18 +36,6 @@
     "./spotify/validator": {
       "types": "./spotify/validator.ts",
       "default": "./spotify/validator.ts"
-    },
-    "./trpc": {
-      "types": "./trpc/index.ts",
-      "default": "./trpc/index.ts"
-    },
-    "./trpc/utils": {
-      "types": "./trpc/utils.ts",
-      "default": "./trpc/utils.ts"
-    },
-    "./trpc/validators": {
-      "types": "./trpc/validators.ts",
-      "default": "./trpc/validators.ts"
     },
     "./services/validators": {
       "types": "./services/validators.ts",
@@ -94,8 +78,12 @@
       "default": "./captcha/env.client.ts"
     },
     "./orpc/contracts": {
-      "types": "./orpc/router.contract",
-      "default": "./orpc/router.contract"
+      "types": "./orpc/router.contract.ts",
+      "default": "./orpc/router.contract.ts"
+    },
+    "./orpc/router": {
+      "types": "./orpc/router.ts",
+      "default": "./orpc/router.ts"
     }
   },
   "scripts": {
@@ -114,8 +102,6 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
-    "@trpc/client": "catalog:trpc",
-    "@trpc/server": "catalog:trpc",
     "client-only": "catalog:",
     "dayjs": "catalog:",
     "github-slugger": "^2.0.0",

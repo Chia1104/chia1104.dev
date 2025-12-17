@@ -1,6 +1,10 @@
 import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
-import { setApiKeyProjectId, getInfiniteApiKeys } from "@chia/db/repos/apikey";
+import {
+  setApiKeyProjectId,
+  getInfiniteApiKeys,
+  getInfiniteApiKeysByProjectId,
+} from "@chia/db/repos/apikey";
 import { tryCatch } from "@chia/utils/try-catch";
 
 import { adminGuard } from "../guards/admin.guard";
@@ -9,18 +13,27 @@ import { contractOS } from "../utils";
 export const createAPIKeyRoute = contractOS.apikey.create
   .use(adminGuard())
   .handler(async (opts) => {
+    console.log(opts.input);
     const { data, error } = await tryCatch(
       auth.api.createApiKey({
         body: {
           rateLimitEnabled: false,
-          ...opts.input,
+          name: opts.input.name,
           userId: opts.context.session.user.id,
+
+          refillAmount: undefined,
+          refillInterval: undefined,
+          rateLimitTimeWindow: undefined,
+          rateLimitMax: undefined,
+          permissions: undefined,
+          remaining: null,
         },
         headers: opts.context.headers,
       })
     );
 
     if (error) {
+      console.log(error);
       if (error instanceof APIError) {
         switch (error.statusCode) {
           case 401:
@@ -49,6 +62,31 @@ export const getAllApiKeysWithMetaRoute = contractOS.apikey.list
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
       getInfiniteApiKeys(opts.context.db, opts.input ?? {})
+    );
+
+    if (error) {
+      if (error instanceof APIError) {
+        switch (error.statusCode) {
+          case 401:
+            throw opts.errors.UNAUTHORIZED();
+          case 403:
+            throw opts.errors.FORBIDDEN();
+          case 404:
+            throw opts.errors.NOT_FOUND();
+        }
+        throw opts.errors.INTERNAL_SERVER_ERROR();
+      }
+      throw opts.errors.INTERNAL_SERVER_ERROR();
+    }
+
+    return data;
+  });
+
+export const getProjectApiKeysRoute = contractOS.apikey["project-list"]
+  .use(adminGuard())
+  .handler(async (opts) => {
+    const { data, error } = await tryCatch(
+      getInfiniteApiKeysByProjectId(opts.context.db, opts.input)
     );
 
     if (error) {

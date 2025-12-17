@@ -6,15 +6,43 @@ import {
   feedSchema,
   contentSchema,
   feedMetaSchema,
+  insertFeedSchema,
+  insertFeedContentSchema,
 } from "@chia/db/validator/feeds";
 
-import {
-  createFeedSchema,
-  deleteFeedSchema,
-  updateFeedSchema,
-} from "../validators";
+const dateSchema = z.object({
+  createdAt: z.number().optional(),
+  updatedAt: z.number().optional(),
+});
 
-const withMetaSchema = (schema: z.ZodType) =>
+export const createFeedSchema = z.object({
+  ...insertFeedSchema
+    .omit({ userId: true, createdAt: true, updatedAt: true })
+    .partial({ slug: true }).shape,
+  ...insertFeedContentSchema
+    .omit({ feedId: true })
+    .partial({ contentType: true }).shape,
+  ...dateSchema.shape,
+});
+
+export type CreateFeedInput = z.infer<typeof createFeedSchema>;
+
+export const updateFeedSchema = z.object({
+  ...insertFeedSchema.omit({
+    userId: true,
+    createdAt: true,
+    updatedAt: true,
+    slug: true,
+  }).shape,
+  ...insertFeedContentSchema.partial({ contentType: true }).shape,
+  ...dateSchema.shape,
+});
+
+export const deleteFeedSchema = z.object({
+  feedId: z.number(),
+});
+
+const withMetaSchema = <Out, In>(schema: z.ZodType<Out, In>) =>
   z.object({
     items: z.array(schema),
     nextCursor: z.union([z.string(), z.number()]).nullable(),
@@ -31,7 +59,7 @@ export const getFeedsWithMetaContract = oc
     withMetaSchema(
       z.object({
         ...feedSchema.shape,
-        content: contentSchema.shape,
+        content: contentSchema.nullish(),
       })
     )
   );
@@ -47,7 +75,7 @@ export const getFeedsWithMetaByAdminIdContract = oc
     withMetaSchema(
       z.object({
         ...feedSchema.shape,
-        content: contentSchema.shape,
+        content: contentSchema.nullish(),
       })
     )
   );
@@ -62,8 +90,8 @@ export const getFeedBySlugContract = oc
   .output(
     z.object({
       ...feedSchema.shape,
-      content: contentSchema.shape,
-      feedMeta: feedMetaSchema.shape,
+      content: contentSchema.nullish(),
+      feedMeta: feedMetaSchema.nullish(),
     })
   );
 
@@ -77,8 +105,8 @@ export const getFeedByIdContract = oc
   .output(
     z.object({
       ...feedSchema.shape,
-      content: contentSchema.shape,
-      feedMeta: feedMetaSchema.shape,
+      content: contentSchema.nullish(),
+      feedMeta: feedMetaSchema.nullish(),
     })
   );
 

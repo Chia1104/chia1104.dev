@@ -2,15 +2,16 @@
 
 import { Input, CardBody, CardFooter, Divider, Form } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import type { Project } from "@chia/db/schema";
+import type { ProjectDTO } from "@chia/db/validator/organization";
 import { Form as FormCtx, FormField } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 
-import { api } from "@/trpc/client";
+import { orpc } from "@/libs/orpc/client";
 
 const schema = z.object({
   name: z.string().min(2).max(50),
@@ -19,7 +20,7 @@ const schema = z.object({
 });
 
 interface Props {
-  onSuccess?: (data: Project) => void;
+  onSuccess?: (data: ProjectDTO) => void;
   organizationId: string;
 }
 
@@ -28,17 +29,19 @@ const CreateForm = (props: Props) => {
     resolver: zodResolver(schema),
   });
 
-  const { mutate } = api.organization.createProject.useMutation({
-    onSuccess: (data) => {
-      if (data[0]) {
-        props?.onSuccess?.(data[0]);
-      }
-      toast.success("Project created successfully");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { mutate } = useMutation(
+    orpc.organization.projects.create.mutationOptions({
+      onSuccess: (data) => {
+        if (data[0]) {
+          props?.onSuccess?.(data[0]);
+        }
+        toast.success("Project created successfully");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
 
   const handleSubmit = form.handleSubmit((data) => {
     mutate({

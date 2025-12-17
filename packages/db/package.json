@@ -92,6 +92,7 @@
     "@chia/utils": "workspace:*",
     "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
     "@types/pg": "^8.16.0",
     "drizzle-kit": "^0.31.8",
     "eslint": "catalog:eslint",

@@ -16,10 +16,10 @@ import authRoutes from "@/controllers/auth.controller";
 import emailRoutes from "@/controllers/email.controller";
 import feedsRoutes from "@/controllers/feeds.controller";
 import healthRoutes from "@/controllers/health.controller";
+import rpcRoutes from "@/controllers/rpc.controller";
 import spotifyRoutes from "@/controllers/spotify.controller";
 import toolingsRoutes from "@/controllers/toolings.controller";
 import triggerRoutes from "@/controllers/trigger.controller";
-import trpcRoutes from "@/controllers/trpc.controller";
 import { env } from "@/env";
 import { maintenance } from "@/middlewares/maintenance.middleware";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
@@ -139,8 +139,8 @@ const bootstrap = <TContext extends HonoContext>(
     .use("/api/v1/feeds", timeout(env.TIMEOUT_MS))
     .route("/api/v1/feeds", feedsRoutes);
   app
-    .use("/api/v1/trpc", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/trpc", trpcRoutes);
+    .use("/api/v1/rpc", timeout(env.TIMEOUT_MS))
+    .route("/api/v1/rpc", rpcRoutes);
   app
     .use("/api/v1/health", timeout(env.TIMEOUT_MS))
     .route("/api/v1/health", healthRoutes);

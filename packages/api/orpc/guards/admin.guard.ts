@@ -27,7 +27,7 @@ export const adminGuard = (role: Role[] = [Role.Admin, Role.Root]) =>
       const adminId = getAdminId();
 
       if (
-        role?.includes(sessionData.user.role) ||
+        !role?.includes(sessionData.user.role) ||
         sessionData.user.id !== adminId
       ) {
         if (context.hooks?.onForbidden) {
