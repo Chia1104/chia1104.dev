@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import * as z from "zod";
 
@@ -7,7 +8,6 @@ import {
   insertFeedMetaRequestSchema,
   updateFeedRequestSchema,
 } from "@chia/api/services/validators";
-import { eq } from "@chia/db";
 import { schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
