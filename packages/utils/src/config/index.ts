@@ -210,14 +210,10 @@ export const getServiceEndPoint = (
 ) => {
   const isServer = typeof window === "undefined";
   const {
-    clientPrefix = "NEXT_PUBLIC_",
-    proxyEndpoint = process.env[`${clientPrefix}SERVICE_PROXY_ENDPOINT`],
+    proxyEndpoint = process.env.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT,
     version = "v1",
     isInternal,
   } = options ?? {};
-
-  const serviceEndpoint = process.env[`${clientPrefix}SERVICE_ENDPOINT`];
-
   return switchEnv(env, {
     prod: () => {
       if (isServer || isInternal) {
@@ -231,10 +227,9 @@ export const getServiceEndPoint = (
       if (proxyEndpoint) {
         return switchServiceVersion(version, proxyEndpoint);
       }
+      const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
       if (!serviceEndpoint)
-        throw new Error(
-          `Missing env variables ${clientPrefix}SERVICE_ENDPOINT`
-        );
+        throw new Error(`Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT`);
       return switchServiceVersion(version, serviceEndpoint);
     },
     beta: () => {
@@ -246,10 +241,9 @@ export const getServiceEndPoint = (
           process.env.INTERNAL_SERVICE_ENDPOINT
         );
       }
+      const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
       if (!serviceEndpoint)
-        throw new Error(
-          `Missing env variables ${clientPrefix}SERVICE_ENDPOINT`
-        );
+        throw new Error(`Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT`);
       return switchServiceVersion(version, serviceEndpoint);
     },
     local: () => {
@@ -261,10 +255,9 @@ export const getServiceEndPoint = (
           process.env.INTERNAL_SERVICE_ENDPOINT
         );
       }
+      const serviceEndpoint = process.env.NEXT_PUBLIC_SERVICE_ENDPOINT;
       if (!serviceEndpoint)
-        throw new Error(
-          `Missing env variables ${clientPrefix}SERVICE_ENDPOINT`
-        );
+        throw new Error(`Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT`);
       return switchServiceVersion(version, serviceEndpoint);
     },
   });
