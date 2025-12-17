@@ -3,7 +3,7 @@ import { createKeyv as createRedis } from "@keyv/redis";
 import { createKeyv as createValkey } from "@keyv/valkey";
 import type { Keyv } from "keyv";
 
-import { isUrl } from "@chia/utils/is-url";
+import { isUrl } from "@chia/utils/is";
 
 import { env } from "./env";
 

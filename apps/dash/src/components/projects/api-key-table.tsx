@@ -41,7 +41,7 @@ import {
 } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
-import { truncateMiddle } from "@chia/utils/string";
+import { truncateMiddle } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs, RouterInputs } from "@/libs/orpc/types";

@@ -8,7 +8,7 @@ import {
   getProjectById,
   getProjectBySlug,
 } from "@chia/db/repos/organization";
-import { tryCatch } from "@chia/utils/try-catch";
+import { tryCatch } from "@chia/utils/error-helper";
 
 import { adminGuard } from "../guards/admin.guard";
 import { contractOS, slugger } from "../utils";

@@ -1,14 +1,22 @@
-interface Success<T> {
+export class ParsedJSONError extends Error {
+  public input: unknown;
+  constructor(input: unknown) {
+    super("Parsed JSON error");
+    this.input = input;
+  }
+}
+
+interface TryCatchSuccess<T> {
   data: T;
   error: null;
 }
 
-interface Failure<E> {
+interface TryCatchFailure<E> {
   data: null;
   error: E;
 }
 
-type Result<T, E = Error> = Success<T> | Failure<E>;
+type TryCatchResult<T, E = Error> = TryCatchSuccess<T> | TryCatchFailure<E>;
 
 /**
  * A utility function to handle asynchronous operations and return a Result object.
@@ -36,7 +44,7 @@ type Result<T, E = Error> = Success<T> | Failure<E>;
  */
 export async function tryCatch<T, E = Error>(
   promise: Promise<T> | T
-): Promise<Result<T, E>> {
+): Promise<TryCatchResult<T, E>> {
   try {
     const data = await promise;
     return { data, error: null };

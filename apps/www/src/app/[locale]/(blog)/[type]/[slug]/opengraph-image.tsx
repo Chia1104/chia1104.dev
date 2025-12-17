@@ -2,8 +2,8 @@ import { ImageResponse } from "next/og";
 import { NextResponse } from "next/server";
 
 import OpenGraph from "@chia/ui/open-graph";
-import { errorGenerator } from "@chia/utils";
 import dayjs from "@chia/utils/day";
+import { errorGenerator } from "@chia/utils/server";
 
 import { getFeedBySlug } from "@/services/feeds.service";
 
@@ -20,20 +20,18 @@ export default async function og({ params }: { params: { slug: string } }) {
     return NextResponse.json(errorGenerator(404), { status: 404 });
   }
   return new ImageResponse(
-    (
-      <OpenGraph
-        metadata={{
-          title: post.title,
-          excerpt: post.excerpt,
-          subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
-        }}
-        styles={{
-          title: {
-            color: "transparent",
-          },
-        }}
-      />
-    ),
+    <OpenGraph
+      metadata={{
+        title: post.title,
+        excerpt: post.excerpt,
+        subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
+      }}
+      styles={{
+        title: {
+          color: "transparent",
+        },
+      }}
+    />,
     {
       ...size,
       status: 200,

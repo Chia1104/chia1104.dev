@@ -2,10 +2,10 @@
 
 import { Button } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
+import type { HTTPError } from "ky";
 import { toast } from "sonner";
 
-import { post } from "@chia/utils";
-import type { HTTPError } from "@chia/utils";
+import { post } from "@chia/utils/request";
 
 const SpotifyLogin = () => {
   const { mutate, isPending } = useMutation<

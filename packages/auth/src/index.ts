@@ -12,7 +12,7 @@ import * as schemas from "@chia/db/schema";
 import { Role } from "@chia/db/types";
 import { kv } from "@chia/kv";
 import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
-import { AUTH_EMAIL } from "@chia/utils";
+import { AUTH_EMAIL } from "@chia/utils/config";
 
 import { env } from "./env";
 import { useSecureCookies, getCookieDomain, X_CH_API_KEY } from "./utils";

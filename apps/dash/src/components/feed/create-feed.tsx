@@ -3,7 +3,7 @@
 import { Button } from "@heroui/react";
 import { useTransitionRouter } from "next-view-transitions";
 
-import { setSearchParams } from "@chia/utils";
+import { setSearchParams } from "@chia/utils/request";
 
 const CreateFeed = () => {
   const router = useTransitionRouter();

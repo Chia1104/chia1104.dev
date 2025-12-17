@@ -1,8 +1,8 @@
 import { createMiddleware } from "hono/factory";
 
 import { captchaSiteverify, CaptchaError, ErrorCode } from "@chia/api/captcha";
-import { errorGenerator } from "@chia/utils";
-import { tryCatch } from "@chia/utils/try-catch";
+import { tryCatch } from "@chia/utils/error-helper";
+import { errorGenerator } from "@chia/utils/server";
 
 export const siteverify = createMiddleware<HonoContext>(async (c, next) => {
   const { data: captcha, error: captchaError } = await tryCatch(

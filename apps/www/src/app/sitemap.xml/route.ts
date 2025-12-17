@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { getMeta } from "@chia/api/services/feeds";
-import { getBaseUrl, WWW_BASE_URL, errorGenerator } from "@chia/utils";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
+import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 

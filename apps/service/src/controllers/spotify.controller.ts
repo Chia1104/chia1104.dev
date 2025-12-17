@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
 import { getPlayList, getNowPlaying } from "@chia/api/spotify";
-import { errorGenerator } from "@chia/utils";
+import { errorGenerator } from "@chia/utils/server";
 
 const api = new Hono<HonoContext>();
 

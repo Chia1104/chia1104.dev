@@ -10,8 +10,8 @@ import {
 } from "@chia/ai/constants";
 import { Provider } from "@chia/ai/types";
 import { verifyApiKey } from "@chia/ai/utils";
-import { errorGenerator } from "@chia/utils";
-import { tryCatch } from "@chia/utils/try-catch";
+import { tryCatch } from "@chia/utils/error-helper";
+import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 

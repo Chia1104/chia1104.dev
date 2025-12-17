@@ -3,8 +3,8 @@ import { Hono } from "hono";
 import { getRuntimeKey } from "hono/adapter";
 import * as z from "zod";
 
-import { numericStringSchema } from "@chia/utils";
 import { delay } from "@chia/utils/delay";
+import { NumericStringSchema } from "@chia/utils/schema";
 
 import { verifyAuth } from "@/guards/auth.guard";
 import { IS_MAINTENANCE_MODE } from "@/middlewares/maintenance.middleware";
@@ -22,7 +22,7 @@ api.get("/runtime", (c) => c.text(getRuntimeKey()));
 
 api.get("/delayed", verifyAuth(true)).get(
   "/delayed",
-  zValidator("query", z.object({ ms: numericStringSchema }), (result, c) => {
+  zValidator("query", z.object({ ms: NumericStringSchema }), (result, c) => {
     if (!result.success) {
       return c.json(errorResponse(result.error), 400);
     }

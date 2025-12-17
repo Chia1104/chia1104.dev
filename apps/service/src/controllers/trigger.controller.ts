@@ -11,8 +11,8 @@ import {
 } from "trigger/feed-summarize";
 import * as z from "zod";
 
-import { errorGenerator } from "@chia/utils";
-import { tryCatch } from "@chia/utils/try-catch";
+import { tryCatch } from "@chia/utils/error-helper";
+import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 import { apikeyVerify } from "@/guards/apikey-verify.guard";

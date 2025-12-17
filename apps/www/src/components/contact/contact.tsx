@@ -26,8 +26,8 @@ import { Form as _Form, FormField, FormItem, FormMessage } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
-import { getServiceEndPoint } from "@chia/utils";
-import { post, handleKyError } from "@chia/utils";
+import { getServiceEndPoint } from "@chia/utils/config";
+import { post, handleKyError } from "@chia/utils/request";
 
 import { env } from "@/env";
 import { contactSchema } from "@/shared/validator";

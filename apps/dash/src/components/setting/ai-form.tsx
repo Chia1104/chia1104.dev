@@ -21,8 +21,8 @@ import {
   Form,
 } from "@chia/ui/form";
 import { cn } from "@chia/ui/utils/cn.util";
-import type { ErrorResponse } from "@chia/utils";
-import { serviceRequest } from "@chia/utils";
+import type { ErrorResponse } from "@chia/utils/request";
+import { serviceRequest } from "@chia/utils/request";
 
 const openaiApiKeySchema = z.object({
   apiKey: z.string().min(1),

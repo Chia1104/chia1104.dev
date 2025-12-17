@@ -7,8 +7,7 @@ import { logger } from "hono/logger";
 import { timeout } from "hono/timeout";
 
 import { auth } from "@chia/auth";
-import { errorGenerator } from "@chia/utils";
-import { getClientIP } from "@chia/utils/get-client-ip";
+import { getClientIP, errorGenerator } from "@chia/utils/server";
 
 import adminRoutes from "@/controllers/admin.controller";
 import aiRoutes from "@/controllers/ai.controller";

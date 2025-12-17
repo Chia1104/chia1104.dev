@@ -10,8 +10,9 @@ import NextLink from "next/link";
 import type { LinkProps as NextLinkProps } from "next/link";
 import * as z from "zod";
 
-import { isUrl, handleKyError, isURLInstance } from "@chia/utils";
-import { serviceRequest } from "@chia/utils";
+import { isUrl, isURLInstance } from "@chia/utils/is";
+import { serviceRequest } from "@chia/utils/request";
+import { handleKyError } from "@chia/utils/request";
 
 import { cn } from "../utils/cn.util";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";

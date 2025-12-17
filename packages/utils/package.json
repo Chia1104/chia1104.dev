@@ -5,73 +5,45 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./config": {
       "types": "./src/config/index.ts",
       "default": "./src/config/index.ts"
     },
-    "./constants": {
-      "types": "./src/constants/index.ts",
-      "default": "./src/constants/index.ts"
-    },
     "./day": {
-      "types": "./src/day/day.ts",
-      "default": "./src/day/day.util.ts"
+      "types": "./src/day/index.ts",
+      "default": "./src/day/index.ts"
     },
-    "./handle-zod-error": {
-      "types": "./src/handle-zod-error/handle-zod-error.ts",
-      "default": "./src/handle-zod-error/handle-zod-error.ts"
+    "./delay": {
+      "types": "./src/delay/index.ts",
+      "default": "./src/delay/index.ts"
     },
-    "./handle-zod-error/enhance": {
-      "types": "./src/handle-zod-error/enhance-handle-zod-error.ts",
-      "default": "./src/handle-zod-error/enhance-handle-zod-error.ts"
+    "./error-helper": {
+      "types": "./src/error-helper/index.ts",
+      "default": "./src/error-helper/index.ts"
     },
-    "./is-url": {
-      "types": "./src/is-url/is-url.ts",
-      "default": "./src/is-url/index.ts"
+    "./format": {
+      "types": "./src/format/index.ts",
+      "default": "./src/format/index.ts"
+    },
+    "./is": {
+      "types": "./src/is/index.ts",
+      "default": "./src/is/index.ts"
     },
     "./request": {
-      "types": "./src/request/request.ts",
-      "default": "./src/request/request.utill.ts"
+      "types": "./src/request/index.ts",
+      "default": "./src/request/index.ts"
     },
-    "./schema": {
-      "types": "./src/schema/index.ts",
-      "default": "./src/schema/index.ts"
-    },
-    "./schema/mjs": {
-      "types": "./src/schema/schema.mjs",
-      "default": "./src/schema/schema.mjs"
-    },
-    "./server/error-helper": {
-      "types": "./src/server/error-helper.ts",
-      "default": "./src/server/error.helper.ts"
-    },
-    "./server/network": {
-      "types": "./src/server/network.ts",
-      "default": "./src/server/network.config.ts"
-    },
-    "./url": {
-      "types": "./src/url/url.ts",
-      "default": "./src/url/url.ts"
+    "./server": {
+      "types": "./src/server/index.ts",
+      "default": "./src/server/index.ts"
     },
     "./string": {
       "types": "./src/string/index.ts",
       "default": "./src/string/index.ts"
     },
-    "./try-catch": {
-      "types": "./src/try-catch/try-catch.ts",
-      "default": "./src/try-catch/try-catch.ts"
-    },
-    "./delay": {
-      "types": "./src/delay/delay.ts",
-      "default": "./src/delay/delay.ts"
-    },
-    "./get-client-ip": {
-      "types": "./src/get-client-ip/index.ts",
-      "default": "./src/get-client-ip/index.ts"
+    "./schema": {
+      "types": "./src/schema/index.ts",
+      "default": "./src/schema/index.ts"
     }
   },
   "scripts": {

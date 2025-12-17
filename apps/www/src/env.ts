@@ -4,7 +4,7 @@ import * as z from "zod";
 import { env as captchaEnv } from "@chia/api/captcha/env.client";
 import { env as githubEnv } from "@chia/api/github/env";
 import { externalInfraEnv as serviceEnv } from "@chia/api/services/env";
-import { nodeEnvSchema, envSchema } from "@chia/utils/schema/mjs";
+import { NodeEnvSchema, AppEnvSchema } from "@chia/utils/schema";
 
 export const getClientEnv = () => {
   if (process.env.NEXT_PUBLIC_ENV) {
@@ -28,7 +28,7 @@ export const getClientEnv = () => {
 
 export const env = createEnv({
   server: {
-    NODE_ENV: nodeEnvSchema,
+    NODE_ENV: NodeEnvSchema,
     RAILWAY_URL: z.string().optional(),
     ZEABUR_URL: z.string().optional(),
     SITE_URL: z.string().optional().default("https://www.chia1104.dev"),
@@ -43,7 +43,7 @@ export const env = createEnv({
   },
 
   client: {
-    NEXT_PUBLIC_ENV: envSchema,
+    NEXT_PUBLIC_ENV: AppEnvSchema,
     NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
     NEXT_PUBLIC_GA_ID: z.string().optional(),

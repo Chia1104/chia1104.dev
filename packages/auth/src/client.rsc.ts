@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/client";
 import "server-only";
 
-import { X_CF_BYPASS_TOKEN } from "@chia/utils";
+import { X_CF_BYPASS_TOKEN } from "@chia/utils/request";
 
 import { env } from "./env";
 import { baseAuthClient, X_CH_API_KEY } from "./utils";

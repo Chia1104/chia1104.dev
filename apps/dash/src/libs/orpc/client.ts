@@ -4,7 +4,7 @@ import type { RouterClient } from "@orpc/server";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
 import type { router } from "@chia/api/orpc/router";
-import { getServiceEndPoint } from "@chia/utils";
+import { getServiceEndPoint } from "@chia/utils/config";
 
 declare global {
   var $client: RouterClient<typeof router> | undefined;

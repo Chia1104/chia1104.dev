@@ -5,7 +5,7 @@ import { HTTPException } from "hono/http-exception";
 
 import { auth } from "@chia/auth";
 import { Role } from "@chia/db/types";
-import { errorGenerator } from "@chia/utils";
+import { errorGenerator } from "@chia/utils/server";
 
 export const verifyAuth = (
   rootOnly?: boolean | ((c: Context) => boolean | Promise<boolean>)

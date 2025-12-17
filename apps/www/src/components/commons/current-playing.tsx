@@ -31,7 +31,7 @@ import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 import { getBrightness } from "@chia/ui/utils/get-brightness";
 import { experimental_getImgAverageRGB } from "@chia/ui/utils/get-img-average-rgb";
-import { serviceRequest } from "@chia/utils";
+import { serviceRequest } from "@chia/utils/request";
 
 interface ExtendsProps {
   className?: string;
