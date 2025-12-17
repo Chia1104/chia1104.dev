@@ -73,7 +73,7 @@ catalogs:
     '@trpc/client': 11.7.2
     '@trpc/next': 11.7.2
     '@trpc/react-query': 11.7.2
-    '@trpc/server': 11.7.2
+    '@trpc/server': 11.8.0
 
 linkWorkspacePackages: true
 
