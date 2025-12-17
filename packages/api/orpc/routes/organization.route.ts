@@ -70,7 +70,7 @@ export const createOrganizationRoute = contractOS.organization.create
       auth.api.createOrganization({
         body: {
           ...opts.input,
-          userId: opts.context.session.user.id,
+          userId: opts.context.session?.user.id,
         },
       })
     );

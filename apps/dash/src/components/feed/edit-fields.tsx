@@ -309,6 +309,7 @@ export const MetadataFields = () => {
                     labelPlacement="outside"
                     className="w-full"
                     label="Create"
+                    // @ts-expect-error - @internationalized/date type conflict with @heroui/react
                     value={
                       field.value
                         ? parseDate(
@@ -340,6 +341,7 @@ export const MetadataFields = () => {
                       labelPlacement="outside"
                       className="w-full"
                       label="Update"
+                      // @ts-expect-error - @internationalized/date type conflict with @heroui/react
                       value={
                         field.value
                           ? parseDate(
