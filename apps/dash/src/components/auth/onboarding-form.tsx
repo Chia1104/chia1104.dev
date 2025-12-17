@@ -2,16 +2,17 @@
 
 import { Input, CardBody, CardFooter, Divider, Form } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import * as z from "zod";
 
 import type { Organization } from "@chia/auth/types";
 import { Form as FormCtx, FormField } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 
+import { orpc } from "@/libs/orpc/client";
 import { setCurrentOrg } from "@/server/org.action";
-import { api } from "@/trpc/client";
 
 const schema = z.object({
   name: z.string().min(2).max(50),
@@ -28,17 +29,19 @@ const OnboardingForm = (props: Props) => {
     resolver: zodResolver(schema),
   });
 
-  const { mutate } = api.organization.createOrganization.useMutation({
-    onSuccess: async (data) => {
-      if (data) {
-        await setCurrentOrg(data.slug);
-        props?.onSuccess?.(data);
-      }
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { mutate } = useMutation(
+    orpc.organization.create.mutationOptions({
+      onSuccess: async (data) => {
+        if (data.slug) {
+          await setCurrentOrg(data.slug);
+          props?.onSuccess?.(data);
+        }
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
 
   const handleSubmit = form.handleSubmit((data) => {
     mutate(data);

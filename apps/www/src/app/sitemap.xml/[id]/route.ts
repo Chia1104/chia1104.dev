@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import * as z from "zod";
 
 import { getFeedsWithMetaByAdminId } from "@chia/api/services/feeds";
 import {

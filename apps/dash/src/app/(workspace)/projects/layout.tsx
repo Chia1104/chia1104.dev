@@ -1,11 +1,12 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import AppLoading from "@/components/commons/app-loading";
 import ProjectLayout from "@/components/projects/project-layout";
+import { orpc } from "@/libs/orpc/client";
 import { useOrganizationStore } from "@/store/organization.store";
-import { api } from "@/trpc/client";
 
 const Layout = ({
   children,
@@ -18,9 +19,14 @@ const Layout = ({
 }) => {
   const segments = useSelectedLayoutSegments();
   const { currentOrgId } = useOrganizationStore((state) => state);
-  const { data, isLoading } = api.organization.getProjectsWithMeta.useQuery({
-    organizationId: currentOrgId,
-  });
+
+  const { data, isLoading } = useQuery(
+    orpc.organization.projects.list.queryOptions({
+      input: {
+        organizationId: currentOrgId,
+      },
+    })
+  );
 
   if (isLoading || !data?.items)
     return (

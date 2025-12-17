@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 import { FeedOrderBy } from "@chia/db/types";
 import {

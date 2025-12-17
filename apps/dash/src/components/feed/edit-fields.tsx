@@ -20,6 +20,7 @@ import {
   Skeleton,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -27,7 +28,7 @@ import { useRouter } from "next/navigation";
 import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
-import type { CreateFeedInput } from "@chia/api/trpc/validators";
+import type { feedsContracts } from "@chia/api/orpc/contracts";
 import { FeedType, ContentType } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import { FormControl, FormField, FormItem, FormMessage } from "@chia/ui/form";
@@ -36,11 +37,11 @@ import useTheme from "@chia/ui/utils/use-theme";
 import dayjs from "@chia/utils/day";
 
 import { useDraft } from "@/hooks/use-draft";
+import { orpc } from "@/libs/orpc/client";
 import {
   useGenerateFeedDescription,
   useGenerateFeedSlug,
 } from "@/services/ai/hooks";
-import { api } from "@/trpc/client";
 
 import {
   EditFieldsContext,
@@ -94,19 +95,21 @@ export interface Ref {
 }
 
 const DeleteButton = () => {
-  const form = useFormContext<CreateFeedInput>();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
   const router = useRouter();
-  const utils = api.useUtils();
-  const deleteFeed = api.feeds.deleteFeed.useMutation({
-    onSuccess: async () => {
-      toast.success("Feed deleted successfully");
-      await utils.feeds.invalidate();
-      router.push("/feed/posts");
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
+  const queryClient = useQueryClient();
+  const deleteFeed = useMutation(
+    orpc.feeds.delete.mutationOptions({
+      onSuccess: async () => {
+        toast.success("Feed deleted successfully");
+        await queryClient.invalidateQueries(orpc.feeds.list.queryOptions());
+        router.push("/feed/posts");
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    })
+  );
 
   return (
     <Popover backdrop="blur">
@@ -136,12 +139,12 @@ const DeleteButton = () => {
 };
 
 const SlugField = () => {
-  const form = useFormContext<CreateFeedInput>();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const { completion } = useGenerateFeedSlug();
 
   return (
-    <FormField<CreateFeedInput, "slug">
+    <FormField<feedsContracts.CreateFeedInput, "slug">
       control={form.control}
       name="slug"
       render={({ field, fieldState }) => (
@@ -175,12 +178,12 @@ const SlugField = () => {
 };
 
 const DescriptionField = () => {
-  const form = useFormContext<CreateFeedInput>();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const { completion } = useGenerateFeedDescription();
 
   return (
-    <FormField<CreateFeedInput, "description">
+    <FormField<feedsContracts.CreateFeedInput, "description">
       control={form.control}
       name="description"
       render={({ field, fieldState }) => (
@@ -219,7 +222,7 @@ const DescriptionField = () => {
 };
 
 export const MetadataFields = () => {
-  const form = useFormContext<CreateFeedInput>();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const articleType = useRef([
     { key: ContentType.Mdx, label: ContentType.Mdx.toUpperCase() },
@@ -232,7 +235,7 @@ export const MetadataFields = () => {
   return (
     <div className="w-full flex flex-col gap-5">
       <div className="flex justify-between">
-        <FormField<CreateFeedInput, "type">
+        <FormField<feedsContracts.CreateFeedInput, "type">
           control={form.control}
           name="type"
           render={({ field }) => (
@@ -271,7 +274,7 @@ export const MetadataFields = () => {
         />
         {editFields.mode === "edit" && <DeleteButton />}
       </div>
-      <FormField<CreateFeedInput, "title">
+      <FormField<feedsContracts.CreateFeedInput, "title">
         control={form.control}
         name="title"
         render={({ field, fieldState }) => (
@@ -294,7 +297,7 @@ export const MetadataFields = () => {
       <DescriptionField />
       <div className="flex flex-col md:flex-row w-full gap-5">
         <div className="flex gap-5 w-full md:w-1/2">
-          <FormField<CreateFeedInput, "createdAt">
+          <FormField<feedsContracts.CreateFeedInput, "createdAt">
             control={form.control}
             name="createdAt"
             render={({ field, fieldState }) => (
@@ -306,6 +309,7 @@ export const MetadataFields = () => {
                     labelPlacement="outside"
                     className="w-full"
                     label="Create"
+                    // @ts-expect-error - @internationalized/date type conflict with @heroui/react
                     value={
                       field.value
                         ? parseDate(
@@ -326,7 +330,7 @@ export const MetadataFields = () => {
             )}
           />
           {editFields.mode === "edit" && (
-            <FormField<CreateFeedInput, "updatedAt">
+            <FormField<feedsContracts.CreateFeedInput, "updatedAt">
               control={form.control}
               name="updatedAt"
               render={({ field, fieldState }) => (
@@ -337,6 +341,7 @@ export const MetadataFields = () => {
                       labelPlacement="outside"
                       className="w-full"
                       label="Update"
+                      // @ts-expect-error - @internationalized/date type conflict with @heroui/react
                       value={
                         field.value
                           ? parseDate(
@@ -359,7 +364,7 @@ export const MetadataFields = () => {
           )}
         </div>
         <div className="flex gap-5 items-end w-full md:w-1/2">
-          <FormField<CreateFeedInput, "contentType">
+          <FormField<feedsContracts.CreateFeedInput, "contentType">
             control={form.control}
             name="contentType"
             render={({ fieldState, field }) => (
@@ -391,7 +396,7 @@ export const MetadataFields = () => {
               </FormItem>
             )}
           />
-          <FormField<CreateFeedInput, "published">
+          <FormField<feedsContracts.CreateFeedInput, "published">
             control={form.control}
             name="published"
             render={({ field }) => (
@@ -416,7 +421,7 @@ export const MetadataFields = () => {
 };
 
 const EditorInfo = memo(() => {
-  const form = useFormContext<CreateFeedInput>();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
   return (
     <>
       {form.watch("contentType") !== ContentType.Tiptap ? (
@@ -439,7 +444,7 @@ const EditorInfo = memo(() => {
 });
 
 const SwitchEditor = () => {
-  const form = useFormContext<CreateFeedInput>();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const { isDarkMode } = useTheme();
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -551,7 +556,7 @@ const SwitchEditor = () => {
 };
 
 const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
-  const form = useFormContext<CreateFeedInput>();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
 
   const createDefaultContent = () => {
     const contentType = form.getValues("contentType");

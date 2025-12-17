@@ -1,5 +1,5 @@
 import { APIError } from "better-auth/api";
-import { z } from "zod";
+import * as z from "zod";
 
 import type { auth } from "./";
 
@@ -15,6 +15,14 @@ export const providerSchema = z.enum(Provider);
 
 export type Session = typeof auth.$Infer.Session;
 
-export type Organization = typeof auth.$Infer.Organization;
+export type Organization = Omit<
+  typeof auth.$Infer.Organization,
+  "createdAt"
+> & {
+  /**
+   * Date type is only came from better-auth, it should always be a string
+   */
+  createdAt: string | Date;
+};
 
 export { APIError };

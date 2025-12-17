@@ -12,17 +12,18 @@ import {
   Button,
   useDisclosure,
 } from "@heroui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { orpc } from "@/libs/orpc/client";
 import { useOrganizationStore } from "@/store/organization.store";
-import { api } from "@/trpc/client";
 
 import CreateForm from "./create-form";
 
 const Create = () => {
-  const utils = api.useUtils();
+  const queryClient = useQueryClient();
   const { isOpen, onOpen, onOpenChange } = useDisclosure({
     id: "create-modal",
   });
@@ -51,7 +52,13 @@ const Create = () => {
                     organizationId={currentOrgId}
                     onSuccess={async () => {
                       onClose();
-                      await utils.organization.getProjectsWithMeta.invalidate();
+                      await queryClient.invalidateQueries(
+                        orpc.organization.projects.list.queryOptions({
+                          input: {
+                            organizationId: currentOrgId,
+                          },
+                        })
+                      );
                     }}
                   />
                 </Card>

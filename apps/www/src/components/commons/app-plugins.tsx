@@ -13,7 +13,7 @@ import useTheme from "@chia/ui/utils/use-theme";
 
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
-import { useRouter } from "@/i18n/routing";
+import { useRouter } from "@/libs/i18n/routing";
 
 const ContactCMD = () => {
   const router = useRouter();

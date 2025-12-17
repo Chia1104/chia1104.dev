@@ -1,7 +1,7 @@
 "use client";
 
-import Error from "@chia/ui/features/Error";
+import ErrorPage from "@chia/ui/features/Error";
 
-export default Error({
+export default ErrorPage({
   className: "w-full",
 });

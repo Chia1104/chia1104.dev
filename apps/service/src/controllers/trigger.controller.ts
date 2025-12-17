@@ -9,7 +9,7 @@ import {
   feedSummarizeTask,
   requestSchema as feedSummarizeRequestSchema,
 } from "trigger/feed-summarize";
-import { z } from "zod";
+import * as z from "zod";
 
 import { errorGenerator } from "@chia/utils";
 import { tryCatch } from "@chia/utils/try-catch";

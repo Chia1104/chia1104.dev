@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
-import { z } from "zod";
+import * as z from "zod";
 
 import {
   OPENAI_API_KEY,

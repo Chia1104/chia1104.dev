@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { z } from "zod";
+import * as z from "zod";
 
 import { FeedType } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
@@ -7,7 +7,7 @@ import { numericStringSchema } from "@chia/utils";
 import dayjs from "@chia/utils/day";
 
 import EditForm from "@/components/feed/edit-form";
-import { api } from "@/trpc/rsc";
+import { client } from "@/libs/orpc/client";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,7 @@ const Page = async ({
   ) {
     notFound();
   }
-  const feed = await api.feeds.getFeedById({
+  const feed = await client.feeds["details-by-id"]({
     feedId: Number(id),
   });
   if (!feed) {

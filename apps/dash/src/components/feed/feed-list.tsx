@@ -4,10 +4,10 @@ import { forwardRef, useMemo, memo, useState } from "react";
 import type { FC } from "react";
 
 import { Card, CardBody, CardHeader, Chip, Button } from "@heroui/react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 
-import type { RouterInputs, RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
 import DateFormat from "@chia/ui/date-format";
@@ -16,15 +16,16 @@ import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import dayjs from "@chia/utils/day";
 
 import { useGetAllDrafts } from "@/hooks/use-draft";
-import { api } from "@/trpc/client";
+import { orpc } from "@/libs/orpc/client";
+import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
 
 import Skeleton from "./skeleton";
 
 interface Props {
-  initFeed?: RouterOutputs["feeds"]["getFeedsWithMeta"]["items"];
+  initFeed?: RouterOutputs["feeds"]["list"]["items"];
   nextCursor?: string | number | null;
   useClient?: boolean;
-  query?: RouterInputs["feeds"]["getFeedsWithMeta"];
+  query?: RouterInputs["feeds"]["list"];
 }
 
 const Empty = () => {
@@ -49,7 +50,7 @@ const Empty = () => {
 const FeedItem = forwardRef<
   HTMLDivElement,
   {
-    feed: RouterOutputs["feeds"]["getFeedsWithMeta"]["items"][0];
+    feed: RouterOutputs["feeds"]["list"]["items"][0];
   }
 >(({ feed }, ref) => {
   const router = useRouter();
@@ -100,10 +101,7 @@ export const PreviewFeedItem = ({
   token,
   onRemove,
 }: {
-  feed: Omit<
-    Partial<RouterOutputs["feeds"]["getFeedsWithMeta"]["items"][0]>,
-    "content"
-  >;
+  feed: Omit<Partial<RouterOutputs["feeds"]["list"]["items"][0]>, "content">;
   token: string;
   onRemove?: () => void;
 }) => {
@@ -152,20 +150,28 @@ const FeedList: FC<Props> = (props) => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = api.feeds.getFeedsWithMeta.useInfiniteQuery(query, {
-    getNextPageParam: (lastPage) => lastPage?.nextCursor,
-    initialData: initFeed
-      ? {
-          pages: [
-            {
-              items: initFeed,
-              nextCursor: nextCursor?.toString(),
-            },
-          ],
-          pageParams: [nextCursor?.toString()],
-        }
-      : undefined,
-  });
+  } = useInfiniteQuery(
+    orpc.feeds.list.infiniteOptions({
+      input: (pageParam) => ({
+        ...query,
+        cursor: pageParam,
+      }),
+      getNextPageParam: (lastPage) =>
+        lastPage?.nextCursor ? lastPage.nextCursor.toString() : null,
+      initialData: initFeed
+        ? {
+            pages: [
+              {
+                items: initFeed,
+                nextCursor: nextCursor?.toString() ?? null,
+              },
+            ],
+            pageParams: [nextCursor?.toString() ?? null],
+          }
+        : undefined,
+      initialPageParam: nextCursor?.toString() ?? null,
+    })
+  );
 
   const flatData = useMemo(() => {
     if (!isSuccess || !data) return [];

@@ -3,20 +3,20 @@
 import { useEffect, useRef } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import type { CreateFeedInput } from "@chia/api/trpc/validators";
-import { createFeedSchema } from "@chia/api/trpc/validators";
+import { feedsContracts } from "@chia/api/orpc/contracts";
 import { FeedType, ContentType } from "@chia/db/types";
 import { Form } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import dayjs from "@chia/utils/day";
 
 import { useDraft } from "@/hooks/use-draft";
-import { api } from "@/trpc/client";
+import { orpc } from "@/libs/orpc/client";
 
 import type { Ref } from "./edit-fields";
 import EditFields from "./edit-fields";
@@ -26,6 +26,7 @@ const CreateForm = ({
 }: {
   type?: typeof FeedType.Note | typeof FeedType.Post;
 }) => {
+  const queryClient = useQueryClient();
   const editFieldsRef = useRef<Ref>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,18 +34,19 @@ const CreateForm = ({
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { getState, setState } = useDraft(token.current);
   const draft = useRef(getState().draft);
-  const utils = api.useUtils();
-  const create = api.feeds.createFeed.useMutation({
-    async onSuccess(_data, { type }) {
-      toast.success("Feed created successfully");
-      router.push(`/feed/${type}s`);
-      await utils.feeds.invalidate();
-    },
-    onError(err) {
-      toast.error(err.message);
-    },
-  });
-  const form = useForm<CreateFeedInput>({
+  const create = useMutation(
+    orpc.feeds.create.mutationOptions({
+      async onSuccess(_data, { type }) {
+        toast.success("Feed created successfully");
+        router.push(`/feed/${type}s`);
+        await queryClient.invalidateQueries(orpc.feeds.list.queryOptions());
+      },
+      onError(err) {
+        toast.error(err.message);
+      },
+    })
+  );
+  const form = useForm<feedsContracts.CreateFeedInput>({
     defaultValues: {
       contentType: ContentType.Mdx,
       type,
@@ -54,7 +56,7 @@ const CreateForm = ({
         ? dayjs(draft.current.createdAt).valueOf()
         : dayjs().valueOf(),
     },
-    resolver: zodResolver(createFeedSchema),
+    resolver: zodResolver(feedsContracts.createFeedSchema),
   });
 
   const onSubmit = form.handleSubmit((values) => {

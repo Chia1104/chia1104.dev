@@ -11,12 +11,7 @@ const withBundleAnalyzer = withBundleAnalyzerImport({
   enabled: process.env.ANALYZE === "true",
 });
 
-const withNextIntl = createNextIntlPlugin({
-  experimental: {
-    // Provide the path to the messages that you're using in `AppConfig`
-    createMessagesDeclaration: "./messages/en-US.json",
-  },
-});
+const withNextIntl = createNextIntlPlugin("./src/libs/i18n/request.ts");
 
 const securityHeaders = [
   {

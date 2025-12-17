@@ -1,15 +1,21 @@
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
-import { z } from "zod";
+import {
+  createInsertSchema,
+  createUpdateSchema,
+  createSelectSchema,
+} from "drizzle-zod";
+import * as z from "zod";
 
 import { contents, feedMeta } from "../../schema";
 import { ContentType, FeedOrderBy, FeedType } from "../../types";
 import { internal_feedsOmitEmbedding } from "../internal_schema";
+import {
+  dateSchema,
+  baseInfiniteSchema as baseInfiniteSchemaShared,
+} from "./shared";
 
 export const baseInfiniteSchema = z.object({
-  limit: z.number().max(50).optional().default(10),
-  cursor: z.union([z.string(), z.number()]).nullish(),
+  ...baseInfiniteSchemaShared.shape,
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
-  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   type: z.enum(FeedType).optional(),
   withContent: z.boolean().optional().default(false),
 });
@@ -25,12 +31,8 @@ export const infiniteSchema = baseInfiniteSchema.optional().default({
 export type InfiniteDTO = z.infer<typeof infiniteSchema>;
 
 const internal_dateSchema = z.object({
-  createdAt: z.union([z.string(), z.number()]).optional(),
-  updatedAt: z.union([z.string(), z.number()]).optional(),
-});
-
-const internal_embeddingSchema = z.object({
-  embedding: z.array(z.number()).optional(),
+  createdAt: dateSchema.optional(),
+  updatedAt: dateSchema.optional(),
 });
 
 export const insertFeedSchema = z.object({
@@ -39,7 +41,7 @@ export const insertFeedSchema = z.object({
     updatedAt: true,
   }).shape,
   ...internal_dateSchema.shape,
-  ...internal_embeddingSchema.shape,
+  embedding: z.array(z.number()).nullable().optional(),
 });
 
 export const updateFeedSchema = z.object({
@@ -48,7 +50,7 @@ export const updateFeedSchema = z.object({
     updatedAt: true,
   }).shape,
   ...internal_dateSchema.shape,
-  ...internal_embeddingSchema.shape,
+  embedding: z.array(z.number()).nullable().optional(),
 });
 
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
@@ -70,3 +72,16 @@ export type UpdateFeedContentDTO = z.infer<typeof updateFeedContentSchema>;
 export const insertFeedMetaSchema = createInsertSchema(feedMeta);
 
 export type InsertFeedMetaDTO = z.infer<typeof insertFeedMetaSchema>;
+
+export const feedSchema = z.object({
+  ...createSelectSchema(internal_feedsOmitEmbedding).shape,
+  ...internal_dateSchema.shape,
+  embedding: z.array(z.number()).nullable(),
+});
+export type FeedDTO = z.infer<typeof feedSchema>;
+
+export const contentSchema = createSelectSchema(contents);
+export type ContentDTO = z.infer<typeof contentSchema>;
+
+export const feedMetaSchema = createSelectSchema(feedMeta);
+export type FeedMetaDTO = z.infer<typeof feedMetaSchema>;

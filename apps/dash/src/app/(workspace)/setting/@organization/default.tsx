@@ -7,27 +7,36 @@ import {
   PopoverTrigger,
   Divider,
 } from "@heroui/react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTransitionRouter } from "next-view-transitions";
 import { toast } from "sonner";
 
+import { orpc } from "@/libs/orpc/client";
 import { useOrganizationStore } from "@/store/organization.store";
-import { api } from "@/trpc/client";
 
 const Default = () => {
   const router = useTransitionRouter();
   const { currentOrgSlug } = useOrganizationStore((state) => state);
-  const { data } = api.organization.getOrganization.useQuery({
-    slug: currentOrgSlug,
-  });
-  const { mutate } = api.organization.deleteOrganization.useMutation({
-    onSuccess: () => {
-      toast.success("Organization deleted successfully");
-      router.push("/onboarding");
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { data } = useQuery(
+    orpc.organization.details.queryOptions({
+      input: {
+        slug: currentOrgSlug,
+      },
+    })
+  );
+
+  const { mutate } = useMutation(
+    orpc.organization.delete.mutationOptions({
+      onSuccess: () => {
+        toast.success("Organization deleted successfully");
+        router.push("/onboarding");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
+
   return (
     <div className="w-full flex flex-col gap-5">
       <h2 className="text-xl font-bold">{data?.name}</h2>

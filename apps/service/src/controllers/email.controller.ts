@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { Resend } from "resend";
-import { z } from "zod";
+import * as z from "zod";
 
 import meta from "@chia/meta";
 import EmailTemplate from "@chia/ui/features/EmailTemplate";

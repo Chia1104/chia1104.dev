@@ -16,9 +16,9 @@ import dayjs from "@chia/utils/day";
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
 import AppLoading from "@/components/commons/app-loading";
-import { redirect } from "@/i18n/routing";
+import { redirect } from "@/libs/i18n/routing";
+import { Locale } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
-import { Locale } from "@/utils/i18n";
 
 const getFeedBySlugWithCache = async (slug: string) => {
   "use cache";

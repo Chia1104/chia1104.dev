@@ -24,8 +24,8 @@
       ]
     },
     {
-      "groupName": "trpc",
-      "matchPackageNames": ["/@trpc/*/"]
+      "groupName": "orpc",
+      "matchPackageNames": ["/@orpc/*/"]
     },
     {
       "groupName": "typescript-eslint",

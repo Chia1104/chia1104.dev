@@ -64,6 +64,7 @@
     "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/mdx": "^2.0.13",
+    "@types/node": "catalog:",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
     "eslint": "catalog:eslint",

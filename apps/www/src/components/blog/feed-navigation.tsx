@@ -5,7 +5,6 @@ import type { FC } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-import type { RouterOutputs } from "@chia/api";
 import { FeedType } from "@chia/db/types";
 import {
   NavigationMenuContent,
@@ -16,10 +15,11 @@ import {
 import { cn } from "@chia/ui/utils/cn.util";
 
 import ListItem from "@/components/blog/list-item";
-import { useRouter } from "@/i18n/routing";
+import { useRouter } from "@/libs/i18n/routing";
+import type { RouterOutputs } from "@/libs/orpc/types";
 
 interface Props {
-  feeds?: RouterOutputs["feeds"]["getFeedsWithMetaByAdminId"]["items"];
+  feeds?: RouterOutputs["feeds"]["list"]["items"];
   type: FeedType;
 }
 

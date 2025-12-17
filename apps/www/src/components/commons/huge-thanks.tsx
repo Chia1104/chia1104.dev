@@ -139,15 +139,6 @@ const techStack = {
         content: "drop-shadow shadow-black text-white",
       },
     },
-    {
-      name: "tRPC",
-      icon: <span className="i-devicon-trpc" />,
-      link: "https://trpc.io/",
-      classNames: {
-        base: "bg-gradient-to-br from-blue-500 to-blue-700",
-        content: "drop-shadow shadow-blue text-white",
-      },
-    },
   ],
 };
 
