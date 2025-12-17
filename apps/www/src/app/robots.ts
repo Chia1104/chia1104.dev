@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { WWW_BASE_URL } from "@chia/utils";
+import { WWW_BASE_URL } from "@chia/utils/config";
 
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -3,6 +3,7 @@
   "include": ["src", "vitest.config.mts", "__tests__", "index.ts"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "lib": ["ES2024", "dom", "dom.iterable"]
   }
 }

@@ -8,7 +8,7 @@ import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
 import Link from "@chia/ui/link";
 import { cn } from "@chia/ui/utils/cn.util";
-import { serviceRequest } from "@chia/utils";
+import { serviceRequest } from "@chia/utils/request";
 
 import { env } from "@/env";
 

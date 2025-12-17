@@ -1,11 +1,11 @@
 import * as z from "zod";
 
-export const nodeEnvSchema = z
+export const NodeEnvSchema = z
   .enum(["development", "production", "test"])
   .default("development");
-export type NodeEnv = z.infer<typeof nodeEnvSchema>;
+export type NodeEnv = z.infer<typeof NodeEnvSchema>;
 
-export const envSchema = z
+export const AppEnvSchema = z
   .enum([
     "preview",
     "development",
@@ -23,6 +23,7 @@ export const envSchema = z
     "railway-dev",
   ])
   .default("development");
-export type Env = z.infer<typeof envSchema>;
 
-export const numericStringSchema = z.string().pipe(z.coerce.number());
+export type AppEnv = z.infer<typeof AppEnvSchema>;
+
+export const NumericStringSchema = z.string().pipe(z.coerce.number());

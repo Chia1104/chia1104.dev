@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const urlSchema = z.union([z.url(), z.instanceof(URL)]);
 
-interface Options<TStrict extends boolean = false> {
+interface IsUrlOptions<TStrict extends boolean = false> {
   allowedProtocols?: string[];
   /**
    * force check is URL instance
@@ -12,7 +12,7 @@ interface Options<TStrict extends boolean = false> {
 
 export const isUrl = <T = unknown, TStrict extends boolean = false>(
   url: T,
-  options?: Options<TStrict>
+  options?: IsUrlOptions<TStrict>
 ) => {
   const { allowedProtocols = ["http", "https"], strict } = options || {};
   try {
@@ -23,8 +23,7 @@ export const isUrl = <T = unknown, TStrict extends boolean = false>(
     }
     const _url = new URL(parsed).protocol.replace(":", "");
     return allowedProtocols.includes(_url);
-    // eslint-disable-next-line
-  } catch (error) {
+  } catch {
     return false;
   }
 };

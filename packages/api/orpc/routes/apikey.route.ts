@@ -5,7 +5,7 @@ import {
   getInfiniteApiKeys,
   getInfiniteApiKeysByProjectId,
 } from "@chia/db/repos/apikey";
-import { tryCatch } from "@chia/utils/try-catch";
+import { tryCatch } from "@chia/utils/error-helper";
 
 import { adminGuard } from "../guards/admin.guard";
 import { contractOS } from "../utils";

@@ -1,6 +1,6 @@
 import { auth } from "@chia/auth";
 import { Role } from "@chia/db/types";
-import { getAdminId } from "@chia/utils";
+import { getAdminId } from "@chia/utils/config";
 
 import { baseOS } from "../utils";
 

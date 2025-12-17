@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-import { errorGenerator } from "@chia/utils";
+import { errorGenerator } from "@chia/utils/server";
 
 export const errorResponse = (
   zodError: z.core.$ZodError<unknown>,

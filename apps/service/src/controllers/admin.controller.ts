@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import * as z from "zod";
 
@@ -7,7 +8,6 @@ import {
   insertFeedMetaRequestSchema,
   updateFeedRequestSchema,
 } from "@chia/api/services/validators";
-import { eq } from "@chia/db";
 import { schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
@@ -18,7 +18,9 @@ import {
   updateFeed,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
-import { errorGenerator, getAdminId, numericStringSchema } from "@chia/utils";
+import { getAdminId } from "@chia/utils/config";
+import { NumericStringSchema } from "@chia/utils/schema";
+import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 import { apikeyVerify } from "@/guards/apikey-verify.guard";
@@ -94,7 +96,7 @@ api.get(
   zValidator(
     "param",
     z.object({
-      id: numericStringSchema,
+      id: NumericStringSchema,
     }),
     (result, c) => {
       if (!result.success) {
@@ -117,7 +119,7 @@ api.get(
   zValidator(
     "param",
     z.object({
-      id: numericStringSchema,
+      id: NumericStringSchema,
     }),
     (result, c) => {
       if (!result.success) {

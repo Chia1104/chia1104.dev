@@ -4,7 +4,7 @@ import { useCompletion } from "@ai-sdk/react";
 
 import type { BaseRequest, Model } from "@chia/ai/types";
 import { OpenAIModel, Provider } from "@chia/ai/types";
-import { getServiceEndPoint } from "@chia/utils";
+import { getServiceEndPoint } from "@chia/utils/config";
 
 type UseCompletionOptions = Parameters<typeof useCompletion>[0];
 

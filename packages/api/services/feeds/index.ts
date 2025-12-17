@@ -9,7 +9,7 @@ import type {
   InsertFeedMetaDTO,
   UpdateFeedDTO,
 } from "@chia/db/validator/feeds";
-import { serviceRequest } from "@chia/utils";
+import { serviceRequest } from "@chia/utils/request";
 
 import { withInternalRequest } from "../utils";
 import type { getFeedsWithMetaSchema } from "../validators";

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { DASH_BASE_URL } from "@chia/utils";
+import { DASH_BASE_URL } from "@chia/utils/config";
 
 export default function robots(): MetadataRoute.Robots {
   return {

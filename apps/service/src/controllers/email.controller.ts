@@ -5,9 +5,9 @@ import * as z from "zod";
 
 import meta from "@chia/meta";
 import EmailTemplate from "@chia/ui/features/EmailTemplate";
-import { errorGenerator } from "@chia/utils";
-import { CONTACT_EMAIL } from "@chia/utils";
-import { tryCatch } from "@chia/utils/try-catch";
+import { CONTACT_EMAIL } from "@chia/utils/config";
+import { tryCatch } from "@chia/utils/error-helper";
+import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 import { siteverify } from "@/guards/captcha.guard";

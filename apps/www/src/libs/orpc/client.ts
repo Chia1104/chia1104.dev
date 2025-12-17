@@ -4,7 +4,7 @@ import type { ContractRouterClient } from "@orpc/contract";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
 import type { routerContract } from "@chia/api/orpc/contracts";
-import { getServiceEndPoint } from "@chia/utils";
+import { getServiceEndPoint } from "@chia/utils/config";
 
 export const link = new RPCLink({
   url: `${getServiceEndPoint()}/rpc`,

@@ -7,7 +7,7 @@ import { organizationClient } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";
 
 import { Role } from "@chia/db/types";
-import { getServiceEndPoint } from "@chia/utils";
+import { getServiceEndPoint } from "@chia/utils/config";
 
 import type { env as internalEnv } from "./env";
 

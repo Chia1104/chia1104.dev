@@ -1,4 +1,4 @@
-import { post, request } from "@chia/utils";
+import request, { post } from "@chia/utils/request";
 
 import { env } from "./env";
 import type { PlayList, CurrentPlaying } from "./types";

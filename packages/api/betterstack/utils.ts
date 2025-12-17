@@ -1,4 +1,4 @@
-import { request } from "@chia/utils";
+import request from "@chia/utils/request";
 
 import { env } from "./env";
 

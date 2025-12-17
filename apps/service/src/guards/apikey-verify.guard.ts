@@ -4,8 +4,8 @@ import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
 import type { ApiKey } from "@chia/db/schema";
-import { errorGenerator } from "@chia/utils";
-import { tryCatch } from "@chia/utils/try-catch";
+import { tryCatch } from "@chia/utils/error-helper";
+import { errorGenerator } from "@chia/utils/server";
 
 export const apikeyVerify = (options?: {
   permissions?: Record<string, string[]>;

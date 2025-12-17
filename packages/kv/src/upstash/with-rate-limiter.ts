@@ -2,9 +2,9 @@ import { Ratelimit } from "@upstash/ratelimit";
 import type { RatelimitConfig, Duration } from "@upstash/ratelimit";
 import type { Redis as Upstash } from "@upstash/redis";
 
-import { getClientIP } from "@chia/utils/get-client-ip";
 import type { ErrorResponse } from "@chia/utils/request";
-import { errorGenerator } from "@chia/utils/server/error-helper";
+import { getClientIP } from "@chia/utils/server";
+import { errorGenerator } from "@chia/utils/server";
 
 import { client as upstash } from "./client";
 

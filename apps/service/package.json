@@ -30,6 +30,7 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
+    "drizzle-orm": "catalog:drizzle",
     "hono": "^4.11.1",
     "hono-rate-limiter": "^0.5.0",
     "jsdom": "^27.3.0",

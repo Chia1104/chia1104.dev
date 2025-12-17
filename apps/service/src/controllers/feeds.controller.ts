@@ -1,11 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-import _ from "lodash";
+import snakeCase from "lodash/snakeCase.js";
 
 import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
-import { eq, schema } from "@chia/db";
+import { schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
@@ -93,7 +94,7 @@ api
       });
       const { keyword, model } = c.req.valid("query");
       const cache = c.var.redis;
-      const cacheKey = `feeds:search:m:${model ?? "default"}:k:${_.snakeCase(keyword)}`;
+      const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}`;
       const cached = await cache.get<string>(cacheKey);
       if (cached) {
         const { items } = await searchFeeds(c.var.db, {

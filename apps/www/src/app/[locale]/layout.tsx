@@ -6,7 +6,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import meta from "@chia/meta";
-import { WWW_BASE_URL } from "@chia/utils";
+import { WWW_BASE_URL } from "@chia/utils/config";
 
 import AppLayout from "@/components/commons/app-layout";
 import AppPlugins from "@/components/commons/app-plugins";

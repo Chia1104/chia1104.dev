@@ -22,5 +22,8 @@
     "@types/node": "catalog:",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
+  },
+  "dependencies": {
+    "drizzle-orm": "catalog:drizzle"
   }
 }

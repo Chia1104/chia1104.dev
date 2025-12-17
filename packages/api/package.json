@@ -104,6 +104,7 @@
     "@t3-oss/env-core": "catalog:",
     "client-only": "catalog:",
     "dayjs": "catalog:",
+    "drizzle-orm": "catalog:drizzle",
     "github-slugger": "^2.0.0",
     "graphql-request": "catalog:",
     "ky": "catalog:",

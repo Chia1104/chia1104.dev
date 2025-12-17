@@ -39,7 +39,7 @@ import {
   Form,
 } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
-import { truncateMiddle } from "@chia/utils/string";
+import { truncateMiddle } from "@chia/utils/format";
 
 const headers = [
   { name: "Name", uid: "name" },

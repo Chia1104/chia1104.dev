@@ -6,12 +6,12 @@ import {
   insertFeedMetaSchema,
   updateFeedSchema,
 } from "@chia/db/validator/feeds";
-import { numericStringSchema } from "@chia/utils";
+import { NumericStringSchema } from "@chia/utils/schema";
 
 export const getFeedsWithMetaSchema = z
   .object({
-    limit: numericStringSchema.optional().default(20),
-    nextCursor: numericStringSchema.optional(),
+    limit: NumericStringSchema.optional().default(20),
+    nextCursor: NumericStringSchema.optional(),
     withContent: z.string().optional().default("false"),
     published: z.string().optional().default("false"),
     orderBy: z
@@ -27,7 +27,7 @@ export const getFeedsWithMetaSchema = z
   })
   .or(
     z.object({
-      limit: numericStringSchema.optional().default(20),
+      limit: NumericStringSchema.optional().default(20),
       nextCursor: z.string().optional(),
       withContent: z.string().optional().default("false"),
       published: z.string().optional().default("false"),

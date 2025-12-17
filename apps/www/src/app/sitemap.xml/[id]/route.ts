@@ -4,13 +4,10 @@ import { NextResponse } from "next/server";
 import * as z from "zod";
 
 import { getFeedsWithMetaByAdminId } from "@chia/api/services/feeds";
-import {
-  getBaseUrl,
-  WWW_BASE_URL,
-  errorGenerator,
-  numericStringSchema,
-} from "@chia/utils";
+import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
+import { NumericStringSchema } from "@chia/utils/schema";
+import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 import routes from "@/shared/routes";
@@ -33,13 +30,13 @@ function buildPagesSitemap(sitemapData: MetadataRoute.Sitemap) {
 }
 
 export const GET = async (
-  request: NextRequest,
+  _request: NextRequest,
   // sitemap index
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     const storedParams = await params;
-    numericStringSchema.parse(storedParams.id);
+    NumericStringSchema.parse(storedParams.id);
 
     const feeds = await getFeedsWithMetaByAdminId(
       {

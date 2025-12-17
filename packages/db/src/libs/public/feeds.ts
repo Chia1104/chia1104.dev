@@ -1,5 +1,8 @@
+import { eq } from "drizzle-orm";
+import { count } from "drizzle-orm";
+
 import { withDTO } from "../";
-import { schema, eq, count } from "../..";
+import { schema } from "../..";
 
 export const getPublicFeedsTotal = withDTO(async (db, userID: string) => {
   return (

@@ -3,8 +3,8 @@ import * as z from "zod";
 
 import { FeedType } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
-import { numericStringSchema } from "@chia/utils";
 import dayjs from "@chia/utils/day";
+import { NumericStringSchema } from "@chia/utils/schema";
 
 import EditForm from "@/components/feed/edit-form";
 import { client } from "@/libs/orpc/client";
@@ -12,7 +12,7 @@ import { client } from "@/libs/orpc/client";
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
-  id: numericStringSchema,
+  id: NumericStringSchema,
   type: z.enum(FeedType).nullish(),
 });
 

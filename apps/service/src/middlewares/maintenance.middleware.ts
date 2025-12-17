@@ -2,7 +2,7 @@ import { getRuntimeKey } from "hono/adapter";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
-import { errorGenerator } from "@chia/utils";
+import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 

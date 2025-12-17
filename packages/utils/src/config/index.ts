@@ -1,15 +1,19 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import type { Env } from "../schema";
+import type { AppEnv } from "../schema";
 
-const getInternalEnv = () => {
-  if (process.env.ENV) {
-    return process.env.ENV;
+const getInternalEnv = (clientPrefix = "NEXT_PUBLIC_") => {
+  if (process.env.ENV || process.env.APP_ENV) {
+    return process.env.ENV || process.env.APP_ENV;
   }
-  if (process.env.NEXT_PUBLIC_ENV) {
-    return process.env.NEXT_PUBLIC_ENV;
+  if (
+    process.env[`${clientPrefix}ENV`] ||
+    process.env[`${clientPrefix}APP_ENV`]
+  ) {
+    return (
+      process.env[`${clientPrefix}ENV`] || process.env[`${clientPrefix}APP_ENV`]
+    );
   }
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
-    return process.env.NEXT_PUBLIC_VERCEL_ENV;
+  if (process.env[`${clientPrefix}VERCEL_ENV`]) {
+    return process.env[`${clientPrefix}VERCEL_ENV`];
   }
   if (process.env.RAILWAY_ENVIRONMENT_NAME) {
     return process.env.RAILWAY_ENVIRONMENT_NAME === "production"
@@ -23,12 +27,12 @@ const getInternalEnv = () => {
   }
 };
 
-export const getEnv = (env?: string) =>
+export const getEnv = (env?: string): AppEnv =>
   (env ??
     process.env.VERCEL_ENV ??
     getInternalEnv() ??
     process.env.NODE_ENV ??
-    "local") as Env;
+    "local") as AppEnv;
 
 export const switchEnv = <TResult = unknown>(
   env: string | undefined,
@@ -142,7 +146,6 @@ export const getBaseUrl = (options?: {
     baseUrl = `http://localhost:${process.env.PORT ?? 3000}`,
     useBaseUrl,
   } = options;
-  // @ts-ignore
   if (typeof window !== "undefined" && !isServer) {
     return "";
   }
@@ -175,6 +178,7 @@ export const getBaseUrl = (options?: {
 type ServiceVersion = "v1";
 
 interface GetServiceEndPointOptions {
+  clientPrefix?: string;
   proxyEndpoint?: string;
   version?: ServiceVersion;
   isInternal?: boolean;
@@ -204,13 +208,15 @@ export const getServiceEndPoint = (
   env?: string,
   options?: GetServiceEndPointOptions
 ) => {
-  // @ts-ignore
   const isServer = typeof window === "undefined";
   const {
-    proxyEndpoint = process.env.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT,
+    clientPrefix = "NEXT_PUBLIC_",
+    proxyEndpoint = process.env[`${clientPrefix}SERVICE_PROXY_ENDPOINT`],
     version = "v1",
     isInternal,
   } = options ?? {};
+
+  const serviceEndpoint = process.env[`${clientPrefix}SERVICE_ENDPOINT`];
 
   return switchEnv(env, {
     prod: () => {
@@ -225,12 +231,11 @@ export const getServiceEndPoint = (
       if (proxyEndpoint) {
         return switchServiceVersion(version, proxyEndpoint);
       }
-      if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
-        throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
-      return switchServiceVersion(
-        version,
-        process.env.NEXT_PUBLIC_SERVICE_ENDPOINT
-      );
+      if (!serviceEndpoint)
+        throw new Error(
+          `Missing env variables ${clientPrefix}SERVICE_ENDPOINT`
+        );
+      return switchServiceVersion(version, serviceEndpoint);
     },
     beta: () => {
       if (isServer || isInternal) {
@@ -241,12 +246,11 @@ export const getServiceEndPoint = (
           process.env.INTERNAL_SERVICE_ENDPOINT
         );
       }
-      if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
-        throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
-      return switchServiceVersion(
-        version,
-        process.env.NEXT_PUBLIC_SERVICE_ENDPOINT
-      );
+      if (!serviceEndpoint)
+        throw new Error(
+          `Missing env variables ${clientPrefix}SERVICE_ENDPOINT`
+        );
+      return switchServiceVersion(version, serviceEndpoint);
     },
     local: () => {
       if (isServer || isInternal) {
@@ -257,16 +261,32 @@ export const getServiceEndPoint = (
           process.env.INTERNAL_SERVICE_ENDPOINT
         );
       }
-      if (!process.env.NEXT_PUBLIC_SERVICE_ENDPOINT)
-        throw new Error("Missing env variables NEXT_PUBLIC_SERVICE_ENDPOINT");
-      return switchServiceVersion(
-        version,
-        process.env.NEXT_PUBLIC_SERVICE_ENDPOINT
-      );
+      if (!serviceEndpoint)
+        throw new Error(
+          `Missing env variables ${clientPrefix}SERVICE_ENDPOINT`
+        );
+      return switchServiceVersion(version, serviceEndpoint);
     },
   });
 };
 
-export default {
-  ENV: getEnv(),
-};
+export const IS_PRODUCTION = process.env.NODE_ENV === "production";
+export const IS_TEST = process.env.NODE_ENV === "test";
+
+export const WWW_BASE_URL =
+  getEnv() === "production" || getEnv() === "prod"
+    ? "https://www.chia1104.dev"
+    : "http://localhost:3000";
+
+export const DASH_BASE_URL =
+  getEnv() === "production" || getEnv() === "prod"
+    ? "https://dash.chia1104.dev"
+    : "http://localhost:3001";
+
+export const SERVICE_BASE_URL =
+  getEnv() === "production" || getEnv() === "prod"
+    ? "https://service.chia1104.dev"
+    : "http://localhost:3003";
+
+export const CONTACT_EMAIL = "contact@notify.chia1104.dev";
+export const AUTH_EMAIL = "no-reply@notify.chia1104.dev";

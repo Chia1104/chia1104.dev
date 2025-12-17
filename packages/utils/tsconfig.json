@@ -3,6 +3,7 @@
   "include": ["."],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "lib": ["ES2024", "dom", "dom.iterable"]
   }
 }

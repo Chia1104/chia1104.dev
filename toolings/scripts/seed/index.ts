@@ -1,11 +1,12 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 
 import { generateEmbedding } from "@chia/ai/embeddings/openai";
-import { schema, eq } from "@chia/db";
+import { schema } from "@chia/db";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
-import { getAdminId } from "@chia/utils";
-import { tryCatch } from "@chia/utils/try-catch";
+import { getAdminId } from "@chia/utils/config";
+import { tryCatch } from "@chia/utils/error-helper";
 
 const withReplicas = (
   fun: (database: DB, adminId: string, env?: string) => Promise<void> | void,

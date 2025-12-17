@@ -1,5 +1,5 @@
 import { updateUserProfile } from "@chia/db/repos/users";
-import { tryCatch } from "@chia/utils/try-catch";
+import { tryCatch } from "@chia/utils/error-helper";
 
 import { authGuard } from "../guards/auth.guard";
 import { contractOS } from "../utils";
