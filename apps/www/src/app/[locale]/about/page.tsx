@@ -8,6 +8,8 @@ import { LocationHero } from "@/components/about/location-hero";
 import { TimelineHero } from "@/components/about/timeline-hero";
 import { SpotifyPlaylist } from "@/containers/about/spotify-playlist";
 
+export const revalidate = 60;
+
 const AboutPage = () => {
   return (
     <ViewTransition>

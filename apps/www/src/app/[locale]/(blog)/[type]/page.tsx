@@ -2,7 +2,6 @@ import { Suspense, ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 
 import Image from "@chia/ui/image";
@@ -29,15 +28,6 @@ export async function generateMetadata({
   };
 }
 
-const getFeedsWithTypeWithCache = async (type: "post" | "note", limit = 10) => {
-  "use cache";
-  cacheLife({
-    revalidate: 120,
-  });
-
-  return getFeedsWithType(type, limit);
-};
-
 const CacheFeeds = async ({
   type,
   limit = 20,
@@ -46,7 +36,7 @@ const CacheFeeds = async ({
   limit?: number;
 }) => {
   const formattedType = type === "posts" ? "post" : "note";
-  const feeds = await getFeedsWithTypeWithCache(formattedType, limit);
+  const feeds = await getFeedsWithType(formattedType, limit);
   const hasFeeds = Array.isArray(feeds.items) && feeds.items.length > 0;
   const t = await getTranslations(`blog.${type}`);
 

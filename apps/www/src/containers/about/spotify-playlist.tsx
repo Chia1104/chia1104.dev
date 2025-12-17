@@ -1,7 +1,5 @@
 import type { FC } from "react";
 
-import { cacheLife } from "next/cache";
-
 import type { PlayList } from "@chia/api/spotify/types";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
@@ -117,11 +115,8 @@ const getTop4 = (data: PlayList) => {
   ];
 };
 
-const getPlaylist = async () => {
-  "use cache";
-  cacheLife("default");
-
-  return await serviceRequest({
+export async function SpotifyPlaylist() {
+  const playlist = await serviceRequest({
     isInternal: true,
     internal_requestSecret: {
       cfBypassToken: env.CF_BYPASS_TOKEN,
@@ -130,10 +125,6 @@ const getPlaylist = async () => {
   })
     .get(`spotify/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default"}`)
     .json<PlayList>();
-};
-
-export async function SpotifyPlaylist() {
-  const playlist = await getPlaylist();
   const data = getTop4(playlist);
   const href = `https://open.spotify.com/playlist/${playlist.id}`;
 
