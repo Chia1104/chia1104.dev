@@ -1,5 +1,5 @@
 import { APIError } from "better-auth/api";
-import { z } from "zod";
+import * as z from "zod";
 
 import type { auth } from "./";
 

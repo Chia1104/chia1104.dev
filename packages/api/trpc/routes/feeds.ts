@@ -1,6 +1,6 @@
 import GithubSlugger from "github-slugger";
 import crypto from "node:crypto";
-import { z } from "zod";
+import * as z from "zod";
 
 import { eq, schema } from "@chia/db";
 import {

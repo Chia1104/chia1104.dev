@@ -9,7 +9,7 @@ import { HTTPError } from "ky";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import * as z from "zod";
 
 import type { Model } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";

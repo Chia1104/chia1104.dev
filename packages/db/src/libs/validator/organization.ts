@@ -1,5 +1,5 @@
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import * as z from "zod";
 
 import { project } from "../../schema";
 import { FeedOrderBy } from "../../types";

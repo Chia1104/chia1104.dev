@@ -1,5 +1,5 @@
 import { modelMessageSchema } from "ai";
-import { z } from "zod";
+import * as z from "zod";
 
 export const Provider = {
   OpenAI: "openai",

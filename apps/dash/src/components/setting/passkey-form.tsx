@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import * as z from "zod";
 
 import { authClient } from "@chia/auth/client";
 import type { Passkey } from "@chia/db/schema";

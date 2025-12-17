@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { getRuntimeKey } from "hono/adapter";
-import { z } from "zod";
+import * as z from "zod";
 
 import { numericStringSchema } from "@chia/utils";
 import { delay } from "@chia/utils/delay";

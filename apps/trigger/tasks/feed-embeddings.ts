@@ -1,5 +1,5 @@
 import { schemaTask } from "@trigger.dev/sdk/v3";
-import { z } from "zod";
+import * as z from "zod";
 
 import { generateEmbedding } from "@chia/ai/embeddings/openai";
 import { getFeedById, updateFeed } from "@chia/api/services/feeds";

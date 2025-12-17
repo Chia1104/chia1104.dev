@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import GithubSlugger from "github-slugger";
 import crypto from "node:crypto";
-import { z } from "zod";
+import * as z from "zod";
 
 import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
