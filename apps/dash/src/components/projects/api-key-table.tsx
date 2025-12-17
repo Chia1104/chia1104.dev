@@ -302,7 +302,7 @@ const ApiKeyTable = (props: Props) => {
             pages: [
               {
                 items: props.initApiKey,
-                nextCursor: props.nextCursor?.toString(),
+                nextCursor: props.nextCursor?.toString() ?? null,
               },
             ],
             pageParams: [props.nextCursor?.toString()],

@@ -92,6 +92,10 @@
     "./captcha/env.client": {
       "types": "./captcha/env.client.ts",
       "default": "./captcha/env.client.ts"
+    },
+    "./orpc/contracts": {
+      "types": "./orpc/router.contract",
+      "default": "./orpc/router.contract"
     }
   },
   "scripts": {
@@ -107,6 +111,8 @@
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
     "@chia/utils": "workspace:*",
+    "@orpc/contract": "catalog:orpc",
+    "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
     "@trpc/client": "catalog:trpc",
     "@trpc/server": "catalog:trpc",

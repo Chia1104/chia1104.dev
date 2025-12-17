@@ -69,6 +69,7 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
     const serializedItems = items.map((item) => ({
       ...item,
       createdAt: dayjs(item.createdAt).toISOString(),
+      deletedAt: item.deletedAt ? dayjs(item.deletedAt).toISOString() : null,
     }));
     return {
       items: serializedItems,
@@ -87,6 +88,9 @@ export const getProjectBySlug = withDTO(async (db, slug: string) => {
   return {
     ...project,
     createdAt: dayjs(project.createdAt).toISOString(),
+    deletedAt: project.deletedAt
+      ? dayjs(project.deletedAt).toISOString()
+      : null,
   };
 });
 
@@ -100,5 +104,8 @@ export const getProjectById = withDTO(async (db, id: number) => {
   return {
     ...project,
     createdAt: dayjs(project.createdAt).toISOString(),
+    deletedAt: project.deletedAt
+      ? dayjs(project.deletedAt).toISOString()
+      : null,
   };
 });

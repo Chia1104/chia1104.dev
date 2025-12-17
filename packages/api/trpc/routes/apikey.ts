@@ -80,6 +80,9 @@ export const apiKeyRouter = createTRPCRouter({
       });
     }),
 
+  /**
+   * @deprecated
+   */
   getAllApiKeys: adminProcedureWithACL({
     project: ["read", "apikey.read"],
   }).query(async (opts) => {

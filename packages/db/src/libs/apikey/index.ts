@@ -65,17 +65,26 @@ export const getInfiniteApiKeysByProjectId = withDTO(
         : (apikey, { eq, and }) =>
             and(eq(apikey.projectId, projectId), ...whereAnd),
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
+    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
     if (items.length > limit) {
       const nextItem = items.pop();
       nextCursor =
         orderBy === FeedOrderBy.CreatedAt
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : nextItem?.[orderBy];
+          : (nextItem?.[orderBy] ?? null);
     }
     const serializedItems = items.map((item) => ({
       ...item,
       key: undefined,
+      updatedAt: dayjs(item.updatedAt).toISOString(),
+      createdAt: dayjs(item.createdAt).toISOString(),
+      lastRefillAt: item.lastRefillAt
+        ? dayjs(item.lastRefillAt).toISOString()
+        : null,
+      expiresAt: item.expiresAt ? dayjs(item.expiresAt).toISOString() : null,
+      lastRequest: item.lastRequest
+        ? dayjs(item.lastRequest).toISOString()
+        : null,
     }));
     return {
       items: serializedItems,
@@ -125,17 +134,26 @@ export const getInfiniteApiKeys = withDTO(
           }
         : undefined,
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
+    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
     if (items.length > limit) {
       const nextItem = items.pop();
       nextCursor =
         orderBy === FeedOrderBy.CreatedAt
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : nextItem?.[orderBy];
+          : (nextItem?.[orderBy] ?? null);
     }
     const serializedItems = items.map((item) => ({
       ...item,
       key: undefined,
+      updatedAt: dayjs(item.updatedAt).toISOString(),
+      createdAt: dayjs(item.createdAt).toISOString(),
+      lastRefillAt: item.lastRefillAt
+        ? dayjs(item.lastRefillAt).toISOString()
+        : null,
+      expiresAt: item.expiresAt ? dayjs(item.expiresAt).toISOString() : null,
+      lastRequest: item.lastRequest
+        ? dayjs(item.lastRequest).toISOString()
+        : null,
     }));
     return {
       items: serializedItems,

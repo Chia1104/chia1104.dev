@@ -107,7 +107,7 @@ export const adminACLMiddleware = (
     const valid = await auth.api.userHasPermission({
       body: {
         userId: ctx.session.user.id,
-        permission,
+        permissions: permission,
       },
     });
 
@@ -131,49 +131,10 @@ export const adminProcedureWithACL = (
   rootOnly?: boolean
 ) => t.procedure.use(adminACLMiddleware(permission, rootOnly));
 
-export const external_createTRPCContext = (opts: {
-  internal_requestSecret: {
-    cfBypassToken: string;
-    apiKey: string;
-  };
-}) => {
-  return {
-    internal_requestSecret: opts.internal_requestSecret,
-  };
-};
-
-const external_trpc = initTRPC
-  .context<typeof external_createTRPCContext>()
-  .create({
-    transformer: superjson,
-    errorFormatter({ shape, error }) {
-      return {
-        ...shape,
-        data: {
-          ...shape.data,
-          zodError:
-            error.cause instanceof ZodError ? treeifyError(error.cause) : null,
-        },
-      };
-    },
-  });
-
-export const external_createTRPCRouter = external_trpc.router;
-
-export const external_procedure = external_trpc.procedure;
-
-export const external_middleware = external_trpc.middleware(({ ctx, next }) => {
-  if (!ctx.internal_requestSecret) {
-    throw new TRPCError({ code: "FORBIDDEN" });
-  }
-  return next();
-});
-
 /**
  * Create a server-side caller
  * @see https://trpc.io/docs/server/server-side-calls
  */
 export const createCallerFactory = t.createCallerFactory;
-export const external_createCallerFactory = external_trpc.createCallerFactory;
 
 export const authGuard = (input?: string): input is string => !!input;

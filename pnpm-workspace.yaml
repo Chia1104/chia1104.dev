@@ -39,6 +39,11 @@ catalogs:
     '@next/bundle-analyzer': 16.0.10
     '@next/third-parties': 16.0.10
     next: 16.0.10
+  orpc:
+    '@orpc/client': 1.12.2
+    '@orpc/contract': 1.12.2
+    '@orpc/server': 1.12.2
+    '@orpc/tanstack-query': 1.12.2
   react-is:
     '@types/react': ^19.2.7
     '@types/react-dom': ^19.2.3

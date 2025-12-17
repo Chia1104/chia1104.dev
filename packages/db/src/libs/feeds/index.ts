@@ -94,13 +94,13 @@ export const getInfiniteFeeds = withDTO(
         : (feeds, { eq, and }) =>
             and(type === "all" ? undefined : eq(feeds.type, type), ...whereAnd),
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
+    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
     if (items.length > limit) {
       const nextItem = items.pop();
       nextCursor =
         orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : nextItem?.[orderBy];
+          : (nextItem?.[orderBy] ?? null);
     }
     const serializedItems = items.map((item) => ({
       ...item,
@@ -164,13 +164,13 @@ export const getInfiniteFeedsByUserId = withDTO(
               ...whereAnd
             ),
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | undefined = undefined;
+    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
     if (items.length > limit) {
       const nextItem = items.pop();
       nextCursor =
         orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
           ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : nextItem?.[orderBy];
+          : (nextItem?.[orderBy] ?? null);
     }
     const serializedItems = items.map((item) => ({
       ...item,

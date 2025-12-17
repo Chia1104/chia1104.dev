@@ -1,5 +1,9 @@
-import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
-import { z } from "zod";
+import {
+  createInsertSchema,
+  createUpdateSchema,
+  createSelectSchema,
+} from "drizzle-zod";
+import * as z from "zod";
 
 import { contents, feedMeta } from "../../schema";
 import { ContentType, FeedOrderBy, FeedType } from "../../types";
@@ -30,7 +34,11 @@ const internal_dateSchema = z.object({
 });
 
 const internal_embeddingSchema = z.object({
-  embedding: z.array(z.number()).optional(),
+  embedding: z.array(z.number()).nullable(),
+});
+
+const internal_embeddingSchemaOptional = z.object({
+  embedding: z.array(z.number()).nullable().optional(),
 });
 
 export const insertFeedSchema = z.object({
@@ -39,7 +47,7 @@ export const insertFeedSchema = z.object({
     updatedAt: true,
   }).shape,
   ...internal_dateSchema.shape,
-  ...internal_embeddingSchema.shape,
+  ...internal_embeddingSchemaOptional.shape,
 });
 
 export const updateFeedSchema = z.object({
@@ -48,7 +56,7 @@ export const updateFeedSchema = z.object({
     updatedAt: true,
   }).shape,
   ...internal_dateSchema.shape,
-  ...internal_embeddingSchema.shape,
+  ...internal_embeddingSchemaOptional.shape,
 });
 
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
@@ -70,3 +78,16 @@ export type UpdateFeedContentDTO = z.infer<typeof updateFeedContentSchema>;
 export const insertFeedMetaSchema = createInsertSchema(feedMeta);
 
 export type InsertFeedMetaDTO = z.infer<typeof insertFeedMetaSchema>;
+
+export const feedSchema = z.object({
+  ...createSelectSchema(internal_feedsOmitEmbedding).shape,
+  ...internal_dateSchema.shape,
+  ...internal_embeddingSchema.shape,
+});
+export type FeedDTO = z.infer<typeof feedSchema>;
+
+export const contentSchema = createSelectSchema(contents);
+export type ContentDTO = z.infer<typeof contentSchema>;
+
+export const feedMetaSchema = createSelectSchema(feedMeta);
+export type FeedMetaDTO = z.infer<typeof feedMetaSchema>;
