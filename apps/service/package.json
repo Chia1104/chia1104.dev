@@ -8,7 +8,7 @@
     "dev": "bun run --watch --bun src/server.ts",
     "build": "tsdown",
     "node:start": "node dist/server.mjs",
-    "start": "node dist/server.mjs",
+    "start": "bun run --bun dist/server.mjs",
     "node:preview": "node --env-file=.env dist/server.js",
     "type:check": "tsc --noEmit",
     "lint": "eslint",
