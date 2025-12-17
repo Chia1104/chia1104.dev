@@ -50,15 +50,9 @@ const LinkItem: FC<{
   );
 };
 
-const getWorkDurationWithCache = async () => {
-  "use cache";
-
-  return Promise.resolve(getWorkDuration(meta.timeline));
-};
-
 const WorkDuration = async () => {
   const t = await getTranslations("home");
-  const workDuration = await getWorkDurationWithCache();
+  const workDuration = getWorkDuration(meta.timeline);
   return <p>{t("section1", { year: workDuration.toString() })}</p>;
 };
 

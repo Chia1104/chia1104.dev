@@ -2,7 +2,6 @@ import { Suspense, ViewTransition } from "react";
 
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { cacheLife } from "next/cache";
 import { notFound } from "next/navigation";
 import { RedirectType } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
@@ -20,14 +19,7 @@ import { redirect } from "@/libs/i18n/routing";
 import { Locale } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
-const getFeedBySlugWithCache = async (slug: string) => {
-  "use cache";
-  cacheLife({
-    revalidate: 120,
-  });
-
-  return getFeedBySlug(slug);
-};
+export const revalidate = 120;
 
 export const generateStaticParams = async () => {
   const feeds = await getFeeds(100);
@@ -47,7 +39,7 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { slug } = await params;
   try {
-    const feed = await getFeedBySlugWithCache(slug);
+    const feed = await getFeedBySlug(slug);
     if (!feed) return {};
     return {
       title: feed.title,
@@ -59,40 +51,6 @@ export const generateMetadata = async ({
   }
 };
 
-const ContentWithCache = async ({
-  feed,
-  locale,
-  tocContents,
-}: {
-  feed: NonNullable<Awaited<ReturnType<typeof getFeedBySlugWithCache>>>;
-  locale: Locale;
-  tocContents: {
-    label: string;
-    updated: string;
-  };
-  // eslint-disable-next-line @typescript-eslint/require-await
-}) => {
-  "use cache";
-  cacheLife({
-    revalidate: 120,
-  });
-
-  return (
-    <Content
-      content={getContentProps({
-        contentType: feed.contentType,
-        content: feed.content,
-      })}
-      context={{
-        updatedAt: feed.updatedAt,
-        type: feed.contentType,
-        tocContents,
-        locale,
-      }}
-    />
-  );
-};
-
 const Page = async ({
   params,
 }: {
@@ -102,7 +60,7 @@ const Page = async ({
   }>;
 }) => {
   const { slug, locale, type } = await params;
-  const feed = await getFeedBySlugWithCache(slug);
+  const feed = await getFeedBySlug(slug);
   const t = await getTranslations("blog");
 
   if (!feed?.content) {
@@ -166,12 +124,19 @@ const Page = async ({
           </span>
         </header>
         <Suspense fallback={<AppLoading />}>
-          <ContentWithCache
-            feed={feed}
-            locale={locale}
-            tocContents={{
-              label: t("otp"),
-              updated: t("last-updated"),
+          <Content
+            content={getContentProps({
+              contentType: feed.contentType,
+              content: feed.content,
+            })}
+            context={{
+              updatedAt: feed.updatedAt,
+              type: feed.contentType,
+              tocContents: {
+                label: t("otp"),
+                updated: t("last-updated"),
+              },
+              locale,
             }}
           />
         </Suspense>

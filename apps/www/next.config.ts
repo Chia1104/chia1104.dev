@@ -1,5 +1,5 @@
 import withBundleAnalyzerImport from "@next/bundle-analyzer";
-// import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
+import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
   output: !process.env.VERCEL ? "standalone" : undefined,
   reactStrictMode: true,
   reactCompiler: true,
-  cacheComponents: true,
+  cacheComponents: false,
   typedRoutes: true,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
@@ -108,15 +108,17 @@ const nextComposePlugins = plugins.reduce(
   nextConfig
 );
 
-// export default withSentryConfigImport(withNextIntl(nextComposePlugins), {
-//   org: process.env.SENTRY_ORG,
-//   project: process.env.SENTRY_PROJECT,
-//   authToken: process.env.SENTRY_AUTH_TOKEN,
-//   silent: true,
-//   disableLogger: true,
-//   sourcemaps: {
-//     deleteSourcemapsAfterUpload: true,
-//   },
-// });
-
-export default withNextIntl(nextComposePlugins);
+export default withSentryConfigImport(withNextIntl(nextComposePlugins), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
+});

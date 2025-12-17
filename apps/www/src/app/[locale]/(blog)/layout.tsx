@@ -1,18 +1,13 @@
 import { Suspense } from "react";
 
-import { cacheLife } from "next/cache";
-
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import FeedNavigation from "@/components/blog/feed-navigation";
 import { getPosts, getNotes } from "@/services/feeds.service";
 
-const Navigation = async () => {
-  "use cache";
-  cacheLife({
-    revalidate: 120,
-  });
+export const revalidate = 120;
 
+const Navigation = async () => {
   const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
 
   return (
