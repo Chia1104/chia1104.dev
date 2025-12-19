@@ -46,7 +46,7 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "^1.13.0",
     "@orpc/tanstack-query": "catalog:orpc",
-    "@sentry/nextjs": "^10.32.0",
+    "@sentry/nextjs": "^10.32.1",
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-query": "catalog:tanstack",
     "@upstash/ratelimit": "2.0.7",
