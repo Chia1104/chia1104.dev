@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "analyze": "ANALYZE=true pnpm build",
+    "analyze": "next experimental-analyze",
     "dev": "next dev --port 3001 --turbo",
     "build": "next build --turbo",
     "start": "next start",
@@ -17,7 +17,7 @@
     "clean": "git clean -xdf .next .turbo node_modules .cache"
   },
   "dependencies": {
-    "@ai-sdk/react": "^2.0.116",
+    "@ai-sdk/react": "^2.0.117",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
@@ -40,7 +40,7 @@
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
-    "ai": "^5.0.114",
+    "ai": "^5.0.115",
     "client-only": "catalog:",
     "clsx": "^2.1.1",
     "dayjs": "catalog:",
@@ -49,7 +49,7 @@
     "fumadocs-ui": "catalog:fumadocs",
     "ky": "catalog:",
     "lodash": "catalog:",
-    "lucide-react": "^0.561.0",
+    "lucide-react": "^0.562.0",
     "monaco-editor": "^0.55.1",
     "next": "catalog:next",
     "next-safe-action": "8.0.11",
@@ -75,7 +75,6 @@
     "@chia/tailwind": "workspace:*",
     "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@next/bundle-analyzer": "catalog:next",
     "@tailwindcss/postcss": "catalog:tailwindcss",
     "@testing-library/react": "catalog:testing-library",
     "@types/lodash": "catalog:",
