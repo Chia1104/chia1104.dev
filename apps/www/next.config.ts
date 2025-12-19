@@ -1,4 +1,3 @@
-import withBundleAnalyzerImport from "@next/bundle-analyzer";
 import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
@@ -6,10 +5,6 @@ import createNextIntlPlugin from "next-intl/plugin";
 import "@/env";
 
 type Plugin = (config: NextConfig) => NextConfig;
-
-const withBundleAnalyzer = withBundleAnalyzerImport({
-  enabled: process.env.ANALYZE === "true",
-});
 
 const withNextIntl = createNextIntlPlugin("./src/libs/i18n/request.ts");
 
@@ -101,7 +96,7 @@ const nextConfig: NextConfig = {
   ],
 };
 
-const plugins: Plugin[] = [withBundleAnalyzer];
+const plugins: Plugin[] = [];
 
 const nextComposePlugins = plugins.reduce(
   (acc, plugin) => plugin(acc),

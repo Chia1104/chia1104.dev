@@ -11,7 +11,7 @@
     "url": "https://github.com/chia1104"
   },
   "scripts": {
-    "analyze": "ANALYZE=true pnpm build",
+    "analyze": "next experimental-analyze",
     "dev": "next dev",
     "build": "next build --turbo",
     "debug:build": "next build -d --turbo",
@@ -44,9 +44,9 @@
     "@next/third-parties": "catalog:next",
     "@orpc/client": "catalog:orpc",
     "@orpc/contract": "catalog:orpc",
-    "@orpc/server": "^1.12.3",
+    "@orpc/server": "^1.13.0",
     "@orpc/tanstack-query": "catalog:orpc",
-    "@sentry/nextjs": "^10.31.0",
+    "@sentry/nextjs": "^10.32.0",
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-query": "catalog:tanstack",
     "@upstash/ratelimit": "2.0.7",
@@ -82,7 +82,6 @@
     "@chia/tailwind": "workspace:*",
     "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@next/bundle-analyzer": "catalog:next",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/postcss": "catalog:tailwindcss",
     "@testing-library/jest-dom": "catalog:testing-library",

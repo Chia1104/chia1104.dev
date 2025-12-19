@@ -69,7 +69,7 @@
     "node": ">=22",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@10.26.0",
+  "packageManager": "pnpm@10.26.1",
   "devDependencies": {
     "@manypkg/cli": "^0.25.1",
     "@playwright/test": "^1.57.0",
@@ -85,7 +85,7 @@
     "jest-extended": "catalog:testing-library",
     "lint-staged": "^16.2.7",
     "msw": "^2.12.4",
-    "nx": "^22.2.7",
+    "nx": "^22.3.1",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tsx": "^4.21.0",
