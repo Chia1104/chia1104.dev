@@ -33,12 +33,12 @@ catalogs:
     eslint: 9.39.2
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.3
-    fumadocs-core: 16.3.0
-    fumadocs-mdx: 14.1.1
-    fumadocs-ui: 16.3.0
+    fumadocs-core: 16.3.1
+    fumadocs-mdx: 14.2.1
+    fumadocs-ui: 16.3.1
   heroui:
-    '@heroui/react': 2.8.6
-    '@heroui/theme': 2.4.24
+    '@heroui/react': 2.8.7
+    '@heroui/theme': 2.4.25
   next:
     '@next/bundle-analyzer': 16.1.0
     '@next/third-parties': 16.1.0
