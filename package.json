@@ -63,7 +63,8 @@
     "ui-add": "turbo run ui-add",
     "update-deps:all": "pnpm up --latest --filter '@chia/*' --filter www --filter dash --filter service --filter trigger",
     "debug:build": "turbo run debug:build --parallel",
-    "debug:start": "turbo run debug:start --parallel"
+    "debug:start": "turbo run debug:start --parallel",
+    "devtools": "turbo devtools"
   },
   "engines": {
     "node": ">=22",
