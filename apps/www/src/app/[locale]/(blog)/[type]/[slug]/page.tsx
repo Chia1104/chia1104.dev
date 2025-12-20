@@ -40,10 +40,18 @@ export const generateMetadata = async ({
   const { slug } = await params;
   try {
     const feed = await getFeedBySlug(slug);
-    if (!feed) return {};
+    if (!feed) {
+      notFound();
+    }
     return {
       title: feed.title,
       description: feed.excerpt,
+      robots: !feed.published
+        ? {
+            index: false,
+            follow: false,
+          }
+        : undefined,
     };
   } catch (error) {
     console.error(error);

@@ -6,6 +6,7 @@ import { ErrorBoundary } from "@chia/ui/error-boundary";
 import dayjs from "@chia/utils/day";
 import { NumericStringSchema } from "@chia/utils/schema";
 
+import { DraftPreview } from "@/components/feed/draft-preview";
 import EditForm from "@/components/feed/edit-form";
 import { client } from "@/libs/orpc/client";
 
@@ -41,6 +42,7 @@ const Page = async ({
   }
   return (
     <ErrorBoundary>
+      <DraftPreview slug={feed.slug} type={feed.type} />
       <EditForm
         feedId={feed.id}
         defaultValues={{
