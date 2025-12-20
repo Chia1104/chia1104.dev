@@ -40,7 +40,7 @@
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
-    "ai": "^5.0.115",
+    "ai": "^5.0.116",
     "client-only": "catalog:",
     "clsx": "^2.1.1",
     "dayjs": "catalog:",
