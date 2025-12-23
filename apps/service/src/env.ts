@@ -2,6 +2,7 @@ import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
 import { env as captchaEnv } from "@chia/api/captcha/env";
+import { env as s3Env } from "@chia/api/s3/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
 import { env as authEnv } from "@chia/auth/env";
 import { env as dbEnv } from "@chia/db/env";
@@ -72,7 +73,7 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv, kvEnv],
+  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv, kvEnv, s3Env],
 });
 
 export type ENV = typeof env;

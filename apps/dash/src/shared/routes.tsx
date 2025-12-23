@@ -71,6 +71,12 @@ export const routeItems: SidebarItem[] = [
     action: <CreateFeed />,
   },
   {
+    key: "assets",
+    href: "/assets",
+    icon: "solar:file-outline",
+    title: "Assets",
+  },
+  {
     key: "setting",
     href: "/setting",
     icon: "solar:settings-outline",

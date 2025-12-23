@@ -1,5 +1,6 @@
 import * as apikeyRoutes from "./routes/apikey.route";
 import * as feedsRoutes from "./routes/feeds.route";
+import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
 import * as organizationRoutes from "./routes/organization.route";
 import { baseOS } from "./utils";
@@ -36,5 +37,8 @@ export const router = baseOS.router({
       "details-by-slug": organizationRoutes.getProjectBySlugRoute,
       list: organizationRoutes.getInfiniteProjectsRoute,
     },
+  },
+  file: {
+    "signed-url:create": fileRoutes.createSignedUrlForUploadRoute,
   },
 });

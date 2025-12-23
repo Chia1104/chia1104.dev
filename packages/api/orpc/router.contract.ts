@@ -1,5 +1,6 @@
 import * as apikeyContracts from "./contracts/apikey.contract";
 import * as feedsContracts from "./contracts/feeds.contract";
+import * as fileContracts from "./contracts/file.contract";
 import * as healthContracts from "./contracts/health.contract";
 import * as organizationContracts from "./contracts/organization.contract";
 import * as userContracts from "./contracts/user.contract";
@@ -39,6 +40,9 @@ export const routerContract = {
       "details-by-slug": organizationContracts.getProjectBySlugContract,
       list: organizationContracts.getInfiniteProjectsContract,
     },
+  },
+  file: {
+    "signed-url:create": fileContracts.createSignedUrlForUploadContract,
   },
 };
 
