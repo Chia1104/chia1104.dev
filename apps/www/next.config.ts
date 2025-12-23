@@ -78,6 +78,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "repository-images.githubusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "storage.chia1104.dev",
+      },
     ],
   },
   async headers() {
