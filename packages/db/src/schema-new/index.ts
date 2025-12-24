@@ -9,9 +9,15 @@ export {
   roles,
   feedType,
   contentType,
-  i18n,
+  locale,
   invitationStatus,
   memberRole,
+  type Role,
+  type FeedType,
+  type ContentType,
+  type Locale,
+  type InvitationStatus,
+  type MemberRole,
 } from "./enums";
 
 // Users

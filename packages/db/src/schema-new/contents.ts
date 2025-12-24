@@ -13,7 +13,7 @@ import {
 
 import { ContentType } from "../types";
 import { timestamps } from "./common";
-import { i18n, feedType, contentType } from "./enums";
+import { locale, feedType, contentType } from "./enums";
 import { pgTable } from "./table";
 import { users } from "./users";
 
@@ -42,7 +42,7 @@ export const tagTranslations = pgTable(
     tagId: integer("tag_id")
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
-    locale: i18n("locale").notNull(),
+    locale: locale("locale").notNull(),
     name: text("name").notNull(),
     description: text("description"),
   },
@@ -89,7 +89,7 @@ const baseFeedsColumns = {
   type: feedType("type").notNull(),
   contentType: contentType("content_type").notNull().default(ContentType.Mdx),
   published: boolean("published").default(false).notNull(),
-  defaultLocale: i18n("default_locale").notNull().default("en"),
+  defaultLocale: locale("default_locale").notNull().default("zh-TW"),
   ...timestamps,
   userId: text("user_id")
     .notNull()
@@ -122,7 +122,7 @@ export const feedTranslations = pgTable(
     feedId: integer("feed_id")
       .notNull()
       .references(() => feeds.id, { onDelete: "cascade" }),
-    locale: i18n("locale").notNull(),
+    locale: locale("locale").notNull(),
     title: text("title").notNull(),
     excerpt: text("excerpt"),
     description: text("description"),
