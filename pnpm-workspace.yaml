@@ -70,9 +70,9 @@ catalogs:
     jest-extended: 7.0.0
     vitest: 4.0.16
   triggerdotdev:
-    '@trigger.dev/build': 4.3.0
-    '@trigger.dev/core': 4.3.0
-    '@trigger.dev/sdk': 4.3.0
+    '@trigger.dev/build': 4.3.2
+    '@trigger.dev/core': 4.3.2
+    '@trigger.dev/sdk': 4.3.2
 
 linkWorkspacePackages: true
 
