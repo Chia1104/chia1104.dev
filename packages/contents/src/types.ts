@@ -64,7 +64,10 @@ export type ContentContextProps = BaseProps &
 
 export interface GetContentPropsArgs {
   contentType: ContentType;
-  content: Partial<Content>;
+  content: Partial<Omit<Content, "createdAt" | "updatedAt">> & {
+    createdAt?: ConfigType;
+    updatedAt?: ConfigType;
+  };
 }
 
 export type GetContentPropsReturn = Promise<ContentProps>;

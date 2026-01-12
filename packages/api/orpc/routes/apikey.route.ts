@@ -13,20 +13,13 @@ import { contractOS } from "../utils";
 export const createAPIKeyRoute = contractOS.apikey.create
   .use(adminGuard())
   .handler(async (opts) => {
-    console.log(opts.input);
     const { data, error } = await tryCatch(
       auth.api.createApiKey({
         body: {
-          rateLimitEnabled: false,
           name: opts.input.name,
           userId: opts.context.session?.user.id,
 
-          refillAmount: undefined,
-          refillInterval: undefined,
-          rateLimitTimeWindow: undefined,
-          rateLimitMax: undefined,
-          permissions: undefined,
-          remaining: null,
+          // rateLimitEnabled: false,
         },
         headers: opts.context.headers,
       })

@@ -38,10 +38,7 @@ import dayjs from "@chia/utils/day";
 
 import { useDraft } from "@/hooks/use-draft";
 import { orpc } from "@/libs/orpc/client";
-import {
-  useGenerateFeedDescription,
-  useGenerateFeedSlug,
-} from "@/services/ai/hooks";
+import { useGenerateFeedSlug } from "@/services/ai/hooks";
 
 import {
   EditFieldsContext,
@@ -126,11 +123,17 @@ const DeleteButton = () => {
           isLoading={deleteFeed.isPending}
           color="danger"
           variant="flat"
-          onPress={() =>
-            deleteFeed.mutate({
-              feedId: Number(form.getValues("id")),
-            })
-          }>
+          onPress={() => {
+            // Get feedId from form context or pass it via props
+            const formValues = form.getValues();
+            // @ts-expect-error - id might exist in edit mode
+            const feedId = formValues.id;
+            if (feedId) {
+              deleteFeed.mutate({
+                feedId: Number(feedId),
+              });
+            }
+          }}>
           <span className="text-xs">Delete</span>
         </Button>
       </PopoverContent>
@@ -157,7 +160,7 @@ const SlugField = () => {
               description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
               endContent={
                 <GenerateFeedSlug
-                  title={form.watch("title")}
+                  title={form.watch("translation.title")}
                   onSuccess={(data) => {
                     field.onChange(data);
                   }}
@@ -177,49 +180,7 @@ const SlugField = () => {
   );
 };
 
-const DescriptionField = () => {
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
-  const editFields = useEditFieldsContext();
-  const { completion } = useGenerateFeedDescription();
-
-  return (
-    <FormField<feedsContracts.CreateFeedInput, "description">
-      control={form.control}
-      name="description"
-      render={({ field, fieldState }) => (
-        <FormItem>
-          <FormControl>
-            <Textarea
-              disabled={editFields.disabled}
-              label="Description"
-              labelPlacement="outside"
-              placeholder={completion || "Description"}
-              minRows={7}
-              isInvalid={fieldState.invalid}
-              endContent={
-                <GenerateFeedDescription
-                  input={{
-                    title: form.watch("title"),
-                    content: form.watch("content") ?? undefined,
-                  }}
-                  onSuccess={(data) => {
-                    field.onChange(data);
-                  }}
-                  preGenerate={() => {
-                    field.onChange("");
-                  }}
-                />
-              }
-              {...field}
-              value={field.value ?? ""}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  );
-};
+// Description field is now part of MetadataFields
 
 export const MetadataFields = () => {
   const form = useFormContext<feedsContracts.CreateFeedInput>();
@@ -274,9 +235,9 @@ export const MetadataFields = () => {
         />
         {editFields.mode === "edit" && <DeleteButton />}
       </div>
-      <FormField<feedsContracts.CreateFeedInput, "title">
+      <FormField<feedsContracts.CreateFeedInput, "translation.title">
         control={form.control}
-        name="title"
+        name="translation.title"
         render={({ field, fieldState }) => (
           <FormItem>
             <FormControl>
@@ -294,7 +255,41 @@ export const MetadataFields = () => {
         )}
       />
       <SlugField />
-      <DescriptionField />
+      <FormField<feedsContracts.CreateFeedInput, "translation.description">
+        control={form.control}
+        name="translation.description"
+        render={({ field, fieldState }) => (
+          <FormItem>
+            <FormControl>
+              <Textarea
+                disabled={editFields.disabled}
+                label="Description"
+                labelPlacement="outside"
+                placeholder="Description"
+                minRows={7}
+                isInvalid={fieldState.invalid}
+                endContent={
+                  <GenerateFeedDescription
+                    input={{
+                      title: form.watch("translation.title"),
+                      content: form.watch("content.content") ?? undefined,
+                    }}
+                    onSuccess={(data) => {
+                      field.onChange(data);
+                    }}
+                    preGenerate={() => {
+                      field.onChange("");
+                    }}
+                  />
+                }
+                {...field}
+                value={field.value ?? ""}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       <div className="flex flex-col md:flex-row w-full gap-5">
         <div className="flex gap-5 w-full md:w-1/2">
           <FormField<feedsContracts.CreateFeedInput, "createdAt">
@@ -460,8 +455,8 @@ const SwitchEditor = () => {
             <div className="absolute top-3 right-3 z-30">
               <GenerateFeedContent
                 input={{
-                  title: form.watch("title"),
-                  description: form.watch("description") ?? "",
+                  title: form.watch("translation.title"),
+                  description: form.watch("translation.description") ?? "",
                   content: editFields.content.mdx.content,
                 }}
                 onSuccess={(data) => {
@@ -565,8 +560,8 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
       case ContentType.Mdx:
         return {
           mdx: {
-            content: form.getValues("content") ?? "",
-            source: form.getValues("source") ?? "",
+            content: form.getValues("content.content") ?? "",
+            source: form.getValues("content.source") ?? "",
           },
           tiptap: {
             content: "",
@@ -580,8 +575,8 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
             source: "",
           },
           tiptap: {
-            content: form.getValues("content") ?? "",
-            source: form.getValues("source") ?? "",
+            content: form.getValues("content.content") ?? "",
+            source: form.getValues("content.source") ?? "",
           },
         };
       default:

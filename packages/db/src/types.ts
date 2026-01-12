@@ -28,14 +28,13 @@ export const FeedOrderBy = {
   CreatedAt: "createdAt",
   Id: "id",
   Slug: "slug",
-  Title: "title",
 } as const;
 
 export type FeedOrderBy = (typeof FeedOrderBy)[keyof typeof FeedOrderBy];
 
-export const I18N = {
+export const Locale = {
   En: "en",
-  ZH_TW: "zh-tw",
+  zhTW: "zh-TW",
 } as const;
 
-export type I18N = (typeof I18N)[keyof typeof I18N];
+export type Locale = (typeof Locale)[keyof typeof Locale];

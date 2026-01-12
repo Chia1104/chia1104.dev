@@ -16,13 +16,6 @@ export const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 export const DEFAULT_COOKIE_DOMAIN = ".chia1104.dev";
 export const X_CH_API_KEY = "x-ch-api-key";
 
-/**
- * @deprecated
- */
-export const SESSION_TOKEN = useSecureCookies
-  ? "__Secure-authjs.session-token"
-  : "authjs.session-token";
-
 export const SESSION_MAX_AGE = 2592000; // 30 days
 export const SESSION_UPDATE_AGE = 86400; // 1 day
 

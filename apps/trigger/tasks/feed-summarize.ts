@@ -4,10 +4,12 @@ import * as z from "zod";
 
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
-import { insertFeedMeta, getFeedById } from "@chia/api/services/feeds";
+import { upsertFeedTranslation, getFeedById } from "@chia/api/services/feeds";
 
 import { TaskID } from "./tasks.constant";
 import { env } from "./utils/env";
+
+type Locale = "zh-TW" | "en";
 
 export type STREAMS = {
   openai: OpenAI.ChatCompletionChunk; // The type of the chunk is determined by the provider
@@ -16,6 +18,7 @@ export type STREAMS = {
 export const requestSchema = z.object({
   ...baseRequestSchema.omit({ authToken: true, messages: true }).shape,
   feedID: z.string(),
+  locale: z.string().optional(),
 });
 
 const SYSTEM_PROMPT =
@@ -24,7 +27,9 @@ const SYSTEM_PROMPT =
 export const feedSummarizeTask = schemaTask({
   id: TaskID.FeedSummarize,
   schema: requestSchema,
-  run: async ({ model, system, feedID }) => {
+  run: async ({ model, system, feedID, locale }) => {
+    const targetLocale = (locale ?? "zh-TW") as Locale;
+
     const feed = await getFeedById(
       {
         cfBypassToken: env.CF_BYPASS_TOKEN,
@@ -32,10 +37,44 @@ export const feedSummarizeTask = schemaTask({
       },
       {
         id: feedID,
+        locale: targetLocale,
       }
     );
 
-    if (feed?.feedMeta?.summary || !feed?.published) {
+    if (!feed?.published) {
+      return;
+    }
+
+    // Get the translation for the specified locale
+    const translation = feed.translations.find(
+      (t) => t.locale === targetLocale
+    );
+
+    if (!translation) {
+      logger.error("Translation not found for locale", {
+        locale: targetLocale,
+      });
+      return;
+    }
+
+    // Skip if summary already exists
+    if (translation.summary) {
+      logger.info("Summary already exists, skipping", {
+        feedID,
+        locale: targetLocale,
+      });
+      return;
+    }
+
+    // Get content from translation
+    const content =
+      translation.content?.source ?? translation.content?.content ?? "";
+
+    if (!content) {
+      logger.error("No content found for translation", {
+        feedID,
+        locale: targetLocale,
+      });
       return;
     }
 
@@ -46,7 +85,7 @@ export const feedSummarizeTask = schemaTask({
         {
           role: "user",
           content: `目前的文章內容為：
-          ${feed?.content.source}
+          ${content}
         `,
         },
       ],
@@ -54,7 +93,7 @@ export const feedSummarizeTask = schemaTask({
     });
 
     const stream = await metadata.stream(
-      `${TaskID.FeedSummarize}-${feedID}`,
+      `${TaskID.FeedSummarize}-${feedID}-${targetLocale}`,
       completion.textStream
     );
 
@@ -65,15 +104,27 @@ export const feedSummarizeTask = schemaTask({
       text += chunk;
     }
 
-    await insertFeedMeta(
+    // Update feed translation with the generated summary
+    await upsertFeedTranslation(
       {
         cfBypassToken: env.CF_BYPASS_TOKEN,
         apiKey: env.CH_API_KEY,
       },
       {
         feedId: Number(feedID),
+        locale: targetLocale,
+        title: translation.title, // Required field, use existing title
+        description: translation.description,
+        excerpt: translation.excerpt,
+        readTime: translation.readTime,
         summary: text,
       }
     );
+
+    logger.info("Successfully generated and saved summary", {
+      feedID,
+      locale: targetLocale,
+      summaryLength: text.length,
+    });
   },
 });

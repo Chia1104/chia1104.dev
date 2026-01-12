@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import snakeCase from "lodash/snakeCase.js";
+import * as z from "zod";
 
 import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
@@ -12,6 +13,7 @@ import {
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
 import { searchFeeds } from "@chia/db/repos/feeds/embedding";
+import { Locale } from "@chia/db/types";
 
 import { ai, AI_AUTH_TOKEN } from "@/guards/ai.guard";
 import { verifyAuth } from "@/guards/auth.guard";
@@ -28,7 +30,7 @@ api.use("/", verifyAuth()).get(
     }
   }),
   async (c) => {
-    const { type, limit, orderBy, sortOrder, nextCursor, withContent } =
+    const { type, limit, orderBy, sortOrder, nextCursor, withContent, locale } =
       c.req.valid("query");
     const feeds = await getInfiniteFeedsByUserId(c.var.db, {
       type,
@@ -37,6 +39,7 @@ api.use("/", verifyAuth()).get(
       sortOrder,
       cursor: nextCursor,
       withContent: withContent === "true",
+      locale: locale as Locale | undefined,
       userId: c.get("user")?.id ?? "",
     });
     return c.json(feeds);
@@ -45,13 +48,19 @@ api.use("/", verifyAuth()).get(
 
 api.get(
   "/public",
-  zValidator("query", getFeedsWithMetaSchema, (result, c) => {
-    if (!result.success) {
-      return c.json(errorResponse(result.error), 400);
+  zValidator(
+    "query",
+    getFeedsWithMetaSchema.extend({
+      locale: z.string().optional(),
+    }),
+    (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
     }
-  }),
+  ),
   async (c) => {
-    const { type, limit, orderBy, sortOrder, nextCursor, withContent } =
+    const { type, limit, orderBy, sortOrder, nextCursor, withContent, locale } =
       c.req.valid("query");
     const feeds = await getInfiniteFeeds(c.var.db, {
       type,
@@ -60,6 +69,7 @@ api.get(
       sortOrder,
       cursor: nextCursor,
       withContent: withContent === "true",
+      locale: locale as Locale | undefined,
       whereAnd: [eq(schema.feeds.published, true)],
     });
     return c.json(feeds);
@@ -83,18 +93,24 @@ api
   )
   .get(
     "/search",
-    zValidator("query", searchFeedsSchema, (result, c) => {
-      if (!result.success) {
-        return c.json(errorResponse(result.error), 400);
+    zValidator(
+      "query",
+      searchFeedsSchema.extend({
+        locale: z.enum(Locale).optional(),
+      }),
+      (result, c) => {
+        if (!result.success) {
+          return c.json(errorResponse(result.error), 400);
+        }
       }
-    }),
+    ),
     async (c) => {
       const client = createOpenAI({
         apiKey: c.get(AI_AUTH_TOKEN),
       });
-      const { keyword, model } = c.req.valid("query");
+      const { keyword, model, locale } = c.req.valid("query");
       const cache = c.var.redis;
-      const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}`;
+      const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}:l:${locale ?? "all"}`;
       const cached = await cache.get<string>(cacheKey);
       if (cached) {
         const { items } = await searchFeeds(c.var.db, {
@@ -102,6 +118,7 @@ api
           limit: 5,
           model: isOllamaEmbeddingModel(model) ? undefined : model,
           useOllama: isOllamaEmbeddingModel(model) ? { model } : undefined,
+          locale: locale as Locale | undefined,
           client,
           embedding: JSON.parse(cached) as number[],
         });
@@ -112,6 +129,7 @@ api
         limit: 5,
         model: isOllamaEmbeddingModel(model) ? undefined : model,
         useOllama: isOllamaEmbeddingModel(model) ? { model } : undefined,
+        locale,
         client,
       });
       await cache.set(cacheKey, JSON.stringify(embedding));

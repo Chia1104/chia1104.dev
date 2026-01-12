@@ -1,13 +1,14 @@
 import type { z } from "zod";
 
+import type { Locale } from "@chia/db";
 import type {
   getInfiniteFeedsByUserId,
   getFeedBySlug as TgetFeedBySlug,
-  getFeedMetaById as TgetFeedMetaById,
 } from "@chia/db/repos/feeds";
 import type {
-  InsertFeedMetaDTO,
+  InsertFeedTranslationDTO,
   UpdateFeedDTO,
+  InsertContentDTO,
 } from "@chia/db/validator/feeds";
 import { serviceRequest } from "@chia/utils/request";
 
@@ -37,8 +38,6 @@ export type FeedDetailDBSource = Required<
 
 export type FeedDetail = FeedDetailDBSource;
 
-export type FeedMetaResult = Awaited<ReturnType<typeof TgetFeedMetaById>>;
-
 export const getFeedsWithMetaByAdminId = withInternalRequest<
   FeedWithMeta,
   GetFeedsWithMetaDTO
@@ -56,32 +55,41 @@ export const getFeedsWithMetaByAdminId = withInternalRequest<
         sortOrder: dto.sortOrder?.toString() ?? "",
         type: dto.type?.toString() ?? "",
         published: dto.published?.toString() ?? "",
+        locale: dto.locale?.toString() ?? "",
       },
     })
     .json<FeedWithMeta>();
 });
 
-export const getFeedBySlug = withInternalRequest<FeedDetail, { slug: string }>(
-  async (internal_requestSecret, { slug }, options) => {
-    return await serviceRequest({
-      isInternal: true,
-      internal_requestSecret,
+export const getFeedBySlug = withInternalRequest<
+  FeedDetail,
+  { slug: string; locale?: Locale }
+>(async (internal_requestSecret, { slug, locale }, options) => {
+  return await serviceRequest({
+    isInternal: true,
+    internal_requestSecret,
+  })
+    .get(`admin/public/feeds/${slug}`, {
+      ...options,
+      searchParams: locale ? { locale } : undefined,
     })
-      .get(`admin/public/feeds/${slug}`, options)
-      .json<FeedDetail>();
-  }
-);
+    .json<FeedDetail>();
+});
 
-export const getFeedById = withInternalRequest<FeedDetail, { id: string }>(
-  async (internal_requestSecret, { id }, options) => {
-    return await serviceRequest({
-      isInternal: true,
-      internal_requestSecret,
+export const getFeedById = withInternalRequest<
+  FeedDetail,
+  { id: string; locale?: Locale }
+>(async (internal_requestSecret, { id, locale }, options) => {
+  return await serviceRequest({
+    isInternal: true,
+    internal_requestSecret,
+  })
+    .get(`admin/public/feeds:id/${id}`, {
+      ...options,
+      searchParams: locale ? { locale } : undefined,
     })
-      .get(`admin/public/feeds:id/${id}`, options)
-      .json<FeedDetail>();
-  }
-);
+    .json<FeedDetail>();
+});
 
 export const getMeta = withInternalRequest<{ total: number }>(
   async (internal_requestSecret, _dto, options) => {
@@ -94,42 +102,47 @@ export const getMeta = withInternalRequest<{ total: number }>(
   }
 );
 
-export const getFeedMetaById = withInternalRequest<
-  FeedMetaResult | null,
-  { id: string }
->(async (internal_requestSecret, { id }, options) => {
+export const upsertFeedTranslation = withInternalRequest<
+  void,
+  InsertFeedTranslationDTO & { feedId: number; locale: Locale }
+>(async (internal_requestSecret, dto, options) => {
   return await serviceRequest({
     isInternal: true,
     internal_requestSecret,
   })
-    .get(`admin/public/feeds:meta/${id}`, options)
-    .json<FeedMetaResult | null>();
+    .post(`admin/public/feeds:translation`, {
+      ...options,
+      json: dto,
+    })
+    .json();
 });
 
-export const insertFeedMeta = withInternalRequest<void, InsertFeedMetaDTO>(
-  async (internal_requestSecret, dto, options) => {
-    return await serviceRequest({
-      isInternal: true,
-      internal_requestSecret,
+export const upsertContent = withInternalRequest<
+  void,
+  InsertContentDTO & { feedTranslationId: number }
+>(async (internal_requestSecret, dto, options) => {
+  return await serviceRequest({
+    isInternal: true,
+    internal_requestSecret,
+  })
+    .post(`admin/public/feeds:content`, {
+      ...options,
+      json: dto,
     })
-      .post(`admin/public/feeds:meta`, {
-        ...options,
-        json: dto,
-      })
-      .json();
-  }
-);
+    .json();
+});
 
-export const updateFeed = withInternalRequest<FeedDetail, UpdateFeedDTO>(
-  async (internal_requestSecret, dto, options) => {
-    return await serviceRequest({
-      isInternal: true,
-      internal_requestSecret,
+export const updateFeed = withInternalRequest<
+  FeedDetail,
+  UpdateFeedDTO & { feedId: number }
+>(async (internal_requestSecret, dto, options) => {
+  return await serviceRequest({
+    isInternal: true,
+    internal_requestSecret,
+  })
+    .post(`admin/public/feeds/${dto.feedId}`, {
+      ...options,
+      json: dto,
     })
-      .post(`admin/public/feeds/${dto.id}`, {
-        ...options,
-        json: dto,
-      })
-      .json<FeedDetail>();
-  }
-);
+    .json<FeedDetail>();
+});

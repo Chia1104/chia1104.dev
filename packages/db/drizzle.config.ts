@@ -40,11 +40,11 @@ const dbEnv = (
 };
 
 export default {
-  schema: "./src/schema",
+  schema: "./src/schemas",
   dialect: "postgresql",
   dbCredentials: {
     url: dbEnv(),
   },
-  out: "./.drizzle",
+  out: "./.drizzle/migrations",
   tablesFilter: ["chia_*"],
 } satisfies Config;

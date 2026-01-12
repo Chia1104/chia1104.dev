@@ -1,19 +1,18 @@
 import { useMutation } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 
-import type { Feed } from "@chia/db/schema";
-
+import type { FeedSearchResult } from "@/resources/feed.resource";
 import { searchFeeds } from "@/resources/feed.resource";
 
 type UseSearchFeedsOptions = UseMutationOptions<
-  (Feed & { similarity: number })[],
+  FeedSearchResult[],
   Error,
-  string
+  { query: string; locale?: string }
 >;
 
 export const useSearchFeeds = (options?: UseSearchFeedsOptions) => {
   return useMutation({
-    mutationFn: (query) => searchFeeds(query),
+    mutationFn: ({ query, locale }) => searchFeeds(query, locale),
     ...options,
   });
 };

@@ -18,8 +18,8 @@
       "default": "./src/types.ts"
     },
     "./schema": {
-      "types": "./src/schema/index.ts",
-      "default": "./src/schema/index.ts"
+      "types": "./src/schemas/index.ts",
+      "default": "./src/schemas/index.ts"
     },
     "./repos/feeds": {
       "types": "./src/libs/feeds/index.ts",
@@ -64,6 +64,10 @@
     "./env": {
       "types": "./src/env.ts",
       "default": "./src/env.ts"
+    },
+    "./mock-db": {
+      "types": "./src/mock-db.ts",
+      "default": "./src/mock-db.ts"
     }
   },
   "scripts": {
@@ -77,7 +81,9 @@
     "db:check": "tsx --env-file=../../.env.global check.ts",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "migrate:run": "tsx --env-file=../../.env.global migrate.ts"
+    "migrate:run": "tsx --env-file=../../.env.global migrate.ts",
+    "migrate:data": "tsx --env-file=../../.env.global migrations/migrate-data.ts",
+    "migrate:verify": "tsx --env-file=../../.env.global migrations/verify-migration.ts"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",

@@ -50,7 +50,15 @@ const CreateForm = ({
     defaultValues: {
       contentType: ContentType.Mdx,
       type,
-      title: "Untitled",
+      defaultLocale: "zh-TW",
+      translation: {
+        locale: "zh-TW",
+        title: "Untitled",
+        excerpt: null,
+        description: null,
+        summary: null,
+        readTime: null,
+      },
       ...draft.current,
       createdAt: draft.current?.createdAt
         ? dayjs(draft.current.createdAt).valueOf()
@@ -60,10 +68,15 @@ const CreateForm = ({
   });
 
   const onSubmit = form.handleSubmit((values) => {
+    const editorContent = editFieldsRef.current?.getContent(values.contentType);
     create.mutate({
       ...values,
-      content: editFieldsRef.current?.getContent(values.contentType).content,
-      source: editFieldsRef.current?.getContent(values.contentType).source,
+      content: editorContent?.content
+        ? {
+            content: editorContent.content,
+            source: editorContent.source,
+          }
+        : undefined,
     });
   });
 
