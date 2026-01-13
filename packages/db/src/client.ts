@@ -2,7 +2,6 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { withReplicas } from "drizzle-orm/pg-core";
 import pg from "pg";
 
-import { kv } from "@chia/kv";
 import { DrizzleCache } from "@chia/kv/drizzle/cache";
 import { switchEnv } from "@chia/utils/config";
 
@@ -24,6 +23,8 @@ export async function getConnection(url: string) {
   // Token is expired or pool is null, recreate pool and db
   try {
     await closeConnection();
+
+    const kv = await import("@chia/kv").then((m) => m.kv);
 
     pool = new Pool({
       connectionString: url,

@@ -1,7 +1,6 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { boolean, text, index, timestamp } from "drizzle-orm/pg-core";
-import crypto from "node:crypto";
 
 import { timestamps } from "../libs/common.schema";
 import { Role } from "../types";
