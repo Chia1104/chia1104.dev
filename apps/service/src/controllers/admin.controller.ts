@@ -10,7 +10,6 @@ import {
   updateFeedRequestSchema,
 } from "@chia/api/services/validators";
 import { locale, schema } from "@chia/db";
-import type { Locale } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
@@ -90,7 +89,7 @@ api.get(
     "query",
     z
       .object({
-        locale: z.string().optional(),
+        locale: z.enum(locale.enumValues).optional(),
       })
       .optional(),
     (result, c) => {
@@ -106,7 +105,7 @@ api.get(
     const { locale } = c.req.valid("query") ?? {};
     const feed = await getFeedBySlug(c.var.db, {
       slug: c.req.param("slug"),
-      locale: locale as Locale | undefined,
+      locale,
     });
     if (!feed) {
       return c.json(errorGenerator(404), 404);

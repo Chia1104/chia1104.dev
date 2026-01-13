@@ -65,9 +65,9 @@ const Page = async ({
   const feed = await getFeedBySlug(slug);
   const t = await getTranslations("blog");
 
-  const content = feed?.translations[0]?.content;
+  const [translation] = feed?.translations ?? [];
 
-  if (!content) {
+  if (!translation?.content || !feed) {
     notFound();
   } else if (`${feed.type}` !== type) {
     redirect(
@@ -131,7 +131,7 @@ const Page = async ({
           <Content
             content={getContentProps({
               contentType: feed.contentType,
-              content,
+              content: translation.content,
             })}
             context={{
               updatedAt: feed.updatedAt,

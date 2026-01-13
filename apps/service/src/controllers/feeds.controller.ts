@@ -69,7 +69,7 @@ api.get(
       sortOrder,
       cursor: nextCursor,
       withContent: withContent === "true",
-      locale: locale as Locale | undefined,
+      locale,
       whereAnd: [eq(schema.feeds.published, true)],
     });
     return c.json(feeds);
