@@ -18,7 +18,7 @@ import healthRoutes from "@/controllers/health.controller";
 import rpcRoutes from "@/controllers/rpc.controller";
 import spotifyRoutes from "@/controllers/spotify.controller";
 import toolingsRoutes from "@/controllers/toolings.controller";
-import triggerRoutes from "@/controllers/trigger.controller";
+// import triggerRoutes from "@/controllers/trigger.controller";
 import { env } from "@/env";
 import { maintenance } from "@/middlewares/maintenance.middleware";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
@@ -150,9 +150,9 @@ const bootstrap = <TContext extends HonoContext>(
   app
     .use("/api/v1/email", timeout(env.TIMEOUT_MS))
     .route("/api/v1/email", emailRoutes);
-  app
-    .use("/api/v1/trigger", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/trigger", triggerRoutes);
+  // app
+  //   .use("/api/v1/trigger", timeout(env.TIMEOUT_MS))
+  //   .route("/api/v1/trigger", triggerRoutes);
   app
     .use("/api/v1/toolings", timeout(env.TIMEOUT_MS))
     .route("/api/v1/toolings", toolingsRoutes);

@@ -5,8 +5,9 @@ export default defineConfig((opts) => ({
   clean: true,
   minify: !opts.watch,
   dts: false,
-  unbundle: true,
+  unbundle: false,
   format: ["esm"],
   tsconfig: "tsconfig.build.json",
+  external: [/!^@chia\//],
   noExternal: [/^@chia\//, /^trigger\//],
 }));
