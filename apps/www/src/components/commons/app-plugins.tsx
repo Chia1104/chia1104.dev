@@ -46,8 +46,12 @@ const AppPlugins = () => {
         <>
           <VercelAnalytics />
           <WebVitals />
-          <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID ?? ""} />
-          <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID ?? ""} />
+          {env.NEXT_PUBLIC_GTM_ID && (
+            <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID} />
+          )}
+          {env.NEXT_PUBLIC_GA_ID && (
+            <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID} />
+          )}
           <SpeedInsights />
         </>
       )}
