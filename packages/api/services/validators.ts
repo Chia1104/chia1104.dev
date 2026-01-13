@@ -14,7 +14,7 @@ export const getFeedsWithMetaSchema = z.object({
   nextCursor: NumericStringSchema.optional(),
   withContent: z.string().optional().default("false"),
   published: z.string().optional().default("false"),
-  locale: z.string().optional(),
+  locale: z.enum(locale.enumValues).optional(),
   orderBy: z
     .enum([
       FeedOrderBy.CreatedAt,

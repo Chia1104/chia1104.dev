@@ -7,7 +7,7 @@ import * as z from "zod";
 import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
-import { schema } from "@chia/db";
+import { locale, schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
@@ -39,7 +39,7 @@ api.use("/", verifyAuth()).get(
       sortOrder,
       cursor: nextCursor,
       withContent: withContent === "true",
-      locale: locale as Locale | undefined,
+      locale,
       userId: c.get("user")?.id ?? "",
     });
     return c.json(feeds);
@@ -51,7 +51,7 @@ api.get(
   zValidator(
     "query",
     getFeedsWithMetaSchema.extend({
-      locale: z.string().optional(),
+      locale: z.enum(locale.enumValues).optional(),
     }),
     (result, c) => {
       if (!result.success) {
@@ -118,7 +118,7 @@ api
           limit: 5,
           model: isOllamaEmbeddingModel(model) ? undefined : model,
           useOllama: isOllamaEmbeddingModel(model) ? { model } : undefined,
-          locale: locale as Locale | undefined,
+          locale,
           client,
           embedding: JSON.parse(cached) as number[],
         });
