@@ -8,4 +8,5 @@ export default defineConfig((opts) => ({
   unbundle: true,
   format: ["esm"],
   tsconfig: "tsconfig.build.json",
+  noExternal: [/^@chia\//, /^trigger\//],
 }));
