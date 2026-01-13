@@ -80,7 +80,7 @@ export const getFeeds = async (limit = 10) => {
   );
 };
 
-export const getFeedBySlug = async (slug: string) => {
+export const getFeedBySlug = async (slug: string, _locale?: Locale) => {
   try {
     return await _getFeedBySlug(
       {

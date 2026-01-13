@@ -84,6 +84,18 @@
     "./orpc/router": {
       "types": "./orpc/router.ts",
       "default": "./orpc/router.ts"
+    },
+    "./s3/env": {
+      "types": "./s3/env.ts",
+      "default": "./s3/env.ts"
+    },
+    "./s3/client": {
+      "types": "./s3/s3.client.ts",
+      "default": "./s3/s3.client.ts"
+    },
+    "./s3/service": {
+      "types": "./s3/s3.service.ts",
+      "default": "./s3/s3.service.ts"
     }
   },
   "scripts": {

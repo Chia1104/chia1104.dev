@@ -94,13 +94,13 @@ const FeedNavigation: FC<Props> = ({ feeds, type }) => {
                   <li key={feed.id} className="row-span-3">
                     <NavigationMenuLink asChild>
                       <Link
-                        className="from-muted/50 to-muted flex size-full select-none flex-col justify-end rounded-md bg-gradient-to-b p-6 no-underline outline-none focus:shadow-md"
+                        className="from-muted/50 to-muted flex size-full select-none flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none focus:shadow-md"
                         href={`${getLinkPrefix()}/${feed.slug}`}>
                         <div className="mb-2 mt-4 line-clamp-2 text-lg font-medium">
-                          {feed.title}
+                          {feed.translations[0]?.title}
                         </div>
                         <p className="text-muted-foreground line-clamp-3 text-sm leading-tight">
-                          {feed.description}
+                          {feed.translations[0]?.description}
                         </p>
                       </Link>
                     </NavigationMenuLink>
@@ -110,9 +110,9 @@ const FeedNavigation: FC<Props> = ({ feeds, type }) => {
               return (
                 <ListItem
                   key={feed.id}
-                  title={feed.title}
+                  title={feed.translations[0]?.title}
                   href={`${getLinkPrefix()}/${feed.slug}`}>
-                  {feed.description}
+                  {feed.translations[0]?.description}
                 </ListItem>
               );
             })

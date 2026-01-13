@@ -36,7 +36,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "type:check": "tsc --noEmit",
-    "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config src/index.ts"
+    "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config scripts/auth-cli.ts"
   },
   "dependencies": {
     "@better-auth/passkey": "1.4.7",

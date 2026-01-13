@@ -1,10 +1,10 @@
 import { createInsertSchema } from "drizzle-zod";
 import * as z from "zod";
 
-import { users } from "../../schema";
+import { user } from "../../schemas";
 
 export const insertUserSchema = z.object({
-  ...createInsertSchema(users).omit({
+  ...createInsertSchema(user).omit({
     id: true,
     emailVerified: true,
   }).shape,

@@ -16,14 +16,15 @@ export const contentType = "image/png";
 
 export default async function og({ params }: { params: { slug: string } }) {
   const post = await getFeedBySlug(params.slug);
-  if (!post) {
+  const translation = post?.translations[0];
+  if (!translation) {
     return NextResponse.json(errorGenerator(404), { status: 404 });
   }
   return new ImageResponse(
     <OpenGraph
       metadata={{
-        title: post.title,
-        excerpt: post.excerpt,
+        title: translation.title,
+        excerpt: translation.excerpt,
         subtitle: dayjs(post.updatedAt).format("MMMM D, YYYY"),
       }}
       styles={{

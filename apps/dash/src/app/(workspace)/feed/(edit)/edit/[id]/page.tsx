@@ -35,26 +35,49 @@ const Page = async ({
   }
   const feed = await client.feeds["details-by-id"]({
     feedId: Number(id),
+    // Use default locale or first available translation
   });
   if (!feed) {
     notFound();
   }
+
+  // Get the default locale translation or first translation
+  const translation =
+    feed.translations.find((t) => t.locale === feed.defaultLocale) ??
+    feed.translations[0];
+
+  if (!translation) {
+    notFound();
+  }
+
   return (
     <ErrorBoundary>
       <EditForm
         feedId={feed.id}
         defaultValues={{
-          id: feed.id,
           type: feed.type,
-          title: feed.title,
           slug: feed.slug,
-          description: feed.description,
           updatedAt: dayjs(feed.updatedAt).valueOf(),
           createdAt: dayjs(feed.createdAt).valueOf(),
           contentType: feed.contentType,
           published: feed.published,
-          content: feed.content?.content,
-          source: feed.content?.source,
+          defaultLocale: feed.defaultLocale,
+          translation: {
+            locale: translation.locale,
+            title: translation.title,
+            description: translation.description ?? null,
+            excerpt: translation.excerpt ?? null,
+            summary: translation.summary ?? null,
+            readTime: translation.readTime ?? null,
+          },
+          content: translation.content
+            ? {
+                content: translation.content.content ?? null,
+                source: translation.content.source ?? null,
+                unstableSerializedSource:
+                  translation.content.unstableSerializedSource ?? null,
+              }
+            : undefined,
         }}
       />
     </ErrorBoundary>

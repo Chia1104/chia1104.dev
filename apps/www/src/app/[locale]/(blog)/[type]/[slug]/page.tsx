@@ -40,10 +40,12 @@ export const generateMetadata = async ({
   const { slug } = await params;
   try {
     const feed = await getFeedBySlug(slug);
-    if (!feed) return {};
+    if (!feed) {
+      notFound();
+    }
     return {
-      title: feed.title,
-      description: feed.excerpt,
+      title: feed.translations[0]?.title,
+      description: feed.translations[0]?.description,
     };
   } catch (error) {
     console.error(error);
@@ -63,7 +65,9 @@ const Page = async ({
   const feed = await getFeedBySlug(slug);
   const t = await getTranslations("blog");
 
-  if (!feed?.content) {
+  const [translation] = feed?.translations ?? [];
+
+  if (!translation?.content || !feed) {
     notFound();
   } else if (`${feed.type}` !== type) {
     redirect(
@@ -78,11 +82,11 @@ const Page = async ({
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    headline: feed.title,
+    headline: feed.translations[0]?.title,
     datePublished: dayjs(feed.createdAt).format("MMMM D, YYYY"),
     dateModified: dayjs(feed.updatedAt).format("MMMM D, YYYY"),
-    name: feed.title,
-    description: feed.excerpt ?? "",
+    name: feed.translations[0]?.title,
+    description: feed.translations[0]?.description ?? "",
     author: {
       "@type": "Person",
       name: "Chia1104",
@@ -101,11 +105,11 @@ const Page = async ({
                 style={{
                   viewTransitionName: `view-transition-link-${feed.id}`,
                 }}>
-                {feed.title}
+                {feed.translations[0]?.title}
               </h1>
             </ViewTransition>
           </div>
-          <p>{feed.description}</p>
+          <p>{feed.translations[0]?.description}</p>
           <span className="mt-5 flex items-center gap-2 not-prose">
             <Image
               src="https://avatars.githubusercontent.com/u/38397958?v=4"
@@ -127,7 +131,7 @@ const Page = async ({
           <Content
             content={getContentProps({
               contentType: feed.contentType,
-              content: feed.content,
+              content: translation.content,
             })}
             context={{
               updatedAt: feed.updatedAt,

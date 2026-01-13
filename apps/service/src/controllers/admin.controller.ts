@@ -5,16 +5,17 @@ import * as z from "zod";
 
 import {
   getFeedsWithMetaSchema,
-  insertFeedMetaRequestSchema,
+  upsertFeedTranslationRequestSchema,
+  upsertContentRequestSchema,
   updateFeedRequestSchema,
 } from "@chia/api/services/validators";
-import { schema } from "@chia/db";
+import { locale, schema } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
-  getFeedMetaById,
-  createFeedMeta,
   getFeedById,
+  upsertFeedTranslation,
+  upsertContent,
   updateFeed,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
@@ -65,6 +66,7 @@ api.get(
       nextCursor,
       withContent,
       published,
+      locale,
     } = c.req.valid("query");
     const feeds = await getInfiniteFeedsByUserId(c.var.db, {
       type,
@@ -74,22 +76,43 @@ api.get(
       cursor: nextCursor,
       withContent: withContent === "true",
       userId: adminId,
+      locale,
       whereAnd: [eq(schema.feeds.published, published === "true")],
     });
     return c.json(feeds);
   }
 );
 
-api.get("/public/feeds/:slug", async (c) => {
-  if (!c.req.param("slug")) {
-    return c.json(errorGenerator(400), 400);
+api.get(
+  "/public/feeds/:slug",
+  zValidator(
+    "query",
+    z
+      .object({
+        locale: z.enum(locale.enumValues).optional(),
+      })
+      .optional(),
+    (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }
+  ),
+  async (c) => {
+    if (!c.req.param("slug")) {
+      return c.json(errorGenerator(400), 400);
+    }
+    const { locale } = c.req.valid("query") ?? {};
+    const feed = await getFeedBySlug(c.var.db, {
+      slug: c.req.param("slug"),
+      locale,
+    });
+    if (!feed) {
+      return c.json(errorGenerator(404), 404);
+    }
+    return c.json(feed);
   }
-  const feed = await getFeedBySlug(c.var.db, c.req.param("slug"));
-  if (!feed) {
-    return c.json(errorGenerator(404), 404);
-  }
-  return c.json(feed);
-});
+);
 
 api.get(
   "/public/feeds:id/:id",
@@ -104,23 +127,13 @@ api.get(
       }
     }
   ),
-  async (c) => {
-    const id = c.req.valid("param").id;
-    const feed = await getFeedById(c.var.db, id);
-    if (!feed) {
-      return c.json(errorGenerator(404), 404);
-    }
-    return c.json(feed);
-  }
-);
-
-api.get(
-  "/public/feeds:meta/:id",
   zValidator(
-    "param",
-    z.object({
-      id: NumericStringSchema,
-    }),
+    "query",
+    z
+      .object({
+        locale: z.enum(locale.enumValues).optional(),
+      })
+      .optional(),
     (result, c) => {
       if (!result.success) {
         return c.json(errorResponse(result.error), 400);
@@ -129,30 +142,42 @@ api.get(
   ),
   async (c) => {
     const id = c.req.valid("param").id;
-    const feed = await getFeedMetaById(c.var.db, {
+    const { locale } = c.req.valid("query") ?? {};
+    const feed = await getFeedById(c.var.db, {
       feedId: id,
-      withContent: true,
+      locale,
     });
     if (!feed) {
-      return c.json(null);
+      return c.json(errorGenerator(404), 404);
     }
     return c.json(feed);
   }
 );
 
 api.post(
-  "/public/feeds:meta",
-  zValidator("json", insertFeedMetaRequestSchema, (result, c) => {
+  "/public/feeds:translation",
+  zValidator("json", upsertFeedTranslationRequestSchema, (result, c) => {
     if (!result.success) {
       return c.json(errorResponse(result.error), 400);
     }
   }),
   async (c) => {
-    const { feedId, summary } = c.req.valid("json");
-    await createFeedMeta(c.var.db, {
-      feedId,
-      summary,
-    });
+    const dto = c.req.valid("json");
+    await upsertFeedTranslation(c.var.db, dto);
+    return c.body(null, 204);
+  }
+);
+
+api.post(
+  "/public/feeds:content",
+  zValidator("json", upsertContentRequestSchema, (result, c) => {
+    if (!result.success) {
+      return c.json(errorResponse(result.error), 400);
+    }
+  }),
+  async (c) => {
+    const dto = c.req.valid("json");
+    await upsertContent(c.var.db, dto);
     return c.body(null, 204);
   }
 );

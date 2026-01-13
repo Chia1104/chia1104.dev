@@ -8,7 +8,6 @@ import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
 import { useTransitionRouter } from "next-view-transitions";
 
-import type { Feed } from "@chia/db/schema";
 import {
   CommandDialog,
   CommandEmpty,
@@ -20,6 +19,7 @@ import {
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
+import type { FeedSearchResult } from "@/resources/feed.resource";
 
 const SearchForm = ({
   isOpen,
@@ -33,7 +33,7 @@ const SearchForm = ({
   const handleSearch = useDebouncedCallback(
     (query: string) => {
       if (!query || query.length < 3) return;
-      searchFeeds(query);
+      searchFeeds({ query });
     },
     {
       wait: 500, // Wait 500ms between executions
@@ -41,7 +41,7 @@ const SearchForm = ({
   );
 
   const handleSelect = useCallback(
-    (feed: Feed) => {
+    (feed: FeedSearchResult) => {
       router.push(`/feed/edit/${feed.id}`);
     },
     [router]

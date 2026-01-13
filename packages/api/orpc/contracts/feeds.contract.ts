@@ -1,13 +1,14 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
+import { locale } from "@chia/db";
 import {
   infiniteSchema,
   feedSchema,
+  feedTranslationSchema,
   contentSchema,
-  feedMetaSchema,
   insertFeedSchema,
-  insertFeedContentSchema,
+  insertContentSchema,
 } from "@chia/db/validator/feeds";
 
 const dateSchema = z.object({
@@ -15,38 +16,138 @@ const dateSchema = z.object({
   updatedAt: z.number().optional(),
 });
 
+// ============================================
+// Input Schemas
+// ============================================
+
 export const createFeedSchema = z.object({
   ...insertFeedSchema
     .omit({ userId: true, createdAt: true, updatedAt: true })
     .partial({ slug: true }).shape,
-  ...insertFeedContentSchema
-    .omit({ feedId: true })
-    .partial({ contentType: true }).shape,
+  translation: z.object({
+    locale: z.enum(locale.enumValues),
+    title: z.string().min(1),
+    excerpt: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+    summary: z.string().optional().nullable(),
+    readTime: z.number().optional().nullable(),
+  }),
+  content: insertContentSchema.optional(),
   ...dateSchema.shape,
 });
 
 export type CreateFeedInput = z.infer<typeof createFeedSchema>;
 
 export const updateFeedSchema = z.object({
-  ...insertFeedSchema.omit({
-    userId: true,
-    createdAt: true,
-    updatedAt: true,
-    slug: true,
-  }).shape,
-  ...insertFeedContentSchema.partial({ contentType: true }).shape,
+  feedId: z.number(),
+  ...insertFeedSchema
+    .omit({
+      userId: true,
+      createdAt: true,
+      updatedAt: true,
+      slug: true,
+    })
+    .partial().shape,
+  translation: z
+    .object({
+      locale: z.enum(locale.enumValues),
+      title: z.string().min(1).optional(),
+      excerpt: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      summary: z.string().optional().nullable(),
+      readTime: z.number().optional().nullable(),
+    })
+    .optional(),
+  content: z
+    .object({
+      content: z.string().optional().nullable(),
+      source: z.string().optional().nullable(),
+      unstableSerializedSource: z.string().optional().nullable(),
+    })
+    .optional(),
   ...dateSchema.shape,
+});
+
+export const upsertFeedTranslationSchema = z.object({
+  feedId: z.number(),
+  locale: z.enum(locale.enumValues),
+  title: z.string().min(1).optional(),
+  excerpt: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  summary: z.string().optional().nullable(),
+  readTime: z.number().optional().nullable(),
+});
+
+export const upsertContentSchema = z.object({
+  feedTranslationId: z.number(),
+  content: z.string().optional().nullable(),
+  source: z.string().optional().nullable(),
+  unstableSerializedSource: z.string().optional().nullable(),
 });
 
 export const deleteFeedSchema = z.object({
   feedId: z.number(),
 });
 
+export const getFeedBySlugSchema = z.object({
+  slug: z.string(),
+  locale: z.enum(locale.enumValues).optional(),
+});
+
+export const getFeedByIdSchema = z.object({
+  feedId: z.number(),
+  locale: z.enum(locale.enumValues).optional(),
+});
+
+// ============================================
+// Output Schemas
+// ============================================
+
 const withMetaSchema = <Out, In>(schema: z.ZodType<Out, In>) =>
   z.object({
     items: z.array(schema),
     nextCursor: z.union([z.string(), z.number()]).nullable(),
   });
+
+export const feedWithTranslationsSchema = z.object({
+  ...feedSchema.shape,
+  translations: z.array(
+    z.object({
+      ...feedTranslationSchema.omit({ createdAt: true, updatedAt: true }).shape,
+      createdAt: z.string(),
+      updatedAt: z.string(),
+      content: contentSchema
+        .omit({ createdAt: true, updatedAt: true })
+        .extend({
+          createdAt: z.string(),
+          updatedAt: z.string(),
+        })
+        .nullable(),
+    })
+  ),
+  feedsToTags: z
+    .array(
+      z.object({
+        tag: z.object({
+          id: z.number(),
+          slug: z.string(),
+          translations: z.array(
+            z.object({
+              id: z.number(),
+              name: z.string(),
+              locale: z.enum(locale.enumValues),
+              description: z.string().nullable(),
+            })
+          ),
+        }),
+      })
+    )
+    .optional(),
+});
+
+// ============================================
+// Contracts
+// ============================================
 
 export const getFeedsWithMetaContract = oc
   .errors({
@@ -55,14 +156,7 @@ export const getFeedsWithMetaContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(infiniteSchema)
-  .output(
-    withMetaSchema(
-      z.object({
-        ...feedSchema.shape,
-        content: contentSchema.nullish(),
-      })
-    )
-  );
+  .output(withMetaSchema(feedWithTranslationsSchema));
 
 export const getFeedsWithMetaByAdminIdContract = oc
   .errors({
@@ -71,14 +165,7 @@ export const getFeedsWithMetaByAdminIdContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(infiniteSchema)
-  .output(
-    withMetaSchema(
-      z.object({
-        ...feedSchema.shape,
-        content: contentSchema.nullish(),
-      })
-    )
-  );
+  .output(withMetaSchema(feedWithTranslationsSchema));
 
 export const getFeedBySlugContract = oc
   .errors({
@@ -86,14 +173,8 @@ export const getFeedBySlugContract = oc
     NOT_FOUND: {},
     INTERNAL_SERVER_ERROR: {},
   })
-  .input(z.object({ slug: z.string() }))
-  .output(
-    z.object({
-      ...feedSchema.shape,
-      content: contentSchema.nullish(),
-      feedMeta: feedMetaSchema.nullish(),
-    })
-  );
+  .input(getFeedBySlugSchema)
+  .output(feedWithTranslationsSchema);
 
 export const getFeedByIdContract = oc
   .errors({
@@ -101,14 +182,8 @@ export const getFeedByIdContract = oc
     NOT_FOUND: {},
     INTERNAL_SERVER_ERROR: {},
   })
-  .input(z.object({ feedId: z.number() }))
-  .output(
-    z.object({
-      ...feedSchema.shape,
-      content: contentSchema.nullish(),
-      feedMeta: feedMetaSchema.nullish(),
-    })
-  );
+  .input(getFeedByIdSchema)
+  .output(feedWithTranslationsSchema);
 
 export const createFeedContract = oc
   .errors({
@@ -125,6 +200,22 @@ export const updateFeedContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(updateFeedSchema);
+
+export const upsertFeedTranslationContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    NOT_FOUND: {},
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .input(upsertFeedTranslationSchema);
+
+export const upsertContentContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    NOT_FOUND: {},
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .input(upsertContentSchema);
 
 export const deleteFeedContract = oc
   .errors({

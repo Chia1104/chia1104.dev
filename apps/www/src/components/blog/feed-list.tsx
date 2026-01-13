@@ -61,10 +61,10 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
     if ((!isSuccess && !data) || isError) return [];
     return data.pages.flatMap((page) =>
       page.items.map((item) => {
-        const { id, title, createdAt, excerpt, slug } = item;
+        const { id, createdAt, slug, translations } = item;
         return {
           id,
-          title,
+          title: translations[0]?.title,
           titleProps: {
             className: "line-clamp-1",
           },
@@ -76,7 +76,7 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
             />
           ),
           startDate: createdAt ? dayjs(createdAt) : null,
-          content: excerpt,
+          content: translations[0]?.description,
           link: `${getLinkPrefix()}/${slug}`,
         } satisfies Data;
       })

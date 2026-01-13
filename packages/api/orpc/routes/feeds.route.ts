@@ -9,9 +9,11 @@ import {
   getFeedById,
   createFeed,
   updateFeed,
+  upsertFeedTranslation,
+  upsertContent,
   deleteFeed,
 } from "@chia/db/repos/feeds";
-import { ContentType } from "@chia/db/types";
+import { ContentType, Locale } from "@chia/db/types";
 
 import { adminGuard } from "../guards/admin.guard";
 import { authGuard } from "../guards/auth.guard";
@@ -51,7 +53,10 @@ export const getFeedsWithMetaByAdminIdRoute = contractOS.feeds["admin-list"]
 export const getFeedBySlugRoute = contractOS.feeds["details-by-slug"]
   .use(authGuard)
   .handler(async (opts) => {
-    const data = await getFeedBySlug(opts.context.db, opts.input.slug);
+    const data = await getFeedBySlug(opts.context.db, {
+      slug: opts.input.slug,
+      locale: opts.input.locale,
+    });
     if (!data) {
       throw opts.errors.NOT_FOUND();
     }
@@ -61,7 +66,10 @@ export const getFeedBySlugRoute = contractOS.feeds["details-by-slug"]
 export const getFeedByIdRoute = contractOS.feeds["details-by-id"]
   .use(authGuard)
   .handler(async (opts) => {
-    const data = await getFeedById(opts.context.db, opts.input.feedId);
+    const data = await getFeedById(opts.context.db, {
+      feedId: opts.input.feedId,
+      locale: opts.input.locale,
+    });
     if (!data) {
       throw opts.errors.NOT_FOUND();
     }
@@ -75,48 +83,94 @@ export const createFeedRoute = contractOS.feeds.create
       slug: opts.input.slug
         ? slugger.slug(opts.input.slug)
         : slugger.slug(
-            `${opts.input.title}-${crypto.getRandomValues(new Uint32Array(1))[0]?.toString(16)}`
+            `${opts.input.translation.title}-${crypto.getRandomValues(new Uint32Array(1))[0]?.toString(16)}`
           ),
       type: opts.input.type,
-      title: opts.input.title,
-      description: opts.input.description,
-      excerpt: opts.input.excerpt || opts.input.description?.slice(0, 100),
       userId: opts.context.adminId,
       published: opts.input.published ?? false,
-      content: opts.input.content,
-      source: opts.input.source,
-      unstable_serializedSource: opts.input.unstable_serializedSource,
       contentType: opts.input.contentType ?? ContentType.Mdx,
+      defaultLocale: opts.input.defaultLocale ?? Locale.zhTW,
+      mainImage: opts.input.mainImage ?? null,
       createdAt: opts.input.createdAt,
       updatedAt: opts.input.updatedAt,
+      translation: {
+        locale: opts.input.translation.locale,
+        title: opts.input.translation.title,
+        excerpt:
+          opts.input.translation.excerpt ??
+          opts.input.translation.description?.slice(0, 100) ??
+          null,
+        description: opts.input.translation.description ?? null,
+        summary: opts.input.translation.summary ?? null,
+        readTime: opts.input.translation.readTime ?? null,
+      },
+      content: opts.input.content
+        ? {
+            content: opts.input.content.content ?? null,
+            source: opts.input.content.source ?? null,
+            unstableSerializedSource:
+              opts.input.content.unstableSerializedSource ?? null,
+          }
+        : undefined,
     });
+
     if (opts.context.hooks?.onFeedCreated && data) {
       await opts.context.hooks.onFeedCreated(data);
     }
+
     return data;
   });
 
 export const updateFeedRoute = contractOS.feeds.update
   .use(adminGuard())
   .handler(async (opts) => {
-    const data = await updateFeed(opts.context.db, {
+    const feedData = await updateFeed(opts.context.db, {
       feedId: opts.input.feedId,
       type: opts.input.type,
-      title: opts.input.title,
-      description: opts.input.description,
-      excerpt: opts.input.excerpt || opts.input.description?.slice(0, 100),
       published: opts.input.published,
-      content: opts.input.content,
-      source: opts.input.source,
-      unstable_serializedSource: opts.input.unstable_serializedSource,
-      contentType: opts.input.contentType ?? undefined,
+      contentType: opts.input.contentType,
+      defaultLocale: opts.input.defaultLocale,
+      mainImage: opts.input.mainImage,
       createdAt: opts.input.createdAt,
       updatedAt: opts.input.updatedAt,
     });
-    if (opts.context.hooks?.onFeedUpdated && data) {
-      await opts.context.hooks.onFeedUpdated(data);
+
+    let translationData = null;
+    let contentData = null;
+
+    const translation = opts.input.translation;
+    if (translation) {
+      translationData = await upsertFeedTranslation(opts.context.db, {
+        feedId: opts.input.feedId,
+        locale: translation.locale,
+        title: translation.title,
+        excerpt: translation.excerpt ?? null,
+        description: translation.description ?? null,
+        summary: translation.summary ?? null,
+        readTime: translation.readTime ?? null,
+      });
+
+      const content = opts.input.content;
+      if (content && translationData?.id) {
+        contentData = await upsertContent(opts.context.db, {
+          feedTranslationId: translationData.id,
+          content: content.content ?? null,
+          source: content.source ?? null,
+          unstableSerializedSource: content.unstableSerializedSource ?? null,
+        });
+      }
     }
-    return data;
+
+    const updatedFeed = Object.assign({}, feedData, {
+      translation: translationData,
+      content: contentData,
+    });
+
+    if (opts.context.hooks?.onFeedUpdated && updatedFeed) {
+      await opts.context.hooks.onFeedUpdated(updatedFeed);
+    }
+
+    return updatedFeed;
   });
 
 export const deleteFeedRoute = contractOS.feeds.delete

@@ -54,6 +54,11 @@ const FeedItem = forwardRef<
   }
 >(({ feed }, ref) => {
   const router = useRouter();
+  // Get first translation (default locale)
+  const translation = feed.translations?.[0];
+  const title = translation?.title ?? "Untitled";
+  const excerpt = translation?.excerpt ?? "";
+
   return (
     <Card ref={ref} className="dark:bg-dark/90 grid-cols-1">
       <CardHeader>
@@ -62,11 +67,11 @@ const FeedItem = forwardRef<
           style={{
             viewTransitionName: `view-transition-link-${feed.id}`,
           }}>
-          {feed.title}
+          {title}
         </h4>
       </CardHeader>
       <CardBody className="gap-2">
-        <p className="text-xs font-bold mt-auto line-clamp-2">{feed.excerpt}</p>
+        <p className="text-xs font-bold mt-auto line-clamp-2">{excerpt}</p>
         <span className="text-xs font-bold flex justify-between items-center">
           <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
           <span className="flex gap-2 items-center">
@@ -101,11 +106,21 @@ export const PreviewFeedItem = ({
   token,
   onRemove,
 }: {
-  feed: Omit<Partial<RouterOutputs["feeds"]["list"]["items"][0]>, "content">;
+  feed: Partial<{
+    translation?: {
+      title?: string;
+      description?: string | null;
+    };
+    createdAt?: string | number;
+    updatedAt?: string | number;
+  }>;
   token: string;
   onRemove?: () => void;
 }) => {
   const router = useRouter();
+  const title = feed.translation?.title ?? "Untitled";
+  const description = feed.translation?.description ?? "";
+
   return (
     <Card className="dark:bg-dark/90 grid-cols-1">
       <CardHeader>
@@ -114,13 +129,11 @@ export const PreviewFeedItem = ({
           style={{
             viewTransitionName: `view-transition-link-${token}`,
           }}>
-          {feed.title}
+          {title}
         </h4>
       </CardHeader>
       <CardBody className="gap-2">
-        <p className="text-xs font-bold mt-auto line-clamp-2">
-          {feed.description}
-        </p>
+        <p className="text-xs font-bold mt-auto line-clamp-2">{description}</p>
         <span className="text-sm font-bold flex justify-between items-center">
           <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
           <span className="flex gap-2 items-center">

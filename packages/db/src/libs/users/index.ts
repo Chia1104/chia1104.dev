@@ -8,16 +8,16 @@ export const updateUserProfile = withDTO(
   async (db, { name, image, id }: InsertUserDTO) => {
     return (
       await db
-        .update(schema.users)
+        .update(schema.user)
         .set({
           name,
           image,
         })
-        .where(eq(schema.users.id, id))
+        .where(eq(schema.user.id, id))
         .returning({
-          id: schema.users.id,
-          name: schema.users.name,
-          image: schema.users.image,
+          id: schema.user.id,
+          name: schema.user.name,
+          image: schema.user.image,
         })
     )[0];
   }

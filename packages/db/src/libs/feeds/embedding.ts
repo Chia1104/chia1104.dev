@@ -1,4 +1,4 @@
-import { sql, cosineDistance, desc, gt } from "drizzle-orm";
+import { sql, cosineDistance, desc, gt, eq, and, isNotNull } from "drizzle-orm";
 
 import type { OllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
 import { ollamaEmbedding } from "@chia/ai/embeddings/ollama";
@@ -8,6 +8,7 @@ import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 
 import { withDTO } from "../";
 import { schema } from "../..";
+import type { Locale } from "../..";
 
 export const searchFeeds = withDTO(
   async (
@@ -20,6 +21,7 @@ export const searchFeeds = withDTO(
       useOllama?: {
         model: OllamaEmbeddingModel;
       };
+      locale?: Locale;
     }
   ) => {
     const embedding =
@@ -35,7 +37,11 @@ export const searchFeeds = withDTO(
         embedding: [],
       };
     }
-    const similarity = sql<number>`1 - (${cosineDistance(schema.feeds.embedding, embedding)})`;
+
+    const similarity = sql<number>`1 - (${cosineDistance(
+      schema.feedTranslations.embedding,
+      embedding
+    )})`;
 
     const feeds = await db
       .select({
@@ -43,18 +49,36 @@ export const searchFeeds = withDTO(
         userId: schema.feeds.userId,
         type: schema.feeds.type,
         slug: schema.feeds.slug,
-        description: schema.feeds.description,
-        createdAt: schema.feeds.createdAt,
-        updatedAt: schema.feeds.updatedAt,
-        readTime: schema.feeds.readTime,
         contentType: schema.feeds.contentType,
         published: schema.feeds.published,
-        title: schema.feeds.title,
-        excerpt: schema.feeds.excerpt,
+        defaultLocale: schema.feeds.defaultLocale,
+        mainImage: schema.feeds.mainImage,
+        createdAt: schema.feeds.createdAt,
+        updatedAt: schema.feeds.updatedAt,
+        feedTranslationId: schema.feedTranslations.id,
+        locale: schema.feedTranslations.locale,
+        title: schema.feedTranslations.title,
+        excerpt: schema.feedTranslations.excerpt,
+        description: schema.feedTranslations.description,
+        summary: schema.feedTranslations.summary,
+        readTime: schema.feedTranslations.readTime,
+        // 相似度分數
         similarity,
       })
       .from(schema.feeds)
-      .where(gt(similarity, dto.comparison ?? 0.5))
+      .innerJoin(
+        schema.feedTranslations,
+        eq(schema.feeds.id, schema.feedTranslations.feedId)
+      )
+      .where(
+        and(
+          isNotNull(schema.feedTranslations.embedding),
+          gt(similarity, dto.comparison ?? 0.5),
+          dto.locale
+            ? eq(schema.feedTranslations.locale, dto.locale)
+            : undefined
+        )
+      )
       .orderBy((t) => desc(t.similarity))
       .limit(dto.limit ?? 5);
 

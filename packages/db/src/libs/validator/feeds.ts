@@ -5,19 +5,23 @@ import {
 } from "drizzle-zod";
 import * as z from "zod";
 
-import { contents, feedMeta } from "../../schema";
-import { ContentType, FeedOrderBy, FeedType } from "../../types";
-import { internal_feedsOmitEmbedding } from "../internal_schema";
+import { feeds, feedTranslations, contents, locale } from "../../schemas";
+import { FeedOrderBy, FeedType } from "../../types";
 import {
   dateSchema,
   baseInfiniteSchema as baseInfiniteSchemaShared,
 } from "./shared";
+
+// ============================================
+// Infinite Query Schema
+// ============================================
 
 export const baseInfiniteSchema = z.object({
   ...baseInfiniteSchemaShared.shape,
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
   type: z.enum(FeedType).optional(),
   withContent: z.boolean().optional().default(false),
+  locale: z.enum(locale.enumValues).optional(),
 });
 
 export const infiniteSchema = baseInfiniteSchema.optional().default({
@@ -30,58 +34,116 @@ export const infiniteSchema = baseInfiniteSchema.optional().default({
 
 export type InfiniteDTO = z.infer<typeof infiniteSchema>;
 
+// ============================================
+// Feed Schema
+// ============================================
+
 const internal_dateSchema = z.object({
   createdAt: dateSchema.optional(),
   updatedAt: dateSchema.optional(),
 });
 
-export const insertFeedSchema = z.object({
-  ...createInsertSchema(internal_feedsOmitEmbedding).omit({
-    createdAt: true,
-    updatedAt: true,
-  }).shape,
-  ...internal_dateSchema.shape,
-  embedding: z.array(z.number()).nullable().optional(),
-});
+export const insertFeedSchema = z
+  .object({
+    ...createInsertSchema(feeds).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+    }).shape,
+    ...internal_dateSchema.shape,
+  })
+  .refine((data) => data.slug && data.slug.length > 0, {
+    message: "Slug is required",
+    path: ["slug"],
+  });
 
 export const updateFeedSchema = z.object({
-  ...createUpdateSchema(internal_feedsOmitEmbedding).omit({
+  ...createUpdateSchema(feeds).omit({
+    id: true,
     createdAt: true,
     updatedAt: true,
   }).shape,
   ...internal_dateSchema.shape,
-  embedding: z.array(z.number()).nullable().optional(),
 });
 
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
 export type UpdateFeedDTO = z.infer<typeof updateFeedSchema>;
 
-export const insertFeedContentSchema = z.object({
-  ...createInsertSchema(contents).shape,
-  contentType: z.enum(ContentType).optional().default(ContentType.Mdx),
+// ============================================
+// Feed Translation Schema
+// ============================================
+
+export const insertFeedTranslationSchema = z
+  .object({
+    ...createInsertSchema(feedTranslations).omit({
+      id: true,
+      feedId: true,
+      createdAt: true,
+      updatedAt: true,
+    }).shape,
+  })
+  .refine((data) => data.title && data.title.length > 0, {
+    message: "Title is required",
+    path: ["title"],
+  });
+
+export const updateFeedTranslationSchema = z.object({
+  ...createUpdateSchema(feedTranslations).omit({
+    id: true,
+    feedId: true,
+    createdAt: true,
+    updatedAt: true,
+  }).shape,
 });
 
-export const updateFeedContentSchema = z.object({
-  ...createUpdateSchema(contents).shape,
-  contentType: z.enum(ContentType).optional().default(ContentType.Mdx),
+export type InsertFeedTranslationDTO = z.infer<
+  typeof insertFeedTranslationSchema
+>;
+export type UpdateFeedTranslationDTO = z.infer<
+  typeof updateFeedTranslationSchema
+>;
+
+// ============================================
+// Content Schema
+// ============================================
+
+export const insertContentSchema = z.object({
+  ...createInsertSchema(contents).omit({
+    id: true,
+    feedTranslationId: true,
+    createdAt: true,
+    updatedAt: true,
+  }).shape,
 });
 
-export type InsertFeedContentDTO = z.infer<typeof insertFeedContentSchema>;
-export type UpdateFeedContentDTO = z.infer<typeof updateFeedContentSchema>;
+export const updateContentSchema = z.object({
+  ...createUpdateSchema(contents).omit({
+    id: true,
+    feedTranslationId: true,
+    createdAt: true,
+    updatedAt: true,
+  }).shape,
+});
 
-export const insertFeedMetaSchema = createInsertSchema(feedMeta);
+export type InsertContentDTO = z.infer<typeof insertContentSchema>;
+export type UpdateContentDTO = z.infer<typeof updateContentSchema>;
 
-export type InsertFeedMetaDTO = z.infer<typeof insertFeedMetaSchema>;
+// ============================================
+// Select Schema (for output validation)
+// ============================================
 
 export const feedSchema = z.object({
-  ...createSelectSchema(internal_feedsOmitEmbedding).shape,
+  ...createSelectSchema(feeds).shape,
   ...internal_dateSchema.shape,
-  embedding: z.array(z.number()).nullable(),
 });
-export type FeedDTO = z.infer<typeof feedSchema>;
+
+export const feedTranslationSchema = z.object({
+  ...createSelectSchema(feedTranslations).shape,
+  ...internal_dateSchema.shape,
+});
 
 export const contentSchema = createSelectSchema(contents);
-export type ContentDTO = z.infer<typeof contentSchema>;
 
-export const feedMetaSchema = createSelectSchema(feedMeta);
-export type FeedMetaDTO = z.infer<typeof feedMetaSchema>;
+export type FeedDTO = z.infer<typeof feedSchema>;
+export type FeedTranslationDTO = z.infer<typeof feedTranslationSchema>;
+export type ContentDTO = z.infer<typeof contentSchema>;

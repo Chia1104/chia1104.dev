@@ -1,7 +1,7 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
 
-import { project, member, invitation, organization } from "../../schema";
+import { project, member, invitation, organization } from "../../schemas";
 import { FeedOrderBy } from "../../types";
 import {
   dateSchema,
@@ -59,6 +59,7 @@ export type MemberDTO = z.infer<typeof memberSchema>;
 
 export const memberTransformSchema = z.object({
   ...memberSchema.shape,
+  role: z.string(),
   createdAt: dateTransformSchema,
   teamId: z.string().nullish(),
 });

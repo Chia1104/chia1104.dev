@@ -1,4 +1,8 @@
-import type { S3Client, ObjectCannedACL } from "@aws-sdk/client-s3";
+import type {
+  S3Client,
+  ObjectCannedACL,
+  PutObjectCommandInput,
+} from "@aws-sdk/client-s3";
 import {
   GetObjectCommand,
   DeleteObjectCommand,
@@ -218,7 +222,11 @@ export class S3Service {
     );
   }
 
-  public async putObject(bucket: string, key: string, body: string) {
+  public async putObject(
+    bucket: string,
+    key: string,
+    body: PutObjectCommandInput["Body"]
+  ) {
     return await this.client.send(
       new PutObjectCommand({ Bucket: bucket, Key: key, Body: body })
     );

@@ -1,0 +1,1 @@
+ALTER TABLE "chia_apikey" ALTER COLUMN "rate_limit_enabled" SET DEFAULT false;

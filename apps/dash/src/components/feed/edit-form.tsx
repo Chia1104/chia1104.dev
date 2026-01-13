@@ -51,21 +51,30 @@ const EditForm = ({
     resolver: zodResolver(feedsContracts.createFeedSchema),
   });
 
-  const onSubmit = form.handleSubmit((values) => {
-    update.mutate({
-      ...values,
-      feedId,
-      content: editFieldsRef.current?.getContent(values.contentType).content,
-      source: editFieldsRef.current?.getContent(values.contentType).source,
-    });
-  });
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) =>
+    form.handleSubmit((values) => {
+      const content = editFieldsRef.current?.getContent(values.contentType);
+      update.mutate({
+        feedId,
+        type: values.type,
+        published: values.published,
+        contentType: values.contentType,
+        createdAt: values.createdAt,
+        updatedAt: values.updatedAt,
+        translation: values.translation,
+        content: {
+          content: content?.content,
+          source: content?.source,
+        },
+      });
+    })(e);
 
   return (
     <Form {...form}>
       <form
         onSubmit={onSubmit}
         className="w-full max-w-[700px] flex flex-col gap-10">
-        <EditFields ref={editFieldsRef} mode="edit" />
+        <EditFields ref={editFieldsRef} mode="edit" feedId={feedId} />
         <SubmitForm className="max-w-[150px] w-full">Update</SubmitForm>
       </form>
     </Form>

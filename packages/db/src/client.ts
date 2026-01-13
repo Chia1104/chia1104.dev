@@ -8,7 +8,7 @@ import { switchEnv } from "@chia/utils/config";
 
 import type { DB } from ".";
 import { env as _env } from "./env";
-import * as schema from "./schema";
+import * as schemas from "./schemas";
 
 const { Pool } = pg;
 
@@ -30,7 +30,7 @@ export async function getConnection(url: string) {
       connectionTimeoutMillis: 10_000,
     });
     db = drizzle(pool, {
-      schema,
+      schema: schemas,
       cache: new DrizzleCache(kv, {
         strategy: "all",
       }),

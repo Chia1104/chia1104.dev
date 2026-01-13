@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,10 +30,10 @@ const CreateForm = ({
   const editFieldsRef = useRef<Ref>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = useRef(searchParams.get("token") ?? crypto.randomUUID());
+  const [token] = useState(searchParams.get("token") ?? crypto.randomUUID());
   // eslint-disable-next-line @typescript-eslint/unbound-method
-  const { getState, setState } = useDraft(token.current);
-  const draft = useRef(getState().draft);
+  const { getState, setState } = useDraft(token);
+  const [draft] = useState(getState().draft);
   const create = useMutation(
     orpc.feeds.create.mutationOptions({
       async onSuccess(_data, { type }) {
@@ -50,22 +50,38 @@ const CreateForm = ({
     defaultValues: {
       contentType: ContentType.Mdx,
       type,
-      title: "Untitled",
-      ...draft.current,
-      createdAt: draft.current?.createdAt
-        ? dayjs(draft.current.createdAt).valueOf()
+      defaultLocale: "zh-TW",
+      translation: {
+        locale: "zh-TW",
+        title: "Untitled",
+        excerpt: null,
+        description: null,
+        summary: null,
+        readTime: null,
+      },
+      ...draft,
+      createdAt: draft?.createdAt
+        ? dayjs(draft.createdAt).valueOf()
         : dayjs().valueOf(),
     },
     resolver: zodResolver(feedsContracts.createFeedSchema),
   });
 
-  const onSubmit = form.handleSubmit((values) => {
-    create.mutate({
-      ...values,
-      content: editFieldsRef.current?.getContent(values.contentType).content,
-      source: editFieldsRef.current?.getContent(values.contentType).source,
-    });
-  });
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) =>
+    form.handleSubmit((values) => {
+      const editorContent = editFieldsRef.current?.getContent(
+        values.contentType
+      );
+      create.mutate({
+        ...values,
+        content: editorContent?.content
+          ? {
+              content: editorContent.content,
+              source: editorContent.source,
+            }
+          : undefined,
+      });
+    })(e);
 
   useEffect(() => {
     setState({
@@ -82,7 +98,7 @@ const CreateForm = ({
           ref={editFieldsRef}
           disabled={create.isPending}
           isPending={create.isPending}
-          token={token.current}
+          token={token}
           mode="create"
         />
         <SubmitForm
