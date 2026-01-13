@@ -44,7 +44,7 @@
     "@next/third-parties": "catalog:next",
     "@orpc/client": "catalog:orpc",
     "@orpc/contract": "catalog:orpc",
-    "@orpc/server": "^1.13.2",
+    "@orpc/server": "^1.13.4",
     "@orpc/tanstack-query": "catalog:orpc",
     "@sentry/nextjs": "^10.33.0",
     "@t3-oss/env-nextjs": "catalog:",

@@ -43,10 +43,10 @@ catalogs:
     '@next/third-parties': 16.1.1
     next: 16.1.1
   orpc:
-    '@orpc/client': 1.13.2
-    '@orpc/contract': 1.13.2
-    '@orpc/server': 1.13.2
-    '@orpc/tanstack-query': 1.13.2
+    '@orpc/client': 1.13.4
+    '@orpc/contract': 1.13.4
+    '@orpc/server': 1.13.4
+    '@orpc/tanstack-query': 1.13.4
   react-is:
     '@types/react': ^19.2.8
     '@types/react-dom': ^19.2.3
