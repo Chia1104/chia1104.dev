@@ -14,7 +14,6 @@ const database = await connectDatabase();
 
 export const auth = betterAuth(
   Object.assign(baseAuthConfig, {
-    ...baseAuthConfig,
     /**
      * database adapter
      */
