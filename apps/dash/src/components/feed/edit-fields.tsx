@@ -81,6 +81,7 @@ interface Props {
   className?: string;
   mode?: "edit" | "create";
   token?: string;
+  feedId?: number;
 }
 
 export interface Ref {
@@ -91,8 +92,7 @@ export interface Ref {
   };
 }
 
-const DeleteButton = () => {
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
+const DeleteButton = ({ feedId }: { feedId: number }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const deleteFeed = useMutation(
@@ -124,15 +124,9 @@ const DeleteButton = () => {
           color="danger"
           variant="flat"
           onPress={() => {
-            // Get feedId from form context or pass it via props
-            const formValues = form.getValues();
-            // @ts-expect-error - id might exist in edit mode
-            const feedId = formValues.id;
-            if (feedId) {
-              deleteFeed.mutate({
-                feedId: Number(feedId),
-              });
-            }
+            deleteFeed.mutate({
+              feedId,
+            });
           }}>
           <span className="text-xs">Delete</span>
         </Button>
@@ -180,9 +174,7 @@ const SlugField = () => {
   );
 };
 
-// Description field is now part of MetadataFields
-
-export const MetadataFields = () => {
+export const MetadataFields = ({ feedId }: { feedId?: number }) => {
   const form = useFormContext<feedsContracts.CreateFeedInput>();
   const editFields = useEditFieldsContext();
   const articleType = useRef([
@@ -233,7 +225,9 @@ export const MetadataFields = () => {
             </FormItem>
           )}
         />
-        {editFields.mode === "edit" && <DeleteButton />}
+        {editFields.mode === "edit" && feedId && (
+          <DeleteButton feedId={feedId} />
+        )}
       </div>
       <FormField<feedsContracts.CreateFeedInput, "translation.title">
         control={form.control}
@@ -620,7 +614,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
         token: props.token ?? "",
       }}>
       <div className={cn("flex flex-col gap-10", props.className)}>
-        <MetadataFields />
+        <MetadataFields feedId={props.feedId} />
         <EditorInfo />
         <ErrorBoundary>
           <SwitchEditor />

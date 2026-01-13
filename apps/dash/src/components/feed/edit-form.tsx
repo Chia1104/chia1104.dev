@@ -74,7 +74,7 @@ const EditForm = ({
       <form
         onSubmit={onSubmit}
         className="w-full max-w-[700px] flex flex-col gap-10">
-        <EditFields ref={editFieldsRef} mode="edit" />
+        <EditFields ref={editFieldsRef} mode="edit" feedId={feedId} />
         <SubmitForm className="max-w-[150px] w-full">Update</SubmitForm>
       </form>
     </Form>
