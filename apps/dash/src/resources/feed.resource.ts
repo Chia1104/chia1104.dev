@@ -2,7 +2,7 @@ import { getServiceEndPoint } from "@chia/utils/config";
 import { get } from "@chia/utils/request";
 
 // Search result type from embedding search
-export type FeedSearchResult = {
+export interface FeedSearchResult {
   id: number;
   userId: string;
   type: string;
@@ -21,7 +21,7 @@ export type FeedSearchResult = {
   summary: string | null;
   readTime: number | null;
   similarity: number;
-};
+}
 
 export const searchFeeds = async (query: string, locale?: string) => {
   const response = await get<FeedSearchResult[]>(
