@@ -38,6 +38,8 @@
 **/*/dist
 **/*/.dist
 
+**/*/.output
+
 **/*/vscode
 **/*/.vscode
 **/*/.idea

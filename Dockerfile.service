@@ -1,7 +1,7 @@
 ARG BUN_VERSION=1.3.6
 ARG NODE_VERSION=24
 
-FROM oven/bun:$BUN_VERSION as runner-base
+FROM oven/bun:$BUN_VERSION AS runner-base
 
 WORKDIR /app
 
@@ -47,23 +47,13 @@ RUN pnpm i
 
 RUN pnpm turbo run build --filter=service...
 
-FROM builder-base as prod
+FROM runner-base AS runner
 
-COPY --from=pre-builder /app/out/json/ .
-COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=pre-builder /app/out/full/ .
-
-RUN pnpm i --prod --ignore-scripts --filter=service
-
-FROM runner-base as runner
-
-COPY --from=builder /app/apps/service/dist ./apps/service/dist
-COPY --from=prod /app/apps/service/node_modules ./apps/service/node_modules
-COPY --from=prod /app/node_modules ./node_modules
+COPY --from=builder /app/apps/service/.output/server ./apps/service
 
 ENV NODE_ENV=production \
     PORT=8080
 
 EXPOSE 8080
 
-CMD [ "bun", "apps/service/dist/server.mjs" ]
+CMD [ "bun", "apps/service/index.mjs" ]
