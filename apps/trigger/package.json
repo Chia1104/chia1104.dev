@@ -20,7 +20,7 @@
     "@trigger.dev/core": "catalog:triggerdotdev",
     "@trigger.dev/sdk": "catalog:triggerdotdev",
     "ky": "catalog:",
-    "openai": "^6.15.0",
+    "openai": "^6.16.0",
     "sharp": "0.34.5",
     "zod": "catalog:"
   },

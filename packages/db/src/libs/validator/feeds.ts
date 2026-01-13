@@ -43,19 +43,14 @@ const internal_dateSchema = z.object({
   updatedAt: dateSchema.optional(),
 });
 
-export const insertFeedSchema = z
-  .object({
-    ...createInsertSchema(feeds).omit({
-      id: true,
-      createdAt: true,
-      updatedAt: true,
-    }).shape,
-    ...internal_dateSchema.shape,
-  })
-  .refine((data) => data.slug && data.slug.length > 0, {
-    message: "Slug is required",
-    path: ["slug"],
-  });
+export const insertFeedSchema = z.object({
+  ...createInsertSchema(feeds).omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  }).shape,
+  ...internal_dateSchema.shape,
+});
 
 export const updateFeedSchema = z.object({
   ...createUpdateSchema(feeds).omit({
@@ -73,19 +68,14 @@ export type UpdateFeedDTO = z.infer<typeof updateFeedSchema>;
 // Feed Translation Schema
 // ============================================
 
-export const insertFeedTranslationSchema = z
-  .object({
-    ...createInsertSchema(feedTranslations).omit({
-      id: true,
-      feedId: true,
-      createdAt: true,
-      updatedAt: true,
-    }).shape,
-  })
-  .refine((data) => data.title && data.title.length > 0, {
-    message: "Title is required",
-    path: ["title"],
-  });
+export const insertFeedTranslationSchema = z.object({
+  ...createInsertSchema(feedTranslations).omit({
+    id: true,
+    feedId: true,
+    createdAt: true,
+    updatedAt: true,
+  }).shape,
+});
 
 export const updateFeedTranslationSchema = z.object({
   ...createUpdateSchema(feedTranslations).omit({
