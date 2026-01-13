@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import * as z from "zod";
 
 import { getFeedsWithMetaByAdminId } from "@chia/api/services/feeds";
+import { Locale } from "@chia/db/types";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 import { NumericStringSchema } from "@chia/utils/schema";
@@ -50,6 +51,7 @@ export const GET = async (
         sortOrder: "desc",
         withContent: "false",
         published: "true",
+        locale: Locale.zhTW,
       }
     );
 
