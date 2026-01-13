@@ -48,6 +48,23 @@ export const updateFeedSchema = z.object({
       slug: true,
     })
     .partial().shape,
+  translation: z
+    .object({
+      locale: z.enum(locale.enumValues),
+      title: z.string().min(1).optional(),
+      excerpt: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      summary: z.string().optional().nullable(),
+      readTime: z.number().optional().nullable(),
+    })
+    .optional(),
+  content: z
+    .object({
+      content: z.string().optional().nullable(),
+      source: z.string().optional().nullable(),
+      unstableSerializedSource: z.string().optional().nullable(),
+    })
+    .optional(),
   ...dateSchema.shape,
 });
 

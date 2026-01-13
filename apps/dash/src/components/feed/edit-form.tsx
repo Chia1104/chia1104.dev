@@ -52,7 +52,6 @@ const EditForm = ({
   });
 
   const onSubmit = form.handleSubmit((values) => {
-    // Update feed basic info
     update.mutate({
       feedId,
       type: values.type,
@@ -60,10 +59,9 @@ const EditForm = ({
       contentType: values.contentType,
       createdAt: values.createdAt,
       updatedAt: values.updatedAt,
+      translation: values.translation,
+      content: values.content,
     });
-
-    // TODO: Add translation and content update separately
-    // Will need to add upsertTranslation and upsertContent mutations
   });
 
   return (

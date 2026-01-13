@@ -28,8 +28,6 @@ export const routerContract = {
     "details-by-id": feedsContracts.getFeedByIdContract,
     create: feedsContracts.createFeedContract,
     update: feedsContracts.updateFeedContract,
-    "upsert-translation": feedsContracts.upsertFeedTranslationContract,
-    "upsert-content": feedsContracts.upsertContentContract,
     delete: feedsContracts.deleteFeedContract,
   },
   organization: {

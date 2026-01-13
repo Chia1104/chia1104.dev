@@ -114,10 +114,9 @@ export const createFeedRoute = contractOS.feeds.create
         : undefined,
     });
 
-    // Note: Hook signature may need updating for new structure
-    // if (opts.context.hooks?.onFeedCreated && data) {
-    //   await opts.context.hooks.onFeedCreated(data);
-    // }
+    if (opts.context.hooks?.onFeedCreated && data) {
+      await opts.context.hooks.onFeedCreated(data);
+    }
 
     return data;
   });
@@ -125,7 +124,7 @@ export const createFeedRoute = contractOS.feeds.create
 export const updateFeedRoute = contractOS.feeds.update
   .use(adminGuard())
   .handler(async (opts) => {
-    const data = await updateFeed(opts.context.db, {
+    const feedData = await updateFeed(opts.context.db, {
       feedId: opts.input.feedId,
       type: opts.input.type,
       published: opts.input.published,
@@ -136,41 +135,42 @@ export const updateFeedRoute = contractOS.feeds.update
       updatedAt: opts.input.updatedAt,
     });
 
-    // Note: Hook signature may need updating for new structure
-    // if (opts.context.hooks?.onFeedUpdated && data) {
-    //   await opts.context.hooks.onFeedUpdated(data);
-    // }
+    let translationData = null;
+    let contentData = null;
 
-    return data;
-  });
+    const translation = opts.input.translation;
+    if (translation) {
+      translationData = await upsertFeedTranslation(opts.context.db, {
+        feedId: opts.input.feedId,
+        locale: translation.locale,
+        title: translation.title,
+        excerpt: translation.excerpt ?? null,
+        description: translation.description ?? null,
+        summary: translation.summary ?? null,
+        readTime: translation.readTime ?? null,
+      });
 
-export const upsertFeedTranslationRoute = contractOS.feeds["upsert-translation"]
-  .use(adminGuard())
-  .handler(async (opts) => {
-    const data = await upsertFeedTranslation(opts.context.db, {
-      feedId: opts.input.feedId,
-      locale: opts.input.locale,
-      title: opts.input.title,
-      excerpt: opts.input.excerpt ?? null,
-      description: opts.input.description ?? null,
-      summary: opts.input.summary ?? null,
-      readTime: opts.input.readTime ?? null,
+      const content = opts.input.content;
+      if (content && translationData?.id) {
+        contentData = await upsertContent(opts.context.db, {
+          feedTranslationId: translationData.id,
+          content: content.content ?? null,
+          source: content.source ?? null,
+          unstableSerializedSource: content.unstableSerializedSource ?? null,
+        });
+      }
+    }
+
+    const updatedFeed = Object.assign({}, feedData, {
+      translation: translationData,
+      content: contentData,
     });
 
-    return data;
-  });
+    if (opts.context.hooks?.onFeedUpdated && updatedFeed) {
+      await opts.context.hooks.onFeedUpdated(updatedFeed);
+    }
 
-export const upsertContentRoute = contractOS.feeds["upsert-content"]
-  .use(adminGuard())
-  .handler(async (opts) => {
-    const data = await upsertContent(opts.context.db, {
-      feedTranslationId: opts.input.feedTranslationId,
-      content: opts.input.content ?? null,
-      source: opts.input.source ?? null,
-      unstableSerializedSource: opts.input.unstableSerializedSource ?? null,
-    });
-
-    return data;
+    return updatedFeed;
   });
 
 export const deleteFeedRoute = contractOS.feeds.delete
