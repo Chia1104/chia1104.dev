@@ -126,6 +126,8 @@ export const feedTranslations = pgTable(
     summary: text("summary"),
     readTime: integer("read_time"),
     embedding: vector("embedding", { dimensions: 1536 }),
+    // Ollama embedding model: nomic-ai/nomic-embed-text-v1.5
+    embedding512: vector("embedding512", { dimensions: 512 }),
     ...timestamps,
   },
   (table) => [
@@ -139,6 +141,10 @@ export const feedTranslations = pgTable(
     index("feed_translation_embedding_idx").using(
       "hnsw",
       table.embedding.op("vector_cosine_ops")
+    ),
+    index("feed_translation_embedding512_idx").using(
+      "hnsw",
+      table.embedding512.op("vector_cosine_ops")
     ),
   ]
 );

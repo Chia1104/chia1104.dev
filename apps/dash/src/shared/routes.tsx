@@ -77,6 +77,12 @@ export const routeItems: SidebarItem[] = [
     title: "Assets",
   },
   {
+    key: "chat",
+    href: "/chat",
+    icon: "solar:chat-round-dots-broken",
+    title: "Chat",
+  },
+  {
     key: "setting",
     href: "/setting",
     icon: "solar:settings-outline",

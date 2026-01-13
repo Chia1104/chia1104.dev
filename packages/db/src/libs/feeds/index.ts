@@ -383,6 +383,7 @@ export const createFeed = withDTO(
           summary: dto.translation.summary,
           readTime: dto.translation.readTime,
           embedding: dto.translation.embedding ?? undefined,
+          embedding512: dto.translation.embedding512 ?? undefined,
         })
         .returning();
 
@@ -468,6 +469,7 @@ export const upsertFeedTranslation = withDTO(
           summary: dto.summary,
           readTime: dto.readTime,
           embedding: dto.embedding ?? undefined,
+          embedding512: dto.embedding512 ?? undefined,
           updatedAt: new Date(),
         })
         .where(eq(feedTranslations.id, existingTranslation.id))
@@ -486,6 +488,7 @@ export const upsertFeedTranslation = withDTO(
           summary: dto.summary,
           readTime: dto.readTime,
           embedding: dto.embedding ?? undefined,
+          embedding512: dto.embedding512 ?? undefined,
         })
         .returning();
 
@@ -510,6 +513,7 @@ export const updateFeedTranslation = withDTO(
         summary: dto.summary,
         readTime: dto.readTime,
         embedding: dto.embedding ?? undefined,
+        embedding512: dto.embedding512 ?? undefined,
         updatedAt: new Date(),
       })
       .where(eq(feedTranslations.id, dto.translationId))

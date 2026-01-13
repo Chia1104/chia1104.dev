@@ -1,0 +1,2 @@
+ALTER TABLE "chia_feed_translation" ADD COLUMN "embedding512" vector(512);--> statement-breakpoint
+CREATE INDEX "feed_translation_embedding512_idx" ON "chia_feed_translation" USING hnsw ("embedding512" vector_cosine_ops);

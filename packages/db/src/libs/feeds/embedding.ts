@@ -13,7 +13,10 @@ import type { Locale } from "../..";
 export const searchFeeds = withDTO(
   async (
     db,
-    dto: Options & {
+    {
+      useOllama,
+      ...dto
+    }: Options & {
       input: string;
       limit?: number;
       comparison?: number;
@@ -24,13 +27,10 @@ export const searchFeeds = withDTO(
       locale?: Locale;
     }
   ) => {
-    const embedding =
-      dto.embedding ??
-      (dto.useOllama
-        ? (await isOllamaEnabled(dto.useOllama.model))
-          ? await ollamaEmbedding(dto.input, dto.useOllama.model)
-          : await generateEmbedding(dto.input, dto)
-        : await generateEmbedding(dto.input, dto));
+    const isOllama = useOllama && (await isOllamaEnabled(useOllama.model));
+    const embedding = isOllama
+      ? await ollamaEmbedding(dto.input, useOllama.model)
+      : await generateEmbedding(dto.input, dto);
     if (!embedding) {
       return {
         items: [],
@@ -39,7 +39,9 @@ export const searchFeeds = withDTO(
     }
 
     const similarity = sql<number>`1 - (${cosineDistance(
-      schema.feedTranslations.embedding,
+      isOllama
+        ? schema.feedTranslations.embedding512
+        : schema.feedTranslations.embedding,
       embedding
     )})`;
 
@@ -72,7 +74,11 @@ export const searchFeeds = withDTO(
       )
       .where(
         and(
-          isNotNull(schema.feedTranslations.embedding),
+          isNotNull(
+            isOllama
+              ? schema.feedTranslations.embedding512
+              : schema.feedTranslations.embedding
+          ),
           gt(similarity, dto.comparison ?? 0.5),
           dto.locale
             ? eq(schema.feedTranslations.locale, dto.locale)

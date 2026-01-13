@@ -29,11 +29,8 @@ export const searchFeeds = async (query: string, locale?: string) => {
     {
       keyword: query,
       locale,
-      /**
-       * TODO: Fix dimensions size conflict, Ollama Embedding model dimensions size is 384, Our database is 1536
-       */
-      // model: "all-minilm",
-      model: "text-embedding-ada-002",
+      model: "nomic-embed-text",
+      useOllama: true,
     },
     {
       credentials: "include",

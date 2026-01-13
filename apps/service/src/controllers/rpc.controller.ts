@@ -25,6 +25,49 @@ api.use("/*", async (c, next) => {
       headers: c.req.raw.headers,
       db: c.var.db,
       redis: c.var.redis,
+      // hooks: {
+      //   async onFeedCreated(feed) {
+      //     if (await isOllamaEnabled(OllamaModel["nomic-embed-text"])) {
+      //       if (!feed.content?.content || !feed.translation.description) {
+      //         return;
+      //       }
+      //       const [embedding] = (
+      //         await ollama.embed({
+      //           model: OllamaModel["nomic-embed-text"],
+      //           input: feed.content?.content ?? feed.translation.description,
+      //           dimensions: 512,
+      //         })
+      //       ).embeddings;
+
+      //       await upsertFeedTranslation(c.var.db, {
+      //         feedId: feed.id,
+      //         locale: Locale.zhTW,
+      //         embedding512: embedding,
+      //       });
+      //     }
+      //   },
+      //   async onFeedUpdated(feed) {
+      //     if (await isOllamaEnabled(OllamaModel["nomic-embed-text"])) {
+      //       if (!feed.content?.content || !feed.translation?.description) {
+      //         return;
+      //       }
+
+      //       const [embedding] = (
+      //         await ollama.embed({
+      //           model: OllamaModel["nomic-embed-text"],
+      //           input: feed.content?.content ?? feed.translation.description,
+      //           dimensions: 512,
+      //         })
+      //       ).embeddings;
+
+      //       await upsertFeedTranslation(c.var.db, {
+      //         feedId: feed.id,
+      //         locale: Locale.zhTW,
+      //         embedding512: embedding,
+      //       });
+      //     }
+      //   },
+      // },
     },
   });
 
