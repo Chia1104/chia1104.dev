@@ -12,5 +12,8 @@ export default defineNitroConfig({
     "@": fileURLToPath(new URL("./src", import.meta.url)),
   },
   noExternals: false,
+  externals: {
+    traceInclude: ["@workflow/world-postgres"],
+  },
   preset: "node-server",
 });
