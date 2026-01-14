@@ -10,6 +10,16 @@ export const createSignedUrlForUploadContract = oc
   .input(
     z.object({
       key: z.string(),
+      area: z.enum(["global", "feed"]),
+      sha256Checksum: z.string(),
+      type: z.enum([
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+        "image/heif",
+      ]),
+      size: z.number(),
     })
   )
   .output(

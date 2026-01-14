@@ -79,23 +79,34 @@ export class S3Service {
    */
   public async createSignedUrlForUpload(
     key: string,
+    content: {
+      sha256Checksum: string;
+      type: string;
+      size: number;
+    },
     options?: {
       bucket?: string;
       expiresIn?: number;
       useACL?: boolean;
     }
-  ): Promise<string> {
-    return await getSignedUrl(
-      this.client,
-      new PutObjectCommand({
-        Bucket: this.getBucket(options?.bucket),
-        Key: this.getKey(key),
-        ACL: this.getACL(options?.useACL),
-      }),
-      {
-        expiresIn: options?.expiresIn ?? 3600,
-      }
-    );
+  ): Promise<{
+    url: string;
+  }> {
+    const command = new PutObjectCommand({
+      Bucket: this.getBucket(options?.bucket),
+      Key: this.getKey(key),
+      ACL: this.getACL(options?.useACL),
+      ChecksumSHA256: content.sha256Checksum,
+      ContentType: content.type,
+      ContentLength: content.size,
+    });
+    const url = await getSignedUrl(this.client, command, {
+      expiresIn: options?.expiresIn ?? 3600,
+    });
+
+    return {
+      url,
+    };
   }
 
   /**
