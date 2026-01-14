@@ -28,3 +28,4 @@ lerna-debug.log*
 .DS_Store
 
 .output
+.workflow-data

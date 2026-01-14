@@ -5,7 +5,7 @@ import type { Keyv } from "keyv";
 
 import { isUrl } from "@chia/utils/is";
 
-import { env } from "./env";
+import { env } from "./env.ts";
 
 let kv: Keyv | null = null;
 

@@ -11,11 +11,11 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 
-import { timestamps } from "../libs/common.schema";
-import { ContentType } from "../types";
-import { locale, feedType, contentType } from "./enums";
-import { pgTable } from "./table";
-import { user } from "./user.schema";
+import { timestamps } from "../libs/common.schema.ts";
+import { ContentType } from "../types.ts";
+import { locale, feedType, contentType } from "./enums.ts";
+import { pgTable } from "./table.ts";
+import { user } from "./user.schema.ts";
 
 // ============================================
 // Tags

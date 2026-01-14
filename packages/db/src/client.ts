@@ -6,8 +6,8 @@ import { DrizzleCache } from "@chia/kv/drizzle/cache";
 import { switchEnv } from "@chia/utils/config";
 
 import type { DB } from ".";
-import { env as _env } from "./env";
-import * as schemas from "./schemas";
+import { env as internalEnv } from "./env.ts";
+import * as schemas from "./schemas/index.ts";
 
 const { Pool } = pg;
 
@@ -51,14 +51,16 @@ export async function closeConnection() {
   }
 }
 
-export const connectDatabase = async (env?: string): Promise<DB> =>
-  await switchEnv(env, {
+export const connectDatabase = async (env?: string): Promise<DB> => {
+  return await switchEnv(env, {
     prod: async () =>
-      _env.DATABASE_URL_REPLICA_1
-        ? withReplicas(await getConnection(_env.DATABASE_URL), [
-            await getConnection(_env.DATABASE_URL_REPLICA_1),
+      internalEnv.DATABASE_URL_REPLICA_1
+        ? withReplicas(await getConnection(internalEnv.DATABASE_URL), [
+            await getConnection(internalEnv.DATABASE_URL_REPLICA_1),
           ])
-        : await getConnection(_env.DATABASE_URL ?? ""),
-    beta: async () => await getConnection(_env.BETA_DATABASE_URL ?? ""),
-    local: async () => await getConnection(_env.LOCAL_DATABASE_URL ?? ""),
+        : await getConnection(internalEnv.DATABASE_URL ?? ""),
+    beta: async () => await getConnection(internalEnv.BETA_DATABASE_URL ?? ""),
+    local: async () =>
+      await getConnection(internalEnv.LOCAL_DATABASE_URL ?? ""),
   });
+};

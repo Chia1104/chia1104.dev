@@ -1,14 +1,17 @@
 import * as z from "zod";
 
-import { generateEmbedding } from "@chia/ai/embeddings/openai";
-import { upsertFeedTranslation, getFeedById } from "@chia/db/repos/feeds";
 import { Locale } from "@chia/db/types";
 
-import { connectDatabaseStep } from "../steps/connect-database.step";
+import {
+  upsertFeedTranslationStep,
+  ollamaEmbeddingStep,
+} from "../steps/feed-embeddings.step";
 
 export const requestSchema = z.object({
   feedID: z.number(),
+  content: z.string(),
   locale: z.enum(Locale).optional().default(Locale.zhTW),
+  enabled: z.boolean().optional().default(true),
 });
 
 type Request = z.input<typeof requestSchema>;
@@ -18,64 +21,32 @@ export const feedEmbeddingsWorkflow = async (request: Request) => {
 
   const parsedRequest = requestSchema.parse(request);
 
-  const db = await connectDatabaseStep();
-
-  const feed = await getFeedById(db, {
-    feedId: parsedRequest.feedID,
-  });
-
-  if (!feed) {
-    throw new Error("Feed not found");
-  }
-
-  if (!feed.published) {
-    console.log("Feed is not published, skipping embedding generation", {
+  if (!parsedRequest.enabled) {
+    console.log("Embedding generation is disabled, skipping", {
       feedID: parsedRequest.feedID,
     });
-    return;
+    return {
+      success: true,
+    };
   }
 
-  const translation = feed.translations.find(
-    (t) => t.locale === parsedRequest.locale
-  );
-
-  if (!translation) {
-    console.log("Translation not found for locale", {
-      locale: parsedRequest.locale,
-    });
-    return;
-  }
-
-  if (translation.embedding) {
-    console.log("Embedding already exists, skipping", {
-      feedID: parsedRequest.feedID,
-      locale: parsedRequest.locale,
-    });
-    return;
-  }
-
-  const content =
-    translation.content?.source ??
-    translation.content?.content ??
-    translation.description ??
-    translation.title ??
-    "";
-
-  if (!content) {
-    console.log("No content found for translation", {
-      feedID: parsedRequest.feedID,
-      locale: parsedRequest.locale,
-    });
-    return;
+  if (!parsedRequest.content) {
+    return {
+      success: false,
+      error: "No content provided",
+    };
   }
 
   console.log("Generating embedding", {
     feedID: parsedRequest.feedID,
     locale: parsedRequest.locale,
-    contentLength: content.length,
+    contentLength: parsedRequest.content.length,
   });
 
-  const embedding = await generateEmbedding(content);
+  const embedding = await ollamaEmbeddingStep(
+    parsedRequest.content,
+    "nomic-embed-text"
+  );
 
   if (!embedding) {
     console.log("Failed to generate embedding", {
@@ -85,11 +56,11 @@ export const feedEmbeddingsWorkflow = async (request: Request) => {
     return;
   }
 
-  await upsertFeedTranslation(db, {
-    feedId: parsedRequest.feedID,
-    locale: parsedRequest.locale,
-    embedding,
-  });
+  await upsertFeedTranslationStep(
+    parsedRequest.feedID,
+    parsedRequest.locale,
+    embedding
+  );
 
   console.log("Successfully generated and saved embedding", {
     feedID: parsedRequest.feedID,

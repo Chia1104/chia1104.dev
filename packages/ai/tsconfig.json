@@ -3,6 +3,7 @@
   "include": ["src", "vitest.config.mts"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "allowImportingTsExtensions": true
   }
 }

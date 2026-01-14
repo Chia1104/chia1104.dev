@@ -3,10 +3,10 @@ import { eq } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { cursorTransform, dateToTimestamp, withDTO } from "../";
-import { feeds, feedTranslations, contents } from "../../schemas";
-import type { Locale } from "../../schemas";
-import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types";
+import { feeds, feedTranslations, contents } from "../../schemas/index.ts";
+import type { Locale } from "../../schemas/index.ts";
+import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
+import { cursorTransform, dateToTimestamp, withDTO } from "../index.ts";
 import type {
   InfiniteDTO,
   InsertFeedDTO,
@@ -14,7 +14,7 @@ import type {
   InsertContentDTO,
   UpdateFeedDTO,
   UpdateFeedTranslationDTO,
-} from "../validator/feeds";
+} from "../validator/feeds.ts";
 
 export const getFeedBySlug = withDTO(
   async (db, params: { slug: string; locale?: Locale }) => {

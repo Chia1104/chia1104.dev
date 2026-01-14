@@ -1,8 +1,6 @@
 import type OpenAI from "openai";
 import * as z from "zod";
 
-import { createOpenAI } from "..";
-
 // https://platform.openai.com/docs/guides/embeddings
 export const TextEmbeddingModel = {
   "ada-002": "text-embedding-ada-002",
@@ -21,8 +19,10 @@ export interface Options {
 
 export const generateEmbedding = async (value: string, options?: Options) => {
   options ??= {};
-  const { client = createOpenAI(), model = TextEmbeddingModel["ada-002"] } =
-    options;
+  const {
+    client = (await import("../index.ts").then((m) => m.createOpenAI))(),
+    model = TextEmbeddingModel["ada-002"],
+  } = options;
   const input = value.replaceAll("\n", " ");
 
   const { data } = await client.embeddings.create({
