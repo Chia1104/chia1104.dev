@@ -3,6 +3,7 @@
   "include": ["tasks"],
   "exclude": ["node_modules", "dist", ".trigger"],
   "compilerOptions": {
-    "lib": ["ES2024", "dom", "dom.iterable"]
+    "lib": ["ES2024", "dom", "dom.iterable"],
+    "allowImportingTsExtensions": true
   }
 }

@@ -41,7 +41,6 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "resend": "^6.7.0",
-    "trigger": "workspace:*",
     "web-streams-polyfill": "^4.2.0",
     "workflow": "4.0.1-beta.44",
     "zod": "catalog:"
