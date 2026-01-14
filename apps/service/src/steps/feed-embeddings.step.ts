@@ -36,13 +36,53 @@ export const ollamaEmbeddingStep = async (
     return null;
   }
 
-  const [embedding] = (
+  const maxChars = 2000;
+
+  if (content.length <= maxChars) {
+    const [embedding] = (
+      await ollama.embed({
+        model,
+        input: content,
+        dimensions: 512,
+      })
+    ).embeddings;
+    return embedding;
+  }
+
+  /* ===============================
+   * @TODO: Handle large context
+   * ===============================
+   */
+
+  const chunks: string[] = [];
+  for (let i = 0; i < content.length; i += maxChars) {
+    chunks.push(content.substring(i, i + maxChars));
+  }
+
+  const embeddings = (
     await ollama.embed({
       model,
-      input: content,
+      input: chunks,
       dimensions: 512,
     })
   ).embeddings;
 
-  return embedding;
+  const avgEmbedding = new Array<number>(512).fill(0);
+  for (const embedding of embeddings) {
+    for (let i = 0; i < 512; i++) {
+      avgEmbedding[i] += embedding[i] / embeddings.length;
+    }
+  }
+
+  const magnitude = Math.sqrt(
+    avgEmbedding.reduce((sum, val) => sum + val * val, 0)
+  );
+
+  if (magnitude > 0) {
+    for (let i = 0; i < avgEmbedding.length; i++) {
+      avgEmbedding[i] /= magnitude;
+    }
+  }
+
+  return avgEmbedding;
 };

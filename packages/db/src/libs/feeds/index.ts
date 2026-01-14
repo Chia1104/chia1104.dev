@@ -414,10 +414,8 @@ export const createFeed = withDTO(
 
       return {
         ...feed,
-        translation: {
-          ...translation,
-          content,
-        },
+        translation,
+        content,
       };
     });
   }

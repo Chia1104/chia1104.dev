@@ -21,7 +21,7 @@ export interface BaseOSContext {
     onFeedCreated?: (
       feed: Feed & {
         translation: FeedTranslation;
-        content?: Content;
+        content: Content | undefined | null;
       }
     ) => Promise<void>;
     onFeedUpdated?: (

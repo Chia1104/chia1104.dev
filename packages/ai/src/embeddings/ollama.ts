@@ -23,9 +23,12 @@ export const ollamaEmbedding = async (
   input: string,
   model: OllamaEmbeddingModel
 ) => {
-  const { embedding } = await ollama.embeddings({
-    model,
-    prompt: input,
-  });
+  const [embedding] = (
+    await ollama.embed({
+      model,
+      input,
+      dimensions: 512,
+    })
+  ).embeddings;
   return embedding;
 };
