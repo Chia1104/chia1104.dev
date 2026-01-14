@@ -12,4 +12,5 @@ export default defineNitroConfig({
     "@": fileURLToPath(new URL("./src", import.meta.url)),
   },
   noExternals: false,
+  preset: "node-server",
 });
