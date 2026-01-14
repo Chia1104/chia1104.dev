@@ -9,10 +9,10 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 
-import { timestamps, softDelete } from "../libs/common.schema";
-import { invitationStatus, memberRole } from "./enums";
-import { pgTable } from "./table";
-import { user } from "./user.schema";
+import { timestamps, softDelete } from "../libs/common.schema.ts";
+import { invitationStatus, memberRole } from "./enums.ts";
+import { pgTable } from "./table.ts";
+import { user } from "./user.schema.ts";
 
 export const organization = pgTable(
   "organization",

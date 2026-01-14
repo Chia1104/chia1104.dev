@@ -3,10 +3,10 @@ import { eq } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { cursorTransform, dateToTimestamp, withDTO } from "../";
-import { feeds, feedTranslations, contents } from "../../schemas";
-import type { Locale } from "../../schemas";
-import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types";
+import { feeds, feedTranslations, contents } from "../../schemas/index.ts";
+import type { Locale } from "../../schemas/index.ts";
+import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
+import { cursorTransform, dateToTimestamp, withDTO } from "../index.ts";
 import type {
   InfiniteDTO,
   InsertFeedDTO,
@@ -14,7 +14,7 @@ import type {
   InsertContentDTO,
   UpdateFeedDTO,
   UpdateFeedTranslationDTO,
-} from "../validator/feeds";
+} from "../validator/feeds.ts";
 
 export const getFeedBySlug = withDTO(
   async (db, params: { slug: string; locale?: Locale }) => {
@@ -383,6 +383,7 @@ export const createFeed = withDTO(
           summary: dto.translation.summary,
           readTime: dto.translation.readTime,
           embedding: dto.translation.embedding ?? undefined,
+          embedding512: dto.translation.embedding512 ?? undefined,
         })
         .returning();
 
@@ -468,6 +469,7 @@ export const upsertFeedTranslation = withDTO(
           summary: dto.summary,
           readTime: dto.readTime,
           embedding: dto.embedding ?? undefined,
+          embedding512: dto.embedding512 ?? undefined,
           updatedAt: new Date(),
         })
         .where(eq(feedTranslations.id, existingTranslation.id))
@@ -486,6 +488,7 @@ export const upsertFeedTranslation = withDTO(
           summary: dto.summary,
           readTime: dto.readTime,
           embedding: dto.embedding ?? undefined,
+          embedding512: dto.embedding512 ?? undefined,
         })
         .returning();
 
@@ -510,6 +513,7 @@ export const updateFeedTranslation = withDTO(
         summary: dto.summary,
         readTime: dto.readTime,
         embedding: dto.embedding ?? undefined,
+        embedding512: dto.embedding512 ?? undefined,
         updatedAt: new Date(),
       })
       .where(eq(feedTranslations.id, dto.translationId))

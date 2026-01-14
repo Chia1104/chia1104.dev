@@ -8,7 +8,8 @@
       "@/*": ["./src/*"]
     },
     "plugins": [{ "name": "next" }],
-    "allowArbitraryExtensions": true
+    "allowArbitraryExtensions": true,
+    "allowImportingTsExtensions": true
   },
   "include": [".", ".next/types/**/*.ts"],
   "exclude": ["node_modules", ".next", "vitest.config.mts.timestamp-*.mjs"]

@@ -6,6 +6,7 @@ import * as z from "zod";
 
 import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
+import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
 import { locale, schema } from "@chia/db";
 import {
@@ -105,10 +106,16 @@ api
       }
     ),
     async (c) => {
-      const client = createOpenAI({
-        apiKey: c.get(AI_AUTH_TOKEN),
-      });
       const { keyword, model, locale } = c.req.valid("query");
+      const isOllama =
+        isOllamaEmbeddingModel(model) && (await isOllamaEnabled(model));
+
+      const client = isOllama
+        ? undefined
+        : createOpenAI({
+            apiKey: c.get(AI_AUTH_TOKEN),
+          });
+
       const cache = c.var.redis;
       const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}:l:${locale ?? "all"}`;
       const cached = await cache.get<string>(cacheKey);

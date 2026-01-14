@@ -2,9 +2,9 @@ import type { InferSelectModel } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { text, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 
-import { timestamps } from "../libs/common.schema";
-import { pgTable } from "./table";
-import { user } from "./user.schema";
+import { timestamps } from "../libs/common.schema.ts";
+import { pgTable } from "./table.ts";
+import { user } from "./user.schema.ts";
 
 export const session = pgTable(
   "session",

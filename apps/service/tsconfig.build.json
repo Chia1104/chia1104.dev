@@ -2,11 +2,10 @@
   "extends": ["./tsconfig.json"],
   "include": ["**/*.ts"],
   "exclude": [
-    "node_modules",
     "**/*.spec.mts",
     "**/*.test.mts",
     "__tests__",
-    "tsup.config.ts",
+    "tsdown.config.ts",
     "vitest.config.mts"
   ],
   "compilerOptions": {

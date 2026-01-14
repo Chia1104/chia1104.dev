@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { ollama } from "../ollama";
+import { ollama } from "../ollama/index.ts";
 
 // https://ollama.com/blog/embedding-models
 export const OllamaEmbeddingModel = {

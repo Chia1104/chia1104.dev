@@ -1,20 +1,19 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import { boolean, text, index, timestamp } from "drizzle-orm/pg-core";
-import crypto from "node:crypto";
 
-import { timestamps } from "../libs/common.schema";
-import { Role } from "../types";
-import { apikey } from "./apikey.schema";
-import { session } from "./auth.schema";
-import { account } from "./auth.schema";
-import { passkey } from "./auth.schema";
-import { feeds } from "./contents.schema";
-import { assets } from "./contents.schema";
-import { roles } from "./enums";
-import { member } from "./organization.schema";
-import { invitation } from "./organization.schema";
-import { pgTable } from "./table";
+import { timestamps } from "../libs/common.schema.ts";
+import { Role } from "../types.ts";
+import { apikey } from "./apikey.schema.ts";
+import { session } from "./auth.schema.ts";
+import { account } from "./auth.schema.ts";
+import { passkey } from "./auth.schema.ts";
+import { feeds } from "./contents.schema.ts";
+import { assets } from "./contents.schema.ts";
+import { roles } from "./enums.ts";
+import { member } from "./organization.schema.ts";
+import { invitation } from "./organization.schema.ts";
+import { pgTable } from "./table.ts";
 
 export const user = pgTable(
   "user",

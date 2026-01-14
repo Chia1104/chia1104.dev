@@ -9,18 +9,17 @@ import { timeout } from "hono/timeout";
 import { auth } from "@chia/auth";
 import { getClientIP, errorGenerator } from "@chia/utils/server";
 
-import adminRoutes from "@/controllers/admin.controller";
-import aiRoutes from "@/controllers/ai.controller";
-import authRoutes from "@/controllers/auth.controller";
-import emailRoutes from "@/controllers/email.controller";
-import feedsRoutes from "@/controllers/feeds.controller";
-import healthRoutes from "@/controllers/health.controller";
-import rpcRoutes from "@/controllers/rpc.controller";
-import spotifyRoutes from "@/controllers/spotify.controller";
-import toolingsRoutes from "@/controllers/toolings.controller";
-// import triggerRoutes from "@/controllers/trigger.controller";
 import { env } from "@/env";
 import { maintenance } from "@/middlewares/maintenance.middleware";
+import adminRoutes from "@/routes/admin.route";
+import aiRoutes from "@/routes/ai.route";
+import authRoutes from "@/routes/auth.route";
+import emailRoutes from "@/routes/email.route";
+import feedsRoutes from "@/routes/feeds.route";
+import healthRoutes from "@/routes/health.route";
+import rpcRoutes from "@/routes/rpc.route";
+import spotifyRoutes from "@/routes/spotify.route";
+import toolingsRoutes from "@/routes/toolings.route";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
 import { splitString } from "./utils";
@@ -150,9 +149,6 @@ const bootstrap = <TContext extends HonoContext>(
   app
     .use("/api/v1/email", timeout(env.TIMEOUT_MS))
     .route("/api/v1/email", emailRoutes);
-  // app
-  //   .use("/api/v1/trigger", timeout(env.TIMEOUT_MS))
-  //   .route("/api/v1/trigger", triggerRoutes);
   app
     .use("/api/v1/toolings", timeout(env.TIMEOUT_MS))
     .route("/api/v1/toolings", toolingsRoutes);

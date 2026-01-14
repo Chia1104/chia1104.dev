@@ -6,8 +6,6 @@ import { Cache } from "drizzle-orm/cache/core";
 import type { CacheConfig } from "drizzle-orm/cache/core/types";
 import type Keyv from "keyv";
 
-import { kv as defaultKv } from "..";
-
 interface Options {
   ttl?: number;
   strategy?: "explicit" | "all";
@@ -19,12 +17,11 @@ export class DrizzleCache extends Cache {
   // This object will be used to store which query keys were used
   // for a specific table, so we can later use it for invalidation.
   private usedTablesPerKey: Record<string, string[]> = {};
+  private kv: Keyv;
 
-  constructor(
-    private kv: Keyv = defaultKv,
-    options?: Options
-  ) {
+  constructor(kv: Keyv, options?: Options) {
     super();
+    this.kv = kv;
     this.globalTtl = options?.ttl ?? 1000;
     this._strategy = options?.strategy ?? "explicit";
   }

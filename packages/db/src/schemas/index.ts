@@ -1,12 +1,12 @@
 // Table creator
-export { pgTable } from "./table";
+export { pgTable } from "./table.ts";
 
 // Common utilities
 export {
   timestamps,
   optionalTimestamps,
   softDelete,
-} from "../libs/common.schema";
+} from "../libs/common.schema.ts";
 
 // Enums
 export {
@@ -22,10 +22,10 @@ export {
   type Locale,
   type InvitationStatus,
   type MemberRole,
-} from "./enums";
+} from "./enums.ts";
 
 // Users
-export { user, userRelations, type User } from "./user.schema";
+export { user, userRelations, type User } from "./user.schema.ts";
 
 // Auth
 export {
@@ -40,7 +40,7 @@ export {
   type Account,
   type Verification,
   type Passkey,
-} from "./auth.schema";
+} from "./auth.schema.ts";
 
 // Organization
 export {
@@ -56,10 +56,10 @@ export {
   type Member,
   type Invitation,
   type Project,
-} from "./organization.schema";
+} from "./organization.schema.ts";
 
 // API Key
-export { apikey, apikeyRelations, type ApiKey } from "./apikey.schema";
+export { apikey, apikeyRelations, type ApiKey } from "./apikey.schema.ts";
 
 // Contents
 export {
@@ -85,4 +85,4 @@ export {
   type Content,
   type Tag,
   type TagTranslation,
-} from "./contents.schema";
+} from "./contents.schema.ts";
