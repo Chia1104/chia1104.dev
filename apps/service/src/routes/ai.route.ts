@@ -69,8 +69,8 @@ api.post(
       cookieName(c.req.valid("json").provider),
       encodeApiKey(c.req.valid("json").apiKey, env.AI_AUTH_PUBLIC_KEY),
       {
-        domain: getCookieDomain({ env: c.env }),
-        secure: c.env.NODE_ENV === "production",
+        domain: getCookieDomain({ env }),
+        secure: env.NODE_ENV === "production",
         sameSite: "strict",
       }
     );

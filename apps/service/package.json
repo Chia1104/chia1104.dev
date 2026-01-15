@@ -22,7 +22,6 @@
     "@chia/meta": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@hono/node-server": "^1.19.9",
     "@hono/react-renderer": "^1.0.1",
     "@hono/sentry": "^1.2.2",
     "@hono/zod-validator": "^0.7.6",
@@ -41,7 +40,6 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "resend": "^6.7.0",
-    "web-streams-polyfill": "^4.2.0",
     "workflow": "4.0.1-beta.46",
     "zod": "catalog:"
   },
