@@ -27,7 +27,7 @@ api.use("/*", async (c, next) => {
     context: {
       headers: c.req.raw.headers,
       db: c.var.db,
-      redis: c.var.redis,
+      kv: c.var.kv,
       hooks: {
         async onFeedCreated(feed) {
           await start(feedEmbeddingsWorkflow, [
