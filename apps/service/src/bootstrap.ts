@@ -6,7 +6,6 @@ import { ipRestriction } from "hono/ip-restriction";
 import { logger } from "hono/logger";
 import { timeout } from "hono/timeout";
 
-import { auth } from "@chia/auth";
 import { getClientIP, errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
@@ -106,23 +105,6 @@ const bootstrap = <TContext extends HonoContext>(
   //     },
   //   })
   // );
-
-  /**
-   * better-auth middleware
-   */
-  app.use("*", async (c, next) => {
-    const session = await auth.api.getSession({ headers: c.req.raw.headers });
-
-    if (!session) {
-      c.set("user", null);
-      c.set("session", null);
-      return next();
-    }
-
-    c.set("user", session.user);
-    c.set("session", session.session);
-    return next();
-  });
 
   /**
    * Routes
