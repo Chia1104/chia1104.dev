@@ -1,5 +1,3 @@
-type Bindings = import("@/env").ENV;
-
 type Variables = {
   db: import("@chia/db").DB;
   redis: import("@chia/kv").Keyv;
@@ -10,6 +8,6 @@ type Variables = {
 };
 
 type HonoContext = {
-  Bindings: Bindings;
+  Bindings: undefined;
   Variables: Variables;
 };
