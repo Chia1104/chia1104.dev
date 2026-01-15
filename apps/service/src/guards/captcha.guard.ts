@@ -11,6 +11,11 @@ export const siteverify = createMiddleware<HonoContext>(async (c, next) => {
 
   if (captchaError) {
     if (captchaError instanceof CaptchaError) {
+      console.error("Captcha error: ", {
+        error: captchaError.code,
+        response: captchaError,
+        payload: c.req.raw.clone(),
+      });
       return c.json(
         errorGenerator(400, [
           {
@@ -25,6 +30,11 @@ export const siteverify = createMiddleware<HonoContext>(async (c, next) => {
   }
 
   if (!captcha.success) {
+    console.error("Captcha service response failed: ", {
+      error: ErrorCode.CaptchaFailed,
+      response: captcha,
+      payload: c.req.raw.clone(),
+    });
     return c.json(
       errorGenerator(400, [
         {
