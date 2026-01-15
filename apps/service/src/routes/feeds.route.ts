@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { timeout } from "hono/timeout";
 import snakeCase from "lodash/snakeCase.js";
 import * as z from "zod";
 
@@ -16,12 +17,21 @@ import {
 import { searchFeeds } from "@chia/db/repos/feeds/embedding";
 import { Locale } from "@chia/db/types";
 
+import { env } from "@/env";
 import { ai, AI_AUTH_TOKEN } from "@/guards/ai.guard";
 import { verifyAuth } from "@/guards/auth.guard";
+import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { errorResponse } from "@/utils/error.util";
 import { searchFeedsSchema } from "@/validators/feeds.validator";
 
 const api = new Hono<HonoContext>();
+
+api.use(
+  rateLimiterGuard({
+    prefix: "rate-limiter:feeds",
+  })
+);
+api.use(timeout(env.TIMEOUT_MS));
 
 api.use("/", verifyAuth()).get(
   "/",

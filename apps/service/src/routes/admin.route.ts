@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
+import { timeout } from "hono/timeout";
 import * as z from "zod";
 
 import {
@@ -31,11 +32,12 @@ const api = new Hono<HonoContext>();
 const adminId = getAdminId();
 
 api.use(
-  "*",
   apikeyVerify({
     projectId: env.PROJECT_ID,
   })
 );
+
+api.use(timeout(env.TIMEOUT_MS));
 
 api.get("/public/feeds:meta", async (c) => {
   let total = 0;

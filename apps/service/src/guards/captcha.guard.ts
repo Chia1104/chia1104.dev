@@ -6,7 +6,7 @@ import { errorGenerator } from "@chia/utils/server";
 
 export const siteverify = createMiddleware<HonoContext>(async (c, next) => {
   const { data: captcha, error: captchaError } = await tryCatch(
-    captchaSiteverify(c.req.raw)
+    captchaSiteverify(c.req.raw.clone())
   );
 
   if (captchaError) {
