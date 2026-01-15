@@ -1,5 +1,4 @@
 import type { Context } from "hono";
-import { getRuntimeKey } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 
@@ -17,9 +16,6 @@ export const verifyAuth = (
 ) =>
   createMiddleware<HonoContext<undefined, { user: Session["user"] }>>(
     async (c, next) => {
-      if (getRuntimeKey() === "bun") {
-        Bun.gc(true);
-      }
       try {
         const session = await auth.api.getSession({
           headers: c.req.raw.headers,
