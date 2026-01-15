@@ -28,7 +28,11 @@ class KeyvStore implements Store<HonoContext> {
     this.windowMs = options.windowMs;
   }
 
-  private initKv(kv?: Keyv) {
+  /**
+   * Initialize the Keyv instance for the store
+   * @param kv - The Keyv instance to use for the store
+   */
+  initKv(kv?: Keyv) {
     this.kv = kv ? kv : this.kv;
   }
 
@@ -129,6 +133,8 @@ class KeyvStore implements Store<HonoContext> {
   }
 }
 
+const keyvStore = new KeyvStore();
+
 export const rateLimiterGuard = (options?: {
   windowMs?: number;
   limit?: number;
@@ -142,10 +148,11 @@ export const rateLimiterGuard = (options?: {
       standardHeaders,
       prefix = "rate-limiter:root-request",
     } = options ?? {};
+    keyvStore.initKv(c.var.kv);
     return rateLimiter<HonoContext>({
       windowMs: windowMs ?? env.RATELIMIT_WINDOW_MS,
       limit: limit ?? env.RATELIMIT_MAX,
-      standardHeaders: standardHeaders ?? "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+      standardHeaders: standardHeaders ?? "draft-6",
       keyGenerator: (c) => {
         let info: string | null | undefined = null;
         try {
@@ -158,9 +165,6 @@ export const rateLimiterGuard = (options?: {
         console.log(key);
         return key;
       },
-      /**
-       * @TODO: Avoid re-creating the store instance on each request
-       */
-      store: new KeyvStore(c.var.kv),
+      store: keyvStore,
     })(c, next);
   });
