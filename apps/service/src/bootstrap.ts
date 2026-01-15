@@ -96,6 +96,7 @@ const bootstrap = <TContext extends HonoContext>(
     .route("/api/v1/admin", adminRoutes);
   app
     .use(
+      "/api/v1/feeds",
       rateLimiterGuard({
         prefix: "rate-limiter:feeds",
       })
@@ -104,6 +105,7 @@ const bootstrap = <TContext extends HonoContext>(
     .route("/api/v1/feeds", feedsRoutes);
   app
     .use(
+      "/api/v1/rpc",
       rateLimiterGuard({
         prefix: "rate-limiter:rpc",
       })
@@ -115,6 +117,7 @@ const bootstrap = <TContext extends HonoContext>(
     .route("/api/v1/health", healthRoutes);
   app
     .use(
+      "/api/v1/ai",
       rateLimiterGuard({
         prefix: "rate-limiter:ai",
       })
@@ -125,6 +128,7 @@ const bootstrap = <TContext extends HonoContext>(
     .route("/api/v1/spotify", spotifyRoutes);
   app
     .use(
+      "/api/v1/email",
       rateLimiterGuard({
         prefix: "rate-limiter:email",
       })
@@ -133,6 +137,7 @@ const bootstrap = <TContext extends HonoContext>(
     .route("/api/v1/email", emailRoutes);
   app
     .use(
+      "/api/v1/toolings",
       rateLimiterGuard({
         prefix: "rate-limiter:toolings",
       })
