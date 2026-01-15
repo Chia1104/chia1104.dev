@@ -9,6 +9,7 @@ import { timeout } from "hono/timeout";
 import { getClientIP, errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
+import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { maintenance } from "@/middlewares/maintenance.middleware";
 import adminRoutes from "@/routes/admin.route";
 import aiRoutes from "@/routes/ai.route";
@@ -85,28 +86,6 @@ const bootstrap = <TContext extends HonoContext>(
   );
 
   /**
-   * Rate limiter middleware
-   */
-  // app.use(
-  //   rateLimiter({
-  //     windowMs: env.RATELIMIT_WINDOW_MS,
-  //     limit: env.RATELIMIT_MAX,
-  //     standardHeaders: "draft-6", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-  //     keyGenerator: (c) => {
-  //       let info: string | null | undefined = null;
-  //       try {
-  //         info = getClientIP(c.req.raw);
-  //       } catch (e) {
-  //         console.error(e);
-  //         info = null;
-  //       }
-  //       console.log(`root-request:${info}`);
-  //       return `root-request:${info}`;
-  //     },
-  //   })
-  // );
-
-  /**
    * Routes
    */
   app
@@ -116,22 +95,26 @@ const bootstrap = <TContext extends HonoContext>(
     .use("/api/v1/admin", timeout(env.TIMEOUT_MS))
     .route("/api/v1/admin", adminRoutes);
   app
+    .use(rateLimiterGuard())
     .use("/api/v1/feeds", timeout(env.TIMEOUT_MS))
     .route("/api/v1/feeds", feedsRoutes);
   app
+    .use(rateLimiterGuard())
     .use("/api/v1/rpc", timeout(env.TIMEOUT_MS))
     .route("/api/v1/rpc", rpcRoutes);
   app
     .use("/api/v1/health", timeout(env.TIMEOUT_MS))
     .route("/api/v1/health", healthRoutes);
-  app.route("/api/v1/ai", aiRoutes);
+  app.use(rateLimiterGuard()).route("/api/v1/ai", aiRoutes);
   app
     .use("/api/v1/spotify", timeout(env.TIMEOUT_MS))
     .route("/api/v1/spotify", spotifyRoutes);
   app
+    .use(rateLimiterGuard())
     .use("/api/v1/email", timeout(env.TIMEOUT_MS))
     .route("/api/v1/email", emailRoutes);
   app
+    .use(rateLimiterGuard())
     .use("/api/v1/toolings", timeout(env.TIMEOUT_MS))
     .route("/api/v1/toolings", toolingsRoutes);
   console.log(

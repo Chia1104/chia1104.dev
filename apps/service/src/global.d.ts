@@ -1,6 +1,7 @@
 type Variables = {
   db: import("@chia/db").DB;
-  redis: import("@chia/kv").Keyv;
+  kv: import("@chia/kv").Keyv;
+  // redis: import("redis").RedisClientType | null;
   clientIP: string;
 };
 

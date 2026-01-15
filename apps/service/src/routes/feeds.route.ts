@@ -116,7 +116,7 @@ api
             apiKey: c.get(AI_AUTH_TOKEN),
           });
 
-      const cache = c.var.redis;
+      const cache = c.var.kv;
       const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}:l:${locale ?? "all"}`;
       const cached = await cache.get<string>(cacheKey);
       if (cached) {
