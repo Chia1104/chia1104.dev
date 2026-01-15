@@ -23,8 +23,8 @@ export const env = createEnv({
     RATELIMIT_WINDOW_MS: z
       .number()
       .optional()
-      .default(15 * 60000),
-    RATELIMIT_MAX: z.number().optional().default(87),
+      .default(5 * 60000),
+    RATELIMIT_MAX: z.number().optional().default(300),
     OPENAI_API_KEY: z.string().optional(),
     AI_AUTH_PUBLIC_KEY: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),

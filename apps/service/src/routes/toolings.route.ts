@@ -24,7 +24,7 @@ api.post(
     try {
       const url = new URL(c.req.valid("json").href);
 
-      const cachedDoc = await c.var.redis.get<DocResponse>(
+      const cachedDoc = await c.var.kv.get<DocResponse>(
         `link-preview:${url.toString()}`
       );
 
@@ -61,7 +61,7 @@ api.post(
             : url.origin + "/" + postparsedOgImage.replace(/^\//, "") // remove leading slash
           : undefined;
 
-        await c.var.redis.set(
+        await c.var.kv.set(
           `link-preview:${url.toString()}`,
           {
             title,

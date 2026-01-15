@@ -17,7 +17,10 @@ import { env } from "@/env";
 
 export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
 
-const getApiKey = (c: Context, provider?: Provider) => {
+const getApiKey = (
+  c: Context<HonoContext<undefined, { AI_AUTH_TOKEN: string }>>,
+  provider?: Provider
+) => {
   switch (provider) {
     case Provider.OpenAI:
       return getCookie(c, OPENAI_API_KEY)?.toString();
@@ -34,48 +37,52 @@ const getApiKey = (c: Context, provider?: Provider) => {
 
 export const ai = (
   provider?: Provider,
-  enabled: (c: Context) => Promise<boolean> | boolean = () => true
+  enabled: (
+    c: Context<HonoContext<undefined, { AI_AUTH_TOKEN: string }>>
+  ) => Promise<boolean> | boolean = () => true
 ) =>
-  createMiddleware(async (c, next) => {
-    if (!!enabled && !(await enabled(c))) {
-      return next();
-    }
-    if (!env.AI_AUTH_PRIVATE_KEY) {
-      return c.json(errorGenerator(503), 503, {
-        "Retry-After": "3600",
-      });
-    }
-    const { data: json } = await tryCatch(
-      c.req.json<{ model: { provider: Provider } }>()
-    );
-    const { data: authToken } = await tryCatch(
-      getApiKey(c, provider ?? json?.model?.provider)
-    );
-    if (!authToken) {
-      return c.json(
-        errorGenerator(401, [
-          {
-            field: "api_key",
-            message: "Missing or invalid API key",
-          },
-        ]),
-        401
+  createMiddleware<HonoContext<undefined, { AI_AUTH_TOKEN: string }>>(
+    async (c, next) => {
+      if (!!enabled && !(await enabled(c))) {
+        return next();
+      }
+      if (!env.AI_AUTH_PRIVATE_KEY) {
+        return c.json(errorGenerator(503), 503, {
+          "Retry-After": "3600",
+        });
+      }
+      const { data: json } = await tryCatch(
+        c.req.json<{ model: { provider: Provider } }>()
       );
-    }
-    const { data: apiKey, error } = await tryCatch(
-      verifyApiKey(authToken, env.AI_AUTH_PRIVATE_KEY).apiKey
-    );
-    if (error) {
-      return c.json(
-        errorGenerator(401, [
-          {
-            field: "api_key",
-            message: "Missing or invalid API key",
-          },
-        ]),
-        401
+      const { data: authToken } = await tryCatch(
+        getApiKey(c, provider ?? json?.model?.provider)
       );
+      if (!authToken) {
+        return c.json(
+          errorGenerator(401, [
+            {
+              field: "api_key",
+              message: "Missing or invalid API key",
+            },
+          ]),
+          401
+        );
+      }
+      const { data: apiKey, error } = await tryCatch(
+        verifyApiKey(authToken, env.AI_AUTH_PRIVATE_KEY).apiKey
+      );
+      if (error) {
+        return c.json(
+          errorGenerator(401, [
+            {
+              field: "api_key",
+              message: "Missing or invalid API key",
+            },
+          ]),
+          401
+        );
+      }
+      c.set(AI_AUTH_TOKEN, apiKey);
+      await next();
     }
-    c.set(AI_AUTH_TOKEN, apiKey);
-    await next();
-  });
+  );

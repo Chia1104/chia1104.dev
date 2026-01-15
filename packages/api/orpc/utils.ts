@@ -13,7 +13,7 @@ import { routerContract } from "./router.contract";
 export interface BaseOSContext {
   headers: Headers;
   db: DB;
-  redis: Keyv;
+  kv: Keyv;
   hooks?: {
     onError?: (error: ORPCError<string, unknown>) => void;
     onUnauthorized?: (error: ORPCError<"UNAUTHORIZED", unknown>) => void;

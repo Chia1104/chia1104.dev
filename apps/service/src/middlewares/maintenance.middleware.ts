@@ -1,4 +1,3 @@
-import { getRuntimeKey } from "hono/adapter";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
@@ -31,10 +30,6 @@ export interface MaintenanceOptions {
 
 export const maintenance = (options?: MaintenanceOptions) =>
   createMiddleware<HonoContext>(async (c, next) => {
-    if (getRuntimeKey() === "bun") {
-      Bun.gc(true);
-    }
-
     const enabled = options?.enabled ?? env.MAINTENANCE_MODE === "true";
     if (!enabled) {
       return next();
