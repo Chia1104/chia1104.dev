@@ -1,5 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { timeout } from "hono/timeout";
 import { JSDOM } from "jsdom";
 import { HTTPError } from "ky";
 
@@ -9,9 +10,18 @@ import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
 import { errorGenerator } from "@chia/utils/server";
 
+import { env } from "@/env";
+import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { errorResponse } from "@/utils/error.util";
 
 const api = new Hono<HonoContext>();
+
+api.use(timeout(env.TIMEOUT_MS));
+api.use(
+  rateLimiterGuard({
+    prefix: "rate-limiter:toolings",
+  })
+);
 
 api.post(
   "/link-preview",

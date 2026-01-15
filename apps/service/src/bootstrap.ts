@@ -4,12 +4,10 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { ipRestriction } from "hono/ip-restriction";
 import { logger } from "hono/logger";
-import { timeout } from "hono/timeout";
 
 import { getClientIP, errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
-import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { maintenance } from "@/middlewares/maintenance.middleware";
 import adminRoutes from "@/routes/admin.route";
 import aiRoutes from "@/routes/ai.route";
@@ -37,7 +35,6 @@ const bootstrap = <TContext extends HonoContext>(
    * Sentry middleware
    */
   app.use(
-    "*",
     sentry({
       dsn: env.SENTRY_DSN,
       enabled: env.NODE_ENV === "production" && !!env.ZEABUR_SERVICE_ID,
@@ -60,7 +57,6 @@ const bootstrap = <TContext extends HonoContext>(
    * Maintenance mode middleware
    */
   app.use(
-    "*",
     maintenance({
       enabled: env.MAINTENANCE_MODE === "true",
       allowedPaths: ["/api/v1/health"],
@@ -88,62 +84,16 @@ const bootstrap = <TContext extends HonoContext>(
   /**
    * Routes
    */
-  app
-    .use("/api/v1/auth", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/auth", authRoutes);
-  app
-    .use("/api/v1/admin", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/admin", adminRoutes);
-  app
-    .use(
-      "/api/v1/feeds",
-      rateLimiterGuard({
-        prefix: "rate-limiter:feeds",
-      })
-    )
-    .use("/api/v1/feeds", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/feeds", feedsRoutes);
-  app
-    .use(
-      "/api/v1/rpc",
-      rateLimiterGuard({
-        prefix: "rate-limiter:rpc",
-      })
-    )
-    .use("/api/v1/rpc", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/rpc", rpcRoutes);
-  app
-    .use("/api/v1/health", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/health", healthRoutes);
-  app
-    .use(
-      "/api/v1/ai",
-      rateLimiterGuard({
-        prefix: "rate-limiter:ai",
-      })
-    )
-    .route("/api/v1/ai", aiRoutes);
-  app
-    .use("/api/v1/spotify", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/spotify", spotifyRoutes);
-  app
-    .use(
-      "/api/v1/email",
-      rateLimiterGuard({
-        prefix: "rate-limiter:email",
-      })
-    )
-    .use("/api/v1/email", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/email", emailRoutes);
-  app
-    .use(
-      "/api/v1/toolings",
-      rateLimiterGuard({
-        prefix: "rate-limiter:toolings",
-      })
-    )
-    .use("/api/v1/toolings", timeout(env.TIMEOUT_MS))
-    .route("/api/v1/toolings", toolingsRoutes);
+  app.route("/api/v1/auth", authRoutes);
+  app.route("/api/v1/admin", adminRoutes);
+  app.route("/api/v1/feeds", feedsRoutes);
+  app.route("/api/v1/rpc", rpcRoutes);
+  app.route("/api/v1/health", healthRoutes);
+  app.route("/api/v1/ai", aiRoutes);
+  app.route("/api/v1/spotify", spotifyRoutes);
+  app.route("/api/v1/email", emailRoutes);
+  app.route("/api/v1/toolings", toolingsRoutes);
+
   console.log(
     `Server is running on port ${port}, go to http://localhost:${port}`
   );

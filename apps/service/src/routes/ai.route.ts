@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
+import { timeout } from "hono/timeout";
 import * as z from "zod";
 
 import {
@@ -23,9 +24,16 @@ import { env } from "@/env";
 import { ai, AI_AUTH_TOKEN } from "@/guards/ai.guard";
 import { apikeyVerify } from "@/guards/apikey-verify.guard";
 import { verifyAuth } from "@/guards/auth.guard";
+import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { errorResponse } from "@/utils/error.util";
 
 const api = new Hono<HonoContext>();
+
+api.use(
+  rateLimiterGuard({
+    prefix: "rate-limiter:ai",
+  })
+);
 
 const cookieName = (provider?: Provider) => {
   switch (provider) {
@@ -44,7 +52,7 @@ const cookieName = (provider?: Provider) => {
 
 api.use(verifyAuth());
 
-api.post(
+api.use(timeout(env.TIMEOUT_MS)).post(
   "/key:signed",
   zValidator(
     "json",

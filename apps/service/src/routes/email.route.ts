@@ -1,5 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { timeout } from "hono/timeout";
 import { Resend } from "resend";
 import * as z from "zod";
 
@@ -11,9 +12,17 @@ import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 import { siteverify } from "@/guards/captcha.guard";
+import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { errorResponse } from "@/utils/error.util";
 
 const api = new Hono<HonoContext>();
+
+api.use(timeout(env.TIMEOUT_MS));
+api.use(
+  rateLimiterGuard({
+    prefix: "rate-limiter:email",
+  })
+);
 
 api.use("/send", siteverify).post(
   "/send",
