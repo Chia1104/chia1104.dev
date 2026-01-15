@@ -95,26 +95,48 @@ const bootstrap = <TContext extends HonoContext>(
     .use("/api/v1/admin", timeout(env.TIMEOUT_MS))
     .route("/api/v1/admin", adminRoutes);
   app
-    .use(rateLimiterGuard())
+    .use(
+      rateLimiterGuard({
+        prefix: "rate-limiter:feeds",
+      })
+    )
     .use("/api/v1/feeds", timeout(env.TIMEOUT_MS))
     .route("/api/v1/feeds", feedsRoutes);
   app
-    .use(rateLimiterGuard())
+    .use(
+      rateLimiterGuard({
+        prefix: "rate-limiter:rpc",
+      })
+    )
     .use("/api/v1/rpc", timeout(env.TIMEOUT_MS))
     .route("/api/v1/rpc", rpcRoutes);
   app
     .use("/api/v1/health", timeout(env.TIMEOUT_MS))
     .route("/api/v1/health", healthRoutes);
-  app.use(rateLimiterGuard()).route("/api/v1/ai", aiRoutes);
+  app
+    .use(
+      rateLimiterGuard({
+        prefix: "rate-limiter:ai",
+      })
+    )
+    .route("/api/v1/ai", aiRoutes);
   app
     .use("/api/v1/spotify", timeout(env.TIMEOUT_MS))
     .route("/api/v1/spotify", spotifyRoutes);
   app
-    .use(rateLimiterGuard())
+    .use(
+      rateLimiterGuard({
+        prefix: "rate-limiter:email",
+      })
+    )
     .use("/api/v1/email", timeout(env.TIMEOUT_MS))
     .route("/api/v1/email", emailRoutes);
   app
-    .use(rateLimiterGuard())
+    .use(
+      rateLimiterGuard({
+        prefix: "rate-limiter:toolings",
+      })
+    )
     .use("/api/v1/toolings", timeout(env.TIMEOUT_MS))
     .route("/api/v1/toolings", toolingsRoutes);
   console.log(
