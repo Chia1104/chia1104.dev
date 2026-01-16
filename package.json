@@ -81,7 +81,7 @@
     "@vitest/ui": "catalog:testing-library",
     "cross-env": "10.1.0",
     "dotenv": "^17.2.3",
-    "happy-dom": "^20.3.0",
+    "happy-dom": "^20.3.1",
     "husky": "^9.1.7",
     "jest-extended": "catalog:testing-library",
     "lint-staged": "^16.2.7",

@@ -91,6 +91,7 @@ export const baseRequestSchema = z.object({
   messages: z.array(modelMessageSchema).min(1),
   authToken: z.string().min(1),
   system: z.string().optional(),
+  proxyUrl: z.string().optional(),
 });
 
 export type BaseRequest = z.infer<typeof baseRequestSchema>;

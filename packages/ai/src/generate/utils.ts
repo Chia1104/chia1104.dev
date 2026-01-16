@@ -8,6 +8,9 @@ import { streamText } from "ai";
 import { Provider } from "../utils/types";
 import type { BaseRequest } from "../utils/types";
 
+/**
+ * @deprecated Use `request.system` instead
+ */
 export const DEFAULT_SYSTEM_PROMPT =
   "You are an AI writing assistant that continues existing text based on context from prior text. " +
   "Give more weight/priority to the later characters than the beginning ones. " +
@@ -24,18 +27,22 @@ export const createModel = (request: BaseRequest): LanguageModel => {
     case Provider.OpenAI:
       return createOpenAI({
         apiKey: request.authToken,
+        baseURL: request.proxyUrl,
       })(request.model.id);
     case Provider.Anthropic:
       return createAnthropic({
         apiKey: request.authToken,
+        baseURL: request.proxyUrl,
       })(request.model.id);
     case Provider.Google:
       return createGoogleGenerativeAI({
         apiKey: request.authToken,
+        baseURL: request.proxyUrl,
       })(request.model.id);
     case Provider.DeepSeek:
       return createDeepSeek({
         apiKey: request.authToken,
+        baseURL: request.proxyUrl,
       })(request.model.id);
     default:
       throw new Error("Invalid provider");
@@ -49,6 +56,6 @@ export const streamGeneratedText = (
   streamText({
     ...options,
     model: createModel(request),
-    system: request.system ?? DEFAULT_SYSTEM_PROMPT,
+    system: request.system,
     messages: request.messages,
   });
