@@ -137,8 +137,8 @@ catalogs:
       version: 4.1.18
   tanstack:
     '@tanstack/react-pacer':
-      specifier: 0.19.2
-      version: 0.19.2
+      specifier: 0.19.3
+      version: 0.19.3
     '@tanstack/react-query':
       specifier: 5.90.17
       version: 5.90.17
@@ -313,7 +313,7 @@ importers:
         version: 0.13.10(typescript@5.9.3)(zod@4.3.5)
       '@tanstack/react-pacer':
         specifier: catalog:tanstack
-        version: 0.19.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 0.19.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tanstack/react-query':
         specifier: catalog:tanstack
         version: 5.90.17(react@19.2.3)
@@ -6606,15 +6606,15 @@ packages:
     resolution: {integrity: sha512-RPfGuk2bDZgcu9bAJodvO2lnZeHuz4/71HjZ0bGb/SPg8+lyTA+RLSKQvo7fSmPSi8/vcH3aKQ8EM9ywf1olaw==}
     engines: {node: '>=18'}
 
-  '@tanstack/pacer@0.17.2':
-    resolution: {integrity: sha512-pWr3EcbJqtxRm4nmffvz5IbWJbrY1Eeh/q4kJBhEqvZmnmCER3FGnXdw7TdaEgwV4Mmwk/4UrsYdlosdQrVk/w==}
+  '@tanstack/pacer@0.17.3':
+    resolution: {integrity: sha512-AavH9DTSJCbXnExsuq2STK+BPfEnHpoFZ9RF0KzFC6GxGGz/D0dSu8H2gKdPyw4MUFs/2DVUZkRm1Au6DsFXVA==}
     engines: {node: '>=18'}
 
   '@tanstack/query-core@5.90.17':
     resolution: {integrity: sha512-hDww+RyyYhjhUfoYQ4es6pbgxY7LNiPWxt4l1nJqhByjndxJ7HIjDxTBtfvMr5HwjYavMrd+ids5g4Rfev3lVQ==}
 
-  '@tanstack/react-pacer@0.19.2':
-    resolution: {integrity: sha512-Hpiu2HqoRgQ8yEGsHO1r5gCVfN2+HlFGWK7v9YRCXweS8Jk/m4pRczKIWveGgvDeH0ms5BHPU4sDFsH8uf/xxw==}
+  '@tanstack/react-pacer@0.19.3':
+    resolution: {integrity: sha512-GalY+86/K3l3NuOP4rAVyNoaKjUPB097u7nVkzYnQu2MmkVTtFwbQRnac59Jb3Pf+0Lt29AKKP4y1ELav20zmA==}
     engines: {node: '>=18'}
     peerDependencies:
       react: '>=16.8'
@@ -20076,16 +20076,16 @@ snapshots:
 
   '@tanstack/devtools-event-client@0.4.0': {}
 
-  '@tanstack/pacer@0.17.2':
+  '@tanstack/pacer@0.17.3':
     dependencies:
       '@tanstack/devtools-event-client': 0.4.0
       '@tanstack/store': 0.8.0
 
   '@tanstack/query-core@5.90.17': {}
 
-  '@tanstack/react-pacer@0.19.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@tanstack/react-pacer@0.19.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
-      '@tanstack/pacer': 0.17.2
+      '@tanstack/pacer': 0.17.3
       '@tanstack/react-store': 0.8.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
