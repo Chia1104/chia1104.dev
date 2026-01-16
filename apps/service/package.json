@@ -40,7 +40,7 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "resend": "^6.7.0",
-    "workflow": "4.0.1-beta.46",
+    "workflow": "4.0.1-beta.47",
     "zod": "catalog:"
   },
   "devDependencies": {

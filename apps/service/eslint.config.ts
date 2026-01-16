@@ -4,7 +4,7 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig(
   {
-    ignores: ["**/*.d.ts"],
+    ignores: ["**/*.d.ts", ".output"],
   },
   baseConfig,
   reactConfig
