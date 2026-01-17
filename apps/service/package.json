@@ -28,6 +28,7 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
+    "@workflow-worlds/redis": "^0.1.0",
     "@workflow/world-postgres": "4.1.0-beta.28",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
@@ -40,7 +41,7 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "resend": "^6.7.0",
-    "workflow": "4.0.1-beta.47",
+    "workflow": "4.0.1-beta.48",
     "zod": "catalog:"
   },
   "devDependencies": {
