@@ -44,7 +44,7 @@
     "client-only": "catalog:",
     "clsx": "^2.1.1",
     "dayjs": "catalog:",
-    "framer-motion": "12.26.2",
+    "framer-motion": "12.27.0",
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
     "ky": "catalog:",

@@ -54,7 +54,7 @@
     "client-only": "catalog:",
     "cobe": "^0.6.5",
     "dayjs": "catalog:",
-    "framer-motion": "12.26.2",
+    "framer-motion": "12.27.0",
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
     "katex": "^0.16.27",
