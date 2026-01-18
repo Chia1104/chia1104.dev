@@ -39,7 +39,7 @@
     "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config scripts/auth-cli.ts"
   },
   "dependencies": {
-    "@better-auth/passkey": "1.4.14",
+    "@better-auth/passkey": "1.4.15",
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
     "@chia/ui": "workspace:*",
