@@ -45,7 +45,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "catalog:",
-    "better-auth": "1.4.14",
+    "better-auth": "1.4.15",
     "client-only": "catalog:",
     "dayjs": "catalog:",
     "resend": "^6.7.0",
