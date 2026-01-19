@@ -11,9 +11,6 @@ import {
   DEEPSEEK_API_KEY,
 } from "@chia/ai/constants";
 import { streamGeneratedText } from "@chia/ai/generate/utils";
-import { ollama } from "@chia/ai/ollama";
-import { OllamaModel } from "@chia/ai/ollama/types";
-import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 import { baseRequestSchema } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import { encodeApiKey } from "@chia/ai/utils";
@@ -22,7 +19,6 @@ import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 import { ai, AI_AUTH_TOKEN } from "@/guards/ai.guard";
-import { apikeyVerify } from "@/guards/apikey-verify.guard";
 import { verifyAuth } from "@/guards/auth.guard";
 import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { errorResponse } from "@/utils/error.util";
@@ -107,31 +103,6 @@ api.post(
       system: c.req.valid("json").system,
     });
     return result.toUIMessageStreamResponse();
-  }
-);
-
-api.use(apikeyVerify()).post(
-  "/embed",
-  zValidator(
-    "json",
-    z.object({
-      input: z.string().min(1),
-      model: z.literal(OllamaModel["nomic-embed-text"]),
-    })
-  ),
-  async (c) => {
-    const { input, model } = c.req.valid("json");
-
-    if (!(await isOllamaEnabled(model))) {
-      return c.json(errorGenerator(503), 503);
-    }
-    const embedding = await ollama.embed({
-      model,
-      input,
-      dimensions: 512,
-    });
-
-    return c.json(embedding);
   }
 );
 
