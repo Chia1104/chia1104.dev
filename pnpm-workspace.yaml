@@ -63,7 +63,7 @@ catalogs:
     '@tanstack/react-query': 5.90.19
   testing-library:
     '@testing-library/jest-dom': 6.9.1
-    '@testing-library/react': 16.3.1
+    '@testing-library/react': 16.3.2
     '@testing-library/user-event': 14.6.1
     '@vitejs/plugin-react-swc': 4.2.2
     '@vitest/coverage-v8': 4.0.17
