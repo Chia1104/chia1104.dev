@@ -24,70 +24,80 @@ import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
 import { errorResponse } from "@/utils/error.util";
 import { searchFeedsSchema } from "@/validators/feeds.validator";
 
-const api = new Hono<HonoContext>();
-
-api.use(
-  rateLimiterGuard({
-    prefix: "rate-limiter:feeds",
-  })
-);
-api.use(timeout(env.TIMEOUT_MS));
-
-api.use("/", verifyAuth()).get(
-  "/",
-  zValidator("query", getFeedsWithMetaSchema, (result, c) => {
-    if (!result.success) {
-      return c.json(errorResponse(result.error), 400);
-    }
-  }),
-  async (c) => {
-    const { type, limit, orderBy, sortOrder, nextCursor, withContent, locale } =
-      c.req.valid("query");
-    const feeds = await getInfiniteFeedsByUserId(c.var.db, {
-      type,
-      limit,
-      orderBy,
-      sortOrder,
-      cursor: nextCursor,
-      withContent: withContent === "true",
-      locale,
-      userId: c.get("user")?.id ?? "",
-    });
-    return c.json(feeds);
-  }
-);
-
-api.get(
-  "/public",
-  zValidator(
-    "query",
-    getFeedsWithMetaSchema.extend({
-      locale: z.enum(locale.enumValues).optional(),
-    }),
-    (result, c) => {
+const api = new Hono<HonoContext>()
+  .use(
+    rateLimiterGuard({
+      prefix: "rate-limiter:feeds",
+    })
+  )
+  .use(timeout(env.TIMEOUT_MS))
+  .use("/", verifyAuth())
+  .get(
+    "/",
+    zValidator("query", getFeedsWithMetaSchema, (result, c) => {
       if (!result.success) {
         return c.json(errorResponse(result.error), 400);
       }
+    }),
+    async (c) => {
+      const {
+        type,
+        limit,
+        orderBy,
+        sortOrder,
+        nextCursor,
+        withContent,
+        locale,
+      } = c.req.valid("query");
+      const feeds = await getInfiniteFeedsByUserId(c.var.db, {
+        type,
+        limit,
+        orderBy,
+        sortOrder,
+        cursor: nextCursor,
+        withContent: withContent === "true",
+        locale,
+        userId: c.get("user")?.id ?? "",
+      });
+      return c.json(feeds);
     }
-  ),
-  async (c) => {
-    const { type, limit, orderBy, sortOrder, nextCursor, withContent, locale } =
-      c.req.valid("query");
-    const feeds = await getInfiniteFeeds(c.var.db, {
-      type,
-      limit,
-      orderBy,
-      sortOrder,
-      cursor: nextCursor,
-      withContent: withContent === "true",
-      locale,
-      whereAnd: [eq(schema.feeds.published, true)],
-    });
-    return c.json(feeds);
-  }
-);
-
-api
+  )
+  .get(
+    "/public",
+    zValidator(
+      "query",
+      getFeedsWithMetaSchema.extend({
+        locale: z.enum(locale.enumValues).optional(),
+      }),
+      (result, c) => {
+        if (!result.success) {
+          return c.json(errorResponse(result.error), 400);
+        }
+      }
+    ),
+    async (c) => {
+      const {
+        type,
+        limit,
+        orderBy,
+        sortOrder,
+        nextCursor,
+        withContent,
+        locale,
+      } = c.req.valid("query");
+      const feeds = await getInfiniteFeeds(c.var.db, {
+        type,
+        limit,
+        orderBy,
+        sortOrder,
+        cursor: nextCursor,
+        withContent: withContent === "true",
+        locale,
+        whereAnd: [eq(schema.feeds.published, true)],
+      });
+      return c.json(feeds);
+    }
+  )
   .use(
     "/search",
     verifyAuth((c) => {
