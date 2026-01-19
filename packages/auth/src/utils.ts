@@ -1,5 +1,5 @@
 import { passkeyClient } from "@better-auth/passkey/client";
-import type { createAuthClient } from "better-auth/client";
+import type { BetterAuthClientOptions } from "better-auth";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { apiKeyClient } from "better-auth/client/plugins";
@@ -47,11 +47,9 @@ export const sessionCookieOptions = (env?: Partial<typeof internalEnv>) =>
     domain: getCookieDomain({ env }),
   }) as const;
 
-export const baseAuthClient = (
-  config?: Parameters<typeof createAuthClient>[0]
-) => {
+export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
   return Object.assign(config ?? {}, {
-    baseURL: `${getServiceEndPoint()}/auth`,
+    baseURL: config?.baseURL ?? `${getServiceEndPoint()}/auth`,
     plugins: [
       inferAdditionalFields({
         user: {

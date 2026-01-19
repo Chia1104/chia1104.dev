@@ -13,29 +13,32 @@ export const name = "auth-core";
 const database = await connectDatabase();
 
 export const auth = betterAuth(
-  Object.assign(baseAuthConfig, {
-    /**
-     * database adapter
-     */
-    database: drizzleAdapter(database, {
-      provider: "pg",
-      schema: schemas,
-    }),
-    secondaryStorage: {
-      get: async (key) => {
-        const value = await kv.get<string>(key);
-        return value ? value : null;
+  Object.assign(
+    {
+      /**
+       * database adapter
+       */
+      database: drizzleAdapter(database, {
+        provider: "pg",
+        schema: schemas,
+      }),
+      secondaryStorage: {
+        get: async (key) => {
+          const value = await kv.get<string>(key);
+          return value ? value : null;
+        },
+        set: async (key, value, ttl) => {
+          if (ttl) {
+            await kv.set(key, value, ttl * 1000);
+          } else {
+            await kv.set(key, value);
+          }
+        },
+        delete: async (key) => {
+          await kv.delete(key);
+        },
       },
-      set: async (key, value, ttl) => {
-        if (ttl) {
-          await kv.set(key, value, ttl * 1000);
-        } else {
-          await kv.set(key, value);
-        }
-      },
-      delete: async (key) => {
-        await kv.delete(key);
-      },
-    },
-  } satisfies BetterAuthOptions)
+    } satisfies BetterAuthOptions,
+    baseAuthConfig
+  )
 );

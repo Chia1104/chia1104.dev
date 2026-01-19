@@ -69,52 +69,6 @@ export const switchEnv = <TResult = unknown>(
   }
 };
 
-/**
- * @deprecated use `getDB` from `@chia/db`
- * @param env
- * @param db
- * @param betaDb
- * @param localDb
- */
-export const getDb = <DB = unknown>(
-  env: string | undefined,
-  {
-    db,
-    betaDb,
-    localDb,
-  }: {
-    db: DB;
-    betaDb: DB;
-    localDb: DB;
-  }
-) => {
-  return switchEnv(env, {
-    prod: () => db,
-    beta: () => betaDb,
-    local: () => localDb,
-  });
-};
-
-export const getDbUrl = (env?: string) => {
-  return switchEnv(env, {
-    prod: () => {
-      if (!process.env.DATABASE_URL)
-        throw new Error("Missing env variables DATABASE_URL");
-      return process.env.DATABASE_URL;
-    },
-    beta: () => {
-      if (!process.env.BETA_DATABASE_URL)
-        throw new Error("Missing env variables BETA_DATABASE_URL");
-      return process.env.BETA_DATABASE_URL;
-    },
-    local: () => {
-      if (!process.env.LOCAL_DATABASE_URL)
-        throw new Error("Missing env variables LOCAL_DATABASE_URL");
-      return process.env.LOCAL_DATABASE_URL;
-    },
-  });
-};
-
 export const getAdminId = (env?: string) => {
   return switchEnv(env, {
     prod: () => {
