@@ -1,0 +1,26 @@
+{
+  "name": "auth-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build --compile --minify-whitespace --minify-syntax --outfile .output/server src/index.ts",
+    "start": ".output/server"
+  },
+  "dependencies": {
+    "@chia/auth": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chia/kv": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@t3-oss/env-core": "catalog:",
+    "elysia": "1.4.22",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "bun-types": "catalog:",
+    "eslint": "catalog:eslint",
+    "typescript": "catalog:"
+  },
+  "module": "src/index.js"
+}

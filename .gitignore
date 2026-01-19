@@ -63,3 +63,6 @@ tsconfig.tsbuildinfo
 .vercel
 
 vitest.config.mts.timestamp-*.mjs
+
+.output
+*.bun-build
