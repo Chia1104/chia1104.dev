@@ -5,7 +5,7 @@ import { auth } from "@chia/auth";
 import { env } from "./env";
 
 const app = new Elysia()
-  .get("/health", () => {
+  .get("/auth/health", () => {
     return {
       status: "ok",
     };
