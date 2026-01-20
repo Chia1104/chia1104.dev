@@ -1,6 +1,7 @@
 ARG NODE_VERSION=24
+ARG TARGETARCH=amd64
 
-FROM node:${NODE_VERSION}-alpine AS builder-base
+FROM --platform=linux/${TARGETARCH} node:${NODE_VERSION}-alpine AS builder-base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -31,21 +32,15 @@ COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
     TURBO_TOKEN
-ARG TARGETARCH
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN
 
 RUN pnpm i
 
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-      export BUN_BUILD_TARGET="bun-linux-arm64"; \
-    else \
-      export BUN_BUILD_TARGET="bun-linux-x64"; \
-    fi && \
-    pnpm turbo run build --filter=auth-service...
+RUN pnpm turbo run build --filter=auth-service...
 
-FROM gcr.io/distroless/base AS runner
+FROM --platform=linux/${TARGETARCH} gcr.io/distroless/base AS runner
 
 WORKDIR /app
 
