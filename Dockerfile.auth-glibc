@@ -31,13 +31,19 @@ COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
     TURBO_TOKEN
+ARG TARGETARCH
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN
 
 RUN pnpm i
 
-RUN pnpm turbo run build --filter=auth-service...
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+      export BUN_BUILD_TARGET="bun-linux-arm64"; \
+    else \
+      export BUN_BUILD_TARGET="bun-linux-x64"; \
+    fi && \
+    pnpm turbo run build --filter=auth-service...
 
 FROM gcr.io/distroless/base AS runner
 
