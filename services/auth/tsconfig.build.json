@@ -1,0 +1,14 @@
+{
+  "extends": ["./tsconfig.json"],
+  "include": ["**/*.ts"],
+  "exclude": [
+    "**/*.spec.mts",
+    "**/*.test.mts",
+    "__tests__",
+    "tsdown.config.ts",
+    "vitest.config.mts"
+  ],
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
+}

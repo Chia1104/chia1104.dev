@@ -4,9 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "build": "bun build --compile --target bun-linux-x64 --minify-whitespace --minify-syntax --outfile .output/server src/index.ts",
-    "start": ".output/server"
+    "dev": "bun run --watch src/server.ts",
+    "build": "nitro build",
+    "build:amd64-glibc": "bun build --compile --target bun-linux-x64 --minify-whitespace --minify-syntax --outfile .output/server src/index.ts",
+    "start:amd64-glibc": ".output/server",
+    "node:start": "node .output/server/index.mjs",
+    "start": "bun run --bun .output/server/index.mjs"
   },
   "dependencies": {
     "@chia/auth": "workspace:*",
@@ -15,6 +18,7 @@
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "catalog:",
     "elysia": "1.4.22",
+    "nitro": "3.0.1-alpha.1",
     "zod": "catalog:"
   },
   "devDependencies": {

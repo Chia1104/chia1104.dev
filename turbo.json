@@ -24,7 +24,7 @@
     },
     "auth-service#build": {
       "dependsOn": ["^build"],
-      "outputs": [".output/server"],
+      "outputs": [".output/**", "!.output/server/node_modules/**"],
       "env": ["DATABASE_URL"]
     },
     "lint": {
