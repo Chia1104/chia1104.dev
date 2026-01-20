@@ -1,10 +1,11 @@
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
-import { getMeta } from "@chia/api/services/feeds";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
+import { client } from "@/libs/service/client.rsc";
+import { HonoRPCError } from "@/libs/service/error";
 
 import { URLS_PER_SITEMAP } from "./utils";
 
@@ -23,14 +24,17 @@ function buildSitemapIndex(sitemaps: string[]) {
 }
 
 export const GET = async () => {
+  let total = 0;
   try {
-    const { total } = await getMeta(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
-      },
-      null
-    );
+    const res = await client.api.v1.admin.public["feeds:meta"].$get();
+    if (!res.ok) {
+      total = 0;
+      captureException(
+        new HonoRPCError(res.statusText, res.status, res.statusText)
+      );
+    } else {
+      total = (await res.json()).total;
+    }
 
     const amountOfSitemapFiles = Math.ceil(total / URLS_PER_SITEMAP);
 
@@ -54,7 +58,7 @@ export const GET = async () => {
     });
   } catch (error) {
     console.error(error);
-    // captureException(error);
+    captureException(error);
     return NextResponse.json(errorGenerator(500), {
       status: 500,
     });

@@ -4,14 +4,21 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nitro dev",
-    "build": "nitro build",
+    "type:emit": "tsc -p tsconfig.types.json",
+    "dev": "pnpm type:emit && nitro dev",
+    "build": "pnpm type:emit && nitro build",
     "node:start": "node .output/server/index.mjs",
     "start": "bun run --bun .output/server/index.mjs",
     "node:preview": "node --env-file=.env .output/server/index.mjs",
     "type:check": "tsc --noEmit",
     "lint": "eslint",
     "test:service": "NODE_ENV=test bun test"
+  },
+  "exports": {
+    "./server": {
+      "types": "./types/server.d.ts",
+      "default": "./types/server.d.ts"
+    }
   },
   "dependencies": {
     "@chia/ai": "workspace:*",

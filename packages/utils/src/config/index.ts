@@ -129,13 +129,14 @@ export const getBaseUrl = (options?: {
   return baseUrl?.replace(/\/$/, "");
 };
 
-type ServiceVersion = "v1";
+type ServiceVersion = "v1" | "NO_PREFIX";
 
 interface GetServiceEndPointOptions {
   clientPrefix?: string;
   proxyEndpoint?: string;
   version?: ServiceVersion;
   isInternal?: boolean;
+  removePrefix?: boolean;
 }
 
 function removeEndSlash(url: string) {
