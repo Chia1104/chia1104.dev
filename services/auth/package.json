@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "build": "bun build --compile --target $BUN_BUILD_TARGET --minify-whitespace --minify-syntax --outfile .output/server src/index.ts",
+    "build": "BUN_BUILD_TARGET=${BUN_BUILD_TARGET:-bun-linux-x64} bun build --compile --target $BUN_BUILD_TARGET --minify-whitespace --minify-syntax --outfile .output/server src/index.ts",
     "start": ".output/server"
   },
   "dependencies": {
