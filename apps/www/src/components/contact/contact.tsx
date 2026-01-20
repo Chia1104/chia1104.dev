@@ -19,17 +19,16 @@ import { useForm } from "react-hook-form";
 import type { Control } from "react-hook-form";
 import { toast } from "sonner";
 
-import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha";
 import { ErrorCode as CaptchaErrorCode } from "@chia/api/captcha";
 import Card from "@chia/ui/card";
 import { Form as _Form, FormField, FormItem, FormMessage } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
-import { getServiceEndPoint } from "@chia/utils/config";
-import { post, handleKyError } from "@chia/utils/request";
+import { handleKyError } from "@chia/utils/request";
 
 import { env } from "@/env";
+import { sendEmail } from "@/services/email.service";
 import { contactSchema } from "@/shared/validator";
 import type { Contact } from "@/shared/validator";
 
@@ -112,22 +111,8 @@ export const Form: FC<
 }) => {
   const id = useId();
   const router = useRouter();
-  const { mutateAsync, isPending } = useMutation<void, Error, Contact>({
-    mutationFn: (data) =>
-      post<void, Omit<Contact, "captchaToken">>(
-        "email/send",
-        {
-          title: data.title,
-          email: data.email,
-          message: data.message,
-        },
-        {
-          headers: {
-            [X_CAPTCHA_RESPONSE]: data.captchaToken,
-          },
-          prefixUrl: getServiceEndPoint(),
-        }
-      ),
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: sendEmail,
   });
 
   const form = useForm<Contact>({
@@ -141,7 +126,7 @@ export const Form: FC<
   });
 
   const handleSubmit = form.handleSubmit((data) => {
-    toast.promise<void>(() => mutateAsync(data), {
+    toast.promise(() => mutateAsync(data), {
       loading: "Loading...",
       success: () => {
         if (!disableRouterRefresh) router.refresh();

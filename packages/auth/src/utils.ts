@@ -7,7 +7,8 @@ import { organizationClient } from "better-auth/client/plugins";
 import { adminClient } from "better-auth/client/plugins";
 
 import { Role } from "@chia/db/types";
-import { getServiceEndPoint } from "@chia/utils/config";
+import { withServiceEndpoint } from "@chia/utils/config";
+import { Service } from "@chia/utils/schema";
 
 import type { env as internalEnv } from "./env";
 
@@ -49,7 +50,12 @@ export const sessionCookieOptions = (env?: Partial<typeof internalEnv>) =>
 
 export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
   return Object.assign(config ?? {}, {
-    baseURL: config?.baseURL ?? `${getServiceEndPoint()}/auth`,
+    baseURL:
+      config?.baseURL ??
+      withServiceEndpoint("/auth", Service.LegacyService, {
+        isInternal: false,
+        version: "LEGACY",
+      }),
     plugins: [
       inferAdditionalFields({
         user: {

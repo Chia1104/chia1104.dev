@@ -1,6 +1,6 @@
-import type { AppEnv } from "../schema";
-import { Service } from "../schema";
-import { serviceEnv } from "./env";
+import type { AppEnv } from "../schema/index.ts";
+import { Service } from "../schema/index.ts";
+import { serviceEnv } from "./env.ts";
 
 const getInternalEnv = () => {
   if (process.env.ENV || process.env.APP_ENV) {

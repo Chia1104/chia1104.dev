@@ -4,10 +4,14 @@ import type { ContractRouterClient } from "@orpc/contract";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
 import type { routerContract } from "@chia/api/orpc/contracts";
-import { getServiceEndPoint } from "@chia/utils/config";
+import { withServiceEndpoint } from "@chia/utils/config";
+import { Service } from "@chia/utils/schema";
 
 export const link = new RPCLink({
-  url: `${getServiceEndPoint()}/rpc`,
+  url: withServiceEndpoint("/rpc", Service.LegacyService, {
+    isInternal: false,
+    version: "LEGACY",
+  }),
 });
 
 export const client: ContractRouterClient<typeof routerContract> =

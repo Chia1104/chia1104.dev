@@ -1,13 +1,16 @@
 import { useMutation } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
+import type { InferResponseType } from "hono";
 
-import type { FeedSearchResult } from "@/resources/feed.resource";
+import type { Locale } from "@chia/db/types";
+
+import type { client } from "@/libs/service/client";
 import { searchFeeds } from "@/resources/feed.resource";
 
 type UseSearchFeedsOptions = UseMutationOptions<
-  FeedSearchResult[],
+  InferResponseType<typeof client.api.v1.feeds.search.$get, 200>,
   Error,
-  { query: string; locale?: string }
+  { query: string; locale?: Locale }
 >;
 
 export const useSearchFeeds = (options?: UseSearchFeedsOptions) => {

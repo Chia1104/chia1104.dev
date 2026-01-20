@@ -13,7 +13,7 @@ interface MeteorsProps {
 export const Meteors = ({ number = 20 }: MeteorsProps) => {
   const meteorStyles = useMemo(
     () =>
-      [...new Array(number)].map(() => ({
+      [...new Array<number>(number)].map(() => ({
         top: -5,
         left: Math.floor(Math.random() * window.innerWidth) + "px",
         animationDelay: Math.random() * 1 + 0.2 + "s",

@@ -115,8 +115,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                           content: {
                             createdAt: string;
                             updatedAt: string;
-                            id: number;
                             content: string | null;
+                            id: number;
                             feedTranslationId: number;
                             source: string | null;
                             unstableSerializedSource: string | null;
@@ -138,8 +138,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                           content: {
                             createdAt: string;
                             updatedAt: string;
-                            id: number;
                             content: string | null;
+                            id: number;
                             feedTranslationId: number;
                             source: string | null;
                             unstableSerializedSource: string | null;
@@ -267,8 +267,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                         content: {
                           createdAt: string;
                           updatedAt: string;
-                          id: number;
                           content: string | null;
+                          id: number;
                           feedTranslationId: number;
                           source: string | null;
                           unstableSerializedSource: string | null;
@@ -290,8 +290,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                         content: {
                           createdAt: string;
                           updatedAt: string;
-                          id: number;
                           content: string | null;
+                          id: number;
                           feedTranslationId: number;
                           source: string | null;
                           unstableSerializedSource: string | null;
@@ -417,8 +417,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                         content: {
                           createdAt: string;
                           updatedAt: string;
-                          id: number;
                           content: string | null;
+                          id: number;
                           feedTranslationId: number;
                           source: string | null;
                           unstableSerializedSource: string | null;
@@ -440,8 +440,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                         content: {
                           createdAt: string;
                           updatedAt: string;
-                          id: number;
                           content: string | null;
+                          id: number;
                           feedTranslationId: number;
                           source: string | null;
                           unstableSerializedSource: string | null;
@@ -725,8 +725,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                           content: {
                             createdAt: string;
                             updatedAt: string;
-                            id: number;
                             content: string | null;
+                            id: number;
                             feedTranslationId: number;
                             source: string | null;
                             unstableSerializedSource: string | null;
@@ -748,8 +748,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                           content: {
                             createdAt: string;
                             updatedAt: string;
-                            id: number;
                             content: string | null;
+                            id: number;
                             feedTranslationId: number;
                             source: string | null;
                             unstableSerializedSource: string | null;
@@ -863,8 +863,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                           content: {
                             createdAt: string;
                             updatedAt: string;
-                            id: number;
                             content: string | null;
+                            id: number;
                             feedTranslationId: number;
                             source: string | null;
                             unstableSerializedSource: string | null;
@@ -886,8 +886,8 @@ export declare const app: import("hono/hono-base").HonoBase<
                           content: {
                             createdAt: string;
                             updatedAt: string;
-                            id: number;
                             content: string | null;
+                            id: number;
                             feedTranslationId: number;
                             source: string | null;
                             unstableSerializedSource: string | null;
