@@ -1,7 +1,6 @@
 ARG NODE_VERSION=24
-ARG TARGET_PLATFORM=linux/arm64
 
-FROM --platform=${TARGET_PLATFORM} node:${NODE_VERSION}-alpine AS builder-base
+FROM node:${NODE_VERSION}-alpine AS builder-base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -13,7 +12,9 @@ RUN apk update && \
     apk add --no-cache \
     build-base \
     gcc \
-    libc6-compat && \
+    libc6-compat \
+    gcompat \
+    libstdc++ && \
     npm install -g corepack@latest turbo bun && \
     corepack enable pnpm
 
@@ -40,7 +41,15 @@ RUN pnpm i
 
 RUN pnpm turbo run build --filter=auth-service...
 
-FROM --platform=${TARGET_PLATFORM} gcr.io/distroless/base AS runner
+FROM alpine AS runner
+
+RUN apk update && \
+    apk add --no-cache \
+    build-base \
+    gcc \
+    libc6-compat \
+    gcompat \
+    libstdc++
 
 WORKDIR /app
 
