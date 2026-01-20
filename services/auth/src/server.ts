@@ -10,13 +10,9 @@ const app = new Elysia()
       status: "ok",
     };
   })
-  .mount(auth.handler);
+  .mount(auth.handler)
+  .listen(env.PORT);
 
 console.log(
   `🦊 Auth Service is running at ${app.server?.protocol}://${app.server?.hostname}:${app.server?.port}`
 );
-
-export default {
-  port: env.PORT,
-  fetch: app.fetch,
-};
