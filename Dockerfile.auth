@@ -44,7 +44,7 @@ RUN pnpm i
 
 RUN pnpm turbo run build --filter=auth-service...
 
-FROM gcr.io/distroless/base AS runner
+FROM debian:bookworm-slim AS runner
 
 WORKDIR /app
 
