@@ -44,7 +44,7 @@ RUN pnpm i
 
 RUN pnpm turbo run build --filter=auth-service...
 
-FROM debian:bookworm-slim AS runner
+FROM alpine AS runner
 
 WORKDIR /app
 
