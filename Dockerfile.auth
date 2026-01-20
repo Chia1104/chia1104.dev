@@ -53,6 +53,6 @@ COPY --from=builder /app/services/auth/.output/server server
 ENV NODE_ENV=production \
     PORT=8080
 
-CMD ["./server"]
-
 EXPOSE 8080
+
+CMD ["./server"]
