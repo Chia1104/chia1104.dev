@@ -1,19 +1,16 @@
 import type { AppEnv } from "../schema";
+import { Service } from "../schema";
+import { serviceEnv } from "./env";
 
-const getInternalEnv = (clientPrefix = "NEXT_PUBLIC_") => {
+const getInternalEnv = () => {
   if (process.env.ENV || process.env.APP_ENV) {
     return process.env.ENV || process.env.APP_ENV;
   }
-  if (
-    process.env[`${clientPrefix}ENV`] ||
-    process.env[`${clientPrefix}APP_ENV`]
-  ) {
-    return (
-      process.env[`${clientPrefix}ENV`] || process.env[`${clientPrefix}APP_ENV`]
-    );
+  if (process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV) {
+    return process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV;
   }
-  if (process.env[`${clientPrefix}VERCEL_ENV`]) {
-    return process.env[`${clientPrefix}VERCEL_ENV`];
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    return process.env.NEXT_PUBLIC_VERCEL_ENV;
   }
   if (process.env.RAILWAY_ENVIRONMENT_NAME) {
     return process.env.RAILWAY_ENVIRONMENT_NAME === "production"
@@ -129,7 +126,7 @@ export const getBaseUrl = (options?: {
   return baseUrl?.replace(/\/$/, "");
 };
 
-type ServiceVersion = "v1" | "NO_PREFIX";
+type ServiceVersion = "v1" | "NO_PREFIX" | "LEGACY";
 
 interface GetServiceEndPointOptions {
   clientPrefix?: string;
@@ -145,6 +142,7 @@ function removeEndSlash(url: string) {
 
 function switchServiceVersion(version: ServiceVersion, url: string) {
   switch (version) {
+    case "LEGACY":
     case "v1":
       return removeEndSlash(url) + "/api/v1";
     default:
@@ -153,6 +151,7 @@ function switchServiceVersion(version: ServiceVersion, url: string) {
 }
 
 /**
+ * @deprecated Use`withServiceEndpoint` instead
  * the url of the service endpoint (including the protocol)
  * @param env
  * @param options {proxyEndpoint, version, isInternal}
@@ -231,10 +230,59 @@ export const DASH_BASE_URL =
     ? "https://dash.chia1104.dev"
     : "http://localhost:3001";
 
-export const SERVICE_BASE_URL =
-  getEnv() === "production" || getEnv() === "prod"
-    ? "https://service.chia1104.dev"
-    : "http://localhost:3003";
-
 export const CONTACT_EMAIL = "contact@notify.chia1104.dev";
 export const AUTH_EMAIL = "no-reply@notify.chia1104.dev";
+
+interface WithServiceEndpointOptions {
+  isInternal?: boolean;
+  version?: ServiceVersion;
+}
+
+function serviceNameResolver(service: Service) {
+  switch (service) {
+    case Service.LegacyService:
+      return "SERVICE";
+    case Service.Auth:
+      return "AUTH_SERVICE";
+    case Service.Content:
+      return "CONTENT_SERVICE";
+    case Service.AI:
+      return "AI_SERVICE";
+  }
+}
+
+const getServicePrefixUrl = (service: Service, isInternal?: boolean) => {
+  if (isInternal) {
+    return (
+      serviceEnv[`INTERNAL_${serviceNameResolver(service)}_ENDPOINT`] ?? ""
+    );
+  }
+  return (
+    serviceEnv.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT ??
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    serviceEnv.NEXT_PUBLIC_SERVICE_ENDPOINT ??
+    ""
+  );
+};
+
+export const withServiceEndpoint = (
+  path: string,
+  service: Service,
+  options?: WithServiceEndpointOptions
+) => {
+  const isServer = typeof window === "undefined";
+  const {
+    isInternal,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    version = !!serviceEnv.INTERNAL_SERVICE_ENDPOINT ||
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    !!serviceEnv.NEXT_PUBLIC_SERVICE_ENDPOINT
+      ? "LEGACY"
+      : "NO_PREFIX",
+  } = options ?? {};
+
+  return `${switchServiceVersion(
+    version,
+    getServicePrefixUrl(service, isInternal || isServer)
+  )}${path.startsWith("/") ? path : `/${path}`}`;
+};

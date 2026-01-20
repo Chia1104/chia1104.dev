@@ -53,6 +53,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@t3-oss/env-core": "catalog:",
     "dayjs": "catalog:",
     "ky": "catalog:",
     "lodash": "catalog:",
