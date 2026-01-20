@@ -12,9 +12,7 @@ RUN apk update && \
     apk add --no-cache \
     build-base \
     gcc \
-    libc6-compat \
-    gcompat \
-    libstdc++ && \
+    libc6-compat && \
     npm install -g corepack@latest turbo bun && \
     corepack enable pnpm
 
@@ -41,15 +39,7 @@ RUN pnpm i
 
 RUN pnpm turbo run build --filter=auth-service...
 
-FROM alpine AS runner
-
-RUN apk update && \
-    apk add --no-cache \
-    build-base \
-    gcc \
-    libc6-compat \
-    gcompat \
-    libstdc++
+FROM gcr.io/distroless/base AS runner
 
 WORKDIR /app
 
