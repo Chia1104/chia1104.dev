@@ -137,6 +137,7 @@ const Page = () => {
                     <span className="flex gap-1">
                       or Via
                       <Link
+                        preview={false}
                         href={`mailto:${meta.email}`}
                         className="flex w-fit">
                         email

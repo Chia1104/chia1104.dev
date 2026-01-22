@@ -1,5 +1,4 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { relations } from "drizzle-orm";
 import { text, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
@@ -48,16 +47,5 @@ export const apikey = pgTable(
     index("apikey_project_id_idx").on(table.projectId),
   ]
 );
-
-export const apikeyRelations = relations(apikey, ({ one }) => ({
-  project: one(project, {
-    fields: [apikey.projectId],
-    references: [project.id],
-  }),
-  user: one(user, {
-    fields: [apikey.userId],
-    references: [user.id],
-  }),
-}));
 
 export type ApiKey = InferSelectModel<typeof apikey>;

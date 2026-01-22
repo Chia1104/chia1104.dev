@@ -9,14 +9,12 @@ import { baseAuthConfig } from "./base-auth";
 
 export const name = "auth-core";
 
-const database = await connectDatabase();
-
 export const auth = betterAuth({
   ...baseAuthConfig,
   /**
    * database adapter
    */
-  database: drizzleAdapter(database, {
+  database: drizzleAdapter(connectDatabase(), {
     provider: "pg",
     schema: schemas,
   }),

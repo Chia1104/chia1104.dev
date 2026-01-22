@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import {
   text,
@@ -88,42 +87,6 @@ export const project = pgTable(
     index("project_name_idx").on(table.name),
   ]
 );
-
-// Relations
-export const organizationRelations = relations(organization, ({ many }) => ({
-  projects: many(project),
-  members: many(member),
-  invitations: many(invitation),
-}));
-
-export const memberRelations = relations(member, ({ one }) => ({
-  organization: one(organization, {
-    fields: [member.organizationId],
-    references: [organization.id],
-  }),
-  user: one(user, {
-    fields: [member.userId],
-    references: [user.id],
-  }),
-}));
-
-export const invitationRelations = relations(invitation, ({ one }) => ({
-  organization: one(organization, {
-    fields: [invitation.organizationId],
-    references: [organization.id],
-  }),
-  user: one(user, {
-    fields: [invitation.inviterId],
-    references: [user.id],
-  }),
-}));
-
-export const projectRelations = relations(project, ({ one }) => ({
-  organization: one(organization, {
-    fields: [project.organizationId],
-    references: [organization.id],
-  }),
-}));
 
 export type Organization = InferSelectModel<typeof organization>;
 export type Member = InferSelectModel<typeof member>;

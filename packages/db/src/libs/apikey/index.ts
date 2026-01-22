@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm";
 import type { SQLWrapper } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
@@ -39,7 +39,7 @@ export const getInfiniteApiKeysByProjectId = withDTO(
       projectId,
     }: InfiniteDTO & {
       projectId: number;
-      whereAnd?: (SQLWrapper | undefined)[];
+      whereAnd?: SQLWrapper[];
     }
   ) => {
     const parsedCursor = cursor
@@ -48,22 +48,28 @@ export const getInfiniteApiKeysByProjectId = withDTO(
           orderBy === FeedOrderBy.CreatedAt ? "timestamp" : "default"
         )
       : null;
+    const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;
+    const cursorFilter = cursorValue
+      ? {
+          [orderBy]: {
+            [sortOrder === "asc" ? "gte" : "lte"]: cursorValue,
+          },
+        }
+      : null;
+    const rawFilters = whereAnd.filter(Boolean).map((condition) => ({
+      RAW: condition,
+    }));
+
     const items = await db.query.apikey.findMany({
       orderBy: (apikey, { asc, desc }) => [
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
       limit: limit + 1,
-      where: parsedCursor
-        ? (apikey, { gte, lte, eq, and }) =>
-            and(
-              sortOrder === "asc"
-                ? gte(apikey[orderBy], dayjs(parsedCursor).toISOString())
-                : lte(apikey[orderBy], dayjs(parsedCursor).toISOString()),
-              eq(apikey.projectId, projectId),
-              ...whereAnd
-            )
-        : (apikey, { eq, and }) =>
-            and(eq(apikey.projectId, projectId), ...whereAnd),
+      where: {
+        projectId,
+        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
+        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
+      },
     });
     let nextCursor: ReturnType<typeof cursorTransform> | null = null;
     if (items.length > limit) {
@@ -103,7 +109,7 @@ export const getInfiniteApiKeys = withDTO(
       whereAnd = [],
       withProject,
     }: Partial<InfiniteDTO> & {
-      whereAnd?: (SQLWrapper | undefined)[];
+      whereAnd?: SQLWrapper[];
       withProject?: boolean;
     }
   ) => {
@@ -113,20 +119,27 @@ export const getInfiniteApiKeys = withDTO(
           orderBy === FeedOrderBy.CreatedAt ? "timestamp" : "default"
         )
       : null;
+    const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;
+    const cursorFilter = cursorValue
+      ? {
+          [orderBy]: {
+            [sortOrder === "asc" ? "gte" : "lte"]: cursorValue,
+          },
+        }
+      : null;
+    const rawFilters = whereAnd.filter(Boolean).map((condition) => ({
+      RAW: condition,
+    }));
+
     const items = await db.query.apikey.findMany({
       orderBy: (apikey, { asc, desc }) => [
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
       limit: limit + 1,
-      where: parsedCursor
-        ? (apikey, { gte, lte, and }) =>
-            and(
-              sortOrder === "asc"
-                ? gte(apikey[orderBy], dayjs(parsedCursor).toISOString())
-                : lte(apikey[orderBy], dayjs(parsedCursor).toISOString()),
-              ...whereAnd
-            )
-        : (apikey, { and }) => and(...whereAnd),
+      where: {
+        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
+        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
+      },
       with: withProject
         ? {
             project: true,
