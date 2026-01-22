@@ -9,8 +9,7 @@ import feedsRoutes from "@/routes/feeds.route";
 import healthRoutes from "@/routes/health.route";
 import rpcRoutes from "@/routes/rpc.route";
 import spotifyRoutes from "@/routes/spotify.route";
-
-// import toolingsRoutes from "@/routes/toolings.route";
+import toolingsRoutes from "@/routes/toolings.route";
 
 export const app = bootstrap(appFactory.createApp())
   .basePath("/api/v1")
@@ -21,11 +20,8 @@ export const app = bootstrap(appFactory.createApp())
   .route("/health", healthRoutes)
   .route("/ai", aiRoutes)
   .route("/spotify", spotifyRoutes)
-  .route("/email", emailRoutes);
-/**
- * @TODO - Currently, `@acemir/cssom` (jsdom) cannot be correctly packaged by Nitro, it has a dynamic loading of a json file, but the node_modules processed by Nitro does not contain this file, causing an error at runtime.
- */
-// .route("/toolings", toolingsRoutes);
+  .route("/email", emailRoutes)
+  .route("/toolings", toolingsRoutes);
 
 export type AppRPC = typeof app;
 

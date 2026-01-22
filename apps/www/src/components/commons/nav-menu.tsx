@@ -153,7 +153,6 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
       <div className="container flex w-full justify-between px-5">
         <div className="flex w-1/5 items-center text-2xl">
           <Link
-            preview={false}
             href="/"
             scroll
             className="subtitle hover:c-text-green-to-purple ml-3 transition ease-in-out">
@@ -177,11 +176,7 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                   <Tab
                     key={path.replace(/^\//, "")}
                     title={
-                      <Link
-                        preview={false}
-                        locale={props.locale}
-                        key={path}
-                        href={path}>
+                      <Link locale={props.locale} key={path} href={path}>
                         <span className="relative px-[10px] py-[5px]">
                           <p className="hidden md:block">{name}</p>
                           <div className="block md:hidden">{icon}</div>

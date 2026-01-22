@@ -1446,13 +1446,75 @@ export declare const app: import("hono/hono-base").HonoBase<
         };
       },
       "/api/v1/email"
+    >
+  | import("hono/types").MergeSchemaPath<
+      {
+        "/link-preview": {
+          $post:
+            | {
+                input: {
+                  json: {
+                    href: string;
+                  };
+                };
+                output: {
+                  status?: number | undefined;
+                  code: string;
+                  errors?:
+                    | {
+                        field: string;
+                        message: string;
+                        code?: string | undefined;
+                      }[]
+                    | null
+                    | undefined;
+                };
+                outputFormat: "json";
+                status: 500;
+              }
+            | {
+                input: {
+                  json: {
+                    href: string;
+                  };
+                };
+                output: {
+                  status?: number | undefined;
+                  code: string;
+                  errors?:
+                    | {
+                        field: string;
+                        message: string;
+                        code?: string | undefined;
+                      }[]
+                    | null
+                    | undefined;
+                };
+                outputFormat: "json";
+                status: 400;
+              }
+            | {
+                input: {
+                  json: {
+                    href: string;
+                  };
+                };
+                output: {
+                  title?: string | null | undefined;
+                  description?: string | null | undefined;
+                  favicon?: string | null | undefined;
+                  ogImage?: string | null | undefined;
+                };
+                outputFormat: "json";
+                status: import("hono/utils/http-status").ContentfulStatusCode;
+              };
+        };
+      },
+      "/api/v1/toolings"
     >,
   "/api/v1",
   "/api/v1"
 >;
-/**
- * @TODO - Currently, `@acemir/cssom` (jsdom) cannot be correctly packaged by Nitro, it has a dynamic loading of a json file, but the node_modules processed by Nitro does not contain this file, causing an error at runtime.
- */
 export type AppRPC = typeof app;
 declare const _default: {
   port: number;
