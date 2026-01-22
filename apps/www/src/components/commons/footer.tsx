@@ -93,7 +93,11 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
                   className="w-fit"
                   key={path.replace(/^\//, "")}
                   title={
-                    <Link locale={locale} key={path} href={path}>
+                    <Link
+                      preview={false}
+                      locale={locale}
+                      key={path}
+                      href={path}>
                       <span className="relative px-[10px] py-[5px]">
                         <p>{name}</p>
                       </span>
@@ -113,6 +117,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
                 href={link}
                 key={link}
                 as={Link}
+                preview={false}
                 variant="light"
                 className="text-default-500 gap-1 text-start">
                 {icon} {name}

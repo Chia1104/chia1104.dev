@@ -217,6 +217,7 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
         {props.data ? (
           <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
             <Link
+              preview={false}
               className="m-0 text-sm"
               href={props.data.item.external_urls.spotify}
               target="_blank">
