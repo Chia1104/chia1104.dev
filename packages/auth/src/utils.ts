@@ -49,7 +49,8 @@ export const sessionCookieOptions = (env?: Partial<typeof internalEnv>) =>
   }) as const;
 
 export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
-  return Object.assign(config ?? {}, {
+  return {
+    ...config,
     baseURL:
       config?.baseURL ??
       withServiceEndpoint("/auth", Service.LegacyService, {
@@ -73,5 +74,5 @@ export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
       organizationClient(),
       adminClient(),
     ],
-  });
+  };
 };
