@@ -1,8 +1,6 @@
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
-import { auth } from "@chia/auth";
-
 import { env } from "@/env";
 
 /**
@@ -11,7 +9,7 @@ import { env } from "@/env";
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))
   .on(["GET", "POST"], "*", (c) => {
-    return auth.handler(c.req.raw);
+    return c.var.auth.handler(c.req.raw);
   });
 
 export default api;

@@ -41,6 +41,7 @@
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
     "ai": "^6.0.45",
+    "better-all": "catalog:",
     "client-only": "catalog:",
     "clsx": "^2.1.1",
     "dayjs": "catalog:",

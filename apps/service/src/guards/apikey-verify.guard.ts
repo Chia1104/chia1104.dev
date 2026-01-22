@@ -1,6 +1,5 @@
 import { createMiddleware } from "hono/factory";
 
-import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
 import type { ApiKey } from "@chia/db/schema";
@@ -28,7 +27,7 @@ export const apikeyVerify = (options?: {
     }
 
     const { data: apiKey, error: apiKeyError } = await tryCatch(
-      auth.api.verifyApiKey({
+      c.var.auth.api.verifyApiKey({
         headers: c.req.raw.headers,
         body: {
           key: chApiKey,

@@ -39,6 +39,7 @@ const api = new Hono<HonoContext>()
         headers: c.req.raw.headers,
         db: c.var.db,
         kv: c.var.kv,
+        auth: c.var.auth,
         hooks: {
           async onFeedCreated(feed) {
             await all({
