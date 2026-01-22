@@ -16,7 +16,6 @@ export const useGenerateFeedSlug = (
 ) => {
   return useCompletion({
     api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
-      isInternal: true,
       version: "LEGACY",
     }),
     credentials: "include",
@@ -45,7 +44,6 @@ export const useGenerateFeedDescription = (
 ) => {
   return useCompletion({
     api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
-      isInternal: true,
       version: "LEGACY",
     }),
     credentials: "include",
@@ -79,7 +77,6 @@ export const useGenerateFeedContent = (
 ) => {
   return useCompletion({
     api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
-      isInternal: true,
       version: "LEGACY",
     }),
     credentials: "include",
