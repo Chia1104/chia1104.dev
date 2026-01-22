@@ -126,7 +126,11 @@ export const getBaseUrl = (options?: {
   return baseUrl?.replace(/\/$/, "");
 };
 
-type ServiceVersion = "v1" | "NO_PREFIX" | "LEGACY";
+type ServiceVersion =
+  | "v1"
+  | "NO_PREFIX"
+  | "LEGACY"
+  | Exclude<Service, typeof Service.LegacyService>;
 
 interface GetServiceEndPointOptions {
   clientPrefix?: string;
@@ -144,7 +148,9 @@ function switchServiceVersion(version: ServiceVersion, url: string) {
   switch (version) {
     case "LEGACY":
     case "v1":
-      return removeEndSlash(url) + "/api/v1";
+      return removeEndSlash(url).replace(/\/api\/v1$/, "") + "/api/v1";
+    case "auth":
+      return removeEndSlash(url).replace(/\/auth$/, "") + "/auth";
     default:
       return removeEndSlash(url);
   }
@@ -234,7 +240,23 @@ export const CONTACT_EMAIL = "contact@notify.chia1104.dev";
 export const AUTH_EMAIL = "no-reply@notify.chia1104.dev";
 
 interface WithServiceEndpointOptions {
+  /**
+   * @default false
+   * @description Whether the service is internal, used to get the internal service endpoint
+   * @example
+   * - true: Get the service endpoint from the internal service endpoint
+   * - false: Get the service endpoint from the proxy endpoint
+   */
   isInternal?: boolean;
+  /**
+   * @default "NO_PREFIX"
+   * @description The version of the service endpoint, used to get the service with prefix
+   * @example
+   * - "v1": `/api/v1`
+   * - "auth": `/auth`
+   * - "NO_PREFIX": `/`
+   * - "LEGACY": `/api/v1`
+   */
   version?: ServiceVersion;
 }
 
@@ -251,7 +273,7 @@ function serviceNameResolver(service: Service) {
   }
 }
 
-const getServicePrefixUrl = (service: Service, isInternal?: boolean) => {
+const getServiceUrl = (service: Service, isInternal?: boolean) => {
   if (isInternal) {
     return (
       serviceEnv[`INTERNAL_${serviceNameResolver(service)}_ENDPOINT`] ?? ""
@@ -265,9 +287,9 @@ const getServicePrefixUrl = (service: Service, isInternal?: boolean) => {
   );
 };
 
-export const withServiceEndpoint = (
+export const withServiceEndpoint = <TService extends Service>(
   path: string,
-  service: Service,
+  service: TService,
   options?: WithServiceEndpointOptions
 ) => {
   const isServer = typeof window === "undefined";
@@ -283,6 +305,6 @@ export const withServiceEndpoint = (
 
   return `${switchServiceVersion(
     version,
-    getServicePrefixUrl(service, isInternal || isServer)
+    getServiceUrl(service, isInternal || isServer)
   )}${path.startsWith("/") ? path : `/${path}`}`;
 };

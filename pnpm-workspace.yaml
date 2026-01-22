@@ -24,6 +24,9 @@ catalog:
   zod: 4.3.5
 
 catalogs:
+  better-auth:
+    '@better-auth/passkey': 1.4.14
+    better-auth: 1.4.14
   chiastack:
     '@chiastack/eslint': 2.0.4
     '@chiastack/tsconfig': 2.1.1

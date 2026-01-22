@@ -5,6 +5,13 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  better-auth:
+    '@better-auth/passkey':
+      specifier: 1.4.14
+      version: 1.4.14
+    better-auth:
+      specifier: 1.4.14
+      version: 1.4.14
   chiastack:
     '@chiastack/eslint':
       specifier: 2.0.4
@@ -515,6 +522,9 @@ importers:
       better-all:
         specifier: 'catalog:'
         version: 0.0.3
+      better-auth:
+        specifier: catalog:better-auth
+        version: 1.4.14(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.6)(kysely@0.28.9)(pg@8.17.1)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.3(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.17)
       dayjs:
         specifier: 'catalog:'
         version: 1.11.19
@@ -946,7 +956,7 @@ importers:
   packages/auth:
     dependencies:
       '@better-auth/passkey':
-        specifier: 1.4.14
+        specifier: catalog:better-auth
         version: 1.4.14(@better-auth/core@1.4.14(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.5))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-auth@1.4.14(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.6)(kysely@0.28.9)(pg@8.17.1)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.3(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.17))(better-call@1.1.8(zod@4.3.5))(nanostores@1.1.0)
       '@chia/db':
         specifier: workspace:*
@@ -964,7 +974,7 @@ importers:
         specifier: 'catalog:'
         version: 0.13.10(typescript@5.9.3)(zod@4.3.5)
       better-auth:
-        specifier: 1.4.14
+        specifier: catalog:better-auth
         version: 1.4.14(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.6)(kysely@0.28.9)(pg@8.17.1)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.3(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.17.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.17)
       client-only:
         specifier: 'catalog:'

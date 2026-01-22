@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "type:emit": "tsc -p tsconfig.types.json",
-    "dev": "pnpm type:emit && nitro dev",
+    "dev": "nitro dev",
     "build": "pnpm type:emit && nitro build",
     "node:start": "node .output/server/index.mjs",
     "start": "bun run --bun .output/server/index.mjs",
@@ -38,6 +38,7 @@
     "@workflow-worlds/redis": "^0.1.0",
     "@workflow/world-postgres": "4.1.0-beta.28",
     "better-all": "catalog:",
+    "better-auth": "catalog:better-auth",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
     "hono": "^4.11.4",
