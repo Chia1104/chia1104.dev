@@ -108,54 +108,29 @@ export declare const app: import("hono/hono-base").HonoBase<
                   items: {
                     createdAt: string;
                     updatedAt: string;
-                    translations: (
-                      | {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: {
-                            createdAt: string;
-                            updatedAt: string;
-                            content: string | null;
-                            id: number;
-                            feedTranslationId: number;
-                            source: string | null;
-                            unstableSerializedSource: string | null;
-                          } | null;
-                          locale: "en" | "zh-TW";
-                          id: number;
-                          description: string | null;
-                          feedId: number;
-                          title: string;
-                          excerpt: string | null;
-                          summary: string | null;
-                          readTime: number | null;
-                          embedding: number[] | null;
-                          embedding512: number[] | null;
-                        }
-                      | {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: {
-                            createdAt: string;
-                            updatedAt: string;
-                            content: string | null;
-                            id: number;
-                            feedTranslationId: number;
-                            source: string | null;
-                            unstableSerializedSource: string | null;
-                          } | null;
-                          locale: "en" | "zh-TW";
-                          id: number;
-                          description: string | null;
-                          feedId: number;
-                          title: string;
-                          excerpt: string | null;
-                          summary: string | null;
-                          readTime: number | null;
-                          embedding: number[] | null;
-                          embedding512: number[] | null;
-                        }
-                    )[];
+                    translations: {
+                      createdAt: string;
+                      updatedAt: string;
+                      content: {
+                        createdAt: string;
+                        updatedAt: string;
+                        content: string | null;
+                        id: number;
+                        feedTranslationId: number;
+                        source: string | null;
+                        unstableSerializedSource: string | null;
+                      } | null;
+                      locale: "en" | "zh-TW";
+                      id: number;
+                      description: string | null;
+                      feedId: number;
+                      title: string;
+                      excerpt: string | null;
+                      summary: string | null;
+                      readTime: number | null;
+                      embedding: number[] | null;
+                      embedding512: number[] | null;
+                    }[];
                     type: "post" | "note";
                     id: number;
                     slug: string;
@@ -173,13 +148,13 @@ export declare const app: import("hono/hono-base").HonoBase<
                         id: number;
                         slug: string;
                         translations: {
-                          name: string;
                           locale: "en" | "zh-TW";
                           id: number;
-                          description: string | null;
+                          name: string;
                           tagId: number;
+                          description: string | null;
                         }[];
-                      };
+                      } | null;
                     }[];
                   }[];
                   nextCursor: string | number | null;
@@ -260,54 +235,29 @@ export declare const app: import("hono/hono-base").HonoBase<
                 output: {
                   createdAt: string;
                   updatedAt: string;
-                  translations: (
-                    | {
-                        createdAt: string;
-                        updatedAt: string;
-                        content: {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: string | null;
-                          id: number;
-                          feedTranslationId: number;
-                          source: string | null;
-                          unstableSerializedSource: string | null;
-                        } | null;
-                        locale: "en" | "zh-TW";
-                        id: number;
-                        description: string | null;
-                        feedId: number;
-                        title: string;
-                        excerpt: string | null;
-                        summary: string | null;
-                        readTime: number | null;
-                        embedding: number[] | null;
-                        embedding512: number[] | null;
-                      }
-                    | {
-                        createdAt: string;
-                        updatedAt: string;
-                        content: {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: string | null;
-                          id: number;
-                          feedTranslationId: number;
-                          source: string | null;
-                          unstableSerializedSource: string | null;
-                        } | null;
-                        locale: "en" | "zh-TW";
-                        id: number;
-                        description: string | null;
-                        feedId: number;
-                        title: string;
-                        excerpt: string | null;
-                        summary: string | null;
-                        readTime: number | null;
-                        embedding: number[] | null;
-                        embedding512: number[] | null;
-                      }
-                  )[];
+                  translations: {
+                    createdAt: string;
+                    updatedAt: string;
+                    content: {
+                      createdAt: string;
+                      updatedAt: string;
+                      content: string | null;
+                      id: number;
+                      feedTranslationId: number;
+                      source: string | null;
+                      unstableSerializedSource: string | null;
+                    } | null;
+                    locale: "en" | "zh-TW";
+                    id: number;
+                    description: string | null;
+                    feedId: number;
+                    title: string;
+                    excerpt: string | null;
+                    summary: string | null;
+                    readTime: number | null;
+                    embedding: number[] | null;
+                    embedding512: number[] | null;
+                  }[];
                   type: "post" | "note";
                   id: number;
                   slug: string;
@@ -325,13 +275,13 @@ export declare const app: import("hono/hono-base").HonoBase<
                       id: number;
                       slug: string;
                       translations: {
-                        name: string;
                         locale: "en" | "zh-TW";
                         id: number;
-                        description: string | null;
+                        name: string;
                         tagId: number;
+                        description: string | null;
                       }[];
-                    };
+                    } | null;
                   }[];
                 };
                 outputFormat: "json";
@@ -410,54 +360,29 @@ export declare const app: import("hono/hono-base").HonoBase<
                 output: {
                   createdAt: string;
                   updatedAt: string;
-                  translations: (
-                    | {
-                        createdAt: string;
-                        updatedAt: string;
-                        content: {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: string | null;
-                          id: number;
-                          feedTranslationId: number;
-                          source: string | null;
-                          unstableSerializedSource: string | null;
-                        } | null;
-                        locale: "en" | "zh-TW";
-                        id: number;
-                        description: string | null;
-                        feedId: number;
-                        title: string;
-                        excerpt: string | null;
-                        summary: string | null;
-                        readTime: number | null;
-                        embedding: number[] | null;
-                        embedding512: number[] | null;
-                      }
-                    | {
-                        createdAt: string;
-                        updatedAt: string;
-                        content: {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: string | null;
-                          id: number;
-                          feedTranslationId: number;
-                          source: string | null;
-                          unstableSerializedSource: string | null;
-                        } | null;
-                        locale: "en" | "zh-TW";
-                        id: number;
-                        description: string | null;
-                        feedId: number;
-                        title: string;
-                        excerpt: string | null;
-                        summary: string | null;
-                        readTime: number | null;
-                        embedding: number[] | null;
-                        embedding512: number[] | null;
-                      }
-                  )[];
+                  translations: {
+                    createdAt: string;
+                    updatedAt: string;
+                    content: {
+                      createdAt: string;
+                      updatedAt: string;
+                      content: string | null;
+                      id: number;
+                      feedTranslationId: number;
+                      source: string | null;
+                      unstableSerializedSource: string | null;
+                    } | null;
+                    locale: "en" | "zh-TW";
+                    id: number;
+                    description: string | null;
+                    feedId: number;
+                    title: string;
+                    excerpt: string | null;
+                    summary: string | null;
+                    readTime: number | null;
+                    embedding: number[] | null;
+                    embedding512: number[] | null;
+                  }[];
                   type: "post" | "note";
                   id: number;
                   slug: string;
@@ -475,13 +400,13 @@ export declare const app: import("hono/hono-base").HonoBase<
                       id: number;
                       slug: string;
                       translations: {
-                        name: string;
                         locale: "en" | "zh-TW";
                         id: number;
-                        description: string | null;
+                        name: string;
                         tagId: number;
+                        description: string | null;
                       }[];
-                    };
+                    } | null;
                   }[];
                 };
                 outputFormat: "json";
@@ -718,54 +643,29 @@ export declare const app: import("hono/hono-base").HonoBase<
                   items: {
                     createdAt: string;
                     updatedAt: string;
-                    translations: (
-                      | {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: {
-                            createdAt: string;
-                            updatedAt: string;
-                            content: string | null;
-                            id: number;
-                            feedTranslationId: number;
-                            source: string | null;
-                            unstableSerializedSource: string | null;
-                          } | null;
-                          locale: "en" | "zh-TW";
-                          id: number;
-                          description: string | null;
-                          feedId: number;
-                          title: string;
-                          excerpt: string | null;
-                          summary: string | null;
-                          readTime: number | null;
-                          embedding: number[] | null;
-                          embedding512: number[] | null;
-                        }
-                      | {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: {
-                            createdAt: string;
-                            updatedAt: string;
-                            content: string | null;
-                            id: number;
-                            feedTranslationId: number;
-                            source: string | null;
-                            unstableSerializedSource: string | null;
-                          } | null;
-                          locale: "en" | "zh-TW";
-                          id: number;
-                          description: string | null;
-                          feedId: number;
-                          title: string;
-                          excerpt: string | null;
-                          summary: string | null;
-                          readTime: number | null;
-                          embedding: number[] | null;
-                          embedding512: number[] | null;
-                        }
-                    )[];
+                    translations: {
+                      createdAt: string;
+                      updatedAt: string;
+                      content: {
+                        createdAt: string;
+                        updatedAt: string;
+                        content: string | null;
+                        id: number;
+                        feedTranslationId: number;
+                        source: string | null;
+                        unstableSerializedSource: string | null;
+                      } | null;
+                      locale: "en" | "zh-TW";
+                      id: number;
+                      description: string | null;
+                      feedId: number;
+                      title: string;
+                      excerpt: string | null;
+                      summary: string | null;
+                      readTime: number | null;
+                      embedding: number[] | null;
+                      embedding512: number[] | null;
+                    }[];
                     type: "post" | "note";
                     id: number;
                     slug: string;
@@ -783,13 +683,13 @@ export declare const app: import("hono/hono-base").HonoBase<
                         id: number;
                         slug: string;
                         translations: {
-                          name: string;
                           locale: "en" | "zh-TW";
                           id: number;
-                          description: string | null;
+                          name: string;
                           tagId: number;
+                          description: string | null;
                         }[];
-                      };
+                      } | null;
                     }[];
                   }[];
                   nextCursor: string | number | null;
@@ -856,54 +756,29 @@ export declare const app: import("hono/hono-base").HonoBase<
                   items: {
                     createdAt: string;
                     updatedAt: string;
-                    translations: (
-                      | {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: {
-                            createdAt: string;
-                            updatedAt: string;
-                            content: string | null;
-                            id: number;
-                            feedTranslationId: number;
-                            source: string | null;
-                            unstableSerializedSource: string | null;
-                          } | null;
-                          locale: "en" | "zh-TW";
-                          id: number;
-                          description: string | null;
-                          feedId: number;
-                          title: string;
-                          excerpt: string | null;
-                          summary: string | null;
-                          readTime: number | null;
-                          embedding: number[] | null;
-                          embedding512: number[] | null;
-                        }
-                      | {
-                          createdAt: string;
-                          updatedAt: string;
-                          content: {
-                            createdAt: string;
-                            updatedAt: string;
-                            content: string | null;
-                            id: number;
-                            feedTranslationId: number;
-                            source: string | null;
-                            unstableSerializedSource: string | null;
-                          } | null;
-                          locale: "en" | "zh-TW";
-                          id: number;
-                          description: string | null;
-                          feedId: number;
-                          title: string;
-                          excerpt: string | null;
-                          summary: string | null;
-                          readTime: number | null;
-                          embedding: number[] | null;
-                          embedding512: number[] | null;
-                        }
-                    )[];
+                    translations: {
+                      createdAt: string;
+                      updatedAt: string;
+                      content: {
+                        createdAt: string;
+                        updatedAt: string;
+                        content: string | null;
+                        id: number;
+                        feedTranslationId: number;
+                        source: string | null;
+                        unstableSerializedSource: string | null;
+                      } | null;
+                      locale: "en" | "zh-TW";
+                      id: number;
+                      description: string | null;
+                      feedId: number;
+                      title: string;
+                      excerpt: string | null;
+                      summary: string | null;
+                      readTime: number | null;
+                      embedding: number[] | null;
+                      embedding512: number[] | null;
+                    }[];
                     type: "post" | "note";
                     id: number;
                     slug: string;
@@ -921,13 +796,13 @@ export declare const app: import("hono/hono-base").HonoBase<
                         id: number;
                         slug: string;
                         translations: {
-                          name: string;
                           locale: "en" | "zh-TW";
                           id: number;
-                          description: string | null;
+                          name: string;
                           tagId: number;
+                          description: string | null;
                         }[];
-                      };
+                      } | null;
                     }[];
                   }[];
                   nextCursor: string | number | null;
