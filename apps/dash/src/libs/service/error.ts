@@ -3,6 +3,7 @@ export class HonoRPCError extends Error {
   status: number;
   constructor(code: string, status: number, message: string) {
     super(message);
+    this.name = "HonoRPCError";
     this.code = code;
     this.status = status;
   }
