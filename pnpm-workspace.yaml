@@ -16,7 +16,7 @@ catalog:
   dayjs: ^1.11.19
   graphql-request: ^7.4.0
   ky: ^1.14.2
-  lodash: ^4.17.21
+  lodash: ^4.17.23
   server-only: ^0.0.1
   superjson: 2.2.6
   tsdown: 0.20.0-beta.3
