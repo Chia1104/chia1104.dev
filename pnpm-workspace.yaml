@@ -31,7 +31,7 @@ catalogs:
     '@chiastack/eslint': 2.0.4
     '@chiastack/tsconfig': 2.1.1
   drizzle:
-    drizzle-kit: 1.0.0-beta.12-a5629fb
+    drizzle-kit: 1.0.0-beta.9-e89174b
     drizzle-orm: 1.0.0-beta.12-a5629fb
     drizzle-zod: 1.0.0-beta.12-a5629fb
   eslint:
