@@ -1,5 +1,4 @@
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 import snakeCase from "lodash/snakeCase.js";
@@ -9,7 +8,7 @@ import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
 import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
-import { locale, schema } from "@chia/db";
+import { locale } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
@@ -93,7 +92,7 @@ const api = new Hono<HonoContext>()
         cursor: nextCursor,
         withContent: withContent === "true",
         locale,
-        whereAnd: [eq(schema.feeds.published, true)],
+        whereAnd: { published: true },
       });
       return c.json(feeds);
     }
