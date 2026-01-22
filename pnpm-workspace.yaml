@@ -33,7 +33,7 @@ catalogs:
   drizzle:
     drizzle-kit: 1.0.0-beta.12-a5629fb
     drizzle-orm: 1.0.0-beta.12-a5629fb
-    drizzle-zod: 1.0.0-beta.12-a5629fb
+    drizzle-zod: 1.0.0-beta.9-e89174b
   eslint:
     eslint: 9.39.2
   fumadocs:
