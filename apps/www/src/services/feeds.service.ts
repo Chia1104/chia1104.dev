@@ -119,6 +119,9 @@ export const getFeedBySlug = async (slug: string, locale = Locale.zhTW) => {
         locale: locale,
       },
     });
+    if (res.status === 404) {
+      return null;
+    }
     if (!res.ok) {
       throw new HonoRPCError(res.statusText, res.status, res.statusText);
     }
