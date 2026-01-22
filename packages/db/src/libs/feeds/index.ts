@@ -3,13 +3,8 @@ import type { RelationsFilterColumns, KnownKeysOnly } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import {
-  feeds,
-  feedTranslations,
-  contents,
-  relations,
-} from "../../schemas/index.ts";
-import type { Locale } from "../../schemas/index.ts";
+import { feeds, feedTranslations, contents } from "../../schemas/index.ts";
+import type { Locale, relations } from "../../schemas/index.ts";
 import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
 import { cursorTransform, dateToTimestamp, withDTO } from "../index.ts";
 import type {
@@ -183,9 +178,11 @@ export const getInfiniteFeeds = withDTO(
       },
       where: {
         type: type === "all" ? undefined : type,
-        [orderBy]: {
-          [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
-        },
+        [orderBy]: parsedCursor
+          ? {
+              [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
+            }
+          : undefined,
         ...whereAnd,
       },
     });
@@ -285,9 +282,11 @@ export const getInfiniteFeedsByUserId = withDTO(
       where: {
         userId,
         type: type === "all" ? undefined : type,
-        [orderBy]: {
-          [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
-        },
+        [orderBy]: parsedCursor
+          ? {
+              [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
+            }
+          : undefined,
         ...whereAnd,
       },
     });
