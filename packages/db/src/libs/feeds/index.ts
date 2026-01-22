@@ -1,9 +1,14 @@
-import type { SQLWrapper } from "drizzle-orm";
 import { eq } from "drizzle-orm";
+import type { RelationsFilterColumns, KnownKeysOnly } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { feeds, feedTranslations, contents } from "../../schemas/index.ts";
+import {
+  feeds,
+  feedTranslations,
+  contents,
+  relations,
+} from "../../schemas/index.ts";
 import type { Locale } from "../../schemas/index.ts";
 import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
 import { cursorTransform, dateToTimestamp, withDTO } from "../index.ts";
@@ -20,20 +25,18 @@ export const getFeedBySlug = withDTO(
   async (db, params: { slug: string; locale?: Locale }) => {
     const locale = params.locale;
     const feed = await db.query.feeds.findFirst({
-      where: (feeds, { eq }) => eq(feeds.slug, params.slug),
+      where: {
+        slug: params.slug,
+      },
       with: {
-        translations: locale
-          ? {
-              where: (translations, { eq }) => eq(translations.locale, locale),
-              with: {
-                content: true,
-              },
-            }
-          : {
-              with: {
-                content: true,
-              },
-            },
+        translations: {
+          where: {
+            locale,
+          },
+          with: {
+            content: true,
+          },
+        },
         feedsToTags: {
           with: {
             tag: {
@@ -74,20 +77,18 @@ export const getFeedById = withDTO(
   async (db, params: { feedId: number; locale?: Locale }) => {
     const locale = params.locale;
     const feed = await db.query.feeds.findFirst({
-      where: (feeds, { eq }) => eq(feeds.id, params.feedId),
+      where: {
+        id: params.feedId,
+      },
       with: {
-        translations: locale
-          ? {
-              where: (translations, { eq }) => eq(translations.locale, locale),
-              with: {
-                content: true,
-              },
-            }
-          : {
-              with: {
-                content: true,
-              },
-            },
+        translations: {
+          where: {
+            locale,
+          },
+          with: {
+            content: true,
+          },
+        },
         feedsToTags: {
           with: {
             tag: {
@@ -134,10 +135,12 @@ export const getInfiniteFeeds = withDTO(
       sortOrder = "desc",
       type = FeedType.Post,
       locale,
-      whereAnd = [],
+      whereAnd = {},
       withContent = false,
     }: InfiniteDTO & {
-      whereAnd?: (SQLWrapper | undefined)[];
+      whereAnd?: RelationsFilterColumns<
+        KnownKeysOnly<typeof feeds, (typeof relations.feeds)["table"]>
+      >;
       locale?: Locale;
     }
   ) => {
@@ -156,44 +159,35 @@ export const getInfiniteFeeds = withDTO(
       ],
       limit: limit + 1,
       with: {
-        translations: locale
-          ? {
-              where: (translations, { eq }) => eq(translations.locale, locale),
-              with: {
-                content: withContent ? true : undefined,
-              },
-            }
-          : {
-              with: {
-                content: withContent ? true : undefined,
-              },
-            },
+        translations: {
+          where: {
+            locale,
+          },
+          with: {
+            content: withContent,
+          },
+        },
         feedsToTags: {
           with: {
             tag: {
               with: {
-                translations: locale
-                  ? {
-                      where: (translations, { eq }) =>
-                        eq(translations.locale, locale),
-                    }
-                  : true,
+                translations: {
+                  where: {
+                    locale: locale,
+                  },
+                },
               },
             },
           },
         },
       },
-      where: parsedCursor
-        ? (feeds, { gte, lte, eq, and }) =>
-            and(
-              sortOrder === "asc"
-                ? gte(feeds[orderBy], parsedCursor)
-                : lte(feeds[orderBy], parsedCursor),
-              type === "all" ? undefined : eq(feeds.type, type),
-              ...whereAnd
-            )
-        : (feeds, { eq, and }) =>
-            and(type === "all" ? undefined : eq(feeds.type, type), ...whereAnd),
+      where: {
+        type: type === "all" ? undefined : type,
+        [orderBy]: {
+          [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
+        },
+        ...whereAnd,
+      },
     });
 
     let nextCursor: ReturnType<typeof cursorTransform> | null = null;
@@ -241,11 +235,13 @@ export const getInfiniteFeedsByUserId = withDTO(
       type = FeedType.Post,
       userId,
       locale,
-      whereAnd = [],
+      whereAnd = {},
       withContent = false,
     }: InfiniteDTO & {
       userId: string;
-      whereAnd?: (SQLWrapper | undefined)[];
+      whereAnd?: RelationsFilterColumns<
+        KnownKeysOnly<typeof feeds, (typeof relations.feeds)["table"]>
+      >;
       locale?: Locale;
     }
   ) => {
@@ -264,49 +260,36 @@ export const getInfiniteFeedsByUserId = withDTO(
       ],
       limit: limit + 1,
       with: {
-        translations: locale
-          ? {
-              where: (translations, { eq }) => eq(translations.locale, locale),
-              with: {
-                content: withContent ? true : undefined,
-              },
-            }
-          : {
-              with: {
-                content: withContent ? true : undefined,
-              },
-            },
+        translations: {
+          where: {
+            locale,
+          },
+          with: {
+            content: withContent,
+          },
+        },
         feedsToTags: {
           with: {
             tag: {
               with: {
-                translations: locale
-                  ? {
-                      where: (translations, { eq }) =>
-                        eq(translations.locale, locale),
-                    }
-                  : true,
+                translations: {
+                  where: {
+                    locale,
+                  },
+                },
               },
             },
           },
         },
       },
-      where: parsedCursor
-        ? (feeds, { gte, lte, eq, and }) =>
-            and(
-              sortOrder === "asc"
-                ? gte(feeds[orderBy], parsedCursor)
-                : lte(feeds[orderBy], parsedCursor),
-              type === "all" ? undefined : eq(feeds.type, type),
-              eq(feeds.userId, userId),
-              ...whereAnd
-            )
-        : (feeds, { eq, and }) =>
-            and(
-              type === "all" ? undefined : eq(feeds.type, type),
-              eq(feeds.userId, userId),
-              ...whereAnd
-            ),
+      where: {
+        userId,
+        type: type === "all" ? undefined : type,
+        [orderBy]: {
+          [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
+        },
+        ...whereAnd,
+      },
     });
 
     let nextCursor: ReturnType<typeof cursorTransform> | null = null;
@@ -450,11 +433,10 @@ export const upsertFeedTranslation = withDTO(
     } & Partial<InsertFeedTranslationDTO>
   ) => {
     const existingTranslation = await db.query.feedTranslations.findFirst({
-      where: (translations, { eq, and }) =>
-        and(
-          eq(translations.feedId, dto.feedId),
-          eq(translations.locale, dto.locale)
-        ),
+      where: {
+        feedId: dto.feedId,
+        locale: dto.locale,
+      },
     });
 
     if (existingTranslation) {
@@ -532,8 +514,9 @@ export const upsertContent = withDTO(
     }
   ) => {
     const existingContent = await db.query.contents.findFirst({
-      where: (contents, { eq }) =>
-        eq(contents.feedTranslationId, dto.feedTranslationId),
+      where: {
+        feedTranslationId: dto.feedTranslationId,
+      },
     });
 
     if (existingContent) {

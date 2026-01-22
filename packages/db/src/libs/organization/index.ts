@@ -36,7 +36,7 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
       organizationId,
     }: InfiniteDTO & {
       organizationId: string;
-      whereAnd?: (SQLWrapper | undefined)[];
+      whereAnd?: SQLWrapper[];
     }
   ) => {
     const parsedCursor = cursor
@@ -45,22 +45,27 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
           orderBy === FeedOrderBy.CreatedAt ? "timestamp" : "default"
         )
       : null;
+    const cursorFilter = parsedCursor
+      ? {
+          [orderBy]: {
+            [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
+          },
+        }
+      : null;
+    const rawFilters = whereAnd.filter(Boolean).map((condition) => ({
+      RAW: condition,
+    }));
+
     const items = await db.query.project.findMany({
       orderBy: (project, { asc, desc }) => [
         sortOrder === "asc" ? asc(project[orderBy]) : desc(project[orderBy]),
       ],
       limit: limit + 1,
-      where: parsedCursor
-        ? (project, { gte, lte, eq, and }) =>
-            and(
-              sortOrder === "asc"
-                ? gte(project[orderBy], parsedCursor)
-                : lte(project[orderBy], parsedCursor),
-              eq(project.organizationId, organizationId),
-              ...whereAnd
-            )
-        : (project, { eq, and }) =>
-            and(eq(project.organizationId, organizationId), ...whereAnd),
+      where: {
+        organizationId,
+        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
+        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
+      },
     });
     let nextCursor: ReturnType<typeof cursorTransform> | null = null;
     if (items.length > limit) {
@@ -84,7 +89,9 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
 
 export const getProjectBySlug = withDTO(async (db, slug: string) => {
   const project = await db.query.project.findFirst({
-    where: (project, { eq }) => eq(project.slug, slug),
+    where: {
+      slug,
+    },
   });
   if (!project) {
     return null;
@@ -100,7 +107,9 @@ export const getProjectBySlug = withDTO(async (db, slug: string) => {
 
 export const getProjectById = withDTO(async (db, id: number) => {
   const project = await db.query.project.findFirst({
-    where: (project, { eq }) => eq(project.id, id),
+    where: {
+      id,
+    },
   });
   if (!project) {
     return null;

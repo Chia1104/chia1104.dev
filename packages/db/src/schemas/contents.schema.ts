@@ -1,5 +1,4 @@
-import { relations } from "drizzle-orm";
-import type { InferSelectModel, BuildExtraConfigColumns } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 import {
   index,
   integer,
@@ -94,19 +93,13 @@ const baseFeedsColumns = {
   mainImage: text("main_image"),
 };
 
-type FeedsColumns = typeof baseFeedsColumns;
-
-const feedsExtraConfig = (
-  table: BuildExtraConfigColumns<"feed", FeedsColumns, "pg">
-) => [
+export const feeds = pgTable("feed", baseFeedsColumns, (table) => [
   uniqueIndex("feed_slug_idx").on(table.slug),
   index("feed_user_id_idx").on(table.userId),
   index("feed_type_idx").on(table.type),
   index("feed_published_idx").on(table.published),
   index("feed_default_locale_idx").on(table.defaultLocale),
-];
-
-export const feeds = pgTable("feed", baseFeedsColumns, feedsExtraConfig);
+]);
 
 // ============================================
 // Feed Translations
@@ -208,86 +201,6 @@ export const feedsToTags = pgTable(
     index("feeds_to_tags_tag_id_idx").on(t.tagId),
   ]
 );
-
-// ============================================
-// Relations
-// ============================================
-
-export const tagsRelations = relations(tags, ({ many }) => ({
-  translations: many(tagTranslations),
-  assetsToTags: many(assetsToTags),
-  feedsToTags: many(feedsToTags),
-}));
-
-export const tagTranslationsRelations = relations(
-  tagTranslations,
-  ({ one }) => ({
-    tag: one(tags, {
-      fields: [tagTranslations.tagId],
-      references: [tags.id],
-    }),
-  })
-);
-
-export const feedsRelations = relations(feeds, ({ one, many }) => ({
-  translations: many(feedTranslations),
-  user: one(user, {
-    fields: [feeds.userId],
-    references: [user.id],
-  }),
-  feedsToTags: many(feedsToTags),
-}));
-
-export const feedTranslationsRelations = relations(
-  feedTranslations,
-  ({ one }) => ({
-    feed: one(feeds, {
-      fields: [feedTranslations.feedId],
-      references: [feeds.id],
-    }),
-    content: one(contents, {
-      fields: [feedTranslations.id],
-      references: [contents.feedTranslationId],
-    }),
-  })
-);
-
-export const assetsRelations = relations(assets, ({ one, many }) => ({
-  user: one(user, {
-    fields: [assets.userId],
-    references: [user.id],
-  }),
-  assetsToTags: many(assetsToTags),
-}));
-
-export const contentsRelations = relations(contents, ({ one }) => ({
-  feedTranslation: one(feedTranslations, {
-    fields: [contents.feedTranslationId],
-    references: [feedTranslations.id],
-  }),
-}));
-
-export const assetsToTagsRelations = relations(assetsToTags, ({ one }) => ({
-  asset: one(assets, {
-    fields: [assetsToTags.assetId],
-    references: [assets.id],
-  }),
-  tag: one(tags, {
-    fields: [assetsToTags.tagId],
-    references: [tags.id],
-  }),
-}));
-
-export const feedsToTagsRelations = relations(feedsToTags, ({ one }) => ({
-  feed: one(feeds, {
-    fields: [feedsToTags.feedId],
-    references: [feeds.id],
-  }),
-  tag: one(tags, {
-    fields: [feedsToTags.tagId],
-    references: [tags.id],
-  }),
-}));
 
 // ============================================
 // Types

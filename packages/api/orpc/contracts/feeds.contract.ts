@@ -128,18 +128,20 @@ export const feedWithTranslationsSchema = z.object({
   feedsToTags: z
     .array(
       z.object({
-        tag: z.object({
-          id: z.number(),
-          slug: z.string(),
-          translations: z.array(
-            z.object({
-              id: z.number(),
-              name: z.string(),
-              locale: z.enum(locale.enumValues),
-              description: z.string().nullable(),
-            })
-          ),
-        }),
+        tag: z
+          .object({
+            id: z.number(),
+            slug: z.string(),
+            translations: z.array(
+              z.object({
+                id: z.number(),
+                name: z.string(),
+                locale: z.enum(locale.enumValues),
+                description: z.string().nullable(),
+              })
+            ),
+          })
+          .nullable(),
       })
     )
     .optional(),

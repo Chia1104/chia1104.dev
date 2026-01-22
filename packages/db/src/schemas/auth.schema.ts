@@ -1,5 +1,4 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { relations } from "drizzle-orm";
 import { text, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
@@ -79,28 +78,6 @@ export const passkey = pgTable(
     index("passkey_credential_id_idx").on(table.credentialID),
   ]
 );
-
-// Relations
-export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
-}));
-
-export const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
-}));
-
-export const passkeyRelations = relations(passkey, ({ one }) => ({
-  user: one(user, {
-    fields: [passkey.userId],
-    references: [user.id],
-  }),
-}));
 
 export type Verification = InferSelectModel<typeof verification>;
 export type Session = InferSelectModel<typeof session>;

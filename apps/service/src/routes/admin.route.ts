@@ -1,5 +1,4 @@
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 import * as z from "zod";
@@ -10,7 +9,7 @@ import {
   upsertContentRequestSchema,
   updateFeedRequestSchema,
 } from "@chia/api/services/validators";
-import { locale, schema } from "@chia/db";
+import { locale } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
@@ -76,7 +75,7 @@ const api = new Hono<HonoContext>()
         withContent: withContent === "true",
         userId: adminId,
         locale,
-        whereAnd: [eq(schema.feeds.published, published === "true")],
+        whereAnd: { published: published === "true" },
       });
       return c.json(feeds);
     }

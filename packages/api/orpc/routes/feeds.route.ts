@@ -1,7 +1,5 @@
-import { eq } from "drizzle-orm";
 import crypto from "node:crypto";
 
-import { schema } from "@chia/db";
 import {
   getInfiniteFeeds,
   getInfiniteFeedsByUserId,
@@ -24,7 +22,7 @@ export const getFeedsWithMetaRoute = contractOS.feeds.list
   .handler(async (opts) => {
     const data = await getInfiniteFeeds(opts.context.db, {
       ...opts.input,
-      whereAnd: [eq(schema.feeds.userId, opts.context.session.user.id ?? "")],
+      whereAnd: { userId: opts.context.session.user.id ?? "" },
     });
     if (!data) {
       throw opts.errors.NOT_FOUND();
@@ -42,7 +40,7 @@ export const getFeedsWithMetaByAdminIdRoute = contractOS.feeds["admin-list"]
     const data = await getInfiniteFeedsByUserId(opts.context.db, {
       ...opts.input,
       userId: opts.context.adminId,
-      whereAnd: [eq(schema.feeds.published, true)],
+      whereAnd: { published: true },
     });
     if (!data) {
       throw opts.errors.NOT_FOUND();

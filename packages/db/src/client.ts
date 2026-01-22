@@ -2,12 +2,13 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { withReplicas } from "drizzle-orm/pg-core";
 import pg from "pg";
 
-import { DrizzleCache } from "@chia/kv/drizzle/cache";
+// import { DrizzleCache } from "@chia/kv/drizzle/cache";
 import { switchEnv } from "@chia/utils/config";
 
 import type { DB } from ".";
 import { env as internalEnv } from "./env.ts";
 import * as schemas from "./schemas/index.ts";
+import { relations } from "./schemas/relations.ts";
 
 const { Pool } = pg;
 
@@ -24,17 +25,17 @@ export async function getConnection(url: string) {
   try {
     await closeConnection();
 
-    const kv = await import("@chia/kv").then((m) => m.kv);
-
     pool = new Pool({
       connectionString: url,
       connectionTimeoutMillis: 10_000,
     });
-    db = drizzle(pool, {
+    db = drizzle({
+      client: pool,
       schema: schemas,
-      cache: new DrizzleCache(kv, {
-        strategy: "all",
-      }),
+      relations,
+      // cache: new DrizzleCache(await import("@chia/kv").then((m) => m.kv), {
+      //   strategy: "all",
+      // }),
     });
     return db;
   } catch (error) {

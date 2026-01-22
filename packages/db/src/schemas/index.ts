@@ -25,7 +25,7 @@ export {
 } from "./enums.ts";
 
 // Users
-export { user, userRelations, type User } from "./user.schema.ts";
+export { user, type User } from "./user.schema.ts";
 
 // Auth
 export {
@@ -33,9 +33,6 @@ export {
   account,
   verification,
   passkey,
-  sessionRelations,
-  accountRelations,
-  passkeyRelations,
   type Session,
   type Account,
   type Verification,
@@ -48,10 +45,6 @@ export {
   member,
   invitation,
   project,
-  organizationRelations,
-  memberRelations,
-  invitationRelations,
-  projectRelations,
   type Organization,
   type Member,
   type Invitation,
@@ -59,7 +52,7 @@ export {
 } from "./organization.schema.ts";
 
 // API Key
-export { apikey, apikeyRelations, type ApiKey } from "./apikey.schema.ts";
+export { apikey, type ApiKey } from "./apikey.schema.ts";
 
 // Contents
 export {
@@ -71,6 +64,26 @@ export {
   contents,
   assetsToTags,
   feedsToTags,
+  type Asset,
+  type Feed,
+  type FeedTranslation,
+  type Content,
+  type Tag,
+  type TagTranslation,
+} from "./contents.schema.ts";
+
+// Relations
+export {
+  relations,
+  userRelations,
+  sessionRelations,
+  accountRelations,
+  passkeyRelations,
+  apikeyRelations,
+  organizationRelations,
+  memberRelations,
+  invitationRelations,
+  projectRelations,
   tagsRelations,
   tagTranslationsRelations,
   feedsRelations,
@@ -79,10 +92,4 @@ export {
   contentsRelations,
   assetsToTagsRelations,
   feedsToTagsRelations,
-  type Asset,
-  type Feed,
-  type FeedTranslation,
-  type Content,
-  type Tag,
-  type TagTranslation,
-} from "./contents.schema.ts";
+} from "./relations.ts";
