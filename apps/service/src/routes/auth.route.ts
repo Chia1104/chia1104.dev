@@ -5,12 +5,13 @@ import { auth } from "@chia/auth";
 
 import { env } from "@/env";
 
-const api = new Hono<HonoContext>();
-
-api.use(timeout(env.TIMEOUT_MS));
-
-api.on(["GET", "POST"], "*", (c) => {
-  return auth.handler(c.req.raw);
-});
+/**
+ * @TODO: Remove this route when the auth service is migrated to separate service
+ */
+const api = new Hono<HonoContext>()
+  .use(timeout(env.TIMEOUT_MS))
+  .on(["GET", "POST"], "*", (c) => {
+    return auth.handler(c.req.raw);
+  });
 
 export default api;

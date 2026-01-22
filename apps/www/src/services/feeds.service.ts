@@ -1,103 +1,135 @@
-import { isHTTPError } from "ky";
 import "server-only";
 
-import {
-  getFeedBySlug as _getFeedBySlug,
-  getFeedsWithMetaByAdminId,
-} from "@chia/api/services/feeds";
 import { Locale } from "@chia/db/types";
 import type { FeedType } from "@chia/db/types";
 
-import { env } from "@/env";
+import { client } from "@/libs/service/client.rsc";
+import { HonoRPCError } from "@/libs/service/error";
 
 export const getPosts = async (limit = 10) => {
-  return await getFeedsWithMetaByAdminId(
-    {
-      cfBypassToken: env.CF_BYPASS_TOKEN,
-      apiKey: env.CH_API_KEY ?? "",
-    },
-    {
-      limit,
-      type: "post",
-      published: "true",
-      orderBy: "id",
-      sortOrder: "desc",
-      withContent: "false",
-      locale: Locale.zhTW,
+  try {
+    const res = await client.api.v1.admin.public.feeds.$get({
+      query: {
+        limit: limit.toString(),
+        type: "post",
+        published: "true",
+        orderBy: "createdAt",
+        sortOrder: "desc",
+        withContent: "false",
+        locale: Locale.zhTW,
+      },
+    });
+    if (!res.ok) {
+      throw new HonoRPCError(res.statusText, res.status, res.statusText);
     }
-  );
+    return res.json();
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
 };
 
 export const getNotes = async (limit = 10) => {
-  return await getFeedsWithMetaByAdminId(
-    {
-      cfBypassToken: env.CF_BYPASS_TOKEN,
-      apiKey: env.CH_API_KEY ?? "",
-    },
-    {
-      limit,
-      type: "note",
-      published: "true",
-      orderBy: "id",
-      sortOrder: "desc",
-      withContent: "false",
-      locale: Locale.zhTW,
+  try {
+    const res = await client.api.v1.admin.public.feeds.$get({
+      query: {
+        limit: limit.toString(),
+        type: "note",
+        published: "true",
+        orderBy: "createdAt",
+        sortOrder: "desc",
+        withContent: "false",
+        locale: Locale.zhTW,
+      },
+    });
+    if (!res.ok) {
+      throw new HonoRPCError(res.statusText, res.status, res.statusText);
     }
-  );
+    return res.json();
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
 };
 
 export const getFeedsWithType = async (
   type: Exclude<FeedType, "all">,
   limit = 10
 ) => {
-  return await getFeedsWithMetaByAdminId(
-    {
-      cfBypassToken: env.CF_BYPASS_TOKEN,
-      apiKey: env.CH_API_KEY ?? "",
-    },
-    {
-      limit,
-      type,
-      published: "true",
-      orderBy: "id",
-      sortOrder: "desc",
-      withContent: "false",
-      locale: Locale.zhTW,
+  try {
+    const res = await client.api.v1.admin.public.feeds.$get({
+      query: {
+        limit: limit.toString(),
+        type: type,
+        published: "true",
+        orderBy: "createdAt",
+        sortOrder: "desc",
+        withContent: "false",
+        locale: Locale.zhTW,
+      },
+    });
+    if (!res.ok) {
+      throw new HonoRPCError(res.statusText, res.status, res.statusText);
     }
-  );
+    return res.json();
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
 };
 
 export const getFeeds = async (limit = 10) => {
-  return await getFeedsWithMetaByAdminId(
-    {
-      cfBypassToken: env.CF_BYPASS_TOKEN,
-      apiKey: env.CH_API_KEY ?? "",
-    },
-    {
-      limit,
-      type: "all",
-      published: "true",
-      orderBy: "id",
-      sortOrder: "desc",
-      withContent: "false",
-      locale: Locale.zhTW,
+  try {
+    const res = await client.api.v1.admin.public.feeds.$get({
+      query: {
+        limit: limit.toString(),
+        type: "all",
+        published: "true",
+        orderBy: "createdAt",
+        sortOrder: "desc",
+        withContent: "false",
+        locale: Locale.zhTW,
+      },
+    });
+    if (!res.ok) {
+      throw new HonoRPCError(res.statusText, res.status, res.statusText);
     }
-  );
+    return res.json();
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
 };
 
 export const getFeedBySlug = async (slug: string, locale = Locale.zhTW) => {
   try {
-    return await _getFeedBySlug(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
+    const res = await client.api.v1.admin.public.feeds[":slug"].$get({
+      param: {
+        slug,
       },
-      { slug, locale }
-    );
-  } catch (error) {
-    if (isHTTPError(error) && error.response.status === 404) {
+      query: {
+        locale: locale,
+      },
+    });
+    if (res.status === 404) {
       return null;
     }
-    throw error;
+    if (!res.ok) {
+      throw new HonoRPCError(res.statusText, res.status, res.statusText);
+    }
+    return res.json();
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
   }
 };

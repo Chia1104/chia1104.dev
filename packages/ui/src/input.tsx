@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { cn } from "../utils/cn.util";
 
 export type InputProps = React.ComponentPropsWithRef<"input">;

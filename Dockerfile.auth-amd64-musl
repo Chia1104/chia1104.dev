@@ -1,0 +1,58 @@
+ARG NODE_VERSION=24
+ARG TARGETARCH=amd64
+
+FROM --platform=linux/${TARGETARCH} node:${NODE_VERSION}-alpine AS builder-base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV TURBO_TELEMETRY_DISABLED=1
+
+WORKDIR /app
+
+RUN apk update && \
+    apk add --no-cache \
+    build-base \
+    gcc \
+    libc6-compat && \
+    npm install -g corepack@latest turbo bun && \
+    corepack enable pnpm
+
+FROM builder-base AS pre-builder
+
+COPY . .
+
+RUN turbo prune --scope=auth-service --docker
+
+FROM builder-base AS builder
+
+COPY --from=pre-builder /app/out/json/ .
+COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pre-builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+ARG TURBO_TEAM \
+    TURBO_TOKEN
+
+ENV TURBO_TEAM=$TURBO_TEAM \
+    TURBO_TOKEN=$TURBO_TOKEN
+
+RUN pnpm i
+
+RUN pnpm -C services/auth build:amd64-musl
+
+FROM --platform=linux/${TARGETARCH} alpine AS runner
+
+RUN apk update && \
+    apk add --no-cache \
+    libstdc++
+
+WORKDIR /app
+
+COPY --from=builder /app/services/auth/.output/server server
+
+ENV NODE_ENV=production \
+    PORT=8080
+
+EXPOSE 8080
+
+CMD ["./server"]

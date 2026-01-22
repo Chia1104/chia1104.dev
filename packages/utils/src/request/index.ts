@@ -1,7 +1,8 @@
 import ky from "ky";
 import type { Options, HTTPError, SearchParamsOption } from "ky";
 
-import { getServiceEndPoint } from "../config";
+import { withServiceEndpoint } from "../config";
+import { Service } from "../schema";
 
 export type { HTTPError };
 
@@ -63,7 +64,7 @@ export const X_CF_BYPASS_TOKEN = "x-cf-bypass-token";
 export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
   return request({
     ...defaultOptions,
-    prefixUrl: getServiceEndPoint(undefined, {
+    prefixUrl: withServiceEndpoint("/", Service.LegacyService, {
       isInternal: defaultOptions?.isInternal,
     }),
     headers: {

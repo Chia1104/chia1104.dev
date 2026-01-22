@@ -1,40 +1,36 @@
-import { getServiceEndPoint } from "@chia/utils/config";
-import { get } from "@chia/utils/request";
+import type { InferResponseType } from "hono";
 
-// Search result type from embedding search
-export interface FeedSearchResult {
-  id: number;
-  userId: string;
-  type: string;
-  slug: string;
-  contentType: string;
-  published: boolean;
-  defaultLocale: string;
-  mainImage: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  feedTranslationId: number;
-  locale: string;
-  title: string;
-  excerpt: string | null;
-  description: string | null;
-  summary: string | null;
-  readTime: number | null;
-  similarity: number;
-}
+import type { Locale } from "@chia/db/types";
 
-export const searchFeeds = async (query: string, locale?: string) => {
-  const response = await get<FeedSearchResult[]>(
-    `${getServiceEndPoint()}/feeds/search`,
-    {
-      keyword: query,
-      locale,
-      model: "nomic-embed-text",
-      useOllama: true,
-    },
-    {
-      credentials: "include",
+import { client } from "@/libs/service/client";
+import { HonoRPCError } from "@/libs/service/error";
+
+export type FeedSearchResult = InferResponseType<
+  typeof client.api.v1.feeds.search.$get,
+  200
+>[0];
+
+export const searchFeeds = async (query: string, locale?: Locale) => {
+  try {
+    const response = await client.api.v1.feeds.search.$get({
+      query: {
+        keyword: query,
+        locale,
+        model: "nomic-embed-text",
+      },
+    });
+    if (!response.ok) {
+      throw new HonoRPCError(
+        response.statusText,
+        response.status,
+        response.statusText
+      );
     }
-  );
-  return response;
+    return response.json();
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
 };

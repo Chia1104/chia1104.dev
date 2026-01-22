@@ -9,6 +9,10 @@
       "types": "./src/config/index.ts",
       "default": "./src/config/index.ts"
     },
+    "./config/env": {
+      "types": "./src/config/env.ts",
+      "default": "./src/config/env.ts"
+    },
     "./day": {
       "types": "./src/day/index.ts",
       "default": "./src/day/index.ts"
@@ -53,6 +57,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@t3-oss/env-core": "catalog:",
     "dayjs": "catalog:",
     "ky": "catalog:",
     "lodash": "catalog:",

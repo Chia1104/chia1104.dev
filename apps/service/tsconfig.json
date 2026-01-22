@@ -12,7 +12,9 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "declaration": true
   },
   "include": [
     "src/**/*.ts",

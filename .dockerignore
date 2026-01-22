@@ -1,38 +1,34 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+node_modules
+.turbo
+.vercel
+.vscode
+.idea
 **/*/node_modules
 **/*/.pnp
 **/*/.pnp.js
 
-# testing
 **/*/coverage
 **/*/cypress/videos
 **/*/cypress/screenshots
 **/*/cypress/downloads
 
-# next.js
 **/*/.next/
 **/*/out/
 **/*/build
 
-# misc
 **/*/.DS_Store
 **/*/*.pem
 
-# debug
 **/*/npm-debug.log*
 **/*/yarn-debug.log*
 **/*/yarn-error.log*
 **/*/.pnpm-debug.log*
 
-# local env files
 **/*/.env
 **/*/.env.example
 **/*/.env.production
 .env.global
 
-# turbo
 **/*/.turbo
 
 **/*/dist
@@ -48,3 +44,6 @@ tests
 **/*/*.md
 
 **/*/.force-redeploy
+
+**/*/.turbo
+**/*/.cache

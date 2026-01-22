@@ -27,3 +27,14 @@ export const AppEnvSchema = z
 export type AppEnv = z.infer<typeof AppEnvSchema>;
 
 export const NumericStringSchema = z.string().pipe(z.coerce.number());
+
+export const Service = {
+  LegacyService: "legacy-service",
+  Auth: "auth",
+  Content: "content",
+  AI: "ai",
+} as const;
+
+export type Service = (typeof Service)[keyof typeof Service];
+
+export const ServiceSchema = z.enum(Service);

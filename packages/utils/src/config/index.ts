@@ -1,19 +1,16 @@
-import type { AppEnv } from "../schema";
+import type { AppEnv } from "../schema/index.ts";
+import { Service } from "../schema/index.ts";
+import { serviceEnv } from "./env.ts";
 
-const getInternalEnv = (clientPrefix = "NEXT_PUBLIC_") => {
+const getInternalEnv = () => {
   if (process.env.ENV || process.env.APP_ENV) {
     return process.env.ENV || process.env.APP_ENV;
   }
-  if (
-    process.env[`${clientPrefix}ENV`] ||
-    process.env[`${clientPrefix}APP_ENV`]
-  ) {
-    return (
-      process.env[`${clientPrefix}ENV`] || process.env[`${clientPrefix}APP_ENV`]
-    );
+  if (process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV) {
+    return process.env.NEXT_PUBLIC_ENV || process.env.NEXT_PUBLIC_APP_ENV;
   }
-  if (process.env[`${clientPrefix}VERCEL_ENV`]) {
-    return process.env[`${clientPrefix}VERCEL_ENV`];
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    return process.env.NEXT_PUBLIC_VERCEL_ENV;
   }
   if (process.env.RAILWAY_ENVIRONMENT_NAME) {
     return process.env.RAILWAY_ENVIRONMENT_NAME === "production"
@@ -67,52 +64,6 @@ export const switchEnv = <TResult = unknown>(
     default:
       throw new Error(`Unknown env: ${env}`);
   }
-};
-
-/**
- * @deprecated use `getDB` from `@chia/db`
- * @param env
- * @param db
- * @param betaDb
- * @param localDb
- */
-export const getDb = <DB = unknown>(
-  env: string | undefined,
-  {
-    db,
-    betaDb,
-    localDb,
-  }: {
-    db: DB;
-    betaDb: DB;
-    localDb: DB;
-  }
-) => {
-  return switchEnv(env, {
-    prod: () => db,
-    beta: () => betaDb,
-    local: () => localDb,
-  });
-};
-
-export const getDbUrl = (env?: string) => {
-  return switchEnv(env, {
-    prod: () => {
-      if (!process.env.DATABASE_URL)
-        throw new Error("Missing env variables DATABASE_URL");
-      return process.env.DATABASE_URL;
-    },
-    beta: () => {
-      if (!process.env.BETA_DATABASE_URL)
-        throw new Error("Missing env variables BETA_DATABASE_URL");
-      return process.env.BETA_DATABASE_URL;
-    },
-    local: () => {
-      if (!process.env.LOCAL_DATABASE_URL)
-        throw new Error("Missing env variables LOCAL_DATABASE_URL");
-      return process.env.LOCAL_DATABASE_URL;
-    },
-  });
 };
 
 export const getAdminId = (env?: string) => {
@@ -175,13 +126,18 @@ export const getBaseUrl = (options?: {
   return baseUrl?.replace(/\/$/, "");
 };
 
-type ServiceVersion = "v1";
+type ServiceVersion =
+  | "v1"
+  | "NO_PREFIX"
+  | "LEGACY"
+  | Exclude<Service, typeof Service.LegacyService>;
 
 interface GetServiceEndPointOptions {
   clientPrefix?: string;
   proxyEndpoint?: string;
   version?: ServiceVersion;
   isInternal?: boolean;
+  removePrefix?: boolean;
 }
 
 function removeEndSlash(url: string) {
@@ -190,14 +146,18 @@ function removeEndSlash(url: string) {
 
 function switchServiceVersion(version: ServiceVersion, url: string) {
   switch (version) {
+    case "LEGACY":
     case "v1":
-      return removeEndSlash(url) + "/api/v1";
+      return removeEndSlash(url).replace(/\/api\/v1$/, "") + "/api/v1";
+    case "auth":
+      return removeEndSlash(url).replace(/\/auth$/, "") + "/auth";
     default:
       return removeEndSlash(url);
   }
 }
 
 /**
+ * @deprecated Use`withServiceEndpoint` instead
  * the url of the service endpoint (including the protocol)
  * @param env
  * @param options {proxyEndpoint, version, isInternal}
@@ -276,10 +236,75 @@ export const DASH_BASE_URL =
     ? "https://dash.chia1104.dev"
     : "http://localhost:3001";
 
-export const SERVICE_BASE_URL =
-  getEnv() === "production" || getEnv() === "prod"
-    ? "https://service.chia1104.dev"
-    : "http://localhost:3003";
-
 export const CONTACT_EMAIL = "contact@notify.chia1104.dev";
 export const AUTH_EMAIL = "no-reply@notify.chia1104.dev";
+
+interface WithServiceEndpointOptions {
+  /**
+   * @default false
+   * @description Whether the service is internal, used to get the internal service endpoint
+   * @example
+   * - true: Get the service endpoint from the internal service endpoint
+   * - false: Get the service endpoint from the proxy endpoint
+   */
+  isInternal?: boolean;
+  /**
+   * @default "NO_PREFIX"
+   * @description The version of the service endpoint, used to get the service with prefix
+   * @example
+   * - "v1": `/api/v1`
+   * - "auth": `/auth`
+   * - "NO_PREFIX": `/`
+   * - "LEGACY": `/api/v1`
+   */
+  version?: ServiceVersion;
+}
+
+function serviceNameResolver(service: Service) {
+  switch (service) {
+    case Service.LegacyService:
+      return "SERVICE";
+    case Service.Auth:
+      return "AUTH_SERVICE";
+    case Service.Content:
+      return "CONTENT_SERVICE";
+    case Service.AI:
+      return "AI_SERVICE";
+  }
+}
+
+const getServiceUrl = (service: Service, isInternal?: boolean) => {
+  if (isInternal) {
+    return (
+      serviceEnv[`INTERNAL_${serviceNameResolver(service)}_ENDPOINT`] ?? ""
+    );
+  }
+  return (
+    serviceEnv.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT ??
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    serviceEnv.NEXT_PUBLIC_SERVICE_ENDPOINT ??
+    ""
+  );
+};
+
+export const withServiceEndpoint = <TService extends Service>(
+  path: string,
+  service: TService,
+  options?: WithServiceEndpointOptions
+) => {
+  const isServer = typeof window === "undefined";
+  const {
+    isInternal,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    version = !!serviceEnv.INTERNAL_SERVICE_ENDPOINT ||
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    !!serviceEnv.NEXT_PUBLIC_SERVICE_ENDPOINT
+      ? "LEGACY"
+      : "NO_PREFIX",
+  } = options ?? {};
+
+  return `${switchServiceVersion(
+    version,
+    getServiceUrl(service, isInternal || isServer)
+  )}${path.startsWith("/") ? path : `/${path}`}`;
+};

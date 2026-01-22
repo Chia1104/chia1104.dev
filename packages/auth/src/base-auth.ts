@@ -72,7 +72,7 @@ export const baseAuthConfig = {
   /**
    * base path for all auth routes
    */
-  basePath: "/api/v1/auth",
+  basePath: env.AUTH_BASE_PATH,
 
   baseURL: getOrigin(env.AUTH_URL),
   secret: env.AUTH_SECRET,

@@ -1,5 +1,5 @@
 import { sentry } from "@hono/sentry";
-import type { Hono } from "hono";
+import type { Hono, Schema } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { ipRestriction } from "hono/ip-restriction";
@@ -9,22 +9,16 @@ import { getClientIP, errorGenerator } from "@chia/utils/server";
 
 import { env } from "@/env";
 import { maintenance } from "@/middlewares/maintenance.middleware";
-import adminRoutes from "@/routes/admin.route";
-import aiRoutes from "@/routes/ai.route";
-import authRoutes from "@/routes/auth.route";
-import emailRoutes from "@/routes/email.route";
-import feedsRoutes from "@/routes/feeds.route";
-import healthRoutes from "@/routes/health.route";
-import rpcRoutes from "@/routes/rpc.route";
-import spotifyRoutes from "@/routes/spotify.route";
-import toolingsRoutes from "@/routes/toolings.route";
 import { getCORSAllowedOrigin } from "@/utils/cors.util";
 
 import { splitString } from "./utils";
 
-const bootstrap = <TContext extends HonoContext>(
-  app: Hono<TContext>,
-  port: number
+const bootstrap = <
+  TContext extends HonoContext,
+  TSchema extends Schema,
+  TApp extends Hono<TContext, TSchema>,
+>(
+  app: TApp
 ) => {
   /**
    * logger middleware
@@ -81,22 +75,7 @@ const bootstrap = <TContext extends HonoContext>(
     })
   );
 
-  /**
-   * Routes
-   */
-  app.route("/api/v1/auth", authRoutes);
-  app.route("/api/v1/admin", adminRoutes);
-  app.route("/api/v1/feeds", feedsRoutes);
-  app.route("/api/v1/rpc", rpcRoutes);
-  app.route("/api/v1/health", healthRoutes);
-  app.route("/api/v1/ai", aiRoutes);
-  app.route("/api/v1/spotify", spotifyRoutes);
-  app.route("/api/v1/email", emailRoutes);
-  app.route("/api/v1/toolings", toolingsRoutes);
-
-  console.log(
-    `Server is running on port ${port}, go to http://localhost:${port}`
-  );
+  return app;
 };
 
 export default bootstrap;

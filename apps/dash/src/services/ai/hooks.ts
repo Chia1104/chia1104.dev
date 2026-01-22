@@ -4,7 +4,8 @@ import { useCompletion } from "@ai-sdk/react";
 
 import type { BaseRequest, Model } from "@chia/ai/types";
 import { OpenAIModel, Provider } from "@chia/ai/types";
-import { getServiceEndPoint } from "@chia/utils/config";
+import { withServiceEndpoint } from "@chia/utils/config";
+import { Service } from "@chia/utils/schema";
 
 type UseCompletionOptions = Parameters<typeof useCompletion>[0];
 
@@ -14,7 +15,9 @@ export const useGenerateFeedSlug = (
   options?: Partial<UseCompletionOptions>
 ) => {
   return useCompletion({
-    api: `${getServiceEndPoint()}/ai/generate`,
+    api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
+      version: "LEGACY",
+    }),
     credentials: "include",
     id: "ai-generate-feed-slug",
     streamProtocol: "data",
@@ -40,7 +43,9 @@ export const useGenerateFeedDescription = (
   options?: Partial<UseCompletionOptions>
 ) => {
   return useCompletion({
-    api: `${getServiceEndPoint()}/ai/generate`,
+    api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
+      version: "LEGACY",
+    }),
     credentials: "include",
     id: "ai-generate-feed-description",
     streamProtocol: "data",
@@ -71,7 +76,9 @@ export const useGenerateFeedContent = (
   options?: Partial<UseCompletionOptions>
 ) => {
   return useCompletion({
-    api: `${getServiceEndPoint()}/ai/generate`,
+    api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
+      version: "LEGACY",
+    }),
     credentials: "include",
     id: "ai-generate-feed-content",
     streamProtocol: "data",

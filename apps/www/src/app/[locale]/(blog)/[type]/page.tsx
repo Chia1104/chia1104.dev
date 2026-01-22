@@ -1,5 +1,6 @@
 import { Suspense, ViewTransition } from "react";
 
+import { ErrorBoundary } from "@sentry/nextjs";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -85,9 +86,11 @@ const Page = async (
     <ViewTransition>
       <div className="w-full">
         <h1>{t("doc-title")}</h1>
-        <Suspense fallback={<AppLoading />}>
-          <CacheFeeds type={type} limit={20} />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<AppLoading />}>
+            <CacheFeeds type={type} limit={20} />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </ViewTransition>
   );

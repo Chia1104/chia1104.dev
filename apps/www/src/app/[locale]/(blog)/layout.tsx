@@ -1,14 +1,20 @@
 import { Suspense } from "react";
 
+import { ErrorBoundary } from "@sentry/nextjs";
+import { all } from "better-all";
+
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
 import FeedNavigation from "@/components/blog/feed-navigation";
 import { getPosts, getNotes } from "@/services/feeds.service";
 
-export const revalidate = 120;
+export const revalidate = 300;
 
 const Navigation = async () => {
-  const [posts, notes] = await Promise.all([getPosts(4), getNotes(4)]);
+  const { posts, notes } = await all({
+    posts: () => getPosts(4),
+    notes: () => getNotes(4),
+  });
 
   return (
     <NavigationMenu className="not-prose mb-5 md:mb-10 z-20">
@@ -24,9 +30,11 @@ const Layout = ({ children }: LayoutProps<"/[locale]">) => {
   return (
     <section className="prose dark:prose-invert mt-10 md:mt-20 w-full items-start justify-start min-w-full min-h-[calc(100vh-140px)] flex flex-col">
       <div className="z-30">
-        <Suspense>
-          <Navigation />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense>
+            <Navigation />
+          </Suspense>
+        </ErrorBoundary>
       </div>
       {children}
     </section>

@@ -3,14 +3,14 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import * as z from "zod";
 
-import { getFeedsWithMetaByAdminId } from "@chia/api/services/feeds";
 import { Locale } from "@chia/db/types";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 import { NumericStringSchema } from "@chia/utils/schema";
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
+import { client } from "@/libs/service/client.rsc";
+import { HonoRPCError } from "@/libs/service/error";
 import routes from "@/shared/routes";
 
 function buildPagesSitemap(sitemapData: MetadataRoute.Sitemap) {
@@ -39,21 +39,21 @@ export const GET = async (
     const storedParams = await params;
     NumericStringSchema.parse(storedParams.id);
 
-    const feeds = await getFeedsWithMetaByAdminId(
-      {
-        cfBypassToken: env.CF_BYPASS_TOKEN,
-        apiKey: env.CH_API_KEY ?? "",
-      },
-      {
-        limit: 1000,
+    const res = await client.api.v1.admin.public.feeds.$get({
+      query: {
+        limit: "1000",
         type: "all",
         orderBy: "updatedAt",
         sortOrder: "desc",
         withContent: "false",
         published: "true",
         locale: Locale.zhTW,
-      }
-    );
+      },
+    });
+    if (!res.ok) {
+      throw new HonoRPCError(res.statusText, res.status, res.statusText);
+    }
+    const feeds = await res.json();
 
     const staticSitemapData = Object.entries(routes).map(
       ([path, { priority }]) =>
