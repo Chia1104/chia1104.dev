@@ -144,7 +144,7 @@ export async function SpotifyPlaylist() {
       <div className="flex items-center gap-3 mt-5">
         <span>
           Check out the{" "}
-          <Link preview={false} href={href}>
+          <Link preview href={href}>
             {playlist.name}
           </Link>{" "}
           on my Spotify.
