@@ -37,6 +37,7 @@ const LinkItem: FC<{
 }> = ({ path, icon, name, showIcon: _showIcon, locale }) => {
   return (
     <Link
+      preview={false}
       locale={locale}
       key={path}
       href={path}
@@ -70,7 +71,7 @@ const Page = async ({ params }: { params: PageParamsWithLocale }) => {
           <div>
             Working at{" "}
             <Link
-              preview
+              preview={false}
               href={latestWork?.link || meta.link.leadbest}
               target="_blank">
               {latestWork?.company || "LeadBest"}
