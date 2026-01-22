@@ -29,7 +29,15 @@ export const sendEmail = async (
       }
     );
     if (!res.ok) {
-      throw new HonoRPCError(res.statusText, res.status, res.statusText);
+      const error = await res.json();
+      if (!error) {
+        throw new HonoRPCError("unknown error", res.status, "unknown error");
+      }
+      throw new HonoRPCError(
+        error.code,
+        res.status,
+        error.errors?.[0]?.message ?? "unknown error"
+      );
     }
     return res.json();
   } catch (error) {

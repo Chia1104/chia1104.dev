@@ -11,7 +11,6 @@ import type {
 import { Input, Textarea } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { HTTPError } from "ky";
 import { useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -25,9 +24,9 @@ import { Form as _Form, FormField, FormItem, FormMessage } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
-import { handleKyError } from "@chia/utils/request";
 
 import { env } from "@/env";
+import { HonoRPCError } from "@/libs/service/error";
 import { sendEmail } from "@/services/email.service";
 import { contactSchema } from "@/shared/validator";
 import type { Contact } from "@/shared/validator";
@@ -133,12 +132,12 @@ export const Form: FC<
         onSuccess?.();
         return "Message sent successfully.";
       },
-      error: async (_error: Error) => {
-        onError?.(_error);
-        if (_error instanceof HTTPError) {
-          const error = await handleKyError(_error);
-
-          switch (error.errors?.[0]?.message) {
+      error: (error) => {
+        if (error instanceof Error) {
+          onError?.(error);
+        }
+        if (error instanceof HonoRPCError) {
+          switch (error.code) {
             case CaptchaErrorCode.CaptchaFailed:
               return "Failed to validate captcha";
             case CaptchaErrorCode.CaptchaProviderNotSupported:
