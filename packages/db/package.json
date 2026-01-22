@@ -91,7 +91,7 @@
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:drizzle",
     "drizzle-zod": "catalog:drizzle",
-    "pg": "^8.17.1",
+    "pg": "^8.17.2",
     "zod": "catalog:"
   },
   "devDependencies": {
