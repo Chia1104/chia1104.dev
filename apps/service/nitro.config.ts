@@ -15,4 +15,6 @@ export default defineConfig({
   routes: {
     "/**": "./src/server.ts",
   },
+  traceDeps: ["jsdom", "@workflow-worlds/redis", "@workflow/world-postgres"],
+  noPublicDir: true,
 });
