@@ -10,10 +10,10 @@ import { CONTACT_EMAIL } from "@chia/utils/config";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
-import { siteverify } from "@/guards/captcha.guard";
-import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
-import { errorResponse } from "@/utils/error.util";
+import { env } from "../env";
+import { siteverify } from "../guards/captcha.guard";
+import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { errorResponse } from "../utils/error.util";
 
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))

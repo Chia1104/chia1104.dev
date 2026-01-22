@@ -459,9 +459,6 @@ importers:
       postcss:
         specifier: 8.5.6
         version: 8.5.6
-      service:
-        specifier: workspace:*
-        version: link:../service
       tailwind-scrollbar:
         specifier: ^4.0.2
         version: 4.0.2(react@19.2.3)(tailwindcss@4.1.18)
@@ -821,9 +818,6 @@ importers:
       postcss:
         specifier: 8.5.6
         version: 8.5.6
-      service:
-        specifier: workspace:*
-        version: link:../service
       tailwind-scrollbar:
         specifier: ^4.0.2
         version: 4.0.2(react@19.2.3)(tailwindcss@4.1.18)

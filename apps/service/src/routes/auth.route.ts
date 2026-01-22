@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
-import { env } from "@/env";
+import { env } from "../env";
 
 /**
  * @TODO: Remove this route when the auth service is migrated to separate service

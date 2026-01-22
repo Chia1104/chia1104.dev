@@ -8,9 +8,6 @@ export default defineConfig({
   typescript: {
     tsconfigPath: "./tsconfig.build.json",
   },
-  alias: {
-    "@": fileURLToPath(new URL("./src", import.meta.url)),
-  },
   preset: "node-server",
   routes: {
     "/**": "./src/server.ts",

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { definePlugin } from "nitro";
-import { env } from "src/env";
+
+import { env } from "../src/env";
 
 export default definePlugin(async () => {
   if (process.env.WORKFLOW_TARGET_WORLD === "@workflow-worlds/redis") {

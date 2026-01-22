@@ -1,6 +1,6 @@
 import { expect, it, describe } from "bun:test";
 
-import { app } from "@/server";
+import { app } from "../src/server";
 
 describe("Feeds Controller", () => {
   it("should be ok", async () => {

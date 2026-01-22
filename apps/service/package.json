@@ -6,7 +6,7 @@
   "scripts": {
     "type:emit": "tsc -p tsconfig.types.json",
     "dev": "nitro dev",
-    "build": "pnpm type:emit && nitro build",
+    "build": "nitro build",
     "postbuild": "cp scripts/postbuild/resources/tslib.js .output/server/node_modules/tslib/tslib.js",
     "node:start": "node .output/server/index.mjs",
     "start": "bun run --bun .output/server/index.mjs",
@@ -14,12 +14,6 @@
     "type:check": "tsc --noEmit",
     "lint": "eslint",
     "test:service": "NODE_ENV=test bun test"
-  },
-  "exports": {
-    "./server": {
-      "types": "./types/server.d.ts",
-      "default": "./types/server.d.ts"
-    }
   },
   "dependencies": {
     "@chia/ai": "workspace:*",

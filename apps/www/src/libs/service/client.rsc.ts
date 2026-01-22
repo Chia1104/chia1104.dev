@@ -1,6 +1,6 @@
 import { hc } from "hono/client";
 import "server-only";
-import type { AppRPC } from "service/server";
+import type { AppRPC } from "~service/server";
 
 import { withServiceEndpoint } from "@chia/utils/config";
 import { X_CF_BYPASS_TOKEN } from "@chia/utils/request";

@@ -98,7 +98,6 @@
     "babel-plugin-react-compiler": "catalog:react-is",
     "eslint": "catalog:eslint",
     "postcss": "8.5.6",
-    "service": "workspace:*",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "catalog:tailwindcss",
     "typescript": "catalog:"
