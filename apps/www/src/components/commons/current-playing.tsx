@@ -4,19 +4,15 @@ import {
   useState,
   useEffect,
   createContext,
-  useRef,
   useContext,
   useCallback,
-  useMemo,
   useTransition,
 } from "react";
-import type { FC, ReactNode, Dispatch, SetStateAction } from "react";
+import type { ReactNode, Dispatch, SetStateAction } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
-import type { HTTPError } from "ky";
 
-import type { CurrentPlaying } from "@chia/api/spotify/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import {
   HoverCard,
@@ -31,7 +27,10 @@ import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 import { getBrightness } from "@chia/ui/utils/get-brightness";
 import { experimental_getImgAverageRGB } from "@chia/ui/utils/get-img-average-rgb";
-import { serviceRequest } from "@chia/utils/request";
+
+import type { HonoRPCError } from "@/libs/service/error";
+import { getCurrentPlaying } from "@/services/spotify.service";
+import type { CurrentPlayingResponse } from "@/services/spotify.service";
 
 interface ExtendsProps {
   className?: string;
@@ -44,194 +43,242 @@ interface ExtendsProps {
 interface Props extends ExtendsProps {
   children?:
     | ReactNode
-    | ((result: UseQueryResult<CurrentPlaying, HTTPError>) => ReactNode);
+    | ((
+        result: UseQueryResult<CurrentPlayingResponse, HonoRPCError>
+      ) => ReactNode);
   queryOptions?: Omit<
-    UseQueryOptions<CurrentPlaying, HTTPError>,
+    UseQueryOptions<CurrentPlayingResponse, HonoRPCError>,
     "queryKey" | "queryFn"
   >;
 }
 
-type State = number;
+const ProgressContext = createContext<
+  [number, Dispatch<SetStateAction<number>>] | undefined
+>(undefined);
 
-const CurrentPlayingContext = createContext<
-  [State, Dispatch<SetStateAction<State>>]
->([0, () => undefined]);
-
-const useCurrentPlayingContext = () => {
-  const context = useContext(CurrentPlayingContext);
+const useProgressContext = () => {
+  const context = useContext(ProgressContext);
   if (!context) {
     throw new Error(
-      "useCurrentPlayingContext must be used within a CurrentPlayingContextProvider"
+      "useProgressContext must be used within a ProgressProvider"
     );
   }
   return context;
 };
 
-const CurrentPlayingContextProvider: FC<{
+const ProgressProvider = ({
+  children,
+  initialProgress,
+}: {
   children: ReactNode;
-  initValue: State;
-}> = ({ children, initValue }) => {
-  const [value, setValue] = useState(initValue);
+  initialProgress: number;
+}) => {
+  const [progress, setProgress] = useState(initialProgress);
   return (
-    <CurrentPlayingContext.Provider value={[value, setValue]}>
+    <ProgressContext.Provider value={[progress, setProgress]}>
       {children}
-    </CurrentPlayingContext.Provider>
+    </ProgressContext.Provider>
   );
 };
 
-const ProgressBar: FC<UseQueryResult<CurrentPlaying, HTTPError>> = (props) => {
-  const [value] = useCurrentPlayingContext();
-  return (
-    <Progress
-      value={(value / (props.data?.item.duration_ms ?? 1)) * 100}
-      className="h-1"
-    />
-  );
-};
-
-const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
-  props
+const useProgressTracking = (
+  isPlaying: boolean,
+  durationMs: number,
+  progressMs: number,
+  isFetching: boolean,
+  isSuccess: boolean,
+  refetch: () => Promise<UseQueryResult<CurrentPlayingResponse, HonoRPCError>>
 ) => {
-  const [, setValue] = useCurrentPlayingContext();
+  const [, setProgress] = useProgressContext();
+
+  // 同步初始進度
+  useEffect(() => {
+    if (!isFetching && isSuccess && isPlaying) {
+      setProgress(progressMs);
+    }
+  }, [isPlaying, isFetching, isSuccess, progressMs, setProgress]);
+
+  // 更新進度條
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < durationMs) {
+          return prev + 1000;
+        }
+        void refetch();
+        return 0;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPlaying, durationMs, refetch, setProgress]);
+};
+
+const useImageColorExtraction = (
+  imageUrl: string | undefined,
+  enabled: boolean
+) => {
   const [bgRGB, setBgRGB] = useState<number[]>([]);
-  const [isLight, setIsLight] = useState<boolean>(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const [isLight, setIsLight] = useState(false);
   const [isPending, startTransition] = useTransition();
-
-  // Sync the progress bar with the current playing song
-  useEffect(() => {
-    if (!props.isFetching && props.isSuccess && props.data?.is_playing) {
-      setValue(props.data.progress_ms);
-    }
-  }, [
-    props.data?.is_playing,
-    props.isFetching,
-    props.isSuccess,
-    props.data?.item.duration_ms,
-    props.data?.progress_ms,
-    setValue,
-  ]);
-
-  // Update the progress bar
-  useEffect(() => {
-    if (props.data?.is_playing) {
-      const interval = setInterval(() => {
-        setValue((prev) => {
-          if (prev < props.data.item.duration_ms) {
-            return prev + 1000;
-          }
-          void props.refetch();
-          return 0;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [setValue, props]);
 
   const handleImageLoad = useCallback(
     (img: HTMLImageElement) => {
-      if (
-        props.experimental?.displayBackgroundColorFromImage &&
-        props.data?.item.album.images[0]?.url
-      ) {
-        startTransition(() => {
-          const rgb = experimental_getImgAverageRGB(img);
-          const { isLight } = getBrightness(rgb);
-          setIsLight(isLight);
-          setBgRGB(rgb);
-        });
-      }
+      if (!enabled || !imageUrl) return;
+
+      startTransition(() => {
+        const rgb = experimental_getImgAverageRGB(img);
+        const { isLight: light } = getBrightness(rgb);
+        setIsLight(light);
+        setBgRGB(rgb);
+      });
     },
-    [
-      props.data?.item.album.images,
-      props.experimental?.displayBackgroundColorFromImage,
-    ]
+    [enabled, imageUrl]
   );
 
-  const MemoImage = useMemo(
-    () => (
-      <>
-        {props.data && (
-          <Image
-            crossOrigin="anonymous"
-            width={80}
-            height={80}
-            sizes="80px"
-            blur={false}
-            onLoad={(e) => handleImageLoad(e.target as HTMLImageElement)}
-            ref={imgRef}
-            src={props.data.item.album.images[0]?.url ?? ""}
-            alt={props.data.item.album.name}
-            className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
-          />
-        )}
-      </>
-    ),
-    [props.data, handleImageLoad]
+  return { bgRGB, isLight, isPending, handleImageLoad };
+};
+
+const getTextColorClass = (
+  enableColorExtraction: boolean,
+  isPending: boolean,
+  isLight: boolean
+) => {
+  if (!enableColorExtraction || isPending) return "";
+  return isLight ? "text-dark" : "text-light";
+};
+
+const ProgressBar = ({ durationMs }: { durationMs: number }) => {
+  const [progress] = useProgressContext();
+  const percentage = (progress / (durationMs || 1)) * 100;
+
+  return <Progress value={percentage} className="h-1" />;
+};
+
+const AlbumImage = ({
+  data,
+  onLoad,
+}: {
+  data: CurrentPlayingResponse;
+  onLoad: (img: HTMLImageElement) => void;
+}) => (
+  <Image
+    crossOrigin="anonymous"
+    width={80}
+    height={80}
+    sizes="80px"
+    blur={false}
+    onLoad={(e) => onLoad(e.target as HTMLImageElement)}
+    src={data?.item.album.images[0]?.url ?? ""}
+    alt={data?.item.album.name ?? ""}
+    className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
+  />
+);
+
+const SongTitle = ({
+  name,
+  enableColorExtraction,
+  isPending,
+  isLight,
+}: {
+  name: string;
+  enableColorExtraction: boolean;
+  isPending: boolean;
+  isLight: boolean;
+}) => {
+  const textColorClass = getTextColorClass(
+    enableColorExtraction,
+    isPending,
+    isLight
+  );
+  const shouldUseMarquee = name.length > 13;
+
+  const titleElement = (
+    <h4
+      className={cn(
+        "mb-2 mt-0",
+        shouldUseMarquee ? "text-md" : "text-lg line-clamp-1",
+        textColorClass
+      )}>
+      {name}
+    </h4>
   );
 
-  const MemoTitle = useMemo(
-    () => (
-      <>
-        {!!props.data && props.data.item.name.length > 13 ? (
-          <Marquee className="w-full p-0" repeat={2}>
-            <h4
-              className={cn(
-                "text-md mb-2 mt-0",
-                props.experimental?.displayBackgroundColorFromImage &&
-                  !isPending
-                  ? isLight
-                    ? "text-dark"
-                    : "text-light"
-                  : ""
-              )}>
-              {props.data.item.name}
-            </h4>
-          </Marquee>
-        ) : (
-          <h4
-            className={cn(
-              "mb-2 mt-0 line-clamp-1 text-lg",
-              props.experimental?.displayBackgroundColorFromImage && !isPending
-                ? isLight
-                  ? "text-dark"
-                  : "text-light"
-                : ""
-            )}>
-            {props.data?.item.name}
-          </h4>
-        )}
-      </>
-    ),
-    [
-      isPending,
-      props.data,
-      isLight,
-      props.experimental?.displayBackgroundColorFromImage,
-    ]
+  if (shouldUseMarquee) {
+    return (
+      <Marquee className="w-full p-0" repeat={2}>
+        {titleElement}
+      </Marquee>
+    );
+  }
+
+  return titleElement;
+};
+
+const PlayingLink = ({
+  data,
+}: {
+  data: CurrentPlayingResponse | undefined;
+}) => {
+  if (!data) {
+    return <p className="m-0">Not Playing</p>;
+  }
+
+  return (
+    <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
+      <Link
+        className="m-0 text-sm"
+        href={data.item.external_urls.spotify}
+        target="_blank">
+        <TextShimmer className="m-0 flex w-full p-0">
+          {data.item.name} - {data.item.artists[0]?.name}
+        </TextShimmer>
+      </Link>
+    </Marquee>
+  );
+};
+
+const Card = ({
+  data,
+  isLoading,
+  isSuccess,
+  isError,
+  isFetching,
+  refetch,
+  className,
+  hoverCardContentClassName,
+  experimental,
+}: UseQueryResult<CurrentPlayingResponse, HonoRPCError> & ExtendsProps) => {
+  const enableColorExtraction =
+    experimental?.displayBackgroundColorFromImage ?? false;
+
+  useProgressTracking(
+    data?.is_playing ?? false,
+    data?.item.duration_ms ?? 0,
+    data?.progress_ms ?? 0,
+    isFetching,
+    isSuccess,
+    refetch
   );
 
-  const MemoLink = useMemo(
-    () => (
-      <>
-        {props.data ? (
-          <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
-            <Link
-              className="m-0 text-sm"
-              href={props.data.item.external_urls.spotify}
-              target="_blank">
-              <TextShimmer className="m-0 flex w-full p-0">
-                {props.data.item.name} - {props.data.item.artists[0]?.name}
-              </TextShimmer>
-            </Link>
-          </Marquee>
-        ) : (
-          <p className="m-0">Not Playing</p>
-        )}
-      </>
-    ),
-    [props.data]
+  const { bgRGB, isLight, isPending, handleImageLoad } =
+    useImageColorExtraction(
+      data?.item.album.images[0]?.url,
+      enableColorExtraction
+    );
+
+  const textColorClass = getTextColorClass(
+    enableColorExtraction,
+    isPending,
+    isLight
   );
+
+  const backgroundColor =
+    bgRGB.length === 3
+      ? `rgba(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]}, 0.3)`
+      : undefined;
 
   return (
     <HoverCard>
@@ -239,95 +286,92 @@ const Card: FC<UseQueryResult<CurrentPlaying, HTTPError> & ExtendsProps> = (
         <div
           className={cn(
             "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
-            props.className
+            className
           )}>
           <span className="i-mdi-spotify size-5 text-[#1DB954]" />
-          {props.isLoading ? (
+          {isLoading ? (
             <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
           ) : (
-            MemoLink
+            <PlayingLink data={data} />
           )}
         </div>
       </HoverCardTrigger>
-      {props.data && (
+      {data && (
         <HoverCardContent
-          style={{
-            backgroundColor:
-              bgRGB.length === 3
-                ? `rgba(${bgRGB[0]}, ${bgRGB[1]}, ${bgRGB[2]}, 0.3)`
-                : undefined,
-          }}
+          style={{ backgroundColor }}
           className={cn(
             "z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-secondary/50 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
-            props.isError &&
+            isError &&
               "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)]",
-            props.experimental?.displayBackgroundColorFromImage && !isPending
+            enableColorExtraction && !isPending
               ? "backdrop-blur-lg"
               : "c-bg-third",
-            props.hoverCardContentClassName
+            hoverCardContentClassName
           )}>
           <div className="flex items-center gap-5">
-            {MemoImage}
+            <AlbumImage data={data} onLoad={handleImageLoad} />
             <div
               className={cn(
                 "overflow-hidden p-1",
-                props.experimental?.displayBackgroundColorFromImage &&
-                  !isPending
+                enableColorExtraction && !isPending
                   ? "not-prose"
                   : "prose dark:prose-invert"
               )}>
-              {MemoTitle}
-              <p
-                className={cn(
-                  "mt-0 line-clamp-1 text-sm",
-                  props.experimental?.displayBackgroundColorFromImage &&
-                    !isPending
-                    ? isLight
-                      ? "text-dark"
-                      : "text-light"
-                    : ""
-                )}>
-                {props.data.item.artists[0]?.name}
+              <SongTitle
+                name={data.item.name}
+                enableColorExtraction={enableColorExtraction}
+                isPending={isPending}
+                isLight={isLight}
+              />
+              <p className={cn("mt-0 line-clamp-1 text-sm", textColorClass)}>
+                {data.item.artists[0]?.name}
               </p>
             </div>
           </div>
-          {props.isSuccess && <ProgressBar {...props} />}
+          {isSuccess && <ProgressBar durationMs={data.item.duration_ms} />}
         </HoverCardContent>
       )}
     </HoverCard>
   );
 };
 
-const CurrentPlaying: FC<Props> = ({
+const LoadingSkeleton = ({ className }: { className?: string }) => (
+  <div
+    className={cn(
+      "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
+      className
+    )}>
+    <span className="i-mdi-spotify size-5 text-[#1DB954]" />
+    <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
+  </div>
+);
+
+const calculateRefetchInterval = (
+  data: CurrentPlayingResponse | undefined
+): number => {
+  if (!data?.is_playing || !data.item.duration_ms || !data.progress_ms) {
+    return 60_000;
+  }
+
+  const remainingTime = data.item.duration_ms - data.progress_ms;
+  const delta = remainingTime / 2;
+
+  return delta > 30_000 ? delta : 30_000;
+};
+
+const CurrentPlaying = ({
   children,
   queryOptions,
   className,
   hoverCardContentClassName,
   experimental,
-}) => {
-  const result = useQuery<CurrentPlaying, HTTPError>({
-    refetchInterval: (ctx) => {
-      if (
-        ctx.state.data?.is_playing &&
-        ctx.state.data.item.duration_ms &&
-        ctx.state.data.progress_ms
-      ) {
-        const delta =
-          (ctx.state.data.item.duration_ms - ctx.state.data.progress_ms) / 2;
-        return delta > 30_000 ? delta : 30_000;
-      }
-      return 60_000;
-    },
+}: Props) => {
+  const result = useQuery<CurrentPlayingResponse, HonoRPCError>({
+    queryKey: ["spotify-current-playing"],
+    queryFn: getCurrentPlaying,
+    refetchInterval: (ctx) => calculateRefetchInterval(ctx.state.data),
     refetchOnWindowFocus: "always",
     ...queryOptions,
-    queryKey: ["spotify-current-playing"],
-    queryFn: async ({ signal }) => {
-      return await serviceRequest()
-        .get("spotify/playing", {
-          signal,
-        })
-        .json<CurrentPlaying>();
-    },
   });
 
   if (children) {
@@ -335,36 +379,27 @@ const CurrentPlaying: FC<Props> = ({
   }
 
   if (result.isLoading) {
-    return (
-      <div
-        className={cn(
-          "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
-          className
-        )}>
-        <span className="i-mdi-spotify size-5 text-[#1DB954]" />
-        <div className="c-bg-primary h-5 w-20 animate-pulse rounded-full" />
-      </div>
-    );
+    return <LoadingSkeleton className={className} />;
   }
 
   return (
-    <CurrentPlayingContextProvider initValue={result.data?.progress_ms ?? 0}>
+    <ProgressProvider initialProgress={result.data?.progress_ms ?? 0}>
       <Card
         {...result}
         className={className}
         hoverCardContentClassName={hoverCardContentClassName}
         experimental={experimental}
       />
-    </CurrentPlayingContextProvider>
+    </ProgressProvider>
   );
 };
 
-const Index: FC<Props> = (props) => {
+const CurrentPlayingWithErrorBoundary = (props: Props) => {
   return (
-    <ErrorBoundary<HTTPError>>
+    <ErrorBoundary<HonoRPCError>>
       <CurrentPlaying {...props} />
     </ErrorBoundary>
   );
 };
 
-export default Index;
+export default CurrentPlayingWithErrorBoundary;
