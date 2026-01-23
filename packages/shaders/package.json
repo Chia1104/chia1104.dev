@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/shaders",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": {
+      "types": "./src/*.tsx",
+      "default": "./src/*.tsx"
+    }
+  },
+  "scripts": {
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "type:check": "tsc --noEmit",
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "ui-add": "pnpm dlx shadcn-ui add && prettier src --write --list-different"
+  },
+  "dependencies": {
+    "@chia/utils": "workspace:*",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "leva": "^0.10.1",
+    "maath": "^0.10.8",
+    "r3f-perf": "^7.2.3",
+    "react": "catalog:react-is",
+    "react-dom": "catalog:react-is",
+    "three": "^0.182.0"
+  },
+  "devDependencies": {
+    "@chiastack/eslint": "catalog:chiastack",
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@testing-library/react": "catalog:testing-library",
+    "@types/react": "catalog:react-is",
+    "@types/react-dom": "catalog:react-is",
+    "@types/three": "^0.182.0",
+    "eslint": "catalog:eslint",
+    "tailwindcss": "catalog:tailwindcss",
+    "typescript": "catalog:"
+  }
+}

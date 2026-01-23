@@ -34,12 +34,9 @@ const Copyright: FC<{ className?: string }> = ({ className }) => {
   );
 };
 
-/**
- * @TODO: Replace with canvas logo
- */
 const Logo = () => (
   <Image
-    src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/icon.png"
+    src="https://storage.chia1104.dev/bot-example.png"
     alt="logo"
     width={60}
     height={60}

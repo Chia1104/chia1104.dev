@@ -35,6 +35,7 @@
     "@chia/i18n": "workspace:*",
     "@chia/kv": "workspace:*",
     "@chia/meta": "workspace:*",
+    "@chia/shaders": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@heroui/react": "catalog:heroui",
