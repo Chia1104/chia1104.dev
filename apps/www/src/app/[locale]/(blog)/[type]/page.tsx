@@ -8,7 +8,6 @@ import { notFound } from "next/navigation";
 
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
-import dayjs from "@chia/utils/day";
 
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
@@ -33,6 +32,8 @@ export async function generateMetadata({
   };
 }
 
+const queryClient = getQueryClient();
+
 const CacheFeeds = async ({
   type,
   limit = 10,
@@ -42,40 +43,30 @@ const CacheFeeds = async ({
 }) => {
   const formattedType = type === "posts" ? "post" : "note";
   const t = await getTranslations(`blog.${type}`);
-  const feeds = await getFeedsWithType(formattedType, limit);
-  const hasFeeds = Array.isArray(feeds.items) && feeds.items.length > 0;
 
-  const queryClient = getQueryClient();
-
-  if (hasFeeds) {
-    queryClient.setQueryData(
-      orpc.feeds["admin-list"].infiniteKey({
-        input: () => ({
-          limit,
-          orderBy: "createdAt",
-          sortOrder: "desc",
-          type: formattedType,
-          cursor: dayjs(feeds.nextCursor).toISOString(),
-        }),
-        initialPageParam: dayjs(feeds.nextCursor).toISOString(),
+  const feeds = await queryClient.fetchInfiniteQuery({
+    queryKey: orpc.feeds["admin-list"].infiniteKey({
+      input: () => ({
+        limit,
+        orderBy: "createdAt",
+        sortOrder: "desc",
+        type: formattedType,
+        cursor: null,
       }),
-      {
-        pageParams: [dayjs(feeds.nextCursor).toISOString()],
-        pages: [
-          {
-            items: feeds.items,
-            nextCursor: dayjs(feeds.nextCursor).toISOString(),
-          },
-        ],
-      }
-    );
-  }
+      initialPageParam: null,
+    }),
+    queryFn: () => getFeedsWithType(formattedType, limit),
+    initialPageParam: null,
+  });
+
+  const hasFeeds =
+    Array.isArray(feeds?.pages[0]?.items) && feeds?.pages[0]?.items.length > 0;
 
   return hasFeeds ? (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <FeedList
         type={formattedType}
-        nextCursor={dayjs(feeds.nextCursor).toISOString()}
+        nextCursor={null}
         query={{
           limit,
           orderBy: "createdAt",
