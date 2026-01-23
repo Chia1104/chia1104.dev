@@ -1,6 +1,7 @@
 import { Suspense, ViewTransition } from "react";
 
 import { ErrorBoundary } from "@sentry/nextjs";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -10,6 +11,8 @@ import ImageZoom from "@chia/ui/image-zoom";
 
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
+import { orpc } from "@/libs/orpc/client";
+import { getQueryClient } from "@/libs/utils/query-client";
 import { getFeedsWithType } from "@/services/feeds.service";
 
 export const generateStaticParams = () => {
@@ -29,30 +32,49 @@ export async function generateMetadata({
   };
 }
 
+const queryClient = getQueryClient();
+
 const CacheFeeds = async ({
   type,
-  limit = 20,
+  limit = 10,
 }: {
   type: "posts" | "notes";
   limit?: number;
 }) => {
   const formattedType = type === "posts" ? "post" : "note";
-  const feeds = await getFeedsWithType(formattedType, limit);
-  const hasFeeds = Array.isArray(feeds.items) && feeds.items.length > 0;
   const t = await getTranslations(`blog.${type}`);
 
-  return hasFeeds ? (
-    <FeedList
-      type={formattedType}
-      initialData={feeds.items}
-      nextCursor={feeds.nextCursor}
-      query={{
-        limit: 10,
-        orderBy: "id",
+  const feeds = await queryClient.fetchInfiniteQuery({
+    queryKey: orpc.feeds["admin-list"].infiniteKey({
+      input: () => ({
+        limit,
+        orderBy: "createdAt",
         sortOrder: "desc",
         type: formattedType,
-      }}
-    />
+        cursor: null,
+      }),
+      initialPageParam: null,
+    }),
+    queryFn: () => getFeedsWithType(formattedType, limit),
+    initialPageParam: null,
+  });
+
+  const hasFeeds =
+    Array.isArray(feeds?.pages[0]?.items) && feeds?.pages[0]?.items.length > 0;
+
+  return hasFeeds ? (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <FeedList
+        type={formattedType}
+        nextCursor={null}
+        query={{
+          limit,
+          orderBy: "createdAt",
+          sortOrder: "desc",
+          type: formattedType,
+        }}
+      />
+    </HydrationBoundary>
   ) : (
     <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
       <p>{t("no-content")}</p>
@@ -88,7 +110,7 @@ const Page = async (
         <h1>{t("doc-title")}</h1>
         <ErrorBoundary>
           <Suspense fallback={<AppLoading />}>
-            <CacheFeeds type={type} limit={20} />
+            <CacheFeeds type={type} limit={10} />
           </Suspense>
         </ErrorBoundary>
       </div>

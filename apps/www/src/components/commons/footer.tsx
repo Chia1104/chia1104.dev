@@ -7,12 +7,12 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import type { Locale } from "next-intl";
 import { useLocale } from "next-intl";
+import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
-import Link from "@chia/ui/link";
 import RetroGrid from "@chia/ui/retro-grid";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";

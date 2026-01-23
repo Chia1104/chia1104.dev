@@ -45,7 +45,7 @@ export const getInfiniteApiKeysByProjectId = withDTO(
     const parsedCursor = cursor
       ? cursorTransform(
           cursor,
-          orderBy === FeedOrderBy.CreatedAt ? "timestamp" : "default"
+          orderBy === FeedOrderBy.CreatedAt ? "date" : "default"
         )
       : null;
     const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;
@@ -116,7 +116,7 @@ export const getInfiniteApiKeys = withDTO(
     const parsedCursor = cursor
       ? cursorTransform(
           cursor,
-          orderBy === FeedOrderBy.CreatedAt ? "timestamp" : "default"
+          orderBy === FeedOrderBy.CreatedAt ? "date" : "default"
         )
       : null;
     const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;

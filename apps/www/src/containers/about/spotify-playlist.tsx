@@ -4,10 +4,10 @@ import type { PlayList } from "@chia/api/spotify/types";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
-import Link from "@chia/ui/link";
 import { cn } from "@chia/ui/utils/cn.util";
 import { serviceRequest } from "@chia/utils/request";
 
+import PreviewLink from "@/components/commons/preview-link";
 import { env } from "@/env";
 
 const ImageItem: FC<{
@@ -68,9 +68,10 @@ const First: FC<{
           alt={data.track.album.name}
           className="aspect-h-1 aspect-w-1"
         />
-        <Link
+        <a
           href={data.track.external_urls.spotify}
           target="_blank"
+          rel="noopener noreferrer"
           className="absolute inset-0 z-10"
         />
         <PlayIcon className="absolute bottom-1 right-5 opacity-0 transition-all duration-300 ease-in-out group-hover:bottom-5 group-hover:opacity-100" />
@@ -97,10 +98,11 @@ const Item: FC<{
       <p className="col-span-2 line-clamp-2">
         {data.track.name} - {data.track.artists[0]?.name}
       </p>
-      <Link
+      <a
         href={data.track.external_urls.spotify}
         className="absolute inset-0"
         target="_blank"
+        rel="noopener noreferrer"
       />
     </div>
   );
@@ -143,10 +145,7 @@ export async function SpotifyPlaylist() {
       </div>
       <div className="flex items-center gap-3 mt-5">
         <span>
-          Check out the{" "}
-          <Link preview href={href}>
-            {playlist.name}
-          </Link>{" "}
+          Check out the <PreviewLink href={href}>{playlist.name}</PreviewLink>{" "}
           on my Spotify.
         </span>
         <span className="i-mdi-spotify size-8 text-[#1DB954]" />

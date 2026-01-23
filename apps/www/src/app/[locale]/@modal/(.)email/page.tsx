@@ -17,7 +17,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@chia/ui/drawer";
-import Link from "@chia/ui/link";
 import { Meteors } from "@chia/ui/meteors";
 import ShimmerButton from "@chia/ui/shimmer-button";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -139,11 +138,9 @@ const Page = () => {
                     </ShimmerButton>
                     <span className="flex gap-1">
                       {t("or-via")}
-                      <Link
-                        href={`mailto:${meta.email}`}
-                        className="flex w-fit">
+                      <a href={`mailto:${meta.email}`} className="flex w-fit">
                         {tForm("email")}
-                      </Link>
+                      </a>
                     </span>
                   </DrawerFooter>
                 </>

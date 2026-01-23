@@ -3,9 +3,8 @@ import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 import { JSDOM } from "jsdom";
 import { HTTPError } from "ky";
+import * as z from "zod";
 
-import { previewSchema } from "@chia/ui/link";
-import type { DocResponse } from "@chia/ui/link";
 import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
 import { errorGenerator } from "@chia/utils/server";
@@ -13,6 +12,13 @@ import { errorGenerator } from "@chia/utils/server";
 import { env } from "../env";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { errorResponse } from "../utils/error.util";
+
+interface DocResponse {
+  title?: string | null;
+  description?: string | null;
+  favicon?: string | null;
+  ogImage?: string | null;
+}
 
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))
@@ -23,7 +29,7 @@ const api = new Hono<HonoContext>()
   )
   .post(
     "/link-preview",
-    zValidator("json", previewSchema, (result, c) => {
+    zValidator("json", z.strictObject({ href: z.url() }), (result, c) => {
       if (!result.success) {
         return c.json(errorResponse(result.error), 400);
       }

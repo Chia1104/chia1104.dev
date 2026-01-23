@@ -42,7 +42,7 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
     const parsedCursor = cursor
       ? cursorTransform(
           cursor,
-          orderBy === FeedOrderBy.CreatedAt ? "timestamp" : "default"
+          orderBy === FeedOrderBy.CreatedAt ? "date" : "default"
         )
       : null;
     const cursorFilter = parsedCursor
