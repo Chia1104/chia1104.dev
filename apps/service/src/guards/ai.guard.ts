@@ -13,7 +13,7 @@ import { verifyApiKey } from "@chia/ai/utils";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
+import { env } from "../env";
 
 export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
 

@@ -90,7 +90,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
     "dayjs": "catalog:",
-    "framer-motion": "12.28.1",
+    "framer-motion": "12.29.0",
     "ky": "catalog:",
     "lucide-react": "^0.562.0",
     "next": "catalog:next",

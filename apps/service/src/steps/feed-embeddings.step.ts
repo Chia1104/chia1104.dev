@@ -62,7 +62,9 @@ export const ollamaEmbeddingStep = async (
   const avgEmbedding = new Array<number>(512).fill(0);
   for (const embedding of embeddings) {
     for (let i = 0; i < 512; i++) {
-      avgEmbedding[i] += embedding[i] / embeddings.length;
+      let avgEmbeddingValue = avgEmbedding[i];
+      if (!avgEmbeddingValue) continue;
+      avgEmbeddingValue += (embedding?.[i] ?? 0) / embeddings.length;
     }
   }
 
@@ -71,8 +73,10 @@ export const ollamaEmbeddingStep = async (
   );
 
   if (magnitude > 0) {
-    for (let i = 0; i < avgEmbedding.length; i++) {
-      avgEmbedding[i] /= magnitude;
+    for (const [i] of avgEmbedding.entries()) {
+      let avgEmbeddingValue = avgEmbedding[i];
+      if (!avgEmbeddingValue) continue;
+      avgEmbeddingValue /= magnitude;
     }
   }
 

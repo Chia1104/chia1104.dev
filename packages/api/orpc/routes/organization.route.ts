@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 
-import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
 import {
   createProject,
@@ -17,7 +16,7 @@ export const getOrganizationRoute = contractOS.organization.details
   .use(adminGuard())
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
-      auth.api.getFullOrganization({
+      opts.context.auth.api.getFullOrganization({
         query: {
           organizationSlug: opts.input.slug,
         },
@@ -53,7 +52,7 @@ export const createOrganizationRoute = contractOS.organization.create
   .use(adminGuard())
   .handler(async (opts) => {
     const { data: slug, error: slugError } = await tryCatch(
-      auth.api.checkOrganizationSlug({
+      opts.context.auth.api.checkOrganizationSlug({
         body: {
           slug: opts.input.slug,
         },
@@ -67,7 +66,7 @@ export const createOrganizationRoute = contractOS.organization.create
     }
 
     const { data: org, error } = await tryCatch(
-      auth.api.createOrganization({
+      opts.context.auth.api.createOrganization({
         body: {
           ...opts.input,
           userId: opts.context.session?.user.id,
@@ -103,7 +102,7 @@ export const deleteOrganizationRoute = contractOS.organization.delete
   .use(adminGuard())
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
-      auth.api.deleteOrganization({
+      opts.context.auth.api.deleteOrganization({
         body: {
           organizationId: opts.input.id,
         },

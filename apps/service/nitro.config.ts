@@ -8,11 +8,10 @@ export default defineConfig({
   typescript: {
     tsconfigPath: "./tsconfig.build.json",
   },
-  alias: {
-    "@": fileURLToPath(new URL("./src", import.meta.url)),
-  },
   preset: "node-server",
   routes: {
     "/**": "./src/server.ts",
   },
+  traceDeps: ["jsdom", "@workflow-worlds/redis", "@workflow/world-postgres"],
+  noPublicDir: true,
 });

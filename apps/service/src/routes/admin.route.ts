@@ -23,9 +23,9 @@ import { getAdminId } from "@chia/utils/config";
 import { NumericStringSchema } from "@chia/utils/schema";
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
-import { apikeyVerify } from "@/guards/apikey-verify.guard";
-import { errorResponse } from "@/utils/error.util";
+import { env } from "../env";
+import { apikeyVerify } from "../guards/apikey-verify.guard";
+import { errorResponse } from "../utils/error.util";
 
 const adminId = getAdminId();
 
@@ -39,7 +39,7 @@ const api = new Hono<HonoContext>()
   .get("/public/feeds:meta", async (c) => {
     let total = 0;
     try {
-      total = await getPublicFeedsTotal(c.var.db, adminId);
+      total = (await getPublicFeedsTotal(c.var.db, adminId)) ?? 0;
     } catch (err) {
       c.var.sentry.captureException(err);
       return c.json(errorGenerator(500), 500);

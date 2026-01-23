@@ -1,5 +1,3 @@
-import { auth } from "@chia/auth";
-
 import { baseOS } from "../utils";
 
 export const authGuard = baseOS
@@ -9,7 +7,7 @@ export const authGuard = baseOS
   .middleware(async ({ next, context, errors }) => {
     const sessionData =
       context.session ??
-      (await auth.api.getSession({
+      (await context.auth.api.getSession({
         headers: context.headers,
       }));
 

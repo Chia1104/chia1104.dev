@@ -9,7 +9,7 @@ import { createMiddleware } from "hono/factory";
 import type { Keyv } from "@chia/kv";
 import { getClientIP } from "@chia/utils/server";
 
-import { env } from "@/env";
+import { env } from "../env";
 
 interface RateLimitEntry {
   totalHits: number;

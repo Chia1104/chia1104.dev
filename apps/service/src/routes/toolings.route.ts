@@ -10,9 +10,9 @@ import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
-import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
-import { errorResponse } from "@/utils/error.util";
+import { env } from "../env";
+import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { errorResponse } from "../utils/error.util";
 
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))

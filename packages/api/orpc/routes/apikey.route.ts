@@ -1,4 +1,3 @@
-import { auth } from "@chia/auth";
 import { APIError } from "@chia/auth/types";
 import {
   setApiKeyProjectId,
@@ -14,7 +13,7 @@ export const createAPIKeyRoute = contractOS.apikey.create
   .use(adminGuard())
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
-      auth.api.createApiKey({
+      opts.context.auth.api.createApiKey({
         body: {
           name: opts.input.name,
           userId: opts.context.session?.user.id,
@@ -104,7 +103,7 @@ export const revokeApiKeyRoute = contractOS.apikey.revoke
   .use(adminGuard())
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
-      auth.api.updateApiKey({
+      opts.context.auth.api.updateApiKey({
         headers: opts.context.headers,
         body: {
           keyId: opts.input,
@@ -135,7 +134,7 @@ export const deleteApiKeyRoute = contractOS.apikey.delete
   .use(adminGuard())
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
-      auth.api.deleteApiKey({
+      opts.context.auth.api.deleteApiKey({
         headers: opts.context.headers,
         body: {
           keyId: opts.input,
@@ -163,7 +162,7 @@ export const updateApiKeyRoute = contractOS.apikey.update
   .use(adminGuard())
   .handler(async (opts) => {
     const { data, error } = await tryCatch(
-      auth.api.updateApiKey({
+      opts.context.auth.api.updateApiKey({
         headers: opts.context.headers,
         body: opts.input,
       })

@@ -1,6 +1,6 @@
 import "client-only";
 import { hc } from "hono/client";
-import type { AppRPC } from "service/server";
+import type { AppRPC } from "~service/server";
 
 import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";

@@ -1,4 +1,3 @@
-import { auth } from "@chia/auth";
 import { Role } from "@chia/db/types";
 import { getAdminId } from "@chia/utils/config";
 
@@ -23,7 +22,7 @@ export const adminGuard = (
       if (options.enabled) {
         sessionData =
           sessionData ??
-          (await auth.api.getSession({
+          (await context.auth.api.getSession({
             headers: context.headers,
           }));
 

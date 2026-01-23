@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "../env";
 
 export const getCORSAllowedOrigin = (): string[] | string => {
   if (!env.CORS_ALLOWED_ORIGIN) return "*";

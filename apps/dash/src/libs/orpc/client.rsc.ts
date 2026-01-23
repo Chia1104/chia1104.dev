@@ -1,23 +1,28 @@
 import { createRouterClient } from "@orpc/server";
+import { all } from "better-all";
 import { headers } from "next/headers";
 import "server-only";
 
 import { router } from "@chia/api/orpc/router";
+import { createAuth } from "@chia/auth";
 import { authClient } from "@chia/auth/client";
 import { connectDatabase } from "@chia/db/client";
 
 globalThis.$client = createRouterClient(router, {
-  context: async () => ({
-    headers: await headers(),
-    db: await connectDatabase(),
-    kv: await import("@chia/kv").then((m) => m.kv),
-    session: await authClient
-      .getSession({
-        fetchOptions: {
-          headers: await headers(),
-        },
-      })
-      .then((res) => res.data ?? null)
-      .catch(() => null),
-  }),
+  context: async () => {
+    const { db, kv } = await all({
+      db: () => connectDatabase(),
+      kv: () => import("@chia/kv").then((m) => m.kv),
+    });
+    return {
+      headers: await headers(),
+      db,
+      kv,
+      session: await authClient
+        .getSession({ fetchOptions: { headers: await headers() } })
+        .then((res) => res.data ?? null)
+        .catch(() => null),
+      auth: createAuth(db, kv),
+    };
+  },
 });

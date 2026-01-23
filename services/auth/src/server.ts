@@ -1,6 +1,9 @@
+/**
+ * @TODO: Work in progress
+ */
 import { Elysia } from "elysia";
 
-import { auth } from "@chia/auth";
+// import { auth } from "@chia/auth";
 
 import { env } from "./env";
 
@@ -10,7 +13,7 @@ const app = new Elysia()
       status: "ok",
     };
   })
-  .mount(auth.handler)
+  // .mount(auth.handler)
   .listen(env.PORT);
 
 console.log(

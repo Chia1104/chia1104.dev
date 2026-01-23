@@ -3,7 +3,7 @@ import { createMiddleware } from "hono/factory";
 
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
+import { env } from "../env";
 
 export const MAINTENANCE_MODE = "MAINTENANCE_MODE";
 export const MAINTENANCE_BYPASS_TOKEN = "MAINTENANCE_BYPASS_TOKEN";

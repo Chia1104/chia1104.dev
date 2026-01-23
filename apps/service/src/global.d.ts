@@ -1,8 +1,8 @@
 type Variables = {
   db: import("@chia/db").DB;
   kv: import("@chia/kv").Keyv;
-  // redis: import("redis").RedisClientType | null;
   clientIP: string;
+  auth: import("@chia/auth").Auth;
 };
 
 type HonoContext<

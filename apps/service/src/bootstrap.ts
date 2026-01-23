@@ -7,11 +7,10 @@ import { logger } from "hono/logger";
 
 import { getClientIP, errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
-import { maintenance } from "@/middlewares/maintenance.middleware";
-import { getCORSAllowedOrigin } from "@/utils/cors.util";
-
+import { env } from "./env";
+import { maintenance } from "./middlewares/maintenance.middleware";
 import { splitString } from "./utils";
+import { getCORSAllowedOrigin } from "./utils/cors.util";
 
 const bootstrap = <
   TContext extends HonoContext,

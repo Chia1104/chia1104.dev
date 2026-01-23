@@ -4,7 +4,7 @@ import { timeout } from "hono/timeout";
 import { getPlayList, getNowPlaying } from "@chia/api/spotify";
 import { errorGenerator } from "@chia/utils/server";
 
-import { env } from "@/env";
+import { env } from "../env";
 
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))

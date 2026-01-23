@@ -1,5 +1,6 @@
 import { createFactory } from "hono/factory";
 
+import { createAuth } from "@chia/auth";
 import { connectDatabase } from "@chia/db/client";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
@@ -22,6 +23,7 @@ export default createFactory<HonoContext>({
       c.set("clientIP", getClientIP(c.req.raw));
       c.set("db", db);
       c.set("kv", kv);
+      c.set("auth", createAuth(db, kv));
 
       await next();
     });

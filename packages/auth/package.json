@@ -55,6 +55,7 @@
   "devDependencies": {
     "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
+    "drizzle-kit": "catalog:drizzle",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }

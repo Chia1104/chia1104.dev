@@ -8,9 +8,8 @@ import { start } from "workflow/api";
 
 import { router } from "@chia/api/orpc/router";
 
-import { env } from "@/env";
-import { rateLimiterGuard } from "@/guards/rate-limiter.guard";
-
+import { env } from "../env";
+import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { estimateReadingTimeWorkflow } from "../workflows/estimate-reading-time.workflow.js";
 import { feedEmbeddingsWorkflow } from "../workflows/feed-embeddings.workflow.js";
 
@@ -39,6 +38,7 @@ const api = new Hono<HonoContext>()
         headers: c.req.raw.headers,
         db: c.var.db,
         kv: c.var.kv,
+        auth: c.var.auth,
         hooks: {
           async onFeedCreated(feed) {
             await all({
