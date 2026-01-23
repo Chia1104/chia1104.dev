@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 
 import meta, { TimelineType, Company } from "@chia/meta";
 import Timeline from "@chia/ui/timeline";
-import type { Data } from "@chia/ui/timeline/types";
+import type { TimelineItemData } from "@chia/ui/timeline/types";
 
 const TimelineTitle = memo(
   ({ type, duration }: { type: TimelineType; duration: string }) => {
@@ -79,7 +79,7 @@ export function TimelineHero() {
       ),
       link: item.link,
     };
-  }) satisfies Data[];
+  }) satisfies TimelineItemData[];
   return (
     <>
       <h2>{t("timeline")}</h2>

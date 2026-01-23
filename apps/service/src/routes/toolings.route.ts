@@ -5,8 +5,6 @@ import { JSDOM } from "jsdom";
 import { HTTPError } from "ky";
 import * as z from "zod";
 
-// import { previewSchema } from "@chia/ui/link";
-// import type { DocResponse } from "@chia/ui/link";
 import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
 import { errorGenerator } from "@chia/utils/server";
