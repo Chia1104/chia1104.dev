@@ -32,6 +32,7 @@ declare namespace __next_route_internal_types__ {
     S extends `${string}${SearchOrHash}` ? never : S
 
   type StaticRoutes = 
+    | `/about`
     | `/api/v1/health`
     | `/sitemap-[id].xml`
     | `/sitemap.xml`
@@ -39,6 +40,7 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}`
     | `/${SafeSlug<T>}/${SafeSlug<T>}`
     | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}`
+    | `/${SafeSlug<T>}/about`
     | `/${SafeSlug<T>}/contact`
     | `/${SafeSlug<T>}/email`
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}`
