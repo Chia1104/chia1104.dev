@@ -22,7 +22,7 @@ const FeedTranslationWarning = (props: Props) => {
     <Alert
       className={props.className}
       color="warning"
-      title={"Warning"}
+      title={t("warning")}
       description={t("not-translated", { locale: tl(Locale.ZH_TW) })}
       onClose={() => setVisible(false)}
       isVisible={visible}

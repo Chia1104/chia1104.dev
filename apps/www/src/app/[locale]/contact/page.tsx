@@ -2,15 +2,19 @@ import type { FC, ReactNode } from "react";
 import { ViewTransition } from "react";
 
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import meta from "@chia/meta";
 import Link from "@chia/ui/link";
 
 import Contact from "@/components/contact/contact";
 
-export const metadata: Metadata = {
-  title: "Contact Me",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("contact");
+  return {
+    title: t("contact-me"),
+  };
+}
 
 /**
  * Tokyo, Japan
@@ -57,22 +61,19 @@ const LinkItem: FC<{
   );
 };
 
-const ContactPage = () => {
+const ContactPage = async () => {
+  const t = await getTranslations("contact");
   return (
     <ViewTransition>
       <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
         <h1>
-          Contact{" "}
+          {t("title")}{" "}
           <span className="animate-cia-waving-hand inline-block origin-[70%_70%]">
             👋
           </span>
         </h1>
-        <p>
-          If you want to get in touch with me, you can send me an email first
-          and we can go from there. I'm always open to new opportunities and
-          support requests.
-        </p>
-        <h3>Find me on</h3>
+        <p>{t("description")}</p>
+        <h3>{t("find-me-on")}</h3>
         <div className="mb-5 flex px-1">
           {Object.entries(contact).map(([key, { name, icon, link }]) => (
             <LinkItem

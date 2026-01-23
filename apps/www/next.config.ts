@@ -119,6 +119,16 @@ const nextConfig: NextConfig = {
       destination: "/notes/:slug",
       permanent: true,
     },
+    {
+      source: "/:locale/about",
+      destination: "/:locale",
+      permanent: true,
+    },
+    {
+      source: "/about",
+      destination: "/",
+      permanent: true,
+    },
   ],
 };
 

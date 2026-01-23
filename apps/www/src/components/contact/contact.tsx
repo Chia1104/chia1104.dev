@@ -11,7 +11,7 @@ import type {
 import { Input, Textarea } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -110,6 +110,7 @@ export const Form: FC<
 }) => {
   const id = useId();
   const router = useRouter();
+  const t = useTranslations("contact.form");
   const { mutateAsync, isPending } = useMutation({
     mutationFn: sendEmail,
   });
@@ -126,11 +127,11 @@ export const Form: FC<
 
   const handleSubmit = form.handleSubmit((data) => {
     toast.promise(() => mutateAsync(data), {
-      loading: "Loading...",
+      loading: t("loading"),
       success: () => {
         if (!disableRouterRefresh) router.refresh();
         onSuccess?.();
-        return "Message sent successfully.";
+        return t("success");
       },
       error: (error) => {
         if (error instanceof Error) {
@@ -139,13 +140,13 @@ export const Form: FC<
         if (error instanceof HonoRPCError) {
           switch (error.code) {
             case CaptchaErrorCode.CaptchaFailed:
-              return "Failed to validate captcha";
+              return t("error.captcha-validation");
             case CaptchaErrorCode.CaptchaProviderNotSupported:
-              return "Captcha provider not supported";
+              return t("error.captcha-provider");
             case CaptchaErrorCode.CaptchaRequired:
-              return "Captcha is required";
+              return t("error.captcha-required");
             default:
-              return "Failed to send email";
+              return t("error.send-failed");
           }
         }
       },
@@ -178,8 +179,8 @@ export const Form: FC<
                   <Input
                     isRequired
                     type="email"
-                    label="Email"
-                    placeholder="Your email"
+                    label={t("email")}
+                    placeholder={t("email-placeholder")}
                     isInvalid={invalid}
                     errorMessage={error?.message}
                     value={value}
@@ -203,8 +204,8 @@ export const Form: FC<
                     isInvalid={invalid}
                     errorMessage={error?.message}
                     type="text"
-                    label="Title"
-                    placeholder="Your title"
+                    label={t("title")}
+                    placeholder={t("title-placeholder")}
                     value={value}
                     onChange={onChange}
                     onBlur={onBlur}
@@ -224,12 +225,12 @@ export const Form: FC<
                   <Textarea
                     isRequired
                     isInvalid={invalid}
-                    label="Message"
+                    label={t("message")}
                     name="message"
                     value={value}
                     onChange={onChange}
                     onBlur={onBlur}
-                    placeholder="Your message"
+                    placeholder={t("message-placeholder")}
                     errorMessage={error?.message}
                     minRows={10}
                   />
@@ -243,7 +244,7 @@ export const Form: FC<
               id={id + "-contact-submit"}
               type="submit"
               className={cn("w-fit self-center py-2")}>
-              Send
+              {t("send")}
             </SubmitForm>
           </>
         )}

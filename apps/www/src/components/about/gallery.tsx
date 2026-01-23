@@ -10,27 +10,27 @@ const images = [
   {
     id: 1,
     alt: "me-1",
-    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/me-1.JPG",
+    src: "https://storage.chia1104.dev/me-1.jpeg",
   },
   {
     id: 2,
     alt: "me-2",
-    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/me.JPG",
+    src: "https://storage.chia1104.dev/me.jpeg",
   },
   {
     id: 3,
     alt: "group-1",
-    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-1.JPG",
+    src: "https://storage.chia1104.dev/graph-1.jpg",
   },
   {
     id: 4,
     alt: "group-2",
-    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG",
+    src: "https://storage.chia1104.dev/group-2.jpeg",
   },
   {
     id: 5,
     alt: "graph-1",
-    src: "https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/graph-1.jpg",
+    src: "https://storage.chia1104.dev/graph-1.jpg",
   },
 ] as const;
 

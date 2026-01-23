@@ -36,7 +36,7 @@ const Copyright: FC<{ className?: string }> = ({ className }) => {
 
 const Logo = () => (
   <Image
-    src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/icon.png"
+    src="https://storage.chia1104.dev/bot-example.png"
     alt="logo"
     width={60}
     height={60}
@@ -47,6 +47,8 @@ const Logo = () => (
 const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   const t = useTranslations("theme");
+  const tNav = useTranslations("nav");
+  const tRoutes = useTranslations("routes");
   return (
     <RetroGrid
       data-testid="footer"
@@ -76,7 +78,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
           <Copyright className="mt-auto" />
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
-          <p className="mb-3 ml-2 text-lg font-bold">Pages</p>
+          <p className="mb-3 ml-2 text-lg font-bold">{tNav("pages")}</p>
           <Tabs
             variant="light"
             aria-label="nav bar"
@@ -87,7 +89,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
                 ? "posts"
                 : (selectedLayoutSegments[0] ?? "/")
             }>
-            {Object.entries(navItems).map(([path, { name }]) => {
+            {Object.entries(navItems).map(([path, { nameKey }]) => {
               return (
                 <Tab
                   className="w-fit"
@@ -95,7 +97,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
                   title={
                     <Link locale={locale} key={path} href={path}>
                       <span className="relative px-[10px] py-[5px]">
-                        <p>{name}</p>
+                        <p>{tRoutes(nameKey)}</p>
                       </span>
                     </Link>
                   }
@@ -105,7 +107,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
           </Tabs>
         </div>
         <div className="flex w-1/2 flex-col items-start gap-1 md:w-1/3">
-          <p className="mb-3 ml-2 text-lg font-bold">Contact</p>
+          <p className="mb-3 ml-2 text-lg font-bold">{tNav("contact")}</p>
           <div className="flex flex-col items-start gap-2">
             {Object.entries(contact).map(([_key, { name, icon, link }]) => (
               <Button

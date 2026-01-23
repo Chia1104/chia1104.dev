@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-import meta from "@chia/meta";
 import OpenGraph from "@chia/ui/open-graph";
 
 export const alt = "Contact Me";
@@ -19,7 +18,6 @@ export default function og() {
         title: TITLE,
         excerpt:
           "If you want to get in touch with me, you can send me an email first and we can go from there. I'm always open to new opportunities and support requests.",
-        subtitle: meta.bio,
       }}
       styles={{
         title: {

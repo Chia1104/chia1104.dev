@@ -4,6 +4,7 @@ import { useId, ViewTransition } from "react";
 
 import { Input, Textarea } from "@heroui/react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Controller } from "react-hook-form";
 
@@ -26,6 +27,8 @@ import { Form } from "@/components/contact/contact";
 const Page = () => {
   const router = useRouter();
   const id = useId();
+  const t = useTranslations("contact");
+  const tForm = useTranslations("contact.form");
 
   return (
     <ViewTransition>
@@ -34,7 +37,7 @@ const Page = () => {
           <div className="relative flex w-full flex-col items-center overflow-hidden">
             <Meteors number={20} />
             <DrawerHeader className="max-w-[700px]">
-              <DrawerTitle>Contact</DrawerTitle>
+              <DrawerTitle>{t("title")}</DrawerTitle>
               <DrawerClose />
             </DrawerHeader>
             <Form
@@ -57,8 +60,8 @@ const Page = () => {
                           <Input
                             isRequired
                             type="email"
-                            label="Email"
-                            placeholder="Your email"
+                            label={tForm("email")}
+                            placeholder={tForm("email-placeholder")}
                             isInvalid={invalid}
                             errorMessage={error?.message}
                             value={value}
@@ -85,8 +88,8 @@ const Page = () => {
                             isInvalid={invalid}
                             errorMessage={error?.message}
                             type="text"
-                            label="Title"
-                            placeholder="Your title"
+                            label={tForm("title")}
+                            placeholder={tForm("title-placeholder")}
                             value={value}
                             onChange={onChange}
                             onBlur={onBlur}
@@ -109,12 +112,12 @@ const Page = () => {
                           <Textarea
                             isRequired
                             isInvalid={invalid}
-                            label="Message"
+                            label={tForm("message")}
                             name="message"
                             value={value}
                             onChange={onChange}
                             onBlur={onBlur}
-                            placeholder="Your message"
+                            placeholder={tForm("message-placeholder")}
                             errorMessage={error?.message}
                           />
                         )}
@@ -132,14 +135,14 @@ const Page = () => {
                       type="submit"
                       disabled={isPending}
                       className={cn("py-1", isPending && "cursor-not-allowed")}>
-                      Send
+                      {tForm("send")}
                     </ShimmerButton>
                     <span className="flex gap-1">
-                      or Via
+                      {t("or-via")}
                       <Link
                         href={`mailto:${meta.email}`}
                         className="flex w-fit">
-                        email
+                        {tForm("email")}
                       </Link>
                     </span>
                   </DrawerFooter>

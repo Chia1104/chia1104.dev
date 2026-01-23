@@ -19,7 +19,6 @@ export default async function og() {
       metadata={{
         title: `${meta.name}.dev`,
         excerpt: t("section1", { year: workDuration.toString() }),
-        subtitle: meta.bio,
       }}
       styles={{
         title: {

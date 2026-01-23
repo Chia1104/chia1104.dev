@@ -59,7 +59,7 @@ const CacheFeeds = async ({
       <ImageZoom>
         <div className="not-prose aspect-h-1 aspect-w-1 relative w-[100px]">
           <Image
-            src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/memo.png"
+            src="https://storage.chia1104.dev/memo.png"
             alt="memo"
             className="object-cover"
             fill

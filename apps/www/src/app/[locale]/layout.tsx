@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { getMessages, getTimeZone } from "next-intl/server";
 import { setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import meta from "@chia/meta";
@@ -25,28 +26,31 @@ export const viewport: Viewport = {
   width: "device-width",
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL(WWW_BASE_URL),
-  title: {
-    default: `${meta.name} | ${meta.title}`,
-    template: `%s | ${meta.name}`,
-  },
-  description: meta.content,
-  keywords: [
-    "Typescript",
-    "FullStack",
-    "NextJS",
-    "React",
-    "NestJS",
-    "Chia1104",
-  ],
-  creator: meta.name,
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("profile");
+  return {
+    metadataBase: new URL(WWW_BASE_URL),
+    title: {
+      default: `${meta.name} | ${t("title")}`,
+      template: `%s | ${meta.name}`,
+    },
+    description: t("bio"),
+    keywords: [
+      "Typescript",
+      "FullStack",
+      "NextJS",
+      "React",
+      "NestJS",
+      "Chia1104",
+    ],
+    creator: meta.name,
+    icons: {
+      icon: "/favicon.ico",
+      shortcut: "/favicon.ico",
+      apple: "/favicon.ico",
+    },
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

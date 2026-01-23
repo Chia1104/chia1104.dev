@@ -21,7 +21,7 @@ import AppLoading from "@/components/commons/app-loading";
 import { Locale } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
-export const revalidate = 120;
+export const revalidate = 300;
 
 export const generateStaticParams = async () => {
   const feeds = await getFeeds(100);

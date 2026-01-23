@@ -1,56 +1,44 @@
 [
   {
     "id": 3,
-    "title": "Work Experience",
+    "type": "work",
     "company": "LeadBest",
+    "companyKey": "leadbest",
     "duration": "2023-3 - Present",
     "startTime": "2023-3",
     "endTime": 0,
-    "location": "Taipei, Taiwan",
-    "work": "ReactJS, React Native, MUI, TypeScript, GCP, Scrum, Jira",
-    "link": "https://www.leadbestconsultant.com/",
-    "detail": [
-      "Adopting the Scrum development process and effectively fulfilling customer requirements with the help and communication of cross-functional teams.",
-      "Creating new frontend projects using internal templates and maintaining related modules."
-    ]
+    "work": "TypeScript, React, NextJS, React Native, Vite, TailwindCSS, TradingView, EChart, Docker",
+    "link": "https://www.leadbestconsultant.com/"
   },
   {
     "id": 2,
-    "title": "Work Experience",
+    "type": "work",
     "company": "WANIN",
+    "companyKey": "wanin",
     "duration": "2022-7 - 2023-1",
     "startTime": "2022-7",
     "endTime": "2023-1",
-    "location": "Taipei, Taiwan",
-    "work": "NextJS, VueJS, NestJS, TailwindCSS, TypeScript, Turborepo, GCP",
-    "link": "https://www.wanin.tw/",
-    "detail": [
-      "Developed a full-stack project, League Funny, which is a website where users can share posts about their favorite games.",
-      "Led the development of the NextJS frontend and backend services, including code review, feature planning, and testing.",
-      "Reduced 50% of the development time by using Turborepo to manage multiple repositories.",
-      "Developed useful hooks such as useS3ImageUpload and useInfiniteScroll to streamline development.",
-      "Led other developers to learn and use new technologies and React features.",
-      "Develop an internal backend system for the company to manage game player-related data and use Vue3 to complete the frontend and NestJS to complete the backend API."
-    ]
+    "work": "TypeScript, Turborepo, React, Vue3, NextJS, Vite, TailwindCSS, EChart, NestJS, TypeORM, PostgreSQL, Docker, GCP",
+    "link": "https://www.wanin.tw/"
   },
   {
     "id": 1,
-    "title": "Education",
+    "type": "education",
     "company": "CGU, IM",
+    "companyKey": "cgu",
     "duration": "2018-6 - 2022-6",
     "startTime": "2018-6",
     "endTime": "2022-6",
-    "location": "Taipei, Taiwan",
     "work": "MIS, Java, Python, MySQL, Computer Science, System Design",
     "link": "https://im.cgu.edu.tw/"
   },
   {
     "id": 0,
-    "title": "Hello World",
+    "type": "other",
     "company": "Chia1104",
+    "companyKey": "chia1104",
     "duration": "1999-11-04 - Present",
     "startTime": "1999-11-04",
-    "endTime": 0,
-    "location": "Taipei, Taiwan"
+    "endTime": 0
   }
 ]

@@ -18,7 +18,61 @@
     "copy": "Copy"
   },
   "home": {
-    "section1": "I am a full-stack engineer with {year} years of experience in web development, including experience in real business production. My expertise lies in NextJS frontend development and backend services management. I excel in project management, code review, feature planning, and testing."
+    "section1": "I am a full-stack engineer with {year} years of experience in web development, including experience in real business production. My expertise lies in NextJS frontend development and backend services management. I excel in project management, code review, feature planning, and testing.",
+    "section2": "Additionally, I actively participate in open-source projects online, gaining experience in document writing and feature enhancements. During my leisure time, I explore new technologies to complete my own side projects.",
+    "section3": "I possess a knack for rapid learning to solve problems and exhibit a high level of resilience. I dare to step out of my comfort zone and embrace new endeavors. I am passionate about acquiring knowledge in emerging technologies and finding fulfillment in their achievements. Furthermore, I take pleasure in sharing my skills with others.",
+    "working-at": "Working at",
+    "full-name": "Full Name",
+    "email": "Email"
+  },
+  "about": {
+    "title": "About Me",
+    "description": "I am a web engineer with over {year} years of development experience, proficient in both frontend and backend technologies, including TypeScript, React, React Native, Next.js, and Nest.js. I have also helped teams adopt tools like Monorepo (Turborepo) to improve cross-project development efficiency. My expertise lies in modular feature development and enhancing developer experience, while adopting modern development processes such as Scrum and CI/CD. I enjoy challenging myself to explore unfamiliar technical areas and quickly mastering related technologies.",
+    "age": "years old",
+    "currently": "Currently",
+    "outside-programming": "Outside of programming, I enjoy traveling, playing video games with friends, and watching movies.",
+    "timeline": "Timeline",
+    "location": {
+      "title": "Location",
+      "description": "Here is where I am currently located."
+    },
+    "favorite-songs": {
+      "title": "Favorite Songs",
+      "description": "Currently, I'm listening to this song."
+    }
+  },
+  "profile": {
+    "title": "Frontend Developer",
+    "content": "I am Yu Chia, Yu (俞又嘉), a Frontend Developer specializing in TypeScript, React, NextJS, and modern web technologies. Currently working at LeadBest, developing blockchain data analysis platforms and multi-chain wallets.",
+    "bio": "Frontend Developer passionate about creating exceptional web experiences with modern technologies.",
+    "location": "Taipei, Taiwan",
+    "timeline": {
+      "work-experience": "Work Experience",
+      "education": "Education",
+      "hello-world": "Hello World",
+      "present": "Present",
+      "leadbest": {
+        "description": "Frontend Developer responsible for developing blockchain data analysis platforms and multi-chain wallets.",
+        "detail": {
+          "1": "Developed a blockchain data analysis platform integrating DEX and DeFi protocols to improve security and user experience.",
+          "2": "Built a multi-chain wallet and successfully integrated Bitcoin L2 Liquid, Ethereum, and Tron modules, expanding the range of supported on-chain assets.",
+          "3": "Designed and implemented highly reusable modules such as TradingView chart components and AI chat interfaces, significantly increasing code reuse across three projects.",
+          "4": "Introduced GitHub Actions to automate CI/CD workflows, reducing manual testing time by 30% and ensuring high-quality deployments.",
+          "5": "Led technical upgrades and refactoring of legacy projects (such as migrating React v16 to v18), greatly improving system maintainability and long-term scalability.",
+          "6": "Coordinated design, PM, and backend teams via Scrum, providing feasibility advice and technical solutions."
+        }
+      },
+      "wanin": {
+        "detail": {
+          "1": "Responsible for code review and mentoring newcomers, significantly improving merge success rate and effectively reducing the number of bug reports.",
+          "2": "Optimized the monorepo architecture with Turborepo and modular design, greatly shortening overall development time.",
+          "3": "Improved operation dashboards for data visualization, reducing manual tracking and reporting time.",
+          "4": "Adopted Hasura with GraphQL to reduce backend logic implementation costs and increase development efficiency.",
+          "5": "Migrated a legacy PHP-based project to Next.js, supported the team with code review, and refactored features according to client requirements.",
+          "6": "Built an interactive ECharts-based dashboard for a multi-tenant event management system, enabling real-time data visualization and activity tracking."
+        }
+      }
+    }
   },
   "blog": {
     "not-translated": "This page is not translated yet. Or you can switch to {locale}.",
@@ -45,6 +99,55 @@
     "open-in-cursor": "Open in Cursor",
     "open-in-t3": "Open in T3 Chat",
     "open-in-scira": "Open in Scira",
-    "open-in-v0": "Open in v0"
+    "open-in-v0": "Open in v0",
+    "warning": "Warning"
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "I love to build things. Here are some of the projects I've worked on recently."
+  },
+  "contact": {
+    "title": "Contact",
+    "contact-me": "Contact Me",
+    "description": "If you want to get in touch with me, you can send me an email first and we can go from there. I'm always open to new opportunities and support requests.",
+    "find-me-on": "Find me on",
+    "or-via": "or Via",
+    "form": {
+      "email": "Email",
+      "email-placeholder": "Your email",
+      "title": "Title",
+      "title-placeholder": "Your title",
+      "message": "Message",
+      "message-placeholder": "Your message",
+      "send": "Send",
+      "loading": "Loading...",
+      "success": "Message sent successfully.",
+      "error": {
+        "captcha-validation": "Failed to validate captcha",
+        "captcha-provider": "Captcha provider not supported",
+        "captcha-required": "Captcha is required",
+        "send-failed": "Failed to send email"
+      }
+    }
+  },
+  "nav": {
+    "pages": "Pages",
+    "contact": "Contact",
+    "theme": "Theme ({theme})",
+    "search-placeholder": "Type a command or search...",
+    "no-results": "No results found.",
+    "theme-system": "System",
+    "theme-dark": "Dark",
+    "theme-light": "Light"
+  },
+  "routes": {
+    "about": "About",
+    "blog": "Blog",
+    "projects": "Projects",
+    "contact": "Contact"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Here looks a little boring, I'll prepare it for you soon"
   }
 }

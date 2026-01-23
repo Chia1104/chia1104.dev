@@ -13,7 +13,8 @@ interface Props {
 }
 
 const AppLoading = (props: Props) => {
-  const t = useTranslations("meta");
+  const tMeta = useTranslations("meta");
+  const tCommon = useTranslations("common");
   return (
     <div
       className={cn(
@@ -23,14 +24,14 @@ const AppLoading = (props: Props) => {
       {!props.spinnerOnly && (
         <span className="w-full max-w-[300px]">
           <TextPath
-            text={props.title || t("title")}
+            text={props.title || tMeta("title")}
             svgProps={{
               viewBox: "0 0 320 100",
             }}
           />
         </span>
       )}
-      <CircularProgress aria-label="Loading..." />
+      <CircularProgress aria-label={tCommon("loading")} />
     </div>
   );
 };
