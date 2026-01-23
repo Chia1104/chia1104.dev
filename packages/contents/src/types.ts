@@ -15,6 +15,10 @@ export interface BaseProps {
     updated?: string;
   };
   children?: React.ReactNode;
+  slot?: {
+    tocFooter?: React.ReactNode;
+    afterLastUpdate?: React.ReactNode;
+  };
 }
 
 export interface BasePropsWithType extends BaseProps {

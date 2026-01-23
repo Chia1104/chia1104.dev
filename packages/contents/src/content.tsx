@@ -78,32 +78,37 @@ const MdxContent = (props: BaseProps) => {
         className="flex w-full relative prose-code:text-[13px] prose-code:font-normal"
         ref={containerRef}>
         {props.children}
-        <Card className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit ml-2">
-          <CardHeader>
-            {content.tocContents?.label ?? "On this page"}
-          </CardHeader>
-          <ScrollShadow className="w-full max-h-[300px]">
-            <CardBody className="pl-0 pt-0 gap-1">
-              <MDXTableOfContents containerRef={containerRef} />
-            </CardBody>
-          </ScrollShadow>
-          <Divider />
-          {props.updatedAt ? (
-            <CardFooter>
-              <span className="self-start text-sm flex gap-1 items-center">
-                {content.tocContents?.updated ?? "Last updated"}:{" "}
-                <ViewTransition>
-                  <DateFormat
-                    date={props.updatedAt}
-                    format="YYYY-MM-DD HH:mm"
-                    locale={props.locale}
-                  />
-                </ViewTransition>
-                <span className="i-mdi-pencil" />
-              </span>
-            </CardFooter>
-          ) : null}
-        </Card>
+        <div className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit ml-2 flex flex-col">
+          <Card className="w-full">
+            <CardHeader>
+              {content.tocContents?.label ?? "On this page"}
+            </CardHeader>
+            <ScrollShadow className="w-full max-h-[300px]">
+              <CardBody className="pl-0 pt-0 gap-1">
+                <MDXTableOfContents containerRef={containerRef} />
+              </CardBody>
+            </ScrollShadow>
+            <Divider />
+            {props.updatedAt || props.slot?.tocFooter ? (
+              <CardFooter className="flex flex-col">
+                <div className="self-start text-sm flex gap-1 items-center justify-between flex-wrap w-full">
+                  <span>
+                    {content.tocContents?.updated ?? "Last updated"}:{" "}
+                    <ViewTransition>
+                      <DateFormat
+                        date={props.updatedAt}
+                        format="YYYY/MM/DD"
+                        locale={props.locale}
+                      />
+                    </ViewTransition>
+                  </span>
+                  {props.slot?.afterLastUpdate}
+                </div>
+              </CardFooter>
+            ) : null}
+          </Card>
+          {props.slot?.tocFooter}
+        </div>
       </div>
     </div>
   );
