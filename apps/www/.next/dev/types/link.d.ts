@@ -42,7 +42,11 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}/about`
     | `/${SafeSlug<T>}/contact`
     | `/${SafeSlug<T>}/email`
+    | `/${SafeSlug<T>}/note/${SafeSlug<T>}`
+    | `/${SafeSlug<T>}/post/${SafeSlug<T>}`
     | `/${SafeSlug<T>}/projects`
+    | `/note/${SafeSlug<T>}`
+    | `/post/${SafeSlug<T>}`
     | `/sitemap.xml/${SafeSlug<T>}`
 
   type RouteImpl<T> = 

@@ -5,7 +5,7 @@ type AppRoutes = "/[locale]" | "/[locale]/[type]" | "/[locale]/[type]/[slug]" | 
 type AppRouteHandlerRoutes = "/api/v1/health" | "/sitemap.xml" | "/sitemap.xml/[id]"
 type PageRoutes = never
 type LayoutRoutes = "/" | "/[locale]" | "/[locale]/about" | "/[locale]/projects"
-type RedirectRoutes = never
+type RedirectRoutes = "/[locale]/note/[slug]" | "/[locale]/post/[slug]" | "/note/[slug]" | "/post/[slug]"
 type RewriteRoutes = "/sitemap-[id].xml"
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
 
@@ -18,8 +18,12 @@ interface ParamMap {
   "/[locale]/about": { "locale": string; }
   "/[locale]/contact": { "locale": string; }
   "/[locale]/email": { "locale": string; }
+  "/[locale]/note/[slug]": { "locale": string; "slug": string; }
+  "/[locale]/post/[slug]": { "locale": string; "slug": string; }
   "/[locale]/projects": { "locale": string; }
   "/api/v1/health": {}
+  "/note/[slug]": { "slug": string; }
+  "/post/[slug]": { "slug": string; }
   "/sitemap-[id].xml": {}
   "/sitemap.xml": {}
   "/sitemap.xml/[id]": { "id": string; }

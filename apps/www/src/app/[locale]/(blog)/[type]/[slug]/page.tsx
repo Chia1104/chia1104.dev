@@ -3,7 +3,6 @@ import { Suspense, ViewTransition } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { RedirectType } from "next/navigation";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
@@ -15,7 +14,6 @@ import dayjs from "@chia/utils/day";
 import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import WrittenBy from "@/components/blog/written-by";
 import AppLoading from "@/components/commons/app-loading";
-import { redirect } from "@/libs/i18n/routing";
 import { Locale } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
@@ -25,7 +23,7 @@ export const generateStaticParams = async () => {
   const feeds = await getFeeds(100);
 
   return feeds.items.map((feed) => ({
-    type: feed.type,
+    type: `${feed.type}s`,
     slug: feed.slug,
   }));
 };
@@ -57,11 +55,11 @@ const Page = async ({
   params,
 }: {
   params: PageParamsWithLocale<{
-    type: "post" | "note";
+    type: "posts" | "notes";
     slug: string;
   }>;
 }) => {
-  const { slug, locale, type } = await params;
+  const { slug, locale } = await params;
   const feed = await getFeedBySlug(slug);
   const t = await getTranslations("blog");
 
@@ -69,14 +67,6 @@ const Page = async ({
 
   if (!translation?.content || !feed) {
     notFound();
-  } else if (`${feed.type}` !== type) {
-    redirect(
-      {
-        href: `/${feed.type}/${feed.slug}`,
-        locale,
-      },
-      RedirectType.replace
-    );
   }
 
   const jsonLd: WithContext<Blog> = {

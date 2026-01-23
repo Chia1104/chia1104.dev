@@ -49,9 +49,9 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
   const getLinkPrefix = useCallback(() => {
     switch (type) {
       case FeedType.Note:
-        return "/note";
+        return "/notes";
       case FeedType.Post:
-        return "/post";
+        return "/posts";
       default:
         return "";
     }
