@@ -113,7 +113,7 @@ const Page = async ({
             articleUrl={articleUrl}
             className="justify-end mt-5 flex lg:hidden"
           />
-          <div className="mt-5 flex items-center justify-between">
+          <div className="mt-5 flex flex-col lg:flex-row items-start lg:items-center lg:justify-between">
             <div className="flex items-center gap-2 not-prose">
               <Image
                 src="https://avatars.githubusercontent.com/u/38397958?v=4"
