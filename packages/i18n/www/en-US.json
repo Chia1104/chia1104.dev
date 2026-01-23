@@ -13,6 +13,10 @@
     "zh-TW": "Traditional Chinese",
     "en-US": "English"
   },
+  "action": {
+    "copied": "Copied",
+    "copy": "Copy"
+  },
   "home": {
     "section1": "I am a full-stack engineer with {year} years of experience in web development, including experience in real business production. My expertise lies in NextJS frontend development and backend services management. I excel in project management, code review, feature planning, and testing."
   },
@@ -22,6 +26,7 @@
     "toc": "Table of Contents",
     "otp": "On this page",
     "last-updated": "Last updated",
+    "written-by-user": "Written by: {user}",
     "posts": {
       "doc-title": "Posts",
       "no-content": "No posts yet.",
@@ -31,6 +36,15 @@
       "doc-title": "Notes",
       "no-content": "No notes yet.",
       "view-all": "View all notes"
-    }
+    },
+    "read-with-minutes": "{minutes} minutes read",
+    "open-in-chat-query": "I have a question about this article: {url}",
+    "open-in-chat": "Open in chat",
+    "open-in-chatgpt": "Open in ChatGPT",
+    "open-in-claude": "Open in Claude",
+    "open-in-cursor": "Open in Cursor",
+    "open-in-t3": "Open in T3 Chat",
+    "open-in-scira": "Open in Scira",
+    "open-in-v0": "Open in v0"
   }
 }

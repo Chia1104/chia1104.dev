@@ -98,6 +98,28 @@ const nextConfig: NextConfig = {
       destination: "/sitemap.xml/:id",
     },
   ],
+  redirects: async () => [
+    {
+      source: "/:locale/post/:slug",
+      destination: "/:locale/posts/:slug",
+      permanent: true,
+    },
+    {
+      source: "/:locale/note/:slug",
+      destination: "/:locale/notes/:slug",
+      permanent: true,
+    },
+    {
+      source: "/post/:slug",
+      destination: "/posts/:slug",
+      permanent: true,
+    },
+    {
+      source: "/note/:slug",
+      destination: "/notes/:slug",
+      permanent: true,
+    },
+  ],
 };
 
 const plugins: Plugin[] = [];

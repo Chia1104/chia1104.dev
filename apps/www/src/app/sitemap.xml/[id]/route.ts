@@ -75,7 +75,7 @@ export const GET = async (
             isServer: true,
             baseUrl: WWW_BASE_URL,
             useBaseUrl: true,
-          })}/${feed.type}/${feed.slug}`,
+          })}/${feed.type}s/${feed.slug}`,
           lastModified: dayjs(feed.updatedAt).toISOString(),
           priority: 0.8,
         }) satisfies MetadataRoute.Sitemap[0]
