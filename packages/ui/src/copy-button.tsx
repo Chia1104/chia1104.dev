@@ -3,7 +3,7 @@
 import { Button, Tooltip } from "@heroui/react";
 import type { ButtonProps, PressEvent, ImageProps } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, CopyCheck } from "lucide-react";
+import { Copy, CheckCheck } from "lucide-react";
 
 import { cn } from "../utils/cn.util";
 import { useClipboard } from "../utils/use-copy-to-clipboard";
@@ -49,7 +49,7 @@ export const CopyButton = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}>
-              <CopyCheck
+              <CheckCheck
                 className={cn("size-3", iconProps?.className)}
                 strokeWidth={1}
               />
