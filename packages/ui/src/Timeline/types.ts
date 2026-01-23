@@ -8,7 +8,7 @@ import type { Dayjs } from "dayjs";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
 import type { LinkProps } from "next/link";
 
-export interface Data {
+export interface TimelineItemData {
   id: number;
   title: ReactNode;
   subtitle?: ReactNode;
@@ -22,9 +22,9 @@ export interface Data {
   slug?: string;
 }
 
-export interface GroupData {
+export interface TimelineGroupData {
   year: Dayjs | string | number;
-  data: Data[];
+  data: TimelineItemData[];
 }
 
 export interface AsyncDataStatus {
@@ -33,36 +33,38 @@ export interface AsyncDataStatus {
   hasMore?: boolean;
 }
 
+export interface TimelineContextValue {
+  groupTemplate: string;
+  tz?: string;
+}
+
 export interface TimelineProps extends ComponentPropsWithoutRef<"div"> {
-  data: Data[];
+  data: TimelineItemData[];
   enableSort?: boolean;
   onEndReached?: () => void;
   asyncDataStatus?: AsyncDataStatus;
   groupTemplate?: string;
-  /**
-   * @todo
-   */
   tz?: string;
 }
 
-export interface ListItemProps extends ComponentProps<
+export interface TimelineItemProps extends ComponentProps<
   ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>
 > {
-  data: Data;
+  data: TimelineItemData;
   isLastItem: boolean;
   refTarget?: (node: HTMLDivElement) => void;
 }
 
-export type ListProps = ComponentPropsWithoutRef<
+export type TimelineListProps = ComponentPropsWithoutRef<
   ForwardRefComponent<"ul", HTMLMotionProps<"ul">>
 > &
-  GroupData & {
+  TimelineGroupData & {
     isLastGroup: boolean;
     refTarget?: (node: HTMLDivElement) => void;
   };
 
-export interface GroupListProps {
-  data: GroupData[];
+export interface TimelineGroupListProps {
+  data: TimelineGroupData[];
   onEndReached?: () => void;
   asyncDataStatus?: AsyncDataStatus;
 }
