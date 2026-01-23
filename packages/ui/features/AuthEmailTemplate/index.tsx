@@ -5,7 +5,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Section,
   Tailwind,
   Text,
@@ -43,15 +42,6 @@ const EmailTemplate = ({ url, host }: Props) => {
             className="fixed left-0 top-0 -z-10 block size-full bg-[length:11px_11px] before:content-['']"
           />
           <Container className="bg-dark/30 border-purple mx-auto my-[40px] w-[465px] rounded border border-solid p-[20px] text-white backdrop-blur-md">
-            <Section className="mt-[32px]">
-              <Img
-                src="https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/icon.png"
-                width="100"
-                height="100"
-                alt="logo"
-                className="mx-auto my-0"
-              />
-            </Section>
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal">
               Here's your sign-in link for <strong>{escapedHost}</strong>
             </Heading>

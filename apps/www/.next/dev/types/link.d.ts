@@ -39,7 +39,6 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}`
     | `/${SafeSlug<T>}/${SafeSlug<T>}`
     | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}`
-    | `/${SafeSlug<T>}/about`
     | `/${SafeSlug<T>}/contact`
     | `/${SafeSlug<T>}/email`
     | `/${SafeSlug<T>}/note/${SafeSlug<T>}`

@@ -58,7 +58,7 @@ Hello World, **Bold**, _Italic_, ~~Hidden~~
 
 [chia1104](https://chia1104.dev)
 
-![Image](https://pliosymjzzmsswrxbkih.supabase.co/storage/v1/object/public/public-assets/www/group-2.JPG)
+![Image](https://storage.chia1104.dev/chia1104.png)
 
 | Table | Description |
 | ----- | ----------- |

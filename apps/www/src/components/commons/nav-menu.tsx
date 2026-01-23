@@ -3,7 +3,7 @@
 import type { FC } from "react";
 
 import { Tabs, Tab, Tooltip, Button, Kbd } from "@heroui/react";
-import capitalize from "lodash/capitalize";
+import { useTranslations } from "next-intl";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import {
@@ -28,6 +28,8 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
   const [open, setOpen] = useCMD();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const t = useTranslations("nav");
+  const tRoutes = useTranslations("routes");
   return (
     <>
       <Tooltip
@@ -47,14 +49,14 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
         </Button>
       </Tooltip>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput placeholder={t("search-placeholder")} />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Pages">
-            {Object.entries(navItems).map(([path, { name }]) => {
+          <CommandEmpty>{t("no-results")}</CommandEmpty>
+          <CommandGroup heading={t("pages")}>
+            {Object.entries(navItems).map(([path, { nameKey }]) => {
               return (
                 <CommandItem
-                  aria-label={name}
+                  aria-label={tRoutes(nameKey)}
                   className="gap-5"
                   key={path}
                   onSelect={() => {
@@ -62,7 +64,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
                     setOpen(false);
                   }}>
                   <div className="i-mdi-paper size-5" />
-                  {name}
+                  {tRoutes(nameKey)}
                 </CommandItem>
               );
             })}
@@ -71,7 +73,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
           <CommandGroup
             heading={
               <span className="flex items-center justify-between">
-                <p>Contact</p>
+                <p>{t("contact")}</p>
                 <Kbd className="text-xs" keys={["command"]}>
                   I
                 </Kbd>
@@ -94,7 +96,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
           <CommandGroup
             heading={
               <span className="flex items-center justify-between">
-                <p>Theme ({capitalize(theme)})</p>
+                <p>{t("theme", { theme: theme ?? "-" })}</p>
                 <Kbd keys={["command"]} className="text-xs">
                   J
                 </Kbd>
@@ -111,7 +113,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
                 theme={Theme.SYSTEM}
                 variants={defaultThemeVariants}
               />
-              System
+              {t("theme-system")}
             </CommandItem>
             <CommandItem
               defaultChecked={theme === Theme.DARK}
@@ -124,7 +126,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
                 theme={Theme.DARK}
                 variants={defaultThemeVariants}
               />
-              Dark
+              {t("theme-dark")}
             </CommandItem>
             <CommandItem
               defaultChecked={theme === Theme.LIGHT}
@@ -137,7 +139,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
                 theme={Theme.LIGHT}
                 variants={defaultThemeVariants}
               />
-              Light
+              {t("theme-light")}
             </CommandItem>
           </CommandGroup>
         </CommandList>
@@ -148,6 +150,7 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
 
 const NavMenu: FC<PropsWithLocale> = (props) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
+  const tRoutes = useTranslations("routes");
   return (
     <nav className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
       <div className="container flex w-full justify-between px-5">
@@ -170,7 +173,7 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                 : (selectedLayoutSegments[0] ?? "/")
             }>
             {Object.entries(navItems).map(
-              ([path, { name, icon, hiddenInMainMenu }]) => {
+              ([path, { nameKey, icon, hiddenInMainMenu }]) => {
                 if (hiddenInMainMenu) return null;
                 return (
                   <Tab
@@ -178,7 +181,7 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                     title={
                       <Link locale={props.locale} key={path} href={path}>
                         <span className="relative px-[10px] py-[5px]">
-                          <p className="hidden md:block">{name}</p>
+                          <p className="hidden md:block">{tRoutes(nameKey)}</p>
                           <div className="block md:hidden">{icon}</div>
                         </span>
                       </Link>
@@ -188,7 +191,7 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
               }
             )}
           </Tabs>
-          <CMDK />
+          <CMDK locale={props.locale} />
         </div>
       </div>
     </nav>

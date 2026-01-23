@@ -1,19 +1,21 @@
 import type { ReactNode } from "react";
 
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Projects",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("projects");
+  return {
+    title: t("title"),
+  };
+}
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({ children }: { children: ReactNode }) {
+  const t = await getTranslations("projects");
   return (
     <article className="prose dark:prose-invert mt-20 min-w-full">
-      <h1>Projects</h1>
-      <p>
-        I love to build things. Here are some of the projects I've worked on
-        recently.
-      </p>
+      <h1>{t("title")}</h1>
+      <p>{t("description")}</p>
       {children}
     </article>
   );

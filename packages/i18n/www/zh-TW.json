@@ -18,7 +18,61 @@
     "copy": "複製"
   },
   "home": {
-    "section1": "I am a full-stack engineer with {year} years of experience in web development, including experience in real business production. My expertise lies in NextJS frontend development and backend services management. I excel in project management, code review, feature planning, and testing."
+    "section1": "我是一位全端工程師，擁有 {year} 年的網頁開發經驗，包括實際商業產品開發經驗。我的專長在於 NextJS 前端開發與後端服務管理。我在專案管理、程式碼審查、功能規劃和測試方面表現優秀。",
+    "section2": "此外，我積極參與線上開源專案，累積文件撰寫與功能增強的經驗。閒暇時，我會探索新技術來完成自己的 Side Project。",
+    "section3": "我具備快速學習解決問題的能力，並展現高度韌性。我勇於走出舒適圈，擁抱新挑戰。我熱衷於學習新興技術知識，並從中獲得成就感。此外，我也樂於與他人分享我的技能。",
+    "working-at": "任職於",
+    "full-name": "全名",
+    "email": "電子信箱"
+  },
+  "about": {
+    "title": "關於我",
+    "description": "我是一位擁有 {year} 年以上開發經驗的網頁工程師，同時具備前後端開發技術，包括 TypeScript、React、React Native、Next.js 和 Nest.js，過去也協助團隊導入 Monorepo (Turborepo) 等工具以提升跨專案開發效率。我的專長在於功能模組化開發並加速開發體驗，同時採用現代化的開發流程，如 Scrum 與 CI/CD。我喜歡挑戰自我以嘗試沒碰過的技術領域，並快速熟悉相關技術。",
+    "age": "歲",
+    "currently": "目前",
+    "outside-programming": "除了程式開發之外，我喜歡旅行、和朋友一起玩電玩遊戲，還有看電影。",
+    "timeline": "時間軸",
+    "location": {
+      "title": "所在地",
+      "description": "這是我目前的所在位置。"
+    },
+    "favorite-songs": {
+      "title": "喜愛的歌曲",
+      "description": "目前，我正在聽這首歌。"
+    }
+  },
+  "profile": {
+    "title": "前端工程師",
+    "content": "我是俞又嘉（Yu Chia, Yu），一位專精於 TypeScript、React、NextJS 和現代網頁技術的前端工程師。目前任職於 LeadBest，負責開發區塊鏈數據分析平台和多鏈錢包。",
+    "bio": "熱衷於使用現代技術打造卓越網頁體驗的前端工程師。",
+    "location": "台北，台灣",
+    "timeline": {
+      "work-experience": "工作經歷",
+      "education": "教育背景",
+      "hello-world": "Hello World",
+      "present": "現今",
+      "leadbest": {
+        "description": "前端工程師，負責開發區塊鏈數據分析平台和多鏈錢包。",
+        "detail": {
+          "1": "開發區塊鏈數據分析平台，整合 DEX 與 DeFi 協議，提升安全性與使用體驗。",
+          "2": "開發多鏈錢包，成功整合 Bitcoin L2 Liquid、Ethereum 及 Tron 模組，擴展平台資產支援範圍。",
+          "3": "設計並建立 TradingView 圖表與 AI 聊天等高重用性模組，大幅提升三個專案間的程式碼重用率。",
+          "4": "導入 GitHub Actions 實現 CI/CD 流程自動化，將手動測試時間減少 30%，確保高品質部署。",
+          "5": "負責舊版專案（如 React v16 升級至 v18）的技術升級與重構，顯著改善系統可維護性與長期擴展性。",
+          "6": "運用 Scrum 流程，高效協調設計、PM 與後端團隊的跨職能溝通，並主動提出可行性建議與技術解決方案。"
+        }
+      },
+      "wanin": {
+        "detail": {
+          "1": "負責程式碼審查與新人指導，顯著提升程式碼合併成功率，並有效降低錯誤回報數量。",
+          "2": "透過 Turborepo 進行 monorepo 優化與模組化架構設計，大幅縮短整體開發時程。",
+          "3": "優化營運後台資料可視化儀表板，顯著降低人工追蹤與統計時間。",
+          "4": "採用 Hasura 資料庫搭配 GraphQL，有效減少後端邏輯開發成本，提升開發效率。",
+          "5": "將原本以 PHP 為基礎的專案遷移至 Next.js，並協助團隊進行程式碼審查與依據客戶需求進行重構。",
+          "6": "建立具互動式 ECharts 儀表板的多租戶事件管理系統，支援即時數據視覺化與活動追蹤。"
+        }
+      }
+    }
   },
   "blog": {
     "not-translated": "此頁面尚未翻譯。或是你可以換成 {locale}。",
@@ -45,6 +99,55 @@
     "open-in-cursor": "在 Cursor 中開啟",
     "open-in-t3": "在 T3 Chat 中開啟",
     "open-in-scira": "在 Scira 中開啟",
-    "open-in-v0": "在 v0 中開啟"
+    "open-in-v0": "在 v0 中開啟",
+    "warning": "警告"
+  },
+  "projects": {
+    "title": "專案",
+    "description": "我熱愛打造新事物。以下是我最近參與的一些專案。"
+  },
+  "contact": {
+    "title": "聯絡",
+    "contact-me": "聯絡我",
+    "description": "如果你想與我聯繫，可以先寄電子郵件給我，我們再從那裡開始。我隨時歡迎新的機會和支援請求。",
+    "find-me-on": "在這裡找到我",
+    "or-via": "或透過",
+    "form": {
+      "email": "電子信箱",
+      "email-placeholder": "您的電子信箱",
+      "title": "標題",
+      "title-placeholder": "您的標題",
+      "message": "訊息",
+      "message-placeholder": "您的訊息",
+      "send": "發送",
+      "loading": "載入中...",
+      "success": "訊息已成功發送。",
+      "error": {
+        "captcha-validation": "驗證碼驗證失敗",
+        "captcha-provider": "不支援的驗證碼提供者",
+        "captcha-required": "需要驗證碼",
+        "send-failed": "發送郵件失敗"
+      }
+    }
+  },
+  "nav": {
+    "pages": "頁面",
+    "contact": "聯絡",
+    "theme": "主題 ({theme})",
+    "search-placeholder": "輸入指令或搜尋...",
+    "no-results": "找不到結果。",
+    "theme-system": "系統",
+    "theme-dark": "深色",
+    "theme-light": "淺色"
+  },
+  "routes": {
+    "about": "關於",
+    "blog": "部落格",
+    "projects": "專案",
+    "contact": "聯絡"
+  },
+  "common": {
+    "loading": "載入中...",
+    "error": "這裡看起來有點無聊，我會盡快為你準備好"
   }
 }

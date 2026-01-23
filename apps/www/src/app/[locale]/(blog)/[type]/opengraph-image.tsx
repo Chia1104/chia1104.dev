@@ -1,3 +1,4 @@
+import { all } from "better-all";
 import { getTranslations } from "next-intl/server";
 import { ImageResponse } from "next/og";
 
@@ -15,17 +16,16 @@ export default async function og(
   props: PagePropsWithLocale<{ type: "posts" | "notes" }>
 ) {
   const { type } = await props.params;
-  const [tFeed, t] = await Promise.all([
-    getTranslations(`blog.${type}`),
-    getTranslations("home"),
-  ]);
+  const { tFeed, t } = await all({
+    tFeed: () => getTranslations(`blog.${type}`),
+    t: () => getTranslations("home"),
+  });
   const workDuration = getWorkDuration(meta.timeline);
   return new ImageResponse(
     <OpenGraph
       metadata={{
         title: tFeed("doc-title"),
         excerpt: t("section1", { year: workDuration.toString() }),
-        subtitle: meta.bio,
       }}
       styles={{
         title: {
