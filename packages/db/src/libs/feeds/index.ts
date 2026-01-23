@@ -143,7 +143,7 @@ export const getInfiniteFeeds = withDTO(
       ? cursorTransform(
           cursor,
           orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-            ? "timestamp"
+            ? "date"
             : "default"
         )
       : null;
@@ -246,7 +246,7 @@ export const getInfiniteFeedsByUserId = withDTO(
       ? cursorTransform(
           cursor,
           orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-            ? "timestamp"
+            ? "date"
             : "default"
         )
       : null;

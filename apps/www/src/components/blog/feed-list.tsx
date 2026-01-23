@@ -6,23 +6,22 @@ import { useMemo, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale } from "next-intl";
 
-import { FeedType } from "@chia/db/types";
+import { FeedOrderBy, FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
 import Timeline from "@chia/ui/timeline";
-import type { Data } from "@chia/ui/timeline/types";
+import type { TimelineItemData } from "@chia/ui/timeline/types";
 import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
-import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
+import type { RouterInputs } from "@/libs/orpc/types";
 
 interface Props {
-  initialData: RouterOutputs["feeds"]["list"]["items"];
   query?: RouterInputs["feeds"]["list"];
   nextCursor?: string | number | null;
   type: FeedType;
 }
 
-const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
+const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
   const locale = useLocale();
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
@@ -31,16 +30,17 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
           ...query,
           cursor: pageParam,
         }),
-        getNextPageParam: (lastPage) =>
-          lastPage.nextCursor ? lastPage.nextCursor.toString() : null,
-        initialData: {
-          pages: [
-            {
-              items: initialData,
-              nextCursor: nextCursor?.toString() ?? null,
-            },
-          ],
-          pageParams: [nextCursor?.toString() ?? null],
+        getNextPageParam: (lastPage) => {
+          if (!lastPage.nextCursor) return null;
+
+          if (
+            query.orderBy === FeedOrderBy.CreatedAt ||
+            query.orderBy === FeedOrderBy.UpdatedAt
+          ) {
+            return dayjs(lastPage.nextCursor).toISOString();
+          }
+
+          return lastPage.nextCursor.toString();
         },
         initialPageParam: nextCursor?.toString() ?? null,
       })
@@ -58,7 +58,7 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
   }, [type]);
 
   const transformData = useMemo(() => {
-    if ((!isSuccess && !data) || isError) return [];
+    if ((!isSuccess && !data) || (isError && !data)) return [];
     return data.pages.flatMap((page) =>
       page.items.map((item) => {
         const { id, createdAt, slug, translations } = item;
@@ -78,7 +78,7 @@ const FeedList: FC<Props> = ({ initialData, nextCursor, query = {}, type }) => {
           startDate: createdAt ? dayjs(createdAt) : null,
           content: translations[0]?.description,
           link: `${getLinkPrefix()}/${slug}`,
-        } satisfies Data;
+        } satisfies TimelineItemData;
       })
     );
   }, [isSuccess, data, isError, locale, getLinkPrefix]);

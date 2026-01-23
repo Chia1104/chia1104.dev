@@ -4,10 +4,10 @@ import type { DB } from "../";
 
 export const cursorTransform = (
   cursor: string | number,
-  mode: "timestamp" | "default" = "default"
+  mode: "date" | "default" = "default"
 ) => {
   try {
-    if (mode === "timestamp") {
+    if (mode === "date") {
       return dayjs(cursor).toDate();
     }
     return cursor;

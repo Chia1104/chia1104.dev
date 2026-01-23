@@ -64,6 +64,7 @@ catalogs:
   tanstack:
     '@tanstack/react-pacer': 0.19.3
     '@tanstack/react-query': 5.90.19
+    '@tanstack/react-query-devtools': 5.91.2
   testing-library:
     '@testing-library/jest-dom': 6.9.1
     '@testing-library/react': 16.3.2

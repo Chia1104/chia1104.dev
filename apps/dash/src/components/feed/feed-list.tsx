@@ -8,7 +8,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
 import { useTransitionRouter as useRouter } from "next-view-transitions";
 
-import { FeedType } from "@chia/db/types";
+import { FeedOrderBy, FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
 import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
@@ -169,8 +169,18 @@ const FeedList: FC<Props> = (props) => {
         ...query,
         cursor: pageParam,
       }),
-      getNextPageParam: (lastPage) =>
-        lastPage?.nextCursor ? lastPage.nextCursor.toString() : null,
+      getNextPageParam: (lastPage) => {
+        if (!lastPage.nextCursor) return null;
+
+        if (
+          query.orderBy === FeedOrderBy.CreatedAt ||
+          query.orderBy === FeedOrderBy.UpdatedAt
+        ) {
+          return dayjs(lastPage.nextCursor).toISOString();
+        }
+
+        return lastPage.nextCursor.toString();
+      },
       initialData: initFeed
         ? {
             pages: [

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 const FeedPage = () => (
   <FeedList
-    query={{ limit: 10, orderBy: "id", sortOrder: "desc", type: "post" }}
+    query={{ limit: 10, orderBy: "createdAt", sortOrder: "desc", type: "post" }}
   />
 );
 
