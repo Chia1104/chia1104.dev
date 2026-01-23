@@ -1,5 +1,4 @@
 import { defineConfig } from "nitro";
-import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   serverDir: "src",
@@ -12,6 +11,11 @@ export default defineConfig({
   routes: {
     "/**": "./src/server.ts",
   },
-  traceDeps: ["jsdom", "@workflow-worlds/redis", "@workflow/world-postgres"],
+  traceDeps: [
+    "jsdom",
+    "@workflow-worlds/redis",
+    "@workflow/world-postgres",
+    "workflow",
+  ],
   noPublicDir: true,
 });
