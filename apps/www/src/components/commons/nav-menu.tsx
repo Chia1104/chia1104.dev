@@ -4,6 +4,7 @@ import type { FC } from "react";
 
 import { Tabs, Tab, Tooltip, Button, Kbd } from "@heroui/react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 
 import {
@@ -16,7 +17,6 @@ import {
   CommandSeparator,
   useCMD,
 } from "@chia/ui/cmd";
-import Link from "@chia/ui/link";
 import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 

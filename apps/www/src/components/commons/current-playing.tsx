@@ -20,7 +20,6 @@ import {
   HoverCardTrigger,
 } from "@chia/ui/hover-card";
 import Image from "@chia/ui/image";
-import Link from "@chia/ui/link";
 import Marquee from "@chia/ui/marquee";
 import { Progress } from "@chia/ui/progress";
 import TextShimmer from "@chia/ui/text-shimmer";
@@ -228,14 +227,15 @@ const PlayingLink = ({
 
   return (
     <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
-      <Link
+      <a
         className="m-0 text-sm"
         href={data.item.external_urls.spotify}
-        target="_blank">
+        target="_blank"
+        rel="noopener noreferrer">
         <TextShimmer className="m-0 flex w-full p-0">
           {data.item.name} - {data.item.artists[0]?.name}
         </TextShimmer>
-      </Link>
+      </a>
     </Marquee>
   );
 };

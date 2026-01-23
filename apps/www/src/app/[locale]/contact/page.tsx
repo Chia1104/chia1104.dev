@@ -5,8 +5,8 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import meta from "@chia/meta";
-import Link from "@chia/ui/link";
 
+import PreviewLink from "@/components/commons/preview-link";
 import Contact from "@/components/contact/contact";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,8 +47,8 @@ const LinkItem: FC<{
   preview?: boolean;
 }> = ({ path, icon, name, showIcon: _showIcon, preview }) => {
   return (
-    <Link
-      preview={preview}
+    <PreviewLink
+      enabled={preview}
       key={path}
       href={path}
       target="_blank"
@@ -57,7 +57,7 @@ const LinkItem: FC<{
         <div>{icon}</div>
         <p>{name}</p>
       </span>
-    </Link>
+    </PreviewLink>
   );
 };
 
