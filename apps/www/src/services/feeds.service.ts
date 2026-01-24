@@ -109,7 +109,10 @@ export const getFeeds = async (limit = 10) => {
   }
 };
 
-export const getFeedBySlug = async (slug: string, locale = Locale.zhTW) => {
+export const getFeedBySlug = async (
+  slug: string,
+  locale: Locale = Locale.zhTW
+) => {
   try {
     const res = await client.api.v1.admin.public.feeds[":slug"].$get({
       param: {

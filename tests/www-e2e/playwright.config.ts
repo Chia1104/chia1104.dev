@@ -14,7 +14,7 @@ export default defineConfig({
   timeout: 30 * 1000,
   testDir: path.join(__dirname, "tests"),
   testMatch: "**/*.pw.ts",
-  retries: 2,
+  retries: 0,
   outputDir: "coverage",
   reporter: "html",
 

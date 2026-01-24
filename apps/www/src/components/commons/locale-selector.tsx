@@ -24,7 +24,7 @@ const LocaleSelector = (props: ButtonProps) => {
     router.refresh();
   };
   return (
-    <Dropdown className="not-prose">
+    <Dropdown className="not-prose" data-testid="locale-selector">
       <DropdownTrigger>
         <Button variant="flat" size="sm" {...props}>
           {t("label")}

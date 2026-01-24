@@ -147,6 +147,7 @@ const HugeThanks = () => {
   return (
     <>
       <NeonGradientCard
+        data-testid="huge-thanks"
         className="h-fit w-fit p-0"
         innerBoxProps={{
           className: "p-0",
