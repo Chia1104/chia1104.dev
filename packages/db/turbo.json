@@ -1,9 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "tags": ["@chia/db"],
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": ["DATABASE_URL"]
+      "env": ["DATABASE_URL", "DATABASE_URL_REPLICA_1"]
     },
     "db:generate": {},
     "db:push": {},

@@ -1,10 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "tags": ["dash"],
+  "tags": ["@chia/ai"],
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": []
+      "env": ["OLLAMA_BASE_URL", "OPENAI_API_KEY"]
     }
   }
 }

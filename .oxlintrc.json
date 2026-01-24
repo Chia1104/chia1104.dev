@@ -1,6 +1,12 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": [],
+  "jsPlugins": [
+    {
+      "name": "turbo",
+      "specifier": "eslint-plugin-turbo"
+    }
+  ],
   "categories": {
     "correctness": "off"
   },
@@ -8,6 +14,7 @@
     "builtin": true
   },
   "ignorePatterns": [
+    "legacy/**",
     "**/*.d.ts",
     ".output",
     "**/*.config.*",
@@ -15,6 +22,14 @@
     "build/**",
     "node_modules/**"
   ],
+  "rules": {
+    "turbo/no-undeclared-env-vars": [
+      "error",
+      {
+        "allowList": ["^ENV_[A-Z]+$"]
+      }
+    ]
+  },
   "overrides": [
     {
       "files": ["**/*.js", "**/*.ts", "**/*.tsx"],

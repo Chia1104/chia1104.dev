@@ -10,23 +10,17 @@
       "outputs": [".cache/tsbuildinfo.json", "dist/**"]
     },
     "www#build": {
-      "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "dash#build": {
-      "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
     "service#build": {
-      "dependsOn": ["^build"],
-      "outputs": [".output/**", "!.output/server/node_modules/**"],
-      "env": ["DATABASE_URL"]
+      "outputs": [".output/**", "!.output/server/node_modules/**"]
     },
     "lint": {},
     "lint:fix": {},
-    "type:check": {
-      "cache": true
-    },
+    "type:check": {},
     "test": {
       "outputs": ["coverage/**"],
       "cache": true
@@ -47,18 +41,18 @@
       "persistent": true
     },
     "start": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "cache": false
     },
     "debug:start": {
-      "dependsOn": ["^debug:build"],
+      "dependsOn": ["build"],
       "cache": false
     },
     "clean": {
       "cache": false
     },
     "test:e2e": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "outputs": ["coverage/**", "playwright-report/**"],
       "cache": true
     },
@@ -105,22 +99,10 @@
     "RAILWAY_PUBLIC_DOMAIN",
     "REDIS_URI",
     "REDIS_URL",
-    "DB_URL",
     "DATABASE_URL",
     "*_DATABASE_URL",
     "ADMIN_ID",
     "*_ADMIN_ID",
-    "GITHUB_API",
-    "GITHUB_GRAPHQL_API",
-    "GH_PUBLIC_TOKEN",
-    "GOOGLE_API",
-    "SPOTIFY_NOW_PLAYING_URL",
-    "SPOTIFY_TOKEN_URL",
-    "EDGE_CONFIG",
-    "NEXT_PUBLIC_SENTRY_DSN",
-    "SENTRY_AUTH_TOKEN",
-    "SENTRY_ORG",
-    "SENTRY_PROJECT",
     "NEXT_PUBLIC_VERCEL_ENV",
     "RAILWAY_ENVIRONMENT_NAME",
     "ZEABUR_ENVIRONMENT_NAME",
@@ -128,53 +110,11 @@
     "*_VERCEL_ENV",
     "ENV",
     "*_ENV",
-    "OPENAI_API_KEY",
-    "HUGGINGFACE_API_KEY",
-    "GITHUB_CLIENT_ID",
-    "GITHUB_CLIENT_SECRET",
-    "NEXT_RUNTIME",
-    "SPOTIFY_CLIENT_ID",
-    "SPOTIFY_CLIENT_SECRET",
-    "GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET",
-    "AUTH_SECRET",
-    "INTERNAL_SERVICE_ENDPOINT",
-    "NEXT_PUBLIC_SERVICE_ENDPOINT",
-    "NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT",
     "CF_BYPASS_TOKEN",
     "CH_API_KEY",
     "CACHE_PROVIDER",
-    "CACHE_URI"
+    "CACHE_URI",
+    "NEXT_RUNTIME"
   ],
-  "globalPassThroughEnv": [
-    "INTERNAL_REQUEST_SECRET",
-    "APP_CODE",
-    "NEXT_PUBLIC_GTM_ID",
-    "SHA_256_HASH",
-    "GH_PUBLIC_TOKEN",
-    "NEXT_PUBLIC_RE_CAPTCHA_KEY",
-    "RE_CAPTCHA_KEY",
-    "GOOGLE_API_KEY",
-    "SPOTIFY_FAVORITE_PLAYLIST_ID",
-    "SPOTIFY_REFRESH_TOKEN",
-    "SENDGRID_KEY",
-    "UPSTASH_TOKEN",
-    "RESEND_API_KEY",
-    "NEXT_PUBLIC_UMAMI_WEBSITE_ID",
-    "NEXT_PUBLIC_UMAMI_URL",
-    "UMAMI_DB_URL",
-    "UMAMI_EDGE_DB_URL",
-    "YOUTUBE_ID",
-    "YOUTUBE_LIST_ID",
-    "NEXT_PUBLIC_GISCUS_REPO",
-    "NEXT_PUBLIC_GISCUS_REPO_ID",
-    "NEXT_PUBLIC_GISCUS_CATEGORY_ID",
-    "NEXT_PUBLIC_GISCUS_CATEGORY",
-    "NEXT_PUBLIC_GISCUS_THEME",
-    "INTERNAL_SERVICE_ENDPOINT",
-    "NEXT_PUBLIC_SERVICE_ENDPOINT",
-    "NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT",
-    "CF_BYPASS_TOKEN",
-    "CH_API_KEY"
-  ]
+  "globalDependencies": [".env.global", ".env"]
 }

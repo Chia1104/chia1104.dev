@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "tags": ["dash"],
+  "tags": ["@chia/contents"],
   "extends": ["//"],
   "tasks": {
     "build": {

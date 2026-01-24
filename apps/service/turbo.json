@@ -1,0 +1,31 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tags": ["service"],
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": [
+        "WORKFLOW_TARGET_WORLD",
+        "CORS_ALLOWED_ORIGIN",
+        "RESEND_API_KEY",
+        "SENTRY_DSN",
+        "ZEABUR_SERVICE_ID",
+        "RATELIMIT_WINDOW_MS",
+        "RATELIMIT_MAX",
+        "OPENAI_API_KEY",
+        "AI_AUTH_PUBLIC_KEY",
+        "AI_AUTH_PRIVATE_KEY",
+        "IP_DENY_LIST",
+        "IP_ALLOW_LIST",
+        "MAINTENANCE_MODE",
+        "MAINTENANCE_BYPASS_TOKEN",
+        "TIMEOUT_MS",
+        "PROJECT_ID",
+        "TRIGGER_SECRET_KEY",
+        "ANTHROPIC_API_KEY",
+        "GENAI_API_KEY",
+        "OLLAMA_BASE_URL"
+      ]
+    }
+  }
+}

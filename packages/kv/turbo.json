@@ -1,0 +1,17 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tags": ["@chia/kv"],
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": [
+        "CACHE_URI",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "REDIS_URI",
+        "VALKEY_URI",
+        "POSTGRES_URI"
+      ]
+    }
+  }
+}

@@ -1,14 +1,18 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "tags": ["@chia/auth"],
   "extends": ["//"],
   "tasks": {
     "build": {
       "env": [
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "AUTH_BASE_PATH",
+        "CORS_ALLOWED_ORIGIN",
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
-        "AUTH_URL",
         "AUTH_SECRET",
-        "AUTH_REDIRECT_PROXY_URL",
+        "AUTH_URL",
         "AUTH_COOKIE_DOMAIN",
         "RESEND_API_KEY"
       ]
