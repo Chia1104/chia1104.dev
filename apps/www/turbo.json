@@ -1,23 +1,29 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "extends": ["//"],
+  "tags": ["www"],
+  "extends": ["//", "@chia/api", "@chia/utils"],
   "tasks": {
     "build": {
+      "outputs": [".next/**", "!.next/cache/**"],
       "env": [
-        "NEXT_PUBLIC_GTM_ID",
-        "NEXT_PUBLIC_GA_ID",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_AUTH_TOKEN",
         "SHA_256_HASH",
-        "GH_PUBLIC_TOKEN",
-        "NEXT_PUBLIC_RE_CAPTCHA_KEY",
-        "RE_CAPTCHA_KEY",
-        "GOOGLE_API_KEY",
+        "EDGE_CONFIG",
         "SPOTIFY_FAVORITE_PLAYLIST_ID",
-        "SPOTIFY_REFRESH_TOKEN",
-        "SENDGRID_KEY",
-        "UPSTASH_TOKEN",
-        "RESEND_API_KEY",
-        "CF_BYPASS_TOKEN",
-        "CH_API_KEY"
+        "ADMIN_ID",
+        "*_ADMIN_ID"
+      ],
+      "passThroughEnv": [
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_AUTH_TOKEN",
+        "SHA_256_HASH",
+        "EDGE_CONFIG",
+        "SPOTIFY_FAVORITE_PLAYLIST_ID",
+        "ADMIN_ID",
+        "*_ADMIN_ID"
       ]
     }
   }

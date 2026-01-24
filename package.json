@@ -75,6 +75,7 @@
     "@vitest/ui": "catalog:testing-library",
     "cross-env": "10.1.0",
     "dotenv": "^17.2.3",
+    "eslint-plugin-turbo": "^2.7.5",
     "happy-dom": "^20.3.4",
     "husky": "^9.1.7",
     "jest-extended": "catalog:testing-library",

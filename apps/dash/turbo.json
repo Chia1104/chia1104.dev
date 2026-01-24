@@ -1,21 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "extends": ["//"],
+  "tags": ["dash"],
+  "extends": ["//", "@chia/api", "@chia/db", "@chia/kv", "@chia/utils"],
   "tasks": {
     "build": {
-      "env": [
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET",
-        "SPOTIFY_CLIENT_ID",
-        "SPOTIFY_CLIENT_SECRET",
-        "AUTH_URL",
-        "AUTH_SECRET",
-        "ZEABUR_URL",
-        "VERCEL_URL",
-        "RAILWAY_STATIC_URL",
-        "NEXT_PUBLIC_SERVICE_ENDPOINT",
-        "INTERNAL_SERVICE_ENDPOINT"
-      ]
+      "outputs": [".next/**", "!.next/cache/**"]
     }
   }
 }
