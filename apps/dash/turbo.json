@@ -1,7 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tags": ["dash"],
-  "extends": ["//"],
+  "extends": [
+    "//",
+    "@chia/auth",
+    "@chia/api",
+    "@chia/db",
+    "@chia/kv",
+    "@chia/utils"
+  ],
   "tasks": {
     "build": {
       "env": []
