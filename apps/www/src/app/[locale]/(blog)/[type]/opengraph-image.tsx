@@ -1,6 +1,7 @@
-import { all } from "better-all";
 import { getTranslations } from "next-intl/server";
 import { ImageResponse } from "next/og";
+
+import { all } from "better-all";
 
 import meta, { getWorkDuration } from "@chia/meta";
 import OpenGraph from "@chia/ui/open-graph";

@@ -1,12 +1,12 @@
 "use client";
 
-import { forwardRef, useMemo, memo, useState } from "react";
+import { useTransitionRouter as useRouter } from "next-view-transitions";
 import type { FC } from "react";
+import { forwardRef, useMemo, memo, useState } from "react";
 
 import { Card, CardBody, CardHeader, Chip, Button } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
 
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
@@ -31,7 +31,7 @@ interface Props {
 const Empty = () => {
   return (
     <CHCard
-      className="prose dark:prose-invert flex w-full flex-col items-center justify-center px-1 py-12 sm:px-4 gap-5 max-w-full"
+      className="prose dark:prose-invert flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12 sm:px-4"
       wrapperProps={{
         className: "w-full",
       }}>
@@ -63,7 +63,7 @@ const FeedItem = forwardRef<
     <Card ref={ref} className="dark:bg-dark/90 grid-cols-1">
       <CardHeader>
         <h4
-          className="font-medium text-xl line-clamp-2"
+          className="line-clamp-2 text-xl font-medium"
           style={{
             viewTransitionName: `view-transition-link-${feed.id}`,
           }}>
@@ -71,10 +71,10 @@ const FeedItem = forwardRef<
         </h4>
       </CardHeader>
       <CardBody className="gap-2">
-        <p className="text-xs font-bold mt-auto line-clamp-2">{excerpt}</p>
-        <span className="text-xs font-bold flex justify-between items-center">
+        <p className="mt-auto line-clamp-2 text-xs font-bold">{excerpt}</p>
+        <span className="flex items-center justify-between text-xs font-bold">
           <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
-          <span className="flex gap-2 items-center">
+          <span className="flex items-center gap-2">
             <Button
               variant="shadow"
               size="sm"
@@ -125,7 +125,7 @@ export const PreviewFeedItem = ({
     <Card className="dark:bg-dark/90 grid-cols-1">
       <CardHeader>
         <h4
-          className="font-medium text-xl line-clamp-2"
+          className="line-clamp-2 text-xl font-medium"
           style={{
             viewTransitionName: `view-transition-link-${token}`,
           }}>
@@ -133,10 +133,10 @@ export const PreviewFeedItem = ({
         </h4>
       </CardHeader>
       <CardBody className="gap-2">
-        <p className="text-xs font-bold mt-auto line-clamp-2">{description}</p>
-        <span className="text-sm font-bold flex justify-between items-center">
+        <p className="mt-auto line-clamp-2 text-xs font-bold">{description}</p>
+        <span className="flex items-center justify-between text-sm font-bold">
           <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
-          <span className="flex gap-2 items-center">
+          <span className="flex items-center gap-2">
             <Button
               variant="shadow"
               size="sm"
@@ -212,7 +212,7 @@ const FeedList: FC<Props> = (props) => {
   return (
     <div className="w-full">
       {isSuccess && flatData.length === 0 && <Empty />}
-      <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {isSuccess &&
           !!flatData &&
           flatData.map((feed, index) => {
@@ -235,7 +235,7 @@ export const Drafts = () => {
   }
   return (
     <div className="w-full">
-      <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {drafts.map((draft, i) =>
           draft?.state?.draft ? (
             <PreviewFeedItem

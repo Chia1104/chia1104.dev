@@ -1,6 +1,6 @@
-import type { NextConfig } from "next";
-
 import "@/env";
+
+import type { NextConfig } from "next";
 
 type Plugin = (config: NextConfig) => NextConfig;
 

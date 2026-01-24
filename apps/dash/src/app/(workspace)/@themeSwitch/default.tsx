@@ -1,7 +1,8 @@
 "use client";
 
-import { Skeleton } from "@heroui/react";
 import dynamic from "next/dynamic";
+
+import { Skeleton } from "@heroui/react";
 
 const ThemeSwitch = dynamic(() => import("@/components/commons/theme-switch"), {
   ssr: false,

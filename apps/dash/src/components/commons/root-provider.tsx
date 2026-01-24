@@ -1,11 +1,11 @@
 "use client";
 
+import { ThemeProvider } from "next-themes";
+import { useTransitionRouter } from "next-view-transitions";
 import { useState } from "react";
 
 import { HeroUIProvider } from "@heroui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
-import { useTransitionRouter } from "next-view-transitions";
 import { Toaster as ST } from "sonner";
 
 import type { Theme } from "@chia/ui/theme";

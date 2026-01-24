@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import type { ReactNode, ComponentPropsWithoutRef } from "react";
-
-import { useQuery } from "@tanstack/react-query";
-import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
 import type { LinkProps as NextLinkProps } from "next/link";
+import type { ReactNode, ComponentPropsWithoutRef } from "react";
+import { useState } from "react";
+
+import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import * as z from "zod";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@chia/ui/avatar";
@@ -18,8 +18,8 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { isUrl } from "@chia/utils/is";
 
 import type { HonoRPCError } from "@/libs/service/error";
-import { getLinkPreview } from "@/services/toolings.service";
 import type { LinkPreviewResponse } from "@/services/toolings.service";
+import { getLinkPreview } from "@/services/toolings.service";
 
 const HOVER_CARD_STYLES = {
   base: "z-20 w-full max-w-80 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
@@ -68,9 +68,9 @@ const PreviewError = ({ message }: { message: string | null }) => (
 const PreviewSkeleton = () => (
   <div className="z-999 flex flex-col gap-3">
     <div className="h-[120px] w-60 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
-    <div className="mt-3 flex space-x-4 items-center">
+    <div className="mt-3 flex items-center space-x-4">
       <span className="size-10 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-800" />
-      <div className="space-y-2 flex flex-col">
+      <div className="flex flex-col space-y-2">
         <span className="h-3 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
         <span className="h-3 w-30 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
       </div>

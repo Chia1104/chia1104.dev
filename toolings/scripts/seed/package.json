@@ -5,25 +5,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules .cache",
     "db:seed": "tsx --env-file=../../../.env.global index.ts",
     "tsc:config": "tsc --showConfig"
   },
+  "dependencies": {
+    "drizzle-orm": "catalog:drizzle"
+  },
   "devDependencies": {
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@faker-js/faker": "^10.2.0",
     "@types/node": "catalog:",
-    "eslint": "catalog:eslint",
     "typescript": "catalog:"
-  },
-  "dependencies": {
-    "drizzle-orm": "catalog:drizzle"
   }
 }

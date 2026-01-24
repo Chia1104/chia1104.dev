@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import type { FC } from "react";
+import { useEffect } from "react";
 
 type NextError = Error & { digest?: string };
 

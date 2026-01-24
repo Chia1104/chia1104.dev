@@ -1,6 +1,6 @@
+import type { ORPCError } from "@orpc/server";
 import { implement } from "@orpc/server";
 import { os } from "@orpc/server";
-import type { ORPCError } from "@orpc/server";
 import GithubSlugger from "github-slugger";
 
 import type { Auth } from "@chia/auth";

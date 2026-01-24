@@ -1,15 +1,15 @@
-import type { ReactNode } from "react";
+import "@/libs/orpc/client.rsc";
+import "./globals.css";
 
 import type { Viewport, Metadata } from "next";
+import type { ReactNode } from "react";
 
 import { getBaseUrl, DASH_BASE_URL } from "@chia/utils/config";
 
 import Background from "@/components/commons/background";
 import RootLayout from "@/components/commons/root-layout";
-import "@/libs/orpc/client.rsc";
 
 import RootProvider from "../components/commons/root-provider";
-import "./globals.css";
 
 export const viewport: Viewport = {
   themeColor: "#2B2E4A",

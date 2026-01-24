@@ -1,5 +1,7 @@
 "use client";
 
+import "client-only";
+
 import type { ButtonProps } from "@heroui/react";
 import {
   Button,

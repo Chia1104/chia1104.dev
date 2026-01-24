@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+
 import * as z from "zod";
 
 import { FeedType } from "@chia/db/types";

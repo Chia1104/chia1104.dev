@@ -18,7 +18,7 @@ const RetroGrid: FC<ComponentPropsWithoutRef<"div">> = ({
         <div
           className={cn(
             "animate-cia-grid opacity-30",
-            "[background-repeat:repeat] [background-size:60px_60px] [height:100vh] [inset:0%_0px] [margin-left:-50%] [transform-origin:100%_0_0] [width:200vw]",
+            "[inset:0%_0px] [margin-left:-50%] [height:100vh] [width:200vw] [transform-origin:100%_0_0] [background-size:60px_60px] [background-repeat:repeat]",
             "[background-image:linear-gradient(to_right,rgba(0,0,0,0.1)_1px,transparent_0),linear-gradient(to_bottom,rgba(0,0,0,0.1)_1px,transparent_0)]",
             "dark:[background-image:linear-gradient(to_right,rgba(255,255,255,0.1)_1px,transparent_0),linear-gradient(to_bottom,rgba(255,255,255,0.1)_1px,transparent_0)]"
           )}

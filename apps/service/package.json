@@ -12,7 +12,8 @@
     "start": "bun run --bun .output/server/index.mjs",
     "node:preview": "node --env-file=.env .output/server/index.mjs",
     "type:check": "tsc --noEmit",
-    "lint": "eslint",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "test:service": "NODE_ENV=test bun test"
   },
   "dependencies": {
@@ -51,7 +52,6 @@
   },
   "devDependencies": {
     "@chia/tailwind": "workspace:*",
-    "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/jsdom": "^27.0.0",
     "@types/lodash": "catalog:",
@@ -59,7 +59,6 @@
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
     "bun-types": "catalog:",
-    "eslint": "catalog:eslint",
     "postcss": "8.5.6",
     "postcss-import": "^16.1.1",
     "tailwindcss": "catalog:tailwindcss",

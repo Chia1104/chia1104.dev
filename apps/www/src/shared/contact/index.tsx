@@ -8,7 +8,7 @@ const contact = {
   },
   instagram: {
     name: "BlueSky",
-    icon: <span className="i-simple-icons-bluesky size-5 m-0.5" />,
+    icon: <span className="i-simple-icons-bluesky m-0.5 size-5" />,
     link: meta.link.bluesky,
   },
   linkedin: {

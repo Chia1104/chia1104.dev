@@ -1,8 +1,7 @@
 "use client";
 
-import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
-
 import { ViewTransitions } from "next-view-transitions";
+import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 

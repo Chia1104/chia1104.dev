@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
 import "server-only";
+
+import { redirect } from "next/navigation";
 
 import Form from "@/components/auth/form";
 import { getSession } from "@/services/auth/resources.rsc";
@@ -10,7 +11,7 @@ const LoginPage = async () => {
     redirect("/");
   }
   return (
-    <div className="container main">
+    <div className="main container">
       <Form />
     </div>
   );

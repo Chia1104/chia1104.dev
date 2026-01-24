@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { useForm } from "react-hook-form";
 
 import {
   Table,
@@ -27,7 +28,6 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { PencilIcon, Trash2Icon } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -130,7 +130,7 @@ const CreateForm = (props: { projectId?: number }) => {
         </Snippet>
       ) : (
         <Form {...form}>
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
+          <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
             <FormField
               control={form.control}
               name="name"
@@ -254,8 +254,8 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
   );
 
   return (
-    <div className="w-full flex flex-col gap-5">
-      <div className="flex gap-5 justify-between">
+    <div className="flex w-full flex-col gap-5">
+      <div className="flex justify-between gap-5">
         <h3 className="text-lg font-bold">ApiKey</h3>
         <CreateAction projectId={projectId} />
       </div>

@@ -1,8 +1,9 @@
-import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
+import "@/env";
+
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
-import "@/env";
+import { withSentryConfig as withSentryConfigImport } from "@sentry/nextjs";
 
 type Plugin = (config: NextConfig) => NextConfig;
 

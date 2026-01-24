@@ -45,7 +45,7 @@ const EmailTemplate = ({ title = "Untitled", message, email, ip }: Props) => {
             style={{
               backgroundImage: "radial-gradient(#535353 0.5px, transparent 0)",
             }}
-            className="fixed left-0 top-0 -z-10 block size-full bg-[length:11px_11px] before:content-['']"
+            className="fixed top-0 left-0 -z-10 block size-full bg-[length:11px_11px] before:content-['']"
           />
           <Container className="bg-dark/30 border-purple mx-auto my-[40px] w-[465px] rounded border border-solid p-[20px] text-white backdrop-blur-md">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal">

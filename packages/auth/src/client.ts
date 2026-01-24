@@ -1,5 +1,6 @@
-import { createAuthClient } from "better-auth/react";
 import "client-only";
+
+import { createAuthClient } from "better-auth/react";
 
 import { baseAuthClient } from "./utils";
 

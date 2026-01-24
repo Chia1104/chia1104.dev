@@ -1,3 +1,4 @@
+import type { LinkProps } from "next/link";
 import type {
   ReactNode,
   ComponentPropsWithoutRef,
@@ -6,7 +7,6 @@ import type {
 
 import type { Dayjs } from "dayjs";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
-import type { LinkProps } from "next/link";
 
 export interface TimelineItemData {
   id: number;

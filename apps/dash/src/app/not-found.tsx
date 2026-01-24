@@ -3,7 +3,7 @@ import GoHome from "../components/commons/go-home";
 
 const NotFound = () => {
   return (
-    <div className="container main">
+    <div className="main container">
       <Background />
       <div className="flex w-[300px] flex-col gap-3">
         <h2 className="text-start text-3xl">404</h2>

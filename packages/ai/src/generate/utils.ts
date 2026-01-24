@@ -5,8 +5,8 @@ import { createOpenAI } from "@ai-sdk/openai";
 import type { LanguageModel } from "ai";
 import { streamText } from "ai";
 
-import { Provider } from "../utils/types";
 import type { BaseRequest } from "../utils/types";
+import { Provider } from "../utils/types";
 
 /**
  * @deprecated Use `request.system` instead

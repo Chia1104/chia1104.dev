@@ -55,7 +55,7 @@ const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
                 paddingLeft: `${item.depth * 0.5}rem`,
               }}
               href={item.url}
-              className="text-sm transition-colors dark:text-gray-400 text-gray-500 [&[data-active='true']]:text-black dark:[&[data-active='true']]:text-white">
+              className="text-sm text-gray-500 transition-colors dark:text-gray-400 [&[data-active='true']]:text-black dark:[&[data-active='true']]:text-white">
               {item.title}
             </Base.TOCItem>
           ))}
@@ -71,27 +71,27 @@ const MdxContent = (props: BaseProps) => {
   const content = useContent();
   return (
     <div className="w-full">
-      <div className="[&>*]:w-full mb-14 w-full">
+      <div className="mb-14 w-full [&>*]:w-full">
         <MDXInlineTOC />
       </div>
       <div
-        className="flex w-full relative prose-code:text-[13px] prose-code:font-normal"
+        className="prose-code:text-[13px] prose-code:font-normal relative flex w-full"
         ref={containerRef}>
         {props.children}
-        <div className="hidden lg:flex w-[30%] not-prose sticky top-24 h-fit ml-2 flex flex-col">
+        <div className="not-prose sticky top-24 ml-2 flex hidden h-fit w-[30%] flex-col lg:flex">
           <Card className="w-full">
             <CardHeader>
               {content.tocContents?.label ?? "On this page"}
             </CardHeader>
-            <ScrollShadow className="w-full max-h-[300px]">
-              <CardBody className="pl-0 pt-0 gap-1">
+            <ScrollShadow className="max-h-[300px] w-full">
+              <CardBody className="gap-1 pt-0 pl-0">
                 <MDXTableOfContents containerRef={containerRef} />
               </CardBody>
             </ScrollShadow>
             <Divider />
             {props.updatedAt || props.slot?.tocFooter ? (
               <CardFooter className="flex flex-col">
-                <div className="self-start text-sm flex gap-1 items-center justify-between flex-wrap w-full">
+                <div className="flex w-full flex-wrap items-center justify-between gap-1 self-start text-sm">
                   <span>
                     {content.tocContents?.updated ?? "Last updated"}:{" "}
                     <ViewTransition>

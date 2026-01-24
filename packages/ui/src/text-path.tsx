@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
 import type { ComponentPropsWithoutRef } from "react";
+import { useRef, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
 
@@ -89,7 +89,7 @@ export const TextPath = ({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="font-[helvetica] font-bold dark:stroke-white stroke-slate-700 fill-transparent text-7xl"
+        className="fill-transparent stroke-slate-700 font-[helvetica] text-7xl font-bold dark:stroke-white"
         style={{ opacity: hovered ? 0.7 : 0 }}>
         {text}
       </text>
@@ -99,7 +99,7 @@ export const TextPath = ({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="font-[helvetica] font-bold fill-transparent text-7xl dark:stroke-white stroke-slate-700"
+        className="fill-transparent stroke-slate-700 font-[helvetica] text-7xl font-bold dark:stroke-white"
         initial={{ strokeDashoffset: 1000, strokeDasharray: 1000 }}
         animate={{
           strokeDashoffset: 0,
@@ -119,7 +119,7 @@ export const TextPath = ({
         stroke="url(#textGradient)"
         strokeWidth="0.3"
         mask="url(#textMask)"
-        className="font-[helvetica] font-bold fill-transparent text-7xl  ">
+        className="fill-transparent font-[helvetica] text-7xl font-bold  ">
         {text}
       </text>
     </svg>

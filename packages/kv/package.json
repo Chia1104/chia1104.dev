@@ -32,16 +32,9 @@
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@chiastack/eslint": "catalog:chiastack",
-    "@chiastack/tsconfig": "catalog:chiastack",
-    "@keyv/test-suite": "^2.1.2",
-    "eslint": "catalog:eslint",
-    "typescript": "catalog:"
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
@@ -54,5 +47,10 @@
     "drizzle-orm": "^0.45.1",
     "keyv": "^5.6.0",
     "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@keyv/test-suite": "^2.1.2",
+    "typescript": "catalog:"
   }
 }

@@ -63,7 +63,7 @@ const TocFooterMeta = ({ readTimeText, targetId = "feed-meta" }: Props) => {
       {isVisible && (
         <motion.div
           key="toc-footer-meta"
-          className="text-foreground-700 text-sm flex items-center overflow-hidden self-end"
+          className="text-foreground-700 flex items-center self-end overflow-hidden text-sm"
           initial="hidden"
           animate="visible"
           exit="hidden"

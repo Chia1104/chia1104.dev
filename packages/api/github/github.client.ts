@@ -1,5 +1,6 @@
-import { GraphQLClient } from "graphql-request";
 import "server-only";
+
+import { GraphQLClient } from "graphql-request";
 
 import { env } from "./env";
 

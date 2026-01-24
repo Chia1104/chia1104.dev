@@ -11,7 +11,7 @@ const Page = ({
     default:
     case Provider.resend:
       return (
-        <div className="container main prose dark:prose-invert">
+        <div className="main prose dark:prose-invert container">
           <Card
             wrapperProps={{
               className: "w-full max-w-[500px]",

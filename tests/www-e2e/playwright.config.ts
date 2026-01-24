@@ -1,6 +1,7 @@
-import { devices, defineConfig } from "@playwright/test";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { devices, defineConfig } from "@playwright/test";
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "127.0.0.1";

@@ -1,12 +1,12 @@
 "use client";
 
-import { memo } from "react";
+import Link from "next/link";
 import type { FC } from "react";
+import { memo } from "react";
 import { ViewTransition } from "react";
 
 import { CircularProgress } from "@heroui/react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 
 import dayjs from "@chia/utils/day";
 
@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../accordion";
+
 import { useTimeline } from "./context";
 import type {
   TimelineItemProps,

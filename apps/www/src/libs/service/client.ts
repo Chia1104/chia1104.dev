@@ -1,4 +1,5 @@
 import "client-only";
+
 import { hc } from "hono/client";
 import type { AppRPC } from "~service/server";
 

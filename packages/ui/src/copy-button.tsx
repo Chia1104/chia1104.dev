@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, Tooltip } from "@heroui/react";
 import type { ButtonProps, PressEvent, ImageProps } from "@heroui/react";
+import { Button, Tooltip } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy, CheckCheck } from "lucide-react";
 

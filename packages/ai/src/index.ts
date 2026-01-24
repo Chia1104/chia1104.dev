@@ -1,5 +1,5 @@
-import OpenAI from "openai";
 import type { ClientOptions } from "openai";
+import OpenAI from "openai";
 
 export const createOpenAI = (options?: Partial<ClientOptions>) => {
   return new OpenAI({

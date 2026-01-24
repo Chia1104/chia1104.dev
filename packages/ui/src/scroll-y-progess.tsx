@@ -2,8 +2,8 @@
 
 import type { FC, ComponentProps } from "react";
 
-import { motion, useScroll, useSpring } from "framer-motion";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
 
 import { cn } from "../utils/cn.util";
 

@@ -1,11 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
+import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { feedsContracts } from "@chia/api/orpc/contracts";
@@ -73,9 +73,9 @@ const EditForm = ({
     <Form {...form}>
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-[700px] flex flex-col gap-10">
+        className="flex w-full max-w-[700px] flex-col gap-10">
         <EditFields ref={editFieldsRef} mode="edit" feedId={feedId} />
-        <SubmitForm className="max-w-[150px] w-full">Update</SubmitForm>
+        <SubmitForm className="w-full max-w-[150px]">Update</SubmitForm>
       </form>
     </Form>
   );

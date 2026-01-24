@@ -30,7 +30,12 @@ enum FeedType {
 }
 
 type Query {
-  feed(feedType: FeedType = post, orderBy: FeedOrderByInput, skip: Float, take: Float): [Feed!]!
+  feed(
+    feedType: FeedType = post
+    orderBy: FeedOrderByInput
+    skip: Float
+    take: Float
+  ): [Feed!]!
 }
 
 enum SortOrder {

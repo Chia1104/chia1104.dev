@@ -244,15 +244,15 @@ const BarChartCard = React.forwardRef<
     <Card
       ref={ref}
       className={cn(
-        "h-[300px] border border-transparent dark:border-default-100",
+        "dark:border-default-100 h-[300px] border border-transparent",
         className
       )}
       {...props}>
       <div className="flex flex-col gap-y-4 p-4">
         <dt>
-          <h3 className="text-small font-medium text-default-500">{title}</h3>
+          <h3 className="text-small text-default-500 font-medium">{title}</h3>
         </dt>
-        <dd className="flex w-full justify-end gap-4 text-tiny text-default-500">
+        <dd className="text-tiny text-default-500 flex w-full justify-end gap-4">
           {categories.map((category, index) => (
             <div key={index} className="flex items-center gap-2">
               <span
@@ -292,9 +292,9 @@ const BarChartCard = React.forwardRef<
           />
           <Tooltip
             content={({ label, payload }) => (
-              <div className="flex h-auto min-w-[120px] items-center gap-x-2 rounded-medium bg-background p-2 text-tiny shadow-small">
+              <div className="rounded-medium bg-background text-tiny shadow-small flex h-auto min-w-[120px] items-center gap-x-2 p-2">
                 <div className="flex w-full flex-col gap-y-1">
-                  <span className="font-medium text-foreground">
+                  <span className="text-foreground font-medium">
                     {formatWeekday(label as string)}
                   </span>
                   {payload?.map((p, index) => {
@@ -313,9 +313,9 @@ const BarChartCard = React.forwardRef<
                             backgroundColor: `hsl(var(--heroui-${color}-${(index + 1) * 200}))`,
                           }}
                         />
-                        <div className="flex w-full items-center justify-between gap-x-2 pr-1 text-xs text-default-700">
+                        <div className="text-default-700 flex w-full items-center justify-between gap-x-2 pr-1 text-xs">
                           <span className="text-default-500">{category}</span>
-                          <span className="font-mono font-medium text-default-700">
+                          <span className="text-default-700 font-mono font-medium">
                             {value}
                           </span>
                         </div>
@@ -342,7 +342,7 @@ const BarChartCard = React.forwardRef<
         </BarChart>
       </ResponsiveContainer>
 
-      <Divider className="mx-auto w-full max-w-[calc(100%-2rem)] bg-default-100" />
+      <Divider className="bg-default-100 mx-auto w-full max-w-[calc(100%-2rem)]" />
 
       <RadioGroup
         aria-label="Time Range"
@@ -362,7 +362,7 @@ const BarChartCard = React.forwardRef<
         <DropdownTrigger>
           <Button
             isIconOnly
-            className="absolute right-2 top-2 w-auto rounded-full"
+            className="absolute top-2 right-2 w-auto rounded-full"
             size="sm"
             variant="light">
             <Icon height={16} icon="solar:menu-dots-bold" width={16} />
@@ -402,7 +402,7 @@ const ButtonRadioItem = React.forwardRef<
       </VisuallyHidden>
       <Button
         disableRipple
-        className={cn("pointer-events-none text-default-500", {
+        className={cn("text-default-500 pointer-events-none", {
           "text-foreground": isSelected,
         })}
         color={color}

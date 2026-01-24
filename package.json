@@ -3,7 +3,6 @@
   "name": "chia1104.dev",
   "version": "3.0.0",
   "private": true,
-  "sideEffects": false,
   "license": "MIT",
   "author": {
     "name": "Chia1104",
@@ -16,6 +15,7 @@
     "toolings/**/*",
     "tests/*"
   ],
+  "sideEffects": false,
   "scripts": {
     "postinstall": "manypkg check",
     "prepare": "husky",
@@ -32,13 +32,13 @@
     "start:www": "turbo run start --filter www",
     "start:dash": "turbo run start --filter dash",
     "start:service": "turbo run start --filter service",
-    "lint": "turbo run lint --continue -- --cache --cache-location .cache/.eslintcache",
-    "lint:www": "turbo run lint --filter www... --continue -- --cache --cache-location .cache/.eslintcache",
-    "lint:dash": "turbo run lint --filter dash... --continue -- --cache --cache-location .cache/.eslintcache",
-    "lint:service": "turbo run lint --filter service... --continue -- --cache --cache-location .cache/.eslintcache",
-    "lint:fix": "turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache",
-    "format": "prettier --write \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue,json}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,cjs,mjs,ts,tsx,md,vue,json}\"",
+    "lint": "turbo run lint --continue",
+    "lint:www": "turbo run lint --filter www... --continue",
+    "lint:dash": "turbo run lint --filter dash... --continue",
+    "lint:service": "turbo run lint --filter service... --continue",
+    "lint:fix": "turbo run lint:fix --continue",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "type:check": "turbo run type:check --parallel",
     "clean": "git clean -xdf node_modules .cache",
     "clean:workspaces": "turbo clean --parallel",
@@ -66,16 +66,10 @@
     "debug:start": "turbo run debug:start --parallel",
     "devtools": "turbo devtools"
   },
-  "engines": {
-    "node": ">=22",
-    "pkl": ">=0.25.2"
-  },
-  "packageManager": "pnpm@10.28.1",
   "devDependencies": {
     "@manypkg/cli": "^0.25.1",
     "@playwright/test": "^1.57.0",
     "@total-typescript/ts-reset": "0.6.1",
-    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@turbo/gen": "^2.7.5",
     "@vitest/coverage-v8": "catalog:testing-library",
     "@vitest/ui": "catalog:testing-library",
@@ -87,25 +81,30 @@
     "lint-staged": "^16.2.7",
     "msw": "^2.12.7",
     "nx": "^22.4.0",
-    "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "oxfmt": "catalog:oxc",
+    "oxlint": "catalog:oxc",
     "tsx": "^4.21.0",
     "turbo": "2.7.5",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   },
+  "lint-staged": {
+    "*.{js,jsx,cjs,mjs,ts,mts,tsx}": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "*.{json,md}": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ]
+  },
+  "engines": {
+    "node": ">=22",
+    "pkl": ">=0.25.2"
+  },
+  "packageManager": "pnpm@10.28.1",
   "manypkg": {
     "ignoredRules": [
       "ROOT_HAS_PROD_DEPENDENCIES"
     ],
     "workspaceProtocol": "require"
-  },
-  "lint-staged": {
-    "*.{js,jsx,cjs,mjs,ts,mts,tsx}": [
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
   }
 }

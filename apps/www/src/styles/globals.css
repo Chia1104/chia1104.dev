@@ -38,7 +38,7 @@
 }
 
 @utility container {
-  @apply 2xl:max-w-[992px] xl:max-w-[992px] lg:max-w-[992px] md:max-w-[768px] sm:max-w-[640px];
+  @apply sm:max-w-[640px] md:max-w-[768px] lg:max-w-[992px] xl:max-w-[992px] 2xl:max-w-[992px];
 }
 
 html,
@@ -95,7 +95,7 @@ body {
   box-shadow: 0 0 0 1px #a7a7a7;
 }
 
-.recaptcha-style>* {
+.recaptcha-style > * {
   /*remove borders*/
   margin: -2px -2px -10px;
 }
@@ -105,10 +105,9 @@ body {
   display: none;
 }
 
-
 @supports (view-transition-name: test) {
   [data-support] [data-support-yes] {
-      display: flex;
+    display: flex;
   }
   [data-support] [data-support-no] {
     display: none;
@@ -117,7 +116,7 @@ body {
 
 @supports not (view-transition-name: test) {
   [data-support] [data-support-yes] {
-      display: none;
+    display: none;
   }
   [data-support] [data-support-no] {
     display: flex;

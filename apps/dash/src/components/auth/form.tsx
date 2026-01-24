@@ -1,11 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 import { Input, Divider, Button } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { KeyRoundIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { authClient } from "@chia/auth/client";
@@ -68,9 +68,9 @@ const LoginForm = () => {
           Send magic link
         </SubmitForm>
       </form>
-      <div className="flex items-center gap-4 w-4/5">
+      <div className="flex w-4/5 items-center gap-4">
         <Divider className="flex-1" />
-        <p className="shrink-0 text-tiny text-default-500 mb-0">OR</p>
+        <p className="text-tiny text-default-500 mb-0 shrink-0">OR</p>
         <Divider className="flex-1" />
       </div>
       <Button
@@ -93,7 +93,7 @@ const LoginForm = () => {
         }>
         Sign in with a passkey
       </Button>
-      <div className="flex w-4/5 justify-center gap-5 my-5">
+      <div className="my-5 flex w-4/5 justify-center gap-5">
         <Button
           onPress={() =>
             startTransition(async () => {
@@ -107,7 +107,7 @@ const LoginForm = () => {
           variant="flat"
           color="primary"
           isIconOnly
-          className="mb-5 mt-auto h-12 w-1/2 p-2">
+          className="mt-auto mb-5 h-12 w-1/2 p-2">
           <Icon icon="flat-color-icons:google" width={28} />
         </Button>
         <Button
@@ -123,7 +123,7 @@ const LoginForm = () => {
           variant="flat"
           color="primary"
           isIconOnly
-          className="mb-5 mt-auto h-12 w-1/2 p-2">
+          className="mt-auto mb-5 h-12 w-1/2 p-2">
           <span className="i-mdi-github size-7" />
         </Button>
       </div>

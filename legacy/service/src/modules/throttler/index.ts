@@ -3,8 +3,8 @@ import { ThrottlerModule, seconds } from "@nestjs/throttler";
 import Redis from "ioredis";
 import { ThrottlerStorageRedisService } from "nestjs-throttler-storage-redis";
 
-import ConfigModule from "@/config";
 import type { AppEnv } from "@/config";
+import ConfigModule from "@/config";
 
 export default ThrottlerModule.forRootAsync({
   imports: [ConfigModule],

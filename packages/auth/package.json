@@ -33,8 +33,8 @@
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit",
     "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config scripts/auth-cli.ts"
   },
@@ -53,10 +53,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
     "drizzle-kit": "catalog:drizzle",
-    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }

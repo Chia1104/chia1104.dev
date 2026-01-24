@@ -1,18 +1,18 @@
 "use client";
 
+import { Link } from "next-view-transitions";
+import { usePathname } from "next/navigation";
 import React from "react";
 
-import { Accordion, AccordionItem } from "@heroui/react";
 import type {
   ListboxProps,
   ListboxSectionProps,
   Selection,
 } from "@heroui/react";
+import { Accordion, AccordionItem } from "@heroui/react";
 import { Listbox, Tooltip, ListboxItem, ListboxSection } from "@heroui/react";
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
-import { Link } from "next-view-transitions";
-import { usePathname } from "next/navigation";
 
 export const SidebarItemType = {
   Nest: "nest",
@@ -169,7 +169,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                           icon={item.icon}
                           width={24}
                         />
-                        <span className="text-small font-medium text-default-500 group-data-[selected=true]:text-foreground">
+                        <span className="text-small text-default-500 group-data-[selected=true]:text-foreground font-medium">
                           {item.title}
                         </span>
                       </div>
@@ -181,7 +181,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                     <Listbox
                       className={"mt-0.5"}
                       classNames={{
-                        list: cn("border-l border-default-200 pl-4"),
+                        list: cn("border-default-200 border-l pl-4"),
                       }}
                       items={item.items}
                       variant="flat">
@@ -281,11 +281,11 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
         itemClasses={{
           ...itemClasses,
           base: cn(
-            "px-3 min-h-11 rounded-large h-[44px] data-[selected=true]:bg-default-100",
+            "rounded-large data-[selected=true]:bg-default-100 h-[44px] min-h-11 px-3",
             itemClasses?.base
           ),
           title: cn(
-            "text-small font-medium text-default-500 group-data-[selected=true]:text-foreground",
+            "text-small text-default-500 group-data-[selected=true]:text-foreground font-medium",
             itemClasses?.title
           ),
         }}

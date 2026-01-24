@@ -14,7 +14,7 @@ const Page = async (props: { params: Promise<{ slug: string }> }) => {
     notFound();
   }
   return (
-    <div className="w-full flex flex-col gap-5">
+    <div className="flex w-full flex-col gap-5">
       <ApiKeyTable projectId={project.id} />
     </div>
   );

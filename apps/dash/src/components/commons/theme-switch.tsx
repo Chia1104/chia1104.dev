@@ -42,7 +42,7 @@ const ThemeRadioItem = ({ icon, ...props }: RadioProps & { icon: string }) => {
         className={cn(
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           wrapperProps?.className,
-          "pointer-events-none h-8 w-8 rounded-full border-black border-opacity-10 ring-0 transition-transform group-data-[pressed=true]:scale-90 dark:border-default-400 border-1.5",
+          "border-opacity-10 dark:border-default-400 border-1.5 pointer-events-none h-8 w-8 rounded-full border-black ring-0 transition-transform group-data-[pressed=true]:scale-90",
           {
             "bg-default-200 dark:bg-default-100": isSelected,
           }
@@ -64,7 +64,7 @@ const ThemeSwitch = React.forwardRef<
       aria-label="Select a theme"
       classNames={{
         ...classNames,
-        wrapper: cn("gap-0 items-center", classNames?.wrapper),
+        wrapper: cn("items-center gap-0", classNames?.wrapper),
       }}
       onValueChange={(value) => {
         setTheme(value as Theme);

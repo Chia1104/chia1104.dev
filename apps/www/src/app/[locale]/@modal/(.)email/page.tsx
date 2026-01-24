@@ -1,12 +1,12 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useId, ViewTransition } from "react";
+import { Controller } from "react-hook-form";
 
 import { Input, Textarea } from "@heroui/react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { Controller } from "react-hook-form";
 
 import meta from "@chia/meta";
 import {
@@ -127,7 +127,7 @@ const Page = () => {
                       {ReCAPTCHA}
                     </div>
                   </div>
-                  <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 pb-5 pt-1">
+                  <DrawerFooter className="prose dark:prose-invert flex max-w-[700px] flex-col items-center justify-center gap-1 pt-1 pb-5">
                     <ShimmerButton
                       shimmerSize="0.1em"
                       id={id + "-contact-submit"}

@@ -200,14 +200,14 @@ const CountOverview = (props: { className?: string }) => {
     <Card
       as="dl"
       className={cn(
-        "border border-transparent dark:border-default-100 w-full",
+        "dark:border-default-100 w-full border border-transparent",
         props.className
       )}>
       <section className="flex flex-col flex-nowrap">
         <div className="flex flex-col justify-between gap-y-2 p-6">
           <div className="flex flex-col gap-y-2">
             <div className="flex flex-col gap-y-0">
-              <dt className="text-medium font-medium text-foreground">
+              <dt className="text-medium text-foreground font-medium">
                 Analytics
               </dt>
             </div>
@@ -225,7 +225,7 @@ const CountOverview = (props: { className?: string }) => {
                   <button
                     key={key}
                     className={cn(
-                      "flex w-full flex-col gap-2 rounded-medium p-3 transition-colors",
+                      "rounded-medium flex w-full flex-col gap-2 p-3 transition-colors",
                       {
                         "bg-default-100": activeChart === key,
                       }
@@ -233,7 +233,7 @@ const CountOverview = (props: { className?: string }) => {
                     onClick={() => setActiveChart(key)}>
                     <span
                       className={cn(
-                        "text-small font-medium text-default-500 transition-colors",
+                        "text-small text-default-500 font-medium transition-colors",
                         {
                           "text-primary": activeChart === key,
                         }
@@ -241,7 +241,7 @@ const CountOverview = (props: { className?: string }) => {
                       {title}
                     </span>
                     <div className="flex items-center gap-x-3">
-                      <span className="text-3xl font-bold text-foreground">
+                      <span className="text-foreground text-3xl font-bold">
                         {formatValue(value, type)}
                       </span>
                       <Chip
@@ -332,7 +332,7 @@ const CountOverview = (props: { className?: string }) => {
             />
             <Tooltip
               content={({ label, payload }) => (
-                <div className="flex h-auto min-w-[120px] items-center gap-x-2 rounded-medium bg-foreground p-2 text-tiny shadow-small">
+                <div className="rounded-medium bg-foreground text-tiny shadow-small flex h-auto min-w-[120px] items-center gap-x-2 p-2">
                   <div className="flex w-full flex-col gap-y-0">
                     {payload?.map((p, index) => {
                       const name = p.name;
@@ -342,14 +342,14 @@ const CountOverview = (props: { className?: string }) => {
                         <div
                           key={`${index}-${name}`}
                           className="flex w-full items-center gap-x-2">
-                          <div className="flex w-full items-center gap-x-1 text-small text-background">
+                          <div className="text-small text-background flex w-full items-center gap-x-1">
                             <span>{formatValue(value as number, type)}</span>
                             <span>{suffix}</span>
                           </div>
                         </div>
                       );
                     })}
-                    <span className="text-small font-medium text-foreground-400">
+                    <span className="text-small text-foreground-400 font-medium">
                       {formatMonth(label as string)} 25, 2024
                     </span>
                   </div>
@@ -384,7 +384,7 @@ const CountOverview = (props: { className?: string }) => {
           <DropdownTrigger>
             <Button
               isIconOnly
-              className="absolute right-2 top-2 w-auto rounded-full"
+              className="absolute top-2 right-2 w-auto rounded-full"
               size="sm"
               variant="light">
               <Icon height={16} icon="solar:menu-dots-bold" width={16} />

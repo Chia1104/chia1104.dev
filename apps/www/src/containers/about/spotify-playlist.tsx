@@ -74,7 +74,7 @@ const First: FC<{
           rel="noopener noreferrer"
           className="absolute inset-0 z-10"
         />
-        <PlayIcon className="absolute bottom-1 right-5 opacity-0 transition-all duration-300 ease-in-out group-hover:bottom-5 group-hover:opacity-100" />
+        <PlayIcon className="absolute right-5 bottom-1 opacity-0 transition-all duration-300 ease-in-out group-hover:bottom-5 group-hover:opacity-100" />
       </span>
       <h3 className="line-clamp-2">
         {data.track.name} - {data.track.artists[0]?.name}
@@ -143,7 +143,7 @@ export async function SpotifyPlaylist() {
         </div>
         <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
       </div>
-      <div className="flex items-center gap-3 mt-5">
+      <div className="mt-5 flex items-center gap-3">
         <span>
           Check out the <PreviewLink href={href}>{playlist.name}</PreviewLink>{" "}
           on my Spotify.

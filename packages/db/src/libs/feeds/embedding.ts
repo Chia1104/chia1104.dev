@@ -7,8 +7,8 @@ import type { Options } from "@chia/ai/embeddings/openai";
 import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 
 import { withDTO } from "../";
-import { schema } from "../..";
 import type { Locale } from "../..";
+import { schema } from "../..";
 
 export const searchFeeds = withDTO(
   async (

@@ -1,10 +1,10 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { Suspense, ViewTransition } from "react";
 
 import { ErrorBoundary } from "@sentry/nextjs";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";

@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, use, useMemo } from "react";
 import type { FC, PropsWithChildren } from "react";
+import { createContext, use, useMemo } from "react";
 
 import type { TimelineContextValue } from "./types";
 

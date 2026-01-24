@@ -66,7 +66,7 @@ const Drawer = React.forwardRef<
               "!items-end !justify-end": sidebarPlacement === "right",
             }),
             base: cn(
-              "w-[var(--sidebar-width)] !m-0 p-0 h-full max-h-full",
+              "!m-0 h-full max-h-full w-[var(--sidebar-width)] p-0",
               classNames?.base,
               className,
               {

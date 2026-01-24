@@ -1,7 +1,7 @@
 "use client";
 
-import { useId } from "react";
 import type { FC } from "react";
+import { useId } from "react";
 
 import type { ButtonProps } from "@heroui/react";
 import {
@@ -11,10 +11,11 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@heroui/react";
-import { motion } from "framer-motion";
 import type { Variant } from "framer-motion";
+import { motion } from "framer-motion";
 
 import useTheme from "../utils/use-theme";
+
 import { useCMD } from "./cmd";
 
 interface Props {

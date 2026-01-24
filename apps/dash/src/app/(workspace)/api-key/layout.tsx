@@ -1,6 +1,6 @@
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <article className="container main justify-start items-start">
+    <article className="main container items-start justify-start">
       {children}
     </article>
   );

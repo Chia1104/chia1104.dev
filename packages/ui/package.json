@@ -64,8 +64,8 @@
     }
   },
   "scripts": {
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "ui-add": "pnpm dlx shadcn-ui add && prettier src --write --list-different"
@@ -106,12 +106,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@testing-library/react": "catalog:testing-library",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
-    "eslint": "catalog:eslint",
     "tailwindcss": "catalog:tailwindcss",
     "typescript": "catalog:"
   }

@@ -28,7 +28,7 @@ export const Meteors = ({ number = 20 }: MeteorsProps) => {
         <span
           key={idx}
           className={cn(
-            "animate-cia-meteor pointer-events-none absolute left-1/2 top-1/2 h-0.5 w-0.5 rounded-[9999px] bg-slate-500 shadow-[0_0_0_1px_#ffffff10]"
+            "animate-cia-meteor pointer-events-none absolute top-1/2 left-1/2 h-0.5 w-0.5 rounded-[9999px] bg-slate-500 shadow-[0_0_0_1px_#ffffff10]"
           )}
           style={style}>
           {/* Meteor Tail */}

@@ -6,9 +6,9 @@
   --color-primary-transparent: rgba(192 132 252, 0.75);
 
   /* Secondary Colors */
-  --color-secondary: #FCA5A5;
-  --color-secondary-light: #FECACA;
-  --color-secondary-dark: #F9C851;
+  --color-secondary: #fca5a5;
+  --color-secondary-light: #fecaca;
+  --color-secondary-dark: #f9c851;
   --color-secondary-transparent: rgba(252, 165, 165, 0.75);
 
   /* Success Colors */
@@ -72,8 +72,8 @@
   --color-purple-transparent: rgba(156, 39, 176, 0.75);
 
   /* Cyberpunk Colors */
-  --color-cyberpunk: #F2E307;
-  --color-cyberpunk-light: #F2E307;
-  --color-cyberpunk-dark: #F2E307;
+  --color-cyberpunk: #f2e307;
+  --color-cyberpunk-light: #f2e307;
+  --color-cyberpunk-dark: #f2e307;
   --color-cyberpunk-transparent: rgba(242, 227, 7, 0.75);
 }

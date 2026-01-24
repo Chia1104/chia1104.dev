@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import Image from "next/image";
+
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
@@ -11,7 +14,6 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { TypeTable } from "fumadocs-ui/components/type-table";
 import defaultComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
-import Image from "next/image";
 
 import { Mermaid } from "./components/mermaid";
 
@@ -37,7 +39,7 @@ export const FumadocsComponents = {
     <Image
       {...props}
       fill
-      className="w-full object-cover h-auto rounded-lg"
+      className="h-auto w-full rounded-lg object-cover"
       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
     />
   ),
@@ -46,7 +48,7 @@ export const FumadocsComponents = {
       {...props}
       width={700}
       height={400}
-      className="w-full object-cover h-auto rounded-lg"
+      className="h-auto w-full rounded-lg object-cover"
     />
   ),
   h1: (props: any) => (
@@ -79,7 +81,7 @@ export const V1MDXComponents: MDXComponents = {
     </div>
   ),
   ImageWrapperWithMaxWidth: (props: any) => (
-    <div className="relative w-full overflow-hidden rounded-lg max-w-[250px]">
+    <div className="relative w-full max-w-[250px] overflow-hidden rounded-lg">
       {props.children}
     </div>
   ),
@@ -87,8 +89,8 @@ export const V1MDXComponents: MDXComponents = {
     <div className="flex w-full justify-center">{props.children}</div>
   ),
   table: (props: any) => (
-    <div className="max-w-full overflow-x-auto my-10">
-      <table className="min-w-full h-auto table-auto w-full not-prose bg-content1 overflow-hidden rounded-lg">
+    <div className="my-10 max-w-full overflow-x-auto">
+      <table className="not-prose bg-content1 h-auto w-full min-w-full table-auto overflow-hidden rounded-lg">
         {props.children}
       </table>
     </div>
@@ -97,17 +99,17 @@ export const V1MDXComponents: MDXComponents = {
     <thead className="[&>tr]:first:rounded-lg">{props.children}</thead>
   ),
   tr: (props: any) => (
-    <tr className="group outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2">
+    <tr className="group data-[focus-visible=true]:outline-focus outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-offset-2">
       {props.children}
     </tr>
   ),
   th: (props: any) => (
-    <th className="group px-3 h-10 align-middle bg-default-100 whitespace-nowrap text-foreground-500 text-tiny font-semibold first:rounded-l-lg rtl:first:rounded-r-lg rtl:first:rounded-l-[unset] last:rounded-r-lg rtl:last:rounded-l-lg rtl:last:rounded-r-[unset] data-[sortable=true]:cursor-pointer data-[hover=true]:text-foreground-400 outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 text-start">
+    <th className="group bg-default-100 text-foreground-500 text-tiny data-[hover=true]:text-foreground-400 data-[focus-visible=true]:outline-focus h-10 px-3 text-start align-middle font-semibold whitespace-nowrap outline-none first:rounded-l-lg last:rounded-r-lg data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-offset-2 data-[sortable=true]:cursor-pointer rtl:first:rounded-l-[unset] rtl:first:rounded-r-lg rtl:last:rounded-l-lg rtl:last:rounded-r-[unset]">
       {props.children}
     </th>
   ),
   td: (props: any) => (
-    <td className="py-2 px-3 relative align-middle whitespace-normal text-small font-normal [&>*]:z-1 [&>*]:relative outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 before:content-[''] before:absolute before:z-0 before:inset-0 before:opacity-0 data-[selected=true]:before:opacity-100 group-data-[disabled=true]:text-foreground-300 group-data-[disabled=true]:cursor-not-allowed before:bg-default/60 data-[selected=true]:text-default-foreground first:before:rounded-l-lg rtl:first:before:rounded-r-lg rtl:first:before:rounded-l-[unset] last:before:rounded-r-lg rtl:last:before:rounded-l-lg rtl:last:before:rounded-r-[unset] text-start">
+    <td className="text-small data-[focus-visible=true]:outline-focus group-data-[disabled=true]:text-foreground-300 before:bg-default/60 data-[selected=true]:text-default-foreground relative px-3 py-2 text-start align-middle font-normal whitespace-normal outline-none group-data-[disabled=true]:cursor-not-allowed before:absolute before:inset-0 before:z-0 before:opacity-0 before:content-[''] first:before:rounded-l-lg last:before:rounded-r-lg data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-offset-2 data-[selected=true]:before:opacity-100 rtl:first:before:rounded-l-[unset] rtl:first:before:rounded-r-lg rtl:last:before:rounded-l-lg rtl:last:before:rounded-r-[unset] [&>*]:relative [&>*]:z-1">
       {props.children}
     </td>
   ),
