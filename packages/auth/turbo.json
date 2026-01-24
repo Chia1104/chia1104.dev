@@ -4,6 +4,22 @@
   "extends": ["//"],
   "tasks": {
     "build": {
+      "passThroughEnv": [
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "AUTH_BASE_PATH",
+        "CORS_ALLOWED_ORIGIN",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "AUTH_SECRET",
+        "AUTH_URL",
+        "AUTH_COOKIE_DOMAIN",
+        "RESEND_API_KEY",
+        "ADMIN_ID",
+        "*_ADMIN_ID",
+        "CF_BYPASS_TOKEN",
+        "CH_API_KEY"
+      ],
       "env": [
         "GITHUB_CLIENT_ID",
         "GITHUB_CLIENT_SECRET",
@@ -14,7 +30,11 @@
         "AUTH_SECRET",
         "AUTH_URL",
         "AUTH_COOKIE_DOMAIN",
-        "RESEND_API_KEY"
+        "RESEND_API_KEY",
+        "ADMIN_ID",
+        "*_ADMIN_ID",
+        "CF_BYPASS_TOKEN",
+        "CH_API_KEY"
       ]
     }
   }

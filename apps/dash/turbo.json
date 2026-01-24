@@ -1,17 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tags": ["dash"],
-  "extends": ["//"],
+  "extends": ["//", "@chia/api", "@chia/db", "@chia/kv", "@chia/utils"],
   "tasks": {
     "build": {
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": [
-        "S3_ACCESS_KEY_ID",
-        "S3_SECRET_ACCESS_KEY",
-        "S3_REGION",
-        "S3_BUCKET_NAME",
-        "S3_ENDPOINT"
-      ]
+      "outputs": [".next/**", "!.next/cache/**"]
     }
   }
 }

@@ -4,7 +4,12 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": ["DATABASE_URL", "DATABASE_URL_REPLICA_1"]
+      "env": ["DATABASE_URL", "DATABASE_URL_REPLICA_1", "*_DATABASE_URL"],
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "DATABASE_URL_REPLICA_1",
+        "*_DATABASE_URL"
+      ]
     },
     "db:generate": {},
     "db:push": {},

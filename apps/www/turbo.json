@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tags": ["www"],
-  "extends": ["//"],
+  "extends": ["//", "@chia/api", "@chia/utils"],
   "tasks": {
     "build": {
       "outputs": [".next/**", "!.next/cache/**"],
@@ -12,13 +12,18 @@
         "SHA_256_HASH",
         "EDGE_CONFIG",
         "SPOTIFY_FAVORITE_PLAYLIST_ID",
-        "SENTRY_AUTH_TOKEN",
+        "ADMIN_ID",
+        "*_ADMIN_ID"
+      ],
+      "passThroughEnv": [
         "SENTRY_ORG",
         "SENTRY_PROJECT",
-        "ADMIN_ID",
-        "BETA_ADMIN_ID",
+        "SENTRY_AUTH_TOKEN",
+        "SHA_256_HASH",
+        "EDGE_CONFIG",
         "SPOTIFY_FAVORITE_PLAYLIST_ID",
-        "GH_PUBLIC_TOKEN"
+        "ADMIN_ID",
+        "*_ADMIN_ID"
       ]
     }
   }

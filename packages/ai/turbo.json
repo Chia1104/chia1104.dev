@@ -4,6 +4,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
+      "passThroughEnv": ["OLLAMA_BASE_URL", "OPENAI_API_KEY"],
       "env": ["OLLAMA_BASE_URL", "OPENAI_API_KEY"]
     }
   }

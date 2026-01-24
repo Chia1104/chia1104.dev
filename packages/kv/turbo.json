@@ -10,7 +10,17 @@
         "UPSTASH_REDIS_REST_TOKEN",
         "REDIS_URI",
         "VALKEY_URI",
-        "POSTGRES_URI"
+        "POSTGRES_URI",
+        "CACHE_PROVIDER"
+      ],
+      "passThroughEnv": [
+        "CACHE_URI",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "REDIS_URI",
+        "VALKEY_URI",
+        "POSTGRES_URI",
+        "CACHE_PROVIDER"
       ]
     }
   }
