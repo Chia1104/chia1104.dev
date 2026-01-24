@@ -1,9 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tags": ["www-e2e"],
-  "extends": ["//", "www", "@chia/api", "@chia/utils"],
+  "extends": ["//"],
   "tasks": {
     "test:e2e": {
+      "outputs": ["coverage/**", "playwright-report/**"],
+      "dependsOn": ["www#build"],
       "env": [
         "SENTRY_ORG",
         "SENTRY_PROJECT",
