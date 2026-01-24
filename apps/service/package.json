@@ -32,7 +32,7 @@
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
     "@workflow-worlds/redis": "^0.1.0",
-    "@workflow/world-postgres": "4.1.0-beta.28",
+    "@workflow/world-postgres": "4.1.0-beta.29",
     "better-all": "catalog:",
     "better-auth": "catalog:better-auth",
     "dayjs": "catalog:",
