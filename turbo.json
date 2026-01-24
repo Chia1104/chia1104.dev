@@ -92,7 +92,8 @@
     "VERCEL_ENV",
     "*_VERCEL_ENV",
     "NEXT_RUNTIME",
-    "ENV"
+    "ENV",
+    "GH_PUBLIC_TOKEN"
   ],
   "globalPassThroughEnv": [
     "APP_CODE",
@@ -114,7 +115,8 @@
     "VERCEL_ENV",
     "*_VERCEL_ENV",
     "NEXT_RUNTIME",
-    "ENV"
+    "ENV",
+    "GH_PUBLIC_TOKEN"
   ],
   "globalDependencies": [".env.global", ".env"]
 }
