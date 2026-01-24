@@ -19,7 +19,7 @@ const Default = () => {
   );
   if (isLoading) return <Spinner size="md" />;
   return (
-    <div className="grid gap-5 grid-cols-1 md:grid-cols-2 w-full">
+    <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
       {data?.items.map((item) =>
         item.slug ? (
           <ProjectCard

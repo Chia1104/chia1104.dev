@@ -1,5 +1,5 @@
-import { betterAuth } from "better-auth";
 import type { BetterAuthOptions } from "better-auth";
+import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { mockDB } from "@chia/db/mock-db";

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode, Dispatch, SetStateAction } from "react";
 import {
   useState,
   useEffect,
@@ -8,10 +9,9 @@ import {
   useCallback,
   useTransition,
 } from "react";
-import type { ReactNode, Dispatch, SetStateAction } from "react";
 
-import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import {
@@ -28,8 +28,8 @@ import { getBrightness } from "@chia/ui/utils/get-brightness";
 import { experimental_getImgAverageRGB } from "@chia/ui/utils/get-img-average-rgb";
 
 import type { HonoRPCError } from "@/libs/service/error";
-import { getCurrentPlaying } from "@/services/spotify.service";
 import type { CurrentPlayingResponse } from "@/services/spotify.service";
+import { getCurrentPlaying } from "@/services/spotify.service";
 
 interface ExtendsProps {
   className?: string;
@@ -197,8 +197,8 @@ const SongTitle = ({
   const titleElement = (
     <h4
       className={cn(
-        "mb-2 mt-0",
-        shouldUseMarquee ? "text-md" : "text-lg line-clamp-1",
+        "mt-0 mb-2",
+        shouldUseMarquee ? "text-md" : "line-clamp-1 text-lg",
         textColorClass
       )}>
       {name}
@@ -285,7 +285,7 @@ const Card = ({
       <HoverCardTrigger asChild className="prose dark:prose-invert z-10">
         <div
           className={cn(
-            "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
+            "c-bg-third border-secondary/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
             className
           )}>
           <span className="i-mdi-spotify size-5 text-[#1DB954]" />
@@ -300,7 +300,7 @@ const Card = ({
         <HoverCardContent
           style={{ backgroundColor }}
           className={cn(
-            "z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 border-secondary/50 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
+            "border-secondary/50 not-prose z-20 flex h-[150px] w-72 flex-col items-start justify-center gap-4 shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
             isError &&
               "border-danger/50 dark:border-danger/50 shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)] dark:shadow-[0px_0px_25px_4px_rgb(244_67_54/0.3)]",
             enableColorExtraction && !isPending
@@ -338,7 +338,7 @@ const Card = ({
 const LoadingSkeleton = ({ className }: { className?: string }) => (
   <div
     className={cn(
-      "c-bg-third relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full border-secondary/50 px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)] not-prose",
+      "c-bg-third border-secondary/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
       className
     )}>
     <span className="i-mdi-spotify size-5 text-[#1DB954]" />

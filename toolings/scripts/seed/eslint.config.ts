@@ -1,4 +1,5 @@
-import baseConfig from "@chiastack/eslint/base";
 import { defineConfig } from "eslint/config";
+
+import baseConfig from "@chiastack/eslint/base";
 
 export default defineConfig(baseConfig);

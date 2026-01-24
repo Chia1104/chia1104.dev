@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext } from "react";
 import type { ComponentProps } from "react";
+import { createContext, useContext } from "react";
 
 import { Button } from "@heroui/react";
 import {
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "../utils/cn.util";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -284,7 +285,7 @@ export const OpenInChatGPT = (props: OpenInChatGPTProps) => {
         href={providers.chatgpt.createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="shrink-0 size-4">{providers.chatgpt.icon}</span>
+        <span className="size-4 shrink-0">{providers.chatgpt.icon}</span>
         <span className="flex-1">{providers.chatgpt.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </a>
@@ -303,7 +304,7 @@ export const OpenInClaude = (props: OpenInClaudeProps) => {
         href={providers.claude.createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="shrink-0 size-4">{providers.claude.icon}</span>
+        <span className="size-4 shrink-0">{providers.claude.icon}</span>
         <span className="flex-1">{providers.claude.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </a>
@@ -322,7 +323,7 @@ export const OpenInT3 = (props: OpenInT3Props) => {
         href={providers.t3.createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="shrink-0 size-4">{providers.t3.icon}</span>
+        <span className="size-4 shrink-0">{providers.t3.icon}</span>
         <span className="flex-1">{providers.t3.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </a>
@@ -341,7 +342,7 @@ export const OpenInScira = (props: OpenInSciraProps) => {
         href={providers.scira.createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="shrink-0 size-4">{providers.scira.icon}</span>
+        <span className="size-4 shrink-0">{providers.scira.icon}</span>
         <span className="flex-1">{providers.scira.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </a>
@@ -360,7 +361,7 @@ export const OpenInv0 = (props: OpenInv0Props) => {
         href={providers.v0.createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="shrink-0 size-4">{providers.v0.icon}</span>
+        <span className="size-4 shrink-0">{providers.v0.icon}</span>
         <span className="flex-1">{providers.v0.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </a>
@@ -379,7 +380,7 @@ export const OpenInCursor = (props: OpenInCursorProps) => {
         href={providers.cursor.createUrl(query)}
         rel="noopener"
         target="_blank">
-        <span className="shrink-0 size-4">{providers.cursor.icon}</span>
+        <span className="size-4 shrink-0">{providers.cursor.icon}</span>
         <span className="flex-1">{providers.cursor.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </a>

@@ -1,14 +1,14 @@
 "use client";
 
+import type { Locale } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
+import Link from "next/link";
+import { useSelectedLayoutSegments } from "next/navigation";
 import type { FC } from "react";
 
 import { Tabs, Tab, Button } from "@heroui/react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
-import type { Locale } from "next-intl";
-import { useLocale } from "next-intl";
-import Link from "next/link";
-import { useSelectedLayoutSegments } from "next/navigation";
 
 import meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
@@ -53,16 +53,16 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
     <RetroGrid
       data-testid="footer"
       className="c-bg-third relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden py-20">
-      <div className="container z-40 mb-10 flex w-full px-10 justify-between">
+      <div className="z-40 container mb-10 flex w-full justify-between px-10">
         <CurrentPlaying
           className="bg-white dark:bg-black"
           hoverCardContentClassName="bg-white/30 dark:bg-black/30 backdrop-blur-lg"
         />
-        <div className="md:w-1/3 flex md:justify-start justify-end">
+        <div className="flex justify-end md:w-1/3 md:justify-start">
           <HugeThanks />
         </div>
       </div>
-      <div className="container z-20 flex w-full px-10">
+      <div className="z-20 container flex w-full px-10">
         <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
           <Logo />
           <LocaleSelector />
@@ -123,7 +123,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
           </div>
         </div>
       </div>
-      <div className="container z-20 mt-5 flex w-full items-center justify-between px-10 md:hidden">
+      <div className="z-20 container mt-5 flex w-full items-center justify-between px-10 md:hidden">
         <div className="flex items-center gap-3">
           <Logo />
           <LocaleSelector />

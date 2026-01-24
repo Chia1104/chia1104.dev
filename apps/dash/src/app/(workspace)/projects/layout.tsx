@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useSelectedLayoutSegments } from "next/navigation";
+
+import { useQuery } from "@tanstack/react-query";
 
 import AppLoading from "@/components/commons/app-loading";
 import ProjectLayout from "@/components/projects/project-layout";

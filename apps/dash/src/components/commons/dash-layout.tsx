@@ -1,5 +1,7 @@
 "use client";
 
+import { useTransitionRouter } from "next-view-transitions";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 import {
@@ -30,8 +32,6 @@ import {
 import { cn } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import _ from "lodash";
-import { useTransitionRouter } from "next-view-transitions";
-import { usePathname } from "next/navigation";
 import { useMediaQuery } from "usehooks-ts";
 
 import { authClient } from "@chia/auth/client";
@@ -39,8 +39,8 @@ import { authClient } from "@chia/auth/client";
 import { AcmeIcon } from "@/components/commons/acme";
 import AuthGuard from "@/components/commons/auth-guard";
 import Drawer from "@/components/commons/drawer";
-import SideBar from "@/components/commons/side-bar";
 import type { SidebarItem } from "@/components/commons/side-bar";
+import SideBar from "@/components/commons/side-bar";
 import { revokeCurrentOrg } from "@/server/org.action";
 import { setCurrentOrg } from "@/server/org.action";
 import { routeItems } from "@/shared/routes";
@@ -66,7 +66,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
 
   if (!data || isLoading) {
     return (
-      <ul className="w-full flex flex-col gap-1">
+      <ul className="flex w-full flex-col gap-1">
         {Array(3).map((_, index) => (
           <li key={index} className="w-full">
             <Skeleton className="h-8 w-20 rounded-full" />
@@ -77,15 +77,15 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-2 pb-2">
-      <ul className="w-full flex flex-col gap-1 pt-2">
+    <div className="flex w-full flex-col gap-2 pb-2">
+      <ul className="flex w-full flex-col gap-1 pt-2">
         {data.map((org) => (
           <li key={org.id} className="w-full">
             <Button
               aria-label={org.name}
               size="sm"
               fullWidth
-              className="pl-5 justify-start"
+              className="justify-start pl-5"
               variant="light"
               isDisabled={isPending}
               onPress={() => {
@@ -107,7 +107,7 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
         onPress={() => {
           onOpen();
         }}
-        className="pl-5 justify-start"
+        className="justify-start pl-5"
         variant="light"
         size="sm"
         startContent={
@@ -223,7 +223,7 @@ const DashLayout = (props: Props) => {
     <div className="flex h-dvh w-full">
       {/* Sidebar */}
       <Drawer
-        className={cn("min-w-[288px] rounded-lg z-50", {
+        className={cn("z-50 min-w-[288px] rounded-lg", {
           "min-w-[76px]": isCollapsed,
         })}
         hideCloseButton={true}
@@ -231,7 +231,7 @@ const DashLayout = (props: Props) => {
         onOpenChange={onOpenChange}>
         <div
           className={cn(
-            "will-change flex h-full w-72 flex-col bg-default-100 p-6 transition-width fixed top-0 z-10",
+            "will-change bg-default-100 transition-width fixed top-0 z-10 flex h-full w-72 flex-col p-6",
             {
               "w-[83px] items-center px-[6px] py-6": isCollapsed,
             }
@@ -247,16 +247,16 @@ const DashLayout = (props: Props) => {
                   isIconOnly={isCollapsed}
                   startContent={
                     !isCollapsed ? (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
+                      <div className="bg-foreground flex h-8 w-8 items-center justify-center rounded-full">
                         <AcmeIcon className="text-background" />
                       </div>
                     ) : null
                   }
                   className={cn(
-                    "w-full text-small font-bold uppercase opacity-100 pl-1 justify-start"
+                    "text-small w-full justify-start pl-1 font-bold uppercase opacity-100"
                   )}>
                   {isCollapsed ? (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground">
+                    <div className="bg-foreground flex h-8 w-8 items-center justify-center rounded-full">
                       <AcmeIcon className="text-background" />
                     </div>
                   ) : (
@@ -287,7 +287,7 @@ const DashLayout = (props: Props) => {
                     className={cn("flex max-w-full flex-col", {
                       hidden: isCollapsed,
                     })}>
-                    <Skeleton className="w-20 h-4 rounded-full" />
+                    <Skeleton className="h-4 w-20 rounded-full" />
                   </div>
                 </>
               }>
@@ -303,7 +303,7 @@ const DashLayout = (props: Props) => {
                     className={cn("flex max-w-full flex-col", {
                       hidden: isCollapsed,
                     })}>
-                    <p className="text-small font-medium text-foreground line-clamp-1">
+                    <p className="text-small text-foreground line-clamp-1 font-medium">
                       {session.user.name}
                     </p>
                   </div>
@@ -334,11 +334,11 @@ const DashLayout = (props: Props) => {
             {isCollapsed && (
               <Button
                 isIconOnly
-                className="flex h-10 w-10 text-default-600"
+                className="text-default-600 flex h-10 w-10"
                 size="sm"
                 variant="light">
                 <Icon
-                  className="cursor-pointer dark:text-default-500 [&>g]:stroke-[1px]"
+                  className="dark:text-default-500 cursor-pointer [&>g]:stroke-[1px]"
                   height={24}
                   icon="solar:round-alt-arrow-right-line-duotone"
                   width={24}
@@ -353,7 +353,7 @@ const DashLayout = (props: Props) => {
               <Button
                 fullWidth
                 className={cn(
-                  "justify-start truncate text-default-600 data-[hover=true]:text-foreground",
+                  "text-default-600 data-[hover=true]:text-foreground justify-start truncate",
                   {
                     "justify-center": isCollapsed,
                   }
@@ -362,7 +362,7 @@ const DashLayout = (props: Props) => {
                 startContent={
                   isCollapsed ? null : (
                     <Icon
-                      className="flex-none text-default-600"
+                      className="text-default-600 flex-none"
                       icon="solar:info-circle-line-duotone"
                       width={24}
                     />
@@ -388,7 +388,7 @@ const DashLayout = (props: Props) => {
                 <PopoverTrigger>
                   <Button
                     className={cn(
-                      "justify-start text-default-500 data-[hover=true]:text-foreground",
+                      "text-default-500 data-[hover=true]:text-foreground justify-start",
                       {
                         "justify-center": isCollapsed,
                       }
@@ -397,7 +397,7 @@ const DashLayout = (props: Props) => {
                     startContent={
                       isCollapsed ? null : (
                         <Icon
-                          className="flex-none rotate-180 text-default-500"
+                          className="text-default-500 flex-none rotate-180"
                           icon="solar:minus-circle-line-duotone"
                           width={24}
                         />
@@ -406,7 +406,7 @@ const DashLayout = (props: Props) => {
                     variant="light">
                     {isCollapsed ? (
                       <Icon
-                        className="rotate-180 text-default-500"
+                        className="text-default-500 rotate-180"
                         icon="solar:minus-circle-line-duotone"
                         width={24}
                       />
@@ -416,7 +416,7 @@ const DashLayout = (props: Props) => {
                   </Button>
                 </PopoverTrigger>
               </Tooltip>
-              <PopoverContent className="p-4 gap-3">
+              <PopoverContent className="gap-3 p-4">
                 <div className="text-small font-bold">
                   Are you sure you want to sign out?
                 </div>
@@ -444,7 +444,7 @@ const DashLayout = (props: Props) => {
         </div>
       </Drawer>
 
-      <div className="flex flex-col w-full">
+      <div className="flex w-full flex-col">
         <Navbar
           isBordered
           className="flex items-center gap-x-3"
@@ -468,7 +468,7 @@ const DashLayout = (props: Props) => {
               width={20}
             />
           </Button>
-          <h1 className="text-2xl font-bold leading-9 text-default-foreground">
+          <h1 className="text-default-foreground text-2xl leading-9 font-bold">
             {currentItem?.title}
           </h1>
           {breadcrumbs.length > 1 && (
@@ -484,11 +484,11 @@ const DashLayout = (props: Props) => {
             </Breadcrumbs>
           )}
         </Navbar>
-        <main className="container flex-1 p-4 relative">
+        <main className="relative container flex-1 p-4">
           {currentItem?.items && currentItem.items.length > 0 && (
             <ScrollShadow
               hideScrollBar
-              className="px-10 flex w-full justify-between gap-8 c-bg-third absolute inset-0 h-20 items-center"
+              className="c-bg-third absolute inset-0 flex h-20 w-full items-center justify-between gap-8 px-10"
               orientation="horizontal">
               <Tabs
                 aria-label="Navigation Tabs"

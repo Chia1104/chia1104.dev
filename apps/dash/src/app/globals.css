@@ -17,9 +17,9 @@
   --color-primary: #00e1ff;
   --color-secondary: #ff00e1;
   --color-sec-text: #444444;
-  --color-bgPurple: rgba(111,66,193,0.65);
-  --color-bgPink: rgba(255,107,237,0.35);
-  --color-bgBlue: rgba(117,149,255,0.3)
+  --color-bgPurple: rgba(111, 66, 193, 0.65);
+  --color-bgPink: rgba(255, 107, 237, 0.35);
+  --color-bgBlue: rgba(117, 149, 255, 0.3);
 }
 
 @layer components {

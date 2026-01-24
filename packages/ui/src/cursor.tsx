@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback } from "react";
 import type { FC, ComponentProps } from "react";
+import { useCallback } from "react";
 
-import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useEventListener } from "usehooks-ts";
 
 import { cn } from "../utils/cn.util";
@@ -38,7 +38,7 @@ const Cursor: FC<
   return (
     <motion.div
       className={cn(
-        "c-bg-gradient-yellow-to-pink dark:c-bg-gradient-purple-to-pink fixed left-0 top-0 size-[400px] rounded-full",
+        "c-bg-gradient-yellow-to-pink dark:c-bg-gradient-purple-to-pink fixed top-0 left-0 size-[400px] rounded-full",
         className
       )}
       style={{

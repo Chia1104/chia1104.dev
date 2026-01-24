@@ -38,7 +38,7 @@ const ShimmerButton = ({
         } as CSSProperties
       }
       className={cn(
-        "dark:c-bg-gradient-black-to-dark-gray c-bg-gradient-yellow-to-pink group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap border border-white/10 px-6 py-3 text-neutral-500 [border-radius:var(--radius)] dark:text-white",
+        "dark:c-bg-gradient-black-to-dark-gray c-bg-gradient-yellow-to-pink group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden [border-radius:var(--radius)] border border-white/10 px-6 py-3 whitespace-nowrap text-neutral-500 dark:text-white",
         "transform-gpu transition-transform duration-300 ease-in-out active:translate-y-[1px]",
         className
       )}
@@ -48,12 +48,12 @@ const ShimmerButton = ({
       <div
         className={cn(
           "-z-30 blur-[2px]",
-          "absolute inset-0 overflow-visible [container-type:size]"
+          "[container-type:size] absolute inset-0 overflow-visible"
         )}>
         {/* spark */}
-        <div className="animate-cia-slide absolute inset-0 h-[100cqh] [aspect-ratio:1] [border-radius:0] [mask:none]">
+        <div className="animate-cia-slide absolute inset-0 [aspect-ratio:1] h-[100cqh] [border-radius:0] [mask:none]">
           {/* spark before */}
-          <div className="animate-cia-spin-around absolute -inset-full w-auto rotate-0 [background:conic-gradient(from_calc(270deg-(var(--spread)*0.5)),transparent_0,var(--shimmer-color)_var(--spread),transparent_var(--spread))] [translate:0_0]" />
+          <div className="animate-cia-spin-around absolute -inset-full w-auto [translate:0_0] rotate-0 [background:conic-gradient(from_calc(270deg-(var(--spread)*0.5)),transparent_0,var(--shimmer-color)_var(--spread),transparent_var(--spread))]" />
         </div>
       </div>
       {children}
@@ -80,7 +80,7 @@ const ShimmerButton = ({
       {/* backdrop */}
       <div
         className={cn(
-          "dark:c-bg-gradient-black-to-dark-gray c-bg-gradient-yellow-to-pink absolute -z-20 [border-radius:var(--radius)] [inset:var(--cut)]",
+          "dark:c-bg-gradient-black-to-dark-gray c-bg-gradient-yellow-to-pink absolute [inset:var(--cut)] -z-20 [border-radius:var(--radius)]",
           backdropClass
         )}
       />

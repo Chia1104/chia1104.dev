@@ -1,5 +1,6 @@
-import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+
+import { captureException } from "@sentry/nextjs";
 
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
 import { errorGenerator } from "@chia/utils/server";

@@ -1,7 +1,8 @@
 "use client";
 
-import { Card, CardHeader, Divider } from "@heroui/react";
 import { useTransitionRouter } from "next-view-transitions";
+
+import { Card, CardHeader, Divider } from "@heroui/react";
 
 import OnboardingForm from "@/components/auth/onboarding-form";
 

@@ -8,7 +8,7 @@ const Drafts = dynamic(
   () => import("@/components/feed/feed-list").then((mod) => mod.Drafts),
   {
     loading: () => (
-      <div className="grid gap-5 grid-cols-1 md:grid-cols-2 w-full">
+      <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2">
         <Skeleton />
       </div>
     ),

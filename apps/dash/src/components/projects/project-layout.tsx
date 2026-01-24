@@ -1,5 +1,6 @@
 "use client";
 
+import { useSelectedLayoutSegments } from "next/navigation";
 import type { ReactNode } from "react";
 
 import {
@@ -13,7 +14,6 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSelectedLayoutSegments } from "next/navigation";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -82,14 +82,14 @@ const ProjectLayout = ({ children }: { children: ReactNode }) => {
 
   return (
     <>
-      <nav className="w-full h-20 c-bg-third absolute inset-0 flex items-center justify-between px-10">
+      <nav className="c-bg-third absolute inset-0 flex h-20 w-full items-center justify-between px-10">
         <h2 className="text-xl font-bold">
           {currentOrgSlug}
           {segments.length > 0 ? ` / ${segments[0]}` : ""}
         </h2>
         <Create />
       </nav>
-      <section className={cn("container main justify-start items-start mt-10")}>
+      <section className={cn("main container mt-10 items-start justify-start")}>
         {children}
       </section>
     </>

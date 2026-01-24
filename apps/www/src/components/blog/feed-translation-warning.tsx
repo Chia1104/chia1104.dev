@@ -1,9 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Alert, Button } from "@heroui/react";
-import { useTranslations } from "next-intl";
 
 import { useChangeLocale } from "@/hooks/use-change-locale";
 import { Locale } from "@/libs/utils/i18n";

@@ -87,19 +87,19 @@
 
   /* Custom TODO list checkboxes – shoutout to this awesome tutorial: https://moderncss.dev/pure-css-custom-checkbox-style/ */
 
-  ul[data-type="taskList"] li>label {
+  ul[data-type="taskList"] li > label {
     margin-right: 0.2rem;
     user-select: none;
     -webkit-user-select: none;
   }
 
   @media screen and (max-width: 768px) {
-    ul[data-type="taskList"] li>label {
+    ul[data-type="taskList"] li > label {
       margin-right: 0.5rem;
     }
   }
 
-  ul[data-type="taskList"] li>label input[type="checkbox"] {
+  ul[data-type="taskList"] li > label input[type="checkbox"] {
     -webkit-appearance: none;
     appearance: none;
     background-color: var(--novel-white);
@@ -138,7 +138,7 @@
     }
   }
 
-  ul[data-type="taskList"] li[data-checked="true"]>div>p {
+  ul[data-type="taskList"] li[data-checked="true"] > div > p {
     color: var(--novel-stone-400);
     text-decoration: line-through;
     text-decoration-thickness: 2px;
@@ -199,53 +199,53 @@
 }
 
 .tiptap pre .hljs-comment,
-  .tiptap pre .hljs-quote {
-    color: #616161 !important;
-  }
+.tiptap pre .hljs-quote {
+  color: #616161 !important;
+}
 
-  .tiptap pre .hljs-variable,
-  .tiptap pre .hljs-template-variable,
-  .tiptap pre .hljs-attribute,
-  .tiptap pre .hljs-tag,
-  .tiptap pre .hljs-name,
-  .tiptap pre .hljs-regexp,
-  .tiptap pre .hljs-link,
-  .tiptap pre .hljs-name,
-  .tiptap pre .hljs-selector-id,
-  .tiptap pre .hljs-selector-class {
-    color: #f98181 !important;
-  }
+.tiptap pre .hljs-variable,
+.tiptap pre .hljs-template-variable,
+.tiptap pre .hljs-attribute,
+.tiptap pre .hljs-tag,
+.tiptap pre .hljs-name,
+.tiptap pre .hljs-regexp,
+.tiptap pre .hljs-link,
+.tiptap pre .hljs-name,
+.tiptap pre .hljs-selector-id,
+.tiptap pre .hljs-selector-class {
+  color: #f98181 !important;
+}
 
-  .tiptap pre .hljs-number,
-  .tiptap pre .hljs-meta,
-  .tiptap pre .hljs-built_in,
-  .tiptap pre .hljs-builtin-name,
-  .tiptap pre .hljs-literal,
-  .tiptap pre .hljs-type,
-  .tiptap pre .hljs-params {
-    color: #fbbc88 !important;
-  }
+.tiptap pre .hljs-number,
+.tiptap pre .hljs-meta,
+.tiptap pre .hljs-built_in,
+.tiptap pre .hljs-builtin-name,
+.tiptap pre .hljs-literal,
+.tiptap pre .hljs-type,
+.tiptap pre .hljs-params {
+  color: #fbbc88 !important;
+}
 
-  .tiptap pre .hljs-string,
-  .tiptap pre .hljs-symbol,
-  .tiptap pre .hljs-bullet {
-    color: #b9f18d !important;
-  }
+.tiptap pre .hljs-string,
+.tiptap pre .hljs-symbol,
+.tiptap pre .hljs-bullet {
+  color: #b9f18d !important;
+}
 
-  .tiptap pre .hljs-title,
-  .tiptap pre .hljs-section {
-    color: #faf594 !important;
-  }
+.tiptap pre .hljs-title,
+.tiptap pre .hljs-section {
+  color: #faf594 !important;
+}
 
-  .tiptap pre .hljs-keyword,
-  .tiptap pre .hljs-selector-tag {
-    color: #70cff8 !important;
-  }
+.tiptap pre .hljs-keyword,
+.tiptap pre .hljs-selector-tag {
+  color: #70cff8 !important;
+}
 
-  .tiptap pre .hljs-emphasis {
-    font-style: italic;
-  }
+.tiptap pre .hljs-emphasis {
+  font-style: italic;
+}
 
-  .tiptap pre .hljs-strong {
-    font-weight: 700;
-  }
+.tiptap pre .hljs-strong {
+  font-weight: 700;
+}

@@ -2,7 +2,6 @@
  * @TODO: Work in progress
  */
 import { Elysia } from "elysia";
-
 // import { auth } from "@chia/auth";
 
 import { env } from "./env";

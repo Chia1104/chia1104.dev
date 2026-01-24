@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransitionRouter } from "next-view-transitions";
 import React from "react";
 
 import type { CardProps } from "@heroui/react";
@@ -11,7 +12,6 @@ import {
   LazyMotion,
   useMotionTemplate,
 } from "framer-motion";
-import { useTransitionRouter } from "next-view-transitions";
 
 interface Props extends CardProps {
   name: string;
@@ -51,7 +51,7 @@ export default function ProjectCard({
       onPress={() => router.push(`/projects/${slug}`)}
       {...props}
       ref={cardRef}
-      className="group relative w-full bg-white dark:bg-neutral-900 shadow-large min-h-[250px]"
+      className="group shadow-large relative min-h-[250px] w-full bg-white dark:bg-neutral-900"
       radius="lg"
       onMouseMove={onMouseMove}>
       <LazyMotion features={domAnimation}>
@@ -68,7 +68,7 @@ export default function ProjectCard({
           }}
         />
       </LazyMotion>
-      <CardHeader className="h-60 p-0 flex justify-center absolute inset-0">
+      <CardHeader className="absolute inset-0 flex h-60 justify-center p-0">
         <Image
           removeWrapper
           alt="Acme Planner"
@@ -80,8 +80,8 @@ export default function ProjectCard({
           }}
         />
       </CardHeader>
-      <CardFooter className="px-6 pb-8 pt-4 absolute bottom-0 w-full">
-        <div className="flex flex-col gap-2 items-start justify-end">
+      <CardFooter className="absolute bottom-0 w-full px-6 pt-4 pb-8">
+        <div className="flex flex-col items-start justify-end gap-2">
           <p className="text-lg">{name}</p>
           <p className="text-small text-neutral-400">{description}</p>
         </div>

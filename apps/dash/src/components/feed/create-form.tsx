@@ -1,12 +1,12 @@
 "use client";
 
+import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTransitionRouter as useRouter } from "next-view-transitions";
-import { useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { feedsContracts } from "@chia/api/orpc/contracts";
@@ -93,7 +93,7 @@ const CreateForm = ({
     <Form {...form}>
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-[700px] flex flex-col gap-10">
+        className="flex w-full max-w-[700px] flex-col gap-10">
         <EditFields
           ref={editFieldsRef}
           disabled={create.isPending}
@@ -102,7 +102,7 @@ const CreateForm = ({
           mode="create"
         />
         <SubmitForm
-          className="max-w-[150px] w-full"
+          className="w-full max-w-[150px]"
           disabled={create.isPending}>
           Create
         </SubmitForm>

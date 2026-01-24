@@ -1,12 +1,12 @@
 "use client";
 
+import { useTransitionRouter } from "next-view-transitions";
 import { useCallback } from "react";
 
-import { Button, useDisclosure, Spinner } from "@heroui/react";
 import type { ButtonProps } from "@heroui/react";
+import { Button, useDisclosure, Spinner } from "@heroui/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
-import { useTransitionRouter } from "next-view-transitions";
 
 import {
   CommandDialog,
@@ -64,7 +64,7 @@ const SearchForm = ({
       />
       <CommandList>
         {isPending && (
-          <CommandLoading className="w-full justify-center flex py-10">
+          <CommandLoading className="flex w-full justify-center py-10">
             <Spinner />
           </CommandLoading>
         )}
@@ -73,7 +73,7 @@ const SearchForm = ({
           <CommandItem key={feed.id} onSelect={() => handleSelect(feed)}>
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium">{feed.title}</p>
-              <p className="text-xs text-muted-foreground">{feed.excerpt}</p>
+              <p className="text-muted-foreground text-xs">{feed.excerpt}</p>
             </div>
           </CommandItem>
         ))}

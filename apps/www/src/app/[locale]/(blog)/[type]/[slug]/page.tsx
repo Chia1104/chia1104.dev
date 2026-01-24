@@ -1,9 +1,9 @@
-import { Suspense, ViewTransition } from "react";
-
-import { all } from "better-all";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { Suspense, ViewTransition } from "react";
+
+import { all } from "better-all";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
@@ -95,7 +95,7 @@ const Page = async ({
     <ViewTransition>
       <div className="flex w-full flex-col items-center">
         {locale !== Locale.ZH_TW && <FeedTranslationWarning />}
-        <header className="mb-5 w-full self-center mt-5">
+        <header className="mt-5 mb-5 w-full self-center">
           <div>
             <ViewTransition name={`view-transition-link-${feed.id}`}>
               <h1
@@ -111,10 +111,10 @@ const Page = async ({
           <ActionGroup
             content={feed.translations[0]?.content?.content}
             articleUrl={articleUrl}
-            className="justify-end mt-5 flex lg:hidden"
+            className="mt-5 flex justify-end lg:hidden"
           />
-          <div className="mt-5 flex flex-col lg:flex-row items-start lg:items-center lg:justify-between">
-            <div className="flex items-center gap-2 not-prose">
+          <div className="mt-5 flex flex-col items-start lg:flex-row lg:items-center lg:justify-between">
+            <div className="not-prose flex items-center gap-2">
               <Image
                 src="https://avatars.githubusercontent.com/u/38397958?v=4"
                 width={40}
@@ -179,7 +179,7 @@ const Page = async ({
                   <ActionGroup
                     content={feed.translations[0]?.content?.content}
                     articleUrl={articleUrl}
-                    className="self-end mt-5 hidden md:flex"
+                    className="mt-5 hidden self-end md:flex"
                   />
                 ),
               },
@@ -187,7 +187,7 @@ const Page = async ({
           />
         </Suspense>
         <WrittenBy
-          className="w-full flex justify-start mt-10 relative self-start"
+          className="relative mt-10 flex w-full justify-start self-start"
           author="Chia1104"
         />
       </div>

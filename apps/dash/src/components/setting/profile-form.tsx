@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 import {
   CardHeader,
@@ -10,8 +12,6 @@ import {
   CardBody,
   Input,
 } from "@heroui/react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { authClient } from "@chia/auth/client";
@@ -57,7 +57,7 @@ const UserProfileForm = (props: {
   });
 
   return (
-    <section className="w-full flex flex-col gap-5">
+    <section className="flex w-full flex-col gap-5">
       <Card>
         <Form {...form}>
           <form onSubmit={onSubmit}>
@@ -114,7 +114,7 @@ const UserProfileForm = (props: {
               <Button
                 isLoading={isPending}
                 type="submit"
-                className="w-fit mt-5">
+                className="mt-5 w-fit">
                 Save
               </Button>
             </CardBody>

@@ -1,7 +1,7 @@
-import { cache } from "react";
+import "server-only";
 
 import { headers } from "next/headers";
-import "server-only";
+import { cache } from "react";
 
 import { authClient } from "@chia/auth/client";
 

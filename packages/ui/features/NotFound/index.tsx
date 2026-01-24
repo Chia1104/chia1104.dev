@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { ViewTransition } from "react";
 
 import { Button, Code } from "@heroui/react";
-import Link from "next/link";
 
 import {
   TextRevealCard,
@@ -14,7 +14,7 @@ import {
 export default function NotFound() {
   return (
     <ViewTransition>
-      <div className="main container not-prose">
+      <div className="main not-prose container">
         <TextRevealCard text="404 Not Found" revealText="出事拉，阿北！">
           <TextRevealCardTitle>Not Found</TextRevealCardTitle>
           <TextRevealCardDescription>

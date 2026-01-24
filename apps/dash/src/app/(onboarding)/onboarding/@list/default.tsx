@@ -12,8 +12,8 @@ const Default = async () => {
   }
 
   return (
-    <div className="min-w-full py-20 prose dark:prose-invert px-8">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-foreground">
+    <div className="prose dark:prose-invert min-w-full px-8 py-20">
+      <div className="bg-foreground flex h-20 w-20 items-center justify-center rounded-full">
         <AcmeIcon size={56} className="text-background" />
       </div>
       <h2>Welcome to your dashboard! Here are your available organizations:</h2>

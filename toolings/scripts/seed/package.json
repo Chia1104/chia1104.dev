@@ -12,6 +12,9 @@
     "db:seed": "tsx --env-file=../../../.env.global index.ts",
     "tsc:config": "tsc --showConfig"
   },
+  "dependencies": {
+    "drizzle-orm": "catalog:drizzle"
+  },
   "devDependencies": {
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
@@ -22,8 +25,5 @@
     "@types/node": "catalog:",
     "eslint": "catalog:eslint",
     "typescript": "catalog:"
-  },
-  "dependencies": {
-    "drizzle-orm": "catalog:drizzle"
   }
 }

@@ -1,7 +1,9 @@
+import "server-only";
+
+import { headers } from "next/headers";
+
 import { createRouterClient } from "@orpc/server";
 import { all } from "better-all";
-import { headers } from "next/headers";
-import "server-only";
 
 import { router } from "@chia/api/orpc/router";
 import { createAuth } from "@chia/auth";

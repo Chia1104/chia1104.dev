@@ -2,7 +2,7 @@ import { GlobalApiKeyTable } from "@/components/projects/api-key-table";
 
 const Page = () => {
   return (
-    <div className="w-full flex flex-col gap-5">
+    <div className="flex w-full flex-col gap-5">
       <GlobalApiKeyTable
         query={{
           withProject: true,

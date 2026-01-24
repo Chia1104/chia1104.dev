@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
 import type {
   ComponentPropsWithoutRef,
   FC,
@@ -9,9 +8,10 @@ import type {
   TouchEvent,
   RefObject,
 } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 
-import createGlobe from "cobe";
 import type { COBEOptions } from "cobe";
+import createGlobe from "cobe";
 import { useSpring, useMotionValue } from "framer-motion";
 import { useResizeObserver } from "usehooks-ts";
 

@@ -1,7 +1,6 @@
-import type { ReactNode } from "react";
-
 import { cookies } from "next/headers";
 import { redirect, unauthorized } from "next/navigation";
+import type { ReactNode } from "react";
 
 import DashLayout from "@/components/commons/dash-layout";
 import Footer from "@/components/commons/footer";

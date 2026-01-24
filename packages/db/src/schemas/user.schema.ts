@@ -3,6 +3,7 @@ import { boolean, text, index, timestamp } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
 import { Role } from "../types.ts";
+
 import { roles } from "./enums.ts";
 import { pgTable } from "./table.ts";
 

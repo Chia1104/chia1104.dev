@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+
 import * as z from "zod";
 
 import { Locale } from "@chia/db/types";

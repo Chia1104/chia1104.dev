@@ -1,8 +1,7 @@
 "use client";
 
-import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
-
 import type { Locale } from "next-intl";
+import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 

@@ -1,8 +1,7 @@
 "use client";
 
-import { memo } from "react";
-
 import { useTranslations } from "next-intl";
+import { memo } from "react";
 
 import meta, { TimelineType, Company } from "@chia/meta";
 import Timeline from "@chia/ui/timeline";

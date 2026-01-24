@@ -18,7 +18,7 @@ const Footer = ({
   };
 }) => {
   return (
-    <footer className="flex w-full flex-col c-bg-third">
+    <footer className="c-bg-third flex w-full flex-col">
       <div className="mx-auto w-full max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex flex-col items-center justify-center gap-2 md:order-2 md:items-end">
           {inject.themeSwitch}
@@ -36,7 +36,7 @@ const Footer = ({
               </Suspense>
             </ErrorBoundary>
           </div>
-          <p className="text-center text-tiny text-default-400 md:text-start">
+          <p className="text-tiny text-default-400 text-center md:text-start">
             &copy; {dayjs().format("YYYY")} Chia1104.dev. All rights reserved.
           </p>
         </div>

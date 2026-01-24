@@ -2,20 +2,19 @@
 
 import type { MouseEvent, ComponentPropsWithoutRef, FC } from "react";
 
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import type {
   MotionStyle,
   MotionValue,
   HTMLMotionProps,
   ForwardRefComponent,
 } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 
 import { cn } from "../utils/cn.util";
 
-interface Props
-  extends ComponentPropsWithoutRef<
-    ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>
-  > {
+interface Props extends ComponentPropsWithoutRef<
+  ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>
+> {
   wrapperProps?: ComponentPropsWithoutRef<
     ForwardRefComponent<HTMLDivElement, HTMLMotionProps<"div">>
   >;

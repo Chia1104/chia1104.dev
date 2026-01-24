@@ -8,7 +8,7 @@ import Image from "@chia/ui/image";
 const ErrorContent = () => {
   const t = useTranslations("common");
   return (
-    <main className="main container prose dark:prose-invert">
+    <main className="main prose dark:prose-invert container">
       <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-lg p-3 px-5">
         <h3 className="my-2">{t("error")}</h3>
         <div>

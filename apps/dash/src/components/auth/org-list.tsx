@@ -1,8 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
-
 import { useTransitionRouter } from "next-view-transitions";
+import { useTransition } from "react";
 
 import type { Organization } from "@chia/auth/types";
 
@@ -14,7 +13,7 @@ const OrgList = ({ orgs }: { orgs: Organization[] }) => {
   const [isPending, startTransition] = useTransition();
   const router = useTransitionRouter();
   return (
-    <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full">
+    <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
       {orgs.map((org) => (
         <ProjectCard
           isDisabled={isPending}

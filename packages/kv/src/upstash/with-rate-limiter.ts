@@ -1,5 +1,5 @@
-import { Ratelimit } from "@upstash/ratelimit";
 import type { RatelimitConfig, Duration } from "@upstash/ratelimit";
+import { Ratelimit } from "@upstash/ratelimit";
 import type { Redis as Upstash } from "@upstash/redis";
 
 import type { ErrorResponse } from "@chia/utils/request";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useTransition } from "react";
+import { useForm } from "react-hook-form";
 
 import {
   Table,
@@ -24,7 +25,6 @@ import {
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilIcon, Trash2Icon } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -156,7 +156,7 @@ const DeleteAction = (props: { item: Passkey; onSuccess?: () => void }) => {
           <Trash2Icon size={16} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-4 gap-3">
+      <PopoverContent className="gap-3 p-4">
         <div className="text-small font-bold">
           Are you sure you want to delete this passkey?
         </div>
@@ -188,7 +188,7 @@ const PasskeyForm = () => {
           return (
             <div className="flex flex-col">
               <p className="text-bold text-sm capitalize">{item.name}</p>
-              <p className="text-bold text-sm capitalize text-default-400">
+              <p className="text-bold text-default-400 text-sm capitalize">
                 {truncateMiddle(item.publicKey, item.publicKey.length / 2, {
                   frontLength: 4,
                   backLength: 4,
@@ -229,9 +229,9 @@ const PasskeyForm = () => {
   );
 
   return (
-    <div className="w-full flex flex-col gap-5">
-      <div className="flex gap-5 justify-between">
-        <p className="text-sm text-default-400">
+    <div className="flex w-full flex-col gap-5">
+      <div className="flex justify-between gap-5">
+        <p className="text-default-400 text-sm">
           Passkeys are webauthn credentials that validate your identity using
           touch, facial recognition, a device password, or a PIN. They can be
           used as a password replacement or as a 2FA method.

@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { Inject } from "@nestjs/commons";
 import {
   Resolver,
@@ -7,7 +9,6 @@ import {
   Field,
   registerEnumType,
 } from "@nestjs/graphql";
-import "reflect-metadata";
 
 import { desc, schema } from "@chia/db";
 import type { AnyColumn, DB } from "@chia/db";

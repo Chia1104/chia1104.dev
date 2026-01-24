@@ -1,5 +1,5 @@
-import { Ratelimit } from "@upstash/ratelimit";
 import type { RatelimitConfig } from "@upstash/ratelimit";
+import { Ratelimit } from "@upstash/ratelimit";
 import type { Redis as Upstash } from "@upstash/redis";
 
 import { getIP } from "./utils";

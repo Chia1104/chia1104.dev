@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 import { Input, Button } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { HTTPError } from "ky";
 import { Eye, EyeOff } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -82,7 +82,7 @@ const AiForm = ({ model }: Props) => {
   });
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="w-full flex flex-col gap-5">
+      <form onSubmit={onSubmit} className="flex w-full flex-col gap-5">
         <FormField<SaveOpenaiApiKeyDTO, "apiKey">
           control={form.control}
           name="apiKey"
@@ -116,7 +116,7 @@ const AiForm = ({ model }: Props) => {
           isLoading={saveApiKey.isPending}>
           Save
         </Button>
-        <div className="w-full flex justify-between items-center">
+        <div className="flex w-full items-center justify-between">
           <label className={cn("text-sm text-gray-500")}>
             Check the API key
           </label>

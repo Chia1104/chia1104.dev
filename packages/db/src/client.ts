@@ -5,10 +5,11 @@ import pg from "pg";
 // import { DrizzleCache } from "@chia/kv/drizzle/cache";
 import { switchEnv } from "@chia/utils/config";
 
-import type { DB } from ".";
 import { env as internalEnv } from "./env.ts";
 import * as schemas from "./schemas/index.ts";
 import { relations } from "./schemas/relations.ts";
+
+import type { DB } from ".";
 
 const { Pool } = pg;
 

@@ -1,7 +1,8 @@
 import * as z from "zod";
 
-import { ollama } from "./index.ts";
 import { OllamaModel } from "./types.ts";
+
+import { ollama } from "./index.ts";
 
 export const isOllamaModel = (model?: unknown): model is OllamaModel => {
   return z.enum(OllamaModel).safeParse(model).success;

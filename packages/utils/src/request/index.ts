@@ -1,5 +1,5 @@
-import ky from "ky";
 import type { Options, HTTPError, SearchParamsOption } from "ky";
+import ky from "ky";
 
 import { withServiceEndpoint } from "../config";
 import { Service } from "../schema";

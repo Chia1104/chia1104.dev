@@ -3,9 +3,23 @@
   "version": "1.0.0",
   "description": "",
   "keywords": [],
-  "author": "",
   "license": "ISC",
+  "author": "",
   "type": "module",
+  "exports": {
+    "./feed-summarize": {
+      "types": "./tasks/feed-summarize.ts",
+      "import": "./tasks/feed-summarize.ts"
+    },
+    "./feed-embeddings": {
+      "types": "./tasks/feed-embeddings.ts",
+      "import": "./tasks/feed-embeddings.ts"
+    },
+    "./constant": {
+      "types": "./tasks/tasks.constant.ts",
+      "import": "./tasks/tasks.constant.ts"
+    }
+  },
   "scripts": {
     "dev": "pnpm dlx trigger.dev@latest dev",
     "deploy:trigger:staging": "pnpm dlx trigger.dev@latest deploy --env staging",
@@ -28,19 +42,5 @@
     "@chiastack/tsconfig": "catalog:chiastack",
     "@trigger.dev/build": "catalog:triggerdotdev",
     "typescript": "catalog:"
-  },
-  "exports": {
-    "./feed-summarize": {
-      "import": "./tasks/feed-summarize.ts",
-      "types": "./tasks/feed-summarize.ts"
-    },
-    "./feed-embeddings": {
-      "import": "./tasks/feed-embeddings.ts",
-      "types": "./tasks/feed-embeddings.ts"
-    },
-    "./constant": {
-      "import": "./tasks/tasks.constant.ts",
-      "types": "./tasks/tasks.constant.ts"
-    }
   }
 }

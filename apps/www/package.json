@@ -2,14 +2,14 @@
   "name": "www",
   "version": "2.0.0",
   "private": true,
-  "sideEffects": false,
   "license": "MIT",
-  "type": "module",
   "author": {
     "name": "Chia1104",
     "email": "yuyuchia7423@gmail.com",
     "url": "https://github.com/chia1104"
   },
+  "type": "module",
+  "sideEffects": false,
   "scripts": {
     "analyze": "next experimental-analyze",
     "dev": "next dev",

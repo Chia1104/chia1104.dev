@@ -21,7 +21,7 @@ const Layout = ({
   organization: React.ReactNode;
 }) => {
   return (
-    <article className="container main justify-start items-start">
+    <article className="main container items-start justify-start">
       <Accordion
         className="gap-5"
         variant="splitted"
@@ -31,16 +31,16 @@ const Layout = ({
           {profile}
         </AccordionItem>
         <AccordionItem key="openai" title="AI API Key">
-          <h3 className="text-lg font-bold mb-5">OpenAI</h3>
+          <h3 className="mb-5 text-lg font-bold">OpenAI</h3>
           {openai}
           <Divider className="my-5" />
-          <h3 className="text-lg font-bold my-5">Anthropic</h3>
+          <h3 className="my-5 text-lg font-bold">Anthropic</h3>
           {anthropic}
           <Divider className="my-5" />
-          <h3 className="text-lg font-bold my-5">Google</h3>
+          <h3 className="my-5 text-lg font-bold">Google</h3>
           {google}
           <Divider className="my-5" />
-          <h3 className="text-lg font-bold my-5">DeepSeek</h3>
+          <h3 className="my-5 text-lg font-bold">DeepSeek</h3>
           {deepseek}
         </AccordionItem>
         <AccordionItem key="passkeys" title="Passkeys">

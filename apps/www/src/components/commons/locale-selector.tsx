@@ -1,5 +1,9 @@
 "use client";
 
+import type { Locale as TLocale } from "next-intl";
+import { useTranslations } from "next-intl";
+
+import type { ButtonProps } from "@heroui/react";
 import {
   Button,
   Dropdown,
@@ -7,9 +11,6 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@heroui/react";
-import type { ButtonProps } from "@heroui/react";
-import { useTranslations } from "next-intl";
-import type { Locale as TLocale } from "next-intl";
 
 import { useRouter, usePathname } from "@/libs/i18n/routing";
 import { Locale } from "@/libs/utils/i18n";

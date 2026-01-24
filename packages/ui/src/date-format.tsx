@@ -4,8 +4,8 @@ import type { ConfigType } from "dayjs";
 
 import type dayjs from "@chia/utils/day";
 
-import { useDate } from "../utils/use-date";
 import type { Options } from "../utils/use-date";
+import { useDate } from "../utils/use-date";
 
 export interface Props extends Options {
   date: ConfigType;

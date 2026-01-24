@@ -18,10 +18,10 @@ export const LocationHero = () => {
       <p>{t("description")}</p>
       <Card className="relative flex h-[300px] w-full justify-center p-2 pt-10 sm:h-[400px]">
         <ErrorBoundary>
-          <span className="pointer-events-none whitespace-pre-wrap bg-linear-to-b from-black to-gray-300/80 bg-clip-text text-center text-5xl font-semibold leading-none text-transparent sm:text-6xl dark:from-white dark:to-slate-900/10">
+          <span className="pointer-events-none bg-linear-to-b from-black to-gray-300/80 bg-clip-text text-center text-5xl leading-none font-semibold whitespace-pre-wrap text-transparent sm:text-6xl dark:from-white dark:to-slate-900/10">
             {tProfile("location")}
           </span>
-          <div className="absolute left-1/2 top-24 mx-auto aspect-square w-fit max-w-[600px] translate-x-[-50%]">
+          <div className="absolute top-24 left-1/2 mx-auto aspect-square w-fit max-w-[600px] translate-x-[-50%]">
             <Location
               cobeOptions={{
                 opacity: 0.9,

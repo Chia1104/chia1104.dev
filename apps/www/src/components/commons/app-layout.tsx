@@ -17,7 +17,7 @@ const AppLayout = ({
       <Background />
       <NavMenu locale={locale} />
       <ScrollYProgress className="fixed top-0 z-[999]" />
-      <main className="container main">{children}</main>
+      <main className="main container">{children}</main>
     </>
   );
 };

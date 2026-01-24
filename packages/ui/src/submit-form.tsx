@@ -1,10 +1,10 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-
-import { Button } from "@heroui/react";
-import type { ButtonProps } from "@heroui/react";
 import { useFormStatus } from "react-dom";
+
+import type { ButtonProps } from "@heroui/react";
+import { Button } from "@heroui/react";
 
 interface Props extends Omit<ButtonProps, "children"> {
   children?: ReactNode | ((isPending: boolean) => ReactNode);

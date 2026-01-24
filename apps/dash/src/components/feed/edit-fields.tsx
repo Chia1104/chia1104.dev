@@ -1,6 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useRef, useState, forwardRef, useImperativeHandle, memo } from "react";
+import { useFormContext } from "react-hook-form";
 
 import {
   Input,
@@ -23,9 +26,6 @@ import { parseDate } from "@internationalized/date";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import { useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { feedsContracts } from "@chia/api/orpc/contracts";
@@ -55,7 +55,7 @@ const GenerateFeedSlug = dynamic(
   () => import("./generate").then((mod) => mod.GenerateFeedSlug),
   {
     ssr: false,
-    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+    loading: () => <Skeleton className="h-[32px] w-[70px] rounded-md" />,
   }
 );
 
@@ -63,7 +63,7 @@ const GenerateFeedDescription = dynamic(
   () => import("./generate").then((mod) => mod.GenerateFeedDescription),
   {
     ssr: false,
-    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+    loading: () => <Skeleton className="h-[32px] w-[70px] rounded-md" />,
   }
 );
 
@@ -71,7 +71,7 @@ const GenerateFeedContent = dynamic(
   () => import("./generate").then((mod) => mod.GenerateFeedContent),
   {
     ssr: false,
-    loading: () => <Skeleton className="w-[70px] h-[32px] rounded-md" />,
+    loading: () => <Skeleton className="h-[32px] w-[70px] rounded-md" />,
   }
 );
 
@@ -115,7 +115,7 @@ const DeleteButton = ({ feedId }: { feedId: number }) => {
           <span className="text-xs">Delete</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-4 gap-3">
+      <PopoverContent className="gap-3 p-4">
         <div className="text-small font-bold">
           Are you sure you want to delete this feed?
         </div>
@@ -186,7 +186,7 @@ export const MetadataFields = ({ feedId }: { feedId?: number }) => {
   );
 
   return (
-    <div className="w-full flex flex-col gap-5">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex justify-between">
         <FormField<feedsContracts.CreateFeedInput, "type">
           control={form.control}
@@ -284,8 +284,8 @@ export const MetadataFields = ({ feedId }: { feedId?: number }) => {
           </FormItem>
         )}
       />
-      <div className="flex flex-col md:flex-row w-full gap-5">
-        <div className="flex gap-5 w-full md:w-1/2">
+      <div className="flex w-full flex-col gap-5 md:flex-row">
+        <div className="flex w-full gap-5 md:w-1/2">
           <FormField<feedsContracts.CreateFeedInput, "createdAt">
             control={form.control}
             name="createdAt"
@@ -350,7 +350,7 @@ export const MetadataFields = ({ feedId }: { feedId?: number }) => {
             />
           )}
         </div>
-        <div className="flex gap-5 items-end w-full md:w-1/2">
+        <div className="flex w-full items-end gap-5 md:w-1/2">
           <FormField<feedsContracts.CreateFeedInput, "contentType">
             control={form.control}
             name="contentType"
@@ -459,7 +459,7 @@ const SwitchEditor = () => {
               />
             </div>
             <MEditor
-              className={cn("py-5 dark:bg-[#1e1e1e] bg-white")}
+              className={cn("bg-white py-5 dark:bg-[#1e1e1e]")}
               height="700px"
               defaultLanguage="markdown"
               theme={isDarkMode ? "vs-dark" : "light"}

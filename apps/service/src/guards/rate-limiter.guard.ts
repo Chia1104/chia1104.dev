@@ -1,9 +1,9 @@
-import { rateLimiter } from "hono-rate-limiter";
 import type {
   Store,
   ClientRateLimitInfo,
   HonoConfigType,
 } from "hono-rate-limiter";
+import { rateLimiter } from "hono-rate-limiter";
 import { createMiddleware } from "hono/factory";
 
 import type { Keyv } from "@chia/kv";

@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { timestamps, softDelete } from "../libs/common.schema.ts";
+
 import { invitationStatus, memberRole } from "./enums.ts";
 import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";

@@ -147,13 +147,13 @@ const HugeThanks = () => {
   return (
     <>
       <NeonGradientCard
-        className="w-fit h-fit p-0"
+        className="h-fit w-fit p-0"
         innerBoxProps={{
           className: "p-0",
         }}>
         <Button
           onPress={onOpen}
-          className="dark:text-white text-black bg-transparent w-fit">
+          className="w-fit bg-transparent text-black dark:text-white">
           Huge Thanks
         </Button>
       </NeonGradientCard>
@@ -166,7 +166,7 @@ const HugeThanks = () => {
             <ul>
               {Object.entries(techStack).map(([key, value]) => (
                 <li key={key}>
-                  <span className="flex flex-wrap gap-2 items-center">
+                  <span className="flex flex-wrap items-center gap-2">
                     {key}:{"  "}
                     {value.map((item) => (
                       <Chip
@@ -174,7 +174,7 @@ const HugeThanks = () => {
                         key={item.name}
                         variant="shadow"
                         classNames={item.classNames}>
-                        <span className="flex items-center gap-1 relative">
+                        <span className="relative flex items-center gap-1">
                           {item.icon}
                           {item.name}
                           <a

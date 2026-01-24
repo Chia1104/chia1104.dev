@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, forwardRef } from "react";
-
-import NextImage from "next/image";
 import type {
   ImageProps as NextImageProps,
   ImageLoaderProps,
 } from "next/image";
+import NextImage from "next/image";
+import { useState, forwardRef } from "react";
 
 import { cn } from "../utils/cn.util";
 
@@ -46,7 +45,7 @@ const Image = forwardRef<HTMLImageElement, ImageProps>((props, ref) => {
         !enableCloudflareLoader &&
           (isLoading
             ? "scale-110 bg-slate-500 blur-2xl grayscale"
-            : "scale-100 blur-0 grayscale-0")
+            : "blur-0 scale-100 grayscale-0")
       )}
       onLoad={
         !enableCloudflareLoader

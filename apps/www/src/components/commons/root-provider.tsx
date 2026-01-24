@@ -1,15 +1,15 @@
 "use client";
 
+import type { AbstractIntlMessages, Timezone } from "next-intl";
+import type { Locale } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
+import { ThemeProvider } from "next-themes";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { HeroUIProvider as _HeroUIProvider } from "@heroui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RootProvider as FDProvider } from "fumadocs-ui/provider/next";
-import { NextIntlClientProvider } from "next-intl";
-import type { AbstractIntlMessages, Timezone } from "next-intl";
-import type { Locale } from "next-intl";
-import { ThemeProvider } from "next-themes";
-import { useRouter } from "next/navigation";
 
 import { getQueryClient } from "@/libs/utils/query-client";
 

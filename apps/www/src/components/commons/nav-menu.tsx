@@ -1,11 +1,11 @@
 "use client";
 
-import type { FC } from "react";
-
-import { Tabs, Tab, Tooltip, Button, Kbd } from "@heroui/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
+import type { FC } from "react";
+
+import { Tabs, Tab, Tooltip, Button, Kbd } from "@heroui/react";
 
 import {
   CommandDialog,

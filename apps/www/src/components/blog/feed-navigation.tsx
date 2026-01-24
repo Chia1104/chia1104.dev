@@ -1,9 +1,8 @@
 "use client";
 
-import type { FC } from "react";
-
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import type { FC } from "react";
 
 import { FeedType } from "@chia/db/types";
 import {
@@ -94,9 +93,9 @@ const FeedNavigation: FC<Props> = ({ feeds, type }) => {
                   <li key={feed.id} className="row-span-3">
                     <NavigationMenuLink asChild>
                       <Link
-                        className="from-muted/50 to-muted flex size-full select-none flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none focus:shadow-md"
+                        className="from-muted/50 to-muted flex size-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-none select-none focus:shadow-md"
                         href={`${getLinkPrefix()}/${feed.slug}`}>
-                        <div className="mb-2 mt-4 line-clamp-2 text-lg font-medium">
+                        <div className="mt-4 mb-2 line-clamp-2 text-lg font-medium">
                           {feed.translations[0]?.title}
                         </div>
                         <p className="text-muted-foreground line-clamp-3 text-sm leading-tight">
@@ -120,7 +119,7 @@ const FeedNavigation: FC<Props> = ({ feeds, type }) => {
             <ListItem href="">{getTranslations().noContent}</ListItem>
           )}
         </ul>
-        <span className="flex w-full items-center justify-end gap-1 py-2 pb-5 pr-5 text-sm font-medium">
+        <span className="flex w-full items-center justify-end gap-1 py-2 pr-5 pb-5 text-sm font-medium">
           <Link href={getLinkPrefix()} className="w-fit">
             {getTranslations().viewAll}
           </Link>

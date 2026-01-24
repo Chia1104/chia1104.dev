@@ -2,6 +2,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { text, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
+
 import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 

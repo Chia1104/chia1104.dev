@@ -15,7 +15,7 @@ const AppLoading = (props: Props) => {
   return (
     <div
       className={cn(
-        "flex flex-col justify-center items-center h-full w-full gap-3",
+        "flex h-full w-full flex-col items-center justify-center gap-3",
         props.className
       )}>
       {!props.spinnerOnly && (

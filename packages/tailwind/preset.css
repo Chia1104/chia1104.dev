@@ -2,8 +2,8 @@
 @import "./typography.css";
 
 @plugin "@tailwindcss/typography" {
-  className: chprose;
-};
+  classname: chprose;
+}
 @plugin "./plugins/egoist-icons";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -103,14 +103,14 @@
   background-position: 0 100%;
   background-repeat: no-repeat;
   transition: background-size 0.2s ease-in-out;
-  background-image: linear-gradient(transparent, transparent),
-    linear-gradient(#ff9b1a, #ff9b1a);
+  background-image:
+    linear-gradient(transparent, transparent), linear-gradient(#ff9b1a, #ff9b1a);
 }
 
 @utility c-link-underline {
   border-bottom-width: 0;
-  background-image: linear-gradient(transparent, transparent),
-    linear-gradient(#fff, #fff);
+  background-image:
+    linear-gradient(transparent, transparent), linear-gradient(#fff, #fff);
   background-size: 0 3px;
   background-position: 0 100%;
   background-repeat: no-repeat;
@@ -118,8 +118,8 @@
 }
 
 @utility c-link-underline-secondary {
-  background-image: linear-gradient(transparent, transparent),
-    linear-gradient(#ff9b1a, #ff9b1a);
+  background-image:
+    linear-gradient(transparent, transparent), linear-gradient(#ff9b1a, #ff9b1a);
 }
 
 @utility c-text-bg-primary-half {
@@ -127,8 +127,10 @@
 }
 
 @utility c-text-bg-sec-half {
-  background-image: linear-gradient(transparent 60%,
-      rgba(255, 155, 26, 0.8) 55%);
+  background-image: linear-gradient(
+    transparent 60%,
+    rgba(255, 155, 26, 0.8) 55%
+  );
 }
 
 @utility c-text-bg-info-half {
@@ -190,7 +192,7 @@
   }
 
   .animated-feature-cards {
-    @apply hover:before:opacity-100 before:pointer-events-none before:absolute before:select-none before:rounded-2xl before:opacity-0 before:transition-opacity before:duration-300 before:z-[-1] before:inset-[-1px];
+    @apply before:pointer-events-none before:absolute before:inset-[-1px] before:z-[-1] before:rounded-2xl before:opacity-0 before:transition-opacity before:duration-300 before:select-none hover:before:opacity-100;
   }
 
   .dark .c-background::before {
@@ -198,20 +200,24 @@
   }
 
   .animated-feature-cards::before {
-    background: radial-gradient(1000px circle at var(--x) var(--y),
-        #f9c851 0,
-        #fca5a5 25%,
-        #fecaca 50%,
-        transparent 80%);
+    background: radial-gradient(
+      1000px circle at var(--x) var(--y),
+      #f9c851 0,
+      #fca5a5 25%,
+      #fecaca 50%,
+      transparent 80%
+    );
     content: "";
   }
 
   .dark .animated-feature-cards::before {
-    background: radial-gradient(1000px circle at var(--x) var(--y),
-        #db2777 0,
-        #c084fc 25%,
-        rgba(255, 255, 255, 0) 50%,
-        transparent 80%);
+    background: radial-gradient(
+      1000px circle at var(--x) var(--y),
+      #db2777 0,
+      #c084fc 25%,
+      rgba(255, 255, 255, 0) 50%,
+      transparent 80%
+    );
     content: "";
   }
 
@@ -225,7 +231,6 @@
 }
 
 @layer base {
-
   html,
   body {
     padding: 0;

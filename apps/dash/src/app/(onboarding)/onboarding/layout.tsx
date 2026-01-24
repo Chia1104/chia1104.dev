@@ -20,10 +20,10 @@ const Layout = async ({
   const orgs = await listOrganizations();
 
   if (!orgs.data || orgs.data.length === 0) {
-    return <section className="container main">{create}</section>;
+    return <section className="main container">{create}</section>;
   }
 
-  return <section className="container main">{list}</section>;
+  return <section className="main container">{list}</section>;
 };
 
 export default Layout;
