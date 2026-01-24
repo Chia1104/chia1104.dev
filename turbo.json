@@ -3,33 +3,54 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".cache/tsbuildinfo.json",
+        "dist/**"
+      ]
     },
     "debug:build": {
-      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
+      "outputs": [
+        ".cache/tsbuildinfo.json",
+        "dist/**"
+      ]
     },
     "www#build": {
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "dash#build": {
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "service#build": {
-      "outputs": [".output/**", "!.output/server/node_modules/**"]
+      "outputs": [
+        ".output/**",
+        "!.output/server/node_modules/**"
+      ]
     },
     "lint": {},
     "lint:fix": {},
     "type:check": {},
     "test": {
-      "outputs": ["coverage/**"],
+      "outputs": [
+        "coverage/**"
+      ],
       "cache": true
     },
     "test:watch": {
       "outputs": []
     },
     "test:service": {
-      "outputs": ["coverage/**"],
+      "outputs": [
+        "coverage/**"
+      ],
       "cache": true
     },
     "dev": {
@@ -41,19 +62,28 @@
       "persistent": true
     },
     "start": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "cache": false
     },
     "debug:start": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "cache": false
     },
     "clean": {
       "cache": false
     },
     "test:e2e": {
-      "dependsOn": ["build"],
-      "outputs": ["coverage/**", "playwright-report/**"],
+      "dependsOn": [
+        "build"
+      ],
+      "outputs": [
+        "coverage/**",
+        "playwright-report/**"
+      ],
       "cache": true
     },
     "db:seed": {
@@ -114,7 +144,12 @@
     "CH_API_KEY",
     "CACHE_PROVIDER",
     "CACHE_URI",
-    "NEXT_RUNTIME"
+    "NEXT_RUNTIME",
+    "INTERNAL_SERVICE_ENDPOINT",
+    "NEXT_PUBLIC_SERVICE_ENDPOINT"
   ],
-  "globalDependencies": [".env.global", ".env"]
+  "globalDependencies": [
+    ".env.global",
+    ".env"
+  ]
 }

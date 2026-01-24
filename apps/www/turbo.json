@@ -1,7 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "tags": ["www"],
-  "extends": ["//", "@chia/api", "@chia/utils"],
+  "tags": [
+    "www"
+  ],
+  "extends": [
+    "//"
+  ],
   "tasks": {
     "build": {
       "env": [
