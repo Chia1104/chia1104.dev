@@ -3,7 +3,7 @@
   "tags": ["www-e2e"],
   "extends": ["//"],
   "tasks": {
-    "build": {
+    "start": {
       "env": [
         "SENTRY_ORG",
         "SENTRY_PROJECT",
