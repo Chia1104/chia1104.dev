@@ -4,6 +4,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
+      "outputs": [".next/**", "!.next/cache/**"],
       "env": [
         "SENTRY_ORG",
         "SENTRY_PROJECT",
@@ -17,15 +18,7 @@
         "ADMIN_ID",
         "BETA_ADMIN_ID",
         "SPOTIFY_FAVORITE_PLAYLIST_ID",
-        "NEXT_PUBLIC_ENV",
-        "NEXT_PUBLIC_SENTRY_DSN",
-        "NEXT_PUBLIC_GTM_ID",
-        "NEXT_PUBLIC_GA_ID",
-        "NEXT_PUBLIC_DEFAULT_TIME_ZONE",
-        "NEXT_PUBLIC_ENABLE_SENTRY",
-        "GH_PUBLIC_TOKEN",
-        "NEXT_PUBLIC_CAPTCHA_PROVIDER",
-        "NEXT_PUBLIC_CAPTCHA_SITE_KEY"
+        "GH_PUBLIC_TOKEN"
       ]
     }
   }

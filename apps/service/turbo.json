@@ -4,6 +4,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
+      "outputs": [".output/**", "!.output/server/node_modules/**"],
       "env": [
         "WORKFLOW_TARGET_WORLD",
         "CORS_ALLOWED_ORIGIN",

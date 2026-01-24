@@ -9,15 +9,6 @@
     "debug:build": {
       "outputs": [".cache/tsbuildinfo.json", "dist/**"]
     },
-    "www#build": {
-      "outputs": [".next/**", "!.next/cache/**"]
-    },
-    "dash#build": {
-      "outputs": [".next/**", "!.next/cache/**"]
-    },
-    "service#build": {
-      "outputs": [".output/**", "!.output/server/node_modules/**"]
-    },
     "lint": {},
     "lint:fix": {},
     "type:check": {},
