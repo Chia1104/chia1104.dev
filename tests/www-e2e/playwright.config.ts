@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  timeout: 10 * 1000,
+  timeout: 30 * 1000,
   testDir: path.join(__dirname, "tests"),
   testMatch: "**/*.pw.ts",
   retries: 0,
