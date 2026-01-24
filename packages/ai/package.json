@@ -52,8 +52,8 @@
   },
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
@@ -71,9 +71,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }

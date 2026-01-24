@@ -22,17 +22,8 @@
       "outputs": [".output/**", "!.output/server/node_modules/**"],
       "env": ["DATABASE_URL"]
     },
-    "auth-service#build": {
-      "dependsOn": ["^build"],
-      "outputs": [".output/**", "!.output/server/node_modules/**"],
-      "env": ["DATABASE_URL"]
-    },
-    "lint": {
-      "outputs": [".cache/.eslintcache"]
-    },
-    "lint:fix": {
-      "outputs": [".cache/.eslintcache"]
-    },
+    "lint": {},
+    "lint:fix": {},
     "type:check": {
       "cache": true
     },

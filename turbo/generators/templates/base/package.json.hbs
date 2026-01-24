@@ -8,8 +8,8 @@
   "main": "./index.ts",
   "scripts": {
     "clean": "git clean -xdf .turbo node_modules dist .cache",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "type:check": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest --passWithNoTests"

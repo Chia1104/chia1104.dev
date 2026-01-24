@@ -79,8 +79,8 @@
     "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "db:check": "tsx --env-file=../../.env.global check.ts",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "migrate:run": "tsx --env-file=../../.env.global migrate.ts",
     "migrate:data": "tsx --env-file=../../.env.global migrations/migrate-data.ts",
     "migrate:verify": "tsx --env-file=../../.env.global migrations/verify-migration.ts"
@@ -96,12 +96,10 @@
   },
   "devDependencies": {
     "@chia/utils": "workspace:*",
-    "@chiastack/eslint": "catalog:chiastack",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
     "@types/pg": "^8.16.0",
     "drizzle-kit": "catalog:drizzle",
-    "eslint": "catalog:eslint",
     "typescript": "catalog:"
   }
 }

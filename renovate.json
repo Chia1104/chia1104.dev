@@ -7,14 +7,6 @@
   "ignorePaths": ["legacy/service/package.json", "legacy/cache/package.json"],
   "packageRules": [
     {
-      "groupName": "eslint",
-      "matchPackageNames": ["/eslint/", "/eslint-*/", "/@types/eslint/"]
-    },
-    {
-      "groupName": "prettier",
-      "matchPackageNames": ["/prettier/", "/prettier-*/", "/@types/prettier/"]
-    },
-    {
       "groupName": "react",
       "matchPackageNames": [
         "react",
@@ -26,10 +18,6 @@
     {
       "groupName": "orpc",
       "matchPackageNames": ["/@orpc/*/"]
-    },
-    {
-      "groupName": "typescript-eslint",
-      "matchPackageNames": ["/@typescript-eslint/*/"]
     },
     {
       "groupName": "fumadocs",
@@ -80,11 +68,6 @@
       "groupName": "Hono",
       "groupSlug": "hono",
       "matchPackageNames": ["hono", "honox", "@hono{/,}**"]
-    },
-    {
-      "groupName": "trigger.dev",
-      "groupSlug": "triggerdotdev",
-      "matchPackageNames": ["@trigger.dev{/,}**"]
     }
   ],
   "updateInternalDeps": true
