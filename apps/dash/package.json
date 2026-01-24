@@ -51,7 +51,7 @@
     "hono": "^4.11.5",
     "ky": "catalog:",
     "lodash": "catalog:",
-    "lucide-react": "^0.562.0",
+    "lucide-react": "^0.563.0",
     "monaco-editor": "^0.55.1",
     "next": "catalog:next",
     "next-safe-action": "8.0.11",
