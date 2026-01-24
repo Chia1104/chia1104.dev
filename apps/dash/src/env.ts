@@ -15,10 +15,14 @@ export const getClientEnv = () => {
     return process.env.NEXT_PUBLIC_VERCEL_ENV;
   }
   if (process.env.RAILWAY_ENVIRONMENT_NAME) {
-    return process.env.RAILWAY_ENVIRONMENT_NAME === "production" ? "railway-prod" : "railway-dev";
+    return process.env.RAILWAY_ENVIRONMENT_NAME === "production"
+      ? "railway-prod"
+      : "railway-dev";
   }
   if (process.env.ZEABUR_ENVIRONMENT_NAME) {
-    return process.env.ZEABUR_ENVIRONMENT_NAME === "production" ? "zeabur-prod" : "zeabur-dev";
+    return process.env.ZEABUR_ENVIRONMENT_NAME === "production"
+      ? "zeabur-prod"
+      : "zeabur-dev";
   }
   return "development";
 };
@@ -43,7 +47,9 @@ export const env = createEnv({
     ZEABUR_URL: process.env.ZEABUR_URL,
   },
 
-  skipValidation: process.env.SKIP_ENV_VALIDATION === "true" || process.env.SKIP_ENV_VALIDATION === "1",
+  skipValidation:
+    process.env.SKIP_ENV_VALIDATION === "true" ||
+    process.env.SKIP_ENV_VALIDATION === "1",
 
   extends: [dbEnv, adminEnv, serviceEnv, s3Env],
 });

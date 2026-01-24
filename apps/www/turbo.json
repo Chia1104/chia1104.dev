@@ -1,11 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "tags": [
-    "www"
-  ],
-  "extends": [
-    "//"
-  ],
+  "tags": ["www"],
+  "extends": ["//"],
   "tasks": {
     "build": {
       "env": [
