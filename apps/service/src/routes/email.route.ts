@@ -29,7 +29,7 @@ const api = new Hono<HonoContext>()
       "json",
       z.strictObject({
         email: z.email(),
-        title: z.string().min(5, "Title must be at least 5 characters long"),
+        title: z.string().min(4, "Title must be at least 4 characters long"),
         message: z
           .string()
           .min(5, "Message must be at least 5 characters long"),

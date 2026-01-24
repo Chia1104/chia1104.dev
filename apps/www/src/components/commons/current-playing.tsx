@@ -284,6 +284,7 @@ const Card = ({
     <HoverCard>
       <HoverCardTrigger asChild className="prose dark:prose-invert z-10">
         <div
+          data-testid="current-playing"
           className={cn(
             "c-bg-third border-secondary/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
             className

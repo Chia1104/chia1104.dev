@@ -152,7 +152,9 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   const tRoutes = useTranslations("routes");
   return (
-    <nav className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
+    <nav
+      data-testid="nav-menu"
+      className="c-bg-third fixed top-0 z-50 flex h-[75px] w-screen items-center justify-center">
       <div className="container flex w-full justify-between px-5">
         <div className="flex w-1/5 items-center text-2xl">
           <Link
@@ -175,11 +177,17 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
             {Object.entries(navItems).map(
               ([path, { nameKey, icon, hiddenInMainMenu }]) => {
                 if (hiddenInMainMenu) return null;
+                const pathKey = path.replace(/^\//, "") || "home";
                 return (
                   <Tab
-                    key={path.replace(/^\//, "")}
+                    key={pathKey}
+                    data-testid={`nav-tab-${pathKey}`}
                     title={
-                      <Link locale={props.locale} key={path} href={path}>
+                      <Link
+                        locale={props.locale}
+                        key={path}
+                        href={path}
+                        data-testid={`nav-link-${pathKey}`}>
                         <span className="relative px-[10px] py-[5px]">
                           <p className="hidden md:block">{tRoutes(nameKey)}</p>
                           <div className="block md:hidden">{icon}</div>

@@ -22,7 +22,9 @@ export function AboutMe() {
             <span className="text-sm">{meta.name.charAt(0)}</span>
           </AvatarFallback>
         </Avatar>
-        <h2 className="mt-0 mb-0">{meta.name}</h2>
+        <h2 className="mt-0 mb-0" data-testid="about-me-name">
+          {meta.name}
+        </h2>
       </div>
       <p>{t("description", { year: workDuration.toString() })}</p>
       <p>

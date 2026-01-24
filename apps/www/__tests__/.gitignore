@@ -1,0 +1,10 @@
+# 測試覆蓋率報告
+coverage/
+*.lcov
+
+# 測試快照
+**/__snapshots__/
+
+# 測試輸出
+test-results/
+junit.xml

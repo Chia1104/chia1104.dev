@@ -187,6 +187,7 @@ export const Form: FC<
                     onChange={onChange}
                     onBlur={onBlur}
                     name="email"
+                    data-testid="contact-email"
                   />
                 )}
               />
@@ -210,6 +211,7 @@ export const Form: FC<
                     onChange={onChange}
                     onBlur={onBlur}
                     name="title"
+                    data-testid="contact-title"
                   />
                 )}
               />
@@ -233,6 +235,7 @@ export const Form: FC<
                     placeholder={t("message-placeholder")}
                     errorMessage={error?.message}
                     minRows={10}
+                    data-testid="contact-message"
                   />
                 )}
               />
@@ -243,7 +246,8 @@ export const Form: FC<
             <SubmitForm
               id={id + "-contact-submit"}
               type="submit"
-              className={cn("w-fit self-center py-2")}>
+              className={cn("w-fit self-center py-2")}
+              data-testid="contact-submit">
               {t("send")}
             </SubmitForm>
           </>

@@ -11,10 +11,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
-  timeout: 30 * 1000,
+  timeout: 10 * 1000,
   testDir: path.join(__dirname, "tests"),
   testMatch: "**/*.pw.ts",
-  retries: 2,
+  retries: 0,
   outputDir: "coverage",
   reporter: "html",
 

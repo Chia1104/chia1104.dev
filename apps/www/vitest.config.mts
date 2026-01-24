@@ -9,6 +9,23 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "happy-dom",
+    setupFiles: ["./__tests__/setup.ts"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      exclude: [
+        "node_modules/**",
+        ".next/**",
+        "__tests__/**",
+        "**/*.d.ts",
+        "**/*.config.*",
+        "**/coverage/**",
+        "src/instrumentation*.ts",
+        "src/env.ts",
+      ],
+    },
+    include: ["__tests__/**/*.{test,spec}.{ts,tsx}"],
+    exclude: ["node_modules", ".next", "dist", "coverage"],
   },
   resolve: {
     alias: {

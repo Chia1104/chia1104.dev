@@ -1,0 +1,12 @@
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+
+# Screenshots
+screenshots/
+
+# Traces
+trace.zip
+*.zip
