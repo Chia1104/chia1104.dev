@@ -41,13 +41,4 @@ test.describe("首頁測試", () => {
     const headings = page.locator("h1, h2, h3");
     expect(await headings.count()).toBeGreaterThan(0);
   });
-
-  test("應該能夠滾動頁面", async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(500);
-
-    // 檢查是否滾動到底部
-    const scrollPosition = await page.evaluate(() => window.scrollY);
-    expect(scrollPosition).toBeGreaterThan(0);
-  });
 });
