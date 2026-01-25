@@ -1,156 +1,253 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 
-import { OrbitControls } from "@react-three/drei";
+import type { ThreeEvent } from "@react-three/fiber";
 import { Canvas, useFrame } from "@react-three/fiber";
-import type * as THREE from "three";
+import * as THREE from "three";
 
-const vertexShader = /* glsl */ `
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  varying vec2 vUv;
-  varying vec3 vPosition;
+const GradientSphere = () => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const mousePositionRef = useRef(new THREE.Vector3(0, 0, 0));
 
-  void main() {
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+  const shaderMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        lightPosition: { value: new THREE.Vector3(2, 2, 3) },
+        mousePosition: { value: new THREE.Vector3(0, 0, 0) },
+        hoverIntensity: { value: 0.0 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldNormal;
+        varying vec3 vPosition;
+        varying vec3 vWorldPosition;
+        varying vec3 vViewPosition;
 
-    vNormal  = normalize(normalMatrix * normal);
-    vViewDir = -mvPosition.xyz;
-    vUv      = uv;
-    vPosition = position;
+        void main() {
+          vUv = uv;
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = position;
+          
+          vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPosition.xyz;
+          
+          vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+          
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vViewPosition = -mvPosition.xyz;
+          
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        uniform vec3 lightPosition;
+        uniform vec3 mousePosition;
+        uniform float hoverIntensity;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldNormal;
+        varying vec3 vPosition;
+        varying vec3 vWorldPosition;
+        varying vec3 vViewPosition;
 
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
+        float noise(vec3 p) {
+          vec3 i = floor(p);
+          vec3 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          
+          float n = i.x + i.y * 57.0 + i.z * 113.0;
+          float a = sin(n) * 43758.5453;
+          float b = sin(n + 1.0) * 43758.5453;
+          float c = sin(n + 57.0) * 43758.5453;
+          float d = sin(n + 58.0) * 43758.5453;
+          
+          a = fract(a);
+          b = fract(b);
+          c = fract(c);
+          d = fract(d);
+          
+          return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+        }
+        
+        float fbm(vec3 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          float frequency = 1.0;
+          
+          for(int i = 0; i < 4; i++) {
+            value += amplitude * noise(p * frequency);
+            frequency *= 2.0;
+            amplitude *= 0.5;
+          }
+          
+          return value;
+        }
+        
+        vec3 hsl2rgb(vec3 hsl) {
+          float h = hsl.x;
+          float s = hsl.y;
+          float l = hsl.z;
+          
+          float c = (1.0 - abs(2.0 * l - 1.0)) * s;
+          float x = c * (1.0 - abs(mod(h * 6.0, 2.0) - 1.0));
+          float m = l - c * 0.5;
+          
+          vec3 rgb;
+          if (h < 1.0/6.0) rgb = vec3(c, x, 0.0);
+          else if (h < 2.0/6.0) rgb = vec3(x, c, 0.0);
+          else if (h < 3.0/6.0) rgb = vec3(0.0, c, x);
+          else if (h < 4.0/6.0) rgb = vec3(0.0, x, c);
+          else if (h < 5.0/6.0) rgb = vec3(x, 0.0, c);
+          else rgb = vec3(c, 0.0, x);
+          
+          return rgb + m;
+        }
 
-const fragmentShader = /* glsl */ `
-  precision highp float;
-
-  uniform float uTime;
-
-  varying vec3 vNormal;
-  varying vec3 vViewDir;
-  varying vec2 vUv;
-  varying vec3 vPosition;
-
-  // Smooth HSV to RGB conversion
-  vec3 hsv2rgb(vec3 c) {
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-  }
-
-  void main() {
-    vec3 N = normalize(vNormal);
-    vec3 V = normalize(vViewDir);
-
-    // Fresnel effect for edge highlighting
-    float ndotv = max(dot(N, V), 0.0);
-    float fresnel = pow(1.0 - ndotv, 2.5);
-
-    // Convert position to spherical coordinates for smooth radial gradient
-    vec3 pos = normalize(vPosition);
-    float theta = atan(pos.z, pos.x); // Horizontal angle
-    float phi = asin(pos.y); // Vertical angle
-    
-    // Create smooth color gradient using spherical coordinates
-    float time = uTime * 0.25; // Faster animation
-    
-    // Radial gradient from center to edge
-    float radialGradient = length(vUv - 0.5) * 2.0;
-    
-    // Combine angles for smooth color distribution with purple as the base
-    float hueVariation = (theta / 6.28318) + (phi / 3.14159) * 0.4 + time * 0.3;
-    
-    // Multi-frequency waves to create more uniform distribution
-    float wave1 = sin(hueVariation * 3.14159) * 0.5 + 0.5;
-    float wave2 = sin(hueVariation * 6.28318 + time) * 0.5 + 0.5;
-    float wave3 = cos(hueVariation * 4.71239 - time * 0.5) * 0.5 + 0.5;
-    
-    // Blend waves and apply smoothstep to compress extremes
-    float blended = wave1 * 0.5 + wave2 * 0.3 + wave3 * 0.2;
-    // Apply smoothstep twice to create more linear middle range
-    float normalizedVariation = smoothstep(0.1, 0.9, blended);
-    normalizedVariation = smoothstep(0.0, 1.0, normalizedVariation);
-    
-    // Narrower range: 0.6 (blue) through 0.7 (purple) to 0.85 (magenta/pink)
-    // Keeps colors closer together, more harmonious transitions
-    float hue = mix(0.6, 0.85, normalizedVariation);
-    
-    // Create base color with smooth HSV gradient
-    vec3 baseColor = hsv2rgb(vec3(hue, 0.8, 0.95));
-    
-    // Add radial variation with offset color, staying close to base hue
-    float radialMix = smoothstep(0.3, 1.0, radialGradient);
-    // Smaller offset for center color to keep colors cohesive
-    float centerHue = hue + sin(time * 2.0) * 0.08; // Oscillate ±0.08 around base hue
-    centerHue = clamp(centerHue, 0.6, 0.85); // Ensure it stays in range
-    vec3 centerColor = hsv2rgb(vec3(centerHue, 0.65, 1.0));
-    baseColor = mix(centerColor, baseColor, radialMix);
-    
-    // Soft edge highlight with fresnel
-    vec3 edgeGlow = vec3(1.0) * fresnel * 0.5;
-    
-    // Larger specular highlight (right-top)
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-    vec3 reflectDir = reflect(-lightDir, N);
-    float spec = pow(max(dot(V, reflectDir), 0.0), 20.0); // Lower power = larger highlight
-    vec3 specular = vec3(1.0) * spec * 0.7; // Increased intensity
-    
-    // Add shadow effect (left-bottom)
-    // Calculate how much the surface faces towards the light
-    float lightDot = dot(N, lightDir);
-    // Create shadow on the opposite side of the light
-    float shadow = smoothstep(-0.5, 0.3, lightDot); // Smooth transition from dark to light
-    // Darken the base color in shadow areas
-    vec3 shadowColor = baseColor * (0.4 + shadow * 0.6); // Shadows are 40% brightness, lit areas are full
-    
-    // Combine all elements
-    vec3 finalColor = shadowColor + edgeGlow + specular;
-    
-    // Ensure colors stay in valid range
-    finalColor = clamp(finalColor, 0.0, 1.0);
-    
-    gl_FragColor = vec4(finalColor, 1.0);
-  }
-`;
-
-function OpalSphere() {
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
+        void main() {
+          vec2 center = vec2(0.5, 0.5);
+          float dist = distance(vUv, center);
+          
+          float noiseValue = fbm(vWorldPosition * 3.0);
+          float noise2 = noise(vWorldPosition * 6.0);
+          float noise3 = noise(vWorldPosition * 10.0);
+          float combinedNoise = noiseValue * 0.5 + noise2 * 0.3 + noise3 * 0.2;
+          
+          float angle = atan(vWorldPosition.y, vWorldPosition.x);
+          
+          float hue = (angle + 3.14159) / (2.0 * 3.14159);
+          hue = fract(hue + combinedNoise * 0.4 + time * 0.05);
+          
+          float saturation = smoothstep(0.0, 0.5, dist * 2.5);
+          saturation = pow(saturation, 0.6);
+          saturation = clamp(saturation * 1.3, 0.0, 1.0);
+          
+          float lightness = mix(0.95, 0.45, pow(dist * 2.0, 1.2));
+          
+          vec3 baseColor = hsl2rgb(vec3(hue, saturation, lightness));
+          
+          vec3 color = baseColor;
+          
+          vec3 lightDir = normalize(lightPosition - vWorldPosition);
+          float diffuse = max(dot(vWorldNormal, lightDir), 0.0);
+          
+          vec3 viewDir = normalize(vViewPosition);
+          
+          float edgeGlow = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 4.0);
+          
+          float bottomRightGlow = smoothstep(-0.3, 0.4, vWorldNormal.y) * 
+                                  smoothstep(-0.2, 0.5, vWorldNormal.x) *
+                                  edgeGlow;
+          bottomRightGlow *= 0.4;
+          
+          float topLeftGlow = smoothstep(0.0, 0.6, vWorldNormal.y) * 
+                              smoothstep(-0.5, 0.0, vWorldNormal.x) *
+                              edgeGlow;
+          topLeftGlow *= 0.3;
+          
+          float bottomLeftShadow = smoothstep(0.2, -0.5, vWorldNormal.y) * 
+                                   smoothstep(0.3, -0.4, vWorldNormal.x);
+          bottomLeftShadow = bottomLeftShadow * 0.5;
+          
+          float shadow = smoothstep(-0.2, 0.5, diffuse);
+          shadow = mix(0.8, 1.0, shadow);
+          
+          float lightIntensity = 0.95 + diffuse * 0.05;
+          lightIntensity *= shadow;
+          
+          lightIntensity *= (1.0 - bottomLeftShadow);
+          
+          color = color * lightIntensity;
+          
+          vec3 bottomRightColor = vec3(1.0) * bottomRightGlow;
+          color += bottomRightColor;
+          
+          vec3 topLeftColor = vec3(1.0) * topLeftGlow;
+          color += topLeftColor;
+          
+          float mouseDist = distance(vWorldPosition, mousePosition);
+          float hoverRadius = 0.4;
+          float hoverEffect = smoothstep(hoverRadius, 0.0, mouseDist) * hoverIntensity;
+          
+          vec3 whiteColor = vec3(1.0);
+          color = mix(color, whiteColor, hoverEffect * 0.5);
+          
+          float glowRadius = 0.6;
+          float glowEffect = smoothstep(glowRadius, 0.2, mouseDist) * hoverIntensity;
+          color += whiteColor * glowEffect * 0.2;
+          
+          color = clamp(color, 0.0, 1.0);
+          
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `,
+      side: THREE.DoubleSide,
+    });
+  }, []);
 
   useFrame((state) => {
-    if (!materialRef.current?.uniforms.uTime) return;
-    materialRef.current.uniforms.uTime.value = state.clock.getElapsedTime();
+    if (meshRef.current?.material instanceof THREE.ShaderMaterial) {
+      if (meshRef.current.material.uniforms.time) {
+        meshRef.current.material.uniforms.time.value = state.clock.elapsedTime;
+      }
+      if (meshRef.current.material.uniforms.mousePosition) {
+        meshRef.current.material.uniforms.mousePosition.value.copy(
+          mousePositionRef.current
+        );
+      }
+    }
   });
 
+  const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
+    if (!event.point) return;
+
+    mousePositionRef.current.copy(event.point);
+
+    if (
+      meshRef.current?.material instanceof THREE.ShaderMaterial &&
+      meshRef.current.material.uniforms.hoverIntensity
+    ) {
+      const currentIntensity =
+        meshRef.current.material.uniforms.hoverIntensity.value;
+      meshRef.current.material.uniforms.hoverIntensity.value = Math.min(
+        currentIntensity + 0.1,
+        1.0
+      );
+    }
+  };
+
+  const handlePointerLeave = () => {
+    if (
+      meshRef.current?.material instanceof THREE.ShaderMaterial &&
+      meshRef.current.material.uniforms.hoverIntensity
+    ) {
+      meshRef.current.material.uniforms.hoverIntensity.value = 0.0;
+    }
+  };
+
   return (
-    <mesh>
+    <mesh
+      ref={meshRef}
+      material={shaderMaterial}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}>
       <sphereGeometry args={[1, 64, 64]} />
-      <shaderMaterial
-        ref={materialRef}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        transparent
-        uniforms={{
-          uTime: { value: 0 },
-        }}
-      />
     </mesh>
   );
-}
+};
 
-export default function Opal() {
+const Opal = () => {
   return (
-    <Canvas
-      camera={{ position: [0, 0, 3], fov: 45 }}
-      style={{ width: "100%", height: "100%", background: "transparent" }}
-      gl={{ alpha: true, antialias: true }}>
+    <Canvas camera={{ position: [0, 0, 3], fov: 45 }} gl={{ antialias: true }}>
       <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={1.0} />
-      <directionalLight position={[-5, -5, -5]} intensity={0.3} />
-      <OpalSphere />
-      <OrbitControls enableDamping enableZoom={false} />
+      <directionalLight position={[2, 2, 3]} intensity={0.8} />
+      <pointLight position={[1, -1, 2]} intensity={0.4} color="#ffffff" />
+      <GradientSphere />
     </Canvas>
   );
-}
+};
+
+export default Opal;
