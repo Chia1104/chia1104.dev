@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { AnimatePresence } from "framer-motion";
 
 import FadeIn from "@chia/ui/fade-in";
@@ -33,14 +35,14 @@ const WrittenBy = ({
             <p className="absolute bottom-0 left-0 flex w-full justify-between text-xs">
               {`Written by: ${author}`}
               {license && (
-                <a
+                <Link
                   target="_blank"
                   rel="noopener noreferrer"
                   href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
                   className="text-foreground-700 flex items-center gap-1 text-xs">
                   <span className="i-simple-icons-creativecommons size-3" /> CC
                   BY-NC-SA 4.0
-                </a>
+                </Link>
               )}
             </p>
           </>

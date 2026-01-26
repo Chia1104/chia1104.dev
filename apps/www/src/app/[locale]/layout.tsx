@@ -10,7 +10,6 @@ import { WWW_BASE_URL } from "@chia/utils/config";
 
 import AppLayout from "@/components/commons/app-layout";
 import AppPlugins from "@/components/commons/app-plugins";
-import Footer from "@/components/commons/footer";
 import RootLayout from "@/components/commons/root-layout";
 import RootProvider from "@/components/commons/root-provider";
 import { routing } from "@/libs/i18n/routing";
@@ -81,7 +80,6 @@ const Layout = async ({
           {children}
           {modal}
         </AppLayout>
-        <Footer locale={locale} />
         <AppPlugins />
       </RootProvider>
     </RootLayout>

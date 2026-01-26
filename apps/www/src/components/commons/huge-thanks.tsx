@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   Modal,
   ModalContent,
@@ -178,7 +180,7 @@ const HugeThanks = () => {
                         <span className="relative flex items-center gap-1">
                           {item.icon}
                           {item.name}
-                          <a
+                          <Link
                             href={item.link}
                             target="_blank"
                             rel="noopener noreferrer"

@@ -9,10 +9,6 @@ const client = new GraphQLClient(env.GITHUB_GRAPHQL_API, {
     accept: "application/vnd.github.v3+json",
     authorization: `token ${env.GH_PUBLIC_TOKEN}`,
   },
-  requestMiddleware: (request) => ({
-    ...request,
-    next: { revalidate: 60 },
-  }),
   fetch,
 });
 

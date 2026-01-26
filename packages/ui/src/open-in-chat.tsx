@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ComponentProps } from "react";
 import { createContext, useContext } from "react";
 
@@ -280,7 +281,7 @@ export const OpenInChatGPT = (props: OpenInChatGPTProps) => {
   const { query, providers } = useOpenInContext();
   return (
     <DropdownMenuItem asChild {...props}>
-      <a
+      <Link
         className="flex items-center gap-2"
         href={providers.chatgpt.createUrl(query)}
         rel="noopener"
@@ -288,7 +289,7 @@ export const OpenInChatGPT = (props: OpenInChatGPTProps) => {
         <span className="size-4 shrink-0">{providers.chatgpt.icon}</span>
         <span className="flex-1">{providers.chatgpt.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
-      </a>
+      </Link>
     </DropdownMenuItem>
   );
 };
@@ -299,7 +300,7 @@ export const OpenInClaude = (props: OpenInClaudeProps) => {
   const { query, providers } = useOpenInContext();
   return (
     <DropdownMenuItem asChild {...props}>
-      <a
+      <Link
         className="flex items-center gap-2"
         href={providers.claude.createUrl(query)}
         rel="noopener"
@@ -307,7 +308,7 @@ export const OpenInClaude = (props: OpenInClaudeProps) => {
         <span className="size-4 shrink-0">{providers.claude.icon}</span>
         <span className="flex-1">{providers.claude.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
-      </a>
+      </Link>
     </DropdownMenuItem>
   );
 };
@@ -318,7 +319,7 @@ export const OpenInT3 = (props: OpenInT3Props) => {
   const { query, providers } = useOpenInContext();
   return (
     <DropdownMenuItem asChild {...props}>
-      <a
+      <Link
         className="flex items-center gap-2"
         href={providers.t3.createUrl(query)}
         rel="noopener"
@@ -326,7 +327,7 @@ export const OpenInT3 = (props: OpenInT3Props) => {
         <span className="size-4 shrink-0">{providers.t3.icon}</span>
         <span className="flex-1">{providers.t3.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
-      </a>
+      </Link>
     </DropdownMenuItem>
   );
 };
@@ -337,7 +338,7 @@ export const OpenInScira = (props: OpenInSciraProps) => {
   const { query, providers } = useOpenInContext();
   return (
     <DropdownMenuItem asChild {...props}>
-      <a
+      <Link
         className="flex items-center gap-2"
         href={providers.scira.createUrl(query)}
         rel="noopener"
@@ -345,7 +346,7 @@ export const OpenInScira = (props: OpenInSciraProps) => {
         <span className="size-4 shrink-0">{providers.scira.icon}</span>
         <span className="flex-1">{providers.scira.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
-      </a>
+      </Link>
     </DropdownMenuItem>
   );
 };
@@ -356,7 +357,7 @@ export const OpenInv0 = (props: OpenInv0Props) => {
   const { query, providers } = useOpenInContext();
   return (
     <DropdownMenuItem asChild {...props}>
-      <a
+      <Link
         className="flex items-center gap-2"
         href={providers.v0.createUrl(query)}
         rel="noopener"
@@ -364,7 +365,7 @@ export const OpenInv0 = (props: OpenInv0Props) => {
         <span className="size-4 shrink-0">{providers.v0.icon}</span>
         <span className="flex-1">{providers.v0.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
-      </a>
+      </Link>
     </DropdownMenuItem>
   );
 };
@@ -375,7 +376,7 @@ export const OpenInCursor = (props: OpenInCursorProps) => {
   const { query, providers } = useOpenInContext();
   return (
     <DropdownMenuItem asChild {...props}>
-      <a
+      <Link
         className="flex items-center gap-2"
         href={providers.cursor.createUrl(query)}
         rel="noopener"
@@ -383,7 +384,7 @@ export const OpenInCursor = (props: OpenInCursorProps) => {
         <span className="size-4 shrink-0">{providers.cursor.icon}</span>
         <span className="flex-1">{providers.cursor.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
-      </a>
+      </Link>
     </DropdownMenuItem>
   );
 };

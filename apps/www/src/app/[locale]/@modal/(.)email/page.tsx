@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, ViewTransition } from "react";
 import { Controller } from "react-hook-form";
@@ -138,9 +139,11 @@ const Page = () => {
                     </ShimmerButton>
                     <span className="flex gap-1">
                       {t("or-via")}
-                      <a href={`mailto:${meta.email}`} className="flex w-fit">
+                      <Link
+                        href={`mailto:${meta.email}`}
+                        className="flex w-fit">
                         {tForm("email")}
-                      </a>
+                      </Link>
                     </span>
                   </DrawerFooter>
                 </>
