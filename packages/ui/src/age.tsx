@@ -3,7 +3,7 @@
 import type { FC, ComponentPropsWithoutRef } from "react";
 import { useEffect, useRef } from "react";
 
-import { useInView, useMotionValue, useSpring } from "framer-motion";
+import { useInView, useMotionValue, useSpring } from "motion/react";
 
 import dayjs from "@chia/utils/day";
 

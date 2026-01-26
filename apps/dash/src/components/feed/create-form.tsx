@@ -103,7 +103,7 @@ const CreateForm = ({
         />
         <SubmitForm
           className="w-full max-w-[150px]"
-          disabled={create.isPending}>
+          isPending={create.isPending}>
           Create
         </SubmitForm>
       </form>

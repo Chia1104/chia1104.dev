@@ -5,8 +5,8 @@ import type { FC } from "react";
 import { memo } from "react";
 import { ViewTransition } from "react";
 
-import { CircularProgress } from "@heroui/react";
-import { motion } from "framer-motion";
+import { Spinner } from "@heroui/react";
+import { motion } from "motion/react";
 
 import dayjs from "@chia/utils/day";
 
@@ -250,10 +250,7 @@ export const TimelineGroupList: FC<TimelineGroupListProps> = memo(
 
         {isLoading && (
           <div className="flex w-full justify-center">
-            <CircularProgress
-              color="secondary"
-              aria-label="Loading more items"
-            />
+            <Spinner aria-label="Loading more items" />
           </div>
         )}
       </>

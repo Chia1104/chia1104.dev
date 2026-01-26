@@ -41,6 +41,9 @@ catalogs:
   heroui:
     '@heroui/react': 2.8.7
     '@heroui/theme': 2.4.25
+  heroui-v3:
+    '@heroui/react': beta
+    '@heroui/styles': beta
   next:
     '@next/third-parties': 16.1.4
     next: 16.1.4

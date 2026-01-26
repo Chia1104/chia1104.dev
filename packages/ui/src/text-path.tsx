@@ -3,7 +3,7 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { useRef, useEffect, useState } from "react";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 import { cn } from "../utils/cn.util";
 

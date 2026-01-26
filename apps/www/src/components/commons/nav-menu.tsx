@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import type { FC } from "react";
 
-import { Tabs, Tab, Tooltip, Button, Kbd } from "@heroui/react";
+import { Button, Kbd, Tooltip, TooltipContent, Tabs } from "@heroui/react";
 
 import {
   CommandDialog,
@@ -32,21 +32,22 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
   const tRoutes = useTranslations("routes");
   return (
     <>
-      <Tooltip
-        delay={300}
-        content={
-          <Kbd keys={["command"]} className="text-xs">
-            K
-          </Kbd>
-        }
-        placement="bottom">
+      <Tooltip>
         <Button
           size="sm"
+          variant="tertiary"
+          onClick={() => setOpen(true)}
+          aria-label="CMD"
           isIconOnly
-          onPress={() => setOpen(true)}
-          aria-label="CMD">
+          className="rounded-xl">
           <div className="i-mdi-hamburger size-4" />
         </Button>
+        <TooltipContent>
+          <Kbd>
+            <Kbd.Abbr keyValue="command" />
+            <Kbd.Content>K</Kbd.Content>
+          </Kbd>
+        </TooltipContent>
       </Tooltip>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder={t("search-placeholder")} />
@@ -74,8 +75,9 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
             heading={
               <span className="flex items-center justify-between">
                 <p>{t("contact")}</p>
-                <Kbd className="text-xs" keys={["command"]}>
-                  I
+                <Kbd className="text-xs">
+                  <Kbd.Abbr keyValue="command" />
+                  <Kbd.Content>I</Kbd.Content>
                 </Kbd>
               </span>
             }>
@@ -97,8 +99,9 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
             heading={
               <span className="flex items-center justify-between">
                 <p>{t("theme", { theme: theme ?? "-" })}</p>
-                <Kbd keys={["command"]} className="text-xs">
-                  J
+                <Kbd className="text-xs">
+                  <Kbd.Abbr keyValue="command" />
+                  <Kbd.Content>J</Kbd.Content>
                 </Kbd>
               </span>
             }>
@@ -166,37 +169,42 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
         </div>
         <div className="flex w-fit items-center">
           <Tabs
-            variant="light"
             aria-label="nav bar"
-            className="w-fit"
+            className="mx-4 w-fit"
             selectedKey={
               selectedLayoutSegments[0] === "(blog)"
                 ? "posts"
                 : (selectedLayoutSegments[0] ?? "/")
             }>
-            {Object.entries(navItems).map(
-              ([path, { nameKey, icon, hiddenInMainMenu }]) => {
-                if (hiddenInMainMenu) return null;
-                const pathKey = path.replace(/^\//, "") || "home";
-                return (
-                  <Tab
-                    key={pathKey}
-                    data-testid={`nav-tab-${pathKey}`}
-                    title={
-                      <Link
-                        key={path}
-                        href={path}
-                        data-testid={`nav-link-${pathKey}`}>
-                        <span className="relative px-[10px] py-[5px]">
-                          <p className="hidden md:block">{tRoutes(nameKey)}</p>
-                          <div className="block md:hidden">{icon}</div>
-                        </span>
-                      </Link>
-                    }
-                  />
-                );
-              }
-            )}
+            <Tabs.ListContainer>
+              <Tabs.List aria-label="nav bar" className="bg-transparent">
+                {Object.entries(navItems).map(
+                  ([path, { nameKey, icon, hiddenInMainMenu }]) => {
+                    if (hiddenInMainMenu) return null;
+                    const pathKey = path.replace(/^\//, "") || "home";
+                    return (
+                      <Tabs.Tab
+                        key={pathKey}
+                        id={pathKey}
+                        data-testid={`nav-tab-${pathKey}`}
+                        className="w-fit justify-start before:h-0">
+                        <Link
+                          key={path}
+                          href={path}
+                          data-testid={`nav-link-${pathKey}`}>
+                          <span className="relative px-[10px] py-[5px]">
+                            <p className="hidden md:block">
+                              {tRoutes(nameKey)}
+                            </p>
+                            <div className="block md:hidden">{icon}</div>
+                          </span>
+                        </Link>
+                      </Tabs.Tab>
+                    );
+                  }
+                )}
+              </Tabs.List>
+            </Tabs.ListContainer>
           </Tabs>
           <CMDK locale={props.locale} />
         </div>

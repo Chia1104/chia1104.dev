@@ -7,8 +7,8 @@ import type {
   MotionValue,
   HTMLMotionProps,
   ForwardRefComponent,
-} from "framer-motion";
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+} from "motion/react";
+import { motion, useMotionTemplate, useMotionValue } from "motion/react";
 
 import { cn } from "../utils/cn.util";
 

@@ -9,11 +9,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant dark-theme (&:where(.dark-theme, .dark-theme *));
 
-/* deprecated */
-@utility c-container {
-  @apply container mx-auto;
-}
-
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
@@ -21,24 +16,8 @@
   @apply 2xl:max-w-[1400px];
 }
 
-@utility c-hover-link {
-  @apply border-primary transition ease-in-out hover:border-b-2;
-}
-
-@utility c-text-primary {
-  @apply text-black transition ease-in-out dark:text-white;
-}
-
-@utility c-text-secondary {
-  @apply text-sec-text transition ease-in-out dark:text-white;
-}
-
-@utility c-description {
-  @apply text-sec-text text-lg transition ease-in-out dark:text-gray-400;
-}
-
 @utility c-bg-primary {
-  @apply bg-[#dddddd] text-black transition ease-in-out dark:bg-black dark:text-white;
+  @apply bg-[#dddddd] text-black dark:bg-black dark:text-white;
 }
 
 @utility c-bg-secondary {
@@ -47,22 +26,6 @@
 
 @utility c-bg-third {
   @apply text-sec-text dark:bg-dark/10 bg-white/10 backdrop-blur-lg transition ease-in-out dark:text-white;
-}
-
-@utility c-border-primary {
-  @apply border-gray-200 dark:border-gray-800;
-}
-
-@utility c-text-purple-to-blue {
-  @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8] bg-clip-text text-transparent;
-}
-
-@utility c-bg-gradient-purple-to-blue {
-  @apply bg-gradient-to-r from-[#D8B4FE] to-[#818CF8];
-}
-
-@utility c-text-purple-to-pink {
-  @apply bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent;
 }
 
 @utility c-bg-gradient-purple-to-pink {
@@ -87,14 +50,6 @@
 
 @utility c-bg-gradient-black-to-dark-gray {
   @apply bg-gradient-to-r from-black via-gray-900 to-gray-900;
-}
-
-@utility c-button-primary {
-  @apply bg-primary hover:bg-secondary flex items-center justify-center rounded-full px-3 py-1 text-white drop-shadow-lg transition ease-in-out;
-}
-
-@utility c-button-secondary {
-  @apply text-sec-text dark:bg-dark/80 rounded bg-white/80 px-5 py-3 text-2xl backdrop-blur-md transition ease-in-out dark:text-white;
 }
 
 @utility c-link-active {
@@ -143,24 +98,6 @@
 
 @utility c-text-bg-pink-half {
   background-image: linear-gradient(transparent 60%, #fecaca 55%);
-}
-
-@utility modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  @apply dark:bg-dark/90 bg-white/90 backdrop-blur-sm transition ease-in-out;
-}
-
-@utility view-transition-link {
-  view-transition-name: link-title;
-  width: fit-content;
 }
 
 @layer components {

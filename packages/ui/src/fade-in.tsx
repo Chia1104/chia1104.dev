@@ -3,8 +3,8 @@
 import type { FC, ComponentProps, ReactNode } from "react";
 import { useRef } from "react";
 
-import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
-import { motion, useInView } from "framer-motion";
+import type { HTMLMotionProps, ForwardRefComponent } from "motion/react";
+import { motion, useInView } from "motion/react";
 
 import { cn } from "../utils/cn.util";
 

@@ -45,7 +45,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@fumadocs/mdx-remote": "catalog:fumadocs",
-    "@heroui/react": "catalog:heroui",
+    "@heroui/react": "catalog:heroui-v3",
     "@mdx-js/react": "^3.1.1",
     "dayjs": "catalog:",
     "fumadocs-core": "catalog:fumadocs",

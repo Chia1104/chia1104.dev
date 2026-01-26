@@ -4,15 +4,9 @@ import type { FC } from "react";
 import { useId } from "react";
 
 import type { ButtonProps } from "@heroui/react";
-import {
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-} from "@heroui/react";
-import type { Variant } from "framer-motion";
-import { motion } from "framer-motion";
+import { Button, Dropdown } from "@heroui/react";
+import type { Variant } from "motion/react";
+import { motion } from "motion/react";
 
 import useTheme from "../utils/use-theme";
 
@@ -174,44 +168,25 @@ const ThemeSelector: FC<
     <>
       {enableCMD && <ThemeCMD />}
       <Dropdown className="not-prose">
-        <DropdownTrigger>
-          <Button
-            type="button"
-            variant="flat"
-            size="sm"
-            startContent={
-              <MotionThemeIcon theme={theme as Theme} variants={variants} />
-            }
-            {...buttonProps}>
-            {label}
-          </Button>
-        </DropdownTrigger>
-        <DropdownMenu>
-          <DropdownItem
-            key="system"
-            startContent={
-              <MotionThemeIcon theme={Theme.SYSTEM} variants={variants} />
-            }
-            onPress={() => setTheme(Theme.SYSTEM)}>
-            {themeLabel.system}
-          </DropdownItem>
-          <DropdownItem
-            key="dark"
-            startContent={
+        <Button type="button" size="sm" {...buttonProps}>
+          <MotionThemeIcon theme={theme as Theme} variants={variants} /> {label}
+        </Button>
+        <Dropdown.Popover>
+          <Dropdown.Menu>
+            <Dropdown.Item key="system" onPress={() => setTheme(Theme.SYSTEM)}>
+              <MotionThemeIcon theme={Theme.SYSTEM} variants={variants} />{" "}
+              {themeLabel.system}
+            </Dropdown.Item>
+            <Dropdown.Item key="dark" onPress={() => setTheme(Theme.DARK)}>
               <MotionThemeIcon theme={Theme.DARK} variants={variants} />
-            }
-            onPress={() => setTheme(Theme.DARK)}>
-            {themeLabel.dark}
-          </DropdownItem>
-          <DropdownItem
-            key="light"
-            startContent={
+              {themeLabel.dark}
+            </Dropdown.Item>
+            <Dropdown.Item key="light" onPress={() => setTheme(Theme.LIGHT)}>
               <MotionThemeIcon theme={Theme.LIGHT} variants={variants} />
-            }
-            onPress={() => setTheme(Theme.LIGHT)}>
-            {themeLabel.light}
-          </DropdownItem>
-        </DropdownMenu>
+              {themeLabel.light}
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown.Popover>
       </Dropdown>
     </>
   );

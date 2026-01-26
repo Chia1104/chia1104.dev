@@ -5,6 +5,8 @@
   "trailingComma": "es5",
   "bracketSameLine": true,
   "ignorePatterns": [
+    "pnpm-workspace.yaml",
+    "pnpm-lock.yaml",
     "legacy",
     "turbo/generators/templates",
     "node_modules",

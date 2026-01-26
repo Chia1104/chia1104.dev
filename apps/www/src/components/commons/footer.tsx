@@ -8,8 +8,8 @@ import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import type { FC } from "react";
 
-import { Tabs, Tab, Button } from "@heroui/react";
-import { motion } from "framer-motion";
+import { Tabs, Button, Link as HeroLink } from "@heroui/react";
+import { motion } from "motion/react";
 
 import meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
@@ -86,50 +86,55 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
               dark: t("dark"),
               light: t("light"),
             }}
+            buttonProps={{
+              variant: "tertiary",
+            }}
           />
           <Copyright className="mt-auto" />
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
           <p className="mb-3 ml-2 text-lg font-bold">{tNav("pages")}</p>
           <Tabs
-            variant="light"
-            aria-label="nav bar"
+            aria-label={tNav("pages")}
             className="w-fit"
-            isVertical
+            orientation="vertical"
             selectedKey={
               selectedLayoutSegments[0] === "(blog)"
                 ? "posts"
                 : (selectedLayoutSegments[0] ?? "/")
             }>
-            {Object.entries(navItems).map(([path, { nameKey }]) => {
-              return (
-                <Tab
-                  className="w-fit"
-                  key={path.replace(/^\//, "")}
-                  title={
-                    <Link key={path} href={path}>
-                      <span className="relative px-[10px] py-[5px]">
-                        <p>{tRoutes(nameKey)}</p>
-                      </span>
-                    </Link>
-                  }
-                />
-              );
-            })}
+            <Tabs.ListContainer>
+              <Tabs.List
+                aria-label={tNav("pages")}
+                className="gap-2 bg-transparent">
+                {Object.entries(navItems).map(([path, { nameKey }]) => {
+                  return (
+                    <Tabs.Tab
+                      key={path}
+                      className="w-fit justify-start pl-1 before:h-0"
+                      id={path.replace(/^\//, "")}>
+                      <Link key={path} href={path}>
+                        {tRoutes(nameKey)}
+                      </Link>
+                    </Tabs.Tab>
+                  );
+                })}
+              </Tabs.List>
+            </Tabs.ListContainer>
           </Tabs>
         </div>
         <div className="flex w-1/2 flex-col items-start gap-1 md:w-1/3">
           <p className="mb-3 ml-2 text-lg font-bold">{tNav("contact")}</p>
           <div className="flex flex-col items-start gap-2">
             {Object.entries(contact).map(([_key, { name, icon, link }]) => (
-              <Button
-                size="sm"
-                href={link}
-                key={link}
-                as={Link}
-                variant="light"
-                className="text-default-500 gap-1 text-start">
-                {icon} {name}
+              <Button key={link} variant="ghost" size="sm">
+                <Link
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-start">
+                  {icon} {name} <HeroLink.Icon />
+                </Link>
               </Button>
             ))}
           </div>
@@ -145,6 +150,9 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
               system: t("system"),
               dark: t("dark"),
               light: t("light"),
+            }}
+            buttonProps={{
+              variant: "tertiary",
             }}
           />
         </div>

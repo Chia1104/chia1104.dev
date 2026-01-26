@@ -4,13 +4,17 @@
   "rsc": true,
   "tsx": true,
   "tailwind": {
-    "config": "./tailwind.config.ts",
-    "css": "unused.css",
+    "config": "",
+    "css": "../themes/default.css",
     "baseColor": "zinc",
     "cssVariables": true
   },
+  "iconLibrary": "lucide",
   "aliases": {
-    "utils": "./utils",
-    "components": "src"
+    "components": "src",
+    "utils": "src/utils/cn.util",
+    "hooks": "src/utils",
+    "lib": "src/utils",
+    "ui": "src/shadcn-stage"
   }
 }

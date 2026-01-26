@@ -29,6 +29,7 @@ export const ActionGroup = ({
             copied: tAction("copied"),
             copy: tAction("copy"),
           }}
+          variant="tertiary"
         />
       ) : null}
       <OpenInChat articleUrl={articleUrl} />

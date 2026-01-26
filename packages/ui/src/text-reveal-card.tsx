@@ -3,7 +3,7 @@
 import type { FC } from "react";
 import { useEffect, useRef, useState, memo } from "react";
 
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 import { cn } from "../utils/cn.util";
 

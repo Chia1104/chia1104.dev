@@ -12,7 +12,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
 
 import type { COBEOptions } from "cobe";
 import createGlobe from "cobe";
-import { useSpring, useMotionValue } from "framer-motion";
+import { useSpring, useMotionValue } from "motion/react";
 import { useResizeObserver } from "usehooks-ts";
 
 import Image from "@chia/ui/image";

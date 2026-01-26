@@ -10,15 +10,13 @@ import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
 import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
-import { getBaseUrl } from "@chia/utils/config";
+import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
 import { ActionGroup } from "@/components/blog/action-group";
-import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
 import AppLoading from "@/components/commons/app-loading";
-import { Locale } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
 export const revalidate = 300;
@@ -75,7 +73,10 @@ const Page = async ({
     notFound();
   }
 
-  const articleUrl = `${getBaseUrl()}/${locale}/${type}s/${slug}`;
+  const articleUrl = `${getBaseUrl({
+    baseUrl: WWW_BASE_URL,
+    useBaseUrl: true,
+  })}/${locale}/${type}s/${slug}`;
 
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",
@@ -94,7 +95,6 @@ const Page = async ({
   return (
     <ViewTransition>
       <div className="flex w-full flex-col items-center">
-        {locale !== Locale.ZH_TW && <FeedTranslationWarning />}
         <header className="mt-5 mb-5 w-full self-center">
           <div>
             <ViewTransition name={`view-transition-link-${feed.id}`}>

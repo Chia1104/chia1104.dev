@@ -4,7 +4,6 @@ import { ViewTransition } from "react";
 
 import Contact from "@/components/contact/contact";
 import ContactHeader from "@/components/contact/contact-header";
-import ContactLinks from "@/components/contact/contact-links";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("contact");
@@ -18,7 +17,6 @@ const ContactPage = () => {
     <ViewTransition>
       <article className="prose dark:prose-invert mt-20 max-w-[700px] items-start">
         <ContactHeader />
-        <ContactLinks />
         <Contact />
       </article>
     </ViewTransition>
