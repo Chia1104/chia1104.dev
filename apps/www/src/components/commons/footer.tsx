@@ -56,7 +56,7 @@ const Logo = () => (
   />
 );
 
-const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
+const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
   const t = useTranslations("theme");
   const tNav = useTranslations("nav");
@@ -107,7 +107,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale }) => {
                   className="w-fit"
                   key={path.replace(/^\//, "")}
                   title={
-                    <Link locale={locale} key={path} href={path}>
+                    <Link key={path} href={path}>
                       <span className="relative px-[10px] py-[5px]">
                         <p>{tRoutes(nameKey)}</p>
                       </span>

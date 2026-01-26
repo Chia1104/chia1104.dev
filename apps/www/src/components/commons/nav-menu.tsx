@@ -184,7 +184,6 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                     data-testid={`nav-tab-${pathKey}`}
                     title={
                       <Link
-                        locale={props.locale}
                         key={path}
                         href={path}
                         data-testid={`nav-link-${pathKey}`}>

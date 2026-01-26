@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { ViewTransition } from "react";
 import type { ReactNode } from "react";
+
+import { PageHeader } from "@/components/project/page-header";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("projects");
@@ -9,13 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function Layout({ children }: { children: ReactNode }) {
-  const t = await getTranslations("projects");
+export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <article className="prose dark:prose-invert mt-20 min-w-full">
-      <h1>{t("title")}</h1>
-      <p>{t("description")}</p>
-      {children}
-    </article>
+    <ViewTransition>
+      <article className="prose dark:prose-invert mt-20 min-w-full">
+        <PageHeader />
+        {children}
+      </article>
+    </ViewTransition>
   );
 }
