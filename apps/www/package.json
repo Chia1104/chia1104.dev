@@ -61,7 +61,7 @@
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
     "hono": "^4.11.5",
-    "katex": "^0.16.27",
+    "katex": "^0.16.28",
     "ky": "catalog:",
     "lodash": "catalog:",
     "next": "catalog:next",
