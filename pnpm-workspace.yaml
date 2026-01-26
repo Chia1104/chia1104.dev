@@ -35,9 +35,9 @@ catalogs:
     drizzle-zod: 1.0.0-beta.12-a5629fb
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.4
-    fumadocs-core: 16.4.8
+    fumadocs-core: 16.4.9
     fumadocs-mdx: 14.2.6
-    fumadocs-ui: 16.4.8
+    fumadocs-ui: 16.4.9
   heroui:
     '@heroui/react': 2.8.7
     '@heroui/theme': 2.4.25
