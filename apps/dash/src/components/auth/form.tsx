@@ -60,11 +60,7 @@ const LoginForm = () => {
           name="email"
           className="w-full"
         />
-        <SubmitForm
-          variant="flat"
-          color="primary"
-          className="w-full"
-          isLoading={isPending}>
+        <SubmitForm className="w-full" isPending={isPending}>
           Send magic link
         </SubmitForm>
       </form>

@@ -118,9 +118,7 @@ const UpdateAction = (props: { item: Passkey; onSuccess?: () => void }) => {
                   <Button color="danger" variant="flat" onPress={onClose}>
                     Close
                   </Button>
-                  <SubmitForm color="primary" type="submit">
-                    Update
-                  </SubmitForm>
+                  <SubmitForm type="submit">Update</SubmitForm>
                 </DrawerFooter>
               </form>
             </Form>

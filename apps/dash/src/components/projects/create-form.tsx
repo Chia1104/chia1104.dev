@@ -96,9 +96,7 @@ const CreateForm = (props: Props) => {
         </CardBody>
         <Divider />
         <CardFooter>
-          <SubmitForm color="primary" className="w-full">
-            Create Project
-          </SubmitForm>
+          <SubmitForm className="w-full">Create Project</SubmitForm>
         </CardFooter>
       </Form>
     </FormCtx>

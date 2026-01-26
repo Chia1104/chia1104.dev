@@ -149,7 +149,7 @@ const CreateForm = (props: { projectId?: number }) => {
                 </FormItem>
               )}
             />
-            <SubmitForm isLoading={isPending}>Create</SubmitForm>
+            <SubmitForm isPending={isPending}>Create</SubmitForm>
           </form>
         </Form>
       )}

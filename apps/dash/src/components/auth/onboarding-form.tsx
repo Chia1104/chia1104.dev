@@ -101,9 +101,7 @@ const OnboardingForm = (props: Props) => {
         </CardBody>
         <Divider />
         <CardFooter>
-          <SubmitForm color="primary" className="w-full">
-            Create Organization
-          </SubmitForm>
+          <SubmitForm className="w-full">Create Organization</SubmitForm>
         </CardFooter>
       </Form>
     </FormCtx>
