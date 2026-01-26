@@ -3,6 +3,7 @@
 import type { Locale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import type { FC } from "react";
@@ -17,12 +18,23 @@ import RetroGrid from "@chia/ui/retro-grid";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";
 
-import CurrentPlaying from "@/components/commons/current-playing";
+import { LoadingSkeleton } from "@/components/commons/current-playing";
 import LocaleSelector from "@/components/commons/locale-selector";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 
 import HugeThanks from "./huge-thanks";
+
+const CurrentPlaying = dynamic(
+  () =>
+    import("@/components/commons/current-playing").then(
+      (mod) => mod.CurrentPlaying
+    ),
+  {
+    ssr: false,
+    loading: () => <LoadingSkeleton />,
+  }
+);
 
 const Copyright: FC<{ className?: string }> = ({ className }) => {
   const locale = useLocale();

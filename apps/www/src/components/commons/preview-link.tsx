@@ -1,6 +1,7 @@
 "use client";
 
 import type { LinkProps as NextLinkProps } from "next/link";
+import Link from "next/link";
 import type { ReactNode, ComponentPropsWithoutRef } from "react";
 import { useState } from "react";
 
@@ -201,13 +202,13 @@ const PreviewLink = ({
   return (
     <HoverCard onOpenChange={setIsOpen}>
       <HoverCardTrigger asChild className="z-10">
-        <a
+        <Link
           target="_blank"
           rel="noopener noreferrer"
           {...props}
           href={href.toString()}>
           {typeof children === "function" ? children(result) : children}
-        </a>
+        </Link>
       </HoverCardTrigger>
       <HoverCardContent
         className={cn(

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { FC } from "react";
 
 import type { PlayList } from "@chia/api/spotify/types";
@@ -68,7 +69,7 @@ const First: FC<{
           alt={data.track.album.name}
           className="aspect-h-1 aspect-w-1"
         />
-        <a
+        <Link
           href={data.track.external_urls.spotify}
           target="_blank"
           rel="noopener noreferrer"
@@ -98,7 +99,7 @@ const Item: FC<{
       <p className="col-span-2 line-clamp-2">
         {data.track.name} - {data.track.artists[0]?.name}
       </p>
-      <a
+      <Link
         href={data.track.external_urls.spotify}
         className="absolute inset-0"
         target="_blank"

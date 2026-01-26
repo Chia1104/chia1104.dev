@@ -55,9 +55,9 @@ export const RepoCard = ({
       </div>
       <div className="flex h-full flex-col p-4 pt-0">
         <h2 className="mt-5 text-xl font-bold">{name}</h2>
-        <p className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500">
           <DateFormat date={updatedAt} format="MMMM D, YYYY" />
-        </p>
+        </span>
         <p className="mt-2 line-clamp-2 text-sm">{description}</p>
         <div className="mt-2 flex flex-wrap space-x-2">
           {tags?.map((tag) => (

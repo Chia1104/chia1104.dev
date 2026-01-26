@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import CurrentPlaying from "@/components/commons/current-playing";
+import { CurrentPlaying } from "@/components/commons/current-playing";
 
 export const FavoriteSongs = () => {
   const t = useTranslations("about.favorite-songs");

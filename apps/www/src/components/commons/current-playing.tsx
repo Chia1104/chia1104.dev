@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
 import {
   useState,
   useEffect,
   createContext,
-  useContext,
+  use,
   useCallback,
   useTransition,
 } from "react";
@@ -13,7 +14,6 @@ import {
 import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import { ErrorBoundary } from "@chia/ui/error-boundary";
 import {
   HoverCard,
   HoverCardContent,
@@ -56,7 +56,7 @@ const ProgressContext = createContext<
 >(undefined);
 
 const useProgressContext = () => {
-  const context = useContext(ProgressContext);
+  const context = use(ProgressContext);
   if (!context) {
     throw new Error(
       "useProgressContext must be used within a ProgressProvider"
@@ -74,9 +74,9 @@ const ProgressProvider = ({
 }) => {
   const [progress, setProgress] = useState(initialProgress);
   return (
-    <ProgressContext.Provider value={[progress, setProgress]}>
+    <ProgressContext value={[progress, setProgress]}>
       {children}
-    </ProgressContext.Provider>
+    </ProgressContext>
   );
 };
 
@@ -227,7 +227,7 @@ const PlayingLink = ({
 
   return (
     <Marquee className="w-[85%] p-0" repeat={2} pauseOnHover>
-      <a
+      <Link
         className="m-0 text-sm"
         href={data.item.external_urls.spotify}
         target="_blank"
@@ -235,7 +235,7 @@ const PlayingLink = ({
         <TextShimmer className="m-0 flex w-full p-0">
           {data.item.name} - {data.item.artists[0]?.name}
         </TextShimmer>
-      </a>
+      </Link>
     </Marquee>
   );
 };
@@ -336,7 +336,7 @@ const Card = ({
   );
 };
 
-const LoadingSkeleton = ({ className }: { className?: string }) => (
+export const LoadingSkeleton = ({ className }: { className?: string }) => (
   <div
     className={cn(
       "c-bg-third border-secondary/50 not-prose relative line-clamp-1 flex w-fit max-w-[200px] items-center gap-2 rounded-full px-4 py-2 text-sm shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]",
@@ -360,7 +360,7 @@ const calculateRefetchInterval = (
   return delta > 30_000 ? delta : 30_000;
 };
 
-const CurrentPlaying = ({
+export const CurrentPlaying = ({
   children,
   queryOptions,
   className,
@@ -394,13 +394,3 @@ const CurrentPlaying = ({
     </ProgressProvider>
   );
 };
-
-const CurrentPlayingWithErrorBoundary = (props: Props) => {
-  return (
-    <ErrorBoundary<HonoRPCError>>
-      <CurrentPlaying {...props} />
-    </ErrorBoundary>
-  );
-};
-
-export default CurrentPlayingWithErrorBoundary;

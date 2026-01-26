@@ -9,7 +9,7 @@ import { RepoCard } from "@/components/project/repo-card";
 
 import { LoadingCard } from "./loading";
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 const RepoList = async () => {
   const repo = await getPinnedRepos(meta.name);
