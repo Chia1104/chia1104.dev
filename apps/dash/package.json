@@ -48,7 +48,7 @@
     "framer-motion": "12.29.0",
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
-    "hono": "^4.11.5",
+    "hono": "^4.11.6",
     "ky": "catalog:",
     "lodash": "catalog:",
     "lucide-react": "^0.563.0",
