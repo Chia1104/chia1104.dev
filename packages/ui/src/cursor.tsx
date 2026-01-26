@@ -3,8 +3,8 @@
 import type { FC, ComponentProps } from "react";
 import { useCallback } from "react";
 
-import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
-import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import type { HTMLMotionProps, ForwardRefComponent } from "motion/react";
+import { motion, useMotionValue, useTransform, useSpring } from "motion/react";
 import { useEventListener } from "usehooks-ts";
 
 import { cn } from "../utils/cn.util";

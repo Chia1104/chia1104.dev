@@ -14,11 +14,9 @@ import { getBaseUrl } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
 import { ActionGroup } from "@/components/blog/action-group";
-import FeedTranslationWarning from "@/components/blog/feed-translation-warning";
 import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
 import AppLoading from "@/components/commons/app-loading";
-import { Locale } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
 export const revalidate = 300;
@@ -94,7 +92,6 @@ const Page = async ({
   return (
     <ViewTransition>
       <div className="flex w-full flex-col items-center">
-        {locale !== Locale.ZH_TW && <FeedTranslationWarning />}
         <header className="mt-5 mb-5 w-full self-center">
           <div>
             <ViewTransition name={`view-transition-link-${feed.id}`}>

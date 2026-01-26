@@ -18,7 +18,7 @@ const RootLayout: FC<Props> = ({ children, locale, htmlProps, bodyProps }) => {
       <body
         {...bodyProps}
         className={cn(
-          "scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full antialiased",
+          "scrollbar-thin dark:scrollbar-thumb-dark scrollbar-thumb-light scrollbar-thumb-rounded-full c-bg-primary antialiased",
           bodyProps?.className
         )}>
         {children}

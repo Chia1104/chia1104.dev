@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  Button,
-  useDisclosure,
-  Chip,
-} from "@heroui/react";
+import { Modal, Button, Chip } from "@heroui/react";
 
 import BetterAuth from "@chia/ui/icons/better-auth";
 import Zeabur from "@chia/ui/icons/zeabur";
@@ -145,56 +137,61 @@ const techStack = {
 };
 
 const HugeThanks = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <NeonGradientCard
-        data-testid="huge-thanks"
-        className="h-fit w-fit p-0"
-        innerBoxProps={{
-          className: "p-0",
-        }}>
-        <Button
-          onPress={onOpen}
-          className="w-fit bg-transparent text-black dark:text-white">
-          Huge Thanks
-        </Button>
-      </NeonGradientCard>
-      <Modal backdrop="blur" isOpen={isOpen} onClose={onClose}>
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1 text-center text-xl">
-            Huge Thanks to all the tech providers! 🎉
-          </ModalHeader>
-          <ModalBody className="prose dark:prose-invert prose-img:m-0">
-            <ul>
-              {Object.entries(techStack).map(([key, value]) => (
-                <li key={key}>
-                  <span className="flex flex-wrap items-center gap-2">
-                    {key}:{"  "}
-                    {value.map((item) => (
-                      <Chip
-                        size="sm"
-                        key={item.name}
-                        variant="shadow"
-                        classNames={item.classNames}>
-                        <span className="relative flex items-center gap-1">
-                          {item.icon}
-                          {item.name}
-                          <Link
-                            href={item.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="absolute inset-0"
-                          />
-                        </span>
-                      </Chip>
-                    ))}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </ModalBody>
-        </ModalContent>
+      <Modal>
+        <NeonGradientCard
+          data-testid="huge-thanks"
+          className="h-fit w-fit p-0"
+          innerBoxProps={{
+            className: "p-0",
+          }}>
+          <Modal.Trigger>
+            <Button className="w-fit bg-transparent text-black dark:text-white">
+              Huge Thanks
+            </Button>
+          </Modal.Trigger>
+        </NeonGradientCard>
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-[360px]">
+              <Modal.CloseTrigger className="absolute top-2 right-2" />
+              <Modal.Header>
+                <Modal.Heading>
+                  Huge Thanks to all the tech providers! 🎉
+                </Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <ul className="flex flex-col gap-2">
+                  {Object.entries(techStack).map(([key, value]) => (
+                    <li key={key}>
+                      <span className="flex flex-wrap items-center gap-2">
+                        {key}:{"  "}
+                        {value.map((item) => (
+                          <Chip
+                            size="sm"
+                            key={item.name}
+                            className={item.classNames.base}>
+                            <span className="relative flex items-center gap-1 text-white">
+                              {item.icon}
+                              {item.name}
+                              <Link
+                                href={item.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="absolute inset-0"
+                              />
+                            </span>
+                          </Chip>
+                        ))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </>
   );

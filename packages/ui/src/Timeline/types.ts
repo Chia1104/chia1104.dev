@@ -6,7 +6,7 @@ import type {
 } from "react";
 
 import type { Dayjs } from "dayjs";
-import type { HTMLMotionProps, ForwardRefComponent } from "framer-motion";
+import type { HTMLMotionProps, ForwardRefComponent } from "motion/react";
 
 export interface TimelineItemData {
   id: number;

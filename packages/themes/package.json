@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/themes",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "default.css"
+  ],
+  "exports": {
+    "./default.css": "./default.css"
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache"
+  }
+}

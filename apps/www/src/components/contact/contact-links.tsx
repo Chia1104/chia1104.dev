@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { FC, ReactNode } from "react";
 
 import meta from "@chia/meta";
@@ -57,19 +58,23 @@ const LinkItem: FC<{
 };
 
 const ContactLinks = () => {
+  const t = useTranslations("contact");
   return (
-    <div className="mb-5 flex px-1">
-      {contactLinks.map(({ name, icon, link, preview }) => (
-        <LinkItem
-          key={link}
-          path={link}
-          name={name}
-          icon={icon}
-          showIcon
-          preview={preview}
-        />
-      ))}
-    </div>
+    <>
+      <h3>{t("find-me-on")}</h3>
+      <div className="mb-5 flex px-1">
+        {contactLinks.map(({ name, icon, link, preview }) => (
+          <LinkItem
+            key={link}
+            path={link}
+            name={name}
+            icon={icon}
+            showIcon
+            preview={preview}
+          />
+        ))}
+      </div>
+    </>
   );
 };
 

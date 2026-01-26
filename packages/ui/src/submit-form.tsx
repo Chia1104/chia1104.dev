@@ -14,7 +14,7 @@ const SubmitForm: FC<Props> = ({ children, ...props }) => {
   const { pending } = useFormStatus();
 
   return (
-    <Button disabled={pending} isLoading={pending} type="submit" {...props}>
+    <Button isDisabled={pending} isPending={pending} type="submit" {...props}>
       {typeof children === "function" ? children(pending) : children}
     </Button>
   );

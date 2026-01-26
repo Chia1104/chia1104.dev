@@ -3,14 +3,7 @@
 import type { ReactNode, Ref, RefObject } from "react";
 import { useRef, ViewTransition } from "react";
 
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Divider,
-  ScrollShadow,
-} from "@heroui/react";
+import { Card, ScrollShadow } from "@heroui/react";
 import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 
@@ -34,7 +27,12 @@ const ContentProvider = ({
 const MDXInlineTOC = () => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
-    return <InlineTOC items={content.toc} />;
+    return (
+      <InlineTOC
+        items={content.toc}
+        className="bg-surface rounded-2xl border-none"
+      />
+    );
   }
   return null;
 };
@@ -80,17 +78,16 @@ const MdxContent = (props: BaseProps) => {
         {props.children}
         <div className="not-prose sticky top-24 ml-2 flex hidden h-fit w-[30%] flex-col lg:flex">
           <Card className="w-full">
-            <CardHeader>
+            <Card.Header>
               {content.tocContents?.label ?? "On this page"}
-            </CardHeader>
+            </Card.Header>
             <ScrollShadow className="max-h-[300px] w-full">
-              <CardBody className="gap-1 pt-0 pl-0">
+              <Card.Content className="gap-1 pt-0 pl-0">
                 <MDXTableOfContents containerRef={containerRef} />
-              </CardBody>
+              </Card.Content>
             </ScrollShadow>
-            <Divider />
             {props.updatedAt || props.slot?.tocFooter ? (
-              <CardFooter className="flex flex-col">
+              <Card.Footer className="flex flex-col">
                 <div className="flex w-full flex-wrap items-center justify-between gap-1 self-start text-sm">
                   <span>
                     {content.tocContents?.updated ?? "Last updated"}:{" "}
@@ -104,7 +101,7 @@ const MdxContent = (props: BaseProps) => {
                   </span>
                   {props.slot?.afterLastUpdate}
                 </div>
-              </CardFooter>
+              </Card.Footer>
             ) : null}
           </Card>
           {props.slot?.tocFooter}

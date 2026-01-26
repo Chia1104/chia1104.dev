@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import { CircularProgress } from "@heroui/react";
+import { Spinner } from "@heroui/react";
 
 import { TextPath } from "@chia/ui/text-path";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -32,7 +32,7 @@ const AppLoading = (props: Props) => {
           />
         </span>
       )}
-      <CircularProgress aria-label={tCommon("loading")} />
+      <Spinner aria-label={tCommon("loading")} />
     </div>
   );
 };

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { Button, Code } from "@heroui/react";
+import { Button, Kbd } from "@heroui/react";
 
 import {
   TextRevealCard,
@@ -20,7 +20,7 @@ export default function Component() {
           This feature is coming soon.
         </TextRevealCardDescription>
         <Button onPress={() => router.push("/")} className="mt-5">
-          <Code>cd ../</Code>
+          <Kbd>cd ../</Kbd>
         </Button>
       </TextRevealCard>
     </div>

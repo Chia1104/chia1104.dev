@@ -14,7 +14,6 @@ const ContactHeader = () => {
         </span>
       </h1>
       <p>{t("description")}</p>
-      <h3>{t("find-me-on")}</h3>
     </>
   );
 };

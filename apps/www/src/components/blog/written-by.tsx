@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "motion/react";
 
 import FadeIn from "@chia/ui/fade-in";
 import { TextPath } from "@chia/ui/text-path";

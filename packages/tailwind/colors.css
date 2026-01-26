@@ -1,3 +1,8 @@
+/**
+ * @deprecated
+ * Use @chia/themes/default.css instead
+ */
+
 @theme {
   /* Primary Colors */
   --color-primary: rgb(192 132 252);
