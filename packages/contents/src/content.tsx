@@ -1,11 +1,12 @@
 "use client";
 
-import type { ReactNode, Ref, RefObject } from "react";
+import type { ReactNode } from "react";
 import { useRef, ViewTransition } from "react";
 
 import { Card, ScrollShadow } from "@heroui/react";
-import * as Base from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
+import { TOCItems } from "fumadocs-ui/components/toc/clerk";
+import { TOCProvider, TOCScrollArea } from "fumadocs-ui/components/toc/index";
 
 import { ContentType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
@@ -37,28 +38,15 @@ const MDXInlineTOC = () => {
   return null;
 };
 
-const MDXTableOfContents = <TContainer extends HTMLElement>(props: {
-  containerRef: Ref<TContainer>;
-}) => {
+const MDXTableOfContents = () => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
     return (
-      <Base.AnchorProvider toc={content.toc} single={false}>
-        <Base.ScrollProvider
-          containerRef={props.containerRef as RefObject<TContainer>}>
-          {content.toc.map((item) => (
-            <Base.TOCItem
-              key={item.url}
-              style={{
-                paddingLeft: `${item.depth * 0.5}rem`,
-              }}
-              href={item.url}
-              className="text-sm text-gray-500 transition-colors dark:text-gray-400 [&[data-active='true']]:text-black dark:[&[data-active='true']]:text-white">
-              {item.title}
-            </Base.TOCItem>
-          ))}
-        </Base.ScrollProvider>
-      </Base.AnchorProvider>
+      <TOCProvider toc={content.toc}>
+        <TOCScrollArea className="max-h-[300px] w-full py-1">
+          <TOCItems className="[&>a]:py-1" />
+        </TOCScrollArea>
+      </TOCProvider>
     );
   }
   return null;
@@ -83,7 +71,7 @@ const MdxContent = (props: BaseProps) => {
             </Card.Header>
             <ScrollShadow className="max-h-[300px] w-full">
               <Card.Content className="gap-1 pt-0 pl-0">
-                <MDXTableOfContents containerRef={containerRef} />
+                <MDXTableOfContents />
               </Card.Content>
             </ScrollShadow>
             {props.updatedAt || props.slot?.tocFooter ? (
