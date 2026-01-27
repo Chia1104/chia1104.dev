@@ -28,8 +28,8 @@ const mockEnv: ENV = {
   // Database env
   DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
   DATABASE_URL_REPLICA_1: undefined,
-  BETA_DATABASE_URL: undefined,
-  LOCAL_DATABASE_URL: undefined,
+  BETA_DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
+  LOCAL_DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
   // Auth env
   GOOGLE_CLIENT_ID: "test-google-client-id",
   GOOGLE_CLIENT_SECRET: "test-google-client-secret",
@@ -39,11 +39,11 @@ const mockEnv: ENV = {
   AUTH_URL: "http://localhost:3000",
   AUTH_COOKIE_DOMAIN: ".chia1104.dev",
   AUTH_BASE_PATH: "/api/v1/auth",
-  CF_BYPASS_TOKEN: undefined,
-  CH_API_KEY: undefined,
-  ADMIN_ID: undefined,
-  BETA_ADMIN_ID: undefined,
-  LOCAL_ADMIN_ID: undefined,
+  CF_BYPASS_TOKEN: "test-cf-bypass-token",
+  CH_API_KEY: "test-ch-api-key",
+  ADMIN_ID: "test-admin-id",
+  BETA_ADMIN_ID: "test-beta-admin-id",
+  LOCAL_ADMIN_ID: "test-local-admin-id",
   // Spotify env
   SPOTIFY_CLIENT_ID: "test-spotify-client-id",
   SPOTIFY_CLIENT_SECRET: "test-spotify-client-secret",
@@ -70,7 +70,7 @@ const mockEnv: ENV = {
   REDIS_URI: undefined,
   VALKEY_URI: undefined,
   POSTGRES_URI: undefined,
-  CACHE_URI: undefined,
+  CACHE_URI: "redis://localhost:6379",
   // Service env
   INTERNAL_SERVICE_ENDPOINT: undefined,
   INTERNAL_AUTH_SERVICE_ENDPOINT: undefined,
