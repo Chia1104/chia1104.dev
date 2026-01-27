@@ -103,7 +103,9 @@ jobs:
         uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🔥 Init bun"
-        run: pnpm add -g --allow-build bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
 
       - name: "🧹 Test"
         shell: bash
