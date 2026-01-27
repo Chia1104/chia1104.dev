@@ -1,3 +1,5 @@
+import "./setup";
+
 import { expect, it, describe } from "bun:test";
 
 import { app } from "../src/server";

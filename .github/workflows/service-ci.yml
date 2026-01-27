@@ -35,6 +35,7 @@ env:
   SPOTIFY_REDIRECT_URI: http://localhost:3005
   REDIS_URI: ${{ secrets.REDIS_URI }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
+  SKIP_ENV_VALIDATION: true
   ENV: beta
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -103,7 +104,9 @@ jobs:
         uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🔥 Init bun"
-        run: pnpm add -g bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
 
       - name: "🧹 Test"
         shell: bash

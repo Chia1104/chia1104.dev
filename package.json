@@ -81,7 +81,7 @@
     "jest-extended": "catalog:testing-library",
     "lint-staged": "^16.2.7",
     "msw": "^2.12.7",
-    "nx": "^22.4.1",
+    "nx": "^22.4.2",
     "oxfmt": "catalog:oxc",
     "oxlint": "catalog:oxc",
     "tsx": "^4.21.0",
@@ -101,7 +101,7 @@
     "node": ">=22",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.28.2",
   "manypkg": {
     "ignoredRules": [
       "ROOT_HAS_PROD_DEPENDENCIES"
