@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode, Ref } from "react";
+import type { ReactNode } from "react";
 import { useRef, ViewTransition } from "react";
 
 import { Card, ScrollShadow } from "@heroui/react";
@@ -38,9 +38,7 @@ const MDXInlineTOC = () => {
   return null;
 };
 
-const MDXTableOfContents = <TContainer extends HTMLElement>(_props: {
-  containerRef: Ref<TContainer>;
-}) => {
+const MDXTableOfContents = () => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
     return (
@@ -73,7 +71,7 @@ const MdxContent = (props: BaseProps) => {
             </Card.Header>
             <ScrollShadow className="max-h-[300px] w-full">
               <Card.Content className="gap-1 pt-0 pl-0">
-                <MDXTableOfContents containerRef={containerRef} />
+                <MDXTableOfContents />
               </Card.Content>
             </ScrollShadow>
             {props.updatedAt || props.slot?.tocFooter ? (
