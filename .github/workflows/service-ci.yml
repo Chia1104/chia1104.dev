@@ -103,7 +103,7 @@ jobs:
         uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
 
       - name: "🔥 Init bun"
-        run: pnpm add -g --approve-builds bun
+        run: pnpm add -g --allow-build bun
 
       - name: "🧹 Test"
         shell: bash
