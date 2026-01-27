@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm build:dash",
+  "installCommand": "cd ../.. && rm -r apps/www && rm -r tests && npm install -g corepack@latest && pnpm install --store=node_modules/.pnpm-store",
+  "git": {
+    "deploymentEnabled": {
+      "develop": false
+    }
+  }
+}

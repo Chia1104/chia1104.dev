@@ -1,0 +1,56 @@
+import { cookies } from "next/headers";
+import { redirect, unauthorized } from "next/navigation";
+import type { ReactNode } from "react";
+
+import { Separator, Breadcrumbs } from "@heroui/react";
+
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@chia/ui/sidebar";
+
+import { AppSidebar } from "@/components/commons/app-sidebar";
+import Footer from "@/components/commons/footer";
+import { getSession, getFullOrganization } from "@/services/auth/resources.rsc";
+
+export default async function Layout({ children }: { children: ReactNode }) {
+  const session = await getSession();
+  const cookieStore = await cookies();
+  const currentOrg = cookieStore.get("currentOrg");
+
+  if (!session.data) {
+    unauthorized();
+  }
+
+  if (!currentOrg?.value) {
+    redirect("/onboarding");
+  }
+
+  const org = await getFullOrganization(currentOrg.value);
+
+  if (org.error || !org.data) {
+    redirect("/onboarding");
+  }
+
+  return (
+    <SidebarProvider>
+      <AppSidebar org={org.data.name} />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="h-4" />
+            <Breadcrumbs>
+              <Breadcrumbs.Item href="#">Home</Breadcrumbs.Item>
+              <Breadcrumbs.Item href="#">Category</Breadcrumbs.Item>
+              <Breadcrumbs.Item>Current Page</Breadcrumbs.Item>
+            </Breadcrumbs>
+          </div>
+        </header>
+        {children}
+        <Footer className="mt-auto" />
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}

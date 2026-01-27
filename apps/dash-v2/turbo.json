@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tags": ["dash"],
+  "extends": ["//", "@chia/api", "@chia/db", "@chia/kv", "@chia/utils"],
+  "tasks": {
+    "build": {
+      "outputs": [".next/**", "!.next/cache/**"]
+    }
+  }
+}
