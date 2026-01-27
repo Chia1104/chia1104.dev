@@ -81,7 +81,7 @@
     "jest-extended": "catalog:testing-library",
     "lint-staged": "^16.2.7",
     "msw": "^2.12.7",
-    "nx": "^22.4.1",
+    "nx": "^22.4.2",
     "oxfmt": "catalog:oxc",
     "oxlint": "catalog:oxc",
     "tsx": "^4.21.0",
