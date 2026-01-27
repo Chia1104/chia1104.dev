@@ -35,6 +35,9 @@ env:
   SPOTIFY_REDIRECT_URI: http://localhost:3005
   REDIS_URI: ${{ secrets.REDIS_URI }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
+  S3_ACCESS_KEY_ID: test
+  S3_SECRET_ACCESS_KEY: test
+  S3_BUCKET_NAME: test
   ENV: beta
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
