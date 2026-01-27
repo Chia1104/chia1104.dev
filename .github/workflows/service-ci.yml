@@ -35,9 +35,7 @@ env:
   SPOTIFY_REDIRECT_URI: http://localhost:3005
   REDIS_URI: ${{ secrets.REDIS_URI }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
-  S3_ACCESS_KEY_ID: test
-  S3_SECRET_ACCESS_KEY: test
-  S3_BUCKET_NAME: test
+  SKIP_ENV_VALIDATION: true
   ENV: beta
   GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
   GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -112,9 +110,5 @@ jobs:
 
       - name: "🧹 Test"
         shell: bash
-        env:
-          S3_ACCESS_KEY_ID: ${{ env.S3_ACCESS_KEY_ID }}
-          S3_SECRET_ACCESS_KEY: ${{ env.S3_SECRET_ACCESS_KEY }}
-          S3_BUCKET_NAME: ${{ env.S3_BUCKET_NAME }}
         run: |
           pnpm test:service
