@@ -1,0 +1,26 @@
+import { notFound } from "next/navigation";
+
+import { all } from "better-all";
+
+import OrgList from "@/components/auth/org-list";
+import { listOrganizations, getSession } from "@/services/auth/resources.rsc";
+
+const Default = async () => {
+  const { orgs, session } = await all({
+    orgs: () => listOrganizations(),
+    session: () => getSession(),
+  });
+
+  if (!orgs.data || !session.data) {
+    notFound();
+  }
+
+  return (
+    <section className="flex flex-col gap-4">
+      <h1 className="text-2xl font-bold">Welcome {session.data.user.name}</h1>
+      <OrgList orgs={orgs.data} />
+    </section>
+  );
+};
+
+export default Default;

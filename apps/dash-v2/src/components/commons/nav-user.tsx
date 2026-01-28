@@ -15,7 +15,7 @@ import {
   Button,
   Separator,
 } from "@heroui/react";
-import { ChevronsUpDown, LogOut, User } from "lucide-react";
+import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 
 import { authClient } from "@chia/auth/client";
 import {
@@ -78,9 +78,9 @@ export function NavUser({
               </DropdownItem>
               <Separator />
               <DropdownItem>
-                <Link href="/profile" className="flex items-center gap-2">
-                  <User className="size-4" />
-                  <span>Profile</span>
+                <Link href="/settings" className="flex items-center gap-2">
+                  <Settings className="size-4" />
+                  <span>Settings</span>
                 </Link>
               </DropdownItem>
               <Separator />
@@ -91,11 +91,11 @@ export function NavUser({
                   fullWidth
                   onPress={() =>
                     startTransition(async () => {
-                      await revokeCurrentOrg(); // revoke current organization
+                      await revokeCurrentOrg();
                       await authClient.signOut({
                         fetchOptions: {
                           onSuccess: () => {
-                            router.push("/auth/login"); // redirect to login page
+                            router.push("/auth/login");
                           },
                         },
                       });

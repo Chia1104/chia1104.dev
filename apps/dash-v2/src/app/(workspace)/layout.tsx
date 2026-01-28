@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect, unauthorized } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { Separator, Breadcrumbs } from "@heroui/react";
+import { Separator } from "@heroui/react";
 
 import {
   SidebarInset,
@@ -12,6 +12,7 @@ import {
 
 import { AppSidebar } from "@/components/commons/app-sidebar";
 import Footer from "@/components/commons/footer";
+import { NavBreadcrumbs } from "@/components/commons/nav-breadcrumbs";
 import { getSession, getFullOrganization } from "@/services/auth/resources.rsc";
 
 export default async function Layout({ children }: { children: ReactNode }) {
@@ -41,11 +42,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger />
             <Separator orientation="vertical" className="h-4" />
-            <Breadcrumbs>
-              <Breadcrumbs.Item href="#">Home</Breadcrumbs.Item>
-              <Breadcrumbs.Item href="#">Category</Breadcrumbs.Item>
-              <Breadcrumbs.Item>Current Page</Breadcrumbs.Item>
-            </Breadcrumbs>
+            <NavBreadcrumbs />
           </div>
         </header>
         {children}

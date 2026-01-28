@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
+import type { Key } from "@heroui/react";
 import {
   Dropdown,
   DropdownItem,
@@ -10,6 +11,7 @@ import {
   DropdownPopover,
   Button,
   Skeleton,
+  Modal,
 } from "@heroui/react";
 import { ChevronsUpDown, Plus } from "lucide-react";
 
@@ -23,10 +25,60 @@ import {
 
 import { setCurrentOrg } from "@/server/org.action";
 
-const OrgList = ({ onClose }: { onClose?: () => void }) => {
+import { OnboardingForm } from "../auth/onboarding-form";
+
+const CreateModal = ({
+  isOpen,
+  onOpenChange,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  return (
+    <Modal.Backdrop isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal.Container placement="auto">
+        <Modal.Dialog className="sm:max-w-md">
+          <Modal.CloseTrigger />
+          <Modal.Header>
+            <Modal.Heading>Create New Organization</Modal.Heading>
+          </Modal.Header>
+          <Modal.Body className="p-4">
+            <OnboardingForm onSuccess={() => onOpenChange(false)} />
+          </Modal.Body>
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal.Backdrop>
+  );
+};
+
+const OrgList = ({
+  onClose,
+  handleOpenCreateModal,
+}: {
+  onClose?: () => void;
+  handleOpenCreateModal: () => void;
+}) => {
   const { data, isPending: isLoading } = authClient.useListOrganizations();
   const [isPending, startTransition] = React.useTransition();
   const router = useRouter();
+
+  const handleAction = (key: Key) => {
+    if (key === "create-org") {
+      handleOpenCreateModal();
+    } else {
+      startTransition(async () => {
+        if (typeof key !== "string") return;
+        const slug = key.split("-")[1];
+        if (slug) {
+          await setCurrentOrg(slug);
+          router.refresh();
+          router.push("/");
+          onClose?.();
+        }
+      });
+    }
+  };
+
   if (!data || isLoading) {
     return (
       <DropdownMenu className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg">
@@ -40,35 +92,30 @@ const OrgList = ({ onClose }: { onClose?: () => void }) => {
   }
 
   return (
-    <DropdownMenu className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg">
-      {data.map((team) => (
-        <DropdownItem
-          key={team.slug}
-          isDisabled={isPending}
-          onClick={() =>
-            startTransition(async () => {
-              await setCurrentOrg(team.slug);
-              router.refresh();
-              router.push("/");
-              onClose?.();
-            })
-          }
-          className="gap-2 p-2">
-          {team.name}
+    <>
+      <DropdownMenu
+        onAction={handleAction}
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg">
+        {data.map((team) => (
+          <DropdownItem
+            key={team.slug}
+            id={`org-${team.slug}`}
+            isDisabled={isPending}
+            className="gap-2 p-2">
+            {team.name}
+          </DropdownItem>
+        ))}
+        <DropdownItem id="create-org">
+          <Plus className="size-4" /> Create New Organization
         </DropdownItem>
-      ))}
-      <DropdownItem className="gap-2 p-2">
-        <Plus className="size-4" />
-        <div className="text-muted-foreground font-medium">
-          Create New Organization
-        </div>
-      </DropdownItem>
-    </DropdownMenu>
+      </DropdownMenu>
+    </>
   );
 };
 
 export function OrgSwitcher({ org }: { org: string }) {
   const { open, isMobile } = useSidebar();
+  const [isOpen, setIsOpen] = React.useState(false);
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -88,10 +135,11 @@ export function OrgSwitcher({ org }: { org: string }) {
             </Button>
           </SidebarMenuButton>
           <DropdownPopover>
-            <OrgList />
+            <OrgList handleOpenCreateModal={() => setIsOpen(true)} />
           </DropdownPopover>
         </Dropdown>
       </SidebarMenuItem>
+      <CreateModal isOpen={isOpen} onOpenChange={setIsOpen} />
     </SidebarMenu>
   );
 }

@@ -1,20 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { unauthorized } from "next/navigation";
 
 import { Logo } from "@/components/commons/logo";
-import { getSession } from "@/services/auth/resources.rsc";
+import { getSession, listOrganizations } from "@/services/auth/resources.rsc";
 
 export default async function Layout({
-  children,
+  create,
+  list,
 }: {
-  children: React.ReactNode;
+  create: React.ReactNode;
+  list: React.ReactNode;
 }) {
   const session = await getSession();
 
-  if (session.data) {
-    redirect("/");
+  if (!session.data) {
+    unauthorized();
   }
+
+  const orgs = await listOrganizations();
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
@@ -25,7 +29,9 @@ export default async function Layout({
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">{children}</div>
+          <div className="w-full">
+            {!orgs.data || orgs.data.length === 0 ? create : list}
+          </div>
         </div>
       </div>
       <div className="bg-muted relative hidden lg:block">
