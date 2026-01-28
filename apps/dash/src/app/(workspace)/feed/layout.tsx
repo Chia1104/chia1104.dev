@@ -1,9 +1,12 @@
-import "server-only";
-
 import type { ReactNode } from "react";
+import { ViewTransition } from "react";
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  return <article className="main container justify-start">{children}</article>;
+  return (
+    <ViewTransition>
+      <article>{children}</article>
+    </ViewTransition>
+  );
 };
 
 export default Layout;

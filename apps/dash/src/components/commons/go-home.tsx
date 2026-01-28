@@ -11,8 +11,7 @@ const GoHome: FC = () => {
     <Button
       className="relative"
       size="lg"
-      variant="flat"
-      color="warning"
+      variant="tertiary"
       onPress={() => router.push("/")}>
       Go to Home
     </Button>

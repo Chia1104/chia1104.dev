@@ -1,34 +1,34 @@
 "use client";
 
-import { useTransitionRouter as useRouter } from "next-view-transitions";
-import type { FC } from "react";
-import { forwardRef, useMemo, memo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { forwardRef, useMemo, memo, useState, useCallback } from "react";
 
-import { Card, CardBody, CardHeader, Chip, Button } from "@heroui/react";
+import { Card, Button, Chip } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
 import DateFormat from "@chia/ui/date-format";
-import Image from "@chia/ui/image";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import dayjs from "@chia/utils/day";
 
-import { useGetAllDrafts } from "@/hooks/use-draft";
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
+import { useAllDrafts, useDraftStore } from "@/store/draft";
 
-import Skeleton from "./skeleton";
+import { Logo } from "../commons/logo";
+
+import FeedSkeleton from "./skeleton";
 
 interface Props {
   initFeed?: RouterOutputs["feeds"]["list"]["items"];
   nextCursor?: string | number | null;
-  useClient?: boolean;
   query?: RouterInputs["feeds"]["list"];
 }
 
-const Empty = () => {
+const Empty = memo(() => {
   return (
     <CHCard
       className="prose dark:prose-invert flex w-full max-w-full flex-col items-center justify-center gap-5 px-1 py-12 sm:px-4"
@@ -36,126 +36,134 @@ const Empty = () => {
         className: "w-full",
       }}>
       <h3>Currently no feeds available</h3>
-      <Image
-        src="/img-empty.png"
-        alt="Empty"
-        width={150}
-        height={150}
-        blur={false}
-      />
+      <div className="not-prose">
+        <Logo classNames={{ root: "size-20" }} />
+      </div>
     </CHCard>
   );
-};
-
-const FeedItem = forwardRef<
-  HTMLDivElement,
-  {
-    feed: RouterOutputs["feeds"]["list"]["items"][0];
-  }
->(({ feed }, ref) => {
-  const router = useRouter();
-  // Get first translation (default locale)
-  const translation = feed.translations?.[0];
-  const title = translation?.title ?? "Untitled";
-  const excerpt = translation?.excerpt ?? "";
-
-  return (
-    <Card ref={ref} className="dark:bg-dark/90 grid-cols-1">
-      <CardHeader>
-        <h4
-          className="line-clamp-2 text-xl font-medium"
-          style={{
-            viewTransitionName: `view-transition-link-${feed.id}`,
-          }}>
-          {title}
-        </h4>
-      </CardHeader>
-      <CardBody className="gap-2">
-        <p className="mt-auto line-clamp-2 text-xs font-bold">{excerpt}</p>
-        <span className="flex items-center justify-between text-xs font-bold">
-          <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
-          <span className="flex items-center gap-2">
-            <Button
-              variant="shadow"
-              size="sm"
-              isIconOnly
-              onPress={() =>
-                router.push(
-                  feed.type === FeedType.Post
-                    ? `/feed/edit/${feed.id}?type=post`
-                    : `/feed/edit/${feed.id}?type=note`
-                )
-              }>
-              <Pencil size={14} />
-            </Button>
-            <Chip
-              variant="shadow"
-              color={feed.published ? "success" : "default"}>
-              {feed.published ? "Published" : "Unpublished"}
-            </Chip>
-          </span>
-        </span>
-      </CardBody>
-    </Card>
-  );
 });
+
+Empty.displayName = "Empty";
+
+const FeedItem = memo(
+  forwardRef<
+    HTMLDivElement,
+    {
+      feed: RouterOutputs["feeds"]["list"]["items"][0];
+    }
+  >(({ feed }, ref) => {
+    const router = useRouter();
+
+    const translation = feed.translations?.[0];
+    const title = translation?.title ?? "Untitled";
+    const excerpt = translation?.excerpt ?? "";
+
+    const handleEdit = useCallback(() => {
+      const editPath =
+        feed.type === FeedType.Post
+          ? `/feed/edit/${feed.id}?type=post`
+          : `/feed/edit/${feed.id}?type=note`;
+      router.push(editPath);
+    }, [feed.id, feed.type, router]);
+
+    return (
+      <Card ref={ref}>
+        <Card.Header>
+          <Card.Title
+            className="line-clamp-2 text-xl"
+            style={{
+              viewTransitionName: `view-transition-link-${feed.id}`,
+            }}>
+            {title}
+          </Card.Title>
+        </Card.Header>
+        <Card.Content className="gap-2">
+          <p className="mt-auto line-clamp-2 text-xs font-bold">{excerpt}</p>
+          <span className="flex items-center justify-between text-xs font-bold">
+            <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
+            <span className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onPress={handleEdit}>
+                <Pencil className="size-4" />
+                <span className="text-xs">Edit</span>
+              </Button>
+              <Chip
+                variant={feed.published ? "primary" : "secondary"}
+                color={feed.published ? "success" : "default"}>
+                {feed.published ? "Published" : "Unpublished"}
+              </Chip>
+            </span>
+          </span>
+        </Card.Content>
+      </Card>
+    );
+  })
+);
+
 FeedItem.displayName = "FeedItem";
 
-export const PreviewFeedItem = ({
-  feed,
-  token,
-  onRemove,
-}: {
-  feed: Partial<{
-    translation?: {
-      title?: string;
-      description?: string | null;
-    };
-    createdAt?: string | number;
-    updatedAt?: string | number;
-  }>;
-  token: string;
-  onRemove?: () => void;
-}) => {
-  const router = useRouter();
-  const title = feed.translation?.title ?? "Untitled";
-  const description = feed.translation?.description ?? "";
+export const PreviewFeedItem = memo(
+  ({
+    feed,
+    token,
+    onRemove,
+  }: {
+    feed: Partial<{
+      translation?: {
+        title?: string;
+        description?: string | null;
+      };
+      createdAt?: string | number;
+      updatedAt?: string | number;
+    }>;
+    token: string;
+    onRemove?: () => void;
+  }) => {
+    const router = useRouter();
 
-  return (
-    <Card className="dark:bg-dark/90 grid-cols-1">
-      <CardHeader>
-        <h4
-          className="line-clamp-2 text-xl font-medium"
-          style={{
-            viewTransitionName: `view-transition-link-${token}`,
-          }}>
-          {title}
-        </h4>
-      </CardHeader>
-      <CardBody className="gap-2">
-        <p className="mt-auto line-clamp-2 text-xs font-bold">{description}</p>
-        <span className="flex items-center justify-between text-sm font-bold">
-          <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
-          <span className="flex items-center gap-2">
-            <Button
-              variant="shadow"
-              size="sm"
-              isIconOnly
-              onPress={() => router.push(`/feed/write?token=${token}`)}>
-              <Pencil size={14} />
-            </Button>
-            <Button variant="shadow" size="sm" isIconOnly onPress={onRemove}>
-              <Trash size={14} />
-            </Button>
+    const title = feed.translation?.title ?? "Untitled";
+    const description = feed.translation?.description ?? "";
+
+    const handleEdit = useCallback(() => {
+      router.push(`/feed/create?token=${token}`);
+    }, [router, token]);
+
+    return (
+      <Card>
+        <Card.Header>
+          <Card.Title
+            className="line-clamp-2 text-xl"
+            style={{
+              viewTransitionName: `view-transition-link-${token}`,
+            }}>
+            {title}
+          </Card.Title>
+        </Card.Header>
+        <Card.Content className="gap-2">
+          <p className="mt-auto line-clamp-2 text-xs font-bold">
+            {description}
+          </p>
+          <span className="flex items-center justify-between text-sm font-bold">
+            <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
+            <span className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onPress={handleEdit}>
+                <Pencil className="size-4" />
+                <span className="text-xs">Edit</span>
+              </Button>
+              <Button variant="danger" size="sm" onPress={onRemove}>
+                <Trash className="size-4" />
+                <span className="text-xs">Delete</span>
+              </Button>
+            </span>
           </span>
-        </span>
-      </CardBody>
-    </Card>
-  );
-};
+        </Card.Content>
+      </Card>
+    );
+  }
+);
 
-const FeedList: FC<Props> = (props) => {
-  const { initFeed, nextCursor, query = {} } = props;
+PreviewFeedItem.displayName = "PreviewFeedItem";
+
+const FeedList = ({ initFeed, nextCursor, query = {} }: Props) => {
   const {
     data,
     isSuccess,
@@ -169,7 +177,7 @@ const FeedList: FC<Props> = (props) => {
         ...query,
         cursor: pageParam,
       }),
-      getNextPageParam: (lastPage) => {
+      getNextPageParam: (lastPage: RouterOutputs["feeds"]["list"]) => {
         if (!lastPage.nextCursor) return null;
 
         if (
@@ -209,47 +217,66 @@ const FeedList: FC<Props> = (props) => {
       rootMargin: "0px 0px 200px 0px",
     },
   });
+
   return (
     <div className="w-full">
-      {isSuccess && flatData.length === 0 && <Empty />}
+      {isSuccess && flatData.length === 0 ? <Empty /> : null}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        {isSuccess &&
-          !!flatData &&
-          flatData.map((feed, index) => {
-            if (flatData.length === index + 1) {
-              return <FeedItem key={feed.id} ref={ref} feed={feed} />;
-            }
-            return <FeedItem key={feed.id} feed={feed} />;
-          })}
-        {(isFetchingNextPage || isLoading) && <Skeleton />}
+        {isSuccess && flatData.length > 0
+          ? flatData.map((feed, index) => {
+              const isLastItem = flatData.length === index + 1;
+              return (
+                <FeedItem
+                  key={feed.id}
+                  ref={isLastItem ? ref : undefined}
+                  feed={feed}
+                />
+              );
+            })
+          : null}
+        {isFetchingNextPage || isLoading ? <FeedSkeleton /> : null}
       </div>
     </div>
   );
 };
 
 export const Drafts = () => {
-  const [now, setNow] = useState(dayjs().valueOf().toString());
-  const drafts = useGetAllDrafts(now);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const router = useRouter();
+  const drafts = useAllDrafts();
+  const deleteDraft = useDraftStore(useShallow((state) => state.deleteDraft));
+
+  const handleRemove = useCallback(
+    (token: string) => {
+      deleteDraft(token);
+      setRefreshKey((prev) => prev + 1);
+      router.refresh();
+    },
+    [deleteDraft, router]
+  );
+
   if (drafts.length === 0) {
     return <Empty />;
   }
+
   return (
     <div className="w-full">
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        {drafts.map((draft, i) =>
-          draft?.state?.draft ? (
+        {drafts.map((draft) =>
+          draft?.formData ? (
             <PreviewFeedItem
-              key={i}
+              key={`${draft.token}-${refreshKey}`}
               feed={{
-                ...draft.state.draft,
-                createdAt: dayjs(draft.state.draft.createdAt).toISOString(),
-                updatedAt: dayjs(draft.state.draft.updatedAt).toISOString(),
+                ...draft.formData,
+                createdAt: draft.formData.createdAt
+                  ? dayjs(draft.formData.createdAt).toISOString()
+                  : undefined,
+                updatedAt: draft.formData.updatedAt
+                  ? dayjs(draft.formData.updatedAt).toISOString()
+                  : undefined,
               }}
-              token={draft.state.token}
-              onRemove={() => {
-                localStorage.removeItem(`CONTENT_DRAFT_${draft.state.token}`);
-                setNow(dayjs().valueOf().toString());
-              }}
+              token={draft.token}
+              onRemove={() => handleRemove(draft.token)}
             />
           ) : null
         )}
@@ -259,5 +286,5 @@ export const Drafts = () => {
 };
 
 export default memo(FeedList, (prev, next) => {
-  return prev.initFeed === next.initFeed;
+  return prev.initFeed === next.initFeed && prev.query === next.query;
 });

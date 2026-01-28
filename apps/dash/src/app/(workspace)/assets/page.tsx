@@ -1,9 +1,13 @@
-import { UploadModal } from "@/components/file/upload-modal";
+import { ViewTransition } from "react";
 
-export default function Page() {
+const Pages = () => {
   return (
-    <div>
-      <UploadModal />
-    </div>
+    <ViewTransition>
+      <div>
+        <h2 className="text-2xl font-bold">Assets</h2>
+      </div>
+    </ViewTransition>
   );
-}
+};
+
+export default Pages;

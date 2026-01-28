@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "@chia/tailwind/shadcn-ui.css";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
+@import "@chia/tailwind/novel.css";
+@import "@chia/tailwind/animations.css";
+@import "@chia/tailwind/preset.css";
+
+@plugin "../themes/heroui";
+
+@source "./src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}";
+@source "../../node_modules/@chia/contents/src/**/*.tsx";
+@source "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+
+@theme {
+  --color-primary: #00e1ff;
+  --color-secondary: #ff00e1;
+  --color-sec-text: #444444;
+  --color-bgPurple: rgba(111, 66, 193, 0.65);
+  --color-bgPink: rgba(255, 107, 237, 0.35);
+  --color-bgBlue: rgba(117, 149, 255, 0.3);
+}
+
+@layer components {
+  .animated-feature-cards::before {
+    background: radial-gradient(
+      1000px circle at var(--x) var(--y),
+      #3aecf8 0,
+      #5295dc 25%,
+      rgba(255, 255, 255, 0) 50%,
+      transparent 80%
+    );
+    content: "";
+  }
+}
+
+[data-rmiz-modal-overlay="visible"] {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dark [data-rmiz-modal-overlay="visible"] {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-rmiz-btn-unzoom] {
+  visibility: hidden;
+}
+
+[data-rmiz-modal-img] {
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+}
+
+::selection {
+  background: #8884;
+}
+
+:root {
+  --color-fd-background: unset;
+}

@@ -1,0 +1,105 @@
+"use client";
+
+import { useTransitionRouter } from "next-view-transitions";
+import { useCallback } from "react";
+
+import type { ButtonProps } from "@heroui/react";
+import { Button, useDisclosure, Spinner } from "@heroui/react";
+import { useDebouncedCallback } from "@tanstack/react-pacer";
+import { Search } from "lucide-react";
+
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandLoading,
+} from "@chia/ui/cmd";
+import { cn } from "@chia/ui/utils/cn.util";
+
+import { useSearchFeeds } from "@/hooks/use-search-feeds";
+import type { FeedSearchResult } from "@/resources/feed.resource";
+
+const SearchForm = ({
+  isOpen,
+  onOpenChange,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const router = useTransitionRouter();
+  const { mutate: searchFeeds, data: feeds, isPending } = useSearchFeeds();
+  const handleSearch = useDebouncedCallback(
+    (query: string) => {
+      if (!query || query.length < 3) return;
+      searchFeeds({ query });
+    },
+    {
+      wait: 500, // Wait 500ms between executions
+    }
+  );
+
+  const handleSelect = useCallback(
+    (feed: FeedSearchResult) => {
+      router.push(`/feed/edit/${feed.id}`);
+    },
+    [router]
+  );
+
+  return (
+    <CommandDialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+      commandProps={{
+        shouldFilter: false,
+      }}>
+      <CommandInput
+        placeholder="Search Feeds"
+        name="query"
+        classNames={{
+          wrapper: ["w-full", !feeds?.length && !isPending && "border-none"],
+        }}
+        onValueChange={(value) => handleSearch(value)}
+      />
+      <CommandList>
+        {isPending && (
+          <CommandLoading className="flex w-full justify-center py-10">
+            <Spinner />
+          </CommandLoading>
+        )}
+        {feeds?.length === 0 && <CommandEmpty>No results found.</CommandEmpty>}
+        {feeds?.map((feed) => (
+          <CommandItem key={feed.id} onSelect={() => handleSelect(feed)}>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium">{feed.title}</p>
+              <p className="text-muted-foreground text-xs">{feed.excerpt}</p>
+            </div>
+          </CommandItem>
+        ))}
+      </CommandList>
+    </CommandDialog>
+  );
+};
+
+const SearchFeed = (props: ButtonProps) => {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  return (
+    <>
+      <Button
+        radius="full"
+        variant="bordered"
+        startContent={<Search className="size-4" />}
+        fullWidth={false}
+        className={cn(props.className)}
+        {...props}
+        onPress={onOpen}>
+        Search Feeds
+      </Button>
+      <SearchForm isOpen={isOpen} onOpenChange={onOpenChange} />
+    </>
+  );
+};
+
+export default SearchFeed;

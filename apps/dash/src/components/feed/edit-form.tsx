@@ -1,33 +1,35 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 
+import { Form } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { feedsContracts } from "@chia/api/orpc/contracts";
-import { Form } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
 
-import type { Ref } from "./edit-fields";
 import EditFields from "./edit-fields";
 
-const EditForm = ({
-  defaultValues,
-  feedId,
-}: {
+const cloneFormData = <T,>(data: T): T => {
+  return JSON.parse(JSON.stringify(data));
+};
+
+interface EditFormProps {
   defaultValues: Partial<feedsContracts.CreateFeedInput>;
   feedId: number;
-}) => {
-  const editFieldsRef = useRef<Ref>(null);
-  const router = useRouter();
+}
+
+const EditForm = ({ defaultValues, feedId }: EditFormProps) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
+
   const update = useMutation(
     orpc.feeds.update.mutationOptions({
       async onSuccess(_data, { type }) {
@@ -40,9 +42,10 @@ const EditForm = ({
       },
     })
   );
+
   const form = useForm<feedsContracts.CreateFeedInput>({
     defaultValues: {
-      ...defaultValues,
+      ...cloneFormData(defaultValues),
       createdAt: defaultValues?.createdAt
         ? dayjs(defaultValues.createdAt).valueOf()
         : dayjs().valueOf(),
@@ -51,9 +54,8 @@ const EditForm = ({
     resolver: zodResolver(feedsContracts.createFeedSchema),
   });
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) =>
-    form.handleSubmit((values) => {
-      const content = editFieldsRef.current?.getContent(values.contentType);
+  const onSubmit = useCallback(
+    (values: feedsContracts.CreateFeedInput) => {
       update.mutate({
         feedId,
         type: values.type,
@@ -63,21 +65,32 @@ const EditForm = ({
         updatedAt: values.updatedAt,
         translation: values.translation,
         content: {
-          content: content?.content,
-          source: content?.source,
+          content: values.content?.content,
+          source: values.content?.source,
         },
       });
-    })(e);
+    },
+    [update, feedId]
+  );
+
+  const handleSubmit = form.handleSubmit(onSubmit);
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={onSubmit}
-        className="flex w-full max-w-[700px] flex-col gap-10">
-        <EditFields ref={editFieldsRef} mode="edit" feedId={feedId} />
-        <SubmitForm className="w-full max-w-[150px]">Update</SubmitForm>
-      </form>
-    </Form>
+    <FormProvider {...form}>
+      <Form onSubmit={handleSubmit} className="flex w-full flex-col gap-10">
+        <EditFields
+          disabled={update.isPending}
+          isPending={update.isPending}
+          mode="edit"
+          feedId={feedId}
+        />
+        <SubmitForm
+          className="w-full max-w-[150px]"
+          isPending={update.isPending}>
+          Update
+        </SubmitForm>
+      </Form>
+    </FormProvider>
   );
 };
 

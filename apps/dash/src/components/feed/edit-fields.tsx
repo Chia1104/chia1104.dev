@@ -2,78 +2,66 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useRef, useState, forwardRef, useImperativeHandle, memo } from "react";
-import { useFormContext } from "react-hook-form";
+import { useState, forwardRef, useImperativeHandle, memo, useId } from "react";
+import { Controller, useFormContext } from "react-hook-form";
 
 import {
   Input,
-  Textarea,
+  TextArea,
   Tabs,
-  Tab,
-  DatePicker,
+  DateInputGroup,
   Select,
-  SelectItem,
   Switch,
   Spinner,
-  Spacer,
   Button,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
   Skeleton,
+  TextField,
+  Label,
+  FieldError,
+  ListBox,
+  Description,
+  DateField,
+  AlertDialog,
 } from "@heroui/react";
-import { parseDate } from "@internationalized/date";
+import { fromDate } from "@internationalized/date";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Callout } from "fumadocs-ui/components/callout";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
 import { toast } from "sonner";
 
 import type { feedsContracts } from "@chia/api/orpc/contracts";
 import { FeedType, ContentType } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
-import { FormControl, FormField, FormItem, FormMessage } from "@chia/ui/form";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
 import dayjs from "@chia/utils/day";
 
-import { useDraft } from "@/hooks/use-draft";
 import { orpc } from "@/libs/orpc/client";
-import { useGenerateFeedSlug } from "@/services/ai/hooks";
-
-import {
-  EditFieldsContext,
-  useEditFieldsContext,
-  DEFAULT_EDIT_FIELDS_CONTEXT,
-} from "./edit-fields.context";
+import { useEditFields } from "@/store/draft";
+import type { ContentData, EditFieldsContext } from "@/store/draft";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => <Skeleton className="min-h-[700px] w-full rounded-xl" />,
 });
 
-const GenerateFeedSlug = dynamic(
-  () => import("./generate").then((mod) => mod.GenerateFeedSlug),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[32px] w-[70px] rounded-md" />,
-  }
-);
+const CONTENT_TYPE_OPTIONS = [
+  { key: ContentType.Mdx, label: ContentType.Mdx.toUpperCase() },
+  { key: ContentType.Tiptap, label: ContentType.Tiptap.toUpperCase() },
+] as const;
 
-const GenerateFeedDescription = dynamic(
-  () => import("./generate").then((mod) => mod.GenerateFeedDescription),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[32px] w-[70px] rounded-md" />,
-  }
-);
+const FEED_TYPE_TABS = [
+  { id: FeedType.Post, icon: GalleryVerticalEnd, label: "Post" },
+  { id: FeedType.Note, icon: Pencil, label: "Note" },
+] as const;
 
-const GenerateFeedContent = dynamic(
-  () => import("./generate").then((mod) => mod.GenerateFeedContent),
-  {
-    ssr: false,
-    loading: () => <Skeleton className="h-[32px] w-[70px] rounded-md" />,
-  }
-);
+const MONACO_OPTIONS = {
+  minimap: { enabled: false },
+  wordWrap: "on" as const,
+  scrollBeyondLastLine: false,
+  scrollbar: { vertical: "auto" as const },
+  lineNumbers: "off" as const,
+  quickSuggestions: false,
+};
 
 interface Props {
   disabled?: boolean;
@@ -86,542 +74,454 @@ interface Props {
 
 export interface Ref {
   content: EditFieldsContext["content"];
-  getContent: (type?: ContentType | null) => {
-    content: string;
-    source: string;
-  };
+  getContent: (type?: ContentType | null) => ContentData;
 }
 
-const DeleteButton = ({ feedId }: { feedId: number }) => {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const deleteFeed = useMutation(
-    orpc.feeds.delete.mutationOptions({
-      onSuccess: async () => {
-        toast.success("Feed deleted successfully");
-        await queryClient.invalidateQueries(orpc.feeds.list.queryOptions());
-        router.push("/feed/posts");
-      },
-      onError: (err) => {
-        toast.error(err.message);
-      },
-    })
-  );
+const DeleteButton = memo(
+  ({ feedId, type }: { feedId: number; type: FeedType }) => {
+    const router = useRouter();
+    const queryClient = useQueryClient();
 
-  return (
-    <Popover backdrop="blur">
-      <PopoverTrigger>
-        <Button isLoading={deleteFeed.isPending} color="danger" variant="flat">
-          <span className="text-xs">Delete</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="gap-3 p-4">
-        <div className="text-small font-bold">
-          Are you sure you want to delete this feed?
-        </div>
-        <Button
-          isLoading={deleteFeed.isPending}
-          color="danger"
-          variant="flat"
-          onPress={() => {
-            deleteFeed.mutate({
-              feedId,
-            });
-          }}>
-          <span className="text-xs">Delete</span>
-        </Button>
-      </PopoverContent>
-    </Popover>
-  );
-};
+    const deleteFeed = useMutation(
+      orpc.feeds.delete.mutationOptions({
+        onSuccess: async () => {
+          toast.success("Feed deleted successfully");
+          await queryClient.invalidateQueries(
+            orpc.feeds.list.queryOptions({
+              input: {
+                type,
+              },
+            })
+          );
+          router.push(`/feed/${type}s`);
+        },
+        onError: (err) => {
+          toast.error(err.message);
+        },
+      })
+    );
 
-const SlugField = () => {
+    const handleDelete = () => {
+      deleteFeed.mutate({ feedId });
+    };
+
+    return (
+      <AlertDialog>
+        <Button variant="danger">Delete</Button>
+        <AlertDialog.Backdrop>
+          <AlertDialog.Container>
+            <AlertDialog.Dialog className="sm:max-w-[400px]">
+              <AlertDialog.CloseTrigger />
+              <AlertDialog.Header>
+                <AlertDialog.Icon status="danger" />
+                <AlertDialog.Heading>
+                  Delete feed permanently?
+                </AlertDialog.Heading>
+              </AlertDialog.Header>
+              <AlertDialog.Body>
+                <p>
+                  This will permanently delete <strong>My Awesome Feed</strong>{" "}
+                  and all of its data. This action cannot be undone.
+                </p>
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button slot="close" variant="tertiary">
+                  Cancel
+                </Button>
+                <Button onPress={handleDelete} variant="danger">
+                  Delete Feed
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
+    );
+  }
+);
+
+DeleteButton.displayName = "DeleteButton";
+
+const SlugField = memo(() => {
+  const id = useId();
   const form = useFormContext<feedsContracts.CreateFeedInput>();
-  const editFields = useEditFieldsContext();
-  const { completion } = useGenerateFeedSlug();
+  const { disabled, mode } = useEditFields();
+
+  const isFieldDisabled = disabled || mode === "edit";
+  const showDescription = mode === "create";
 
   return (
-    <FormField<feedsContracts.CreateFeedInput, "slug">
+    <Controller
       control={form.control}
       name="slug"
-      render={({ field, fieldState }) => (
-        <FormItem>
-          <FormControl>
-            <Input
-              disabled={editFields.disabled || editFields.mode === "edit"}
-              label="Slug"
-              isInvalid={fieldState.invalid}
-              description="The slug will automatically be generated based on the title.(slug can't be changed after creation)"
-              endContent={
-                <GenerateFeedSlug
-                  title={form.watch("translation.title")}
-                  onSuccess={(data) => {
-                    field.onChange(data);
-                  }}
-                  preGenerate={() => {
-                    field.onChange("");
-                  }}
-                />
-              }
-              {...field}
-              placeholder={completion}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
+      render={({ field, fieldState: { invalid, error } }) => (
+        <TextField isInvalid={invalid} fullWidth>
+          <Label htmlFor={`${id}-slug`}>Slug</Label>
+          <Input
+            id={`${id}-slug`}
+            disabled={isFieldDisabled}
+            placeholder="slug"
+            {...field}
+          />
+          <FieldError>{error?.message}</FieldError>
+          {showDescription && (
+            <Description>
+              The slug will be generated based on the title (cannot be changed
+              after creation)
+            </Description>
+          )}
+        </TextField>
       )}
     />
   );
-};
+});
 
-export const MetadataFields = ({ feedId }: { feedId?: number }) => {
+SlugField.displayName = "SlugField";
+
+const FeedTypeTabs = memo(() => {
   const form = useFormContext<feedsContracts.CreateFeedInput>();
-  const editFields = useEditFieldsContext();
-  const articleType = useRef([
-    { key: ContentType.Mdx, label: ContentType.Mdx.toUpperCase() },
-    { key: ContentType.Tiptap, label: ContentType.Tiptap.toUpperCase() },
-  ]);
-  const [contentType, setContentType] = useState(
-    new Set([form.getValues("contentType")])
+
+  return (
+    <Controller
+      control={form.control}
+      name="type"
+      render={({ field }) => (
+        <Tabs
+          selectedKey={field.value}
+          onSelectionChange={(key) => field.onChange(key)}>
+          <Tabs.List aria-label="Feed type">
+            {FEED_TYPE_TABS.map(({ id, icon: Icon, label }) => (
+              <Tabs.Tab key={id} id={id}>
+                <div className="flex items-center space-x-2">
+                  <Icon className="size-5" />
+                  <span>{label}</span>
+                </div>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs>
+      )}
+    />
   );
+});
+
+FeedTypeTabs.displayName = "FeedTypeTabs";
+
+const TitleField = memo(
+  ({ id, disabled }: { id: string; disabled?: boolean }) => {
+    const form = useFormContext<feedsContracts.CreateFeedInput>();
+
+    return (
+      <Controller
+        control={form.control}
+        name="translation.title"
+        render={({ field, fieldState: { invalid, error } }) => (
+          <TextField isInvalid={invalid} isRequired fullWidth>
+            <Label htmlFor={`${id}-title`}>Title</Label>
+            <Input
+              id={`${id}-title`}
+              disabled={disabled}
+              placeholder="Untitled"
+              {...field}
+            />
+            <FieldError>{error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+    );
+  }
+);
+
+TitleField.displayName = "TitleField";
+
+const DescriptionField = memo(
+  ({ id, disabled }: { id: string; disabled?: boolean }) => {
+    const form = useFormContext<feedsContracts.CreateFeedInput>();
+
+    return (
+      <Controller
+        control={form.control}
+        name="translation.description"
+        render={({ field, fieldState: { invalid, error } }) => (
+          <TextField isInvalid={invalid} fullWidth>
+            <Label htmlFor={`${id}-description`}>Description</Label>
+            <TextArea
+              id={`${id}-description`}
+              disabled={disabled}
+              placeholder="Enter description"
+              rows={7}
+              {...field}
+              value={field.value ?? ""}
+            />
+            <FieldError>{error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+    );
+  }
+);
+
+DescriptionField.displayName = "DescriptionField";
+
+export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
+  const id = useId();
+  const form = useFormContext<feedsContracts.CreateFeedInput>();
+  const { disabled, mode } = useEditFields();
+
+  const showDeleteButton = mode === "edit" && feedId;
+  const showUpdatedDate = mode === "edit";
 
   return (
     <div className="flex w-full flex-col gap-5">
-      <div className="flex justify-between">
-        <FormField<feedsContracts.CreateFeedInput, "type">
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Tabs
-                  isDisabled={editFields.disabled}
-                  selectedKey={field.value}
-                  onSelectionChange={(value) => field.onChange(value)}
-                  aria-label="feed type"
-                  color="secondary"
-                  size="sm">
-                  <Tab
-                    key={FeedType.Post}
-                    title={
-                      <div className="flex items-center space-x-2">
-                        <GalleryVerticalEnd className="size-5" />
-                        <span>Post</span>
-                      </div>
-                    }
-                  />
-                  <Tab
-                    key={FeedType.Note}
-                    title={
-                      <div className="flex items-center space-x-2">
-                        <Pencil className="size-5" />
-                        <span>Note</span>
-                      </div>
-                    }
-                  />
-                </Tabs>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {editFields.mode === "edit" && feedId && (
-          <DeleteButton feedId={feedId} />
+      <div className="flex items-center justify-between">
+        <FeedTypeTabs />
+        {showDeleteButton && feedId && (
+          <DeleteButton feedId={feedId} type={form.watch("type")} />
         )}
       </div>
-      <FormField<feedsContracts.CreateFeedInput, "translation.title">
-        control={form.control}
-        name="translation.title"
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormControl>
-              <Input
-                disabled={editFields.disabled}
-                label="Title *"
-                labelPlacement="outside"
-                placeholder="Untitled"
-                isInvalid={fieldState.invalid}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+
+      <TitleField id={id} disabled={disabled} />
+
       <SlugField />
-      <FormField<feedsContracts.CreateFeedInput, "translation.description">
-        control={form.control}
-        name="translation.description"
-        render={({ field, fieldState }) => (
-          <FormItem>
-            <FormControl>
-              <Textarea
-                disabled={editFields.disabled}
-                label="Description"
-                labelPlacement="outside"
-                placeholder="Description"
-                minRows={7}
-                isInvalid={fieldState.invalid}
-                endContent={
-                  <GenerateFeedDescription
-                    input={{
-                      title: form.watch("translation.title"),
-                      content: form.watch("content.content") ?? undefined,
-                    }}
-                    onSuccess={(data) => {
-                      field.onChange(data);
-                    }}
-                    preGenerate={() => {
-                      field.onChange("");
-                    }}
-                  />
-                }
-                {...field}
-                value={field.value ?? ""}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+
+      <DescriptionField id={id} disabled={disabled} />
+
       <div className="flex w-full flex-col gap-5 md:flex-row">
         <div className="flex w-full gap-5 md:w-1/2">
-          <FormField<feedsContracts.CreateFeedInput, "createdAt">
+          <Controller
             control={form.control}
             name="createdAt"
-            render={({ field, fieldState }) => (
-              <FormItem
-                className={cn(editFields.mode === "edit" ? "w-1/2" : "w-full")}>
-                <FormControl>
-                  <DatePicker
-                    isInvalid={fieldState.invalid}
-                    labelPlacement="outside"
-                    className="w-full"
-                    label="Create"
-                    value={
-                      field.value
-                        ? parseDate(
-                            dayjs(field.value).format(
-                              // ISO 8601 date string, with no time
-                              "YYYY-MM-DD"
-                            )
-                          )
-                        : null
-                    }
-                    onChange={(date) => {
-                      field.onChange(dayjs(date?.toString()).valueOf());
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            render={({ fieldState: { invalid, error }, field }) => (
+              <DateField
+                value={
+                  field.value
+                    ? fromDate(dayjs(field.value).toDate(), "UTC")
+                    : null
+                }
+                onChange={(value) =>
+                  field.onChange(dayjs(value?.toString()).valueOf())
+                }
+                isInvalid={invalid}
+                fullWidth
+                className={cn(showUpdatedDate ? "md:w-1/2" : "w-full")}>
+                <Label htmlFor={`${id}-createdAt`}>Created Date</Label>
+                <DateInputGroup id={`${id}-createdAt`}>
+                  <DateInputGroup.Input>
+                    {(segment) => <DateInputGroup.Segment segment={segment} />}
+                  </DateInputGroup.Input>
+                </DateInputGroup>
+                <FieldError>{error?.message}</FieldError>
+              </DateField>
             )}
           />
-          {editFields.mode === "edit" && (
-            <FormField<feedsContracts.CreateFeedInput, "updatedAt">
+          {showUpdatedDate && (
+            <Controller
               control={form.control}
               name="updatedAt"
-              render={({ field, fieldState }) => (
-                <FormItem className="w-1/2">
-                  <FormControl>
-                    <DatePicker
-                      isInvalid={fieldState.invalid}
-                      labelPlacement="outside"
-                      className="w-full"
-                      label="Update"
-                      value={
-                        field.value
-                          ? parseDate(
-                              dayjs(field.value).format(
-                                // ISO 8601 date string, with no time
-                                "YYYY-MM-DD"
-                              )
-                            )
-                          : null
-                      }
-                      onChange={(date) => {
-                        field.onChange(dayjs(date?.toString()).valueOf());
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ fieldState: { invalid, error }, field }) => (
+                <DateField
+                  value={
+                    field.value
+                      ? fromDate(dayjs(field.value).toDate(), "UTC")
+                      : null
+                  }
+                  onChange={(value) =>
+                    field.onChange(dayjs(value?.toString()).valueOf())
+                  }
+                  isInvalid={invalid}
+                  fullWidth
+                  className="md:w-1/2">
+                  <Label htmlFor={`${id}-updatedAt`}>Updated Date</Label>
+                  <DateInputGroup id={`${id}-updatedAt`}>
+                    <DateInputGroup.Input>
+                      {(segment) => (
+                        <DateInputGroup.Segment segment={segment} />
+                      )}
+                    </DateInputGroup.Input>
+                  </DateInputGroup>
+                  <FieldError>{error?.message}</FieldError>
+                </DateField>
               )}
             />
           )}
         </div>
+
         <div className="flex w-full items-end gap-5 md:w-1/2">
-          <FormField<feedsContracts.CreateFeedInput, "contentType">
+          <Controller
             control={form.control}
             name="contentType"
             render={({ fieldState, field }) => (
-              <FormItem className="w-1/2">
-                <FormControl>
-                  <Select
-                    // @ts-expect-error - why Set ??
-                    selectedKeys={contentType}
-                    // @ts-expect-error - why Set ??
-                    onSelectionChange={setContentType}
-                    disabled={editFields.disabled}
-                    isInvalid={fieldState.invalid}
-                    items={articleType.current}
-                    onChange={(value) => {
-                      field.onChange(value);
-                    }}
-                    isDisabled
-                    defaultSelectedKeys={[ContentType.Mdx]}
-                    label="Content Type"
-                    placeholder="Select a type"
-                    labelPlacement="outside"
-                    className="w-full">
-                    {(item) => (
-                      <SelectItem key={item.key}>{item.label}</SelectItem>
-                    )}
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <div className="flex w-1/2 flex-col gap-1">
+                <Label htmlFor={`${id}-contentType`}>Content Type</Label>
+                <Select
+                  id={`${id}-contentType`}
+                  value={field.value}
+                  onChange={(key) => {
+                    if (key) {
+                      field.onChange(key);
+                    }
+                  }}
+                  isDisabled={disabled || true}
+                  isInvalid={fieldState.invalid}
+                  placeholder="Select type">
+                  <Select.Trigger>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      {CONTENT_TYPE_OPTIONS.map((item) => (
+                        <ListBox.Item key={item.key} id={item.key}>
+                          {item.label}
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+                {fieldState.error && (
+                  <p className="px-1 text-xs text-red-500">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </div>
             )}
           />
-          <FormField<feedsContracts.CreateFeedInput, "published">
+          <Controller
             control={form.control}
             name="published"
             render={({ field }) => (
-              <FormItem className="w-1/2">
-                <FormControl>
-                  <Switch
-                    disabled={editFields.disabled}
-                    color="secondary"
-                    isSelected={Boolean(field.value)}
-                    onValueChange={field.onChange}>
-                    Published
-                  </Switch>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <div className="w-1/2">
+                <Switch
+                  isSelected={Boolean(field.value)}
+                  onChange={field.onChange}>
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                  <Label className="text-sm">Published</Label>
+                </Switch>
+              </div>
             )}
           />
         </div>
       </div>
     </div>
   );
-};
+});
 
-const EditorInfo = memo(() => {
+MetadataFields.displayName = "MetadataFields";
+
+const SwitchEditor = memo(() => {
   const form = useFormContext<feedsContracts.CreateFeedInput>();
-  return (
-    <>
-      {form.watch("contentType") !== ContentType.Tiptap ? (
-        <Callout type="info" className="my-0">
-          You are using the markdown editor. You can use markdown syntax to
-          write your content. <br />
-          Currently, the preview feature is only available for basic markdown
-          syntax
-          <Spacer />
-        </Callout>
-      ) : (
-        <Callout type="warn" className="my-0">
-          You are using <strong className="font-bold">UNSTABLE</strong> Tiptap
-          editor. Please be aware that this feature is still in development and
-          may not work as expected.
-        </Callout>
-      )}
-    </>
+  const { disabled } = useEditFields();
+  const { isDarkMode } = useTheme();
+
+  const contentType = form.watch("contentType") ?? ContentType.Mdx;
+
+  const editorTheme = isDarkMode ? "vs-dark" : "light";
+  const editorClassName = cn("bg-white py-5 dark:bg-[#1e1e1e]");
+  const containerClassName = cn(
+    "relative w-full overflow-hidden rounded-2xl shadow-lg",
+    disabled && "pointer-events-none"
+  );
+
+  return contentType !== ContentType.Mdx ? null : (
+    <div className={containerClassName}>
+      <Controller
+        control={form.control}
+        name="content.content"
+        render={({ field }) => (
+          <MEditor
+            className={editorClassName}
+            height="700px"
+            defaultLanguage="markdown"
+            theme={editorTheme}
+            loading={<Spinner />}
+            onChange={(value) => field.onChange(value ?? "")}
+            value={field.value ?? ""}
+            options={MONACO_OPTIONS}
+          />
+        )}
+      />
+    </div>
   );
 });
 
-const SwitchEditor = () => {
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
-  const editFields = useEditFieldsContext();
-  const { isDarkMode } = useTheme();
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const { setState, getState } = useDraft(editFields.token);
-
-  const editorCreator = (contentType: ContentType) => {
-    switch (contentType) {
-      case ContentType.Mdx:
-        return (
-          <div
-            className={cn(
-              "relative w-full overflow-hidden rounded-2xl shadow-lg",
-              editFields.disabled && "pointer-events-none"
-            )}>
-            <div className="absolute top-3 right-3 z-30">
-              <GenerateFeedContent
-                input={{
-                  title: form.watch("translation.title"),
-                  description: form.watch("translation.description") ?? "",
-                  content: editFields.content.mdx.content,
-                }}
-                onSuccess={(data) => {
-                  console.log(data);
-                }}
-              />
-            </div>
-            <MEditor
-              className={cn("bg-white py-5 dark:bg-[#1e1e1e]")}
-              height="700px"
-              defaultLanguage="markdown"
-              theme={isDarkMode ? "vs-dark" : "light"}
-              loading={<Spinner />}
-              onChange={(value) => {
-                editFields.setContent((prev) => ({
-                  ...prev,
-                  [ContentType.Mdx]: {
-                    content: value ?? "",
-                    source: value ?? "",
-                  },
-                }));
-                if (
-                  editFields.mode === "create" &&
-                  editFields.token.length > 0
-                ) {
-                  setState({
-                    content: {
-                      [ContentType.Mdx]: {
-                        content: value ?? "",
-                        source: value ?? "",
-                      },
-                    },
-                  });
-                }
-              }}
-              value={
-                editFields.content.mdx.content ||
-                getState().content?.mdx?.content
-              }
-              options={{
-                minimap: { enabled: false },
-                wordWrap: "on",
-                scrollBeyondLastLine: false,
-                scrollbar: { vertical: "auto" },
-                lineNumbers: "off",
-                quickSuggestions: false,
-              }}
-            />
-          </div>
-        );
-      // case ContentType.Tiptap:
-      //   return (
-      //     <Novel
-      //       editable={!editFields.disabled}
-      //       onUpdate={(e) => {
-      //         const content = e.editor.storage.markdown.getMarkdown();
-      //         const source = JSON.stringify(e.editor.getJSON());
-      //         editFields.setContent((prev) => ({
-      //           ...prev,
-      //           [ContentType.Tiptap]: {
-      //             content,
-      //             source,
-      //           },
-      //         }));
-      //         if (editFields.mode === "create" && editFields.token.length > 0) {
-      //           setState({
-      //             content: {
-      //               [ContentType.Tiptap]: {
-      //                 content,
-      //                 source,
-      //               },
-      //             },
-      //           });
-      //         }
-      //       }}
-      //       className="min-h-[700px]"
-      //       initialContent={JSON.parse(
-      //         editFields.content.tiptap.source ||
-      //           getState().content?.tiptap?.source ||
-      //           "{}"
-      //       )}
-      //     />
-      //   );
-      default:
-        return null;
-    }
-  };
-
-  return <>{editorCreator(form.watch("contentType") ?? ContentType.Mdx)}</>;
-};
+SwitchEditor.displayName = "SwitchEditor";
 
 const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
   const form = useFormContext<feedsContracts.CreateFeedInput>();
-
-  const createDefaultContent = () => {
-    const contentType = form.getValues("contentType");
-    if (!contentType) {
-      return DEFAULT_EDIT_FIELDS_CONTEXT.content;
-    }
-    switch (contentType) {
-      case ContentType.Mdx:
-        return {
-          mdx: {
-            content: form.getValues("content.content") ?? "",
-            source: form.getValues("content.source") ?? "",
-          },
-          tiptap: {
-            content: "",
-            source: "",
-          },
-        };
-      case ContentType.Tiptap:
-        return {
-          mdx: {
-            content: "",
-            source: "",
-          },
-          tiptap: {
-            content: form.getValues("content.content") ?? "",
-            source: form.getValues("content.source") ?? "",
-          },
-        };
-      default:
-        return DEFAULT_EDIT_FIELDS_CONTEXT.content;
-    }
-  };
-
-  const [content, setContent] = useState(createDefaultContent());
-
-  useImperativeHandle(ref, () => ({
+  const {
     content,
-    getContent: (type) => {
-      switch (type ?? form.watch("contentType")) {
-        case ContentType.Mdx:
-          return {
-            content: content.mdx.content,
-            source: content.mdx.source,
-          };
-        case ContentType.Tiptap:
-          return {
-            content: content.tiptap.content,
-            source: content.tiptap.source,
-          };
-        default:
-          return {
-            content: "",
-            source: "",
-          };
-      }
-    },
-  }));
+    setMode,
+    setDisabled,
+    setIsPending,
+    setContent: setStoreContent,
+    getContent,
+  } = useEditFields();
+
+  useState(() => {
+    setMode(mode);
+    if (props.disabled !== undefined) {
+      setDisabled(props.disabled);
+    }
+    if (props.isPending !== undefined) {
+      setIsPending(props.isPending);
+    }
+  });
+
+  useState(() => {
+    const contentType = form.getValues("contentType");
+    if (!contentType) return;
+
+    const formContent = form.getValues("content.content") ?? "";
+    const formSource = form.getValues("content.source") ?? "";
+
+    if (contentType === ContentType.Mdx) {
+      setStoreContent({
+        [ContentType.Mdx]: {
+          content: formContent,
+          source: formSource,
+        },
+      });
+    } else if (contentType === ContentType.Tiptap) {
+      setStoreContent({
+        [ContentType.Tiptap]: {
+          content: formContent,
+          source: formSource,
+        },
+      });
+    }
+  });
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      content,
+      getContent: (type) => {
+        const currentType = type ?? form.watch("contentType");
+        if (
+          currentType === ContentType.Mdx ||
+          currentType === ContentType.Tiptap
+        ) {
+          return getContent(currentType);
+        }
+        return getContent(ContentType.Mdx);
+      },
+    }),
+    [content, form, getContent]
+  );
 
   return (
-    <EditFieldsContext
-      value={{
-        isPending: props.isPending,
-        disabled: props.disabled,
-        content,
-        setContent,
-        mode,
-        token: props.token ?? "",
-      }}>
-      <div className={cn("flex flex-col gap-10", props.className)}>
-        <MetadataFields feedId={props.feedId} />
-        <EditorInfo />
-        <ErrorBoundary>
-          <SwitchEditor />
-        </ErrorBoundary>
-      </div>
-    </EditFieldsContext>
+    <div className={cn("flex flex-col gap-10", props.className)}>
+      <MetadataFields feedId={props.feedId} />
+      <ErrorBoundary>
+        <SwitchEditor />
+      </ErrorBoundary>
+    </div>
   );
 });
+
+Fields.displayName = "Fields";
 
 export default Fields;
