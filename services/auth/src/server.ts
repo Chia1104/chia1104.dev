@@ -1,10 +1,12 @@
-/**
- * @TODO: Work in progress
- */
 import { Elysia } from "elysia";
-// import { auth } from "@chia/auth";
+
+import { createAuth } from "@chia/auth";
+import { connectDatabase } from "@chia/db/client";
+import { kv } from "@chia/kv";
 
 import { env } from "./env";
+
+const db = await connectDatabase();
 
 const app = new Elysia()
   .get("/auth/health", () => {
@@ -12,7 +14,7 @@ const app = new Elysia()
       status: "ok",
     };
   })
-  // .mount(auth.handler)
+  .mount(createAuth(db, kv).handler)
   .listen(env.PORT);
 
 console.log(
