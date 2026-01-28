@@ -46,7 +46,7 @@ catalogs:
     '@heroui/styles': 3.0.0-beta.5
   next:
     '@next/third-parties': 16.1.5
-    next: 16.1.5
+    next: 16.1.6
   orpc:
     '@orpc/client': 1.13.4
     '@orpc/contract': 1.13.4
