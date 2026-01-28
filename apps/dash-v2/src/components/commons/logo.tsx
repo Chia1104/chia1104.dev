@@ -1,11 +1,19 @@
 import { Avatar } from "@heroui/react";
 
-export const Logo = () => {
+interface Props {
+  classNames?: {
+    root?: string;
+    image?: string;
+    fallback?: string;
+  };
+}
+
+export const Logo = ({ classNames }: Props) => {
   return (
-    <Avatar>
-      <Avatar.Image src="/icon.png" />
-      <Avatar.Fallback>
-        <span className="text-sm">C</span>
+    <Avatar className={classNames?.root}>
+      <Avatar.Image src="/icon.png" className={classNames?.image} />
+      <Avatar.Fallback className={classNames?.fallback}>
+        <span>C</span>
       </Avatar.Fallback>
     </Avatar>
   );

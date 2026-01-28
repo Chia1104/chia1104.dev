@@ -6,17 +6,19 @@ import { forwardRef, useMemo, memo, useState, useCallback } from "react";
 import { Card, Button, Chip } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
 import DateFormat from "@chia/ui/date-format";
-import Image from "@chia/ui/image";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs, RouterOutputs } from "@/libs/orpc/types";
-import { useAllDrafts } from "@/store/draft";
+import { useAllDrafts, useDraftStore } from "@/store/draft";
+
+import { Logo } from "../commons/logo";
 
 import FeedSkeleton from "./skeleton";
 
@@ -34,13 +36,9 @@ const Empty = memo(() => {
         className: "w-full",
       }}>
       <h3>Currently no feeds available</h3>
-      <Image
-        src="/img-empty.png"
-        alt="Empty"
-        width={150}
-        height={150}
-        blur={false}
-      />
+      <div className="not-prose">
+        <Logo classNames={{ root: "size-20" }} />
+      </div>
     </CHCard>
   );
 });
@@ -244,12 +242,18 @@ const FeedList = ({ initFeed, nextCursor, query = {} }: Props) => {
 
 export const Drafts = () => {
   const [refreshKey, setRefreshKey] = useState(0);
+  const router = useRouter();
   const drafts = useAllDrafts();
+  const deleteDraft = useDraftStore(useShallow((state) => state.deleteDraft));
 
-  const handleRemove = useCallback((token: string) => {
-    localStorage.removeItem(`FEED_DRAFT_${token}`);
-    setRefreshKey((prev) => prev + 1);
-  }, []);
+  const handleRemove = useCallback(
+    (token: string) => {
+      deleteDraft(token);
+      setRefreshKey((prev) => prev + 1);
+      router.refresh();
+    },
+    [deleteDraft, router]
+  );
 
   if (drafts.length === 0) {
     return <Empty />;
