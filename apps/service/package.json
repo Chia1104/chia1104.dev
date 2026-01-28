@@ -37,7 +37,7 @@
     "better-auth": "catalog:better-auth",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
-    "hono": "^4.11.6",
+    "hono": "^4.11.7",
     "hono-rate-limiter": "^0.5.3",
     "jsdom": "^27.4.0",
     "ky": "catalog:",

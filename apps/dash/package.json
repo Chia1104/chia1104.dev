@@ -48,7 +48,7 @@
     "dayjs": "catalog:",
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
-    "hono": "^4.11.6",
+    "hono": "^4.11.7",
     "ky": "catalog:",
     "lodash": "catalog:",
     "lucide-react": "^0.563.0",
