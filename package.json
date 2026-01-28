@@ -76,7 +76,7 @@
     "cross-env": "10.1.0",
     "dotenv": "^17.2.3",
     "eslint-plugin-turbo": "^2.7.6",
-    "happy-dom": "^20.3.9",
+    "happy-dom": "^20.4.0",
     "husky": "^9.1.7",
     "jest-extended": "catalog:testing-library",
     "lint-staged": "^16.2.7",
