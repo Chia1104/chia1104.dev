@@ -1,8 +1,12 @@
+import { ViewTransition } from "react";
+
 const Pages = () => {
   return (
-    <div>
-      <h2 className="text-2xl font-bold">Assets</h2>
-    </div>
+    <ViewTransition>
+      <div>
+        <h2 className="text-2xl font-bold">Assets</h2>
+      </div>
+    </ViewTransition>
   );
 };
 

@@ -1,5 +1,11 @@
+import { ViewTransition } from "react";
+
 import { LoginForm } from "@/components/auth/login-form";
 
 export default function Page() {
-  return <LoginForm />;
+  return (
+    <ViewTransition>
+      <LoginForm />
+    </ViewTransition>
+  );
 }

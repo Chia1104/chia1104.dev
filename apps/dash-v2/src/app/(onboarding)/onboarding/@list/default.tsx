@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ViewTransition } from "react";
 
 import { all } from "better-all";
 
@@ -16,10 +17,12 @@ const Default = async () => {
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Welcome {session.data.user.name}</h1>
-      <OrgList orgs={orgs.data} />
-    </section>
+    <ViewTransition>
+      <section className="flex flex-col gap-4">
+        <h1 className="text-2xl font-bold">Welcome {session.data.user.name}</h1>
+        <OrgList orgs={orgs.data} />
+      </section>
+    </ViewTransition>
   );
 };
 

@@ -11,7 +11,11 @@ import { LoadingFallback, ErrorFallback } from "./status-chip";
 
 const Footer = ({ className }: { className?: string }) => {
   return (
-    <footer className={cn("c-bg-third flex w-full flex-col", className)}>
+    <footer
+      className={cn(
+        "bg-sidebar border-sidebar-border flex w-full flex-col border-t",
+        className
+      )}>
       <div className="mx-auto w-full px-6 py-5 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex flex-col items-center justify-center gap-2 md:order-2 md:items-end">
           <ThemeSwitch
