@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 
+import { Description } from "@heroui/react";
 import { all } from "better-all";
 
 import OrgList from "@/components/auth/org-list";
@@ -20,6 +21,10 @@ const Default = async () => {
     <ViewTransition>
       <section className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold">Welcome {session.data.user.name}</h1>
+        <Description>
+          You are a member of multiple organizations. Please select one to
+          continue.
+        </Description>
         <OrgList orgs={orgs.data} />
       </section>
     </ViewTransition>

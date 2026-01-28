@@ -39,6 +39,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  typedRoutes: true,
   async headers() {
     return [
       {

@@ -131,9 +131,7 @@ const CreateForm = ({ type = FeedType.Post }: CreateFormProps) => {
           token={token}
           mode="create"
         />
-        <SubmitForm
-          className="w-full max-w-[150px]"
-          isPending={create.isPending}>
+        <SubmitForm className="w-full max-w-37.5" isPending={create.isPending}>
           Create
         </SubmitForm>
       </Form>

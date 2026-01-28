@@ -10,5 +10,10 @@ export const client = hc<AppRPC>(
   withServiceEndpoint("/", Service.LegacyService, {
     isInternal: false,
     version: "NO_PREFIX",
-  })
+  }),
+  {
+    init: {
+      credentials: "include",
+    },
+  }
 );

@@ -66,7 +66,7 @@ export function OnboardingForm({ onSuccess }: OnboardingFormProps) {
         control={form.control}
         name="name"
         render={({ field, fieldState: { invalid, error } }) => (
-          <TextField isInvalid={invalid} isRequired>
+          <TextField isInvalid={invalid} isRequired variant="secondary">
             <Label htmlFor={`${id}-name`}>Organization Name</Label>
             <Input
               id={`${id}-name`}
@@ -82,7 +82,7 @@ export function OnboardingForm({ onSuccess }: OnboardingFormProps) {
         control={form.control}
         name="slug"
         render={({ field, fieldState: { invalid, error } }) => (
-          <TextField isInvalid={invalid} isRequired>
+          <TextField isInvalid={invalid} isRequired variant="secondary">
             <Label htmlFor={`${id}-slug`}>URL Slug</Label>
             <Input id={`${id}-slug`} placeholder="slug" {...field} />
             <FieldError>{error?.message}</FieldError>
