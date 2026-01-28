@@ -33,13 +33,13 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
-    optimizePackageImports: ["@heroui/react"],
     viewTransition: true,
     authInterrupts: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
+  typedRoutes: true,
   async headers() {
     return [
       {

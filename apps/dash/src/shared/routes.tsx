@@ -1,91 +1,93 @@
 "use client";
 
-import { Icon } from "@iconify/react";
+import { useSelectedLayoutSegments } from "next/navigation";
+import { useMemo } from "react";
 
-import type { SidebarItem } from "@/components/commons/side-bar";
-import CreateFeed from "@/components/feed/create-feed";
+import {
+  Home,
+  Bookmark,
+  Settings,
+  Folder,
+  KeySquare,
+  Notebook,
+  PenSquare,
+  File,
+} from "lucide-react";
 
-export const routeItems: SidebarItem[] = [
-  {
-    key: "metrics",
-    href: "/",
-    icon: "solar:home-2-linear",
-    title: "Metrics",
-  },
-  {
-    key: "projects",
-    href: "/projects",
-    icon: "solar:widget-2-outline",
-    title: "Projects",
-    endContent: (
-      <Icon
-        className="text-default-400"
-        icon="solar:add-circle-line-duotone"
-        width={24}
-      />
-    ),
-  },
-  {
-    key: "api-key",
-    href: "/api-key",
-    icon: "solar:key-square-2-line-duotone",
-    title: "Api Keys",
-  },
-  {
-    key: "feed",
-    href: "/feed",
-    icon: "solar:bookmark-broken",
-    title: "Feed",
-    items: [
-      {
-        key: "posts",
-        href: "/feed/posts",
-        icon: "solar:bookmark-broken",
-        title: "Posts",
-      },
-      {
-        key: "notes",
-        href: "/feed/notes",
-        icon: "solar:notebook-line-duotone",
-        title: "Notes",
-      },
-      {
-        key: "drafts",
-        href: "/feed/drafts",
-        icon: "solar:pen-new-square-line-duotone",
-        title: "Drafts",
-      },
-      // {
-      //   key: "write",
-      //   icon: "solar:pen-new-square-line-duotone",
-      //   title: "Write",
-      //   hiddenInMenu: true,
-      // },
-      {
-        key: "edit",
-        icon: "solar:pen-new-square-line-duotone",
-        title: "Edit",
-        hiddenInMenu: true,
-      },
-    ],
-    action: <CreateFeed />,
-  },
-  {
-    key: "assets",
-    href: "/assets",
-    icon: "solar:file-outline",
-    title: "Assets",
-  },
-  {
-    key: "chat",
-    href: "/chat",
-    icon: "solar:chat-round-dots-broken",
-    title: "Chat",
-  },
-  {
-    key: "setting",
-    href: "/setting",
-    icon: "solar:settings-outline",
-    title: "Setting",
-  },
-];
+import type { NavMainItem } from "@/components/commons/nav-main";
+
+type RouteGroup = "overview" | "project" | "content" | "settings";
+
+export const useRouteItems = () => {
+  const segments = useSelectedLayoutSegments();
+  return useMemo(() => {
+    return {
+      overview: [
+        {
+          url: "/",
+          icon: <Home />,
+          title: "Overview",
+          isActive: segments.length === 0,
+        },
+      ],
+      project: [
+        {
+          url: "/projects",
+          icon: <Folder />,
+          title: "Projects",
+          isActive: segments[0] === "projects",
+          items: [
+            {
+              url: "/projects/api-key",
+              icon: <KeySquare />,
+              title: "Api Keys",
+              isActive: segments[0] === "projects" && segments[1] === "api-key",
+            },
+          ],
+        },
+      ],
+      content: [
+        {
+          url: "/feed",
+          isActive: segments[0] === "feed",
+          icon: <Bookmark />,
+          title: "Content",
+          items: [
+            {
+              url: "/feed/posts",
+              icon: <Bookmark />,
+              title: "Posts",
+              isActive: segments[0] === "feed" && segments[1] === "posts",
+            },
+            {
+              url: "/feed/notes",
+              icon: <Notebook />,
+              title: "Notes",
+              isActive: segments[0] === "feed" && segments[1] === "notes",
+            },
+            {
+              url: "/feed/drafts",
+              icon: <PenSquare />,
+              title: "Drafts",
+              isActive: segments[0] === "feed" && segments[1] === "drafts",
+            },
+          ],
+        },
+        {
+          url: "/assets",
+          isActive: segments[0] === "assets",
+          icon: <File />,
+          title: "Assets",
+        },
+      ],
+      settings: [
+        {
+          url: "/settings",
+          isActive: segments[0] === "settings",
+          icon: <Settings />,
+          title: "Settings",
+        },
+      ],
+    } satisfies Record<RouteGroup, NavMainItem[]>;
+  }, [segments]);
+};

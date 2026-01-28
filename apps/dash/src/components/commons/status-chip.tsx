@@ -1,17 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo } from "react";
 
-import { Chip, Skeleton, Tooltip, Link } from "@heroui/react";
+import { Chip, Skeleton, Tooltip } from "@heroui/react";
 
 import type { Monitors, Monitor } from "@chia/api/betterstack/types";
 
 export const LoadingFallback = () => {
   return (
-    <Chip
-      className="text-default-500 border-none px-0"
-      color="default"
-      variant="dot">
+    <Chip className="text-default-500 border-none px-0" color="default">
       <Skeleton className="h-4 w-20 rounded-full" />
     </Chip>
   );
@@ -19,10 +17,7 @@ export const LoadingFallback = () => {
 
 export const ErrorFallback = () => {
   return (
-    <Chip
-      className="text-default-500 border-none px-0"
-      color="danger"
-      variant="dot">
+    <Chip className="text-default-500 border-none px-0" color="danger">
       Service Error
     </Chip>
   );
@@ -112,32 +107,31 @@ export const StatusChip = ({ status }: { status: Monitors }) => {
   }, [serviceStatus]);
 
   return (
-    <Tooltip
-      content={
+    <Tooltip>
+      <Tooltip.Trigger>
+        <Chip className="text-default-500 border-none" color={current.color}>
+          <Link
+            href="https://status.chia1104.dev/"
+            target="_blank"
+            rel="noopener noreferrer">
+            {current.label}
+          </Link>
+        </Chip>
+      </Tooltip.Trigger>
+      <Tooltip.Content className="min-w-48">
         <ul className="flex flex-col gap-3 p-3">
           {status.data.map((monitor) => (
-            <li key={monitor.id} className="flex flex-col">
+            <li key={monitor.id} className="flex flex-col gap-1">
               <span>{monitor.attributes.pronounceable_name}</span>
               <Chip
-                className="text-default-500 border-none px-0"
-                color={getColorAndLabel(monitor).color}
-                variant="dot">
+                className="text-default-500 border-none"
+                color={getColorAndLabel(monitor).color}>
                 {getColorAndLabel(monitor).label}
               </Chip>
             </li>
           ))}
         </ul>
-      }>
-      <Chip
-        as={Link}
-        href="https://status.chia1104.dev/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-default-500 border-none px-0"
-        color={current.color}
-        variant="dot">
-        {current.label}
-      </Chip>
+      </Tooltip.Content>
     </Tooltip>
   );
 };

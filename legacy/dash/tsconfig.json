@@ -1,0 +1,16 @@
+{
+  "extends": "@chiastack/tsconfig/react.json",
+  "compilerOptions": {
+    "types": ["vitest/globals"],
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "~service/*": ["../service/src/*"]
+    },
+    "plugins": [{ "name": "next" }],
+    "allowImportingTsExtensions": true
+  },
+  "include": [".", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", ".next", "vitest.config.mts.timestamp-*.mjs"]
+}

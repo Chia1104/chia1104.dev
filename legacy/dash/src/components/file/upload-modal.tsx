@@ -90,7 +90,9 @@ const UploadForm = ({
         .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
       const sha256ChecksumBase64 = btoa(
-        String.fromCharCode(...new Uint8Array(sha256Checksum))
+        Array.from(new Uint8Array(sha256Checksum))
+          .map((byte) => String.fromCharCode(byte))
+          .join("")
       );
 
       try {

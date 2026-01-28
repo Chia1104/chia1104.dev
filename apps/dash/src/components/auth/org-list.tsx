@@ -1,32 +1,39 @@
 "use client";
 
-import { useTransitionRouter } from "next-view-transitions";
-import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useTransition, useCallback } from "react";
 
 import type { Organization } from "@chia/auth/types";
 
 import { setCurrentOrg } from "@/server/org.action";
 
-import ProjectCard from "../projects/project-card";
+import Card from "../commons/card";
 
 const OrgList = ({ orgs }: { orgs: Organization[] }) => {
   const [isPending, startTransition] = useTransition();
-  const router = useTransitionRouter();
+  const router = useRouter();
+
+  const handleOrgSelect = useCallback(
+    (slug: string) => {
+      startTransition(async () => {
+        await setCurrentOrg(slug);
+        router.push("/");
+      });
+    },
+    [router]
+  );
+
   return (
     <div className="grid w-full grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
       {orgs.map((org) => (
-        <ProjectCard
-          isDisabled={isPending}
-          onPress={() => {
-            startTransition(async () => {
-              await setCurrentOrg(org.slug);
-              router.push(`/projects`);
-            });
-          }}
+        <Card
           key={org.id}
-          name={org.name}
-          slug={org.slug}
-          image={org.logo}
+          title={org.name}
+          description={org.slug}
+          imageSrc={org.logo}
+          imageAlt={`${org.name} logo`}
+          onPress={() => handleOrgSelect(org.slug)}
+          isDisabled={isPending}
         />
       ))}
     </div>

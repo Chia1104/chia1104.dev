@@ -4,7 +4,12 @@
   "labels": ["dependencies", "renovate"],
   "rebaseWhen": "conflicted",
   "rangeStrategy": "bump",
-  "ignorePaths": ["legacy/service/package.json", "legacy/cache/package.json"],
+  "ignorePaths": [
+    "legacy/service/package.json",
+    "legacy/cache/package.json",
+    "legacy/dash/package.json",
+    "legacy/trigger/package.json"
+  ],
   "packageRules": [
     {
       "groupName": "react",

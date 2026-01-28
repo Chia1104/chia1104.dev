@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 const Unauthorized = () => {
-  redirect("/auth/signin");
+  redirect("/auth/login");
 };
 
 export default Unauthorized;

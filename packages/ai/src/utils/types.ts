@@ -1,4 +1,5 @@
 import { modelMessageSchema } from "ai";
+import type { ModelMessage } from "ai";
 import * as z from "zod";
 
 export const Provider = {
@@ -101,3 +102,5 @@ export const authTokenSchema = z.object({
 });
 
 export type AuthToken = z.infer<typeof authTokenSchema>;
+
+export { ModelMessage };

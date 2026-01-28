@@ -1,21 +1,20 @@
 "use client";
 
-import type { FC } from "react";
+import { Skeleton } from "@heroui/react";
 
-import { Skeleton as NSkeleton } from "@heroui/react";
+// rendering-hoist-jsx: Extract static JSX outside components
+const SKELETON_ITEMS = Array.from({ length: 5 }, (_, i) => i);
 
-const Skeleton: FC = () => {
+const FeedSkeleton = () => {
   return (
     <>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <NSkeleton
-          className="rounded-lg duration-700 before:animate-[shimmer_5s_infinite]"
-          key={i}>
-          <div className="bg-default-300 min-h-[120px] w-full rounded-lg" />
-        </NSkeleton>
+      {SKELETON_ITEMS.map((i) => (
+        <div key={i} className="w-full">
+          <Skeleton className="min-h-[120px] w-full rounded-lg" />
+        </div>
       ))}
     </>
   );
 };
 
-export default Skeleton;
+export default FeedSkeleton;
