@@ -14,7 +14,6 @@ const CreateFeedButton = () => {
   return (
     <Button
       variant="primary"
-      size="lg"
       onPress={() => router.push(`/feed/create?token=${crypto.randomUUID()}`)}>
       <Plus className="size-4" />
       Create Feed
@@ -27,11 +26,11 @@ const Layout = ({ children }: { children: ReactNode }) => {
       <section className="flex min-h-screen w-full justify-center">
         <div className="w-full px-4 py-8 md:px-6 lg:px-8">
           <div className="mb-6 flex flex-col items-start gap-4">
+            <FeedTabs className="w-fit" />
             <div className="flex w-full items-center justify-between">
-              <FeedTabs className="w-fit" />
+              <SearchFeed className="max-w-fit" />
               <CreateFeedButton />
             </div>
-            <SearchFeed className="max-w-fit" />
           </div>
           {children}
         </div>

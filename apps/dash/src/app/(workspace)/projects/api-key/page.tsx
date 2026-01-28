@@ -1,11 +1,13 @@
 import { ViewTransition } from "react";
 
+import { GlobalApiKeyTable } from "@/components/projects/api-key-table";
+
 const Page = () => {
   return (
     <ViewTransition>
-      <div className="container">
-        <h2 className="text-2xl font-bold">Api Keys</h2>
-      </div>
+      <section className="flex w-full flex-col gap-4 px-4 py-8 md:px-6 lg:px-8">
+        <GlobalApiKeyTable query={{ withProject: true }} />
+      </section>
     </ViewTransition>
   );
 };
