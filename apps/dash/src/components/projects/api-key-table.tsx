@@ -1,25 +1,17 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback, useMemo, useId } from "react";
+import { useForm, Controller } from "react-hook-form";
 
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Spinner,
   Button,
-  Snippet,
-  useDisclosure,
   Modal,
-  ModalBody,
-  ModalHeader,
-  ModalContent,
-  ModalFooter,
   Input,
+  Form,
+  TextField,
+  FieldError,
+  Label,
+  Surface,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -31,15 +23,17 @@ import { PencilIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { CopyButton } from "@chia/ui/copy-button";
 import DateFormat from "@chia/ui/date-format";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-  Form,
-} from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@chia/ui/table";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import { truncateMiddle } from "@chia/utils/format";
 
@@ -60,7 +54,6 @@ const headers = [
 ];
 
 type ApiKeysWithoutProject = RouterOutputs["apikey"]["list"]["items"];
-
 type ApiKeysWithProject = RouterOutputs["apikey"]["list"]["items"];
 
 type ApiKeys<TWithProject extends boolean = false> = TWithProject extends true
@@ -68,7 +61,6 @@ type ApiKeys<TWithProject extends boolean = false> = TWithProject extends true
   : ApiKeysWithoutProject;
 
 type Query = RouterInputs["apikey"]["list"];
-
 type AllKeysQuery = RouterInputs["apikey"]["list"];
 
 interface Props {
@@ -84,27 +76,74 @@ interface AllKeysProps {
   query?: Partial<AllKeysQuery>;
 }
 
-const CreateForm = (props: { projectId?: number }) => {
+const createSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+});
+
+type CreateFormData = z.infer<typeof createSchema>;
+
+const LoadingRow = ({ colSpan }: { colSpan: number }) => (
+  <TableRow>
+    <TableCell colSpan={colSpan} className="text-center">
+      Loading...
+    </TableCell>
+  </TableRow>
+);
+
+const EmptyRow = ({ colSpan }: { colSpan: number }) => (
+  <TableRow>
+    <TableCell colSpan={colSpan} className="text-center">
+      No API Keys found
+    </TableCell>
+  </TableRow>
+);
+
+const ApiKeyDisplay = ({ apiKey }: { apiKey: string }) => {
+  return (
+    <Surface
+      className="flex items-center justify-between rounded-lg p-3 font-mono text-sm"
+      variant="secondary">
+      <span>
+        {truncateMiddle(apiKey, apiKey.length / 2, {
+          frontLength: 8,
+          backLength: 8,
+          ellipsis: "...",
+        })}
+      </span>
+      <CopyButton
+        content={apiKey}
+        translations={{
+          copied: "Copied",
+          copy: "Copy",
+        }}
+      />
+    </Surface>
+  );
+};
+
+const CreateForm = (props: { projectId?: number; onSuccess?: () => void }) => {
   const queryClient = useQueryClient();
-  const form = useForm({
-    resolver: zodResolver(
-      z.object({
-        name: z.string().min(1),
-      })
-    ),
+  const formId = useId();
+  const form = useForm<CreateFormData>({
+    resolver: zodResolver(createSchema),
+    defaultValues: {
+      name: "",
+    },
   });
+
   const { mutate, isPending, isSuccess, data } = useMutation(
     orpc.apikey.create.mutationOptions({
       onSuccess: async (data) => {
         if (data) {
           toast.success("API Key created successfully");
-          await queryClient.invalidateQueries(
+          queryClient.invalidateQueries(
             orpc.apikey.list.queryOptions({
               input: {
                 projectId: props.projectId,
               },
             })
           );
+          props.onSuccess?.();
         }
       },
       onError: (error) => {
@@ -112,45 +151,41 @@ const CreateForm = (props: { projectId?: number }) => {
       },
     })
   );
+
   const handleSubmit = form.handleSubmit((data) => {
     mutate({
       name: data.name,
       projectId: props.projectId,
     });
   });
+
   return (
     <>
-      {isSuccess ? (
-        <Snippet codeString={data.key}>
-          {truncateMiddle(data.key, data.key.length / 2, {
-            frontLength: 4,
-            backLength: 4,
-            ellipsis: "********",
-          })}
-        </Snippet>
+      {isSuccess && data?.key ? (
+        <div className="flex flex-col gap-3">
+          <p className="text-foreground/70 text-sm">
+            Save your API key now - you won't be able to see it again!
+          </p>
+          <ApiKeyDisplay apiKey={data.key} />
+        </div>
       ) : (
-        <Form {...form}>
-          <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      label="Name"
-                      labelPlacement="outside"
-                      placeholder="Enter your ApiKey name"
-                      isInvalid={fieldState.invalid}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <SubmitForm isPending={isPending}>Create</SubmitForm>
-          </form>
+        <Form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+          <Controller
+            control={form.control}
+            name="name"
+            render={({ field, fieldState: { invalid, error } }) => (
+              <TextField isInvalid={invalid} isRequired variant="secondary">
+                <Label htmlFor={`${formId}-name`}>API Key Name</Label>
+                <Input
+                  id={`${formId}-name`}
+                  placeholder="Enter your API Key name"
+                  {...field}
+                />
+                <FieldError>{error?.message}</FieldError>
+              </TextField>
+            )}
+          />
+          <SubmitForm isPending={isPending}>Create</SubmitForm>
         </Form>
       )}
     </>
@@ -158,32 +193,40 @@ const CreateForm = (props: { projectId?: number }) => {
 };
 
 const CreateAction = (props: { projectId?: number }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const queryClient = useQueryClient();
+
+  const handleSuccess = () => {
+    queryClient.invalidateQueries(
+      orpc.apikey.list.queryOptions({
+        input: {
+          projectId: props.projectId,
+        },
+      })
+    );
+  };
+
   return (
-    <>
-      <Button className="min-w-[130px]" onPress={onOpen}>
-        Add ApiKey
+    <Modal>
+      <Button variant="primary" className="min-w-32.5">
+        Add API Key
       </Button>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Create New ApiKey
-              </ModalHeader>
-              <ModalBody>
-                <CreateForm projectId={props.projectId} />
-              </ModalBody>
-              <ModalFooter>
-                <Button color="primary" variant="flat" onPress={onClose}>
-                  Close
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    </>
+      <Modal.Backdrop>
+        <Modal.Container placement="auto">
+          <Modal.Dialog className="sm:max-w-md">
+            <Modal.CloseTrigger />
+            <Modal.Header>
+              <Modal.Heading>Create New API Key</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="p-4">
+              <CreateForm
+                projectId={props.projectId}
+                onSuccess={handleSuccess}
+              />
+            </Modal.Body>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
   );
 };
 
@@ -209,18 +252,18 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
   });
 
   const renderCell = useCallback(
-    (item: ApiKeys<TWithProject>[0], key: keyof ApiKeys<TWithProject>[0]) => {
+    (item: ApiKeys<TWithProject>[0], key: string) => {
       switch (key) {
         case "name":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-sm">{item.name}</p>
+              <p className="text-sm font-semibold">{item.name}</p>
             </div>
           );
         case "createdAt":
           return (
             <div className="flex flex-col">
-              <span className="text-bold text-sm">
+              <span className="text-sm font-semibold">
                 <DateFormat
                   date={item.createdAt}
                   format="YYYY-MM-DD HH:mm:ss"
@@ -231,10 +274,18 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
         case "id":
           return (
             <div className="flex gap-2">
-              <Button isIconOnly variant="flat">
+              <Button
+                isIconOnly
+                variant="ghost"
+                size="sm"
+                aria-label="Edit API Key">
                 <PencilIcon size={16} />
               </Button>
-              <Button isIconOnly color="danger" variant="flat">
+              <Button
+                isIconOnly
+                variant="danger"
+                size="sm"
+                aria-label="Delete API Key">
                 <Trash2Icon size={16} />
               </Button>
             </div>
@@ -243,7 +294,7 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
           return withProject ? (
             <div className="flex flex-col">
               {/* @ts-expect-error - TODO: Fix the type issue */}
-              <p className="text-bold text-sm">{item?.project?.name}</p>
+              <p className="text-sm font-semibold">{item?.project?.name}</p>
             </div>
           ) : null;
         default:
@@ -253,42 +304,49 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
     [withProject]
   );
 
+  const currentHeaders = withProject ? headersWithProject : headers;
+
   return (
     <div className="flex w-full flex-col gap-5">
-      <div className="flex justify-between gap-5">
-        <h3 className="text-lg font-bold">ApiKey</h3>
+      <div className="flex items-center justify-between gap-5">
+        <h3 className="text-lg font-bold">API Keys</h3>
         <CreateAction projectId={projectId} />
       </div>
-      <Table
-        bottomContent={
-          hasNextPage ? (
-            <div className="flex w-full justify-center">
-              <Spinner ref={ref} />
-            </div>
-          ) : null
-        }
-        aria-label="ApiKey table ">
-        <TableHeader columns={withProject ? headersWithProject : headers}>
-          {(column) => (
-            <TableColumn key={column.uid}>{column.name}</TableColumn>
-          )}
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {currentHeaders.map((column) => (
+              <TableHead key={column.uid}>{column.name}</TableHead>
+            ))}
+          </TableRow>
         </TableHeader>
-        <TableBody
-          isLoading={isLoading}
-          loadingContent={<Spinner />}
-          items={data}
-          emptyContent={isLoading ? <Spinner /> : "No ApiKey data"}>
-          {(item) => (
-            <TableRow key={item.id}>
-              {(columnKey) => (
-                <TableCell>
-                  {renderCell(item, columnKey as keyof ApiKeys[0])}
-                </TableCell>
-              )}
-            </TableRow>
+        <TableBody>
+          {isLoading && data.length === 0 ? (
+            <LoadingRow colSpan={currentHeaders.length} />
+          ) : data.length === 0 ? (
+            <EmptyRow colSpan={currentHeaders.length} />
+          ) : (
+            data.map((item) => (
+              <TableRow key={item.id}>
+                {currentHeaders.map((column) => (
+                  <TableCell key={column.uid}>
+                    {renderCell(item, column.uid)}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
           )}
         </TableBody>
       </Table>
+
+      {hasNextPage && (
+        <div ref={ref} className="flex w-full justify-center py-4">
+          <div className="text-foreground/70 text-sm">
+            {isLoading ? "Loading more..." : "Load more"}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -308,7 +366,7 @@ const ApiKeyTable = (props: Props) => {
         projectId: props.projectId,
         cursor: pageParam,
       }),
-      getNextPageParam: (lastPage) =>
+      getNextPageParam: (lastPage: { nextCursor?: string | number | null }) =>
         lastPage?.nextCursor ? lastPage.nextCursor.toString() : null,
       initialData: props.initApiKey
         ? {
@@ -355,7 +413,7 @@ export const GlobalApiKeyTable = (props: AllKeysProps) => {
         ...props.query,
         cursor: pageParam,
       }),
-      getNextPageParam: (lastPage) =>
+      getNextPageParam: (lastPage: { nextCursor?: string | number | null }) =>
         lastPage?.nextCursor ? lastPage.nextCursor.toString() : null,
       initialData: props.initApiKey
         ? {

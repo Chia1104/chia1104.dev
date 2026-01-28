@@ -9,7 +9,14 @@
 /coverage
 
 # next.js
-/.next/
+# next.js
+.next/*
+!.next/dev/
+.next/dev/*
+!.next/dev/types/
+.next/dev/types/*
+!.next/dev/types/routes.d.ts
+!.next/dev/types/link.d.ts
 /out/
 
 # production
@@ -32,7 +39,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
 .vscode
 .idea

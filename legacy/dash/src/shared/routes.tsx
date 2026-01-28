@@ -1,0 +1,91 @@
+"use client";
+
+import { Icon } from "@iconify/react";
+
+import type { SidebarItem } from "@/components/commons/side-bar";
+import CreateFeed from "@/components/feed/create-feed";
+
+export const routeItems: SidebarItem[] = [
+  {
+    key: "metrics",
+    href: "/",
+    icon: "solar:home-2-linear",
+    title: "Metrics",
+  },
+  {
+    key: "projects",
+    href: "/projects",
+    icon: "solar:widget-2-outline",
+    title: "Projects",
+    endContent: (
+      <Icon
+        className="text-default-400"
+        icon="solar:add-circle-line-duotone"
+        width={24}
+      />
+    ),
+  },
+  {
+    key: "api-key",
+    href: "/api-key",
+    icon: "solar:key-square-2-line-duotone",
+    title: "Api Keys",
+  },
+  {
+    key: "feed",
+    href: "/feed",
+    icon: "solar:bookmark-broken",
+    title: "Feed",
+    items: [
+      {
+        key: "posts",
+        href: "/feed/posts",
+        icon: "solar:bookmark-broken",
+        title: "Posts",
+      },
+      {
+        key: "notes",
+        href: "/feed/notes",
+        icon: "solar:notebook-line-duotone",
+        title: "Notes",
+      },
+      {
+        key: "drafts",
+        href: "/feed/drafts",
+        icon: "solar:pen-new-square-line-duotone",
+        title: "Drafts",
+      },
+      // {
+      //   key: "write",
+      //   icon: "solar:pen-new-square-line-duotone",
+      //   title: "Write",
+      //   hiddenInMenu: true,
+      // },
+      {
+        key: "edit",
+        icon: "solar:pen-new-square-line-duotone",
+        title: "Edit",
+        hiddenInMenu: true,
+      },
+    ],
+    action: <CreateFeed />,
+  },
+  {
+    key: "assets",
+    href: "/assets",
+    icon: "solar:file-outline",
+    title: "Assets",
+  },
+  {
+    key: "chat",
+    href: "/chat",
+    icon: "solar:chat-round-dots-broken",
+    title: "Chat",
+  },
+  {
+    key: "setting",
+    href: "/setting",
+    icon: "solar:settings-outline",
+    title: "Setting",
+  },
+];

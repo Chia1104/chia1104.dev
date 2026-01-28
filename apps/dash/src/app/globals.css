@@ -1,25 +1,19 @@
 @import "tailwindcss";
-@import "@chia/tailwind/shadcn-ui.css";
+@import "@heroui/styles";
 @import "fumadocs-ui/css/shadcn.css";
 @import "fumadocs-ui/css/preset.css";
 @import "@chia/tailwind/novel.css";
 @import "@chia/tailwind/animations.css";
+@import "@chia/themes/cyan.css";
 @import "@chia/tailwind/preset.css";
-
-@plugin "../themes/heroui";
 
 @source "./src/**/*.{js,ts,jsx,tsx}";
 @source "../../node_modules/@chia/ui/src/**/*.{js,ts,jsx,tsx}";
 @source "../../node_modules/@chia/contents/src/**/*.tsx";
-@source "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
 
 @theme {
-  --color-primary: #00e1ff;
-  --color-secondary: #ff00e1;
   --color-sec-text: #444444;
-  --color-bgPurple: rgba(111, 66, 193, 0.65);
-  --color-bgPink: rgba(255, 107, 237, 0.35);
-  --color-bgBlue: rgba(117, 149, 255, 0.3);
+  --color-primary: #00e1ff;
 }
 
 @layer components {

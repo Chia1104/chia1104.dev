@@ -1,33 +1,44 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useId } from "react";
 import { useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
-import { Input, CardBody, CardFooter, Divider, Form } from "@heroui/react";
+import { Input, Form, TextField, FieldError, Label } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as z from "zod";
 
 import type { Organization } from "@chia/auth/types";
-import { Form as FormCtx, FormField } from "@chia/ui/form";
 import SubmitForm from "@chia/ui/submit-form";
 
 import { orpc } from "@/libs/orpc/client";
 import { setCurrentOrg } from "@/server/org.action";
 
 const schema = z.object({
-  name: z.string().min(2).max(50),
-  slug: z.string().min(2).max(50),
+  name: z.string().min(2, "Name must be at least 2 characters").max(50),
+  slug: z.string().min(2, "Slug must be at least 2 characters").max(50),
   logo: z.string().optional(),
 });
 
-interface Props {
+type FormData = z.infer<typeof schema>;
+
+interface OnboardingFormProps {
   onSuccess?: (data: Organization) => void;
 }
 
-const OnboardingForm = (props: Props) => {
-  const form = useForm({
+export function OnboardingForm({ onSuccess }: OnboardingFormProps) {
+  const router = useRouter();
+  const id = useId();
+  const form = useForm<FormData>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      logo: "",
+    },
   });
 
   const { mutate } = useMutation(
@@ -35,7 +46,8 @@ const OnboardingForm = (props: Props) => {
       onSuccess: async (data) => {
         if (data.slug) {
           await setCurrentOrg(data.slug);
-          props?.onSuccess?.(data);
+          router.push("/");
+          onSuccess?.(data);
         }
       },
       onError: (error) => {
@@ -47,65 +59,40 @@ const OnboardingForm = (props: Props) => {
   const handleSubmit = form.handleSubmit((data) => {
     mutate(data);
   });
+
   return (
-    <FormCtx {...form}>
-      <Form onSubmit={handleSubmit}>
-        <CardBody className="gap-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({
-              field: { onChange, value, onBlur },
-              fieldState: { invalid, error },
-            }) => (
-              <Input
-                isRequired
-                label="Organization Name"
-                placeholder="Enter your organization name"
-                isInvalid={invalid}
-                errorMessage={error?.message}
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-              />
-            )}
-          />
+    <Form onSubmit={handleSubmit} className="w-full space-y-4">
+      <Controller
+        control={form.control}
+        name="name"
+        render={({ field, fieldState: { invalid, error } }) => (
+          <TextField isInvalid={invalid} isRequired variant="secondary">
+            <Label htmlFor={`${id}-name`}>Organization Name</Label>
+            <Input
+              id={`${id}-name`}
+              placeholder="Enter your organization name"
+              {...field}
+            />
+            <FieldError>{error?.message}</FieldError>
+          </TextField>
+        )}
+      />
 
-          <FormField
-            control={form.control}
-            name="slug"
-            render={({
-              field: { onChange, value, onBlur },
-              fieldState: { invalid, error },
-            }) => (
-              <Input
-                isRequired
-                label="URL Slug"
-                placeholder="slug"
-                startContent={
-                  <div className="pointer-events-none flex items-center">
-                    <span className="text-default-400 text-small">
-                      dash.chia1104.dev/
-                    </span>
-                  </div>
-                }
-                description="This will be used for your organization's URL"
-                isInvalid={invalid}
-                errorMessage={error?.message}
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-              />
-            )}
-          />
-        </CardBody>
-        <Divider />
-        <CardFooter>
-          <SubmitForm className="w-full">Create Organization</SubmitForm>
-        </CardFooter>
-      </Form>
-    </FormCtx>
+      <Controller
+        control={form.control}
+        name="slug"
+        render={({ field, fieldState: { invalid, error } }) => (
+          <TextField isInvalid={invalid} isRequired variant="secondary">
+            <Label htmlFor={`${id}-slug`}>URL Slug</Label>
+            <Input id={`${id}-slug`} placeholder="slug" {...field} />
+            <FieldError>{error?.message}</FieldError>
+          </TextField>
+        )}
+      />
+
+      <SubmitForm fullWidth className="mt-5">
+        Create Organization
+      </SubmitForm>
+    </Form>
   );
-};
-
-export default OnboardingForm;
+}

@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 
 import { getBaseUrl, DASH_BASE_URL } from "@chia/utils/config";
 
-import Background from "@/components/commons/background";
 import RootLayout from "@/components/commons/root-layout";
 
 import RootProvider from "../components/commons/root-provider";
@@ -33,10 +32,7 @@ export const metadata: Metadata = {
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <RootLayout>
-      <RootProvider>
-        <Background />
-        {children}
-      </RootProvider>
+      <RootProvider>{children}</RootProvider>
     </RootLayout>
   );
 }

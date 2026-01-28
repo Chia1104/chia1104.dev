@@ -1,10 +1,8 @@
 "use client";
 
 import { ThemeProvider } from "next-themes";
-import { useTransitionRouter } from "next-view-transitions";
 import { useState } from "react";
 
-import { HeroUIProvider } from "@heroui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as ST } from "sonner";
 
@@ -23,15 +21,12 @@ const Toaster = () => {
 };
 
 const RootProvider = ({ children }: Props) => {
-  const router = useTransitionRouter();
   const [queryClient] = useState(() => getQueryClient());
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-        <HeroUIProvider navigate={router.push}>
-          <Toaster />
-          {children}
-        </HeroUIProvider>
+        <Toaster />
+        {children}
       </ThemeProvider>
     </QueryClientProvider>
   );

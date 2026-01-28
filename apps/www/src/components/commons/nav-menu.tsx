@@ -199,6 +199,7 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                             <div className="block md:hidden">{icon}</div>
                           </span>
                         </Link>
+                        <Tabs.Indicator />
                       </Tabs.Tab>
                     );
                   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { CircularProgress } from "@heroui/react";
+import { Spinner } from "@heroui/react";
 
 import { TextPath } from "@chia/ui/text-path";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -28,7 +28,7 @@ const AppLoading = (props: Props) => {
           />
         </span>
       )}
-      <CircularProgress aria-label="Loading..." />
+      <Spinner size="lg" aria-label="Loading..." />
     </div>
   );
 };

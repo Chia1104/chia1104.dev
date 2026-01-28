@@ -1,0 +1,114 @@
+"use client";
+
+import { useTransitionRouter as useRouter } from "next-view-transitions";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import { feedsContracts } from "@chia/api/orpc/contracts";
+import { FeedType, ContentType } from "@chia/db/types";
+import { Form } from "@chia/ui/form";
+import SubmitForm from "@chia/ui/submit-form";
+import dayjs from "@chia/utils/day";
+
+import { useDraft } from "@/hooks/use-draft";
+import { orpc } from "@/libs/orpc/client";
+
+import type { Ref } from "./edit-fields";
+import EditFields from "./edit-fields";
+
+const CreateForm = ({
+  type = FeedType.Post,
+}: {
+  type?: typeof FeedType.Note | typeof FeedType.Post;
+}) => {
+  const queryClient = useQueryClient();
+  const editFieldsRef = useRef<Ref>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [token] = useState(searchParams.get("token") ?? crypto.randomUUID());
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const { getState, setState } = useDraft(token);
+  const [draft] = useState(getState().draft);
+  const create = useMutation(
+    orpc.feeds.create.mutationOptions({
+      async onSuccess(_data, { type }) {
+        toast.success("Feed created successfully");
+        router.push(`/feed/${type}s`);
+        await queryClient.invalidateQueries(orpc.feeds.list.queryOptions());
+      },
+      onError(err) {
+        toast.error(err.message);
+      },
+    })
+  );
+  const form = useForm<feedsContracts.CreateFeedInput>({
+    defaultValues: {
+      contentType: ContentType.Mdx,
+      type,
+      defaultLocale: "zh-TW",
+      translation: {
+        locale: "zh-TW",
+        title: "Untitled",
+        excerpt: null,
+        description: null,
+        summary: null,
+        readTime: null,
+      },
+      ...draft,
+      createdAt: draft?.createdAt
+        ? dayjs(draft.createdAt).valueOf()
+        : dayjs().valueOf(),
+    },
+    resolver: zodResolver(feedsContracts.createFeedSchema),
+  });
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) =>
+    form.handleSubmit((values) => {
+      const editorContent = editFieldsRef.current?.getContent(
+        values.contentType
+      );
+      create.mutate({
+        ...values,
+        content: editorContent?.content
+          ? {
+              content: editorContent.content,
+              source: editorContent.source,
+            }
+          : undefined,
+      });
+    })(e);
+
+  useEffect(() => {
+    setState({
+      draft: form.getValues(),
+    });
+  }, [form, form.getValues, setState]);
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={onSubmit}
+        className="flex w-full max-w-[700px] flex-col gap-10">
+        <EditFields
+          ref={editFieldsRef}
+          disabled={create.isPending}
+          isPending={create.isPending}
+          token={token}
+          mode="create"
+        />
+        <SubmitForm
+          className="w-full max-w-[150px]"
+          isPending={create.isPending}>
+          Create
+        </SubmitForm>
+      </form>
+    </Form>
+  );
+};
+
+export default CreateForm;
