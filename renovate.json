@@ -8,7 +8,8 @@
     "legacy/service/package.json",
     "legacy/cache/package.json",
     "legacy/dash/package.json",
-    "legacy/trigger/package.json"
+    "legacy/trigger/package.json",
+    "legacy/auth/package.json"
   ],
   "packageRules": [
     {
