@@ -17,7 +17,7 @@
     "clean": "git clean -xdf .next .turbo node_modules .cache"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.60",
+    "@ai-sdk/react": "^3.0.64",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
@@ -41,7 +41,7 @@
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
-    "ai": "^6.0.58",
+    "ai": "^6.0.62",
     "better-all": "catalog:",
     "client-only": "catalog:",
     "clsx": "^2.1.1",
