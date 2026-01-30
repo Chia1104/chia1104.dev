@@ -11,7 +11,7 @@ catalog:
   '@types/lodash': ^4.17.23
   '@types/node': 25.1.0
   better-all: 0.0.5
-  bun-types: ^1.3.7
+  bun-types: ^1.3.8
   client-only: ^0.0.1
   dayjs: ^1.11.19
   graphql-request: ^7.4.0
@@ -25,8 +25,8 @@ catalog:
 
 catalogs:
   better-auth:
-    '@better-auth/passkey': 1.4.17
-    better-auth: 1.4.17
+    '@better-auth/passkey': 1.4.18
+    better-auth: 1.4.18
   chiastack:
     '@chiastack/tsconfig': 2.1.1
   drizzle:
@@ -35,9 +35,9 @@ catalogs:
     drizzle-zod: 1.0.0-beta.12-a5629fb
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.4
-    fumadocs-core: 16.4.9
+    fumadocs-core: 16.4.11
     fumadocs-mdx: 14.2.6
-    fumadocs-ui: 16.4.9
+    fumadocs-ui: 16.4.11
   heroui:
     '@heroui/react': 2.8.7
     '@heroui/theme': 2.4.25
@@ -58,7 +58,7 @@ catalogs:
   react-is:
     '@types/react': ^19.2.10
     '@types/react-dom': ^19.2.3
-    babel-plugin-react-compiler: 19.1.0-rc.3
+    babel-plugin-react-compiler: 1.0.0
     react: ^19.2.4
     react-dom: ^19.2.4
   tailwindcss:
@@ -67,7 +67,7 @@ catalogs:
   tanstack:
     '@tanstack/react-pacer': 0.19.4
     '@tanstack/react-query': 5.90.20
-    '@tanstack/react-query-devtools': 5.91.2
+    '@tanstack/react-query-devtools': 5.91.3
   testing-library:
     '@testing-library/jest-dom': 6.9.1
     '@testing-library/react': 16.3.2

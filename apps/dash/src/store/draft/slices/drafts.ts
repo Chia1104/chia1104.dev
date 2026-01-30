@@ -3,10 +3,11 @@
 import type { StateCreator } from "zustand";
 
 import type { feedsContracts } from "@chia/api/orpc/contracts";
+import { Locale } from "@chia/db/types";
 
 import type { DraftState } from "../store";
 
-import type { EditFieldsContext } from "./edit-fields";
+import type { FormSchema } from "./edit-fields";
 
 /**
  * Draft Data Structure
@@ -14,8 +15,7 @@ import type { EditFieldsContext } from "./edit-fields";
  */
 export interface DraftData {
   token: string;
-  formData: Partial<feedsContracts.CreateFeedInput>;
-  content: EditFieldsContext["content"];
+  formData: Partial<FormSchema>;
   updatedAt: number;
 }
 
@@ -33,6 +33,16 @@ export interface DraftsState {
   // ============ Public Actions ============
 
   /**
+   * 創建草稿
+   * @param token - 草稿標識
+   * @param formData - 表單數據
+   */
+  createDraft: (
+    token: string,
+    formData: Partial<feedsContracts.CreateFeedInput>
+  ) => void;
+
+  /**
    * 保存草稿
    * @param token - 草稿標識
    * @param formData - 表單數據
@@ -40,8 +50,7 @@ export interface DraftsState {
    */
   saveDraft: (
     token: string,
-    formData: Partial<feedsContracts.CreateFeedInput>,
-    content?: EditFieldsContext["content"]
+    formData: Partial<feedsContracts.CreateFeedInput>
   ) => void;
 
   /**
@@ -82,6 +91,8 @@ export interface DraftsState {
    * @param token - 草稿標識
    */
   internal_removeDraft: (token: string) => void;
+
+  internal_createEmptyContent: () => FormSchema["translations"][Locale];
 }
 export const createDraftsSlice: StateCreator<
   DraftState,
@@ -93,12 +104,26 @@ export const createDraftsSlice: StateCreator<
 
   // ============ Public Actions ============
 
-  saveDraft: (token, formData, content) => {
-    const currentDraft = get().draftsMap[token];
+  createDraft: (token, formData) => {
+    const draft: DraftData = {
+      token,
+      formData: {
+        ...formData,
+        translations: {
+          [Locale.zhTW]: get().internal_createEmptyContent(),
+          [Locale.En]: get().internal_createEmptyContent(),
+        },
+      },
+      updatedAt: Date.now(),
+    };
+
+    get().internal_dispatchDraft(token, draft);
+  },
+
+  saveDraft: (token, formData) => {
     const draft: DraftData = {
       token,
       formData,
-      content: content ?? currentDraft?.content ?? get().content,
       updatedAt: Date.now(),
     };
 
@@ -137,5 +162,20 @@ export const createDraftsSlice: StateCreator<
     set((state) => {
       delete state.draftsMap[token];
     });
+  },
+
+  internal_createEmptyContent: () => {
+    return {
+      title: "Untitled",
+      excerpt: null,
+      description: null,
+      summary: null,
+      readTime: null,
+      content: {
+        content: "",
+        source: "",
+        unstableSerializedSource: null,
+      },
+    };
   },
 });

@@ -3,9 +3,10 @@ import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
 import * as organizationRoutes from "./routes/organization.route";
-import { baseOS } from "./utils";
+import * as userRoutes from "./routes/user.route";
+import { contractOS } from "./utils";
 
-export const router = baseOS.router({
+export const router = contractOS.router({
   health: {
     server: healthRoutes.healthRoute,
     client: healthRoutes.protectedHealthRoute,
@@ -40,5 +41,8 @@ export const router = baseOS.router({
   },
   file: {
     "signed-url:create": fileRoutes.createSignedUrlForUploadRoute,
+  },
+  user: {
+    "profile:update": userRoutes.updateUserProfileRoute,
   },
 });

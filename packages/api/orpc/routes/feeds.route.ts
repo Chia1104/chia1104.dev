@@ -77,11 +77,17 @@ export const getFeedByIdRoute = contractOS.feeds["details-by-id"]
 export const createFeedRoute = contractOS.feeds.create
   .use(adminGuard())
   .handler(async (opts) => {
+    const defaultTranslation = opts.input.translations[Locale.zhTW];
+    if (!defaultTranslation) {
+      throw opts.errors.BAD_REQUEST({
+        message: "No default translation provided",
+      });
+    }
     const data = await createFeed(opts.context.db, {
       slug: opts.input.slug
         ? slugger.slug(opts.input.slug)
         : slugger.slug(
-            `${opts.input.translation.title}-${crypto.getRandomValues(new Uint32Array(1))[0]?.toString(16)}`
+            `${defaultTranslation.title}-${crypto.getRandomValues(new Uint32Array(1))[0]?.toString(16)}`
           ),
       type: opts.input.type,
       userId: opts.context.adminId,
@@ -91,25 +97,17 @@ export const createFeedRoute = contractOS.feeds.create
       mainImage: opts.input.mainImage ?? null,
       createdAt: opts.input.createdAt,
       updatedAt: opts.input.updatedAt,
-      translation: {
-        locale: opts.input.translation.locale,
-        title: opts.input.translation.title,
-        excerpt:
-          opts.input.translation.excerpt ??
-          opts.input.translation.description?.slice(0, 100) ??
-          null,
-        description: opts.input.translation.description ?? null,
-        summary: opts.input.translation.summary ?? null,
-        readTime: opts.input.translation.readTime ?? null,
-      },
-      content: opts.input.content
-        ? {
-            content: opts.input.content.content ?? null,
-            source: opts.input.content.source ?? null,
-            unstableSerializedSource:
-              opts.input.content.unstableSerializedSource ?? null,
-          }
-        : undefined,
+      translations: Object.entries(opts.input.translations).map(
+        ([locale, translation]) => ({
+          ...translation,
+          locale: locale as Locale,
+          content: translation.content ?? {
+            content: null,
+            source: null,
+            unstableSerializedSource: null,
+          },
+        })
+      ),
     });
 
     if (opts.context.hooks?.onFeedCreated && data) {
@@ -133,36 +131,52 @@ export const updateFeedRoute = contractOS.feeds.update
       updatedAt: opts.input.updatedAt,
     });
 
-    let translationData = null;
-    let contentData = null;
+    if (!feedData) {
+      throw opts.errors.NOT_FOUND();
+    }
 
-    const translation = opts.input.translation;
-    if (translation) {
-      translationData = await upsertFeedTranslation(opts.context.db, {
-        feedId: opts.input.feedId,
-        locale: translation.locale,
-        title: translation.title,
-        excerpt: translation.excerpt ?? null,
-        description: translation.description ?? null,
-        summary: translation.summary ?? null,
-        readTime: translation.readTime ?? null,
-      });
+    const translationsData = [];
+    const contentsData = [];
 
-      const content = opts.input.content;
-      if (content && translationData?.id) {
-        contentData = await upsertContent(opts.context.db, {
-          feedTranslationId: translationData.id,
-          content: content.content ?? null,
-          source: content.source ?? null,
-          unstableSerializedSource: content.unstableSerializedSource ?? null,
+    const translations = opts.input.translations;
+    if (translations) {
+      for (const [locale, translation] of Object.entries(translations)) {
+        const translationData = await upsertFeedTranslation(opts.context.db, {
+          feedId: opts.input.feedId,
+          locale: locale as Locale,
+          title: translation.title,
+          excerpt: translation.excerpt ?? null,
+          description: translation.description ?? null,
+          summary: translation.summary ?? null,
+          readTime: translation.readTime ?? null,
         });
+
+        if (translationData) {
+          translationsData.push(translationData);
+
+          const content = translation.content;
+          if (content && translationData.id) {
+            const contentData = await upsertContent(opts.context.db, {
+              feedTranslationId: translationData.id,
+              content: content.content ?? null,
+              source: content.source ?? null,
+              unstableSerializedSource:
+                content.unstableSerializedSource ?? null,
+            });
+
+            if (contentData) {
+              contentsData.push(contentData);
+            }
+          }
+        }
       }
     }
 
-    const updatedFeed = Object.assign({}, feedData, {
-      translation: translationData,
-      content: contentData,
-    });
+    const updatedFeed = {
+      ...feedData,
+      translations: translationsData,
+      contents: contentsData,
+    };
 
     if (opts.context.hooks?.onFeedUpdated && updatedFeed) {
       await opts.context.hooks.onFeedUpdated(updatedFeed);

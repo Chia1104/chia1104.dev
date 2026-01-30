@@ -30,7 +30,7 @@ export const CopyButton = ({
   const { copy, copied } = useClipboard({ timeout });
   return (
     <Tooltip>
-      <Tooltip.Trigger>
+      <Tooltip.Trigger className="flex items-center justify-center">
         <Button
           aria-label="copy"
           isIconOnly

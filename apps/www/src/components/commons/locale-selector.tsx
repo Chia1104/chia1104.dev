@@ -20,7 +20,8 @@ const LocaleSelector = (props: ButtonProps) => {
   return (
     <Dropdown className="not-prose" data-testid="locale-selector">
       <Button size="sm" variant="tertiary" {...props}>
-        {t("label")}
+        <span className="i-mdi-translate size-3" />
+        <span className="hidden md:block">{t("label")}</span>
       </Button>
       <Dropdown.Popover>
         <Dropdown.Menu>

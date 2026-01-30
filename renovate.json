@@ -8,7 +8,8 @@
     "legacy/service/package.json",
     "legacy/cache/package.json",
     "legacy/dash/package.json",
-    "legacy/trigger/package.json"
+    "legacy/trigger/package.json",
+    "legacy/auth/package.json"
   ],
   "packageRules": [
     {
@@ -26,27 +27,7 @@
     },
     {
       "groupName": "fumadocs",
-      "matchPackageNames": ["/fumadocs-*/"]
-    },
-    {
-      "groupName": "tiptap",
-      "matchPackageNames": ["/@tiptap/*/"]
-    },
-    {
-      "groupName": "plate",
-      "matchPackageNames": ["/@udecode/plate-*/"]
-    },
-    {
-      "groupName": "anthropic",
-      "matchPackageNames": ["@ai-sdk/anthropic", "@anthropic-ai/sdk"]
-    },
-    {
-      "groupName": "genai",
-      "matchPackageNames": ["@ai-sdk/google", "@google/genai"]
-    },
-    {
-      "groupName": "openai",
-      "matchPackageNames": ["@ai-sdk/openai", "openai"]
+      "matchPackageNames": ["/@fumadocs/*/", "/fumadocs-*/"]
     },
     {
       "enabled": false,
@@ -70,9 +51,54 @@
       ]
     },
     {
+      "groupName": "heroui",
+      "matchPackageNames": ["@heroui/react", "@heroui/styles"]
+    },
+    {
+      "groupName": "orpc",
+      "matchPackageNames": [
+        "@orpc/client",
+        "@orpc/contract",
+        "@orpc/server",
+        "@orpc/tanstack-query"
+      ]
+    },
+    {
+      "groupName": "drizzle",
+      "matchPackageNames": ["drizzle-orm", "drizzle-kit", "drizzle-zod"]
+    },
+    {
+      "groupName": "ai-sdk",
+      "matchPackageNames": [
+        "@ai-sdk/anthropic",
+        "@ai-sdk/google",
+        "@ai-sdk/openai"
+      ]
+    },
+    {
       "groupName": "Hono",
       "groupSlug": "hono",
       "matchPackageNames": ["hono", "honox", "@hono{/,}**"]
+    },
+    {
+      "groupName": "oxc",
+      "matchPackageNames": ["oxfmt", "oxlint"]
+    },
+    {
+      "groupName": "tanstack",
+      "matchPackageNames": [
+        "@tanstack/react-pacer",
+        "@tanstack/react-query",
+        "@tanstack/react-query-devtools"
+      ]
+    },
+    {
+      "groupName": "better-auth",
+      "matchPackageNames": ["@better-auth/passkey", "better-auth"]
+    },
+    {
+      "groupName": "chiastack",
+      "matchPackageNames": ["@chiastack/tsconfig"]
     }
   ],
   "updateInternalDeps": true

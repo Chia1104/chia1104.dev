@@ -13,8 +13,8 @@ import { motion } from "motion/react";
 
 import meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
-import Image from "@chia/ui/image";
 import RetroGrid from "@chia/ui/retro-grid";
+import { SwooshText } from "@chia/ui/swoosh-text";
 import ThemeSelector from "@chia/ui/theme";
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -46,15 +46,30 @@ const Copyright: FC<{ className?: string }> = ({ className }) => {
   );
 };
 
-const Logo = () => (
-  <Image
-    src="https://storage.chia1104.dev/bot-example.png"
-    alt="logo"
-    width={60}
-    height={60}
-    loading="lazy"
-  />
-);
+const Logo = () => {
+  return (
+    <SwooshText
+      text="Chia1104"
+      className="text-md w-fit text-start md:text-xl"
+      distance={{
+        alpha: 7,
+        beta: 12,
+        gamma: 17,
+        delta: 22,
+        epsilon: 37,
+      }}
+      style={
+        {
+          "--swoosh-c-alpha": "#f9c851",
+          "--swoosh-c-beta": "#fbc04d",
+          "--swoosh-c-gamma": "#fba857",
+          "--swoosh-c-delta": "#fc9670",
+          "--swoosh-c-epsilon": "#fca5a5",
+        } as React.CSSProperties
+      }
+    />
+  );
+};
 
 const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
   const selectedLayoutSegments = useSelectedLayoutSegments();
@@ -75,22 +90,26 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
         </div>
       </div>
       <div className="z-20 container flex w-full px-10">
-        <div className="hidden h-full min-h-[130px] w-1/3 flex-col items-start gap-5 md:flex">
+        <div className="hidden min-h-full w-1/3 flex-col items-start justify-between md:flex">
           <Logo />
-          <LocaleSelector />
-          <ThemeSelector
-            enableCMD
-            label={t("label")}
-            themeLabel={{
-              system: t("system"),
-              dark: t("dark"),
-              light: t("light"),
-            }}
-            buttonProps={{
-              variant: "tertiary",
-            }}
-          />
-          <Copyright className="mt-auto" />
+          <div className="flex flex-col gap-5">
+            <div className="mt-auto hidden items-center gap-2 md:flex">
+              <LocaleSelector />
+              <ThemeSelector
+                enableCMD
+                label={t("label")}
+                themeLabel={{
+                  system: t("system"),
+                  dark: t("dark"),
+                  light: t("light"),
+                }}
+                buttonProps={{
+                  variant: "tertiary",
+                }}
+              />
+            </div>
+            <Copyright />
+          </div>
         </div>
         <div className="flex w-1/2 flex-col items-start md:w-1/3">
           <p className="mb-3 ml-2 text-lg font-bold">{tNav("pages")}</p>
@@ -141,22 +160,24 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
         </div>
       </div>
       <div className="z-20 container mt-5 flex w-full items-center justify-between px-10 md:hidden">
-        <div className="flex items-center gap-3">
-          <Logo />
-          <LocaleSelector />
-          <ThemeSelector
-            label=""
-            themeLabel={{
-              system: t("system"),
-              dark: t("dark"),
-              light: t("light"),
-            }}
-            buttonProps={{
-              variant: "tertiary",
-            }}
-          />
+        <Logo />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 md:hidden">
+            <LocaleSelector />
+            <ThemeSelector
+              label=""
+              themeLabel={{
+                system: t("system"),
+                dark: t("dark"),
+                light: t("light"),
+              }}
+              buttonProps={{
+                variant: "tertiary",
+              }}
+            />
+          </div>
+          <Copyright />
         </div>
-        <Copyright />
       </div>
       <motion.div
         whileInView={{

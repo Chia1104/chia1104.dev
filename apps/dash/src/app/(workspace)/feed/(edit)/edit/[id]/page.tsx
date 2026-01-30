@@ -5,12 +5,14 @@ import { all } from "better-all";
 import * as z from "zod";
 
 import { FeedType } from "@chia/db/types";
+import type { Locale } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import dayjs from "@chia/utils/day";
 import { NumericStringSchema } from "@chia/utils/schema";
 
-import EditForm from "@/components/feed/edit-form";
+import EditView from "@/containers/feed/edit-view";
 import { client } from "@/libs/orpc/client";
+import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
 export const dynamic = "force-dynamic";
 
@@ -48,14 +50,6 @@ const Page = async ({
       notFound();
     }
 
-    const translation =
-      feed.translations.find((t) => t.locale === feed.defaultLocale) ??
-      feed.translations[0];
-
-    if (!translation) {
-      notFound();
-    }
-
     const defaultValues = {
       type: feed.type,
       slug: feed.slug,
@@ -64,22 +58,29 @@ const Page = async ({
       contentType: feed.contentType,
       published: feed.published,
       defaultLocale: feed.defaultLocale,
-      translation: {
-        locale: translation.locale,
-        title: translation.title,
-        description: translation.description ?? null,
-        excerpt: translation.excerpt ?? null,
-        summary: translation.summary ?? null,
-        readTime: translation.readTime ?? null,
-      },
-      content: translation.content
-        ? {
-            content: translation.content.content ?? null,
-            source: translation.content.source ?? null,
-            unstableSerializedSource:
-              translation.content.unstableSerializedSource ?? null,
-          }
-        : undefined,
+      translations: feed.translations.reduce<
+        Record<Locale, FormSchema["translations"][Locale]>
+      >(
+        (acc, translation) => {
+          acc[translation.locale] = {
+            title: translation.title,
+            description: translation.description ?? null,
+            excerpt: translation.excerpt ?? null,
+            summary: translation.summary ?? null,
+            readTime: translation.readTime ?? null,
+            content: translation.content
+              ? {
+                  content: translation.content.content ?? null,
+                  source: translation.content.source ?? null,
+                  unstableSerializedSource:
+                    translation.content.unstableSerializedSource ?? null,
+                }
+              : undefined,
+          };
+          return acc;
+        },
+        {} as Record<Locale, FormSchema["translations"][Locale]>
+      ),
     };
 
     return (
@@ -87,7 +88,7 @@ const Page = async ({
         <ErrorBoundary>
           <section className="flex min-h-screen w-full justify-center">
             <div className="w-full max-w-4xl px-4 py-8 md:px-6 lg:px-8">
-              <EditForm feedId={feed.id} defaultValues={defaultValues} />
+              <EditView feedId={feed.id} defaultValues={defaultValues} />
             </div>
           </section>
         </ErrorBoundary>

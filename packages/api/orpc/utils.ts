@@ -22,14 +22,14 @@ export interface BaseOSContext {
     onForbidden?: (error: ORPCError<"FORBIDDEN", unknown>) => void;
     onFeedCreated?: (
       feed: Feed & {
-        translation: FeedTranslation;
-        content: Content | undefined | null;
+        translations: FeedTranslation[];
+        contents: Content[];
       }
     ) => Promise<void>;
     onFeedUpdated?: (
       feed: Feed & {
-        translation: FeedTranslation | null | undefined;
-        content: Content | null | undefined;
+        translations: FeedTranslation[];
+        contents: Content[];
       }
     ) => Promise<void>;
   };
