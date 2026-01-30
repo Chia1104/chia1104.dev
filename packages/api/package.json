@@ -101,7 +101,7 @@
   "scripts": {
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "type:check": "tsc --noEmit",
+    "type:check": "tsgo --noEmit",
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
