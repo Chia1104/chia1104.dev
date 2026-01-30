@@ -58,6 +58,15 @@ const Logo = () => {
         delta: 22,
         epsilon: 37,
       }}
+      style={
+        {
+          "--swoosh-c-alpha": "#f9c851",
+          "--swoosh-c-beta": "#fbc04d",
+          "--swoosh-c-gamma": "#fba857",
+          "--swoosh-c-delta": "#fc9670",
+          "--swoosh-c-epsilon": "#fca5a5",
+        } as React.CSSProperties
+      }
     />
   );
 };
