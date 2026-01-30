@@ -3,6 +3,7 @@
   "compilerOptions": {
     "types": ["vitest/globals"],
     "jsx": "preserve",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
       "~service/*": ["../service/src/*"]

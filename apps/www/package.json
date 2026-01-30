@@ -20,7 +20,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "type:check": "tsgo --noEmit",
+    "type:check": "tsc --noEmit",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
     "format:docs": "prettier --write \"**/*.{md,mdx}\"",
     "docs:check": "prettier --check \"**/*.{md,mdx}\"",

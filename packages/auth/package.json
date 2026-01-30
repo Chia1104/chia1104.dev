@@ -35,7 +35,7 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "type:check": "tsgo --noEmit",
+    "type:check": "tsc --noEmit",
     "auth-schema:generate": "SKIP_ENV_VALIDATION=1 pnpm dlx @better-auth/cli generate --config scripts/auth-cli.ts"
   },
   "dependencies": {

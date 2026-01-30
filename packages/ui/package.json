@@ -66,7 +66,7 @@
   "scripts": {
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "type:check": "tsgo --noEmit",
+    "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules dist .cache",
     "ui-add": "pnpm dlx shadcn@latest add"
   },
