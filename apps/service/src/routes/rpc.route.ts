@@ -41,63 +41,68 @@ const api = new Hono<HonoContext>()
         auth: c.var.auth,
         hooks: {
           async onFeedCreated(feed) {
-            await all({
-              async feedEmbeddings() {
-                return await start(feedEmbeddingsWorkflow, [
-                  {
-                    feedID: feed.id,
-                    locale: feed.translation.locale,
-                    content:
-                      feed.content?.content ??
-                      feed.translation.description ??
-                      "",
-                    enabled: feed.published,
-                  },
-                ]);
-              },
-              async estimateReadingTime() {
-                return await start(estimateReadingTimeWorkflow, [
-                  {
-                    feedID: feed.id,
-                    locale: feed.translation.locale,
-                    content:
-                      feed.content?.content ??
-                      feed.translation.description ??
-                      "",
-                  },
-                ]);
-              },
+            const workflows = feed.translations.map((translation) => {
+              const content = feed.contents.find(
+                (c) => c.feedTranslationId === translation.id
+              );
+              return all({
+                async feedEmbeddings() {
+                  return await start(feedEmbeddingsWorkflow, [
+                    {
+                      feedID: feed.id,
+                      locale: translation.locale,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                      enabled: feed.published,
+                    },
+                  ]);
+                },
+                async estimateReadingTime() {
+                  return await start(estimateReadingTimeWorkflow, [
+                    {
+                      feedID: feed.id,
+                      locale: translation.locale,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                    },
+                  ]);
+                },
+              });
             });
-          },
 
+            await Promise.all(workflows);
+          },
           async onFeedUpdated(feed) {
-            await all({
-              async feedEmbeddings() {
-                return await start(feedEmbeddingsWorkflow, [
-                  {
-                    feedID: feed.id,
-                    locale: feed.translation?.locale,
-                    content:
-                      feed.content?.content ??
-                      feed.translation?.description ??
-                      "",
-                    enabled: feed.published,
-                  },
-                ]);
-              },
-              async estimateReadingTime() {
-                return await start(estimateReadingTimeWorkflow, [
-                  {
-                    feedID: feed.id,
-                    locale: feed.translation?.locale,
-                    content:
-                      feed.content?.content ??
-                      feed.translation?.description ??
-                      "",
-                  },
-                ]);
-              },
+            const workflows = feed.translations.map((translation) => {
+              const content = feed.contents.find(
+                (c) => c.feedTranslationId === translation.id
+              );
+              return all({
+                async feedEmbeddings() {
+                  return await start(feedEmbeddingsWorkflow, [
+                    {
+                      feedID: feed.id,
+                      locale: translation.locale,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                      enabled: feed.published,
+                    },
+                  ]);
+                },
+                async estimateReadingTime() {
+                  return await start(estimateReadingTimeWorkflow, [
+                    {
+                      feedID: feed.id,
+                      locale: translation.locale,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                    },
+                  ]);
+                },
+              });
             });
+
+            await Promise.all(workflows);
           },
         },
       },

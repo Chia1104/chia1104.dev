@@ -24,15 +24,17 @@ export const createFeedSchema = z.object({
   ...insertFeedSchema
     .omit({ userId: true, createdAt: true, updatedAt: true })
     .partial({ slug: true }).shape,
-  translation: z.object({
-    locale: z.enum(locale.enumValues),
-    title: z.string().min(1),
-    excerpt: z.string().optional().nullable(),
-    description: z.string().optional().nullable(),
-    summary: z.string().optional().nullable(),
-    readTime: z.number().optional().nullable(),
-  }),
-  content: insertContentSchema.optional(),
+  translations: z.record(
+    z.enum(locale.enumValues),
+    z.object({
+      title: z.string().min(1),
+      excerpt: z.string().optional().nullable(),
+      description: z.string().optional().nullable(),
+      summary: z.string().optional().nullable(),
+      readTime: z.number().optional().nullable(),
+      content: insertContentSchema.optional(),
+    })
+  ),
   ...dateSchema.shape,
 });
 
@@ -48,22 +50,18 @@ export const updateFeedSchema = z.object({
       slug: true,
     })
     .partial().shape,
-  translation: z
-    .object({
-      locale: z.enum(locale.enumValues),
-      title: z.string().min(1).optional(),
-      excerpt: z.string().optional().nullable(),
-      description: z.string().optional().nullable(),
-      summary: z.string().optional().nullable(),
-      readTime: z.number().optional().nullable(),
-    })
-    .optional(),
-  content: z
-    .object({
-      content: z.string().optional().nullable(),
-      source: z.string().optional().nullable(),
-      unstableSerializedSource: z.string().optional().nullable(),
-    })
+  translations: z
+    .record(
+      z.enum(locale.enumValues),
+      z.object({
+        title: z.string().min(1).optional(),
+        excerpt: z.string().optional().nullable(),
+        description: z.string().optional().nullable(),
+        summary: z.string().optional().nullable(),
+        readTime: z.number().optional().nullable(),
+        content: insertContentSchema.optional(),
+      })
+    )
     .optional(),
   ...dateSchema.shape,
 });
@@ -192,6 +190,9 @@ export const createFeedContract = oc
     UNAUTHORIZED: {},
     NOT_FOUND: {},
     INTERNAL_SERVER_ERROR: {},
+    BAD_REQUEST: {
+      message: "",
+    },
   })
   .input(createFeedSchema);
 

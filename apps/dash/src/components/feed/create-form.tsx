@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 
 import { Form } from "@heroui/react";
@@ -10,13 +10,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { feedsContracts } from "@chia/api/orpc/contracts";
 import { FeedType, ContentType } from "@chia/db/types";
+import { Locale } from "@chia/db/types";
 import SubmitForm from "@chia/ui/submit-form";
 import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
 import { useDraft } from "@/store/draft";
+import type { FormSchema } from "@/store/draft/slices/edit-fields";
+import { formSchema } from "@/store/draft/slices/edit-fields";
 
 import EditFields from "./edit-fields";
 
@@ -38,7 +40,12 @@ const CreateForm = ({ type = FeedType.Post }: CreateFormProps) => {
     () => searchParams.get("token") ?? crypto.randomUUID()
   );
 
-  const { draft, saveDraft } = useDraft(token);
+  const { saveDraft, draft } = useDraft(token);
+
+  const formData = useMemo(
+    () => (draft?.formData ? cloneFormData(draft?.formData) : {}),
+    [draft]
+  );
 
   const create = useMutation(
     orpc.feeds.create.mutationOptions({
@@ -53,49 +60,31 @@ const CreateForm = ({ type = FeedType.Post }: CreateFormProps) => {
     })
   );
 
-  const form = useForm<feedsContracts.CreateFeedInput>({
+  const form = useForm<FormSchema>({
     defaultValues: {
       contentType: ContentType.Mdx,
       type,
-      defaultLocale: "zh-TW",
-      translation: {
-        locale: "zh-TW",
-        title: "Untitled",
-        excerpt: null,
-        description: null,
-        summary: null,
-        readTime: null,
-      },
-      ...(draft?.formData ? cloneFormData(draft.formData) : {}),
-      createdAt: draft?.formData?.createdAt
-        ? dayjs(draft.formData.createdAt).valueOf()
+      defaultLocale: Locale.zhTW,
+      activeLocale: Locale.zhTW,
+      ...formData,
+      createdAt: formData?.createdAt
+        ? dayjs(formData.createdAt).valueOf()
         : dayjs().valueOf(),
     },
-    resolver: zodResolver(feedsContracts.createFeedSchema),
+    resolver: zodResolver(formSchema),
   });
 
   const debouncedSaveRef = useRef<NodeJS.Timeout | null>(null);
 
   const debouncedSave = useCallback(
-    (formData: Partial<feedsContracts.CreateFeedInput>) => {
+    (formData: Partial<FormSchema>) => {
       if (debouncedSaveRef.current) {
         clearTimeout(debouncedSaveRef.current);
       }
 
       debouncedSaveRef.current = setTimeout(() => {
         try {
-          const clonedData = cloneFormData(formData);
-
-          saveDraft(clonedData, {
-            [ContentType.Mdx]: {
-              content: clonedData.content?.content ?? "",
-              source: clonedData.content?.source ?? "",
-            },
-            [ContentType.Tiptap]: {
-              content: "",
-              source: "",
-            },
-          });
+          saveDraft(cloneFormData(formData));
         } catch (error) {
           console.error("Failed to save draft:", error);
         }

@@ -9,20 +9,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { feedsContracts } from "@chia/api/orpc/contracts";
+import { Locale } from "@chia/db/types";
 import SubmitForm from "@chia/ui/submit-form";
 import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
+import { DraftProvider } from "@/store/draft";
+import { formSchema } from "@/store/draft/slices/edit-fields";
+import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
 import EditFields from "./edit-fields";
 
-const cloneFormData = <T,>(data: T): T => {
-  return JSON.parse(JSON.stringify(data));
-};
-
-interface EditFormProps {
-  defaultValues: Partial<feedsContracts.CreateFeedInput>;
+export interface EditFormProps {
+  defaultValues: Partial<FormSchema>;
   feedId: number;
 }
 
@@ -43,31 +42,23 @@ const EditForm = ({ defaultValues, feedId }: EditFormProps) => {
     })
   );
 
-  const form = useForm<feedsContracts.CreateFeedInput>({
+  const form = useForm<FormSchema>({
     defaultValues: {
-      ...cloneFormData(defaultValues),
+      ...defaultValues,
+      activeLocale: defaultValues?.defaultLocale ?? Locale.zhTW,
       createdAt: defaultValues?.createdAt
         ? dayjs(defaultValues.createdAt).valueOf()
         : dayjs().valueOf(),
       updatedAt: dayjs().valueOf(),
     },
-    resolver: zodResolver(feedsContracts.createFeedSchema),
+    resolver: zodResolver(formSchema),
   });
 
   const onSubmit = useCallback(
-    (values: feedsContracts.CreateFeedInput) => {
+    (values: FormSchema) => {
       update.mutate({
+        ...values,
         feedId,
-        type: values.type,
-        published: values.published,
-        contentType: values.contentType,
-        createdAt: values.createdAt,
-        updatedAt: values.updatedAt,
-        translation: values.translation,
-        content: {
-          content: values.content?.content,
-          source: values.content?.source,
-        },
       });
     },
     [update, feedId]
@@ -76,21 +67,26 @@ const EditForm = ({ defaultValues, feedId }: EditFormProps) => {
   const handleSubmit = form.handleSubmit(onSubmit);
 
   return (
-    <FormProvider {...form}>
-      <Form onSubmit={handleSubmit} className="flex w-full flex-col gap-10">
-        <EditFields
-          disabled={update.isPending}
-          isPending={update.isPending}
-          mode="edit"
-          feedId={feedId}
-        />
-        <SubmitForm
-          className="w-full max-w-[150px]"
-          isPending={update.isPending}>
-          Update
-        </SubmitForm>
-      </Form>
-    </FormProvider>
+    <DraftProvider
+      initialValues={{
+        mode: "edit",
+      }}>
+      <FormProvider {...form}>
+        <Form onSubmit={handleSubmit} className="flex w-full flex-col gap-10">
+          <EditFields
+            disabled={update.isPending}
+            isPending={update.isPending}
+            mode="edit"
+            feedId={feedId}
+          />
+          <SubmitForm
+            className="w-full max-w-[150px]"
+            isPending={update.isPending}>
+            Update
+          </SubmitForm>
+        </Form>
+      </FormProvider>
+    </DraftProvider>
   );
 };
 

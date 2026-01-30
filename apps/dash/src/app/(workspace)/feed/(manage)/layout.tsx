@@ -11,6 +11,7 @@ import SearchFeed from "@/components/feed/search-feed";
 
 const CreateFeedButton = () => {
   const router = useRouter();
+
   return (
     <Button
       variant="primary"

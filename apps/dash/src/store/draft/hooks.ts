@@ -6,8 +6,8 @@ import { useShallow } from "zustand/react/shallow";
 
 import type { feedsContracts } from "@chia/api/orpc/contracts";
 
-import { useDraftStore } from "./store";
-import type { DraftData, EditFieldsContext } from "./store";
+import { useDraft as useDraftStore } from "./store";
+import type { DraftData } from "./store";
 
 /**
  * useDraft Hook
@@ -34,18 +34,22 @@ export const useDraft = (token: string) => {
       saveDraft: state.saveDraft,
       loadDraft: state.loadDraft,
       deleteDraft: state.deleteDraft,
-      content: state.content,
+      createDraft: state.createDraft,
     }))
   );
 
   const draft = store.draftsMap[token];
 
+  const createDraft = useCallback(
+    (formData: Partial<feedsContracts.CreateFeedInput>) => {
+      store.createDraft(token, formData);
+    },
+    [token, store]
+  );
+
   const saveDraft = useCallback(
-    (
-      formData: Partial<feedsContracts.CreateFeedInput>,
-      content?: EditFieldsContext["content"]
-    ) => {
-      store.saveDraft(token, formData, content);
+    (formData: Partial<feedsContracts.CreateFeedInput>) => {
+      store.saveDraft(token, formData);
     },
     [token, store]
   );
@@ -62,12 +66,9 @@ export const useDraft = (token: string) => {
   );
 
   const setState = useCallback(
-    (data: {
-      draft?: Partial<feedsContracts.CreateFeedInput>;
-      content?: EditFieldsContext["content"];
-    }) => {
+    (data: { draft?: Partial<feedsContracts.CreateFeedInput> }) => {
       if (data.draft) {
-        store.saveDraft(token, data.draft, data.content);
+        store.saveDraft(token, data.draft);
       }
     },
     [token, store]
@@ -78,6 +79,11 @@ export const useDraft = (token: string) => {
      * 當前草稿數據（衍生狀態）
      */
     draft,
+
+    /**
+     * 創建草稿
+     */
+    createDraft,
 
     /**
      * 保存草稿
@@ -142,47 +148,15 @@ export const useAllDrafts = (): DraftData[] => {
 export const useEditFields = () => {
   return useDraftStore(
     useShallow((state) => ({
-      content: state.content,
       mode: state.mode,
+      activeLocale: state.activeLocale,
       disabled: state.disabled,
       isPending: state.isPending,
-      updateContent: state.updateContent,
-      setContent: state.setContent,
       setMode: state.setMode,
+      setActiveLocale: state.setActiveLocale,
       setDisabled: state.setDisabled,
       setIsPending: state.setIsPending,
       resetEditFields: state.resetEditFields,
-      getContent: state.getContent,
     }))
   );
-};
-
-/**
- * useEditFieldsContext Hook
- * 兼容舊的 Context API
- *
- * @param token - 可選的 token（用於向後兼容）
- * @returns EditFieldsContext
- *
- * @deprecated 建議使用 useEditFields
- */
-export const useEditFieldsContext = (token?: string): EditFieldsContext => {
-  const state = useDraftStore(
-    useShallow((state) => ({
-      content: state.content,
-      mode: state.mode,
-      disabled: state.disabled,
-      isPending: state.isPending,
-      setContent: state.setContent,
-    }))
-  );
-
-  return {
-    content: state.content,
-    mode: state.mode,
-    token,
-    disabled: state.disabled,
-    isPending: state.isPending,
-    setContent: state.setContent,
-  };
 };

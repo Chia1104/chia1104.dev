@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState, forwardRef, useImperativeHandle, memo, useId } from "react";
+import { memo, useId } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import {
@@ -28,8 +28,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
 import { toast } from "sonner";
 
-import type { feedsContracts } from "@chia/api/orpc/contracts";
 import { FeedType, ContentType } from "@chia/db/types";
+import { Locale } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
 import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
@@ -37,7 +37,7 @@ import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
 import { useEditFields } from "@/store/draft";
-import type { ContentData, EditFieldsContext } from "@/store/draft";
+import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
 const MEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -53,6 +53,19 @@ const FEED_TYPE_TABS = [
   { id: FeedType.Post, icon: GalleryVerticalEnd, label: "Post" },
   { id: FeedType.Note, icon: Pencil, label: "Note" },
 ] as const;
+
+const SUPPORTED_LOCALES: { key: Locale; index: number; label: string }[] = [
+  {
+    key: Locale.En,
+    index: 0,
+    label: "English",
+  },
+  {
+    key: Locale.zhTW,
+    index: 1,
+    label: "Chinese (Traditional)",
+  },
+];
 
 const MONACO_OPTIONS = {
   minimap: { enabled: false },
@@ -70,11 +83,6 @@ interface Props {
   mode?: "edit" | "create";
   token?: string;
   feedId?: number;
-}
-
-export interface Ref {
-  content: EditFieldsContext["content"];
-  getContent: (type?: ContentType | null) => ContentData;
 }
 
 const DeleteButton = memo(
@@ -144,7 +152,7 @@ DeleteButton.displayName = "DeleteButton";
 
 const SlugField = memo(() => {
   const id = useId();
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
+  const form = useFormContext<FormSchema>();
   const { disabled, mode } = useEditFields();
 
   const isFieldDisabled = disabled || mode === "edit";
@@ -179,7 +187,7 @@ const SlugField = memo(() => {
 SlugField.displayName = "SlugField";
 
 const FeedTypeTabs = memo(() => {
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
+  const form = useFormContext<FormSchema>();
 
   return (
     <Controller
@@ -210,17 +218,19 @@ FeedTypeTabs.displayName = "FeedTypeTabs";
 
 const TitleField = memo(
   ({ id, disabled }: { id: string; disabled?: boolean }) => {
-    const form = useFormContext<feedsContracts.CreateFeedInput>();
+    const form = useFormContext<FormSchema>();
+    const activeLocale = form.watch("activeLocale");
 
     return (
       <Controller
+        key={activeLocale}
         control={form.control}
-        name="translation.title"
+        name={`translations.${activeLocale}.title`}
         render={({ field, fieldState: { invalid, error } }) => (
           <TextField isInvalid={invalid} isRequired fullWidth>
-            <Label htmlFor={`${id}-title`}>Title</Label>
+            <Label htmlFor={`${id}-title-${activeLocale}`}>Title</Label>
             <Input
-              id={`${id}-title`}
+              id={`${id}-title-${activeLocale}`}
               disabled={disabled}
               placeholder="Untitled"
               {...field}
@@ -235,38 +245,71 @@ const TitleField = memo(
 
 TitleField.displayName = "TitleField";
 
-const DescriptionField = memo(
-  ({ id, disabled }: { id: string; disabled?: boolean }) => {
-    const form = useFormContext<feedsContracts.CreateFeedInput>();
+const DescriptionField = ({
+  id,
+  disabled,
+}: {
+  id: string;
+  disabled?: boolean;
+}) => {
+  const form = useFormContext<FormSchema>();
+  const activeLocale = form.watch("activeLocale");
 
-    return (
-      <Controller
-        control={form.control}
-        name="translation.description"
-        render={({ field, fieldState: { invalid, error } }) => (
-          <TextField isInvalid={invalid} fullWidth>
-            <Label htmlFor={`${id}-description`}>Description</Label>
-            <TextArea
-              id={`${id}-description`}
-              disabled={disabled}
-              placeholder="Enter description"
-              rows={7}
-              {...field}
-              value={field.value ?? ""}
-            />
-            <FieldError>{error?.message}</FieldError>
-          </TextField>
-        )}
-      />
-    );
-  }
-);
+  return (
+    <Controller
+      key={activeLocale}
+      control={form.control}
+      name={`translations.${activeLocale}.description`}
+      render={({ field, fieldState: { invalid, error } }) => (
+        <TextField isInvalid={invalid} fullWidth>
+          <Label htmlFor={`${id}-description-${activeLocale}`}>
+            Description
+          </Label>
+          <TextArea
+            id={`${id}-description-${activeLocale}`}
+            disabled={disabled}
+            placeholder="Enter description"
+            rows={7}
+            {...field}
+            value={field.value ?? ""}
+          />
+          <FieldError>{error?.message}</FieldError>
+        </TextField>
+      )}
+    />
+  );
+};
 
 DescriptionField.displayName = "DescriptionField";
 
+const LocaleTabs = memo(() => {
+  const form = useFormContext<FormSchema>();
+
+  return (
+    <Controller
+      control={form.control}
+      name="activeLocale"
+      render={({ field }) => (
+        <Tabs selectedKey={field.value} onSelectionChange={field.onChange}>
+          <Tabs.List aria-label="Locale">
+            {SUPPORTED_LOCALES.map((locale) => (
+              <Tabs.Tab key={locale.key} id={locale.key}>
+                <span>{locale.label}</span>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs>
+      )}
+    />
+  );
+});
+
+LocaleTabs.displayName = "LocaleTabs";
+
 export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
   const id = useId();
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
+  const form = useFormContext<FormSchema>();
   const { disabled, mode } = useEditFields();
 
   const showDeleteButton = mode === "edit" && feedId;
@@ -281,11 +324,7 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
         )}
       </div>
 
-      <TitleField id={id} disabled={disabled} />
-
       <SlugField />
-
-      <DescriptionField id={id} disabled={disabled} />
 
       <div className="flex w-full flex-col gap-5 md:flex-row">
         <div className="flex w-full gap-5 md:w-1/2">
@@ -405,6 +444,12 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
           />
         </div>
       </div>
+
+      <LocaleTabs />
+
+      <TitleField id={id} disabled={disabled} />
+
+      <DescriptionField id={id} disabled={disabled} />
     </div>
   );
 });
@@ -412,11 +457,12 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
 MetadataFields.displayName = "MetadataFields";
 
 const SwitchEditor = memo(() => {
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
+  const form = useFormContext<FormSchema>();
   const { disabled } = useEditFields();
   const { isDarkMode } = useTheme();
 
   const contentType = form.watch("contentType") ?? ContentType.Mdx;
+  const activeLocale = form.watch("activeLocale");
 
   const editorTheme = isDarkMode ? "vs-dark" : "light";
   const editorClassName = cn("bg-white py-5 dark:bg-[#1e1e1e]");
@@ -428,8 +474,9 @@ const SwitchEditor = memo(() => {
   return contentType !== ContentType.Mdx ? null : (
     <div className={containerClassName}>
       <Controller
+        key={activeLocale}
         control={form.control}
-        name="content.content"
+        name={`translations.${activeLocale}.content.content`}
         render={({ field }) => (
           <MEditor
             className={editorClassName}
@@ -449,69 +496,7 @@ const SwitchEditor = memo(() => {
 
 SwitchEditor.displayName = "SwitchEditor";
 
-const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
-  const form = useFormContext<feedsContracts.CreateFeedInput>();
-  const {
-    content,
-    setMode,
-    setDisabled,
-    setIsPending,
-    setContent: setStoreContent,
-    getContent,
-  } = useEditFields();
-
-  useState(() => {
-    setMode(mode);
-    if (props.disabled !== undefined) {
-      setDisabled(props.disabled);
-    }
-    if (props.isPending !== undefined) {
-      setIsPending(props.isPending);
-    }
-  });
-
-  useState(() => {
-    const contentType = form.getValues("contentType");
-    if (!contentType) return;
-
-    const formContent = form.getValues("content.content") ?? "";
-    const formSource = form.getValues("content.source") ?? "";
-
-    if (contentType === ContentType.Mdx) {
-      setStoreContent({
-        [ContentType.Mdx]: {
-          content: formContent,
-          source: formSource,
-        },
-      });
-    } else if (contentType === ContentType.Tiptap) {
-      setStoreContent({
-        [ContentType.Tiptap]: {
-          content: formContent,
-          source: formSource,
-        },
-      });
-    }
-  });
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      content,
-      getContent: (type) => {
-        const currentType = type ?? form.watch("contentType");
-        if (
-          currentType === ContentType.Mdx ||
-          currentType === ContentType.Tiptap
-        ) {
-          return getContent(currentType);
-        }
-        return getContent(ContentType.Mdx);
-      },
-    }),
-    [content, form, getContent]
-  );
-
+const Fields = (props: Props) => {
   return (
     <div className={cn("flex flex-col gap-10", props.className)}>
       <MetadataFields feedId={props.feedId} />
@@ -520,7 +505,7 @@ const Fields = forwardRef<Ref, Props>(({ mode = "create", ...props }, ref) => {
       </ErrorBoundary>
     </div>
   );
-});
+};
 
 Fields.displayName = "Fields";
 

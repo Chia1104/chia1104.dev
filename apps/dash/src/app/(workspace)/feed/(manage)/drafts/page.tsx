@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { ViewTransition } from "react";
 
 import FeedSkeleton from "@/components/feed/skeleton";
+import { DraftProvider } from "@/store/draft";
 
 const Drafts = dynamic(
   () => import("@/components/feed/feed-list").then((mod) => mod.Drafts),
@@ -20,7 +21,9 @@ const Drafts = dynamic(
 const DraftsPage = () => {
   return (
     <ViewTransition>
-      <Drafts />
+      <DraftProvider>
+        <Drafts />
+      </DraftProvider>
     </ViewTransition>
   );
 };

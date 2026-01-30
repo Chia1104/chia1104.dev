@@ -329,8 +329,9 @@ export const createFeed = withDTO(
   async (
     db,
     dto: InsertFeedDTO & {
-      translation: InsertFeedTranslationDTO;
-      content?: Omit<InsertContentDTO, "feedTranslationId">;
+      translations: (InsertFeedTranslationDTO & {
+        content: Omit<InsertContentDTO, "feedTranslationId">;
+      })[];
     }
   ) => {
     return await db.transaction(async (trx) => {
@@ -354,50 +355,56 @@ export const createFeed = withDTO(
         throw new Error("Failed to create feed");
       }
 
-      const [translation] = await trx
-        .insert(feedTranslations)
-        .values({
-          feedId: feed.id,
-          locale: dto.translation.locale,
-          title: dto.translation.title,
-          excerpt: dto.translation.excerpt,
-          description: dto.translation.description,
-          summary: dto.translation.summary,
-          readTime: dto.translation.readTime,
-          embedding: dto.translation.embedding ?? undefined,
-          embedding512: dto.translation.embedding512 ?? undefined,
-        })
-        .returning();
+      const createdTranslations = [];
+      const createdContents = [];
 
-      if (!translation?.id) {
-        trx.rollback();
-        throw new Error("Failed to create feed translation");
-      }
-
-      let content = null;
-
-      if (dto.content) {
-        const [createdContent] = await trx
-          .insert(contents)
+      for (const translationInput of dto.translations) {
+        const [translation] = await trx
+          .insert(feedTranslations)
           .values({
-            feedTranslationId: translation.id,
-            content: dto.content.content,
-            source: dto.content.source,
-            unstableSerializedSource: dto.content.unstableSerializedSource,
+            feedId: feed.id,
+            locale: translationInput.locale,
+            title: translationInput.title,
+            excerpt: translationInput.excerpt,
+            description: translationInput.description,
+            summary: translationInput.summary,
+            readTime: translationInput.readTime,
+            embedding: translationInput.embedding ?? undefined,
+            embedding512: translationInput.embedding512 ?? undefined,
           })
           .returning();
 
-        if (!createdContent?.id) {
+        if (!translation?.id) {
           trx.rollback();
-          throw new Error("Failed to create content");
+          throw new Error("Failed to create feed translation");
         }
-        content = createdContent;
+
+        createdTranslations.push(translation);
+
+        if (translationInput.content) {
+          const [createdContent] = await trx
+            .insert(contents)
+            .values({
+              feedTranslationId: translation.id,
+              content: translationInput.content.content,
+              source: translationInput.content.source,
+              unstableSerializedSource:
+                translationInput.content.unstableSerializedSource,
+            })
+            .returning();
+
+          if (!createdContent?.id) {
+            trx.rollback();
+            throw new Error("Failed to create content");
+          }
+          createdContents.push(createdContent);
+        }
       }
 
       return {
         ...feed,
-        translation,
-        content,
+        translations: createdTranslations,
+        contents: createdContents,
       };
     });
   }
