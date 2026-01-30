@@ -22,11 +22,6 @@ import { formSchema } from "@/store/draft/slices/edit-fields";
 
 import EditFields from "./edit-fields";
 
-// Helper function to deep clone form data to avoid readonly property issues
-const cloneFormData = <T,>(data: T): T => {
-  return JSON.parse(JSON.stringify(data));
-};
-
 interface CreateFormProps {
   type?: typeof FeedType.Note | typeof FeedType.Post;
 }
@@ -42,10 +37,7 @@ const CreateForm = ({ type = FeedType.Post }: CreateFormProps) => {
 
   const { saveDraft, draft } = useDraft(token);
 
-  const formData = useMemo(
-    () => (draft?.formData ? cloneFormData(draft?.formData) : {}),
-    [draft]
-  );
+  const formData = useMemo(() => draft?.formData ?? {}, [draft]);
 
   const create = useMutation(
     orpc.feeds.create.mutationOptions({
@@ -102,7 +94,7 @@ const CreateForm = ({ type = FeedType.Post }: CreateFormProps) => {
 
       debouncedSaveRef.current = setTimeout(() => {
         try {
-          saveDraft(cloneFormData(formData));
+          saveDraft(structuredClone(formData));
         } catch (error) {
           console.error("Failed to save draft:", error);
         }
