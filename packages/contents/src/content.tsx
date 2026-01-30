@@ -69,7 +69,7 @@ const MdxContent = (props: BaseProps) => {
             <Card.Header>
               {content.tocContents?.label ?? "On this page"}
             </Card.Header>
-            <ScrollShadow className="max-h-[300px] w-full">
+            <ScrollShadow className="max-h-[300px] w-full" hideScrollBar>
               <Card.Content className="gap-1 pt-0 pl-0">
                 <MDXTableOfContents />
               </Card.Content>

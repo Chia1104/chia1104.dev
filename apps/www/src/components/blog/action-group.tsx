@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { CopyButton } from "@chia/ui/copy-button";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import LocaleSelector from "@/components/commons/locale-selector";
+
 import { OpenInChat } from "./open-in-chat";
 
 export const ActionGroup = ({
@@ -18,7 +20,8 @@ export const ActionGroup = ({
 }) => {
   const tAction = useTranslations("action");
   return (
-    <div className={cn("items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-2", className)}>
+      <LocaleSelector />
       {content ? (
         <CopyButton
           content={content}
