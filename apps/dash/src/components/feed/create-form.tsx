@@ -67,6 +67,24 @@ const CreateForm = ({ type = FeedType.Post }: CreateFormProps) => {
       defaultLocale: Locale.zhTW,
       activeLocale: Locale.zhTW,
       ...formData,
+      translations: {
+        [Locale.zhTW]: {
+          title: "Untitled",
+          excerpt: null,
+          description: null,
+          summary: null,
+          readTime: null,
+          ...formData?.translations?.[Locale.zhTW],
+        },
+        [Locale.En]: {
+          title: "Untitled",
+          excerpt: null,
+          description: null,
+          summary: null,
+          readTime: null,
+          ...formData?.translations?.[Locale.En],
+        },
+      },
       createdAt: formData?.createdAt
         ? dayjs(formData.createdAt).valueOf()
         : dayjs().valueOf(),
