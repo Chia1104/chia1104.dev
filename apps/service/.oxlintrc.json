@@ -8,7 +8,7 @@
   "env": {
     "builtin": true
   },
-  "ignorePatterns": ["**/*.d.ts", ".output", "scripts"],
+  "ignorePatterns": ["**/*.d.ts", ".output", "scripts", "__tests__/**"],
   "rules": {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn"
