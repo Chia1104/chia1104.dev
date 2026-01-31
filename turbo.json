@@ -19,10 +19,6 @@
     "test:watch": {
       "outputs": []
     },
-    "test:service": {
-      "outputs": ["coverage/**"],
-      "cache": true
-    },
     "dev": {
       "cache": false,
       "persistent": true

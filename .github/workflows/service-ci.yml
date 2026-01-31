@@ -111,4 +111,4 @@ jobs:
       - name: "🧹 Test"
         shell: bash
         run: |
-          pnpm test:service
+          pnpm test --project service
