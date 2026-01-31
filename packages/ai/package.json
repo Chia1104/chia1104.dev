@@ -57,14 +57,14 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.31",
+    "@ai-sdk/anthropic": "^3.0.33",
     "@ai-sdk/deepseek": "^2.0.15",
     "@ai-sdk/google": "^3.0.18",
     "@ai-sdk/openai": "^3.0.23",
     "@anthropic-ai/sdk": "^0.72.1",
     "@chia/utils": "workspace:*",
-    "@google/genai": "^1.38.0",
-    "ai": "^6.0.62",
+    "@google/genai": "^1.39.0",
+    "ai": "^6.0.64",
     "next": "catalog:next",
     "ollama": "^0.6.3",
     "openai": "^6.17.0",

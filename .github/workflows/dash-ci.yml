@@ -87,4 +87,4 @@ jobs:
       - name: "🧹 Test"
         shell: bash
         run: |
-          pnpm test
+          pnpm test --project dash

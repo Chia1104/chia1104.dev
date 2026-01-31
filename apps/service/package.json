@@ -13,8 +13,7 @@
     "node:preview": "node --env-file=.env .output/server/index.mjs",
     "type:check": "tsc --noEmit",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "test:service": "NODE_ENV=test bun test"
+    "lint:fix": "oxlint --fix"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
