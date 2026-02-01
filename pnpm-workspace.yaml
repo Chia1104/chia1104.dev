@@ -39,7 +39,7 @@ catalogs:
     fumadocs-mdx: 14.2.6
     fumadocs-ui: 16.4.11
   heroui:
-    '@heroui/react': 2.8.7
+    '@heroui/react': 2.8.8
     '@heroui/theme': 2.4.25
   heroui-v3:
     '@heroui/react': 3.0.0-beta.5
