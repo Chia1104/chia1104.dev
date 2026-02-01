@@ -55,15 +55,6 @@
       "matchPackageNames": ["@heroui/react", "@heroui/styles"]
     },
     {
-      "groupName": "orpc",
-      "matchPackageNames": [
-        "@orpc/client",
-        "@orpc/contract",
-        "@orpc/server",
-        "@orpc/tanstack-query"
-      ]
-    },
-    {
       "groupName": "drizzle",
       "matchPackageNames": ["drizzle-orm", "drizzle-kit", "drizzle-zod"]
     },

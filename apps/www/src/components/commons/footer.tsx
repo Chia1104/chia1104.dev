@@ -161,7 +161,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
       </div>
       <div className="z-20 container mt-5 flex w-full items-center justify-between px-10 md:hidden">
         <Logo />
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2 md:hidden">
             <LocaleSelector />
             <ThemeSelector
