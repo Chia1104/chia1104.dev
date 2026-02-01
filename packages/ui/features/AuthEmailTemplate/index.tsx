@@ -1,66 +1,63 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
+  Hr,
   Html,
+  Img,
+  Preview,
   Section,
   Tailwind,
   Text,
+  Button,
 } from "@react-email/components";
 
 export interface Props {
-  url: string;
-  host: string;
-  theme?: "default";
+  url?: string;
 }
 
-const EmailTemplate = ({ url, host }: Props) => {
-  const escapedHost = host.replace(/\./g, "&#8203;.");
+const AuthEmailTemplate = ({ url }: Props) => {
   return (
-    <Tailwind
-      config={{
-        theme: {
-          extend: {
-            colors: {
-              cyan: "#79ffe1",
-              purple: "#f81ce5",
-              cyberpunk: "#F2E307",
-              dark: "#000000",
-            },
-          },
-        },
-      }}>
-      <Html>
-        <Head />
-        <Body className="m-auto bg-black p-10 font-sans text-white">
-          <Section
-            style={{
-              backgroundImage: "radial-gradient(#535353 0.5px, transparent 0)",
-            }}
-            className="fixed top-0 left-0 -z-10 block size-full bg-[length:11px_11px] before:content-['']"
-          />
-          <Container className="bg-dark/30 border-purple mx-auto my-[40px] w-[465px] rounded border border-solid p-[20px] text-white backdrop-blur-md">
-            <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal">
-              Here's your sign-in link for <strong>{escapedHost}</strong>
-            </Heading>
-            <Text className="text-[14px] leading-[24px]">
-              Click the button below to sign in to your account. If you didn't
-              request this link, you can safely ignore this email.
-            </Text>
-            <Section className="my-[32px] text-center">
-              <Button
-                className="bg-cyberpunk rounded px-5 py-3 text-center text-[12px] font-semibold text-[#666666] no-underline"
-                href={url}>
-                Sign in
-              </Button>
+    <Html>
+      <Head />
+      <Tailwind>
+        <Body className="bg-white">
+          <Preview>Please click the link below to sign in</Preview>
+          <Container className="mx-auto my-0 max-w-2xl bg-[url('https://storage.chia1104.dev/project-background.jpg')] [background-position:bottom] [background-repeat:no-repeat] p-6">
+            <Section className="rounded-2xl bg-white p-4">
+              <Img
+                src="https://storage.chia1104.dev/bot-example.png"
+                width={48}
+                height={48}
+                alt="Chia1104.dev"
+              />
+              <Heading className="mt-12 text-[28px] font-bold">
+                Sign in to Chia1104.dev
+              </Heading>
+              <Text className="text-base leading-6.5">
+                Please click the link below to sign in
+              </Text>
+              <Button href={url}>Sign in</Button>
+              <Hr className="mt-12 border-[#dddddd]" />
+              <Img
+                src="https://storage.chia1104.dev/bot-example.png"
+                width={32}
+                height={32}
+                style={{
+                  WebkitFilter: "grayscale(100%)",
+                }}
+                className="mx-0 my-5 [filter:grayscale(100%)]"
+              />
+              <Text className="ml-1 text-xs leading-6 text-[#8898aa]">
+                Chia1104.dev
+              </Text>
             </Section>
           </Container>
         </Body>
-      </Html>
-    </Tailwind>
+      </Tailwind>
+    </Html>
   );
 };
 
-export default EmailTemplate;
+export default AuthEmailTemplate;
