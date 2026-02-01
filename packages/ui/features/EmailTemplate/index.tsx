@@ -1,16 +1,16 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
   Hr,
   Html,
-  Link,
+  Img,
   Preview,
   Section,
   Tailwind,
   Text,
+  Markdown,
 } from "@react-email/components";
 
 export interface Props {
@@ -18,61 +18,61 @@ export interface Props {
   message?: string;
   email?: string;
   ip?: string;
+  emailConfig?: {
+    preview?: string;
+    title?: string;
+  };
 }
 
-const EmailTemplate = ({ title = "Untitled", message, email, ip }: Props) => {
-  const previewText = `You have received a message from ${email}`;
-  const fromEmail = `mailto:${email}`;
+const EmailTemplate = ({ title, message, email, ip, emailConfig }: Props) => {
+  const previewText =
+    emailConfig?.preview ?? `You have received a message from ${email}`;
+
   return (
-    <Tailwind
-      config={{
-        theme: {
-          extend: {
-            colors: {
-              cyan: "#79ffe1",
-              purple: "#f81ce5",
-              cyberpunk: "#F2E307",
-              dark: "#000000",
-            },
-          },
-        },
-      }}>
-      <Html>
-        <Head />
-        <Preview>{previewText}</Preview>
-        <Body className="m-auto bg-black p-10 font-sans text-white">
-          <Section
-            style={{
-              backgroundImage: "radial-gradient(#535353 0.5px, transparent 0)",
-            }}
-            className="fixed top-0 left-0 -z-10 block size-full bg-[length:11px_11px] before:content-['']"
-          />
-          <Container className="bg-dark/30 border-purple mx-auto my-[40px] w-[465px] rounded border border-solid p-[20px] text-white backdrop-blur-md">
-            <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal">
-              <strong>{title}</strong>
-            </Heading>
-            <Text className="text-[14px] leading-[24px]">
-              From:{" "}
-              <Link href={fromEmail} className="text-cyan no-underline">
-                {email}
-              </Link>
-            </Text>
-            <Text className="text-[14px] leading-[24px]">{message}</Text>
-            <Section className="my-[32px] text-center">
-              <Button
-                className="bg-cyberpunk rounded px-5 py-3 text-center text-[12px] font-semibold text-[#666666] no-underline"
-                href={fromEmail}>
-                Reply
-              </Button>
+    <Html>
+      <Head />
+      <Tailwind>
+        <Body className="bg-white">
+          <Preview>{previewText}</Preview>
+          <Container className="mx-auto my-0 max-w-2xl bg-[url('https://storage.chia1104.dev/project-background.jpg')] [background-position:bottom] [background-repeat:no-repeat] p-6">
+            <Section className="rounded-2xl bg-white p-4">
+              <Img
+                src="https://storage.chia1104.dev/bot-example.png"
+                width={48}
+                height={48}
+                alt="Chia1104.dev"
+              />
+              <Heading className="mt-12 text-[28px] font-bold">
+                {emailConfig?.title ?? "Contact Message"}
+              </Heading>
+              <Text className="text-base leading-6.5">{previewText}</Text>
+              {title && (
+                <Section className="mx-0 my-6">
+                  <Text className="text-lg leading-3">{title}</Text>
+                </Section>
+              )}
+              <Markdown>{message ?? ""}</Markdown>
+              <Hr className="mt-12 border-[#dddddd]" />
+              <Img
+                src="https://storage.chia1104.dev/bot-example.png"
+                width={32}
+                height={32}
+                style={{
+                  WebkitFilter: "grayscale(100%)",
+                }}
+                className="mx-0 my-5 [filter:grayscale(100%)]"
+              />
+              <Text className="ml-1 text-xs leading-6 text-[#8898aa]">
+                Chia1104.dev
+              </Text>
+              <Text className="ml-1 text-xs leading-6 text-[#8898aa]">
+                The message was sent from the IP address: {ip ?? "Unknown"}
+              </Text>
             </Section>
-            <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
-            <Text className="text-[12px] leading-[24px] text-[#666666]">
-              The message was sent from IP address {ip}
-            </Text>
           </Container>
         </Body>
-      </Html>
-    </Tailwind>
+      </Tailwind>
+    </Html>
   );
 };
 

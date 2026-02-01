@@ -7,7 +7,7 @@ import { organization } from "better-auth/plugins";
 import { Resend } from "resend";
 
 import { Role } from "@chia/db/types";
-import EmailTemplate from "@chia/ui/features/AuthEmailTemplate";
+import AuthEmailTemplate from "@chia/ui/features/AuthEmailTemplate";
 import { AUTH_EMAIL } from "@chia/utils/config";
 
 import { env } from "./env";
@@ -103,9 +103,8 @@ export const baseAuthConfig = {
           to: email,
           subject: "Sign in to Chia1104.dev",
           text: "Please click the link below to sign in",
-          react: EmailTemplate({
+          react: AuthEmailTemplate({
             url,
-            host: new URL(url).host,
           }),
         });
       },
