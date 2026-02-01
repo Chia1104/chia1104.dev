@@ -76,7 +76,7 @@ const Page = async ({
   const articleUrl = `${getBaseUrl({
     baseUrl: WWW_BASE_URL,
     useBaseUrl: true,
-  })}/${locale}/${type}s/${slug}`;
+  })}/${locale}/${type}/${slug}`;
 
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",

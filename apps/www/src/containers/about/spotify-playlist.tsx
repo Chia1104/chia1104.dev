@@ -5,6 +5,7 @@ import type { PlayList } from "@chia/api/spotify/types";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
+import { NoiseBackground } from "@chia/ui/noise-background";
 import { cn } from "@chia/ui/utils/cn.util";
 import { serviceRequest } from "@chia/utils/request";
 
@@ -133,7 +134,18 @@ export async function SpotifyPlaylist() {
 
   return (
     <FadeIn className="w-full flex-col">
-      <div className="c-bg-third relative grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7 sm:grid-cols-2 sm:py-3">
+      <NoiseBackground
+        style={
+          {
+            "--noise-gradient-1": "#F9C851",
+            "--noise-gradient-2": "#FCA5A5",
+            "--noise-gradient-3": "#FECACA",
+            "--noise-gradient-1-dark": "var(--color-purple-400)",
+            "--noise-gradient-2-dark": "var(--color-pink-400)",
+            "--noise-gradient-3-dark": "var(--color-pink-600)",
+          } as React.CSSProperties
+        }
+        className="grid w-full grid-cols-1 gap-2 overflow-hidden rounded-lg px-5 py-7 sm:grid-cols-2 sm:py-3">
         <div className="flex w-full items-center">
           <First data={data[0]} />
         </div>
@@ -142,8 +154,7 @@ export async function SpotifyPlaylist() {
           <Item data={data[2]} />
           <Item data={data[3]} />
         </div>
-        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
-      </div>
+      </NoiseBackground>
       <div className="mt-5 flex items-center gap-3">
         <span>
           Check out the <PreviewLink href={href}>{playlist.name}</PreviewLink>{" "}

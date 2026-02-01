@@ -11,8 +11,6 @@ import {
   MessageCircleIcon,
 } from "lucide-react";
 
-import { cn } from "../utils/cn.util";
-
 interface ProviderInfo {
   title: string;
   createUrl: (q: string) => string;
@@ -221,9 +219,9 @@ export const OpenIn = ({
 
 export type OpenInContentProps = ComponentProps<typeof Dropdown.Menu>;
 
-export const OpenInContent = ({ className, ...props }: OpenInContentProps) => (
+export const OpenInContent = (props: OpenInContentProps) => (
   <Dropdown.Popover>
-    <Dropdown.Menu className={cn("w-[240px]", className)} {...props} />
+    <Dropdown.Menu {...props} />
   </Dropdown.Popover>
 );
 

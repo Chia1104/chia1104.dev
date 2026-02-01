@@ -17,7 +17,7 @@
 }
 
 @utility c-bg-primary {
-  @apply bg-[#dddddd] text-black dark:bg-black dark:text-white;
+  @apply bg-[#dddddd] text-black dark:bg-neutral-950 dark:text-white;
 }
 
 @utility c-bg-secondary {
@@ -29,27 +29,27 @@
 }
 
 @utility c-bg-gradient-purple-to-pink {
-  @apply bg-gradient-to-r from-purple-400 via-pink-400 to-pink-600;
+  @apply bg-linear-to-r from-purple-400 via-pink-400 to-pink-600;
 }
 
 @utility c-text-green-to-purple {
-  @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA] bg-clip-text text-transparent;
+  @apply bg-linear-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA] bg-clip-text text-transparent;
 }
 
 @utility c-bg-gradient-green-to-purple {
-  @apply bg-gradient-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA];
+  @apply bg-linear-to-r from-[#6EE7B7] via-[#3B82F6] to-[#9333EA];
 }
 
 @utility c-text-yellow-to-pink {
-  @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA] bg-clip-text text-transparent;
+  @apply bg-linear-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA] bg-clip-text text-transparent;
 }
 
 @utility c-bg-gradient-yellow-to-pink {
-  @apply bg-gradient-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA];
+  @apply bg-linear-to-r from-[#F9C851] via-[#FCA5A5] to-[#FECACA];
 }
 
 @utility c-bg-gradient-black-to-dark-gray {
-  @apply bg-gradient-to-r from-black via-gray-900 to-gray-900;
+  @apply bg-linear-to-r from-black via-gray-900 to-gray-900;
 }
 
 @utility c-link-active {
@@ -133,7 +133,7 @@
   }
 
   .dark .c-background::before {
-    background-image: radial-gradient(#3e3e3e 0.5px, transparent 0);
+    background-image: radial-gradient(#282828 0.5px, transparent 0);
   }
 
   .animated-feature-cards::before {
