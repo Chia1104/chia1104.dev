@@ -67,14 +67,14 @@ catalogs:
       version: 4.3.6
   drizzle:
     drizzle-kit:
-      specifier: 1.0.0-beta.12-a5629fb
-      version: 1.0.0-beta.12-a5629fb
+      specifier: 1.0.0-beta.9-e89174b
+      version: 1.0.0-beta.9-e89174b
     drizzle-orm:
-      specifier: 1.0.0-beta.12-a5629fb
-      version: 1.0.0-beta.12-a5629fb
+      specifier: 1.0.0-beta.9-e89174b
+      version: 1.0.0-beta.9-e89174b
     drizzle-zod:
-      specifier: 1.0.0-beta.12-a5629fb
-      version: 1.0.0-beta.12-a5629fb
+      specifier: 1.0.0-beta.9-e89174b
+      version: 1.0.0-beta.9-e89174b
   fumadocs:
     '@fumadocs/mdx-remote':
       specifier: 1.4.4
@@ -524,13 +524,13 @@ importers:
         version: 0.0.7
       better-auth:
         specifier: catalog:better-auth
-        version: 1.4.18(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18)
+        version: 1.4.18(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18)
       dayjs:
         specifier: 'catalog:'
         version: 1.11.19
       drizzle-orm:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
+        version: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
       hono:
         specifier: ^4.11.7
         version: 4.11.7
@@ -548,7 +548,7 @@ importers:
         version: 4.17.23
       nitro:
         specifier: 3.0.1-alpha.2
-        version: 3.0.1-alpha.2(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(rolldown@1.0.0-rc.1)(rollup@4.57.1)(sqlite3@5.1.7)(vite@7.3.1(@types/node@25.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 3.0.1-alpha.2(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(rolldown@1.0.0-rc.1)(rollup@4.57.1)(sqlite3@5.1.7)(vite@7.3.1(@types/node@25.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       react:
         specifier: catalog:react-is
         version: 19.2.4
@@ -908,7 +908,7 @@ importers:
         version: 1.11.19
       drizzle-orm:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
+        version: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
       github-slugger:
         specifier: ^2.0.0
         version: 2.0.0
@@ -939,7 +939,7 @@ importers:
     dependencies:
       '@better-auth/passkey':
         specifier: catalog:better-auth
-        version: 1.4.18(@better-auth/core@1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-auth@1.4.18(drizzle-kit@1.0.0-beta.12-a5629fb)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18))(better-call@1.1.8(zod@4.3.6))(nanostores@1.1.0)
+        version: 1.4.18(@better-auth/core@1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-auth@1.4.18(drizzle-kit@1.0.0-beta.9-e89174b)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18))(better-call@1.1.8(zod@4.3.6))(nanostores@1.1.0)
       '@chia/db':
         specifier: workspace:*
         version: link:../db
@@ -957,7 +957,7 @@ importers:
         version: 0.13.10(typescript@5.9.3)(zod@4.3.6)
       better-auth:
         specifier: catalog:better-auth
-        version: 1.4.18(drizzle-kit@1.0.0-beta.12-a5629fb)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18)
+        version: 1.4.18(drizzle-kit@1.0.0-beta.9-e89174b)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18)
       client-only:
         specifier: 'catalog:'
         version: 0.0.1
@@ -979,7 +979,7 @@ importers:
         version: 2.1.1
       drizzle-kit:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.12-a5629fb
+        version: 1.0.0-beta.9-e89174b
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -1073,10 +1073,10 @@ importers:
         version: 0.13.10(typescript@5.9.3)(zod@4.3.6)
       drizzle-orm:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
+        version: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
       drizzle-zod:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.12-a5629fb(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(zod@4.3.6)
+        version: 1.0.0-beta.9-e89174b(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(zod@4.3.6)
       pg:
         specifier: ^8.18.0
         version: 8.18.0
@@ -1098,7 +1098,7 @@ importers:
         version: 8.16.0
       drizzle-kit:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.12-a5629fb
+        version: 1.0.0-beta.9-e89174b
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -1418,7 +1418,7 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
+        version: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
     devDependencies:
       '@chia/ai':
         specifier: workspace:*
@@ -8085,8 +8085,8 @@ packages:
   draco3d@1.5.7:
     resolution: {integrity: sha512-m6WCKt/erDXcw+70IJXnG7M3awwQPAsZvJGX5zY7beBqpELw6RDGkYVU0W43AFxye4pDZ5i2Lbyc/NNGqwjUVQ==}
 
-  drizzle-kit@1.0.0-beta.12-a5629fb:
-    resolution: {integrity: sha512-l+p4QOMvPGYBYEE9NBlU7diu+NSlxuOUwi0I7i01Uj1PpfU0NxhPzaks/9q1MDw4FAPP8vdD0dOhoqosKtRWWQ==}
+  drizzle-kit@1.0.0-beta.9-e89174b:
+    resolution: {integrity: sha512-Xrw3k8E2CbSZr+kqe3k5W4oxd2fbEyczjKtyGIkAq0x9Wqpa/VtAT6Mkh83sIzqG4OSN7lOoUafsDxSE/AR7RA==}
     hasBin: true
 
   drizzle-orm@0.44.7:
@@ -8273,8 +8273,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-orm@1.0.0-beta.12-a5629fb:
-    resolution: {integrity: sha512-wyOAgr9Cy9oEN6z5S0JGhfipLKbRRJtQKgbDO9SXGR9swMBbGNIlXkeMqPRrqYQ8k70mh+7ZJ/eVmJ2F7zR3Vg==}
+  drizzle-orm@1.0.0-beta.9-e89174b:
+    resolution: {integrity: sha512-B5KR/qYMZ0JMOurK+0xi1ObpOQcgrjaC9wHUiU2eTJjLemuh2CoQIw6yur68NxZG6Xcd0b9qghUNC/78/bEfbg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -8379,8 +8379,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@1.0.0-beta.12-a5629fb:
-    resolution: {integrity: sha512-vVrK6eHnIZrnOv+m3X9hMeEHzW/Dl2VSmTQPhVYLalfArLtusHxbuTfJMhHj3LpU/JOA2+9mm2JsjUcCdCgvBg==}
+  drizzle-zod@1.0.0-beta.9-e89174b:
+    resolution: {integrity: sha512-dnEHqeFk5KHuC5sqYEbXxk0FXcijiYRtLwI2/p/z4AclfyGBOcnCAakoVwbOdNHrF0emlc6ufyRl0NffVP1XRw==}
     peerDependencies:
       drizzle-orm: '>=1.0.0-beta.2'
       zod: ^3.25.0 || ^4.0.0
@@ -13837,14 +13837,14 @@ snapshots:
       nanostores: 1.1.0
       zod: 4.3.6
 
-  '@better-auth/passkey@1.4.18(@better-auth/core@1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-auth@1.4.18(drizzle-kit@1.0.0-beta.12-a5629fb)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18))(better-call@1.1.8(zod@4.3.6))(nanostores@1.1.0)':
+  '@better-auth/passkey@1.4.18(@better-auth/core@1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-auth@1.4.18(drizzle-kit@1.0.0-beta.9-e89174b)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18))(better-call@1.1.8(zod@4.3.6))(nanostores@1.1.0)':
     dependencies:
       '@better-auth/core': 1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0)
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.21
       '@simplewebauthn/browser': 13.2.2
       '@simplewebauthn/server': 13.2.2
-      better-auth: 1.4.18(drizzle-kit@1.0.0-beta.12-a5629fb)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18)
+      better-auth: 1.4.18(drizzle-kit@1.0.0-beta.9-e89174b)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18)
       better-call: 1.1.8(zod@4.3.6)
       nanostores: 1.1.0
       zod: 4.3.6
@@ -19662,7 +19662,7 @@ snapshots:
 
   better-all@0.0.7: {}
 
-  better-auth@1.4.18(drizzle-kit@1.0.0-beta.12-a5629fb)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18):
+  better-auth@1.4.18(drizzle-kit@1.0.0-beta.9-e89174b)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18):
     dependencies:
       '@better-auth/core': 1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0)
       '@better-auth/telemetry': 1.4.18(@better-auth/core@1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0))
@@ -19677,7 +19677,7 @@ snapshots:
       nanostores: 1.1.0
       zod: 4.3.6
     optionalDependencies:
-      drizzle-kit: 1.0.0-beta.12-a5629fb
+      drizzle-kit: 1.0.0-beta.9-e89174b
       drizzle-orm: 0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
       next: 16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       pg: 8.18.0
@@ -19685,7 +19685,7 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
       vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.1.0)(@vitest/ui@4.0.18)(happy-dom@20.4.0)(jiti@2.6.1)(jsdom@27.4.0(@noble/hashes@2.0.1))(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.1.0)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  better-auth@1.4.18(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18):
+  better-auth@1.4.18(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(next@16.1.6(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.18.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18):
     dependencies:
       '@better-auth/core': 1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0)
       '@better-auth/telemetry': 1.4.18(@better-auth/core@1.4.18(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.0))
@@ -19700,7 +19700,7 @@ snapshots:
       nanostores: 1.1.0
       zod: 4.3.6
     optionalDependencies:
-      drizzle-orm: 1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
+      drizzle-orm: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
       next: 16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       pg: 8.18.0
       react: 19.2.4
@@ -20403,9 +20403,9 @@ snapshots:
 
   dayjs@1.11.19: {}
 
-  db0@0.3.4(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7):
+  db0@0.3.4(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7):
     optionalDependencies:
-      drizzle-orm: 1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
+      drizzle-orm: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
       sqlite3: 5.1.7
 
   debug@4.4.3(supports-color@8.1.1):
@@ -20551,7 +20551,7 @@ snapshots:
 
   draco3d@1.5.7: {}
 
-  drizzle-kit@1.0.0-beta.12-a5629fb:
+  drizzle-kit@1.0.0-beta.9-e89174b:
     dependencies:
       '@drizzle-team/brocli': 0.11.0
       '@js-temporal/polyfill': 0.5.1
@@ -20580,7 +20580,7 @@ snapshots:
       postgres: 3.4.7
       sqlite3: 5.1.7
 
-  drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7):
+  drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7):
     dependencies:
       '@types/mssql': 9.1.9
       mssql: 11.0.1
@@ -20593,9 +20593,9 @@ snapshots:
       postgres: 3.4.7
       sqlite3: 5.1.7
 
-  drizzle-zod@1.0.0-beta.12-a5629fb(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(zod@4.3.6):
+  drizzle-zod@1.0.0-beta.9-e89174b(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(zod@4.3.6):
     dependencies:
-      drizzle-orm: 1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
+      drizzle-orm: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7)
       zod: 4.3.6
 
   dts-resolver@2.1.3: {}
@@ -23232,11 +23232,11 @@ snapshots:
 
   nf3@0.3.7: {}
 
-  nitro@3.0.1-alpha.2(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(rolldown@1.0.0-rc.1)(rollup@4.57.1)(sqlite3@5.1.7)(vite@7.3.1(@types/node@25.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+  nitro@3.0.1-alpha.2(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(rolldown@1.0.0-rc.1)(rollup@4.57.1)(sqlite3@5.1.7)(vite@7.3.1(@types/node@25.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.4(srvx@0.10.1)
-      db0: 0.3.4(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7)
+      db0: 0.3.4(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7)
       h3: 2.0.1-rc.11(crossws@0.4.4(srvx@0.10.1))
       jiti: 2.6.1
       nf3: 0.3.7
@@ -23247,7 +23247,7 @@ snapshots:
       srvx: 0.10.1
       undici: 7.19.2
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.5(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(db0@0.3.4(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(ofetch@2.0.0-alpha.3)
+      unstorage: 2.0.0-alpha.5(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(db0@0.3.4(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(ofetch@2.0.0-alpha.3)
     optionalDependencies:
       rolldown: 1.0.0-rc.1
       rollup: 4.57.1
@@ -25459,13 +25459,13 @@ snapshots:
     dependencies:
       rolldown: 1.0.0-rc.1
 
-  unstorage@2.0.0-alpha.5(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(db0@0.3.4(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(ofetch@2.0.0-alpha.3):
+  unstorage@2.0.0-alpha.5(@azure/identity@4.13.0)(@upstash/redis@1.36.1)(@vercel/functions@3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0)))(chokidar@5.0.0)(db0@0.3.4(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7))(ioredis@5.9.2)(lru-cache@11.2.5)(ofetch@2.0.0-alpha.3):
     optionalDependencies:
       '@azure/identity': 4.13.0
       '@upstash/redis': 1.36.1
       '@vercel/functions': 3.4.0(@aws-sdk/credential-provider-web-identity@3.609.0(@aws-sdk/client-sts@3.975.0))
       chokidar: 5.0.0
-      db0: 0.3.4(drizzle-orm@1.0.0-beta.12-a5629fb(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7)
+      db0: 0.3.4(drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(bun-types@1.3.8)(mssql@11.0.1)(pg@8.18.0)(postgres@3.4.7)(sqlite3@5.1.7))(sqlite3@5.1.7)
       ioredis: 5.9.2
       lru-cache: 11.2.5
       ofetch: 2.0.0-alpha.3
