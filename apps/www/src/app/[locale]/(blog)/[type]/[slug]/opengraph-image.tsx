@@ -14,8 +14,13 @@ export const size = {
 };
 export const contentType = "image/png";
 
-export default async function og({ params }: { params: { slug: string } }) {
-  const post = await getFeedBySlug(params.slug);
+export default async function og({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = await getFeedBySlug(slug);
   const translation = post?.translations[0];
   if (!translation) {
     return NextResponse.json(errorGenerator(404), { status: 404 });

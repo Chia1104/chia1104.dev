@@ -49,38 +49,6 @@ const api = new Hono<HonoContext>()
     });
   })
   .get(
-    "/public/feeds",
-    zValidator("query", getFeedsWithMetaSchema, (result, c) => {
-      if (!result.success) {
-        return c.json(errorResponse(result.error), 400);
-      }
-    }),
-    async (c) => {
-      const {
-        type,
-        limit,
-        orderBy,
-        sortOrder,
-        nextCursor,
-        withContent,
-        published,
-        locale,
-      } = c.req.valid("query");
-      const feeds = await getInfiniteFeedsByUserId(c.var.db, {
-        type,
-        limit,
-        orderBy,
-        sortOrder,
-        cursor: nextCursor,
-        withContent: withContent === "true",
-        userId: adminId,
-        locale,
-        whereAnd: { published: published === "true" },
-      });
-      return c.json(feeds);
-    }
-  )
-  .get(
     "/public/feeds/:slug",
     zValidator(
       "query",
@@ -189,6 +157,38 @@ const api = new Hono<HonoContext>()
         feedId: Number(c.req.param("id")),
       });
       return c.json(feed);
+    }
+  )
+  .get(
+    "/public/feeds",
+    zValidator("query", getFeedsWithMetaSchema, (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }),
+    async (c) => {
+      const {
+        type,
+        limit,
+        orderBy,
+        sortOrder,
+        nextCursor,
+        withContent,
+        published,
+        locale,
+      } = c.req.valid("query");
+      const feeds = await getInfiniteFeedsByUserId(c.var.db, {
+        type,
+        limit,
+        orderBy,
+        sortOrder,
+        cursor: nextCursor,
+        withContent: withContent === "true",
+        userId: adminId,
+        locale,
+        whereAnd: { published: published === "true" },
+      });
+      return c.json(feeds);
     }
   );
 
