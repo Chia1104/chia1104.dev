@@ -19,6 +19,7 @@ import {
   updateFeed,
 } from "@chia/db/repos/feeds";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
+import { Locale } from "@chia/db/types";
 import { getAdminId } from "@chia/utils/config";
 import { NumericStringSchema } from "@chia/utils/schema";
 import { errorGenerator } from "@chia/utils/server";
@@ -54,7 +55,7 @@ const api = new Hono<HonoContext>()
       "query",
       z
         .object({
-          locale: z.enum(locale.enumValues).optional(),
+          locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
         })
         .optional(),
       (result, c) => {
@@ -95,7 +96,7 @@ const api = new Hono<HonoContext>()
       "query",
       z
         .object({
-          locale: z.enum(locale.enumValues).optional(),
+          locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
         })
         .optional(),
       (result, c) => {
