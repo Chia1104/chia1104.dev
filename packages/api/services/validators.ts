@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 import { locale } from "@chia/db";
-import { FeedOrderBy } from "@chia/db/types";
+import { FeedOrderBy, Locale } from "@chia/db/types";
 import {
   baseInfiniteSchema,
   insertFeedTranslationSchema,
@@ -14,7 +14,7 @@ export const getFeedsWithMetaSchema = z.object({
   nextCursor: NumericStringSchema.optional(),
   withContent: z.string().optional().default("false"),
   published: z.string().optional().default("false"),
-  locale: z.enum(locale.enumValues).optional(),
+  locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
   orderBy: z
     .enum([
       FeedOrderBy.CreatedAt,
