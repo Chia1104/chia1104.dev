@@ -13,7 +13,8 @@
     "node:preview": "node --env-file=.env .output/server/index.mjs",
     "type:check": "tsc --noEmit",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix"
+    "lint:fix": "oxlint --fix",
+    "clean": "git clean -xdf .output node_modules .cache .turbo"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",

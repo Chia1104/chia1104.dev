@@ -23,7 +23,7 @@ import {
   DateField,
   AlertDialog,
 } from "@heroui/react";
-import { fromDate } from "@internationalized/date";
+import { parseAbsolute, getLocalTimeZone } from "@internationalized/date";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
 import { toast } from "sonner";
@@ -335,7 +335,10 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
               <DateField
                 value={
                   field.value
-                    ? fromDate(dayjs(field.value).toDate(), "UTC")
+                    ? parseAbsolute(
+                        dayjs(field.value).toISOString(),
+                        getLocalTimeZone()
+                      )
                     : null
                 }
                 onChange={(value) =>
@@ -362,7 +365,10 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
                 <DateField
                   value={
                     field.value
-                      ? fromDate(dayjs(field.value).toDate(), "UTC")
+                      ? parseAbsolute(
+                          dayjs(field.value).toISOString(),
+                          getLocalTimeZone()
+                        )
                       : null
                   }
                   onChange={(value) =>
