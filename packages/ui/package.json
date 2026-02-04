@@ -95,7 +95,7 @@
     "dayjs": "catalog:",
     "ky": "catalog:",
     "lucide-react": "^0.563.0",
-    "motion": "^12.29.2",
+    "motion": "^12.31.0",
     "next": "catalog:next",
     "next-themes": "^0.4.6",
     "react": "catalog:react-is",
