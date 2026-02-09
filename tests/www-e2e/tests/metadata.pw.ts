@@ -29,20 +29,14 @@ test.describe("網站 Metadata 與 SEO 測試", () => {
   });
 
   test.describe("Sitemap", () => {
-    test("應該成功載入 sitemap index", async ({ page }) => {
+    test("應該成功載入 sitemap", async ({ page }) => {
       const response = await page.request.get("/sitemap.xml");
       expect(response.status()).toBe(200);
       expect(response.headers()["content-type"]).toContain("xml");
     });
 
-    test("應該成功載入 sitemap", async ({ page }) => {
-      const response = await page.request.get("/sitemap-0.xml");
-      expect(response.status()).toBe(200);
-      expect(response.headers()["content-type"]).toContain("xml");
-    });
-
     test("sitemap 應該包含有效的 URL", async ({ page }) => {
-      const response = await page.request.get("/sitemap-0.xml");
+      const response = await page.request.get("/sitemap.xml");
       const text = await response.text();
 
       expect(text).toContain("<urlset");
@@ -51,7 +45,7 @@ test.describe("網站 Metadata 與 SEO 測試", () => {
     });
 
     test("sitemap 應該包含 lastmod", async ({ page }) => {
-      const response = await page.request.get("/sitemap-0.xml");
+      const response = await page.request.get("/sitemap.xml");
       const text = await response.text();
 
       expect(text).toContain("<lastmod>");

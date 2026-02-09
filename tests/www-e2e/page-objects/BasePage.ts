@@ -12,11 +12,11 @@ export class BasePage {
 
   async goto(url: string) {
     await this.page.goto(url);
-    await this.waitForPageLoad();
+    // await this.waitForPageLoad();
   }
 
   async waitForPageLoad() {
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async getTitle() {

@@ -3,6 +3,7 @@
 
 import Image from "next/image";
 
+import { ScrollShadow } from "@heroui/react";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
@@ -91,14 +92,21 @@ export const V1MDXComponents: MDXComponents = {
     <div className="flex w-full justify-center">{props.children}</div>
   ),
   table: (props: any) => (
-    <table
-      {...props}
-      className={cn(
-        "prose-th:border-none prose-th:ps-2 prose-td:ps-2",
-        props.className
-      )}>
+    <ScrollShadow orientation="horizontal" hideScrollBar size={20}>
+      <table
+        {...props}
+        className={cn(
+          "prose-th:border-none prose-th:px-2 prose-td:px-2 w-full",
+          props.className
+        )}>
+        {props.children}
+      </table>
+    </ScrollShadow>
+  ),
+  th: (props: any) => (
+    <th {...props} className={cn("min-w-[160px]", props.className)}>
       {props.children}
-    </table>
+    </th>
   ),
   strong: (props: any) => (
     <strong className="dark:c-text-bg-purple-half c-text-bg-pink-half">

@@ -1,12 +1,17 @@
 import "server-only";
 
-import { Locale } from "@chia/db/types";
+import type { Locale } from "@chia/db/types";
 import type { FeedType } from "@chia/db/types";
 
+import { env } from "@/env";
 import { client } from "@/libs/service/client.rsc";
 import { HonoRPCError } from "@/libs/service/error";
+import { dbLocaleResolver } from "@/libs/utils/i18n";
 
-export const getPosts = async (limit = 10) => {
+export const getPosts = async (
+  limit = 10,
+  locale: Locale = dbLocaleResolver(env.NEXT_PUBLIC_DEFAULT_LOCALE)
+) => {
   try {
     const res = await client.api.v1.admin.public.feeds.$get({
       query: {
@@ -16,7 +21,7 @@ export const getPosts = async (limit = 10) => {
         orderBy: "createdAt",
         sortOrder: "desc",
         withContent: "false",
-        locale: Locale.zhTW,
+        locale,
       },
     });
     if (!res.ok) {
@@ -31,7 +36,10 @@ export const getPosts = async (limit = 10) => {
   }
 };
 
-export const getNotes = async (limit = 10) => {
+export const getNotes = async (
+  limit = 10,
+  locale: Locale = dbLocaleResolver(env.NEXT_PUBLIC_DEFAULT_LOCALE)
+) => {
   try {
     const res = await client.api.v1.admin.public.feeds.$get({
       query: {
@@ -41,7 +49,7 @@ export const getNotes = async (limit = 10) => {
         orderBy: "createdAt",
         sortOrder: "desc",
         withContent: "false",
-        locale: Locale.zhTW,
+        locale,
       },
     });
     if (!res.ok) {
@@ -58,7 +66,8 @@ export const getNotes = async (limit = 10) => {
 
 export const getFeedsWithType = async (
   type: Exclude<FeedType, "all">,
-  limit = 10
+  limit = 10,
+  locale: Locale = dbLocaleResolver(env.NEXT_PUBLIC_DEFAULT_LOCALE)
 ) => {
   try {
     const res = await client.api.v1.admin.public.feeds.$get({
@@ -69,7 +78,7 @@ export const getFeedsWithType = async (
         orderBy: "createdAt",
         sortOrder: "desc",
         withContent: "false",
-        locale: Locale.zhTW,
+        locale,
       },
     });
     if (!res.ok) {
@@ -84,7 +93,10 @@ export const getFeedsWithType = async (
   }
 };
 
-export const getFeeds = async (limit = 10) => {
+export const getFeeds = async (
+  limit = 10,
+  locale: Locale = dbLocaleResolver(env.NEXT_PUBLIC_DEFAULT_LOCALE)
+) => {
   try {
     const res = await client.api.v1.admin.public.feeds.$get({
       query: {
@@ -94,7 +106,7 @@ export const getFeeds = async (limit = 10) => {
         orderBy: "createdAt",
         sortOrder: "desc",
         withContent: "false",
-        locale: Locale.zhTW,
+        locale,
       },
     });
     if (!res.ok) {
@@ -111,7 +123,7 @@ export const getFeeds = async (limit = 10) => {
 
 export const getFeedBySlug = async (
   slug: string,
-  locale: Locale = Locale.zhTW
+  locale: Locale = dbLocaleResolver(env.NEXT_PUBLIC_DEFAULT_LOCALE)
 ) => {
   try {
     const res = await client.api.v1.admin.public.feeds[":slug"].$get({

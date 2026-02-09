@@ -92,12 +92,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  rewrites: async () => [
-    {
-      source: "/sitemap-:id.xml",
-      destination: "/sitemap.xml/:id",
-    },
-  ],
   redirects: async () => [
     {
       source: "/:locale/post/:slug",

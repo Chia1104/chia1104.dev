@@ -50,7 +50,7 @@ export const OpenInChat = ({ articleUrl }: { articleUrl: string }) => {
         },
       }}>
       <OpenInTrigger className="max-w-fit" label={t("open-in-chat")} />
-      <OpenInContent className="not-prose min-w-[200px]">
+      <OpenInContent className="not-prose min-w-55">
         <OpenInChatGPT />
         <OpenInClaude />
         <OpenInCursor />
