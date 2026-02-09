@@ -38,9 +38,9 @@ export const generateMetadata = async ({
     slug: string;
   }>;
 }): Promise<Metadata> => {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   try {
-    const feed = await getFeedBySlug(slug);
+    const feed = await getFeedBySlug(slug, dbLocaleResolver(locale));
     if (!feed) {
       notFound();
     }
