@@ -92,7 +92,7 @@ export const V1MDXComponents: MDXComponents = {
     <div className="flex w-full justify-center">{props.children}</div>
   ),
   table: (props: any) => (
-    <ScrollShadow orientation="vertical" hideScrollBar>
+    <ScrollShadow orientation="horizontal" hideScrollBar size={20}>
       <table
         {...props}
         className={cn(
