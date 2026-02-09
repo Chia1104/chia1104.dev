@@ -220,7 +220,7 @@ export const OpenIn = ({
 export type OpenInContentProps = ComponentProps<typeof Dropdown.Menu>;
 
 export const OpenInContent = (props: OpenInContentProps) => (
-  <Dropdown.Popover>
+  <Dropdown.Popover className="min-w-fit">
     <Dropdown.Menu {...props} />
   </Dropdown.Popover>
 );
