@@ -34,8 +34,6 @@ declare namespace __next_route_internal_types__ {
   type StaticRoutes = 
     | `/about`
     | `/api/v1/health`
-    | `/sitemap-[id].xml`
-    | `/sitemap.xml`
   type DynamicRoutes<T extends string = string> = 
     | `/${SafeSlug<T>}`
     | `/${SafeSlug<T>}/${SafeSlug<T>}`
@@ -48,7 +46,6 @@ declare namespace __next_route_internal_types__ {
     | `/${SafeSlug<T>}/projects`
     | `/note/${SafeSlug<T>}`
     | `/post/${SafeSlug<T>}`
-    | `/sitemap.xml/${SafeSlug<T>}`
 
   type RouteImpl<T> = 
     | StaticRoutes

@@ -31,10 +31,7 @@ export const getContentProps = async ({
 }: GetContentPropsArgs): GetContentPropsReturn => {
   switch (contentType) {
     case ContentType.Mdx: {
-      if (content.content == null) {
-        throw new Error("Content must have a content property");
-      }
-      const compiled = await compileMDX(content.content);
+      const compiled = await compileMDX(content.content ?? "");
       return {
         type: ContentType.Mdx,
         toc: compiled.toc,

@@ -17,6 +17,7 @@ import { ActionGroup } from "@/components/blog/action-group";
 import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
 import AppLoading from "@/components/commons/app-loading";
+import { dbLocaleResolver } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
 export const revalidate = 300;
@@ -62,7 +63,7 @@ const Page = async ({
   }>;
 }) => {
   const { slug, locale, type } = await params;
-  const feed = await getFeedBySlug(slug);
+  const feed = await getFeedBySlug(slug, dbLocaleResolver(locale));
   const { t } = await all({
     t: async () => await getTranslations("blog"),
   });

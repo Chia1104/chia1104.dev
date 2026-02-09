@@ -51,7 +51,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GA_ID: z.string().optional(),
     NEXT_PUBLIC_DEFAULT_TIME_ZONE: z.string().min(1),
     NEXT_PUBLIC_ENABLE_SENTRY: z.boolean().optional().default(true),
-    NEXT_PUBLIC_DEFAULT_LOCALE: z.string().min(1),
+    NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(Locale),
   },
 
   runtimeEnv: {

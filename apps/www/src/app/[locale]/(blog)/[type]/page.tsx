@@ -12,6 +12,7 @@ import ImageZoom from "@chia/ui/image-zoom";
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
 import { orpc } from "@/libs/orpc/client";
+import { dbLocaleResolver } from "@/libs/utils/i18n";
 import { getQueryClient } from "@/libs/utils/query-client";
 import { getFeedsWithType } from "@/services/feeds.service";
 
@@ -37,9 +38,11 @@ const queryClient = getQueryClient();
 const CacheFeeds = async ({
   type,
   limit = 10,
+  locale,
 }: {
   type: "posts" | "notes";
   limit?: number;
+  locale: Locale;
 }) => {
   const formattedType = type === "posts" ? "post" : "note";
   const t = await getTranslations(`blog.${type}`);
@@ -52,10 +55,12 @@ const CacheFeeds = async ({
         sortOrder: "desc",
         type: formattedType,
         cursor: null,
+        locale: dbLocaleResolver(locale),
       }),
       initialPageParam: null,
     }),
-    queryFn: () => getFeedsWithType(formattedType, limit),
+    queryFn: () =>
+      getFeedsWithType(formattedType, limit, dbLocaleResolver(locale)),
     initialPageParam: null,
   });
 
@@ -72,6 +77,7 @@ const CacheFeeds = async ({
           orderBy: "createdAt",
           sortOrder: "desc",
           type: formattedType,
+          locale: dbLocaleResolver(locale),
         }}
       />
     </HydrationBoundary>
@@ -97,7 +103,7 @@ const CacheFeeds = async ({
 const Page = async (
   props: PagePropsWithLocale<{ type: "posts" | "notes" }>
 ) => {
-  const { type } = await props.params;
+  const { type, locale } = await props.params;
 
   if (!["posts", "notes"].includes(type)) {
     notFound();
@@ -110,7 +116,7 @@ const Page = async (
         <h1>{t("doc-title")}</h1>
         <ErrorBoundary>
           <Suspense fallback={<AppLoading />}>
-            <CacheFeeds type={type} limit={10} />
+            <CacheFeeds type={type} limit={10} locale={locale} />
           </Suspense>
         </ErrorBoundary>
       </div>

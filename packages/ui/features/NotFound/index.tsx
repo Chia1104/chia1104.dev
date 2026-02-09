@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
 
-import { Button, Kbd } from "@heroui/react";
+import { Button } from "@heroui/react";
 
 import {
   TextRevealCard,
@@ -21,9 +21,7 @@ export default function NotFound() {
             Sorry, the page you are looking for does not exist.
           </TextRevealCardDescription>
           <Link href="/">
-            <Button className="mt-5">
-              <Kbd>cd ../</Kbd>
-            </Button>
+            <Button className="mt-5">cd ../</Button>
           </Link>
         </TextRevealCard>
       </div>
