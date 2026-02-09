@@ -10,7 +10,7 @@ export const routing = defineRouting({
   // Used when no locale matches
   defaultLocale: Locale.ZH_TW,
 
-  localePrefix: "always",
+  localePrefix: "as-needed",
 });
 
 // Lightweight wrappers around Next.js' navigation APIs
