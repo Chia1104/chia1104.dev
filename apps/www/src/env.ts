@@ -6,6 +6,8 @@ import { env as githubEnv } from "@chia/api/github/env";
 import { externalInfraEnv as serviceEnv } from "@chia/api/services/env";
 import { NodeEnvSchema, AppEnvSchema } from "@chia/utils/schema";
 
+import { Locale } from "./libs/utils/i18n";
+
 export const getClientEnv = () => {
   if (process.env.NEXT_PUBLIC_ENV) {
     return process.env.NEXT_PUBLIC_ENV;
@@ -49,6 +51,7 @@ export const env = createEnv({
     NEXT_PUBLIC_GA_ID: z.string().optional(),
     NEXT_PUBLIC_DEFAULT_TIME_ZONE: z.string().min(1),
     NEXT_PUBLIC_ENABLE_SENTRY: z.boolean().optional().default(true),
+    NEXT_PUBLIC_DEFAULT_LOCALE: z.string().min(1),
   },
 
   runtimeEnv: {
@@ -69,6 +72,8 @@ export const env = createEnv({
     NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
     NEXT_PUBLIC_DEFAULT_TIME_ZONE:
       process.env.NEXT_PUBLIC_DEFAULT_TIME_ZONE || "Asia/Taipei",
+    NEXT_PUBLIC_DEFAULT_LOCALE:
+      process.env.NEXT_PUBLIC_DEFAULT_LOCALE || Locale.ZH_TW,
     SPOTIFY_FAVORITE_PLAYLIST_ID: process.env.SPOTIFY_FAVORITE_PLAYLIST_ID,
     NEXT_PUBLIC_ENABLE_SENTRY:
       process.env.NEXT_PUBLIC_ENABLE_SENTRY === "true" ||
