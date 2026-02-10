@@ -6,7 +6,7 @@ import dayjs from "@chia/utils/day";
 import type { Locale, relations } from "../../schemas/index.ts";
 import { feeds, feedTranslations, contents } from "../../schemas/index.ts";
 import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
-import { cursorTransform, dateToTimestamp, withDTO } from "../index.ts";
+import { parseCursorForOrder, sliceNextCursor, withDTO } from "../index.ts";
 import type {
   InfiniteDTO,
   InsertFeedDTO,
@@ -15,6 +15,11 @@ import type {
   UpdateFeedDTO,
   UpdateFeedTranslationDTO,
 } from "../validator/feeds.ts";
+
+const FEED_DATE_ORDER_BY = new Set([
+  FeedOrderBy.UpdatedAt,
+  FeedOrderBy.CreatedAt,
+]);
 
 export const getFeedBySlug = withDTO(
   async (db, params: { slug: string; locale?: Locale }) => {
@@ -139,16 +144,13 @@ export const getInfiniteFeeds = withDTO(
       locale?: Locale;
     }
   ) => {
-    const parsedCursor = cursor
-      ? cursorTransform(
-          cursor,
-          orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-            ? "date"
-            : "default"
-        )
-      : null;
+    const parsedCursor = parseCursorForOrder(
+      cursor ?? null,
+      orderBy,
+      FEED_DATE_ORDER_BY
+    );
 
-    const items = await db.query.feeds.findMany({
+    const rawItems = await db.query.feeds.findMany({
       orderBy: (feeds, { asc, desc }) => [
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
@@ -187,14 +189,12 @@ export const getInfiniteFeeds = withDTO(
       },
     });
 
-    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
-    if (items.length > limit) {
-      const nextItem = items.pop();
-      nextCursor =
-        orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : (nextItem?.[orderBy] ?? null);
-    }
+    const { items, nextCursor } = sliceNextCursor(
+      rawItems,
+      limit,
+      orderBy,
+      FEED_DATE_ORDER_BY
+    );
 
     const serializedItems = items.map((item) => ({
       ...item,
@@ -242,16 +242,13 @@ export const getInfiniteFeedsByUserId = withDTO(
       locale?: Locale;
     }
   ) => {
-    const parsedCursor = cursor
-      ? cursorTransform(
-          cursor,
-          orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-            ? "date"
-            : "default"
-        )
-      : null;
+    const parsedCursor = parseCursorForOrder(
+      cursor ?? null,
+      orderBy,
+      FEED_DATE_ORDER_BY
+    );
 
-    const items = await db.query.feeds.findMany({
+    const rawItems = await db.query.feeds.findMany({
       orderBy: (feeds, { asc, desc }) => [
         sortOrder === "asc" ? asc(feeds[orderBy]) : desc(feeds[orderBy]),
       ],
@@ -291,14 +288,12 @@ export const getInfiniteFeedsByUserId = withDTO(
       },
     });
 
-    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
-    if (items.length > limit) {
-      const nextItem = items.pop();
-      nextCursor =
-        orderBy === FeedOrderBy.UpdatedAt || orderBy === FeedOrderBy.CreatedAt
-          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : (nextItem?.[orderBy] ?? null);
-    }
+    const { items, nextCursor } = sliceNextCursor(
+      rawItems,
+      limit,
+      orderBy,
+      FEED_DATE_ORDER_BY
+    );
 
     const serializedItems = items.map((item) => ({
       ...item,

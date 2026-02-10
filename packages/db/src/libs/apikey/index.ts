@@ -3,10 +3,12 @@ import { eq } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { cursorTransform, dateToTimestamp, withDTO } from "../";
+import { parseCursorForOrder, sliceNextCursor, withDTO } from "../";
 import { schema } from "../..";
 import { FeedOrderBy } from "../../types";
 import type { InfiniteDTO } from "../validator/apikey";
+
+const APIKEY_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);
 
 export const setApiKeyProjectId = withDTO(
   async (
@@ -42,12 +44,11 @@ export const getInfiniteApiKeysByProjectId = withDTO(
       whereAnd?: SQLWrapper[];
     }
   ) => {
-    const parsedCursor = cursor
-      ? cursorTransform(
-          cursor,
-          orderBy === FeedOrderBy.CreatedAt ? "date" : "default"
-        )
-      : null;
+    const parsedCursor = parseCursorForOrder(
+      cursor ?? null,
+      orderBy,
+      APIKEY_DATE_ORDER_BY
+    );
     const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;
     const cursorFilter = cursorValue
       ? {
@@ -60,7 +61,7 @@ export const getInfiniteApiKeysByProjectId = withDTO(
       RAW: condition,
     }));
 
-    const items = await db.query.apikey.findMany({
+    const rawItems = await db.query.apikey.findMany({
       orderBy: (apikey, { asc, desc }) => [
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
@@ -71,14 +72,14 @@ export const getInfiniteApiKeysByProjectId = withDTO(
         ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
       },
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
-    if (items.length > limit) {
-      const nextItem = items.pop();
-      nextCursor =
-        orderBy === FeedOrderBy.CreatedAt
-          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : (nextItem?.[orderBy] ?? null);
-    }
+
+    const { items, nextCursor } = sliceNextCursor(
+      rawItems,
+      limit,
+      orderBy,
+      APIKEY_DATE_ORDER_BY
+    );
+
     const serializedItems = items.map((item) => ({
       ...item,
       updatedAt: dayjs(item.updatedAt).toISOString(),
@@ -113,12 +114,11 @@ export const getInfiniteApiKeys = withDTO(
       withProject?: boolean;
     }
   ) => {
-    const parsedCursor = cursor
-      ? cursorTransform(
-          cursor,
-          orderBy === FeedOrderBy.CreatedAt ? "date" : "default"
-        )
-      : null;
+    const parsedCursor = parseCursorForOrder(
+      cursor ?? null,
+      orderBy,
+      APIKEY_DATE_ORDER_BY
+    );
     const cursorValue = parsedCursor ? dayjs(parsedCursor).toISOString() : null;
     const cursorFilter = cursorValue
       ? {
@@ -131,7 +131,7 @@ export const getInfiniteApiKeys = withDTO(
       RAW: condition,
     }));
 
-    const items = await db.query.apikey.findMany({
+    const rawItems = await db.query.apikey.findMany({
       orderBy: (apikey, { asc, desc }) => [
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
@@ -146,14 +146,14 @@ export const getInfiniteApiKeys = withDTO(
           }
         : undefined,
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
-    if (items.length > limit) {
-      const nextItem = items.pop();
-      nextCursor =
-        orderBy === FeedOrderBy.CreatedAt
-          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : (nextItem?.[orderBy] ?? null);
-    }
+
+    const { items, nextCursor } = sliceNextCursor(
+      rawItems,
+      limit,
+      orderBy,
+      APIKEY_DATE_ORDER_BY
+    );
+
     const serializedItems = items.map((item) => ({
       ...item,
       updatedAt: dayjs(item.updatedAt).toISOString(),

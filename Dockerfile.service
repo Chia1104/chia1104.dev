@@ -41,7 +41,8 @@ ARG TURBO_TEAM \
     TURBO_TOKEN
 
 ENV TURBO_TEAM=$TURBO_TEAM \
-    TURBO_TOKEN=$TURBO_TOKEN
+    TURBO_TOKEN=$TURBO_TOKEN \
+    NITRO_PRESET=bun
 
 RUN pnpm i
 
@@ -54,6 +55,8 @@ COPY --from=builder /app/apps/service/.output/server ./apps/service
 ENV NODE_ENV=production \
     PORT=8080
 
+WORKDIR /app/apps/service
+
 EXPOSE 8080
 
-CMD [ "bun", "apps/service/index.mjs" ]
+CMD [ "bun", "index.mjs" ]

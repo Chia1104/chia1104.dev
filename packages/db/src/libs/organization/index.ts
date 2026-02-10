@@ -2,10 +2,17 @@ import type { SQLWrapper } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { cursorTransform, dateToTimestamp, withDTO } from "../";
+import {
+  buildCursorWhere,
+  parseCursorForOrder,
+  sliceNextCursor,
+  withDTO,
+} from "../";
 import { schema } from "../..";
 import { FeedOrderBy } from "../../types";
 import type { InsertProjectDTO, InfiniteDTO } from "../validator/organization";
+
+const ORGANIZATION_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);
 
 export const createProject = withDTO(async (db, dto: InsertProjectDTO) => {
   const project = await db
@@ -39,24 +46,17 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
       whereAnd?: SQLWrapper[];
     }
   ) => {
-    const parsedCursor = cursor
-      ? cursorTransform(
-          cursor,
-          orderBy === FeedOrderBy.CreatedAt ? "date" : "default"
-        )
-      : null;
-    const cursorFilter = parsedCursor
-      ? {
-          [orderBy]: {
-            [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
-          },
-        }
-      : null;
+    const parsedCursor = parseCursorForOrder(
+      cursor ?? null,
+      orderBy,
+      ORGANIZATION_DATE_ORDER_BY
+    );
+    const cursorFilter = buildCursorWhere(orderBy, parsedCursor, sortOrder);
     const rawFilters = whereAnd.filter(Boolean).map((condition) => ({
       RAW: condition,
     }));
 
-    const items = await db.query.project.findMany({
+    const rawItems = await db.query.project.findMany({
       orderBy: (project, { asc, desc }) => [
         sortOrder === "asc" ? asc(project[orderBy]) : desc(project[orderBy]),
       ],
@@ -67,14 +67,14 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
         ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
       },
     });
-    let nextCursor: ReturnType<typeof cursorTransform> | null = null;
-    if (items.length > limit) {
-      const nextItem = items.pop();
-      nextCursor =
-        orderBy === FeedOrderBy.CreatedAt
-          ? dateToTimestamp(nextItem?.[orderBy] as dayjs.ConfigType)
-          : (nextItem?.[orderBy] ?? null);
-    }
+
+    const { items, nextCursor } = sliceNextCursor(
+      rawItems,
+      limit,
+      orderBy,
+      ORGANIZATION_DATE_ORDER_BY
+    );
+
     const serializedItems = items.map((item) => ({
       ...item,
       createdAt: dayjs(item.createdAt).toISOString(),

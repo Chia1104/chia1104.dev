@@ -7,15 +7,10 @@ export default defineConfig({
   typescript: {
     tsconfigPath: "./tsconfig.build.json",
   },
-  preset: "node-server",
+  preset: process.env.NITRO_PRESET === "bun" ? "bun" : "node-server",
   routes: {
     "/**": "./src/server.ts",
   },
-  traceDeps: [
-    "jsdom",
-    "@workflow-worlds/redis",
-    "@workflow/world-postgres",
-    "workflow",
-  ],
+  traceDeps: ["@workflow-worlds/redis", "@workflow/world-postgres", "workflow"],
   noPublicDir: true,
 });
