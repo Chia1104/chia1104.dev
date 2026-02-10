@@ -77,7 +77,7 @@ export function UploadAssets({
   );
 
   const validateFiles = useCallback(
-    (files: FileList | null): File[] => {
+    (files: FileList | File[] | null): File[] => {
       if (!files || files.length === 0) {
         return [];
       }
@@ -89,10 +89,7 @@ export function UploadAssets({
         const result = patterns.image.safeParse(file);
         if (!result.success) {
           const treeified = z.treeifyError(result.error);
-          const errorMessages = treeified.errors.map(
-            (e) => (e as { message?: string }).message || String(e)
-          );
-          errors.push(`${file.name}: ${errorMessages.join(", ")}`);
+          errors.push(`${file.name}: ${treeified.errors.join(", ")}`);
         } else {
           validFiles.push(result.data);
         }
@@ -143,13 +140,14 @@ export function UploadAssets({
             ChecksumSHA256: sha256Base64,
             "Content-Type": item.type,
           },
-          onUploadProgress: (progress) => {
-            setUploadItems((prev) =>
-              prev.map((i) =>
-                i.id === item.id ? { ...i, progress: progress.percent } : i
-              )
-            );
-          },
+          // ky issue: https://github.com/sindresorhus/ky/issues/739
+          // onUploadProgress: (progress) => {
+          //   setUploadItems((prev) =>
+          //     prev.map((i) =>
+          //       i.id === item.id ? { ...i, progress: progress.percent } : i
+          //     )
+          //   );
+          // },
         });
 
         setUploadItems((prev) =>
@@ -227,7 +225,7 @@ export function UploadAssets({
         return;
       }
 
-      const validFiles = validateFiles(fileArray as unknown as FileList);
+      const validFiles = validateFiles(fileArray);
       if (validFiles.length === 0) {
         return;
       }
