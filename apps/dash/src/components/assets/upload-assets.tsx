@@ -35,18 +35,22 @@ interface UploadAssetsProps {
   onUploadComplete?: (files: FileUploadItem[]) => void;
 }
 
-const calculateSHA256 = async (file: File): Promise<string> => {
+const calculateSHA256Checksum = async (file: File) => {
   const arrayBuffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return await crypto.subtle.digest("SHA-256", arrayBuffer);
+};
+
+const sha256ChecksumToHex = (checksum: ArrayBuffer): string => {
+  const hashArray = Array.from(new Uint8Array(checksum));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 };
 
-const sha256HexToBase64 = (hex: string): string => {
-  const bytes = new Uint8Array(
-    hex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) ?? []
+const sha256ChecksumToBase64 = (checksum: ArrayBuffer): string => {
+  return btoa(
+    Array.from(new Uint8Array(checksum))
+      .map((byte) => String.fromCharCode(byte))
+      .join("")
   );
-  return btoa(String.fromCharCode(...bytes));
 };
 
 export function UploadAssets({
@@ -112,8 +116,9 @@ export function UploadAssets({
       );
 
       try {
-        const sha256Hex = await calculateSHA256(item.file);
-        const sha256Base64 = sha256HexToBase64(sha256Hex);
+        const sha256Checksum = await calculateSHA256Checksum(item.file);
+        const sha256Hex = sha256ChecksumToHex(sha256Checksum);
+        const sha256Base64 = sha256ChecksumToBase64(sha256Checksum);
 
         const response = await createSignedUrlMutation.mutateAsync({
           key: item.name,
