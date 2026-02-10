@@ -7,7 +7,7 @@ export default defineConfig({
   typescript: {
     tsconfigPath: "./tsconfig.build.json",
   },
-  preset: "node-server",
+  preset: process.env.NITRO_PRESET === "bun" ? "bun" : "node-server",
   routes: {
     "/**": "./src/server.ts",
   },
