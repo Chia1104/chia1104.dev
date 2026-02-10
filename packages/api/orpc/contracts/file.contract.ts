@@ -27,3 +27,24 @@ export const createSignedUrlForUploadContract = oc
       url: z.string(),
     })
   );
+
+export const listObjectsContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    INTERNAL_SERVER_ERROR: {},
+    BAD_REQUEST: {},
+  })
+  .input(
+    z.object({
+      area: z.enum(["global", "feed"]).optional(),
+    })
+  )
+  .output(
+    z.array(
+      z.object({
+        key: z.string(),
+        size: z.number(),
+      })
+    )
+  );

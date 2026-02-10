@@ -50,74 +50,126 @@ function formatBytes(bytes: number, decimals = 2): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 }
 
-function getFileIcon(filename: string) {
+export function isFileType(
+  filename: unknown,
+  type:
+    | "image"
+    | "video"
+    | "audio"
+    | "code"
+    | "json"
+    | "text"
+    | "archive"
+    | "spreadsheet"
+    | "pdf"
+    | "html"
+    | "css"
+    | "config"
+): filename is string {
+  if (typeof filename !== "string") return false;
+
   const ext = filename.split(".").pop()?.toLowerCase() || "";
 
-  if (
-    ["png", "jpg", "jpeg", "gif", "webp", "svg", "ico", "bmp", "tiff"].includes(
-      ext
-    )
-  ) {
+  switch (type) {
+    case "image":
+      return [
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "webp",
+        "svg",
+        "ico",
+        "bmp",
+        "tiff",
+      ].includes(ext);
+    case "video":
+      return ["mp4", "webm", "mov", "avi", "mkv", "flv", "wmv"].includes(ext);
+    case "audio":
+      return ["mp3", "wav", "ogg", "flac", "aac", "wma", "m4a"].includes(ext);
+    case "code":
+      return [
+        "js",
+        "ts",
+        "jsx",
+        "tsx",
+        "py",
+        "rb",
+        "go",
+        "rs",
+        "java",
+        "c",
+        "cpp",
+        "h",
+        "hpp",
+        "cs",
+        "php",
+        "swift",
+        "kt",
+      ].includes(ext);
+    case "json":
+      return ["json"].includes(ext);
+    case "text":
+      return ["txt", "md", "mdx", "rst", "log"].includes(ext);
+    case "archive":
+      return ["zip", "tar", "gz", "rar", "7z", "bz2"].includes(ext);
+    case "spreadsheet":
+      return ["csv", "xlsx", "xls", "ods"].includes(ext);
+    case "pdf":
+      return ["pdf"].includes(ext);
+    case "html":
+      return ["html", "htm"].includes(ext);
+    case "css":
+      return ["css", "scss", "sass", "less"].includes(ext);
+    case "config":
+      return ["yaml", "yml", "toml", "ini", "env", "config"].includes(ext);
+  }
+
+  return false;
+}
+
+function getFileIcon(filename: string) {
+  if (isFileType(filename, "image")) {
     return <FileImage className="size-4 text-green-500" />;
   }
 
-  if (["mp4", "webm", "mov", "avi", "mkv", "flv", "wmv"].includes(ext)) {
+  if (isFileType(filename, "video")) {
     return <FileVideo className="size-4 text-purple-500" />;
   }
 
-  if (["mp3", "wav", "ogg", "flac", "aac", "wma", "m4a"].includes(ext)) {
+  if (isFileType(filename, "audio")) {
     return <FileAudio className="size-4 text-pink-500" />;
   }
 
-  if (
-    [
-      "js",
-      "ts",
-      "jsx",
-      "tsx",
-      "py",
-      "rb",
-      "go",
-      "rs",
-      "java",
-      "c",
-      "cpp",
-      "h",
-      "hpp",
-      "cs",
-      "php",
-      "swift",
-      "kt",
-    ].includes(ext)
-  ) {
+  if (isFileType(filename, "code")) {
     return <FileCode className="size-4 text-blue-500" />;
   }
 
-  if (ext === "json") {
+  if (isFileType(filename, "json")) {
     return <FileJson className="size-4 text-yellow-500" />;
   }
 
-  if (["txt", "md", "mdx", "rst", "log"].includes(ext)) {
+  if (isFileType(filename, "text")) {
     return <FileText className="size-4 text-gray-500" />;
   }
 
-  if (["zip", "tar", "gz", "rar", "7z", "bz2"].includes(ext)) {
+  if (isFileType(filename, "archive")) {
     return <FileArchive className="size-4 text-amber-600" />;
   }
 
-  if (["csv", "xlsx", "xls", "ods"].includes(ext)) {
+  if (isFileType(filename, "spreadsheet")) {
     return <FileSpreadsheet className="size-4 text-emerald-600" />;
   }
 
-  if (ext === "pdf") {
+  if (isFileType(filename, "pdf")) {
     return <FileType className="size-4 text-red-500" />;
   }
 
-  if (["html", "htm", "css", "scss", "sass", "less"].includes(ext)) {
+  if (isFileType(filename, "html") || isFileType(filename, "css")) {
     return <FileCode className="size-4 text-orange-500" />;
   }
 
-  if (["yaml", "yml", "toml", "ini", "env", "config"].includes(ext)) {
+  if (isFileType(filename, "config")) {
     return <FileText className="size-4 text-slate-500" />;
   }
 

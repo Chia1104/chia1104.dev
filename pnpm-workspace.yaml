@@ -28,6 +28,7 @@ catalogs:
     "@better-auth/passkey": 1.4.18
     better-auth: 1.4.18
   chiastack:
+    "@chiastack/ui": 1.2.0
     "@chiastack/tsconfig": 2.1.2
   drizzle:
     drizzle-kit: 1.0.0-beta.12-a5629fb
