@@ -43,6 +43,7 @@ export const routerContract = {
   },
   file: {
     "signed-url:create": fileContracts.createSignedUrlForUploadContract,
+    list: fileContracts.listObjectsContract,
   },
 };
 

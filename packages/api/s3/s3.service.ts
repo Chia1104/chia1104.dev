@@ -223,13 +223,15 @@ export class S3Service {
     return await this.client.send(new ListBucketsCommand({}));
   }
 
-  public async listObjects(bucket: string) {
-    return await this.client.send(new ListObjectsCommand({ Bucket: bucket }));
+  public async listObjects(bucket?: string) {
+    return await this.client.send(
+      new ListObjectsCommand({ Bucket: this.getBucket(bucket) })
+    );
   }
 
-  public async getObject(bucket: string, key: string) {
+  public async getObject(key: string, bucket?: string) {
     return await this.client.send(
-      new GetObjectCommand({ Bucket: bucket, Key: key })
+      new GetObjectCommand({ Bucket: this.getBucket(bucket), Key: key })
     );
   }
 

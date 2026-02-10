@@ -28,6 +28,7 @@
     "@chia/themes": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
+    "@chiastack/ui": "catalog:chiastack",
     "@heroui/react": "catalog:heroui-v3",
     "@heroui/styles": "catalog:heroui-v3",
     "@hookform/resolvers": "^5.2.2",

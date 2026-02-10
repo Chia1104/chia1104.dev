@@ -16,6 +16,9 @@ catalogs:
     '@chiastack/tsconfig':
       specifier: 2.1.2
       version: 2.1.2
+    '@chiastack/ui':
+      specifier: 1.2.0
+      version: 1.2.0
   default:
     '@t3-oss/env-core':
       specifier: ^0.13.10
@@ -284,6 +287,9 @@ importers:
       '@chia/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@chiastack/ui':
+        specifier: catalog:chiastack
+        version: 1.2.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@heroui/react':
         specifier: catalog:heroui-v3
         version: 3.0.0-beta.6(@types/react-dom@19.2.3(@types/react@19.2.13))(@types/react@19.2.13)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tailwindcss@4.1.18)
@@ -1971,6 +1977,19 @@ packages:
 
   '@chiastack/tsconfig@2.1.2':
     resolution: {integrity: sha512-NPGEBh2Qc1K5/XMeJNOHo5vNse8j68oC5OEsiF88ZSAPng99KfnR6U5fJJcYvV5Fs9mONDTdKnbrFQ4+U4ENBg==}
+
+  '@chiastack/ui@1.2.0':
+    resolution: {integrity: sha512-t2v+HYRkyrfnEb+HBcfpYv6Vl9luKFFK3KWqCgmlmeSxkYUOB0TUKbdEGj/bqbHopqoH6r2BQ2kGX9MbRenSQA==}
+    peerDependencies:
+      lightweight-charts: ^5.0.0
+      react: ^19.2.0
+      react-dom: ^19.2.0
+      technicalindicators: ^3.1.0
+    peerDependenciesMeta:
+      lightweight-charts:
+        optional: true
+      technicalindicators:
+        optional: true
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -14346,6 +14365,11 @@ snapshots:
   '@chevrotain/utils@11.0.3': {}
 
   '@chiastack/tsconfig@2.1.2': {}
+
+  '@chiastack/ui@1.2.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
