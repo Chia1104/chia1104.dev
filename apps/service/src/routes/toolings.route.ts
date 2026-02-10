@@ -1,7 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
-import { JSDOM } from "jsdom";
 import { HTTPError } from "ky";
 import * as z from "zod";
 
@@ -49,6 +48,7 @@ const api = new Hono<HonoContext>()
             },
           }).get(url);
           const html = await res.text();
+          const JSDOM = await import("jsdom").then((m) => m.JSDOM);
           const parsed = new JSDOM(html);
           const title =
             parsed.window.document.querySelector("title")?.textContent;
