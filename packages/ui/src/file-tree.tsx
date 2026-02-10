@@ -564,7 +564,7 @@ export function FileTree({
         </>
       )}
 
-      <ScrollShadow className="max-h-[500px]">
+      <ScrollShadow className="max-h-max">
         {tree.map((node) => (
           <TreeNodeComponent
             key={node.path}
