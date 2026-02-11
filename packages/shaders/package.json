@@ -26,6 +26,7 @@
     "r3f-perf": "^7.2.3",
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
+    "shaders": "^2.3.52",
     "three": "^0.182.0"
   },
   "devDependencies": {

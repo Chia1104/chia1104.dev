@@ -31,7 +31,7 @@ catalogs:
       version: 4.17.23
     '@types/node':
       specifier: 25.2.2
-      version: 25.2.0
+      version: 25.2.2
     better-all:
       specifier: 0.0.7
       version: 0.0.7
@@ -1193,6 +1193,9 @@ importers:
       react-dom:
         specifier: catalog:react-is
         version: 19.2.4(react@19.2.4)
+      shaders:
+        specifier: ^2.3.52
+        version: 2.3.52
       three:
         specifier: ^0.182.0
         version: 0.182.0
@@ -12027,6 +12030,9 @@ packages:
     resolution: {integrity: sha512-JxHc1weCN68wRY0fhCoXpyK55m/XPHafOmK4UWD7m2CI14GMcFypt4w/0+NV5f/ZMby2F6S2wwA7fgynh9gWSw==}
     engines: {node: '>=0.10.0'}
 
+  shaders@2.3.52:
+    resolution: {integrity: sha512-dL/6LscI/E5sNn9HHyeD1vOmNxbfdQ4izH5PPRNC+VVXs2RpONLS5HmIExNKzWn8MJpY++Gfcv7yGcO4UM4++g==}
+
   sharp@0.34.5:
     resolution: {integrity: sha512-Ou9I5Ft9WNcCbXrU9cMgPBcCK8LiwLqcbywW3t4oDV37n1pzpuNLsYiAV8eODnjbtQlSDwZ2cUEeQz4E54Hltg==}
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
@@ -12445,6 +12451,9 @@ packages:
     resolution: {integrity: sha512-XyGQrFmNQ5O/IoKm556ftwKsBg11TIb301MB5dWNicziQBEs2g3gtOYIf7pFiLa0zI2gUwhtCjv9fmjnxKZ1Cg==}
     peerDependencies:
       three: '>=0.128.0'
+
+  three@0.181.2:
+    resolution: {integrity: sha512-k/CjiZ80bYss6Qs7/ex1TBlPD11whT9oKfT8oTGiHa34W4JRd1NiH/Tr1DbHWQ2/vMUypxksLnF2CfmlmM5XFQ==}
 
   three@0.182.0:
     resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
@@ -25616,6 +25625,10 @@ snapshots:
       is-plain-object: 2.0.4
       split-string: 3.1.0
 
+  shaders@2.3.52:
+    dependencies:
+      three: 0.181.2
+
   sharp@0.34.5:
     dependencies:
       '@img/colour': 1.0.0
@@ -26103,6 +26116,8 @@ snapshots:
       fflate: 0.6.10
       potpack: 1.0.2
       three: 0.182.0
+
+  three@0.181.2: {}
 
   three@0.182.0: {}
 
