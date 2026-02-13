@@ -31,7 +31,7 @@ catalogs:
       version: 4.17.23
     '@types/node':
       specifier: 25.2.2
-      version: 25.2.2
+      version: 25.2.0
     better-all:
       specifier: 0.0.7
       version: 0.0.7
@@ -1169,6 +1169,9 @@ importers:
 
   packages/shaders:
     dependencies:
+      '@chia/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils

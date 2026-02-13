@@ -35,6 +35,7 @@ const Toaster = () => {
 const AppPlugins = () => {
   return (
     <>
+      {/* <ThemeVarsSync /> */}
       <Toaster />
       <Cursor
         style={{

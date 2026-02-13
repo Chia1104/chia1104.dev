@@ -2,16 +2,30 @@
 
 import { Spherize, SolidColor, Blob, ChromaFlow, Shader } from "shaders/react";
 
-export const Bot = () => {
+import { cn } from "@chia/ui/utils/cn.util";
+
+interface Props {
+  className?: string;
+  spherizeProps?: React.ComponentProps<typeof Spherize>;
+  solidColorProps?: React.ComponentProps<typeof SolidColor>;
+  blobsProps?: {
+    alpha: React.ComponentProps<typeof Blob>;
+    beta: React.ComponentProps<typeof Blob>;
+    gamma: React.ComponentProps<typeof Blob>;
+  };
+  chromaFlowProps?: React.ComponentProps<typeof ChromaFlow>;
+}
+
+export const Bot = (props: Props) => {
   return (
-    <Shader className="size-40">
+    <Shader className={cn("size-25", props.className)}>
       <Spherize
         radius={1}
         depth={1.79}
         lightIntensity={0.5}
         lightSoftness={0.5}
         lightColor="#ffffff">
-        <SolidColor color="#08071a" />
+        <SolidColor color="#08071a" {...props.solidColorProps} />
         <Blob
           colorA="#2B2E4A"
           colorB="#ff6e00"
@@ -19,6 +33,7 @@ export const Bot = () => {
             x: 0.05,
             y: 0.25,
           }}
+          {...props.blobsProps?.alpha}
         />
         <Blob
           colorA="#e6e601"
@@ -27,6 +42,7 @@ export const Bot = () => {
             x: 0.95,
             y: 0.25,
           }}
+          {...props.blobsProps?.beta}
         />
         <Blob
           colorA="#041d8c"
@@ -35,6 +51,7 @@ export const Bot = () => {
             x: 0.5,
             y: 1,
           }}
+          {...props.blobsProps?.gamma}
         />
         <ChromaFlow
           baseColor="#2B2E4A"
@@ -42,6 +59,7 @@ export const Bot = () => {
           downColor="#ff6e00"
           leftColor="#e601c0"
           rightColor="#e6e601"
+          {...props.chromaFlowProps}
         />
       </Spherize>
     </Shader>

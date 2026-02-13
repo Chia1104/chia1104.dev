@@ -18,6 +18,7 @@
     "ui-add": "pnpm dlx shadcn-ui add && prettier src --write --list-different"
   },
   "dependencies": {
+    "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",

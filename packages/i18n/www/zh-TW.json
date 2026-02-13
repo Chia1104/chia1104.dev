@@ -149,5 +149,20 @@
   "common": {
     "loading": "載入中...",
     "error": "這裡看起來有點無聊，我會盡快為你準備好"
+  },
+  "chbot": {
+    "comming-soon": {
+      "title": "即將推出",
+      "description": "你正在訪問一個尚未推出的功能。我正在努力開發中，很快就會推出。"
+    }
+  },
+  "settings": {
+    "title": "設定",
+    "open": "開啟設定",
+    "aiEnabled": "啟用 AI 功能",
+    "aiEnabledDescription": "允許在本站使用 AI 相關功能。",
+    "accentColor": "強調色",
+    "accentColorDescription": "用於連結與重點的主要強調色。",
+    "done": "完成"
   }
 }
