@@ -163,6 +163,10 @@
     "aiEnabledDescription": "Allow AI-powered features on this site.",
     "accentColor": "Accent color",
     "accentColorDescription": "Primary accent used for links and highlights.",
-    "done": "Done"
+    "done": "Done",
+    "backgroundEnabled": "Enable background features",
+    "backgroundEnabledDescription": "Allow background features on this site.",
+    "cursorEnabled": "Enable cursor features",
+    "cursorEnabledDescription": "Allow cursor features on this site."
   }
 }

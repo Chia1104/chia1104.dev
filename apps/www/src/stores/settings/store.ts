@@ -163,6 +163,8 @@ const emptyThemeState: ThemeState = {
 export interface SettingsState {
   aiEnabled: boolean;
   theme: ThemeState;
+  backgroundEnabled: boolean;
+  cursorEnabled: boolean;
 }
 
 export interface SettingsActions {
@@ -184,6 +186,8 @@ export interface SettingsActions {
     typography: Partial<ThemeTypography>
   ) => void;
   resetTheme: (mode?: typeof Theme.DARK | typeof Theme.LIGHT) => void;
+  setBackgroundEnabled: (enabled: boolean) => void;
+  setCursorEnabled: (enabled: boolean) => void;
 }
 
 export type SettingsStore = SettingsState & SettingsActions;
@@ -191,6 +195,8 @@ export type SettingsStore = SettingsState & SettingsActions;
 const defaultState: SettingsState = {
   aiEnabled: false,
   theme: emptyThemeState,
+  backgroundEnabled: true,
+  cursorEnabled: true,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -199,7 +205,8 @@ export const useSettingsStore = create<SettingsStore>()(
       ...defaultState,
 
       setAiEnabled: (enabled) => set({ aiEnabled: enabled }),
-
+      setBackgroundEnabled: (enabled) => set({ backgroundEnabled: enabled }),
+      setCursorEnabled: (enabled) => set({ cursorEnabled: enabled }),
       setThemeConfig: (mode, config) =>
         set((state) => ({
           theme: {

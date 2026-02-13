@@ -15,6 +15,7 @@ import useTheme from "@chia/ui/utils/use-theme";
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
 import { useRouter } from "@/libs/i18n/routing";
+import { useSettingsStore } from "@/stores/settings/store";
 
 const ContactCMD = () => {
   const router = useRouter();
@@ -33,16 +34,19 @@ const Toaster = () => {
 };
 
 const AppPlugins = () => {
+  const cursorEnabled = useSettingsStore((s) => s.cursorEnabled);
   return (
     <>
       {/* <ThemeVarsSync /> */}
       <Toaster />
-      <Cursor
-        style={{
-          opacity: 0.13,
-          filter: "blur(50px)",
-        }}
-      />
+      {cursorEnabled && (
+        <Cursor
+          style={{
+            opacity: 0.13,
+            filter: "blur(50px)",
+          }}
+        />
+      )}
       <ContactCMD />
       <ReactQueryDevtools initialIsOpen={false} />
       {env.NEXT_PUBLIC_ENV === "production" && (
