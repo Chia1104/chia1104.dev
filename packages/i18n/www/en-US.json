@@ -149,5 +149,24 @@
   "common": {
     "loading": "Loading...",
     "error": "Here looks a little boring, I'll prepare it for you soon"
+  },
+  "chbot": {
+    "comming-soon": {
+      "title": "Coming Soon",
+      "description": "You're visiting a feature that is not yet available. I'm working on it and it will be released soon."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "open": "Open settings",
+    "aiEnabled": "Enable AI features",
+    "aiEnabledDescription": "Allow AI-powered features on this site.",
+    "accentColor": "Accent color",
+    "accentColorDescription": "Primary accent used for links and highlights.",
+    "done": "Done",
+    "backgroundEnabled": "Enable background features",
+    "backgroundEnabledDescription": "Allow background features on this site.",
+    "cursorEnabled": "Enable cursor features",
+    "cursorEnabledDescription": "Allow cursor features on this site."
   }
 }

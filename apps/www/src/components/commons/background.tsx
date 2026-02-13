@@ -8,16 +8,23 @@ import { useIsMounted } from "usehooks-ts";
 import Spotlight from "@chia/ui/spotlight";
 import useTheme from "@chia/ui/utils/use-theme";
 
+import { useSettingsStore } from "@/stores/settings/store";
+
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const Background: FC = () => {
   const { isDarkMode } = useTheme();
+  const backgroundEnabled = useSettingsStore((s) => s.backgroundEnabled);
   const isMounted = useIsMounted();
   const [isOK, setIsOK] = useState(false);
 
   useEffect(() => {
     void delay(500).then(() => isMounted() && setIsOK(true));
   }, [isMounted]);
+
+  if (!backgroundEnabled) {
+    return null;
+  }
 
   return (
     <>

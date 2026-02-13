@@ -20,6 +20,7 @@ import { cn } from "@chia/ui/utils/cn.util";
 
 import { LoadingSkeleton } from "@/components/commons/current-playing";
 import LocaleSelector from "@/components/commons/locale-selector";
+import { Settings } from "@/components/commons/settings";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 
@@ -107,6 +108,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                   variant: "tertiary",
                 }}
               />
+              <Settings />
             </div>
             <Copyright />
           </div>
@@ -175,6 +177,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 variant: "tertiary",
               }}
             />
+            <Settings />
           </div>
           <Copyright />
         </div>
