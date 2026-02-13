@@ -1,9 +1,9 @@
 "use client";
 
-import type { Locale } from "next-intl";
 import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
 
 import { cn } from "@chia/ui/utils/cn.util";
+import type { Locale } from "next-intl";
 
 interface Props {
   children: ReactNode;
@@ -14,7 +14,11 @@ interface Props {
 
 const RootLayout: FC<Props> = ({ children, locale, htmlProps, bodyProps }) => {
   return (
-    <html lang={locale} suppressHydrationWarning {...htmlProps}>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      {...htmlProps}
+      className={cn(htmlProps?.className, "overscroll-none")}>
       <body
         {...bodyProps}
         className={cn(
