@@ -12,7 +12,11 @@ interface Props {
 
 const RootLayout: FC<Props> = ({ children, htmlProps, bodyProps }) => {
   return (
-    <html lang="en" suppressHydrationWarning {...htmlProps}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      {...htmlProps}
+      className={cn(htmlProps?.className, "overscroll-none")}>
       <body
         {...bodyProps}
         className={cn(
