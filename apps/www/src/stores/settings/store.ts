@@ -297,6 +297,8 @@ export const useSettingsStore = create<SettingsStore>()(
       partialize: (state) => ({
         aiEnabled: state.aiEnabled,
         theme: state.theme,
+        backgroundEnabled: state.backgroundEnabled,
+        cursorEnabled: state.cursorEnabled,
       }),
     }
   )
