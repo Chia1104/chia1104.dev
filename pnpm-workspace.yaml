@@ -31,9 +31,8 @@ catalogs:
     '@chiastack/tsconfig': 2.1.2
     '@chiastack/ui': 1.2.0
   drizzle:
-    drizzle-kit: 1.0.0-beta.12-a5629fb
-    drizzle-orm: 1.0.0-beta.12-a5629fb
-    drizzle-zod: 1.0.0-beta.12-a5629fb
+    drizzle-kit: beta
+    drizzle-orm: beta
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.5
     fumadocs-core: 16.6.3
