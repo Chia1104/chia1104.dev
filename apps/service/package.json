@@ -37,9 +37,9 @@
     "better-auth": "catalog:better-auth",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
-    "hono": "^4.11.9",
+    "hono": "^4.12.0",
     "hono-rate-limiter": "^0.5.3",
-    "jsdom": "^28.0.0",
+    "jsdom": "^28.1.0",
     "ky": "catalog:",
     "lodash": "catalog:",
     "nitro": "3.0.1-alpha.2",
@@ -47,7 +47,7 @@
     "react-dom": "catalog:react-is",
     "reading-time-estimator": "^2.1.1",
     "resend": "^6.9.2",
-    "workflow": "4.1.0-beta.56",
+    "workflow": "4.1.0-beta.57",
     "zod": "catalog:"
   },
   "devDependencies": {
