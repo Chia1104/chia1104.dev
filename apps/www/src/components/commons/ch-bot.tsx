@@ -1,10 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 
 import { Popover } from "@heroui/react";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 
 import useDarkMode from "@chia/ui/utils/use-theme";
 

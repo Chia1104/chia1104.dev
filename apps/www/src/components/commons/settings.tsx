@@ -1,9 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { startTransition } from "react";
 
 import { Button, Description, Label, Modal, Switch } from "@heroui/react";
+import { useTranslations } from "next-intl";
 
 import { useSettingsStore } from "@/stores/settings/store";
 

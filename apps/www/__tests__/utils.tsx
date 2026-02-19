@@ -1,9 +1,8 @@
-import type { Locale } from "next-intl";
-import { NextIntlClientProvider } from "next-intl";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { RenderOptions } from "@testing-library/react";
 import { render } from "@testing-library/react";
+import type { Locale } from "next-intl";
+import { NextIntlClientProvider } from "next-intl";
 
 /**
  * 測試用的 QueryClient 配置，關閉重試和快取以加快測試速度

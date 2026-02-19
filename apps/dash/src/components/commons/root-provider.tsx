@@ -1,9 +1,9 @@
 "use client";
 
-import { ThemeProvider } from "next-themes";
 import { useState } from "react";
 
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { Toaster as ST } from "sonner";
 
 import type { Theme } from "@chia/ui/theme";

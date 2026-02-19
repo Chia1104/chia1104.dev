@@ -1,6 +1,5 @@
 import "@/libs/orpc/client.rsc";
 import "./globals.css";
-
 import type { Viewport, Metadata } from "next";
 import type { ReactNode } from "react";
 

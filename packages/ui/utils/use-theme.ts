@@ -1,7 +1,6 @@
 "use client";
 
 import { useTheme } from "next-themes";
-
 import { useMediaQuery } from "usehooks-ts";
 
 interface Result extends ReturnType<typeof useTheme> {

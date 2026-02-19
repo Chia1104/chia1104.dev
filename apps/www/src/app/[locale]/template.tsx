@@ -1,5 +1,6 @@
-import { getTimeZone, getLocale } from "next-intl/server";
 import type { ReactNode } from "react";
+
+import { getTimeZone, getLocale } from "next-intl/server";
 
 import { initDayjs } from "@/libs/utils/dayjs";
 

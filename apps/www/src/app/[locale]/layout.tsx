@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
+
 import { getMessages, getTimeZone } from "next-intl/server";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
 
 import meta from "@chia/meta";
 import { WWW_BASE_URL } from "@chia/utils/config";

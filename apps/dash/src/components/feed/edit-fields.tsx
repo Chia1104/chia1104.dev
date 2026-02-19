@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { memo, useId } from "react";
-import { Controller, useFormContext } from "react-hook-form";
 
 import {
   Input,
@@ -26,6 +25,7 @@ import {
 import { parseAbsolute, getLocalTimeZone } from "@internationalized/date";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
+import { Controller, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 import { FeedType, ContentType } from "@chia/db/types";

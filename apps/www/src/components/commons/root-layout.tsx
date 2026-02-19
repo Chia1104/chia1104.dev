@@ -2,8 +2,9 @@
 
 import type { ReactNode, FC, ComponentPropsWithoutRef } from "react";
 
-import { cn } from "@chia/ui/utils/cn.util";
 import type { Locale } from "next-intl";
+
+import { cn } from "@chia/ui/utils/cn.util";
 
 interface Props {
   children: ReactNode;

@@ -1,8 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Link from "next/link";
 import type { FC } from "react";
+
+import { useTranslations } from "next-intl";
 
 import { FeedType } from "@chia/db/types";
 import {

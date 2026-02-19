@@ -1,10 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { ViewTransition } from "react";
 
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 
 import {
   Drawer,
