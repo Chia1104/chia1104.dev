@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import { ViewTransition } from "react";
 import type { ReactNode } from "react";
+
+import { getTranslations } from "next-intl/server";
 
 import { PageHeader } from "@/components/project/page-header";
 

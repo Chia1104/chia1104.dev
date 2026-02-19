@@ -1,8 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-
 import { Spinner } from "@heroui/react";
+import { useTranslations } from "next-intl";
 
 import { TextPath } from "@chia/ui/text-path";
 import { cn } from "@chia/ui/utils/cn.util";

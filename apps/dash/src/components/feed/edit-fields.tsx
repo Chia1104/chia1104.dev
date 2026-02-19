@@ -3,13 +3,11 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { memo, useId } from "react";
-import { Controller, useFormContext } from "react-hook-form";
 
 import {
   Input,
   TextArea,
   Tabs,
-  DateInputGroup,
   Select,
   Switch,
   Spinner,
@@ -20,12 +18,15 @@ import {
   FieldError,
   ListBox,
   Description,
+  Calendar,
   DateField,
+  DatePicker,
   AlertDialog,
 } from "@heroui/react";
 import { parseAbsolute, getLocalTimeZone } from "@internationalized/date";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, GalleryVerticalEnd } from "lucide-react";
+import { Controller, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 import { FeedType, ContentType } from "@chia/db/types";
@@ -327,12 +328,19 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
       <SlugField />
 
       <div className="flex w-full flex-col gap-5 md:flex-row">
-        <div className="flex w-full gap-5 md:w-1/2">
+        <div className="flex flex-col gap-2 md:w-1/2 md:flex-row">
           <Controller
             control={form.control}
             name="createdAt"
-            render={({ fieldState: { invalid, error }, field }) => (
-              <DateField
+            render={({ fieldState: { invalid }, field }) => (
+              <DatePicker
+                hideTimeZone
+                className="w-full md:w-1/2"
+                name="createdAt"
+                onChange={(value) =>
+                  field.onChange(dayjs(value?.toString()).valueOf())
+                }
+                isInvalid={invalid}
                 value={
                   field.value
                     ? parseAbsolute(
@@ -340,29 +348,66 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
                         getLocalTimeZone()
                       )
                     : null
-                }
-                onChange={(value) =>
-                  field.onChange(dayjs(value?.toString()).valueOf())
-                }
-                isInvalid={invalid}
-                fullWidth
-                className={cn(showUpdatedDate ? "md:w-1/2" : "w-full")}>
-                <Label htmlFor={`${id}-createdAt`}>Created Date</Label>
-                <DateInputGroup id={`${id}-createdAt`}>
-                  <DateInputGroup.Input>
-                    {(segment) => <DateInputGroup.Segment segment={segment} />}
-                  </DateInputGroup.Input>
-                </DateInputGroup>
-                <FieldError>{error?.message}</FieldError>
-              </DateField>
+                }>
+                <Label>Created Date</Label>
+                <DateField.Group fullWidth>
+                  <DateField.Input>
+                    {(segment) => <DateField.Segment segment={segment} />}
+                  </DateField.Input>
+                  <DateField.Suffix>
+                    <DatePicker.Trigger>
+                      <DatePicker.TriggerIndicator />
+                    </DatePicker.Trigger>
+                  </DateField.Suffix>
+                </DateField.Group>
+                <DatePicker.Popover>
+                  <Calendar aria-label="Created date">
+                    <Calendar.Header>
+                      <Calendar.YearPickerTrigger>
+                        <Calendar.YearPickerTriggerHeading />
+                        <Calendar.YearPickerTriggerIndicator />
+                      </Calendar.YearPickerTrigger>
+                      <Calendar.NavButton slot="previous" />
+                      <Calendar.NavButton slot="next" />
+                    </Calendar.Header>
+                    <Calendar.Grid>
+                      <Calendar.GridHeader>
+                        {(day) => (
+                          <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                        )}
+                      </Calendar.GridHeader>
+                      <Calendar.GridBody>
+                        {(date) => <Calendar.Cell date={date} />}
+                      </Calendar.GridBody>
+                    </Calendar.Grid>
+                    <Calendar.YearPickerGrid>
+                      <Calendar.YearPickerGridBody>
+                        {({ year }) => (
+                          <Calendar.YearPickerCell
+                            className="text-xs"
+                            year={year}
+                          />
+                        )}
+                      </Calendar.YearPickerGridBody>
+                    </Calendar.YearPickerGrid>
+                  </Calendar>
+                </DatePicker.Popover>
+              </DatePicker>
             )}
           />
           {showUpdatedDate && (
             <Controller
               control={form.control}
               name="updatedAt"
-              render={({ fieldState: { invalid, error }, field }) => (
-                <DateField
+              render={({ fieldState: { invalid }, field }) => (
+                <DatePicker
+                  hideTimeZone
+                  name="updatedAt"
+                  className="w-full md:w-1/2"
+                  onChange={(value) =>
+                    field.onChange(dayjs(value?.toString()).valueOf())
+                  }
+                  isInvalid={invalid}
                   value={
                     field.value
                       ? parseAbsolute(
@@ -370,29 +415,57 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
                           getLocalTimeZone()
                         )
                       : null
-                  }
-                  onChange={(value) =>
-                    field.onChange(dayjs(value?.toString()).valueOf())
-                  }
-                  isInvalid={invalid}
-                  fullWidth
-                  className="md:w-1/2">
-                  <Label htmlFor={`${id}-updatedAt`}>Updated Date</Label>
-                  <DateInputGroup id={`${id}-updatedAt`}>
-                    <DateInputGroup.Input>
-                      {(segment) => (
-                        <DateInputGroup.Segment segment={segment} />
-                      )}
-                    </DateInputGroup.Input>
-                  </DateInputGroup>
-                  <FieldError>{error?.message}</FieldError>
-                </DateField>
+                  }>
+                  <Label>Updated Date</Label>
+                  <DateField.Group fullWidth>
+                    <DateField.Input>
+                      {(segment) => <DateField.Segment segment={segment} />}
+                    </DateField.Input>
+                    <DateField.Suffix>
+                      <DatePicker.Trigger>
+                        <DatePicker.TriggerIndicator />
+                      </DatePicker.Trigger>
+                    </DateField.Suffix>
+                  </DateField.Group>
+                  <DatePicker.Popover>
+                    <Calendar aria-label="Updated date">
+                      <Calendar.Header>
+                        <Calendar.YearPickerTrigger>
+                          <Calendar.YearPickerTriggerHeading />
+                          <Calendar.YearPickerTriggerIndicator />
+                        </Calendar.YearPickerTrigger>
+                        <Calendar.NavButton slot="previous" />
+                        <Calendar.NavButton slot="next" />
+                      </Calendar.Header>
+                      <Calendar.Grid>
+                        <Calendar.GridHeader>
+                          {(day) => (
+                            <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                          )}
+                        </Calendar.GridHeader>
+                        <Calendar.GridBody>
+                          {(date) => <Calendar.Cell date={date} />}
+                        </Calendar.GridBody>
+                      </Calendar.Grid>
+                      <Calendar.YearPickerGrid>
+                        <Calendar.YearPickerGridBody>
+                          {({ year }) => (
+                            <Calendar.YearPickerCell
+                              className="text-xs"
+                              year={year}
+                            />
+                          )}
+                        </Calendar.YearPickerGridBody>
+                      </Calendar.YearPickerGrid>
+                    </Calendar>
+                  </DatePicker.Popover>
+                </DatePicker>
               )}
             />
           )}
         </div>
 
-        <div className="flex w-full items-end gap-5 md:w-1/2">
+        <div className="flex w-full items-end gap-2 md:w-1/2">
           <Controller
             control={form.control}
             name="contentType"

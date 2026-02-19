@@ -1,7 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import type { FC, ReactNode } from "react";
+
+import { useTranslations } from "next-intl";
 
 import meta from "@chia/meta";
 

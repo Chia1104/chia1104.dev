@@ -40,7 +40,7 @@
   ],
   "experimentalSortImports": {
     "groups": [
-      ["side-effect", "style"],
+      ["style"],
       ["builtin"],
       ["react", "next"],
       ["external"],
@@ -54,19 +54,19 @@
     "customGroups": [
       {
         "groupName": "react",
-        "elementNamePattern": ["react"]
+        "elementNamePattern": ["react", "react/**"]
       },
       {
         "groupName": "next",
-        "elementNamePattern": ["next"]
+        "elementNamePattern": ["next", "next/**"]
       },
       {
         "groupName": "chia",
-        "elementNamePattern": ["@chia/"]
+        "elementNamePattern": ["@chia/*", "@chia/**"]
       },
       {
         "groupName": "chiastack",
-        "elementNamePattern": ["@chiastack/"]
+        "elementNamePattern": ["@chiastack/*", "@chiastack/**"]
       }
     ]
   },

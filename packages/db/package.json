@@ -90,7 +90,6 @@
     "@chia/kv": "workspace:*",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:drizzle",
-    "drizzle-zod": "catalog:drizzle",
     "pg": "^8.18.0",
     "zod": "catalog:"
   },

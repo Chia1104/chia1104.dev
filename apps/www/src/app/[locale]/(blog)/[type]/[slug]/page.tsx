@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Suspense, ViewTransition } from "react";
 
 import { all } from "better-all";
+import { getTranslations } from "next-intl/server";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";

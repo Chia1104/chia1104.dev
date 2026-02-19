@@ -1,5 +1,4 @@
 import "client-only";
-
 import type { InferRequestType } from "hono";
 
 import { X_CAPTCHA_RESPONSE } from "@chia/api/captcha";

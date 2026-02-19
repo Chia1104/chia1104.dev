@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import { ViewTransition } from "react";
+
+import { getTranslations } from "next-intl/server";
 
 import Contact from "@/components/contact/contact";
 import ContactHeader from "@/components/contact/contact-header";

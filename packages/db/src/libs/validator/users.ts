@@ -1,4 +1,4 @@
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema } from "drizzle-orm/zod";
 import * as z from "zod";
 
 import { user } from "../../schemas";

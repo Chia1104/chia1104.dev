@@ -27,15 +27,15 @@
     "r3f-perf": "^7.2.3",
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
-    "shaders": "^2.3.56",
-    "three": "^0.182.0"
+    "shaders": "^2.3.66",
+    "three": "^0.183.0"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
     "@testing-library/react": "catalog:testing-library",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
-    "@types/three": "^0.182.0",
+    "@types/three": "^0.183.0",
     "tailwindcss": "catalog:tailwindcss",
     "typescript": "catalog:"
   }

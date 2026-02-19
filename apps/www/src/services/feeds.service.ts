@@ -1,5 +1,4 @@
 import "server-only";
-
 import type { Locale } from "@chia/db/types";
 import type { FeedType } from "@chia/db/types";
 

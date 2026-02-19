@@ -1,5 +1,4 @@
 import "server-only";
-
 import { ViewTransition } from "react";
 
 import FeedList from "@/components/feed/feed-list";

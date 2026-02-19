@@ -1,8 +1,5 @@
 "use client";
 
-import type { Locale } from "next-intl";
-import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
@@ -10,6 +7,9 @@ import type { FC } from "react";
 
 import { Tabs, Button, Link as HeroLink } from "@heroui/react";
 import { motion } from "motion/react";
+import type { Locale } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
 import meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";

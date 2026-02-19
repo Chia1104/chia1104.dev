@@ -1,10 +1,10 @@
 "use client";
 
-import { useLocale } from "next-intl";
 import type { FC } from "react";
 import { useMemo, useCallback } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";

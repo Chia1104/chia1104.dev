@@ -1,8 +1,8 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { useEffect } from "react";
 
+import { useTheme } from "next-themes";
 import { useMediaQuery } from "usehooks-ts";
 
 const COLOR_SCHEME_QUERY = "(prefers-color-scheme: dark)";

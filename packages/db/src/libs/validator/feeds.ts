@@ -2,7 +2,7 @@ import {
   createInsertSchema,
   createUpdateSchema,
   createSelectSchema,
-} from "drizzle-zod";
+} from "drizzle-orm/zod";
 import * as z from "zod";
 
 import { feeds, feedTranslations, contents, locale } from "../../schemas";

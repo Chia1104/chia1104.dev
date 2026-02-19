@@ -1,5 +1,6 @@
-import { getTranslations } from "next-intl/server";
 import { ImageResponse } from "next/og";
+
+import { getTranslations } from "next-intl/server";
 
 import meta, { getWorkDuration } from "@chia/meta";
 import OpenGraph from "@chia/ui/open-graph";

@@ -1,5 +1,4 @@
 import "client-only";
-
 import type { InferResponseType } from "hono";
 
 import { client } from "@/libs/service/client";

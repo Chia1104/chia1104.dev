@@ -1,7 +1,8 @@
 "use client";
 
-import { useLocale, useTimeZone } from "next-intl";
 import { useEffect } from "react";
+
+import { useLocale, useTimeZone } from "next-intl";
 
 import { initDayjs } from "@/libs/utils/dayjs";
 

@@ -1,11 +1,9 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, memo } from "react";
-import { Controller, useForm } from "react-hook-form";
 
 import {
   Input,
@@ -18,6 +16,8 @@ import {
 import type { FormProps } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { ErrorCode as CaptchaErrorCode } from "@chia/api/captcha";
