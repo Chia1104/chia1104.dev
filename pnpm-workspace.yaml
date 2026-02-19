@@ -40,8 +40,8 @@ catalogs:
     fumadocs-mdx: 14.2.7
     fumadocs-ui: 16.6.3
   heroui-v3:
-    '@heroui/react': 3.0.0-beta.6
-    '@heroui/styles': 3.0.0-beta.6
+    '@heroui/react': 3.0.0-beta.7
+    '@heroui/styles': 3.0.0-beta.7
   next:
     '@next/third-parties': 16.1.6
     next: 16.1.6
