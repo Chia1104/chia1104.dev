@@ -12,6 +12,10 @@ import { env } from "../env";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { estimateReadingTimeWorkflow } from "../workflows/estimate-reading-time.workflow.js";
 import { feedEmbeddingsWorkflow } from "../workflows/feed-embeddings.workflow.js";
+import {
+  insertOramaDatasourceWorkflow,
+  updateOramaDatasourceWorkflow,
+} from "../workflows/sync-orama-datasource.workflow.js";
 
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))
@@ -67,6 +71,19 @@ const api = new Hono<HonoContext>()
                     },
                   ]);
                 },
+                async syncOramaDatasource() {
+                  return await start(insertOramaDatasourceWorkflow, [
+                    {
+                      feedID: translation.id,
+                      title: translation.title,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                      locale: translation.locale,
+                      published: feed.published,
+                      enabled: true,
+                    },
+                  ]);
+                },
               });
             });
 
@@ -96,6 +113,19 @@ const api = new Hono<HonoContext>()
                       locale: translation.locale,
                       content:
                         content?.content ?? translation.description ?? "",
+                    },
+                  ]);
+                },
+                async syncOramaDatasource() {
+                  return await start(updateOramaDatasourceWorkflow, [
+                    {
+                      feedID: translation.id,
+                      title: translation.title,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                      locale: translation.locale,
+                      published: feed.published,
+                      enabled: true,
                     },
                   ]);
                 },

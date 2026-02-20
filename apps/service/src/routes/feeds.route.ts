@@ -20,6 +20,7 @@ import { env } from "../env";
 import { ai, AI_AUTH_TOKEN } from "../guards/ai.guard";
 import { verifyAuth } from "../guards/auth.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { orama } from "../libs/orama/client";
 import { errorResponse } from "../utils/error.util";
 import { searchFeedsSchema } from "../validators/feeds.validator";
 
@@ -160,6 +161,34 @@ const api = new Hono<HonoContext>()
       });
       await cache.set(cacheKey, JSON.stringify(embedding));
       return c.json(items);
+    }
+  )
+  .get(
+    "/orama-search",
+    zValidator(
+      "query",
+      z.object({
+        keyword: z.string(),
+        locale: z.enum(Locale).optional(),
+      }),
+      (result, c) => {
+        if (!result.success) {
+          return c.json(errorResponse(result.error), 400);
+        }
+      }
+    ),
+    async (c) => {
+      const { keyword } = c.req.valid("query");
+      const results = await orama.search({
+        term: keyword,
+        mode: "hybrid",
+        // where: {
+        //   locale: {
+        //     eq: locale,
+        //   },
+        // },
+      });
+      return c.json(results);
     }
   );
 

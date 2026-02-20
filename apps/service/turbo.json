@@ -32,7 +32,10 @@
         "TRIGGER_SECRET_KEY",
         "ANTHROPIC_API_KEY",
         "GENAI_API_KEY",
-        "OLLAMA_BASE_URL"
+        "OLLAMA_BASE_URL",
+        "ORAMA_PROJECT_ID",
+        "ORAMA_API_KEY",
+        "ORAMA_DATASOURCE_ID"
       ],
       "passThroughEnv": [
         "WORKFLOW_TARGET_WORLD",
@@ -54,7 +57,10 @@
         "TRIGGER_SECRET_KEY",
         "ANTHROPIC_API_KEY",
         "GENAI_API_KEY",
-        "OLLAMA_BASE_URL"
+        "OLLAMA_BASE_URL",
+        "ORAMA_PROJECT_ID",
+        "ORAMA_API_KEY",
+        "ORAMA_DATASOURCE_ID"
       ]
     }
   }
