@@ -1,5 +1,7 @@
 import { createCompiler } from "@fumadocs/mdx-remote";
 import { remarkDirectiveAdmonition } from "fumadocs-core/mdx-plugins";
+import { rehypeCodeDefaultOptions } from "fumadocs-core/mdx-plugins";
+import { transformerTwoslash } from "fumadocs-twoslash";
 import type { MDXComponents } from "mdx/types";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
@@ -12,6 +14,19 @@ import type { GetContentPropsArgs, GetContentPropsReturn } from "./types";
 const compiler = createCompiler({
   remarkPlugins: [remarkMath, remarkDirectiveAdmonition],
   rehypePlugins: (v) => [rehypeKatex, ...v],
+  rehypeCodeOptions: {
+    themes: {
+      light: "github-light",
+      dark: "github-dark",
+    },
+    transformers: [
+      ...(rehypeCodeDefaultOptions.transformers ?? []),
+      transformerTwoslash(),
+    ],
+    // important: Shiki doesn't support lazy loading languages for codeblocks in Twoslash popups
+    // make sure to define them first (e.g. the common ones)
+    langs: ["js", "jsx", "ts", "tsx"],
+  },
 });
 
 export const compileMDX = (content: string, components?: MDXComponents) => {

@@ -4,6 +4,7 @@
 import Image from "next/image";
 
 import { ScrollShadow } from "@heroui/react";
+import * as Twoslash from "fumadocs-twoslash/ui";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
@@ -22,6 +23,16 @@ import { Mermaid } from "./components/mermaid";
 
 export const FumadocsComponents = {
   ...defaultComponents,
+  ...Twoslash,
+  PopupContent: (props: any) => (
+    <Twoslash.PopupContent
+      {...props}
+      className={cn(
+        props.className,
+        "dark:[&_.twoslash-popup-docs]:prose-invert"
+      )}
+    />
+  ),
   Tabs,
   Tab,
   Callout,
