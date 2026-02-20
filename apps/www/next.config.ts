@@ -43,13 +43,7 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
     isolatedDevBuild: true,
   },
-  serverExternalPackages: [
-    "@chia/db",
-    "@chia/auth",
-    "@sentry/nextjs",
-    "typescript",
-    "twoslash",
-  ],
+  serverExternalPackages: ["@chia/db", "@chia/auth", "@sentry/nextjs"],
   typescript: {
     ignoreBuildErrors: true,
   },
