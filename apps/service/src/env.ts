@@ -39,6 +39,9 @@ export const env = createEnv({
     ANTHROPIC_API_KEY: z.string().optional(),
     GENAI_API_KEY: z.string().optional(),
     OLLAMA_BASE_URL: z.string().optional(),
+    ORAMA_PROJECT_ID: z.string().optional(),
+    ORAMA_API_KEY: z.string().optional(),
+    ORAMA_DATASOURCE_ID: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -70,6 +73,9 @@ export const env = createEnv({
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     GENAI_API_KEY: process.env.GENAI_API_KEY,
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
+    ORAMA_PROJECT_ID: process.env.ORAMA_PROJECT_ID,
+    ORAMA_API_KEY: process.env.ORAMA_API_KEY,
+    ORAMA_DATASOURCE_ID: process.env.ORAMA_DATASOURCE_ID,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

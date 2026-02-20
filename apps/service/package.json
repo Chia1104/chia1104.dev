@@ -28,6 +28,7 @@
     "@hono/react-renderer": "^1.0.1",
     "@hono/sentry": "^1.2.2",
     "@hono/zod-validator": "^0.7.6",
+    "@orama/core": "^1.2.19",
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
