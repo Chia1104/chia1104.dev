@@ -2,6 +2,7 @@
 @import "@heroui/styles";
 @import "fumadocs-ui/css/shadcn.css";
 @import "fumadocs-ui/css/preset.css";
+@import "fumadocs-twoslash/twoslash.css";
 @import "@chia/tailwind/animations.css";
 @import "@chia/themes/default.css";
 @import "@chia/tailwind/preset.css";

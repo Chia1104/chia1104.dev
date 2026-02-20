@@ -50,6 +50,7 @@
     "dayjs": "catalog:",
     "fumadocs-core": "catalog:fumadocs",
     "fumadocs-mdx": "catalog:fumadocs",
+    "fumadocs-twoslash": "^3.1.13",
     "fumadocs-ui": "catalog:fumadocs",
     "katex": "^0.16.28",
     "mermaid": "^11.12.3",
@@ -58,7 +59,8 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0"
+    "remark-math": "^6.0.0",
+    "twoslash": "^0.3.6"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
