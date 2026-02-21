@@ -85,7 +85,7 @@ const CacheFeeds = async ({
     <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
       <p>{t("no-content")}</p>
       <ImageZoom>
-        <div className="not-prose aspect-h-1 aspect-w-1 relative w-[100px]">
+        <div className="not-prose relative aspect-square w-[100px]">
           <Image
             src="https://storage.chia1104.dev/memo.png"
             alt="memo"
