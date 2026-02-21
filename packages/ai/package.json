@@ -57,17 +57,17 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.45",
-    "@ai-sdk/deepseek": "^2.0.20",
-    "@ai-sdk/google": "^3.0.30",
-    "@ai-sdk/openai": "^3.0.30",
-    "@anthropic-ai/sdk": "^0.77.0",
+    "@ai-sdk/anthropic": "catalog:ai",
+    "@ai-sdk/deepseek": "catalog:ai",
+    "@ai-sdk/google": "catalog:ai",
+    "@ai-sdk/openai": "catalog:ai",
+    "@anthropic-ai/sdk": "catalog:ai",
     "@chia/utils": "workspace:*",
-    "@google/genai": "^1.42.0",
-    "ai": "^6.0.92",
+    "@google/genai": "catalog:ai",
+    "ai": "catalog:ai",
     "next": "catalog:next",
-    "ollama": "^0.6.3",
-    "openai": "^6.22.0",
+    "ollama": "catalog:ai",
+    "openai": "catalog:ai",
     "zod": "catalog:"
   },
   "devDependencies": {

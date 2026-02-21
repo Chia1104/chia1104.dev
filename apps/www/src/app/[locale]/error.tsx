@@ -12,7 +12,7 @@ const ErrorContent = () => {
       <div className="c-bg-third relative flex min-h-[320px] w-full max-w-[700px] flex-col items-center justify-center overflow-hidden rounded-lg p-3 px-5">
         <h3 className="my-2">{t("error")}</h3>
         <div>
-          <div className="not-prose aspect-h-1 aspect-w-1 relative w-[200px]">
+          <div className="not-prose relative aspect-square w-[200px]">
             <Image
               src="https://storage.chia1104.dev/memo.png"
               alt="memo"

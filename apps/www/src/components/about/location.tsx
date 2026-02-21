@@ -188,7 +188,7 @@ const Location: FC<LocationProps> = ({
           {fallbackElement ?? (
             <div
               className={cn(
-                "not-prose aspect-h-1 aspect-w-1 relative w-[600px]",
+                "not-prose relative aspect-square w-[600px]",
                 className
               )}>
               <Image

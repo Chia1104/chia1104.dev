@@ -43,7 +43,7 @@ export const RepoCard = ({
           y: 20,
         },
       }}>
-      <div className="aspect-h-9 aspect-w-16 c-bg-gradient-green-to-purple not-prose w-full overflow-hidden rounded-t-2xl">
+      <div className="c-bg-gradient-green-to-purple not-prose relative aspect-video w-full shrink-0 overflow-hidden rounded-t-2xl">
         <Image
           src={image}
           alt={name}
@@ -53,7 +53,7 @@ export const RepoCard = ({
           sizes="100vw"
         />
       </div>
-      <div className="flex h-full flex-col p-4 pt-0">
+      <div className="flex flex-1 flex-col p-4 pt-0">
         <h2 className="mt-5 text-xl font-bold">{name}</h2>
         <span className="text-xs text-gray-500">
           <DateFormat date={updatedAt} format="MMMM D, YYYY" />

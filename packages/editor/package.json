@@ -21,7 +21,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@platejs/basic-nodes": "catalog:platejs",
-    "class-variance-authority": "^0.7.1",
+    "class-variance-authority": "catalog:ui",
     "platejs": "catalog:platejs"
   },
   "devDependencies": {

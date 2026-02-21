@@ -63,7 +63,7 @@ const Gallery = () => {
         <ImageItem
           src={images[4].src}
           alt={images[4].alt}
-          className="aspect-h-1 aspect-w-2 sm:aspect-w-1"
+          className="aspect-2/1 sm:aspect-square"
         />
       </span>
       <div className="col-span-2 grid w-full grid-cols-2 gap-2 sm:col-span-1">
@@ -71,21 +71,21 @@ const Gallery = () => {
           <ImageItem
             src={images[0].src}
             alt={images[0].alt}
-            className="aspect-h-1 aspect-w-1"
+            className="aspect-square"
           />
         </span>
         <span>
           <ImageItem
             src={images[1].src}
             alt={images[1].alt}
-            className="aspect-h-1 aspect-w-1"
+            className="aspect-square"
           />
         </span>
         <span className="col-span-2">
           <ImageItem
             src={images[3].src}
             alt={images[3].alt}
-            className="aspect-h-1 aspect-w-2"
+            className="aspect-2/1"
           />
         </span>
       </div>
