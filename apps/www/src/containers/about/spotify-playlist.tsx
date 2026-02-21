@@ -68,7 +68,7 @@ const First: FC<{
         <ImageItem
           src={data.track.album.images[0]?.url ?? ""}
           alt={data.track.album.name}
-          className="aspect-h-1 aspect-w-1"
+          className="aspect-square"
         />
         <Link
           href={data.track.external_urls.spotify}
@@ -94,7 +94,7 @@ const Item: FC<{
         <ImageItem
           src={data.track.album.images[0]?.url ?? ""}
           alt={data.track.album.name}
-          className="aspect-h-1 aspect-w-1"
+          className="aspect-square"
         />
       </span>
       <p className="col-span-2 line-clamp-2">

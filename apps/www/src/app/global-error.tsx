@@ -19,7 +19,7 @@ const GlobalError = withError(
               Here looks a little boring, I'll prepare it for you soon
             </h3>
             <div>
-              <div className="not-prose aspect-h-1 aspect-w-1 relative w-[200px]">
+              <div className="not-prose relative aspect-square w-[200px]">
                 <Image
                   src="https://storage.chia1104.dev/memo.png"
                   alt="memo"

@@ -16,7 +16,7 @@ const RootLayout: FC<Props> = ({ children, htmlProps, bodyProps }) => {
       lang="en"
       suppressHydrationWarning
       {...htmlProps}
-      className={cn(htmlProps?.className, "overscroll-none")}>
+      className={cn(htmlProps?.className, "overscroll-y-none")}>
       <body
         {...bodyProps}
         className={cn(

@@ -25,9 +25,9 @@
     "@chia/meta": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
-    "@hono/react-renderer": "^1.0.1",
-    "@hono/sentry": "^1.2.2",
-    "@hono/zod-validator": "^0.7.6",
+    "@hono/react-renderer": "catalog:hono",
+    "@hono/sentry": "catalog:hono",
+    "@hono/zod-validator": "catalog:hono",
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
@@ -37,8 +37,8 @@
     "better-auth": "catalog:better-auth",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
-    "hono": "^4.12.0",
-    "hono-rate-limiter": "^0.5.3",
+    "hono": "catalog:hono",
+    "hono-rate-limiter": "catalog:hono",
     "jsdom": "^28.1.0",
     "ky": "catalog:",
     "lodash": "catalog:",
@@ -51,7 +51,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/tailwind": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/jsdom": "^27.0.0",
     "@types/lodash": "catalog:",
@@ -59,9 +58,6 @@
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
     "bun-types": "catalog:",
-    "postcss": "8.5.6",
-    "postcss-import": "^16.1.1",
-    "tailwindcss": "catalog:tailwindcss",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

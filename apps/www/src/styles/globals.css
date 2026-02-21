@@ -6,7 +6,6 @@
 @import "@chia/themes/default.css";
 @import "@chia/tailwind/preset.css";
 
-@plugin "@tailwindcss/aspect-ratio";
 @plugin "tailwind-scrollbar";
 
 @source "./src/**/*.{js,ts,jsx,tsx}";
