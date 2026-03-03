@@ -62,7 +62,7 @@ catalogs:
     '@next/third-parties': 16.1.6
     next: 16.1.6
   orpc:
-    '@orpc/client': 1.13.5
+    '@orpc/client': 1.13.6
     '@orpc/contract': 1.13.5
     '@orpc/server': 1.13.5
     '@orpc/tanstack-query': 1.13.5
