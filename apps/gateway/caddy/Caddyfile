@@ -1,8 +1,23 @@
 {
-    auto_https off
+    admin off # theres no need for the admin api in railway's environment
+	persist_config off # storage isn't persistent anyway
+	auto_https off # railway handles https for us, this could in some cases cause issues if left enabled
+	# runtime logs
+	log {
+		format json # set runtime log format to json mode 
+	}
+	# server options
+	servers {
+		trusted_proxies static private_ranges # trust railway's proxy
+	}
 }
 
-:80 {
+:{$PORT} {
+    # access logs
+	log {
+		format json # set access log format to json mode
+	}
+    
     request_body {
         max_size 15MB
     }
