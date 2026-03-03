@@ -1,0 +1,38 @@
+{
+    auto_https off
+}
+
+:80 {
+    request_body {
+        max_size 15MB
+    }
+
+    handle /api/v1* {
+        reverse_proxy service:8080 {
+            header_up Host {host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+
+            transport http {
+                versions 1.1
+                read_timeout  3600s
+                write_timeout 3600s
+            }
+
+            flush_interval -1
+        }
+    }
+
+    handle /robots.txt {
+        header Content-Type text/plain
+        respond "User-agent: *\nDisallow: /\n" 200
+    }
+
+    handle /health {
+        header Content-Type text/plain
+        respond "ok" 200
+    }
+
+    @root path /
+    redir @root https://chia1104.dev 301
+}
