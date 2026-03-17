@@ -18,7 +18,7 @@
     "@chia/kv": "workspace:*",
     "@chia/utils": "workspace:*",
     "@t3-oss/env-core": "catalog:",
-    "elysia": "1.4.22",
+    "elysia": "1.4.27",
     "zod": "catalog:"
   },
   "devDependencies": {
