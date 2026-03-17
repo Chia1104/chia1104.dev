@@ -60,7 +60,7 @@ catalogs:
     hono-rate-limiter: 0.5.3
   next:
     '@next/third-parties': 16.1.6
-    next: 16.1.6
+    next: 16.1.7
   orpc:
     '@orpc/client': 1.13.6
     '@orpc/contract': 1.13.5
