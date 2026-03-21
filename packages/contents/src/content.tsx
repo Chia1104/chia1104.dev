@@ -4,11 +4,9 @@ import type { ReactNode } from "react";
 import { useRef, ViewTransition } from "react";
 
 import { Card, ScrollShadow } from "@heroui/react";
-import {
-  AnchorProvider as TOCProvider,
-  ScrollProvider as TOCScrollArea,
-} from "fumadocs-core/toc";
+import { ScrollProvider as TOCScrollArea } from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
+import { TOCProvider } from "fumadocs-ui/components/toc";
 import { TOCItems } from "fumadocs-ui/components/toc/clerk";
 
 import { ContentType } from "@chia/db/types";
