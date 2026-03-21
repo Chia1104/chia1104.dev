@@ -39,7 +39,7 @@
     "drizzle-orm": "catalog:drizzle",
     "hono": "catalog:hono",
     "hono-rate-limiter": "catalog:hono",
-    "jsdom": "^29.0.0",
+    "jsdom": "^29.0.1",
     "ky": "catalog:",
     "lodash": "catalog:",
     "nitro": "3.0.260311-beta",
@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@types/jsdom": "^28.0.0",
+    "@types/jsdom": "^28.0.1",
     "@types/lodash": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",

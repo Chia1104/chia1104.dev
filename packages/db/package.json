@@ -95,7 +95,7 @@
     "@chia/utils": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
-    "@types/pg": "^8.18.0",
+    "@types/pg": "^8.20.0",
     "drizzle-kit": "catalog:drizzle",
     "typescript": "catalog:"
   }
