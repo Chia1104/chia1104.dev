@@ -1,7 +1,7 @@
+import { apiKey } from "@better-auth/api-key";
 import { passkey } from "@better-auth/passkey";
 import type { BetterAuthOptions } from "better-auth";
 import { magicLink } from "better-auth/plugins";
-import { apiKey } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { organization } from "better-auth/plugins";
 import { Resend } from "resend";

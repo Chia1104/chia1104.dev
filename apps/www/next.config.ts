@@ -41,7 +41,6 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
     authInterrupts: true,
-    isolatedDevBuild: true,
   },
   serverExternalPackages: ["@chia/db", "@chia/auth", "@sentry/nextjs"],
   typescript: {

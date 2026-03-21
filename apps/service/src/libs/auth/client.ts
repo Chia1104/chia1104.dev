@@ -1,6 +1,3 @@
-/**
- * @TODO: WIP
- */
 import { createAuthClient } from "better-auth/client";
 
 import { baseAuthClient } from "@chia/auth/utils";
@@ -16,4 +13,4 @@ export const authClient = createAuthClient(
   baseAuthClient({
     baseURL: AUTH_SERVICE_ENDPOINT,
   })
-);
+) as ReturnType<typeof createAuthClient>;

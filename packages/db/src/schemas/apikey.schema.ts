@@ -5,7 +5,6 @@ import { timestamps } from "../libs/common.schema.ts";
 
 import { project } from "./organization.schema.ts";
 import { pgTable } from "./table.ts";
-import { user } from "./user.schema.ts";
 
 export const apikey = pgTable(
   "apikey",
@@ -15,9 +14,6 @@ export const apikey = pgTable(
     start: text("start"),
     prefix: text("prefix"),
     key: text("key").notNull(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
     // Rate limiting - refill
     refillInterval: integer("refill_interval"),
     refillAmount: integer("refill_amount"),
@@ -41,11 +37,15 @@ export const apikey = pgTable(
     projectId: integer("project_id").references(() => project.id, {
       onDelete: "cascade",
     }),
+
+    configId: text("config_id").default("default").notNull(),
+    referenceId: text("reference_id").notNull(),
   },
   (table) => [
-    index("apikey_user_id_idx").on(table.userId),
     index("apikey_key_idx").on(table.key),
     index("apikey_project_id_idx").on(table.projectId),
+    index("apikey_configId_idx").on(table.configId),
+    index("apikey_referenceId_idx").on(table.referenceId),
   ]
 );
 

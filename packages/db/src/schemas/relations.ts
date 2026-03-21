@@ -45,7 +45,6 @@ export const relations = defineRelations(schema, (r) => ({
     sessions: r.many.session({ from: r.user.id, to: r.session.userId }),
     accounts: r.many.account({ from: r.user.id, to: r.account.userId }),
     passkeys: r.many.passkey({ from: r.user.id, to: r.passkey.userId }),
-    apikeys: r.many.apikey({ from: r.user.id, to: r.apikey.userId }),
     members: r.many.member({ from: r.user.id, to: r.member.userId }),
     invitations: r.many.invitation({
       from: r.user.id,
@@ -68,7 +67,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.apikey.projectId,
       to: r.project.id,
     }),
-    user: r.one.user({ from: r.apikey.userId, to: r.user.id }),
   },
   organization: {
     projects: r.many.project({

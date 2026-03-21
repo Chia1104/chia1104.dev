@@ -1,6 +1,6 @@
 import type { ConfigType } from "dayjs";
 import type { TableOfContents } from "fumadocs-core/toc";
-import type { MDXContent } from "mdx/types";
+import type { MDXComponents } from "mdx/types";
 
 import type { Content } from "@chia/db/schema";
 import type { ContentType } from "@chia/db/types";
@@ -30,7 +30,9 @@ export type ContentProps = BaseProps &
     | {
         type: typeof ContentType.Mdx;
         toc: TableOfContents;
-        content: MDXContent;
+        content: React.FC<{
+          components?: MDXComponents;
+        }>;
       }
     | {
         type: typeof ContentType.Tiptap;

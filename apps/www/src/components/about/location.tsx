@@ -25,7 +25,7 @@ type LocationProps = {
   height: number | string;
   defaultPositionOffset?: [number, number];
   enableYInteraction?: boolean;
-  cobeOptions?: Omit<Partial<COBEOptions>, "width" | "height" | "onRender">;
+  cobeOptions?: Omit<Partial<COBEOptions>, "width" | "height">;
   stiffness?: number;
   damping?: number;
   fallbackElement?: ReactNode;
@@ -46,8 +46,7 @@ const Location: FC<LocationProps> = ({
 }) => {
   const [isError, setIsError] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // @ts-expect-error - TODO: update ref type
-  const globe = useRef<Globe>();
+  const globe = useRef<Globe>(null);
   const pointerXInteracting = useRef<number | null>(null);
   const pointerYInteracting = useRef<number | null>(null);
   const pointerXInteractionMovement = useRef(0);
@@ -67,7 +66,29 @@ const Location: FC<LocationProps> = ({
     damping,
   });
   const { isDarkMode } = useTheme();
+  const handleCobeUpdate = useCallback(() => {
+    if (globe.current) {
+      globe.current.update({
+        phi: defaultPositionOffset[1] + springX.get(),
+        theta: enableYInteraction
+          ? defaultPositionOffset[0] + springY.get()
+          : defaultPositionOffset[0],
+      });
+    }
+  }, [springX, springY, defaultPositionOffset, enableYInteraction]);
+
   useEffect(() => {
+    const unsubX = springX.on("change", handleCobeUpdate);
+    const unsubY = springY.on("change", handleCobeUpdate);
+    return () => {
+      unsubX();
+      unsubY();
+    };
+  }, [springX, springY, handleCobeUpdate]);
+
+  useEffect(() => {
+    let raf1: number, raf2: number;
+
     if (canvasRef.current && width && height) {
       try {
         const context = canvasRef.current.getContext("webgl");
@@ -83,8 +104,8 @@ const Location: FC<LocationProps> = ({
 
       globe.current = createGlobe(canvasRef.current, {
         devicePixelRatio: 2,
-        phi: 0,
-        theta: -0.1,
+        phi: defaultPositionOffset[1],
+        theta: defaultPositionOffset[0],
         diffuse: 2,
         mapSamples: 36_000,
         mapBrightness: 2,
@@ -95,32 +116,38 @@ const Location: FC<LocationProps> = ({
         dark: isDarkMode ? 1 : 0,
         context: { antialias: false },
         ...cobeOptions,
-        markers: [{ size: 0.1, ...cobeOptions.markers, location }],
+        markers: [{ size: 0.025, ...cobeOptions.markers, location }],
         width: width * 2,
         height: height * 2,
-        onRender: (state) => {
-          state.phi = defaultPositionOffset[1] + springX.get();
-          state.theta = enableYInteraction
-            ? defaultPositionOffset[0] + springY.get()
-            : defaultPositionOffset[0];
-          state.width = width * 2;
-          state.height = height * 2;
-        },
+      });
+
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          globe.current?.update({
+            phi: defaultPositionOffset[1] + springX.get(),
+            theta: enableYInteraction
+              ? defaultPositionOffset[0] + springY.get()
+              : defaultPositionOffset[0],
+          });
+        });
       });
     }
+
     return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
       globe.current?.destroy();
     };
   }, [
     width,
     height,
-    springX,
-    springY,
     isDarkMode,
     location,
-    enableYInteraction,
     defaultPositionOffset,
     cobeOptions,
+    springX,
+    springY,
+    enableYInteraction,
   ]);
 
   const handlePointerDown = useCallback(
