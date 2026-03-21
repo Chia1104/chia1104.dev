@@ -4,9 +4,12 @@ import type { ReactNode } from "react";
 import { useRef, ViewTransition } from "react";
 
 import { Card, ScrollShadow } from "@heroui/react";
+import {
+  AnchorProvider as TOCProvider,
+  ScrollProvider as TOCScrollArea,
+} from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
 import { TOCItems } from "fumadocs-ui/components/toc/clerk";
-import { TOCProvider, TOCScrollArea } from "fumadocs-ui/components/toc/index";
 
 import { ContentType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
@@ -38,16 +41,29 @@ const MDXInlineTOC = () => {
   return null;
 };
 
+const ContentTOC = () => {
+  const content = useContent();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  if (content.type !== ContentType.Mdx) return null;
+  return (
+    <TOCProvider toc={content.toc}>
+      <ScrollShadow
+        ref={contentRef}
+        className="max-h-[300px] w-full py-1"
+        hideScrollBar>
+        <TOCScrollArea containerRef={contentRef}>
+          <TOCItems className="[&>a]:py-1" />
+        </TOCScrollArea>
+      </ScrollShadow>
+    </TOCProvider>
+  );
+};
+
 const MDXTableOfContents = () => {
   const content = useContent();
   if (content.type === ContentType.Mdx) {
-    return (
-      <TOCProvider toc={content.toc}>
-        <TOCScrollArea className="max-h-[300px] w-full py-1">
-          <TOCItems className="[&>a]:py-1" />
-        </TOCScrollArea>
-      </TOCProvider>
-    );
+    return <ContentTOC />;
   }
   return null;
 };
@@ -69,11 +85,9 @@ const MdxContent = (props: BaseProps) => {
             <Card.Header>
               {content.tocContents?.label ?? "On this page"}
             </Card.Header>
-            <ScrollShadow className="max-h-[300px] w-full" hideScrollBar>
-              <Card.Content className="gap-1 pt-0 pl-0">
-                <MDXTableOfContents />
-              </Card.Content>
-            </ScrollShadow>
+            <Card.Content className="gap-1 pt-0 pl-0">
+              <MDXTableOfContents />
+            </Card.Content>
             {props.updatedAt || props.slot?.tocFooter ? (
               <Card.Footer className="flex flex-col">
                 <div className="flex w-full flex-wrap items-center justify-between gap-1 self-start text-sm">

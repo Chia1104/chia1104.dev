@@ -81,23 +81,21 @@
     "db:check": "tsx --env-file=../../.env.global check.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "migrate:run": "tsx --env-file=../../.env.global migrate.ts",
-    "migrate:data": "tsx --env-file=../../.env.global migrations/migrate-data.ts",
-    "migrate:verify": "tsx --env-file=../../.env.global migrations/verify-migration.ts"
+    "migrate:run": "tsx --env-file=../../.env.global migrate.ts"
   },
   "dependencies": {
     "@chia/ai": "workspace:*",
     "@chia/kv": "workspace:*",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:drizzle",
-    "pg": "^8.18.0",
+    "pg": "^8.20.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@chia/utils": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
-    "@types/pg": "^8.16.0",
+    "@types/pg": "^8.18.0",
     "drizzle-kit": "catalog:drizzle",
     "typescript": "catalog:"
   }

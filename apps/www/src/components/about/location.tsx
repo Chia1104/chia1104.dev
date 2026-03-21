@@ -67,6 +67,16 @@ const Location: FC<LocationProps> = ({
     damping,
   });
   const { isDarkMode } = useTheme();
+  const handleCobeUpdate = useCallback(() => {
+    if (globe.current) {
+      globe.current.update({
+        phi: defaultPositionOffset[1] + springX.get(),
+        theta: enableYInteraction
+          ? defaultPositionOffset[0] + springY.get()
+          : defaultPositionOffset[0],
+      });
+    }
+  }, [springX, springY, defaultPositionOffset, enableYInteraction]);
   useEffect(() => {
     if (canvasRef.current && width && height) {
       try {
@@ -98,16 +108,17 @@ const Location: FC<LocationProps> = ({
         markers: [{ size: 0.1, ...cobeOptions.markers, location }],
         width: width * 2,
         height: height * 2,
-        onRender: (state) => {
-          state.phi = defaultPositionOffset[1] + springX.get();
-          state.theta = enableYInteraction
-            ? defaultPositionOffset[0] + springY.get()
-            : defaultPositionOffset[0];
-          state.width = width * 2;
-          state.height = height * 2;
-        },
+        // onRender: (state) => {
+        //   state.phi = defaultPositionOffset[1] + springX.get();
+        //   state.theta = enableYInteraction
+        //     ? defaultPositionOffset[0] + springY.get()
+        //     : defaultPositionOffset[0];
+        //   state.width = width * 2;
+        //   state.height = height * 2;
+        // },
       });
     }
+    handleCobeUpdate();
     return () => {
       globe.current?.destroy();
     };
@@ -121,6 +132,7 @@ const Location: FC<LocationProps> = ({
     enableYInteraction,
     defaultPositionOffset,
     cobeOptions,
+    handleCobeUpdate,
   ]);
 
   const handlePointerDown = useCallback(
