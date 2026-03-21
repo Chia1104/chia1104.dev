@@ -11,6 +11,8 @@ import {
   FieldError,
   Label,
   Surface,
+  Table,
+  Spinner,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -26,15 +28,6 @@ import * as z from "zod";
 import { CopyButton } from "@chia/ui/copy-button";
 import DateFormat from "@chia/ui/date-format";
 import SubmitForm from "@chia/ui/submit-form";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@chia/ui/table";
-import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
 import { truncateMiddle } from "@chia/utils/format";
 
 import { orpc } from "@/libs/orpc/client";
@@ -81,22 +74,6 @@ const createSchema = z.object({
 });
 
 type CreateFormData = z.infer<typeof createSchema>;
-
-const LoadingRow = ({ colSpan }: { colSpan: number }) => (
-  <TableRow>
-    <TableCell colSpan={colSpan} className="text-center">
-      Loading...
-    </TableCell>
-  </TableRow>
-);
-
-const EmptyRow = ({ colSpan }: { colSpan: number }) => (
-  <TableRow>
-    <TableCell colSpan={colSpan} className="text-center">
-      No API Keys found
-    </TableCell>
-  </TableRow>
-);
 
 const ApiKeyDisplay = ({ apiKey }: { apiKey: string }) => {
   return (
@@ -245,12 +222,6 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
   projectId?: number;
   withProject?: TWithProject;
 }) => {
-  const { ref } = useInfiniteScroll<HTMLDivElement>({
-    hasMore: hasNextPage,
-    isLoading,
-    onLoadMore,
-  });
-
   const renderCell = useCallback(
     (item: ApiKeys<TWithProject>[0], key: string) => {
       switch (key) {
@@ -314,39 +285,49 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
       </div>
 
       <Table>
-        <TableHeader>
-          <TableRow>
-            {currentHeaders.map((column) => (
-              <TableHead key={column.uid}>{column.name}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading && data.length === 0 ? (
-            <LoadingRow colSpan={currentHeaders.length} />
-          ) : data.length === 0 ? (
-            <EmptyRow colSpan={currentHeaders.length} />
-          ) : (
-            data.map((item) => (
-              <TableRow key={item.id}>
-                {currentHeaders.map((column) => (
-                  <TableCell key={column.uid}>
-                    {renderCell(item, column.uid)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
+        <Table.ScrollContainer>
+          <Table.Content aria-label="API Keys">
+            <Table.Header>
+              {currentHeaders.map((column) => (
+                <Table.Column
+                  key={column.uid}
+                  id={column.uid}
+                  isRowHeader={column.uid === "name"}>
+                  {column.name}
+                </Table.Column>
+              ))}
+            </Table.Header>
+            <Table.Body
+              renderEmptyState={() => (
+                <div className="text-foreground/70 py-4 text-center text-sm">
+                  {isLoading ? "Loading..." : "No API Keys found"}
+                </div>
+              )}>
+              <Table.Collection items={data}>
+                {(item) => (
+                  <Table.Row id={item.id}>
+                    {currentHeaders.map((column) => (
+                      <Table.Cell key={column.uid}>
+                        {renderCell(item, column.uid)}
+                      </Table.Cell>
+                    ))}
+                  </Table.Row>
+                )}
+              </Table.Collection>
+              {hasNextPage && (
+                <Table.LoadMore
+                  isLoading={isLoading}
+                  scrollOffset={0}
+                  onLoadMore={onLoadMore}>
+                  <Table.LoadMoreContent>
+                    <Spinner size="sm" />
+                  </Table.LoadMoreContent>
+                </Table.LoadMore>
+              )}
+            </Table.Body>
+          </Table.Content>
+        </Table.ScrollContainer>
       </Table>
-
-      {hasNextPage && (
-        <div ref={ref} className="flex w-full justify-center py-4">
-          <div className="text-foreground/70 text-sm">
-            {isLoading ? "Loading more..." : "Load more"}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
