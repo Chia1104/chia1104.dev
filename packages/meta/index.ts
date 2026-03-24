@@ -73,7 +73,7 @@ export default {
   secondaryAvatar: "https://storage.chia1104.dev/avatar.png",
   chineseName: "俞又嘉",
   fullName: "Yu Chia, Yu",
-  email: "yuyuchia7423@gmail.com",
+  email: "contact@chia1104.dev",
   phone: "+886 970227360",
   birthday: "1999-11-04",
   link: {
