@@ -6,8 +6,8 @@ packages:
   - tests/*
 
 catalog:
-  '@t3-oss/env-core': ^0.13.10
-  '@t3-oss/env-nextjs': ^0.13.10
+  '@t3-oss/env-core': ^0.13.11
+  '@t3-oss/env-nextjs': ^0.13.11
   '@types/lodash': ^4.17.24
   '@types/node': 25.5.0
   better-all: 0.0.7
@@ -20,25 +20,25 @@ catalog:
   server-only: ^0.0.1
   superjson: 2.2.6
   tsdown: 0.21.4
-  typescript: ^5.9.3
+  typescript: ^6.0.2
   zod: 4.3.6
 
 catalogs:
   ai:
     '@ai-sdk/anthropic': 3.0.63
     '@ai-sdk/deepseek': 2.0.26
-    '@ai-sdk/google': 3.0.52
-    '@ai-sdk/openai': 3.0.47
-    '@ai-sdk/react': 3.0.136
+    '@ai-sdk/google': 3.0.53
+    '@ai-sdk/openai': 3.0.48
+    '@ai-sdk/react': 3.0.139
     '@anthropic-ai/sdk': 0.80.0
     '@google/genai': 1.46.0
-    ai: 6.0.134
+    ai: 6.0.137
     ollama: 0.6.3
     openai: 6.32.0
   better-auth:
-    '@better-auth/api-key': 1.5.5
-    '@better-auth/passkey': 1.5.5
-    better-auth: 1.5.5
+    '@better-auth/api-key': 1.5.6
+    '@better-auth/passkey': 1.5.6
+    better-auth: 1.5.6
   chiastack:
     '@chiastack/oxlint': 1.1.0
     '@chiastack/tsconfig': 2.1.2
@@ -48,9 +48,9 @@ catalogs:
     drizzle-orm: 1.0.0-beta.18-7eb39f0
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.6
-    fumadocs-core: 16.7.4
+    fumadocs-core: 16.7.5
     fumadocs-mdx: 14.2.11
-    fumadocs-ui: 16.7.4
+    fumadocs-ui: 16.7.5
   heroui-v3:
     '@heroui/react': 3.0.1
     '@heroui/styles': 3.0.1
@@ -58,7 +58,7 @@ catalogs:
     '@hono/react-renderer': 1.0.1
     '@hono/sentry': 1.2.2
     '@hono/zod-validator': 0.7.6
-    hono: 4.12.8
+    hono: 4.12.9
     hono-rate-limiter: 0.5.3
   next:
     '@next/third-parties': 16.2.1
@@ -101,18 +101,18 @@ catalogs:
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.2.2
   tanstack:
-    '@tanstack/react-pacer': 0.20.0
-    '@tanstack/react-query': 5.94.5
-    '@tanstack/react-query-devtools': 5.94.5
+    '@tanstack/react-pacer': 0.21.0
+    '@tanstack/react-query': 5.95.2
+    '@tanstack/react-query-devtools': 5.95.2
   testing-library:
     '@testing-library/jest-dom': 6.9.1
     '@testing-library/react': 16.3.2
     '@testing-library/user-event': 14.6.1
     '@vitejs/plugin-react-swc': 4.3.0
-    '@vitest/coverage-v8': 4.1.0
-    '@vitest/ui': 4.1.0
+    '@vitest/coverage-v8': 4.1.1
+    '@vitest/ui': 4.1.1
     jest-extended: 7.0.0
-    vitest: 4.1.0
+    vitest: 4.1.1
   ui:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
@@ -120,12 +120,12 @@ catalogs:
     cobe: ^2.0.1
     immer: ^11.1.4
     katex: ^0.16.40
-    lucide-react: ^0.577.0
+    lucide-react: ^1.0.1
     motion: ^12.38.0
     next-themes: ^0.4.6
     nuqs: ^2.8.9
     react-medium-image-zoom: ^5.4.1
-    schema-dts: 1.1.5
+    schema-dts: 2.0.0
     shiki: ^4.0.2
     sonner: 2.0.7
     tailwind-merge: ^3.5.0
