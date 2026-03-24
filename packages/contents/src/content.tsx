@@ -6,8 +6,12 @@ import { useRef, ViewTransition } from "react";
 import { Card, ScrollShadow } from "@heroui/react";
 import { ScrollProvider as TOCScrollArea } from "fumadocs-core/toc";
 import { InlineTOC } from "fumadocs-ui/components/inline-toc";
-import { TOCProvider } from "fumadocs-ui/components/toc";
-import { TOCItems } from "fumadocs-ui/components/toc/clerk";
+import { TOCProvider, useTOCItems } from "fumadocs-ui/components/toc";
+import {
+  TOCItems as TOCItemEffect,
+  TOCItem,
+  TOCEmpty,
+} from "fumadocs-ui/components/toc/clerk";
 
 import { ContentType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
@@ -39,6 +43,22 @@ const MDXInlineTOC = () => {
   return null;
 };
 
+const TOCItems = () => {
+  const items = useTOCItems();
+
+  if (items.length === 0) {
+    return <TOCEmpty />;
+  }
+
+  return (
+    <>
+      {items.map((item) => (
+        <TOCItem key={item.url} item={item} />
+      ))}
+    </>
+  );
+};
+
 const ContentTOC = () => {
   const content = useContent();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -51,7 +71,9 @@ const ContentTOC = () => {
         className="max-h-[300px] w-full py-1"
         hideScrollBar>
         <TOCScrollArea containerRef={contentRef}>
-          <TOCItems className="[&>a]:py-1" />
+          <TOCItemEffect className="[&>a]:py-1">
+            <TOCItems />
+          </TOCItemEffect>
         </TOCScrollArea>
       </ScrollShadow>
     </TOCProvider>
