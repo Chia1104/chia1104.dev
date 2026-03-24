@@ -63,7 +63,7 @@
     "pg": "^8.20.0",
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
-    "react-hook-form": "^7.71.2",
+    "react-hook-form": "^7.72.0",
     "react-medium-image-zoom": "catalog:ui",
     "server-only": "catalog:",
     "sharp": "0.34.5",
