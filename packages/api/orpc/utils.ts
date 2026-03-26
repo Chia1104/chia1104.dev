@@ -41,3 +41,5 @@ export const baseOS = os.$context<BaseOSContext>();
 export const contractOS = implement(routerContract).$context<BaseOSContext>();
 
 export const slugger = new GithubSlugger();
+
+export { withMetaSchema } from "./contracts/shared";

@@ -151,6 +151,87 @@ export const useFormRules = () => {
             error: "File must be an image",
           }
         ),
+      /**
+       * PDF
+       */
+      pdf: z
+        .file({
+          error: "File is required",
+        })
+        .min(1, {
+          error: "File is required",
+        })
+        .max(50 * 1024 * 1024, {
+          error: "File size must be less than 50MB",
+        })
+        .mime(["application/pdf"], {
+          error: "File must be a PDF",
+        }),
+      /**
+       * 影片
+       */
+      video: z
+        .file({
+          error: "File is required",
+        })
+        .min(1, {
+          error: "File is required",
+        })
+        .max(500 * 1024 * 1024, {
+          error: "File size must be less than 500MB",
+        })
+        .mime(
+          [
+            "video/mp4",
+            "video/webm",
+            "video/quicktime",
+            "video/x-msvideo",
+            "video/avi",
+          ],
+          {
+            error: "File must be a video",
+          }
+        ),
+      /**
+       * 通用 asset（圖片 10MB / PDF 50MB / 影片 500MB）
+       */
+      asset: z.union([
+        z
+          .file({ error: "File is required" })
+          .min(1, { error: "File is required" })
+          .max(10 * 1024 * 1024, { error: "File size must be less than 10MB" })
+          .mime(
+            [
+              "image/jpeg",
+              "image/png",
+              "image/webp",
+              "image/heic",
+              "image/heif",
+            ],
+            { error: "Invalid file type or size" }
+          ),
+        z
+          .file({ error: "File is required" })
+          .min(1, { error: "File is required" })
+          .max(50 * 1024 * 1024, { error: "File size must be less than 50MB" })
+          .mime(["application/pdf"], { error: "Invalid file type or size" }),
+        z
+          .file({ error: "File is required" })
+          .min(1, { error: "File is required" })
+          .max(500 * 1024 * 1024, {
+            error: "File size must be less than 500MB",
+          })
+          .mime(
+            [
+              "video/mp4",
+              "video/webm",
+              "video/quicktime",
+              "video/x-msvideo",
+              "video/avi",
+            ],
+            { error: "Invalid file type or size" }
+          ),
+      ]),
     }),
     [messages.primitive]
   );

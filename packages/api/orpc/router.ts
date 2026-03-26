@@ -42,8 +42,10 @@ export const router = contractOS.router({
   file: {
     "signed-url:create": fileRoutes.createSignedUrlForUploadRoute,
     list: fileRoutes.listObjectsRoute,
+    delete: fileRoutes.deleteObjectRoute,
   },
   user: {
     "profile:update": userRoutes.updateUserProfileRoute,
+    list: userRoutes.getInfiniteUsersRoute,
   },
 });

@@ -20,6 +20,7 @@ export const routerContract = {
   },
   user: {
     "profile:update": userContracts.updateUserProfileContract,
+    list: userContracts.getInfiniteUsersContract,
   },
   feeds: {
     list: feedsContracts.getFeedsWithMetaContract,
@@ -44,6 +45,7 @@ export const routerContract = {
   file: {
     "signed-url:create": fileContracts.createSignedUrlForUploadContract,
     list: fileContracts.listObjectsContract,
+    delete: fileContracts.deleteObjectContract,
   },
 };
 

@@ -18,6 +18,12 @@ export const createSignedUrlForUploadContract = oc
         "image/webp",
         "image/heic",
         "image/heif",
+        "application/pdf",
+        "video/mp4",
+        "video/webm",
+        "video/quicktime",
+        "video/x-msvideo",
+        "video/avi",
       ]),
       size: z.number(),
     })
@@ -47,4 +53,22 @@ export const listObjectsContract = oc
         size: z.number(),
       })
     )
+  );
+
+export const deleteObjectContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    INTERNAL_SERVER_ERROR: {},
+    BAD_REQUEST: {},
+  })
+  .input(
+    z.object({
+      key: z.string(),
+    })
+  )
+  .output(
+    z.object({
+      success: z.boolean(),
+    })
   );
