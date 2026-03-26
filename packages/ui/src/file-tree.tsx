@@ -542,10 +542,6 @@ export function FileTree({
         <>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="text-muted-foreground text-[10px]">
-                {totalFolders} {totalFolders === 1 ? "folder" : "folders"},{" "}
-                {totalFiles} {totalFiles === 1 ? "file" : "files"}
-              </div>
               <Breadcrumb
                 path={selectedPath ?? null}
                 onNavigate={handleBreadcrumbNavigate}
@@ -559,6 +555,10 @@ export function FileTree({
               <ChevronsUpDown className="size-3" />
               {isExpanded ? "Collapse" : "Expand"}
             </Button>
+          </div>
+          <div className="text-muted-foreground px-1 text-[10px]">
+            {totalFolders} {totalFolders === 1 ? "folder" : "folders"},{" "}
+            {totalFiles} {totalFiles === 1 ? "file" : "files"}
           </div>
           <Separator className="my-2" />
         </>

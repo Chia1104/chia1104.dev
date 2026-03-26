@@ -46,3 +46,14 @@ export const listObjectsRoute = contractOS.file.list
       })) ?? []
     );
   });
+
+export const deleteObjectRoute = contractOS.file.delete
+  .use(adminGuard())
+  .handler(async (opts) => {
+    try {
+      await s3Service.deleteFile(opts.input.key);
+      return { success: true };
+    } catch {
+      throw opts.errors.INTERNAL_SERVER_ERROR();
+    }
+  });

@@ -8,7 +8,14 @@ import { Spinner } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ky from "ky";
 import { HTTPError } from "ky";
-import { Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Upload,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  FileVideo,
+} from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -86,12 +93,12 @@ export function UploadAssets({
       const errors: string[] = [];
 
       for (const file of Array.from(files)) {
-        const result = patterns.image.safeParse(file);
-        if (!result.success) {
+        const result = patterns.asset.safeParse(file);
+        if (result.success) {
+          validFiles.push(result.data);
+        } else {
           const treeified = z.treeifyError(result.error);
           errors.push(`${file.name}: ${treeified.errors.join(", ")}`);
-        } else {
-          validFiles.push(result.data);
         }
       }
 
@@ -101,7 +108,7 @@ export function UploadAssets({
 
       return validFiles;
     },
-    [patterns.image]
+    [patterns.asset]
   );
 
   const uploadSingleFile = useCallback(
@@ -126,7 +133,13 @@ export function UploadAssets({
             | "image/png"
             | "image/webp"
             | "image/heic"
-            | "image/heif",
+            | "image/heif"
+            | "application/pdf"
+            | "video/mp4"
+            | "video/webm"
+            | "video/quicktime"
+            | "video/x-msvideo"
+            | "video/avi",
           size: item.size,
         });
 
@@ -333,9 +346,19 @@ export function UploadAssets({
     }
   }, []);
 
+  const getFileTypeIcon = useCallback((type: string) => {
+    if (type === "application/pdf") {
+      return <FileText className="text-muted-foreground size-4" />;
+    }
+    if (type.startsWith("video/")) {
+      return <FileVideo className="text-muted-foreground size-4" />;
+    }
+    return null;
+  }, []);
+
   return (
     <>
-      <Button onPress={() => setIsOpen(true)}>
+      <Button onPress={() => setIsOpen(true)} size="sm">
         <Upload className="size-4" />
         Upload Files
       </Button>
@@ -376,7 +399,7 @@ export function UploadAssets({
                       ref={fileInputRef}
                       type="file"
                       multiple
-                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                      accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf,video/mp4,video/webm,video/quicktime,video/x-msvideo,video/avi"
                       onChange={handleFileSelectWithUpload}
                       className="hidden"
                       id="file-upload"
@@ -401,7 +424,7 @@ export function UploadAssets({
                             : "Click or drag files here to upload"}
                         </p>
                         <p className="text-muted-foreground text-xs">
-                          Supports JPEG, PNG, WebP, HEIC, HEIF (max 10MB)
+                          Image (max 10MB) · PDF (max 50MB) · Video (max 500MB)
                         </p>
                       </div>
                     </label>
@@ -442,7 +465,8 @@ export function UploadAssets({
                           )}>
                           <div className="flex items-center gap-3">
                             <div className="shrink-0">
-                              {getStatusIcon(item.status)}
+                              {getStatusIcon(item.status) ??
+                                getFileTypeIcon(item.type)}
                             </div>
 
                             <div className="min-w-0 flex-1">
