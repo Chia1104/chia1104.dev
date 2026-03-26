@@ -13,7 +13,7 @@ const Page = async () => {
     session: () => getSession(),
   });
 
-  if (!orgs.data || !session.data) {
+  if (!orgs.data || orgs.data.length === 0 || !session.data) {
     redirect("/onboarding/create");
   }
 

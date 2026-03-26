@@ -45,5 +45,6 @@ export const router = contractOS.router({
   },
   user: {
     "profile:update": userRoutes.updateUserProfileRoute,
+    list: userRoutes.getInfiniteUsersRoute,
   },
 });

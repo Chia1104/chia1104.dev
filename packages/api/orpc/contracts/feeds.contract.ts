@@ -11,6 +11,8 @@ import {
   insertContentSchema,
 } from "@chia/db/validator/feeds";
 
+import { withMetaSchema } from "./shared";
+
 const dateSchema = z.object({
   createdAt: z.number().optional(),
   updatedAt: z.number().optional(),
@@ -100,12 +102,6 @@ export const getFeedByIdSchema = z.object({
 // ============================================
 // Output Schemas
 // ============================================
-
-const withMetaSchema = <Out, In>(schema: z.ZodType<Out, In>) =>
-  z.object({
-    items: z.array(schema),
-    nextCursor: z.union([z.string(), z.number()]).nullable(),
-  });
 
 export const feedWithTranslationsSchema = z.object({
   ...feedSchema.shape,

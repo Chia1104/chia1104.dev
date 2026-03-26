@@ -27,9 +27,10 @@ type FormData = z.infer<typeof schema>;
 
 interface OnboardingFormProps {
   onSuccess?: (data: Organization) => void;
+  isDisabled?: boolean;
 }
 
-export function OnboardingForm({ onSuccess }: OnboardingFormProps) {
+export function OnboardingForm({ onSuccess, isDisabled }: OnboardingFormProps) {
   const router = useRouter();
   const id = useId();
   const form = useForm<FormData>({
@@ -66,7 +67,11 @@ export function OnboardingForm({ onSuccess }: OnboardingFormProps) {
         control={form.control}
         name="name"
         render={({ field, fieldState: { invalid, error } }) => (
-          <TextField isInvalid={invalid} isRequired variant="secondary">
+          <TextField
+            isInvalid={invalid}
+            isRequired
+            variant="secondary"
+            isDisabled={isDisabled}>
             <Label htmlFor={`${id}-name`}>Organization Name</Label>
             <Input
               id={`${id}-name`}
@@ -82,7 +87,11 @@ export function OnboardingForm({ onSuccess }: OnboardingFormProps) {
         control={form.control}
         name="slug"
         render={({ field, fieldState: { invalid, error } }) => (
-          <TextField isInvalid={invalid} isRequired variant="secondary">
+          <TextField
+            isInvalid={invalid}
+            isRequired
+            variant="secondary"
+            isDisabled={isDisabled}>
             <Label htmlFor={`${id}-slug`}>URL Slug</Label>
             <Input id={`${id}-slug`} placeholder="slug" {...field} />
             <FieldError>{error?.message}</FieldError>
@@ -90,7 +99,7 @@ export function OnboardingForm({ onSuccess }: OnboardingFormProps) {
         )}
       />
 
-      <SubmitForm fullWidth className="mt-5">
+      <SubmitForm fullWidth className="mt-5" isDisabled={isDisabled}>
         Create Organization
       </SubmitForm>
     </Form>

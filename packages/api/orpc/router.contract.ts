@@ -20,6 +20,7 @@ export const routerContract = {
   },
   user: {
     "profile:update": userContracts.updateUserProfileContract,
+    list: userContracts.getInfiniteUsersContract,
   },
   feeds: {
     list: feedsContracts.getFeedsWithMetaContract,
