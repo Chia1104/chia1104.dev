@@ -95,7 +95,6 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
           <Logo />
           <div className="flex flex-col gap-5">
             <div className="mt-auto hidden items-center gap-2 md:flex">
-              <LocaleSelector />
               <ThemeSelector
                 enableCMD
                 label={t("label")}
@@ -108,6 +107,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                   variant: "tertiary",
                 }}
               />
+              <LocaleSelector />
               <Settings />
             </div>
             <Copyright />
@@ -165,7 +165,6 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
         <Logo />
         <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2 md:hidden">
-            <LocaleSelector />
             <ThemeSelector
               label=""
               themeLabel={{
@@ -177,6 +176,7 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 variant: "tertiary",
               }}
             />
+            <LocaleSelector />
             <Settings />
           </div>
           <Copyright />
