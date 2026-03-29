@@ -1,10 +1,10 @@
 "use client";
 
+import { Avatar, AvatarImage, AvatarFallback } from "@heroui/react";
 import { useTranslations } from "next-intl";
 
 import meta, { getWorkDuration } from "@chia/meta";
 import Age from "@chia/ui/age";
-import { Avatar, AvatarImage, AvatarFallback } from "@chia/ui/avatar";
 import FadeIn from "@chia/ui/fade-in";
 
 import Gallery from "./gallery";
@@ -16,7 +16,7 @@ export function AboutMe() {
   return (
     <FadeIn className="w-full flex-col">
       <div className="flex items-end gap-2">
-        <Avatar className="size-14">
+        <Avatar className="not-prose size-14">
           <AvatarImage src={meta.avatar} />
           <AvatarFallback>
             <span className="text-sm">{meta.name.charAt(0)}</span>

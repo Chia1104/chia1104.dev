@@ -158,7 +158,7 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
           maxValue={duration || 0}
           step={0.1}
           onChange={handleSeek}
-          className="mb-1 w-full">
+          className="mb-2 w-full">
           <Slider.Track className="h-1">
             <Slider.Fill />
             <Slider.Thumb className="size-4" />
