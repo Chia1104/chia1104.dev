@@ -92,7 +92,7 @@ export const V1MDXComponents: MDXComponents = {
     <div className="flex w-full justify-center">{props.children}</div>
   ),
   table: (props: any) => (
-    <Table className="not-prose">
+    <Table className="not-prose my-2">
       <Table.ScrollContainer>
         <Table.Content aria-label="table" className="min-w-[600px]">
           {props.children}
