@@ -57,7 +57,7 @@
     "monaco-editor": "^0.55.1",
     "motion": "catalog:ui",
     "next": "catalog:next",
-    "next-safe-action": "8.1.8",
+    "next-safe-action": "8.1.9",
     "next-themes": "catalog:ui",
     "nuqs": "catalog:ui",
     "pg": "^8.20.0",

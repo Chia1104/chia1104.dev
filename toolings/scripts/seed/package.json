@@ -7,10 +7,8 @@
   "scripts": {
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "type:check": "tsc --noEmit",
     "clean": "git clean -xdf .turbo node_modules .cache",
-    "db:seed": "tsx --env-file=../../../.env.global index.ts",
-    "tsc:config": "tsc --showConfig"
+    "db:seed": "tsx --env-file=../../../.env.global index.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:drizzle"

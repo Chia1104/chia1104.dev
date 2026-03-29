@@ -92,12 +92,12 @@ export const FileDetailPanel = ({
               <Image.Resource
                 src={fileUrl}
                 alt={fileName}
-                className="h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-contain"
               />
             </ViewTransition>
             <ViewTransition>
               <Image.FallbackActivity>
-                <Skeleton className="h-full w-full" />
+                <Skeleton className="absolute inset-0 h-full w-full" />
               </Image.FallbackActivity>
             </ViewTransition>
           </Image.Root>
@@ -106,7 +106,7 @@ export const FileDetailPanel = ({
 
       {/* Video preview */}
       {isFileType(selectedPath, "video") && (
-        <VideoPlayer src={fileUrl} className="w-full max-w-sm" />
+        <VideoPlayer src={fileUrl} className="aspect-video w-full max-w-xl" />
       )}
     </div>
   );

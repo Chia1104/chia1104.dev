@@ -19,22 +19,22 @@ catalog:
   lodash: ^4.17.23
   server-only: ^0.0.1
   superjson: 2.2.6
-  tsdown: 0.21.4
+  tsdown: 0.21.7
   typescript: ^6.0.2
   zod: 4.3.6
 
 catalogs:
   ai:
-    '@ai-sdk/anthropic': 3.0.63
+    '@ai-sdk/anthropic': 3.0.64
     '@ai-sdk/deepseek': 2.0.26
     '@ai-sdk/google': 3.0.53
     '@ai-sdk/openai': 3.0.48
-    '@ai-sdk/react': 3.0.139
+    '@ai-sdk/react': 3.0.143
     '@anthropic-ai/sdk': 0.80.0
-    '@google/genai': 1.46.0
-    ai: 6.0.137
+    '@google/genai': 1.47.0
+    ai: 6.0.141
     ollama: 0.6.3
-    openai: 6.32.0
+    openai: 6.33.0
   better-auth:
     '@better-auth/api-key': 1.5.6
     '@better-auth/passkey': 1.5.6
@@ -48,9 +48,9 @@ catalogs:
     drizzle-orm: 1.0.0-beta.18-7eb39f0
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.6
-    fumadocs-core: 16.7.5
+    fumadocs-core: 16.7.7
     fumadocs-mdx: 14.2.11
-    fumadocs-ui: 16.7.5
+    fumadocs-ui: 16.7.7
   heroui-v3:
     '@heroui/react': 3.0.1
     '@heroui/styles': 3.0.1
@@ -64,16 +64,16 @@ catalogs:
     '@next/third-parties': 16.2.1
     next: 16.2.1
   orpc:
-    '@orpc/client': 1.13.9
-    '@orpc/contract': 1.13.9
-    '@orpc/server': 1.13.9
-    '@orpc/tanstack-query': 1.13.9
+    '@orpc/client': 1.13.13
+    '@orpc/contract': 1.13.13
+    '@orpc/server': 1.13.13
+    '@orpc/tanstack-query': 1.13.13
   oxc:
-    oxfmt: 0.41.0
-    oxlint: 1.56.0
+    oxfmt: 0.42.0
+    oxlint: 1.57.0
   platejs:
-    '@platejs/basic-nodes': ^52.0.11
-    platejs: ^52.3.4
+    '@platejs/basic-nodes': ^52.3.10
+    platejs: ^52.3.16
   radix-ui:
     '@radix-ui/react-accordion': 1.2.12
     '@radix-ui/react-avatar': ^1.1.11
@@ -109,18 +109,18 @@ catalogs:
     '@testing-library/react': 16.3.2
     '@testing-library/user-event': 14.6.1
     '@vitejs/plugin-react-swc': 4.3.0
-    '@vitest/coverage-v8': 4.1.1
-    '@vitest/ui': 4.1.1
+    '@vitest/coverage-v8': 4.1.2
+    '@vitest/ui': 4.1.2
     jest-extended: 7.0.0
-    vitest: 4.1.1
+    vitest: 4.1.2
   ui:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     cmdk: 1.1.1
     cobe: ^2.0.1
     immer: ^11.1.4
-    katex: ^0.16.40
-    lucide-react: ^1.0.1
+    katex: ^0.16.44
+    lucide-react: ^1.7.0
     motion: ^12.38.0
     next-themes: ^0.4.6
     nuqs: ^2.8.9
