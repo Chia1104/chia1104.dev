@@ -30,7 +30,7 @@ catalogs:
     '@ai-sdk/google': 3.0.53
     '@ai-sdk/openai': 3.0.48
     '@ai-sdk/react': 3.0.143
-    '@anthropic-ai/sdk': 0.80.0
+    '@anthropic-ai/sdk': 0.81.0
     '@google/genai': 1.47.0
     ai: 6.0.141
     ollama: 0.6.3

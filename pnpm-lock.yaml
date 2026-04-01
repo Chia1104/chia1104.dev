@@ -22,8 +22,8 @@ catalogs:
       specifier: 3.0.143
       version: 3.0.143
     '@anthropic-ai/sdk':
-      specifier: 0.80.0
-      version: 0.80.0
+      specifier: 0.81.0
+      version: 0.81.0
     '@google/genai':
       specifier: 1.47.0
       version: 1.47.0
@@ -990,7 +990,7 @@ importers:
         version: 3.0.48(zod@4.3.6)
       '@anthropic-ai/sdk':
         specifier: catalog:ai
-        version: 0.80.0(zod@4.3.6)
+        version: 0.81.0(zod@4.3.6)
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1686,8 +1686,8 @@ packages:
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
 
-  '@anthropic-ai/sdk@0.80.0':
-    resolution: {integrity: sha512-WeXLn7zNVk3yjeshn+xZHvld6AoFUOR3Sep6pSoHho5YbSi6HwcirqgPA5ccFuW8QTVJAAU7N8uQQC6Wa9TG+g==}
+  '@anthropic-ai/sdk@0.81.0':
+    resolution: {integrity: sha512-D4K5PvEV6wPiRtVlVsJHIUhHAmOZ6IT/I9rKlTf84gR7GyyAurPJK7z9BOf/AZqC5d1DhYQGJNKRmV+q8dGhgw==}
     hasBin: true
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
@@ -13599,7 +13599,7 @@ snapshots:
       package-manager-detector: 1.6.0
       tinyexec: 1.0.4
 
-  '@anthropic-ai/sdk@0.80.0(zod@4.3.6)':
+  '@anthropic-ai/sdk@0.81.0(zod@4.3.6)':
     dependencies:
       json-schema-to-ts: 3.1.1
     optionalDependencies:
