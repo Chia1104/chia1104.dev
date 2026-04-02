@@ -223,7 +223,6 @@ const Location: FC<LocationProps> = ({
                   isDarkMode ? "/assets/globe.png" : "/assets/globe-light.png"
                 }
                 alt="globe-fallback"
-                blur={false}
                 fill
                 className="object-cover"
               />

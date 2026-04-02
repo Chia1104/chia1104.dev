@@ -13,8 +13,7 @@ const LocaleSelector = (props: ButtonProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const changeLocale = (locale: TLocale) => {
-    router.push(pathname, { locale });
-    router.refresh();
+    router.replace(pathname, { locale });
   };
   return (
     <Dropdown className="not-prose" data-testid="locale-selector">

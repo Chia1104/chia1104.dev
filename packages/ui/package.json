@@ -72,6 +72,7 @@
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
+    "@chiastack/ui": "catalog:chiastack",
     "@heroui/react": "catalog:heroui-v3",
     "@radix-ui/react-accordion": "catalog:radix-ui",
     "@radix-ui/react-avatar": "catalog:radix-ui",
@@ -87,7 +88,7 @@
     "@radix-ui/react-slot": "catalog:radix-ui",
     "@radix-ui/react-tabs": "catalog:radix-ui",
     "@radix-ui/react-tooltip": "catalog:radix-ui",
-    "@react-email/components": "^1.0.10",
+    "@react-email/components": "^1.0.11",
     "@tanstack/react-query": "catalog:tanstack",
     "class-variance-authority": "catalog:ui",
     "clsx": "catalog:ui",

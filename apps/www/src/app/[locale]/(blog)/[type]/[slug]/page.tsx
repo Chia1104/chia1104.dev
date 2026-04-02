@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense, ViewTransition } from "react";
 
+import { Avatar } from "@heroui/react";
 import { all } from "better-all";
 import { getTranslations } from "next-intl/server";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
+import Meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
-import Image from "@chia/ui/image";
 import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
@@ -116,14 +117,13 @@ const Page = async ({
           />
           <div className="mt-5 flex flex-col items-start lg:flex-row lg:items-center lg:justify-between">
             <div className="not-prose flex items-center gap-2">
-              <Image
-                src="https://avatars.githubusercontent.com/u/38397958?v=4"
-                width={40}
-                height={40}
-                className="rounded-full"
-                alt="Chia1104"
-              />
-              <span>Chia1104</span>
+              <Avatar>
+                <Avatar.Image src={Meta.avatar} />
+                <Avatar.Fallback>
+                  <span>{Meta.name.charAt(0)}</span>
+                </Avatar.Fallback>
+              </Avatar>
+              <span>{Meta.name}</span>
             </div>
             <div
               id="feed-meta"

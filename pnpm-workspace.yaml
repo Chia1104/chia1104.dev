@@ -16,7 +16,7 @@ catalog:
   dayjs: ^1.11.20
   graphql-request: ^7.4.0
   ky: ^1.14.3
-  lodash: ^4.17.23
+  lodash: ^4.18.1
   server-only: ^0.0.1
   superjson: 2.2.6
   tsdown: 0.21.7
@@ -27,12 +27,12 @@ catalogs:
   ai:
     '@ai-sdk/anthropic': 3.0.64
     '@ai-sdk/deepseek': 2.0.26
-    '@ai-sdk/google': 3.0.53
-    '@ai-sdk/openai': 3.0.48
-    '@ai-sdk/react': 3.0.143
-    '@anthropic-ai/sdk': 0.80.0
-    '@google/genai': 1.47.0
-    ai: 6.0.141
+    '@ai-sdk/google': 3.0.55
+    '@ai-sdk/openai': 3.0.49
+    '@ai-sdk/react': 3.0.144
+    '@anthropic-ai/sdk': 0.82.0
+    '@google/genai': 1.48.0
+    ai: 6.0.142
     ollama: 0.6.3
     openai: 6.33.0
   better-auth:
@@ -48,9 +48,9 @@ catalogs:
     drizzle-orm: 1.0.0-beta.18-7eb39f0
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.6
-    fumadocs-core: 16.7.7
+    fumadocs-core: 16.7.9
     fumadocs-mdx: 14.2.11
-    fumadocs-ui: 16.7.7
+    fumadocs-ui: 16.7.9
   heroui-v3:
     '@heroui/react': 3.0.1
     '@heroui/styles': 3.0.1
@@ -61,19 +61,19 @@ catalogs:
     hono: 4.12.9
     hono-rate-limiter: 0.5.3
   next:
-    '@next/third-parties': 16.2.1
-    next: 16.2.1
+    '@next/third-parties': 16.2.2
+    next: 16.2.2
   orpc:
     '@orpc/client': 1.13.13
     '@orpc/contract': 1.13.13
     '@orpc/server': 1.13.13
     '@orpc/tanstack-query': 1.13.13
   oxc:
-    oxfmt: 0.42.0
-    oxlint: 1.57.0
+    oxfmt: 0.43.0
+    oxlint: 1.58.0
   platejs:
     '@platejs/basic-nodes': ^52.3.10
-    platejs: ^52.3.16
+    platejs: ^52.3.21
   radix-ui:
     '@radix-ui/react-accordion': 1.2.12
     '@radix-ui/react-avatar': ^1.1.11
@@ -101,9 +101,9 @@ catalogs:
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.2.2
   tanstack:
-    '@tanstack/react-pacer': 0.21.0
-    '@tanstack/react-query': 5.95.2
-    '@tanstack/react-query-devtools': 5.95.2
+    '@tanstack/react-pacer': 0.21.1
+    '@tanstack/react-query': 5.96.1
+    '@tanstack/react-query-devtools': 5.96.1
   testing-library:
     '@testing-library/jest-dom': 6.9.1
     '@testing-library/react': 16.3.2
@@ -124,7 +124,7 @@ catalogs:
     motion: ^12.38.0
     next-themes: ^0.4.6
     nuqs: ^2.8.9
-    react-medium-image-zoom: ^5.4.1
+    react-medium-image-zoom: ^5.4.2
     schema-dts: 2.0.0
     shiki: ^4.0.2
     sonner: 2.0.7

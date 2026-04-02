@@ -4,7 +4,6 @@ import type { FC } from "react";
 import type { PlayList } from "@chia/api/spotify/types";
 import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
-import ImageZoom from "@chia/ui/image-zoom";
 import { NoiseBackground } from "@chia/ui/noise-background";
 import { cn } from "@chia/ui/utils/cn.util";
 import { serviceRequest } from "@chia/utils/request";
@@ -17,21 +16,19 @@ const ImageItem: FC<{
   alt: string;
   className?: string;
 }> = ({ src, alt, className }) => (
-  <ImageZoom>
-    <div
-      className={cn(
-        "not-prose relative w-full overflow-hidden rounded-lg shadow-md",
-        className
-      )}>
-      <Image
-        src={src}
-        alt={alt}
-        className="w-full object-cover"
-        fill
-        loading="lazy"
-      />
-    </div>
-  </ImageZoom>
+  <div
+    className={cn(
+      "not-prose relative w-full overflow-hidden rounded-lg shadow-md",
+      className
+    )}>
+    <Image
+      src={src}
+      alt={alt}
+      className="w-full object-cover"
+      fill
+      loading="lazy"
+    />
+  </div>
 );
 
 const PlayIcon: FC<{
