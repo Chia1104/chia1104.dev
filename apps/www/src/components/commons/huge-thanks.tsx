@@ -106,7 +106,6 @@ const techStack = {
           width={10}
           height={10}
           alt="fumadocs"
-          blur={false}
         />
       ),
       link: "https://fumadocs.dev/",

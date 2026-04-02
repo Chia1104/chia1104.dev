@@ -168,7 +168,6 @@ const AlbumImage = ({
     width={80}
     height={80}
     sizes="80px"
-    blur={false}
     onLoad={(e) => onLoad(e.target as HTMLImageElement)}
     src={data?.item.album.images[0]?.url ?? ""}
     alt={data?.item.album.name ?? ""}
