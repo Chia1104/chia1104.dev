@@ -72,6 +72,7 @@
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
+    "@chiastack/ui": "catalog:chiastack",
     "@heroui/react": "catalog:heroui-v3",
     "@radix-ui/react-accordion": "catalog:radix-ui",
     "@radix-ui/react-avatar": "catalog:radix-ui",

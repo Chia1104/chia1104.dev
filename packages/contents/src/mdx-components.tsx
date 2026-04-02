@@ -10,12 +10,12 @@ import { Callout } from "fumadocs-ui/components/callout";
 import { CodeBlock, Pre } from "fumadocs-ui/components/codeblock";
 import { File, Folder, Files } from "fumadocs-ui/components/files";
 import { Heading } from "fumadocs-ui/components/heading";
-import { ImageZoom } from "fumadocs-ui/components/image-zoom";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 import { TypeTable } from "fumadocs-ui/components/type-table";
 import defaultComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 
+import ImageZoom from "@chia/ui/image-zoom";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { Mermaid } from "./components/mermaid";
@@ -39,20 +39,22 @@ export const FumadocsComponents = {
   ),
   blockquote: (props: any) => <Callout>{props.children}</Callout>,
   Image: (props: any) => (
-    <Image
-      {...props}
-      fill
-      className="h-auto w-full rounded-lg object-cover"
-      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
-    />
+    <ImageZoom wrapElement="span">
+      <Image
+        {...props}
+        className="h-auto w-full rounded-lg object-cover"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
+      />
+    </ImageZoom>
   ),
   img: (props: any) => (
-    <ImageZoom
-      {...props}
-      width={700}
-      height={400}
-      className="h-auto w-full rounded-lg object-cover"
-    />
+    <ImageZoom wrapElement="span">
+      <Image
+        {...props}
+        className="h-auto w-full rounded-lg object-cover"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
+      />
+    </ImageZoom>
   ),
   h1: (props: any) => (
     <Heading as="h1" {...props} className="prose-a:no-underline" />
