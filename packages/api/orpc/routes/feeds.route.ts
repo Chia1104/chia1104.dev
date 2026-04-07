@@ -77,10 +77,11 @@ export const getFeedByIdRoute = contractOS.feeds["details-by-id"]
 export const createFeedRoute = contractOS.feeds.create
   .use(adminGuard())
   .handler(async (opts) => {
-    const defaultTranslation = opts.input.translations[Locale.zhTW];
+    const defaultLocale = opts.input.defaultLocale ?? Locale.zhTW;
+    const defaultTranslation = opts.input.translations[defaultLocale];
     if (!defaultTranslation) {
       throw opts.errors.BAD_REQUEST({
-        message: "No default translation provided",
+        message: `No default translation provided for locale "${defaultLocale}"`,
       });
     }
     const data = await createFeed(opts.context.db, {

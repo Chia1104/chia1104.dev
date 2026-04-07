@@ -30,7 +30,7 @@ declare module "ky" {
 export const SPOTIFY_BASE_URL = "https://api.spotify.com/v1";
 
 export const spotifyRequest = request({
-  prefixUrl: SPOTIFY_BASE_URL,
+  prefix: SPOTIFY_BASE_URL,
 });
 
 const BASIC = Buffer.from(
@@ -58,35 +58,20 @@ export const getSpotifyAccessToken = async (req?: {
       : "grant_type=client_credentials";
   const result = await post<{
     access_token: string;
-  }>(
-    `${ACCOUNT_ENDPOINT}/api/token`,
-    undefined,
-    {
-      headers: {
-        Authorization: `Basic ${BASIC}`,
-      },
-      body,
-      cache,
-      next:
-        cache !== "no-store"
-          ? {
-              revalidate,
-            }
-          : undefined,
+  }>(`${ACCOUNT_ENDPOINT}/api/token`, undefined, {
+    headers: {
+      Authorization: `Basic ${BASIC}`,
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    {
-      hooks: {
-        beforeRequest: [
-          (request) => {
-            request.headers.set(
-              "Content-Type",
-              "application/x-www-form-urlencoded"
-            );
-          },
-        ],
-      },
-    }
-  );
+    body,
+    cache,
+    next:
+      cache !== "no-store"
+        ? {
+            revalidate,
+          }
+        : undefined,
+  });
 
   return result.access_token;
 };
@@ -187,21 +172,12 @@ export const codeAuthorization = (dto: CodeAuthorizationDTO) => {
   }>(`${ACCOUNT_ENDPOINT}/api/token`, undefined, {
     headers: {
       Authorization: `Basic ${BASIC}`,
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams({
       grant_type: "authorization_code",
       code: dto.code,
       redirect_uri: dto.redirectUri,
     }),
-    hooks: {
-      beforeRequest: [
-        (request) => {
-          request.headers.set(
-            "Content-Type",
-            "application/x-www-form-urlencoded"
-          );
-        },
-      ],
-    },
   });
 };

@@ -7,9 +7,11 @@ import once from "lodash/once.js";
 import { start } from "workflow/api";
 
 import { router } from "@chia/api/orpc/router";
+import dayjs from "@chia/utils/day";
 
 import { env } from "../env";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { saveFeedToAlgoliaWorkflow } from "../workflows/algolia-search.workflow.js";
 import { estimateReadingTimeWorkflow } from "../workflows/estimate-reading-time.workflow.js";
 import { feedEmbeddingsWorkflow } from "../workflows/feed-embeddings.workflow.js";
 
@@ -67,6 +69,23 @@ const api = new Hono<HonoContext>()
                     },
                   ]);
                 },
+                async saveFeedToAlgolia() {
+                  return await start(saveFeedToAlgoliaWorkflow, [
+                    {
+                      feedID: feed.id,
+                      objectID: translation.id,
+                      locale: translation.locale,
+                      title: translation.title,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                      description: translation.description ?? "",
+                      createdAt: dayjs(feed.createdAt).toISOString(),
+                      updatedAt: dayjs(feed.updatedAt).toISOString(),
+                      slug: feed.slug,
+                      enabled: feed.published,
+                    },
+                  ]);
+                },
               });
             });
 
@@ -96,6 +115,23 @@ const api = new Hono<HonoContext>()
                       locale: translation.locale,
                       content:
                         content?.content ?? translation.description ?? "",
+                    },
+                  ]);
+                },
+                async saveFeedToAlgolia() {
+                  return await start(saveFeedToAlgoliaWorkflow, [
+                    {
+                      feedID: feed.id,
+                      objectID: translation.id,
+                      locale: translation.locale,
+                      title: translation.title,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                      description: translation.description ?? "",
+                      createdAt: dayjs(feed.createdAt).toISOString(),
+                      updatedAt: dayjs(feed.updatedAt).toISOString(),
+                      slug: feed.slug,
+                      enabled: feed.published,
                     },
                   ]);
                 },
