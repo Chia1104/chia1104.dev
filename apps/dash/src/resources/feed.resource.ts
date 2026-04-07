@@ -1,6 +1,6 @@
 import type { InferResponseType } from "hono";
 
-import type { Locale } from "@chia/db/types";
+import { Locale } from "@chia/db/types";
 
 import { client } from "@/libs/service/client";
 import { HonoRPCError } from "@/libs/service/error";
@@ -10,13 +10,16 @@ export type FeedSearchResult = InferResponseType<
   200
 >[0];
 
-export const searchFeeds = async (query: string, locale?: Locale) => {
+export const searchFeeds = async (
+  query: string,
+  locale: Locale = Locale.zhTW
+) => {
   try {
     const response = await client.api.v1.feeds.search.$get({
       query: {
         keyword: query,
         locale,
-        model: "nomic-embed-text",
+        model: "text-embedding-3-small",
       },
     });
     if (!response.ok) {

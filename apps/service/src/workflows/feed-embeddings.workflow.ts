@@ -4,7 +4,7 @@ import { Locale } from "@chia/db/types";
 
 import {
   upsertFeedTranslationStep,
-  ollamaEmbeddingStep,
+  generateEmbeddingStep,
 } from "../steps/feed-embeddings.step";
 
 export const requestSchema = z.object({
@@ -43,24 +43,11 @@ export const feedEmbeddingsWorkflow = async (request: Request) => {
     contentLength: parsedRequest.content.length,
   });
 
-  const embedding = await ollamaEmbeddingStep(
-    parsedRequest.content,
-    "nomic-embed-text"
-  );
+  const embedding = await generateEmbeddingStep(parsedRequest.content);
 
-  if (!embedding) {
-    console.log("Failed to generate embedding", {
-      feedID: parsedRequest.feedID,
-      locale: parsedRequest.locale,
-    });
-    return;
-  }
-
-  await upsertFeedTranslationStep(
-    parsedRequest.feedID,
-    parsedRequest.locale,
-    embedding
-  );
+  await upsertFeedTranslationStep(parsedRequest.feedID, parsedRequest.locale, {
+    1536: embedding,
+  });
 
   console.log("Successfully generated and saved embedding", {
     feedID: parsedRequest.feedID,

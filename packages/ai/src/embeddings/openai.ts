@@ -1,8 +1,12 @@
 import type OpenAI from "openai";
+import type { ClientOptions } from "openai";
 import * as z from "zod";
 
 // https://platform.openai.com/docs/guides/embeddings
 export const TextEmbeddingModel = {
+  /**
+   * @deprecated
+   */
   "ada-002": "text-embedding-ada-002",
   "3-small": "text-embedding-3-small",
   "3-large": "text-embedding-3-large",
@@ -15,13 +19,16 @@ export type TextEmbeddingModel = z.infer<typeof textEmbeddingModelSchema>;
 export interface Options {
   client?: OpenAI;
   model?: TextEmbeddingModel;
+  clientOptions?: ClientOptions;
 }
 
 export const generateEmbedding = async (value: string, options?: Options) => {
   options ??= {};
   const {
-    client = (await import("../index.ts").then((m) => m.createOpenAI))(),
-    model = TextEmbeddingModel["ada-002"],
+    client = (await import("../index.ts").then((m) => m.createOpenAI))(
+      options?.clientOptions
+    ),
+    model = TextEmbeddingModel["3-small"],
   } = options;
   const input = value.replaceAll("\n", " ");
 
