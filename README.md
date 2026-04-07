@@ -34,8 +34,7 @@ A modern full-stack personal website and content management system built with Ne
 - 📄 **MDX** with [Fumadocs](https://fumadocs.vercel.app/) for rich content
 - 📝 **Custom CMS** for content management
 - 🧠 **AI Integration** - Vector search and text generation
-- ⚡ **Trigger.dev** - Background jobs and scheduled tasks
-- 🤖 **OpenAI & Ollama** support
+- 🤖 **OpenAI, Anthropic, Google GenAI, Deepseek & Ollama** support
 
 ### Developer Experience
 
@@ -43,8 +42,8 @@ A modern full-stack personal website and content management system built with Ne
 - 🧪 **Vitest** - Fast unit testing
 - 🎭 **Playwright** - End-to-end testing
 - ✍️ **Husky & Lint Staged** - Pre-commit hooks
-- 🔍 **ESLint 9** - Code linting
-- 📐 **TypeScript 5.9** - Type safety
+- 🔍 **Oxlint** - Fast ESLint-compatible linting
+- 📐 **TypeScript 6** - Type safety
 - 🐳 **Docker** - Containerization support
 
 ## 🔨 Tech Stack
@@ -98,19 +97,21 @@ chia1104.dev/
 ├── apps/
 │   ├── www/              # Main website (Next.js 16)
 │   ├── dash/             # Admin dashboard (Next.js 16)
-│   ├── service/          # Backend API service (Hono)
-│   ├── trigger/          # Background jobs (Trigger.dev)
-│   ├── gateway/          # Nginx gateway configuration
-│   └── image-resize/     # Image processing service (Go)
+│   ├── service/          # Backend API service (Hono + Nitro)
+│   └── gateway/          # Nginx gateway configuration
 ├── packages/
-│   ├── ai/               # AI integrations (OpenAI, Ollama)
-│   ├── api/              # tRPC API routes and external API clients
+│   ├── ai/               # AI integrations (OpenAI, Anthropic, Google, Deepseek, Ollama)
+│   ├── api/              # tRPC/ORPC routes and external API clients
 │   ├── auth/             # Better Auth configuration
 │   ├── contents/         # MDX content management
 │   ├── db/               # Drizzle ORM schemas and migrations
+│   ├── editor/           # Editor components (Monaco)
+│   ├── i18n/             # Internationalization configuration
 │   ├── kv/               # Redis/Upstash key-value store
 │   ├── meta/             # Project metadata
+│   ├── shaders/          # Three.js shaders and WebGL effects
 │   ├── tailwind/         # Tailwind CSS configuration
+│   ├── themes/           # Theme management and design tokens
 │   ├── ui/               # Shared React components
 │   └── utils/            # Shared utilities
 ├── tests/
@@ -127,7 +128,7 @@ chia1104.dev/
 ### Prerequisites
 
 - **Node.js** >= 22
-- **pnpm** 10.22.0
+- **pnpm** 10.32.1
 - **Docker** (optional, for containerized deployment)
 - **PostgreSQL** database
 - **Redis** instance (optional, for caching)
@@ -263,6 +264,7 @@ pnpm clean:workspaces
 ### API Layer
 
 - **tRPC** - End-to-end typesafe APIs
+- **ORPC** - Type-safe RPC alternative
 - **Hono** - Ultrafast web framework
 - Type inference from server to client
 - Built-in validation with Zod
@@ -281,20 +283,19 @@ pnpm clean:workspaces
 - Syntax highlighting with Shiki
 - Math equations with KaTeX
 
-### Background Jobs
-
-- **Trigger.dev** - Background job processing
-- Scheduled tasks
-- AI-powered content processing
-- Email notifications
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+3. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/):
+   - `feat: add new feature`
+   - `fix: resolve a bug`
+   - `docs: update documentation`
+   - `refactor: restructure code without behavior change`
+   - `test: add or update tests`
+   - `chore: maintenance tasks (deps, tooling, etc.)`
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
