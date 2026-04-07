@@ -7,6 +7,7 @@ import once from "lodash/once.js";
 import { start } from "workflow/api";
 
 import { router } from "@chia/api/orpc/router";
+import dayjs from "@chia/utils/day";
 
 import { env } from "../env";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
@@ -77,6 +78,11 @@ const api = new Hono<HonoContext>()
                       title: translation.title,
                       content:
                         content?.content ?? translation.description ?? "",
+                      description: translation.description ?? "",
+                      createdAt: dayjs(feed.createdAt).toISOString(),
+                      updatedAt: dayjs(feed.updatedAt).toISOString(),
+                      slug: feed.slug,
+                      enabled: feed.published,
                     },
                   ]);
                 },
@@ -121,6 +127,11 @@ const api = new Hono<HonoContext>()
                       title: translation.title,
                       content:
                         content?.content ?? translation.description ?? "",
+                      description: translation.description ?? "",
+                      createdAt: dayjs(feed.createdAt).toISOString(),
+                      updatedAt: dayjs(feed.updatedAt).toISOString(),
+                      slug: feed.slug,
+                      enabled: feed.published,
                     },
                   ]);
                 },

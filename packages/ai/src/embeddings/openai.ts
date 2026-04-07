@@ -1,20 +1,7 @@
 import type OpenAI from "openai";
 import type { ClientOptions } from "openai";
-import * as z from "zod";
 
-// https://platform.openai.com/docs/guides/embeddings
-export const TextEmbeddingModel = {
-  /**
-   * @deprecated
-   */
-  "ada-002": "text-embedding-ada-002",
-  "3-small": "text-embedding-3-small",
-  "3-large": "text-embedding-3-large",
-} as const;
-
-export const textEmbeddingModelSchema = z.enum(TextEmbeddingModel);
-
-export type TextEmbeddingModel = z.infer<typeof textEmbeddingModelSchema>;
+import { TextEmbeddingModel } from "./utils.ts";
 
 export interface Options {
   client?: OpenAI;

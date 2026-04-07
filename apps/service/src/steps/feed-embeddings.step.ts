@@ -1,9 +1,7 @@
 import { fetch } from "workflow";
 
-import {
-  generateEmbedding,
-  TextEmbeddingModel,
-} from "@chia/ai/embeddings/openai";
+import { generateEmbedding } from "@chia/ai/embeddings/openai";
+import { TextEmbeddingModel } from "@chia/ai/embeddings/utils";
 import { connectDatabase } from "@chia/db/client";
 import { upsertFeedTranslation } from "@chia/db/repos/feeds";
 import type { Locale } from "@chia/db/types";

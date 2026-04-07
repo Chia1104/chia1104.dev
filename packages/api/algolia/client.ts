@@ -1,6 +1,15 @@
+import type {
+  Response as AlgoliaResponse,
+  EndRequest,
+  Requester,
+} from "@algolia/client-common";
 import { algoliasearch } from "algoliasearch";
 
 import { env } from "./env";
+
+interface FetchRequesterOptions {
+  readonly requesterOptions?: RequestInit | undefined;
+}
 
 /**
  * Currently, the algolia client is not compatible with the `workflow` package,
@@ -9,8 +18,10 @@ import { env } from "./env";
  * This function is a workaround to create a fetch requester that is compatible with the `workflow` package.
  * @see https://github.com/algolia/algoliasearch-client-javascript/blob/main/packages/requester-fetch/src/createFetchRequester.ts
  */
-const createFetchRequester = ({ requesterOptions = {} }: any = {}) => {
-  async function send(request: any) {
+const createFetchRequester = ({
+  requesterOptions = {},
+}: FetchRequesterOptions = {}): Requester => {
+  async function send(request: EndRequest): Promise<AlgoliaResponse> {
     let fetchRes: Response;
     try {
       fetchRes = await fetch(request.url, {

@@ -1022,9 +1022,6 @@ importers:
 
   packages/api:
     dependencies:
-      '@algolia/requester-fetch':
-        specifier: ^5.50.1
-        version: 5.50.1
       '@aws-sdk/client-s3':
         specifier: ^3.1025.0
         version: 3.1025.0
@@ -1083,6 +1080,9 @@ importers:
         specifier: 'catalog:'
         version: 4.3.6
     devDependencies:
+      '@algolia/client-common':
+        specifier: ^5.50.1
+        version: 5.50.1
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
