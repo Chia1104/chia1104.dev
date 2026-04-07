@@ -1,4 +1,4 @@
-import { OllamaEmbeddingModel } from "../embeddings/ollama.ts";
+import { OllamaEmbeddingModel } from "../embeddings/utils.ts";
 
 export const OllamaModel = {
   ...OllamaEmbeddingModel,

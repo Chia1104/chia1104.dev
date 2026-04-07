@@ -48,6 +48,10 @@
     "./embeddings/ollama": {
       "types": "./src/embeddings/ollama.ts",
       "default": "./src/embeddings/ollama.ts"
+    },
+    "./embeddings/utils": {
+      "types": "./src/embeddings/utils.ts",
+      "default": "./src/embeddings/utils.ts"
     }
   },
   "scripts": {

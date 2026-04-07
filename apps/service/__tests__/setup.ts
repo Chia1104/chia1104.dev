@@ -113,6 +113,8 @@ export const mockEnv = {
   // KV/Cache env
   CACHE_PROVIDER: "auto",
   CACHE_URI: "redis://localhost:6379",
+  ALGOLIA_APPLICATION_ID: "test-algolia-application-id",
+  ALGOLIA_API_KEY: "test-algolia-api-key",
 };
 
 vi.stubEnv("NODE_ENV", mockEnv.NODE_ENV);
@@ -160,3 +162,5 @@ vi.stubEnv(
 vi.stubEnv("CAPTCHA_SECRET_KEY", mockEnv.CAPTCHA_SECRET_KEY);
 vi.stubEnv("CACHE_PROVIDER", mockEnv.CACHE_PROVIDER);
 vi.stubEnv("CACHE_URI", mockEnv.CACHE_URI);
+vi.stubEnv("ALGOLIA_APPLICATION_ID", mockEnv.ALGOLIA_APPLICATION_ID);
+vi.stubEnv("ALGOLIA_API_KEY", mockEnv.ALGOLIA_API_KEY);

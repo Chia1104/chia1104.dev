@@ -1,9 +1,9 @@
 import { sql, cosineDistance, desc, gt, eq, and, isNotNull } from "drizzle-orm";
 
-import type { OllamaEmbeddingModel } from "@chia/ai/embeddings/ollama";
 import { ollamaEmbedding } from "@chia/ai/embeddings/ollama";
 import { generateEmbedding } from "@chia/ai/embeddings/openai";
 import type { Options } from "@chia/ai/embeddings/openai";
+import type { OllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
 import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 
 import { withDTO } from "../";
