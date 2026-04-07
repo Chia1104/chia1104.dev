@@ -29,7 +29,8 @@ export const saveFeedToAlgoliaWorkflow = async (request: Request) => {
   globalThis.fetch = fetch as unknown as typeof globalThis.fetch;
 
   await client.saveObject({
-    indexName: env.ALGOLIA_FEEDS_INDEX_NAME,
+    indexName:
+      process.env.ALGOLIA_FEEDS_INDEX_NAME ?? env.ALGOLIA_FEEDS_INDEX_NAME,
     body: {
       version: "2026.04.07",
       objectID: parsedRequest.objectID,
