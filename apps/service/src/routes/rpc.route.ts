@@ -10,6 +10,7 @@ import { router } from "@chia/api/orpc/router";
 
 import { env } from "../env";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { saveFeedToAlgoliaWorkflow } from "../workflows/algolia-search.workflow.js";
 import { estimateReadingTimeWorkflow } from "../workflows/estimate-reading-time.workflow.js";
 import { feedEmbeddingsWorkflow } from "../workflows/feed-embeddings.workflow.js";
 
@@ -67,6 +68,18 @@ const api = new Hono<HonoContext>()
                     },
                   ]);
                 },
+                async saveFeedToAlgolia() {
+                  return await start(saveFeedToAlgoliaWorkflow, [
+                    {
+                      feedID: feed.id,
+                      objectID: translation.id,
+                      locale: translation.locale,
+                      title: translation.title,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                    },
+                  ]);
+                },
               });
             });
 
@@ -94,6 +107,18 @@ const api = new Hono<HonoContext>()
                     {
                       feedID: feed.id,
                       locale: translation.locale,
+                      content:
+                        content?.content ?? translation.description ?? "",
+                    },
+                  ]);
+                },
+                async saveFeedToAlgolia() {
+                  return await start(saveFeedToAlgoliaWorkflow, [
+                    {
+                      feedID: feed.id,
+                      objectID: translation.id,
+                      locale: translation.locale,
+                      title: translation.title,
                       content:
                         content?.content ?? translation.description ?? "",
                     },

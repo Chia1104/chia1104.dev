@@ -96,6 +96,14 @@
     "./s3/service": {
       "types": "./s3/s3.service.ts",
       "default": "./s3/s3.service.ts"
+    },
+    "./algolia": {
+      "types": "./algolia/client.ts",
+      "default": "./algolia/client.ts"
+    },
+    "./algolia/env": {
+      "types": "./algolia/env.ts",
+      "default": "./algolia/env.ts"
     }
   },
   "scripts": {
@@ -105,6 +113,7 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
+    "@algolia/requester-fetch": "^5.50.1",
     "@aws-sdk/client-s3": "^3.1025.0",
     "@aws-sdk/s3-request-presigner": "^3.1025.0",
     "@chia/auth": "workspace:*",
@@ -114,6 +123,7 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
+    "algoliasearch": "^5.50.1",
     "client-only": "catalog:",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
