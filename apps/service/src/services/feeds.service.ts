@@ -55,7 +55,7 @@ export async function searchFeedsService({
 }: SearchFeedsServiceParams): Promise<SearchFeedsServiceResult> {
   if (model === "algolia") {
     const { hits } = await algoliaClient.searchSingleIndex<AlgoliaFeedHit>({
-      indexName: env.FEEDS_INDEX_NAME,
+      indexName: env.ALGOLIA_FEEDS_INDEX_NAME,
       searchParams: {
         query: keyword ?? "",
         // filters: locale ? `locale:${locale}` : undefined,
