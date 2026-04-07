@@ -33,12 +33,10 @@ COPY --from=pre-builder /app/out/full/ .
 COPY turbo.json turbo.json
 
 ARG TURBO_TEAM \
-    TURBO_TOKEN \
-    REDIS_URI
+    TURBO_TOKEN
 
 ENV TURBO_TEAM=$TURBO_TEAM \
-    TURBO_TOKEN=$TURBO_TOKEN \
-    REDIS_URI=$REDIS_URI
+    TURBO_TOKEN=$TURBO_TOKEN
 
 RUN pnpm i
 

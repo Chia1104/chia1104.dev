@@ -31,7 +31,8 @@
         "CF_BYPASS_TOKEN",
         "CH_API_KEY",
         "ALGOLIA_APPLICATION_ID",
-        "ALGOLIA_API_KEY"
+        "ALGOLIA_API_KEY",
+        "ALGOLIA_FEEDS_INDEX_NAME"
       ],
       "env": [
         "BS_UPTIME_TOKEN",
@@ -60,7 +61,8 @@
         "CF_BYPASS_TOKEN",
         "CH_API_KEY",
         "ALGOLIA_APPLICATION_ID",
-        "ALGOLIA_API_KEY"
+        "ALGOLIA_API_KEY",
+        "ALGOLIA_FEEDS_INDEX_NAME"
       ]
     }
   }
