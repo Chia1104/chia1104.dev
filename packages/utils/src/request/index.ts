@@ -34,13 +34,6 @@ const request = (defaultOptions?: Options) => {
   return ky.extend({
     timeout: 30_000,
     credentials: "include",
-    hooks: {
-      beforeRequest: [
-        (request) => {
-          request.headers.set("Content-Type", "application/json");
-        },
-      ],
-    },
     ...defaultOptions,
   });
 };
@@ -64,7 +57,7 @@ export const X_CF_BYPASS_TOKEN = "x-cf-bypass-token";
 export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
   return request({
     ...defaultOptions,
-    prefixUrl: withServiceEndpoint("/", Service.LegacyService, {
+    prefix: withServiceEndpoint("/", Service.LegacyService, {
       isInternal: defaultOptions?.isInternal,
     }),
     headers: {
@@ -161,8 +154,8 @@ export const patch = async <T = unknown, U = unknown>(
     .json();
 };
 
-export const handleKyError = async (
-  error: HTTPError
+export const handleKyError = async <TError extends HTTPError>(
+  error: TError
 ): Promise<ErrorResponse> => {
   switch (error.name) {
     case "HTTPError": {
@@ -179,11 +172,6 @@ export const handleKyError = async (
       }
       return {
         code: "unknown error",
-      };
-    }
-    case "AbortError": {
-      return {
-        code: "abort error",
       };
     }
     default: {
