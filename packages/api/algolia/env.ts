@@ -3,8 +3,8 @@ import * as z from "zod";
 
 export const env = createEnv({
   server: {
-    ALGOLIA_APPLICATION_ID: z.string().min(1),
-    ALGOLIA_API_KEY: z.string().min(1),
+    ALGOLIA_APPLICATION_ID: z.string().optional(),
+    ALGOLIA_API_KEY: z.string().optional(),
     FEEDS_INDEX_NAME: z.string().optional().default("dev_FEEDS"),
   },
   runtimeEnv: {

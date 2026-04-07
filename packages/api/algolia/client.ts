@@ -63,8 +63,8 @@ const createFetchRequester = ({
 };
 
 export const client = algoliasearch(
-  env.ALGOLIA_APPLICATION_ID,
-  env.ALGOLIA_API_KEY,
+  env.ALGOLIA_APPLICATION_ID ?? "",
+  env.ALGOLIA_API_KEY ?? "",
   {
     requester: createFetchRequester(),
   }
