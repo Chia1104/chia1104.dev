@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { forwardRef, useMemo, memo, useState, useCallback } from "react";
 
-import { Card, Button, Chip } from "@heroui/react";
+import { Card, Button, Chip, Tooltip } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
@@ -45,6 +45,11 @@ const Empty = memo(() => {
 
 Empty.displayName = "Empty";
 
+const SUPPORTED_LOCALES_META = [
+  { key: "zh-TW", label: "中文" },
+  { key: "en", label: "EN" },
+] as const;
+
 const FeedItem = memo(
   forwardRef<
     HTMLDivElement,
@@ -54,9 +59,16 @@ const FeedItem = memo(
   >(({ feed }, ref) => {
     const router = useRouter();
 
-    const translation = feed.translations?.[0];
-    const title = translation?.title ?? "Untitled";
-    const excerpt = translation?.excerpt ?? "";
+    const translationsByLocale = useMemo(
+      () =>
+        Object.fromEntries((feed.translations ?? []).map((t) => [t.locale, t])),
+      [feed.translations]
+    );
+
+    const defaultTranslation =
+      translationsByLocale[feed.defaultLocale ?? "zh-TW"] ??
+      feed.translations?.[0];
+    const title = defaultTranslation?.title ?? "Untitled";
 
     const handleEdit = useCallback(() => {
       const editPath =
@@ -69,28 +81,70 @@ const FeedItem = memo(
     return (
       <Card ref={ref}>
         <Card.Header>
-          <Card.Title
-            className="line-clamp-2 text-xl"
-            style={{
-              viewTransitionName: `view-transition-link-${feed.id}`,
-            }}>
-            {title}
-          </Card.Title>
+          <Tooltip isDisabled={title.length <= 50} delay={400}>
+            <Tooltip.Trigger>
+              <Card.Title
+                className="line-clamp-2 cursor-default text-xl"
+                style={{
+                  viewTransitionName: `view-transition-link-${feed.id}`,
+                }}>
+                {title}
+              </Card.Title>
+            </Tooltip.Trigger>
+            <Tooltip.Content showArrow>
+              <Tooltip.Arrow />
+              <p className="max-w-xs text-sm">{title}</p>
+            </Tooltip.Content>
+          </Tooltip>
         </Card.Header>
-        <Card.Content className="gap-2">
-          <p className="mt-auto line-clamp-2 text-xs font-bold">{excerpt}</p>
+        <Card.Content className="gap-3">
+          <div className="flex flex-col gap-1.5 rounded-lg border border-dashed p-2.5">
+            {SUPPORTED_LOCALES_META.map(({ key, label }) => {
+              const t = translationsByLocale[key];
+              const isDefault = key === feed.defaultLocale;
+              const translationTitle = t?.title ?? "";
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <Chip
+                    variant="soft"
+                    color={isDefault ? "accent" : "default"}
+                    size="sm"
+                    className="w-9 shrink-0 justify-center font-mono text-[10px]">
+                    {label}
+                  </Chip>
+                  {t ? (
+                    <Tooltip
+                      isDisabled={translationTitle.length <= 40}
+                      delay={400}>
+                      <Tooltip.Trigger className="line-clamp-1 min-w-0 flex-1 text-xs">
+                        {translationTitle}
+                      </Tooltip.Trigger>
+                      <Tooltip.Content showArrow>
+                        <Tooltip.Arrow />
+                        <p className="max-w-xs text-xs">{translationTitle}</p>
+                      </Tooltip.Content>
+                    </Tooltip>
+                  ) : (
+                    <span className="text-muted-foreground flex-1 text-xs italic">
+                      — Not translated
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
           <span className="flex items-center justify-between text-xs font-bold">
             <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
             <span className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onPress={handleEdit}>
-                <Pencil className="size-4" />
-                <span className="text-xs">Edit</span>
-              </Button>
               <Chip
                 variant={feed.published ? "primary" : "secondary"}
                 color={feed.published ? "success" : "default"}>
                 {feed.published ? "Published" : "Unpublished"}
               </Chip>
+              <Button variant="outline" size="sm" onPress={handleEdit}>
+                <Pencil className="size-3.5" />
+                <span className="text-xs">Edit</span>
+              </Button>
             </span>
           </span>
         </Card.Content>
@@ -108,10 +162,11 @@ export const PreviewFeedItem = memo(
     onRemove,
   }: {
     feed: Partial<{
-      translation?: {
-        title?: string;
-        description?: string | null;
-      };
+      translations?: Record<
+        string,
+        { title?: string; description?: string | null }
+      >;
+      defaultLocale?: string;
       createdAt?: string | number;
       updatedAt?: string | number;
     }>;
@@ -120,8 +175,12 @@ export const PreviewFeedItem = memo(
   }) => {
     const router = useRouter();
 
-    const title = feed.translation?.title ?? "Untitled";
-    const description = feed.translation?.description ?? "";
+    const defaultLocale = feed.defaultLocale ?? "zh-TW";
+    const translationRecord = feed.translations;
+    const defaultTranslation =
+      translationRecord?.[defaultLocale] ??
+      Object.values(translationRecord ?? {})[0];
+    const title = defaultTranslation?.title ?? "Untitled";
 
     const handleEdit = useCallback(() => {
       router.push(`/feed/create?token=${token}`);
@@ -130,27 +189,69 @@ export const PreviewFeedItem = memo(
     return (
       <Card>
         <Card.Header>
-          <Card.Title
-            className="line-clamp-2 text-xl"
-            style={{
-              viewTransitionName: `view-transition-link-${token}`,
-            }}>
-            {title}
-          </Card.Title>
+          <Tooltip isDisabled={title.length <= 50} delay={400}>
+            <Tooltip.Trigger>
+              <Card.Title
+                className="line-clamp-2 cursor-default text-xl"
+                style={{
+                  viewTransitionName: `view-transition-link-${token}`,
+                }}>
+                {title}
+              </Card.Title>
+            </Tooltip.Trigger>
+            <Tooltip.Content showArrow>
+              <Tooltip.Arrow />
+              <p className="max-w-xs text-sm">{title}</p>
+            </Tooltip.Content>
+          </Tooltip>
         </Card.Header>
-        <Card.Content className="gap-2">
-          <p className="mt-auto line-clamp-2 text-xs font-bold">
-            {description}
-          </p>
-          <span className="flex items-center justify-between text-sm font-bold">
+        <Card.Content className="gap-3">
+          <div className="flex flex-col gap-1.5 rounded-lg border border-dashed p-2.5">
+            {SUPPORTED_LOCALES_META.map(({ key, label }) => {
+              const t = translationRecord?.[key];
+              const isDefault = key === defaultLocale;
+              const translationTitle = t?.title ?? "";
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <Chip
+                    variant="soft"
+                    color={isDefault ? "accent" : "default"}
+                    size="sm"
+                    className="w-9 shrink-0 justify-center font-mono text-[10px]">
+                    {label}
+                  </Chip>
+                  {t && translationTitle ? (
+                    <Tooltip
+                      isDisabled={translationTitle.length <= 40}
+                      delay={400}>
+                      <Tooltip.Trigger className="min-w-0 flex-1">
+                        <span className="line-clamp-1 block w-full text-xs">
+                          {translationTitle}
+                        </span>
+                      </Tooltip.Trigger>
+                      <Tooltip.Content showArrow>
+                        <Tooltip.Arrow />
+                        <p className="max-w-xs text-xs">{translationTitle}</p>
+                      </Tooltip.Content>
+                    </Tooltip>
+                  ) : (
+                    <span className="text-muted-foreground flex-1 text-xs italic">
+                      — Not translated
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <span className="flex items-center justify-between text-xs font-bold">
             <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
             <span className="flex items-center gap-2">
               <Button variant="outline" size="sm" onPress={handleEdit}>
-                <Pencil className="size-4" />
+                <Pencil className="size-3.5" />
                 <span className="text-xs">Edit</span>
               </Button>
               <Button variant="danger" size="sm" onPress={onRemove}>
-                <Trash className="size-4" />
+                <Trash className="size-3.5" />
                 <span className="text-xs">Delete</span>
               </Button>
             </span>

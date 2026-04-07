@@ -283,8 +283,60 @@ const DescriptionField = ({
 
 DescriptionField.displayName = "DescriptionField";
 
+const DefaultLocaleField = memo(() => {
+  const id = useId();
+  const form = useFormContext<FormSchema>();
+  const { disabled } = useEditFields();
+
+  return (
+    <Controller
+      control={form.control}
+      name="defaultLocale"
+      render={({ field, fieldState }) => (
+        <div className="flex w-1/3 flex-col gap-1">
+          <Label htmlFor={`${id}-defaultLocale`}>Default Locale</Label>
+          <Select
+            id={`${id}-defaultLocale`}
+            value={field.value ?? undefined}
+            onChange={(key) => {
+              if (key) {
+                field.onChange(key);
+              }
+            }}
+            isDisabled={disabled}
+            isInvalid={fieldState.invalid}
+            placeholder="Select default locale">
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {SUPPORTED_LOCALES.map((locale) => (
+                  <ListBox.Item key={locale.key} id={locale.key}>
+                    {locale.label}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+          {fieldState.error && (
+            <p className="px-1 text-xs text-red-500">
+              {fieldState.error.message}
+            </p>
+          )}
+        </div>
+      )}
+    />
+  );
+});
+
+DefaultLocaleField.displayName = "DefaultLocaleField";
+
 const LocaleTabs = memo(() => {
   const form = useFormContext<FormSchema>();
+  const translations = form.watch("translations");
+  const defaultLocale = form.watch("defaultLocale");
 
   return (
     <Controller
@@ -293,12 +345,31 @@ const LocaleTabs = memo(() => {
       render={({ field }) => (
         <Tabs selectedKey={field.value} onSelectionChange={field.onChange}>
           <Tabs.List aria-label="Locale">
-            {SUPPORTED_LOCALES.map((locale) => (
-              <Tabs.Tab key={locale.key} id={locale.key}>
-                <span>{locale.label}</span>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-            ))}
+            {SUPPORTED_LOCALES.map((locale) => {
+              const translationTitle = translations?.[locale.key]?.title;
+              const hasContent = Boolean(
+                translationTitle &&
+                translationTitle.trim() !== "" &&
+                translationTitle !== "Untitled"
+              );
+              const isDefault = locale.key === defaultLocale;
+              return (
+                <Tabs.Tab key={locale.key} id={locale.key}>
+                  <div className="flex items-center gap-1.5">
+                    <span>{locale.label}</span>
+                    {isDefault && (
+                      <span className="rounded bg-blue-100 px-1 py-0.5 text-[10px] font-medium text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                        default
+                      </span>
+                    )}
+                    {hasContent && (
+                      <span className="size-1.5 rounded-full bg-green-500" />
+                    )}
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              );
+            })}
           </Tabs.List>
         </Tabs>
       )}
@@ -523,6 +594,8 @@ export const MetadataFields = memo(({ feedId }: { feedId?: number }) => {
           />
         </div>
       </div>
+
+      <DefaultLocaleField />
 
       <LocaleTabs />
 
