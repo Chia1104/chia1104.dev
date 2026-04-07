@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { definePlugin } from "nitro";
 
-import { env } from "../src/env";
-
 export default definePlugin(async () => {
   if (process.env.WORKFLOW_TARGET_WORLD === "@workflow-worlds/redis") {
-    if (!env.REDIS_URI) {
+    if (!process.env.REDIS_URI) {
       console.error("REDIS_URI is not set, skipping Redis World...");
       return;
     }
@@ -13,7 +11,7 @@ export default definePlugin(async () => {
     console.log("Starting Redis World...");
     const { createWorld } = await import("@workflow-worlds/redis");
     await createWorld({
-      redisUrl: env.REDIS_URI,
+      redisUrl: process.env.REDIS_URI,
     }).start?.();
     console.log("Redis World started");
   }
