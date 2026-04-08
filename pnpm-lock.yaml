@@ -9,6 +9,9 @@ catalogs:
     '@ai-sdk/anthropic':
       specifier: 3.0.68
       version: 3.0.68
+    '@ai-sdk/gateway':
+      specifier: 3.0.93
+      version: 3.0.93
     '@ai-sdk/google':
       specifier: 3.0.60
       version: 3.0.60
@@ -65,7 +68,7 @@ catalogs:
       version: 4.17.24
     '@types/node':
       specifier: 25.5.2
-      version: 25.5.2
+      version: 25.5.0
     better-all:
       specifier: 0.0.7
       version: 0.0.7
@@ -635,6 +638,9 @@ importers:
 
   apps/service:
     dependencies:
+      '@ai-sdk/gateway':
+        specifier: catalog:ai
+        version: 3.0.93(zod@4.3.6)
       '@chia/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -976,6 +982,9 @@ importers:
       '@ai-sdk/anthropic':
         specifier: catalog:ai
         version: 3.0.68(zod@4.3.6)
+      '@ai-sdk/gateway':
+        specifier: catalog:ai
+        version: 3.0.93(zod@4.3.6)
       '@ai-sdk/google':
         specifier: catalog:ai
         version: 3.0.60(zod@4.3.6)

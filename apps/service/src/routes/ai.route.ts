@@ -1,3 +1,4 @@
+import { gateway } from "@ai-sdk/gateway";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
@@ -8,7 +9,6 @@ import {
   OPENAI_API_KEY,
   ANTHROPIC_API_KEY,
   GENAI_API_KEY,
-  DEEPSEEK_API_KEY,
 } from "@chia/ai/constants";
 import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
@@ -31,8 +31,6 @@ const cookieName = (provider?: Provider) => {
       return ANTHROPIC_API_KEY;
     case Provider.Google:
       return GENAI_API_KEY;
-    case Provider.DeepSeek:
-      return DEEPSEEK_API_KEY;
     default:
       return "";
   }
@@ -101,6 +99,10 @@ const api = new Hono<HonoContext>()
       });
       return result.toUIMessageStreamResponse();
     }
-  );
+  )
+  .get("/models", async (c) => {
+    const availableModels = await gateway.getAvailableModels();
+    return c.json(availableModels.models);
+  });
 
 export default api;
