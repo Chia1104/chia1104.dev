@@ -58,7 +58,7 @@ export async function searchFeedsService({
       indexName: env.ALGOLIA_FEEDS_INDEX_NAME,
       searchParams: {
         query: keyword ?? "",
-        // filters: locale ? `locale:${locale}` : undefined,
+        facetFilters: locale ? [`locale:${locale}`] : undefined,
         hitsPerPage: 5,
       },
     });
