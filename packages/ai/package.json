@@ -52,6 +52,10 @@
     "./embeddings/utils": {
       "types": "./src/embeddings/utils.ts",
       "default": "./src/embeddings/utils.ts"
+    },
+    "./tools/content": {
+      "types": "./src/tools/content.tool.ts",
+      "default": "./src/tools/content.tool.ts"
     }
   },
   "scripts": {
@@ -69,6 +73,7 @@
     "@chia/utils": "workspace:*",
     "@google/genai": "catalog:ai",
     "ai": "catalog:ai",
+    "github-slugger": "^2.0.0",
     "next": "catalog:next",
     "ollama": "catalog:ai",
     "openai": "catalog:ai",

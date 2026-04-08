@@ -1000,6 +1000,9 @@ importers:
       ai:
         specifier: catalog:ai
         version: 6.0.153(zod@4.3.6)
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       next:
         specifier: catalog:next
         version: 16.2.2(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)

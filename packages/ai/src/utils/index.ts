@@ -4,7 +4,11 @@ import {
   privateDecrypt,
 } from "node:crypto";
 
+import GithubSlugger from "github-slugger";
+
 import { authTokenSchema } from "./types";
+
+export const slugger = new GithubSlugger();
 
 export function generateKeys() {
   const { publicKey, privateKey } = generateKeyPairSync("rsa", {
