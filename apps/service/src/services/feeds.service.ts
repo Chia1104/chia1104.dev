@@ -81,6 +81,7 @@ export async function searchFeedsService({
       locale,
       client,
       embedding: JSON.parse(cached) as number[],
+      comparison: 0.3,
     });
     return {
       provider: model,
@@ -95,6 +96,7 @@ export async function searchFeedsService({
     useOllama: isOllama ? { model } : undefined,
     locale,
     client,
+    comparison: 0.3,
   });
 
   await kv.set(cacheKey, JSON.stringify(embedding), 60 * 60 * 24);

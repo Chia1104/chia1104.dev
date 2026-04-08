@@ -22,6 +22,7 @@ export const generateEmbedding = async (value: string, options?: Options) => {
   const { data } = await client.embeddings.create({
     model,
     input,
+    dimensions: 1536,
   });
 
   return data[0]?.embedding;

@@ -19,10 +19,6 @@ export const isOllamaEmbeddingModel = (
 
 // https://platform.openai.com/docs/guides/embeddings
 export const TextEmbeddingModel = {
-  /**
-   * @deprecated
-   */
-  "ada-002": "text-embedding-ada-002",
   "3-small": "text-embedding-3-small",
   "3-large": "text-embedding-3-large",
 } as const;
