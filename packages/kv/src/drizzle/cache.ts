@@ -1,4 +1,3 @@
-import type { TableConfig } from "drizzle-orm";
 import { Table } from "drizzle-orm";
 import { is } from "drizzle-orm";
 import { getTableName } from "drizzle-orm";
@@ -82,7 +81,7 @@ export class DrizzleCache extends Cache {
   //   helping you track which tables have changed since the last cache update.
   override async onMutate(params: {
     tags: string | string[];
-    tables: string | string[] | Table<TableConfig> | Table<TableConfig>[];
+    tables: string | string[];
   }): Promise<void> {
     const tagsArray = params.tags
       ? Array.isArray(params.tags)

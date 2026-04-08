@@ -88,7 +88,19 @@ const Page = async ({
         <ErrorBoundary>
           <section className="flex min-h-screen w-full justify-center">
             <div className="w-full max-w-4xl px-4 py-8 md:px-6 lg:px-8">
-              <EditView feedId={feed.id} defaultValues={defaultValues} />
+              <EditView
+                feedId={feed.id}
+                defaultValues={defaultValues}
+                meta={{
+                  embedding: Object.fromEntries(
+                    feed.translations.map((t) => [t.locale, t.embedding])
+                  ),
+                  published: feed.published,
+                  deleted: feed.deletedAt
+                    ? dayjs(feed.deletedAt).toISOString()
+                    : null,
+                }}
+              />
             </div>
           </section>
         </ErrorBoundary>

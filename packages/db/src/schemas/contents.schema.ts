@@ -10,7 +10,7 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 
-import { timestamps } from "../libs/common.schema.ts";
+import { timestamps, softDelete } from "../libs/common.schema.ts";
 import { ContentType } from "../types.ts";
 
 import { locale, feedType, contentType } from "./enums.ts";
@@ -88,6 +88,7 @@ const baseFeedsColumns = {
   published: boolean("published").default(false).notNull(),
   defaultLocale: locale("default_locale").notNull().default("zh-TW"),
   ...timestamps,
+  ...softDelete,
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -100,6 +101,7 @@ export const feeds = pgTable("feed", baseFeedsColumns, (table) => [
   index("feed_type_idx").on(table.type),
   index("feed_published_idx").on(table.published),
   index("feed_default_locale_idx").on(table.defaultLocale),
+  index("feed_deleted_at_idx").on(table.deletedAt),
 ]);
 
 // ============================================

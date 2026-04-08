@@ -9,6 +9,8 @@ import {
   updateFeed,
   upsertFeedTranslation,
   upsertContent,
+  softDeleteFeed,
+  restoreFeed,
   deleteFeed,
 } from "@chia/db/repos/feeds";
 import { ContentType, Locale } from "@chia/db/types";
@@ -22,6 +24,7 @@ export const getFeedsWithMetaRoute = contractOS.feeds.list
   .handler(async (opts) => {
     const data = await getInfiniteFeeds(opts.context.db, {
       ...opts.input,
+      enableDeleted: true,
       whereAnd: { userId: opts.context.session.user.id ?? "" },
     });
     if (!data) {
@@ -54,6 +57,7 @@ export const getFeedBySlugRoute = contractOS.feeds["details-by-slug"]
     const data = await getFeedBySlug(opts.context.db, {
       slug: opts.input.slug,
       locale: opts.input.locale,
+      enableDeleted: true,
     });
     if (!data) {
       throw opts.errors.NOT_FOUND();
@@ -67,6 +71,7 @@ export const getFeedByIdRoute = contractOS.feeds["details-by-id"]
     const data = await getFeedById(opts.context.db, {
       feedId: opts.input.feedId,
       locale: opts.input.locale,
+      enableDeleted: true,
     });
     if (!data) {
       throw opts.errors.NOT_FOUND();
@@ -189,7 +194,24 @@ export const updateFeedRoute = contractOS.feeds.update
 export const deleteFeedRoute = contractOS.feeds.delete
   .use(adminGuard())
   .handler(async (opts) => {
-    await deleteFeed(opts.context.db, {
+    if (opts.input.hard) {
+      await deleteFeed(opts.context.db, {
+        feedId: opts.input.feedId,
+      });
+    } else {
+      await softDeleteFeed(opts.context.db, {
+        feedId: opts.input.feedId,
+      });
+    }
+  });
+
+export const restoreFeedRoute = contractOS.feeds.restore
+  .use(adminGuard())
+  .handler(async (opts) => {
+    const data = await restoreFeed(opts.context.db, {
       feedId: opts.input.feedId,
     });
+    if (!data) {
+      throw opts.errors.NOT_FOUND();
+    }
   });

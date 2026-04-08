@@ -25,14 +25,14 @@ catalog:
 
 catalogs:
   ai:
-    '@ai-sdk/anthropic': 3.0.67
-    '@ai-sdk/deepseek': 2.0.28
-    '@ai-sdk/google': 3.0.59
-    '@ai-sdk/openai': 3.0.51
-    '@ai-sdk/react': 3.0.151
-    '@anthropic-ai/sdk': 0.82.0
+    '@ai-sdk/anthropic': 3.0.68
+    '@ai-sdk/deepseek': 2.0.29
+    '@ai-sdk/google': 3.0.60
+    '@ai-sdk/openai': 3.0.52
+    '@ai-sdk/react': 3.0.155
+    '@anthropic-ai/sdk': 0.85.0
     '@google/genai': 1.48.0
-    ai: 6.0.149
+    ai: 6.0.153
     ollama: 0.6.3
     openai: 6.33.0
   better-auth:
@@ -44,13 +44,13 @@ catalogs:
     '@chiastack/tsconfig': 2.1.2
     '@chiastack/ui': 1.2.2
   drizzle:
-    drizzle-kit: 1.0.0-beta.18-7eb39f0
-    drizzle-orm: 1.0.0-beta.18-7eb39f0
+    drizzle-kit: 1.0.0-beta.20
+    drizzle-orm: 1.0.0-beta.20
   fumadocs:
     '@fumadocs/mdx-remote': 1.4.6
-    fumadocs-core: 16.7.10
+    fumadocs-core: 16.7.11
     fumadocs-mdx: 14.2.11
-    fumadocs-ui: 16.7.10
+    fumadocs-ui: 16.7.11
   heroui-v3:
     '@heroui/react': 3.0.2
     '@heroui/styles': 3.0.2
@@ -97,7 +97,7 @@ catalogs:
     react-dom: ^19.2.4
   tailwindcss:
     '@tailwindcss/postcss': 4.2.2
-    postcss: 8.5.8
+    postcss: 8.5.9
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.2.2
   tanstack:
@@ -109,10 +109,10 @@ catalogs:
     '@testing-library/react': 16.3.2
     '@testing-library/user-event': 14.6.1
     '@vitejs/plugin-react-swc': 4.3.0
-    '@vitest/coverage-v8': 4.1.2
-    '@vitest/ui': 4.1.2
+    '@vitest/coverage-v8': 4.1.3
+    '@vitest/ui': 4.1.3
     jest-extended: 7.0.0
-    vitest: 4.1.2
+    vitest: 4.1.3
   ui:
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1

@@ -22,11 +22,19 @@ const FEED_DATE_ORDER_BY = new Set([
 ]);
 
 export const getFeedBySlug = withDTO(
-  async (db, params: { slug: string; locale?: Locale }) => {
+  async (
+    db,
+    params: { slug: string; locale?: Locale; enableDeleted?: boolean }
+  ) => {
     const locale = params.locale;
     const feed = await db.query.feeds.findFirst({
       where: {
         slug: params.slug,
+        deletedAt: params.enableDeleted
+          ? undefined
+          : {
+              isNull: true,
+            },
       },
       with: {
         translations: {
@@ -57,6 +65,7 @@ export const getFeedBySlug = withDTO(
       ...feed,
       createdAt: dayjs(feed.createdAt).toISOString(),
       updatedAt: dayjs(feed.updatedAt).toISOString(),
+      deletedAt: feed.deletedAt ? dayjs(feed.deletedAt).toISOString() : null,
       translations: feed.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
@@ -74,11 +83,19 @@ export const getFeedBySlug = withDTO(
 );
 
 export const getFeedById = withDTO(
-  async (db, params: { feedId: number; locale?: Locale }) => {
+  async (
+    db,
+    params: { feedId: number; locale?: Locale; enableDeleted?: boolean }
+  ) => {
     const locale = params.locale;
     const feed = await db.query.feeds.findFirst({
       where: {
         id: params.feedId,
+        deletedAt: params.enableDeleted
+          ? undefined
+          : {
+              isNull: true,
+            },
       },
       with: {
         translations: {
@@ -109,6 +126,7 @@ export const getFeedById = withDTO(
       ...feed,
       createdAt: dayjs(feed.createdAt).toISOString(),
       updatedAt: dayjs(feed.updatedAt).toISOString(),
+      deletedAt: feed.deletedAt ? dayjs(feed.deletedAt).toISOString() : null,
       translations: feed.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
@@ -137,11 +155,13 @@ export const getInfiniteFeeds = withDTO(
       locale,
       whereAnd = {},
       withContent = false,
+      enableDeleted = false,
     }: InfiniteDTO & {
       whereAnd?: RelationsFilterColumns<
         KnownKeysOnly<typeof feeds, (typeof relations.feeds)["table"]>
       >;
       locale?: Locale;
+      enableDeleted?: boolean;
     }
   ) => {
     const parsedCursor = parseCursorForOrder(
@@ -180,6 +200,11 @@ export const getInfiniteFeeds = withDTO(
       },
       where: {
         type: type === "all" ? undefined : type,
+        deletedAt: enableDeleted
+          ? undefined
+          : {
+              isNull: true,
+            },
         [orderBy]: parsedCursor
           ? {
               [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
@@ -200,6 +225,7 @@ export const getInfiniteFeeds = withDTO(
       ...item,
       createdAt: dayjs(item.createdAt).toISOString(),
       updatedAt: dayjs(item.updatedAt).toISOString(),
+      deletedAt: item.deletedAt ? dayjs(item.deletedAt).toISOString() : null,
       translations: item.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
@@ -234,12 +260,14 @@ export const getInfiniteFeedsByUserId = withDTO(
       locale,
       whereAnd = {},
       withContent = false,
+      enableDeleted = false,
     }: InfiniteDTO & {
       userId: string;
       whereAnd?: RelationsFilterColumns<
         KnownKeysOnly<typeof feeds, (typeof relations.feeds)["table"]>
       >;
       locale?: Locale;
+      enableDeleted?: boolean;
     }
   ) => {
     const parsedCursor = parseCursorForOrder(
@@ -279,6 +307,11 @@ export const getInfiniteFeedsByUserId = withDTO(
       where: {
         userId,
         type: type === "all" ? undefined : type,
+        deletedAt: enableDeleted
+          ? undefined
+          : {
+              isNull: true,
+            },
         [orderBy]: parsedCursor
           ? {
               [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor,
@@ -299,6 +332,7 @@ export const getInfiniteFeedsByUserId = withDTO(
       ...item,
       createdAt: dayjs(item.createdAt).toISOString(),
       updatedAt: dayjs(item.updatedAt).toISOString(),
+      deletedAt: item.deletedAt ? dayjs(item.deletedAt).toISOString() : null,
       translations: item.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
@@ -548,6 +582,24 @@ export const upsertContent = withDTO(
     }
   }
 );
+
+export const softDeleteFeed = withDTO(async (db, dto: { feedId: number }) => {
+  const [updated] = await db
+    .update(feeds)
+    .set({ deletedAt: new Date() })
+    .where(eq(feeds.id, dto.feedId))
+    .returning();
+  return updated;
+});
+
+export const restoreFeed = withDTO(async (db, dto: { feedId: number }) => {
+  const [updated] = await db
+    .update(feeds)
+    .set({ deletedAt: null })
+    .where(eq(feeds.id, dto.feedId))
+    .returning();
+  return updated;
+});
 
 export const deleteFeed = withDTO(async (db, dto: { feedId: number }) => {
   await db.delete(feeds).where(eq(feeds.id, dto.feedId));

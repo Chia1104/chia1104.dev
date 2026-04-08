@@ -1,4 +1,13 @@
-import { sql, cosineDistance, desc, gt, eq, and, isNotNull } from "drizzle-orm";
+import {
+  sql,
+  cosineDistance,
+  desc,
+  gt,
+  eq,
+  and,
+  isNotNull,
+  isNull,
+} from "drizzle-orm";
 
 import { ollamaEmbedding } from "@chia/ai/embeddings/ollama";
 import { generateEmbedding } from "@chia/ai/embeddings/openai";
@@ -25,6 +34,7 @@ export const searchFeeds = withDTO(
         model: OllamaEmbeddingModel;
       };
       locale?: Locale;
+      enableDeleted?: boolean;
     }
   ) => {
     const isOllama = useOllama && (await isOllamaEnabled(useOllama.model));
@@ -74,6 +84,7 @@ export const searchFeeds = withDTO(
       )
       .where(
         and(
+          dto.enableDeleted ? undefined : isNull(schema.feeds.deletedAt),
           isNotNull(
             isOllama
               ? schema.feedTranslations.embedding512

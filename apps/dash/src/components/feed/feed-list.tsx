@@ -20,6 +20,7 @@ import { useAllDrafts, useDraftStore } from "@/store/draft";
 
 import { Logo } from "../commons/logo";
 
+import { MetaChip } from "./meta-chip";
 import FeedSkeleton from "./skeleton";
 
 interface Props {
@@ -97,7 +98,7 @@ const FeedItem = memo(
             </Tooltip.Content>
           </Tooltip>
         </Card.Header>
-        <Card.Content className="gap-3">
+        <Card.Content>
           <div className="flex flex-col gap-1.5 rounded-lg border border-dashed p-2.5">
             {SUPPORTED_LOCALES_META.map(({ key, label }) => {
               const t = translationsByLocale[key];
@@ -133,21 +134,25 @@ const FeedItem = memo(
               );
             })}
           </div>
-          <span className="flex items-center justify-between text-xs font-bold">
-            <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
-            <span className="flex items-center gap-2">
-              <Chip
-                variant={feed.published ? "primary" : "secondary"}
-                color={feed.published ? "success" : "default"}>
-                {feed.published ? "Published" : "Unpublished"}
-              </Chip>
-              <Button variant="outline" size="sm" onPress={handleEdit}>
-                <Pencil className="size-3.5" />
-                <span className="text-xs">Edit</span>
-              </Button>
-            </span>
-          </span>
         </Card.Content>
+        <Card.Footer className="mt-auto flex items-center justify-between text-xs font-bold">
+          <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
+          <span className="flex items-center gap-2">
+            <MetaChip
+              embedding={Object.fromEntries(
+                feed.translations.map((t) => [t.locale, t.embedding])
+              )}
+              published={feed.published}
+              deleted={
+                feed.deletedAt ? dayjs(feed.deletedAt).toISOString() : null
+              }
+            />
+            <Button variant="outline" size="sm" onPress={handleEdit}>
+              <Pencil className="size-3.5" />
+              <span className="text-xs">Edit</span>
+            </Button>
+          </span>
+        </Card.Footer>
       </Card>
     );
   })
@@ -187,7 +192,7 @@ export const PreviewFeedItem = memo(
     }, [router, token]);
 
     return (
-      <Card>
+      <Card className="">
         <Card.Header>
           <Tooltip isDisabled={title.length <= 50} delay={400}>
             <Tooltip.Trigger>
@@ -243,20 +248,20 @@ export const PreviewFeedItem = memo(
               );
             })}
           </div>
-          <span className="flex items-center justify-between text-xs font-bold">
-            <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
-            <span className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onPress={handleEdit}>
-                <Pencil className="size-3.5" />
-                <span className="text-xs">Edit</span>
-              </Button>
-              <Button variant="danger" size="sm" onPress={onRemove}>
-                <Trash className="size-3.5" />
-                <span className="text-xs">Delete</span>
-              </Button>
-            </span>
-          </span>
         </Card.Content>
+        <Card.Footer className="mt-auto flex items-center justify-between text-xs font-bold">
+          <DateFormat date={feed.createdAt} format="MMMM D, YYYY" />
+          <span className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onPress={handleEdit}>
+              <Pencil className="size-3.5" />
+              <span className="text-xs">Edit</span>
+            </Button>
+            <Button variant="danger" size="sm" onPress={onRemove}>
+              <Trash className="size-3.5" />
+              <span className="text-xs">Delete</span>
+            </Button>
+          </span>
+        </Card.Footer>
       </Card>
     );
   }

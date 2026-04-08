@@ -87,6 +87,7 @@ export const upsertContentSchema = z.object({
 
 export const deleteFeedSchema = z.object({
   feedId: z.number(),
+  hard: z.boolean().optional().default(false),
 });
 
 export const getFeedBySlugSchema = z.object({
@@ -105,6 +106,7 @@ export const getFeedByIdSchema = z.object({
 
 export const feedWithTranslationsSchema = z.object({
   ...feedSchema.shape,
+  deletedAt: z.string().nullable(),
   translations: z.array(
     z.object({
       ...feedTranslationSchema.omit({ createdAt: true, updatedAt: true }).shape,
@@ -223,3 +225,15 @@ export const deleteFeedContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(deleteFeedSchema);
+
+export const restoreFeedSchema = z.object({
+  feedId: z.number(),
+});
+
+export const restoreFeedContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    NOT_FOUND: {},
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .input(restoreFeedSchema);
