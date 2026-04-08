@@ -8,11 +8,12 @@ import {
 } from "lucide-react";
 
 import type { Locale } from "@chia/db/types";
+import dayjs from "@chia/utils/day";
 
 export interface MetaChipProps {
   embedding?: Partial<Record<Locale, boolean>>;
   algolia?: Partial<Record<Locale, boolean>>;
-  deleted?: boolean;
+  deleted?: string | null;
   published?: boolean;
 }
 
@@ -50,7 +51,16 @@ export const MetaChip = ({
       <CloudIcon className="text-muted-foreground size-4" />
     )}
     {deleted ? (
-      <CircleMinus className="text-danger size-4" />
+      <Tooltip delay={500}>
+        <Tooltip.Trigger>
+          <CircleMinus className="text-danger size-4" />
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p className="text-xs">
+            Deleted At: {dayjs(deleted).format("MMMM D, YYYY")}
+          </p>
+        </Tooltip.Content>
+      </Tooltip>
     ) : published ? (
       <CircleCheck className="text-success size-4" />
     ) : (

@@ -27,6 +27,7 @@ export const router = contractOS.router({
     create: feedsRoutes.createFeedRoute,
     update: feedsRoutes.updateFeedRoute,
     delete: feedsRoutes.deleteFeedRoute,
+    restore: feedsRoutes.restoreFeedRoute,
   },
   organization: {
     details: organizationRoutes.getOrganizationRoute,

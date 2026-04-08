@@ -96,6 +96,9 @@ const Page = async ({
                     feed.translations.map((t) => [t.locale, t.embedding])
                   ),
                   published: feed.published,
+                  deleted: feed.deletedAt
+                    ? dayjs(feed.deletedAt).toISOString()
+                    : null,
                 }}
               />
             </div>

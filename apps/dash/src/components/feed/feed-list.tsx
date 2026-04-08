@@ -143,6 +143,9 @@ const FeedItem = memo(
                 feed.translations.map((t) => [t.locale, t.embedding])
               )}
               published={feed.published}
+              deleted={
+                feed.deletedAt ? dayjs(feed.deletedAt).toISOString() : null
+              }
             />
             <Button variant="outline" size="sm" onPress={handleEdit}>
               <Pencil className="size-3.5" />

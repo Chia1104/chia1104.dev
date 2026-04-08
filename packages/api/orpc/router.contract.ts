@@ -30,6 +30,7 @@ export const routerContract = {
     create: feedsContracts.createFeedContract,
     update: feedsContracts.updateFeedContract,
     delete: feedsContracts.deleteFeedContract,
+    restore: feedsContracts.restoreFeedContract,
   },
   organization: {
     details: organizationContracts.getOrganizationContract,
