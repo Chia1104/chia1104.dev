@@ -1,5 +1,6 @@
 import { gateway } from "@ai-sdk/gateway";
 import { zValidator } from "@hono/zod-validator";
+import { streamText } from "ai";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { timeout } from "hono/timeout";
@@ -10,9 +11,9 @@ import {
   ANTHROPIC_API_KEY,
   GENAI_API_KEY,
 } from "@chia/ai/constants";
-import { streamGeneratedText } from "@chia/ai/generate/utils";
 import { baseRequestSchema } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
+import { createModel } from "@chia/ai/utils";
 import { encodeApiKey } from "@chia/ai/utils";
 import { getCookieDomain } from "@chia/auth/utils";
 import { errorGenerator } from "@chia/utils/server";
@@ -91,11 +92,14 @@ const api = new Hono<HonoContext>()
     ai(),
     (c) => {
       c.header("Content-Type", "text/plain; charset=utf-8");
-      const result = streamGeneratedText({
-        model: c.req.valid("json").model,
-        messages: c.req.valid("json").messages,
-        authToken: c.get(AI_AUTH_TOKEN),
-        system: c.req.valid("json").system,
+      const { model, messages, system } = c.req.valid("json");
+      const result = streamText({
+        model: createModel({
+          model,
+          authToken: c.get(AI_AUTH_TOKEN),
+        }),
+        messages: messages ?? [],
+        system,
       });
       return result.toUIMessageStreamResponse();
     }

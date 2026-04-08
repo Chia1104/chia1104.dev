@@ -21,14 +21,6 @@
       "types": "./src/ollama/utils.ts",
       "default": "./src/ollama/utils.ts"
     },
-    "./generate/handler": {
-      "types": "./src/generate/handler.ts",
-      "default": "./src/generate/handler.ts"
-    },
-    "./generate/utils": {
-      "types": "./src/generate/utils.ts",
-      "default": "./src/generate/utils.ts"
-    },
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/utils/types.ts"
