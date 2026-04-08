@@ -19,13 +19,15 @@ import { formSchema } from "@/store/draft/slices/edit-fields";
 import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
 import EditFields from "./edit-fields";
+import type { MetaChipProps } from "./meta-chip";
 
 export interface EditFormProps {
   defaultValues: Partial<FormSchema>;
   feedId: number;
+  meta?: MetaChipProps;
 }
 
-const EditForm = ({ defaultValues, feedId }: EditFormProps) => {
+const EditForm = ({ defaultValues, feedId, meta }: EditFormProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -78,6 +80,7 @@ const EditForm = ({ defaultValues, feedId }: EditFormProps) => {
             isPending={update.isPending}
             mode="edit"
             feedId={feedId}
+            meta={meta}
           />
           <SubmitForm
             className="w-full max-w-[150px]"
