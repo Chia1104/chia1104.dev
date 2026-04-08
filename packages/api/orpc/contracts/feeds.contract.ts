@@ -106,6 +106,7 @@ export const getFeedByIdSchema = z.object({
 
 export const feedWithTranslationsSchema = z.object({
   ...feedSchema.shape,
+  deletedAt: z.string().nullable(),
   translations: z.array(
     z.object({
       ...feedTranslationSchema.omit({ createdAt: true, updatedAt: true }).shape,

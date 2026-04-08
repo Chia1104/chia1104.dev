@@ -65,6 +65,7 @@ export const getFeedBySlug = withDTO(
       ...feed,
       createdAt: dayjs(feed.createdAt).toISOString(),
       updatedAt: dayjs(feed.updatedAt).toISOString(),
+      deletedAt: feed.deletedAt ? dayjs(feed.deletedAt).toISOString() : null,
       translations: feed.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
@@ -125,6 +126,7 @@ export const getFeedById = withDTO(
       ...feed,
       createdAt: dayjs(feed.createdAt).toISOString(),
       updatedAt: dayjs(feed.updatedAt).toISOString(),
+      deletedAt: feed.deletedAt ? dayjs(feed.deletedAt).toISOString() : null,
       translations: feed.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
@@ -223,6 +225,7 @@ export const getInfiniteFeeds = withDTO(
       ...item,
       createdAt: dayjs(item.createdAt).toISOString(),
       updatedAt: dayjs(item.updatedAt).toISOString(),
+      deletedAt: item.deletedAt ? dayjs(item.deletedAt).toISOString() : null,
       translations: item.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
@@ -329,6 +332,7 @@ export const getInfiniteFeedsByUserId = withDTO(
       ...item,
       createdAt: dayjs(item.createdAt).toISOString(),
       updatedAt: dayjs(item.updatedAt).toISOString(),
+      deletedAt: item.deletedAt ? dayjs(item.deletedAt).toISOString() : null,
       translations: item.translations.map((t) => ({
         ...t,
         createdAt: dayjs(t.createdAt).toISOString(),
