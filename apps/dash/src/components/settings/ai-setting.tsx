@@ -4,12 +4,7 @@ import { Tabs } from "@heroui/react";
 import { Card } from "@heroui/react";
 import { MessageCircle } from "lucide-react";
 
-import {
-  AnthropicModel,
-  OpenAIModel,
-  GoogleModel,
-  DeepSeekModel,
-} from "@chia/ai/types";
+import { AnthropicModel, OpenAIModel, GoogleModel } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 
 import { AIForm } from "@/components/settings/ai-form";
@@ -39,10 +34,6 @@ export const AISetting = () => {
                 Google
                 <Tabs.Indicator />
               </Tabs.Tab>
-              <Tabs.Tab id="deepseek">
-                DeepSeek
-                <Tabs.Indicator />
-              </Tabs.Tab>
             </Tabs.List>
           </Tabs.ListContainer>
           <Tabs.Panel className="pt-4" id="openai">
@@ -57,7 +48,7 @@ export const AISetting = () => {
             <AIForm
               model={{
                 provider: Provider.Anthropic,
-                id: AnthropicModel["claude-3-5-haiku"],
+                id: AnthropicModel["claude-haiku-4-5"],
               }}
             />
           </Tabs.Panel>
@@ -65,15 +56,7 @@ export const AISetting = () => {
             <AIForm
               model={{
                 provider: Provider.Google,
-                id: GoogleModel["gemini-2.0-flash"],
-              }}
-            />
-          </Tabs.Panel>
-          <Tabs.Panel className="pt-4" id="deepseek">
-            <AIForm
-              model={{
-                provider: Provider.DeepSeek,
-                id: DeepSeekModel["deepseek-r1"],
+                id: GoogleModel["gemini-3.1-flash"],
               }}
             />
           </Tabs.Panel>

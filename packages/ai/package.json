@@ -66,7 +66,6 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:ai",
-    "@ai-sdk/deepseek": "catalog:ai",
     "@ai-sdk/google": "catalog:ai",
     "@ai-sdk/openai": "catalog:ai",
     "@anthropic-ai/sdk": "catalog:ai",

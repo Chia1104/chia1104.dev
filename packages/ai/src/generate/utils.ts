@@ -1,5 +1,4 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { LanguageModel } from "ai";
@@ -30,11 +29,6 @@ export const createModel = (request: BaseRequest): LanguageModel => {
         apiKey: request.authToken,
         baseURL: request.proxyUrl,
       })(request.model.id);
-    case Provider.DeepSeek:
-      return createDeepSeek({
-        apiKey: request.authToken,
-        baseURL: request.proxyUrl,
-      })(request.model.id);
     default:
       throw new Error("Invalid provider");
   }
@@ -48,5 +42,5 @@ export const streamGeneratedText = (
     ...options,
     model: createModel(request),
     system: request.system,
-    messages: request.messages,
+    messages: request.messages ?? [],
   });
