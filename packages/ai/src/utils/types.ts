@@ -89,6 +89,7 @@ export const SupportedTools = {
   GenerateExcerpt: "generate-excerpt",
   GenerateSummary: "generate-summary",
   GenerateDescription: "generate-description",
+  GenerateContent: "generate-content",
 } as const;
 
 export type SupportedTools =

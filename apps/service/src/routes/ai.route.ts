@@ -20,6 +20,10 @@ import {
   generateSummaryInput,
   generateExcerpt,
   generateExcerptInput,
+  generateContentInput,
+  generateContentComplete,
+  generateContentCompleteInput,
+  streamContent,
 } from "@chia/ai/tools/content";
 import { SupportedTools } from "@chia/ai/types";
 import { baseRequestSchema } from "@chia/ai/types";
@@ -185,6 +189,38 @@ const api = new Hono<HonoContext>()
         default:
           return c.json(errorGenerator(400), 400);
       }
+    }
+  )
+  .post(
+    "/content/generate",
+    verifyAuth(true),
+    zValidator("json", generateContentInput, (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }),
+    (c) => {
+      c.header("Content-Type", "text/plain; charset=utf-8");
+      const input = c.req.valid("json");
+      const result = streamContent("openai/gpt-4o-mini", input);
+      return result.toTextStreamResponse();
+    }
+  )
+  .post(
+    "/content/complete",
+    verifyAuth(true),
+    zValidator("json", generateContentCompleteInput, (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }),
+    async (c) => {
+      const input = c.req.valid("json");
+      const completion = await generateContentComplete(
+        "openai/gpt-4o-mini",
+        input
+      );
+      return c.json({ completion });
     }
   );
 
