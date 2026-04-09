@@ -57,6 +57,7 @@ export const SlugField = memo(() => {
                 variant="secondary"
                 isIconOnly
                 aria-label="generate slug"
+                isDisabled={isFieldDisabled}
                 isPending={generateSlugMutation.isPending}
                 onPress={() =>
                   generateSlugMutation.mutate(
