@@ -1025,6 +1025,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.5.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.2

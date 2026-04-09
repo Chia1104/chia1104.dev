@@ -73,6 +73,7 @@
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   }
 }
