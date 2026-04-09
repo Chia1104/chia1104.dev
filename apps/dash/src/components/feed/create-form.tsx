@@ -20,7 +20,7 @@ import { useDraft } from "@/store/draft";
 import type { FormSchema } from "@/store/draft/slices/edit-fields";
 import { formSchema } from "@/store/draft/slices/edit-fields";
 
-import EditFields from "./edit-fields";
+import { EditFields } from "./edit-fields";
 
 interface CreateFormProps {
   type?: typeof FeedType.Note | typeof FeedType.Post;

@@ -18,7 +18,7 @@ import { DraftProvider } from "@/store/draft";
 import { formSchema } from "@/store/draft/slices/edit-fields";
 import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
-import EditFields from "./edit-fields";
+import { EditFields } from "./edit-fields";
 import type { MetaChipProps } from "./meta-chip";
 
 export interface EditFormProps {

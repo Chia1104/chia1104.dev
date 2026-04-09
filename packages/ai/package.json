@@ -21,14 +21,6 @@
       "types": "./src/ollama/utils.ts",
       "default": "./src/ollama/utils.ts"
     },
-    "./generate/handler": {
-      "types": "./src/generate/handler.ts",
-      "default": "./src/generate/handler.ts"
-    },
-    "./generate/utils": {
-      "types": "./src/generate/utils.ts",
-      "default": "./src/generate/utils.ts"
-    },
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/utils/types.ts"
@@ -52,6 +44,10 @@
     "./embeddings/utils": {
       "types": "./src/embeddings/utils.ts",
       "default": "./src/embeddings/utils.ts"
+    },
+    "./tools/content": {
+      "types": "./src/tools/content.tool.ts",
+      "default": "./src/tools/content.tool.ts"
     }
   },
   "scripts": {
@@ -62,13 +58,14 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:ai",
-    "@ai-sdk/deepseek": "catalog:ai",
+    "@ai-sdk/gateway": "catalog:ai",
     "@ai-sdk/google": "catalog:ai",
     "@ai-sdk/openai": "catalog:ai",
     "@anthropic-ai/sdk": "catalog:ai",
     "@chia/utils": "workspace:*",
     "@google/genai": "catalog:ai",
     "ai": "catalog:ai",
+    "github-slugger": "^2.0.0",
     "next": "catalog:next",
     "ollama": "catalog:ai",
     "openai": "catalog:ai",
@@ -76,6 +73,7 @@
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   }
 }

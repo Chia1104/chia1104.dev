@@ -6,7 +6,6 @@ import {
   OPENAI_API_KEY,
   ANTHROPIC_API_KEY,
   GENAI_API_KEY,
-  DEEPSEEK_API_KEY,
 } from "@chia/ai/constants";
 import { Provider } from "@chia/ai/types";
 import { verifyApiKey } from "@chia/ai/utils";
@@ -28,8 +27,6 @@ const getApiKey = (
       return getCookie(c, ANTHROPIC_API_KEY)?.toString();
     case Provider.Google:
       return getCookie(c, GENAI_API_KEY)?.toString();
-    case Provider.DeepSeek:
-      return getCookie(c, DEEPSEEK_API_KEY)?.toString();
     default:
       return "";
   }

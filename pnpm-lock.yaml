@@ -9,9 +9,9 @@ catalogs:
     '@ai-sdk/anthropic':
       specifier: 3.0.68
       version: 3.0.68
-    '@ai-sdk/deepseek':
-      specifier: 2.0.29
-      version: 2.0.29
+    '@ai-sdk/gateway':
+      specifier: 3.0.93
+      version: 3.0.93
     '@ai-sdk/google':
       specifier: 3.0.60
       version: 3.0.60
@@ -638,6 +638,9 @@ importers:
 
   apps/service:
     dependencies:
+      '@ai-sdk/gateway':
+        specifier: catalog:ai
+        version: 3.0.93(zod@4.3.6)
       '@chia/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -686,6 +689,9 @@ importers:
       '@workflow/world-postgres':
         specifier: 4.1.0
         version: 4.1.0(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(@upstash/redis@1.37.0)(bun-types@1.3.11)(kysely@0.28.15)(postgres@3.4.8)(sqlite3@5.1.7)(typescript@6.0.2)
+      ai:
+        specifier: catalog:ai
+        version: 6.0.153(zod@4.3.6)
       better-all:
         specifier: 'catalog:'
         version: 0.0.7
@@ -979,9 +985,9 @@ importers:
       '@ai-sdk/anthropic':
         specifier: catalog:ai
         version: 3.0.68(zod@4.3.6)
-      '@ai-sdk/deepseek':
+      '@ai-sdk/gateway':
         specifier: catalog:ai
-        version: 2.0.29(zod@4.3.6)
+        version: 3.0.93(zod@4.3.6)
       '@ai-sdk/google':
         specifier: catalog:ai
         version: 3.0.60(zod@4.3.6)
@@ -1000,6 +1006,9 @@ importers:
       ai:
         specifier: catalog:ai
         version: 6.0.153(zod@4.3.6)
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       next:
         specifier: catalog:next
         version: 16.2.2(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1016,6 +1025,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.5.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -1644,12 +1656,6 @@ packages:
 
   '@ai-sdk/anthropic@3.0.68':
     resolution: {integrity: sha512-BAd+fmgYoJMmGw0/uV+jRlXX60PyGxelA6Clp4cK/NI0dsyv9jOOwzQmKNaz2nwb+Jz7HqI7I70KK4XtU5EcXQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/deepseek@2.0.29':
-    resolution: {integrity: sha512-cn4+xV0menm/4JKEDElnVGiUilHvi6AD4ZK/sY7DXP/Wb7Yb3Vr86NyYM6mGBE/Shk3mWHoHbzggVnF5x0uMEA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -13972,12 +13978,6 @@ snapshots:
   '@adobe/css-tools@4.4.4': {}
 
   '@ai-sdk/anthropic@3.0.68(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)
-      zod: 4.3.6
-
-  '@ai-sdk/deepseek@2.0.29(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.23(zod@4.3.6)

@@ -19,6 +19,18 @@ export type GenerateAIContentInput = InferRequestType<
   (typeof client.api.v1.ai)["generate"]["$post"]
 >;
 
+export type GenerateAIContentMetaInput = InferRequestType<
+  (typeof client.api.v1.ai.content.meta)["$post"]
+>;
+
+export type GenerateAIArticleContentInput = InferRequestType<
+  (typeof client.api.v1.ai.content)["generate"]["$post"]
+>;
+
+export type GenerateAIContentCompleteInput = InferRequestType<
+  (typeof client.api.v1.ai.content)["complete"]["$post"]
+>;
+
 export const getSignedAIKey = async (apiKey: string, provider: Provider) => {
   try {
     const response = await client.api.v1.ai["key:signed"].$post({
@@ -86,6 +98,102 @@ export const generateAIContent = async (
       },
       stream: body,
     };
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
+};
+
+export const generateAIContentComplete = async (
+  input: GenerateAIContentCompleteInput["json"]
+): Promise<string> => {
+  try {
+    const response = await client.api.v1.ai.content.complete.$post({
+      json: input,
+    });
+    if (!response.ok) {
+      throw new HonoRPCError(
+        response.statusText,
+        response.status,
+        response.statusText
+      );
+    }
+    const data = await response.json();
+    return data.completion;
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
+};
+
+export const generateAIArticleContent = async (
+  input: GenerateAIArticleContentInput["json"]
+) => {
+  try {
+    const response = await client.api.v1.ai.content.generate.$post({
+      json: input,
+    });
+
+    if (!response.ok) {
+      throw new HonoRPCError(
+        response.statusText,
+        response.status,
+        response.statusText
+      );
+    }
+
+    const body = response.body;
+    if (!body)
+      throw new HonoRPCError(
+        "Stream response body is undefined",
+        500,
+        "Stream response body is undefined"
+      );
+
+    const decoder = new TextDecoder();
+
+    return {
+      [Symbol.asyncIterator]: async function* () {
+        const reader = body.getReader();
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            yield decoder.decode(value);
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      },
+      stream: body,
+    };
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
+};
+
+export const generateAIContentMeta = async (
+  input: GenerateAIContentMetaInput["json"]
+) => {
+  try {
+    const response = await client.api.v1.ai.content.meta.$post({
+      json: input,
+    });
+    if (!response.ok) {
+      throw new HonoRPCError(
+        response.statusText,
+        response.status,
+        response.statusText
+      );
+    }
+    return response.json();
   } catch (error) {
     if (error instanceof HonoRPCError) {
       throw error;
