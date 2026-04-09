@@ -1,13 +1,15 @@
 import { generateText } from "ai";
 import type { LanguageModel } from "ai";
-import GithubSlugger from "github-slugger";
 import * as z from "zod";
+
+import { slugger } from "../utils";
 
 const buildPrompt = (title: string, content?: string) =>
   `Title: ${title}${content ? `\n\nContent:\n${content}` : ""}`;
 
 export const generateSlugInput = z.object({
   title: z.string(),
+  content: z.string().optional(),
 });
 
 export const generateExcerptInput = z.object({
@@ -33,11 +35,20 @@ export type GenerateExcerptInput = z.infer<typeof generateExcerptInput>;
 export type GenerateSummaryInput = z.infer<typeof generateSummaryInput>;
 export type GenerateDescriptionInput = z.infer<typeof generateDescriptionInput>;
 
-export async function generateSlug({
-  title,
-}: GenerateSlugInput): Promise<string> {
-  const slugger = new GithubSlugger();
-  return slugger.slug(title);
+export async function generateSlug(
+  model: LanguageModel,
+  { title, content }: GenerateSlugInput
+): Promise<string> {
+  const { text } = await generateText({
+    model,
+    system:
+      "You are a slug generator. Given an article title and optional content, " +
+      "produce a single concise URL-friendly slug. " +
+      "Rules: lowercase letters, numbers, and hyphens only; no spaces or special characters; " +
+      "3-6 meaningful words; return ONLY the slug with no extra text.",
+    prompt: buildPrompt(title, content),
+  });
+  return slugger.slug(text);
 }
 
 export async function generateExcerpt(
