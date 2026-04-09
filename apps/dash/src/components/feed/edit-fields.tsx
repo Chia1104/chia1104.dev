@@ -6,7 +6,7 @@ import { memo, useId } from "react";
 
 import {
   Input,
-  TextArea,
+  InputGroup,
   Tabs,
   Select,
   Switch,
@@ -28,10 +28,11 @@ import {
 } from "@heroui/react";
 import { parseAbsolute, getLocalTimeZone } from "@internationalized/date";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Pencil, GalleryVerticalEnd, ChevronDown } from "lucide-react";
+import { Pencil, GalleryVerticalEnd, ChevronDown, Sparkle } from "lucide-react";
 import { Controller, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
+import { SupportedTools } from "@chia/ai/types";
 import { FeedType, ContentType } from "@chia/db/types";
 import { Locale } from "@chia/db/types";
 import { ErrorBoundary } from "@chia/ui/error-boundary";
@@ -40,6 +41,7 @@ import useTheme from "@chia/ui/utils/use-theme";
 import dayjs from "@chia/utils/day";
 
 import { orpc } from "@/libs/orpc/client";
+import { generateAIContentMeta } from "@/resources/ai.resource";
 import { useEditFields } from "@/store/draft";
 import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
@@ -322,6 +324,13 @@ const SlugField = memo(() => {
   const isFieldDisabled = disabled || mode === "edit";
   const showDescription = mode === "create";
 
+  const activeLocale = form.watch("activeLocale");
+  const title = form.watch(`translations.${activeLocale}.title`);
+
+  const generateSlugMutation = useMutation({
+    mutationFn: generateAIContentMeta,
+  });
+
   return (
     <Controller
       control={form.control}
@@ -329,12 +338,45 @@ const SlugField = memo(() => {
       render={({ field, fieldState: { invalid, error } }) => (
         <TextField isInvalid={invalid} fullWidth>
           <Label htmlFor={`${id}-slug`}>Slug</Label>
-          <Input
-            id={`${id}-slug`}
-            disabled={isFieldDisabled}
-            placeholder="slug"
-            {...field}
-          />
+          <InputGroup fullWidth>
+            <InputGroup.Input
+              id={`${id}-slug`}
+              disabled={isFieldDisabled}
+              placeholder="slug"
+              {...field}
+            />
+            <InputGroup.Suffix>
+              <Button
+                className="size-6.5 rounded-lg"
+                size="sm"
+                variant="secondary"
+                isIconOnly
+                aria-label="generate slug"
+                isPending={generateSlugMutation.isPending}
+                onPress={() =>
+                  generateSlugMutation.mutate(
+                    {
+                      feature: SupportedTools.GenerateSlug,
+                      input: {
+                        title: title ?? "",
+                      },
+                    },
+                    {
+                      onSuccess: (data) => {
+                        if (data.feature === SupportedTools.GenerateSlug) {
+                          field.onChange(data.content.slug);
+                        }
+                      },
+                      onError: (err) => {
+                        toast.error(err.message);
+                      },
+                    }
+                  )
+                }>
+                <Sparkle className="size-3" />
+              </Button>
+            </InputGroup.Suffix>
+          </InputGroup>
           <FieldError>{error?.message}</FieldError>
           {showDescription && (
             <Description>
@@ -418,6 +460,12 @@ const DescriptionField = ({
 }) => {
   const form = useFormContext<FormSchema>();
   const activeLocale = form.watch("activeLocale");
+  const title = form.watch(`translations.${activeLocale}.title`);
+  const content = form.watch(`translations.${activeLocale}.content.content`);
+
+  const generateDescriptionMutation = useMutation({
+    mutationFn: generateAIContentMeta,
+  });
 
   return (
     <Controller
@@ -429,14 +477,51 @@ const DescriptionField = ({
           <Label htmlFor={`${id}-description-${activeLocale}`}>
             Description
           </Label>
-          <TextArea
-            id={`${id}-description-${activeLocale}`}
-            disabled={disabled}
-            placeholder="Enter description"
-            rows={7}
-            {...field}
-            value={field.value ?? ""}
-          />
+          <InputGroup fullWidth>
+            <InputGroup.TextArea
+              id={`${id}-description-${activeLocale}`}
+              disabled={disabled}
+              placeholder="Enter description"
+              rows={7}
+              {...field}
+              value={field.value ?? ""}
+            />
+            <InputGroup.Suffix>
+              <Button
+                className="rounded-xl"
+                size="sm"
+                variant="secondary"
+                isIconOnly
+                aria-label="generate description"
+                isPending={generateDescriptionMutation.isPending}
+                onPress={() =>
+                  generateDescriptionMutation.mutate(
+                    {
+                      feature: SupportedTools.GenerateDescription,
+                      input: {
+                        title: title ?? "",
+                        content: content ?? undefined,
+                        locale: activeLocale,
+                      },
+                    },
+                    {
+                      onSuccess: (data) => {
+                        if (
+                          data.feature === SupportedTools.GenerateDescription
+                        ) {
+                          field.onChange(data.content.description);
+                        }
+                      },
+                      onError: (err) => {
+                        toast.error(err.message);
+                      },
+                    }
+                  )
+                }>
+                <Sparkle className="size-4" />
+              </Button>
+            </InputGroup.Suffix>
+          </InputGroup>
           <FieldError>{error?.message}</FieldError>
         </TextField>
       )}

@@ -11,6 +11,17 @@ import {
   ANTHROPIC_API_KEY,
   GENAI_API_KEY,
 } from "@chia/ai/constants";
+import {
+  generateSlug,
+  generateDescription,
+  generateSlugInput,
+  generateDescriptionInput,
+  generateSummary,
+  generateSummaryInput,
+  generateExcerpt,
+  generateExcerptInput,
+} from "@chia/ai/tools/content";
+import { SupportedTools } from "@chia/ai/types";
 import { baseRequestSchema } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import { createModel } from "@chia/ai/utils";
@@ -107,6 +118,74 @@ const api = new Hono<HonoContext>()
   .get("/models", async (c) => {
     const availableModels = await gateway.getAvailableModels();
     return c.json(availableModels.models);
-  });
+  })
+  .post(
+    "/content/meta",
+    verifyAuth(true),
+    zValidator(
+      "json",
+      z.union([
+        z.object({
+          feature: z.literal(SupportedTools.GenerateSlug),
+          input: generateSlugInput,
+        }),
+        z.object({
+          feature: z.literal(SupportedTools.GenerateDescription),
+          input: generateDescriptionInput,
+        }),
+        z.object({
+          feature: z.literal(SupportedTools.GenerateSummary),
+          input: generateSummaryInput,
+        }),
+        z.object({
+          feature: z.literal(SupportedTools.GenerateExcerpt),
+          input: generateExcerptInput,
+        }),
+      ]),
+      (result, c) => {
+        if (!result.success) {
+          return c.json(errorResponse(result.error), 400);
+        }
+      }
+    ),
+    async (c) => {
+      const json = c.req.valid("json");
+      switch (json.feature) {
+        case SupportedTools.GenerateSlug:
+          return c.json({
+            feature: SupportedTools.GenerateSlug,
+            content: {
+              slug: await generateSlug("openai/gpt-4o-mini", json.input),
+            },
+          });
+        case SupportedTools.GenerateDescription:
+          return c.json({
+            feature: SupportedTools.GenerateDescription,
+            content: {
+              description: await generateDescription(
+                "openai/gpt-4o-mini",
+                json.input
+              ),
+            },
+          });
+        case SupportedTools.GenerateSummary:
+          return c.json({
+            feature: SupportedTools.GenerateSummary,
+            content: {
+              summary: await generateSummary("openai/gpt-4o-mini", json.input),
+            },
+          });
+        case SupportedTools.GenerateExcerpt:
+          return c.json({
+            feature: SupportedTools.GenerateExcerpt,
+            content: {
+              excerpt: await generateExcerpt("openai/gpt-4o-mini", json.input),
+            },
+          });
+        default:
+          return c.json(errorGenerator(400), 400);
+      }
+    }
+  );
 
 export default api;

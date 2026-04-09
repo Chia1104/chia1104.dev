@@ -19,6 +19,10 @@ export type GenerateAIContentInput = InferRequestType<
   (typeof client.api.v1.ai)["generate"]["$post"]
 >;
 
+export type GenerateAIContentMetaInput = InferRequestType<
+  (typeof client.api.v1.ai.content.meta)["$post"]
+>;
+
 export const getSignedAIKey = async (apiKey: string, provider: Provider) => {
   try {
     const response = await client.api.v1.ai["key:signed"].$post({
@@ -86,6 +90,29 @@ export const generateAIContent = async (
       },
       stream: body,
     };
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
+};
+
+export const generateAIContentMeta = async (
+  input: GenerateAIContentMetaInput["json"]
+) => {
+  try {
+    const response = await client.api.v1.ai.content.meta.$post({
+      json: input,
+    });
+    if (!response.ok) {
+      throw new HonoRPCError(
+        response.statusText,
+        response.status,
+        response.statusText
+      );
+    }
+    return response.json();
   } catch (error) {
     if (error instanceof HonoRPCError) {
       throw error;
