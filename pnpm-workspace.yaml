@@ -25,10 +25,10 @@ catalog:
 
 catalogs:
   ai:
-    '@ai-sdk/anthropic': 3.0.68
+    '@ai-sdk/anthropic': 3.0.71
     '@ai-sdk/gateway': 3.0.93
     '@ai-sdk/google': 3.0.60
-    '@ai-sdk/openai': 3.0.52
+    '@ai-sdk/openai': 3.0.53
     '@ai-sdk/react': 3.0.155
     '@anthropic-ai/sdk': 0.85.0
     '@google/genai': 1.48.0
