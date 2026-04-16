@@ -68,7 +68,7 @@ catalogs:
       version: 4.17.24
     '@types/node':
       specifier: 25.5.2
-      version: 25.5.0
+      version: 25.5.2
     better-all:
       specifier: 0.0.7
       version: 0.0.7
@@ -143,8 +143,8 @@ catalogs:
       specifier: 0.7.6
       version: 0.7.6
     hono:
-      specifier: 4.12.12
-      version: 4.12.12
+      specifier: 4.12.14
+      version: 4.12.14
     hono-rate-limiter:
       specifier: 0.5.3
       version: 0.5.3
@@ -516,7 +516,7 @@ importers:
         version: 16.7.11(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.7.11(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(algoliasearch@5.50.1)(lucide-react@1.7.0(react@19.2.4))(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react-router@7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(zod@4.3.6))(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(shiki@4.0.2)(tailwindcss@4.2.2)
       hono:
         specifier: catalog:hono
-        version: 4.12.12
+        version: 4.12.14
       immer:
         specifier: catalog:ui
         version: 11.1.4
@@ -667,13 +667,13 @@ importers:
         version: link:../../packages/utils
       '@hono/react-renderer':
         specifier: catalog:hono
-        version: 1.0.1(hono@4.12.12)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 1.0.1(hono@4.12.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@hono/sentry':
         specifier: catalog:hono
-        version: 1.2.2(hono@4.12.12)
+        version: 1.2.2(hono@4.12.14)
       '@hono/zod-validator':
         specifier: catalog:hono
-        version: 0.7.6(hono@4.12.12)(zod@4.3.6)
+        version: 0.7.6(hono@4.12.14)(zod@4.3.6)
       '@orpc/contract':
         specifier: catalog:orpc
         version: 1.13.13(@opentelemetry/api@1.9.1)
@@ -706,10 +706,10 @@ importers:
         version: 1.0.0-beta.20(@opentelemetry/api@1.9.1)(@sinclair/typebox@0.34.49)(@types/mssql@9.1.9(@azure/core-client@1.10.1))(@types/pg@8.20.0)(@upstash/redis@1.37.0)(bun-types@1.3.11)(mssql@11.0.1(@azure/core-client@1.10.1))(pg@8.20.0)(postgres@3.4.8)(sqlite3@5.1.7)(zod@4.3.6)
       hono:
         specifier: catalog:hono
-        version: 4.12.12
+        version: 4.12.14
       hono-rate-limiter:
         specifier: catalog:hono
-        version: 0.5.3(hono@4.12.12)
+        version: 0.5.3(hono@4.12.14)
       jsdom:
         specifier: ^29.0.2
         version: 29.0.2(@noble/hashes@2.0.1)
@@ -866,7 +866,7 @@ importers:
         version: 16.7.11(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@types/mdx@2.0.13)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.7.11(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(algoliasearch@5.50.1)(lucide-react@1.7.0(react@19.2.4))(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react-router@7.13.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(zod@4.3.6))(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(shiki@4.0.2)(tailwindcss@4.2.2)
       hono:
         specifier: catalog:hono
-        version: 4.12.12
+        version: 4.12.14
       katex:
         specifier: catalog:ui
         version: 0.16.45
@@ -1644,7 +1644,7 @@ importers:
         version: 10.3.0
       '@types/node':
         specifier: 'catalog:'
-        version: 25.5.0
+        version: 25.5.2
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -7421,9 +7421,6 @@ packages:
   '@types/node@22.19.17':
     resolution: {integrity: sha512-wGdMcf+vPYM6jikpS/qhg6WiqSV/OhG+jeeHT/KlVqxYfD40iYJf9/AE1uQxVWFvU7MipKRkRv8NSHiCGgPr8Q==}
 
-  '@types/node@25.5.0':
-    resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
-
   '@types/node@25.5.2':
     resolution: {integrity: sha512-tO4ZIRKNC+MDWV4qKVZe3Ql/woTnmHDr5JD8UI5hn2pwBrHEwOEMZK7WlNb5RKB6EoJ02gwmQS9OrjuFnZYdpg==}
 
@@ -10232,8 +10229,8 @@ packages:
       unstorage:
         optional: true
 
-  hono@4.12.12:
-    resolution: {integrity: sha512-p1JfQMKaceuCbpJKAPKVqyqviZdS0eUxH9v82oWo1kb9xjQ5wA6iP3FNVAPDFlz5/p7d45lO+BpSk1tuSZMF4Q==}
+  hono@4.12.14:
+    resolution: {integrity: sha512-am5zfg3yu6sqn5yjKBNqhnTX7Cv+m00ox+7jbaKkrLMRJ4rAdldd1xPd/JzbBWspqaQv6RSTrgFN95EsfhC+7w==}
     engines: {node: '>=16.9.0'}
 
   hookable@6.1.0:
@@ -15442,20 +15439,20 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono/react-renderer@1.0.1(hono@4.12.12)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@hono/react-renderer@1.0.1(hono@4.12.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
-      hono: 4.12.12
+      hono: 4.12.14
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
 
-  '@hono/sentry@1.2.2(hono@4.12.12)':
+  '@hono/sentry@1.2.2(hono@4.12.14)':
     dependencies:
-      hono: 4.12.12
+      hono: 4.12.14
       toucan-js: 4.1.1
 
-  '@hono/zod-validator@0.7.6(hono@4.12.12)(zod@4.3.6)':
+  '@hono/zod-validator@0.7.6(hono@4.12.14)(zod@4.3.6)':
     dependencies:
-      hono: 4.12.12
+      hono: 4.12.14
       zod: 4.3.6
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.72.1(react@19.2.4))':
@@ -20322,10 +20319,6 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/node@25.5.0':
-    dependencies:
-      undici-types: 7.18.2
-
   '@types/node@25.5.2':
     dependencies:
       undici-types: 7.18.2
@@ -23365,11 +23358,11 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.5.3(hono@4.12.12):
+  hono-rate-limiter@0.5.3(hono@4.12.14):
     dependencies:
-      hono: 4.12.12
+      hono: 4.12.14
 
-  hono@4.12.12: {}
+  hono@4.12.14: {}
 
   hookable@6.1.0: {}
 

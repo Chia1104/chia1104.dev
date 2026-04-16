@@ -58,7 +58,7 @@ catalogs:
     '@hono/react-renderer': 1.0.1
     '@hono/sentry': 1.2.2
     '@hono/zod-validator': 0.7.6
-    hono: 4.12.12
+    hono: 4.12.14
     hono-rate-limiter: 0.5.3
   next:
     '@next/third-parties': 16.2.3
