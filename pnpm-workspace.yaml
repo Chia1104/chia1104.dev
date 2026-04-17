@@ -32,7 +32,7 @@ catalogs:
     '@ai-sdk/react': 3.0.155
     '@anthropic-ai/sdk': 0.85.0
     '@google/genai': 1.48.0
-    ai: 6.0.153
+    ai: 6.0.168
     ollama: 0.6.3
     openai: 6.33.0
   better-auth:
