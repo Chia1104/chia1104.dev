@@ -113,8 +113,8 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1026.0",
-    "@aws-sdk/s3-request-presigner": "^3.1026.0",
+    "@aws-sdk/client-s3": "^3.1031.0",
+    "@aws-sdk/s3-request-presigner": "^3.1031.0",
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
@@ -122,7 +122,7 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
-    "algoliasearch": "^5.50.1",
+    "algoliasearch": "^5.50.2",
     "client-only": "catalog:",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
@@ -134,7 +134,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@algolia/client-common": "^5.50.1",
+    "@algolia/client-common": "^5.50.2",
     "@chiastack/tsconfig": "catalog:chiastack",
     "typescript": "catalog:"
   }

@@ -21,21 +21,21 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
+    "@react-three/fiber": "^9.6.0",
     "leva": "^0.10.1",
     "maath": "^0.10.8",
     "r3f-perf": "^7.2.3",
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
-    "shaders": "^2.5.92",
-    "three": "^0.183.2"
+    "shaders": "^2.5.100",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
     "@testing-library/react": "catalog:testing-library",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
-    "@types/three": "^0.183.1",
+    "@types/three": "^0.184.0",
     "tailwindcss": "catalog:tailwindcss",
     "typescript": "catalog:"
   }
