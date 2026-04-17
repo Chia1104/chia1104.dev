@@ -264,7 +264,6 @@ export const ApiKeyTablePrimitive = <TWithProject extends boolean = false>({
         case "project":
           return withProject ? (
             <div className="flex flex-col">
-              {/* @ts-expect-error - TODO: Fix the type issue */}
               <p className="text-sm font-semibold">{item?.project?.name}</p>
             </div>
           ) : null;
