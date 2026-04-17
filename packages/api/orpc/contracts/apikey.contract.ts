@@ -93,7 +93,7 @@ export const apiKeySchema = z.object({
   expiresAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  project: projectSchema.nullable(),
+  project: projectSchema.nullish(),
 });
 
 export const createAPIKeyContract = oc
