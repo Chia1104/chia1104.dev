@@ -67,6 +67,25 @@ export const originalApiKeySchema = z
       : null,
   }));
 
+export const projectSchema = z
+  .object({
+    createdAt: z.date(),
+    deletedAt: z.date().nullable(),
+    id: z.number(),
+    logo: z.string().nullable(),
+    metadata: z.any().nullable(),
+    name: z.string(),
+    organizationId: z.string(),
+    slug: z.string(),
+    updatedAt: z.date().nullable(),
+  })
+  .transform((data) => ({
+    ...data,
+    createdAt: dayjs(data.createdAt).toISOString(),
+    updatedAt: dayjs(data.updatedAt).toISOString(),
+    deletedAt: data.deletedAt ? dayjs(data.deletedAt).toISOString() : null,
+  }));
+
 export const apiKeySchema = z.object({
   ...baseApiKeySchema.shape,
   lastRequest: z.string().nullable(),
@@ -74,6 +93,7 @@ export const apiKeySchema = z.object({
   expiresAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  project: projectSchema.nullish(),
 });
 
 export const createAPIKeyContract = oc
