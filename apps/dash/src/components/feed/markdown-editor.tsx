@@ -154,7 +154,7 @@ export const MarkdownEditor = ({
         "relative w-full overflow-hidden rounded-2xl shadow-lg",
         className
       )}>
-      <div className="flex items-center justify-end border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+      <div className="flex items-center justify-end border-b border-gray-200 bg-white px-3 py-2 dark:border-gray-700 dark:bg-[#1e1e1e]">
         <Button
           size="sm"
           variant={aiEnabled ? "secondary" : "tertiary"}

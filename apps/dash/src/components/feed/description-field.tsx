@@ -54,7 +54,7 @@ export const DescriptionField = ({
             />
             <InputGroup.Suffix>
               <Button
-                className="size-8 rounded-xl"
+                className="size-7.5 rounded-xl"
                 size="sm"
                 variant="secondary"
                 isIconOnly
