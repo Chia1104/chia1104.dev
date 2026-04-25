@@ -93,14 +93,14 @@ const MdxContent = (props: BaseProps) => {
   const content = useContent();
   return (
     <div className="w-full">
-      <div className="mb-14 w-full [&>*]:w-full">
+      <div className="mb-14 w-full *:w-full">
         <MDXInlineTOC />
       </div>
       <div
         className="prose-code:text-[13px] prose-code:font-normal relative flex w-full"
         ref={containerRef}>
         {props.children}
-        <div className="not-prose sticky top-24 ml-2 flex hidden h-fit w-[30%] flex-col lg:flex">
+        <div className="not-prose sticky top-24 ml-2 hidden h-fit w-[30%] flex-col lg:flex">
           <Card className="w-full">
             <Card.Header>
               {content.tocContents?.label ?? "On this page"}

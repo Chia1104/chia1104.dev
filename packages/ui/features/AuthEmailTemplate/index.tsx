@@ -11,7 +11,7 @@ import {
   Tailwind,
   Text,
   Button,
-} from "@react-email/components";
+} from "react-email";
 
 export interface Props {
   url?: string;

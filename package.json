@@ -80,8 +80,8 @@
     "husky": "^9.1.7",
     "jest-extended": "catalog:testing-library",
     "lint-staged": "^16.4.0",
-    "msw": "^2.13.4",
-    "nx": "^22.6.5",
+    "msw": "^2.13.6",
+    "nx": "^22.7.0",
     "oxfmt": "catalog:oxc",
     "oxlint": "catalog:oxc",
     "tsx": "^4.21.0",
@@ -101,7 +101,7 @@
     "node": ">=22",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.2",
   "manypkg": {
     "ignoredRules": [
       "ROOT_HAS_PROD_DEPENDENCIES"
