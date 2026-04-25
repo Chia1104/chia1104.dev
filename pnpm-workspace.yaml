@@ -52,8 +52,8 @@ catalogs:
     fumadocs-mdx: 14.3.1
     fumadocs-ui: 16.8.3
   heroui-v3:
-    "@heroui/react": 3.0.3
-    "@heroui/styles": 3.0.3
+    "@heroui/react": 3.0.2
+    "@heroui/styles": 3.0.2
   hono:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2

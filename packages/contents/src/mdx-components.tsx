@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 
-import { Table } from "@heroui/react";
+import { Table, Alert } from "@heroui/react";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
@@ -15,6 +15,7 @@ import { TypeTable } from "fumadocs-ui/components/type-table";
 import defaultComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 
+import { ErrorBoundary } from "@chia/ui/error-boundary";
 import ImageZoom from "@chia/ui/image-zoom";
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -94,19 +95,30 @@ export const V1MDXComponents: MDXComponents = {
     <div className="flex w-full justify-center">{props.children}</div>
   ),
   table: (props: any) => (
-    <Table className="not-prose my-2">
-      <Table.ScrollContainer>
-        <Table.Content aria-label="table" className="min-w-[600px]">
-          {props.children}
-        </Table.Content>
-      </Table.ScrollContainer>
-    </Table>
+    <ErrorBoundary
+      errorElement={
+        <Alert status="danger" className="not-prose my-2">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>Error loading table</Alert.Title>
+            <Alert.Description>Please try again later.</Alert.Description>
+          </Alert.Content>
+        </Alert>
+      }>
+      <Table className="not-prose my-2">
+        <Table.ScrollContainer>
+          <Table.Content aria-label="table" className="min-w-[600px]">
+            {props.children}
+          </Table.Content>
+        </Table.ScrollContainer>
+      </Table>
+    </ErrorBoundary>
   ),
   thead: (props: any) => <Table.Header>{props.children}</Table.Header>,
   tbody: (props: any) => <Table.Body>{props.children}</Table.Body>,
   tr: (props: any) => <Table.Row>{props.children}</Table.Row>,
   th: (props: any) => (
-    <Table.Column className={cn("min-w-[160px]")} isRowHeader>
+    <Table.Column className={cn("min-w-40")} isRowHeader>
       {props.children}
     </Table.Column>
   ),
