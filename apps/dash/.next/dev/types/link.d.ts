@@ -33,24 +33,7 @@ declare namespace __next_route_internal_types__ {
 
   type StaticRoutes = 
     | `/`
-    | `/api/v1/health`
-    | `/assets`
-    | `/auth/callback/sent-success`
-    | `/auth/login`
-    | `/feed`
-    | `/feed/create`
-    | `/feed/drafts`
-    | `/feed/notes`
-    | `/feed/posts`
-    | `/onboarding`
-    | `/onboarding/create`
-    | `/projects`
-    | `/projects/api-key`
-    | `/projects/create`
-    | `/settings`
-  type DynamicRoutes<T extends string = string> = 
-    | `/feed/edit/${SafeSlug<T>}`
-    | `/projects/${SafeSlug<T>}`
+  type DynamicRoutes<T extends string = string> = never
 
   type RouteImpl<T> = 
     | StaticRoutes
@@ -171,6 +154,13 @@ declare module 'next/form' {
      * - If `action` is a string, it will be interpreted as a path or URL to navigate to when the form is submitted.
      *   The path will be prefetched when the form becomes visible.
      * - If `action` is a function, it will be called when the form is submitted. See the [React docs](https://react.dev/reference/react-dom/components/form#props) for more.
+     */
+    action: __next_route_internal_types__.RouteImpl<RouteInferType> | ((formData: FormData) => void)
+  } & FormRestProps
+
+  export default function Form<RouteType>(props: FormProps<RouteType>): JSX.Element
+}
+  * - If `action` is a function, it will be called when the form is submitted. See the [React docs](https://react.dev/reference/react-dom/components/form#props) for more.
      */
     action: __next_route_internal_types__.RouteImpl<RouteInferType> | ((formData: FormData) => void)
   } & FormRestProps
