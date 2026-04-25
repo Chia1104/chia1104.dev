@@ -142,7 +142,7 @@ jobs:
           pnpm test:e2e --filter www-e2e...
 
       - name: "✅  Output coverage"
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report

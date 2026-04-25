@@ -11,7 +11,7 @@ import {
   Tailwind,
   Text,
   Markdown,
-} from "@react-email/components";
+} from "react-email";
 
 export interface Props {
   title?: string;
