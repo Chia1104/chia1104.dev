@@ -246,8 +246,8 @@ catalogs:
       specifier: 4.2.4
       version: 4.2.4
     postcss:
-      specifier: 8.5.10
-      version: 8.5.10
+      specifier: 8.5.12
+      version: 8.5.12
     tailwind-scrollbar:
       specifier: ^4.0.2
       version: 4.0.2
@@ -625,7 +625,7 @@ importers:
         version: 1.0.0
       postcss:
         specifier: catalog:tailwindcss
-        version: 8.5.10
+        version: 8.5.12
       tailwind-scrollbar:
         specifier: catalog:tailwindcss
         version: 4.0.2(react@19.2.5)(tailwindcss@4.2.4)
@@ -969,7 +969,7 @@ importers:
         version: 1.0.0
       postcss:
         specifier: catalog:tailwindcss
-        version: 8.5.10
+        version: 8.5.12
       tailwind-scrollbar:
         specifier: catalog:tailwindcss
         version: 4.0.2(react@19.2.5)(tailwindcss@4.2.4)
@@ -11895,6 +11895,10 @@ packages:
     resolution: {integrity: sha512-pMMHxBOZKFU6HgAZ4eyGnwXF/EvPGGqUr0MnZ5+99485wwW41kW91A4LOGxSHhgugZmSChL5AlElNdwlNgcnLQ==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.5.12:
+    resolution: {integrity: sha512-W62t/Se6rA0Az3DfCL0AqJwXuKwBeYg6nOaIgzP+xZ7N5BFCI7DYi1qs6ygUYT6rvfi6t9k65UMLJC+PHZpDAA==}
+    engines: {node: ^10 || ^12 || >=14}
+
   postgres-array@2.0.0:
     resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
     engines: {node: '>=4'}
@@ -19264,7 +19268,7 @@ snapshots:
       '@alloc/quick-lru': 5.2.0
       '@tailwindcss/node': 4.2.4
       '@tailwindcss/oxide': 4.2.4
-      postcss: 8.5.10
+      postcss: 8.5.12
       tailwindcss: 4.2.4
 
   '@tailwindcss/typography@0.5.19(tailwindcss@4.2.4)':
@@ -25055,6 +25059,12 @@ snapshots:
       source-map-js: 1.2.1
 
   postcss@8.5.10:
+    dependencies:
+      nanoid: 3.3.11
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
+  postcss@8.5.12:
     dependencies:
       nanoid: 3.3.11
       picocolors: 1.1.1
