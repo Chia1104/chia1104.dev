@@ -47,10 +47,10 @@ catalogs:
     drizzle-kit: 1.0.0-beta.23
     drizzle-orm: 1.0.0-beta.23
   fumadocs:
-    "@fumadocs/mdx-remote": 1.4.9
-    fumadocs-core: 16.8.3
-    fumadocs-mdx: 14.3.1
-    fumadocs-ui: 16.8.3
+    "@fumadocs/mdx-remote": 1.4.10
+    fumadocs-core: 16.8.5
+    fumadocs-mdx: 14.3.2
+    fumadocs-ui: 16.8.5
   heroui-v3:
     "@heroui/react": 3.0.2
     "@heroui/styles": 3.0.2
