@@ -69,8 +69,8 @@ catalogs:
     "@orpc/server": 1.14.0
     "@orpc/tanstack-query": 1.14.0
   oxc:
-    oxfmt: 0.46.0
-    oxlint: 1.61.0
+    oxfmt: 0.47.0
+    oxlint: 1.62.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
     platejs: ^53.0.0
