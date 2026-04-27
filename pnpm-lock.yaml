@@ -811,8 +811,8 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.73.1(react@19.2.5))
       '@marsidev/react-turnstile':
-        specifier: ^1.5.0
-        version: 1.5.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+        specifier: ^1.5.1
+        version: 1.5.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@next/third-parties':
         specifier: catalog:next
         version: 16.2.4(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
@@ -3673,8 +3673,8 @@ packages:
     resolution: {integrity: sha512-CEFCOGzhFdx5sIehISBRS9Ev5D1Zp+24YT1uyOkaEcY8uAKeK+kA58NChYfUwXmAFerm3zWZWYhQViUf8XhQcg==}
     engines: {node: '>=20.0.0'}
 
-  '@marsidev/react-turnstile@1.5.0':
-    resolution: {integrity: sha512-Ph6mcj8u9WBDsBO7s9jKPsyRDz1sBPBJwrk+Ngx09vFInvKsQ6U6kW5amEcGq4dHOreB6DgFrOJk7/fy318YlQ==}
+  '@marsidev/react-turnstile@1.5.1':
+    resolution: {integrity: sha512-dGZeOWEh1t9AfkR0G94k48+gciIzTNz8GhEatIGTk43ZBynWFfHxmgv1ZiSPkJBYBhSqeqfgFMp+nqFbZAViyQ==}
     peerDependencies:
       react: ^17.0.2 || ^18.0.0 || ^19.0
       react-dom: ^17.0.2 || ^18.0.0 || ^19.0
@@ -16032,7 +16032,7 @@ snapshots:
       js-yaml: 4.1.1
       tinyglobby: 0.2.16
 
-  '@marsidev/react-turnstile@1.5.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+  '@marsidev/react-turnstile@1.5.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)

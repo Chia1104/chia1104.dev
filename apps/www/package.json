@@ -42,7 +42,7 @@
     "@heroui/react": "catalog:heroui-v3",
     "@heroui/styles": "catalog:heroui-v3",
     "@hookform/resolvers": "^5.2.2",
-    "@marsidev/react-turnstile": "^1.5.0",
+    "@marsidev/react-turnstile": "^1.5.1",
     "@next/third-parties": "catalog:next",
     "@orpc/client": "catalog:orpc",
     "@orpc/contract": "catalog:orpc",
