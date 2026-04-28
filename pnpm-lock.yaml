@@ -259,11 +259,11 @@ catalogs:
       specifier: 0.22.0
       version: 0.22.0
     '@tanstack/react-query':
-      specifier: 5.100.2
-      version: 5.100.2
+      specifier: 5.100.6
+      version: 5.100.6
     '@tanstack/react-query-devtools':
-      specifier: 5.100.2
-      version: 5.100.2
+      specifier: 5.100.6
+      version: 5.100.6
   testing-library:
     '@testing-library/jest-dom':
       specifier: 6.9.1
@@ -483,7 +483,7 @@ importers:
         version: 1.14.0(@opentelemetry/api@1.9.1)(crossws@0.4.5(srvx@0.11.15))(ws@8.20.0)
       '@orpc/tanstack-query':
         specifier: catalog:orpc
-        version: 1.14.0(@opentelemetry/api@1.9.1)(@orpc/client@1.14.0(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.2)
+        version: 1.14.0(@opentelemetry/api@1.9.1)(@orpc/client@1.14.0(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.6)
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.13.11(typescript@6.0.3)(zod@4.3.6)
@@ -492,7 +492,7 @@ importers:
         version: 0.22.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-query':
         specifier: catalog:tanstack
-        version: 5.100.2(react@19.2.5)
+        version: 5.100.6(react@19.2.5)
       ai:
         specifier: catalog:ai
         version: 6.0.168(zod@4.3.6)
@@ -827,7 +827,7 @@ importers:
         version: 1.14.0(@opentelemetry/api@1.9.1)(crossws@0.4.5(srvx@0.11.15))(ws@8.20.0)
       '@orpc/tanstack-query':
         specifier: catalog:orpc
-        version: 1.14.0(@opentelemetry/api@1.9.1)(@orpc/client@1.14.0(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.2)
+        version: 1.14.0(@opentelemetry/api@1.9.1)(@orpc/client@1.14.0(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.6)
       '@sentry/nextjs':
         specifier: ^10.50.0
         version: 10.50.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.2(@swc/core@1.15.30(@swc/helpers@0.5.21)))
@@ -836,10 +836,10 @@ importers:
         version: 0.13.11(typescript@6.0.3)(zod@4.3.6)
       '@tanstack/react-query':
         specifier: catalog:tanstack
-        version: 5.100.2(react@19.2.5)
+        version: 5.100.6(react@19.2.5)
       '@tanstack/react-query-devtools':
         specifier: catalog:tanstack
-        version: 5.100.2(@tanstack/react-query@5.100.2(react@19.2.5))(react@19.2.5)
+        version: 5.100.6(@tanstack/react-query@5.100.6(react@19.2.5))(react@19.2.5)
       '@vercel/analytics':
         specifier: 2.0.1
         version: 2.0.1(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
@@ -1504,7 +1504,7 @@ importers:
         version: 6.0.0(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@tanstack/react-query':
         specifier: catalog:tanstack
-        version: 5.100.2(react@19.2.5)
+        version: 5.100.6(react@19.2.5)
       class-variance-authority:
         specifier: catalog:ui
         version: 0.7.1
@@ -6893,11 +6893,11 @@ packages:
     resolution: {integrity: sha512-EZyU3fQvdz7faj0vBVrPd5ejkSS9pbGKtrGZI56dLJgotca6iZKhaNDRv7dweG4dnWx0LovE9YYf1MAErGpbLQ==}
     engines: {node: '>=18'}
 
-  '@tanstack/query-core@5.100.2':
-    resolution: {integrity: sha512-HzzOC7xgSfGGzZ1gTsFZqYz6rxGg3tYF77nTPctin+wEYYLNMP7LjwPVFALEGNdjxkHvcewh1EM5ywixeukS4w==}
+  '@tanstack/query-core@5.100.6':
+    resolution: {integrity: sha512-Os2CPUr98to98RYm+D4qGqGkiffn7MGSyl2547a4MljVkHE30AMJRqTiyCqBfMwzAx/I91vCkAxp5tHSla6Twg==}
 
-  '@tanstack/query-devtools@5.100.2':
-    resolution: {integrity: sha512-0vAp4Y9RyywcZ3gb+wFoiR+pEViDT2ZG/ZaUhn7zXHuUbxuAdeEKuhlh9SDW2vjsPdm9F2AWqplr/QxhOeoqEQ==}
+  '@tanstack/query-devtools@5.100.6':
+    resolution: {integrity: sha512-2SiNwlOiAdTbqktCSmwlXZH8x8mckSbES2O0bdr3qZNhdQl5DCtImZx0S3HGeNHWTIkzTaHx2Isg+bD4M3WRIg==}
 
   '@tanstack/react-pacer@0.22.0':
     resolution: {integrity: sha512-AuKrkcP/LheBuq1tJCN8DDkwU+RmSql3zpJ1RFwvdc7qJED7Ba+jwlfFkeOZ62WcMtV54RceG9Uyprr0j99Qnw==}
@@ -6906,14 +6906,14 @@ packages:
       react: '>=16.8'
       react-dom: '>=16.8'
 
-  '@tanstack/react-query-devtools@5.100.2':
-    resolution: {integrity: sha512-PE5Pgotl8GKv4Mi0s4YiwTcA+evvb2fHMMWexJDx0D3EsBjtf3MbhYuv9kt+oBnbbsjQj4LJTza2PG2vw2pdOQ==}
+  '@tanstack/react-query-devtools@5.100.6':
+    resolution: {integrity: sha512-sz3ksMKA2t1rx0+Odzb0x1A3pXH/SVf7fzlzd3sKXzwXz8980f5sbOwfQD6+UfTG8G4Y2KaIg9e3sBn+uC4VTg==}
     peerDependencies:
-      '@tanstack/react-query': ^5.100.2
+      '@tanstack/react-query': ^5.100.6
       react: ^18 || ^19
 
-  '@tanstack/react-query@5.100.2':
-    resolution: {integrity: sha512-MvvzPcurtzVh4EcbsTfI1BL5GOfdi1S0dk/qhigEghW07MvcHUl/dhfc1FT8hPEquuMtUC+IIAxC0bdmSp/7kA==}
+  '@tanstack/react-query@5.100.6':
+    resolution: {integrity: sha512-uVSrps0PV16Cxmcn2rvL+dUhwTpTUtiRW347AEeYxMZXO2pZe9ja7E24PAMGoQ5u2g89DD8u4QhOviBk+RN8RA==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -16749,11 +16749,11 @@ snapshots:
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/tanstack-query@1.14.0(@opentelemetry/api@1.9.1)(@orpc/client@1.14.0(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.2)':
+  '@orpc/tanstack-query@1.14.0(@opentelemetry/api@1.9.1)(@orpc/client@1.14.0(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.6)':
     dependencies:
       '@orpc/client': 1.14.0(@opentelemetry/api@1.9.1)
       '@orpc/shared': 1.14.0(@opentelemetry/api@1.9.1)
-      '@tanstack/query-core': 5.100.2
+      '@tanstack/query-core': 5.100.6
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
@@ -19279,9 +19279,9 @@ snapshots:
       '@tanstack/devtools-event-client': 0.4.3
       '@tanstack/store': 0.11.0
 
-  '@tanstack/query-core@5.100.2': {}
+  '@tanstack/query-core@5.100.6': {}
 
-  '@tanstack/query-devtools@5.100.2': {}
+  '@tanstack/query-devtools@5.100.6': {}
 
   '@tanstack/react-pacer@0.22.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
@@ -19290,15 +19290,15 @@ snapshots:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
 
-  '@tanstack/react-query-devtools@5.100.2(@tanstack/react-query@5.100.2(react@19.2.5))(react@19.2.5)':
+  '@tanstack/react-query-devtools@5.100.6(@tanstack/react-query@5.100.6(react@19.2.5))(react@19.2.5)':
     dependencies:
-      '@tanstack/query-devtools': 5.100.2
-      '@tanstack/react-query': 5.100.2(react@19.2.5)
+      '@tanstack/query-devtools': 5.100.6
+      '@tanstack/react-query': 5.100.6(react@19.2.5)
       react: 19.2.5
 
-  '@tanstack/react-query@5.100.2(react@19.2.5)':
+  '@tanstack/react-query@5.100.6(react@19.2.5)':
     dependencies:
-      '@tanstack/query-core': 5.100.2
+      '@tanstack/query-core': 5.100.6
       react: 19.2.5
 
   '@tanstack/react-store@0.11.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
