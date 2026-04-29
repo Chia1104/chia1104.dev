@@ -17,11 +17,10 @@ import type { RouterInputs } from "@/libs/orpc/types";
 
 interface Props {
   query?: RouterInputs["feeds"]["list"];
-  nextCursor?: string | number | null;
   type: FeedType;
 }
 
-const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
+const FeedList: FC<Props> = ({ query = {}, type }) => {
   const locale = useLocale();
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
@@ -42,7 +41,6 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
 
           return lastPage.nextCursor.toString();
         },
-        initialPageParam: nextCursor?.toString() ?? null,
       })
     );
 
