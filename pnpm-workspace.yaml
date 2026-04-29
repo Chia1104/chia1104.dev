@@ -120,7 +120,7 @@ catalogs:
     cobe: ^2.0.1
     immer: ^11.1.4
     katex: ^0.16.45
-    lucide-react: ^1.12.0
+    lucide-react: ^1.14.0
     motion: ^12.38.0
     next-themes: ^0.4.6
     nuqs: ^2.8.9
