@@ -4,10 +4,12 @@ import type { FC } from "react";
 import { useMemo, useCallback } from "react";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
+import Image from "@chia/ui/image";
+import ImageZoom from "@chia/ui/image-zoom";
 import Timeline from "@chia/ui/timeline";
 import type { TimelineItemData } from "@chia/ui/timeline/types";
 import dayjs from "@chia/utils/day";
@@ -23,6 +25,7 @@ interface Props {
 
 const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
   const locale = useLocale();
+  const t = useTranslations(`blog.posts`);
   const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
       orpc.feeds["admin-list"].infiniteOptions({
@@ -82,6 +85,26 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
       })
     );
   }, [isSuccess, data, isError, locale, getLinkPrefix]);
+
+  if (isSuccess && transformData.length === 0) {
+    return (
+      <div className="c-bg-third relative flex flex-col items-center justify-center overflow-hidden rounded-lg px-5 py-10">
+        <p>{t("no-content")}</p>
+        <ImageZoom>
+          <div className="not-prose relative aspect-square w-[100px]">
+            <Image
+              src="https://storage.chia1104.dev/memo.png"
+              alt="memo"
+              className="object-cover"
+              fill
+              loading="lazy"
+            />
+          </div>
+        </ImageZoom>
+        <div className="dark:c-bg-gradient-purple-to-pink c-bg-gradient-yellow-to-pink absolute -z-40 size-full opacity-50 blur-3xl" />
+      </div>
+    );
+  }
 
   return (
     <Timeline
