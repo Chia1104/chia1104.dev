@@ -21,7 +21,7 @@
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.0",
+    "@react-three/fiber": "^9.6.1",
     "leva": "^0.10.1",
     "maath": "^0.10.8",
     "r3f-perf": "^7.2.3",

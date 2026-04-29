@@ -25,16 +25,16 @@ catalog:
 
 catalogs:
   ai:
-    "@ai-sdk/anthropic": 3.0.71
-    "@ai-sdk/gateway": 3.0.104
-    "@ai-sdk/google": 3.0.64
-    "@ai-sdk/openai": 3.0.53
-    "@ai-sdk/react": 3.0.170
+    "@ai-sdk/anthropic": 3.0.72
+    "@ai-sdk/gateway": 3.0.105
+    "@ai-sdk/google": 3.0.65
+    "@ai-sdk/openai": 3.0.54
+    "@ai-sdk/react": 3.0.171
     "@anthropic-ai/sdk": 0.91.1
     "@google/genai": 1.50.1
-    ai: 6.0.168
+    ai: 6.0.169
     ollama: 0.6.3
-    openai: 6.34.0
+    openai: 6.35.0
   better-auth:
     "@better-auth/api-key": 1.6.9
     "@better-auth/passkey": 1.6.9
@@ -47,10 +47,10 @@ catalogs:
     drizzle-kit: 1.0.0-beta.23
     drizzle-orm: 1.0.0-beta.23
   fumadocs:
-    "@fumadocs/mdx-remote": 1.4.9
-    fumadocs-core: 16.8.3
-    fumadocs-mdx: 14.3.1
-    fumadocs-ui: 16.8.3
+    "@fumadocs/mdx-remote": 1.4.10
+    fumadocs-core: 16.8.5
+    fumadocs-mdx: 14.3.2
+    fumadocs-ui: 16.8.5
   heroui-v3:
     "@heroui/react": 3.0.2
     "@heroui/styles": 3.0.2
@@ -69,8 +69,8 @@ catalogs:
     "@orpc/server": 1.14.0
     "@orpc/tanstack-query": 1.14.0
   oxc:
-    oxfmt: 0.46.0
-    oxlint: 1.61.0
+    oxfmt: 0.47.0
+    oxlint: 1.62.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
     platejs: ^53.0.0
@@ -97,13 +97,13 @@ catalogs:
     react-dom: ^19.2.5
   tailwindcss:
     "@tailwindcss/postcss": 4.2.4
-    postcss: 8.5.10
+    postcss: 8.5.12
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.2.4
   tanstack:
     "@tanstack/react-pacer": 0.22.0
-    "@tanstack/react-query": 5.100.2
-    "@tanstack/react-query-devtools": 5.100.2
+    "@tanstack/react-query": 5.100.6
+    "@tanstack/react-query-devtools": 5.100.6
   testing-library:
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 16.3.2
@@ -120,7 +120,7 @@ catalogs:
     cobe: ^2.0.1
     immer: ^11.1.4
     katex: ^0.16.45
-    lucide-react: ^1.11.0
+    lucide-react: ^1.12.0
     motion: ^12.38.0
     next-themes: ^0.4.6
     nuqs: ^2.8.9
