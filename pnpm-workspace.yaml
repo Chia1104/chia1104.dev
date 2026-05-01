@@ -29,7 +29,7 @@ catalogs:
     "@ai-sdk/gateway": 3.0.105
     "@ai-sdk/google": 3.0.65
     "@ai-sdk/openai": 3.0.54
-    "@ai-sdk/react": 3.0.171
+    "@ai-sdk/react": 3.0.176
     "@anthropic-ai/sdk": 0.91.1
     "@google/genai": 1.50.1
     ai: 6.0.169
