@@ -31,8 +31,6 @@ export async function generateMetadata({
   };
 }
 
-const queryClient = getQueryClient();
-
 const CacheFeeds = async ({
   type,
   limit = 10,
@@ -42,6 +40,7 @@ const CacheFeeds = async ({
   limit?: number;
   locale: Locale;
 }) => {
+  const queryClient = getQueryClient();
   const formattedType = type === "posts" ? "post" : "note";
 
   await queryClient.prefetchInfiniteQuery(
