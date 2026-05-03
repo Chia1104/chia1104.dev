@@ -26,7 +26,7 @@ interface Props {
 const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
   const locale = useLocale();
   const t = useTranslations(`blog.posts`);
-  const { data, isSuccess, isFetching, isError, fetchNextPage, hasNextPage } =
+  const { data, isSuccess, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
       orpc.feeds["admin-list"].infiniteOptions({
         input: (pageParam) => ({
@@ -112,7 +112,7 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
       enableSort={false}
       asyncDataStatus={{
         hasMore: hasNextPage,
-        isLoading: isFetching,
+        isLoading,
         isError,
       }}
       onEndReached={fetchNextPage}
