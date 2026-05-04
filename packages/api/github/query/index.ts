@@ -58,3 +58,23 @@ export const GET_PINNED_REPOS = gql`
     }
   }
 `;
+
+export const GET_CONTRIBUTIONS = gql`
+  query ($login: String!, $from: DateTime!, $to: DateTime!) {
+    user(login: $login) {
+      contributionsCollection(from: $from, to: $to) {
+        contributionCalendar {
+          totalContributions
+          weeks {
+            contributionDays {
+              date
+              contributionCount
+              weekday
+              color
+            }
+          }
+        }
+      }
+    }
+  }
+`;

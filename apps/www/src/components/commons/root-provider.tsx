@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RootProvider as FDProvider } from "fumadocs-ui/provider/next";
-import type { AbstractIntlMessages, Timezone } from "next-intl";
+import type { useMessages, Timezone } from "next-intl";
 import type { Locale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
@@ -18,7 +18,7 @@ const RootProvider = ({
   locale,
 }: {
   children: React.ReactNode;
-  messages: AbstractIntlMessages;
+  messages: ReturnType<typeof useMessages>;
   timeZone: Timezone;
   locale: Locale;
 }) => {
