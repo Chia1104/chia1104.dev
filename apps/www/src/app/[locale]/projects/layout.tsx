@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <ViewTransition>
-      <article className="prose dark:prose-invert mt-20 min-w-full">
+      <article className="prose dark:prose-invert mt-20 w-full max-w-full min-w-0">
         <PageHeader />
         {children}
       </article>

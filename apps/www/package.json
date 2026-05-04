@@ -69,6 +69,7 @@
     "next-intl": "^4.11.0",
     "next-themes": "catalog:ui",
     "react": "catalog:react-is",
+    "react-activity-calendar": "^3.2.0",
     "react-dom": "catalog:react-is",
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.75.0",

@@ -31,3 +31,21 @@ export interface RepoGql {
     };
   };
 }
+
+export interface Contributions {
+  user: {
+    contributionsCollection: {
+      contributionCalendar: {
+        totalContributions: number;
+        weeks: {
+          contributionDays: {
+            date: string;
+            contributionCount: number;
+            weekday: number;
+            color: string;
+          }[];
+        }[];
+      };
+    };
+  };
+}

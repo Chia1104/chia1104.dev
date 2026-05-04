@@ -1,26 +1,25 @@
-import { getPinnedRepos } from "@chia/api/github";
-import meta from "@chia/meta";
+import { Suspense } from "react";
 
-import { RepoCard } from "@/components/project/repo-card";
+import { ContributionsChart } from "@/containers/projects/contributions-chart";
+import { RepoList } from "@/containers/projects/repo-list";
 
-export const revalidate = 300;
+import {
+  ContributionsChartFallback,
+  RepoListFallback,
+} from "./loading-fallbacks";
 
-const Page = async () => {
-  const repo = await getPinnedRepos(meta.name);
+export const revalidate = 14400; // 4 hours
+
+const Page = () => {
   return (
-    <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-      {repo.user.pinnedItems.edges.map((item) => (
-        <RepoCard
-          key={item.node.id}
-          href={item.node.url}
-          image={item.node.openGraphImageUrl}
-          name={item.node.name}
-          description={item.node.description}
-          language={item.node.primaryLanguage}
-          updatedAt={item.node.pushedAt}
-        />
-      ))}
-    </div>
+    <>
+      <Suspense fallback={<ContributionsChartFallback />}>
+        <ContributionsChart />
+      </Suspense>
+      <Suspense fallback={<RepoListFallback />}>
+        <RepoList />
+      </Suspense>
+    </>
   );
 };
 

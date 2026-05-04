@@ -104,7 +104,30 @@
   },
   "projects": {
     "title": "Projects",
-    "description": "I love to build things. Here are some of the projects I've worked on recently."
+    "description": "I love to build things. Here are some of the projects I've worked on recently.",
+    "calendar": {
+      "tooltip": "{count, plural, =0 {No contributions} =1 {# contribution} other {# contributions}} on {date}",
+      "total-count": "{{count}} contributions in {{year}}",
+      "months": [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+      ],
+      "weekdays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "legend": {
+        "less": "Less",
+        "more": "More"
+      }
+    }
   },
   "contact": {
     "title": "Contact",

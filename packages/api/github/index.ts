@@ -1,6 +1,6 @@
 import client from "./github.client";
-import { GET_PINNED_REPOS, GET_REPOS } from "./query";
-import type { RepoGql } from "./types";
+import { GET_PINNED_REPOS, GET_REPOS, GET_CONTRIBUTIONS } from "./query";
+import type { RepoGql, Contributions } from "./types";
 
 export interface PinnedRepository {
   user: {
@@ -26,4 +26,11 @@ export const getRepos = (userName: string, sort?: string, limit?: number) =>
     username: userName,
     sort,
     limit,
+  });
+
+export const getContributions = (userName: string, from: string, to: string) =>
+  client.request<Contributions>(GET_CONTRIBUTIONS, {
+    login: userName,
+    from,
+    to,
   });
