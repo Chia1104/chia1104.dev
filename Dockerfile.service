@@ -1,5 +1,5 @@
 ARG BUN_VERSION=1.3.13
-ARG NODE_VERSION=24
+ARG NODE_VERSION=25
 
 FROM oven/bun:$BUN_VERSION AS runner-base
 
@@ -19,9 +19,7 @@ RUN apk update && \
     build-base \
     gcc \
     libc6-compat && \
-    npm install -g corepack@latest && \
-    corepack enable pnpm && \
-    pnpm add -g turbo && \
+    npm install -g pnpm@next-11 turbo && \
     ln -sf /usr/bin/python3 /usr/bin/python
 
 FROM builder-base AS pre-builder
