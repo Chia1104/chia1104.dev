@@ -5,6 +5,21 @@ packages:
   - toolings/**/*
   - tests/*
 
+allowBuilds:
+  '@google/genai': false
+  '@nestjs/core': false
+  '@parcel/watcher': false
+  '@sentry/cli': false
+  '@swc/core': true
+  cbor-extract: false
+  esbuild: true
+  msgpackr-extract: false
+  msw: false
+  nx: false
+  protobufjs: false
+  sharp: true
+  sqlite3: false
+
 catalog:
   "@t3-oss/env-core": ^0.13.11
   "@t3-oss/env-nextjs": ^0.13.11
@@ -21,18 +36,18 @@ catalog:
   superjson: 2.2.6
   tsdown: 0.21.10
   typescript: ^6.0.3
-  zod: 4.3.6
+  zod: 4.4.2
 
 catalogs:
   ai:
-    "@ai-sdk/anthropic": 3.0.72
-    "@ai-sdk/gateway": 3.0.105
-    "@ai-sdk/google": 3.0.65
-    "@ai-sdk/openai": 3.0.54
-    "@ai-sdk/react": 3.0.171
-    "@anthropic-ai/sdk": 0.91.1
-    "@google/genai": 1.50.1
-    ai: 6.0.169
+    "@ai-sdk/anthropic": 3.0.74
+    "@ai-sdk/gateway": 3.0.109
+    "@ai-sdk/google": 3.0.67
+    "@ai-sdk/openai": 3.0.58
+    "@ai-sdk/react": 3.0.176
+    "@anthropic-ai/sdk": 0.92.0
+    "@google/genai": 1.51.0
+    ai: 6.0.174
     ollama: 0.6.3
     openai: 6.35.0
   better-auth:
@@ -44,13 +59,13 @@ catalogs:
     "@chiastack/tsconfig": 2.1.2
     "@chiastack/ui": 1.2.2
   drizzle:
-    drizzle-kit: 1.0.0-beta.23
-    drizzle-orm: 1.0.0-beta.23
+    drizzle-kit: 1.0.0-rc.2-203eab8
+    drizzle-orm: 1.0.0-rc.2-203eab8
   fumadocs:
     "@fumadocs/mdx-remote": 1.4.10
-    fumadocs-core: 16.8.5
+    fumadocs-core: 16.8.7
     fumadocs-mdx: 14.3.2
-    fumadocs-ui: 16.8.5
+    fumadocs-ui: 16.8.7
   heroui-v3:
     "@heroui/react": 3.0.2
     "@heroui/styles": 3.0.2
@@ -58,22 +73,22 @@ catalogs:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2
     "@hono/zod-validator": 0.7.6
-    hono: 4.12.15
+    hono: 4.12.16
     hono-rate-limiter: 0.5.3
   next:
     "@next/third-parties": 16.2.4
     next: 16.2.4
   orpc:
-    "@orpc/client": 1.14.0
-    "@orpc/contract": 1.14.0
-    "@orpc/server": 1.14.0
-    "@orpc/tanstack-query": 1.14.0
+    "@orpc/client": 1.14.1
+    "@orpc/contract": 1.14.1
+    "@orpc/server": 1.14.1
+    "@orpc/tanstack-query": 1.14.1
   oxc:
     oxfmt: 0.47.0
     oxlint: 1.62.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
-    platejs: ^53.0.0
+    platejs: ^53.0.3
   radix-ui:
     "@radix-ui/react-accordion": 1.2.12
     "@radix-ui/react-avatar": ^1.1.11
@@ -97,13 +112,13 @@ catalogs:
     react-dom: ^19.2.5
   tailwindcss:
     "@tailwindcss/postcss": 4.2.4
-    postcss: 8.5.12
+    postcss: 8.5.13
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.2.4
   tanstack:
     "@tanstack/react-pacer": 0.22.0
-    "@tanstack/react-query": 5.100.6
-    "@tanstack/react-query-devtools": 5.100.6
+    "@tanstack/react-query": 5.100.9
+    "@tanstack/react-query-devtools": 5.100.9
   testing-library:
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 16.3.2
@@ -120,11 +135,11 @@ catalogs:
     cobe: ^2.0.1
     immer: ^11.1.4
     katex: ^0.16.45
-    lucide-react: ^1.12.0
+    lucide-react: ^1.14.0
     motion: ^12.38.0
     next-themes: ^0.4.6
     nuqs: ^2.8.9
-    react-medium-image-zoom: ^5.4.3
+    react-medium-image-zoom: ^5.4.5
     schema-dts: 2.0.0
     shiki: ^4.0.2
     sonner: 2.0.7

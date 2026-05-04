@@ -16,6 +16,7 @@ export default defineConfig({
     "@workflow-worlds/redis",
     "@workflow/world-postgres",
     "workflow",
+    "@better-auth/passkey",
   ],
   noPublicDir: true,
 });

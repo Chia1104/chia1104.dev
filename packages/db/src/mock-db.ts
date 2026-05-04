@@ -1,7 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-import * as schema from "./schemas";
 import { relations } from "./schemas/relations";
 
 export const mockDB = drizzle({
@@ -9,6 +8,5 @@ export const mockDB = drizzle({
     connectionString: "postgres://localhost:5432/postgres",
     connectionTimeoutMillis: 10_000,
   }),
-  schema,
   relations,
 });
