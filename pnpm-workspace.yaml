@@ -4,12 +4,13 @@ packages:
   - services/*
   - toolings/**/*
   - tests/*
+
 allowBuilds:
   '@google/genai': false
   '@nestjs/core': false
   '@parcel/watcher': false
   '@sentry/cli': false
-  '@swc/core': false
+  '@swc/core': true
   cbor-extract: false
   esbuild: true
   msgpackr-extract: false
@@ -58,8 +59,8 @@ catalogs:
     "@chiastack/tsconfig": 2.1.2
     "@chiastack/ui": 1.2.2
   drizzle:
-    drizzle-kit: 1.0.0-beta.23
-    drizzle-orm: 1.0.0-beta.23
+    drizzle-kit: 1.0.0-rc.2-203eab8
+    drizzle-orm: 1.0.0-rc.2-203eab8
   fumadocs:
     "@fumadocs/mdx-remote": 1.4.10
     fumadocs-core: 16.8.7

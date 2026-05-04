@@ -5,7 +5,6 @@ import { DrizzleCache } from "@chia/kv/drizzle/cache";
 import { switchEnv } from "@chia/utils/config";
 
 import { env as internalEnv } from "./env.ts";
-import * as schemas from "./schemas/index.ts";
 import { relations } from "./schemas/relations.ts";
 
 import type { DB } from ".";
@@ -19,7 +18,6 @@ export async function getConnection(url: string) {
 
   try {
     db = drizzle(url, {
-      schema: schemas,
       relations,
       cache: new DrizzleCache(await import("@chia/kv").then((m) => m.kv), {
         strategy: "all",
