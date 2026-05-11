@@ -27,7 +27,7 @@
     "r3f-perf": "^7.2.3",
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
-    "shaders": "^2.5.111",
+    "shaders": "^2.5.116",
     "three": "^0.184.0"
   },
   "devDependencies": {
@@ -35,7 +35,7 @@
     "@testing-library/react": "catalog:testing-library",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
-    "@types/three": "^0.184.0",
+    "@types/three": "^0.184.1",
     "tailwindcss": "catalog:tailwindcss",
     "typescript": "catalog:"
   }
