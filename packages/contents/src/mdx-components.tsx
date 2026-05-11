@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 
-import { Table, Alert } from "@heroui/react";
+import { Alert, ScrollShadow } from "@heroui/react";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
@@ -105,24 +105,26 @@ export const V1MDXComponents: MDXComponents = {
           </Alert.Content>
         </Alert>
       }>
-      <Table className="not-prose my-2">
-        <Table.ScrollContainer>
-          <Table.Content aria-label="table" className="min-w-[600px]">
+      <div className="table-root table-root--primary my-6">
+        <ScrollShadow orientation="horizontal">
+          <table className="not-prose table__content min-w-[600px]">
             {props.children}
-          </Table.Content>
-        </Table.ScrollContainer>
-      </Table>
+          </table>
+        </ScrollShadow>
+      </div>
     </ErrorBoundary>
   ),
-  thead: (props: any) => <Table.Header>{props.children}</Table.Header>,
-  tbody: (props: any) => <Table.Body>{props.children}</Table.Body>,
-  tr: (props: any) => <Table.Row>{props.children}</Table.Row>,
-  th: (props: any) => (
-    <Table.Column className={cn("min-w-40")} isRowHeader>
-      {props.children}
-    </Table.Column>
+  thead: (props: any) => (
+    <thead className="table__header">{props.children}</thead>
   ),
-  td: (props: any) => <Table.Cell>{props.children}</Table.Cell>,
+  tbody: (props: any) => (
+    <tbody className="table__body">{props.children}</tbody>
+  ),
+  tr: (props: any) => <tr>{props.children}</tr>,
+  th: (props: any) => (
+    <th className={cn("table__column min-w-40")}>{props.children}</th>
+  ),
+  td: (props: any) => <td className="table__cell">{props.children}</td>,
   strong: (props: any) => (
     <strong className="dark:c-text-bg-purple-half c-text-bg-pink-half">
       {props.children}
