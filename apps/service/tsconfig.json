@@ -4,7 +4,8 @@
     "types": ["node", "bun-types", "vitest/globals"],
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
-    "declaration": true
+    "declaration": true,
+    "jsx": "react-jsx"
   },
   "include": [
     "src/**/*.ts",
