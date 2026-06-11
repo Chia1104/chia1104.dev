@@ -52,7 +52,7 @@
     "fumadocs-mdx": "catalog:fumadocs",
     "fumadocs-ui": "catalog:fumadocs",
     "katex": "catalog:ui",
-    "mermaid": "^11.14.0",
+    "mermaid": "^11.15.0",
     "next": "catalog:next",
     "next-themes": "catalog:ui",
     "react": "catalog:react-is",
@@ -62,7 +62,7 @@
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@types/mdx": "^2.0.13",
+    "@types/mdx": "^2.0.14",
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",

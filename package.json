@@ -68,24 +68,24 @@
   "devDependencies": {
     "@chiastack/oxlint": "catalog:chiastack",
     "@manypkg/cli": "^0.25.1",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.60.0",
     "@total-typescript/ts-reset": "0.6.1",
-    "@turbo/gen": "^2.9.12",
+    "@turbo/gen": "^2.9.17",
     "@vitest/coverage-v8": "catalog:testing-library",
     "@vitest/ui": "catalog:testing-library",
     "cross-env": "10.1.0",
     "dotenv": "^17.4.2",
-    "eslint-plugin-turbo": "^2.9.12",
-    "happy-dom": "^20.9.0",
+    "eslint-plugin-turbo": "^2.9.17",
+    "happy-dom": "^20.10.2",
     "husky": "^9.1.7",
     "jest-extended": "catalog:testing-library",
-    "lint-staged": "^17.0.4",
-    "msw": "^2.14.5",
-    "nx": "^22.7.1",
+    "lint-staged": "^17.0.7",
+    "msw": "^2.14.6",
+    "nx": "^22.7.5",
     "oxfmt": "catalog:oxc",
     "oxlint": "catalog:oxc",
-    "tsx": "^4.21.0",
-    "turbo": "2.9.12",
+    "tsx": "^4.22.4",
+    "turbo": "2.9.17",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   },
@@ -101,7 +101,7 @@
     "node": ">=22",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@11.0.2",
+  "packageManager": "pnpm@11.5.2",
   "manypkg": {
     "ignoredRules": [
       "ROOT_HAS_PROD_DEPENDENCIES"
