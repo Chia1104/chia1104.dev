@@ -20,6 +20,9 @@ allowBuilds:
   sharp: true
   sqlite3: false
 
+overrides:
+  sanitize-html: 2.17.4
+
 catalog:
   "@t3-oss/env-core": ^0.13.11
   "@t3-oss/env-nextjs": ^0.13.11
@@ -59,8 +62,8 @@ catalogs:
     "@chiastack/tsconfig": 2.1.2
     "@chiastack/ui": 1.2.2
   drizzle:
-    drizzle-kit: 1.0.0-rc.2-203eab8
-    drizzle-orm: 1.0.0-rc.2-203eab8
+    drizzle-kit: 1.0.0-rc.3
+    drizzle-orm: 1.0.0-rc.3
   fumadocs:
     "@fumadocs/mdx-remote": 1.4.10
     fumadocs-core: 16.9.3
