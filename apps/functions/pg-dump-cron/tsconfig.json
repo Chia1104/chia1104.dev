@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "types": ["node", "bun-types"]
+  },
+  "include": ["function.ts"]
+}
