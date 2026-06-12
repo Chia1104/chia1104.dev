@@ -4,6 +4,7 @@ packages:
   - services/*
   - toolings/**/*
   - tests/*
+  - apps/functions/pg-dump-cron
 
 allowBuilds:
   '@google/genai': false
