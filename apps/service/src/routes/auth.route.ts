@@ -9,6 +9,9 @@ import { env } from "../env";
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))
   .on(["GET", "POST"], "*", (c) => {
+    if (!c.var.auth) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
     return c.var.auth.handler(c.req.raw);
   });
 

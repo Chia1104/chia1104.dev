@@ -15,6 +15,10 @@ import { contractOS, slugger } from "../utils";
 export const getOrganizationRoute = contractOS.organization.details
   .use(adminGuard())
   .handler(async (opts) => {
+    if (!opts.context.auth) {
+      throw opts.errors.UNAUTHORIZED();
+    }
+
     const { data, error } = await tryCatch(
       opts.context.auth.api.getFullOrganization({
         query: {
@@ -51,6 +55,10 @@ export const getOrganizationRoute = contractOS.organization.details
 export const createOrganizationRoute = contractOS.organization.create
   .use(adminGuard())
   .handler(async (opts) => {
+    if (!opts.context.auth) {
+      throw opts.errors.UNAUTHORIZED();
+    }
+
     const { data: slug, error: slugError } = await tryCatch(
       opts.context.auth.api.checkOrganizationSlug({
         body: {
@@ -101,6 +109,9 @@ export const createOrganizationRoute = contractOS.organization.create
 export const deleteOrganizationRoute = contractOS.organization.delete
   .use(adminGuard())
   .handler(async (opts) => {
+    if (!opts.context.auth) {
+      throw opts.errors.UNAUTHORIZED();
+    }
     const { data, error } = await tryCatch(
       opts.context.auth.api.deleteOrganization({
         body: {

@@ -26,6 +26,8 @@ export const apikeyVerify = (options?: {
       );
     }
 
+    if (!c.var.auth) return c.json({ message: "Unauthorized" }, 401);
+
     const { data: apiKey, error: apiKeyError } = await tryCatch(
       c.var.auth.api.verifyApiKey({
         headers: c.req.raw.headers,

@@ -22,7 +22,7 @@ export const adminGuard = (
       if (options.enabled) {
         sessionData =
           sessionData ??
-          (await context.auth.api.getSession({
+          (await context.auth?.api.getSession({
             headers: context.headers,
           }));
 

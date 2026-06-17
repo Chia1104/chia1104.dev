@@ -1,11 +1,9 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
-import { Resend } from "resend";
 import * as z from "zod";
 
 import meta from "@chia/meta";
-import EmailTemplate from "@chia/ui/features/EmailTemplate";
 import { CONTACT_EMAIL } from "@chia/utils/config";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
@@ -41,6 +39,11 @@ const api = new Hono<HonoContext>()
       }
     ),
     async (c) => {
+      const [{ Resend }, { default: EmailTemplate }] = await Promise.all([
+        import("resend"),
+        import("@chia/ui/features/EmailTemplate"),
+      ]);
+
       const { data: resend, error: resendError } = await tryCatch(
         new Resend(env.RESEND_API_KEY)
       );
