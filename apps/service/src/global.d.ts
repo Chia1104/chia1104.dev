@@ -2,7 +2,7 @@ type Variables = {
   db: import("@chia/db").DB;
   kv: import("@chia/kv").Keyv;
   clientIP: string;
-  auth: import("@chia/auth").Auth;
+  auth?: import("@chia/auth").Auth;
 };
 
 type HonoContext<

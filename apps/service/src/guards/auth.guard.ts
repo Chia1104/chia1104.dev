@@ -19,9 +19,10 @@ export const verifyAuth = (
     HonoContext<undefined, { user: Session["user"] } & Variables>
   >(async (c, next) => {
     try {
-      const session = await c.var.auth.api.getSession({
+      const session = await c.var.auth?.api.getSession({
         headers: c.req.raw.headers,
       });
+
       if (!session) {
         return c.json(errorGenerator(401), 401);
       }

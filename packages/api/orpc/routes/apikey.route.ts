@@ -12,6 +12,10 @@ import { contractOS } from "../utils";
 export const createAPIKeyRoute = contractOS.apikey.create
   .use(adminGuard())
   .handler(async (opts) => {
+    if (!opts.context.auth) {
+      throw opts.errors.UNAUTHORIZED();
+    }
+
     const { data, error } = await tryCatch(
       opts.context.auth.api.createApiKey({
         body: {
@@ -102,6 +106,10 @@ export const getProjectApiKeysRoute = contractOS.apikey["project-list"]
 export const revokeApiKeyRoute = contractOS.apikey.revoke
   .use(adminGuard())
   .handler(async (opts) => {
+    if (!opts.context.auth) {
+      throw opts.errors.UNAUTHORIZED();
+    }
+
     const { data, error } = await tryCatch(
       opts.context.auth.api.updateApiKey({
         headers: opts.context.headers,
@@ -133,6 +141,10 @@ export const revokeApiKeyRoute = contractOS.apikey.revoke
 export const deleteApiKeyRoute = contractOS.apikey.delete
   .use(adminGuard())
   .handler(async (opts) => {
+    if (!opts.context.auth) {
+      throw opts.errors.UNAUTHORIZED();
+    }
+
     const { data, error } = await tryCatch(
       opts.context.auth.api.deleteApiKey({
         headers: opts.context.headers,
@@ -161,6 +173,10 @@ export const deleteApiKeyRoute = contractOS.apikey.delete
 export const updateApiKeyRoute = contractOS.apikey.update
   .use(adminGuard())
   .handler(async (opts) => {
+    if (!opts.context.auth) {
+      throw opts.errors.UNAUTHORIZED();
+    }
+
     const { data, error } = await tryCatch(
       opts.context.auth.api.updateApiKey({
         headers: opts.context.headers,

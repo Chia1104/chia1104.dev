@@ -46,6 +46,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "db:up": "docker-compose -f db.docker-compose.yaml up",
+    "service:up": "docker compose --env-file .env.global -f service.docker-compose.yaml up --build",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:pull": "turbo run db:pull",

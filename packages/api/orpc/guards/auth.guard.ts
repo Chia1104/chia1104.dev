@@ -7,7 +7,7 @@ export const authGuard = baseOS
   .middleware(async ({ next, context, errors }) => {
     const sessionData =
       context.session ??
-      (await context.auth.api.getSession({
+      (await context.auth?.api.getSession({
         headers: context.headers,
       }));
 

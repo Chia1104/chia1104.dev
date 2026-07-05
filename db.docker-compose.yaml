@@ -11,6 +11,11 @@ services:
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - DEBUG=true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     container_name: chia-redis
@@ -19,6 +24,11 @@ services:
       - "6380:6379"
     volumes:
       - chia-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   chia-postgres-v2:
