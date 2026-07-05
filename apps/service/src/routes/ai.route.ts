@@ -159,7 +159,7 @@ const api = new Hono<HonoContext>()
           return c.json({
             feature: SupportedTools.GenerateSlug,
             content: {
-              slug: await generateSlug("openai/gpt-4o-mini", json.input),
+              slug: await generateSlug("anthropic/claude-sonnet-5", json.input),
             },
           });
         case SupportedTools.GenerateDescription:
@@ -167,7 +167,7 @@ const api = new Hono<HonoContext>()
             feature: SupportedTools.GenerateDescription,
             content: {
               description: await generateDescription(
-                "openai/gpt-4o-mini",
+                "anthropic/claude-sonnet-5",
                 json.input
               ),
             },
@@ -176,14 +176,20 @@ const api = new Hono<HonoContext>()
           return c.json({
             feature: SupportedTools.GenerateSummary,
             content: {
-              summary: await generateSummary("openai/gpt-4o-mini", json.input),
+              summary: await generateSummary(
+                "anthropic/claude-sonnet-5",
+                json.input
+              ),
             },
           });
         case SupportedTools.GenerateExcerpt:
           return c.json({
             feature: SupportedTools.GenerateExcerpt,
             content: {
-              excerpt: await generateExcerpt("openai/gpt-4o-mini", json.input),
+              excerpt: await generateExcerpt(
+                "anthropic/claude-sonnet-5",
+                json.input
+              ),
             },
           });
         default:
@@ -202,7 +208,7 @@ const api = new Hono<HonoContext>()
     (c) => {
       c.header("Content-Type", "text/plain; charset=utf-8");
       const input = c.req.valid("json");
-      const result = streamContent("openai/gpt-4o-mini", input);
+      const result = streamContent("anthropic/claude-sonnet-5", input);
       return result.toTextStreamResponse();
     }
   )
@@ -217,7 +223,7 @@ const api = new Hono<HonoContext>()
     async (c) => {
       const input = c.req.valid("json");
       const completion = await generateContentComplete(
-        "openai/gpt-4o-mini",
+        "anthropic/claude-sonnet-5",
         input
       );
       return c.json({ completion });
