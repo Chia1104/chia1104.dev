@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "type:emit": "tsc -p tsconfig.types.json",
     "dev": "nitro dev",
     "build": "nitro build",
     "node:start": "node .output/server/index.mjs",
@@ -32,7 +31,7 @@
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
     "@workflow-worlds/redis": "^0.2.2",
-    "@workflow/world-postgres": "4.1.4",
+    "@workflow/world-postgres": "4.3.0",
     "ai": "catalog:ai",
     "better-all": "catalog:",
     "better-auth": "catalog:better-auth",
@@ -43,12 +42,12 @@
     "jsdom": "^29.1.1",
     "ky": "catalog:",
     "lodash": "catalog:",
-    "nitro": "3.0.260603-beta",
+    "nitro": "3.0.260610-beta",
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
-    "reading-time-estimator": "^2.6.0",
-    "resend": "^6.12.4",
-    "workflow": "4.3.1",
+    "reading-time-estimator": "^2.9.0",
+    "resend": "^6.17.2",
+    "workflow": "4.6.0",
     "zod": "catalog:"
   },
   "devDependencies": {

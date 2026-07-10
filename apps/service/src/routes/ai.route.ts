@@ -1,6 +1,6 @@
 import { gateway } from "@ai-sdk/gateway";
 import { zValidator } from "@hono/zod-validator";
-import { streamText } from "ai";
+import { streamText, createTextStreamResponse } from "ai";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { timeout } from "hono/timeout";
@@ -106,7 +106,6 @@ const api = new Hono<HonoContext>()
     ),
     ai(),
     (c) => {
-      c.header("Content-Type", "text/plain; charset=utf-8");
       const { model, messages, system } = c.req.valid("json");
       const result = streamText({
         model: createModel({
@@ -116,7 +115,12 @@ const api = new Hono<HonoContext>()
         messages: messages ?? [],
         system,
       });
-      return result.toUIMessageStreamResponse();
+      return createTextStreamResponse({
+        stream: result.textStream,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
     }
   )
   .get("/models", async (c) => {
@@ -206,10 +210,14 @@ const api = new Hono<HonoContext>()
       }
     }),
     (c) => {
-      c.header("Content-Type", "text/plain; charset=utf-8");
       const input = c.req.valid("json");
       const result = streamContent("anthropic/claude-sonnet-5", input);
-      return result.toTextStreamResponse();
+      return createTextStreamResponse({
+        stream: result.textStream,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
     }
   )
   .post(
