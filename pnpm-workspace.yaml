@@ -36,7 +36,7 @@ catalog:
   server-only: ^0.0.1
   superjson: 2.2.6
   tsdown: 0.22.4
-  typescript: ^7.0.2
+  typescript: 6.0.3
   zod: 4.4.3
 
 catalogs:
