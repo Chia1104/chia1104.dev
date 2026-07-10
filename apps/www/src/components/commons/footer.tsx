@@ -124,10 +124,8 @@ const Footer: FC<{ locale?: Locale }> = ({ locale: _locale }) => {
                 ? "posts"
                 : (selectedLayoutSegments[0] ?? "/")
             }>
-            <Tabs.ListContainer>
-              <Tabs.List
-                aria-label={tNav("pages")}
-                className="gap-2 bg-transparent">
+            <Tabs.ListContainer className="bg-transparent">
+              <Tabs.List aria-label={tNav("pages")} className="gap-2">
                 {Object.entries(navItems).map(([path, { nameKey }]) => {
                   return (
                     <Tabs.Tab
