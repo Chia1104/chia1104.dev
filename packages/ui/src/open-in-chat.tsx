@@ -24,7 +24,8 @@ type Provider =
   | "claude"
   | "t3"
   | "v0"
-  | "cursor";
+  | "cursor"
+  | "perplexity";
 
 export const providers: Record<Provider, ProviderInfo> = {
   github: {
@@ -185,6 +186,27 @@ export const providers: Record<Provider, ProviderInfo> = {
           d="M457.43,125.94L244.42,2.96c-6.84-3.95-15.28-3.95-22.12,0L9.3,125.94c-5.75,3.32-9.3,9.46-9.3,16.11v247.99c0,6.65,3.55,12.79,9.3,16.11l213.01,122.98c6.84,3.95,15.28,3.95,22.12,0l213.01-122.98c5.75-3.32,9.3-9.46,9.3-16.11v-247.99c0-6.65-3.55-12.79-9.3-16.11h-.01ZM444.05,151.99l-205.63,356.16c-1.39,2.4-5.06,1.42-5.06-1.36v-233.21c0-4.66-2.49-8.97-6.53-11.31L24.87,145.67c-2.4-1.39-1.42-5.06,1.36-5.06h411.26c5.84,0,9.49,6.33,6.57,11.39h-.01Z"
           fill="currentColor"
         />
+      </svg>
+    ),
+  },
+  perplexity: {
+    title: "Open in Perplexity",
+    createUrl: (q: string) =>
+      `https://www.perplexity.ai/search?${new URLSearchParams({
+        q,
+      })}`,
+    icon: (
+      <svg
+        height="1em"
+        className="size-4"
+        viewBox="0 0 24 24"
+        width="1em"
+        xmlns="http://www.w3.org/2000/svg">
+        <title>Perplexity</title>
+        <path
+          d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"
+          fill="#22B8CD"
+          fillRule="nonzero"></path>
       </svg>
     ),
   },
@@ -350,6 +372,25 @@ export const OpenInCursor = (props: OpenInCursorProps) => {
         target="_blank">
         <span className="size-4 shrink-0">{providers.cursor.icon}</span>
         <span className="flex-1">{providers.cursor.title}</span>
+        <ExternalLinkIcon className="size-4 shrink-0" />
+      </Link>
+    </Dropdown.Item>
+  );
+};
+
+export type OpenInPerplexityProps = ComponentProps<typeof Dropdown.Item>;
+
+export const OpenInPerplexity = (props: OpenInPerplexityProps) => {
+  const { query, providers } = useOpenInContext();
+  return (
+    <Dropdown.Item {...props}>
+      <Link
+        className="flex w-full items-center gap-2"
+        href={providers.perplexity.createUrl(query)}
+        rel="noopener"
+        target="_blank">
+        <span className="size-4 shrink-0">{providers.perplexity.icon}</span>
+        <span className="flex-1">{providers.perplexity.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>

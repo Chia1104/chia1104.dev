@@ -8,10 +8,9 @@ import {
   OpenInClaude,
   OpenInContent,
   OpenInCursor,
-  OpenInScira,
+  OpenInPerplexity,
   OpenInT3,
   OpenInTrigger,
-  OpenInv0,
   providers,
 } from "@chia/ui/open-in-chat";
 
@@ -40,13 +39,9 @@ export const OpenInChat = ({ articleUrl }: { articleUrl: string }) => {
           ...providers.t3,
           title: t("open-in-t3"),
         },
-        scira: {
-          ...providers.scira,
-          title: t("open-in-scira"),
-        },
-        v0: {
-          ...providers.v0,
-          title: t("open-in-v0"),
+        perplexity: {
+          ...providers.perplexity,
+          title: t("open-in-perplexity"),
         },
       }}>
       <OpenInTrigger className="max-w-fit" label={t("open-in-chat")} />
@@ -55,8 +50,7 @@ export const OpenInChat = ({ articleUrl }: { articleUrl: string }) => {
         <OpenInClaude />
         <OpenInCursor />
         <OpenInT3 />
-        <OpenInScira />
-        <OpenInv0 />
+        <OpenInPerplexity />
       </OpenInContent>
     </OpenIn>
   );
