@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { FC } from "react";
+import { use } from "react";
 
 import { useTranslations } from "next-intl";
 
@@ -19,11 +20,12 @@ import { useRouter } from "@/libs/i18n/routing";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 interface Props {
-  feeds?: RouterOutputs["feeds"]["list"]["items"];
+  feeds: Promise<RouterOutputs["feeds"]["list"]>;
   type: FeedType;
 }
 
-const FeedNavigation: FC<Props> = ({ feeds, type }) => {
+const FeedNavigation: FC<Props> = ({ feeds: promisedFeeds, type }) => {
+  const feeds = use(promisedFeeds).items;
   const hasFeeds = !!feeds && Array.isArray(feeds) && feeds.length > 0;
   const router = useRouter();
   const tn = useTranslations("blog.notes");
