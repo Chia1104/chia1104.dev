@@ -7,10 +7,11 @@ import {
   OpenInChatGPT,
   OpenInClaude,
   OpenInContent,
-  OpenInCursor,
   OpenInPerplexity,
   OpenInT3,
   OpenInTrigger,
+  OpenInMarkdown,
+  OpenInGemini,
   providers,
 } from "@chia/ui/open-in-chat";
 
@@ -23,6 +24,11 @@ export const OpenInChat = ({ articleUrl }: { articleUrl: string }) => {
       })}
       providers={{
         ...providers,
+        markdown: {
+          ...providers.markdown,
+          createUrl: () => articleUrl,
+          title: t("view-as-markdown"),
+        },
         chatgpt: {
           ...providers.chatgpt,
           title: t("open-in-chatgpt"),
@@ -31,9 +37,9 @@ export const OpenInChat = ({ articleUrl }: { articleUrl: string }) => {
           ...providers.claude,
           title: t("open-in-claude"),
         },
-        cursor: {
-          ...providers.cursor,
-          title: t("open-in-cursor"),
+        gemini: {
+          ...providers.gemini,
+          title: t("open-in-gemini"),
         },
         t3: {
           ...providers.t3,
@@ -46,9 +52,10 @@ export const OpenInChat = ({ articleUrl }: { articleUrl: string }) => {
       }}>
       <OpenInTrigger className="max-w-fit" label={t("open-in-chat")} />
       <OpenInContent className="not-prose min-w-55">
+        <OpenInMarkdown />
         <OpenInChatGPT />
         <OpenInClaude />
-        <OpenInCursor />
+        <OpenInGemini />
         <OpenInT3 />
         <OpenInPerplexity />
       </OpenInContent>

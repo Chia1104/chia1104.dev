@@ -48,8 +48,7 @@ export const generateMetadata = async ({
       title: feed.translations[0]?.title,
       description: feed.translations[0]?.description,
     };
-  } catch (error) {
-    console.error(error);
+  } catch {
     notFound();
   }
 };
@@ -77,7 +76,7 @@ const Page = async ({
   const articleUrl = `${getBaseUrl({
     baseUrl: WWW_BASE_URL,
     useBaseUrl: true,
-  })}/${locale}/${type}/${slug}`;
+  })}/${locale}/${type}/${slug}/llm.md`;
 
   const jsonLd: WithContext<Blog> = {
     "@context": "https://schema.org",

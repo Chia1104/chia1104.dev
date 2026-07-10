@@ -101,6 +101,8 @@
     "open-in-scira": "在 Scira 中開啟",
     "open-in-v0": "在 v0 中開啟",
     "open-in-perplexity": "在 Perplexity 中開啟",
+    "view-as-markdown": "以 Markdown 格式開啟",
+    "open-in-gemini": "在 Gemini 中開啟",
     "warning": "警告"
   },
   "projects": {
