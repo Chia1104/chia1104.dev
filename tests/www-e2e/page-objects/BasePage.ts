@@ -11,7 +11,7 @@ export class BasePage {
   }
 
   async goto(url: string) {
-    await this.page.goto(url);
+    return await this.page.goto(url);
     // await this.waitForPageLoad();
   }
 
