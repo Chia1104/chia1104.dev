@@ -1,13 +1,18 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { Button } from "@heroui/react";
+import { Button, Skeleton } from "@heroui/react";
 import { Plus } from "lucide-react";
 
-import FeedTabs from "@/components/feed/feed-tabs";
 import SearchFeed from "@/components/feed/search-feed";
+
+const FeedTabs = dynamic(() => import("@/components/feed/feed-tabs"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-10 w-[290px] rounded-full" />,
+});
 
 const CreateFeedButton = () => {
   const router = useRouter();

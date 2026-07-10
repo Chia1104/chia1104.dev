@@ -1,5 +1,5 @@
 import { generateText, streamText } from "ai";
-import type { LanguageModel, StreamTextResult, ToolSet } from "ai";
+import type { LanguageModel } from "ai";
 import * as z from "zod";
 
 import { slugger } from "../utils";
@@ -175,7 +175,7 @@ export async function generateContentComplete(
 export function streamContent(
   model: LanguageModel,
   { title, context, outline, keywords, locale, length }: GenerateContentInput
-): StreamTextResult<ToolSet, never> {
+) {
   return streamText({
     model,
     system:

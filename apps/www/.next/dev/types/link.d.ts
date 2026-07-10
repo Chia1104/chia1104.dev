@@ -32,20 +32,20 @@ declare namespace __next_route_internal_types__ {
     S extends `${string}${SearchOrHash}` ? never : S
 
   type StaticRoutes = 
-    | `/about`
-    | `/api/v1/health`
+    | `/about` // /about
+    | `/api/v1/health` // ../../../src/app/api/(v1)/v1/health/route.ts
   type DynamicRoutes<T extends string = string> = 
-    | `/${SafeSlug<T>}`
-    | `/${SafeSlug<T>}/${SafeSlug<T>}`
-    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}`
-    | `/${SafeSlug<T>}/about`
-    | `/${SafeSlug<T>}/contact`
-    | `/${SafeSlug<T>}/email`
-    | `/${SafeSlug<T>}/note/${SafeSlug<T>}`
-    | `/${SafeSlug<T>}/post/${SafeSlug<T>}`
-    | `/${SafeSlug<T>}/projects`
-    | `/note/${SafeSlug<T>}`
-    | `/post/${SafeSlug<T>}`
+    | `/${SafeSlug<T>}` // ../../../src/app/[locale]/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/page.tsx
+    | `/${SafeSlug<T>}/${SafeSlug<T>}/${SafeSlug<T>}` // ../../../src/app/[locale]/(blog)/[type]/[slug]/page.tsx
+    | `/${SafeSlug<T>}/about` // /[locale]/about
+    | `/${SafeSlug<T>}/contact` // ../../../src/app/[locale]/contact/page.tsx
+    | `/${SafeSlug<T>}/email` // ../../../src/app/[locale]/@modal/(.)email/page.tsx
+    | `/${SafeSlug<T>}/note/${SafeSlug<T>}` // /[locale]/note/[slug]
+    | `/${SafeSlug<T>}/post/${SafeSlug<T>}` // /[locale]/post/[slug]
+    | `/${SafeSlug<T>}/projects` // ../../../src/app/[locale]/projects/page.tsx
+    | `/note/${SafeSlug<T>}` // /note/[slug]
+    | `/post/${SafeSlug<T>}` // /post/[slug]
 
   type RouteImpl<T> = 
     | StaticRoutes

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter, useSelectedLayoutSegments } from "next/navigation";
 import { useCallback, useMemo } from "react";
 
 import { Tabs } from "@heroui/react";
@@ -31,21 +31,23 @@ const FEED_TABS = [
 
 const FeedTabs = ({ className }: { className?: string }) => {
   const router = useRouter();
-  const pathname = usePathname();
+  const selectedLayoutSegments = useSelectedLayoutSegments();
 
   const selectedKey = useMemo(() => {
-    const matchedTab = FEED_TABS.find((tab) => pathname.includes(tab.key));
-    return matchedTab?.key ?? "posts";
-  }, [pathname]);
+    const matchedTab = FEED_TABS.find((tab) =>
+      selectedLayoutSegments?.includes(tab.key)
+    );
+    return matchedTab?.key;
+  }, [selectedLayoutSegments]);
 
   const handleSelectionChange = useCallback(
     (key: React.Key) => {
       const tab = FEED_TABS.find((t) => t.key === key);
-      if (tab) {
+      if (tab && tab.key !== selectedKey) {
         router.push(tab.href);
       }
     },
-    [router]
+    [router, selectedKey]
   );
 
   return (
@@ -53,17 +55,19 @@ const FeedTabs = ({ className }: { className?: string }) => {
       selectedKey={selectedKey}
       onSelectionChange={handleSelectionChange}
       className={cn("w-full", className)}>
-      <Tabs.List aria-label="Feed navigation tabs">
-        {FEED_TABS.map(({ key, label, icon: Icon }) => (
-          <Tabs.Tab key={key} id={key}>
-            <div className="flex items-center gap-2">
-              <Icon className="size-4" />
-              <span>{label}</span>
-            </div>
-            <Tabs.Indicator />
-          </Tabs.Tab>
-        ))}
-      </Tabs.List>
+      <Tabs.ListContainer>
+        <Tabs.List aria-label="Feed navigation tabs">
+          {FEED_TABS.map(({ key, label, icon: Icon }) => (
+            <Tabs.Tab key={key} id={key}>
+              <div className="flex items-center gap-2">
+                <Icon className="size-4" />
+                <span>{label}</span>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+      </Tabs.ListContainer>
     </Tabs>
   );
 };

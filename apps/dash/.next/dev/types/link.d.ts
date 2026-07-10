@@ -32,25 +32,25 @@ declare namespace __next_route_internal_types__ {
     S extends `${string}${SearchOrHash}` ? never : S
 
   type StaticRoutes = 
-    | `/`
-    | `/api/v1/health`
-    | `/assets`
-    | `/auth/callback/sent-success`
-    | `/auth/login`
-    | `/feed`
-    | `/feed/create`
-    | `/feed/drafts`
-    | `/feed/notes`
-    | `/feed/posts`
-    | `/onboarding`
-    | `/onboarding/create`
-    | `/projects`
-    | `/projects/api-key`
-    | `/projects/create`
-    | `/settings`
+    | `/` // ../../../src/app/(workspace)/page.tsx
+    | `/api/v1/health` // ../../../src/app/api/v1/health/route.ts
+    | `/assets` // ../../../src/app/(workspace)/assets/page.tsx
+    | `/auth/callback/sent-success` // ../../../src/app/(auth)/auth/callback/sent-success/page.tsx
+    | `/auth/login` // ../../../src/app/(auth)/auth/login/page.tsx
+    | `/feed` // ../../../src/app/(workspace)/feed/page.tsx
+    | `/feed/create` // ../../../src/app/(workspace)/feed/(edit)/create/page.tsx
+    | `/feed/drafts` // ../../../src/app/(workspace)/feed/(manage)/drafts/page.tsx
+    | `/feed/notes` // ../../../src/app/(workspace)/feed/(manage)/notes/page.tsx
+    | `/feed/posts` // ../../../src/app/(workspace)/feed/(manage)/posts/page.tsx
+    | `/onboarding` // ../../../src/app/(onboarding)/onboarding/page.tsx
+    | `/onboarding/create` // ../../../src/app/(onboarding)/onboarding/create/page.tsx
+    | `/projects` // ../../../src/app/(workspace)/projects/page.tsx
+    | `/projects/api-key` // ../../../src/app/(workspace)/projects/api-key/page.tsx
+    | `/projects/create` // ../../../src/app/(workspace)/projects/create/page.tsx
+    | `/settings` // ../../../src/app/(workspace)/settings/page.tsx
   type DynamicRoutes<T extends string = string> = 
-    | `/feed/edit/${SafeSlug<T>}`
-    | `/projects/${SafeSlug<T>}`
+    | `/feed/edit/${SafeSlug<T>}` // ../../../src/app/(workspace)/feed/(edit)/edit/[id]/page.tsx
+    | `/projects/${SafeSlug<T>}` // ../../../src/app/(workspace)/projects/[slug]/page.tsx
 
   type RouteImpl<T> = 
     | StaticRoutes

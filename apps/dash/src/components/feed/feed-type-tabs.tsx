@@ -20,17 +20,19 @@ export const FeedTypeTabs = memo(() => {
         <Tabs
           selectedKey={field.value}
           onSelectionChange={(key) => field.onChange(key)}>
-          <Tabs.List aria-label="Feed type">
-            {FEED_TYPE_TABS.map(({ id, icon: Icon, label }) => (
-              <Tabs.Tab key={id} id={id}>
-                <div className="flex items-center space-x-2">
-                  <Icon className="size-5" />
-                  <span>{label}</span>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
+          <Tabs.ListContainer>
+            <Tabs.List aria-label="Feed type">
+              {FEED_TYPE_TABS.map(({ id, icon: Icon, label }) => (
+                <Tabs.Tab key={id} id={id}>
+                  <div className="flex items-center space-x-2">
+                    <Icon className="size-5" />
+                    <span>{label}</span>
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs.ListContainer>
         </Tabs>
       )}
     />

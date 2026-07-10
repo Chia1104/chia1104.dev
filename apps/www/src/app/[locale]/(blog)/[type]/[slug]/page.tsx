@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense, ViewTransition } from "react";
+import { ViewTransition } from "react";
 
 import { Avatar } from "@heroui/react";
 import { all } from "better-all";
@@ -17,7 +17,6 @@ import dayjs from "@chia/utils/day";
 import { ActionGroup } from "@/components/blog/action-group";
 import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
-import AppLoading from "@/components/commons/app-loading";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
@@ -150,43 +149,41 @@ const Page = async ({
             </div>
           </div>
         </header>
-        <Suspense fallback={<AppLoading />}>
-          <Content
-            content={getContentProps({
-              contentType: feed.contentType,
-              content: translation.content,
-            })}
-            context={{
-              updatedAt: feed.updatedAt,
-              type: feed.contentType,
-              tocContents: {
-                label: t("otp"),
-                updated: t("last-updated"),
-              },
-              locale,
-              slot: {
-                afterLastUpdate: (
-                  <TocFooterMeta
-                    readTimeText={
-                      feed.translations[0]?.readTime
-                        ? t("read-with-minutes", {
-                            minutes: feed.translations[0]?.readTime,
-                          })
-                        : undefined
-                    }
-                  />
-                ),
-                tocFooter: (
-                  <ActionGroup
-                    content={feed.translations[0]?.content?.content}
-                    articleUrl={articleUrl}
-                    className="mt-5 hidden self-end md:flex"
-                  />
-                ),
-              },
-            }}
-          />
-        </Suspense>
+        <Content
+          content={getContentProps({
+            contentType: feed.contentType,
+            content: translation.content,
+          })}
+          context={{
+            updatedAt: feed.updatedAt,
+            type: feed.contentType,
+            tocContents: {
+              label: t("otp"),
+              updated: t("last-updated"),
+            },
+            locale,
+            slot: {
+              afterLastUpdate: (
+                <TocFooterMeta
+                  readTimeText={
+                    feed.translations[0]?.readTime
+                      ? t("read-with-minutes", {
+                          minutes: feed.translations[0]?.readTime,
+                        })
+                      : undefined
+                  }
+                />
+              ),
+              tocFooter: (
+                <ActionGroup
+                  content={feed.translations[0]?.content?.content}
+                  articleUrl={articleUrl}
+                  className="mt-5 hidden self-end md:flex"
+                />
+              ),
+            },
+          }}
+        />
         <WrittenBy
           className="relative mt-10 flex w-full justify-start self-start"
           author="Chia1104"

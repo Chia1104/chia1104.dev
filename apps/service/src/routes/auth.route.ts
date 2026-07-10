@@ -8,11 +8,11 @@ import { env } from "../env";
  */
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))
-  .on(["GET", "POST"], "*", (c) => {
+  .on(["GET", "POST"], ["*"], async (c) => {
     if (!c.var.auth) {
       return c.json({ message: "Unauthorized" }, 401);
     }
-    return c.var.auth.handler(c.req.raw);
+    return await c.var.auth.handler(c.req.raw);
   });
 
 export default api;

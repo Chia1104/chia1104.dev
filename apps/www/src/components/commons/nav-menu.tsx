@@ -176,8 +176,8 @@ const NavMenu: FC<PropsWithLocale> = (props) => {
                 ? "posts"
                 : (selectedLayoutSegments[0] ?? "/")
             }>
-            <Tabs.ListContainer>
-              <Tabs.List aria-label="nav bar" className="bg-transparent">
+            <Tabs.ListContainer className="bg-transparent">
+              <Tabs.List aria-label="nav bar">
                 {Object.entries(navItems).map(
                   ([path, { nameKey, icon, hiddenInMainMenu }]) => {
                     if (hiddenInMainMenu) return null;
