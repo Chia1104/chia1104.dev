@@ -8,17 +8,24 @@ import { Root, ResourceActivity, Fallback } from "@chiastack/ui/image";
 
 export type ImageProps = NextImageProps;
 
-const Image = (props: ImageProps) => {
+const Image = (
+  props: ImageProps & {
+    experimental_lazyLoading?: boolean;
+  }
+) => {
+  const { experimental_lazyLoading = true, ...rest } = props;
   return (
     <Root>
       <ResourceActivity src={props.src as string}>
-        <NextImage {...props} aria-label={props.alt} />
+        <NextImage {...rest} aria-label={props.alt} />
       </ResourceActivity>
-      <ViewTransition>
-        <Fallback className="relative">
-          <Skeleton className="absolute inset-0 h-full w-full" />
-        </Fallback>
-      </ViewTransition>
+      {experimental_lazyLoading && (
+        <ViewTransition>
+          <Fallback className="relative">
+            <Skeleton className="absolute inset-0 h-full w-full" />
+          </Fallback>
+        </ViewTransition>
+      )}
     </Root>
   );
 };
