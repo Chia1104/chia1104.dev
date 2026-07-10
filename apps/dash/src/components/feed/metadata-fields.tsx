@@ -241,6 +241,7 @@ export const MetadataFields = memo(
               render={({ field }) => (
                 <div className="w-1/2">
                   <Switch
+                    className="flex-row"
                     isSelected={Boolean(field.value)}
                     onChange={field.onChange}>
                     <Switch.Control>
