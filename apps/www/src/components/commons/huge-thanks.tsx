@@ -1,12 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import { Modal, Button, Chip } from "@heroui/react";
 
 import BetterAuth from "@chia/ui/icons/better-auth";
 import Zeabur from "@chia/ui/icons/zeabur";
-import Image from "@chia/ui/image";
 import { NeonGradientCard } from "@chia/ui/neon-gradient-card";
 
 const techStack = {
@@ -106,7 +106,6 @@ const techStack = {
           width={10}
           height={10}
           alt="fumadocs"
-          experimental_lazyLoading={false}
         />
       ),
       link: "https://fumadocs.dev/",
