@@ -24,12 +24,15 @@ type Provider =
   | "claude"
   | "t3"
   | "v0"
-  | "cursor";
+  | "cursor"
+  | "perplexity"
+  | "markdown"
+  | "gemini";
 
 export const providers: Record<Provider, ProviderInfo> = {
   github: {
     title: "Open in GitHub",
-    createUrl: (url: string) => url,
+    createUrl: (url) => url,
     icon: (
       <svg fill="currentColor" role="img" viewBox="0 0 24 24">
         <title>GitHub</title>
@@ -39,7 +42,7 @@ export const providers: Record<Provider, ProviderInfo> = {
   },
   scira: {
     title: "Open in Scira",
-    createUrl: (q: string) =>
+    createUrl: (q) =>
       `https://scira.ai/?${new URLSearchParams({
         q,
       })}`,
@@ -102,7 +105,7 @@ export const providers: Record<Provider, ProviderInfo> = {
   },
   chatgpt: {
     title: "Open in ChatGPT",
-    createUrl: (prompt: string) =>
+    createUrl: (prompt) =>
       `https://chatgpt.com/?${new URLSearchParams({
         hints: "search",
         prompt,
@@ -121,7 +124,7 @@ export const providers: Record<Provider, ProviderInfo> = {
   },
   claude: {
     title: "Open in Claude",
-    createUrl: (q: string) =>
+    createUrl: (q) =>
       `https://claude.ai/new?${new URLSearchParams({
         q,
       })}`,
@@ -143,7 +146,7 @@ export const providers: Record<Provider, ProviderInfo> = {
   },
   t3: {
     title: "Open in T3 Chat",
-    createUrl: (q: string) =>
+    createUrl: (q) =>
       `https://t3.chat/new?${new URLSearchParams({
         q,
       })}`,
@@ -151,7 +154,7 @@ export const providers: Record<Provider, ProviderInfo> = {
   },
   v0: {
     title: "Open in v0",
-    createUrl: (q: string) =>
+    createUrl: (q) =>
       `https://v0.app?${new URLSearchParams({
         q,
       })}`,
@@ -169,7 +172,7 @@ export const providers: Record<Provider, ProviderInfo> = {
   },
   cursor: {
     title: "Open in Cursor",
-    createUrl: (text: string) => {
+    createUrl: (text) => {
       const url = new URL("https://cursor.com/link/prompt");
       url.searchParams.set("text", text);
       return url.toString();
@@ -185,6 +188,238 @@ export const providers: Record<Provider, ProviderInfo> = {
           d="M457.43,125.94L244.42,2.96c-6.84-3.95-15.28-3.95-22.12,0L9.3,125.94c-5.75,3.32-9.3,9.46-9.3,16.11v247.99c0,6.65,3.55,12.79,9.3,16.11l213.01,122.98c6.84,3.95,15.28,3.95,22.12,0l213.01-122.98c5.75-3.32,9.3-9.46,9.3-16.11v-247.99c0-6.65-3.55-12.79-9.3-16.11h-.01ZM444.05,151.99l-205.63,356.16c-1.39,2.4-5.06,1.42-5.06-1.36v-233.21c0-4.66-2.49-8.97-6.53-11.31L24.87,145.67c-2.4-1.39-1.42-5.06,1.36-5.06h411.26c5.84,0,9.49,6.33,6.57,11.39h-.01Z"
           fill="currentColor"
         />
+      </svg>
+    ),
+  },
+  perplexity: {
+    title: "Open in Perplexity",
+    createUrl: (q) =>
+      `https://www.perplexity.ai/search?${new URLSearchParams({
+        q,
+      })}`,
+    icon: (
+      <svg
+        height="1em"
+        className="size-4"
+        viewBox="0 0 24 24"
+        width="1em"
+        xmlns="http://www.w3.org/2000/svg">
+        <title>Perplexity</title>
+        <path
+          d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"
+          fill="#22B8CD"
+          fillRule="nonzero"></path>
+      </svg>
+    ),
+  },
+  markdown: {
+    title: "View as Markdown",
+    createUrl: () => "/",
+    icon: (
+      <svg className="size-4" viewBox="0 0 208 128" fill="none">
+        <g fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M15 10a5 5 0 0 0-5 5v98a5 5 0 0 0 5 5h178a5 5 0 0 0 5-5V15a5 5 0 0 0-5-5zM0 15A15 15 0 0 1 15 0h178a15 15 0 0 1 15 15v98a15 15 0 0 1-15 15H15a15 15 0 0 1-15-15z"
+            clipRule="evenodd"
+          />
+          <path d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0-30-33h20V30h20v35h20z" />
+        </g>
+      </svg>
+    ),
+  },
+  gemini: {
+    title: "Open in Gemini",
+    createUrl: (q) =>
+      `https://www.google.com/search?${new URLSearchParams({
+        udm: "50",
+        q,
+      })}`,
+    icon: (
+      <svg viewBox="0 0 296 298" fill="none">
+        <mask
+          id="gemini__a"
+          width="296"
+          height="298"
+          x="0"
+          y="0"
+          maskUnits="userSpaceOnUse"
+          style={{ maskType: "alpha" }}>
+          <path
+            fill="#3186FF"
+            d="M141.201 4.886c2.282-6.17 11.042-6.071 13.184.148l5.985 17.37a184.004 184.004 0 0 0 111.257 113.049l19.304 6.997c6.143 2.227 6.156 10.91.02 13.155l-19.35 7.082a184.001 184.001 0 0 0-109.495 109.385l-7.573 20.629c-2.241 6.105-10.869 6.121-13.133.025l-7.908-21.296a184 184 0 0 0-109.02-108.658l-19.698-7.239c-6.102-2.243-6.118-10.867-.025-13.132l20.083-7.467A183.998 183.998 0 0 0 133.291 26.28l7.91-21.394Z"
+          />
+        </mask>
+        <g mask="url(#gemini__a)">
+          <g filter="url(#gemini__b)">
+            <ellipse cx="163" cy="149" fill="#3689FF" rx="196" ry="159" />
+          </g>
+          <g filter="url(#gemini__c)">
+            <ellipse cx="33.5" cy="142.5" fill="#F6C013" rx="68.5" ry="72.5" />
+          </g>
+          <g filter="url(#gemini__d)">
+            <ellipse cx="19.5" cy="148.5" fill="#F6C013" rx="68.5" ry="72.5" />
+          </g>
+          <g filter="url(#gemini__e)">
+            <path
+              fill="#FA4340"
+              d="M194 10.5C172 82.5 65.5 134.333 22.5 135L144-66l50 76.5Z"
+            />
+          </g>
+          <g filter="url(#gemini__f)">
+            <path
+              fill="#FA4340"
+              d="M190.5-12.5C168.5 59.5 62 111.333 19 112L140.5-89l50 76.5Z"
+            />
+          </g>
+          <g filter="url(#gemini__g)">
+            <path
+              fill="#14BB69"
+              d="M194.5 279.5C172.5 207.5 66 155.667 23 155l121.5 201 50-76.5Z"
+            />
+          </g>
+          <g filter="url(#gemini__h)">
+            <path
+              fill="#14BB69"
+              d="M196.5 320.5C174.5 248.5 68 196.667 25 196l121.5 201 50-76.5Z"
+            />
+          </g>
+        </g>
+        <defs>
+          <filter
+            id="gemini__b"
+            width="464"
+            height="390"
+            x="-69"
+            y="-46"
+            colorInterpolationFilters="sRGB"
+            filterUnits="userSpaceOnUse">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              result="effect1_foregroundBlur_69_17998"
+              stdDeviation="18"
+            />
+          </filter>
+          <filter
+            id="gemini__c"
+            width="265"
+            height="273"
+            x="-99"
+            y="6"
+            colorInterpolationFilters="sRGB"
+            filterUnits="userSpaceOnUse">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              result="effect1_foregroundBlur_69_17998"
+              stdDeviation="32"
+            />
+          </filter>
+          <filter
+            id="gemini__d"
+            width="265"
+            height="273"
+            x="-113"
+            y="12"
+            colorInterpolationFilters="sRGB"
+            filterUnits="userSpaceOnUse">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              result="effect1_foregroundBlur_69_17998"
+              stdDeviation="32"
+            />
+          </filter>
+          <filter
+            id="gemini__e"
+            width="299.5"
+            height="329"
+            x="-41.5"
+            y="-130"
+            colorInterpolationFilters="sRGB"
+            filterUnits="userSpaceOnUse">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              result="effect1_foregroundBlur_69_17998"
+              stdDeviation="32"
+            />
+          </filter>
+          <filter
+            id="gemini__f"
+            width="299.5"
+            height="329"
+            x="-45"
+            y="-153"
+            colorInterpolationFilters="sRGB"
+            filterUnits="userSpaceOnUse">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              result="effect1_foregroundBlur_69_17998"
+              stdDeviation="32"
+            />
+          </filter>
+          <filter
+            id="gemini__g"
+            width="299.5"
+            height="329"
+            x="-41"
+            y="91"
+            colorInterpolationFilters="sRGB"
+            filterUnits="userSpaceOnUse">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              result="effect1_foregroundBlur_69_17998"
+              stdDeviation="32"
+            />
+          </filter>
+          <filter
+            id="gemini__h"
+            width="299.5"
+            height="329"
+            x="-39"
+            y="132"
+            colorInterpolationFilters="sRGB"
+            filterUnits="userSpaceOnUse">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend
+              in="SourceGraphic"
+              in2="BackgroundImageFix"
+              result="shape"
+            />
+            <feGaussianBlur
+              result="effect1_foregroundBlur_69_17998"
+              stdDeviation="32"
+            />
+          </filter>
+        </defs>
       </svg>
     ),
   },
@@ -350,6 +585,63 @@ export const OpenInCursor = (props: OpenInCursorProps) => {
         target="_blank">
         <span className="size-4 shrink-0">{providers.cursor.icon}</span>
         <span className="flex-1">{providers.cursor.title}</span>
+        <ExternalLinkIcon className="size-4 shrink-0" />
+      </Link>
+    </Dropdown.Item>
+  );
+};
+
+export type OpenInPerplexityProps = ComponentProps<typeof Dropdown.Item>;
+
+export const OpenInPerplexity = (props: OpenInPerplexityProps) => {
+  const { query, providers } = useOpenInContext();
+  return (
+    <Dropdown.Item {...props}>
+      <Link
+        className="flex w-full items-center gap-2"
+        href={providers.perplexity.createUrl(query)}
+        rel="noopener"
+        target="_blank">
+        <span className="size-4 shrink-0">{providers.perplexity.icon}</span>
+        <span className="flex-1">{providers.perplexity.title}</span>
+        <ExternalLinkIcon className="size-4 shrink-0" />
+      </Link>
+    </Dropdown.Item>
+  );
+};
+
+export type OpenInMarkdownProps = ComponentProps<typeof Dropdown.Item>;
+
+export const OpenInMarkdown = (props: OpenInMarkdownProps) => {
+  const { query, providers } = useOpenInContext();
+  return (
+    <Dropdown.Item {...props}>
+      <Link
+        className="flex w-full items-center gap-2"
+        href={providers.markdown.createUrl(query)}
+        rel="noopener"
+        target="_blank">
+        <span className="size-4 shrink-0">{providers.markdown.icon}</span>
+        <span className="flex-1">{providers.markdown.title}</span>
+        <ExternalLinkIcon className="size-4 shrink-0" />
+      </Link>
+    </Dropdown.Item>
+  );
+};
+
+export type OpenInGeminiProps = ComponentProps<typeof Dropdown.Item>;
+
+export const OpenInGemini = (props: OpenInGeminiProps) => {
+  const { query, providers } = useOpenInContext();
+  return (
+    <Dropdown.Item {...props}>
+      <Link
+        className="flex w-full items-center gap-2"
+        href={providers.gemini.createUrl(query)}
+        rel="noopener"
+        target="_blank">
+        <span className="size-4 shrink-0">{providers.gemini.icon}</span>
+        <span className="flex-1">{providers.gemini.title}</span>
         <ExternalLinkIcon className="size-4 shrink-0" />
       </Link>
     </Dropdown.Item>

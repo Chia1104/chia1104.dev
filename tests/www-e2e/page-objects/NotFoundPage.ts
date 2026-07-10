@@ -35,6 +35,6 @@ export class NotFoundPage extends BasePage {
   }
 
   async navigateToInvalidPage(url: string) {
-    await this.goto(url);
+    return await this.goto(url);
   }
 }
