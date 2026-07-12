@@ -36,7 +36,7 @@ catalog:
   server-only: ^0.0.1
   superjson: 2.2.6
   tsdown: 0.22.4
-  typescript: 6.0.3
+  typescript: 7.0.2
   zod: 4.4.3
 
 catalogs:
@@ -77,8 +77,8 @@ catalogs:
     hono: 4.12.28
     hono-rate-limiter: 0.5.3
   next:
-    "@next/third-parties": preview
-    next: preview
+    "@next/third-parties": 16.3.0-canary.83
+    next: 16.3.0-canary.83
   orpc:
     "@orpc/client": 1.14.7
     "@orpc/contract": 1.14.7
