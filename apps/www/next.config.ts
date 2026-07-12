@@ -41,7 +41,6 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
     authInterrupts: true,
-    // @ts-expect-error - wait for TS7 support
     useTypeScriptCli: true,
   },
   serverExternalPackages: ["@chia/db", "@chia/auth", "@sentry/nextjs"],
