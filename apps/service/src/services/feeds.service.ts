@@ -6,9 +6,12 @@ import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
 import type { TextEmbeddingModel } from "@chia/ai/embeddings/utils";
 import { client as algoliaClient } from "@chia/api/algolia";
 import { env } from "@chia/api/algolia/env";
+import type { PublicFeedSearchItem } from "@chia/api/services/validators";
 import type { DB } from "@chia/db";
+import { getPublicFeedSummariesByIds } from "@chia/db/repos/feeds";
 import { searchFeeds } from "@chia/db/repos/feeds/embedding";
 import type { Locale } from "@chia/db/types";
+import type { FeedType } from "@chia/db/types";
 import type { Keyv } from "@chia/kv";
 
 interface SearchFeedsServiceParams {
@@ -23,9 +26,10 @@ interface SearchFeedsServiceParams {
 type VectorSearchResult = Awaited<ReturnType<typeof searchFeeds>>["items"];
 
 export interface AlgoliaFeedHit {
-  version: "2026.04.07";
+  version: "2026.07.13";
   objectID: string | number;
   feedID: string | number;
+  type: Exclude<FeedType, "all">;
   locale: Locale;
   slug: string;
   title: string;
@@ -44,6 +48,61 @@ type SearchFeedsServiceResult =
       provider: "algolia";
       items: AlgoliaFeedHit[];
     };
+
+export async function searchPublicFeedsService({
+  db,
+  keyword,
+  locale,
+  limit = 5,
+}: {
+  db: DB;
+  keyword: string;
+  locale: Locale;
+  limit?: number;
+}): Promise<PublicFeedSearchItem[]> {
+  const { hits } = await algoliaClient.searchSingleIndex<AlgoliaFeedHit>({
+    indexName: env.ALGOLIA_FEEDS_INDEX_NAME,
+    searchParams: {
+      query: keyword.trim(),
+      facetFilters: [`locale:${locale}`],
+      hitsPerPage: limit,
+    },
+  });
+
+  const feedIds = [
+    ...new Set(
+      hits
+        .map(({ feedID }) => Number(feedID))
+        .filter((feedID) => Number.isSafeInteger(feedID))
+    ),
+  ];
+  const summaries = await getPublicFeedSummariesByIds(db, {
+    feedIds,
+    locale,
+  });
+  const summariesById = new Map(
+    summaries.map((summary) => [summary.id, summary])
+  );
+
+  return hits.flatMap(({ feedID }) => {
+    const summary = summariesById.get(Number(feedID));
+    if (!summary) {
+      return [];
+    }
+
+    return [
+      {
+        feedId: summary.id,
+        type: summary.type,
+        slug: summary.slug,
+        locale: summary.locale,
+        title: summary.title,
+        description: summary.description ?? "",
+        excerpt: summary.excerpt ?? "",
+      },
+    ];
+  });
+}
 
 export async function searchFeedsService({
   db,

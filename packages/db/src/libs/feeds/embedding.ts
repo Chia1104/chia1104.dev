@@ -4,6 +4,7 @@ import {
   desc,
   gt,
   eq,
+  ne,
   and,
   isNotNull,
   isNull,
@@ -38,10 +39,12 @@ export const searchFeeds = withDTO(
     }
   ) => {
     const isOllama = useOllama && (await isOllamaEnabled(useOllama.model));
-    const embedding = isOllama
-      ? await ollamaEmbedding(dto.input, useOllama.model)
-      : await generateEmbedding(dto.input, dto);
-    if (!embedding) {
+    const embedding =
+      dto.embedding ??
+      (isOllama
+        ? await ollamaEmbedding(dto.input, useOllama.model)
+        : await generateEmbedding(dto.input, dto));
+    if (!embedding?.length) {
       return {
         items: [],
         embedding: [],
@@ -85,6 +88,7 @@ export const searchFeeds = withDTO(
       .where(
         and(
           dto.enableDeleted ? undefined : isNull(schema.feeds.deletedAt),
+          eq(schema.feeds.published, true),
           isNotNull(
             isOllama
               ? schema.feedTranslations.embedding512
@@ -103,5 +107,77 @@ export const searchFeeds = withDTO(
       items: feeds,
       embedding,
     };
+  }
+);
+
+export const getRelatedFeeds = withDTO(
+  async (
+    db,
+    dto: {
+      slug: string;
+      locale: Locale;
+      limit?: number;
+      comparison?: number;
+    }
+  ) => {
+    const [source] = await db
+      .select({
+        id: schema.feeds.id,
+        embedding: schema.feedTranslations.embedding,
+      })
+      .from(schema.feeds)
+      .innerJoin(
+        schema.feedTranslations,
+        eq(schema.feeds.id, schema.feedTranslations.feedId)
+      )
+      .where(
+        and(
+          eq(schema.feeds.slug, dto.slug),
+          eq(schema.feeds.published, true),
+          isNull(schema.feeds.deletedAt),
+          eq(schema.feedTranslations.locale, dto.locale),
+          isNotNull(schema.feedTranslations.embedding)
+        )
+      )
+      .limit(1);
+
+    if (!source?.embedding) {
+      return [];
+    }
+
+    const similarity = sql<number>`1 - (${cosineDistance(
+      schema.feedTranslations.embedding,
+      source.embedding
+    )})`;
+
+    return await db
+      .select({
+        id: schema.feeds.id,
+        type: schema.feeds.type,
+        slug: schema.feeds.slug,
+        locale: schema.feedTranslations.locale,
+        title: schema.feedTranslations.title,
+        description: schema.feedTranslations.description,
+        excerpt: schema.feedTranslations.excerpt,
+        createdAt: schema.feeds.createdAt,
+        similarity,
+      })
+      .from(schema.feeds)
+      .innerJoin(
+        schema.feedTranslations,
+        eq(schema.feeds.id, schema.feedTranslations.feedId)
+      )
+      .where(
+        and(
+          ne(schema.feeds.id, source.id),
+          eq(schema.feeds.published, true),
+          isNull(schema.feeds.deletedAt),
+          eq(schema.feedTranslations.locale, dto.locale),
+          isNotNull(schema.feedTranslations.embedding),
+          gt(similarity, dto.comparison ?? 0.3)
+        )
+      )
+      .orderBy(desc(similarity))
+      .limit(dto.limit ?? 3);
   }
 );

@@ -1,5 +1,5 @@
 import type { KnownKeysOnly, RelationsFilterColumns } from "drizzle-orm";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
@@ -451,6 +451,81 @@ export const getFeedById = withDTO(
       params.locale,
       params.enableDeleted
     )
+);
+
+export const getFeedForIndexing = withDTO(
+  async (db, params: { feedId: number }) => {
+    const rows = await db
+      .select({
+        feed: feeds,
+        translation: feedTranslations,
+        content: contents,
+      })
+      .from(feeds)
+      .innerJoin(feedTranslations, eq(feeds.id, feedTranslations.feedId))
+      .leftJoin(contents, eq(contents.feedTranslationId, feedTranslations.id))
+      .where(eq(feeds.id, params.feedId));
+
+    const firstRow = rows[0];
+    if (!firstRow) {
+      return null;
+    }
+
+    return {
+      ...firstRow.feed,
+      translations: rows.map(({ translation, content }) => ({
+        ...translation,
+        content,
+      })),
+    };
+  }
+);
+
+export const getPublicFeedSummariesByIds = withDTO(
+  async (
+    db,
+    params: {
+      feedIds: number[];
+      locale: Locale;
+    }
+  ) => {
+    if (params.feedIds.length === 0) {
+      return [];
+    }
+
+    return await db
+      .select({
+        id: feeds.id,
+        type: feeds.type,
+        slug: feeds.slug,
+        locale: feedTranslations.locale,
+        title: feedTranslations.title,
+        description: feedTranslations.description,
+        excerpt: feedTranslations.excerpt,
+      })
+      .from(feeds)
+      .innerJoin(feedTranslations, eq(feeds.id, feedTranslations.feedId))
+      .where(
+        and(
+          inArray(feeds.id, params.feedIds),
+          eq(feeds.published, true),
+          isNull(feeds.deletedAt),
+          eq(feedTranslations.locale, params.locale)
+        )
+      );
+  }
+);
+
+export const getFeedIdByTranslationId = withDTO(
+  async (db, params: { translationId: number }) => {
+    const [translation] = await db
+      .select({ feedId: feedTranslations.feedId })
+      .from(feedTranslations)
+      .where(eq(feedTranslations.id, params.translationId))
+      .limit(1);
+
+    return translation?.feedId ?? null;
+  }
 );
 
 export const getInfiniteFeeds = withDTO(

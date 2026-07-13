@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
+import { useState } from "react";
 import type { FC } from "react";
 
 import { Button, Kbd, Tooltip, TooltipContent, Tabs } from "@heroui/react";
@@ -9,7 +10,6 @@ import { useTranslations } from "next-intl";
 
 import {
   CommandDialog,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -20,16 +20,23 @@ import {
 import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
+import { FeedSearch } from "@/components/commons/feed-search";
 import { useRouter } from "@/libs/i18n/routing";
+import { Locale } from "@/libs/utils/i18n";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";
 
 const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
   const [open, setOpen] = useCMD();
+  const [query, setQuery] = useState("");
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const t = useTranslations("nav");
   const tRoutes = useTranslations("routes");
+  const closeCommand = () => {
+    setQuery("");
+    setOpen(false);
+  };
   return (
     <>
       <Tooltip>
@@ -49,102 +56,123 @@ const CMDK = (props: PartialK<PropsWithLocale, "locale">) => {
           </Kbd>
         </TooltipContent>
       </Tooltip>
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder={t("search-placeholder")} />
+      <CommandDialog
+        open={open}
+        onOpenChange={(isOpen) => {
+          setOpen(isOpen);
+          if (!isOpen) {
+            setQuery("");
+          }
+        }}
+        commandProps={{ shouldFilter: false }}>
+        <CommandInput
+          value={query}
+          onValueChange={setQuery}
+          placeholder={t("search-placeholder")}
+        />
         <CommandList>
-          <CommandEmpty>{t("no-results")}</CommandEmpty>
-          <CommandGroup heading={t("pages")}>
-            {Object.entries(navItems).map(([path, { nameKey }]) => {
-              return (
+          {query.trim().length >= 2 ? (
+            <FeedSearch
+              query={query}
+              locale={props.locale ?? Locale.ZH_TW}
+              onSelect={closeCommand}
+            />
+          ) : (
+            <>
+              <CommandGroup heading={t("pages")}>
+                {Object.entries(navItems).map(([path, { nameKey }]) => {
+                  return (
+                    <CommandItem
+                      aria-label={tRoutes(nameKey)}
+                      className="gap-5"
+                      key={path}
+                      onSelect={() => {
+                        router.push(path, { locale: props.locale });
+                        closeCommand();
+                      }}>
+                      <div className="i-mdi-paper size-5" />
+                      {tRoutes(nameKey)}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+              <CommandSeparator className="mb-2" />
+              <CommandGroup
+                heading={
+                  <span className="flex items-center justify-between">
+                    <p>{t("contact")}</p>
+                    <Kbd className="text-xs">
+                      <Kbd.Abbr keyValue="command" />
+                      <Kbd.Content>I</Kbd.Content>
+                    </Kbd>
+                  </span>
+                }>
+                {Object.entries(contact).map(([key, { name, icon, link }]) => (
+                  <CommandItem
+                    className="gap-5"
+                    key={key}
+                    onSelect={() => {
+                      window.open(link, "_blank");
+                      closeCommand();
+                    }}>
+                    {icon}
+                    {name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator className="mb-2" />
+              <CommandGroup
+                heading={
+                  <span className="flex items-center justify-between">
+                    <p>{t("theme", { theme: theme ?? "-" })}</p>
+                    <Kbd className="text-xs">
+                      <Kbd.Abbr keyValue="command" />
+                      <Kbd.Content>J</Kbd.Content>
+                    </Kbd>
+                  </span>
+                }>
                 <CommandItem
-                  aria-label={tRoutes(nameKey)}
+                  defaultChecked={theme === Theme.SYSTEM}
                   className="gap-5"
-                  key={path}
                   onSelect={() => {
-                    router.push(path, { locale: props.locale });
-                    setOpen(false);
+                    setTheme(Theme.SYSTEM);
+                    closeCommand();
                   }}>
-                  <div className="i-mdi-paper size-5" />
-                  {tRoutes(nameKey)}
+                  <MotionThemeIcon
+                    theme={Theme.SYSTEM}
+                    variants={defaultThemeVariants}
+                  />
+                  {t("theme-system")}
                 </CommandItem>
-              );
-            })}
-          </CommandGroup>
-          <CommandSeparator className="mb-2" />
-          <CommandGroup
-            heading={
-              <span className="flex items-center justify-between">
-                <p>{t("contact")}</p>
-                <Kbd className="text-xs">
-                  <Kbd.Abbr keyValue="command" />
-                  <Kbd.Content>I</Kbd.Content>
-                </Kbd>
-              </span>
-            }>
-            {Object.entries(contact).map(([key, { name, icon, link }]) => (
-              <CommandItem
-                className="gap-5"
-                key={key}
-                onSelect={() => {
-                  window.open(link, "_blank");
-                  setOpen(false);
-                }}>
-                {icon}
-                {name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator className="mb-2" />
-          <CommandGroup
-            heading={
-              <span className="flex items-center justify-between">
-                <p>{t("theme", { theme: theme ?? "-" })}</p>
-                <Kbd className="text-xs">
-                  <Kbd.Abbr keyValue="command" />
-                  <Kbd.Content>J</Kbd.Content>
-                </Kbd>
-              </span>
-            }>
-            <CommandItem
-              defaultChecked={theme === Theme.SYSTEM}
-              className="gap-5"
-              onSelect={() => {
-                setTheme(Theme.SYSTEM);
-                setOpen(false);
-              }}>
-              <MotionThemeIcon
-                theme={Theme.SYSTEM}
-                variants={defaultThemeVariants}
-              />
-              {t("theme-system")}
-            </CommandItem>
-            <CommandItem
-              defaultChecked={theme === Theme.DARK}
-              className="gap-5"
-              onSelect={() => {
-                setTheme(Theme.DARK);
-                setOpen(false);
-              }}>
-              <MotionThemeIcon
-                theme={Theme.DARK}
-                variants={defaultThemeVariants}
-              />
-              {t("theme-dark")}
-            </CommandItem>
-            <CommandItem
-              defaultChecked={theme === Theme.LIGHT}
-              className="gap-5"
-              onSelect={() => {
-                setTheme(Theme.LIGHT);
-                setOpen(false);
-              }}>
-              <MotionThemeIcon
-                theme={Theme.LIGHT}
-                variants={defaultThemeVariants}
-              />
-              {t("theme-light")}
-            </CommandItem>
-          </CommandGroup>
+                <CommandItem
+                  defaultChecked={theme === Theme.DARK}
+                  className="gap-5"
+                  onSelect={() => {
+                    setTheme(Theme.DARK);
+                    closeCommand();
+                  }}>
+                  <MotionThemeIcon
+                    theme={Theme.DARK}
+                    variants={defaultThemeVariants}
+                  />
+                  {t("theme-dark")}
+                </CommandItem>
+                <CommandItem
+                  defaultChecked={theme === Theme.LIGHT}
+                  className="gap-5"
+                  onSelect={() => {
+                    setTheme(Theme.LIGHT);
+                    closeCommand();
+                  }}>
+                  <MotionThemeIcon
+                    theme={Theme.LIGHT}
+                    variants={defaultThemeVariants}
+                  />
+                  {t("theme-light")}
+                </CommandItem>
+              </CommandGroup>
+            </>
+          )}
         </CommandList>
       </CommandDialog>
     </>
