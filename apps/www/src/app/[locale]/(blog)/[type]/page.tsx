@@ -6,8 +6,6 @@ import { ErrorBoundary } from "@sentry/nextjs";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getTranslations } from "next-intl/server";
 
-import dayjs from "@chia/utils/day";
-
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
 import { orpc } from "@/libs/orpc/client.rsc";
@@ -56,7 +54,7 @@ const CacheFeeds = async ({
       initialPageParam: null,
       getNextPageParam: (lastPage) => {
         if (!lastPage.nextCursor) return null;
-        return dayjs(lastPage.nextCursor).toISOString();
+        return lastPage.nextCursor.toString();
       },
     })
   );

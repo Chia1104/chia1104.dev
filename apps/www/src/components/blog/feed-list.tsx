@@ -6,7 +6,7 @@ import { useMemo, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 
-import { FeedOrderBy, FeedType } from "@chia/db/types";
+import { FeedType } from "@chia/db/types";
 import DateFormat from "@chia/ui/date-format";
 import Image from "@chia/ui/image";
 import ImageZoom from "@chia/ui/image-zoom";
@@ -35,14 +35,6 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
         }),
         getNextPageParam: (lastPage) => {
           if (!lastPage.nextCursor) return null;
-
-          if (
-            query.orderBy === FeedOrderBy.CreatedAt ||
-            query.orderBy === FeedOrderBy.UpdatedAt
-          ) {
-            return dayjs(lastPage.nextCursor).toISOString();
-          }
-
           return lastPage.nextCursor.toString();
         },
         initialPageParam: nextCursor?.toString() ?? null,

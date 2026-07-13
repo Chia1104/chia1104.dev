@@ -1,119 +1,195 @@
-import { Table } from "drizzle-orm";
-import { is } from "drizzle-orm";
 import { getTableName } from "drizzle-orm";
+import type { Table } from "drizzle-orm";
 import { Cache } from "drizzle-orm/cache/core";
+import type { MutationOption } from "drizzle-orm/cache/core";
 import type { CacheConfig } from "drizzle-orm/cache/core/types";
 import type Keyv from "keyv";
 
 interface Options {
-  ttl?: number;
+  ttlMs?: number;
   strategy?: "explicit" | "all";
 }
 
+interface CacheIndexEntry {
+  key: string;
+  expiresAt: number;
+}
+
+interface CacheEntryMetadata {
+  tables: string[];
+  expiresAt: number;
+}
+
+const TABLE_INDEX_PREFIX = "drizzle:cache:table:";
+const ENTRY_METADATA_PREFIX = "drizzle:cache:entry:";
+
 export class DrizzleCache extends Cache {
-  private globalTtl: number;
+  private globalTtlMs: number;
   private _strategy: "explicit" | "all";
-  // This object will be used to store which query keys were used
-  // for a specific table, so we can later use it for invalidation.
-  private usedTablesPerKey: Record<string, string[]> = {};
   private kv: Keyv;
 
   constructor(kv: Keyv, options?: Options) {
     super();
     this.kv = kv;
-    this.globalTtl = options?.ttl ?? 1000;
+    this.globalTtlMs = options?.ttlMs ?? 60_000;
     this._strategy = options?.strategy ?? "explicit";
   }
 
-  // For the strategy, we have two options:
-  // - 'explicit': The cache is used only when .$withCache() is added to a query.
-  // - 'all': All queries are cached globally.
-  // The default behavior is 'explicit'.
   override strategy(): "explicit" | "all" {
     return this._strategy;
   }
 
-  // This function accepts query and parameters that cached into key param,
-  // allowing you to retrieve response values for this query from the cache.
   override async get<TResult = unknown>(
     key: string
   ): Promise<TResult | undefined> {
-    const res = (await this.kv.get<TResult>(key)) ?? undefined;
-    return res;
+    return (await this.kv.get<TResult>(key)) ?? undefined;
   }
 
-  // This function accepts several options to define how cached data will be stored:
-  // - 'key': A hashed query and parameters.
-  // - 'response': An array of values returned by Drizzle from the database.
-  // - 'tables': An array of tables involved in the select queries. This information is needed for cache invalidation.
-  //
-  // For example, if a query uses the "users" and "posts" tables, you can store this information. Later, when the app executes
-  // any mutation statements on these tables, you can remove the corresponding key from the cache.
-  // If you're okay with eventual consistency for your queries, you can skip this option.
   override async put<TResponse = unknown>(
     key: string,
     response: TResponse,
     tables: string[],
-    isTag: boolean,
+    _isTag: boolean,
     config?: CacheConfig
   ): Promise<void> {
+    const ttlMs = this.resolveTtlMs(config);
+    const expiresAt = Date.now() + ttlMs;
+    const tableNames = [...new Set(tables)];
+
+    await this.kv.set(key, response, ttlMs);
     await this.kv.set(
-      key,
-      response,
-      config?.ex ? config.ex * 1000 : this.globalTtl * 1000
+      this.entryMetadataKey(key),
+      {
+        tables: tableNames,
+        expiresAt,
+      } satisfies CacheEntryMetadata,
+      ttlMs
     );
-    for (const table of tables) {
-      const keys = this.usedTablesPerKey[table];
-      if (keys === undefined) {
-        this.usedTablesPerKey[table] = [key];
-      } else {
-        keys.push(key);
-      }
-    }
+
+    await Promise.all(
+      tableNames.map((table) => this.addTableIndexEntry(table, key, expiresAt))
+    );
   }
 
-  // This function is called when insert, update, or delete statements are executed.
-  // You can either skip this step or invalidate queries that used the affected tables.
-  //
-  // The function receives an object with two keys:
-  // - 'tags': Used for queries labeled with a specific tag, allowing you to invalidate by that tag.
-  // - 'tables': The actual tables affected by the insert, update, or delete statements,
-  //   helping you track which tables have changed since the last cache update.
-  override async onMutate(params: {
-    tags: string | string[];
-    tables: string | string[];
-  }): Promise<void> {
-    const tagsArray = params.tags
+  override async onMutate(params: MutationOption): Promise<void> {
+    const tags = params.tags
       ? Array.isArray(params.tags)
         ? params.tags
         : [params.tags]
       : [];
-    const tablesArray = params.tables
-      ? Array.isArray(params.tables)
-        ? params.tables
-        : [params.tables]
-      : [];
+    const tableNames = (
+      params.tables
+        ? Array.isArray(params.tables)
+          ? params.tables
+          : [params.tables]
+        : []
+    ).map((table) => this.resolveTableName(table));
+    const now = Date.now();
+    const keysToDelete = new Set(tags);
 
-    const keysToDelete = new Set<string>();
-
-    for (const table of tablesArray) {
-      const tableName = is(table, Table) ? getTableName(table) : table;
-      const keys = this.usedTablesPerKey[tableName] ?? [];
-      for (const key of keys) keysToDelete.add(key);
-    }
-
-    if (keysToDelete.size > 0 || tagsArray.length > 0) {
-      for (const tag of tagsArray) {
-        await this.kv.delete(tag);
-      }
-
-      for (const key of keysToDelete) {
-        await this.kv.delete(key);
-        for (const table of tablesArray) {
-          const tableName = is(table, Table) ? getTableName(table) : table;
-          this.usedTablesPerKey[tableName] = [];
+    const indexes = await Promise.all(
+      tableNames.map(async (table) => ({
+        table,
+        entries: await this.getTableIndex(table),
+      }))
+    );
+    for (const { entries } of indexes) {
+      for (const entry of entries) {
+        if (entry.expiresAt > now) {
+          keysToDelete.add(entry.key);
         }
       }
     }
+
+    const metadata = await Promise.all(
+      [...keysToDelete].map(async (key) => ({
+        key,
+        metadata: await this.kv.get<CacheEntryMetadata>(
+          this.entryMetadataKey(key)
+        ),
+      }))
+    );
+    const affectedTables = new Set(tableNames);
+    for (const entry of metadata) {
+      for (const table of entry.metadata?.tables ?? []) {
+        affectedTables.add(table);
+      }
+    }
+
+    await Promise.all(
+      [...keysToDelete].flatMap((key) => [
+        this.kv.delete(key),
+        this.kv.delete(this.entryMetadataKey(key)),
+      ])
+    );
+    await Promise.all(
+      [...affectedTables].map((table) =>
+        this.removeTableIndexEntries(table, keysToDelete, now)
+      )
+    );
+  }
+
+  private resolveTtlMs(config?: CacheConfig): number {
+    if (config?.px !== undefined) {
+      return config.px;
+    }
+    if (config?.ex !== undefined) {
+      return config.ex * 1000;
+    }
+    if (config?.pxat !== undefined) {
+      return Math.max(1, config.pxat - Date.now());
+    }
+    if (config?.exat !== undefined) {
+      return Math.max(1, config.exat * 1000 - Date.now());
+    }
+    return this.globalTtlMs;
+  }
+
+  private tableIndexKey(table: string): string {
+    return `${TABLE_INDEX_PREFIX}${table}`;
+  }
+
+  private resolveTableName(table: string | Table): string {
+    return typeof table === "string" ? table : getTableName(table);
+  }
+
+  private entryMetadataKey(key: string): string {
+    return `${ENTRY_METADATA_PREFIX}${key}`;
+  }
+
+  private async getTableIndex(table: string): Promise<CacheIndexEntry[]> {
+    return (
+      (await this.kv.get<CacheIndexEntry[]>(this.tableIndexKey(table))) ?? []
+    );
+  }
+
+  private async addTableIndexEntry(
+    table: string,
+    key: string,
+    expiresAt: number
+  ): Promise<void> {
+    const now = Date.now();
+    const entries = (await this.getTableIndex(table)).filter(
+      (entry) => entry.expiresAt > now && entry.key !== key
+    );
+    entries.push({ key, expiresAt });
+    await this.kv.set(this.tableIndexKey(table), entries);
+  }
+
+  private async removeTableIndexEntries(
+    table: string,
+    keys: ReadonlySet<string>,
+    now: number
+  ): Promise<void> {
+    const indexKey = this.tableIndexKey(table);
+    const entries = (await this.getTableIndex(table)).filter(
+      (entry) => entry.expiresAt > now && !keys.has(entry.key)
+    );
+
+    if (entries.length === 0) {
+      await this.kv.delete(indexKey);
+      return;
+    }
+    await this.kv.set(indexKey, entries);
   }
 }
