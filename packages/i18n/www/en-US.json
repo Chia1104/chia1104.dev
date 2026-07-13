@@ -103,6 +103,7 @@
     "open-in-perplexity": "Open in Perplexity",
     "view-as-markdown": "View as Markdown",
     "open-in-gemini": "Open in Gemini",
+    "related-feeds": "Related articles",
     "warning": "Warning"
   },
   "projects": {
@@ -161,6 +162,11 @@
     "contact": "Contact",
     "theme": "Theme ({theme})",
     "search-placeholder": "Type a command or search...",
+    "search-articles": "Search articles",
+    "search-hint": "Enter at least two characters to search articles and notes.",
+    "search-loading": "Searching...",
+    "search-error": "Search is temporarily unavailable. Please try again.",
+    "articles": "Articles and notes",
     "no-results": "No results found.",
     "theme-system": "System",
     "theme-dark": "Dark",

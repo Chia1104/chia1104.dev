@@ -1,19 +1,17 @@
 import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
-import { all } from "better-all";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 import once from "lodash/once.js";
-import { start } from "workflow/api";
 
 import { router } from "@chia/api/orpc/router";
-import dayjs from "@chia/utils/day";
 
 import { env } from "../env";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
-import { saveFeedToAlgoliaWorkflow } from "../workflows/algolia-search.workflow.js";
-import { estimateReadingTimeWorkflow } from "../workflows/estimate-reading-time.workflow.js";
-import { feedEmbeddingsWorkflow } from "../workflows/feed-embeddings.workflow.js";
+import {
+  removeFeedFromSearchIndex,
+  syncFeedSearchIndex,
+} from "../services/feed-indexing.service";
 
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))
@@ -42,103 +40,11 @@ const api = new Hono<HonoContext>()
         kv: c.var.kv,
         auth: c.var.auth,
         hooks: {
-          async onFeedCreated(feed) {
-            const workflows = feed.translations.map((translation) => {
-              const content = feed.contents.find(
-                (c) => c.feedTranslationId === translation.id
-              );
-              return all({
-                async feedEmbeddings() {
-                  return await start(feedEmbeddingsWorkflow, [
-                    {
-                      feedID: feed.id,
-                      locale: translation.locale,
-                      content:
-                        content?.content ?? translation.description ?? "",
-                      enabled: feed.published,
-                    },
-                  ]);
-                },
-                async estimateReadingTime() {
-                  return await start(estimateReadingTimeWorkflow, [
-                    {
-                      feedID: feed.id,
-                      locale: translation.locale,
-                      content:
-                        content?.content ?? translation.description ?? "",
-                    },
-                  ]);
-                },
-                async saveFeedToAlgolia() {
-                  return await start(saveFeedToAlgoliaWorkflow, [
-                    {
-                      feedID: feed.id,
-                      objectID: translation.id,
-                      locale: translation.locale,
-                      title: translation.title,
-                      content:
-                        content?.content ?? translation.description ?? "",
-                      description: translation.description ?? "",
-                      createdAt: dayjs(feed.createdAt).toISOString(),
-                      updatedAt: dayjs(feed.updatedAt).toISOString(),
-                      slug: feed.slug,
-                      enabled: feed.published,
-                    },
-                  ]);
-                },
-              });
-            });
-
-            await Promise.all(workflows);
+          async onFeedChanged(feedID) {
+            await syncFeedSearchIndex(c.var.db, feedID);
           },
-          async onFeedUpdated(feed) {
-            const workflows = feed.translations.map((translation) => {
-              const content = feed.contents.find(
-                (c) => c.feedTranslationId === translation.id
-              );
-              return all({
-                async feedEmbeddings() {
-                  return await start(feedEmbeddingsWorkflow, [
-                    {
-                      feedID: feed.id,
-                      locale: translation.locale,
-                      content:
-                        content?.content ?? translation.description ?? "",
-                      enabled: feed.published,
-                    },
-                  ]);
-                },
-                async estimateReadingTime() {
-                  return await start(estimateReadingTimeWorkflow, [
-                    {
-                      feedID: feed.id,
-                      locale: translation.locale,
-                      content:
-                        content?.content ?? translation.description ?? "",
-                    },
-                  ]);
-                },
-                async saveFeedToAlgolia() {
-                  return await start(saveFeedToAlgoliaWorkflow, [
-                    {
-                      feedID: feed.id,
-                      objectID: translation.id,
-                      locale: translation.locale,
-                      title: translation.title,
-                      content:
-                        content?.content ?? translation.description ?? "",
-                      description: translation.description ?? "",
-                      createdAt: dayjs(feed.createdAt).toISOString(),
-                      updatedAt: dayjs(feed.updatedAt).toISOString(),
-                      slug: feed.slug,
-                      enabled: feed.published,
-                    },
-                  ]);
-                },
-              });
-            });
-
-            await Promise.all(workflows);
+          async onFeedRemoved(translationIDs) {
+            await removeFeedFromSearchIndex(translationIDs);
           },
         },
       },

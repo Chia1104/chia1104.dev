@@ -10,6 +10,7 @@ import type { AlgoliaFeedHit } from "../services/feeds.service";
 export const requestSchema = z.object({
   feedID: z.string().or(z.number()),
   objectID: z.string().or(z.number()),
+  type: z.enum(["post", "note"]),
   locale: z.enum(Locale).optional().default(Locale.zhTW),
   slug: z.string(),
   title: z.string(),
@@ -22,19 +23,34 @@ export const requestSchema = z.object({
 
 type Request = z.input<typeof requestSchema>;
 
+const getIndexName = () =>
+  process.env.ALGOLIA_FEEDS_INDEX_NAME ?? env.ALGOLIA_FEEDS_INDEX_NAME;
+
 export const saveFeedToAlgoliaWorkflow = async (request: Request) => {
   "use workflow";
   const parsedRequest = requestSchema.parse(request);
 
   globalThis.fetch = fetch as unknown as typeof globalThis.fetch;
 
+  const indexName = getIndexName();
+
+  if (!parsedRequest.enabled) {
+    await client.deleteObject({
+      indexName,
+      objectID: parsedRequest.objectID.toString(),
+    });
+    return {
+      success: true,
+    };
+  }
+
   await client.saveObject({
-    indexName:
-      process.env.ALGOLIA_FEEDS_INDEX_NAME ?? env.ALGOLIA_FEEDS_INDEX_NAME,
+    indexName,
     body: {
-      version: "2026.04.07",
+      version: "2026.07.13",
       objectID: parsedRequest.objectID,
       feedID: parsedRequest.feedID,
+      type: parsedRequest.type,
       locale: parsedRequest.locale,
       slug: parsedRequest.slug,
       title: parsedRequest.title,
@@ -44,6 +60,32 @@ export const saveFeedToAlgoliaWorkflow = async (request: Request) => {
       content: parsedRequest.content,
     } satisfies AlgoliaFeedHit,
   });
+
+  return {
+    success: true,
+  };
+};
+
+const deleteRequestSchema = z.object({
+  objectIDs: z.array(z.string().or(z.number())),
+});
+
+export const deleteFeedFromAlgoliaWorkflow = async (
+  request: z.input<typeof deleteRequestSchema>
+) => {
+  "use workflow";
+  const { objectIDs } = deleteRequestSchema.parse(request);
+
+  globalThis.fetch = fetch as unknown as typeof globalThis.fetch;
+
+  await Promise.all(
+    objectIDs.map(async (objectID) => {
+      await client.deleteObject({
+        indexName: getIndexName(),
+        objectID: objectID.toString(),
+      });
+    })
+  );
 
   return {
     success: true,

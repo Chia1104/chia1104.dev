@@ -540,13 +540,13 @@ importers:
         version: 16.3.0-canary.83(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       next-safe-action:
         specifier: 8.5.5
-        version: 8.5.5(next@16.3.0-canary.83(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 8.5.5(next@16.3.0-canary.83(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       next-themes:
         specifier: catalog:ui
         version: 0.4.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       nuqs:
         specifier: catalog:ui
-        version: 2.9.0(next@16.3.0-canary.83(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)
+        version: 2.9.0(next@16.3.0-canary.83(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)
       pg:
         specifier: ^8.22.0
         version: 8.22.0
@@ -821,7 +821,7 @@ importers:
         version: 3.2.2(@react-spectrum/provider@3.11.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(tailwindcss@4.3.2)
       '@heroui/styles':
         specifier: catalog:heroui-v3
-        version: 3.2.2(tailwind-merge@3.6.0)(tailwindcss@4.3.2)
+        version: 3.2.2(tailwind-merge@3.4.0)(tailwindcss@4.3.2)
       '@hookform/resolvers':
         specifier: ^5.4.0
         version: 5.4.0(react-hook-form@7.81.0(react@19.2.7))
@@ -849,6 +849,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: 'catalog:'
         version: 0.13.11(typescript@7.0.2)(zod@4.4.3)
+      '@tanstack/react-pacer':
+        specifier: catalog:tanstack
+        version: 0.22.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tanstack/react-query':
         specifier: catalog:tanstack
         version: 5.101.2(react@19.2.7)
@@ -22181,7 +22184,7 @@ snapshots:
     transitivePeerDependencies:
       - '@swc/helpers'
 
-  next-safe-action@8.5.5(next@16.3.0-canary.83(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  next-safe-action@8.5.5(next@16.3.0-canary.83(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       next: 16.3.0-canary.83(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react: 19.2.7
@@ -22384,7 +22387,7 @@ snapshots:
       set-blocking: 2.0.0
     optional: true
 
-  nuqs@2.9.0(next@16.3.0-canary.83(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7):
+  nuqs@2.9.0(next@16.3.0-canary.83(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7):
     dependencies:
       '@standard-schema/spec': 1.0.0
       react: 19.2.7

@@ -43,6 +43,9 @@ vi.mock("@chia/db/repos/feeds", async () => {
     getInfiniteFeeds: mocks.getInfiniteFeeds,
     getFeedBySlug: mocks.getFeedBySlug,
     getFeedById: mocks.getFeedById,
+    getFeedForIndexing: mocks.getFeedForIndexing,
+    getPublicFeedSummariesByIds: mocks.getPublicFeedSummariesByIds,
+    getFeedIdByTranslationId: mocks.getFeedIdByTranslationId,
     upsertFeedTranslation: mocks.upsertFeedTranslation,
     upsertContent: mocks.upsertContent,
     updateFeed: mocks.updateFeed,
@@ -53,6 +56,7 @@ vi.mock("@chia/db/repos/feeds/embedding", async () => {
   const mocks = await import("./__mocks__/db.mock");
   return {
     searchFeeds: mocks.searchFeeds,
+    getRelatedFeeds: mocks.getRelatedFeeds,
   };
 });
 

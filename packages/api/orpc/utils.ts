@@ -6,7 +6,6 @@ import GithubSlugger from "github-slugger";
 import type { Auth } from "@chia/auth";
 import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
-import type { Feed, Content, FeedTranslation } from "@chia/db/schema";
 import type { Keyv } from "@chia/kv";
 
 import { routerContract } from "./router.contract";
@@ -20,18 +19,8 @@ export interface BaseOSContext {
     onError?: (error: ORPCError<string, unknown>) => void;
     onUnauthorized?: (error: ORPCError<"UNAUTHORIZED", unknown>) => void;
     onForbidden?: (error: ORPCError<"FORBIDDEN", unknown>) => void;
-    onFeedCreated?: (
-      feed: Feed & {
-        translations: FeedTranslation[];
-        contents: Content[];
-      }
-    ) => Promise<void>;
-    onFeedUpdated?: (
-      feed: Feed & {
-        translations: FeedTranslation[];
-        contents: Content[];
-      }
-    ) => Promise<void>;
+    onFeedChanged?: (feedID: number) => Promise<void>;
+    onFeedRemoved?: (translationIDs: readonly number[]) => Promise<void>;
   };
   session?: Session | null;
 }

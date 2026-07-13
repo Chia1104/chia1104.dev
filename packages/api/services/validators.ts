@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 import { locale } from "@chia/db";
-import { FeedOrderBy, Locale } from "@chia/db/types";
+import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import {
   baseInfiniteSchema,
   insertFeedTranslationSchema,
@@ -53,3 +53,25 @@ export const upsertContentRequestSchema = z.object({
   source: z.string().optional().nullable(),
   unstableSerializedSource: z.string().optional().nullable(),
 });
+
+export const publicFeedSearchItemSchema = z.object({
+  feedId: z.number(),
+  type: z.enum([FeedType.Post, FeedType.Note]),
+  slug: z.string(),
+  locale: z.enum(locale.enumValues),
+  title: z.string(),
+  description: z.string(),
+  excerpt: z.string(),
+});
+
+export const publicFeedSearchResponseSchema = z.object({
+  items: z.array(publicFeedSearchItemSchema),
+});
+
+export const publicFeedSearchQuerySchema = z.object({
+  keyword: z.string().trim().min(2).max(100),
+  locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
+  limit: z.coerce.number().int().min(1).max(10).optional().default(5),
+});
+
+export type PublicFeedSearchItem = z.infer<typeof publicFeedSearchItemSchema>;

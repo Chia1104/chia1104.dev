@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { CSSProperties, ComponentPropsWithoutRef } from "react";
 
 import {
@@ -64,7 +64,6 @@ interface NoiseBackgroundProps extends ComponentPropsWithoutRef<"div"> {
   };
   noiseIntensity?: number;
   speed?: number;
-  backdropBlur?: boolean;
   animating?: boolean;
   springConfig?: {
     stiffness?: number;
@@ -81,15 +80,15 @@ export const NoiseBackground = ({
     first: 0.4,
     second: 0.3,
   },
-  noiseIntensity = 0.2,
+  noiseIntensity = 0.3,
   speed = 0.1,
-  backdropBlur = false,
   animating = true,
   springConfig = { stiffness: 100, damping: 30 },
   style,
   ...props
 }: NoiseBackgroundProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const noiseFilterId = useId();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -215,11 +214,9 @@ export const NoiseBackground = ({
         } as CSSProperties
       }
       className={cn(
-        "group relative overflow-hidden rounded-2xl bg-neutral-200 backdrop-blur-sm dark:bg-neutral-900/90",
+        "group relative overflow-hidden rounded-2xl bg-neutral-200 dark:bg-neutral-900/90",
         "shadow-[0px_0.5px_1px_0px_var(--color-neutral-400)_inset,0px_1px_0px_0px_var(--color-neutral-100)]",
         "dark:shadow-[0px_1px_0px_0px_var(--color-neutral-950)_inset,0px_1px_0px_0px_var(--color-neutral-800)]",
-        backdropBlur &&
-          "after:absolute after:inset-0 after:h-full after:w-full after:backdrop-blur-lg after:content-['']",
         containerClassName
       )}>
       <GradientLayer layer={1} />
@@ -233,12 +230,19 @@ export const NoiseBackground = ({
       />
 
       <div className="not-prose pointer-events-none absolute inset-0 overflow-hidden">
-        <img
-          src="https://storage.chia1104.dev/noise.webp"
-          alt="noise background"
-          className="h-full w-full object-cover opacity-[var(--noise-opacity)] mix-blend-overlay"
-          aria-hidden
-        />
+        <svg
+          className="h-full w-full opacity-[var(--noise-opacity)] mix-blend-overlay grayscale"
+          aria-hidden>
+          <filter id={noiseFilterId}>
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.45"
+              numOctaves="3"
+              stitchTiles="stitch"
+            />
+          </filter>
+          <rect width="100%" height="100%" filter={`url(#${noiseFilterId})`} />
+        </svg>
       </div>
 
       <div className={cn("relative z-10", className)}>{children}</div>

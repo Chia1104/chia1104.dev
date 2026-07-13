@@ -147,3 +147,30 @@ export const getFeedBySlug = async (
     throw new HonoRPCError("unknown error", 500, "unknown error");
   }
 };
+
+export const getRelatedFeeds = async (
+  slug: string,
+  locale: Locale = dbLocaleResolver(env.NEXT_PUBLIC_DEFAULT_LOCALE),
+  limit = 3
+) => {
+  try {
+    const res = await client.api.v1.admin.public.feeds[":slug"].related.$get({
+      param: {
+        slug,
+      },
+      query: {
+        locale,
+        limit: limit.toString(),
+      },
+    });
+    if (!res.ok) {
+      throw new HonoRPCError(res.statusText, res.status, res.statusText);
+    }
+    return res.json();
+  } catch (error) {
+    if (error instanceof HonoRPCError) {
+      throw error;
+    }
+    throw new HonoRPCError("unknown error", 500, "unknown error");
+  }
+};

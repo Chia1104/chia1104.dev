@@ -10,6 +10,7 @@ import {
   getFeedsWithType,
   getFeeds,
   getFeedBySlug,
+  getRelatedFeeds,
 } from "@/services/feeds.service";
 
 // Mock the client
@@ -23,6 +24,9 @@ vi.mock("@/libs/service/client.rsc", () => ({
               $get: vi.fn(),
               ":slug": {
                 $get: vi.fn(),
+                related: {
+                  $get: vi.fn(),
+                },
               },
             },
           },
@@ -37,6 +41,8 @@ const mockGet = client.api.v1.admin.public.feeds.$get as ReturnType<
   typeof vi.fn
 >;
 const mockGetBySlug = client.api.v1.admin.public.feeds[":slug"]
+  .$get as ReturnType<typeof vi.fn>;
+const mockGetRelated = client.api.v1.admin.public.feeds[":slug"].related
   .$get as ReturnType<typeof vi.fn>;
 
 describe("Feeds Service", () => {
@@ -260,6 +266,36 @@ describe("Feeds Service", () => {
       });
 
       await expect(getFeedBySlug("test-slug")).rejects.toThrow(HonoRPCError);
+    });
+  });
+
+  describe("getRelatedFeeds", () => {
+    it("應該取得相關文章", async () => {
+      const mockData = {
+        items: [{ id: 2, type: "note", slug: "related-note" }],
+      };
+      mockGetRelated.mockResolvedValue({
+        ok: true,
+        json: async () => mockData,
+      });
+
+      const result = await getRelatedFeeds("test-slug", Locale.En, 4);
+
+      expect(result).toEqual(mockData);
+      expect(mockGetRelated).toHaveBeenCalledWith({
+        param: { slug: "test-slug" },
+        query: { locale: Locale.En, limit: "4" },
+      });
+    });
+
+    it("應該在請求失敗時拋出 HonoRPCError", async () => {
+      mockGetRelated.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: "Server Error",
+      });
+
+      await expect(getRelatedFeeds("test-slug")).rejects.toThrow(HonoRPCError);
     });
   });
 });

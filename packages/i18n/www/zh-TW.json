@@ -103,6 +103,7 @@
     "open-in-perplexity": "在 Perplexity 中開啟",
     "view-as-markdown": "以 Markdown 格式開啟",
     "open-in-gemini": "在 Gemini 中開啟",
+    "related-feeds": "相關文章",
     "warning": "警告"
   },
   "projects": {
@@ -161,6 +162,11 @@
     "contact": "聯絡",
     "theme": "主題 ({theme})",
     "search-placeholder": "輸入指令或搜尋...",
+    "search-articles": "搜尋文章",
+    "search-hint": "輸入至少兩個字元以搜尋文章與筆記。",
+    "search-loading": "搜尋中...",
+    "search-error": "搜尋暫時無法使用，請稍後再試。",
+    "articles": "文章與筆記",
     "no-results": "找不到結果。",
     "theme-system": "系統",
     "theme-dark": "深色",

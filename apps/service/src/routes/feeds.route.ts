@@ -7,7 +7,10 @@ import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
 import { isOpenAIEmbeddingModel } from "@chia/ai/embeddings/utils";
 import { isOllamaEnabled } from "@chia/ai/ollama/utils";
-import { getFeedsWithMetaSchema } from "@chia/api/services/validators";
+import {
+  getFeedsWithMetaSchema,
+  publicFeedSearchQuerySchema,
+} from "@chia/api/services/validators";
 import { locale } from "@chia/db";
 import {
   getInfiniteFeedsByUserId,
@@ -19,7 +22,10 @@ import { env } from "../env";
 import { ai, AI_AUTH_TOKEN } from "../guards/ai.guard";
 import { verifyAuth } from "../guards/auth.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
-import { searchFeedsService } from "../services/feeds.service";
+import {
+  searchFeedsService,
+  searchPublicFeedsService,
+} from "../services/feeds.service";
 import { errorResponse } from "../utils/error.util";
 import { searchFeedsSchema } from "../validators/feeds.validator";
 
@@ -95,6 +101,24 @@ const api = new Hono<HonoContext>()
         whereAnd: { published: true },
       });
       return c.json(feeds);
+    }
+  )
+  .get(
+    "/public/search",
+    zValidator("query", publicFeedSearchQuerySchema, (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }),
+    async (c) => {
+      const { keyword, locale, limit } = c.req.valid("query");
+      const items = await searchPublicFeedsService({
+        db: c.var.db,
+        keyword,
+        locale,
+        limit,
+      });
+      return c.json({ items });
     }
   )
   .use(

@@ -14,10 +14,12 @@ import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
   getFeedById,
+  getFeedIdByTranslationId,
   upsertFeedTranslation,
   upsertContent,
   updateFeed,
 } from "@chia/db/repos/feeds";
+import { getRelatedFeeds } from "@chia/db/repos/feeds/embedding";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { Locale } from "@chia/db/types";
 import { getAdminId } from "@chia/utils/config";
@@ -26,9 +28,14 @@ import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "../env";
 import { apikeyVerify } from "../guards/apikey-verify.guard";
+import { syncFeedSearchIndex } from "../services/feed-indexing.service";
 import { errorResponse } from "../utils/error.util";
 
 const adminId = getAdminId();
+const relatedFeedsSchema = z.object({
+  locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
+  limit: z.coerce.number().int().min(1).max(6).optional().default(3),
+});
 
 const api = new Hono<HonoContext>()
   .use(
@@ -49,6 +56,23 @@ const api = new Hono<HonoContext>()
       total,
     });
   })
+  .get(
+    "/public/feeds/:slug/related",
+    zValidator("query", relatedFeedsSchema, (result, c) => {
+      if (!result.success) {
+        return c.json(errorResponse(result.error), 400);
+      }
+    }),
+    async (c) => {
+      const { locale, limit } = c.req.valid("query");
+      const items = await getRelatedFeeds(c.var.db, {
+        slug: c.req.param("slug"),
+        locale,
+        limit,
+      });
+      return c.json({ items });
+    }
+  )
   .get(
     "/public/feeds/:slug",
     zValidator(
@@ -127,7 +151,10 @@ const api = new Hono<HonoContext>()
     }),
     async (c) => {
       const dto = c.req.valid("json");
-      await upsertFeedTranslation(c.var.db, dto);
+      const translation = await upsertFeedTranslation(c.var.db, dto);
+      if (translation) {
+        await syncFeedSearchIndex(c.var.db, translation.feedId);
+      }
       return c.body(null, 204);
     }
   )
@@ -141,6 +168,12 @@ const api = new Hono<HonoContext>()
     async (c) => {
       const dto = c.req.valid("json");
       await upsertContent(c.var.db, dto);
+      const feedID = await getFeedIdByTranslationId(c.var.db, {
+        translationId: dto.feedTranslationId,
+      });
+      if (feedID) {
+        await syncFeedSearchIndex(c.var.db, feedID);
+      }
       return c.body(null, 204);
     }
   )
@@ -157,6 +190,9 @@ const api = new Hono<HonoContext>()
         ...dto,
         feedId: Number(c.req.param("id")),
       });
+      if (feed) {
+        await syncFeedSearchIndex(c.var.db, feed.id);
+      }
       return c.json(feed);
     }
   )

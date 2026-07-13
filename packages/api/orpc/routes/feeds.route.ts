@@ -5,6 +5,7 @@ import {
   getInfiniteFeedsByUserId,
   getFeedBySlug,
   getFeedById,
+  getFeedForIndexing,
   createFeed,
   updateFeed,
   upsertFeedTranslation,
@@ -116,8 +117,8 @@ export const createFeedRoute = contractOS.feeds.create
       ),
     });
 
-    if (opts.context.hooks?.onFeedCreated && data) {
-      await opts.context.hooks.onFeedCreated(data);
+    if (opts.context.hooks?.onFeedChanged && data) {
+      await opts.context.hooks.onFeedChanged(data.id);
     }
 
     return data;
@@ -184,8 +185,8 @@ export const updateFeedRoute = contractOS.feeds.update
       contents: contentsData,
     };
 
-    if (opts.context.hooks?.onFeedUpdated && updatedFeed) {
-      await opts.context.hooks.onFeedUpdated(updatedFeed);
+    if (opts.context.hooks?.onFeedChanged) {
+      await opts.context.hooks.onFeedChanged(updatedFeed.id);
     }
 
     return updatedFeed;
@@ -194,6 +195,13 @@ export const updateFeedRoute = contractOS.feeds.update
 export const deleteFeedRoute = contractOS.feeds.delete
   .use(adminGuard())
   .handler(async (opts) => {
+    const feed = await getFeedForIndexing(opts.context.db, {
+      feedId: opts.input.feedId,
+    });
+    if (!feed) {
+      throw opts.errors.NOT_FOUND();
+    }
+
     if (opts.input.hard) {
       await deleteFeed(opts.context.db, {
         feedId: opts.input.feedId,
@@ -202,6 +210,12 @@ export const deleteFeedRoute = contractOS.feeds.delete
       await softDeleteFeed(opts.context.db, {
         feedId: opts.input.feedId,
       });
+    }
+
+    if (opts.context.hooks?.onFeedRemoved) {
+      await opts.context.hooks.onFeedRemoved(
+        feed.translations.map(({ id }) => id)
+      );
     }
   });
 
@@ -213,5 +227,8 @@ export const restoreFeedRoute = contractOS.feeds.restore
     });
     if (!data) {
       throw opts.errors.NOT_FOUND();
+    }
+    if (opts.context.hooks?.onFeedChanged) {
+      await opts.context.hooks.onFeedChanged(data.id);
     }
   });

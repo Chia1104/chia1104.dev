@@ -2,11 +2,13 @@ import { beforeEach } from "vitest";
 
 import { app } from "../src/server";
 
+import * as dbMocks from "./__mocks__/db.mock";
 import * as guardMocks from "./__mocks__/guards.mock";
 
 describe("Admin Controller", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();
+    dbMocks.resetAllDbMocks();
   });
   describe("GET /api/v1/admin/public/feeds:meta", () => {
     it("should return feeds metadata (mock skips auth)", async () => {
@@ -26,6 +28,36 @@ describe("Admin Controller", () => {
       const data = await res.json();
       expect(data).toHaveProperty("items");
       expect(data).toHaveProperty("meta");
+    });
+  });
+
+  describe("GET /api/v1/admin/public/feeds/:slug/related", () => {
+    it("should return related published feeds", async () => {
+      dbMocks.getRelatedFeeds.mockResolvedValue([
+        {
+          id: 2,
+          type: "note",
+          slug: "related-note",
+          locale: "zh-TW",
+          title: "Related note",
+        },
+      ]);
+
+      const res = await app.request(
+        "/api/v1/admin/public/feeds/test-feed/related?locale=zh-TW"
+      );
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.items).toHaveLength(1);
+      expect(dbMocks.getRelatedFeeds).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          slug: "test-feed",
+          locale: "zh-TW",
+          limit: 3,
+        })
+      );
     });
   });
 

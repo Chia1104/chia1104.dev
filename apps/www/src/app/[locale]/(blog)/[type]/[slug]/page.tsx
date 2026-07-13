@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import { Avatar } from "@heroui/react";
+import { ErrorBoundary } from "@sentry/nextjs";
 import { all } from "better-all";
 import { getTranslations } from "next-intl/server";
 import type { Blog, WithContext } from "schema-dts";
@@ -15,10 +16,18 @@ import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
 import { ActionGroup } from "@/components/blog/action-group";
+import {
+  RelatedFeeds,
+  RelatedFeedsSkeleton,
+} from "@/components/blog/related-feeds";
 import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
+import {
+  getFeedBySlug,
+  getFeeds,
+  getRelatedFeeds,
+} from "@/services/feeds.service";
 
 export const revalidate = 300;
 
@@ -62,8 +71,11 @@ const Page = async ({
   }>;
 }) => {
   const { slug, locale, type } = await params;
-  const feed = await getFeedBySlug(slug, dbLocaleResolver(locale));
-  const { t } = await all({
+  const dbLocale = dbLocaleResolver(locale);
+  const { feed, relatedFeeds, t } = await all({
+    feed: async () => await getFeedBySlug(slug, dbLocale),
+    relatedFeeds: async () =>
+      await getRelatedFeeds(slug, dbLocale).catch(() => ({ items: [] })),
     t: async () => await getTranslations("blog"),
   });
 
@@ -183,6 +195,11 @@ const Page = async ({
             },
           }}
         />
+        <ErrorBoundary>
+          <Suspense fallback={<RelatedFeedsSkeleton />}>
+            <RelatedFeeds items={relatedFeeds.items} locale={locale} />
+          </Suspense>
+        </ErrorBoundary>
         <WrittenBy
           className="relative mt-10 flex w-full justify-start self-start"
           author="Chia1104"
