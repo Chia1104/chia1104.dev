@@ -16,8 +16,9 @@ export async function GET(
   }
 ) {
   const { locale, slug, type } = await params;
-  const token = new URL(request.url).searchParams.get("token");
-  const theme = new URL(request.url).searchParams.get("theme");
+  const searchParams = new URL(request.url).searchParams;
+  const token = searchParams.get("token");
+  const theme = searchParams.get("theme");
 
   if (!token || !verifyFeedImageToken({ locale, slug, type }, token)) {
     return NextResponse.json(errorGenerator(401), { status: 401 });
