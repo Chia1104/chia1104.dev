@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 
 import { Avatar } from "@heroui/react";
+import { ErrorBoundary } from "@sentry/nextjs";
 import { all } from "better-all";
 import { getTranslations } from "next-intl/server";
 import type { Blog, WithContext } from "schema-dts";
@@ -15,7 +16,10 @@ import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
 import { ActionGroup } from "@/components/blog/action-group";
-import { RelatedFeeds } from "@/components/blog/related-feeds";
+import {
+  RelatedFeeds,
+  RelatedFeedsSkeleton,
+} from "@/components/blog/related-feeds";
 import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
@@ -191,7 +195,11 @@ const Page = async ({
             },
           }}
         />
-        <RelatedFeeds items={relatedFeeds.items} />
+        <ErrorBoundary>
+          <Suspense fallback={<RelatedFeedsSkeleton />}>
+            <RelatedFeeds items={relatedFeeds.items} locale={locale} />
+          </Suspense>
+        </ErrorBoundary>
         <WrittenBy
           className="relative mt-10 flex w-full justify-start self-start"
           author="Chia1104"
