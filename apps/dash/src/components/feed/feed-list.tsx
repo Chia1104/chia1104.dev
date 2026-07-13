@@ -8,7 +8,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Pencil, Trash } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 
-import { FeedOrderBy, FeedType } from "@chia/db/types";
+import { FeedType } from "@chia/db/types";
 import CHCard from "@chia/ui/card";
 import DateFormat from "@chia/ui/date-format";
 import useInfiniteScroll from "@chia/ui/utils/use-infinite-scroll";
@@ -140,7 +140,10 @@ const FeedItem = memo(
           <span className="flex items-center gap-2">
             <MetaChip
               embedding={Object.fromEntries(
-                feed.translations.map((t) => [t.locale, t.embedding])
+                feed.translations.map((translation) => [
+                  translation.locale,
+                  translation.hasEmbedding,
+                ])
               )}
               published={feed.published}
               deleted={
@@ -285,14 +288,6 @@ const FeedList = ({ initFeed, nextCursor, query = {} }: Props) => {
       }),
       getNextPageParam: (lastPage: RouterOutputs["feeds"]["list"]) => {
         if (!lastPage.nextCursor) return null;
-
-        if (
-          query.orderBy === FeedOrderBy.CreatedAt ||
-          query.orderBy === FeedOrderBy.UpdatedAt
-        ) {
-          return dayjs(lastPage.nextCursor).toISOString();
-        }
-
         return lastPage.nextCursor.toString();
       },
       initialData: initFeed

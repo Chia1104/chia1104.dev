@@ -104,6 +104,14 @@ export const getFeedByIdSchema = z.object({
 // Output Schemas
 // ============================================
 
+const serializedContentSchema = contentSchema
+  .omit({ createdAt: true, updatedAt: true })
+  .extend({
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .nullable();
+
 export const feedWithTranslationsSchema = z.object({
   ...feedSchema.shape,
   deletedAt: z.string().nullable(),
@@ -112,13 +120,7 @@ export const feedWithTranslationsSchema = z.object({
       ...feedTranslationSchema.omit({ createdAt: true, updatedAt: true }).shape,
       createdAt: z.string(),
       updatedAt: z.string(),
-      content: contentSchema
-        .omit({ createdAt: true, updatedAt: true })
-        .extend({
-          createdAt: z.string(),
-          updatedAt: z.string(),
-        })
-        .nullable(),
+      content: serializedContentSchema,
     })
   ),
   feedsToTags: z
@@ -143,6 +145,23 @@ export const feedWithTranslationsSchema = z.object({
     .optional(),
 });
 
+const feedListSchema = feedWithTranslationsSchema.extend({
+  translations: z.array(
+    z.object({
+      ...feedTranslationSchema.omit({
+        createdAt: true,
+        updatedAt: true,
+        embedding: true,
+        embedding512: true,
+      }).shape,
+      createdAt: z.string(),
+      updatedAt: z.string(),
+      hasEmbedding: z.boolean(),
+      content: serializedContentSchema,
+    })
+  ),
+});
+
 // ============================================
 // Contracts
 // ============================================
@@ -154,7 +173,7 @@ export const getFeedsWithMetaContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(infiniteSchema)
-  .output(withMetaSchema(feedWithTranslationsSchema));
+  .output(withMetaSchema(feedListSchema));
 
 export const getFeedsWithMetaByAdminIdContract = oc
   .errors({
@@ -163,7 +182,7 @@ export const getFeedsWithMetaByAdminIdContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(infiniteSchema)
-  .output(withMetaSchema(feedWithTranslationsSchema));
+  .output(withMetaSchema(feedListSchema));
 
 export const getFeedBySlugContract = oc
   .errors({

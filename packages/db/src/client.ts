@@ -9,22 +9,28 @@ import { relations } from "./schemas/relations.ts";
 
 import type { DB } from ".";
 
-let db: DB | null = null;
+const connections = new Map<string, Promise<DB>>();
 
 export async function getConnection(url: string) {
-  if (db) {
-    return db;
+  const existingConnection = connections.get(url);
+  if (existingConnection) {
+    return await existingConnection;
   }
 
-  try {
-    db = drizzle(url, {
+  const connection = (async () =>
+    drizzle(url, {
       relations,
       cache: new DrizzleCache(await import("@chia/kv").then((m) => m.kv), {
-        strategy: "all",
+        strategy: "explicit",
+        ttlMs: 60_000,
       }),
-    });
-    return db;
+    }))();
+  connections.set(url, connection);
+
+  try {
+    return await connection;
   } catch (error) {
+    connections.delete(url);
     console.error("Failed to create database connection:", error);
     throw error;
   }
