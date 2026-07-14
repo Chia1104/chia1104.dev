@@ -64,6 +64,7 @@ export const createOrganizationRoute = contractOS.organization.create
         body: {
           slug: opts.input.slug,
         },
+        headers: opts.context.headers,
       })
     );
 
@@ -76,9 +77,11 @@ export const createOrganizationRoute = contractOS.organization.create
     const { data: org, error } = await tryCatch(
       opts.context.auth.api.createOrganization({
         body: {
+          // the creator is resolved from the forwarded session headers;
+          // `userId` is a server-only field that better-auth rejects over HTTP
           ...opts.input,
-          userId: opts.context.session?.user.id,
         },
+        headers: opts.context.headers,
       })
     );
 

@@ -1,0 +1,33 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/server.ts",
+    "build": "bun build --compile --target=bun --minify-whitespace --minify-syntax --outfile .output/server src/server.ts",
+    "type:check": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "clean": "git clean -xdf .output node_modules .cache .turbo"
+  },
+  "dependencies": {
+    "@chia/auth": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chia/kv": "workspace:*",
+    "@chia/ui": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@hono/sentry": "catalog:hono",
+    "@t3-oss/env-core": "catalog:",
+    "hono": "catalog:hono",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react-is",
+    "@types/react-dom": "catalog:react-is",
+    "bun-types": "catalog:",
+    "typescript": "catalog:"
+  }
+}

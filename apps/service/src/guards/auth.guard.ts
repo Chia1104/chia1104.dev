@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 
+import { decodeTrustedHeader, X_CH_AUTH_SESSION } from "@chia/auth/gateway";
 import type { Session } from "@chia/auth/types";
 import { Role } from "@chia/db/types";
 import { errorGenerator } from "@chia/utils/server";
@@ -19,9 +20,16 @@ export const verifyAuth = (
     HonoContext<undefined, { user: Session["user"] } & Variables>
   >(async (c, next) => {
     try {
-      const session = await c.var.auth?.api.getSession({
-        headers: c.req.raw.headers,
-      });
+      // fast path: identity injected by the edge gateway's forward_auth;
+      // fall back to the auth gateway when not fronted by the edge (local dev,
+      // internal callers)
+      const session =
+        decodeTrustedHeader<Session>(
+          c.req.raw.headers.get(X_CH_AUTH_SESSION)
+        ) ??
+        (await c.var.auth?.api.getSession({
+          headers: c.req.raw.headers,
+        }));
 
       if (!session) {
         return c.json(errorGenerator(401), 401);
