@@ -6,6 +6,7 @@ import {
   assets,
   assetsToTags,
   contents,
+  feedEmbeddings,
   feeds,
   feedsToTags,
   feedTranslations,
@@ -35,6 +36,7 @@ const schema = {
   assets,
   feeds,
   feedTranslations,
+  feedEmbeddings,
   contents,
   assetsToTags,
   feedsToTags,
@@ -141,6 +143,16 @@ export const relations = defineRelations(schema, (r) => ({
     content: r.one.contents({
       from: r.feedTranslations.id,
       to: r.contents.feedTranslationId,
+    }),
+    embeddings: r.many.feedEmbeddings({
+      from: r.feedTranslations.id,
+      to: r.feedEmbeddings.feedTranslationId,
+    }),
+  },
+  feedEmbeddings: {
+    feedTranslation: r.one.feedTranslations({
+      from: r.feedEmbeddings.feedTranslationId,
+      to: r.feedTranslations.id,
     }),
   },
   assets: {

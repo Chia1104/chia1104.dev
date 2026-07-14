@@ -69,3 +69,5 @@ vitest.config.mts.timestamp-*.mjs
 .alma-snapshots
 
 .pnpm-store
+
+.swc

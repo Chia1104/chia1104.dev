@@ -29,6 +29,7 @@ lerna-debug.log*
 
 .output
 .workflow-data
+.workflow-vitest
 
 types/*
 !types/server.d.ts

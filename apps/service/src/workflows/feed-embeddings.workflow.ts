@@ -1,60 +1,156 @@
 import * as z from "zod";
 
-import { Locale } from "@chia/db/types";
+import {
+  CANONICAL_EMBEDDING_MODEL,
+  INDEXED_EMBEDDING_MODELS,
+} from "@chia/ai/embeddings/utils";
+import type { EmbeddingModel } from "@chia/ai/embeddings/utils";
 
 import {
-  upsertFeedTranslationStep,
-  generateEmbeddingStep,
+  loadFeedForEmbeddingStep,
+  prepareTranslationEmbeddingStep,
+  resolveStaleModelsStep,
+  generateFeedEmbeddingsStep,
+  saveFeedEmbeddingsStep,
 } from "../steps/feed-embeddings.step";
 
 export const requestSchema = z.object({
   feedID: z.number(),
-  content: z.string(),
-  locale: z.enum(Locale).optional().default(Locale.zhTW),
-  enabled: z.boolean().optional().default(true),
 });
 
 type Request = z.input<typeof requestSchema>;
 
+interface ModelResult {
+  model: EmbeddingModel;
+  status: "saved" | "unavailable" | "failed";
+  chunkCount?: number;
+  error?: string;
+}
+
+/**
+ * Durable embedding pipeline: loads the feed itself (re-runnable with just a
+ * feedID), fans out per translation, and per translation fans out per model.
+ * Each model embeds the document + all chunks in one batched provider call.
+ * Steps retry independently; a failed model never blocks the others.
+ */
 export const feedEmbeddingsWorkflow = async (request: Request) => {
   "use workflow";
 
-  const parsedRequest = requestSchema.parse(request);
+  const { feedID } = requestSchema.parse(request);
 
-  if (!parsedRequest.enabled) {
-    console.log("Embedding generation is disabled, skipping", {
-      feedID: parsedRequest.feedID,
+  const feed = await loadFeedForEmbeddingStep(feedID);
+  if (!feed) {
+    return { success: false, error: "Feed not found" };
+  }
+  if (!feed.enabled) {
+    console.log("Feed is unpublished or deleted, skipping embeddings", {
+      feedID,
     });
-    return {
-      success: true,
-    };
+    return { success: true, skipped: true };
   }
 
-  if (!parsedRequest.content) {
-    return {
-      success: false,
-      error: "No content provided",
-    };
-  }
+  const translations = await Promise.all(
+    feed.translations.map(async (translation) => {
+      const prepared = await prepareTranslationEmbeddingStep(translation);
+      if (!prepared.documentInput) {
+        return {
+          locale: translation.locale,
+          status: "skipped" as const,
+          reason: "no content",
+        };
+      }
 
-  console.log("Generating embedding", {
-    feedID: parsedRequest.feedID,
-    locale: parsedRequest.locale,
-    contentLength: parsedRequest.content.length,
+      const staleModels = await resolveStaleModelsStep(
+        translation.translationID,
+        prepared.contentHash,
+        INDEXED_EMBEDDING_MODELS
+      );
+      if (staleModels.length === 0) {
+        console.log("Embeddings are up to date, skipping", {
+          feedID,
+          locale: translation.locale,
+        });
+        return {
+          locale: translation.locale,
+          status: "skipped" as const,
+          reason: "up to date",
+        };
+      }
+
+      // one model failing (e.g. rate-limited past retries) must not block
+      // the other models for this translation
+      const inputs = [
+        prepared.documentInput,
+        ...prepared.chunks.map((chunk) => chunk.embeddingInput),
+      ];
+      const settled = await Promise.allSettled(
+        staleModels.map(async (model): Promise<ModelResult> => {
+          const embeddings = await generateFeedEmbeddingsStep(inputs, model);
+          if (!embeddings) {
+            return { model, status: "unavailable" };
+          }
+          const [documentEmbedding, ...chunkEmbeddings] = embeddings;
+          if (
+            !documentEmbedding ||
+            chunkEmbeddings.length !== prepared.chunks.length
+          ) {
+            return {
+              model,
+              status: "failed",
+              error: `Expected ${inputs.length} embeddings, received ${embeddings.length}`,
+            };
+          }
+          await saveFeedEmbeddingsStep({
+            translationID: translation.translationID,
+            model,
+            contentHash: prepared.contentHash,
+            documentEmbedding,
+            chunks: prepared.chunks.map((chunk, index) => ({
+              chunkIndex: chunk.chunkIndex,
+              chunkText: chunk.chunkText,
+              headingPath: chunk.headingPath,
+              tokenCount: chunk.tokenCount,
+              embedding: chunkEmbeddings[index]!,
+            })),
+          });
+          return { model, status: "saved", chunkCount: prepared.chunks.length };
+        })
+      );
+
+      const models = settled.map((result, index): ModelResult => {
+        if (result.status === "fulfilled") {
+          return result.value;
+        }
+        return {
+          model: staleModels[index]!,
+          status: "failed",
+          error: String(result.reason),
+        };
+      });
+
+      return {
+        locale: translation.locale,
+        status: "processed" as const,
+        models,
+      };
+    })
+  );
+
+  // the canonical (OpenAI) model must succeed wherever it was stale
+  const success = translations.every(
+    (translation) =>
+      translation.status === "skipped" ||
+      translation.models.every(
+        (model) =>
+          model.model !== CANONICAL_EMBEDDING_MODEL || model.status === "saved"
+      )
+  );
+
+  console.log("Feed embeddings workflow finished", {
+    feedID,
+    success,
+    translations,
   });
 
-  const embedding = await generateEmbeddingStep(parsedRequest.content);
-
-  await upsertFeedTranslationStep(parsedRequest.feedID, parsedRequest.locale, {
-    1536: embedding,
-  });
-
-  console.log("Successfully generated and saved embedding", {
-    feedID: parsedRequest.feedID,
-    locale: parsedRequest.locale,
-  });
-
-  return {
-    success: true,
-  };
+  return { success, translations };
 };

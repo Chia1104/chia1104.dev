@@ -57,6 +57,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",
     "@types/react-dom": "catalog:react-is",
+    "@workflow/vitest": "^4.0.12",
     "bun-types": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"

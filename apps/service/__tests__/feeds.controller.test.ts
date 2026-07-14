@@ -1,4 +1,7 @@
-import { beforeEach } from "vitest";
+import { app } from "../src/server";
+
+import * as dbMocks from "./__mocks__/db.mock";
+import * as guardMocks from "./__mocks__/guards.mock";
 
 const { mockSearchPublicFeedsService } = vi.hoisted(() => ({
   mockSearchPublicFeedsService: vi.fn(),
@@ -12,11 +15,6 @@ vi.mock("../src/services/feeds.service", async (importOriginal) => {
     searchPublicFeedsService: mockSearchPublicFeedsService,
   };
 });
-
-import { app } from "../src/server";
-
-import * as dbMocks from "./__mocks__/db.mock";
-import * as guardMocks from "./__mocks__/guards.mock";
 
 describe("Feeds Controller", () => {
   beforeEach(() => {
