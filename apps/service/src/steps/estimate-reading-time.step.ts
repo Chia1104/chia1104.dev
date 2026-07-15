@@ -11,7 +11,7 @@ export const estimateReadingTimeStep = async (
 ) => {
   "use step";
 
-  const db = await connectDatabase();
+  const db = await connectDatabase(undefined, { withCache: false });
   const readingTimeResult = readingTime(content);
 
   console.log("Reading time result", readingTimeResult);

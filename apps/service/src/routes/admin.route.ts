@@ -153,7 +153,7 @@ const api = new Hono<HonoContext>()
       const dto = c.req.valid("json");
       const translation = await upsertFeedTranslation(c.var.db, dto);
       if (translation) {
-        await syncFeedSearchIndex(c.var.db, translation.feedId);
+        await syncFeedSearchIndex(translation.feedId);
       }
       return c.body(null, 204);
     }
@@ -172,7 +172,7 @@ const api = new Hono<HonoContext>()
         translationId: dto.feedTranslationId,
       });
       if (feedID) {
-        await syncFeedSearchIndex(c.var.db, feedID);
+        await syncFeedSearchIndex(feedID);
       }
       return c.body(null, 204);
     }
@@ -191,7 +191,7 @@ const api = new Hono<HonoContext>()
         feedId: Number(c.req.param("id")),
       });
       if (feed) {
-        await syncFeedSearchIndex(c.var.db, feed.id);
+        await syncFeedSearchIndex(feed.id);
       }
       return c.json(feed);
     }

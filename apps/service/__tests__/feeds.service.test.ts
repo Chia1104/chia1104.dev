@@ -1,3 +1,9 @@
+import type { DB } from "@chia/db";
+
+import { searchPublicFeedsService } from "../src/services/feeds.service";
+
+import * as dbMocks from "./__mocks__/db.mock";
+
 const { mockSearchSingleIndex } = vi.hoisted(() => ({
   mockSearchSingleIndex: vi.fn(),
 }));
@@ -7,12 +13,6 @@ vi.mock("@chia/api/algolia", () => ({
     searchSingleIndex: mockSearchSingleIndex,
   },
 }));
-
-import type { DB } from "@chia/db";
-
-import { searchPublicFeedsService } from "../src/services/feeds.service";
-
-import * as dbMocks from "./__mocks__/db.mock";
 
 describe("Public feeds search service", () => {
   beforeEach(() => {

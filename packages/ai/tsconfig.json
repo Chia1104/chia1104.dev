@@ -1,6 +1,6 @@
 {
   "extends": "@chiastack/tsconfig/base.json",
-  "include": ["src", "vitest.config.mts"],
+  "include": ["src", "vitest.config.mts", "__tests__"],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "types": ["vitest/globals", "node"],

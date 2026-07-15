@@ -1,5 +1,3 @@
-import { beforeEach } from "vitest";
-
 import { app } from "../src/server";
 
 import * as guardMocks from "./__mocks__/guards.mock";

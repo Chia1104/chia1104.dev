@@ -16,6 +16,7 @@ import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
+import { OllamaUnavailableError } from "@chia/db/repos/feeds/embedding";
 import { Locale } from "@chia/db/types";
 
 import { env } from "../env";
@@ -25,6 +26,7 @@ import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import {
   searchFeedsService,
   searchPublicFeedsService,
+  UnindexedEmbeddingModelError,
 } from "../services/feeds.service";
 import { errorResponse } from "../utils/error.util";
 import { searchFeedsSchema } from "../validators/feeds.validator";
@@ -153,15 +155,25 @@ const api = new Hono<HonoContext>()
             apiKey: c.get(AI_AUTH_TOKEN),
           });
 
-      const items = await searchFeedsService({
-        db: c.var.db,
-        kv: c.var.kv,
-        keyword,
-        model,
-        locale,
-        client,
-      });
-      return c.json(items);
+      try {
+        const items = await searchFeedsService({
+          db: c.var.db,
+          kv: c.var.kv,
+          keyword,
+          model,
+          locale,
+          client,
+        });
+        return c.json(items);
+      } catch (error) {
+        if (error instanceof UnindexedEmbeddingModelError) {
+          return c.json({ error: error.message }, 400);
+        }
+        if (error instanceof OllamaUnavailableError) {
+          return c.json({ error: error.message }, 503);
+        }
+        throw error;
+      }
     }
   );
 

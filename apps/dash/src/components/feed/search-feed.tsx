@@ -7,10 +7,11 @@ import { Button, Spinner, ButtonGroup, ScrollShadow } from "@heroui/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
 
-import {
+import type {
   OllamaEmbeddingModel,
   TextEmbeddingModel,
 } from "@chia/ai/embeddings/utils";
+import { QUERYABLE_EMBEDDING_MODELS } from "@chia/ai/embeddings/utils";
 import { Locale } from "@chia/db/types";
 import {
   CommandDialog,
@@ -37,11 +38,8 @@ const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
     TextEmbeddingModel | OllamaEmbeddingModel | "algolia"
   >("text-embedding-3-small");
 
-  const supportedModels = [
-    ...Object.values(TextEmbeddingModel),
-    ...Object.values(OllamaEmbeddingModel),
-    "algolia",
-  ] as const;
+  // only indexed + query-enabled models — anything else has no stored vectors
+  const supportedModels = [...QUERYABLE_EMBEDDING_MODELS, "algolia"] as const;
 
   const {
     mutate: searchFeeds,

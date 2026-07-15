@@ -1,9 +1,15 @@
-import snakeCase from "lodash/snakeCase.js";
-
 import type { createOpenAI } from "@chia/ai";
-import type { OllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
-import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
-import type { TextEmbeddingModel } from "@chia/ai/embeddings/utils";
+import type {
+  OllamaEmbeddingModel,
+  TextEmbeddingModel,
+} from "@chia/ai/embeddings/utils";
+import {
+  getEmbeddingModelConfig,
+  hashEmbeddingInput,
+  isOllamaEmbeddingModel,
+  isQueryableEmbeddingModel,
+  normalizeQueryForEmbedding,
+} from "@chia/ai/embeddings/utils";
 import { client as algoliaClient } from "@chia/api/algolia";
 import { env } from "@chia/api/algolia/env";
 import type { PublicFeedSearchItem } from "@chia/api/services/validators";
@@ -127,26 +133,20 @@ export async function searchFeedsService({
     };
   }
 
-  const isOllama = isOllamaEmbeddingModel(model);
-  const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}:l:${locale ?? "all"}`;
-  const cached = await kv.get<string>(cacheKey);
-
-  if (cached) {
-    const { items } = await searchFeeds(db, {
-      input: keyword ?? "",
-      limit: 5,
-      model: isOllama ? undefined : model,
-      useOllama: isOllama ? { model } : undefined,
-      locale,
-      client,
-      embedding: JSON.parse(cached) as number[],
-      comparison: 0.3,
-    });
-    return {
-      provider: model,
-      items,
-    };
+  // only models the indexing workflow actually writes are searchable —
+  // anything else would burn a query embedding and return nothing
+  if (!isQueryableEmbeddingModel(model)) {
+    throw new UnindexedEmbeddingModelError(model);
   }
+
+  const config = getEmbeddingModelConfig(model);
+  const isOllama = isOllamaEmbeddingModel(model);
+  const cachedEmbedding = await readCachedQueryEmbedding({
+    kv,
+    keyword: keyword ?? "",
+    model,
+    locale,
+  });
 
   const { items, embedding } = await searchFeeds(db, {
     input: keyword ?? "",
@@ -155,13 +155,109 @@ export async function searchFeedsService({
     useOllama: isOllama ? { model } : undefined,
     locale,
     client,
-    comparison: 0.3,
+    embedding: cachedEmbedding ?? undefined,
+    comparison: config.defaultThreshold,
   });
 
-  await kv.set(cacheKey, JSON.stringify(embedding), 60 * 60 * 24);
+  if (!cachedEmbedding && embedding.length === config.dimensions) {
+    await writeCachedQueryEmbedding({
+      kv,
+      keyword: keyword ?? "",
+      model,
+      locale,
+      embedding,
+    });
+  }
 
   return {
     provider: model,
     items,
   };
 }
+
+// ============================================
+// Query embedding cache
+// ============================================
+
+export class UnindexedEmbeddingModelError extends Error {
+  constructor(readonly model: string) {
+    super(`Embedding model "${model}" is not indexed for search`);
+    this.name = "UnindexedEmbeddingModelError";
+  }
+}
+
+const QUERY_EMBEDDING_CACHE_VERSION = "v1";
+const QUERY_EMBEDDING_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+interface CachedQueryEmbedding {
+  model: string;
+  dimensions: number;
+  embedding: number[];
+  createdAt: string;
+}
+
+const queryEmbeddingCacheKey = async (params: {
+  keyword: string;
+  model: TextEmbeddingModel | OllamaEmbeddingModel;
+  locale: Locale | undefined;
+}) => {
+  const normalized = normalizeQueryForEmbedding(params.keyword);
+  const digest = await hashEmbeddingInput(normalized);
+  return `feeds:query-embedding:${QUERY_EMBEDDING_CACHE_VERSION}:${params.model}:${params.locale ?? "all"}:${digest}`;
+};
+
+const readCachedQueryEmbedding = async (params: {
+  kv: Keyv;
+  keyword: string;
+  model: TextEmbeddingModel | OllamaEmbeddingModel;
+  locale: Locale | undefined;
+}): Promise<number[] | null> => {
+  const cacheKey = await queryEmbeddingCacheKey(params);
+  const cached = await params.kv.get<string>(cacheKey);
+  if (!cached) {
+    return null;
+  }
+
+  const config = getEmbeddingModelConfig(params.model);
+  try {
+    const payload = JSON.parse(cached) as Partial<CachedQueryEmbedding>;
+    if (
+      payload.model === params.model &&
+      payload.dimensions === config.dimensions &&
+      Array.isArray(payload.embedding) &&
+      payload.embedding.length === config.dimensions &&
+      payload.embedding.every(
+        (value) => typeof value === "number" && Number.isFinite(value)
+      )
+    ) {
+      return payload.embedding;
+    }
+  } catch {
+    // fall through — corrupt payloads are deleted and regenerated
+  }
+
+  await params.kv.delete(cacheKey);
+  return null;
+};
+
+const writeCachedQueryEmbedding = async (params: {
+  kv: Keyv;
+  keyword: string;
+  model: TextEmbeddingModel | OllamaEmbeddingModel;
+  locale: Locale | undefined;
+  embedding: number[];
+}) => {
+  const cacheKey = await queryEmbeddingCacheKey(params);
+  const config = getEmbeddingModelConfig(params.model);
+  const payload: CachedQueryEmbedding = {
+    model: params.model,
+    dimensions: config.dimensions,
+    embedding: params.embedding,
+    createdAt: new Date().toISOString(),
+  };
+  await params.kv.set(
+    cacheKey,
+    JSON.stringify(payload),
+    QUERY_EMBEDDING_CACHE_TTL_MS
+  );
+};

@@ -1,5 +1,5 @@
 import type { KnownKeysOnly, RelationsFilterColumns } from "drizzle-orm";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
@@ -7,6 +7,7 @@ import type { DB } from "../../index.ts";
 import type { Locale, relations } from "../../schemas/index.ts";
 import {
   contents,
+  feedEmbeddings,
   feeds,
   feedsToTags,
   feedTranslations,
@@ -268,13 +269,9 @@ const queryInfiniteFeeds = async (
         where: {
           locale,
         },
-        columns: {
-          embedding: false,
-          embedding512: false,
-        },
         extras: {
           hasEmbedding: (translation, { sql }) =>
-            sql<boolean>`${translation.embedding} is not null`.as(
+            sql<boolean>`exists (select 1 from ${feedEmbeddings} where ${feedEmbeddings.feedTranslationId} = ${translation.id})`.as(
               "has_embedding"
             ),
         },
@@ -343,7 +340,10 @@ const getFeedDetails = async (
   );
   const [feedTranslationRows, contentRows, tagRows] = await Promise.all([
     db
-      .select()
+      .select({
+        translation: feedTranslations,
+        hasEmbedding: sql<boolean>`exists (select 1 from ${feedEmbeddings} where ${feedEmbeddings.feedTranslationId} = ${feedTranslations.id})`,
+      })
       .from(feedTranslations)
       .where(translationFilter)
       .$withCache({ config: { ex: 300 } }),
@@ -390,10 +390,13 @@ const getFeedDetails = async (
   const contentByTranslationId = new Map(
     contentRows.map(({ content }) => [content.feedTranslationId, content])
   );
-  const translations = feedTranslationRows.map((translation) => ({
-    ...translation,
-    content: contentByTranslationId.get(translation.id) ?? null,
-  }));
+  const translations = feedTranslationRows.map(
+    ({ translation, hasEmbedding }) => ({
+      ...translation,
+      hasEmbedding,
+      content: contentByTranslationId.get(translation.id) ?? null,
+    })
+  );
   type TagRow = (typeof tagRows)[number];
   type FeedTag = Omit<TagRow, "translation"> & {
     tag: TagRow["tag"] & {
@@ -579,8 +582,6 @@ export const createFeed = withDTO(
         description: translation.description,
         summary: translation.summary,
         readTime: translation.readTime,
-        embedding: translation.embedding ?? undefined,
-        embedding512: translation.embedding512 ?? undefined,
       }));
       const createdTranslations =
         translationValues.length > 0
@@ -667,8 +668,6 @@ export const upsertFeedTranslation = withDTO(
         description: dto.description,
         summary: dto.summary,
         readTime: dto.readTime,
-        embedding: dto.embedding ?? undefined,
-        embedding512: dto.embedding512 ?? undefined,
       })
       .onConflictDoUpdate({
         target: [feedTranslations.feedId, feedTranslations.locale],
@@ -678,8 +677,6 @@ export const upsertFeedTranslation = withDTO(
           description: dto.description,
           summary: dto.summary,
           readTime: dto.readTime,
-          embedding: dto.embedding ?? undefined,
-          embedding512: dto.embedding512 ?? undefined,
           updatedAt: new Date(),
         },
       })
@@ -704,8 +701,6 @@ export const updateFeedTranslation = withDTO(
         description: dto.description,
         summary: dto.summary,
         readTime: dto.readTime,
-        embedding: dto.embedding ?? undefined,
-        embedding512: dto.embedding512 ?? undefined,
         updatedAt: new Date(),
       })
       .where(eq(feedTranslations.id, dto.translationId))
