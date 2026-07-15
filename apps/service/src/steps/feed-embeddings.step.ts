@@ -14,7 +14,6 @@ import {
 import type { EmbeddingModel } from "@chia/ai/embeddings/utils";
 import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 import { connectDatabase } from "@chia/db/client";
-import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import {
   deleteFeedEmbeddings,
   getFeedEmbeddingMeta,
@@ -29,34 +28,6 @@ export interface TranslationSource {
   summary: string | null;
   content: string | null;
 }
-
-/**
- * Loads the feed's raw translation sources. Runs as a step so the workflow
- * replays the same snapshot on retries.
- */
-export const loadFeedForEmbeddingStep = async (feedID: number) => {
-  "use step";
-
-  const db = await connectDatabase();
-  const feed = await getFeedForIndexing(db, { feedId: feedID });
-  if (!feed) {
-    return null;
-  }
-
-  return {
-    enabled: feed.published && !feed.deletedAt,
-    translations: feed.translations.map(
-      (translation): TranslationSource => ({
-        translationID: translation.id,
-        locale: translation.locale,
-        title: translation.title,
-        description: translation.description,
-        summary: translation.summary,
-        content: translation.content?.content ?? null,
-      })
-    ),
-  };
-};
 
 /**
  * Builds everything derived from the source content in one deterministic

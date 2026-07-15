@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { withReplicas } from "drizzle-orm/pg-core";
 
-import { DrizzleCache } from "@chia/kv/drizzle/cache";
+// import { DrizzleCache } from "@chia/kv/drizzle/cache";
 import { switchEnv } from "@chia/utils/config";
 
 import { env as internalEnv } from "./env.ts";
@@ -20,10 +20,10 @@ export async function getConnection(url: string) {
   const connection = (async () =>
     drizzle(url, {
       relations,
-      cache: new DrizzleCache(await import("@chia/kv").then((m) => m.kv), {
-        strategy: "explicit",
-        ttlMs: 60_000,
-      }),
+      // cache: new DrizzleCache(await import("@chia/kv").then((m) => m.kv), {
+      //   strategy: "explicit",
+      //   ttlMs: 60_000,
+      // }),
     }))();
   connections.set(url, connection);
 
