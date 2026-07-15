@@ -29,7 +29,7 @@ export const loadFeedForIndexingStep = async (
 ): Promise<FeedIndexingSnapshot | null> => {
   "use step";
 
-  const db = await connectDatabase();
+  const db = await connectDatabase(undefined, { withCache: false });
   const feed = await getFeedForIndexing(db, { feedId: feedID });
   if (!feed) {
     return null;

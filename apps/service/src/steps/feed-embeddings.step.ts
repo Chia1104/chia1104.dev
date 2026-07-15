@@ -70,7 +70,7 @@ export const prepareTranslationEmbeddingStep = async (
 export const deleteFeedEmbeddingsStep = async (translationID: number) => {
   "use step";
 
-  const db = await connectDatabase();
+  const db = await connectDatabase(undefined, { withCache: false });
   return await deleteFeedEmbeddings(db, { feedTranslationId: translationID });
 };
 
@@ -85,7 +85,7 @@ export const resolveStaleModelsStep = async (
 ) => {
   "use step";
 
-  const db = await connectDatabase();
+  const db = await connectDatabase(undefined, { withCache: false });
   const existing = await getFeedEmbeddingMeta(db, {
     feedTranslationId: translationID,
   });
@@ -167,7 +167,7 @@ export const saveFeedEmbeddingsStep = async (params: {
 }) => {
   "use step";
 
-  const db = await connectDatabase();
+  const db = await connectDatabase(undefined, { withCache: false });
   return await replaceFeedEmbeddings(db, {
     feedTranslationId: params.translationID,
     model: params.model,

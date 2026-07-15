@@ -206,7 +206,6 @@ export const feedIndexingWorkflow = async (request: Request) => {
   console.log("Feed indexing workflow finished", {
     feedID,
     success,
-    translations,
   });
 
   return { success, translations };
