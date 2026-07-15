@@ -32,6 +32,19 @@ import { schema } from "../..";
 
 export type FeedEmbeddingKind = "document" | "chunk";
 
+/**
+ * Thrown when an Ollama model is explicitly requested but Ollama is
+ * unreachable. Query-side code must fail loud instead of silently falling
+ * back to another model — the cached query embedding and the reported
+ * provider would no longer match the vectors actually searched.
+ */
+export class OllamaUnavailableError extends Error {
+  constructor(readonly model: string) {
+    super(`Ollama embedding model "${model}" is unavailable`);
+    this.name = "OllamaUnavailableError";
+  }
+}
+
 const embeddingColumnFor = (model: EmbeddingModel) =>
   EMBEDDING_MODEL_DIMENSIONS[model] === 512
     ? schema.feedEmbeddings.embedding512
@@ -179,6 +192,20 @@ export const replaceFeedEmbeddings = withDTO(
 );
 
 /**
+ * Removes every embedding for a translation — used when a translation no
+ * longer has embeddable content, so stale vectors can't keep matching it.
+ */
+export const deleteFeedEmbeddings = withDTO(
+  async (db, dto: { feedTranslationId: number }) => {
+    const deleted = await db
+      .delete(schema.feedEmbeddings)
+      .where(eq(schema.feedEmbeddings.feedTranslationId, dto.feedTranslationId))
+      .returning({ id: schema.feedEmbeddings.id });
+    return { deletedCount: deleted.length };
+  }
+);
+
+/**
  * Lightweight metadata (no vectors) for stale detection — one row per model,
  * taken from the document row which is always written last with its chunks.
  */
@@ -221,14 +248,16 @@ export const searchFeeds = withDTO(
       enableDeleted?: boolean;
     }
   ) => {
-    const isOllama = useOllama && (await isOllamaEnabled(useOllama.model));
-    const model: EmbeddingModel = isOllama
+    if (useOllama && !(await isOllamaEnabled(useOllama.model))) {
+      throw new OllamaUnavailableError(useOllama.model);
+    }
+    const model: EmbeddingModel = useOllama
       ? useOllama.model
       : (dto.model ?? CANONICAL_EMBEDDING_MODEL);
     const embeddingColumn = embeddingColumnFor(model);
     const embedding =
       dto.embedding ??
-      (isOllama
+      (useOllama
         ? await ollamaEmbedding(dto.input, useOllama.model, "search_query")
         : await generateEmbedding(dto.input, dto));
     if (!embedding?.length) {
@@ -236,6 +265,12 @@ export const searchFeeds = withDTO(
         items: [],
         embedding: [],
       };
+    }
+    // guards against e.g. a stale cached query embedding from another model
+    if (embedding.length !== EMBEDDING_MODEL_DIMENSIONS[model]) {
+      throw new Error(
+        `Query embedding for "${model}" must have ${EMBEDDING_MODEL_DIMENSIONS[model]} dimensions, received ${embedding.length}`
+      );
     }
 
     const similarity = sql<number>`1 - (${cosineDistance(

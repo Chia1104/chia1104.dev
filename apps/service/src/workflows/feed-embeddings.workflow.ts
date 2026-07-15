@@ -12,6 +12,7 @@ import {
   resolveStaleModelsStep,
   generateFeedEmbeddingsStep,
   saveFeedEmbeddingsStep,
+  deleteFeedEmbeddingsStep,
 } from "../steps/feed-embeddings.step";
 
 export const requestSchema = z.object({
@@ -53,10 +54,16 @@ export const feedEmbeddingsWorkflow = async (request: Request) => {
     feed.translations.map(async (translation) => {
       const prepared = await prepareTranslationEmbeddingStep(translation);
       if (!prepared.documentInput) {
+        // content was emptied — remove stale vectors so search stops
+        // matching this translation
+        const { deletedCount } = await deleteFeedEmbeddingsStep(
+          translation.translationID
+        );
         return {
           locale: translation.locale,
           status: "skipped" as const,
           reason: "no content",
+          deletedCount,
         };
       }
 

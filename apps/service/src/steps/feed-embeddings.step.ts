@@ -16,6 +16,7 @@ import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 import { connectDatabase } from "@chia/db/client";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import {
+  deleteFeedEmbeddings,
   getFeedEmbeddingMeta,
   replaceFeedEmbeddings,
 } from "@chia/db/repos/feeds/embedding";
@@ -89,6 +90,17 @@ export const prepareTranslationEmbeddingStep = async (
     : [];
 
   return { contentHash, documentInput, chunks };
+};
+
+/**
+ * Removes all stored vectors for a translation whose embeddable content was
+ * emptied — otherwise stale embeddings keep matching it in vector search.
+ */
+export const deleteFeedEmbeddingsStep = async (translationID: number) => {
+  "use step";
+
+  const db = await connectDatabase();
+  return await deleteFeedEmbeddings(db, { feedTranslationId: translationID });
 };
 
 /**

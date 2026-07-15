@@ -16,6 +16,7 @@ import {
   getInfiniteFeedsByUserId,
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
+import { OllamaUnavailableError } from "@chia/db/repos/feeds/embedding";
 import { Locale } from "@chia/db/types";
 
 import { env } from "../env";
@@ -167,6 +168,9 @@ const api = new Hono<HonoContext>()
       } catch (error) {
         if (error instanceof UnindexedEmbeddingModelError) {
           return c.json({ error: error.message }, 400);
+        }
+        if (error instanceof OllamaUnavailableError) {
+          return c.json({ error: error.message }, 503);
         }
         throw error;
       }
