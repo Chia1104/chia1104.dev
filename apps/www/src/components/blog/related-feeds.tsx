@@ -3,15 +3,14 @@ import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/libs/i18n/routing";
 import { createFeedImageToken } from "@/libs/utils/feed-image-token";
-import type { getRelatedFeeds } from "@/services/feeds.service";
+import { dbLocaleResolver } from "@/libs/utils/i18n";
+import { getRelatedFeeds } from "@/services/feeds.service";
 
 import { RelatedFeedsImageBackground } from "./related-feeds-image-background";
 
-type RelatedFeed = Awaited<ReturnType<typeof getRelatedFeeds>>["items"][number];
-
 interface RelatedFeedsProps {
-  items: RelatedFeed[];
   locale: Locale;
+  slug: string;
 }
 
 export function RelatedFeedsSkeleton() {
@@ -41,12 +40,15 @@ export function RelatedFeedsSkeleton() {
   );
 }
 
-export async function RelatedFeeds({ items, locale }: RelatedFeedsProps) {
-  if (items.length === 0) {
+export async function RelatedFeeds({ locale, slug }: RelatedFeedsProps) {
+  const t = await getTranslations("blog");
+  const dbLocale = dbLocaleResolver(locale);
+
+  const feeds = await getRelatedFeeds(slug, dbLocale);
+
+  if (feeds.items.length === 0) {
     return null;
   }
-
-  const t = await getTranslations("blog");
 
   return (
     <section
@@ -56,7 +58,7 @@ export async function RelatedFeeds({ items, locale }: RelatedFeedsProps) {
         {t("related-feeds")}
       </h2>
       <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {items.map((feed) => {
+        {feeds.items.map((feed) => {
           const type = `${feed.type}s`;
           const token = createFeedImageToken({
             locale,

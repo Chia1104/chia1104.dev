@@ -40,7 +40,7 @@ const dbEnv = (
 };
 
 export default {
-  schema: "./src/schemas",
+  schema: "./src/schemas/index.ts",
   dialect: "postgresql",
   dbCredentials: {
     url: dbEnv(),

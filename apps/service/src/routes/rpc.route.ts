@@ -41,7 +41,7 @@ const api = new Hono<HonoContext>()
         auth: c.var.auth,
         hooks: {
           async onFeedChanged(feedID) {
-            await syncFeedSearchIndex(c.var.db, feedID);
+            await syncFeedSearchIndex(feedID);
           },
           async onFeedRemoved(translationIDs) {
             await removeFeedFromSearchIndex(translationIDs);

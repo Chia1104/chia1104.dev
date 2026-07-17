@@ -35,7 +35,7 @@ export const Settings = () => {
                   startTransition(() => setAiEnabled(isSelected))
                 }
                 aria-label={t("aiEnabled")}>
-                <div className="flex gap-3">
+                <Switch.Content>
                   <Switch.Control>
                     <Switch.Thumb />
                   </Switch.Control>
@@ -43,7 +43,7 @@ export const Settings = () => {
                     <Label className="text-sm">{t("aiEnabled")}</Label>
                     <Description>{t("aiEnabledDescription")}</Description>
                   </div>
-                </div>
+                </Switch.Content>
               </Switch>
               <Switch
                 isSelected={backgroundEnabled}
@@ -51,7 +51,7 @@ export const Settings = () => {
                   startTransition(() => setBackgroundEnabled(isSelected))
                 }
                 aria-label={t("backgroundEnabled")}>
-                <div className="flex gap-3">
+                <Switch.Content>
                   <Switch.Control>
                     <Switch.Thumb />
                   </Switch.Control>
@@ -61,7 +61,7 @@ export const Settings = () => {
                       {t("backgroundEnabledDescription")}
                     </Description>
                   </div>
-                </div>
+                </Switch.Content>
               </Switch>
               <Switch
                 isSelected={cursorEnabled}
@@ -69,7 +69,7 @@ export const Settings = () => {
                   startTransition(() => setCursorEnabled(isSelected))
                 }
                 aria-label={t("cursorEnabled")}>
-                <div className="flex gap-3">
+                <Switch.Content>
                   <Switch.Control>
                     <Switch.Thumb />
                   </Switch.Control>
@@ -77,7 +77,7 @@ export const Settings = () => {
                     <Label className="text-sm">{t("cursorEnabled")}</Label>
                     <Description>{t("cursorEnabledDescription")}</Description>
                   </div>
-                </div>
+                </Switch.Content>
               </Switch>
             </Modal.Body>
           </Modal.Dialog>

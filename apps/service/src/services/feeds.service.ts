@@ -1,15 +1,23 @@
-import snakeCase from "lodash/snakeCase.js";
-
 import type { createOpenAI } from "@chia/ai";
-import type { OllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
-import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
-import type { TextEmbeddingModel } from "@chia/ai/embeddings/utils";
+import type {
+  OllamaEmbeddingModel,
+  TextEmbeddingModel,
+} from "@chia/ai/embeddings/utils";
+import {
+  CANONICAL_EMBEDDING_MODEL,
+  EMBEDDING_INDEX_VERSION,
+  getEmbeddingModelConfig,
+  hashEmbeddingInput,
+  isOllamaEmbeddingModel,
+  isQueryableEmbeddingModel,
+  normalizeQueryForEmbedding,
+} from "@chia/ai/embeddings/utils";
 import { client as algoliaClient } from "@chia/api/algolia";
 import { env } from "@chia/api/algolia/env";
 import type { PublicFeedSearchItem } from "@chia/api/services/validators";
 import type { DB } from "@chia/db";
 import { getPublicFeedSummariesByIds } from "@chia/db/repos/feeds";
-import { searchFeeds } from "@chia/db/repos/feeds/embedding";
+import { getRelatedFeeds, searchFeeds } from "@chia/db/repos/feeds/embedding";
 import type { Locale } from "@chia/db/types";
 import type { FeedType } from "@chia/db/types";
 import type { Keyv } from "@chia/kv";
@@ -127,26 +135,20 @@ export async function searchFeedsService({
     };
   }
 
-  const isOllama = isOllamaEmbeddingModel(model);
-  const cacheKey = `feeds:search:m:${model ?? "default"}:k:${snakeCase(keyword)}:l:${locale ?? "all"}`;
-  const cached = await kv.get<string>(cacheKey);
-
-  if (cached) {
-    const { items } = await searchFeeds(db, {
-      input: keyword ?? "",
-      limit: 5,
-      model: isOllama ? undefined : model,
-      useOllama: isOllama ? { model } : undefined,
-      locale,
-      client,
-      embedding: JSON.parse(cached) as number[],
-      comparison: 0.3,
-    });
-    return {
-      provider: model,
-      items,
-    };
+  // only models the indexing workflow actually writes are searchable —
+  // anything else would burn a query embedding and return nothing
+  if (!isQueryableEmbeddingModel(model)) {
+    throw new UnindexedEmbeddingModelError(model);
   }
+
+  const config = getEmbeddingModelConfig(model);
+  const isOllama = isOllamaEmbeddingModel(model);
+  const cachedEmbedding = await readCachedQueryEmbedding({
+    kv,
+    keyword: keyword ?? "",
+    model,
+    locale,
+  });
 
   const { items, embedding } = await searchFeeds(db, {
     input: keyword ?? "",
@@ -155,13 +157,178 @@ export async function searchFeedsService({
     useOllama: isOllama ? { model } : undefined,
     locale,
     client,
-    comparison: 0.3,
+    embedding: cachedEmbedding ?? undefined,
+    comparison: config.defaultThreshold,
   });
 
-  await kv.set(cacheKey, JSON.stringify(embedding), 60 * 60 * 24);
+  if (!cachedEmbedding && embedding.length === config.dimensions) {
+    await writeCachedQueryEmbedding({
+      kv,
+      keyword: keyword ?? "",
+      model,
+      locale,
+      embedding,
+    });
+  }
 
   return {
     provider: model,
     items,
   };
+}
+
+// ============================================
+// Query embedding cache
+// ============================================
+
+export class UnindexedEmbeddingModelError extends Error {
+  constructor(readonly model: string) {
+    super(`Embedding model "${model}" is not indexed for search`);
+    this.name = "UnindexedEmbeddingModelError";
+  }
+}
+
+const QUERY_EMBEDDING_CACHE_VERSION = "v1";
+const QUERY_EMBEDDING_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+interface CachedQueryEmbedding {
+  model: string;
+  dimensions: number;
+  embedding: number[];
+  createdAt: string;
+}
+
+const queryEmbeddingCacheKey = async (params: {
+  keyword: string;
+  model: TextEmbeddingModel | OllamaEmbeddingModel;
+  locale: Locale | undefined;
+}) => {
+  const normalized = normalizeQueryForEmbedding(params.keyword);
+  const digest = await hashEmbeddingInput(normalized);
+  return `feeds:query-embedding:${QUERY_EMBEDDING_CACHE_VERSION}:${params.model}:${params.locale ?? "all"}:${digest}`;
+};
+
+const readCachedQueryEmbedding = async (params: {
+  kv: Keyv;
+  keyword: string;
+  model: TextEmbeddingModel | OllamaEmbeddingModel;
+  locale: Locale | undefined;
+}): Promise<number[] | null> => {
+  const cacheKey = await queryEmbeddingCacheKey(params);
+  const cached = await params.kv.get<string>(cacheKey);
+  if (!cached) {
+    return null;
+  }
+
+  const config = getEmbeddingModelConfig(params.model);
+  try {
+    const payload = JSON.parse(cached) as Partial<CachedQueryEmbedding>;
+    if (
+      payload.model === params.model &&
+      payload.dimensions === config.dimensions &&
+      Array.isArray(payload.embedding) &&
+      payload.embedding.length === config.dimensions &&
+      payload.embedding.every(
+        (value) => typeof value === "number" && Number.isFinite(value)
+      )
+    ) {
+      return payload.embedding;
+    }
+  } catch {
+    // fall through — corrupt payloads are deleted and regenerated
+  }
+
+  await params.kv.delete(cacheKey);
+  return null;
+};
+
+const writeCachedQueryEmbedding = async (params: {
+  kv: Keyv;
+  keyword: string;
+  model: TextEmbeddingModel | OllamaEmbeddingModel;
+  locale: Locale | undefined;
+  embedding: number[];
+}) => {
+  const cacheKey = await queryEmbeddingCacheKey(params);
+  const config = getEmbeddingModelConfig(params.model);
+  const payload: CachedQueryEmbedding = {
+    model: params.model,
+    dimensions: config.dimensions,
+    embedding: params.embedding,
+    createdAt: new Date().toISOString(),
+  };
+  await params.kv.set(
+    cacheKey,
+    JSON.stringify(payload),
+    QUERY_EMBEDDING_CACHE_TTL_MS
+  );
+};
+
+// ============================================
+// Related feeds cache
+// ============================================
+
+const RELATED_FEEDS_CACHE_VERSION = "v1";
+const RELATED_FEEDS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+// an empty result usually means the feed is not indexed yet — keep it
+// short-lived so freshly embedded feeds surface quickly
+const RELATED_FEEDS_EMPTY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+type RelatedFeedItems = Awaited<ReturnType<typeof getRelatedFeeds>>;
+
+interface CachedRelatedFeeds {
+  items: RelatedFeedItems;
+}
+
+/**
+ * Embedding index version and canonical model are part of the key so bumping
+ * either invalidates every cached list without a manual flush; content edits
+ * within the TTL rely on expiry.
+ */
+const relatedFeedsCacheKey = (params: {
+  slug: string;
+  locale: Locale;
+  limit: number;
+}) =>
+  `feeds:related:${RELATED_FEEDS_CACHE_VERSION}:${EMBEDDING_INDEX_VERSION}:${CANONICAL_EMBEDDING_MODEL}:${params.locale}:${params.limit}:${params.slug}`;
+
+/**
+ * Cached wrapper around {@link getRelatedFeeds} — related lists only change
+ * on re-indexing, so there is no need to run a vector similarity query per
+ * request. Note `createdAt` becomes an ISO string after a cache round-trip;
+ * callers only JSON-serialize the items, so the response shape is identical.
+ */
+export async function getRelatedFeedsService({
+  db,
+  kv,
+  slug,
+  locale,
+  limit,
+}: {
+  db: DB;
+  kv: Keyv;
+  slug: string;
+  locale: Locale;
+  limit: number;
+}): Promise<RelatedFeedItems> {
+  const cacheKey = relatedFeedsCacheKey({ slug, locale, limit });
+  const cached = await kv.get<string>(cacheKey);
+  if (cached) {
+    try {
+      const payload = JSON.parse(cached) as Partial<CachedRelatedFeeds>;
+      if (Array.isArray(payload.items)) {
+        return payload.items;
+      }
+    } catch {
+      // corrupt payloads fall through and get overwritten below
+    }
+  }
+
+  const items = await getRelatedFeeds(db, { slug, locale, limit });
+  await kv.set(
+    cacheKey,
+    JSON.stringify({ items } satisfies CachedRelatedFeeds),
+    items.length ? RELATED_FEEDS_CACHE_TTL_MS : RELATED_FEEDS_EMPTY_CACHE_TTL_MS
+  );
+  return items;
 }

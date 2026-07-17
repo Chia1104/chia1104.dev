@@ -244,10 +244,12 @@ export const MetadataFields = memo(
                     className="flex-row"
                     isSelected={Boolean(field.value)}
                     onChange={field.onChange}>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
-                    <Label className="text-sm">Published</Label>
+                    <Switch.Content>
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                      <Label className="text-sm">Published</Label>
+                    </Switch.Content>
                   </Switch>
                 </div>
               )}

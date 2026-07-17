@@ -1,7 +1,7 @@
-import { ImageResponse } from "next/og";
-
 import { all } from "better-all";
 import { getTranslations } from "next-intl/server";
+import { googleFonts } from "takumi-js/helpers";
+import { ImageResponse } from "takumi-js/response";
 
 import meta, { getWorkDuration } from "@chia/meta";
 import OpenGraph from "@chia/ui/open-graph";
@@ -37,6 +37,7 @@ export default async function og(
     {
       ...size,
       status: 200,
+      fonts: googleFonts(["Inter", "Noto Sans JP", "Noto Sans TC"]),
     }
   );
 }

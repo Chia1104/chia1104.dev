@@ -120,6 +120,7 @@ export const feedWithTranslationsSchema = z.object({
       ...feedTranslationSchema.omit({ createdAt: true, updatedAt: true }).shape,
       createdAt: z.string(),
       updatedAt: z.string(),
+      hasEmbedding: z.boolean(),
       content: serializedContentSchema,
     })
   ),
@@ -151,8 +152,6 @@ const feedListSchema = feedWithTranslationsSchema.extend({
       ...feedTranslationSchema.omit({
         createdAt: true,
         updatedAt: true,
-        embedding: true,
-        embedding512: true,
       }).shape,
       createdAt: z.string(),
       updatedAt: z.string(),

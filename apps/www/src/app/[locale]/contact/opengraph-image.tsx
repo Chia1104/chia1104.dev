@@ -1,4 +1,5 @@
-import { ImageResponse } from "next/og";
+import { googleFonts } from "takumi-js/helpers";
+import { ImageResponse } from "takumi-js/response";
 
 import OpenGraph from "@chia/ui/open-graph";
 
@@ -28,6 +29,7 @@ export default function og() {
     {
       ...size,
       status: 200,
+      fonts: googleFonts(["Inter", "Noto Sans JP", "Noto Sans TC"]),
     }
   );
 }

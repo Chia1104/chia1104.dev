@@ -19,7 +19,6 @@ import {
   upsertContent,
   updateFeed,
 } from "@chia/db/repos/feeds";
-import { getRelatedFeeds } from "@chia/db/repos/feeds/embedding";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { Locale } from "@chia/db/types";
 import { getAdminId } from "@chia/utils/config";
@@ -29,6 +28,7 @@ import { errorGenerator } from "@chia/utils/server";
 import { env } from "../env";
 import { apikeyVerify } from "../guards/apikey-verify.guard";
 import { syncFeedSearchIndex } from "../services/feed-indexing.service";
+import { getRelatedFeedsService } from "../services/feeds.service";
 import { errorResponse } from "../utils/error.util";
 
 const adminId = getAdminId();
@@ -65,7 +65,9 @@ const api = new Hono<HonoContext>()
     }),
     async (c) => {
       const { locale, limit } = c.req.valid("query");
-      const items = await getRelatedFeeds(c.var.db, {
+      const items = await getRelatedFeedsService({
+        db: c.var.db,
+        kv: c.var.kv,
         slug: c.req.param("slug"),
         locale,
         limit,
@@ -153,7 +155,7 @@ const api = new Hono<HonoContext>()
       const dto = c.req.valid("json");
       const translation = await upsertFeedTranslation(c.var.db, dto);
       if (translation) {
-        await syncFeedSearchIndex(c.var.db, translation.feedId);
+        await syncFeedSearchIndex(translation.feedId);
       }
       return c.body(null, 204);
     }
@@ -172,7 +174,7 @@ const api = new Hono<HonoContext>()
         translationId: dto.feedTranslationId,
       });
       if (feedID) {
-        await syncFeedSearchIndex(c.var.db, feedID);
+        await syncFeedSearchIndex(feedID);
       }
       return c.body(null, 204);
     }
@@ -191,7 +193,7 @@ const api = new Hono<HonoContext>()
         feedId: Number(c.req.param("id")),
       });
       if (feed) {
-        await syncFeedSearchIndex(c.var.db, feed.id);
+        await syncFeedSearchIndex(feed.id);
       }
       return c.json(feed);
     }

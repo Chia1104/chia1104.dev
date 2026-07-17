@@ -93,7 +93,7 @@ const Page = async ({
                 defaultValues={defaultValues}
                 meta={{
                   embedding: Object.fromEntries(
-                    feed.translations.map((t) => [t.locale, t.embedding])
+                    feed.translations.map((t) => [t.locale, t.hasEmbedding])
                   ),
                   published: feed.published,
                   deleted: feed.deletedAt
