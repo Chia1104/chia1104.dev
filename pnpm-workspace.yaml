@@ -35,22 +35,22 @@ catalog:
   lodash: ^4.18.1
   server-only: ^0.0.1
   superjson: 2.2.6
-  tsdown: 0.22.4
+  tsdown: 0.22.8
   typescript: 7.0.2
   zod: 4.4.3
 
 catalogs:
   ai:
-    "@ai-sdk/anthropic": 4.0.10
-    "@ai-sdk/gateway": 4.0.14
-    "@ai-sdk/google": 4.0.10
-    "@ai-sdk/openai": 4.0.9
-    "@ai-sdk/react": 4.0.19
-    "@anthropic-ai/sdk": 0.110.0
-    "@google/genai": 2.10.0
-    ai: 7.0.18
+    "@ai-sdk/anthropic": 4.0.15
+    "@ai-sdk/gateway": 4.0.21
+    "@ai-sdk/google": 4.0.17
+    "@ai-sdk/openai": 4.0.15
+    "@ai-sdk/react": 4.0.32
+    "@anthropic-ai/sdk": 0.111.0
+    "@google/genai": 2.12.0
+    ai: 7.0.29
     ollama: 0.6.3
-    openai: 6.45.0
+    openai: 6.47.0
   better-auth:
     "@better-auth/api-key": 1.6.23
     "@better-auth/passkey": 1.6.23
@@ -63,30 +63,30 @@ catalogs:
     drizzle-kit: 1.0.0-rc.3
     drizzle-orm: 1.0.0-rc.3
   fumadocs:
-    "@fumadocs/mdx-remote": 1.5.0
-    fumadocs-core: 16.11.1
-    fumadocs-mdx: 15.1.0
-    fumadocs-ui: 16.11.1
+    "@fumadocs/mdx-remote": 1.5.1
+    fumadocs-core: 16.11.5
+    fumadocs-mdx: 15.2.0
+    fumadocs-ui: 16.11.5
   heroui-v3:
     "@heroui/react": 3.2.2
     "@heroui/styles": 3.2.2
   hono:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2
-    "@hono/zod-validator": 0.8.0
-    hono: 4.12.28
+    "@hono/zod-validator": 0.9.0
+    hono: 4.12.30
     hono-rate-limiter: 0.5.3
   next:
-    "@next/third-parties": 16.3.0-canary.83
-    next: 16.3.0-canary.83
+    "@next/third-parties": 16.3.0-preview.6
+    next: 16.3.0-preview.6
   orpc:
-    "@orpc/client": 1.14.7
-    "@orpc/contract": 1.14.7
-    "@orpc/server": 1.14.7
-    "@orpc/tanstack-query": 1.14.7
+    "@orpc/client": 1.14.8
+    "@orpc/contract": 1.14.8
+    "@orpc/server": 1.14.8
+    "@orpc/tanstack-query": 1.14.8
   oxc:
-    oxfmt: 0.58.0
-    oxlint: 1.73.0
+    oxfmt: 0.59.0
+    oxlint: 1.74.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
     platejs: ^53.2.4
@@ -113,7 +113,7 @@ catalogs:
     react-dom: ^19.2.7
   tailwindcss:
     "@tailwindcss/postcss": 4.3.2
-    postcss: 8.5.16
+    postcss: 8.5.19
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.3.2
   tanstack:
@@ -136,7 +136,7 @@ catalogs:
     cobe: ^2.0.1
     immer: ^11.1.11
     katex: ^0.17.0
-    lucide-react: ^1.23.0
+    lucide-react: ^1.24.0
     motion: ^12.42.2
     next-themes: ^0.4.6
     nuqs: ^2.9.0
