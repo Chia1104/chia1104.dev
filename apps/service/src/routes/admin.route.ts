@@ -19,7 +19,6 @@ import {
   upsertContent,
   updateFeed,
 } from "@chia/db/repos/feeds";
-import { getRelatedFeeds } from "@chia/db/repos/feeds/embedding";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 import { Locale } from "@chia/db/types";
 import { getAdminId } from "@chia/utils/config";
@@ -29,6 +28,7 @@ import { errorGenerator } from "@chia/utils/server";
 import { env } from "../env";
 import { apikeyVerify } from "../guards/apikey-verify.guard";
 import { syncFeedSearchIndex } from "../services/feed-indexing.service";
+import { getRelatedFeedsService } from "../services/feeds.service";
 import { errorResponse } from "../utils/error.util";
 
 const adminId = getAdminId();
@@ -65,7 +65,9 @@ const api = new Hono<HonoContext>()
     }),
     async (c) => {
       const { locale, limit } = c.req.valid("query");
-      const items = await getRelatedFeeds(c.var.db, {
+      const items = await getRelatedFeedsService({
+        db: c.var.db,
+        kv: c.var.kv,
         slug: c.req.param("slug"),
         locale,
         limit,

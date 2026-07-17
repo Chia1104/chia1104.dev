@@ -4,6 +4,8 @@ import type {
   TextEmbeddingModel,
 } from "@chia/ai/embeddings/utils";
 import {
+  CANONICAL_EMBEDDING_MODEL,
+  EMBEDDING_INDEX_VERSION,
   getEmbeddingModelConfig,
   hashEmbeddingInput,
   isOllamaEmbeddingModel,
@@ -15,7 +17,7 @@ import { env } from "@chia/api/algolia/env";
 import type { PublicFeedSearchItem } from "@chia/api/services/validators";
 import type { DB } from "@chia/db";
 import { getPublicFeedSummariesByIds } from "@chia/db/repos/feeds";
-import { searchFeeds } from "@chia/db/repos/feeds/embedding";
+import { getRelatedFeeds, searchFeeds } from "@chia/db/repos/feeds/embedding";
 import type { Locale } from "@chia/db/types";
 import type { FeedType } from "@chia/db/types";
 import type { Keyv } from "@chia/kv";
@@ -261,3 +263,72 @@ const writeCachedQueryEmbedding = async (params: {
     QUERY_EMBEDDING_CACHE_TTL_MS
   );
 };
+
+// ============================================
+// Related feeds cache
+// ============================================
+
+const RELATED_FEEDS_CACHE_VERSION = "v1";
+const RELATED_FEEDS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+// an empty result usually means the feed is not indexed yet — keep it
+// short-lived so freshly embedded feeds surface quickly
+const RELATED_FEEDS_EMPTY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+type RelatedFeedItems = Awaited<ReturnType<typeof getRelatedFeeds>>;
+
+interface CachedRelatedFeeds {
+  items: RelatedFeedItems;
+}
+
+/**
+ * Embedding index version and canonical model are part of the key so bumping
+ * either invalidates every cached list without a manual flush; content edits
+ * within the TTL rely on expiry.
+ */
+const relatedFeedsCacheKey = (params: {
+  slug: string;
+  locale: Locale;
+  limit: number;
+}) =>
+  `feeds:related:${RELATED_FEEDS_CACHE_VERSION}:${EMBEDDING_INDEX_VERSION}:${CANONICAL_EMBEDDING_MODEL}:${params.locale}:${params.limit}:${params.slug}`;
+
+/**
+ * Cached wrapper around {@link getRelatedFeeds} — related lists only change
+ * on re-indexing, so there is no need to run a vector similarity query per
+ * request. Note `createdAt` becomes an ISO string after a cache round-trip;
+ * callers only JSON-serialize the items, so the response shape is identical.
+ */
+export async function getRelatedFeedsService({
+  db,
+  kv,
+  slug,
+  locale,
+  limit,
+}: {
+  db: DB;
+  kv: Keyv;
+  slug: string;
+  locale: Locale;
+  limit: number;
+}): Promise<RelatedFeedItems> {
+  const cacheKey = relatedFeedsCacheKey({ slug, locale, limit });
+  const cached = await kv.get<string>(cacheKey);
+  if (cached) {
+    try {
+      const payload = JSON.parse(cached) as Partial<CachedRelatedFeeds>;
+      if (Array.isArray(payload.items)) {
+        return payload.items;
+      }
+    } catch {
+      // corrupt payloads fall through and get overwritten below
+    }
+  }
+
+  const items = await getRelatedFeeds(db, { slug, locale, limit });
+  await kv.set(
+    cacheKey,
+    JSON.stringify({ items } satisfies CachedRelatedFeeds),
+    items.length ? RELATED_FEEDS_CACHE_TTL_MS : RELATED_FEEDS_EMPTY_CACHE_TTL_MS
+  );
+  return items;
+}
