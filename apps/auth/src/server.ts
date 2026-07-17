@@ -21,6 +21,6 @@ export type AuthAppRPC = typeof app;
 export default {
   port: env.PORT,
   // Railway private networking is IPv6-only — bind dual-stack.
-  // hostname: "::",
+  hostname: "::",
   fetch: app.fetch,
 };

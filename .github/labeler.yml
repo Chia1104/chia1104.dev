@@ -29,3 +29,15 @@
         ".github/workflows/service-ci.yml",
         "package.json",
       ]
+
+"area-auth":
+  - any:
+      [
+        "apps/auth/**",
+        "packages/auth/**",
+        ".github/workflows/auth-ci.yml",
+        "package.json",
+      ]
+
+"area-gateway":
+  - any: ["apps/gateway/**", "infra/railway/gateway.json"]

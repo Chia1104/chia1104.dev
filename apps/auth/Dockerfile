@@ -22,7 +22,7 @@ FROM builder-base AS pre-builder
 
 COPY . .
 
-RUN turbo prune --scope=service --docker
+RUN turbo prune --scope=auth --docker
 
 FROM builder-base AS builder
 
