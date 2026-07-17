@@ -1,6 +1,9 @@
 # Edge gateway: routes public traffic to the auth service and the legacy
 # service, authenticating API requests at the edge via forward_auth.
 #
+# Keep in sync with ../routes.config.ts — the local dev proxy mirrors this
+# routing table.
+#
 # Required environment variables (see README.md):
 #   PORT                         injected by Railway
 #   AUTH_UPSTREAM                e.g. auth.railway.internal:3006

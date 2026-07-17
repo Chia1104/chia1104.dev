@@ -18,6 +18,10 @@
       "types": "./src/gateway.ts",
       "default": "./src/gateway.ts"
     },
+    "./middlewares": {
+      "types": "./src/middlewares.ts",
+      "default": "./src/middlewares.ts"
+    },
     "./utils": {
       "types": "./src/utils.ts",
       "default": "./src/utils.ts"
@@ -53,6 +57,7 @@
     "better-auth": "catalog:better-auth",
     "client-only": "catalog:",
     "dayjs": "catalog:",
+    "hono": "catalog:hono",
     "resend": "^6.17.2",
     "server-only": "catalog:",
     "zod": "catalog:"
