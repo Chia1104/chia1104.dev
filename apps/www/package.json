@@ -80,6 +80,7 @@
     "shiki": "catalog:ui",
     "sonner": "catalog:ui",
     "superjson": "catalog:",
+    "takumi-js": "^2.2.0",
     "usehooks-ts": "catalog:ui",
     "zod": "catalog:",
     "zustand": "catalog:ui"

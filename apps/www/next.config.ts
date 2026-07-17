@@ -43,7 +43,12 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
     useTypeScriptCli: true,
   },
-  serverExternalPackages: ["@chia/db", "@chia/auth", "@sentry/nextjs"],
+  serverExternalPackages: [
+    "@chia/db",
+    "@chia/auth",
+    "@sentry/nextjs",
+    "@takumi-rs/core",
+  ],
   typescript: {
     ignoreBuildErrors: true,
   },

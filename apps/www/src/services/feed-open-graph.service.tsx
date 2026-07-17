@@ -1,5 +1,7 @@
-import { ImageResponse } from "next/og";
 import { NextResponse } from "next/server";
+
+import { googleFonts } from "takumi-js/helpers";
+import { ImageResponse } from "takumi-js/response";
 
 import OpenGraph from "@chia/ui/open-graph";
 import dayjs from "@chia/utils/day";
@@ -48,6 +50,7 @@ export async function createFeedOpenGraphImage({
     {
       ...imageSize,
       status: 200,
+      fonts: googleFonts(["Inter", "Noto Sans JP", "Noto Sans TC"]),
     }
   );
 }
