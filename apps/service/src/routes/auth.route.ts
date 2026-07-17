@@ -4,7 +4,9 @@ import { timeout } from "hono/timeout";
 import { env } from "../env";
 
 /**
- * @TODO: Remove this route when the auth service is migrated to separate service
+ * When INTERNAL_AUTH_SERVICE_ENDPOINT is set this proxies to the standalone
+ * auth service (`apps/auth`); otherwise it is served by the in-process
+ * better-auth instance. Remove once clients point at the auth service directly.
  */
 const api = new Hono<HonoContext>()
   .use(timeout(env.TIMEOUT_MS))

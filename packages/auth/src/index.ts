@@ -9,9 +9,22 @@ import { baseAuthConfig } from "./base-auth";
 
 export const name = "auth-core";
 
-export const createAuth = (db: DB, kv: Keyv) =>
+export const createAuth = (
+  db: DB,
+  kv: Keyv,
+  options?: {
+    /**
+     * Override the base path from AUTH_BASE_PATH — used by the standalone
+     * auth service, whose mount is fixed at `/auth`. Kept as an explicit
+     * field (not a config spread) so better-auth's type inference from
+     * `baseAuthConfig` stays intact.
+     */
+    basePath?: string;
+  }
+) =>
   betterAuth({
     ...baseAuthConfig,
+    basePath: options?.basePath ?? baseAuthConfig.basePath,
     /**
      * database adapter
      */
