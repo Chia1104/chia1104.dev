@@ -15,8 +15,8 @@ export const useGenerateFeedSlug = (
   options?: Partial<UseCompletionOptions>
 ) => {
   return useCompletion({
-    api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
-      version: "LEGACY",
+    api: withServiceEndpoint("/generate", Service.AI, {
+      version: "ai",
     }),
     credentials: "include",
     id: "ai-generate-feed-slug",
@@ -43,8 +43,8 @@ export const useGenerateFeedDescription = (
   options?: Partial<UseCompletionOptions>
 ) => {
   return useCompletion({
-    api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
-      version: "LEGACY",
+    api: withServiceEndpoint("/generate", Service.AI, {
+      version: "ai",
     }),
     credentials: "include",
     id: "ai-generate-feed-description",
@@ -76,8 +76,8 @@ export const useGenerateFeedContent = (
   options?: Partial<UseCompletionOptions>
 ) => {
   return useCompletion({
-    api: withServiceEndpoint("/ai/generate", Service.LegacyService, {
-      version: "LEGACY",
+    api: withServiceEndpoint("/generate", Service.AI, {
+      version: "ai",
     }),
     credentials: "include",
     id: "ai-generate-feed-content",

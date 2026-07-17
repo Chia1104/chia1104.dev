@@ -2,38 +2,38 @@ import type { InferResponseType, InferRequestType } from "hono";
 
 import type { Provider } from "@chia/ai/types";
 
-import { client } from "@/libs/service/client";
+import { aiClient } from "@/libs/service/client";
 import { HonoRPCError } from "@/libs/service/error";
 
 export type SignAIKeyResponse = InferResponseType<
-  (typeof client.api.v1.ai)["key:signed"]["$post"],
+  (typeof aiClient.ai)["key:signed"]["$post"],
   200
 >;
 
 export type GenerateAIContentResponse = InferResponseType<
-  (typeof client.api.v1.ai)["generate"]["$post"],
+  (typeof aiClient.ai)["generate"]["$post"],
   200
 >;
 
 export type GenerateAIContentInput = InferRequestType<
-  (typeof client.api.v1.ai)["generate"]["$post"]
+  (typeof aiClient.ai)["generate"]["$post"]
 >;
 
 export type GenerateAIContentMetaInput = InferRequestType<
-  (typeof client.api.v1.ai.content.meta)["$post"]
+  (typeof aiClient.ai.content.meta)["$post"]
 >;
 
 export type GenerateAIArticleContentInput = InferRequestType<
-  (typeof client.api.v1.ai.content)["generate"]["$post"]
+  (typeof aiClient.ai.content)["generate"]["$post"]
 >;
 
 export type GenerateAIContentCompleteInput = InferRequestType<
-  (typeof client.api.v1.ai.content)["complete"]["$post"]
+  (typeof aiClient.ai.content)["complete"]["$post"]
 >;
 
 export const getSignedAIKey = async (apiKey: string, provider: Provider) => {
   try {
-    const response = await client.api.v1.ai["key:signed"].$post({
+    const response = await aiClient.ai["key:signed"].$post({
       json: {
         apiKey,
         provider,
@@ -59,7 +59,7 @@ export const generateAIContent = async (
   input: GenerateAIContentInput["json"]
 ) => {
   try {
-    const response = await client.api.v1.ai.generate.$post({
+    const response = await aiClient.ai.generate.$post({
       json: input,
     });
 
@@ -110,7 +110,7 @@ export const generateAIContentComplete = async (
   input: GenerateAIContentCompleteInput["json"]
 ): Promise<string> => {
   try {
-    const response = await client.api.v1.ai.content.complete.$post({
+    const response = await aiClient.ai.content.complete.$post({
       json: input,
     });
     if (!response.ok) {
@@ -134,7 +134,7 @@ export const generateAIArticleContent = async (
   input: GenerateAIArticleContentInput["json"]
 ) => {
   try {
-    const response = await client.api.v1.ai.content.generate.$post({
+    const response = await aiClient.ai.content.generate.$post({
       json: input,
     });
 
@@ -183,7 +183,7 @@ export const generateAIContentMeta = async (
   input: GenerateAIContentMetaInput["json"]
 ) => {
   try {
-    const response = await client.api.v1.ai.content.meta.$post({
+    const response = await aiClient.ai.content.meta.$post({
       json: input,
     });
     if (!response.ok) {

@@ -39,5 +39,14 @@
         "package.json",
       ]
 
+"area-ai":
+  - any:
+      [
+        "apps/ai/**",
+        "packages/ai/**",
+        ".github/workflows/ai-ci.yml",
+        "package.json",
+      ]
+
 "area-gateway":
   - any: ["apps/gateway/**", "infra/railway/gateway.json"]

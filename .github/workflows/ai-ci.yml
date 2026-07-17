@@ -1,0 +1,109 @@
+name: ai CI
+
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize]
+    paths:
+      - "apps/ai/**"
+      - "packages/ai/**"
+      - "packages/auth/**"
+      - "packages/db/**"
+      - "packages/utils/**"
+      - "packages/kv/**"
+      - ".github/workflows/ai-ci.yml"
+      - "package.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pull-${{ github.ref }}-ai-ci
+  cancel-in-progress: true
+
+env:
+  APP_CODE: ai
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  SKIP_ENV_VALIDATION: true
+  ENV: beta
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  ai-lint:
+    name: "ai lint"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area-ai') && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v6
+
+      - name: "💽️ Setup"
+        id: ai-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
+
+      - name: "🔥 Init bun"
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: "🧹 Lint"
+        shell: bash
+        run: |
+          pnpm lint:ai
+
+  ai-type-check:
+    name: "ai type check"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area-ai') && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v6
+
+      - name: "💽️ Setup"
+        id: ai-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
+
+      - name: "🔥 Init bun"
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: "🧹 Type check"
+        shell: bash
+        run: |
+          pnpm type:check --filter ai-service...
+
+  ai-docker-build:
+    name: "ai docker build"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'ai:docker') || contains(github.event.pull_request.labels.*.name, 'area-ai')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Builder
+        uses: docker/setup-buildx-action@v4
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/ai/Dockerfile
+          push: false
+          load: false
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-ai:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            TURBO_TEAM=${{ secrets.TURBO_TEAM }}
+            TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}

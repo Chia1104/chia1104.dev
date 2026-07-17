@@ -2,7 +2,6 @@ import bootstrap from "./bootstrap";
 import { env } from "./env";
 import appFactory from "./factories/app.factory";
 import adminRoutes from "./routes/admin.route";
-import aiRoutes from "./routes/ai.route";
 import authRoutes from "./routes/auth.route";
 import emailRoutes from "./routes/email.route";
 import feedsRoutes from "./routes/feeds.route";
@@ -18,7 +17,6 @@ export const app = bootstrap(appFactory.createApp())
   .route("/feeds", feedsRoutes)
   .route("/rpc", rpcRoutes)
   .route("/health", healthRoutes)
-  .route("/ai", aiRoutes)
   .route("/spotify", spotifyRoutes)
   .route("/email", emailRoutes)
   .route("/toolings", toolingsRoutes);
