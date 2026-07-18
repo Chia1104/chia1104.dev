@@ -42,6 +42,8 @@ export const env = createEnv({
     OLLAMA_BASE_URL: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
     INTERNAL_AUTH_SERVICE_TOKEN: z.string().optional(),
+    INTERNAL_WORKFLOW_SERVICE_ENDPOINT: z.string().optional(),
+    INTERNAL_WORKFLOW_SERVICE_TOKEN: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -72,6 +74,10 @@ export const env = createEnv({
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     INTERNAL_AUTH_SERVICE_TOKEN: process.env.INTERNAL_AUTH_SERVICE_TOKEN,
+    INTERNAL_WORKFLOW_SERVICE_ENDPOINT:
+      process.env.INTERNAL_WORKFLOW_SERVICE_ENDPOINT,
+    INTERNAL_WORKFLOW_SERVICE_TOKEN:
+      process.env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

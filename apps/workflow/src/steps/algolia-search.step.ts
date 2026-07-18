@@ -1,8 +1,8 @@
 import { client } from "@chia/api/algolia";
+import type { AlgoliaFeedHit } from "@chia/api/algolia/types";
 import type { Locale } from "@chia/db/types";
 
 import { env } from "../env";
-import type { AlgoliaFeedHit } from "../services/feeds.service";
 
 const getIndexName = () =>
   process.env.ALGOLIA_FEEDS_INDEX_NAME ?? env.ALGOLIA_FEEDS_INDEX_NAME;

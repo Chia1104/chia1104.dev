@@ -13,7 +13,6 @@
     "build": {
       "outputs": [".output/**", "!.output/server/node_modules/**"],
       "env": [
-        "WORKFLOW_TARGET_WORLD",
         "CORS_ALLOWED_ORIGIN",
         "RESEND_API_KEY",
         "SENTRY_DSN",
@@ -33,7 +32,6 @@
         "AI_GATEWAY_API_KEY"
       ],
       "passThroughEnv": [
-        "WORKFLOW_TARGET_WORLD",
         "CORS_ALLOWED_ORIGIN",
         "RESEND_API_KEY",
         "SENTRY_DSN",

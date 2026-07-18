@@ -48,5 +48,13 @@
         "package.json",
       ]
 
+"area-workflow":
+  - any:
+      [
+        "apps/workflow/**",
+        ".github/workflows/workflow-ci.yml",
+        "package.json",
+      ]
+
 "area-gateway":
   - any: ["apps/gateway/**", "infra/railway/gateway.json"]

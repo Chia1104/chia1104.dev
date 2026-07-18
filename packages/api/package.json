@@ -104,6 +104,10 @@
     "./algolia/env": {
       "types": "./algolia/env.ts",
       "default": "./algolia/env.ts"
+    },
+    "./algolia/types": {
+      "types": "./algolia/types.ts",
+      "default": "./algolia/types.ts"
     }
   },
   "scripts": {

@@ -2,6 +2,8 @@ import { defineConfig } from "nitro";
 
 export default defineConfig({
   serverDir: "src",
+  modules: ["workflow/nitro"],
+  plugins: ["plugins/start-pg-world.ts", "plugins/start-redis-world.ts"],
   typescript: {
     tsconfigPath: "./tsconfig.build.json",
   },
@@ -9,6 +11,6 @@ export default defineConfig({
   routes: {
     "/**": "./src/server.ts",
   },
-  traceDeps: ["jsdom", "@better-auth/passkey"],
+  traceDeps: ["@workflow-worlds/redis", "@workflow/world-postgres", "workflow"],
   noPublicDir: true,
 });
