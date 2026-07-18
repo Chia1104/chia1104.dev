@@ -19,7 +19,7 @@ services:
       - PORT=8080
       - LOCAL_DATABASE_URL=postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/${POSTGRES_DB:?}
       - REDIS_URI=redis://redis:6379
-      - INTERNAL_AUTH_SERVICE_ENDPOINT=http://host.docker.internal:4001/auth
+      - INTERNAL_AUTH_SERVICE_ENDPOINT=http://host.docker.internal:4001
       - INTERNAL_WORKFLOW_SERVICE_ENDPOINT=http://workflow:8080
       - INTERNAL_WORKFLOW_SERVICE_TOKEN=${INTERNAL_WORKFLOW_SERVICE_TOKEN:-local-dev-token}
     extra_hosts:
