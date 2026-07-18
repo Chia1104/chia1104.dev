@@ -1,20 +1,28 @@
 # Microservices 拆分規劃（Auth / AI / Workflow）
 
-> 狀態：規劃完成，Phase 0–4 未開始
+> 狀態：Phase 0–4 程式碼實作完成（`refactor/micro-services`），部署與部署後驗收未進行
 > 建立日期：2026-07-17
-> 最後更新：2026-07-17
+> 最後更新：2026-07-18
 > 範圍：`apps/service` monolith 拆分為 auth / ai / workflow 三個獨立服務，production 以 Caddy 做邊緣轉發，本地開發以獨立簡易 dev proxy 轉發
 > 前置：`refactor/auth-service` branch（auth 拆分雛形，1 個 WIP commit）
 
 ## 0. 執行狀態
 
-| Phase                              | 狀態      | 備註                                                            |
-| ---------------------------------- | --------- | --------------------------------------------------------------- |
-| Phase 0：auth branch 收尾與部署    | ⬜ 未開始 | 修 Dockerfile scope bug、IPv6 host、CI、Railway config          |
-| Phase 1：dev proxy + 共用 plumbing | ⬜ 未開始 | `apps/gateway` 升級為 workspace app、`@chia/utils/gateway` 抽取 |
-| Phase 2：`apps/ai` 拆分            | ⬜ 未開始 | AI 路由 + guards 搬移，純 Hono/Bun                              |
-| Phase 3：`apps/workflow` 拆分      | ⬜ 未開始 | workflows/steps/world 搬移，internal HTTP trigger               |
-| Phase 4：client 切換與清理         | ⬜ 未開始 | dash 切 `Service.AI`、移除 `/api/v1/ai` 過渡 rewrite            |
+| Phase                              | 狀態          | 備註                                                                                                           |
+| ---------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
+| Phase 0：auth branch 收尾與部署    | 🟨 程式碼完成 | commit `c0e02369`；Railway 部署（步驟 4）待執行                                                                |
+| Phase 1：dev proxy + 共用 plumbing | ✅ 完成       | commit `b402f966`；dev proxy 已端到端驗證（block / gate / rewrite / proxy）                                    |
+| Phase 2：`apps/ai` 拆分            | 🟨 程式碼完成 | commit `1f6cf8a5`；package 名為 `ai-service`（避免與 npm `ai` 撞名）；部署與串流實測（步驟 4–5）待執行         |
+| Phase 3：`apps/workflow` 拆分      | 🟨 程式碼完成 | Nitro build + internal route 煙霧測試通過；部署與驗收（步驟 5–6）待執行                                        |
+| Phase 4：client 切換與清理         | 🟨 部分完成   | dash 已切 `Service.AI`（與 Phase 2 同 commit，型別相依必須同步切）；`/api/v1/ai` 過渡 rewrite 待部署驗證後移除 |
+
+### 實作備註（2026-07-18）
+
+- `apps/ai` 的 workspace package 名稱為 **`ai-service`**（非計畫中的 `ai`）：與 npm 的 Vercel AI SDK `ai` 套件撞名會讓 manypkg / pnpm 把 `"ai": "catalog:ai"` 誤判為 workspace 依賴。turbo filter、CI、Dockerfile scope 均用 `ai-service`。
+- `guards/ai.guard.ts` 與 `AI_AUTH_PRIVATE_KEY` **保留一份在 `apps/service`**：`/feeds/search` 需要驗簽 provider-key cookie 做 query embedding（§1.3/§9 的既定場景）；`AI_AUTH_PUBLIC_KEY`（簽發側）只在 `apps/ai`。
+- `AlgoliaFeedHit` 提升到 `@chia/api/algolia/types`：workflow steps（寫入側）與 service feeds search（讀取側）共用同一份 index 文件 shape。
+- Caddy gateway 改為 repo-root build context（`infra/railway/gateway.json` 指定 `dockerfilePath`），與其他 Railway service 一致。
+- 既有測試 `admin.controller.test.ts` 的 related feeds timeout 在拆分前（`c0a3e7cd`）即失敗，與本拆分無關。
 
 ### 已定案的決策
 
