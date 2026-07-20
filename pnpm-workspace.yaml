@@ -139,7 +139,7 @@ catalogs:
     lucide-react: ^1.24.0
     motion: ^12.42.2
     next-themes: ^0.4.6
-    nuqs: ^2.9.0
+    nuqs: ^2.9.1
     react-medium-image-zoom: ^5.4.8
     schema-dts: 2.0.0
     shiki: ^4.3.1
