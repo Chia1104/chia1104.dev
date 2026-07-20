@@ -1,4 +1,6 @@
 import { APIError } from "better-auth/api";
+import type { Options as KyOptions } from "ky";
+import ky from "ky";
 
 import { sanitizeHeaders, X_CH_INTERNAL_TOKEN } from "@chia/utils/gateway";
 
@@ -119,14 +121,14 @@ export const createRemoteAuthGateway = (
         }
       }
     }
-    const requestHeaders = sanitizeHeaders(headers);
-    if (body !== undefined) {
-      requestHeaders.set("content-type", "application/json");
-    }
-    const response = await fetch(target, {
+    // non-2xx is mapped to APIError below, so keep ky from throwing/retrying
+    const response = await ky(target, {
       method,
-      headers: requestHeaders,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      headers: sanitizeHeaders(headers),
+      retry: 0,
+      timeout: false,
+      throwHttpErrors: false,
+      ...(body !== undefined ? { json: body } : {}),
     });
     const text = await response.text();
     const data: unknown = text ? JSON.parse(text) : null;
@@ -247,13 +249,16 @@ export const createRemoteAuthGateway = (
       request.method !== "HEAD" &&
       request.body !== null &&
       !request.bodyUsed;
-    return await fetch(target, {
+    // reverse-proxy semantics: relay upstream responses verbatim — no
+    // retry, no timeout (streaming), no throwing on 4xx/5xx
+    return await ky(target, {
       method: request.method,
       headers: sanitizeHeaders(request.headers),
       redirect: "manual",
-      ...(hasBody
-        ? ({ body: request.body, duplex: "half" } as RequestInit)
-        : {}),
+      retry: 0,
+      timeout: false,
+      throwHttpErrors: false,
+      ...(hasBody ? ({ body: request.body, duplex: "half" } as KyOptions) : {}),
     });
   };
 

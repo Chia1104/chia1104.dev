@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@chia/utils": "workspace:*",
-    "hono": "catalog:hono"
+    "hono": "catalog:hono",
+    "ky": "catalog:"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",

@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
+import type { Options as KyOptions } from "ky";
+import ky from "ky";
 
 import {
   sanitizeHeaders,
@@ -63,9 +65,10 @@ const forwardAuth = async (
     );
   }
 
-  const gateResponse = await fetch(
+  // gate errors (401/403) are relayed verbatim, so don't throw or retry
+  const gateResponse = await ky.get(
     `${authUpstream()}/auth/internal/gate?mode=${mode}`,
-    { headers: gateHeaders }
+    { headers: gateHeaders, retry: 0, timeout: false, throwHttpErrors: false }
   );
 
   if (gateResponse.status !== 204) {
@@ -121,13 +124,16 @@ app.all("*", async (c) => {
     c.req.method !== "HEAD" &&
     c.req.raw.body !== null;
 
-  return await fetch(target, {
+  // reverse-proxy semantics: relay upstream responses verbatim — no retry,
+  // no timeout (AI streaming), no throwing on 4xx/5xx
+  return await ky(target, {
     method: c.req.method,
     headers,
     redirect: "manual",
-    ...(hasBody
-      ? ({ body: c.req.raw.body, duplex: "half" } as RequestInit)
-      : {}),
+    retry: 0,
+    timeout: false,
+    throwHttpErrors: false,
+    ...(hasBody ? ({ body: c.req.raw.body, duplex: "half" } as KyOptions) : {}),
   });
 });
 

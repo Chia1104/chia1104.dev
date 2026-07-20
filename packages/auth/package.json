@@ -58,6 +58,7 @@
     "client-only": "catalog:",
     "dayjs": "catalog:",
     "hono": "catalog:hono",
+    "ky": "catalog:",
     "resend": "^6.17.2",
     "server-only": "catalog:",
     "zod": "catalog:"

@@ -775,6 +775,9 @@ importers:
       hono:
         specifier: catalog:hono
         version: 4.12.30
+      ky:
+        specifier: 'catalog:'
+        version: 2.0.2
     devDependencies:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
@@ -1345,6 +1348,9 @@ importers:
       hono:
         specifier: catalog:hono
         version: 4.12.30
+      ky:
+        specifier: 'catalog:'
+        version: 2.0.2
       resend:
         specifier: ^6.17.2
         version: 6.17.2(@react-email/render@2.1.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
