@@ -42,7 +42,7 @@ export const env = createEnv({
     OLLAMA_BASE_URL: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
     INTERNAL_AUTH_SERVICE_TOKEN: z.string().optional(),
-    INTERNAL_WORKFLOW_SERVICE_ENDPOINT: z.string().optional(),
+    // INTERNAL_*_SERVICE_ENDPOINT vars come from the extended serviceEnv
     INTERNAL_WORKFLOW_SERVICE_TOKEN: z.string().optional(),
   },
   runtimeEnv: {
@@ -74,8 +74,6 @@ export const env = createEnv({
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     INTERNAL_AUTH_SERVICE_TOKEN: process.env.INTERNAL_AUTH_SERVICE_TOKEN,
-    INTERNAL_WORKFLOW_SERVICE_ENDPOINT:
-      process.env.INTERNAL_WORKFLOW_SERVICE_ENDPOINT,
     INTERNAL_WORKFLOW_SERVICE_TOKEN:
       process.env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
   },

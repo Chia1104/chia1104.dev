@@ -4,6 +4,7 @@ import * as z from "zod";
 import { env as authEnv } from "@chia/auth/env";
 import { env as dbEnv } from "@chia/db/env";
 import { env as kvEnv } from "@chia/kv/env";
+import { serviceEnv } from "@chia/utils/config/env";
 import { NumericStringSchema } from "@chia/utils/schema";
 
 export const env = createEnv({
@@ -29,7 +30,7 @@ export const env = createEnv({
     AI_AUTH_PUBLIC_KEY: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
     OLLAMA_BASE_URL: z.string().optional(),
-    INTERNAL_AUTH_SERVICE_ENDPOINT: z.string().optional(),
+    // INTERNAL_*_SERVICE_ENDPOINT vars come from the extended serviceEnv
     INTERNAL_AUTH_SERVICE_TOKEN: z.string().optional(),
   },
   runtimeEnv: {
@@ -52,13 +53,12 @@ export const env = createEnv({
     AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
-    INTERNAL_AUTH_SERVICE_ENDPOINT: process.env.INTERNAL_AUTH_SERVICE_ENDPOINT,
     INTERNAL_AUTH_SERVICE_TOKEN: process.env.INTERNAL_AUTH_SERVICE_TOKEN,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [authEnv, dbEnv, kvEnv],
+  extends: [authEnv, dbEnv, kvEnv, serviceEnv],
 });
 
 export type ENV = typeof env;

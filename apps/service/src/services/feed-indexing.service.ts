@@ -1,4 +1,6 @@
+import { withServiceEndpoint } from "@chia/utils/config";
 import { X_CH_INTERNAL_TOKEN } from "@chia/utils/gateway";
+import { Service } from "@chia/utils/schema";
 
 import { env } from "../env";
 
@@ -18,17 +20,22 @@ const triggerWorkflow = async (path: string, body: unknown) => {
     return null;
   }
 
-  const origin = env.INTERNAL_WORKFLOW_SERVICE_ENDPOINT.replace(/\/$/, "");
   const headers = new Headers({ "content-type": "application/json" });
   if (env.INTERNAL_WORKFLOW_SERVICE_TOKEN) {
     headers.set(X_CH_INTERNAL_TOKEN, env.INTERNAL_WORKFLOW_SERVICE_TOKEN);
   }
 
-  const response = await fetch(`${origin}/workflow/internal/workflows${path}`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-  });
+  const response = await fetch(
+    withServiceEndpoint(`/internal/workflows${path}`, Service.Workflow, {
+      isInternal: true,
+      version: "workflow",
+    }),
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    }
+  );
 
   if (!response.ok) {
     throw new Error(

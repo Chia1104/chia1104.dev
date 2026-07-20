@@ -4,9 +4,6 @@ import type { Locale } from "@chia/db/types";
 
 import { env } from "../env";
 
-const getIndexName = () =>
-  process.env.ALGOLIA_FEEDS_INDEX_NAME ?? env.ALGOLIA_FEEDS_INDEX_NAME;
-
 export interface SaveFeedToAlgoliaParams {
   feedID: number;
   objectID: number;
@@ -30,7 +27,7 @@ export const saveFeedToAlgoliaStep = async (
 ) => {
   "use step";
 
-  const indexName = getIndexName();
+  const indexName = env.ALGOLIA_FEEDS_INDEX_NAME;
 
   if (!params.enabled) {
     await client.deleteObject({
