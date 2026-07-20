@@ -7,6 +7,9 @@ import type { AuthGateway } from "@chia/auth/gateway";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
 import type { Keyv } from "@chia/kv";
+// read through serviceEnv, not the app env: t3-env's `extends` is skipped
+// entirely when SKIP_ENV_VALIDATION is set, so extended vars vanish there
+import { serviceEnv } from "@chia/utils/config/env";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
 import { getClientIP } from "@chia/utils/server";
@@ -19,9 +22,9 @@ import { env } from "../env";
  * better-auth instance (single-service/local development).
  */
 const getAuthGateway = once((db: DB, kv: Keyv): AuthGateway => {
-  if (env.INTERNAL_AUTH_SERVICE_ENDPOINT) {
+  if (serviceEnv.INTERNAL_AUTH_SERVICE_ENDPOINT) {
     return createRemoteAuthGateway({
-      baseURL: env.INTERNAL_AUTH_SERVICE_ENDPOINT,
+      baseURL: serviceEnv.INTERNAL_AUTH_SERVICE_ENDPOINT,
       internalToken: env.INTERNAL_AUTH_SERVICE_TOKEN,
     });
   }

@@ -1,6 +1,6 @@
 import { APIError } from "better-auth/api";
 import type { Options as KyOptions } from "ky";
-import ky from "ky";
+import ky, { HTTPError } from "ky";
 
 import { sanitizeHeaders, X_CH_INTERNAL_TOKEN } from "@chia/utils/gateway";
 
@@ -121,25 +121,31 @@ export const createRemoteAuthGateway = (
         }
       }
     }
-    // non-2xx is mapped to APIError below, so keep ky from throwing/retrying
-    const response = await ky(target, {
-      method,
-      headers: sanitizeHeaders(headers),
-      retry: 0,
-      timeout: false,
-      throwHttpErrors: false,
-      ...(body !== undefined ? { json: body } : {}),
-    });
-    const text = await response.text();
-    const data: unknown = text ? JSON.parse(text) : null;
-    if (!response.ok) {
-      const errorBody = (data ?? {}) as { code?: string; message?: string };
-      throw new APIError(
-        response.status as ConstructorParameters<typeof APIError>[0],
-        errorBody
-      );
+    try {
+      const response = await ky(target, {
+        method,
+        headers: sanitizeHeaders(headers),
+        retry: 0,
+        timeout: false,
+        ...(body !== undefined ? { json: body } : {}),
+      });
+      const text = await response.text();
+      return text ? (JSON.parse(text) as unknown) : null;
+    } catch (error) {
+      // surface upstream failures as better-auth's APIError, matching the
+      // behavior of a local better-auth instance
+      if (error instanceof HTTPError) {
+        const errorBody = (await error.response.json().catch(() => ({}))) as {
+          code?: string;
+          message?: string;
+        };
+        throw new APIError(
+          error.response.status as ConstructorParameters<typeof APIError>[0],
+          errorBody
+        );
+      }
+      throw error;
     }
-    return data;
   };
 
   const callAuth = (path: string, callOptions: CallOptions) =>
