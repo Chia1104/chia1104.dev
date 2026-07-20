@@ -152,6 +152,10 @@ function switchServiceVersion(version: ServiceVersion, url: string) {
       return removeEndSlash(url).replace(/\/api\/v1$/, "") + "/api/v1";
     case "auth":
       return removeEndSlash(url).replace(/\/auth$/, "") + "/auth";
+    case "ai":
+      return removeEndSlash(url).replace(/\/ai$/, "") + "/ai";
+    case "workflow":
+      return removeEndSlash(url).replace(/\/workflow$/, "") + "/workflow";
     default:
       return removeEndSlash(url);
   }
@@ -271,6 +275,8 @@ function serviceNameResolver(service: Service) {
       return "CONTENT_SERVICE";
     case Service.AI:
       return "AI_SERVICE";
+    case Service.Workflow:
+      return "WORKFLOW_SERVICE";
   }
 }
 

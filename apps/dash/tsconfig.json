@@ -5,7 +5,8 @@
     "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"],
-      "~service/*": ["../service/src/*"]
+      "~service/*": ["../service/src/*"],
+      "~ai-service/*": ["../ai/src/*"]
     },
     "plugins": [{ "name": "next" }],
     "allowImportingTsExtensions": true

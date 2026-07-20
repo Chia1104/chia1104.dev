@@ -1,0 +1,18 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tags": ["gateway"],
+  "extends": ["//", "@chia/utils"],
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "PORT",
+        "DEV_AUTH_UPSTREAM",
+        "DEV_AI_UPSTREAM",
+        "DEV_SERVICE_UPSTREAM",
+        "INTERNAL_AUTH_SERVICE_TOKEN"
+      ]
+    }
+  }
+}

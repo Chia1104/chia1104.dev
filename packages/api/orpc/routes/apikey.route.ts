@@ -20,9 +20,8 @@ export const createAPIKeyRoute = contractOS.apikey.create
       opts.context.auth.api.createApiKey({
         body: {
           name: opts.input.name,
-          userId: opts.context.session?.user.id,
-
-          // rateLimitEnabled: false,
+          // the key owner is resolved from the forwarded session headers;
+          // `userId` is a server-only field that better-auth rejects over HTTP
         },
         headers: opts.context.headers,
       })

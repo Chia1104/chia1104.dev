@@ -5,6 +5,8 @@ import { timeout } from "hono/timeout";
 import once from "lodash/once.js";
 
 import { router } from "@chia/api/orpc/router";
+import { decodeTrustedHeader, X_CH_AUTH_SESSION } from "@chia/auth/gateway";
+import type { Session } from "@chia/auth/types";
 
 import { env } from "../env";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
@@ -39,6 +41,11 @@ const api = new Hono<HonoContext>()
         db: c.var.db,
         kv: c.var.kv,
         auth: c.var.auth,
+        // identity injected by the edge gateway; orpc guards fall back to
+        // gateway getSession when absent
+        session: decodeTrustedHeader<Session>(
+          c.req.raw.headers.get(X_CH_AUTH_SESSION)
+        ),
         hooks: {
           async onFeedChanged(feedID) {
             await syncFeedSearchIndex(feedID);

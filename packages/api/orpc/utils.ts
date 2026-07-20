@@ -3,7 +3,7 @@ import { implement } from "@orpc/server";
 import { os } from "@orpc/server";
 import GithubSlugger from "github-slugger";
 
-import type { Auth } from "@chia/auth";
+import type { AuthGateway } from "@chia/auth/gateway";
 import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
 import type { Keyv } from "@chia/kv";
@@ -14,7 +14,7 @@ export interface BaseOSContext {
   headers: Headers;
   db: DB;
   kv?: Keyv;
-  auth?: Auth;
+  auth?: AuthGateway;
   hooks?: {
     onError?: (error: ORPCError<string, unknown>) => void;
     onUnauthorized?: (error: ORPCError<"UNAUTHORIZED", unknown>) => void;

@@ -1,10 +1,39 @@
 import { createMiddleware } from "hono/factory";
 
+import { decodeTrustedHeader, X_CH_AUTH_API_KEY } from "@chia/auth/gateway";
 import { APIError } from "@chia/auth/types";
 import { X_CH_API_KEY } from "@chia/auth/utils";
 import type { ApiKey } from "@chia/db/schema";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
+
+/**
+ * Local equivalent of better-auth's api-key permission check: every required
+ * action of every required resource must be granted by the key. The gate
+ * verifies keys without route-specific permissions, so the fine-grained check
+ * happens here against the key metadata it injected.
+ */
+const hasRequiredPermissions = (
+  keyPermissions: unknown,
+  required: Record<string, string[]>
+): boolean => {
+  let granted = keyPermissions;
+  if (typeof granted === "string") {
+    try {
+      granted = JSON.parse(granted);
+    } catch {
+      return false;
+    }
+  }
+  if (!granted || typeof granted !== "object") return false;
+  return Object.entries(required).every(([resource, actions]) =>
+    actions.every((action) =>
+      (granted as Record<string, string[] | undefined>)[resource]?.includes(
+        action
+      )
+    )
+  );
+};
 
 export const apikeyVerify = (options?: {
   permissions?: Record<string, string[]>;
@@ -24,6 +53,30 @@ export const apikeyVerify = (options?: {
         ]),
         401
       );
+    }
+
+    // fast path: the edge gateway already verified the key and injected its
+    // metadata — only the route-specific checks remain
+    const trustedKey = decodeTrustedHeader<Omit<ApiKey, "key">>(
+      c.req.raw.headers.get(X_CH_AUTH_API_KEY)
+    );
+
+    if (trustedKey) {
+      if (
+        permissions &&
+        !hasRequiredPermissions(trustedKey.permissions, permissions)
+      ) {
+        return c.json(errorGenerator(403), 403);
+      }
+      if (
+        trustedKey.projectId &&
+        projectId &&
+        trustedKey.projectId !== projectId
+      ) {
+        return c.json(errorGenerator(403), 403);
+      }
+      await next();
+      return;
     }
 
     if (!c.var.auth) return c.json({ message: "Unauthorized" }, 401);

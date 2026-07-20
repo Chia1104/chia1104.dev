@@ -1,0 +1,78 @@
+name: auth CI
+
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize]
+    paths:
+      - "apps/auth/**"
+      - "packages/auth/**"
+      - "packages/db/**"
+      - "packages/utils/**"
+      - "packages/kv/**"
+      - ".github/workflows/auth-ci.yml"
+      - "package.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pull-${{ github.ref }}-auth-ci
+  cancel-in-progress: true
+
+env:
+  APP_CODE: auth
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  SKIP_ENV_VALIDATION: true
+  ENV: beta
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  auth-lint:
+    name: "auth lint"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area-auth') && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v6
+
+      - name: "💽️ Setup"
+        id: auth-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
+
+      - name: "🔥 Init bun"
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: "🧹 Lint"
+        shell: bash
+        run: |
+          pnpm lint:auth
+
+  auth-type-check:
+    name: "auth type check"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'area-auth') && !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - name: "🐙️ Check out code"
+        uses: actions/checkout@v6
+
+      - name: "💽️ Setup"
+        id: auth-init
+        uses: chia1104/chiastack.dev/.github/actions/setup-node-with-pnpm@main
+
+      - name: "🔥 Init bun"
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: "🧹 Type check"
+        shell: bash
+        run: |
+          pnpm type:check --filter auth...

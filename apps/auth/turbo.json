@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tags": ["auth"],
+  "extends": ["//", "@chia/auth", "@chia/db", "@chia/kv", "@chia/utils"],
+  "tasks": {
+    "build": {
+      "outputs": [".output/**", "!.output/server/node_modules/**"],
+      "env": [
+        "CORS_ALLOWED_ORIGIN",
+        "RESEND_API_KEY",
+        "SENTRY_DSN",
+        "ZEABUR_SERVICE_ID",
+        "TIMEOUT_MS",
+        "INTERNAL_AUTH_SERVICE_TOKEN"
+      ],
+      "passThroughEnv": [
+        "CORS_ALLOWED_ORIGIN",
+        "RESEND_API_KEY",
+        "SENTRY_DSN",
+        "ZEABUR_SERVICE_ID",
+        "TIMEOUT_MS",
+        "INTERNAL_AUTH_SERVICE_TOKEN"
+      ]
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tags": ["ai"],
+  "extends": [
+    "//",
+    "@chia/ai",
+    "@chia/auth",
+    "@chia/db",
+    "@chia/kv",
+    "@chia/utils"
+  ],
+  "tasks": {
+    "build": {
+      "outputs": [".output/**", "!.output/server/node_modules/**"],
+      "env": [
+        "CORS_ALLOWED_ORIGIN",
+        "SENTRY_DSN",
+        "ZEABUR_SERVICE_ID",
+        "TIMEOUT_MS",
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "GENAI_API_KEY",
+        "AI_GATEWAY_API_KEY",
+        "AI_AUTH_PUBLIC_KEY",
+        "AI_AUTH_PRIVATE_KEY",
+        "OLLAMA_BASE_URL",
+        "RATELIMIT_WINDOW_MS",
+        "RATELIMIT_MAX",
+        "INTERNAL_AUTH_SERVICE_ENDPOINT",
+        "INTERNAL_AUTH_SERVICE_TOKEN"
+      ],
+      "passThroughEnv": [
+        "CORS_ALLOWED_ORIGIN",
+        "SENTRY_DSN",
+        "ZEABUR_SERVICE_ID",
+        "TIMEOUT_MS",
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "GENAI_API_KEY",
+        "AI_GATEWAY_API_KEY",
+        "AI_AUTH_PUBLIC_KEY",
+        "AI_AUTH_PRIVATE_KEY",
+        "OLLAMA_BASE_URL",
+        "RATELIMIT_WINDOW_MS",
+        "RATELIMIT_MAX",
+        "INTERNAL_AUTH_SERVICE_ENDPOINT",
+        "INTERNAL_AUTH_SERVICE_TOKEN"
+      ]
+    }
+  }
+}

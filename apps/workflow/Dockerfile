@@ -1,0 +1,60 @@
+ARG BUN_VERSION=1.3.14
+ARG NODE_VERSION=26
+
+FROM oven/bun:$BUN_VERSION AS runner-base
+
+WORKDIR /app
+
+FROM node:${NODE_VERSION}-alpine AS builder-base
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV TURBO_TELEMETRY_DISABLED=1
+
+WORKDIR /app
+
+RUN apk update && \
+    apk add --no-cache \
+    python3 \
+    build-base \
+    gcc \
+    libc6-compat && \
+    npm install -g pnpm@next-11 turbo && \
+    ln -sf /usr/bin/python3 /usr/bin/python
+
+FROM builder-base AS pre-builder
+
+COPY . .
+
+RUN turbo prune --scope=workflow-service --docker
+
+FROM builder-base AS builder
+
+COPY --from=pre-builder /app/out/json/ .
+COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pre-builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+ARG TURBO_TEAM \
+    TURBO_TOKEN
+
+ENV TURBO_TEAM=$TURBO_TEAM \
+    TURBO_TOKEN=$TURBO_TOKEN \
+    NITRO_PRESET=bun
+
+RUN pnpm i
+
+RUN pnpm turbo run build --filter=workflow-service...
+
+FROM runner-base AS runner
+
+COPY --from=builder /app/apps/workflow/.output/server ./apps/workflow
+
+ENV NODE_ENV=production \
+    PORT=8080
+
+WORKDIR /app/apps/workflow
+
+EXPOSE 8080
+
+CMD [ "bun", "index.mjs" ]

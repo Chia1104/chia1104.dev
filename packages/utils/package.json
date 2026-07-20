@@ -25,6 +25,10 @@
       "types": "./src/error-helper/index.ts",
       "default": "./src/error-helper/index.ts"
     },
+    "./gateway": {
+      "types": "./src/gateway/index.ts",
+      "default": "./src/gateway/index.ts"
+    },
     "./format": {
       "types": "./src/format/index.ts",
       "default": "./src/format/index.ts"

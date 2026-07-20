@@ -30,12 +30,12 @@ import { baseRequestSchema } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
 import { createModel } from "@chia/ai/utils";
 import { encodeApiKey } from "@chia/ai/utils";
+import { verifyAuth } from "@chia/auth/middlewares";
 import { getCookieDomain } from "@chia/auth/utils";
 import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "../env";
 import { ai, AI_AUTH_TOKEN } from "../guards/ai.guard";
-import { verifyAuth } from "../guards/auth.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { errorResponse } from "../utils/error.util";
 

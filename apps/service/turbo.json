@@ -13,7 +13,6 @@
     "build": {
       "outputs": [".output/**", "!.output/server/node_modules/**"],
       "env": [
-        "WORKFLOW_TARGET_WORLD",
         "CORS_ALLOWED_ORIGIN",
         "RESEND_API_KEY",
         "SENTRY_DSN",
@@ -21,7 +20,6 @@
         "RATELIMIT_WINDOW_MS",
         "RATELIMIT_MAX",
         "OPENAI_API_KEY",
-        "AI_AUTH_PUBLIC_KEY",
         "AI_AUTH_PRIVATE_KEY",
         "IP_DENY_LIST",
         "IP_ALLOW_LIST",
@@ -30,13 +28,10 @@
         "TIMEOUT_MS",
         "PROJECT_ID",
         "TRIGGER_SECRET_KEY",
-        "ANTHROPIC_API_KEY",
-        "GENAI_API_KEY",
         "OLLAMA_BASE_URL",
         "AI_GATEWAY_API_KEY"
       ],
       "passThroughEnv": [
-        "WORKFLOW_TARGET_WORLD",
         "CORS_ALLOWED_ORIGIN",
         "RESEND_API_KEY",
         "SENTRY_DSN",
@@ -44,7 +39,6 @@
         "RATELIMIT_WINDOW_MS",
         "RATELIMIT_MAX",
         "OPENAI_API_KEY",
-        "AI_AUTH_PUBLIC_KEY",
         "AI_AUTH_PRIVATE_KEY",
         "IP_DENY_LIST",
         "IP_ALLOW_LIST",
@@ -53,8 +47,6 @@
         "TIMEOUT_MS",
         "PROJECT_ID",
         "TRIGGER_SECRET_KEY",
-        "ANTHROPIC_API_KEY",
-        "GENAI_API_KEY",
         "OLLAMA_BASE_URL",
         "AI_GATEWAY_API_KEY"
       ]

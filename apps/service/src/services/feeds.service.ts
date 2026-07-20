@@ -14,12 +14,12 @@ import {
 } from "@chia/ai/embeddings/utils";
 import { client as algoliaClient } from "@chia/api/algolia";
 import { env } from "@chia/api/algolia/env";
+import type { AlgoliaFeedHit } from "@chia/api/algolia/types";
 import type { PublicFeedSearchItem } from "@chia/api/services/validators";
 import type { DB } from "@chia/db";
 import { getPublicFeedSummariesByIds } from "@chia/db/repos/feeds";
 import { getRelatedFeeds, searchFeeds } from "@chia/db/repos/feeds/embedding";
 import type { Locale } from "@chia/db/types";
-import type { FeedType } from "@chia/db/types";
 import type { Keyv } from "@chia/kv";
 
 interface SearchFeedsServiceParams {
@@ -33,19 +33,7 @@ interface SearchFeedsServiceParams {
 
 type VectorSearchResult = Awaited<ReturnType<typeof searchFeeds>>["items"];
 
-export interface AlgoliaFeedHit {
-  version: "2026.07.13";
-  objectID: string | number;
-  feedID: string | number;
-  type: Exclude<FeedType, "all">;
-  locale: Locale;
-  slug: string;
-  title: string;
-  description: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { AlgoliaFeedHit };
 
 type SearchFeedsServiceResult =
   | {

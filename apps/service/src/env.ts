@@ -28,7 +28,9 @@ export const env = createEnv({
       .default(5 * 60000),
     RATELIMIT_MAX: z.number().optional().default(300),
     OPENAI_API_KEY: z.string().optional(),
-    AI_AUTH_PUBLIC_KEY: z.string().optional(),
+    // Decodes the signed provider-key cookie for /feeds/search query
+    // embeddings; the cookie itself is issued by the ai service
+    // (POST /ai/key:signed, which owns AI_AUTH_PUBLIC_KEY).
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
     IP_DENY_LIST: z.string().optional(),
     IP_ALLOW_LIST: z.string().optional(),
@@ -37,10 +39,11 @@ export const env = createEnv({
     TIMEOUT_MS: NumericStringSchema,
     PROJECT_ID: NumericStringSchema.optional(),
     TRIGGER_SECRET_KEY: z.string().optional(),
-    ANTHROPIC_API_KEY: z.string().optional(),
-    GENAI_API_KEY: z.string().optional(),
     OLLAMA_BASE_URL: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
+    INTERNAL_AUTH_SERVICE_TOKEN: z.string().optional(),
+    // INTERNAL_*_SERVICE_ENDPOINT vars come from the extended serviceEnv
+    INTERNAL_WORKFLOW_SERVICE_TOKEN: z.string().optional(),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -56,7 +59,6 @@ export const env = createEnv({
       ? Number(process.env.RATELIMIT_MAX)
       : 87,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     IP_DENY_LIST: process.env.IP_DENY_LIST,
     IP_ALLOW_LIST: process.env.IP_ALLOW_LIST,
@@ -69,10 +71,11 @@ export const env = createEnv({
     TIMEOUT_MS: process.env.TIMEOUT_MS || "10000",
     PROJECT_ID: process.env.PROJECT_ID,
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-    GENAI_API_KEY: process.env.GENAI_API_KEY,
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
+    INTERNAL_AUTH_SERVICE_TOKEN: process.env.INTERNAL_AUTH_SERVICE_TOKEN,
+    INTERNAL_WORKFLOW_SERVICE_TOKEN:
+      process.env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

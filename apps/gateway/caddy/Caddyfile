@@ -1,53 +1,104 @@
+# Edge gateway: routes public traffic to the auth service and the legacy
+# service, authenticating API requests at the edge via forward_auth.
+#
+# Keep in sync with ../routes.config.ts — the local dev proxy mirrors this
+# routing table.
+#
+# Required environment variables (see README.md):
+#   PORT                         injected by Railway
+#   AUTH_UPSTREAM                e.g. auth.railway.internal:3006
+#   AI_UPSTREAM                  e.g. ai.railway.internal:3007
+#   SERVICE_UPSTREAM             e.g. service.railway.internal:3005
+#   INTERNAL_AUTH_SERVICE_TOKEN  shared secret for /auth/internal/*
+#
+# The workflow service is internal-only: it has no upstream here and
+# /workflow* answers 404.
+
 {
-    admin off # theres no need for the admin api in railway's environment
-	persist_config off # storage isn't persistent anyway
-	auto_https off # railway handles https for us, this could in some cases cause issues if left enabled
-	# runtime logs
-	log {
-		format json # set runtime log format to json mode 
-	}
-	# server options
-	servers {
-		trusted_proxies static private_ranges # trust railway's proxy
-	}
+	admin off
+	auto_https off
+	persist_config off
 }
 
 :{$PORT} {
-    # access logs
-	log {
-		format json # set access log format to json mode
+	log
+
+	# Identity headers are injected by forward_auth below — strip anything
+	# the client sent so they can never be spoofed.
+	request_header -x-ch-auth-session
+	request_header -x-ch-auth-api-key
+
+	# Server-to-server routes must never be reachable from the public edge.
+	handle /auth/internal/* {
+		respond 404
 	}
-    
-    request_body {
-        max_size 15MB
-    }
 
-    handle /api/v1* {
-        reverse_proxy service:8080 {
-            header_up Host {host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
+	handle /ai/internal/* {
+		respond 404
+	}
 
-            transport http {
-                versions 1.1
-                read_timeout  3600s
-                write_timeout 3600s
-            }
+	# The workflow service is internal-only.
+	handle /workflow* {
+		respond 404
+	}
 
-            flush_interval -1
-        }
-    }
+	# better-auth flows: sign-in, OAuth callbacks, get-session, ...
+	handle /auth/* {
+		reverse_proxy {$AUTH_UPSTREAM}
+	}
 
-    handle /robots.txt {
-        header Content-Type text/plain
-        respond "User-agent: *\nDisallow: /\n" 200
-    }
+	# Legacy auth path — rewrite onto the auth service until every client
+	# points at /auth directly, then remove this block.
+	handle /api/v1/auth/* {
+		uri replace /api/v1/auth /auth
+		reverse_proxy {$AUTH_UPSTREAM}
+	}
 
-    handle /health {
-        header Content-Type text/plain
-        respond "ok" 200
-    }
+	# AI service: same edge authentication as the main API. flush_interval -1
+	# disables response buffering — required for streaming completions.
+	handle /ai/* {
+		forward_auth {$AUTH_UPSTREAM} {
+			uri /auth/internal/gate?mode=optional
+			header_up x-ch-internal-token {$INTERNAL_AUTH_SERVICE_TOKEN}
+			copy_headers x-ch-auth-session x-ch-auth-api-key
+		}
+		reverse_proxy {$AI_UPSTREAM} {
+			flush_interval -1
+		}
+	}
 
-    @root path /
-    redir @root https://chia1104.dev 301
+	# Transitional path — remove once dash points at /ai directly
+	# (Service.AI switch in apps/dash).
+	handle /api/v1/ai/* {
+		uri replace /api/v1/ai /ai
+		forward_auth {$AUTH_UPSTREAM} {
+			uri /auth/internal/gate?mode=optional
+			header_up x-ch-internal-token {$INTERNAL_AUTH_SERVICE_TOKEN}
+			copy_headers x-ch-auth-session x-ch-auth-api-key
+		}
+		reverse_proxy {$AI_UPSTREAM} {
+			flush_interval -1
+		}
+	}
+
+	# Main API: authenticate at the edge, then hand off with identity
+	# headers. mode=optional lets anonymous requests through so public
+	# endpoints keep working — the service guards remain the enforcement
+	# point, but they trust the injected identity instead of re-verifying.
+	#
+	# To hard-block anonymous traffic for a prefix, add a more specific
+	# handle above this one using `uri /auth/internal/gate` (mode defaults
+	# to required, which answers 401 when unauthenticated).
+	handle /api/v1/* {
+		forward_auth {$AUTH_UPSTREAM} {
+			uri /auth/internal/gate?mode=optional
+			header_up x-ch-internal-token {$INTERNAL_AUTH_SERVICE_TOKEN}
+			copy_headers x-ch-auth-session x-ch-auth-api-key
+		}
+		reverse_proxy {$SERVICE_UPSTREAM}
+	}
+
+	handle {
+		respond 404
+	}
 }
