@@ -41,10 +41,10 @@ catalog:
 
 catalogs:
   ai:
-    "@ai-sdk/anthropic": 4.0.15
+    "@ai-sdk/anthropic": 4.0.18
     "@ai-sdk/gateway": 4.0.21
     "@ai-sdk/google": 4.0.17
-    "@ai-sdk/openai": 4.0.15
+    "@ai-sdk/openai": 4.0.17
     "@ai-sdk/react": 4.0.32
     "@anthropic-ai/sdk": 0.111.0
     "@google/genai": 2.12.0
