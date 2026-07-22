@@ -12,6 +12,7 @@ import {
   Notebook,
   PenSquare,
   File,
+  Music2,
 } from "lucide-react";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
@@ -86,6 +87,20 @@ export const useRouteItems = () => {
           isActive: segments[0] === "settings",
           icon: <Settings />,
           title: "Settings",
+          items: [
+            {
+              url: "/settings",
+              icon: <Settings />,
+              title: "General",
+              isActive: segments[0] === "settings" && segments.length === 1,
+            },
+            {
+              url: "/settings/spotify",
+              icon: <Music2 />,
+              title: "Spotify",
+              isActive: segments[0] === "settings" && segments[1] === "spotify",
+            },
+          ],
         },
       ],
     } satisfies Record<RouteGroup, NavMainItem[]>;

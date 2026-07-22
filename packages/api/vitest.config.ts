@@ -6,6 +6,7 @@ export default defineConfig({
     include: [
       "src/**/*.{spec,test}.{ts,tsx}",
       "__tests__/**/*.{spec,test}.{ts,tsx}",
+      "spotify/**/*.{spec,test}.{ts,tsx}",
     ],
     exclude: ["**/node_modules/**"],
   },

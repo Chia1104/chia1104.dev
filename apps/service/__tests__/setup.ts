@@ -1,3 +1,18 @@
+const { kvStore } = vi.hoisted(() => ({
+  kvStore: new Map<string, unknown>(),
+}));
+
+vi.mock("@chia/kv", () => ({
+  kv: {
+    get: vi.fn((key: string) => kvStore.get(key)),
+    set: vi.fn((key: string, value: unknown) => {
+      kvStore.set(key, value);
+      return true;
+    }),
+    delete: vi.fn((key: string) => kvStore.delete(key)),
+  },
+}));
+
 // Mock guards
 vi.mock("../src/guards/rate-limiter.guard", async () => {
   const mocks = await import("./__mocks__/guards.mock");
@@ -98,7 +113,8 @@ export const mockEnv = {
     "test-spotify-favorite-playlist-id",
   SPOTIFY_REFRESH_TOKEN:
     process.env.SPOTIFY_REFRESH_TOKEN ?? "test-spotify-refresh-token",
-  SPOTIFY_REDIRECT_URI: undefined,
+  SPOTIFY_REDIRECT_URI: "http://localhost:3005/api/v1/spotify/oauth/callback",
+  SPOTIFY_TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
   SPOTIFY_NOW_PLAYING_URL:
     "https://api.spotify.com/v1/me/player/currently-playing",
   SPOTIFY_TOKEN_URL: "https://accounts.spotify.com/api/token",
@@ -148,6 +164,10 @@ vi.stubEnv(
 );
 vi.stubEnv("SPOTIFY_REFRESH_TOKEN", mockEnv.SPOTIFY_REFRESH_TOKEN);
 vi.stubEnv("SPOTIFY_REDIRECT_URI", mockEnv.SPOTIFY_REDIRECT_URI);
+vi.stubEnv(
+  "SPOTIFY_TOKEN_ENCRYPTION_KEY",
+  mockEnv.SPOTIFY_TOKEN_ENCRYPTION_KEY
+);
 vi.stubEnv("SPOTIFY_NOW_PLAYING_URL", mockEnv.SPOTIFY_NOW_PLAYING_URL);
 vi.stubEnv("SPOTIFY_TOKEN_URL", mockEnv.SPOTIFY_TOKEN_URL);
 vi.stubEnv(

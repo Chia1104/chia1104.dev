@@ -45,6 +45,10 @@
       "types": "./src/libs/apikey/index.ts",
       "default": "./src/libs/apikey/index.ts"
     },
+    "./repos/spotify": {
+      "types": "./src/libs/spotify/index.ts",
+      "default": "./src/libs/spotify/index.ts"
+    },
     "./validator/feeds": {
       "types": "./src/libs/validator/feeds.ts",
       "default": "./src/libs/validator/feeds.ts"

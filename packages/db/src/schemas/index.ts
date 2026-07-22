@@ -54,6 +54,9 @@ export {
 // API Key
 export { apikey, type ApiKey } from "./apikey.schema.ts";
 
+// Spotify
+export { spotifyCredential, type SpotifyCredential } from "./spotify.schema.ts";
+
 // Contents
 export {
   tags,
@@ -82,6 +85,7 @@ export {
   accountRelations,
   passkeyRelations,
   apikeyRelations,
+  spotifyCredentialRelations,
   organizationRelations,
   memberRelations,
   invitationRelations,
