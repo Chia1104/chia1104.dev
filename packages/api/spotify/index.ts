@@ -7,6 +7,26 @@ import type {
   CodeAuthorizationDTO,
 } from "./validator";
 
+export { encryptSpotifyToken, decryptSpotifyToken } from "./token-crypto";
+
+export interface SpotifyTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token?: string;
+  scope: string;
+}
+
+export interface SpotifyUserProfile {
+  id: string;
+  display_name: string | null;
+  images: {
+    url: string;
+    height: number | null;
+    width: number | null;
+  }[];
+}
+
 interface NextFetchRequestConfig {
   revalidate?: number | false;
   tags?: string[];
@@ -56,24 +76,32 @@ export const getSpotifyAccessToken = async (req?: {
           refresh_token: refresh_token ?? env.SPOTIFY_REFRESH_TOKEN ?? "",
         })
       : "grant_type=client_credentials";
-  const result = await post<{
-    access_token: string;
-  }>(`${ACCOUNT_ENDPOINT}/api/token`, undefined, {
-    headers: {
-      Authorization: `Basic ${BASIC}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body,
-    cache,
-    next:
-      cache !== "no-store"
-        ? {
-            revalidate,
-          }
-        : undefined,
-  });
+  return post<SpotifyTokenResponse>(
+    `${ACCOUNT_ENDPOINT}/api/token`,
+    undefined,
+    {
+      headers: {
+        Authorization: `Basic ${BASIC}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body,
+      cache,
+      next:
+        cache !== "no-store"
+          ? {
+              revalidate,
+            }
+          : undefined,
+    }
+  );
+};
 
-  return result.access_token;
+export const refreshSpotifyAccessToken = (refreshToken: string) => {
+  return getSpotifyAccessToken({
+    refresh_token: refreshToken,
+    grant_type: "refresh_token",
+    cache: "no-store",
+  });
 };
 
 /**
@@ -94,7 +122,7 @@ export const getPlayList = async (req?: {
     throw new Error("revalidate must be positive");
   }
 
-  const accessToken = await getSpotifyAccessToken({
+  const token = await getSpotifyAccessToken({
     cache: tokenRequestCache,
     revalidate,
   });
@@ -103,7 +131,7 @@ export const getPlayList = async (req?: {
     `playlists/${playlistId ?? FAVORITE_PLAYLIST_ID}`,
     {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token.access_token}`,
       },
       next: {
         revalidate,
@@ -120,16 +148,12 @@ export const getPlayList = async (req?: {
  * @default revalidate one request per one minutes
  * @returns CurrentPlaying | null
  */
-export const getNowPlaying = async (req?: {
+export const getNowPlaying = async (req: {
+  accessToken: string;
   revalidate?: number;
   cache?: RequestCache;
 }) => {
-  req ??= {};
-  const { revalidate = 60, cache } = req;
-  const accessToken = await getSpotifyAccessToken({
-    revalidate,
-    grant_type: "refresh_token",
-  });
+  const { accessToken, revalidate = 60, cache } = req;
 
   const result = await spotifyRequest("me/player/currently-playing", {
     headers: {
@@ -163,21 +187,30 @@ export const generateAuthorizeUrl = (dto: GenerateAuthorizeUrlDTO) => {
 };
 
 export const codeAuthorization = (dto: CodeAuthorizationDTO) => {
-  return post<{
-    access_token: string;
-    token_type: string;
-    expires_in: number;
-    refresh_token: string;
-    scope: string;
-  }>(`${ACCOUNT_ENDPOINT}/api/token`, undefined, {
+  return post<SpotifyTokenResponse>(
+    `${ACCOUNT_ENDPOINT}/api/token`,
+    undefined,
+    {
+      headers: {
+        Authorization: `Basic ${BASIC}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code: dto.code,
+        redirect_uri: dto.redirectUri,
+      }),
+    }
+  );
+};
+
+export const getSpotifyUserProfile = async (accessToken: string) => {
+  const result = await spotifyRequest("me", {
     headers: {
-      Authorization: `Basic ${BASIC}`,
-      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Bearer ${accessToken}`,
     },
-    body: new URLSearchParams({
-      grant_type: "authorization_code",
-      code: dto.code,
-      redirect_uri: dto.redirectUri,
-    }),
+    cache: "no-store",
   });
+
+  return result.json<SpotifyUserProfile>();
 };

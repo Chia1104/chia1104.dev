@@ -28,9 +28,10 @@ export const getCookieDomain = (options?: {
   const AUTH_URL = env?.AUTH_URL?.replace(/\/api\/v1\/auth$/, "");
   if (
     AUTH_URL?.includes("localhost") ??
+    AUTH_URL?.includes("127.0.0.1") ??
     process.env.NODE_ENV === "development"
   ) {
-    return "localhost";
+    return AUTH_URL?.includes("127.0.0.1") ? "127.0.0.1" : "localhost";
   }
   return (
     env?.AUTH_COOKIE_DOMAIN ??
@@ -74,5 +75,5 @@ export const baseAuthClient = (config?: Partial<BetterAuthClientOptions>) => {
       organizationClient(),
       adminClient(),
     ],
-  };
+  } satisfies BetterAuthClientOptions;
 };

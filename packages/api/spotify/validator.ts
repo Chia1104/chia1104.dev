@@ -24,3 +24,22 @@ export const codeAuthorizationSchema = z.object({
 });
 
 export type CodeAuthorizationDTO = z.infer<typeof codeAuthorizationSchema>;
+
+export const spotifyOAuthCallbackSchema = z.union([
+  z.object({
+    state: z.string().min(1),
+    error: z.string().min(1),
+    error_description: z.string().optional(),
+  }),
+  z.object({
+    state: z.string().min(1),
+    code: z.string().min(1),
+  }),
+]);
+export type SpotifyOAuthCallbackDTO = z.infer<
+  typeof spotifyOAuthCallbackSchema
+>;
+
+export const spotifyCredentialUserSchema = z.object({
+  userId: z.string().min(1),
+});
