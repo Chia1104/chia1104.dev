@@ -144,7 +144,6 @@ export const getSpotifyPlaylistService = (playlistId: string) => {
 
 export const getSpotifyNowPlayingService = async (db: DB) => {
   const accessToken = await resolveSpotifyAccessToken(db);
-  console.log("getSpotifyNowPlayingService_accessToken", accessToken);
   if (!accessToken) {
     throw new SpotifyCredentialUnavailableError();
   }
