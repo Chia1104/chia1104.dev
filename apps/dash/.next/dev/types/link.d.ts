@@ -48,6 +48,7 @@ declare namespace __next_route_internal_types__ {
     | `/projects/api-key` // ../../../src/app/(workspace)/projects/api-key/page.tsx
     | `/projects/create` // ../../../src/app/(workspace)/projects/create/page.tsx
     | `/settings` // ../../../src/app/(workspace)/settings/page.tsx
+    | `/settings/spotify` // ../../../src/app/(workspace)/settings/spotify/page.tsx
   type DynamicRoutes<T extends string = string> = 
     | `/feed/edit/${SafeSlug<T>}` // ../../../src/app/(workspace)/feed/(edit)/edit/[id]/page.tsx
     | `/projects/${SafeSlug<T>}` // ../../../src/app/(workspace)/projects/[slug]/page.tsx

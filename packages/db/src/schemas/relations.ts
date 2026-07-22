@@ -19,6 +19,7 @@ import {
   organization,
   project,
 } from "./organization.schema.ts";
+import { spotifyCredential } from "./spotify.schema.ts";
 import { user } from "./user.schema.ts";
 
 const schema = {
@@ -27,6 +28,7 @@ const schema = {
   account,
   passkey,
   apikey,
+  spotifyCredential,
   organization,
   member,
   invitation,
@@ -47,6 +49,10 @@ export const relations = defineRelations(schema, (r) => ({
     sessions: r.many.session({ from: r.user.id, to: r.session.userId }),
     accounts: r.many.account({ from: r.user.id, to: r.account.userId }),
     passkeys: r.many.passkey({ from: r.user.id, to: r.passkey.userId }),
+    spotifyCredential: r.one.spotifyCredential({
+      from: r.user.id,
+      to: r.spotifyCredential.userId,
+    }),
     members: r.many.member({ from: r.user.id, to: r.member.userId }),
     invitations: r.many.invitation({
       from: r.user.id,
@@ -68,6 +74,12 @@ export const relations = defineRelations(schema, (r) => ({
     project: r.one.project({
       from: r.apikey.projectId,
       to: r.project.id,
+    }),
+  },
+  spotifyCredential: {
+    user: r.one.user({
+      from: r.spotifyCredential.userId,
+      to: r.user.id,
     }),
   },
   organization: {
@@ -186,6 +198,7 @@ export const sessionRelations = relations.session;
 export const accountRelations = relations.account;
 export const passkeyRelations = relations.passkey;
 export const apikeyRelations = relations.apikey;
+export const spotifyCredentialRelations = relations.spotifyCredential;
 export const organizationRelations = relations.organization;
 export const memberRelations = relations.member;
 export const invitationRelations = relations.invitation;

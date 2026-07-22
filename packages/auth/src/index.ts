@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import type { DB } from "@chia/db";
 import * as schemas from "@chia/db/schema";
 import type { Keyv } from "@chia/kv";
+import { IS_PRODUCTION } from "@chia/utils/config";
 
 import { baseAuthConfig } from "./base-auth";
 
@@ -12,6 +13,9 @@ export const name = "auth-core";
 export const createAuth = (db: DB, kv: Keyv) =>
   betterAuth({
     ...baseAuthConfig,
+    account: {
+      skipStateCookieCheck: !IS_PRODUCTION,
+    },
     /**
      * database adapter
      */
