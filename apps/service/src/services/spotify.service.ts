@@ -51,13 +51,6 @@ export class SpotifyCredentialNotFoundError extends Error {
   }
 }
 
-const getSpotifyRedirectUri = () => {
-  if (!env.SPOTIFY_REDIRECT_URI) {
-    throw new Error("SPOTIFY_REDIRECT_URI is not configured");
-  }
-  return env.SPOTIFY_REDIRECT_URI;
-};
-
 export const getSpotifyDashboardRedirect = (status: string) => {
   const url = new URL("/settings/spotify", DASH_BASE_URL);
   url.searchParams.set("spotify", status);
@@ -204,10 +197,14 @@ export const createSpotifyAuthorizationService = async (
     SPOTIFY_OAUTH_STATE_TTL_MS
   );
 
+  if (!env.SPOTIFY_REDIRECT_URI) {
+    throw new SpotifyCredentialUnavailableError();
+  }
+
   return generateAuthorizeUrl({
     state,
     scopes: SPOTIFY_SCOPES,
-    redirectUri: getSpotifyRedirectUri(),
+    redirectUri: env.SPOTIFY_REDIRECT_URI,
   });
 };
 
@@ -227,10 +224,14 @@ export const completeSpotifyAuthorizationService = async (
     return "cancelled" as const;
   }
 
+  if (!env.SPOTIFY_REDIRECT_URI) {
+    throw new SpotifyCredentialUnavailableError();
+  }
+
   const token = await codeAuthorization({
     code: query.code,
     state: query.state,
-    redirectUri: getSpotifyRedirectUri(),
+    redirectUri: env.SPOTIFY_REDIRECT_URI,
   });
   const existingCredential = await getSpotifyCredentialByUserId(
     db,
