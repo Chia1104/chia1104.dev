@@ -84,6 +84,7 @@ vi.mock("@chia/db/repos/public/feeds", async () => {
 
 export const mockEnv = {
   NODE_ENV: "test",
+  SKIP_ENV_VALIDATION: "false",
   CORS_ALLOWED_ORIGIN: "http://localhost:3000",
   RESEND_API_KEY: "test-resend-api-key",
   // Database env
@@ -105,14 +106,10 @@ export const mockEnv = {
   BETA_ADMIN_ID: process.env.BETA_ADMIN_ID ?? "test-beta-admin-id",
   LOCAL_ADMIN_ID: process.env.LOCAL_ADMIN_ID ?? "test-local-admin-id",
   // Spotify env
-  SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID ?? "test-spotify-client-id",
-  SPOTIFY_CLIENT_SECRET:
-    process.env.SPOTIFY_CLIENT_SECRET ?? "test-spotify-client-secret",
-  SPOTIFY_FAVORITE_PLAYLIST_ID:
-    process.env.SPOTIFY_FAVORITE_PLAYLIST_ID ??
-    "test-spotify-favorite-playlist-id",
-  SPOTIFY_REFRESH_TOKEN:
-    process.env.SPOTIFY_REFRESH_TOKEN ?? "test-spotify-refresh-token",
+  SPOTIFY_CLIENT_ID: "test-spotify-client-id",
+  SPOTIFY_CLIENT_SECRET: "test-spotify-client-secret",
+  SPOTIFY_FAVORITE_PLAYLIST_ID: "test-spotify-favorite-playlist-id",
+  SPOTIFY_REFRESH_TOKEN: "test-spotify-refresh-token",
   SPOTIFY_REDIRECT_URI: "http://localhost:3005/api/v1/spotify/oauth/callback",
   SPOTIFY_TOKEN_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64"),
   SPOTIFY_NOW_PLAYING_URL:
@@ -138,6 +135,7 @@ export const mockEnv = {
 };
 
 vi.stubEnv("NODE_ENV", mockEnv.NODE_ENV);
+vi.stubEnv("SKIP_ENV_VALIDATION", mockEnv.SKIP_ENV_VALIDATION);
 vi.stubEnv("CORS_ALLOWED_ORIGIN", mockEnv.CORS_ALLOWED_ORIGIN);
 vi.stubEnv("RESEND_API_KEY", mockEnv.RESEND_API_KEY);
 vi.stubEnv("DATABASE_URL", mockEnv.DATABASE_URL);
