@@ -113,7 +113,7 @@ catalogs:
     react-dom: ^19.2.7
   tailwindcss:
     "@tailwindcss/postcss": 4.3.2
-    postcss: 8.5.19
+    postcss: 8.5.22
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.3.2
   tanstack:
