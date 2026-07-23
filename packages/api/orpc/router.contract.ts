@@ -3,6 +3,7 @@ import * as feedsContracts from "./contracts/feeds.contract";
 import * as fileContracts from "./contracts/file.contract";
 import * as healthContracts from "./contracts/health.contract";
 import * as organizationContracts from "./contracts/organization.contract";
+import * as spotifyContracts from "./contracts/spotify.contract";
 import * as userContracts from "./contracts/user.contract";
 
 export const routerContract = {
@@ -48,6 +49,14 @@ export const routerContract = {
     list: fileContracts.listObjectsContract,
     delete: fileContracts.deleteObjectContract,
   },
+  spotify: {
+    manage: {
+      accounts: spotifyContracts.getSpotifyAccountsContract,
+      authorize: spotifyContracts.createSpotifyAuthorizationContract,
+      activate: spotifyContracts.activateSpotifyAccountContract,
+      disconnect: spotifyContracts.disconnectSpotifyAccountContract,
+    },
+  },
 };
 
 export {
@@ -55,5 +64,6 @@ export {
   feedsContracts,
   healthContracts,
   organizationContracts,
+  spotifyContracts,
   userContracts,
 };

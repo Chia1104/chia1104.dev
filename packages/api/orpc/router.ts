@@ -3,6 +3,7 @@ import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
 import * as organizationRoutes from "./routes/organization.route";
+import * as spotifyRoutes from "./routes/spotify.route";
 import * as userRoutes from "./routes/user.route";
 import { contractOS } from "./utils";
 
@@ -48,5 +49,13 @@ export const router = contractOS.router({
   user: {
     "profile:update": userRoutes.updateUserProfileRoute,
     list: userRoutes.getInfiniteUsersRoute,
+  },
+  spotify: {
+    manage: {
+      accounts: spotifyRoutes.getSpotifyAccountsRoute,
+      authorize: spotifyRoutes.createSpotifyAuthorizationRoute,
+      activate: spotifyRoutes.activateSpotifyAccountRoute,
+      disconnect: spotifyRoutes.disconnectSpotifyAccountRoute,
+    },
   },
 });

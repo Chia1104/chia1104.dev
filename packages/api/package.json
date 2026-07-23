@@ -37,6 +37,10 @@
       "types": "./spotify/validator.ts",
       "default": "./spotify/validator.ts"
     },
+    "./spotify/account": {
+      "types": "./spotify/account.ts",
+      "default": "./spotify/account.ts"
+    },
     "./services/validators": {
       "types": "./services/validators.ts",
       "default": "./services/validators.ts"
