@@ -7,15 +7,7 @@ import { createOpenAI } from "@chia/ai";
 import { isOllamaEmbeddingModel } from "@chia/ai/embeddings/utils";
 import { isOpenAIEmbeddingModel } from "@chia/ai/embeddings/utils";
 import { isOllamaEnabled } from "@chia/ai/ollama/utils";
-import {
-  getFeedsWithMetaSchema,
-  publicFeedSearchQuerySchema,
-} from "@chia/api/services/validators";
-import { locale } from "@chia/db";
-import {
-  getInfiniteFeedsByUserId,
-  getInfiniteFeeds,
-} from "@chia/db/repos/feeds";
+import { publicFeedSearchQuerySchema } from "@chia/api/services/validators";
 import { OllamaUnavailableError } from "@chia/db/repos/feeds/embedding";
 import { Locale } from "@chia/db/types";
 
@@ -38,73 +30,6 @@ const api = new Hono<HonoContext>()
     })
   )
   .use(timeout(env.TIMEOUT_MS))
-  .use("/", verifyAuth())
-  .get(
-    "/",
-    zValidator("query", getFeedsWithMetaSchema, (result, c) => {
-      if (!result.success) {
-        return c.json(errorResponse(result.error), 400);
-      }
-    }),
-    async (c) => {
-      const {
-        type,
-        limit,
-        orderBy,
-        sortOrder,
-        nextCursor,
-        withContent,
-        locale,
-      } = c.req.valid("query");
-      const feeds = await getInfiniteFeedsByUserId(c.var.db, {
-        type,
-        limit,
-        orderBy,
-        sortOrder,
-        cursor: nextCursor,
-        withContent: withContent === "true",
-        locale,
-        userId: c.get("user")?.id ?? "",
-      });
-      return c.json(feeds);
-    }
-  )
-  .get(
-    "/public",
-    zValidator(
-      "query",
-      getFeedsWithMetaSchema.extend({
-        locale: z.enum(locale.enumValues).optional(),
-      }),
-      (result, c) => {
-        if (!result.success) {
-          return c.json(errorResponse(result.error), 400);
-        }
-      }
-    ),
-    async (c) => {
-      const {
-        type,
-        limit,
-        orderBy,
-        sortOrder,
-        nextCursor,
-        withContent,
-        locale,
-      } = c.req.valid("query");
-      const feeds = await getInfiniteFeeds(c.var.db, {
-        type,
-        limit,
-        orderBy,
-        sortOrder,
-        cursor: nextCursor,
-        withContent: withContent === "true",
-        locale,
-        whereAnd: { published: true },
-      });
-      return c.json(feeds);
-    }
-  )
   .get(
     "/public/search",
     zValidator("query", publicFeedSearchQuerySchema, (result, c) => {
