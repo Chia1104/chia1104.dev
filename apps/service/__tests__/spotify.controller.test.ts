@@ -1,29 +1,21 @@
 const mocks = vi.hoisted(() => {
   class SpotifyCredentialUnavailableError extends Error {}
-  class SpotifyCredentialNotFoundError extends Error {}
 
   return {
     SpotifyCredentialUnavailableError,
-    SpotifyCredentialNotFoundError,
-    activateSpotifyAccountService: vi.fn(),
     completeSpotifyAuthorizationService: vi.fn(),
-    createSpotifyAuthorizationService: vi.fn(),
-    disconnectSpotifyAccountService: vi.fn(),
-    getSpotifyAccountsService: vi.fn(),
     getSpotifyNowPlayingService: vi.fn(),
     getSpotifyPlaylistService: vi.fn(),
   };
 });
 
-vi.mock("../src/services/spotify.service", () => ({
+vi.mock("@chia/api/spotify/account", () => ({
   SpotifyCredentialUnavailableError: mocks.SpotifyCredentialUnavailableError,
-  SpotifyCredentialNotFoundError: mocks.SpotifyCredentialNotFoundError,
-  activateSpotifyAccountService: mocks.activateSpotifyAccountService,
   completeSpotifyAuthorizationService:
     mocks.completeSpotifyAuthorizationService,
-  createSpotifyAuthorizationService: mocks.createSpotifyAuthorizationService,
-  disconnectSpotifyAccountService: mocks.disconnectSpotifyAccountService,
-  getSpotifyAccountsService: mocks.getSpotifyAccountsService,
+}));
+
+vi.mock("../src/services/spotify.service", () => ({
   getSpotifyDashboardRedirect: (status: string) =>
     `http://localhost:3001/settings/spotify?spotify=${status}`,
   getSpotifyNowPlayingService: mocks.getSpotifyNowPlayingService,
@@ -41,17 +33,6 @@ describe("Spotify Controller", () => {
     mocks.getSpotifyNowPlayingService.mockResolvedValue({
       is_playing: true,
     });
-    mocks.getSpotifyAccountsService.mockResolvedValue({
-      currentUserId: "test-user-id",
-      accounts: [],
-    });
-    mocks.activateSpotifyAccountService.mockResolvedValue({
-      userId: "test-user-id",
-      isActive: true,
-    });
-    mocks.createSpotifyAuthorizationService.mockResolvedValue(
-      "https://accounts.spotify.com/authorize?state=state"
-    );
     mocks.completeSpotifyAuthorizationService.mockResolvedValue("connected");
   });
 
@@ -92,60 +73,8 @@ describe("Spotify Controller", () => {
     });
   });
 
-  describe("Spotify account management", () => {
-    it("returns safe connected account metadata", async () => {
-      mocks.getSpotifyAccountsService.mockResolvedValueOnce({
-        currentUserId: "test-user-id",
-        accounts: [
-          {
-            userId: "test-user-id",
-            spotifyDisplayName: "Spotify User",
-            isActive: true,
-          },
-        ],
-      });
-
-      const res = await app.request("/api/v1/spotify/manage/accounts");
-      const body = await res.json();
-
-      expect(res.status).toBe(200);
-      expect(body).toMatchObject({
-        currentUserId: "test-user-id",
-        accounts: [
-          {
-            spotifyDisplayName: "Spotify User",
-            isActive: true,
-          },
-        ],
-      });
-      expect(JSON.stringify(body)).not.toContain("access-token");
-      expect(JSON.stringify(body)).not.toContain("refresh-token");
-    });
-
-    it("switches the active playback account", async () => {
-      const res = await app.request(
-        "/api/v1/spotify/manage/accounts/another-admin/activate",
-        {
-          method: "POST",
-        }
-      );
-
-      expect(res.status).toBe(200);
-      expect(mocks.activateSpotifyAccountService).toHaveBeenCalledWith(
-        expect.anything(),
-        "another-admin"
-      );
-    });
-
+  describe("GET /api/v1/spotify/oauth/callback", () => {
     it("passes validated OAuth callback queries to the service", async () => {
-      const authorizeRes = await app.request(
-        "/api/v1/spotify/manage/authorize",
-        {
-          method: "POST",
-        }
-      );
-      expect(authorizeRes.status).toBe(200);
-
       const callbackPath =
         "/api/v1/spotify/oauth/callback?code=code&state=state";
       const callbackRes = await app.request(callbackPath);

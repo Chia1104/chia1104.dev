@@ -25,14 +25,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  activateSpotifyAccount,
-  createSpotifyAuthorization,
-  disconnectSpotifyAccount,
-  getSpotifyAccounts,
-} from "@/resources/spotify.resource";
+import { orpc } from "@/libs/orpc/client";
 
-const SPOTIFY_ACCOUNTS_QUERY_KEY = ["spotify", "accounts"] as const;
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
   timeStyle: "short",
@@ -74,46 +68,46 @@ export const SpotifySettings = () => {
   const queryClient = useQueryClient();
   const callbackStatus = searchParams.get("spotify");
 
-  const accountsQuery = useQuery({
-    queryKey: SPOTIFY_ACCOUNTS_QUERY_KEY,
-    queryFn: getSpotifyAccounts,
-  });
+  const accountsQuery = useQuery(orpc.spotify.manage.accounts.queryOptions());
 
-  const authorizationMutation = useMutation({
-    mutationFn: createSpotifyAuthorization,
-    onSuccess: ({ url }) => {
-      window.location.assign(url);
-    },
-    onError: () => {
-      toast.error("Unable to start Spotify authorization");
-    },
-  });
+  const authorizationMutation = useMutation(
+    orpc.spotify.manage.authorize.mutationOptions({
+      onSuccess: ({ url }) => {
+        window.location.assign(url);
+      },
+      onError: () => {
+        toast.error("Unable to start Spotify authorization");
+      },
+    })
+  );
 
-  const activateMutation = useMutation({
-    mutationFn: activateSpotifyAccount,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: SPOTIFY_ACCOUNTS_QUERY_KEY,
-      });
-      toast.success("Active playback account updated");
-    },
-    onError: () => {
-      toast.error("Unable to switch Spotify accounts");
-    },
-  });
+  const activateMutation = useMutation(
+    orpc.spotify.manage.activate.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: orpc.spotify.manage.accounts.queryKey(),
+        });
+        toast.success("Active playback account updated");
+      },
+      onError: () => {
+        toast.error("Unable to switch Spotify accounts");
+      },
+    })
+  );
 
-  const disconnectMutation = useMutation({
-    mutationFn: disconnectSpotifyAccount,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: SPOTIFY_ACCOUNTS_QUERY_KEY,
-      });
-      toast.success("Spotify account disconnected");
-    },
-    onError: () => {
-      toast.error("Unable to disconnect Spotify account");
-    },
-  });
+  const disconnectMutation = useMutation(
+    orpc.spotify.manage.disconnect.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: orpc.spotify.manage.accounts.queryKey(),
+        });
+        toast.success("Spotify account disconnected");
+      },
+      onError: () => {
+        toast.error("Unable to disconnect Spotify account");
+      },
+    })
+  );
 
   useEffect(() => {
     if (!callbackStatus) {
@@ -124,7 +118,7 @@ export const SpotifySettings = () => {
     if (result?.type === "success") {
       toast.success(result.message);
       void queryClient.invalidateQueries({
-        queryKey: SPOTIFY_ACCOUNTS_QUERY_KEY,
+        queryKey: orpc.spotify.manage.accounts.queryKey(),
       });
     } else {
       toast.error(result?.message ?? "Spotify authorization failed");
@@ -227,14 +221,14 @@ export const SpotifySettings = () => {
                 <Button
                   variant="outline"
                   isPending={authorizationMutation.isPending}
-                  onPress={() => authorizationMutation.mutate()}>
+                  onPress={() => authorizationMutation.mutate(undefined)}>
                   <RefreshCw />
                   Reauthorize
                 </Button>
                 <Button
                   variant="danger-soft"
                   isPending={disconnectMutation.isPending}
-                  onPress={() => disconnectMutation.mutate()}>
+                  onPress={() => disconnectMutation.mutate(undefined)}>
                   <Unplug />
                   Disconnect
                 </Button>
@@ -252,7 +246,7 @@ export const SpotifySettings = () => {
               <Button
                 variant="primary"
                 isPending={authorizationMutation.isPending}
-                onPress={() => authorizationMutation.mutate()}>
+                onPress={() => authorizationMutation.mutate(undefined)}>
                 <Music2 />
                 Connect with Spotify
               </Button>
@@ -281,7 +275,7 @@ export const SpotifySettings = () => {
               isDisabled={activateMutation.isPending}
               onChange={(userId) => {
                 if (userId !== activeAccount?.userId) {
-                  activateMutation.mutate(userId);
+                  activateMutation.mutate({ userId });
                 }
               }}>
               <Label className="sr-only">Active playback account</Label>
