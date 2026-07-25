@@ -248,9 +248,6 @@ catalogs:
     '@tailwindcss/postcss':
       specifier: 4.3.2
       version: 4.3.2
-    postcss:
-      specifier: 8.5.19
-      version: 8.5.19
     tailwind-scrollbar:
       specifier: ^4.0.2
       version: 4.0.2
