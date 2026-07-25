@@ -3,11 +3,6 @@ import * as z from "zod";
 
 import { getAlgoliaClient } from "@chia/api/algolia";
 
-import { env } from "../env";
-
-const getIndexName = () =>
-  process.env.ALGOLIA_FEEDS_INDEX_NAME ?? env.ALGOLIA_FEEDS_INDEX_NAME;
-
 const deleteRequestSchema = z.object({
   objectIDs: z.array(z.string().or(z.number())),
 });
@@ -20,10 +15,15 @@ export const deleteFeedFromAlgoliaWorkflow = async (
 
   globalThis.fetch = fetch as unknown as typeof globalThis.fetch;
 
+  const indexName = process.env.ALGOLIA_FEEDS_INDEX_NAME;
+  if (!indexName) {
+    throw new Error("ALGOLIA_FEEDS_INDEX_NAME is not set");
+  }
+
   await Promise.all(
     objectIDs.map(async (objectID) => {
       await getAlgoliaClient().deleteObject({
-        indexName: getIndexName(),
+        indexName,
         objectID: objectID.toString(),
       });
     })
