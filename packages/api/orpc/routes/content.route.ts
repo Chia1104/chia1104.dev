@@ -26,6 +26,7 @@ import { feedEvents } from "../events";
 import { adminIdGuard } from "../guards/admin.guard";
 import { aiKeyGuard } from "../guards/ai-key.guard";
 import { apiKeyGuard } from "../guards/apikey.guard";
+import { sessionGuard } from "../guards/auth.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { contractOS } from "../utils";
 
@@ -180,6 +181,12 @@ export const searchPublicFeedsRoute = contractOS.content.feeds["public-search"]
 
 export const searchFeedsRoute = contractOS.content.feeds.search
   .use(rateLimitGuard({ prefix: "rate-limiter:feeds" }))
+  // Authenticated for every model, and root-only for the OpenAI-hosted ones — the same
+  // requirement the Hono route enforced via `verifyAuth(isOpenAIEmbeddingModel(model))`.
+  // Unlike the public `public-search` procedure, this one returns full record bodies.
+  .use(sessionGuard, (input) => ({
+    rootOnly: isOpenAIEmbeddingModel(input.model),
+  }))
   // Only OpenAI-hosted embedding models need a caller-supplied key; Ollama and Algolia
   // run without one, so the guard is conditional on the requested model.
   .use(aiKeyGuard({ provider: "openai" }), (input) => ({
