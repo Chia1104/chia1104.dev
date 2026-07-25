@@ -37,6 +37,10 @@
       "types": "./spotify/validator.ts",
       "default": "./spotify/validator.ts"
     },
+    "./spotify/account": {
+      "types": "./spotify/account.ts",
+      "default": "./spotify/account.ts"
+    },
     "./services/validators": {
       "types": "./services/validators.ts",
       "default": "./services/validators.ts"
@@ -104,6 +108,62 @@
     "./algolia/env": {
       "types": "./algolia/env.ts",
       "default": "./algolia/env.ts"
+    },
+    "./orpc/events": {
+      "types": "./orpc/events.ts",
+      "default": "./orpc/events.ts"
+    },
+    "./orpc/utils": {
+      "types": "./orpc/utils.ts",
+      "default": "./orpc/utils.ts"
+    },
+    "./orpc/config": {
+      "types": "./orpc/config.ts",
+      "default": "./orpc/config.ts"
+    },
+    "./spotify/playback": {
+      "types": "./spotify/playback.ts",
+      "default": "./spotify/playback.ts"
+    },
+    "./email": {
+      "types": "./email/index.ts",
+      "default": "./email/index.ts"
+    },
+    "./email/env": {
+      "types": "./email/env.ts",
+      "default": "./email/env.ts"
+    },
+    "./feeds/search": {
+      "types": "./feeds/search.ts",
+      "default": "./feeds/search.ts"
+    },
+    "./feeds/validator": {
+      "types": "./feeds/validator.ts",
+      "default": "./feeds/validator.ts"
+    },
+    "./orpc/guards/apikey.guard": {
+      "types": "./orpc/guards/apikey.guard.ts",
+      "default": "./orpc/guards/apikey.guard.ts"
+    },
+    "./orpc/guards/rate-limit.guard": {
+      "types": "./orpc/guards/rate-limit.guard.ts",
+      "default": "./orpc/guards/rate-limit.guard.ts"
+    },
+    "./orpc/guards/captcha.guard": {
+      "types": "./orpc/guards/captcha.guard.ts",
+      "default": "./orpc/guards/captcha.guard.ts"
+    },
+    "./orpc/guards/ai-key.guard": {
+      "types": "./orpc/guards/ai-key.guard.ts",
+      "default": "./orpc/guards/ai-key.guard.ts"
+    },
+    "./orpc/guards/admin.guard": {
+      "types": "./orpc/guards/admin.guard.ts",
+      "default": "./orpc/guards/admin.guard.ts"
+    },
+    "./orpc/guards/auth.guard": {
+      "types": "./orpc/guards/auth.guard.ts",
+      "default": "./orpc/guards/auth.guard.ts"
     }
   },
   "scripts": {
@@ -113,11 +173,15 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1088.0",
-    "@aws-sdk/s3-request-presigner": "^3.1088.0",
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "@aws-sdk/s3-request-presigner": "^3.1095.0",
+    "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
+    "@chia/meta": "workspace:*",
+    "@chia/service-kit": "workspace:*",
+    "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
@@ -128,7 +192,9 @@
     "drizzle-orm": "catalog:drizzle",
     "github-slugger": "^2.0.0",
     "graphql-request": "catalog:",
+    "jsdom": "^29.1.1",
     "ky": "catalog:",
+    "resend": "^6.18.0",
     "server-only": "catalog:",
     "superjson": "catalog:",
     "zod": "catalog:"
@@ -136,6 +202,7 @@
   "devDependencies": {
     "@algolia/client-common": "^5.56.0",
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/jsdom": "^28.0.3",
     "typescript": "catalog:"
   }
 }

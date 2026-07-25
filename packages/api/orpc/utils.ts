@@ -1,28 +1,22 @@
-import type { ORPCError } from "@orpc/server";
 import { implement } from "@orpc/server";
 import { os } from "@orpc/server";
 import GithubSlugger from "github-slugger";
 
-import type { Auth } from "@chia/auth";
-import type { Session } from "@chia/auth/types";
-import type { DB } from "@chia/db";
-import type { Keyv } from "@chia/kv";
+import type { ServiceContext } from "@chia/service-kit/context";
 
 import { routerContract } from "./router.contract";
 
-export interface BaseOSContext {
-  headers: Headers;
-  db: DB;
-  kv?: Keyv;
-  auth?: Auth;
+/**
+ * oRPC handler context. Intentionally nothing more than {@link ServiceContext} plus a
+ * single error sink, so mounting the handler is a spread of the Hono `c.var`.
+ *
+ * Domain side effects (search reindexing, …) are **not** here — they are registered
+ * per app via `packages/api/orpc/events.ts`.
+ */
+export interface BaseOSContext extends ServiceContext {
   hooks?: {
-    onError?: (error: ORPCError<string, unknown>) => void;
-    onUnauthorized?: (error: ORPCError<"UNAUTHORIZED", unknown>) => void;
-    onForbidden?: (error: ORPCError<"FORBIDDEN", unknown>) => void;
-    onFeedChanged?: (feedID: number) => Promise<void>;
-    onFeedRemoved?: (translationIDs: readonly number[]) => Promise<void>;
+    onError?: (error: unknown) => void;
   };
-  session?: Session | null;
 }
 
 export const baseOS = os.$context<BaseOSContext>();

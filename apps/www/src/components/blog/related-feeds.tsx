@@ -2,9 +2,9 @@ import { Card, Skeleton } from "@heroui/react";
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/libs/i18n/routing";
+import { client } from "@/libs/orpc/client.rsc";
 import { createFeedImageToken } from "@/libs/utils/feed-image-token";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import { getRelatedFeeds } from "@/services/feeds.service";
 
 import { RelatedFeedsImageBackground } from "./related-feeds-image-background";
 
@@ -44,7 +44,11 @@ export async function RelatedFeeds({ locale, slug }: RelatedFeedsProps) {
   const t = await getTranslations("blog");
   const dbLocale = dbLocaleResolver(locale);
 
-  const feeds = await getRelatedFeeds(slug, dbLocale);
+  const feeds = await client.content.feeds.related({
+    slug,
+    locale: dbLocale,
+    limit: 3,
+  });
 
   if (feeds.items.length === 0) {
     return null;

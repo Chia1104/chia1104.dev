@@ -71,3 +71,5 @@ vitest.config.mts.timestamp-*.mjs
 .pnpm-store
 
 .swc
+
+.codebase-memory

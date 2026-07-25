@@ -51,7 +51,7 @@ const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
   const handleSearch = useDebouncedCallback(
     (query: string) => {
       if (!query) return;
-      searchFeeds({ query, locale, model });
+      searchFeeds({ keyword: query, locale, model });
     },
     {
       wait: 750,

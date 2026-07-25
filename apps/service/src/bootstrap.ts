@@ -1,71 +1,34 @@
-import { sentry } from "@hono/sentry";
 import type { Hono, Schema } from "hono";
-import { cors } from "hono/cors";
-import { HTTPException } from "hono/http-exception";
-import { logger } from "hono/logger";
 
-import { errorGenerator } from "@chia/utils/server";
+import { bootstrap as bootstrapApp } from "@chia/service-kit/bootstrap";
 
 import { env } from "./env";
-import { maintenance } from "./middlewares/maintenance.middleware";
 import { getCORSAllowedOrigin } from "./utils/cors.util";
 
+/**
+ * Applies the shared service middleware with this app's env. The middleware itself
+ * lives in `@chia/service-kit` so every service app boots identically.
+ */
 const bootstrap = <
-  TContext extends HonoContext,
   TSchema extends Schema,
-  TApp extends Hono<TContext, TSchema>,
+  TApp extends Hono<HonoContext, TSchema>,
 >(
   app: TApp
-) => {
-  /**
-   * logger middleware
-   */
-  app.use(logger());
-
-  /**
-   * Sentry middleware
-   */
-  app.use(
-    sentry({
+) =>
+  bootstrapApp<HonoContext, TSchema, TApp>(app, {
+    sentry: {
       dsn: env.SENTRY_DSN,
       enabled: env.NODE_ENV === "production" && !!env.ZEABUR_SERVICE_ID,
-    })
-  );
-
-  /**
-   * Global error handler
-   */
-  app.onError((e, c) => {
-    console.error(e);
-    if (e instanceof HTTPException) {
-      return c.json(errorGenerator(e.status), e.status);
-    }
-    c.get("sentry").captureException(e);
-    return c.json(errorGenerator(500), 500);
-  });
-
-  /**
-   * Maintenance mode middleware
-   */
-  app.use(
-    maintenance({
+    },
+    cors: {
+      origin: getCORSAllowedOrigin(),
+      credentials: true,
+    },
+    maintenance: {
       enabled: env.MAINTENANCE_MODE === "true",
       allowedPaths: ["/api/v1/health"],
       bypassToken: env.MAINTENANCE_BYPASS_TOKEN,
-    })
-  );
-
-  /**
-   * CORS middleware
-   */
-  app.use(
-    cors({
-      origin: getCORSAllowedOrigin(),
-      credentials: true,
-    })
-  );
-
-  return app;
-};
+    },
+  });
 
 export default bootstrap;

@@ -1,6 +1,5 @@
+import { searchPublicFeedsService } from "@chia/api/feeds/search";
 import type { DB } from "@chia/db";
-
-import { searchPublicFeedsService } from "../src/services/feeds.service";
 
 import * as dbMocks from "./__mocks__/db.mock";
 
@@ -8,10 +7,12 @@ const { mockSearchSingleIndex } = vi.hoisted(() => ({
   mockSearchSingleIndex: vi.fn(),
 }));
 
+// The client is now built lazily via `getAlgoliaClient()` so that importing the oRPC
+// router does not require Algolia credentials.
 vi.mock("@chia/api/algolia", () => ({
-  client: {
+  getAlgoliaClient: () => ({
     searchSingleIndex: mockSearchSingleIndex,
-  },
+  }),
 }));
 
 describe("Public feeds search service", () => {

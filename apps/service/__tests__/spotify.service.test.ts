@@ -44,16 +44,17 @@ vi.mock("@chia/db/repos/spotify", () => ({
 
 import { HTTPError } from "ky";
 
-import type { DB } from "@chia/db";
-import type { Keyv } from "@chia/kv";
-
 import {
   completeSpotifyAuthorizationService,
   createSpotifyAuthorizationService,
+  SpotifyCredentialUnavailableError,
+} from "@chia/api/spotify/account";
+import {
   getSpotifyNowPlayingService,
   resolveSpotifyAccessToken,
-  SpotifyCredentialUnavailableError,
-} from "../src/services/spotify.service";
+} from "@chia/api/spotify/playback";
+import type { DB } from "@chia/db";
+import type { Keyv } from "@chia/kv";
 
 const db = {} as DB;
 

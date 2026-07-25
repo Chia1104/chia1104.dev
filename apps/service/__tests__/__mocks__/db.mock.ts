@@ -1,34 +1,61 @@
 import type { Mock } from "vitest";
 
+/**
+ * Feed rows shaped like the repository actually returns them.
+ *
+ * These used to be loose stubs, which was harmless while the Hono routes returned
+ * whatever the repository gave them. The oRPC procedures validate their output against
+ * the contract, so the fixtures now have to be faithful — that is the point of moving
+ * to contract-first.
+ */
+const mockTranslation = (locale: "en" | "zh-TW", title: string) => ({
+  id: 1,
+  feedId: 1,
+  locale,
+  title,
+  excerpt: "Test excerpt",
+  description: "Test Description",
+  summary: null,
+  readTime: null,
+  createdAt: new Date("2024-01-01").toISOString(),
+  updatedAt: new Date("2024-01-01").toISOString(),
+  hasEmbedding: false,
+  content: null,
+});
+
+const mockFeed = (
+  id: number,
+  slug: string,
+  locale: "en" | "zh-TW",
+  title: string
+) => ({
+  id,
+  slug,
+  type: "post" as const,
+  contentType: "mdx" as const,
+  published: true,
+  defaultLocale: locale,
+  userId: "test-admin-id",
+  mainImage: null,
+  createdAt: new Date("2024-01-01").toISOString(),
+  updatedAt: new Date("2024-01-01").toISOString(),
+  deletedAt: null,
+  translations: [mockTranslation(locale, title)],
+});
+
 export const mockFeeds = [
-  {
-    id: 1,
-    slug: "test-feed-1",
-    title: "Test Feed 1",
-    description: "Test Description 1",
-    published: true,
-    createdAt: new Date("2024-01-01"),
-    updatedAt: new Date("2024-01-01"),
-    locale: "en",
-  },
-  {
-    id: 2,
-    slug: "test-feed-2",
-    title: "Test Feed 2",
-    description: "Test Description 2",
-    published: true,
-    createdAt: new Date("2024-01-02"),
-    updatedAt: new Date("2024-01-02"),
-    locale: "zh-TW",
-  },
+  mockFeed(1, "test-feed-1", "en", "Test Feed 1"),
+  mockFeed(2, "test-feed-2", "zh-TW", "Test Feed 2"),
 ];
 
+/**
+ * `{ items, nextCursor }` — the shape `queryInfiniteFeeds` returns
+ * (`packages/db/src/libs/feeds/index.ts`). The previous fixture invented a
+ * `meta: { nextCursor, hasMore }` wrapper that production never produced.
+ */
 export const mockFeedsResponse = {
   items: mockFeeds,
-  meta: {
-    nextCursor: null,
-    hasMore: false,
-  },
+  nextCursor: null,
 };
 
 const mockSearchFeedsResult = {

@@ -1,59 +1,34 @@
-import { Role } from "@chia/db/types";
-import { getAdminId } from "@chia/utils/config";
+import { runPolicy } from "@chia/service-kit/adapters/orpc";
+import type { AdminPolicyOptions } from "@chia/service-kit/policies";
+import { adminIdPolicy, adminPolicy } from "@chia/service-kit/policies";
 
 import { baseOS } from "../utils";
 
-interface AdminGuardOptions {
-  role?: Role[];
-  enabled?: boolean;
-}
-
-export const adminGuard = (
-  options: AdminGuardOptions = { role: [Role.Admin, Role.Root], enabled: true }
-) =>
+/**
+ * Requires an authenticated session in `roles` whose user id matches the configured
+ * admin id. Pass `pinToAdminId: false` for "any admin/root" routes.
+ */
+export const adminGuard = (options: AdminPolicyOptions = {}) =>
   baseOS
     .errors({
       UNAUTHORIZED: {},
       FORBIDDEN: {},
     })
-    .middleware(async ({ next, context, errors }) => {
-      let sessionData = context.session;
+    .middleware(async ({ next, context }) =>
+      next({ context: await runPolicy(adminPolicy(options), context) })
+    );
 
-      if (options.enabled) {
-        sessionData =
-          sessionData ??
-          (await context.auth?.api.getSession({
-            headers: context.headers,
-          }));
-
-        if (!sessionData?.session || !sessionData?.user) {
-          if (context.hooks?.onUnauthorized) {
-            context.hooks.onUnauthorized(errors.UNAUTHORIZED());
-          }
-          throw errors.UNAUTHORIZED();
-        }
-      }
-
-      const adminId = getAdminId();
-
-      if (
-        sessionData &&
-        (!options.role?.includes(sessionData.user.role) ||
-          sessionData.user.id !== adminId)
-      ) {
-        if (context.hooks?.onForbidden) {
-          context.hooks.onForbidden(errors.FORBIDDEN());
-        }
-        throw errors.FORBIDDEN();
-      }
-
-      return next({
-        context: {
-          session: sessionData,
-          adminId,
-        },
-      });
-    });
+/**
+ * Performs no authorization — only exposes the configured `adminId`. For public routes
+ * that read the admin's own data.
+ *
+ * Deliberately separate from {@link adminGuard} rather than an `enabled: false` option:
+ * the previous option form ran the role check whenever a session happened to be on the
+ * context, which rejected logged-in non-admin users on public routes.
+ */
+export const adminIdGuard = baseOS.middleware(async ({ next, context }) =>
+  next({ context: await runPolicy(adminIdPolicy(), context) })
+);
 
 /**
  * @TODO: Implement this function.

@@ -1,0 +1,168 @@
+import { vi } from "vitest";
+
+import type { ServiceContext } from "../src/context";
+import { captchaPolicy } from "../src/policies/captcha.policy";
+import { rateLimitPolicy } from "../src/policies/rate-limit.policy";
+import { sessionPolicy } from "../src/policies/session.policy";
+
+const session = (role: string) => ({
+  session: { id: "s1", userId: "u1" },
+  user: { id: "u1", role },
+});
+
+const makeContext = (overrides: Partial<ServiceContext> = {}): ServiceContext =>
+  ({
+    headers: new Headers(),
+    clientIP: "1.2.3.4",
+    db: {},
+    kv: undefined,
+    ...overrides,
+  }) as unknown as ServiceContext;
+
+/** Minimal in-memory Keyv stand-in — only `get`/`set` are exercised. */
+const makeKv = () => {
+  const store = new Map<string, unknown>();
+  return {
+    get: vi.fn((key: string) => Promise.resolve(store.get(key))),
+    set: vi.fn((key: string, value: unknown) => {
+      store.set(key, value);
+      return Promise.resolve(true);
+    }),
+  };
+};
+
+describe("sessionPolicy", () => {
+  it("denies with UNAUTHORIZED when there is no session", async () => {
+    const result = await sessionPolicy()(makeContext());
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("UNAUTHORIZED");
+  });
+
+  it("reuses a session already on the context instead of calling better-auth", async () => {
+    const getSession = vi.fn();
+    const result = await sessionPolicy()(
+      makeContext({
+        session: session("admin") as never,
+        auth: { api: { getSession } } as never,
+      })
+    );
+
+    expect(getSession).not.toHaveBeenCalled();
+    expect(result.ok).toBe(true);
+  });
+
+  it("denies with FORBIDDEN when rootOnly is set and the role is not root", async () => {
+    const result = await sessionPolicy({ rootOnly: true })(
+      makeContext({ session: session("admin") as never })
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("FORBIDDEN");
+  });
+
+  it("allows root when rootOnly is set", async () => {
+    const result = await sessionPolicy({ rootOnly: true })(
+      makeContext({ session: session("root") as never })
+    );
+
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe("rateLimitPolicy", () => {
+  const policy = (kv?: ReturnType<typeof makeKv>) =>
+    rateLimitPolicy({ windowMs: 60_000, limit: 2, prefix: "test" })(
+      makeContext({ kv: kv as never })
+    );
+
+  it("fails open when there is no store rather than locking callers out", async () => {
+    const result = await policy(undefined);
+    expect(result.ok).toBe(true);
+  });
+
+  it("reports the remaining budget in draft-6 headers", async () => {
+    const kv = makeKv();
+
+    const first = await policy(kv);
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.headers?.["RateLimit-Limit"]).toBe("2");
+    expect(first.headers?.["RateLimit-Remaining"]).toBe("1");
+
+    const second = await policy(kv);
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.headers?.["RateLimit-Remaining"]).toBe("0");
+  });
+
+  it("denies with 429 and Retry-After once the limit is exceeded", async () => {
+    const kv = makeKv();
+
+    await policy(kv);
+    await policy(kv);
+    const third = await policy(kv);
+
+    expect(third.ok).toBe(false);
+    if (third.ok) return;
+    expect(third.error.code).toBe("TOO_MANY_REQUESTS");
+    expect(third.error.status).toBe(429);
+    expect(Number(third.error.headers?.["Retry-After"])).toBeGreaterThan(0);
+  });
+
+  it("namespaces counters by prefix so route families do not share a budget", async () => {
+    const kv = makeKv();
+
+    await rateLimitPolicy({ windowMs: 60_000, limit: 1, prefix: "a" })(
+      makeContext({ kv: kv as never })
+    );
+    const other = await rateLimitPolicy({
+      windowMs: 60_000,
+      limit: 1,
+      prefix: "b",
+    })(makeContext({ kv: kv as never }));
+
+    expect(other.ok).toBe(true);
+  });
+});
+
+describe("captchaPolicy", () => {
+  const verify = vi.fn();
+
+  it("denies when no token was supplied", async () => {
+    const result = await captchaPolicy({ verify, token: undefined })(
+      makeContext()
+    );
+
+    expect(verify).not.toHaveBeenCalled();
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.issues?.[0]?.message).toBe("CAPTCHA_REQUIRED");
+  });
+
+  it("passes the client IP through to the verifier", async () => {
+    verify.mockResolvedValueOnce({ success: true });
+
+    const result = await captchaPolicy({ verify, token: "token-123" })(
+      makeContext()
+    );
+
+    expect(verify).toHaveBeenCalledWith({
+      token: "token-123",
+      remoteip: "1.2.3.4",
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("denies with CAPTCHA_FAILED when the provider rejects the token", async () => {
+    verify.mockResolvedValueOnce({ success: false });
+
+    const result = await captchaPolicy({ verify, token: "bad" })(makeContext());
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.issues?.[0]?.message).toBe("CAPTCHA_FAILED");
+  });
+});

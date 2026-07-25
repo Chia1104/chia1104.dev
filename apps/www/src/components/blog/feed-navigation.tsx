@@ -20,7 +20,7 @@ import { useRouter } from "@/libs/i18n/routing";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 interface Props {
-  feeds: Promise<RouterOutputs["feeds"]["list"]>;
+  feeds: Promise<RouterOutputs["content"]["feeds"]["list"]>;
   type: FeedType;
 }
 

@@ -27,9 +27,10 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { getBrightness } from "@chia/ui/utils/get-brightness";
 import { experimental_getImgAverageRGB } from "@chia/ui/utils/get-img-average-rgb";
 
-import type { HonoRPCError } from "@/libs/service/error";
-import type { CurrentPlayingResponse } from "@/services/spotify.service";
-import { getCurrentPlaying } from "@/services/spotify.service";
+import { orpc } from "@/libs/orpc/client";
+import type { RouterOutputs } from "@/libs/orpc/types";
+
+type CurrentPlayingResponse = RouterOutputs["media"]["spotify"]["playing"];
 
 interface ExtendsProps {
   className?: string;
@@ -42,11 +43,9 @@ interface ExtendsProps {
 interface Props extends ExtendsProps {
   children?:
     | ReactNode
-    | ((
-        result: UseQueryResult<CurrentPlayingResponse, HonoRPCError>
-      ) => ReactNode);
+    | ((result: UseQueryResult<CurrentPlayingResponse, Error>) => ReactNode);
   queryOptions?: Omit<
-    UseQueryOptions<CurrentPlayingResponse, HonoRPCError>,
+    UseQueryOptions<CurrentPlayingResponse, Error>,
     "queryKey" | "queryFn"
   >;
 }
@@ -86,7 +85,7 @@ const useProgressTracking = (
   progressMs: number,
   isFetching: boolean,
   isSuccess: boolean,
-  refetch: () => Promise<UseQueryResult<CurrentPlayingResponse, HonoRPCError>>
+  refetch: () => Promise<UseQueryResult<CurrentPlayingResponse, Error>>
 ) => {
   const [, setProgress] = useProgressContext();
 
@@ -249,7 +248,7 @@ const Card = ({
   className,
   hoverCardContentClassName,
   experimental,
-}: UseQueryResult<CurrentPlayingResponse, HonoRPCError> & ExtendsProps) => {
+}: UseQueryResult<CurrentPlayingResponse, Error> & ExtendsProps) => {
   const enableColorExtraction =
     experimental?.displayBackgroundColorFromImage ?? false;
 
@@ -366,9 +365,8 @@ export const CurrentPlaying = ({
   hoverCardContentClassName,
   experimental,
 }: Props) => {
-  const result = useQuery<CurrentPlayingResponse, HonoRPCError>({
-    queryKey: ["spotify-current-playing"],
-    queryFn: getCurrentPlaying,
+  const result = useQuery({
+    ...orpc.media.spotify.playing.queryOptions(),
     refetchInterval: (ctx) => calculateRefetchInterval(ctx.state.data),
     refetchOnWindowFocus: "always",
     ...queryOptions,
