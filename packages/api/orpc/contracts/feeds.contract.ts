@@ -122,7 +122,8 @@ export const publicFeedsInfiniteSchema = z.object({
   // Deliberately uncapped, matching the previous schema: the sitemap asks for every
   // published feed in one call.
   limit: z.coerce.number().int().positive().optional().default(20),
-  nextCursor: z.coerce.number().int().optional(),
+  // Composite feed cursors are strings (`feed:[timestamp,id]`); bare numeric ids still work.
+  nextCursor: z.union([z.string(), z.number()]).optional(),
   withContent: flexibleBoolean.optional().default(false),
   locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),

@@ -29,8 +29,7 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
   const { data, isSuccess, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
       orpc.content.feeds["public-list"].infiniteOptions({
-        // `nextCursor` is omitted rather than nulled for the first page: the contract
-        // coerces it to a number, and `null` would coerce to cursor 0.
+        // Omit `nextCursor` on the first page — `null` is not a valid cursor value.
         input: (pageParam) => ({
           ...query,
           nextCursor: pageParam ?? undefined,
