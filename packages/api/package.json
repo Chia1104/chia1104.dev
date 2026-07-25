@@ -173,8 +173,8 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1088.0",
-    "@aws-sdk/s3-request-presigner": "^3.1088.0",
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "@aws-sdk/s3-request-presigner": "^3.1095.0",
     "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",
@@ -194,7 +194,7 @@
     "graphql-request": "catalog:",
     "jsdom": "^29.1.1",
     "ky": "catalog:",
-    "resend": "^6.17.2",
+    "resend": "^6.18.0",
     "server-only": "catalog:",
     "superjson": "catalog:",
     "zod": "catalog:"
