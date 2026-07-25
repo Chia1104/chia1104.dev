@@ -145,9 +145,6 @@ catalogs:
     hono:
       specifier: 4.12.30
       version: 4.12.30
-    hono-rate-limiter:
-      specifier: 0.5.3
-      version: 0.5.3
   next:
     '@next/third-parties':
       specifier: 16.3.0-preview.6
@@ -162,10 +159,16 @@ catalogs:
     '@orpc/contract':
       specifier: 1.14.8
       version: 1.14.8
+    '@orpc/openapi':
+      specifier: 1.14.8
+      version: 1.14.8
     '@orpc/server':
       specifier: 1.14.8
       version: 1.14.8
     '@orpc/tanstack-query':
+      specifier: 1.14.8
+      version: 1.14.8
+    '@orpc/zod':
       specifier: 1.14.8
       version: 1.14.8
   oxc:
@@ -442,6 +445,9 @@ importers:
       '@chia/meta':
         specifier: workspace:*
         version: link:../../packages/meta
+      '@chia/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
       '@chia/themes':
         specifier: workspace:*
         version: link:../../packages/themes
@@ -674,6 +680,9 @@ importers:
       '@chia/meta':
         specifier: workspace:*
         version: link:../../packages/meta
+      '@chia/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
       '@chia/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -692,9 +701,15 @@ importers:
       '@orpc/contract':
         specifier: catalog:orpc
         version: 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/openapi':
+        specifier: catalog:orpc
+        version: 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
       '@orpc/server':
         specifier: catalog:orpc
         version: 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      '@orpc/zod':
+        specifier: catalog:orpc
+        version: 1.14.8(@opentelemetry/api@1.9.1)(@orpc/contract@1.14.8(@opentelemetry/api@1.9.1))(@orpc/server@1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1))(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)(zod@4.4.3)
       '@t3-oss/env-core':
         specifier: 'catalog:'
         version: 0.13.11(typescript@7.0.2)(zod@4.4.3)
@@ -722,9 +737,6 @@ importers:
       hono:
         specifier: catalog:hono
         version: 4.12.30
-      hono-rate-limiter:
-        specifier: catalog:hono
-        version: 0.5.3(hono@4.12.30)
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1(@noble/hashes@2.2.0)
@@ -1070,6 +1082,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.1088.0
         version: 3.1088.0
+      '@chia/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@chia/auth':
         specifier: workspace:*
         version: link:../auth
@@ -1079,6 +1094,15 @@ importers:
       '@chia/kv':
         specifier: workspace:*
         version: link:../kv
+      '@chia/meta':
+        specifier: workspace:*
+        version: link:../meta
+      '@chia/service-kit':
+        specifier: workspace:*
+        version: link:../service-kit
+      '@chia/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@chia/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1109,9 +1133,15 @@ importers:
       graphql-request:
         specifier: 'catalog:'
         version: 7.4.0(graphql@16.14.2)
+      jsdom:
+        specifier: ^29.1.1
+        version: 29.1.1(@noble/hashes@2.2.0)
       ky:
         specifier: 'catalog:'
         version: 2.0.2
+      resend:
+        specifier: ^6.17.2
+        version: 6.17.2(@react-email/render@2.1.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
       server-only:
         specifier: 'catalog:'
         version: 0.0.1
@@ -1128,6 +1158,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@types/jsdom':
+        specifier: ^28.0.3
+        version: 28.0.3
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -1384,6 +1417,40 @@ importers:
       dayjs:
         specifier: 'catalog:'
         version: 1.11.21
+    devDependencies:
+      '@chiastack/tsconfig':
+        specifier: catalog:chiastack
+        version: 2.1.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  packages/service-kit:
+    dependencies:
+      '@chia/auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@chia/db':
+        specifier: workspace:*
+        version: link:../db
+      '@chia/kv':
+        specifier: workspace:*
+        version: link:../kv
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@hono/sentry':
+        specifier: catalog:hono
+        version: 1.2.2(hono@4.12.30)
+      '@orpc/server':
+        specifier: catalog:orpc
+        version: 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      hono:
+        specifier: catalog:hono
+        version: 4.12.30
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
     devDependencies:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
@@ -3888,6 +3955,15 @@ packages:
   '@orpc/interop@1.14.8':
     resolution: {integrity: sha512-DgLjqMVMUEqtDWVgd3L3rScoAmO5uHumpwaxcCmQygAgGrCMiJ8S48ePOgkVajpxt5eC25tybd2veY4hnKRtUQ==}
 
+  '@orpc/json-schema@1.14.8':
+    resolution: {integrity: sha512-vUU95SiJe+AwRP/9y2xAKMhdYb86f6Jgf8GOqt4bpxhleS8ujpd9YHZXVkT9M7jNkL1Z2+ftykwmfvW2IdXs6A==}
+
+  '@orpc/openapi-client@1.14.8':
+    resolution: {integrity: sha512-d1eaL8H67Lz/OpNx02cWKu3w3zmqDwCCAZRVjerG4wC2MmbbBGliS1PYVPTvAeetAk81JnyD8i6w13Qf8SNpwA==}
+
+  '@orpc/openapi@1.14.8':
+    resolution: {integrity: sha512-/kIScUqpy4oeDJt1LPhLsosLrnYj5lx1OkiYKg873UN1XQru4d/X4rzv3jJdKAOYvpqwcQje7fDfFIiQAaRBLg==}
+
   '@orpc/server@1.14.8':
     resolution: {integrity: sha512-Do6xBim+uMtjlEy+08BpGInN78SmH9zVL9CNOUqmo//RmkTkb7C8LaqiPz/Y4QKvDdVRo15ku0C4OQhfvzlkSg==}
     peerDependencies:
@@ -3935,6 +4011,13 @@ packages:
     peerDependencies:
       '@orpc/client': 1.14.8
       '@tanstack/query-core': '>=5.80.2'
+
+  '@orpc/zod@1.14.8':
+    resolution: {integrity: sha512-Gf7oywZziLst/MS0WOC4GHi51QoI399OQrPYqjSle2ks7nrmQp4e9JOZq1HKcNVZJ87NWXz24KA7mFwkS1LrJA==}
+    peerDependencies:
+      '@orpc/contract': 1.14.8
+      '@orpc/server': 1.14.8
+      zod: '>=3.25.0'
 
   '@oxc-project/types@0.139.0':
     resolution: {integrity: sha512-r9gHphtCs+1M7J0pw6Sn/hh/Wpa/iQrOOkrNAlVLF/gHq+/CJmHIWKKUUhdWjcD6CIa8idarspCsASiXCXvFUw==}
@@ -9469,15 +9552,6 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono-rate-limiter@0.5.3:
-    resolution: {integrity: sha512-M0DxbVMpPELEzLi0AJg1XyBHLGJXz7GySjsPoK+gc5YeeBsdGDGe+2RvVuCAv8ydINiwlbxqYMNxUEyYfRji/A==}
-    peerDependencies:
-      hono: ^4.10.8
-      unstorage: ^1.17.3
-    peerDependenciesMeta:
-      unstorage:
-        optional: true
-
   hono@4.12.30:
     resolution: {integrity: sha512-emn+JoJjrN9YTpRDS5it/UI2SO9BAE37T6I3d963RxcZ81G9A4pr2SZTEiiaiKbzx+NKRg5BZ89fCL7gCJCUog==}
     engines: {node: '>=16.9.0'}
@@ -13172,6 +13246,9 @@ packages:
     resolution: {integrity: sha512-c9bZp7b5YtRj2wOe6dlj32MK+Bx/M/d+9VB2SHM1OtsUHR0aV0tdP6DWh/iMt0kWi1t5g1Iudu6hQRNd1A4PVA==}
     engines: {node: '>=18'}
 
+  wildcard-match@5.1.4:
+    resolution: {integrity: sha512-wldeCaczs8XXq7hj+5d/F38JE2r7EXgb6WQDM84RVwxy81T/sxB5e9+uZLK9Q9oNz1mlvjut+QtvgaOQFPVq/g==}
+
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
@@ -15477,6 +15554,46 @@ snapshots:
 
   '@orpc/interop@1.14.8': {}
 
+  '@orpc/json-schema@1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)':
+    dependencies:
+      '@orpc/contract': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/interop': 1.14.8
+      '@orpc/openapi': 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      '@orpc/server': 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      '@orpc/shared': 1.14.8(@opentelemetry/api@1.9.1)
+      json-schema-typed: 8.0.2
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - crossws
+      - fastify
+      - ws
+
+  '@orpc/openapi-client@1.14.8(@opentelemetry/api@1.9.1)':
+    dependencies:
+      '@orpc/client': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/contract': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/shared': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.14.8(@opentelemetry/api@1.9.1)
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  '@orpc/openapi@1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)':
+    dependencies:
+      '@orpc/client': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/contract': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/interop': 1.14.8
+      '@orpc/openapi-client': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/server': 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      '@orpc/shared': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.14.8(@opentelemetry/api@1.9.1)
+      json-schema-typed: 8.0.2
+      rou3: 0.7.12
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - crossws
+      - fastify
+      - ws
+
   '@orpc/server@1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)':
     dependencies:
       '@orpc/client': 1.14.8(@opentelemetry/api@1.9.1)
@@ -15556,6 +15673,22 @@ snapshots:
       '@tanstack/query-core': 5.101.2
     transitivePeerDependencies:
       - '@opentelemetry/api'
+
+  '@orpc/zod@1.14.8(@opentelemetry/api@1.9.1)(@orpc/contract@1.14.8(@opentelemetry/api@1.9.1))(@orpc/server@1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1))(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)(zod@4.4.3)':
+    dependencies:
+      '@orpc/contract': 1.14.8(@opentelemetry/api@1.9.1)
+      '@orpc/json-schema': 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      '@orpc/openapi': 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      '@orpc/server': 1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)
+      '@orpc/shared': 1.14.8(@opentelemetry/api@1.9.1)
+      escape-string-regexp: 5.0.0
+      wildcard-match: 5.1.4
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - crossws
+      - fastify
+      - ws
 
   '@oxc-project/types@0.139.0': {}
 
@@ -21031,10 +21164,6 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono-rate-limiter@0.5.3(hono@4.12.30):
-    dependencies:
-      hono: 4.12.30
-
   hono@4.12.30: {}
 
   hookable@6.1.1: {}
@@ -25291,6 +25420,8 @@ snapshots:
   widest-line@5.0.0:
     dependencies:
       string-width: 7.2.0
+
+  wildcard-match@5.1.4: {}
 
   word-wrap@1.2.5: {}
 

@@ -18,6 +18,12 @@ vi.mock("@chia/api/spotify/account", () => ({
 vi.mock("../src/services/spotify.service", () => ({
   getSpotifyDashboardRedirect: (status: string) =>
     `http://localhost:3001/settings/spotify?spotify=${status}`,
+}));
+
+// The playback reads moved to `@chia/api/spotify/playback`, next to the oRPC procedures
+// that now serve `/spotify/playing` and `/spotify/playlist/:id`. The URLs and the
+// assertions below are unchanged — only the mock target follows the code.
+vi.mock("@chia/api/spotify/playback", () => ({
   getSpotifyNowPlayingService: mocks.getSpotifyNowPlayingService,
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,
 }));

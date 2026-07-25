@@ -82,8 +82,10 @@ catalogs:
   orpc:
     "@orpc/client": 1.14.8
     "@orpc/contract": 1.14.8
+    "@orpc/openapi": 1.14.8
     "@orpc/server": 1.14.8
     "@orpc/tanstack-query": 1.14.8
+    "@orpc/zod": 1.14.8
   oxc:
     oxfmt: 0.59.0
     oxlint: 1.74.0

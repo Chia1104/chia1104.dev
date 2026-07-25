@@ -1,5 +1,3 @@
-import { Role } from "@chia/db/types";
-
 import {
   activateSpotifyAccountService,
   createSpotifyAuthorizationService,
@@ -8,46 +6,14 @@ import {
   SpotifyCredentialNotFoundError,
   SpotifyCredentialUnavailableError,
 } from "../../spotify/account";
-import { baseOS, contractOS } from "../utils";
-
-const SPOTIFY_ADMIN_ROLES = new Set<string>([Role.Admin, Role.Root]);
+import { adminGuard } from "../guards/admin.guard";
+import { contractOS } from "../utils";
 
 /**
- * Authenticated + role ∈ {Admin, Root}. Intentionally NOT `adminGuard`, which
- * additionally pins the session to the single configured admin id.
+ * Authenticated + role ∈ {Admin, Root}, but **not** pinned to the single configured
+ * admin id — any admin may manage the connected Spotify accounts.
  */
-const spotifyManageGuard = baseOS
-  .errors({
-    UNAUTHORIZED: {},
-    FORBIDDEN: {},
-  })
-  .middleware(async ({ next, context, errors }) => {
-    const sessionData =
-      context.session ??
-      (await context.auth?.api.getSession({
-        headers: context.headers,
-      }));
-
-    if (!sessionData?.session || !sessionData?.user) {
-      if (context.hooks?.onUnauthorized) {
-        context.hooks.onUnauthorized(errors.UNAUTHORIZED());
-      }
-      throw errors.UNAUTHORIZED();
-    }
-
-    if (!SPOTIFY_ADMIN_ROLES.has(sessionData.user.role)) {
-      if (context.hooks?.onForbidden) {
-        context.hooks.onForbidden(errors.FORBIDDEN());
-      }
-      throw errors.FORBIDDEN();
-    }
-
-    return next({
-      context: {
-        session: sessionData,
-      },
-    });
-  });
+const spotifyManageGuard = adminGuard({ pinToAdminId: false });
 
 export const getSpotifyAccountsRoute = contractOS.spotify.manage.accounts
   .use(spotifyManageGuard)

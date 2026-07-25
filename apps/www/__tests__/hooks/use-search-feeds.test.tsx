@@ -4,34 +4,40 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { Locale } from "@chia/db/types";
 
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
-import { client } from "@/libs/service/client";
+import { orpc } from "@/libs/orpc/client";
 
 import { createTestQueryClient } from "../utils";
 
-vi.mock("@/libs/service/client", () => ({
-  client: {
-    api: {
-      v1: {
-        feeds: {
-          public: {
-            search: {
-              $get: vi.fn(),
-            },
-          },
-        },
+const { mockQueryFn, mockQueryOptions } = vi.hoisted(() => {
+  const queryFn = vi.fn();
+  return {
+    mockQueryFn: queryFn,
+    // Stands in for oRPC's tanstack-query util: it returns the `queryKey` / `queryFn`
+    // pair that react-query consumes, so the hook is exercised through the real
+    // react-query machinery.
+    mockQueryOptions: vi.fn(
+      ({ input }: { input: { keyword: string; locale: string } }) => ({
+        queryKey: ["content", "feeds", "public-search", input],
+        queryFn: () => queryFn(input),
+      })
+    ),
+  };
+});
+
+vi.mock("@/libs/orpc/client", () => ({
+  orpc: {
+    content: {
+      feeds: {
+        "public-search": { queryOptions: mockQueryOptions },
       },
     },
   },
 }));
 
-const mockSearch = client.api.v1.feeds.public.search.$get as ReturnType<
-  typeof vi.fn
->;
-
 describe("useSearchFeeds", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSearch.mockResolvedValue(Response.json({ items: [] }));
+    mockQueryFn.mockResolvedValue({ items: [] });
   });
 
   afterEach(() => {
@@ -79,10 +85,10 @@ describe("useSearchFeeds", () => {
     });
 
     expect(result.current.canSearch).toBe(false);
-    expect(mockSearch).not.toHaveBeenCalled();
+    expect(mockQueryFn).not.toHaveBeenCalled();
   });
 
-  it("should search through the shared service client", async () => {
+  it("should search through the oRPC query options", async () => {
     const queryClient = createTestQueryClient();
 
     renderHook(() => useSearchFeeds("React", Locale.En), {
@@ -94,19 +100,15 @@ describe("useSearchFeeds", () => {
     });
 
     await waitFor(() => {
-      expect(mockSearch).toHaveBeenCalledWith(
-        {
-          query: {
-            keyword: "React",
-            locale: Locale.En,
-          },
-        },
-        {
-          init: {
-            signal: expect.any(AbortSignal),
-          },
-        }
-      );
+      expect(
+        orpc.content.feeds["public-search"].queryOptions
+      ).toHaveBeenCalledWith({
+        input: { keyword: "React", locale: Locale.En },
+      });
+      expect(mockQueryFn).toHaveBeenCalledWith({
+        keyword: "React",
+        locale: Locale.En,
+      });
     });
   });
 });

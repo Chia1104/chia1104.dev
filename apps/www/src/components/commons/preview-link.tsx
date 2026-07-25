@@ -18,9 +18,10 @@ import {
 import { cn } from "@chia/ui/utils/cn.util";
 import { isUrl } from "@chia/utils/is";
 
-import type { HonoRPCError } from "@/libs/service/error";
-import type { LinkPreviewResponse } from "@/services/toolings.service";
-import { getLinkPreview } from "@/services/toolings.service";
+import { orpc } from "@/libs/orpc/client";
+import type { RouterOutputs } from "@/libs/orpc/types";
+
+type LinkPreviewResponse = RouterOutputs["toolings"]["link-preview"];
 
 const HOVER_CARD_STYLES = {
   base: "z-20 w-full max-w-80 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
@@ -38,16 +39,12 @@ export interface PreviewLinkProps extends Omit<
   href: URL | string;
   children?:
     | ReactNode
-    | ((
-        result: UseQueryResult<LinkPreviewResponse, HonoRPCError>
-      ) => ReactNode);
+    | ((result: UseQueryResult<LinkPreviewResponse, Error>) => ReactNode);
   previewContent?:
     | ReactNode
-    | ((
-        result: UseQueryResult<LinkPreviewResponse, HonoRPCError>
-      ) => ReactNode);
+    | ((result: UseQueryResult<LinkPreviewResponse, Error>) => ReactNode);
   queryOptions?: Omit<
-    UseQueryOptions<LinkPreviewResponse, HonoRPCError>,
+    UseQueryOptions<LinkPreviewResponse, Error>,
     "queryKey" | "queryFn" | "enabled"
   >;
   enabled?: boolean;
@@ -125,7 +122,7 @@ const PreviewDetail = ({
   isSuccess,
   error,
 }: Pick<
-  UseQueryResult<LinkPreviewResponse, HonoRPCError>,
+  UseQueryResult<LinkPreviewResponse, Error>,
   "data" | "isSuccess" | "isError" | "error"
 >) => {
   if (isError) {
@@ -145,16 +142,15 @@ const useLinkPreview = (
   href: URL | string,
   isOpen: boolean,
   queryOptions?: Omit<
-    UseQueryOptions<LinkPreviewResponse, HonoRPCError>,
+    UseQueryOptions<LinkPreviewResponse, Error>,
     "queryKey" | "queryFn" | "enabled"
   >,
   enabled?: boolean
 ) => {
-  return useQuery<LinkPreviewResponse, HonoRPCError>({
-    queryKey: ["link-preview", { href: href.toString() }],
-    queryFn: async ({ signal }) => {
-      return await getLinkPreview(href.toString(), signal);
-    },
+  return useQuery({
+    ...orpc.toolings["link-preview"].queryOptions({
+      input: { href: href.toString() },
+    }),
     enabled: isOpen && isUrl(href) && enabled,
     retry: 1,
     ...queryOptions,

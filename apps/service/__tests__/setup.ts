@@ -21,13 +21,6 @@ vi.mock("../src/guards/rate-limiter.guard", async () => {
   };
 });
 
-vi.mock("../src/guards/captcha.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return {
-    siteverify: mocks.siteverify,
-  };
-});
-
 vi.mock("../src/guards/auth.guard", async () => {
   const mocks = await import("./__mocks__/guards.mock");
   return {
@@ -48,6 +41,27 @@ vi.mock("../src/guards/ai.guard", async () => {
     ai: mocks.ai,
     AI_AUTH_TOKEN: mocks.AI_AUTH_TOKEN,
   };
+});
+
+// Mock oRPC guards — the routes migrated off Hono are guarded by these instead.
+vi.mock("@chia/api/orpc/guards/apikey.guard", async () => {
+  const mocks = await import("./__mocks__/guards.mock");
+  return { apiKeyGuard: mocks.orpcApiKeyGuard };
+});
+
+vi.mock("@chia/api/orpc/guards/rate-limit.guard", async () => {
+  const mocks = await import("./__mocks__/guards.mock");
+  return { rateLimitGuard: mocks.orpcRateLimitGuard };
+});
+
+vi.mock("@chia/api/orpc/guards/captcha.guard", async () => {
+  const mocks = await import("./__mocks__/guards.mock");
+  return { captchaGuard: mocks.orpcCaptchaGuard };
+});
+
+vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
+  const mocks = await import("./__mocks__/guards.mock");
+  return { aiKeyGuard: mocks.orpcAiKeyGuard };
 });
 
 // Mock database repos

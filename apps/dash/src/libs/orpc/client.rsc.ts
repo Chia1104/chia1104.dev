@@ -8,6 +8,7 @@ import { router } from "@chia/api/orpc/router";
 import { createAuth } from "@chia/auth";
 import { authClient } from "@chia/auth/client";
 import { connectDatabase } from "@chia/db/client";
+import { resolveClientIP } from "@chia/service-kit/context";
 
 globalThis.$client = createRouterClient(router, {
   context: async () => {
@@ -15,8 +16,10 @@ globalThis.$client = createRouterClient(router, {
       db: () => connectDatabase(),
       kv: () => import("@chia/kv").then((m) => m.kv),
     });
+    const requestHeaders = await headers();
     return {
-      headers: await headers(),
+      headers: requestHeaders,
+      clientIP: resolveClientIP(requestHeaders),
       db,
       kv,
       session: await authClient

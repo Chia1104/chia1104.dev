@@ -49,13 +49,12 @@ import {
   createSpotifyAuthorizationService,
   SpotifyCredentialUnavailableError,
 } from "@chia/api/spotify/account";
-import type { DB } from "@chia/db";
-import type { Keyv } from "@chia/kv";
-
 import {
   getSpotifyNowPlayingService,
   resolveSpotifyAccessToken,
-} from "../src/services/spotify.service";
+} from "@chia/api/spotify/playback";
+import type { DB } from "@chia/db";
+import type { Keyv } from "@chia/kv";
 
 const db = {} as DB;
 

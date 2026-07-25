@@ -1,8 +1,8 @@
-import { client } from "@chia/api/algolia";
+import { getAlgoliaClient } from "@chia/api/algolia";
+import type { AlgoliaFeedHit } from "@chia/api/feeds/search";
 import type { Locale } from "@chia/db/types";
 
 import { env } from "../env";
-import type { AlgoliaFeedHit } from "../services/feeds.service";
 
 const getIndexName = () =>
   process.env.ALGOLIA_FEEDS_INDEX_NAME ?? env.ALGOLIA_FEEDS_INDEX_NAME;
@@ -33,14 +33,14 @@ export const saveFeedToAlgoliaStep = async (
   const indexName = getIndexName();
 
   if (!params.enabled) {
-    await client.deleteObject({
+    await getAlgoliaClient().deleteObject({
       indexName,
       objectID: params.objectID.toString(),
     });
     return { action: "deleted" as const };
   }
 
-  await client.saveObject({
+  await getAlgoliaClient().saveObject({
     indexName,
     body: {
       version: "2026.07.13",

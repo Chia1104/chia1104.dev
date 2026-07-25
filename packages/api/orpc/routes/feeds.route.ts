@@ -16,7 +16,8 @@ import {
 } from "@chia/db/repos/feeds";
 import { ContentType, Locale } from "@chia/db/types";
 
-import { adminGuard } from "../guards/admin.guard";
+import { feedEvents } from "../events";
+import { adminGuard, adminIdGuard } from "../guards/admin.guard";
 import { authGuard } from "../guards/auth.guard";
 import { contractOS, slugger } from "../utils";
 
@@ -35,11 +36,7 @@ export const getFeedsWithMetaRoute = contractOS.feeds.list
   });
 
 export const getFeedsWithMetaByAdminIdRoute = contractOS.feeds["admin-list"]
-  .use(
-    adminGuard({
-      enabled: false,
-    })
-  )
+  .use(adminIdGuard)
   .handler(async (opts) => {
     const data = await getInfiniteFeedsByUserId(opts.context.db, {
       ...opts.input,
@@ -117,8 +114,8 @@ export const createFeedRoute = contractOS.feeds.create
       ),
     });
 
-    if (opts.context.hooks?.onFeedChanged && data) {
-      await opts.context.hooks.onFeedChanged(data.id);
+    if (data) {
+      await feedEvents.changed(data.id);
     }
 
     return data;
@@ -185,9 +182,7 @@ export const updateFeedRoute = contractOS.feeds.update
       contents: contentsData,
     };
 
-    if (opts.context.hooks?.onFeedChanged) {
-      await opts.context.hooks.onFeedChanged(updatedFeed.id);
-    }
+    await feedEvents.changed(updatedFeed.id);
 
     return updatedFeed;
   });
@@ -212,11 +207,7 @@ export const deleteFeedRoute = contractOS.feeds.delete
       });
     }
 
-    if (opts.context.hooks?.onFeedRemoved) {
-      await opts.context.hooks.onFeedRemoved(
-        feed.translations.map(({ id }) => id)
-      );
-    }
+    await feedEvents.removed(feed.translations.map(({ id }) => id));
   });
 
 export const restoreFeedRoute = contractOS.feeds.restore
@@ -228,7 +219,5 @@ export const restoreFeedRoute = contractOS.feeds.restore
     if (!data) {
       throw opts.errors.NOT_FOUND();
     }
-    if (opts.context.hooks?.onFeedChanged) {
-      await opts.context.hooks.onFeedChanged(data.id);
-    }
+    await feedEvents.changed(data.id);
   });

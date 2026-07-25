@@ -1,14 +1,17 @@
 import * as apikeyContracts from "./contracts/apikey.contract";
+import * as contentContracts from "./contracts/content.contract";
+import * as emailContracts from "./contracts/email.contract";
 import * as feedsContracts from "./contracts/feeds.contract";
 import * as fileContracts from "./contracts/file.contract";
 import * as healthContracts from "./contracts/health.contract";
+import * as mediaContracts from "./contracts/media.contract";
 import * as organizationContracts from "./contracts/organization.contract";
 import * as spotifyContracts from "./contracts/spotify.contract";
+import * as toolingsContracts from "./contracts/toolings.contract";
 import * as userContracts from "./contracts/user.contract";
 
 export const routerContract = {
   health: {
-    server: healthContracts.healthContract,
     client: healthContracts.protectedHealthContract,
   },
   apikey: {
@@ -49,6 +52,33 @@ export const routerContract = {
     list: fileContracts.listObjectsContract,
     delete: fileContracts.deleteObjectContract,
   },
+  toolings: {
+    "link-preview": toolingsContracts.linkPreviewContract,
+  },
+  email: {
+    send: emailContracts.sendContactEmailContract,
+  },
+  content: {
+    feeds: {
+      list: contentContracts.getPublicFeedsContract,
+      total: contentContracts.getPublicFeedsTotalContract,
+      "details-by-slug": contentContracts.getPublicFeedBySlugContract,
+      "details-by-id": contentContracts.getPublicFeedByIdContract,
+      related: contentContracts.getPublicRelatedFeedsContract,
+      "translation:upsert":
+        contentContracts.upsertPublicFeedTranslationContract,
+      "content:upsert": contentContracts.upsertPublicFeedContentContract,
+      update: contentContracts.updatePublicFeedContract,
+      "public-search": contentContracts.searchPublicFeedsContract,
+      search: contentContracts.searchFeedsContract,
+    },
+  },
+  media: {
+    spotify: {
+      playlist: mediaContracts.getSpotifyPlaylistContract,
+      playing: mediaContracts.getSpotifyNowPlayingContract,
+    },
+  },
   spotify: {
     manage: {
       accounts: spotifyContracts.getSpotifyAccountsContract,
@@ -61,9 +91,13 @@ export const routerContract = {
 
 export {
   apikeyContracts,
+  contentContracts,
+  emailContracts,
   feedsContracts,
   healthContracts,
+  mediaContracts,
   organizationContracts,
   spotifyContracts,
+  toolingsContracts,
   userContracts,
 };

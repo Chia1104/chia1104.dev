@@ -1,14 +1,14 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
-import type { RouterClient } from "@orpc/server";
+import type { ContractRouterClient } from "@orpc/contract";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
-import type { router } from "@chia/api/orpc/router";
+import type { routerContract } from "@chia/api/orpc/contracts";
 import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";
 
 declare global {
-  var $client: RouterClient<typeof router> | undefined;
+  var $client: ContractRouterClient<typeof routerContract> | undefined;
 }
 
 export const link = new RPCLink({
@@ -32,7 +32,7 @@ export const link = new RPCLink({
   },
 });
 
-export const client: RouterClient<typeof router> =
+export const client: ContractRouterClient<typeof routerContract> =
   globalThis.$client ?? createORPCClient(link);
 
 export const orpc = createTanstackQueryUtils(client);

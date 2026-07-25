@@ -62,10 +62,23 @@ const createFetchRequester = ({
   return { send };
 };
 
-export const client = algoliasearch(
-  env.ALGOLIA_APPLICATION_ID ?? "",
-  env.ALGOLIA_API_KEY ?? "",
-  {
-    requester: createFetchRequester(),
-  }
-);
+let instance: ReturnType<typeof algoliasearch> | undefined;
+
+/**
+ * Lazily constructed.
+ *
+ * `algoliasearch()` throws when `appId` is empty, so building it at module scope made
+ * merely importing anything that transitively reaches this file require Algolia
+ * credentials. That broke `apps/dash`, which imports the oRPC router for its in-process
+ * RSC client and has no Algolia configuration of its own.
+ */
+export const getAlgoliaClient = () => {
+  instance ??= algoliasearch(
+    env.ALGOLIA_APPLICATION_ID ?? "",
+    env.ALGOLIA_API_KEY ?? "",
+    {
+      requester: createFetchRequester(),
+    }
+  );
+  return instance;
+};

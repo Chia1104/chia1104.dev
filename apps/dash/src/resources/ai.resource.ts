@@ -1,203 +1,100 @@
-import type { InferResponseType, InferRequestType } from "hono";
+import type * as z from "zod";
 
-import type { Provider } from "@chia/ai/types";
+import type {
+  generateContentCompleteInput,
+  generateContentInput,
+  generateDescriptionInput,
+  generateExcerptInput,
+  generateSlugInput,
+  generateSummaryInput,
+} from "@chia/ai/tools/content";
+import type {
+  baseRequestSchema,
+  Provider,
+  SupportedTools,
+} from "@chia/ai/types";
 
-import { client } from "@/libs/service/client";
-import { HonoRPCError } from "@/libs/service/error";
+import { postJson, postTextStream } from "@/libs/service/fetcher";
 
-export type SignAIKeyResponse = InferResponseType<
-  (typeof client.api.v1.ai)["key:signed"]["$post"],
-  200
+/**
+ * The AI endpoints stay on Hono (streaming responses, `Set-Cookie`), so these are plain
+ * fetch calls. Types come from `@chia/ai`'s own schemas rather than `hc<AppRPC>` so they
+ * survive the AI routes moving to their own service.
+ */
+
+export interface SignAIKeyResponse {
+  message: string;
+}
+
+export type GenerateAIContentInput = Omit<
+  z.infer<typeof baseRequestSchema>,
+  "authToken"
 >;
 
-export type GenerateAIContentResponse = InferResponseType<
-  (typeof client.api.v1.ai)["generate"]["$post"],
-  200
+export type GenerateAIArticleContentInput = z.infer<
+  typeof generateContentInput
 >;
 
-export type GenerateAIContentInput = InferRequestType<
-  (typeof client.api.v1.ai)["generate"]["$post"]
+export type GenerateAIContentCompleteInput = z.infer<
+  typeof generateContentCompleteInput
 >;
 
-export type GenerateAIContentMetaInput = InferRequestType<
-  (typeof client.api.v1.ai.content.meta)["$post"]
->;
-
-export type GenerateAIArticleContentInput = InferRequestType<
-  (typeof client.api.v1.ai.content)["generate"]["$post"]
->;
-
-export type GenerateAIContentCompleteInput = InferRequestType<
-  (typeof client.api.v1.ai.content)["complete"]["$post"]
->;
-
-export const getSignedAIKey = async (apiKey: string, provider: Provider) => {
-  try {
-    const response = await client.api.v1.ai["key:signed"].$post({
-      json: {
-        apiKey,
-        provider,
-      },
-    });
-    if (!response.ok) {
-      throw new HonoRPCError(
-        response.statusText,
-        response.status,
-        response.statusText
-      );
+/** Mirrors the discriminated union `POST /api/v1/ai/content/meta` validates. */
+export type GenerateAIContentMetaInput =
+  | {
+      feature: typeof SupportedTools.GenerateSlug;
+      input: z.infer<typeof generateSlugInput>;
     }
-    return response.json();
-  } catch (error) {
-    if (error instanceof HonoRPCError) {
-      throw error;
+  | {
+      feature: typeof SupportedTools.GenerateDescription;
+      input: z.infer<typeof generateDescriptionInput>;
     }
-    throw new HonoRPCError("unknown error", 500, "unknown error");
-  }
-};
-
-export const generateAIContent = async (
-  input: GenerateAIContentInput["json"]
-) => {
-  try {
-    const response = await client.api.v1.ai.generate.$post({
-      json: input,
-    });
-
-    if (!response.ok) {
-      throw new HonoRPCError(
-        response.statusText,
-        response.status,
-        response.statusText
-      );
+  | {
+      feature: typeof SupportedTools.GenerateSummary;
+      input: z.infer<typeof generateSummaryInput>;
     }
-
-    const body = response.body;
-    if (!body)
-      throw new HonoRPCError(
-        "Stream response body is undefined",
-        500,
-        "Stream response body is undefined"
-      );
-
-    const decoder = new TextDecoder();
-
-    return {
-      [Symbol.asyncIterator]: async function* () {
-        const reader = body.getReader();
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            yield chunk;
-          }
-        } finally {
-          reader.releaseLock();
-        }
-      },
-      stream: body,
+  | {
+      feature: typeof SupportedTools.GenerateExcerpt;
+      input: z.infer<typeof generateExcerptInput>;
     };
-  } catch (error) {
-    if (error instanceof HonoRPCError) {
-      throw error;
+
+export type GenerateAIContentMetaResponse =
+  | {
+      feature: typeof SupportedTools.GenerateSlug;
+      content: { slug: string };
     }
-    throw new HonoRPCError("unknown error", 500, "unknown error");
-  }
-};
+  | {
+      feature: typeof SupportedTools.GenerateDescription;
+      content: { description: string };
+    }
+  | {
+      feature: typeof SupportedTools.GenerateSummary;
+      content: { summary: string };
+    }
+  | {
+      feature: typeof SupportedTools.GenerateExcerpt;
+      content: { excerpt: string };
+    };
+
+export const getSignedAIKey = (apiKey: string, provider: Provider) =>
+  postJson<SignAIKeyResponse>("/ai/key:signed", { apiKey, provider });
+
+export const generateAIContent = (input: GenerateAIContentInput) =>
+  postTextStream("/ai/generate", input);
+
+export const generateAIArticleContent = (
+  input: GenerateAIArticleContentInput
+) => postTextStream("/ai/content/generate", input);
 
 export const generateAIContentComplete = async (
-  input: GenerateAIContentCompleteInput["json"]
+  input: GenerateAIContentCompleteInput
 ): Promise<string> => {
-  try {
-    const response = await client.api.v1.ai.content.complete.$post({
-      json: input,
-    });
-    if (!response.ok) {
-      throw new HonoRPCError(
-        response.statusText,
-        response.status,
-        response.statusText
-      );
-    }
-    const data = await response.json();
-    return data.completion;
-  } catch (error) {
-    if (error instanceof HonoRPCError) {
-      throw error;
-    }
-    throw new HonoRPCError("unknown error", 500, "unknown error");
-  }
+  const { completion } = await postJson<{ completion: string }>(
+    "/ai/content/complete",
+    input
+  );
+  return completion;
 };
 
-export const generateAIArticleContent = async (
-  input: GenerateAIArticleContentInput["json"]
-) => {
-  try {
-    const response = await client.api.v1.ai.content.generate.$post({
-      json: input,
-    });
-
-    if (!response.ok) {
-      throw new HonoRPCError(
-        response.statusText,
-        response.status,
-        response.statusText
-      );
-    }
-
-    const body = response.body;
-    if (!body)
-      throw new HonoRPCError(
-        "Stream response body is undefined",
-        500,
-        "Stream response body is undefined"
-      );
-
-    const decoder = new TextDecoder();
-
-    return {
-      [Symbol.asyncIterator]: async function* () {
-        const reader = body.getReader();
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            yield decoder.decode(value);
-          }
-        } finally {
-          reader.releaseLock();
-        }
-      },
-      stream: body,
-    };
-  } catch (error) {
-    if (error instanceof HonoRPCError) {
-      throw error;
-    }
-    throw new HonoRPCError("unknown error", 500, "unknown error");
-  }
-};
-
-export const generateAIContentMeta = async (
-  input: GenerateAIContentMetaInput["json"]
-) => {
-  try {
-    const response = await client.api.v1.ai.content.meta.$post({
-      json: input,
-    });
-    if (!response.ok) {
-      throw new HonoRPCError(
-        response.statusText,
-        response.status,
-        response.statusText
-      );
-    }
-    return response.json();
-  } catch (error) {
-    if (error instanceof HonoRPCError) {
-      throw error;
-    }
-    throw new HonoRPCError("unknown error", 500, "unknown error");
-  }
-};
+export const generateAIContentMeta = (input: GenerateAIContentMetaInput) =>
+  postJson<GenerateAIContentMetaResponse>("/ai/content/meta", input);

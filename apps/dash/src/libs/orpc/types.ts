@@ -1,7 +1,10 @@
-import type { InferRouterOutputs, InferRouterInputs } from "@orpc/server";
+import type {
+  InferContractRouterOutputs,
+  InferContractRouterInputs,
+} from "@orpc/contract";
 
-import type { router } from "@chia/api/orpc/router";
+import type { routerContract } from "@chia/api/orpc/contracts";
 
-export type RouterOutputs = InferRouterOutputs<typeof router>;
+export type RouterOutputs = InferContractRouterOutputs<typeof routerContract>;
 
-export type RouterInputs = InferRouterInputs<typeof router>;
+export type RouterInputs = InferContractRouterInputs<typeof routerContract>;

@@ -1,26 +1,16 @@
+import { runPolicy } from "@chia/service-kit/adapters/orpc";
+import { sessionPolicy } from "@chia/service-kit/policies";
+
 import { baseOS } from "../utils";
 
+/**
+ * Thin binding around the shared `sessionPolicy` — the Hono side uses the very same
+ * policy through `toHonoMiddleware`.
+ */
 export const authGuard = baseOS
   .errors({
     UNAUTHORIZED: {},
   })
-  .middleware(async ({ next, context, errors }) => {
-    const sessionData =
-      context.session ??
-      (await context.auth?.api.getSession({
-        headers: context.headers,
-      }));
-
-    if (!sessionData?.session || !sessionData?.user) {
-      if (context.hooks?.onUnauthorized) {
-        context.hooks.onUnauthorized(errors.UNAUTHORIZED());
-      }
-      throw errors.UNAUTHORIZED();
-    }
-
-    return next({
-      context: {
-        session: sessionData,
-      },
-    });
-  });
+  .middleware(async ({ next, context }) =>
+    next({ context: await runPolicy(sessionPolicy(), context) })
+  );

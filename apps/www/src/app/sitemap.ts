@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
 
-import { Locale } from "@chia/db/types";
+import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import { getBaseUrl, WWW_BASE_URL } from "@chia/utils/config";
 import dayjs from "@chia/utils/day";
 
-import { client } from "@/libs/service/client.rsc";
+import { client } from "@/libs/orpc/client.rsc";
 import { Locale as ILocale } from "@/libs/utils/i18n";
 import routes from "@/shared/routes";
 
@@ -37,23 +37,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const feedsSitemapData = (
     await Promise.all(
       Object.values(Locale).map(async (locale) => {
-        const res = await client.api.v1.admin.public.feeds.$get({
-          query: {
-            limit: "1000",
-            type: "all",
-            orderBy: "updatedAt",
-            sortOrder: "desc",
-            withContent: "false",
-            published: "true",
-            locale,
-          },
+        const { items } = await client.content.feeds.list({
+          limit: 1000,
+          type: FeedType.All,
+          orderBy: FeedOrderBy.UpdatedAt,
+          sortOrder: "desc",
+          withContent: false,
+          published: true,
+          locale,
         });
 
-        if (!res.ok) {
-          throw new Error(`Failed to fetch feeds for locale ${locale}`);
-        }
-
-        return (await res.json()).items.map(
+        return items.map(
           (feed) =>
             ({
               url: `${baseUrl}/${localeResolver(locale)}/${feed.type}s/${feed.slug}`,

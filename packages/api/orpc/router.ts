@@ -1,15 +1,18 @@
 import * as apikeyRoutes from "./routes/apikey.route";
+import * as contentRoutes from "./routes/content.route";
+import * as emailRoutes from "./routes/email.route";
 import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
+import * as mediaRoutes from "./routes/media.route";
 import * as organizationRoutes from "./routes/organization.route";
 import * as spotifyRoutes from "./routes/spotify.route";
+import * as toolingsRoutes from "./routes/toolings.route";
 import * as userRoutes from "./routes/user.route";
 import { contractOS } from "./utils";
 
 export const router = contractOS.router({
   health: {
-    server: healthRoutes.healthRoute,
     client: healthRoutes.protectedHealthRoute,
   },
   apikey: {
@@ -49,6 +52,32 @@ export const router = contractOS.router({
   user: {
     "profile:update": userRoutes.updateUserProfileRoute,
     list: userRoutes.getInfiniteUsersRoute,
+  },
+  toolings: {
+    "link-preview": toolingsRoutes.linkPreviewRoute,
+  },
+  email: {
+    send: emailRoutes.sendContactEmailRoute,
+  },
+  content: {
+    feeds: {
+      list: contentRoutes.getPublicFeedsRoute,
+      total: contentRoutes.getPublicFeedsTotalRoute,
+      "details-by-slug": contentRoutes.getPublicFeedBySlugRoute,
+      "details-by-id": contentRoutes.getPublicFeedByIdRoute,
+      related: contentRoutes.getPublicRelatedFeedsRoute,
+      "translation:upsert": contentRoutes.upsertPublicFeedTranslationRoute,
+      "content:upsert": contentRoutes.upsertPublicFeedContentRoute,
+      update: contentRoutes.updatePublicFeedRoute,
+      "public-search": contentRoutes.searchPublicFeedsRoute,
+      search: contentRoutes.searchFeedsRoute,
+    },
+  },
+  media: {
+    spotify: {
+      playlist: mediaRoutes.getSpotifyPlaylistRoute,
+      playing: mediaRoutes.getSpotifyNowPlayingRoute,
+    },
   },
   spotify: {
     manage: {

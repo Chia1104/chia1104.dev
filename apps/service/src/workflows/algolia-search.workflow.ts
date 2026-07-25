@@ -1,7 +1,7 @@
 import { fetch } from "workflow";
 import * as z from "zod";
 
-import { client } from "@chia/api/algolia";
+import { getAlgoliaClient } from "@chia/api/algolia";
 
 import { env } from "../env";
 
@@ -22,7 +22,7 @@ export const deleteFeedFromAlgoliaWorkflow = async (
 
   await Promise.all(
     objectIDs.map(async (objectID) => {
-      await client.deleteObject({
+      await getAlgoliaClient().deleteObject({
         indexName: getIndexName(),
         objectID: objectID.toString(),
       });

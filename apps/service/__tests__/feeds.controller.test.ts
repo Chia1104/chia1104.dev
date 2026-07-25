@@ -7,9 +7,12 @@ const { mockSearchPublicFeedsService } = vi.hoisted(() => ({
   mockSearchPublicFeedsService: vi.fn(),
 }));
 
-vi.mock("../src/services/feeds.service", async (importOriginal) => {
+// The search services moved to `@chia/api/feeds/search`, next to the oRPC procedures
+// that now serve `/feeds/public/search` and `/feeds/search`. URLs and assertions below
+// are unchanged — only the mock target follows the code.
+vi.mock("@chia/api/feeds/search", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import("../src/services/feeds.service")>();
+    await importOriginal<typeof import("@chia/api/feeds/search")>();
   return {
     ...actual,
     searchPublicFeedsService: mockSearchPublicFeedsService,

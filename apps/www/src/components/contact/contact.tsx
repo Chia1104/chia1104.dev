@@ -15,6 +15,7 @@ import {
 } from "@heroui/react";
 import type { FormProps } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ORPCError } from "@orpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
@@ -28,8 +29,7 @@ import { cn } from "@chia/ui/utils/cn.util";
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { env } from "@/env";
-import { HonoRPCError } from "@/libs/service/error";
-import { sendEmail } from "@/services/email.service";
+import { orpc } from "@/libs/orpc/client";
 import type { Contact } from "@/shared/validator";
 import { contactSchema } from "@/shared/validator";
 
@@ -58,9 +58,9 @@ export const ContactForm = ({
   const t = useTranslations("contact.form");
   const tContact = useTranslations("contact");
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: sendEmail,
-  });
+  const { mutateAsync, isPending } = useMutation(
+    orpc.email.send.mutationOptions()
+  );
 
   const form = useForm<Contact>({
     defaultValues: {
@@ -84,8 +84,14 @@ export const ContactForm = ({
         if (error instanceof Error) {
           onError?.(error);
         }
-        if (error instanceof HonoRPCError) {
-          switch (error.code) {
+        // The captcha code travels in the error payload's issues, which is the shape
+        // `AppError` serialises to on both the REST and RPC surfaces.
+        if (error instanceof ORPCError) {
+          const issues = error.data as
+            | { errors?: { message?: string }[] }
+            | undefined;
+
+          switch (issues?.errors?.[0]?.message) {
             case CaptchaErrorCode.CaptchaFailed:
               return t("error.captcha-validation");
             case CaptchaErrorCode.CaptchaProviderNotSupported:

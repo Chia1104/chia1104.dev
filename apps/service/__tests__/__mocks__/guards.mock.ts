@@ -1,6 +1,43 @@
 import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
+import { baseOS } from "@chia/api/orpc/utils";
+
+// ============================================
+// oRPC guards
+//
+// Routes migrated off Hono are guarded by the oRPC middleware in
+// `@chia/api/orpc/guards/*` rather than `apps/service/src/guards/*`, so those modules
+// need pass-through equivalents of their own.
+// ============================================
+
+const FAKE_API_KEY = {
+  id: "test-api-key-id",
+  projectId: null,
+  userId: "test-user-id",
+  enabled: true,
+};
+
+/** Mock for the oRPC `apiKeyGuard` — skips API key verification. */
+export const orpcApiKeyGuard = vi.fn(() =>
+  baseOS.middleware(({ next }) => next({ context: { apiKey: FAKE_API_KEY } }))
+);
+
+/** Mock for the oRPC `rateLimitGuard` — skips rate limiting. */
+export const orpcRateLimitGuard = vi.fn(() =>
+  baseOS.middleware(({ next }) => next())
+);
+
+/** Mock for the oRPC `captchaGuard` — skips captcha verification. */
+export const orpcCaptchaGuard = baseOS.middleware(({ next }) => next());
+
+/** Mock for the oRPC `aiKeyGuard` — injects a fake provider token. */
+export const orpcAiKeyGuard = vi.fn(() =>
+  baseOS.middleware(({ next }) =>
+    next({ context: { AI_AUTH_TOKEN: "mock-ai-api-key" } })
+  )
+);
+
 /**
  * Mock for rateLimiterGuard
  * 在測試中跳過 rate limiting 檢查
@@ -10,14 +47,6 @@ export const rateLimiterGuard = vi.fn(() =>
     await next();
   })
 );
-
-/**
- * Mock for siteverify (captcha)
- * 在測試中跳過 captcha 驗證
- */
-export const siteverify = createMiddleware(async (_c, next) => {
-  await next();
-});
 
 /**
  * Mock for verifyAuth
@@ -120,19 +149,6 @@ export const mockRateLimiterExceeded = () => {
       return c.json({ error: "Too Many Requests" }, 429);
     })
   );
-};
-
-// 讓 siteverify (captcha) 失敗
-export const mockCaptchaFailed = () => {
-  return createMiddleware(async (c) => {
-    return c.json(
-      {
-        error: "Bad Request",
-        issues: [{ field: "captcha", message: "CAPTCHA_FAILED" }],
-      },
-      400
-    );
-  });
 };
 
 // 設置自訂的用戶資料

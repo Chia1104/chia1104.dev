@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/service-kit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./context": {
+      "types": "./src/context.ts",
+      "default": "./src/context.ts"
+    },
+    "./errors": {
+      "types": "./src/errors.ts",
+      "default": "./src/errors.ts"
+    },
+    "./policies": {
+      "types": "./src/policies/index.ts",
+      "default": "./src/policies/index.ts"
+    },
+    "./adapters/hono": {
+      "types": "./src/adapters/hono.ts",
+      "default": "./src/adapters/hono.ts"
+    },
+    "./adapters/orpc": {
+      "types": "./src/adapters/orpc.ts",
+      "default": "./src/adapters/orpc.ts"
+    },
+    "./bootstrap": {
+      "types": "./src/bootstrap.ts",
+      "default": "./src/bootstrap.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chia/auth": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chia/kv": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@hono/sentry": "catalog:hono",
+    "@orpc/server": "catalog:orpc",
+    "hono": "catalog:hono",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "typescript": "catalog:"
+  }
+}

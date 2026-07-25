@@ -1,9 +1,4 @@
-type Variables = {
-  db: import("@chia/db").DB;
-  kv: import("@chia/kv").Keyv;
-  clientIP: string;
-  auth?: import("@chia/auth").Auth;
-};
+type Variables = import("@chia/service-kit/context").ServiceContext;
 
 type HonoContext<
   TBindings = undefined,
