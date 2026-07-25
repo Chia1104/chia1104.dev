@@ -74,10 +74,6 @@ export const getPublicFeedsRoute = contractOS.content.feeds.list
       ...PUBLIC_LIST_SCOPE(opts.context.adminId),
     });
 
-    if (!data) {
-      throw opts.errors.NOT_FOUND();
-    }
-
     return data;
   });
 
