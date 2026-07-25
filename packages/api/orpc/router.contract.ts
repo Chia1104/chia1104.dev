@@ -28,7 +28,6 @@ export const routerContract = {
   },
   feeds: {
     list: feedsContracts.getFeedsWithMetaContract,
-    "admin-list": feedsContracts.getFeedsWithMetaByAdminIdContract,
     "details-by-slug": feedsContracts.getFeedBySlugContract,
     "details-by-id": feedsContracts.getFeedByIdContract,
     create: feedsContracts.createFeedContract,
@@ -69,6 +68,7 @@ export const routerContract = {
         contentContracts.upsertPublicFeedTranslationContract,
       "content:upsert": contentContracts.upsertPublicFeedContentContract,
       update: contentContracts.updatePublicFeedContract,
+      "public-list": contentContracts.listPublicFeedsContract,
       "public-search": contentContracts.searchPublicFeedsContract,
       search: contentContracts.searchFeedsContract,
     },

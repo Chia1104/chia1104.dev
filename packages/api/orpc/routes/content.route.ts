@@ -32,9 +32,32 @@ import { contractOS } from "../utils";
 
 // ============================================
 // Public reads (API key + configured admin)
+//
+// `apps/www` is deployed on Vercel while the service runs on Railway, so every call
+// crosses the public internet and carries the project API key. On top of that, these
+// procedures back a single-author public blog: the visible set is *always* the configured
+// admin's published feeds, so the scope is fixed in the handler rather than accepted as
+// input. A caller holding the API key still cannot ask for someone else's feeds or for
+// unpublished drafts.
 // ============================================
 
 const publicFeedGuard = apiKeyGuard();
+
+/**
+ * The only scope the public read surface may ever use.
+ *
+ * `PUBLIC_SCOPE` is the detail-query shape, `PUBLIC_LIST_SCOPE` the list-query shape —
+ * the repository spells the published filter differently for the two.
+ */
+const PUBLIC_SCOPE = (adminId: string) => ({
+  userId: adminId,
+  published: true as const,
+});
+
+const PUBLIC_LIST_SCOPE = (adminId: string) => ({
+  userId: adminId,
+  whereAnd: { published: true },
+});
 
 export const getPublicFeedsRoute = contractOS.content.feeds.list
   .use(publicFeedGuard)
@@ -47,9 +70,8 @@ export const getPublicFeedsRoute = contractOS.content.feeds.list
       sortOrder: opts.input.sortOrder,
       cursor: opts.input.nextCursor,
       withContent: opts.input.withContent,
-      userId: opts.context.adminId,
       locale: opts.input.locale,
-      whereAnd: { published: opts.input.published },
+      ...PUBLIC_LIST_SCOPE(opts.context.adminId),
     });
 
     if (!data) {
@@ -73,10 +95,12 @@ export const getPublicFeedBySlugRoute = contractOS.content.feeds[
   "details-by-slug"
 ]
   .use(publicFeedGuard)
+  .use(adminIdGuard)
   .handler(async (opts) => {
     const feed = await getFeedBySlug(opts.context.db, {
       slug: opts.input.slug,
       locale: opts.input.locale,
+      ...PUBLIC_SCOPE(opts.context.adminId),
     });
 
     if (!feed) {
@@ -88,10 +112,12 @@ export const getPublicFeedBySlugRoute = contractOS.content.feeds[
 
 export const getPublicFeedByIdRoute = contractOS.content.feeds["details-by-id"]
   .use(publicFeedGuard)
+  .use(adminIdGuard)
   .handler(async (opts) => {
     const feed = await getFeedById(opts.context.db, {
       feedId: opts.input.feedId,
       locale: opts.input.locale,
+      ...PUBLIC_SCOPE(opts.context.adminId),
     });
 
     if (!feed) {
@@ -165,6 +191,32 @@ export const updatePublicFeedRoute = contractOS.content.feeds.update
 // ============================================
 // Search
 // ============================================
+
+/**
+ * Public counterpart of `list` for the browser — no API key, but the same fixed scope, so
+ * it can never surface a draft or another author's feed.
+ */
+export const listPublicFeedsRoute = contractOS.content.feeds["public-list"]
+  .use(rateLimitGuard({ prefix: "rate-limiter:feeds" }))
+  .use(adminIdGuard)
+  .handler(async (opts) => {
+    const data = await getInfiniteFeedsByUserId(opts.context.db, {
+      type: opts.input.type,
+      limit: opts.input.limit,
+      orderBy: opts.input.orderBy,
+      sortOrder: opts.input.sortOrder,
+      cursor: opts.input.nextCursor,
+      withContent: opts.input.withContent,
+      locale: opts.input.locale,
+      ...PUBLIC_LIST_SCOPE(opts.context.adminId),
+    });
+
+    if (!data) {
+      throw opts.errors.NOT_FOUND();
+    }
+
+    return data;
+  });
 
 export const searchPublicFeedsRoute = contractOS.content.feeds["public-search"]
   .use(rateLimitGuard({ prefix: "rate-limiter:feeds" }))

@@ -169,6 +169,24 @@ export const updatePublicFeedContract = oc
 // Search
 // ============================================
 
+/**
+ * Public feed list — the browser's infinite scroll.
+ *
+ * Same data as `list`, but reachable **without** the project API key: the key
+ * authenticates one deployment to another (www → service) and cannot be shipped to a
+ * browser. Scope is identical and equally fixed in the handler, so the two differ only in
+ * who is allowed to call them.
+ */
+export const listPublicFeedsContract = oc
+  .route({ method: "GET", path: "/feeds/public" })
+  .errors({
+    NOT_FOUND: {},
+    TOO_MANY_REQUESTS: {},
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .input(publicFeedsInfiniteSchema)
+  .output(withMetaSchema(feedListSchema));
+
 export const searchPublicFeedsContract = oc
   .route({ method: "GET", path: "/feeds/public/search" })
   .errors({

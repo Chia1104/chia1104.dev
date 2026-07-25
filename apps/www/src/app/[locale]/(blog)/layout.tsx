@@ -18,7 +18,6 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
           <FeedNavigation
             feeds={client.content.feeds.list({
               limit: 4,
-              published: true,
               withContent: false,
               orderBy: FeedOrderBy.CreatedAt,
               sortOrder: "desc",
@@ -30,7 +29,6 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
           <FeedNavigation
             feeds={client.content.feeds.list({
               limit: 4,
-              published: true,
               withContent: false,
               orderBy: FeedOrderBy.CreatedAt,
               sortOrder: "desc",

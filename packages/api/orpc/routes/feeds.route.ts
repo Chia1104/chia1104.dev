@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 
 import {
   getInfiniteFeeds,
-  getInfiniteFeedsByUserId,
   getFeedBySlug,
   getFeedById,
   getFeedForIndexing,
@@ -17,7 +16,7 @@ import {
 import { ContentType, Locale } from "@chia/db/types";
 
 import { feedEvents } from "../events";
-import { adminGuard, adminIdGuard } from "../guards/admin.guard";
+import { adminGuard } from "../guards/admin.guard";
 import { authGuard } from "../guards/auth.guard";
 import { contractOS, slugger } from "../utils";
 
@@ -28,20 +27,6 @@ export const getFeedsWithMetaRoute = contractOS.feeds.list
       ...opts.input,
       enableDeleted: true,
       whereAnd: { userId: opts.context.session.user.id ?? "" },
-    });
-    if (!data) {
-      throw opts.errors.NOT_FOUND();
-    }
-    return data;
-  });
-
-export const getFeedsWithMetaByAdminIdRoute = contractOS.feeds["admin-list"]
-  .use(adminIdGuard)
-  .handler(async (opts) => {
-    const data = await getInfiniteFeedsByUserId(opts.context.db, {
-      ...opts.input,
-      userId: opts.context.adminId,
-      whereAnd: { published: true },
     });
     if (!data) {
       throw opts.errors.NOT_FOUND();

@@ -33,7 +33,6 @@ export const generateStaticParams = async () => {
   const feeds = await client.content.feeds.list({
     limit: 100,
     type: FeedType.All,
-    published: true,
     withContent: false,
     orderBy: FeedOrderBy.CreatedAt,
     sortOrder: "desc",

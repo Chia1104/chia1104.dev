@@ -112,8 +112,11 @@ export const getFeedByIdSchema = z.object({
 const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
 
 /**
- * Input for the public feed list. Mirrors the `getFeedsWithMetaSchema` the Hono route
- * validated with, so the REST URL keeps accepting exactly what it accepted before.
+ * Input for the public feed list.
+ *
+ * `published` and `userId` are deliberately **absent**: this is the public blog surface,
+ * so the handler pins them to the configured admin's published feeds. The previous schema
+ * accepted `published` as a query param, which let a caller ask for drafts.
  */
 export const publicFeedsInfiniteSchema = z.object({
   // Deliberately uncapped, matching the previous schema: the sitemap asks for every
@@ -121,7 +124,6 @@ export const publicFeedsInfiniteSchema = z.object({
   limit: z.coerce.number().int().positive().optional().default(20),
   nextCursor: z.coerce.number().int().optional(),
   withContent: flexibleBoolean.optional().default(false),
-  published: flexibleBoolean.optional().default(false),
   locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
@@ -194,15 +196,6 @@ export const feedListSchema = feedWithTranslationsSchema.extend({
 // ============================================
 
 export const getFeedsWithMetaContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
-  .input(infiniteSchema)
-  .output(withMetaSchema(feedListSchema));
-
-export const getFeedsWithMetaByAdminIdContract = oc
   .errors({
     UNAUTHORIZED: {},
     NOT_FOUND: {},

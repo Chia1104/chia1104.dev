@@ -8,25 +8,22 @@ import { withServiceEndpoint } from "@chia/utils/config";
 import { Service } from "@chia/utils/schema";
 
 /**
- * Per-call client context. `headers` exists so a caller can attach request headers a
- * procedure's guards read — e.g. the captcha token for `email.send`, which travels in a
- * header so the policy never has to consume the request body.
+ * Browser-side client — talks to the service directly.
+ *
+ * It may only call the service's **public** procedures. The project API key authenticates
+ * one deployment to another (www on Vercel → service on Railway) and must never reach a
+ * browser, so anything the browser needs is exposed as a public procedure instead.
+ *
+ * Server-side callers use `client.rsc.ts`, which does carry the key.
  */
-export interface ClientContext {
-  headers?: Record<string, string>;
-}
-
-export const link = new RPCLink<ClientContext>({
+export const link = new RPCLink({
   url: withServiceEndpoint("/rpc", Service.LegacyService, {
     isInternal: false,
     version: "LEGACY",
   }),
-  headers: ({ context }) => context?.headers ?? {},
 });
 
-export const client: ContractRouterClient<
-  typeof routerContract,
-  ClientContext
-> = createORPCClient(link);
+export const client: ContractRouterClient<typeof routerContract> =
+  createORPCClient(link);
 
 export const orpc = createTanstackQueryUtils(client);

@@ -25,7 +25,6 @@ export const router = contractOS.router({
   },
   feeds: {
     list: feedsRoutes.getFeedsWithMetaRoute,
-    "admin-list": feedsRoutes.getFeedsWithMetaByAdminIdRoute,
     "details-by-slug": feedsRoutes.getFeedBySlugRoute,
     "details-by-id": feedsRoutes.getFeedByIdRoute,
     create: feedsRoutes.createFeedRoute,
@@ -69,6 +68,7 @@ export const router = contractOS.router({
       "translation:upsert": contentRoutes.upsertPublicFeedTranslationRoute,
       "content:upsert": contentRoutes.upsertPublicFeedContentRoute,
       update: contentRoutes.updatePublicFeedRoute,
+      "public-list": contentRoutes.listPublicFeedsRoute,
       "public-search": contentRoutes.searchPublicFeedsRoute,
       search: contentRoutes.searchFeedsRoute,
     },

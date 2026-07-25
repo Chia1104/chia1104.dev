@@ -43,7 +43,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           orderBy: FeedOrderBy.UpdatedAt,
           sortOrder: "desc",
           withContent: false,
-          published: true,
           locale,
         });
 

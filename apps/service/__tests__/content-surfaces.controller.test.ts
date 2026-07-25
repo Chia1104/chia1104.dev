@@ -53,18 +53,79 @@ describe("content.feeds.list across both surfaces", () => {
   });
 
   it("passes the parsed flags through to the repository", async () => {
-    await app.request(
-      "/api/v1/admin/public/feeds?limit=10&published=true&withContent=false"
-    );
+    await app.request("/api/v1/admin/public/feeds?limit=10&withContent=false");
 
     expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({
-        limit: 10,
-        withContent: false,
-        whereAnd: { published: true },
-      })
+      expect.objectContaining({ limit: 10, withContent: false })
     );
+  });
+
+  describe("public scope is fixed by the handler, not the caller", () => {
+    it("ignores a caller-supplied published=false and still lists only published feeds", async () => {
+      await app.request(
+        "/api/v1/admin/public/feeds?limit=10&published=false&type=all"
+      );
+
+      expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          whereAnd: { published: true },
+          userId: expect.any(String),
+        })
+      );
+    });
+
+    it("scopes details-by-slug to the admin's published feeds", async () => {
+      await app.request("/api/v1/admin/public/feeds/test-feed-1");
+
+      expect(dbMocks.getFeedBySlug).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          slug: "test-feed-1",
+          published: true,
+          userId: expect.any(String),
+        })
+      );
+    });
+
+    it("scopes details-by-id to the admin's published feeds", async () => {
+      await app.request("/api/v1/admin/public/feeds:id/1");
+
+      expect(dbMocks.getFeedById).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          feedId: 1,
+          published: true,
+          userId: expect.any(String),
+        })
+      );
+    });
+
+    // `public-list` is the browser's surface: reachable without the project API key,
+    // because that key authenticates www → service and cannot be shipped to a browser.
+    // Its scope must therefore be just as tightly fixed as the API-key-guarded `list`.
+    it("serves public-list without an API key, still scoped to published feeds", async () => {
+      const res = await app.request("/api/v1/feeds/public?limit=10&type=all");
+
+      expect(res.status).toBe(200);
+      expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          whereAnd: { published: true },
+          userId: expect.any(String),
+        })
+      );
+    });
+
+    it("ignores a caller-supplied published=false on public-list too", async () => {
+      await app.request("/api/v1/feeds/public?limit=10&published=false");
+
+      expect(dbMocks.getInfiniteFeedsByUserId).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ whereAnd: { published: true } })
+      );
+    });
   });
 
   it("serves the related feeds and search procedures over their legacy URLs", async () => {
