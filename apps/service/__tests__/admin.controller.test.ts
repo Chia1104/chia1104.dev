@@ -25,12 +25,16 @@ describe("Admin Controller", () => {
       expect(res.ok).toBe(true);
       const data = await res.json();
       expect(data).toHaveProperty("items");
-      expect(data).toHaveProperty("meta");
+      // `nextCursor`, not `meta` — the repository returns `{ items, nextCursor }`; the
+      // old fixture invented a `meta` wrapper production never produced.
+      expect(data).toHaveProperty("nextCursor");
     });
   });
 
   describe("GET /api/v1/admin/public/feeds/:slug/related", () => {
     it("should return related published feeds", async () => {
+      // Faithful to what `getRelatedFeeds` selects — the oRPC procedure validates its
+      // output against the contract, so a partial row is no longer accepted.
       dbMocks.getRelatedFeeds.mockResolvedValue([
         {
           id: 2,
@@ -38,6 +42,10 @@ describe("Admin Controller", () => {
           slug: "related-note",
           locale: "zh-TW",
           title: "Related note",
+          description: "Related description",
+          excerpt: "Related excerpt",
+          createdAt: new Date("2024-01-01").toISOString(),
+          similarity: 0.92,
         },
       ]);
 

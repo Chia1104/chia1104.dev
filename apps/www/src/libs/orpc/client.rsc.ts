@@ -18,6 +18,9 @@ export const link = new RPCLink({
   }),
   headers: {
     [X_CF_BYPASS_TOKEN]: env.CF_BYPASS_TOKEN ?? "",
+    // The `content.feeds.*` procedures are API-key guarded — the same key the Hono
+    // `hc` RSC client used to send for `/api/v1/admin/public/feeds*`.
+    "x-ch-api-key": env.CH_API_KEY ?? "",
   },
 });
 

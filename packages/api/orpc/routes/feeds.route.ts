@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 
 import {
   getInfiniteFeeds,
-  getInfiniteFeedsByUserId,
   getFeedBySlug,
   getFeedById,
   getFeedForIndexing,
@@ -16,6 +15,7 @@ import {
 } from "@chia/db/repos/feeds";
 import { ContentType, Locale } from "@chia/db/types";
 
+import { feedEvents } from "../events";
 import { adminGuard } from "../guards/admin.guard";
 import { authGuard } from "../guards/auth.guard";
 import { contractOS, slugger } from "../utils";
@@ -27,24 +27,6 @@ export const getFeedsWithMetaRoute = contractOS.feeds.list
       ...opts.input,
       enableDeleted: true,
       whereAnd: { userId: opts.context.session.user.id ?? "" },
-    });
-    if (!data) {
-      throw opts.errors.NOT_FOUND();
-    }
-    return data;
-  });
-
-export const getFeedsWithMetaByAdminIdRoute = contractOS.feeds["admin-list"]
-  .use(
-    adminGuard({
-      enabled: false,
-    })
-  )
-  .handler(async (opts) => {
-    const data = await getInfiniteFeedsByUserId(opts.context.db, {
-      ...opts.input,
-      userId: opts.context.adminId,
-      whereAnd: { published: true },
     });
     if (!data) {
       throw opts.errors.NOT_FOUND();
@@ -117,8 +99,8 @@ export const createFeedRoute = contractOS.feeds.create
       ),
     });
 
-    if (opts.context.hooks?.onFeedChanged && data) {
-      await opts.context.hooks.onFeedChanged(data.id);
+    if (data) {
+      await feedEvents.changed(data.id);
     }
 
     return data;
@@ -185,9 +167,7 @@ export const updateFeedRoute = contractOS.feeds.update
       contents: contentsData,
     };
 
-    if (opts.context.hooks?.onFeedChanged) {
-      await opts.context.hooks.onFeedChanged(updatedFeed.id);
-    }
+    await feedEvents.changed(updatedFeed.id);
 
     return updatedFeed;
   });
@@ -212,11 +192,7 @@ export const deleteFeedRoute = contractOS.feeds.delete
       });
     }
 
-    if (opts.context.hooks?.onFeedRemoved) {
-      await opts.context.hooks.onFeedRemoved(
-        feed.translations.map(({ id }) => id)
-      );
-    }
+    await feedEvents.removed(feed.translations.map(({ id }) => id));
   });
 
 export const restoreFeedRoute = contractOS.feeds.restore
@@ -228,7 +204,5 @@ export const restoreFeedRoute = contractOS.feeds.restore
     if (!data) {
       throw opts.errors.NOT_FOUND();
     }
-    if (opts.context.hooks?.onFeedChanged) {
-      await opts.context.hooks.onFeedChanged(data.id);
-    }
+    await feedEvents.changed(data.id);
   });

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { safe } from "@orpc/client";
 import { googleFonts } from "takumi-js/helpers";
 import { ImageResponse } from "takumi-js/response";
 
@@ -7,8 +8,8 @@ import OpenGraph from "@chia/ui/open-graph";
 import dayjs from "@chia/utils/day";
 import { errorGenerator } from "@chia/utils/server";
 
+import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import { getFeedBySlug } from "@/services/feeds.service";
 
 const imageSize = {
   width: 1200,
@@ -26,8 +27,17 @@ export async function createFeedOpenGraphImage({
   slug,
   theme = "light",
 }: CreateFeedOpenGraphImageOptions) {
-  const post = await getFeedBySlug(slug, dbLocaleResolver(locale));
-  const translation = post?.translations[0];
+  const { error, data: post } = await safe(
+    client.content.feeds["details-by-slug"]({
+      slug,
+      locale: dbLocaleResolver(locale),
+    })
+  );
+  if (error) {
+    return NextResponse.json(errorGenerator(404), { status: 404 });
+  }
+
+  const translation = post.translations[0];
 
   if (!translation) {
     return NextResponse.json(errorGenerator(404), { status: 404 });

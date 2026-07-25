@@ -310,11 +310,26 @@ const queryInfiniteFeeds = async (
   };
 };
 
+interface FeedDetailsScope {
+  /**
+   * Restrict to a single author. Callers serving the public site pass the configured
+   * admin id so a feed belonging to anyone else is invisible.
+   */
+  userId?: string;
+  /**
+   * Restrict to published feeds. Public callers must set this — the detail query is
+   * addressable by slug, so without it any draft is readable by anyone who knows or
+   * guesses its slug.
+   */
+  published?: boolean;
+}
+
 const getFeedDetails = async (
   db: DB,
   identifier: { id: number } | { slug: string },
   locale?: Locale,
-  enableDeleted = false
+  enableDeleted = false,
+  scope?: FeedDetailsScope
 ) => {
   const [feed] = await db
     .select()
@@ -324,7 +339,11 @@ const getFeedDetails = async (
         "id" in identifier
           ? eq(feeds.id, identifier.id)
           : eq(feeds.slug, identifier.slug),
-        enableDeleted ? undefined : isNull(feeds.deletedAt)
+        enableDeleted ? undefined : isNull(feeds.deletedAt),
+        scope?.userId ? eq(feeds.userId, scope.userId) : undefined,
+        scope?.published === undefined
+          ? undefined
+          : eq(feeds.published, scope.published)
       )
     )
     .limit(1)
@@ -433,26 +452,36 @@ const getFeedDetails = async (
 export const getFeedBySlug = withDTO(
   async (
     db,
-    params: { slug: string; locale?: Locale; enableDeleted?: boolean }
+    params: {
+      slug: string;
+      locale?: Locale;
+      enableDeleted?: boolean;
+    } & FeedDetailsScope
   ) =>
     await getFeedDetails(
       db,
       { slug: params.slug },
       params.locale,
-      params.enableDeleted
+      params.enableDeleted,
+      { userId: params.userId, published: params.published }
     )
 );
 
 export const getFeedById = withDTO(
   async (
     db,
-    params: { feedId: number; locale?: Locale; enableDeleted?: boolean }
+    params: {
+      feedId: number;
+      locale?: Locale;
+      enableDeleted?: boolean;
+    } & FeedDetailsScope
   ) =>
     await getFeedDetails(
       db,
       { id: params.feedId },
       params.locale,
-      params.enableDeleted
+      params.enableDeleted,
+      { userId: params.userId, published: params.published }
     )
 );
 

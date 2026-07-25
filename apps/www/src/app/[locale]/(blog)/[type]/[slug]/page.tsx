@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense, ViewTransition } from "react";
 
 import { Avatar } from "@heroui/react";
+import { safe } from "@orpc/client";
 import { ErrorBoundary } from "@sentry/nextjs";
 import { all } from "better-all";
 import { getTranslations } from "next-intl/server";
@@ -10,6 +11,7 @@ import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
 import { getContentProps } from "@chia/contents/services";
+import { FeedOrderBy, FeedType } from "@chia/db/types";
 import Meta from "@chia/meta";
 import DateFormat from "@chia/ui/date-format";
 import { WWW_BASE_URL, getBaseUrl } from "@chia/utils/config";
@@ -22,13 +24,19 @@ import {
 } from "@/components/blog/related-feeds";
 import TocFooterMeta from "@/components/blog/toc-footer-meta";
 import WrittenBy from "@/components/blog/written-by";
+import { client } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import { getFeedBySlug, getFeeds } from "@/services/feeds.service";
 
 export const revalidate = 300;
 
 export const generateStaticParams = async () => {
-  const feeds = await getFeeds(100);
+  const feeds = await client.content.feeds.list({
+    limit: 100,
+    type: FeedType.All,
+    withContent: false,
+    orderBy: FeedOrderBy.CreatedAt,
+    sortOrder: "desc",
+  });
 
   return feeds.items.map((feed) => ({
     type: `${feed.type}s`,
@@ -45,10 +53,10 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { slug, locale } = await params;
   try {
-    const feed = await getFeedBySlug(slug, dbLocaleResolver(locale));
-    if (!feed) {
-      notFound();
-    }
+    const feed = await client.content.feeds["details-by-slug"]({
+      slug,
+      locale: dbLocaleResolver(locale),
+    });
     return {
       title: feed.translations[0]?.title,
       description: feed.translations[0]?.description,
@@ -69,7 +77,12 @@ const Page = async ({
   const { slug, locale, type } = await params;
   const dbLocale = dbLocaleResolver(locale);
   const { feed, t } = await all({
-    feed: async () => await getFeedBySlug(slug, dbLocale),
+    feed: async () => {
+      const { error, data } = await safe(
+        client.content.feeds["details-by-slug"]({ slug, locale: dbLocale })
+      );
+      return error ? null : data;
+    },
     t: async () => await getTranslations("blog"),
   });
 

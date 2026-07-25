@@ -18,7 +18,7 @@ import { orpc } from "@/libs/orpc/client";
 import type { RouterInputs } from "@/libs/orpc/types";
 
 interface Props {
-  query?: RouterInputs["feeds"]["list"];
+  query?: RouterInputs["content"]["feeds"]["public-list"];
   nextCursor?: string | number | null;
   type: FeedType;
 }
@@ -28,10 +28,12 @@ const FeedList: FC<Props> = ({ nextCursor, query = {}, type }) => {
   const t = useTranslations(`blog.posts`);
   const { data, isSuccess, isLoading, isError, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
-      orpc.feeds["admin-list"].infiniteOptions({
+      orpc.content.feeds["public-list"].infiniteOptions({
+        // `nextCursor` is omitted rather than nulled for the first page: the contract
+        // coerces it to a number, and `null` would coerce to cursor 0.
         input: (pageParam) => ({
           ...query,
-          cursor: pageParam,
+          nextCursor: pageParam ?? undefined,
         }),
         getNextPageParam: (lastPage) => {
           if (!lastPage.nextCursor) return null;

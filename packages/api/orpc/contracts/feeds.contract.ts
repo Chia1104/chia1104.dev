@@ -2,6 +2,7 @@ import { oc } from "@orpc/contract";
 import * as z from "zod";
 
 import { locale } from "@chia/db";
+import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import {
   infiniteSchema,
   feedSchema,
@@ -100,6 +101,35 @@ export const getFeedByIdSchema = z.object({
   locale: z.enum(locale.enumValues).optional(),
 });
 
+/**
+ * Accepts a JSON boolean or its query-string spelling.
+ *
+ * The same procedure is reachable over RPC (where values arrive as real JSON) and as
+ * `GET /admin/public/feeds` (where every value is a string), so the flags have to take
+ * both. A bare `z.stringbool()` would reject `true`; a bare `z.boolean()` would reject
+ * `"true"`.
+ */
+const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
+
+/**
+ * Input for the public feed list.
+ *
+ * `published` and `userId` are deliberately **absent**: this is the public blog surface,
+ * so the handler pins them to the configured admin's published feeds. The previous schema
+ * accepted `published` as a query param, which let a caller ask for drafts.
+ */
+export const publicFeedsInfiniteSchema = z.object({
+  // Deliberately uncapped, matching the previous schema: the sitemap asks for every
+  // published feed in one call.
+  limit: z.coerce.number().int().positive().optional().default(20),
+  nextCursor: z.coerce.number().int().optional(),
+  withContent: flexibleBoolean.optional().default(false),
+  locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
+  orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+  type: z.enum(FeedType).optional(),
+});
+
 // ============================================
 // Output Schemas
 // ============================================
@@ -146,7 +176,7 @@ export const feedWithTranslationsSchema = z.object({
     .optional(),
 });
 
-const feedListSchema = feedWithTranslationsSchema.extend({
+export const feedListSchema = feedWithTranslationsSchema.extend({
   translations: z.array(
     z.object({
       ...feedTranslationSchema.omit({
@@ -166,15 +196,6 @@ const feedListSchema = feedWithTranslationsSchema.extend({
 // ============================================
 
 export const getFeedsWithMetaContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
-  .input(infiniteSchema)
-  .output(withMetaSchema(feedListSchema));
-
-export const getFeedsWithMetaByAdminIdContract = oc
   .errors({
     UNAUTHORIZED: {},
     NOT_FOUND: {},

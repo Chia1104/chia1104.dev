@@ -7,9 +7,12 @@ const { mockSearchPublicFeedsService } = vi.hoisted(() => ({
   mockSearchPublicFeedsService: vi.fn(),
 }));
 
-vi.mock("../src/services/feeds.service", async (importOriginal) => {
+// The search services moved to `@chia/api/feeds/search`, next to the oRPC procedures
+// that now serve `/feeds/public/search` and `/feeds/search`. URLs and assertions below
+// are unchanged — only the mock target follows the code.
+vi.mock("@chia/api/feeds/search", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import("../src/services/feeds.service")>();
+    await importOriginal<typeof import("@chia/api/feeds/search")>();
   return {
     ...actual,
     searchPublicFeedsService: mockSearchPublicFeedsService,
@@ -23,55 +26,6 @@ describe("Feeds Controller", () => {
     mockSearchPublicFeedsService.mockReset();
     mockSearchPublicFeedsService.mockResolvedValue([]);
   });
-  describe("GET /api/v1/feeds/public", () => {
-    it("should return public feeds", async () => {
-      const res = await app.request("/api/v1/feeds/public");
-
-      expect(res.ok).toBe(true);
-      expect(res.status).toBe(200);
-      const data = await res.json();
-      expect(data).toHaveProperty("items");
-      expect(data).toHaveProperty("meta");
-    }, 15000);
-
-    it("should handle limit parameter", async () => {
-      const res = await app.request("/api/v1/feeds/public?limit=5");
-
-      expect(res.ok).toBe(true);
-      const data = await res.json();
-      expect(data.items).toBeDefined();
-      expect(Array.isArray(data.items)).toBe(true);
-    }, 15000);
-
-    it("should reject invalid limit parameter", async () => {
-      const res = await app.request(
-        "/api/v1/feeds/public?limit=foo&orderBy=updatedAt"
-      );
-
-      expect(res.status).toBe(400);
-      const data = await res.json();
-      expect(data).toHaveProperty("code");
-    }, 15000);
-
-    it("should handle orderBy parameter", async () => {
-      const res = await app.request(
-        "/api/v1/feeds/public?orderBy=createdAt&sortOrder=desc"
-      );
-
-      expect(res.ok).toBe(true);
-      const data = await res.json();
-      expect(data).toHaveProperty("items");
-    }, 15000);
-
-    it("should handle locale parameter", async () => {
-      const res = await app.request("/api/v1/feeds/public?locale=en");
-
-      expect(res.ok).toBe(true);
-      const data = await res.json();
-      expect(data).toHaveProperty("items");
-    }, 15000);
-  });
-
   describe("GET /api/v1/feeds/public/search", () => {
     it("should return public Algolia search results", async () => {
       mockSearchPublicFeedsService.mockResolvedValue([

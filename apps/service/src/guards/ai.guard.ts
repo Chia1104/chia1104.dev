@@ -1,5 +1,4 @@
 import type { Context } from "hono";
-import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
 import {
@@ -9,77 +8,69 @@ import {
 } from "@chia/ai/constants";
 import { Provider } from "@chia/ai/types";
 import { verifyApiKey } from "@chia/ai/utils";
+import { applyPolicy } from "@chia/service-kit/adapters/hono";
+import { aiKeyPolicy, AI_AUTH_TOKEN } from "@chia/service-kit/policies";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "../env";
 
-export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
+export { AI_AUTH_TOKEN };
 
-const getApiKey = (
-  c: Context<HonoContext<undefined, { AI_AUTH_TOKEN: string }>>,
-  provider?: Provider
-) => {
+type AiContext = HonoContext<undefined, Variables & { AI_AUTH_TOKEN: string }>;
+
+const cookieName = (provider?: Provider) => {
   switch (provider) {
     case Provider.OpenAI:
-      return getCookie(c, OPENAI_API_KEY)?.toString();
+      return OPENAI_API_KEY;
     case Provider.Anthropic:
-      return getCookie(c, ANTHROPIC_API_KEY)?.toString();
+      return ANTHROPIC_API_KEY;
     case Provider.Google:
-      return getCookie(c, GENAI_API_KEY)?.toString();
+      return GENAI_API_KEY;
     default:
-      return "";
+      return undefined;
   }
 };
 
+/**
+ * Resolves the caller's provider API key from cookies into `c.var.AI_AUTH_TOKEN`.
+ *
+ * Which provider to look for is request-shaped — it can come from the JSON body — so it
+ * is resolved here and handed to the shared `aiKeyPolicy` as an option. The policy
+ * itself only ever reads the service context.
+ */
 export const ai = (
   provider?: Provider,
-  enabled: (
-    c: Context<HonoContext<undefined, { AI_AUTH_TOKEN: string }>>
-  ) => Promise<boolean> | boolean = () => true
+  enabled: (c: Context<AiContext>) => Promise<boolean> | boolean = () => true
 ) =>
-  createMiddleware<HonoContext<undefined, { AI_AUTH_TOKEN: string }>>(
-    async (c, next) => {
-      if (!!enabled && !(await enabled(c))) {
-        return next();
-      }
-      if (!env.AI_AUTH_PRIVATE_KEY) {
-        return c.json(errorGenerator(503), 503, {
-          "Retry-After": "3600",
-        });
-      }
-      const { data: json } = await tryCatch(
-        c.req.json<{ model: { provider: Provider } }>()
-      );
-      const { data: authToken } = await tryCatch(
-        getApiKey(c, provider ?? json?.model?.provider)
-      );
-      if (!authToken) {
-        return c.json(
-          errorGenerator(401, [
-            {
-              field: "api_key",
-              message: "Missing or invalid API key",
-            },
-          ]),
-          401
-        );
-      }
-      const { data: apiKey, error } = await tryCatch(
-        verifyApiKey(authToken, env.AI_AUTH_PRIVATE_KEY).apiKey
-      );
-      if (error) {
-        return c.json(
-          errorGenerator(401, [
-            {
-              field: "api_key",
-              message: "Missing or invalid API key",
-            },
-          ]),
-          401
-        );
-      }
-      c.set(AI_AUTH_TOKEN, apiKey);
-      await next();
+  createMiddleware<AiContext>(async (c, next) => {
+    if (!(await enabled(c))) {
+      return next();
     }
-  );
+
+    const privateKey = env.AI_AUTH_PRIVATE_KEY;
+
+    if (!privateKey) {
+      return c.json(errorGenerator(503), 503, {
+        "Retry-After": "3600",
+      });
+    }
+
+    const { data: json } = await tryCatch(
+      c.req.json<{ model: { provider: Provider } }>()
+    );
+
+    const denied = await applyPolicy(
+      c,
+      aiKeyPolicy({
+        cookieName: cookieName(provider ?? json?.model?.provider),
+        verify: (encoded) => verifyApiKey(encoded, privateKey),
+      })
+    );
+
+    if (denied) {
+      return denied;
+    }
+
+    await next();
+  });

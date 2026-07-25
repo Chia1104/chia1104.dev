@@ -25,6 +25,7 @@
     "@chia/db": "workspace:*",
     "@chia/kv": "workspace:*",
     "@chia/meta": "workspace:*",
+    "@chia/service-kit": "workspace:*",
     "@chia/themes": "workspace:*",
     "@chia/ui": "workspace:*",
     "@chia/utils": "workspace:*",
