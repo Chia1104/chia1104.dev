@@ -27,8 +27,7 @@ Work in this order:
 3. Decide the default locale (zh-TW unless the topic is clearly English-first) and set the
    feed metadata: \`type\`, \`slug\` (run \`slugify\` first), \`defaultLocale\`.
 4. Write the body for the default locale, then set its title, excerpt, description and summary.
-5. \`validate_draft\` and fix everything it reports.
-6. Stop and show me a summary. Do NOT commit — I will tell you when.
+5. Stop and show me a summary. Do NOT commit — I will tell you when.
 `
 );
 
@@ -41,8 +40,7 @@ Produce the $1 version of the current draft.
 Read the \`bilingual-parity\` skill first, then the tone skill for $1. This is a rewrite, not a
 translation: same structure, same code, prose that reads as though written in $1 originally.
 
-Write real per-locale metadata — do not copy the other locale's. Finish with \`validate_draft\`
-for $1.
+Write real per-locale metadata — do not copy the other locale's.
 `
 );
 
@@ -69,7 +67,7 @@ Rewrite the section under the heading "$1" in the current draft.
 Additional instruction: $2
 
 Read the draft first so your \`edit_draft_content\` call matches exactly. Change only that
-section — leave every other line byte-identical. Validate afterwards.
+section — leave every other line byte-identical.
 `
 );
 

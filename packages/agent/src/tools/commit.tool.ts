@@ -21,8 +21,7 @@ export const commitDraftTool = defineTool({
   label: labelOf(TOOL_NAMES.commitDraft),
   description:
     "Write the staged draft to the database as an UNPUBLISHED post (or update the post this " +
-    "session is already bound to). Requires human approval. Run `validate_draft` for every locale " +
-    "first — committing MDX that does not compile breaks the page. This does NOT publish; use " +
+    "session is already bound to). Requires human approval. This does NOT publish; use " +
     "`set_published` for that.",
   parameters: Type.Object({
     confirmation: Type.String({

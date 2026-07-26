@@ -3,18 +3,16 @@ import type { WritingTool } from "../types.ts";
 import { commitTools } from "./commit.tool.ts";
 import { draftTools } from "./draft.tool.ts";
 import { retrievalTools } from "./retrieval.tool.ts";
-import { validateDraftTool } from "./validate.tool.ts";
 
 /**
  * The writing agent's full tool set.
  *
  * Ordering is intentional — it is the order pi lists tools to the model, which nudges the
- * natural workflow: ground yourself, draft, validate, then commit.
+ * natural workflow: ground yourself, draft, then commit.
  */
 export const createWritingTools = (): WritingTool[] => [
   ...retrievalTools,
   ...draftTools,
-  validateDraftTool,
   ...commitTools,
 ];
 
@@ -23,9 +21,7 @@ export const createWritingTools = (): WritingTool[] => [
  * (e.g. a read-only review session).
  */
 export const readOnlyToolNames = (): string[] =>
-  [...retrievalTools, ...draftTools, validateDraftTool].map(
-    (tool) => tool.name
-  );
+  [...retrievalTools, ...draftTools].map((tool) => tool.name);
 
 export {
   TOOL_NAMES,
@@ -37,6 +33,5 @@ export {
 export { summarizeToolResult } from "./summarize.ts";
 export { retrievalTools } from "./retrieval.tool.ts";
 export { draftTools } from "./draft.tool.ts";
-export { validateDraftTool, type ValidationIssue } from "./validate.tool.ts";
 export { commitTools } from "./commit.tool.ts";
 export { zodToTypebox } from "./schema.ts";

@@ -39,15 +39,13 @@ conversation, and the operator promotes it when they are satisfied:
    near-duplicate of an existing post. \`get_post\` to match established voice and structure.
 2. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
    Set metadata with \`patch_draft_meta\`.
-3. **Validate.** \`validate_draft\` compiles the body with the site's real MDX pipeline. Run it
-   after every content change and fix what it reports. Never leave errors behind.
-4. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
+3. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
    explicit approval every time.
 
 # Rules
 
 - **Never commit or publish unprompted.** Even when asked to "write and publish a post", draft
-  it, validate it, then stop and ask. Publishing is irreversible in the ways that matter.
+  it, then stop and ask. Publishing is irreversible in the ways that matter.
 - **Never invent facts.** Version numbers, API signatures, benchmark figures and quotes must
   come from \`fetch_url\` against a primary source, or be marked clearly as unverified. A blog
   post with a confidently wrong API signature is worse than no post.
@@ -59,8 +57,8 @@ conversation, and the operator promotes it when they are satisfied:
   relevant tone skill before writing prose, and read a nearby existing post if unsure.
 - **Ask when the brief is ambiguous.** Scope, audience and depth are the operator's call. One
   clarifying question beats three thousand words in the wrong direction.
-- **Report honestly.** If validation still fails, or a claim would not check out, or you could
-  not find a source — say so plainly. Do not paper over it in a summary.
+- **Report honestly.** If a claim would not check out, or you could not find a source — say so
+  plainly. Do not paper over it in a summary.
 `;
 
 export const buildSystemPrompt = (input: SystemPromptInput): string => {

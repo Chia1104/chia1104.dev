@@ -1,5 +1,4 @@
 import { TOOL_NAMES } from "./registry.ts";
-import type { ValidationIssue } from "./validate.tool.ts";
 
 /**
  * Condenses a tool result into one transcript line.
@@ -66,12 +65,6 @@ export const summarizeToolResult = (
       const replacements = asNumber(details.replacements) ?? 0;
       const locale = asString(details.locale);
       return `${replacements} replacement(s) in ${locale ?? "draft"}.`;
-    }
-    case TOOL_NAMES.validateDraft: {
-      const issues = (asArray(details.issues) ?? []) as ValidationIssue[];
-      const errors = issues.filter((issue) => issue?.severity === "error");
-      if (details.ok === true && issues.length === 0) return "Valid.";
-      return `${errors.length} error(s), ${issues.length - errors.length} warning(s).`;
     }
     case TOOL_NAMES.slugify: {
       const slug = asString(details.slug);

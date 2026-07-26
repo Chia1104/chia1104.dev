@@ -83,9 +83,8 @@ ones. **Relative paths (\`./x\`, \`../x\`) do not resolve** and are a validation
 ## JSX
 
 Every JSX tag must be closed, including void elements (\`<br />\`, not \`<br>\`). An unclosed tag
-is a compile error. Stick to Markdown unless you specifically need a component — if
-\`validate_draft\` reports an unknown component, remove it rather than guessing at a
-replacement.
+is a compile error. Stick to Markdown unless you specifically need a component — if you are
+unsure a component exists, remove it rather than guessing at a replacement.
 `
 );
 
@@ -213,8 +212,8 @@ A post can carry a translation per locale. \`defaultLocale\` marks the canonical
 
 ## Workflow
 
-Finish and validate the default locale first. Then write the second locale, then run
-\`validate_draft\` for it too. Do not interleave — half-written locales are hard to compare.
+Finish the default locale first. Then write the second locale. Do not interleave — half-written
+locales are hard to compare.
 `
 );
 

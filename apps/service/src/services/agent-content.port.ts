@@ -5,7 +5,6 @@ import type {
   FetchedPage,
   GetPostInput,
   ListPostsInput,
-  MdxCompileResult,
   PostFeedType,
   PostListItem,
   PostSearchHit,
@@ -16,7 +15,6 @@ import type {
 import { CANONICAL_EMBEDDING_MODEL } from "@chia/ai/embeddings/utils";
 import { searchFeedsService } from "@chia/api/feeds/search";
 import { createFeedService, updateFeedService } from "@chia/api/services/feeds";
-import { compileMDX } from "@chia/contents/services";
 import type { DB } from "@chia/db";
 import {
   getFeedById,
@@ -35,9 +33,9 @@ import request from "@chia/utils/request";
  * {@link ContentPort} implementation.
  *
  * This is the whole IO surface of the writing agent. It reuses what already exists —
- * `searchFeedsService`, `@chia/db/repos/feeds`, `createFeedService`/`updateFeedService`,
- * `compileMDX` — rather than issuing its own queries, so the agent is subject to the same
- * validation, slug generation and post-write indexing as a human using the dashboard.
+ * `searchFeedsService`, `@chia/db/repos/feeds`, `createFeedService`/`updateFeedService` —
+ * rather than issuing its own queries, so the agent is subject to the same slug generation and
+ * post-write indexing as a human using the dashboard.
  *
  * Takes a `DB` and a `Keyv` rather than a `ServiceContext`, because it is constructed inside a
  * workflow step where no request exists. Authorisation happened at the transport boundary before
@@ -172,29 +170,6 @@ export const createAgentContentPort = (
           ])
         ) as TagItem["names"],
       }));
-    },
-
-    /**
-     * Compiles with the site's real MDX pipeline, so anything that passes here renders.
-     *
-     * The compiler throws on failure; the message is handed back to the model verbatim because it
-     * names the construct and usually the position, which is exactly what it needs to fix itself.
-     */
-    async compileMdx(content: string): Promise<MdxCompileResult> {
-      try {
-        await compileMDX(content);
-        return { ok: true };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        const position = error as { line?: number; column?: number };
-        return {
-          ok: false,
-          message,
-          line: typeof position.line === "number" ? position.line : undefined,
-          column:
-            typeof position.column === "number" ? position.column : undefined,
-        };
-      }
     },
 
     async fetchPage(url: string): Promise<FetchedPage> {

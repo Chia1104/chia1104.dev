@@ -161,34 +161,6 @@ describe("createWritingHarness", () => {
     expect(fixture.events.some((e) => e.type === "draft:changed")).toBe(true);
   });
 
-  it("reports MDX compile failures through validate_draft", async () => {
-    fixture.setResponses([
-      fauxAssistantMessage(
-        [
-          fauxToolCall(TOOL_NAMES.writeDraftContent, {
-            locale: "en",
-            content: "## Broken\n\n<Callout>never closed",
-          }),
-          fauxToolCall(TOOL_NAMES.validateDraft, { locale: "en" }),
-        ],
-        { stopReason: "toolUse" }
-      ),
-      fauxAssistantMessage("I will fix the unclosed tag."),
-    ]);
-
-    await fixture.harness.prompt("Draft something");
-
-    const validation = fixture.events.find(
-      (e) => e.type === "tool:end" && e.toolName === TOOL_NAMES.validateDraft
-    );
-    expect(validation).toBeDefined();
-    const details = (
-      validation as { details?: { ok: boolean; issues: { rule: string }[] } }
-    ).details;
-    expect(details?.ok).toBe(false);
-    expect(details?.issues.map((issue) => issue.rule)).toContain("mdx/compile");
-  });
-
   it("blocks a commit without approval and tells the model to stop", async () => {
     fixture.setResponses([
       fauxAssistantMessage(

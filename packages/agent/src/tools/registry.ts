@@ -20,7 +20,6 @@ export const TOOL_NAMES = {
   patchDraftMeta: "patch_draft_meta",
   writeDraftContent: "write_draft_content",
   editDraftContent: "edit_draft_content",
-  validateDraft: "validate_draft",
   slugify: "slugify",
   // commit
   commitDraft: "commit_draft",
@@ -40,7 +39,6 @@ export const TOOL_TIER_BY_NAME: Record<string, ToolTier> = {
   [TOOL_NAMES.patchDraftMeta]: "draft",
   [TOOL_NAMES.writeDraftContent]: "draft",
   [TOOL_NAMES.editDraftContent]: "draft",
-  [TOOL_NAMES.validateDraft]: "draft",
   [TOOL_NAMES.slugify]: "draft",
 
   [TOOL_NAMES.commitDraft]: "commit",
@@ -58,7 +56,6 @@ export const TOOL_LABEL_BY_NAME: Record<string, string> = {
   [TOOL_NAMES.patchDraftMeta]: "Update draft metadata",
   [TOOL_NAMES.writeDraftContent]: "Write draft body",
   [TOOL_NAMES.editDraftContent]: "Edit draft body",
-  [TOOL_NAMES.validateDraft]: "Validate draft",
   [TOOL_NAMES.slugify]: "Slugify",
 
   [TOOL_NAMES.commitDraft]: "Commit draft",

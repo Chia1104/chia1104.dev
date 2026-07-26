@@ -3,20 +3,13 @@ import type {
   CommitDraftInput,
   CommitDraftResult,
   FetchedPage,
-  MdxCompileResult,
   PostListItem,
   PostSearchHit,
   PostSnapshot,
   TagItem,
 } from "../src/types.ts";
 
-/**
- * Scriptable {@link ContentPort} for tests.
- *
- * `compileMdx` implements a deliberately crude but *real* check — unbalanced JSX and unbalanced
- * code fences — so `validate_draft` can be exercised without pulling the MDX compiler (and React)
- * into a unit test. The production adapter in `apps/service` uses the real pipeline.
- */
+/** Scriptable {@link ContentPort} for tests. */
 export interface FakeContentPortOptions {
   searchHits?: PostSearchHit[];
   posts?: PostSnapshot[];
@@ -51,7 +44,6 @@ export const createFakeContentPort = (
       ),
     listPosts: () => Promise.resolve(options.list ?? []),
     listTags: () => Promise.resolve(options.tags ?? []),
-    compileMdx: (content) => Promise.resolve(fakeCompile(content)),
     fetchPage: (url) =>
       Promise.resolve(
         options.pages?.[url] ?? { url, title: "Untitled", text: "" }
@@ -74,28 +66,4 @@ export const createFakeContentPort = (
       });
     },
   };
-};
-
-const fakeCompile = (content: string): MdxCompileResult => {
-  const withoutFences = content.replace(/```[\s\S]*?```/g, "");
-
-  const opened = [...withoutFences.matchAll(/<([A-Z][A-Za-z0-9]*)(\s[^>]*)?>/g)]
-    .filter((match) => !match[0].endsWith("/>"))
-    .map((match) => match[1]!);
-  const closed = [...withoutFences.matchAll(/<\/([A-Z][A-Za-z0-9]*)>/g)].map(
-    (match) => match[1]!
-  );
-
-  for (const tag of opened) {
-    const index = closed.indexOf(tag);
-    if (index === -1) {
-      return {
-        ok: false,
-        message: `Expected a closing tag for <${tag}>`,
-      };
-    }
-    closed.splice(index, 1);
-  }
-
-  return { ok: true };
 };

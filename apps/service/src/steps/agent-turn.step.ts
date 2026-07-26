@@ -14,7 +14,6 @@ import {
   getApprovedAgentToolCallIds,
   recordAgentApprovalRequest,
 } from "@chia/db/repos/agent";
-import { kv } from "@chia/kv";
 
 import { createAgentContentPort } from "../services/agent-content.port";
 
@@ -79,6 +78,7 @@ export const runAgentTurnStep = async (
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
+  const { kv } = await import("@chia/kv");
 
   const row = await getAgentSession(db, request.sessionId);
   if (!row || row.deletedAt !== null) {

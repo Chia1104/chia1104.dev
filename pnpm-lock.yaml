@@ -684,9 +684,6 @@ importers:
       '@chia/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@chia/contents':
-        specifier: workspace:*
-        version: link:../../packages/contents
       '@chia/db':
         specifier: workspace:*
         version: link:../../packages/db

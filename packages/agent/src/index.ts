@@ -65,7 +65,6 @@ export {
   readOnlyToolNames,
   summarizeToolResult,
   type ToolName,
-  type ValidationIssue,
 } from "./tools/index.ts";
 export {
   buildSystemPrompt,

@@ -208,8 +208,7 @@ export const writeDraftContentTool = defineTool({
   label: labelOf(TOOL_NAMES.writeDraftContent),
   description:
     "Replace a locale's entire MDX body. Use this to create the first version; prefer " +
-    "`edit_draft_content` for revisions so you do not rewrite text that was already reviewed. " +
-    "Always run `validate_draft` afterwards.",
+    "`edit_draft_content` for revisions so you do not rewrite text that was already reviewed.",
   parameters: Type.Object({
     locale: LocaleSchema("Locale to write."),
     content: Type.String({
@@ -226,8 +225,7 @@ export const writeDraftContentTool = defineTool({
     );
     const lineCount = params.content.split("\n").length;
     return textResult(
-      `Wrote ${params.content.length} characters (${lineCount} lines) to the ${params.locale} draft. ` +
-        `Run validate_draft to confirm it compiles.`,
+      `Wrote ${params.content.length} characters (${lineCount} lines) to the ${params.locale} draft.`,
       { locale: params.locale, lineCount, charCount: params.content.length }
     );
   },
@@ -285,8 +283,7 @@ export const editDraftContentTool = defineTool({
     );
 
     return textResult(
-      `Applied ${result.replacements} replacement(s) to the ${locale} draft. ` +
-        `Run validate_draft to confirm it still compiles.`,
+      `Applied ${result.replacements} replacement(s) to the ${locale} draft.`,
       {
         locale,
         replacements: result.replacements,

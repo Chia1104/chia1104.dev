@@ -138,11 +138,6 @@ export interface FetchedPage {
   text: string;
 }
 
-/** Result of compiling a draft body through the same MDX pipeline production uses. */
-export type MdxCompileResult =
-  | { ok: true }
-  | { ok: false; message: string; line?: number; column?: number };
-
 export interface CommitDraftInput {
   adminId: string;
   feedId?: number;

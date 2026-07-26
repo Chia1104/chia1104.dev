@@ -7,7 +7,6 @@ import type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
-  MdxCompileResult,
   PostListItem,
   PostSearchHit,
   PostSnapshot,
@@ -24,7 +23,6 @@ export type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
-  MdxCompileResult,
   PostFeedType,
   PostListItem,
   PostSearchHit,
@@ -77,11 +75,6 @@ export interface ContentPort {
   getPost(input: GetPostInput): Promise<PostSnapshot | null>;
   listPosts(input: ListPostsInput): Promise<PostListItem[]>;
   listTags(): Promise<TagItem[]>;
-  /**
-   * Compiles MDX through the *same* pipeline the site renders with, so a draft that passes
-   * here cannot break the published page. This is the agent's feedback loop.
-   */
-  compileMdx(content: string): Promise<MdxCompileResult>;
   fetchPage(url: string): Promise<FetchedPage>;
   commitDraft(input: CommitDraftInput): Promise<CommitDraftResult>;
   setPublished(input: {
