@@ -15,7 +15,7 @@ const skill = (name: string, description: string, content: string): Skill => ({
   name,
   description,
   content: content.trim(),
-  filePath: `@chia/agent/skills/${name}`,
+  filePath: `@chia/agent-writing/skills/${name}`,
 });
 
 export const mdxAuthoringSkill = skill(

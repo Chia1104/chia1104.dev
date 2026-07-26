@@ -21,8 +21,8 @@ import {
   updateAgentSession,
 } from "@chia/db/repos/agent";
 
-import { AGENT_PROVIDER_ID, DEFAULT_WRITING_MODEL_ID } from "../models.ts";
 import type {
+  AgentSessionDefaults,
   AgentSessionSettings,
   ThinkingLevel,
   ToolTier,
@@ -57,7 +57,15 @@ export class PgSessionRepo implements SessionRepo<
   PgSessionCreateOptions,
   PgSessionListOptions
 > {
-  constructor(private readonly db: DB) {}
+  /**
+   * `defaults` is required rather than hardcoded: the provider is shared, but which model a kind
+   * starts a session on is that kind's policy. Baking in the writing agent's default would make
+   * core depend on a domain package.
+   */
+  constructor(
+    private readonly db: DB,
+    private readonly defaults: AgentSessionDefaults
+  ) {}
 
   async create(
     options: PgSessionCreateOptions
@@ -71,9 +79,10 @@ export class PgSessionRepo implements SessionRepo<
       userId: options.userId,
       kind,
       title: options.title ?? null,
-      providerId: settings.providerId ?? AGENT_PROVIDER_ID,
-      modelId: settings.modelId ?? DEFAULT_WRITING_MODEL_ID,
-      thinkingLevel: settings.thinkingLevel ?? "off",
+      providerId: settings.providerId ?? this.defaults.providerId,
+      modelId: settings.modelId ?? this.defaults.modelId,
+      thinkingLevel:
+        settings.thinkingLevel ?? this.defaults.thinkingLevel ?? "off",
       activeToolNames: settings.activeToolNames ?? null,
       autoApprove: settings.autoApprove ?? [],
       targetFeedId: options.targetFeedId ?? null,

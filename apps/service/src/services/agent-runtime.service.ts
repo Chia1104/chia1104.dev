@@ -1,27 +1,31 @@
 import { getHookByToken, getRun, start } from "workflow/api";
 
 import {
-  createWritingHarness,
-  createWritingTools,
   entriesToWireEvents,
-  labelOf,
-  listWritingModels,
-  PgDraftStore,
   PgPendingMessageStore,
   PgSessionRepo,
-  summarizeToolResult,
-  tierOf,
   UnknownAgentModelError,
   writeSessionSettings,
-  writingPromptTemplates,
-  writingSkills,
-} from "@chia/agent";
+} from "@chia/agent-core";
 import type {
   AgentSessionSettings,
   AgentWireEvent,
   ThinkingLevel,
   ToolTier,
-} from "@chia/agent";
+} from "@chia/agent-core";
+import {
+  createWritingHarness,
+  createWritingTools,
+  isWritingModelId,
+  listWritingModels,
+  PgDraftStore,
+  WRITING_MODEL_IDS,
+  WRITING_AGENT_KIND,
+  WRITING_SESSION_DEFAULTS,
+  writingPolicy,
+  writingPromptTemplates,
+  writingSkills,
+} from "@chia/agent-writing";
 import { registerAgentRuntime } from "@chia/api/orpc/agent-runtime";
 import type {
   AgentRuntime,
@@ -50,7 +54,12 @@ import {
 import { createAgentContentPort } from "./agent-content.port";
 
 /**
- * The agent runtime.
+ * The **writing** agent runtime, registered under `agent_session.kind = "writing"`.
+ *
+ * Generic machinery (session tree, approval gate, turn loop, wire events) is `@chia/agent-core`;
+ * the writing domain (tools, prompts, draft buffer, policy) is `@chia/agent-writing`. This module is
+ * the transport-facing glue between them and the durable workflow run. A second agent kind is a
+ * sibling of this file plus its own domain package — core does not change.
  *
  * **Stateless.** There is no in-process registry: each session is driven by a durable workflow run,
  * and every piece of state lives somewhere durable —
@@ -73,7 +82,7 @@ const dependenciesFor = (caller: AgentRuntimeCaller) => {
   const db = caller.context.db as DB;
   return {
     db,
-    repo: new PgSessionRepo(db),
+    repo: new PgSessionRepo(db, WRITING_SESSION_DEFAULTS),
     draft: new PgDraftStore(db),
     pending: new PgPendingMessageStore(db),
     content: createAgentContentPort({
@@ -97,6 +106,9 @@ const loadOwnedSession = async (
   const row = await getAgentSession(caller.context.db as DB, sessionId);
   if (!row || row.deletedAt !== null) return null;
   if (row.userId !== caller.userId) return null;
+  // The transport picks a runtime from client-supplied `kind`; refuse a session belonging to a
+  // different kind rather than driving it with the wrong tools and policy.
+  if (row.kind !== WRITING_AGENT_KIND) return null;
   return row;
 };
 
@@ -141,9 +153,9 @@ const summaryOf = (row: {
 const discardEvents = (): void => undefined;
 
 const replayOptions = {
-  tierOf,
-  labelOf,
-  summarize: summarizeToolResult,
+  tierOf: writingPolicy.tierOf,
+  labelOf: writingPolicy.labelOf,
+  summarize: writingPolicy.summarize,
 };
 
 /**
@@ -246,7 +258,7 @@ const detailFor = async (caller: AgentRuntimeCaller, sessionId: string) => {
 // Runtime
 // ============================================
 
-export const agentRuntime: AgentRuntime = {
+export const writingAgentRuntime: AgentRuntime = {
   async listSessions(caller, input) {
     const { db, repo } = dependenciesFor(caller);
     const metadata = await repo.list({
@@ -273,6 +285,7 @@ export const agentRuntime: AgentRuntime = {
 
     const session = await repo.create({
       userId: caller.userId,
+      kind: WRITING_AGENT_KIND,
       title: input.title,
       targetFeedId: input.targetFeedId,
       settings: {
@@ -504,7 +517,7 @@ export const agentRuntime: AgentRuntime = {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return false;
     const { pending } = dependenciesFor(caller);
-    await pending.push(input.sessionId, input.kind ?? "steer", input.text);
+    await pending.push(input.sessionId, input.queue ?? "steer", input.text);
     return true;
   },
 
@@ -610,7 +623,7 @@ export const agentRuntime: AgentRuntime = {
       tools: createWritingTools().map((tool) => ({
         name: tool.name,
         label: tool.label,
-        tier: tierOf(tool.name),
+        tier: writingPolicy.tierOf(tool.name),
         description: tool.description,
       })),
       promptTemplates: writingPromptTemplates.map((template) => ({
@@ -654,12 +667,12 @@ const assertNoTurnRunning = async (
 };
 
 const assertKnownModel = (modelId: string) => {
-  if (!listWritingModels().some((model) => model.modelId === modelId)) {
-    throw new UnknownAgentModelError(modelId);
+  if (!isWritingModelId(modelId)) {
+    throw new UnknownAgentModelError(modelId, WRITING_MODEL_IDS);
   }
 };
 
-/** Registers the runtime with `packages/api`. Called once at module load. */
+/** Registers this runtime under its kind. Called once at module load. */
 export const registerAgentRuntimeService = (): void => {
-  registerAgentRuntime(agentRuntime);
+  registerAgentRuntime(WRITING_AGENT_KIND, writingAgentRuntime);
 };

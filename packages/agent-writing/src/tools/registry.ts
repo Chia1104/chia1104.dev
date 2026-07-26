@@ -1,4 +1,4 @@
-import type { ToolTier } from "../types.ts";
+import type { ToolTier } from "@chia/agent-core";
 
 /**
  * Single source of truth for tool identity: name → tier and name → UI label.

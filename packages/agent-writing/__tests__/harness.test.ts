@@ -9,13 +9,15 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { foldEvents } from "@chia/agent-core";
+import type { AgentWireEvent } from "@chia/agent-core";
+import { InMemoryPendingMessageStore } from "@chia/agent-core";
+import type { AgentSessionSettings } from "@chia/agent-core";
+
 import { InMemoryDraftStore } from "../src/draft/index.ts";
-import { foldEvents } from "../src/events.ts";
-import type { AgentWireEvent } from "../src/events.ts";
 import { createWritingHarness } from "../src/harness.ts";
-import { InMemoryPendingMessageStore } from "../src/session/pg-pending-messages.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
-import type { AgentSessionSettings, WritingToolContext } from "../src/types.ts";
+import type { WritingToolContext } from "../src/types.ts";
 
 import { createFakeContentPort } from "./fixtures.ts";
 import type { FakeContentPort } from "./fixtures.ts";
@@ -157,8 +159,9 @@ describe("createWritingHarness", () => {
     expect(draft.translations.en?.content).toBe("## Hello\n\nSome body text.");
     expect(fixture.content.commits).toHaveLength(0);
 
-    // A draft mutation must announce itself so the client refetches.
-    expect(fixture.events.some((e) => e.type === "draft:changed")).toBe(true);
+    // A draft mutation must announce itself so the client refetches. The event is generic
+    // (`state:changed`) with the writing policy's scope attached.
+    expect(fixture.events.some((e) => e.type === "state:changed")).toBe(true);
   });
 
   it("blocks a commit without approval and tells the model to stop", async () => {

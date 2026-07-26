@@ -1,4 +1,4 @@
-import type { AgentWireEvent } from "@chia/agent/events";
+import type { AgentWireEvent } from "@chia/agent-core/events";
 import type { ServiceContext } from "@chia/service-kit/context";
 
 import type * as agentContracts from "./contracts/agent.contract";
@@ -112,7 +112,7 @@ export interface AgentRuntime {
 
   steer(
     caller: AgentRuntimeCaller,
-    input: { sessionId: string; text: string; kind?: "steer" | "followUp" }
+    input: { sessionId: string; text: string; queue?: "steer" | "followUp" }
   ): Promise<boolean>;
 
   approve(
@@ -160,7 +160,7 @@ export interface AgentRuntime {
     tools: {
       name: string;
       label: string;
-      tier: "read" | "draft" | "commit";
+      tier: string;
       description: string;
     }[];
     promptTemplates: { name: string; description?: string }[];
@@ -168,28 +168,61 @@ export interface AgentRuntime {
   }>;
 }
 
-let runtime: AgentRuntime | undefined;
+/**
+ * Registry keyed by `agent_session.kind`.
+ *
+ * A single slot would have been overwritten by the second agent kind registered in the same
+ * process — the two would silently share one implementation. Keying by kind is what makes a
+ * sibling package like `@chia/agent-writing` additive.
+ */
+const runtimes = new Map<string, AgentRuntime>();
 
 export class AgentRuntimeNotRegisteredError extends Error {
-  constructor() {
+  constructor(kind: string) {
     super(
-      "No agent runtime registered. The host app must call registerAgentRuntime() at startup — " +
-        "see apps/service/src/services/agent-runtime.service.ts."
+      `No agent runtime registered for kind "${kind}". The host app must call ` +
+        "registerAgentRuntime(kind, impl) at startup — see " +
+        "apps/service/src/services/agent-runtime.service.ts."
     );
     this.name = "AgentRuntimeNotRegisteredError";
   }
 }
 
-export const registerAgentRuntime = (implementation: AgentRuntime): void => {
-  runtime = implementation;
+export const registerAgentRuntime = (
+  kind: string,
+  implementation: AgentRuntime
+): void => {
+  runtimes.set(kind, implementation);
 };
 
-export const getAgentRuntime = (): AgentRuntime => {
-  if (!runtime) throw new AgentRuntimeNotRegisteredError();
+export const getAgentRuntime = (kind: string): AgentRuntime => {
+  const runtime = runtimes.get(kind);
+  if (!runtime) throw new AgentRuntimeNotRegisteredError(kind);
   return runtime;
 };
 
-export const isAgentRuntimeRegistered = (): boolean => runtime !== undefined;
+export const isAgentRuntimeRegistered = (kind: string): boolean =>
+  runtimes.has(kind);
+
+/** Kinds with a registered runtime. */
+export const registeredAgentKinds = (): string[] => [...runtimes.keys()];
+
+/**
+ * Resolves the runtime for a request.
+ *
+ * `kind` is optional because the overwhelmingly common case is a single registered kind, and making
+ * every caller thread it through would be noise. It becomes required the moment a second kind is
+ * registered — at which point an ambiguous call is a bug, not something to guess at.
+ */
+export const resolveAgentRuntime = (kind?: string): AgentRuntime => {
+  if (kind) return getAgentRuntime(kind);
+  if (runtimes.size === 1) return [...runtimes.values()][0]!;
+  if (runtimes.size === 0) throw new AgentRuntimeNotRegisteredError("(none)");
+  throw new Error(
+    `Multiple agent kinds are registered (${[...runtimes.keys()].join(", ")}); ` +
+      "the request must name one."
+  );
+};
 
 // `Input` is exported for the host app to derive handler argument types without restating them.
 export type { Input as AgentContractInput };

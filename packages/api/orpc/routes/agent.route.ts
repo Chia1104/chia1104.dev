@@ -1,4 +1,4 @@
-import { getAgentRuntime } from "../agent-runtime";
+import { resolveAgentRuntime } from "../agent-runtime";
 import type { AgentRuntimeCaller } from "../agent-runtime";
 import { adminGuard } from "../guards/admin.guard";
 import { contractOS } from "../utils";
@@ -6,9 +6,12 @@ import { contractOS } from "../utils";
 /**
  * Agent routes.
  *
- * Thin by design: every handler resolves the registered runtime and forwards. The runtime lives in
- * the host app because it owns process-scoped state (live runs, provider credentials) — see
+ * Thin by design: every handler resolves a runtime **by kind** and forwards. The runtime lives in
+ * the host app because it owns harness construction and provider credentials — see
  * `../agent-runtime.ts`.
+ *
+ * `input.kind` is optional while only one kind is registered; `resolveAgentRuntime` refuses to
+ * guess once there are several.
  *
  * `adminGuard()` pins to the configured admin id, so a logged-in non-admin cannot reach these even
  * with a valid session. That matters more here than on the read routes: these tools can write to
@@ -30,19 +33,25 @@ const callerOf = (opts: {
 export const listAgentSessionsRoute = contractOS.agent.sessions.list
   .use(adminGuard())
   .handler(async (opts) =>
-    getAgentRuntime().listSessions(callerOf(opts), opts.input)
+    resolveAgentRuntime(opts.input?.kind).listSessions(
+      callerOf(opts),
+      opts.input
+    )
   );
 
 export const createAgentSessionRoute = contractOS.agent.sessions.create
   .use(adminGuard())
   .handler(async (opts) =>
-    getAgentRuntime().createSession(callerOf(opts), opts.input)
+    resolveAgentRuntime(opts.input?.kind).createSession(
+      callerOf(opts),
+      opts.input
+    )
   );
 
 export const getAgentSessionRoute = contractOS.agent.sessions.get
   .use(adminGuard())
   .handler(async (opts) => {
-    const detail = await getAgentRuntime().getSession(
+    const detail = await resolveAgentRuntime(opts.input?.kind).getSession(
       callerOf(opts),
       opts.input
     );
@@ -53,7 +62,7 @@ export const getAgentSessionRoute = contractOS.agent.sessions.get
 export const deleteAgentSessionRoute = contractOS.agent.sessions.delete
   .use(adminGuard())
   .handler(async (opts) => {
-    const deleted = await getAgentRuntime().deleteSession(
+    const deleted = await resolveAgentRuntime(opts.input?.kind).deleteSession(
       callerOf(opts),
       opts.input
     );
@@ -66,7 +75,7 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
 ]
   .use(adminGuard())
   .handler(async (opts) => {
-    const detail = await getAgentRuntime().updateSettings(
+    const detail = await resolveAgentRuntime(opts.input?.kind).updateSettings(
       callerOf(opts),
       opts.input
     );
@@ -84,28 +93,41 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
  */
 export const promptAgentRoute = contractOS.agent.sessions.prompt
   .use(adminGuard())
-  .handler((opts) => getAgentRuntime().prompt(callerOf(opts), opts.input));
+  .handler((opts) =>
+    resolveAgentRuntime(opts.input?.kind).prompt(callerOf(opts), opts.input)
+  );
 
 export const streamAgentRoute = contractOS.agent.sessions.stream
   .use(adminGuard())
-  .handler((opts) => getAgentRuntime().stream(callerOf(opts), opts.input));
+  .handler((opts) =>
+    resolveAgentRuntime(opts.input?.kind).stream(callerOf(opts), opts.input)
+  );
 
 export const abortAgentRoute = contractOS.agent.sessions.abort
   .use(adminGuard())
   .handler(async (opts) => ({
-    aborted: await getAgentRuntime().abort(callerOf(opts), opts.input),
+    aborted: await resolveAgentRuntime(opts.input?.kind).abort(
+      callerOf(opts),
+      opts.input
+    ),
   }));
 
 export const steerAgentRoute = contractOS.agent.sessions.steer
   .use(adminGuard())
   .handler(async (opts) => ({
-    queued: await getAgentRuntime().steer(callerOf(opts), opts.input),
+    queued: await resolveAgentRuntime(opts.input?.kind).steer(
+      callerOf(opts),
+      opts.input
+    ),
   }));
 
 export const approveAgentToolRoute = contractOS.agent.sessions.approve
   .use(adminGuard())
   .handler(async (opts) => {
-    const ok = await getAgentRuntime().approve(callerOf(opts), opts.input);
+    const ok = await resolveAgentRuntime(opts.input?.kind).approve(
+      callerOf(opts),
+      opts.input
+    );
     if (!ok) throw opts.errors.NOT_FOUND();
     return {
       toolCallId: opts.input.toolCallId,
@@ -120,7 +142,10 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
 export const compactAgentSessionRoute = contractOS.agent.sessions.compact
   .use(adminGuard())
   .handler(async (opts) => {
-    const result = await getAgentRuntime().compact(callerOf(opts), opts.input);
+    const result = await resolveAgentRuntime(opts.input?.kind).compact(
+      callerOf(opts),
+      opts.input
+    );
     if (!result) throw opts.errors.NOT_FOUND();
     return result;
   });
@@ -128,7 +153,10 @@ export const compactAgentSessionRoute = contractOS.agent.sessions.compact
 export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
   .use(adminGuard())
   .handler(async (opts) => {
-    const result = await getAgentRuntime().navigate(callerOf(opts), opts.input);
+    const result = await resolveAgentRuntime(opts.input?.kind).navigate(
+      callerOf(opts),
+      opts.input
+    );
     if (!result) throw opts.errors.NOT_FOUND();
     return result;
   });
@@ -136,7 +164,10 @@ export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
 export const getAgentDraftRoute = contractOS.agent.sessions.draft
   .use(adminGuard())
   .handler(async (opts) => {
-    const draft = await getAgentRuntime().getDraft(callerOf(opts), opts.input);
+    const draft = await resolveAgentRuntime(opts.input?.kind).getDraft(
+      callerOf(opts),
+      opts.input
+    );
     if (!draft) throw opts.errors.NOT_FOUND();
     return draft;
   });
@@ -147,8 +178,10 @@ export const getAgentDraftRoute = contractOS.agent.sessions.draft
 
 export const listAgentModelsRoute = contractOS.agent.models.list
   .use(adminGuard())
-  .handler(async () => getAgentRuntime().listModels());
+  .handler(async (opts) => resolveAgentRuntime(opts.input?.kind).listModels());
 
 export const listAgentCapabilitiesRoute = contractOS.agent.capabilities.list
   .use(adminGuard())
-  .handler(async () => getAgentRuntime().listCapabilities());
+  .handler(async (opts) =>
+    resolveAgentRuntime(opts.input?.kind).listCapabilities()
+  );

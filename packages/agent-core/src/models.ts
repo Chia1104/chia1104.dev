@@ -15,25 +15,6 @@ import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-
 export const AGENT_PROVIDER_ID = "vercel-ai-gateway";
 
 /**
- * Models offered to the writing agent, narrowed from the provider's ~192-model catalogue.
- *
- * Narrow on purpose: a long-horizon authoring agent with write access to the blog is a bad
- * place to discover that a cheap model ignores tool schemas. Ordered best-first — the head
- * is the default.
- */
-export const WRITING_MODEL_IDS = [
-  "anthropic/claude-sonnet-5",
-  "anthropic/claude-opus-5",
-  "anthropic/claude-sonnet-4.6",
-  "anthropic/claude-haiku-4.5",
-] as const;
-
-export type WritingModelId = (typeof WRITING_MODEL_IDS)[number];
-
-export const DEFAULT_WRITING_MODEL_ID: WritingModelId =
-  "anthropic/claude-sonnet-5";
-
-/**
  * Provider registration is process-wide and immutable, so it is built once and cached.
  * `Models` holds no per-request state — auth resolves per call.
  */
@@ -49,38 +30,41 @@ export const getAgentModels = (): Models => {
 };
 
 export class UnknownAgentModelError extends Error {
-  constructor(readonly modelId: string) {
+  constructor(
+    readonly modelId: string,
+    allowlist: readonly string[]
+  ) {
     super(
-      `Model "${modelId}" is not available to the writing agent. Allowed: ${WRITING_MODEL_IDS.join(", ")}`
+      `Model "${modelId}" is not available to this agent. Allowed: ${allowlist.join(", ")}`
     );
     this.name = "UnknownAgentModelError";
   }
 }
 
-export const isWritingModelId = (modelId: string): modelId is WritingModelId =>
-  (WRITING_MODEL_IDS as readonly string[]).includes(modelId);
-
 /**
- * Resolves an allowlisted model id.
+ * Resolves a model against an **allowlist owned by the agent kind**.
  *
- * Rejects ids outside {@link WRITING_MODEL_IDS} even when the gateway would serve them —
- * the model id reaches this function from a client-supplied setting.
+ * The allowlist is a parameter rather than a constant here: which models an agent may use is
+ * policy, and a long-horizon authoring agent with write access wants a different (narrower) set
+ * than, say, a public Q&A agent. Ids outside it are rejected even when the gateway would serve
+ * them, because the id arrives from a client-supplied setting.
  */
 export const resolveModel = (
   modelId: string,
+  allowlist: readonly string[],
   models: Models = getAgentModels()
 ): Model<any> => {
-  if (!isWritingModelId(modelId)) {
-    throw new UnknownAgentModelError(modelId);
+  if (!allowlist.includes(modelId)) {
+    throw new UnknownAgentModelError(modelId, allowlist);
   }
   const model = models.getModel(AGENT_PROVIDER_ID, modelId);
   if (!model) {
-    throw new UnknownAgentModelError(modelId);
+    throw new UnknownAgentModelError(modelId, allowlist);
   }
   return model;
 };
 
-export interface WritingModelInfo {
+export interface AgentModelInfo {
   providerId: string;
   modelId: string;
   name: string;
@@ -90,10 +74,11 @@ export interface WritingModelInfo {
 }
 
 /** Model picker payload. Silently skips ids the installed pi-ai catalogue lacks. */
-export const listWritingModels = (
+export const listModels = (
+  allowlist: readonly string[],
   models: Models = getAgentModels()
-): WritingModelInfo[] =>
-  WRITING_MODEL_IDS.flatMap((modelId) => {
+): AgentModelInfo[] =>
+  allowlist.flatMap((modelId) => {
     const model = models.getModel(AGENT_PROVIDER_ID, modelId);
     if (!model) return [];
     return [

@@ -18,13 +18,18 @@ import { pgTable } from "./table.ts";
 import { user } from "./user.schema.ts";
 
 /**
- * Persistence for the writing agent (`@chia/agent`).
+ * Persistence for agent sessions.
+ *
+ * `agent_session` / `agent_session_entry` / `agent_pending_message` / `agent_tool_approval` are
+ * **generic** — every agent kind shares them, discriminated by `agent_session.kind`. `agent_draft`
+ * (and `agent_session.targetFeedId` / `feedMeta`) belong to the writing agent specifically; they are
+ * nullable, so another kind simply leaves them unset.
  *
  * The transcript is a **tree**, not a flat log: `agent_session_entry.parentId` points at
  * the previous entry on the branch and `agent_session.leafEntryId` marks the active leaf.
  * That is what lets the agent rewind ("退回三步用另一個角度重寫") and what pi's
- * `SessionStorage` port expects. `@chia/agent/session` implements that port over these
- * tables.
+ * `SessionStorage` port expects. `@chia/agent-core/session` implements that port over these
+ * tables; the writing-specific `agent_draft` belongs to `@chia/agent-writing`.
  *
  * `agent_draft` is the staging buffer: the agent only ever writes here, and a human
  * promotes it into `feed`/`feed_translation`/`content` through the existing

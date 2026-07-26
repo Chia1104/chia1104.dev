@@ -4,7 +4,6 @@ import type {
 } from "@earendil-works/pi-agent-core";
 import * as z from "zod";
 
-import { TOOL_TIERS } from "./types.ts";
 import type { ToolTier } from "./types.ts";
 
 /**
@@ -56,7 +55,7 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     toolCallId: z.string(),
     toolName: z.string(),
     label: z.string(),
-    tier: z.enum(TOOL_TIERS),
+    tier: z.string(),
     args: z.unknown(),
   }),
   z.object({
@@ -77,7 +76,7 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     type: z.literal("approval:request"),
     toolCallId: z.string(),
     toolName: z.string(),
-    tier: z.enum(TOOL_TIERS),
+    tier: z.string(),
     args: z.unknown(),
   }),
   z.object({
@@ -92,8 +91,12 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     tokensBefore: z.number(),
   }),
   z.object({
-    type: z.literal("draft:changed"),
-    /** Bump-only signal; the client refetches the draft rather than diffing over the wire. */
+    type: z.literal("state:changed"),
+    /**
+     * What changed, as named by the agent kind's policy (`"draft"` for the writing agent).
+     * Bump-only — the client refetches rather than diffing over the wire.
+     */
+    scope: z.string().optional(),
     revision: z.number(),
   }),
   z.object({ type: z.literal("error"), message: z.string() }),
@@ -375,14 +378,15 @@ export interface AgentViewState {
   items: AgentViewItem[];
   /** Tool calls parked on a human decision. Drives the approval prompt. */
   pendingApprovals: ToolCallView[];
-  draftRevision: number;
+  /** Bumped whenever a tool changed durable state the client should refetch. */
+  stateRevision: number;
   runStatus: "idle" | "running" | "awaiting_approval" | "error";
 }
 
 export const emptyViewState = (): AgentViewState => ({
   items: [],
   pendingApprovals: [],
-  draftRevision: 0,
+  stateRevision: 0,
   runStatus: "idle",
 });
 
@@ -570,8 +574,8 @@ export const applyEvent = (
       });
       return { ...state, items };
 
-    case "draft:changed":
-      return { ...state, items, draftRevision: event.revision };
+    case "state:changed":
+      return { ...state, items, stateRevision: event.revision };
 
     case "error":
       items.push({ kind: "notice", variant: "error", text: event.message });

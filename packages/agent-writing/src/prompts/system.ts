@@ -1,9 +1,10 @@
 import { formatSkillsForSystemPrompt } from "@earendil-works/pi-agent-core";
 import type { Skill } from "@earendil-works/pi-agent-core";
 
+import type { ToolTier } from "@chia/agent-core";
 import type { Locale } from "@chia/db/types";
 
-import type { FeedDraft, ToolTier } from "../types.ts";
+import type { FeedDraft } from "../types.ts";
 
 /**
  * System prompt assembly.

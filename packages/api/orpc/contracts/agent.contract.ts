@@ -1,8 +1,7 @@
 import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { agentWireEventSchema } from "@chia/agent/events";
-import { TOOL_TIERS } from "@chia/agent/types";
+import { agentWireEventSchema } from "@chia/agent-core/events";
 import { locale } from "@chia/db";
 
 import { withMetaSchema } from "./shared";
@@ -29,7 +28,11 @@ const thinkingLevelSchema = z.enum([
   "max",
 ]);
 
-const toolTierSchema = z.enum(TOOL_TIERS);
+/**
+ * Tiers are per-kind policy, so the contract carries the string rather than a union. `@chia/agent-core`
+ * deliberately keeps `ToolTier` open for the same reason — narrowing lives in each kind's package.
+ */
+const toolTierSchema = z.string();
 
 export const agentSessionSummarySchema = z.object({
   id: z.string(),
@@ -101,6 +104,7 @@ export const listAgentSessionsContract = oc
   .input(
     z
       .object({
+        kind: z.string().optional(),
         limit: z.number().int().min(1).max(100).optional(),
         includeDeleted: z.boolean().optional(),
       })
@@ -112,6 +116,8 @@ export const createAgentSessionContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, BAD_REQUEST: {} })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       title: z.string().max(200).optional(),
       /** Seeds the draft buffer from this post so the agent edits rather than starts fresh. */
       targetFeedId: z.number().int().optional(),
@@ -124,18 +130,32 @@ export const createAgentSessionContract = oc
 
 export const getAgentSessionContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(z.object({ sessionId: z.string() }))
+  .input(
+    z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
+      sessionId: z.string(),
+    })
+  )
   .output(agentSessionDetailSchema);
 
 export const deleteAgentSessionContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(z.object({ sessionId: z.string() }))
+  .input(
+    z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
+      sessionId: z.string(),
+    })
+  )
   .output(z.object({ sessionId: z.string() }));
 
 export const updateAgentSessionSettingsContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, BAD_REQUEST: {} })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       sessionId: z.string(),
       title: z.string().max(200).optional(),
       modelId: z.string().optional(),
@@ -167,6 +187,8 @@ export const promptAgentContract = oc
   })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       sessionId: z.string(),
       text: z.string().min(1),
       /** Invoke a prompt template (slash command) instead of sending raw text. */
@@ -206,6 +228,8 @@ export const streamAgentContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       sessionId: z.string(),
       /** Defaults to the session's current run. */
       runId: z.string().optional(),
@@ -219,17 +243,28 @@ export const streamAgentContract = oc
 
 export const abortAgentContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(z.object({ sessionId: z.string() }))
+  .input(
+    z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
+      sessionId: z.string(),
+    })
+  )
   .output(z.object({ aborted: z.boolean() }));
 
 export const steerAgentContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       sessionId: z.string(),
       text: z.string().min(1),
-      /** `steer` interrupts the running turn; `followUp` waits for it to finish. */
-      kind: z.enum(["steer", "followUp"]).optional(),
+      /**
+       * `steer` interrupts the running turn; `followUp` waits for it to finish.
+       * Named `queue` rather than `kind` — `kind` selects the *agent* kind on every procedure.
+       */
+      queue: z.enum(["steer", "followUp"]).optional(),
     })
   )
   .output(z.object({ queued: z.boolean() }));
@@ -238,6 +273,8 @@ export const approveAgentToolContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       sessionId: z.string(),
       toolCallId: z.string(),
       approved: z.boolean(),
@@ -259,6 +296,8 @@ export const compactAgentSessionContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       sessionId: z.string(),
       customInstructions: z.string().max(2000).optional(),
     })
@@ -275,6 +314,8 @@ export const navigateAgentSessionContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
   .input(
     z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
       sessionId: z.string(),
       entryId: z.string(),
       summarize: z.boolean().optional(),
@@ -290,7 +331,13 @@ export const navigateAgentSessionContract = oc
 
 export const getAgentDraftContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(z.object({ sessionId: z.string() }))
+  .input(
+    z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
+      sessionId: z.string(),
+    })
+  )
   .output(agentDraftSchema);
 
 // ============================================
@@ -299,6 +346,7 @@ export const getAgentDraftContract = oc
 
 export const listAgentModelsContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+  .input(z.object({ kind: z.string().optional() }).optional())
   .output(
     z.array(
       z.object({
@@ -315,6 +363,7 @@ export const listAgentModelsContract = oc
 /** Tools and slash commands, so the dashboard need not hard-code either list. */
 export const listAgentCapabilitiesContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+  .input(z.object({ kind: z.string().optional() }).optional())
   .output(
     z.object({
       tools: z.array(

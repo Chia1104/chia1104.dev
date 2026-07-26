@@ -1,13 +1,12 @@
 import { FatalError, getWritable } from "workflow";
 
+import { PgPendingMessageStore, PgSessionRepo } from "@chia/agent-core";
+import type { AgentWireEvent, ThinkingLevel, ToolTier } from "@chia/agent-core";
 import {
   createWritingHarness,
   PgDraftStore,
-  PgPendingMessageStore,
-  PgSessionRepo,
-} from "@chia/agent";
-import type { AgentWireEvent, ToolTier } from "@chia/agent";
-import type { ThinkingLevel } from "@chia/agent";
+  WRITING_SESSION_DEFAULTS,
+} from "@chia/agent-writing";
 import { connectDatabase } from "@chia/db/client";
 import {
   getAgentSession,
@@ -90,7 +89,7 @@ export const runAgentTurnStep = async (
     );
   }
 
-  const repo = new PgSessionRepo(db);
+  const repo = new PgSessionRepo(db, WRITING_SESSION_DEFAULTS);
   const session = await repo.openById(request.sessionId);
   const draft = new PgDraftStore(db);
   const pending = new PgPendingMessageStore(db);

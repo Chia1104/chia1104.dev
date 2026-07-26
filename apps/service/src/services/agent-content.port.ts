@@ -11,7 +11,7 @@ import type {
   PostSnapshot,
   SearchPostsInput,
   TagItem,
-} from "@chia/agent/ports";
+} from "@chia/agent-writing/ports";
 import { CANONICAL_EMBEDDING_MODEL } from "@chia/ai/embeddings/utils";
 import { searchFeedsService } from "@chia/api/feeds/search";
 import { createFeedService, updateFeedService } from "@chia/api/services/feeds";

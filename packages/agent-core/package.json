@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/agent-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    },
+    "./ports": {
+      "types": "./src/ports.ts",
+      "default": "./src/ports.ts"
+    },
+    "./models": {
+      "types": "./src/models.ts",
+      "default": "./src/models.ts"
+    },
+    "./events": {
+      "types": "./src/events.ts",
+      "default": "./src/events.ts"
+    },
+    "./permissions": {
+      "types": "./src/permissions.ts",
+      "default": "./src/permissions.ts"
+    },
+    "./harness": {
+      "types": "./src/harness.ts",
+      "default": "./src/harness.ts"
+    },
+    "./session": {
+      "types": "./src/session/index.ts",
+      "default": "./src/session/index.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "vitest --run",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chia/db": "workspace:*",
+    "@earendil-works/pi-agent-core": "catalog:agent",
+    "@earendil-works/pi-ai": "catalog:agent",
+    "typebox": "catalog:agent",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}
