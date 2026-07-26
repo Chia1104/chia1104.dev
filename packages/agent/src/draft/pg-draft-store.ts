@@ -1,0 +1,139 @@
+import type { DB } from "@chia/db";
+import {
+  deleteAgentDrafts,
+  getAgentDrafts,
+  getAgentSession,
+  updateAgentSession,
+  upsertAgentDraft,
+} from "@chia/db/repos/agent";
+import type { Locale } from "@chia/db/types";
+
+import type { DraftStore } from "../ports.ts";
+import type {
+  DraftFeedMeta,
+  DraftTranslation,
+  FeedDraft,
+  PostSnapshot,
+} from "../types.ts";
+
+import { emptyDraft } from "./operations.ts";
+
+/**
+ * {@link DraftStore} over `agent_draft` (per-locale) + `agent_session.feedMeta` (feed-level).
+ *
+ * The split mirrors the real schema — `feed` vs `feed_translation` — so committing maps onto
+ * `createFeedSchema` without reshaping. Both halves are jsonb rather than columns because the
+ * draft is a scratch buffer: adding a field the agent can propose should not need a migration.
+ */
+export class PgDraftStore implements DraftStore {
+  constructor(private readonly db: DB) {}
+
+  async get(sessionId: string): Promise<FeedDraft> {
+    const [session, rows] = await Promise.all([
+      getAgentSession(this.db, sessionId),
+      getAgentDrafts(this.db, sessionId),
+    ]);
+
+    const draft = emptyDraft();
+    if (session?.feedMeta) {
+      draft.feedMeta = session.feedMeta as DraftFeedMeta;
+    }
+    if (session?.targetFeedId != null) {
+      draft.committedFeedId = session.targetFeedId;
+    }
+    for (const row of rows) {
+      draft.translations[row.locale] = {
+        ...(row.meta as DraftTranslation),
+        content: row.content ?? undefined,
+      };
+    }
+    return draft;
+  }
+
+  async patchFeedMeta(
+    sessionId: string,
+    patch: DraftFeedMeta
+  ): Promise<FeedDraft> {
+    const current = await this.get(sessionId);
+    const feedMeta = stripUndefined({ ...current.feedMeta, ...patch });
+    await updateAgentSession(this.db, sessionId, { feedMeta });
+    return { ...current, feedMeta: feedMeta as DraftFeedMeta };
+  }
+
+  async patchTranslation(
+    sessionId: string,
+    locale: Locale,
+    patch: DraftTranslation
+  ): Promise<FeedDraft> {
+    const current = await this.get(sessionId);
+    const merged = stripUndefined({
+      ...(current.translations[locale] ?? {}),
+      ...patch,
+    }) as DraftTranslation;
+
+    // `content` has its own column; everything else goes to the jsonb blob.
+    const { content, ...meta } = merged;
+    await upsertAgentDraft(this.db, { sessionId, locale, meta, content });
+
+    return {
+      ...current,
+      translations: { ...current.translations, [locale]: merged },
+    };
+  }
+
+  setContent(
+    sessionId: string,
+    locale: Locale,
+    content: string
+  ): Promise<FeedDraft> {
+    return this.patchTranslation(sessionId, locale, { content });
+  }
+
+  async markCommitted(sessionId: string, feedId: number): Promise<FeedDraft> {
+    await updateAgentSession(this.db, sessionId, { targetFeedId: feedId });
+    const current = await this.get(sessionId);
+    return { ...current, committedFeedId: feedId };
+  }
+
+  async seedFromPost(
+    sessionId: string,
+    post: PostSnapshot
+  ): Promise<FeedDraft> {
+    await updateAgentSession(this.db, sessionId, {
+      targetFeedId: post.feedId,
+      feedMeta: stripUndefined({
+        slug: post.slug,
+        type: post.type,
+        contentType: post.contentType,
+        defaultLocale: post.defaultLocale,
+        mainImage: post.mainImage,
+        tagSlugs: post.tagSlugs,
+      }),
+    });
+
+    for (const translation of post.translations) {
+      const { locale, content, ...meta } = translation;
+      await upsertAgentDraft(this.db, {
+        sessionId,
+        locale,
+        meta: stripUndefined(meta),
+        content: content ?? null,
+      });
+    }
+
+    return this.get(sessionId);
+  }
+
+  /** Used when a session is reset rather than deleted. */
+  async clear(sessionId: string): Promise<void> {
+    await deleteAgentDrafts(this.db, sessionId);
+    await updateAgentSession(this.db, sessionId, { feedMeta: null });
+  }
+}
+
+/**
+ * jsonb round-trips `undefined` as `null`, which would turn "field not set" into "field
+ * explicitly cleared". Drop undefined keys before persisting.
+ */
+const stripUndefined = <T extends object>(value: T): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined));

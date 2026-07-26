@@ -164,6 +164,14 @@
     "./orpc/guards/auth.guard": {
       "types": "./orpc/guards/auth.guard.ts",
       "default": "./orpc/guards/auth.guard.ts"
+    },
+    "./orpc/agent-runtime": {
+      "types": "./orpc/agent-runtime.ts",
+      "default": "./orpc/agent-runtime.ts"
+    },
+    "./orpc/routes/feeds.route": {
+      "types": "./orpc/routes/feeds.route.ts",
+      "default": "./orpc/routes/feeds.route.ts"
     }
   },
   "scripts": {
@@ -175,6 +183,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1095.0",
     "@aws-sdk/s3-request-presigner": "^3.1095.0",
+    "@chia/agent": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",
     "@chia/db": "workspace:*",

@@ -1,5 +1,12 @@
 import { defineRelations } from "drizzle-orm";
 
+import {
+  agentDrafts,
+  agentPendingMessages,
+  agentSessionEntries,
+  agentSessions,
+  agentToolApprovals,
+} from "./agent.schema.ts";
 import { apikey } from "./apikey.schema.ts";
 import { account, passkey, session } from "./auth.schema.ts";
 import {
@@ -42,6 +49,11 @@ const schema = {
   contents,
   assetsToTags,
   feedsToTags,
+  agentSessions,
+  agentSessionEntries,
+  agentDrafts,
+  agentPendingMessages,
+  agentToolApprovals,
 };
 
 export const relations = defineRelations(schema, (r) => ({
@@ -191,6 +203,57 @@ export const relations = defineRelations(schema, (r) => ({
     feed: r.one.feeds({ from: r.feedsToTags.feedId, to: r.feeds.id }),
     tag: r.one.tags({ from: r.feedsToTags.tagId, to: r.tags.id }),
   },
+  agentSessions: {
+    user: r.one.user({ from: r.agentSessions.userId, to: r.user.id }),
+    targetFeed: r.one.feeds({
+      from: r.agentSessions.targetFeedId,
+      to: r.feeds.id,
+    }),
+    entries: r.many.agentSessionEntries({
+      from: r.agentSessions.id,
+      to: r.agentSessionEntries.sessionId,
+    }),
+    drafts: r.many.agentDrafts({
+      from: r.agentSessions.id,
+      to: r.agentDrafts.sessionId,
+    }),
+    pendingMessages: r.many.agentPendingMessages({
+      from: r.agentSessions.id,
+      to: r.agentPendingMessages.sessionId,
+    }),
+    toolApprovals: r.many.agentToolApprovals({
+      from: r.agentSessions.id,
+      to: r.agentToolApprovals.sessionId,
+    }),
+  },
+  agentSessionEntries: {
+    session: r.one.agentSessions({
+      from: r.agentSessionEntries.sessionId,
+      to: r.agentSessions.id,
+    }),
+  },
+  agentDrafts: {
+    session: r.one.agentSessions({
+      from: r.agentDrafts.sessionId,
+      to: r.agentSessions.id,
+    }),
+  },
+  agentPendingMessages: {
+    session: r.one.agentSessions({
+      from: r.agentPendingMessages.sessionId,
+      to: r.agentSessions.id,
+    }),
+  },
+  agentToolApprovals: {
+    session: r.one.agentSessions({
+      from: r.agentToolApprovals.sessionId,
+      to: r.agentSessions.id,
+    }),
+    decidedByUser: r.one.user({
+      from: r.agentToolApprovals.decidedBy,
+      to: r.user.id,
+    }),
+  },
 }));
 
 export const userRelations = relations.user;
@@ -211,3 +274,8 @@ export const assetsRelations = relations.assets;
 export const contentsRelations = relations.contents;
 export const assetsToTagsRelations = relations.assetsToTags;
 export const feedsToTagsRelations = relations.feedsToTags;
+export const agentSessionsRelations = relations.agentSessions;
+export const agentSessionEntriesRelations = relations.agentSessionEntries;
+export const agentDraftsRelations = relations.agentDrafts;
+export const agentPendingMessagesRelations = relations.agentPendingMessages;
+export const agentToolApprovalsRelations = relations.agentToolApprovals;

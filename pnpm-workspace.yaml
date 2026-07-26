@@ -40,6 +40,10 @@ catalog:
   zod: 4.4.3
 
 catalogs:
+  agent:
+    "@earendil-works/pi-agent-core": 0.82.1
+    "@earendil-works/pi-ai": 0.82.1
+    typebox: 1.1.38
   ai:
     "@ai-sdk/anthropic": 4.0.20
     "@ai-sdk/gateway": 4.0.28
@@ -152,5 +156,9 @@ catalogs:
     zustand: 5.0.14
 
 linkWorkspacePackages: true
+
+minimumReleaseAgeExclude:
+  - '@earendil-works/pi-agent-core@0.82.1'
+  - '@earendil-works/pi-ai@0.82.1'
 
 strictPeerDependencies: false

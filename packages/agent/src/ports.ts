@@ -1,0 +1,143 @@
+import type { Locale } from "@chia/db/types";
+
+import type {
+  CommitDraftInput,
+  CommitDraftResult,
+  DraftFeedMeta,
+  DraftTranslation,
+  FeedDraft,
+  FetchedPage,
+  MdxCompileResult,
+  PostListItem,
+  PostSearchHit,
+  PostSnapshot,
+  TagItem,
+} from "./types.ts";
+
+/**
+ * Re-exported so an adapter can import a port and every type in its signature from one place.
+ */
+export type {
+  CommitDraftInput,
+  CommitDraftResult,
+  DraftFeedMeta,
+  DraftTranslation,
+  FeedDraft,
+  FetchedPage,
+  MdxCompileResult,
+  PostFeedType,
+  PostListItem,
+  PostSearchHit,
+  PostSnapshot,
+  TagItem,
+} from "./types.ts";
+
+/**
+ * Ports this package needs from the host app.
+ *
+ * The split is deliberate: `packages/agent` owns the *agent* logic (tool contracts, prompt
+ * assembly, permission gating, event shaping) and stays free of transport, auth and
+ * Algolia/S3 concerns. `apps/service` implements these against the repo's existing
+ * repositories and oRPC procedures — see `apps/service/src/services/agent-content.port.ts`.
+ */
+
+// ============================================
+// Content port
+// ============================================
+
+export interface SearchPostsInput {
+  keyword: string;
+  locale?: Locale;
+  /** `algolia` for keyword search, an embedding model id for semantic search. */
+  mode: "algolia" | "semantic";
+  limit: number;
+}
+
+export interface ListPostsInput {
+  adminId: string;
+  limit: number;
+  /** Omit for both. */
+  published?: boolean;
+}
+
+export interface GetPostInput {
+  slug?: string;
+  feedId?: number;
+  locale?: Locale;
+}
+
+/**
+ * Read/write access to the published content domain.
+ *
+ * Every method is scoped by the caller to the configured admin — this port does no
+ * authorization of its own, the oRPC `adminGuard` already ran.
+ */
+export interface ContentPort {
+  searchPosts(input: SearchPostsInput): Promise<PostSearchHit[]>;
+  getPost(input: GetPostInput): Promise<PostSnapshot | null>;
+  listPosts(input: ListPostsInput): Promise<PostListItem[]>;
+  listTags(): Promise<TagItem[]>;
+  /**
+   * Compiles MDX through the *same* pipeline the site renders with, so a draft that passes
+   * here cannot break the published page. This is the agent's feedback loop.
+   */
+  compileMdx(content: string): Promise<MdxCompileResult>;
+  fetchPage(url: string): Promise<FetchedPage>;
+  commitDraft(input: CommitDraftInput): Promise<CommitDraftResult>;
+  setPublished(input: {
+    adminId: string;
+    feedId: number;
+    published: boolean;
+  }): Promise<{ feedId: number; published: boolean }>;
+}
+
+// ============================================
+// Draft store
+// ============================================
+
+/** Staging buffer for one agent session. Backed by `agent_draft` + `agent_session.feedMeta`. */
+export interface DraftStore {
+  get(sessionId: string): Promise<FeedDraft>;
+  patchFeedMeta(sessionId: string, patch: DraftFeedMeta): Promise<FeedDraft>;
+  patchTranslation(
+    sessionId: string,
+    locale: Locale,
+    patch: DraftTranslation
+  ): Promise<FeedDraft>;
+  setContent(
+    sessionId: string,
+    locale: Locale,
+    content: string
+  ): Promise<FeedDraft>;
+  markCommitted(sessionId: string, feedId: number): Promise<FeedDraft>;
+  /** Seeds the buffer from an existing post when a session is opened to edit one. */
+  seedFromPost(sessionId: string, post: PostSnapshot): Promise<FeedDraft>;
+}
+
+// ============================================
+// Pending message store
+// ============================================
+
+export type PendingMessageKind = "steer" | "followUp";
+
+export interface PendingMessage {
+  id: string;
+  kind: PendingMessageKind;
+  text: string;
+}
+
+/**
+ * Queue for messages that arrive while a turn is already running.
+ *
+ * `AgentHarness.steer()` is a method rather than a callback, so an HTTP request cannot
+ * reach into the running harness. The transport enqueues here and the turn drains it.
+ */
+export interface PendingMessageStore {
+  push(
+    sessionId: string,
+    kind: PendingMessageKind,
+    text: string
+  ): Promise<void>;
+  /** Atomically returns unconsumed messages and marks them consumed. */
+  claim(sessionId: string): Promise<PendingMessage[]>;
+}

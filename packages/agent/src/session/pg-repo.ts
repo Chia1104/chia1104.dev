@@ -1,0 +1,212 @@
+import {
+  createTimestamp,
+  getEntriesToFork,
+  SessionError,
+  toSession,
+  uuidv7,
+} from "@earendil-works/pi-agent-core";
+import type {
+  Session,
+  SessionCreateOptions,
+  SessionForkOptions,
+  SessionRepo,
+} from "@earendil-works/pi-agent-core";
+
+import type { DB } from "@chia/db";
+import {
+  createAgentSession,
+  getAgentSession,
+  getAgentSessions,
+  softDeleteAgentSession,
+  updateAgentSession,
+} from "@chia/db/repos/agent";
+
+import { AGENT_PROVIDER_ID, DEFAULT_WRITING_MODEL_ID } from "../models.ts";
+import type {
+  AgentSessionSettings,
+  ThinkingLevel,
+  ToolTier,
+} from "../types.ts";
+
+import { PgSessionStorage } from "./pg-storage.ts";
+import type { PgSessionMetadata } from "./pg-storage.ts";
+
+export interface PgSessionCreateOptions extends SessionCreateOptions {
+  userId: string;
+  kind?: string;
+  title?: string;
+  targetFeedId?: number;
+  settings?: Partial<AgentSessionSettings>;
+}
+
+export interface PgSessionListOptions {
+  userId: string;
+  limit?: number;
+  includeDeleted?: boolean;
+}
+
+/**
+ * pi's {@link SessionRepo} over `agent_session`.
+ *
+ * `fork` is the interesting one — it powers "rewind three steps and try another angle". pi's
+ * `getEntriesToFork` picks the prefix to copy, and the copy lands in a *new* session row so the
+ * original branch stays readable in the dashboard.
+ */
+export class PgSessionRepo implements SessionRepo<
+  PgSessionMetadata,
+  PgSessionCreateOptions,
+  PgSessionListOptions
+> {
+  constructor(private readonly db: DB) {}
+
+  async create(
+    options: PgSessionCreateOptions
+  ): Promise<Session<PgSessionMetadata>> {
+    const id = options.id ?? uuidv7();
+    const kind = options.kind ?? "writing";
+    const settings = options.settings ?? {};
+
+    await createAgentSession(this.db, {
+      id,
+      userId: options.userId,
+      kind,
+      title: options.title ?? null,
+      providerId: settings.providerId ?? AGENT_PROVIDER_ID,
+      modelId: settings.modelId ?? DEFAULT_WRITING_MODEL_ID,
+      thinkingLevel: settings.thinkingLevel ?? "off",
+      activeToolNames: settings.activeToolNames ?? null,
+      autoApprove: settings.autoApprove ?? [],
+      targetFeedId: options.targetFeedId ?? null,
+    });
+
+    return toSession(
+      new PgSessionStorage(this.db, id, {
+        id,
+        createdAt: createTimestamp(),
+        userId: options.userId,
+        kind,
+      })
+    );
+  }
+
+  async open(
+    metadata: Pick<PgSessionMetadata, "id">
+  ): Promise<Session<PgSessionMetadata>> {
+    const row = await getAgentSession(this.db, metadata.id);
+    if (!row) {
+      throw new SessionError("not_found", `Session not found: ${metadata.id}`);
+    }
+    return toSession(
+      new PgSessionStorage(this.db, row.id, {
+        id: row.id,
+        createdAt: row.createdAt.toISOString(),
+        userId: row.userId,
+        kind: row.kind,
+      })
+    );
+  }
+
+  /** Opens by id — what the transport actually holds, without a metadata round-trip. */
+  openById(sessionId: string): Promise<Session<PgSessionMetadata>> {
+    return this.open({ id: sessionId });
+  }
+
+  async list(options?: PgSessionListOptions): Promise<PgSessionMetadata[]> {
+    if (!options) return [];
+    const rows = await getAgentSessions(this.db, options);
+    return rows.map((row) => ({
+      id: row.id,
+      createdAt: row.createdAt.toISOString(),
+      userId: row.userId,
+      kind: row.kind,
+    }));
+  }
+
+  /**
+   * Soft delete. A transcript is worth keeping after an operator clears a session from the
+   * list — a hard delete cascades the whole tree away.
+   */
+  async delete(metadata: Pick<PgSessionMetadata, "id">): Promise<void> {
+    await softDeleteAgentSession(this.db, metadata.id);
+  }
+
+  async fork(
+    source: Pick<PgSessionMetadata, "id">,
+    options: SessionForkOptions & Partial<PgSessionCreateOptions>
+  ): Promise<Session<PgSessionMetadata>> {
+    const original = await this.open(source);
+    const entries = await getEntriesToFork(original.getStorage(), {
+      entryId: options.entryId,
+      position: options.position,
+    });
+
+    const sourceRow = await getAgentSession(this.db, source.id);
+    if (!sourceRow) {
+      throw new SessionError("not_found", `Session not found: ${source.id}`);
+    }
+
+    const forked = await this.create({
+      id: options.id,
+      userId: options.userId ?? sourceRow.userId,
+      kind: options.kind ?? sourceRow.kind,
+      title: options.title ?? sourceRow.title ?? undefined,
+      targetFeedId: options.targetFeedId ?? sourceRow.targetFeedId ?? undefined,
+      settings: options.settings ?? {
+        providerId: sourceRow.providerId,
+        modelId: sourceRow.modelId,
+        thinkingLevel: sourceRow.thinkingLevel as ThinkingLevel,
+        activeToolNames: sourceRow.activeToolNames ?? null,
+        autoApprove: sourceRow.autoApprove as ToolTier[],
+      },
+    });
+
+    const storage = forked.getStorage();
+    for (const entry of entries) {
+      await storage.appendEntry(entry);
+    }
+    const leaf = entries.at(-1);
+    if (leaf) await storage.setLeafId(leaf.id);
+
+    return forked;
+  }
+}
+
+// ============================================
+// Session settings (outside pi's port)
+// ============================================
+
+/**
+ * Runtime settings are read and written directly rather than through `SessionStorage`.
+ *
+ * pi models model/thinking changes as session *entries* for replay fidelity, but the transport
+ * needs the current values *before* a harness exists in order to build one.
+ */
+export const readSessionSettings = async (
+  db: DB,
+  sessionId: string
+): Promise<AgentSessionSettings | null> => {
+  const row = await getAgentSession(db, sessionId);
+  if (!row) return null;
+  return {
+    providerId: row.providerId,
+    modelId: row.modelId,
+    thinkingLevel: row.thinkingLevel as ThinkingLevel,
+    activeToolNames: row.activeToolNames ?? null,
+    autoApprove: row.autoApprove as ToolTier[],
+  };
+};
+
+export const writeSessionSettings = async (
+  db: DB,
+  sessionId: string,
+  patch: Partial<AgentSessionSettings> & { title?: string }
+): Promise<void> => {
+  await updateAgentSession(db, sessionId, {
+    providerId: patch.providerId,
+    modelId: patch.modelId,
+    thinkingLevel: patch.thinkingLevel,
+    activeToolNames: patch.activeToolNames,
+    autoApprove: patch.autoApprove,
+    title: patch.title,
+  });
+};
