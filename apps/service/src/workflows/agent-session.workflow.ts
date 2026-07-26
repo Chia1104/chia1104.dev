@@ -2,6 +2,7 @@ import * as z from "zod";
 
 import {
   closeAgentStreamsStep,
+  completeAgentRunStep,
   runAgentTurnStep,
 } from "../steps/agent-turn.step";
 import type { AgentTurnOutcome } from "../steps/agent-turn.step";
@@ -130,6 +131,7 @@ export const agentSessionWorkflow = async (request: Request) => {
     }
   }
 
+  await completeAgentRunStep(sessionId);
   await closeAgentStreamsStep();
 
   return { sessionId, turns };

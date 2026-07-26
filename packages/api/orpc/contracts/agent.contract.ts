@@ -7,11 +7,12 @@ import { locale } from "@chia/db";
 import { withMetaSchema } from "./shared";
 
 /**
- * Contract for the writing agent.
+ * Shared agent transport contract.
  *
  * RPC-only — no `.route({ method, path })` annotations. The REST surface is a catch-all over the
  * same router, and an event-iterator procedure is not meaningfully addressable as REST, so these
- * are deliberately kept off it.
+ * are deliberately kept off it. Kind-specific fields stay optional; the runtime selected by
+ * `agent_session.kind` owns their validation.
  */
 
 // ============================================
@@ -38,9 +39,10 @@ export const agentSessionSummarySchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
   kind: z.string(),
-  modelId: z.string(),
-  thinkingLevel: thinkingLevelSchema,
-  targetFeedId: z.number().nullable(),
+  modelId: z.string().nullable().optional(),
+  thinkingLevel: thinkingLevelSchema.nullable().optional(),
+  /** Writing-agent extension retained for the current dashboard. Other kinds omit it. */
+  targetFeedId: z.number().nullable().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });
@@ -68,14 +70,23 @@ export const agentDraftSchema = z.object({
 
 export const agentSessionDetailSchema = z.object({
   session: agentSessionSummarySchema,
-  settings: z.object({
-    providerId: z.string(),
-    modelId: z.string(),
-    thinkingLevel: thinkingLevelSchema,
-    activeToolNames: z.array(z.string()).nullable(),
-    autoApprove: z.array(toolTierSchema),
-  }),
-  draft: agentDraftSchema,
+  /** Common LLM settings. A non-LLM harness can omit this block. */
+  settings: z
+    .object({
+      providerId: z.string(),
+      modelId: z.string(),
+      thinkingLevel: thinkingLevelSchema,
+      activeToolNames: z.array(z.string()).nullable(),
+      autoApprove: z.array(toolTierSchema),
+    })
+    .optional(),
+  /** Versioned kind-owned configuration persisted on the shared session record. */
+  runtimeConfig: z.record(z.string(), z.unknown()).optional(),
+  configVersion: z.number().int().positive().optional(),
+  /** Optional runtime-owned state for kinds that do not have a dedicated public contract yet. */
+  state: z.unknown().optional(),
+  /** Writing-agent state. Other kinds expose their own state contract. */
+  draft: agentDraftSchema.optional(),
   /**
    * The transcript replayed as wire events, so the client folds it with the exact same reducer it
    * uses for the live stream.
@@ -116,14 +127,15 @@ export const createAgentSessionContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, BAD_REQUEST: {} })
   .input(
     z.object({
-      /** Agent kind. Optional while only one is registered. */
-      kind: z.string().optional(),
+      /** Agent kind is required because creation has no stored session to dispatch from. */
+      kind: z.string().min(1),
       title: z.string().max(200).optional(),
       /** Seeds the draft buffer from this post so the agent edits rather than starts fresh. */
       targetFeedId: z.number().int().optional(),
       modelId: z.string().optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       autoApprove: z.array(toolTierSchema).optional(),
+      runtimeConfig: z.record(z.string(), z.unknown()).optional(),
     })
   )
   .output(agentSessionDetailSchema);
@@ -162,6 +174,7 @@ export const updateAgentSessionSettingsContract = oc
       thinkingLevel: thinkingLevelSchema.optional(),
       activeToolNames: z.array(z.string()).nullable().optional(),
       autoApprove: z.array(toolTierSchema).optional(),
+      runtimeConfig: z.record(z.string(), z.unknown()).optional(),
     })
   )
   .output(agentSessionDetailSchema);
@@ -346,7 +359,7 @@ export const getAgentDraftContract = oc
 
 export const listAgentModelsContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
-  .input(z.object({ kind: z.string().optional() }).optional())
+  .input(z.object({ kind: z.string().min(1) }))
   .output(
     z.array(
       z.object({
@@ -363,7 +376,7 @@ export const listAgentModelsContract = oc
 /** Tools and slash commands, so the dashboard need not hard-code either list. */
 export const listAgentCapabilitiesContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
-  .input(z.object({ kind: z.string().optional() }).optional())
+  .input(z.object({ kind: z.string().min(1) }))
   .output(
     z.object({
       tools: z.array(

@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import {
   bigserial,
@@ -20,18 +21,18 @@ import { user } from "./user.schema.ts";
 /**
  * Persistence for agent sessions.
  *
- * `agent_session` / `agent_session_entry` / `agent_pending_message` / `agent_tool_approval` are
- * **generic** — every agent kind shares them, discriminated by `agent_session.kind`. `agent_draft`
- * (and `agent_session.targetFeedId` / `feedMeta`) belong to the writing agent specifically; they are
- * nullable, so another kind simply leaves them unset.
+ * `agent_session` / `agent_session_entry` / `agent_run` / `agent_pending_message` /
+ * `agent_tool_approval` are **generic** — every agent kind shares them, discriminated by
+ * `agent_session.kind`. Writing-specific state lives in `writing_agent_session` and
+ * `writing_agent_draft`.
  *
  * The transcript is a **tree**, not a flat log: `agent_session_entry.parentId` points at
  * the previous entry on the branch and `agent_session.leafEntryId` marks the active leaf.
  * That is what lets the agent rewind ("退回三步用另一個角度重寫") and what pi's
  * `SessionStorage` port expects. `@chia/agent-core/session` implements that port over these
- * tables; the writing-specific `agent_draft` belongs to `@chia/agent-writing`.
+ * tables; the writing-specific `writing_agent_draft` belongs to `@chia/agent-writing`.
  *
- * `agent_draft` is the staging buffer: the agent only ever writes here, and a human
+ * `writing_agent_draft` is the staging buffer: the agent only ever writes here, and a human
  * promotes it into `feed`/`feed_translation`/`content` through the existing
  * `feeds.create`/`feeds.update` procedures.
  */
@@ -52,42 +53,35 @@ export const agentSessions = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    /** Reserved for future agent kinds; only `writing` exists today. */
-    kind: text("kind").notNull().default("writing"),
+    /** Stable runtime registry key, e.g. `writing` or `site-assistant`. */
+    kind: text("kind").notNull(),
     title: text("title"),
-    providerId: text("provider_id").notNull(),
-    modelId: text("model_id").notNull(),
-    thinkingLevel: text("thinking_level").notNull().default("off"),
+    /**
+     * Common LLM settings. Nullable because a different harness may not use a provider model at
+     * all; a kind that needs them validates them when constructing its runtime.
+     */
+    providerId: text("provider_id"),
+    modelId: text("model_id"),
+    thinkingLevel: text("thinking_level"),
     /** `null` means "every registered tool is active". */
     activeToolNames: jsonb("active_tool_names").$type<string[] | null>(),
     /** Tool tiers the operator pre-approved for this session, e.g. `["draft"]`. */
     autoApprove: jsonb("auto_approve").$type<string[]>().notNull().default([]),
-    /**
-     * Feed this session is editing, when it was opened from an existing post. `null` for
-     * "write something new" sessions until `commit_draft` runs.
-     */
-    targetFeedId: integer("target_feed_id").references(() => feeds.id, {
-      onDelete: "set null",
-    }),
+    /** Kind-owned configuration that does not deserve a shared column. */
+    runtimeConfig: jsonb("runtime_config")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    /** Schema version for validating and migrating `runtimeConfig`. */
+    configVersion: integer("config_version").notNull().default(1),
     /** Active leaf of the session tree. `null` for a fresh session with no entries. */
     leafEntryId: text("leaf_entry_id"),
-    /**
-     * Workflow run driving this session.
-     *
-     * One long-lived run per session: it waits on a hook for the next message, executes a turn,
-     * and parks on an approval hook when a tier-3 tool is gated. Recorded here so a later request
-     * can find the run to resume, stream from, or cancel. `null` before the first turn, or after
-     * the run completed and a new one has not started.
-     */
-    workflowRunId: text("workflow_run_id"),
-    /** Feed-level draft fields (slug/type/published/mainImage/…). Per-locale fields live on `agent_draft`. */
-    feedMeta: jsonb("feed_meta").$type<Record<string, unknown>>(),
     ...timestamps,
     ...softDelete,
   },
   (table) => [
     index("agent_session_user_id_idx").on(table.userId),
-    index("agent_session_target_feed_id_idx").on(table.targetFeedId),
+    index("agent_session_user_kind_idx").on(table.userId, table.kind),
     index("agent_session_deleted_at_idx").on(table.deletedAt),
     index("agent_session_updated_at_idx").on(table.updatedAt),
   ]
@@ -96,14 +90,54 @@ export const agentSessions = pgTable(
 export type AgentSession = InferSelectModel<typeof agentSessions>;
 
 // ============================================
+// Agent Run
+// ============================================
+
+export type AgentRunStatus = "active" | "completed" | "cancelled" | "failed";
+
+/**
+ * One execution owned by a harness. Keeping runs separate from sessions avoids assuming that every
+ * kind uses one long-lived workflow and leaves room for retries, alternate harnesses and sub-runs.
+ */
+export const agentRuns = pgTable(
+  "agent_run",
+  {
+    id: text("id").primaryKey(),
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => agentSessions.id, { onDelete: "cascade" }),
+    harnessKind: text("harness_kind").notNull(),
+    harnessVersion: integer("harness_version").notNull().default(1),
+    status: text("status").$type<AgentRunStatus>().notNull().default("active"),
+    /** Provider/workflow-owned identifier used to stream, resume or cancel this run. */
+    externalRunId: text("external_run_id").notNull(),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    startedAt: timestamp("started_at", { mode: "date" }).defaultNow().notNull(),
+    endedAt: timestamp("ended_at", { mode: "date" }),
+  },
+  (table) => [
+    index("agent_run_session_status_idx").on(table.sessionId, table.status),
+    index("agent_run_external_id_idx").on(table.externalRunId),
+    uniqueIndex("agent_run_one_active_per_session_idx")
+      .on(table.sessionId)
+      .where(sql`${table.status} = 'active'`),
+  ]
+);
+
+export type AgentRun = InferSelectModel<typeof agentRuns>;
+
+// ============================================
 // Agent Session Entry
 // ============================================
 
 /**
- * One node of the session tree. `type`/`payload` mirror pi's `SessionTreeEntry` union
+ * One node of the session tree. `type`/`payload` mirror a harness's session-entry union
  * (`message`, `compaction`, `modelChange`, `label`, …) rather than being normalised into
- * columns — the union is pi's to evolve, and storing it opaquely means a pi upgrade that
- * adds an entry type needs no migration here.
+ * columns. Storing the payload opaquely lets each harness evolve its entry types without
+ * changing the shared table.
  *
  * `seq` exists so the storage adapter can page entries in insertion order and so the
  * event stream has a stable cursor; the tree order comes from `parentId`.
@@ -132,15 +166,41 @@ export const agentSessionEntries = pgTable(
 export type AgentSessionEntry = InferSelectModel<typeof agentSessionEntries>;
 
 // ============================================
-// Agent Draft
+// Writing Agent State
 // ============================================
 
 /**
- * Per-locale staging buffer. Mirrors `feed_translation` + `content` so `commit_draft` is
+ * One-to-one extension for the writing agent. Other kinds add sibling extension tables instead of
+ * nullable columns to `agent_session`.
+ */
+export const writingAgentSessions = pgTable(
+  "writing_agent_session",
+  {
+    sessionId: text("session_id")
+      .primaryKey()
+      .references(() => agentSessions.id, { onDelete: "cascade" }),
+    targetFeedId: integer("target_feed_id").references(() => feeds.id, {
+      onDelete: "set null",
+    }),
+    /** Feed-level draft fields (slug/type/published/mainImage/…). */
+    feedMeta: jsonb("feed_meta")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+  },
+  (table) => [
+    index("writing_agent_session_target_feed_idx").on(table.targetFeedId),
+  ]
+);
+
+export type WritingAgentSession = InferSelectModel<typeof writingAgentSessions>;
+
+/**
+ * Per-locale writing staging buffer. Mirrors `feed_translation` + `content` so `commit_draft` is
  * a near-direct mapping onto `createFeedSchema.translations`.
  */
-export const agentDrafts = pgTable(
-  "agent_draft",
+export const writingAgentDrafts = pgTable(
+  "writing_agent_draft",
   {
     sessionId: text("session_id")
       .notNull()
@@ -157,7 +217,7 @@ export const agentDrafts = pgTable(
   (table) => [primaryKey({ columns: [table.sessionId, table.locale] })]
 );
 
-export type AgentDraft = InferSelectModel<typeof agentDrafts>;
+export type WritingAgentDraft = InferSelectModel<typeof writingAgentDrafts>;
 
 // ============================================
 // Agent Pending Message
@@ -198,6 +258,8 @@ export type AgentPendingMessage = InferSelectModel<typeof agentPendingMessages>;
 // Agent Tool Approval
 // ============================================
 
+export type AgentApprovalStatus = "pending" | "approved" | "rejected";
+
 /**
  * Durable record of a tier-3 approval decision, keyed by the model's `toolCallId`.
  *
@@ -214,7 +276,10 @@ export const agentToolApprovals = pgTable(
     toolCallId: text("tool_call_id").notNull(),
     toolName: text("tool_name").notNull(),
     args: jsonb("args").$type<Record<string, unknown>>(),
-    approved: text("approved"),
+    status: text("status")
+      .$type<AgentApprovalStatus>()
+      .notNull()
+      .default("pending"),
     comment: text("comment"),
     decidedBy: text("decided_by").references(() => user.id, {
       onDelete: "set null",
@@ -222,10 +287,7 @@ export const agentToolApprovals = pgTable(
     decidedAt: timestamp("decided_at", { mode: "date" }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.sessionId, table.toolCallId] }),
-    uniqueIndex("agent_tool_approval_call_idx").on(table.toolCallId),
-  ]
+  (table) => [primaryKey({ columns: [table.sessionId, table.toolCallId] })]
 );
 
 export type AgentToolApproval = InferSelectModel<typeof agentToolApprovals>;

@@ -1,10 +1,10 @@
 import type { DB } from "@chia/db";
 import {
-  deleteAgentDrafts,
-  getAgentDrafts,
-  getAgentSession,
-  updateAgentSession,
-  upsertAgentDraft,
+  deleteWritingAgentDrafts,
+  getWritingAgentDrafts,
+  getWritingAgentSession,
+  updateWritingAgentSession,
+  upsertWritingAgentDraft,
 } from "@chia/db/repos/agent";
 import type { Locale } from "@chia/db/types";
 
@@ -19,7 +19,8 @@ import type {
 import { emptyDraft } from "./operations.ts";
 
 /**
- * {@link DraftStore} over `agent_draft` (per-locale) + `agent_session.feedMeta` (feed-level).
+ * {@link DraftStore} over `writing_agent_draft` (per-locale) +
+ * `writing_agent_session.feedMeta` (feed-level).
  *
  * The split mirrors the real schema — `feed` vs `feed_translation` — so committing maps onto
  * `createFeedSchema` without reshaping. Both halves are jsonb rather than columns because the
@@ -29,17 +30,17 @@ export class PgDraftStore implements DraftStore {
   constructor(private readonly db: DB) {}
 
   async get(sessionId: string): Promise<FeedDraft> {
-    const [session, rows] = await Promise.all([
-      getAgentSession(this.db, sessionId),
-      getAgentDrafts(this.db, sessionId),
+    const [writingState, rows] = await Promise.all([
+      getWritingAgentSession(this.db, sessionId),
+      getWritingAgentDrafts(this.db, sessionId),
     ]);
 
     const draft = emptyDraft();
-    if (session?.feedMeta) {
-      draft.feedMeta = session.feedMeta as DraftFeedMeta;
+    if (writingState?.feedMeta) {
+      draft.feedMeta = writingState.feedMeta as DraftFeedMeta;
     }
-    if (session?.targetFeedId != null) {
-      draft.committedFeedId = session.targetFeedId;
+    if (writingState?.targetFeedId != null) {
+      draft.committedFeedId = writingState.targetFeedId;
     }
     for (const row of rows) {
       draft.translations[row.locale] = {
@@ -56,7 +57,7 @@ export class PgDraftStore implements DraftStore {
   ): Promise<FeedDraft> {
     const current = await this.get(sessionId);
     const feedMeta = stripUndefined({ ...current.feedMeta, ...patch });
-    await updateAgentSession(this.db, sessionId, { feedMeta });
+    await updateWritingAgentSession(this.db, sessionId, { feedMeta });
     return { ...current, feedMeta: feedMeta as DraftFeedMeta };
   }
 
@@ -73,7 +74,12 @@ export class PgDraftStore implements DraftStore {
 
     // `content` has its own column; everything else goes to the jsonb blob.
     const { content, ...meta } = merged;
-    await upsertAgentDraft(this.db, { sessionId, locale, meta, content });
+    await upsertWritingAgentDraft(this.db, {
+      sessionId,
+      locale,
+      meta,
+      content,
+    });
 
     return {
       ...current,
@@ -90,7 +96,9 @@ export class PgDraftStore implements DraftStore {
   }
 
   async markCommitted(sessionId: string, feedId: number): Promise<FeedDraft> {
-    await updateAgentSession(this.db, sessionId, { targetFeedId: feedId });
+    await updateWritingAgentSession(this.db, sessionId, {
+      targetFeedId: feedId,
+    });
     const current = await this.get(sessionId);
     return { ...current, committedFeedId: feedId };
   }
@@ -99,7 +107,7 @@ export class PgDraftStore implements DraftStore {
     sessionId: string,
     post: PostSnapshot
   ): Promise<FeedDraft> {
-    await updateAgentSession(this.db, sessionId, {
+    await updateWritingAgentSession(this.db, sessionId, {
       targetFeedId: post.feedId,
       feedMeta: stripUndefined({
         slug: post.slug,
@@ -113,7 +121,7 @@ export class PgDraftStore implements DraftStore {
 
     for (const translation of post.translations) {
       const { locale, content, ...meta } = translation;
-      await upsertAgentDraft(this.db, {
+      await upsertWritingAgentDraft(this.db, {
         sessionId,
         locale,
         meta: stripUndefined(meta),
@@ -126,8 +134,8 @@ export class PgDraftStore implements DraftStore {
 
   /** Used when a session is reset rather than deleted. */
   async clear(sessionId: string): Promise<void> {
-    await deleteAgentDrafts(this.db, sessionId);
-    await updateAgentSession(this.db, sessionId, { feedMeta: null });
+    await deleteWritingAgentDrafts(this.db, sessionId);
+    await updateWritingAgentSession(this.db, sessionId, { feedMeta: {} });
   }
 }
 

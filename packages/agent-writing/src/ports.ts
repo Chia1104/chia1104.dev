@@ -91,7 +91,10 @@ export interface ContentPort {
 // Draft store
 // ============================================
 
-/** Staging buffer for one agent session. Backed by `agent_draft` + `agent_session.feedMeta`. */
+/**
+ * Staging buffer for one writing session. Backed by `writing_agent_draft` +
+ * `writing_agent_session.feedMeta`.
+ */
 export interface DraftStore {
   get(sessionId: string): Promise<FeedDraft>;
   patchFeedMeta(sessionId: string, patch: DraftFeedMeta): Promise<FeedDraft>;

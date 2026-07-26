@@ -2,20 +2,23 @@ import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
 
 import type { DB } from "../../index.ts";
 import {
-  agentDrafts,
   agentPendingMessages,
+  agentRuns,
   agentSessionEntries,
   agentSessions,
   agentToolApprovals,
+  writingAgentDrafts,
+  writingAgentSessions,
 } from "../../schemas/index.ts";
-import type { Locale } from "../../schemas/index.ts";
+import type { AgentRunStatus, Locale } from "../../schemas/index.ts";
 
 /**
- * Repository for the writing agent's persistence.
+ * Repository for shared agent persistence and kind-owned extensions.
  *
  * Every drizzle query for the agent tables lives here, matching the rest of `packages/db`.
- * `@chia/agent` calls these instead of importing `drizzle-orm` itself — sharing one ORM
- * instance and keeping SQL in the package that owns the schema.
+ * Agent packages call these instead of importing `drizzle-orm` themselves — sharing one ORM
+ * instance and keeping SQL in the package that owns the schema. Writing-specific queries are
+ * explicitly named so another kind can add a sibling extension without changing shared records.
  */
 
 // ============================================
@@ -27,12 +30,13 @@ export interface InsertAgentSessionDTO {
   userId: string;
   kind: string;
   title?: string | null;
-  providerId: string;
-  modelId: string;
-  thinkingLevel: string;
+  providerId?: string | null;
+  modelId?: string | null;
+  thinkingLevel?: string | null;
   activeToolNames?: string[] | null;
   autoApprove?: string[];
-  targetFeedId?: number | null;
+  runtimeConfig?: Record<string, unknown>;
+  configVersion?: number;
   leafEntryId?: string | null;
 }
 
@@ -52,7 +56,8 @@ export const createAgentSession = async (
       thinkingLevel: input.thinkingLevel,
       activeToolNames: input.activeToolNames ?? null,
       autoApprove: input.autoApprove ?? [],
-      targetFeedId: input.targetFeedId ?? null,
+      runtimeConfig: input.runtimeConfig ?? {},
+      configVersion: input.configVersion ?? 1,
       leafEntryId: input.leafEntryId ?? null,
     })
     .returning();
@@ -64,40 +69,42 @@ export const getAgentSession = async (db: DB, sessionId: string) =>
 
 export const getAgentSessions = async (
   db: DB,
-  options: { userId: string; limit?: number; includeDeleted?: boolean }
-) =>
-  await db
+  options: {
+    userId: string;
+    kind?: string;
+    limit?: number;
+    includeDeleted?: boolean;
+  }
+) => {
+  const conditions = [eq(agentSessions.userId, options.userId)];
+  if (options.kind) conditions.push(eq(agentSessions.kind, options.kind));
+  if (!options.includeDeleted) conditions.push(isNull(agentSessions.deletedAt));
+
+  return await db
     .select()
     .from(agentSessions)
-    .where(
-      options.includeDeleted
-        ? eq(agentSessions.userId, options.userId)
-        : and(
-            eq(agentSessions.userId, options.userId),
-            isNull(agentSessions.deletedAt)
-          )
-    )
+    .where(and(...conditions))
     .orderBy(desc(agentSessions.updatedAt))
     .limit(options.limit ?? 50);
+};
 
 export interface UpdateAgentSessionDTO {
   title?: string | null;
-  providerId?: string;
-  modelId?: string;
-  thinkingLevel?: string;
+  providerId?: string | null;
+  modelId?: string | null;
+  thinkingLevel?: string | null;
   activeToolNames?: string[] | null;
   autoApprove?: string[];
-  targetFeedId?: number | null;
+  runtimeConfig?: Record<string, unknown>;
+  configVersion?: number;
   leafEntryId?: string | null;
-  feedMeta?: Record<string, unknown> | null;
-  workflowRunId?: string | null;
 }
 
 /**
  * Only the keys present in `patch` are written.
  *
- * `null` and `undefined` mean different things here: `targetFeedId: null` detaches the
- * session from its post, while omitting the key leaves it alone.
+ * `null` and `undefined` mean different things here: a nullable setting can be cleared with
+ * `null`, while omitting the key leaves it alone.
  */
 export const updateAgentSession = async (
   db: DB,
@@ -129,9 +136,80 @@ export const restoreAgentSession = async (db: DB, sessionId: string) => {
     .where(eq(agentSessions.id, sessionId));
 };
 
-/** Hard delete. Entries, drafts, pending messages and approvals cascade. */
+/** Hard delete. Runs, entries, kind extensions, pending messages and approvals cascade. */
 export const deleteAgentSession = async (db: DB, sessionId: string) => {
   await db.delete(agentSessions).where(eq(agentSessions.id, sessionId));
+};
+
+// ============================================
+// Runs
+// ============================================
+
+/**
+ * Replaces the session's active run in one transaction. The workflow backend only supports one
+ * message hook per session, so superseded runs must not remain active in the database.
+ */
+export const createAgentRun = async (
+  db: DB,
+  input: {
+    id: string;
+    sessionId: string;
+    harnessKind: string;
+    harnessVersion?: number;
+    externalRunId: string;
+    metadata?: Record<string, unknown>;
+  }
+) =>
+  await db.transaction(async (tx) => {
+    await tx
+      .update(agentRuns)
+      .set({ status: "completed", endedAt: new Date() })
+      .where(
+        and(
+          eq(agentRuns.sessionId, input.sessionId),
+          eq(agentRuns.status, "active")
+        )
+      );
+
+    const [row] = await tx
+      .insert(agentRuns)
+      .values({
+        ...input,
+        harnessVersion: input.harnessVersion ?? 1,
+        metadata: input.metadata ?? {},
+      })
+      .returning();
+    return row;
+  });
+
+export const getActiveAgentRun = async (db: DB, sessionId: string) =>
+  await db.query.agentRuns.findFirst({
+    where: { sessionId, status: "active" },
+    orderBy: { startedAt: "desc" },
+  });
+
+export const completeAgentRun = async (
+  db: DB,
+  runId: string,
+  status: Exclude<AgentRunStatus, "active">
+) => {
+  await db
+    .update(agentRuns)
+    .set({ status, endedAt: new Date() })
+    .where(eq(agentRuns.id, runId));
+};
+
+export const completeActiveAgentRuns = async (
+  db: DB,
+  sessionId: string,
+  status: Exclude<AgentRunStatus, "active">
+) => {
+  await db
+    .update(agentRuns)
+    .set({ status, endedAt: new Date() })
+    .where(
+      and(eq(agentRuns.sessionId, sessionId), eq(agentRuns.status, "active"))
+    );
 };
 
 // ============================================
@@ -206,16 +284,59 @@ export const getAgentSessionEntries = async (
 };
 
 // ============================================
-// Drafts
+// Writing agent state
 // ============================================
 
-export const getAgentDrafts = async (db: DB, sessionId: string) =>
+export const createWritingAgentSession = async (
+  db: DB,
+  input: {
+    sessionId: string;
+    targetFeedId?: number | null;
+    feedMeta?: Record<string, unknown>;
+  }
+) => {
+  const [row] = await db
+    .insert(writingAgentSessions)
+    .values({
+      sessionId: input.sessionId,
+      targetFeedId: input.targetFeedId ?? null,
+      feedMeta: input.feedMeta ?? {},
+    })
+    .returning();
+  return row;
+};
+
+export const getWritingAgentSession = async (db: DB, sessionId: string) =>
+  await db.query.writingAgentSessions.findFirst({
+    where: { sessionId },
+  });
+
+export const updateWritingAgentSession = async (
+  db: DB,
+  sessionId: string,
+  patch: {
+    targetFeedId?: number | null;
+    feedMeta?: Record<string, unknown>;
+  }
+) => {
+  const set: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (value !== undefined) set[key] = value;
+  }
+  if (Object.keys(set).length === 0) return;
+  await db
+    .update(writingAgentSessions)
+    .set(set)
+    .where(eq(writingAgentSessions.sessionId, sessionId));
+};
+
+export const getWritingAgentDrafts = async (db: DB, sessionId: string) =>
   await db
     .select()
-    .from(agentDrafts)
-    .where(eq(agentDrafts.sessionId, sessionId));
+    .from(writingAgentDrafts)
+    .where(eq(writingAgentDrafts.sessionId, sessionId));
 
-export const upsertAgentDraft = async (
+export const upsertWritingAgentDraft = async (
   db: DB,
   input: {
     sessionId: string;
@@ -226,7 +347,7 @@ export const upsertAgentDraft = async (
   }
 ) => {
   await db
-    .insert(agentDrafts)
+    .insert(writingAgentDrafts)
     .values({
       sessionId: input.sessionId,
       locale: input.locale,
@@ -234,7 +355,7 @@ export const upsertAgentDraft = async (
       content: input.content ?? null,
     })
     .onConflictDoUpdate({
-      target: [agentDrafts.sessionId, agentDrafts.locale],
+      target: [writingAgentDrafts.sessionId, writingAgentDrafts.locale],
       set: {
         meta: input.meta,
         ...(input.content === undefined ? {} : { content: input.content }),
@@ -242,8 +363,10 @@ export const upsertAgentDraft = async (
     });
 };
 
-export const deleteAgentDrafts = async (db: DB, sessionId: string) => {
-  await db.delete(agentDrafts).where(eq(agentDrafts.sessionId, sessionId));
+export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {
+  await db
+    .delete(writingAgentDrafts)
+    .where(eq(writingAgentDrafts.sessionId, sessionId));
 };
 
 // ============================================
@@ -339,7 +462,7 @@ export const decideAgentApproval = async (
   const [row] = await db
     .update(agentToolApprovals)
     .set({
-      approved: input.approved ? "true" : "false",
+      status: input.approved ? "approved" : "rejected",
       comment: input.comment ?? null,
       decidedBy: input.decidedBy ?? null,
       decidedAt: new Date(),
@@ -365,7 +488,7 @@ export const getApprovedAgentToolCallIds = async (
     .where(
       and(
         eq(agentToolApprovals.sessionId, sessionId),
-        eq(agentToolApprovals.approved, "true")
+        eq(agentToolApprovals.status, "approved")
       )
     );
   return rows.map((row) => row.toolCallId);

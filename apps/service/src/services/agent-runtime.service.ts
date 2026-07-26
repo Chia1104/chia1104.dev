@@ -33,12 +33,16 @@ import type {
 } from "@chia/api/orpc/agent-runtime";
 import type { DB } from "@chia/db";
 import {
+  completeAgentRun,
+  createAgentRun,
+  createWritingAgentSession,
   decideAgentApproval,
+  deleteAgentSession,
+  getActiveAgentRun,
   getAgentApprovals,
   getAgentSession,
-  getApprovedAgentToolCallIds,
+  getWritingAgentSession,
   softDeleteAgentSession,
-  updateAgentSession,
 } from "@chia/db/repos/agent";
 
 import { AGENT_DELTA_NAMESPACE } from "../steps/agent-turn.step";
@@ -66,9 +70,9 @@ import { createAgentContentPort } from "./agent-content.port";
  *
  * - transcript → `agent_session_entry` (queried directly by the dashboard, and the source pi
  *   rebuilds context from)
- * - draft buffer → `agent_draft`
+ * - draft buffer → `writing_agent_session` + `writing_agent_draft`
  * - approval decisions → `agent_tool_approval`
- * - turn execution, pauses and event stream → the workflow run
+ * - turn execution metadata → `agent_run`; pauses and event stream → the workflow backend
  *
  * That split is why a deploy mid-turn is survivable and why an approval can be granted a day later.
  * It is also why this module can be replicated across instances without a coordination layer.
@@ -82,7 +86,10 @@ const dependenciesFor = (caller: AgentRuntimeCaller) => {
   const db = caller.context.db as DB;
   return {
     db,
-    repo: new PgSessionRepo(db, WRITING_SESSION_DEFAULTS),
+    repo: new PgSessionRepo(db, {
+      kind: WRITING_AGENT_KIND,
+      defaults: WRITING_SESSION_DEFAULTS,
+    }),
     draft: new PgDraftStore(db),
     pending: new PgPendingMessageStore(db),
     content: createAgentContentPort({
@@ -103,48 +110,72 @@ const loadOwnedSession = async (
   caller: AgentRuntimeCaller,
   sessionId: string
 ) => {
-  const row = await getAgentSession(caller.context.db as DB, sessionId);
+  const db = caller.context.db as DB;
+  const row = await getAgentSession(db, sessionId);
   if (!row || row.deletedAt !== null) return null;
   if (row.userId !== caller.userId) return null;
-  // The transport picks a runtime from client-supplied `kind`; refuse a session belonging to a
-  // different kind rather than driving it with the wrong tools and policy.
   if (row.kind !== WRITING_AGENT_KIND) return null;
-  return row;
+
+  const [writingState, activeRun] = await Promise.all([
+    getWritingAgentSession(db, sessionId),
+    getActiveAgentRun(db, sessionId),
+  ]);
+  if (!writingState) return null;
+
+  return {
+    ...row,
+    targetFeedId: writingState.targetFeedId,
+    feedMeta: writingState.feedMeta,
+    activeRunId: activeRun?.id ?? null,
+    workflowRunId: activeRun?.externalRunId ?? null,
+  };
 };
 
 const settingsOf = (row: {
-  providerId: string;
-  modelId: string;
-  thinkingLevel: string;
+  id: string;
+  providerId: string | null;
+  modelId: string | null;
+  thinkingLevel: string | null;
   activeToolNames: string[] | null;
   autoApprove: string[];
-}): AgentSessionSettings => ({
-  providerId: row.providerId,
-  modelId: row.modelId,
-  thinkingLevel: row.thinkingLevel as ThinkingLevel,
-  activeToolNames: row.activeToolNames,
-  autoApprove: row.autoApprove as ToolTier[],
-});
+}): AgentSessionSettings => {
+  if (!row.providerId || !row.modelId || !row.thinkingLevel) {
+    throw new Error(`Writing session ${row.id} has incomplete LLM settings.`);
+  }
+  return {
+    providerId: row.providerId,
+    modelId: row.modelId,
+    thinkingLevel: row.thinkingLevel as ThinkingLevel,
+    activeToolNames: row.activeToolNames,
+    autoApprove: row.autoApprove as ToolTier[],
+  };
+};
 
 const summaryOf = (row: {
   id: string;
   title: string | null;
   kind: string;
-  modelId: string;
-  thinkingLevel: string;
+  providerId: string | null;
+  modelId: string | null;
+  thinkingLevel: string | null;
+  activeToolNames: string[] | null;
+  autoApprove: string[];
   targetFeedId: number | null;
   createdAt: Date;
   updatedAt: Date;
-}) => ({
-  id: row.id,
-  title: row.title,
-  kind: row.kind,
-  modelId: row.modelId,
-  thinkingLevel: row.thinkingLevel as ThinkingLevel,
-  targetFeedId: row.targetFeedId,
-  createdAt: row.createdAt.getTime(),
-  updatedAt: row.updatedAt.getTime(),
-});
+}) => {
+  const settings = settingsOf(row);
+  return {
+    id: row.id,
+    title: row.title,
+    kind: row.kind,
+    modelId: settings.modelId,
+    thinkingLevel: settings.thinkingLevel,
+    targetFeedId: row.targetFeedId,
+    createdAt: row.createdAt.getTime(),
+    updatedAt: row.updatedAt.getTime(),
+  };
+};
 
 /**
  * `compact` and `navigate` build a harness only to reach its session-tree methods; their events are
@@ -217,32 +248,29 @@ const detailFor = async (caller: AgentRuntimeCaller, sessionId: string) => {
   const { db, repo, draft } = dependenciesFor(caller);
   const session = await repo.openById(sessionId);
 
-  const [branch, draftState, stats, approvedIds] = await Promise.all([
+  const [branch, draftState, stats, approvals] = await Promise.all([
     session.getBranch(),
     draft.get(sessionId),
     session.getSessionStats(),
-    getApprovedAgentToolCallIds(db, sessionId),
+    getAgentApprovals(db, sessionId),
   ]);
 
   const events = entriesToWireEvents(branch, replayOptions);
 
   // Surface approvals still waiting on a decision, so a reload restores the prompt.
-  const approved = new Set(approvedIds);
-  const pendingApprovals = events.flatMap((event) =>
-    event.type === "approval:request" && !approved.has(event.toolCallId)
-      ? [
-          {
-            toolCallId: event.toolCallId,
-            toolName: event.toolName,
-            args: event.args,
-          },
-        ]
-      : []
-  );
+  const pendingApprovals = approvals
+    .filter((approval) => approval.status === "pending")
+    .map((approval) => ({
+      toolCallId: approval.toolCallId,
+      toolName: approval.toolName,
+      args: approval.args ?? undefined,
+    }));
 
   return {
     session: summaryOf(row),
     settings: settingsOf(row),
+    runtimeConfig: row.runtimeConfig,
+    configVersion: row.configVersion,
     draft: draftState as never,
     events,
     pendingApprovals,
@@ -268,7 +296,15 @@ export const writingAgentRuntime: AgentRuntime = {
     });
 
     const rows = await Promise.all(
-      metadata.map((entry) => getAgentSession(db, entry.id))
+      metadata.map(async (entry) => {
+        const [row, writingState] = await Promise.all([
+          getAgentSession(db, entry.id),
+          getWritingAgentSession(db, entry.id),
+        ]);
+        return row && writingState
+          ? { ...row, targetFeedId: writingState.targetFeedId }
+          : null;
+      })
     );
 
     return {
@@ -285,27 +321,38 @@ export const writingAgentRuntime: AgentRuntime = {
 
     const session = await repo.create({
       userId: caller.userId,
-      kind: WRITING_AGENT_KIND,
       title: input.title,
-      targetFeedId: input.targetFeedId,
       settings: {
         modelId: input.modelId,
         thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
         autoApprove: input.autoApprove as ToolTier[] | undefined,
       },
+      runtimeConfig: input.runtimeConfig,
     });
     const { id } = await session.getMetadata();
+    try {
+      await createWritingAgentSession(caller.context.db as DB, {
+        sessionId: id,
+        targetFeedId: input.targetFeedId,
+      });
 
-    // Opening a session against an existing post seeds the buffer, so the agent edits the real
-    // content instead of guessing at it.
-    if (input.targetFeedId !== undefined) {
-      const post = await content.getPost({ feedId: input.targetFeedId });
-      if (post) await draft.seedFromPost(id, post);
+      // Opening a session against an existing post seeds the buffer, so the agent edits the real
+      // content instead of guessing at it.
+      if (input.targetFeedId !== undefined) {
+        const post = await content.getPost({ feedId: input.targetFeedId });
+        if (post) await draft.seedFromPost(id, post);
+      }
+
+      const detail = await detailFor(caller, id);
+      if (!detail)
+        throw new Error("Session vanished immediately after creation");
+      return detail;
+    } catch (error) {
+      // Core and writing state live in separate repositories. Compensate if extension setup or
+      // draft seeding fails so callers never receive an unusable half-created session.
+      await deleteAgentSession(caller.context.db as DB, id);
+      throw error;
     }
-
-    const detail = await detailFor(caller, id);
-    if (!detail) throw new Error("Session vanished immediately after creation");
-    return detail;
   },
 
   getSession(caller, input) {
@@ -321,6 +368,13 @@ export const writingAgentRuntime: AgentRuntime = {
       await agentMessageHook.resume(agentMessageToken(input.sessionId), {
         text: AGENT_END_SENTINEL,
       });
+    }
+    if (row.activeRunId) {
+      await completeAgentRun(
+        caller.context.db as DB,
+        row.activeRunId,
+        "cancelled"
+      );
     }
 
     await softDeleteAgentSession(caller.context.db as DB, input.sessionId);
@@ -338,6 +392,7 @@ export const writingAgentRuntime: AgentRuntime = {
       thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
       activeToolNames: input.activeToolNames,
       autoApprove: input.autoApprove as ToolTier[] | undefined,
+      runtimeConfig: input.runtimeConfig,
     });
 
     return detailFor(caller, input.sessionId);
@@ -410,8 +465,12 @@ export const writingAgentRuntime: AgentRuntime = {
       },
     ]);
 
-    await updateAgentSession(caller.context.db as DB, input.sessionId, {
-      workflowRunId: run.runId,
+    await createAgentRun(caller.context.db as DB, {
+      id: run.runId,
+      sessionId: input.sessionId,
+      harnessKind: "workflow",
+      externalRunId: run.runId,
+      metadata: { agentKind: WRITING_AGENT_KIND },
     });
 
     return { runId: run.runId, startIndex: 0, startedRun: true };
@@ -507,9 +566,13 @@ export const writingAgentRuntime: AgentRuntime = {
     // Cancels the whole run, which is the session's driver — the next prompt starts a fresh one and
     // picks the transcript back up from Postgres.
     await getRun(row.workflowRunId).cancel();
-    await updateAgentSession(caller.context.db as DB, input.sessionId, {
-      workflowRunId: null,
-    });
+    if (row.activeRunId) {
+      await completeAgentRun(
+        caller.context.db as DB,
+        row.activeRunId,
+        "cancelled"
+      );
+    }
     return true;
   },
 

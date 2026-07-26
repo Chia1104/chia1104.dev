@@ -50,6 +50,7 @@ export interface AgentRuntime {
       modelId?: string;
       thinkingLevel?: string;
       autoApprove?: string[];
+      runtimeConfig?: Record<string, unknown>;
     }
   ): Promise<agentContracts.AgentSessionDetail>;
 
@@ -72,6 +73,7 @@ export interface AgentRuntime {
       thinkingLevel?: string;
       activeToolNames?: string[] | null;
       autoApprove?: string[];
+      runtimeConfig?: Record<string, unknown>;
     }
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
@@ -140,7 +142,8 @@ export interface AgentRuntime {
     }
   ): Promise<{ cancelled: boolean; events: AgentWireEvent[] } | null>;
 
-  getDraft(
+  /** Optional writing-domain extension retained for the current dashboard. */
+  getDraft?(
     caller: AgentRuntimeCaller,
     input: { sessionId: string }
   ): Promise<agentContracts.AgentDraftPayload | null>;
@@ -210,9 +213,8 @@ export const registeredAgentKinds = (): string[] => [...runtimes.keys()];
 /**
  * Resolves the runtime for a request.
  *
- * `kind` is optional because the overwhelmingly common case is a single registered kind, and making
- * every caller thread it through would be noise. It becomes required the moment a second kind is
- * registered — at which point an ambiguous call is a bug, not something to guess at.
+ * Creation and capability requests must provide `kind`. Session-scoped requests should instead
+ * load the session and call {@link getAgentRuntime} with the stored kind.
  */
 export const resolveAgentRuntime = (kind?: string): AgentRuntime => {
   if (kind) return getAgentRuntime(kind);

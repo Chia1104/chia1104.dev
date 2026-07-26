@@ -80,15 +80,21 @@ export {
 // Agent
 export {
   agentSessions,
+  agentRuns,
   agentSessionEntries,
-  agentDrafts,
+  writingAgentSessions,
+  writingAgentDrafts,
   agentPendingMessages,
   agentToolApprovals,
   type AgentSession,
+  type AgentRun,
+  type AgentRunStatus,
   type AgentSessionEntry,
-  type AgentDraft,
+  type WritingAgentSession,
+  type WritingAgentDraft,
   type AgentPendingMessage,
   type AgentToolApproval,
+  type AgentApprovalStatus,
 } from "./agent.schema.ts";
 
 // Relations
@@ -113,8 +119,10 @@ export {
   assetsToTagsRelations,
   feedsToTagsRelations,
   agentSessionsRelations,
+  agentRunsRelations,
   agentSessionEntriesRelations,
-  agentDraftsRelations,
+  writingAgentSessionsRelations,
+  writingAgentDraftsRelations,
   agentPendingMessagesRelations,
   agentToolApprovalsRelations,
 } from "./relations.ts";

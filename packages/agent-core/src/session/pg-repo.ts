@@ -33,16 +33,21 @@ import type { PgSessionMetadata } from "./pg-storage.ts";
 
 export interface PgSessionCreateOptions extends SessionCreateOptions {
   userId: string;
-  kind?: string;
   title?: string;
-  targetFeedId?: number;
   settings?: Partial<AgentSessionSettings>;
+  runtimeConfig?: Record<string, unknown>;
+  configVersion?: number;
 }
 
 export interface PgSessionListOptions {
   userId: string;
   limit?: number;
   includeDeleted?: boolean;
+}
+
+export interface PgSessionRepoOptions {
+  kind: string;
+  defaults: AgentSessionDefaults;
 }
 
 /**
@@ -58,20 +63,19 @@ export class PgSessionRepo implements SessionRepo<
   PgSessionListOptions
 > {
   /**
-   * `defaults` is required rather than hardcoded: the provider is shared, but which model a kind
-   * starts a session on is that kind's policy. Baking in the writing agent's default would make
-   * core depend on a domain package.
+   * The repository is scoped to one kind. That makes list/open safe by construction and keeps
+   * defaults owned by the kind rather than by core.
    */
   constructor(
     private readonly db: DB,
-    private readonly defaults: AgentSessionDefaults
+    private readonly options: PgSessionRepoOptions
   ) {}
 
   async create(
     options: PgSessionCreateOptions
   ): Promise<Session<PgSessionMetadata>> {
     const id = options.id ?? uuidv7();
-    const kind = options.kind ?? "writing";
+    const { kind, defaults } = this.options;
     const settings = options.settings ?? {};
 
     await createAgentSession(this.db, {
@@ -79,13 +83,13 @@ export class PgSessionRepo implements SessionRepo<
       userId: options.userId,
       kind,
       title: options.title ?? null,
-      providerId: settings.providerId ?? this.defaults.providerId,
-      modelId: settings.modelId ?? this.defaults.modelId,
-      thinkingLevel:
-        settings.thinkingLevel ?? this.defaults.thinkingLevel ?? "off",
+      providerId: settings.providerId ?? defaults.providerId,
+      modelId: settings.modelId ?? defaults.modelId,
+      thinkingLevel: settings.thinkingLevel ?? defaults.thinkingLevel ?? "off",
       activeToolNames: settings.activeToolNames ?? null,
       autoApprove: settings.autoApprove ?? [],
-      targetFeedId: options.targetFeedId ?? null,
+      runtimeConfig: options.runtimeConfig,
+      configVersion: options.configVersion,
     });
 
     return toSession(
@@ -105,6 +109,12 @@ export class PgSessionRepo implements SessionRepo<
     if (!row) {
       throw new SessionError("not_found", `Session not found: ${metadata.id}`);
     }
+    if (row.kind !== this.options.kind) {
+      throw new SessionError(
+        "not_found",
+        `Session ${metadata.id} belongs to agent kind "${row.kind}", not "${this.options.kind}"`
+      );
+    }
     return toSession(
       new PgSessionStorage(this.db, row.id, {
         id: row.id,
@@ -122,7 +132,10 @@ export class PgSessionRepo implements SessionRepo<
 
   async list(options?: PgSessionListOptions): Promise<PgSessionMetadata[]> {
     if (!options) return [];
-    const rows = await getAgentSessions(this.db, options);
+    const rows = await getAgentSessions(this.db, {
+      ...options,
+      kind: this.options.kind,
+    });
     return rows.map((row) => ({
       id: row.id,
       createdAt: row.createdAt.toISOString(),
@@ -157,16 +170,8 @@ export class PgSessionRepo implements SessionRepo<
     const forked = await this.create({
       id: options.id,
       userId: options.userId ?? sourceRow.userId,
-      kind: options.kind ?? sourceRow.kind,
       title: options.title ?? sourceRow.title ?? undefined,
-      targetFeedId: options.targetFeedId ?? sourceRow.targetFeedId ?? undefined,
-      settings: options.settings ?? {
-        providerId: sourceRow.providerId,
-        modelId: sourceRow.modelId,
-        thinkingLevel: sourceRow.thinkingLevel as ThinkingLevel,
-        activeToolNames: sourceRow.activeToolNames ?? null,
-        autoApprove: sourceRow.autoApprove as ToolTier[],
-      },
+      settings: options.settings ?? settingsFromRow(sourceRow),
     });
 
     const storage = forked.getStorage();
@@ -196,19 +201,16 @@ export const readSessionSettings = async (
 ): Promise<AgentSessionSettings | null> => {
   const row = await getAgentSession(db, sessionId);
   if (!row) return null;
-  return {
-    providerId: row.providerId,
-    modelId: row.modelId,
-    thinkingLevel: row.thinkingLevel as ThinkingLevel,
-    activeToolNames: row.activeToolNames ?? null,
-    autoApprove: row.autoApprove as ToolTier[],
-  };
+  return settingsFromRow(row);
 };
 
 export const writeSessionSettings = async (
   db: DB,
   sessionId: string,
-  patch: Partial<AgentSessionSettings> & { title?: string }
+  patch: Partial<AgentSessionSettings> & {
+    title?: string;
+    runtimeConfig?: Record<string, unknown>;
+  }
 ): Promise<void> => {
   await updateAgentSession(db, sessionId, {
     providerId: patch.providerId,
@@ -217,5 +219,26 @@ export const writeSessionSettings = async (
     activeToolNames: patch.activeToolNames,
     autoApprove: patch.autoApprove,
     title: patch.title,
+    runtimeConfig: patch.runtimeConfig,
   });
+};
+
+const settingsFromRow = (row: {
+  id: string;
+  providerId: string | null;
+  modelId: string | null;
+  thinkingLevel: string | null;
+  activeToolNames: string[] | null;
+  autoApprove: string[];
+}): AgentSessionSettings => {
+  if (!row.providerId || !row.modelId || !row.thinkingLevel) {
+    throw new Error(`Session ${row.id} has no LLM settings for this harness`);
+  }
+  return {
+    providerId: row.providerId,
+    modelId: row.modelId,
+    thinkingLevel: row.thinkingLevel as ThinkingLevel,
+    activeToolNames: row.activeToolNames,
+    autoApprove: row.autoApprove as ToolTier[],
+  };
 };

@@ -1,11 +1,13 @@
 import { defineRelations } from "drizzle-orm";
 
 import {
-  agentDrafts,
   agentPendingMessages,
+  agentRuns,
   agentSessionEntries,
   agentSessions,
   agentToolApprovals,
+  writingAgentDrafts,
+  writingAgentSessions,
 } from "./agent.schema.ts";
 import { apikey } from "./apikey.schema.ts";
 import { account, passkey, session } from "./auth.schema.ts";
@@ -50,8 +52,10 @@ const schema = {
   assetsToTags,
   feedsToTags,
   agentSessions,
+  agentRuns,
   agentSessionEntries,
-  agentDrafts,
+  writingAgentSessions,
+  writingAgentDrafts,
   agentPendingMessages,
   agentToolApprovals,
 };
@@ -205,17 +209,17 @@ export const relations = defineRelations(schema, (r) => ({
   },
   agentSessions: {
     user: r.one.user({ from: r.agentSessions.userId, to: r.user.id }),
-    targetFeed: r.one.feeds({
-      from: r.agentSessions.targetFeedId,
-      to: r.feeds.id,
+    runs: r.many.agentRuns({
+      from: r.agentSessions.id,
+      to: r.agentRuns.sessionId,
     }),
     entries: r.many.agentSessionEntries({
       from: r.agentSessions.id,
       to: r.agentSessionEntries.sessionId,
     }),
-    drafts: r.many.agentDrafts({
+    writingState: r.one.writingAgentSessions({
       from: r.agentSessions.id,
-      to: r.agentDrafts.sessionId,
+      to: r.writingAgentSessions.sessionId,
     }),
     pendingMessages: r.many.agentPendingMessages({
       from: r.agentSessions.id,
@@ -226,16 +230,40 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.agentToolApprovals.sessionId,
     }),
   },
+  agentRuns: {
+    session: r.one.agentSessions({
+      from: r.agentRuns.sessionId,
+      to: r.agentSessions.id,
+    }),
+  },
   agentSessionEntries: {
     session: r.one.agentSessions({
       from: r.agentSessionEntries.sessionId,
       to: r.agentSessions.id,
     }),
   },
-  agentDrafts: {
+  writingAgentSessions: {
     session: r.one.agentSessions({
-      from: r.agentDrafts.sessionId,
+      from: r.writingAgentSessions.sessionId,
       to: r.agentSessions.id,
+    }),
+    targetFeed: r.one.feeds({
+      from: r.writingAgentSessions.targetFeedId,
+      to: r.feeds.id,
+    }),
+    drafts: r.many.writingAgentDrafts({
+      from: r.writingAgentSessions.sessionId,
+      to: r.writingAgentDrafts.sessionId,
+    }),
+  },
+  writingAgentDrafts: {
+    session: r.one.agentSessions({
+      from: r.writingAgentDrafts.sessionId,
+      to: r.agentSessions.id,
+    }),
+    writingState: r.one.writingAgentSessions({
+      from: r.writingAgentDrafts.sessionId,
+      to: r.writingAgentSessions.sessionId,
     }),
   },
   agentPendingMessages: {
@@ -275,7 +303,9 @@ export const contentsRelations = relations.contents;
 export const assetsToTagsRelations = relations.assetsToTags;
 export const feedsToTagsRelations = relations.feedsToTags;
 export const agentSessionsRelations = relations.agentSessions;
+export const agentRunsRelations = relations.agentRuns;
 export const agentSessionEntriesRelations = relations.agentSessionEntries;
-export const agentDraftsRelations = relations.agentDrafts;
+export const writingAgentSessionsRelations = relations.writingAgentSessions;
+export const writingAgentDraftsRelations = relations.writingAgentDrafts;
 export const agentPendingMessagesRelations = relations.agentPendingMessages;
 export const agentToolApprovalsRelations = relations.agentToolApprovals;

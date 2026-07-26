@@ -5,12 +5,16 @@ import type { AgentWireEvent, ThinkingLevel, ToolTier } from "@chia/agent-core";
 import {
   createWritingHarness,
   PgDraftStore,
+  WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
 } from "@chia/agent-writing";
+import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
 import {
+  completeActiveAgentRuns,
   getAgentSession,
   getApprovedAgentToolCallIds,
+  getWritingAgentSession,
   recordAgentApprovalRequest,
 } from "@chia/db/repos/agent";
 
@@ -67,6 +71,14 @@ export interface AgentTurnOutcome {
   error?: string;
 }
 
+type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
+
+type AgentTurnHandler = (
+  db: DB,
+  row: AgentSessionRow,
+  request: AgentTurnRequest
+) => Promise<AgentTurnOutcome>;
+
 // ============================================
 // Step
 // ============================================
@@ -77,7 +89,6 @@ export const runAgentTurnStep = async (
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
-  const { kv } = await import("@chia/kv");
 
   const row = await getAgentSession(db, request.sessionId);
   if (!row || row.deletedAt !== null) {
@@ -89,7 +100,46 @@ export const runAgentTurnStep = async (
     );
   }
 
-  const repo = new PgSessionRepo(db, WRITING_SESSION_DEFAULTS);
+  const handler = AGENT_TURN_HANDLERS[row.kind];
+  if (!handler) {
+    throw new FatalError(
+      `No turn handler registered for agent kind "${row.kind}".`
+    );
+  }
+
+  return await handler(db, row, request);
+};
+
+/**
+ * Static registration is intentional: workflow steps are deployment-versioned bundles. A new kind
+ * adds a handler here and a sibling HTTP runtime, while the workflow stays free of domain imports.
+ */
+const AGENT_TURN_HANDLERS: Readonly<Record<string, AgentTurnHandler>> = {
+  [WRITING_AGENT_KIND]: runWritingAgentTurn,
+};
+
+async function runWritingAgentTurn(
+  db: DB,
+  row: AgentSessionRow,
+  request: AgentTurnRequest
+): Promise<AgentTurnOutcome> {
+  const { kv } = await import("@chia/kv");
+  const writingState = await getWritingAgentSession(db, request.sessionId);
+  if (!writingState) {
+    throw new FatalError(
+      `Writing state is missing for agent session ${request.sessionId}.`
+    );
+  }
+  if (!row.providerId || !row.modelId || !row.thinkingLevel) {
+    throw new FatalError(
+      `Writing session ${request.sessionId} has incomplete LLM settings.`
+    );
+  }
+
+  const repo = new PgSessionRepo(db, {
+    kind: WRITING_AGENT_KIND,
+    defaults: WRITING_SESSION_DEFAULTS,
+  });
   const session = await repo.openById(request.sessionId);
   const draft = new PgDraftStore(db);
   const pending = new PgPendingMessageStore(db);
@@ -112,7 +162,7 @@ export const runAgentTurnStep = async (
     },
     agentSessionId: request.sessionId,
     adminId: request.adminId,
-    targetFeedId: row.targetFeedId ?? undefined,
+    targetFeedId: writingState.targetFeedId ?? undefined,
     content,
     draft,
     pending,
@@ -193,7 +243,7 @@ export const runAgentTurnStep = async (
   await writer.flush();
 
   return { status, approvals, error: failure };
-};
+}
 
 /**
  * No retries.
@@ -281,4 +331,14 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
   }).getWriter();
 
   await Promise.allSettled([coarse.close(), deltas.close()]);
+};
+
+/** Marks the durable run inactive once its orchestration loop ends. */
+export const completeAgentRunStep = async (
+  sessionId: string
+): Promise<void> => {
+  "use step";
+
+  const db = await connectDatabase(undefined, { withCache: false });
+  await completeActiveAgentRuns(db, sessionId, "completed");
 };
