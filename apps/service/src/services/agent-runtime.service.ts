@@ -255,7 +255,21 @@ const detailFor = async (caller: AgentRuntimeCaller, sessionId: string) => {
     getAgentApprovals(db, sessionId),
   ]);
 
-  const events = entriesToWireEvents(branch, replayOptions);
+  // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
+  // an empty active branch. Replay those entries in insertion order so existing development
+  // sessions remain visible after a refresh. Correctly linked sessions always use their branch.
+  let transcriptEntries = branch;
+  if (
+    branch.length === 0 &&
+    row.leafEntryId === null &&
+    stats.messageCount > 0
+  ) {
+    const storedEntries = await session.getStorage().getEntries();
+    if (storedEntries.every((entry) => entry.parentId === null)) {
+      transcriptEntries = storedEntries;
+    }
+  }
+  const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
   // Surface approvals still waiting on a decision, so a reload restores the prompt.
   const pendingApprovals = approvals

@@ -51,7 +51,19 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
 
   async getLeafId(): Promise<string | null> {
     const row = await getAgentSession(this.db, this.sessionId);
-    return row?.leafEntryId ?? null;
+    if (row?.leafEntryId) return row.leafEntryId;
+
+    // Compatibility for entries written before appendEntry advanced the leaf. That bug produced a
+    // flat sequence where every entry was a root. A normal branch can have a null leaf after an
+    // explicit move-to-root, but its existing entries still contain parent links.
+    const entries = await getAgentSessionEntries(this.db, this.sessionId);
+    if (
+      entries.length > 1 &&
+      entries.every((entry) => entry.parentId === null)
+    ) {
+      return entries.at(-1)?.id ?? null;
+    }
+    return null;
   }
 
   async setLeafId(leafId: string | null): Promise<void> {
@@ -76,6 +88,11 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
       payload: payload as Record<string, unknown>,
       timestamp: new Date(timestamp),
     });
+
+    // pi's in-memory and JSONL adapters advance the active leaf whenever an entry is appended.
+    // Keep the PostgreSQL adapter behaviorally equivalent: getBranch() starts from this cursor,
+    // so leaving it null makes a persisted transcript look empty after the process is recreated.
+    await this.setLeafId(id);
   }
 
   async getEntry(id: string): Promise<SessionTreeEntry | undefined> {
@@ -152,7 +169,19 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
     if (!leafId) return [];
 
     const rows = await getAgentSessionEntries(this.db, this.sessionId);
-    const byId = new Map(rows.map((row) => [row.id, toEntry(row)]));
+    const entries = rows.map(toEntry);
+
+    // The old PostgreSQL adapter persisted every entry with a null parent because its leaf never
+    // advanced. Reconstruct only that contiguous root prefix in memory. A legitimate branch made
+    // after move-to-root occurs after linked entries, so it is intentionally left untouched.
+    for (let index = 1; index < entries.length; index += 1) {
+      const entry = entries[index];
+      const previous = entries[index - 1];
+      if (!entry || !previous || entry.parentId !== null) break;
+      entries[index] = { ...entry, parentId: previous.id };
+    }
+
+    const byId = new Map(entries.map((entry) => [entry.id, entry]));
 
     const path: SessionTreeEntry[] = [];
     const seen = new Set<string>();
