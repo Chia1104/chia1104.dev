@@ -434,6 +434,9 @@ importers:
       '@ai-sdk/react':
         specifier: catalog:ai
         version: 4.0.40(react@19.2.8)(zod@4.4.3)
+      '@chia/agent-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-core
       '@chia/ai':
         specifier: workspace:*
         version: link:../../packages/ai

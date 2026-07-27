@@ -64,7 +64,10 @@ export const agentDraftSchema = z.object({
     mainImage: z.string().nullish(),
     tagSlugs: z.array(z.string()).optional(),
   }),
-  translations: z.record(z.enum(locale.enumValues), draftTranslationSchema),
+  translations: z.partialRecord(
+    z.enum(locale.enumValues),
+    draftTranslationSchema
+  ),
   committedFeedId: z.number().optional(),
 });
 
