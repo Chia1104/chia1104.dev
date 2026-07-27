@@ -123,7 +123,9 @@ async function runWritingAgentTurn(
   row: AgentSessionRow,
   request: AgentTurnRequest
 ): Promise<AgentTurnOutcome> {
-  const { kv } = await import("@chia/kv");
+  const kv = await import("@chia/kv/redis").then((module) =>
+    module.getRedisKv()
+  );
   const writingState = await getWritingAgentSession(db, request.sessionId);
   if (!writingState) {
     throw new FatalError(
