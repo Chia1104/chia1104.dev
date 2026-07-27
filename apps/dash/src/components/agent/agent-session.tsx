@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
   Button,
@@ -11,19 +11,25 @@ import {
   Tabs,
   TextArea,
 } from "@heroui/react";
+import { useChat } from "@tanstack/ai-react";
+import type { ChatFetcher } from "@tanstack/ai-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, CircleAlert, Send, Square, X } from "lucide-react";
 import { toast } from "sonner";
 
-import type { AgentViewState, ToolCallView } from "@chia/agent-core";
-import { applyEvent, foldEvents } from "@chia/agent-core";
-
-import { orpc } from "@/libs/orpc/client";
+import { client, orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
+import {
+  agentEventsToUiMessages,
+  latestUserText,
+  mergePendingApprovals,
+  nextApprovalContinuation,
+  withAbortSignal,
+} from "./agent-chat";
+import type { PendingApproval } from "./agent-chat";
 import { AgentDraftPreview } from "./agent-draft-preview";
 import { AgentTranscript } from "./agent-transcript";
-import { useAgentStream } from "./use-agent-stream";
 
 type AgentSessionDetail = RouterOutputs["agent"]["sessions"]["get"];
 
@@ -37,32 +43,8 @@ interface AgentSessionContentProps extends AgentSessionProps {
   refetch: () => Promise<unknown>;
 }
 
-interface PendingApproval {
-  toolCallId: string;
-  toolName: string;
-  args?: unknown;
-}
-
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Something went wrong.";
-
-const mergeApprovals = (
-  serverApprovals: PendingApproval[],
-  liveApprovals: ToolCallView[]
-) => {
-  const merged = new Map<string, PendingApproval>();
-  for (const approval of serverApprovals) {
-    merged.set(approval.toolCallId, approval);
-  }
-  for (const approval of liveApprovals) {
-    merged.set(approval.toolCallId, {
-      toolCallId: approval.toolCallId,
-      toolName: approval.toolName,
-      args: approval.args,
-    });
-  }
-  return [...merged.values()];
-};
 
 const statusMeta = {
   awaiting_approval: { color: "warning", label: "Needs approval" },
@@ -70,7 +52,7 @@ const statusMeta = {
   idle: { color: "default", label: "Idle" },
   running: { color: "accent", label: "Running" },
 } as const satisfies Record<
-  AgentViewState["runStatus"],
+  "awaiting_approval" | "error" | "idle" | "running",
   {
     color: "accent" | "danger" | "default" | "warning";
     label: string;
@@ -85,8 +67,7 @@ const AgentSessionContent = ({
 }: AgentSessionContentProps) => {
   const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
-  const [isTurnActive, setIsTurnActive] = useState(false);
-  const [view, dispatch] = useReducer(applyEvent, detail.events, foldEvents);
+  const handledApprovalIdsRef = useRef(new Set<string>());
 
   const refreshDetail = useCallback(async () => {
     await queryClient.invalidateQueries({
@@ -96,132 +77,156 @@ const AgentSessionContent = ({
     });
   }, [queryClient, sessionId]);
 
-  const handleStreamEvent = useCallback(
-    (event: Parameters<typeof applyEvent>[1]) => {
-      dispatch(event);
-
-      if (event.type === "run:end" || event.type === "error") {
-        setIsTurnActive(false);
-      }
-      if (event.type === "state:changed" || event.type === "run:end") {
-        void refreshDetail();
-        onSessionChanged();
-      }
-    },
-    [onSessionChanged, refreshDetail]
+  const initialMessages = useMemo(
+    () => agentEventsToUiMessages(detail.events, detail.pendingApprovals),
+    [detail.events, detail.pendingApprovals]
   );
 
-  const { close, isConnected, start } = useAgentStream({
-    onEvent: handleStreamEvent,
-    onError: (error) => {
-      setIsTurnActive(false);
-      toast.error(`Agent stream disconnected: ${errorMessage(error)}`);
+  const fetcher = useCallback<ChatFetcher>(
+    async ({ messages, runId, threadId }, { signal }) => {
+      const approval = nextApprovalContinuation(
+        messages,
+        handledApprovalIdsRef.current
+      );
+
+      let action:
+        | { type: "prompt"; text: string }
+        | {
+            type: "approve";
+            toolCallId: string;
+            approved: boolean;
+          };
+      if (approval) {
+        handledApprovalIdsRef.current.add(approval.approvalId);
+        action = {
+          type: "approve",
+          toolCallId: approval.approvalId,
+          approved: approval.approved,
+        };
+      } else {
+        const text = latestUserText(messages);
+        if (!text) throw new Error("The agent prompt is empty.");
+        action = { type: "prompt", text };
+      }
+
+      try {
+        const stream = await client.agent.sessions.chat({
+          sessionId,
+          threadId,
+          runId,
+          action,
+        });
+        return withAbortSignal(stream, signal);
+      } catch (error) {
+        if (approval) {
+          handledApprovalIdsRef.current.delete(approval.approvalId);
+        }
+        throw error;
+      }
     },
-    onClose: () => setIsTurnActive(false),
+    [sessionId]
+  );
+
+  const {
+    addToolApprovalResponse,
+    error,
+    isLoading,
+    messages,
+    sendMessage,
+    stop,
+  } = useChat({
+    id: sessionId,
+    threadId: sessionId,
+    fetcher,
+    initialMessages,
+    queue: "drop",
+    onChunk: (chunk) => {
+      if (chunk.type !== "RUN_FINISHED" && chunk.type !== "RUN_ERROR") return;
+      void refreshDetail();
+      onSessionChanged();
+    },
+    onCustomEvent: (name) => {
+      if (
+        name !== "chia.agent.state-changed" &&
+        name !== "chia.agent.session-compacted"
+      ) {
+        return;
+      }
+      void refreshDetail();
+      onSessionChanged();
+    },
+    onError: (chatError) => {
+      toast.error(`Agent stream disconnected: ${chatError.message}`);
+    },
   });
 
   const pendingApprovals = useMemo(
-    () => mergeApprovals(detail.pendingApprovals, view.pendingApprovals),
-    [detail.pendingApprovals, view.pendingApprovals]
+    () => mergePendingApprovals(detail.pendingApprovals, messages),
+    [detail.pendingApprovals, messages]
   );
 
-  useEffect(() => {
-    if (pendingApprovals.length === 0 || isConnected) return;
-    void start({ sessionId, startIndex: -1 });
-  }, [isConnected, pendingApprovals.length, sessionId, start]);
-
-  const promptMutation = useMutation(
-    orpc.agent.sessions.prompt.mutationOptions()
-  );
-  const approveMutation = useMutation(
-    orpc.agent.sessions.approve.mutationOptions()
-  );
   const abortMutation = useMutation(
     orpc.agent.sessions.abort.mutationOptions()
   );
 
   const send = useCallback(async () => {
     const text = message.trim();
-    if (!text || isTurnActive || pendingApprovals.length > 0) return;
+    if (!text || isLoading || pendingApprovals.length > 0) return;
 
-    setIsTurnActive(true);
+    setMessage("");
     try {
-      const result = await promptMutation.mutateAsync({ sessionId, text });
-      setMessage("");
-      if (!isConnected) {
-        await start({
-          sessionId,
-          runId: result.runId,
-          startIndex: result.startIndex,
-        });
-      }
-    } catch (error) {
-      setIsTurnActive(false);
-      toast.error(errorMessage(error));
+      await sendMessage(text);
+    } catch (sendError) {
+      setMessage(text);
+      toast.error(errorMessage(sendError));
     }
-  }, [
-    isConnected,
-    isTurnActive,
-    message,
-    pendingApprovals.length,
-    promptMutation,
-    sessionId,
-    start,
-  ]);
+  }, [isLoading, message, pendingApprovals.length, sendMessage]);
 
   const decide = useCallback(
     async (approval: PendingApproval, approved: boolean) => {
       try {
-        if (!isConnected) {
-          await start({ sessionId, startIndex: -1 });
-        }
-        await approveMutation.mutateAsync({
-          sessionId,
-          toolCallId: approval.toolCallId,
+        await addToolApprovalResponse({
+          id: approval.toolCallId,
           approved,
         });
-        dispatch({
-          type: "approval:resolved",
-          toolCallId: approval.toolCallId,
-          approved,
-        });
-        setIsTurnActive(true);
         await refreshDetail();
-      } catch (error) {
-        setIsTurnActive(false);
-        toast.error(errorMessage(error));
+      } catch (approvalError) {
+        toast.error(errorMessage(approvalError));
       }
     },
-    [approveMutation, isConnected, refreshDetail, sessionId, start]
+    [addToolApprovalResponse, refreshDetail]
   );
 
   const abort = useCallback(async () => {
     try {
       const result = await abortMutation.mutateAsync({ sessionId });
       if (!result.aborted) return;
-      await close();
-      dispatch({ type: "run:end", reason: "aborted" });
-      setIsTurnActive(false);
+      stop();
       await Promise.all([refreshDetail(), refetch()]);
       onSessionChanged();
-    } catch (error) {
-      toast.error(errorMessage(error));
+    } catch (abortError) {
+      toast.error(errorMessage(abortError));
     }
   }, [
     abortMutation,
-    close,
     onSessionChanged,
     refetch,
     refreshDetail,
     sessionId,
+    stop,
   ]);
 
-  const isBusy =
-    isTurnActive || promptMutation.isPending || view.runStatus === "running";
+  const isBusy = isLoading || abortMutation.isPending;
   const composerDisabled = isBusy || pendingApprovals.length > 0;
   const meta =
     statusMeta[
-      pendingApprovals.length > 0 ? "awaiting_approval" : view.runStatus
+      isLoading
+        ? "running"
+        : pendingApprovals.length > 0
+          ? "awaiting_approval"
+          : error
+            ? "error"
+            : "idle"
     ];
 
   return (
@@ -273,7 +278,7 @@ const AgentSessionContent = ({
         <Tabs.Panel
           className="flex min-h-0 flex-1 flex-col p-0"
           id="conversation">
-          <AgentTranscript items={view.items} runStatus={view.runStatus} />
+          <AgentTranscript isRunning={isLoading} messages={messages} />
 
           {pendingApprovals.length > 0 ? (
             <ScrollShadow
@@ -297,7 +302,7 @@ const AgentSessionContent = ({
                     ) : null}
                     <Card.Footer className="flex-row justify-end gap-2">
                       <Button
-                        isPending={approveMutation.isPending}
+                        isPending={isLoading}
                         onPress={() => void decide(approval, false)}
                         size="sm"
                         variant="danger-soft">
@@ -305,7 +310,7 @@ const AgentSessionContent = ({
                         Reject
                       </Button>
                       <Button
-                        isPending={approveMutation.isPending}
+                        isPending={isLoading}
                         onPress={() => void decide(approval, true)}
                         size="sm">
                         <Check className="size-4" />
@@ -348,7 +353,7 @@ const AgentSessionContent = ({
                 aria-label="Send message"
                 isDisabled={composerDisabled || !message.trim()}
                 isIconOnly
-                isPending={promptMutation.isPending}
+                isPending={isLoading}
                 onPress={() => void send()}>
                 <Send className="size-4" />
               </Button>
@@ -401,6 +406,7 @@ export const AgentSession = ({
 
   return (
     <AgentSessionContent
+      key={sessionId}
       detail={query.data}
       onSessionChanged={onSessionChanged}
       refetch={query.refetch}

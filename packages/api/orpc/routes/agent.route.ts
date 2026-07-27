@@ -1,6 +1,7 @@
 import type { DB } from "@chia/db";
 import { getAgentSession } from "@chia/db/repos/agent";
 
+import { toAgentUiEventStream } from "../agent-ai-transport";
 import { getAgentRuntime, registeredAgentKinds } from "../agent-runtime";
 import type { AgentRuntimeCaller } from "../agent-runtime";
 import { adminGuard } from "../guards/admin.guard";
@@ -146,6 +147,43 @@ export const streamAgentRoute = contractOS.agent.sessions.stream
     return runtime.stream(caller, opts.input);
   });
 
+export const chatAgentRoute = contractOS.agent.sessions.chat
+  .use(adminGuard())
+  .handler(async (opts) => {
+    const caller = callerOf(opts);
+    const runtime = await sessionRuntimeOf(
+      caller,
+      opts.input.sessionId,
+      opts.input.kind
+    );
+    if (!runtime) throw opts.errors.NOT_FOUND();
+
+    const cursor =
+      opts.input.action.type === "prompt"
+        ? await runtime.prompt(caller, {
+            sessionId: opts.input.sessionId,
+            text: opts.input.action.text,
+          })
+        : await runtime.approve(caller, {
+            sessionId: opts.input.sessionId,
+            toolCallId: opts.input.action.toolCallId,
+            approved: opts.input.action.approved,
+            comment: opts.input.action.comment,
+          });
+    if (!cursor) throw opts.errors.NOT_FOUND();
+
+    const events = runtime.stream(caller, {
+      sessionId: opts.input.sessionId,
+      runId: cursor.runId,
+      startIndex: cursor.startIndex,
+      deltas: true,
+    });
+    return toAgentUiEventStream(events, {
+      threadId: opts.input.threadId,
+      runId: opts.input.runId,
+    });
+  });
+
 export const abortAgentRoute = contractOS.agent.sessions.abort
   .use(adminGuard())
   .handler(async (opts) => {
@@ -181,8 +219,8 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
       opts.input.sessionId,
       opts.input.kind
     );
-    const ok = await runtime?.approve(caller, opts.input);
-    if (!ok) throw opts.errors.NOT_FOUND();
+    const cursor = await runtime?.approve(caller, opts.input);
+    if (!cursor) throw opts.errors.NOT_FOUND();
     return {
       toolCallId: opts.input.toolCallId,
       approved: opts.input.approved,

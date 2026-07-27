@@ -33,6 +33,11 @@ export interface AgentRuntimeCaller {
   context: ServiceContext;
 }
 
+export interface AgentStreamCursor {
+  runId: string;
+  startIndex: number;
+}
+
 export interface AgentRuntime {
   listSessions(
     caller: AgentRuntimeCaller,
@@ -125,7 +130,7 @@ export interface AgentRuntime {
       approved: boolean;
       comment?: string;
     }
-  ): Promise<boolean>;
+  ): Promise<AgentStreamCursor | null>;
 
   compact(
     caller: AgentRuntimeCaller,

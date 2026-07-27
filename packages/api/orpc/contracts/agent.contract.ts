@@ -4,6 +4,8 @@ import * as z from "zod";
 import { agentWireEventSchema } from "@chia/agent-core/events";
 import { locale } from "@chia/db";
 
+import { agentUiEventSchema } from "../agent-ai-transport";
+
 import { withMetaSchema } from "./shared";
 
 /**
@@ -256,6 +258,46 @@ export const streamAgentContract = oc
     })
   )
   .output(eventIterator(agentWireEventSchema));
+
+/**
+ * TanStack AI compatibility facade.
+ *
+ * The client run remains request-scoped, while the runtime below it keeps using one durable,
+ * multi-turn workflow. Only the newest prompt or approval decision crosses this boundary; the
+ * server-owned session remains the source of truth for conversation history.
+ */
+export const chatAgentContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    BAD_REQUEST: {},
+    CONFLICT: { message: "A turn is already running for this session." },
+  })
+  .input(
+    z.object({
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
+      sessionId: z.string(),
+      /** Stable TanStack conversation id. */
+      threadId: z.string(),
+      /** Per-send TanStack run id; deliberately distinct from the workflow run id. */
+      runId: z.string(),
+      action: z.discriminatedUnion("type", [
+        z.object({
+          type: z.literal("prompt"),
+          text: z.string().min(1),
+        }),
+        z.object({
+          type: z.literal("approve"),
+          toolCallId: z.string(),
+          approved: z.boolean(),
+          comment: z.string().max(1000).optional(),
+        }),
+      ]),
+    })
+  )
+  .output(eventIterator(agentUiEventSchema));
 
 export const abortAgentContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })

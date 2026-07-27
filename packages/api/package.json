@@ -195,6 +195,7 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
+    "@tanstack/ai": "catalog:agent-client",
     "algoliasearch": "^5.56.0",
     "client-only": "catalog:",
     "dayjs": "catalog:",

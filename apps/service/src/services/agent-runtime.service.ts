@@ -586,7 +586,7 @@ export const writingAgentRuntime: AgentRuntime = {
 
   async approve(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
-    if (!row) return false;
+    if (!row?.workflowRunId) return null;
 
     // Persist first: the decision must outlive the run, and the permission gate reads it back from
     // here when the tool call is re-issued.
@@ -597,7 +597,13 @@ export const writingAgentRuntime: AgentRuntime = {
       comment: input.comment,
       decidedBy: caller.userId,
     });
-    if (!decided) return false;
+    if (!decided) return null;
+
+    // Capture the cursor before waking the workflow. The TanStack compatibility transport opens a
+    // fresh request for an approval continuation, unlike the native dashboard's old long-lived
+    // subscription, so it needs the same exact replay boundary as a normal prompt.
+    const run = getRun(row.workflowRunId);
+    const startIndex = (await run.getReadable().getTailIndex()) + 1;
 
     // Then wake the run, which has been parked on this hook with no compute consumed.
     await agentApprovalHook.resume(
@@ -605,7 +611,7 @@ export const writingAgentRuntime: AgentRuntime = {
       { approved: input.approved, comment: input.comment }
     );
 
-    return true;
+    return { runId: row.workflowRunId, startIndex };
   },
 
   async compact(caller, input) {
