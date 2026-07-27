@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "catalog:ai",
+    "@chia/agent-core": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
@@ -41,6 +42,7 @@
     "@orpc/server": "catalog:orpc",
     "@orpc/tanstack-query": "catalog:orpc",
     "@t3-oss/env-nextjs": "catalog:",
+    "@tanstack/ai-react": "catalog:agent-client",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
     "ai": "catalog:ai",

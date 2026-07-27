@@ -1,3 +1,4 @@
+import * as agentRoutes from "./routes/agent.route";
 import * as apikeyRoutes from "./routes/apikey.route";
 import * as contentRoutes from "./routes/content.route";
 import * as emailRoutes from "./routes/email.route";
@@ -12,6 +13,30 @@ import * as userRoutes from "./routes/user.route";
 import { contractOS } from "./utils";
 
 export const router = contractOS.router({
+  agent: {
+    sessions: {
+      list: agentRoutes.listAgentSessionsRoute,
+      create: agentRoutes.createAgentSessionRoute,
+      get: agentRoutes.getAgentSessionRoute,
+      delete: agentRoutes.deleteAgentSessionRoute,
+      "settings:update": agentRoutes.updateAgentSessionSettingsRoute,
+      prompt: agentRoutes.promptAgentRoute,
+      stream: agentRoutes.streamAgentRoute,
+      chat: agentRoutes.chatAgentRoute,
+      abort: agentRoutes.abortAgentRoute,
+      steer: agentRoutes.steerAgentRoute,
+      approve: agentRoutes.approveAgentToolRoute,
+      compact: agentRoutes.compactAgentSessionRoute,
+      navigate: agentRoutes.navigateAgentSessionRoute,
+      draft: agentRoutes.getAgentDraftRoute,
+    },
+    models: {
+      list: agentRoutes.listAgentModelsRoute,
+    },
+    capabilities: {
+      list: agentRoutes.listAgentCapabilitiesRoute,
+    },
+  },
   health: {
     client: healthRoutes.protectedHealthRoute,
   },

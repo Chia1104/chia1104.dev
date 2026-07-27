@@ -1,3 +1,4 @@
+import * as agentContracts from "./contracts/agent.contract";
 import * as apikeyContracts from "./contracts/apikey.contract";
 import * as contentContracts from "./contracts/content.contract";
 import * as emailContracts from "./contracts/email.contract";
@@ -11,6 +12,30 @@ import * as toolingsContracts from "./contracts/toolings.contract";
 import * as userContracts from "./contracts/user.contract";
 
 export const routerContract = {
+  agent: {
+    sessions: {
+      list: agentContracts.listAgentSessionsContract,
+      create: agentContracts.createAgentSessionContract,
+      get: agentContracts.getAgentSessionContract,
+      delete: agentContracts.deleteAgentSessionContract,
+      "settings:update": agentContracts.updateAgentSessionSettingsContract,
+      prompt: agentContracts.promptAgentContract,
+      stream: agentContracts.streamAgentContract,
+      chat: agentContracts.chatAgentContract,
+      abort: agentContracts.abortAgentContract,
+      steer: agentContracts.steerAgentContract,
+      approve: agentContracts.approveAgentToolContract,
+      compact: agentContracts.compactAgentSessionContract,
+      navigate: agentContracts.navigateAgentSessionContract,
+      draft: agentContracts.getAgentDraftContract,
+    },
+    models: {
+      list: agentContracts.listAgentModelsContract,
+    },
+    capabilities: {
+      list: agentContracts.listAgentCapabilitiesContract,
+    },
+  },
   health: {
     client: healthContracts.protectedHealthContract,
   },
@@ -90,6 +115,7 @@ export const routerContract = {
 };
 
 export {
+  agentContracts,
   apikeyContracts,
   contentContracts,
   emailContracts,

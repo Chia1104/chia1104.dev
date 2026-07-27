@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "catalog:ai",
+    "@chia/agent-core": "workspace:*",
+    "@chia/agent-writing": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",
@@ -28,6 +30,7 @@
     "@hono/react-renderer": "catalog:hono",
     "@hono/sentry": "catalog:hono",
     "@hono/zod-validator": "catalog:hono",
+    "@keyv/redis": "^5.1.6",
     "@orpc/contract": "catalog:orpc",
     "@orpc/openapi": "catalog:orpc",
     "@orpc/server": "catalog:orpc",

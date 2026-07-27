@@ -1,6 +1,4 @@
-import Keyv from "keyv";
+import { getRedisKv } from "./adapters/redis.ts";
 
-import { createKeyv } from "./clients.ts";
-
-export const kv = createKeyv();
-export { Keyv };
+export const kv = getRedisKv();
+export type { default as Keyv } from "keyv";

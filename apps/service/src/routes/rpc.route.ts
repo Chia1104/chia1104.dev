@@ -11,6 +11,7 @@ import {
   withErrorReporting,
 } from "../factories/orpc.factory";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
+import { registerAgentRuntimeService } from "../services/agent-runtime.service";
 import {
   removeFeedFromSearchIndex,
   syncFeedSearchIndex,
@@ -29,6 +30,28 @@ registerFeedEventListeners({
   },
 });
 
+/**
+ * This app also owns the agent runtime: running a turn needs a long-lived process, a database
+ * handle and the gateway credentials, none of which `packages/api` has. Same registration shape as
+ * the feed listeners above.
+ */
+registerAgentRuntimeService();
+
+/**
+ * Procedures whose response *is* a live event stream, so the shared request timeout must not apply.
+ *
+ * Only the stream endpoint needs this. `agent.sessions.prompt` used to as well, but the turn now
+ * runs inside a durable workflow run — so `prompt` returns as soon as the message is enqueued and
+ * keeps the normal timeout.
+ *
+ * Matched against the oRPC procedure path (`/agent/sessions/stream`), which is what appears after
+ * the `/api/v1/rpc` mount prefix.
+ */
+const STREAMING_PROCEDURE_PATHS = ["/agent/sessions/stream"];
+
+const isStreamingProcedure = (path: string): boolean =>
+  STREAMING_PROCEDURE_PATHS.some((candidate) => path.endsWith(candidate));
+
 /** Built once per process — the handler holds no per-request state. */
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -36,8 +59,12 @@ const handler = new RPCHandler(router, {
   ],
 });
 
+const requestTimeout = timeout(env.TIMEOUT_MS);
+
 const api = new Hono<HonoContext>()
-  .use(timeout(env.TIMEOUT_MS))
+  .use((c, next) =>
+    isStreamingProcedure(c.req.path) ? next() : requestTimeout(c, next)
+  )
   .use(
     rateLimiterGuard({
       prefix: "rate-limiter:rpc",

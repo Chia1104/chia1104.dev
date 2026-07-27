@@ -1,24 +1,20 @@
-import crypto from "node:crypto";
-
 import {
   getInfiniteFeeds,
   getFeedBySlug,
   getFeedById,
   getFeedForIndexing,
-  createFeed,
-  updateFeed,
-  upsertFeedTranslation,
-  upsertContent,
   softDeleteFeed,
   restoreFeed,
   deleteFeed,
 } from "@chia/db/repos/feeds";
-import { ContentType, Locale } from "@chia/db/types";
+import { toORPCError } from "@chia/service-kit/adapters/orpc";
+import { isAppError } from "@chia/service-kit/errors";
 
+import { createFeedService, updateFeedService } from "../../services/feeds";
 import { feedEvents } from "../events";
 import { adminGuard } from "../guards/admin.guard";
 import { authGuard } from "../guards/auth.guard";
-import { contractOS, slugger } from "../utils";
+import { contractOS } from "../utils";
 
 export const getFeedsWithMetaRoute = contractOS.feeds.list
   .use(authGuard)
@@ -65,111 +61,26 @@ export const getFeedByIdRoute = contractOS.feeds["details-by-id"]
 export const createFeedRoute = contractOS.feeds.create
   .use(adminGuard())
   .handler(async (opts) => {
-    const defaultLocale = opts.input.defaultLocale ?? Locale.zhTW;
-    const defaultTranslation = opts.input.translations[defaultLocale];
-    if (!defaultTranslation) {
-      throw opts.errors.BAD_REQUEST({
-        message: `No default translation provided for locale "${defaultLocale}"`,
+    // The write logic lives in `services/feeds` because the writing agent's durable turn calls
+    // it too, from a workflow step that has no request to authorise against.
+    try {
+      return await createFeedService(opts.context.db, {
+        ...opts.input,
+        adminId: opts.context.adminId,
       });
+    } catch (error) {
+      throw isAppError(error) ? toORPCError(error) : error;
     }
-    const data = await createFeed(opts.context.db, {
-      slug: opts.input.slug
-        ? slugger.slug(opts.input.slug)
-        : slugger.slug(
-            `${defaultTranslation.title}-${crypto.getRandomValues(new Uint32Array(1))[0]?.toString(16)}`
-          ),
-      type: opts.input.type,
-      userId: opts.context.adminId,
-      published: opts.input.published ?? false,
-      contentType: opts.input.contentType ?? ContentType.Mdx,
-      defaultLocale: opts.input.defaultLocale ?? Locale.zhTW,
-      mainImage: opts.input.mainImage ?? null,
-      createdAt: opts.input.createdAt,
-      updatedAt: opts.input.updatedAt,
-      translations: Object.entries(opts.input.translations).map(
-        ([locale, translation]) => ({
-          ...translation,
-          locale: locale as Locale,
-          content: translation.content ?? {
-            content: null,
-            source: null,
-            unstableSerializedSource: null,
-          },
-        })
-      ),
-    });
-
-    if (data) {
-      await feedEvents.changed(data.id);
-    }
-
-    return data;
   });
 
 export const updateFeedRoute = contractOS.feeds.update
   .use(adminGuard())
   .handler(async (opts) => {
-    const feedData = await updateFeed(opts.context.db, {
-      feedId: opts.input.feedId,
-      type: opts.input.type,
-      published: opts.input.published,
-      contentType: opts.input.contentType,
-      defaultLocale: opts.input.defaultLocale,
-      mainImage: opts.input.mainImage,
-      createdAt: opts.input.createdAt,
-      updatedAt: opts.input.updatedAt,
-    });
-
-    if (!feedData) {
-      throw opts.errors.NOT_FOUND();
+    try {
+      return await updateFeedService(opts.context.db, opts.input);
+    } catch (error) {
+      throw isAppError(error) ? toORPCError(error) : error;
     }
-
-    const translationsData = [];
-    const contentsData = [];
-
-    const translations = opts.input.translations;
-    if (translations) {
-      for (const [locale, translation] of Object.entries(translations)) {
-        const translationData = await upsertFeedTranslation(opts.context.db, {
-          feedId: opts.input.feedId,
-          locale: locale as Locale,
-          title: translation.title,
-          excerpt: translation.excerpt ?? null,
-          description: translation.description ?? null,
-          summary: translation.summary ?? null,
-          readTime: translation.readTime ?? null,
-        });
-
-        if (translationData) {
-          translationsData.push(translationData);
-
-          const content = translation.content;
-          if (content && translationData.id) {
-            const contentData = await upsertContent(opts.context.db, {
-              feedTranslationId: translationData.id,
-              content: content.content ?? null,
-              source: content.source ?? null,
-              unstableSerializedSource:
-                content.unstableSerializedSource ?? null,
-            });
-
-            if (contentData) {
-              contentsData.push(contentData);
-            }
-          }
-        }
-      }
-    }
-
-    const updatedFeed = {
-      ...feedData,
-      translations: translationsData,
-      contents: contentsData,
-    };
-
-    await feedEvents.changed(updatedFeed.id);
-
-    return updatedFeed;
   });
 
 export const deleteFeedRoute = contractOS.feeds.delete
