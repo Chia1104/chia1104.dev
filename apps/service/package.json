@@ -30,6 +30,7 @@
     "@hono/react-renderer": "catalog:hono",
     "@hono/sentry": "catalog:hono",
     "@hono/zod-validator": "catalog:hono",
+    "@keyv/redis": "^5.1.6",
     "@orpc/contract": "catalog:orpc",
     "@orpc/openapi": "catalog:orpc",
     "@orpc/server": "catalog:orpc",

@@ -13,6 +13,18 @@
       "types": "./src/clients.ts",
       "default": "./src/clients.ts"
     },
+    "./postgres": {
+      "types": "./src/adapters/postgres.ts",
+      "default": "./src/adapters/postgres.ts"
+    },
+    "./redis": {
+      "types": "./src/adapters/redis.ts",
+      "default": "./src/adapters/redis.ts"
+    },
+    "./valkey": {
+      "types": "./src/adapters/valkey.ts",
+      "default": "./src/adapters/valkey.ts"
+    },
     "./env": {
       "types": "./src/env.ts",
       "default": "./src/env.ts"

@@ -1,10 +1,10 @@
-import { createKeyv as createPostgres } from "@keyv/postgres";
-import { createKeyv as createRedis } from "@keyv/redis";
-import { createKeyv as createValkey } from "@keyv/valkey";
 import type { Keyv } from "keyv";
 
 import { isUrl } from "@chia/utils/is";
 
+import { createPostgresKv } from "./adapters/postgres.ts";
+import { createRedisKv } from "./adapters/redis.ts";
+import { createValkeyKv } from "./adapters/valkey.ts";
 import { env } from "./env.ts";
 
 let kv: Keyv | null = null;
@@ -16,24 +16,15 @@ export const createKeyv = () => {
 
   switch (env.CACHE_PROVIDER) {
     case "redis": {
-      kv = createRedis(
-        env.CACHE_URI ?? env.REDIS_URI ?? "redis://localhost:6379"
-      );
+      kv = createRedisKv();
       break;
     }
     case "valkey": {
-      kv = createValkey(
-        env.CACHE_URI ?? env.VALKEY_URI ?? "valkey://localhost:6379"
-      );
+      kv = createValkeyKv();
       break;
     }
     case "postgres": {
-      kv = createPostgres({
-        uri:
-          env.CACHE_URI ??
-          env.POSTGRES_URI ??
-          "postgres://localhost:5432/postgres",
-      });
+      kv = createPostgresKv();
       break;
     }
     case "auto": {
@@ -53,25 +44,16 @@ export const createKeyv = () => {
       switch (protocol) {
         case "rediss":
         case "redis": {
-          kv = createRedis(
-            env.CACHE_URI ?? env.REDIS_URI ?? "redis://localhost:6379"
-          );
+          kv = createRedisKv();
           break;
         }
         case "valkeys":
         case "valkey": {
-          kv = createValkey(
-            env.CACHE_URI ?? env.VALKEY_URI ?? "valkey://localhost:6379"
-          );
+          kv = createValkeyKv();
           break;
         }
         case "postgres": {
-          kv = createPostgres({
-            uri:
-              env.CACHE_URI ??
-              env.POSTGRES_URI ??
-              "postgres://localhost:5432/postgres",
-          });
+          kv = createPostgresKv();
           break;
         }
         default:
