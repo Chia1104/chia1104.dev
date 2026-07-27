@@ -13,6 +13,7 @@ import {
   PenSquare,
   File,
   Music2,
+  Bot,
 } from "lucide-react";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
@@ -79,6 +80,12 @@ export const useRouteItems = () => {
           isActive: segments[0] === "assets",
           icon: <File />,
           title: "Assets",
+        },
+        {
+          url: "/agent",
+          isActive: segments[0] === "agent",
+          icon: <Bot />,
+          title: "Writing Agent",
         },
       ],
       settings: [

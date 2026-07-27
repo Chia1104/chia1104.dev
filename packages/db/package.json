@@ -72,6 +72,10 @@
     "./mock-db": {
       "types": "./src/mock-db.ts",
       "default": "./src/mock-db.ts"
+    },
+    "./repos/agent": {
+      "types": "./src/libs/agent/index.ts",
+      "default": "./src/libs/agent/index.ts"
     }
   },
   "scripts": {

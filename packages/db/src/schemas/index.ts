@@ -77,6 +77,26 @@ export {
   type TagTranslation,
 } from "./contents.schema.ts";
 
+// Agent
+export {
+  agentSessions,
+  agentRuns,
+  agentSessionEntries,
+  writingAgentSessions,
+  writingAgentDrafts,
+  agentPendingMessages,
+  agentToolApprovals,
+  type AgentSession,
+  type AgentRun,
+  type AgentRunStatus,
+  type AgentSessionEntry,
+  type WritingAgentSession,
+  type WritingAgentDraft,
+  type AgentPendingMessage,
+  type AgentToolApproval,
+  type AgentApprovalStatus,
+} from "./agent.schema.ts";
+
 // Relations
 export {
   relations,
@@ -98,4 +118,11 @@ export {
   contentsRelations,
   assetsToTagsRelations,
   feedsToTagsRelations,
+  agentSessionsRelations,
+  agentRunsRelations,
+  agentSessionEntriesRelations,
+  writingAgentSessionsRelations,
+  writingAgentDraftsRelations,
+  agentPendingMessagesRelations,
+  agentToolApprovalsRelations,
 } from "./relations.ts";
