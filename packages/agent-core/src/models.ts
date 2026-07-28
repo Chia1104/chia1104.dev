@@ -1,5 +1,5 @@
 import { createModels } from "@earendil-works/pi-ai";
-import type { Model, Models } from "@earendil-works/pi-ai";
+import type { Api, Model, Models } from "@earendil-works/pi-ai";
 import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-ai-gateway";
 
 /**
@@ -53,7 +53,7 @@ export const resolveModel = (
   modelId: string,
   allowlist: readonly string[],
   models: Models = getAgentModels()
-): Model<any> => {
+): Model<Api> => {
   if (!allowlist.includes(modelId)) {
     throw new UnknownAgentModelError(modelId, allowlist);
   }

@@ -3,10 +3,10 @@ import { FatalError, getWritable } from "workflow";
 import { PgPendingMessageStore, PgSessionRepo } from "@chia/agent-core";
 import type { AgentWireEvent, ThinkingLevel, ToolTier } from "@chia/agent-core";
 import {
-  createWritingHarness,
   PgDraftStore,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
+  writingAgentRuntime,
 } from "@chia/agent-writing";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
@@ -23,8 +23,8 @@ import { createAgentContentPort } from "../services/agent-content.port";
 /**
  * One agent turn, as a durable step.
  *
- * The harness **must** live here rather than in the workflow function: `"use workflow"` code runs in
- * a sandboxed VM with no Node built-ins and no native `fetch`, and the harness needs `pg` (drizzle)
+ * The engine **must** live here rather than in the workflow function: `"use workflow"` code runs in
+ * a sandboxed VM with no Node built-ins and no native `fetch`, and the engine needs `pg` (drizzle)
  * plus outbound HTTP. The workflow function only orchestrates and passes plain data across the
  * boundary.
  */
@@ -153,98 +153,45 @@ async function runWritingAgentTurn(
 
   const writer = createEventWriter();
 
-  const built = await createWritingHarness({
-    session,
-    settings: {
-      providerId: row.providerId,
-      modelId: row.modelId,
-      thinkingLevel: row.thinkingLevel as ThinkingLevel,
-      activeToolNames: row.activeToolNames,
-      autoApprove: row.autoApprove as ToolTier[],
+  return await writingAgentRuntime.runTurn({
+    createOptions: {
+      session,
+      settings: {
+        providerId: row.providerId,
+        modelId: row.modelId,
+        thinkingLevel: row.thinkingLevel as ThinkingLevel,
+        activeToolNames: row.activeToolNames,
+        autoApprove: row.autoApprove as ToolTier[],
+      },
+      agentSessionId: request.sessionId,
+      adminId: request.adminId,
+      targetFeedId: writingState.targetFeedId ?? undefined,
+      content,
+      draft,
+      pending,
+      onEvent: writer.push,
+      approvedToolCallIds,
+      preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
     },
-    agentSessionId: request.sessionId,
-    adminId: request.adminId,
-    targetFeedId: writingState.targetFeedId ?? undefined,
-    content,
-    draft,
-    pending,
-    onEvent: writer.push,
-    approvedToolCallIds,
-    preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
-  });
-
-  /**
-   * Drains queued steer / follow-up messages while the turn runs.
-   *
-   * `AgentHarness.steer()` is a method, not a callback, so a message that arrives over HTTP
-   * mid-turn cannot reach the harness directly. The transport writes a row and this poll hands it
-   * over at pi's next queue drain point.
-   */
-  const drainInterval = setInterval(() => {
-    void built.drainPendingMessages().catch(() => {
-      // A failed drain must not kill the turn; the message stays queued for the next tick.
-    });
-  }, 1_000);
-
-  writer.push({ type: "run:start", sessionId: request.sessionId });
-  writer.push({
-    type: "user",
-    messageId: `u-${Date.now().toString(36)}`,
-    text: request.text,
-  });
-
-  let failure: string | undefined;
-
-  try {
-    if (request.template) {
-      await built.harness.promptFromTemplate(
-        request.template.name,
-        request.template.args
-      );
-    } else {
-      await built.harness.prompt(request.text);
-    }
-  } catch (error) {
-    failure = error instanceof Error ? error.message : String(error);
-  } finally {
-    clearInterval(drainInterval);
-  }
-
-  // Persist every approval request before the step returns, so a decision made hours later can
-  // still be matched back to its tool call.
-  const approvals: AgentApprovalRequestSnapshot[] = [];
-  for (const approval of built.approvalRequests) {
-    const snapshot: AgentApprovalRequestSnapshot = {
+    message: {
+      text: request.text,
+      template: request.template,
+    },
+    toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
       args: approval.args as Record<string, unknown> | undefined,
-    };
-    approvals.push(snapshot);
-    await recordAgentApprovalRequest(db, {
-      sessionId: request.sessionId,
-      toolCallId: snapshot.toolCallId,
-      toolName: snapshot.toolName,
-      args: snapshot.args,
-    });
-  }
-
-  if (failure) writer.push({ type: "error", message: failure });
-
-  const status: AgentTurnOutcome["status"] = failure
-    ? "error"
-    : approvals.length > 0
-      ? "awaiting_approval"
-      : "done";
-
-  writer.push({
-    type: "run:end",
-    reason: status === "awaiting_approval" ? "awaiting_approval" : status,
+    }),
+    persistApproval: async (approval) => {
+      await recordAgentApprovalRequest(db, {
+        sessionId: request.sessionId,
+        toolCallId: approval.toolCallId,
+        toolName: approval.toolName,
+        args: approval.args,
+      });
+    },
+    flushEvents: writer.flush,
   });
-
-  built.dispose();
-  await writer.flush();
-
-  return { status, approvals, error: failure };
 }
 
 /**

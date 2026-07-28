@@ -29,10 +29,6 @@
       "types": "./src/permissions.ts",
       "default": "./src/permissions.ts"
     },
-    "./harness": {
-      "types": "./src/harness.ts",
-      "default": "./src/harness.ts"
-    },
     "./session": {
       "types": "./src/session/index.ts",
       "default": "./src/session/index.ts"

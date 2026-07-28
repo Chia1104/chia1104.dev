@@ -11,7 +11,7 @@ export type { ThinkingLevel, Skill, PromptTemplate };
  * Generic agent vocabulary. Nothing here knows what an agent is *for*.
  *
  * Each agent kind (`@chia/agent-writing`, and whatever comes next) defines its own tiers, tools,
- * prompts and tool context, then hands them to {@link createAgentHarness} together with a
+ * prompts and tool context, then hands them to an engine adapter together with a
  * {@link AgentPolicy}.
  */
 
