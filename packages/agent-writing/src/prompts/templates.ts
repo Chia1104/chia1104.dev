@@ -1,7 +1,7 @@
 import type { PromptTemplate } from "@earendil-works/pi-agent-core";
 
 /**
- * Prompt templates, invoked with `harness.promptFromTemplate(name, args)`.
+ * Prompt templates, invoked with `engine.promptFromTemplate(name, args)`.
  *
  * These are the dashboard's slash commands. `$1`, `$2`, `$ARGUMENTS` are substituted by pi's
  * `substituteArgs`, so the argument order below is the contract with the UI.

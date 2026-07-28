@@ -1,16 +1,20 @@
 import type { Models } from "@earendil-works/pi-ai";
 
-import { createAgentHarness } from "@chia/agent-core";
 import type {
-  AgentHarnessHandle,
   AgentSessionSettings,
   AgentWireEvent,
   PendingMessageStore,
   Session,
 } from "@chia/agent-core";
+import { createAgentRuntime } from "@chia/agent-runtime";
+import type {
+  AgentDefinition,
+  AgentMaintenanceEngineHandle,
+} from "@chia/agent-runtime";
+import { createPiAgentEngine } from "@chia/agent-runtime/adapters/pi";
 import { Locale } from "@chia/db/types";
 
-import { resolveWritingModel } from "./models.ts";
+import { resolveWritingModel, WRITING_AGENT_KIND } from "./models.ts";
 import { writingPolicy } from "./policy.ts";
 import type { ContentPort, DraftStore } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
@@ -20,15 +24,15 @@ import { createWritingTools } from "./tools/index.ts";
 import type { WritingToolContext } from "./types.ts";
 
 /**
- * Builds a harness for one turn of the writing agent.
+ * Builds an engine handle for one turn of the writing agent.
  *
- * A thin wrapper over {@link createAgentHarness}: everything here is the *writing* half — the tool
- * set, the prompt, the skills, the policy and the tool context. The turn loop, the approval gate and
- * the event mapping are generic and live in `@chia/agent-core`.
+ * A thin wrapper over the pi adapter: everything here is the *writing* half — the tool set, prompt,
+ * skills, policy and tool context. The turn lifecycle and provider adapter live in
+ * `@chia/agent-runtime`; approval and event primitives live in `@chia/agent-core`.
  */
 
-export interface CreateWritingHarnessOptions {
-  session: Session<any>;
+export interface CreateWritingEngineOptions {
+  session: Session;
   settings: AgentSessionSettings;
   agentSessionId: string;
   adminId: string;
@@ -44,11 +48,11 @@ export interface CreateWritingHarnessOptions {
   defaultLocale?: Locale;
 }
 
-export type WritingHarness = AgentHarnessHandle<WritingToolContext>;
+export type WritingEngine = AgentMaintenanceEngineHandle;
 
-export const createWritingHarness = (
-  options: CreateWritingHarnessOptions
-): Promise<WritingHarness> => {
+export const createWritingEngine = (
+  options: CreateWritingEngineOptions
+): Promise<WritingEngine> => {
   const defaultLocale = options.defaultLocale ?? Locale.zhTW;
 
   const toolContext: WritingToolContext = {
@@ -59,7 +63,7 @@ export const createWritingHarness = (
     draft: options.draft,
   };
 
-  return createAgentHarness<WritingToolContext>({
+  return createPiAgentEngine<WritingToolContext>({
     session: options.session,
     settings: options.settings,
     model: resolveWritingModel(options.settings.modelId, options.models),
@@ -88,3 +92,11 @@ export const createWritingHarness = (
     models: options.models,
   });
 };
+
+export const writingAgentDefinition = {
+  kind: WRITING_AGENT_KIND,
+  createEngine: createWritingEngine,
+} satisfies AgentDefinition<CreateWritingEngineOptions, WritingEngine>;
+
+/** Shared turn lifecycle plus the writing agent's pi engine factory. */
+export const writingAgentRuntime = createAgentRuntime(writingAgentDefinition);

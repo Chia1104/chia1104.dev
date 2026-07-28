@@ -1,7 +1,7 @@
+import { toTanStackAgentEventStream } from "@chia/agent-runtime/transports/tanstack-ai";
 import type { DB } from "@chia/db";
 import { getAgentSession } from "@chia/db/repos/agent";
 
-import { toAgentUiEventStream } from "../agent-ai-transport";
 import { getAgentRuntime, registeredAgentKinds } from "../agent-runtime";
 import type { AgentRuntimeCaller } from "../agent-runtime";
 import { adminGuard } from "../guards/admin.guard";
@@ -178,7 +178,7 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
       startIndex: cursor.startIndex,
       deltas: true,
     });
-    return toAgentUiEventStream(events, {
+    return toTanStackAgentEventStream(events, {
       threadId: opts.input.threadId,
       runId: opts.input.runId,
     });

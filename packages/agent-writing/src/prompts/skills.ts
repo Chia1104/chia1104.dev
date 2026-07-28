@@ -2,8 +2,8 @@ import type { Skill } from "@earendil-works/pi-agent-core";
 
 /**
  * Skills, in pi's first-class sense: `formatSkillsForSystemPrompt` inserts the name and
- * description into the system prompt, and the model pulls the full `content` in on demand via
- * `harness.skill(name)`.
+ * description into the system prompt, and pi loads the full `content` through its skill resource
+ * API when the model selects one.
  *
  * They live inline rather than as `SKILL.md` files on disk because this package is consumed
  * source-only (no build step) and is loaded inside a server bundle — a runtime `fs.readFile`

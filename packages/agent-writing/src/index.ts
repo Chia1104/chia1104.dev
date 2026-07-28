@@ -2,8 +2,8 @@
  * `@chia/agent-writing` — the blog authoring agent.
  *
  * The *domain* half of the agent: tools, prompts, the draft staging buffer, and the policy that
- * classifies and gates them. The turn loop, session persistence, approval gate and wire events are
- * generic and live in `@chia/agent-core`.
+ * classifies and gates them. The turn loop and provider adapters live in `@chia/agent-runtime`;
+ * session persistence, approval gates and wire events live in `@chia/agent-core`.
  *
  * Adding another agent kind means adding a sibling package like this one — not editing core.
  */
@@ -22,10 +22,12 @@ export {
 } from "./models.ts";
 export { writingPolicy } from "./policy.ts";
 export {
-  createWritingHarness,
-  type CreateWritingHarnessOptions,
-  type WritingHarness,
-} from "./harness.ts";
+  createWritingEngine,
+  writingAgentDefinition,
+  writingAgentRuntime,
+  type CreateWritingEngineOptions,
+  type WritingEngine,
+} from "./runtime.ts";
 export {
   EditNotAppliedError,
   InMemoryDraftStore,

@@ -1,4 +1,4 @@
-import type { AgentTool, AgentPolicy } from "@chia/agent-core";
+import type { AgentTool } from "@chia/agent-core";
 import type { ContentType, FeedType, Locale } from "@chia/db/types";
 
 import type { ContentPort, DraftStore } from "./ports.ts";
@@ -31,7 +31,7 @@ export const WRITING_STATE_TIERS: readonly WritingToolTier[] = [
 ];
 
 /**
- * Per-turn context handed to every tool by the harness (pi 0.82's `toolContext`).
+ * Per-turn context handed to every tool by the pi engine adapter.
  *
  * Deliberately holds ports rather than a `DB` handle: the tools are this package's domain logic and
  * stay testable without a database, while `apps/service` owns the wiring.
@@ -48,9 +48,6 @@ export interface WritingToolContext {
 }
 
 export type WritingTool = AgentTool<WritingToolContext>;
-
-/** Re-exported so callers building a harness need one import. */
-export type { AgentPolicy };
 
 // ============================================
 // Draft buffer shapes

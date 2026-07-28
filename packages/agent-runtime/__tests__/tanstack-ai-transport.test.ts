@@ -1,8 +1,9 @@
 import { EventType } from "@tanstack/ai";
+import { describe, expect, it } from "vitest";
 
 import type { AgentWireEvent } from "@chia/agent-core";
 
-import { toAgentUiEventStream } from "../orpc/agent-ai-transport";
+import { toTanStackAgentEventStream } from "../src/transports/tanstack-ai.ts";
 
 const eventStream = async function* (
   events: readonly AgentWireEvent[]
@@ -12,7 +13,7 @@ const eventStream = async function* (
 
 const collect = async (events: readonly AgentWireEvent[]) => {
   const chunks = [];
-  for await (const chunk of toAgentUiEventStream(eventStream(events), {
+  for await (const chunk of toTanStackAgentEventStream(eventStream(events), {
     threadId: "session-1",
     runId: "client-run-1",
   })) {
@@ -21,7 +22,7 @@ const collect = async (events: readonly AgentWireEvent[]) => {
   return chunks;
 };
 
-describe("agent AG-UI transport", () => {
+describe("TanStack AI transport", () => {
   it("streams text and reconciles the authoritative final message", async () => {
     const chunks = await collect([
       { type: "run:start", sessionId: "session-1" },

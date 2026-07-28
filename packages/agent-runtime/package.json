@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "name": "@chia/agent-writing",
+  "name": "@chia/agent-runtime",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,37 +9,21 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./types": {
-      "types": "./src/types.ts",
-      "default": "./src/types.ts"
-    },
-    "./ports": {
-      "types": "./src/ports.ts",
-      "default": "./src/ports.ts"
-    },
-    "./models": {
-      "types": "./src/models.ts",
-      "default": "./src/models.ts"
-    },
-    "./policy": {
-      "types": "./src/policy.ts",
-      "default": "./src/policy.ts"
+    "./engine": {
+      "types": "./src/engine.ts",
+      "default": "./src/engine.ts"
     },
     "./runtime": {
       "types": "./src/runtime.ts",
       "default": "./src/runtime.ts"
     },
-    "./draft": {
-      "types": "./src/draft/index.ts",
-      "default": "./src/draft/index.ts"
+    "./adapters/pi": {
+      "types": "./src/adapters/pi.ts",
+      "default": "./src/adapters/pi.ts"
     },
-    "./prompts": {
-      "types": "./src/prompts/index.ts",
-      "default": "./src/prompts/index.ts"
-    },
-    "./tools": {
-      "types": "./src/tools/index.ts",
-      "default": "./src/tools/index.ts"
+    "./transports/tanstack-ai": {
+      "types": "./src/transports/tanstack-ai.ts",
+      "default": "./src/transports/tanstack-ai.ts"
     }
   },
   "scripts": {
@@ -51,12 +35,9 @@
   },
   "dependencies": {
     "@chia/agent-core": "workspace:*",
-    "@chia/agent-runtime": "workspace:*",
-    "@chia/db": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
-    "github-slugger": "^2.0.0",
-    "typebox": "catalog:agent",
+    "@tanstack/ai": "catalog:agent-client",
     "zod": "catalog:"
   },
   "devDependencies": {
