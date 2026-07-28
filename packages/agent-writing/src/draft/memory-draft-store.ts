@@ -11,7 +11,7 @@ import type {
 import { emptyDraft, patchFeedMeta, patchTranslation } from "./operations.ts";
 
 /**
- * In-memory {@link DraftStore}. For tests and for driving the harness against pi-ai's
+ * In-memory {@link DraftStore}. For tests and for driving the engine against pi-ai's
  * `faux` provider without a database.
  */
 export class InMemoryDraftStore implements DraftStore {

@@ -1,4 +1,4 @@
-import type { Model, Models } from "@earendil-works/pi-ai";
+import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import { AGENT_PROVIDER_ID, listModels, resolveModel } from "@chia/agent-core";
 import type { AgentModelInfo, AgentSessionDefaults } from "@chia/agent-core";
@@ -30,7 +30,7 @@ export const isWritingModelId = (modelId: string): modelId is WritingModelId =>
 export const resolveWritingModel = (
   modelId: string,
   models?: Models
-): Model<any> => resolveModel(modelId, WRITING_MODEL_IDS, models);
+): Model<Api> => resolveModel(modelId, WRITING_MODEL_IDS, models);
 
 export const listWritingModels = (models?: Models): AgentModelInfo[] =>
   listModels(WRITING_MODEL_IDS, models);

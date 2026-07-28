@@ -108,8 +108,8 @@ const customSchema = z.object({
   value: z.unknown().optional(),
 });
 
-/** The AG-UI subset emitted by the agent runtime compatibility transport. */
-export const agentUiEventSchema = z.discriminatedUnion("type", [
+/** The AG-UI subset emitted by the TanStack AI transport. */
+export const tanstackAgentEventSchema = z.discriminatedUnion("type", [
   runStartedSchema,
   runFinishedSchema,
   runErrorSchema,
@@ -128,9 +128,9 @@ export const agentUiEventSchema = z.discriminatedUnion("type", [
   customSchema,
 ]);
 
-export type AgentUiEvent = z.infer<typeof agentUiEventSchema>;
+export type TanStackAgentEvent = z.infer<typeof tanstackAgentEventSchema>;
 
-interface AgentUiStreamOptions {
+export interface TanStackAgentStreamOptions {
   threadId: string;
   runId: string;
 }
@@ -167,14 +167,16 @@ const missingSuffix = (complete: string, streamed: string): string =>
  * restarts its per-turn message sequence at `a1`. Tool approvals retain the original tool-call id
  * as their approval id so the continuation can be routed back to the persisted decision.
  */
-export const createAgentUiEventMapper = ({ runId }: AgentUiStreamOptions) => {
+export const createTanStackAgentEventMapper = ({
+  runId,
+}: TanStackAgentStreamOptions) => {
   const assistants = new Map<string, AssistantState>();
   const tools = new Map<string, ToolState>();
   let activeAssistantId: string | undefined;
 
   const scopedId = (id: string) => `${runId}:${id}`;
 
-  const mapper = (event: AgentWireEvent): AgentUiEvent[] => {
+  const mapper = (event: AgentWireEvent): TanStackAgentEvent[] => {
     switch (event.type) {
       case "run:start":
       case "user":
@@ -215,7 +217,7 @@ export const createAgentUiEventMapper = ({ runId }: AgentUiStreamOptions) => {
         }
 
         assistant.thinking += event.delta;
-        const chunks: AgentUiEvent[] = [];
+        const chunks: TanStackAgentEvent[] = [];
         if (!assistant.reasoningStarted) {
           assistant.reasoningStarted = true;
           chunks.push(
@@ -249,7 +251,7 @@ export const createAgentUiEventMapper = ({ runId }: AgentUiStreamOptions) => {
         assistants.set(event.messageId, assistant);
         assistant.ended = true;
 
-        const chunks: AgentUiEvent[] = [];
+        const chunks: TanStackAgentEvent[] = [];
         const thinkingSuffix = missingSuffix(
           event.thinking ?? "",
           assistant.thinking
@@ -470,17 +472,17 @@ export const createAgentUiEventMapper = ({ runId }: AgentUiStreamOptions) => {
  * Starts one TanStack client run, replays/tails the matching durable workflow turn, and terminates
  * at that turn's `run:end` while leaving the underlying multi-turn workflow alive.
  */
-export const toAgentUiEventStream = async function* (
+export const toTanStackAgentEventStream = async function* (
   events: AsyncIterable<AgentWireEvent>,
-  options: AgentUiStreamOptions
-): AsyncGenerator<AgentUiEvent, void, void> {
+  options: TanStackAgentStreamOptions
+): AsyncGenerator<TanStackAgentEvent, void, void> {
   yield {
     type: EventType.RUN_STARTED,
     threadId: options.threadId,
     runId: options.runId,
   };
 
-  const mapEvent = createAgentUiEventMapper(options);
+  const mapEvent = createTanStackAgentEventMapper(options);
   for await (const event of events) {
     for (const chunk of mapEvent(event)) {
       if (chunk.type === EventType.RUN_FINISHED) {

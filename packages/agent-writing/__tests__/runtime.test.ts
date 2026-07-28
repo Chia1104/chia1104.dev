@@ -1,5 +1,4 @@
 import { InMemorySessionRepo } from "@earendil-works/pi-agent-core";
-import type { AgentHarness } from "@earendil-works/pi-agent-core";
 import { createModels } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
@@ -15,15 +14,15 @@ import { InMemoryPendingMessageStore } from "@chia/agent-core";
 import type { AgentSessionSettings } from "@chia/agent-core";
 
 import { InMemoryDraftStore } from "../src/draft/index.ts";
-import { createWritingHarness } from "../src/harness.ts";
+import { createWritingEngine } from "../src/runtime.ts";
+import type { WritingEngine } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
-import type { WritingToolContext } from "../src/types.ts";
 
 import { createFakeContentPort } from "./fixtures.ts";
 import type { FakeContentPort } from "./fixtures.ts";
 
 /**
- * End-to-end harness tests against pi-ai's `faux` provider.
+ * End-to-end runtime tests against pi-ai's `faux` provider.
  *
  * These exercise the real `AgentHarness`, the real tools and the real permission gate with
  * scripted assistant messages, so the tool loop, the tier-3 refusal handshake and the event
@@ -34,7 +33,7 @@ const SESSION_ID = "session-1";
 const ADMIN_ID = "admin-1";
 
 interface Fixture {
-  harness: AgentHarness<WritingToolContext>;
+  engine: WritingEngine;
   events: AgentWireEvent[];
   content: FakeContentPort;
   draft: InMemoryDraftStore;
@@ -70,7 +69,7 @@ const build = async (
   const draft = new InMemoryDraftStore();
   const events: AgentWireEvent[] = [];
 
-  const built = await createWritingHarness({
+  const built = await createWritingEngine({
     session,
     settings: {
       providerId: "vercel-ai-gateway",
@@ -90,7 +89,7 @@ const build = async (
   });
 
   return {
-    harness: built.harness,
+    engine: built,
     events,
     content,
     draft,
@@ -100,7 +99,7 @@ const build = async (
   };
 };
 
-describe("createWritingHarness", () => {
+describe("createWritingEngine", () => {
   let fixture: Fixture;
 
   beforeEach(async () => {
@@ -116,7 +115,7 @@ describe("createWritingHarness", () => {
       fauxAssistantMessage("There is already a post about TypeScript."),
     ]);
 
-    await fixture.harness.prompt("Is there a post about TypeScript?");
+    await fixture.engine.prompt("Is there a post about TypeScript?");
 
     const toolStart = fixture.events.find((e) => e.type === "tool:start");
     const toolEnd = fixture.events.find((e) => e.type === "tool:end");
@@ -153,7 +152,7 @@ describe("createWritingHarness", () => {
       fauxAssistantMessage("Draft written."),
     ]);
 
-    await fixture.harness.prompt("Draft something");
+    await fixture.engine.prompt("Draft something");
 
     const draft = await fixture.draft.get(SESSION_ID);
     expect(draft.translations.en?.content).toBe("## Hello\n\nSome body text.");
@@ -191,7 +190,7 @@ describe("createWritingHarness", () => {
       fauxAssistantMessage("Waiting for your approval."),
     ]);
 
-    await fixture.harness.prompt("Write and commit a post");
+    await fixture.engine.prompt("Write and commit a post");
 
     expect(fixture.content.commits).toHaveLength(0);
     expect(fixture.approvalRequests().map((r) => r.toolName)).toEqual([
@@ -239,7 +238,7 @@ describe("createWritingHarness", () => {
       fauxAssistantMessage("Committed."),
     ]);
 
-    await approved.harness.prompt("Write and commit a post");
+    await approved.engine.prompt("Write and commit a post");
 
     expect(approved.content.commits).toHaveLength(1);
     expect(approved.content.commits[0]).toMatchObject({
@@ -270,7 +269,7 @@ describe("createWritingHarness", () => {
       fauxAssistantMessage("I need a title first."),
     ]);
 
-    await approved.harness.prompt("Commit it");
+    await approved.engine.prompt("Commit it");
 
     expect(approved.content.commits).toHaveLength(0);
     const commitEvent = approved.events.find(
@@ -285,7 +284,7 @@ describe("createWritingHarness", () => {
       fauxAssistantMessage([fauxText("Hello there, operator.")]),
     ]);
 
-    await fixture.harness.prompt("Hi");
+    await fixture.engine.prompt("Hi");
 
     const deltas = fixture.events.filter((e) => e.type === "assistant:delta");
     expect(deltas.length).toBeGreaterThan(0);

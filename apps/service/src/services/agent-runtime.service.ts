@@ -14,7 +14,6 @@ import type {
   ToolTier,
 } from "@chia/agent-core";
 import {
-  createWritingHarness,
   createWritingTools,
   isWritingModelId,
   listWritingModels,
@@ -24,6 +23,7 @@ import {
   WRITING_SESSION_DEFAULTS,
   writingPolicy,
   writingPromptTemplates,
+  writingAgentRuntime as writingAgentEngineRuntime,
   writingSkills,
 } from "@chia/agent-writing";
 import { registerAgentRuntime } from "@chia/api/orpc/agent-runtime";
@@ -60,10 +60,10 @@ import { createAgentContentPort } from "./agent-content.port";
 /**
  * The **writing** agent runtime, registered under `agent_session.kind = "writing"`.
  *
- * Generic machinery (session tree, approval gate, turn loop, wire events) is `@chia/agent-core`;
- * the writing domain (tools, prompts, draft buffer, policy) is `@chia/agent-writing`. This module is
- * the transport-facing glue between them and the durable workflow run. A second agent kind is a
- * sibling of this file plus its own domain package — core does not change.
+ * Session, approval and wire primitives are `@chia/agent-core`; engine execution is
+ * `@chia/agent-runtime`; the writing domain is `@chia/agent-writing`. This module is the
+ * transport-facing glue between them and the durable workflow run. A second agent kind is a
+ * sibling of this file plus its own domain package.
  *
  * **Stateless.** There is no in-process registry: each session is driven by a durable workflow run,
  * and every piece of state lives somewhere durable —
@@ -178,7 +178,7 @@ const summaryOf = (row: {
 };
 
 /**
- * `compact` and `navigate` build a harness only to reach its session-tree methods; their events are
+ * `compact` and `navigate` build an engine only to reach its session-tree methods; their events are
  * not part of any turn, so nothing subscribes to them.
  */
 const discardEvents = (): void => undefined;
@@ -635,7 +635,7 @@ export const writingAgentRuntime: AgentRuntime = {
 
     const { repo, draft, pending, content } = dependenciesFor(caller);
     const session = await repo.openById(input.sessionId);
-    const built = await createWritingHarness({
+    const engine = await writingAgentEngineRuntime.createEngine({
       session,
       settings: settingsOf(row),
       agentSessionId: input.sessionId,
@@ -648,10 +648,10 @@ export const writingAgentRuntime: AgentRuntime = {
     });
 
     try {
-      const result = await built.harness.compact(input.customInstructions);
+      const result = await engine.compact(input.customInstructions);
       return { summary: result.summary, tokensBefore: result.tokensBefore };
     } finally {
-      built.dispose();
+      engine.dispose();
     }
   },
 
@@ -662,7 +662,7 @@ export const writingAgentRuntime: AgentRuntime = {
 
     const { repo, draft, pending, content } = dependenciesFor(caller);
     const session = await repo.openById(input.sessionId);
-    const built = await createWritingHarness({
+    const engine = await writingAgentEngineRuntime.createEngine({
       session,
       settings: settingsOf(row),
       agentSessionId: input.sessionId,
@@ -675,7 +675,7 @@ export const writingAgentRuntime: AgentRuntime = {
     });
 
     try {
-      const result = await built.harness.navigateTree(input.entryId, {
+      const result = await engine.navigate(input.entryId, {
         summarize: input.summarize,
         label: input.label,
       });
@@ -686,7 +686,7 @@ export const writingAgentRuntime: AgentRuntime = {
         events: entriesToWireEvents(branch, replayOptions),
       };
     } finally {
-      built.dispose();
+      engine.dispose();
     }
   },
 

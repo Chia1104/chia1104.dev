@@ -1,10 +1,7 @@
 /**
- * `@chia/agent-core` — the agent runtime substrate, with no idea what any agent is *for*.
+ * `@chia/agent-core` — shared agent data, policy and persistence primitives.
  *
- * **Every import of `@earendil-works/pi-*` in this repo lives in this package.** pi is pre-1.0 and
- * moves fast (0.81 → 0.82 removed `AgentHarnessOptions.env` and introduced the `toolContext`
- * generic), so versions are pinned exactly and the churn is contained: a pi upgrade means type
- * errors in one package, not across the monorepo.
+ * Engine contracts, turn execution and provider adapters live in `@chia/agent-runtime`.
  *
  * What is generic and lives here:
  * - `session` — the session tree over Postgres (pi's `SessionStorage`/`SessionRepo` ports) and the
@@ -13,7 +10,6 @@
  * - `events` — the wire contract and the fold shared by server and client. `tier` is a plain string
  *   because tiers are per-kind policy.
  * - `permissions` — the approval gate, with classification injected via `AgentPolicy`.
- * - `harness` — assembles tools, prompt, skills and policy into a per-turn `AgentHarness`.
  *
  * What does **not** belong here: tools, prompts, domain ports, staging buffers, tier unions. Those
  * are a kind's own — see `@chia/agent-writing`.
@@ -48,11 +44,6 @@ export {
   type ApprovalRequest,
   type ToolCallGate,
 } from "./permissions.ts";
-export {
-  createAgentHarness,
-  type AgentHarnessHandle,
-  type CreateAgentHarnessOptions,
-} from "./harness.ts";
 export {
   InMemoryPendingMessageStore,
   InMemorySessionRepo,

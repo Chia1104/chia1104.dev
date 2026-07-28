@@ -2,9 +2,8 @@ import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
 
 import { agentWireEventSchema } from "@chia/agent-core/events";
+import { tanstackAgentEventSchema } from "@chia/agent-runtime/transports/tanstack-ai";
 import { locale } from "@chia/db";
-
-import { agentUiEventSchema } from "../agent-ai-transport";
 
 import { withMetaSchema } from "./shared";
 
@@ -297,7 +296,7 @@ export const chatAgentContract = oc
       ]),
     })
   )
-  .output(eventIterator(agentUiEventSchema));
+  .output(eventIterator(tanstackAgentEventSchema));
 
 export const abortAgentContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
