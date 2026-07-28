@@ -108,6 +108,91 @@ describe("createAgentRuntime", () => {
     expect(handle.dispose).toHaveBeenCalledOnce();
   });
 
+  it("serializes pending-message drains and waits for them before disposal", async () => {
+    vi.useFakeTimers();
+
+    try {
+      const prompt = Promise.withResolvers<void>();
+      const pendingDrain = Promise.withResolvers<number>();
+      const handle = createHandle({
+        prompt: vi.fn(() => prompt.promise),
+        drainPendingMessages: vi.fn(() => pendingDrain.promise),
+      });
+      const runtime = createAgentRuntime({
+        kind: "test",
+        createEngine: async () => handle,
+      });
+
+      const turn = runtime.runTurn({
+        createOptions: {
+          agentSessionId: "session-1",
+          onEvent: () => undefined,
+        },
+        message: { text: "Hello" },
+        toApproval: (approval) => approval.toolCallId,
+        persistApproval: async () => undefined,
+        drainIntervalMs: 100,
+      });
+
+      await vi.advanceTimersByTimeAsync(100);
+      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
+
+      await vi.advanceTimersByTimeAsync(300);
+      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
+
+      prompt.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(handle.dispose).not.toHaveBeenCalled();
+
+      pendingDrain.resolve(1);
+      await turn;
+      expect(handle.dispose).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("allows a later drain to retry after a failed attempt", async () => {
+    vi.useFakeTimers();
+
+    try {
+      const prompt = Promise.withResolvers<void>();
+      const handle = createHandle({
+        prompt: vi.fn(() => prompt.promise),
+        drainPendingMessages: vi
+          .fn()
+          .mockRejectedValueOnce(new Error("temporary failure"))
+          .mockResolvedValue(0),
+      });
+      const runtime = createAgentRuntime({
+        kind: "test",
+        createEngine: async () => handle,
+      });
+
+      const turn = runtime.runTurn({
+        createOptions: {
+          agentSessionId: "session-1",
+          onEvent: () => undefined,
+        },
+        message: { text: "Hello" },
+        toApproval: (approval) => approval.toolCallId,
+        persistApproval: async () => undefined,
+        drainIntervalMs: 100,
+      });
+
+      await vi.advanceTimersByTimeAsync(100);
+      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
+
+      await vi.advanceTimersByTimeAsync(100);
+      expect(handle.drainPendingMessages).toHaveBeenCalledTimes(2);
+
+      prompt.resolve();
+      await turn;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("flushes the event sink when engine construction fails", async () => {
     const flushEvents = vi.fn(async () => undefined);
     const runtime = createAgentRuntime({

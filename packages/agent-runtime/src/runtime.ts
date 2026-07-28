@@ -75,13 +75,38 @@ export const createAgentRuntime = <
     const emit = createOptions.onEvent;
     let engine: THandle | undefined;
     let drainInterval: ReturnType<typeof setInterval> | undefined;
+    let activeDrain: Promise<void> | undefined;
+
+    const stopDraining = async () => {
+      if (drainInterval) {
+        clearInterval(drainInterval);
+        drainInterval = undefined;
+      }
+      await activeDrain;
+    };
 
     try {
-      engine = await definition.createEngine(createOptions);
-      drainInterval = setInterval(() => {
-        void engine?.drainPendingMessages().catch(() => {
+      const turnEngine = await definition.createEngine(createOptions);
+      engine = turnEngine;
+
+      const drainPendingMessages = async () => {
+        try {
+          await turnEngine.drainPendingMessages();
+        } catch {
           // A failed drain must not kill the turn; a durable store leaves it queued for retry.
-        });
+        }
+      };
+      const drain = () => {
+        if (!activeDrain) {
+          activeDrain = drainPendingMessages().finally(() => {
+            activeDrain = undefined;
+          });
+        }
+        return activeDrain;
+      };
+
+      drainInterval = setInterval(() => {
+        void drain();
       }, drainIntervalMs);
 
       emit({ type: "run:start", sessionId: createOptions.agentSessionId });
@@ -95,22 +120,21 @@ export const createAgentRuntime = <
       let failure: string | undefined;
       try {
         if (message.template) {
-          await engine.promptFromTemplate(
+          await turnEngine.promptFromTemplate(
             message.template.name,
             message.template.args
           );
         } else {
-          await engine.prompt(message.text);
+          await turnEngine.prompt(message.text);
         }
       } catch (error) {
         failure = messageFor(error);
       } finally {
-        clearInterval(drainInterval);
-        drainInterval = undefined;
+        await stopDraining();
       }
 
       const approvals: TApproval[] = [];
-      for (const request of engine.approvalRequests) {
+      for (const request of turnEngine.approvalRequests) {
         const approval = toApproval(request);
         approvals.push(approval);
         await persistApproval(approval);
@@ -131,7 +155,7 @@ export const createAgentRuntime = <
 
       return { status, approvals, error: failure };
     } finally {
-      if (drainInterval) clearInterval(drainInterval);
+      await stopDraining();
       try {
         engine?.dispose();
       } finally {
