@@ -264,7 +264,7 @@ sequenceDiagram
     participant PG as agent_tool_approval
 
     M->>G: commit_draft(...)
-    G-->>M: block + "needs human approval; stop here"
+    G-->>M: block + "needs human approval, stop here"
     G->>WF: approval:request event
     Note over WF: turn ends cleanly<br/>status = awaiting_approval
     WF->>PG: recordAgentApprovalRequest
