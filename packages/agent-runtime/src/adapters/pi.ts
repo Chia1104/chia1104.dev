@@ -213,12 +213,32 @@ export const createPiAgentEngine = async <TContext extends object>(
       const result = await harness.navigateTree(entryId, navigationOptions);
       return { cancelled: result.cancelled };
     },
+    /**
+     * Hands claimed messages to the harness, putting back anything it refuses.
+     *
+     * `claim` marks rows consumed before delivery, so a throw here used to lose them outright. The
+     * common throw is pi's `"Cannot steer while idle"`, which happens when the turn finishes
+     * between the claim and the delivery. Releasing means the message survives to the *next* turn
+     * instead — a steer aimed at turn N surfacing in turn N+1 reads slightly oddly, but it beats
+     * the operator's message vanishing with no trace.
+     */
     async drainPendingMessages() {
-      if (!options.pending) return 0;
-      const messages = await options.pending.claim(options.agentSessionId);
-      for (const message of messages) {
-        if (message.kind === "steer") await harness.steer(message.text);
-        else await harness.followUp(message.text);
+      const store = options.pending;
+      if (!store) return 0;
+      const messages = await store.claim(options.agentSessionId);
+      const undelivered = [...messages];
+      try {
+        for (const message of messages) {
+          if (message.kind === "steer") await harness.steer(message.text);
+          else await harness.followUp(message.text);
+          undelivered.shift();
+        }
+      } catch (error) {
+        // Best effort: if the release itself fails there is nothing left to try.
+        await store
+          .release(undelivered.map((message) => message.id))
+          .catch(() => undefined);
+        throw error;
       }
       return messages.length;
     },

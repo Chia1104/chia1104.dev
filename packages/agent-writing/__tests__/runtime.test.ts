@@ -37,6 +37,7 @@ interface Fixture {
   events: AgentWireEvent[];
   content: FakeContentPort;
   draft: InMemoryDraftStore;
+  pending: InMemoryPendingMessageStore;
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
@@ -67,6 +68,7 @@ const build = async (
     tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
   });
   const draft = new InMemoryDraftStore();
+  const pending = new InMemoryPendingMessageStore();
   const events: AgentWireEvent[] = [];
 
   const built = await createWritingEngine({
@@ -83,7 +85,7 @@ const build = async (
     adminId: ADMIN_ID,
     content,
     draft,
-    pending: new InMemoryPendingMessageStore(),
+    pending,
     onEvent: (event) => events.push(event),
     models,
   });
@@ -93,6 +95,7 @@ const build = async (
     events,
     content,
     draft,
+    pending,
     setResponses: faux.setResponses,
     dispose: built.dispose,
     approvalRequests: () => built.approvalRequests,
@@ -302,5 +305,56 @@ describe("createWritingEngine", () => {
 
     expect(textOf(withDeltas)).toBe("Hello there, operator.");
     expect(textOf(withoutDeltas)).toBe("Hello there, operator.");
+  });
+
+  describe("pending messages", () => {
+    it("delivers a queued steer into a running turn", async () => {
+      fixture.setResponses([fauxAssistantMessage([fauxText("Understood.")])]);
+      await fixture.pending.push(SESSION_ID, "steer", "Actually, stop.");
+
+      const turn = fixture.engine.prompt("Write something");
+      await fixture.engine.drainPendingMessages();
+      await turn;
+
+      expect(await fixture.pending.peek(SESSION_ID)).toEqual([]);
+    });
+
+    /**
+     * The loss window: `claim` marks rows consumed before delivery, and pi refuses `steer()` on an
+     * idle harness. Without the release path the operator's message would be consumed and then
+     * dropped on the floor with nothing to show for it.
+     */
+    it("returns a message to the queue when the harness has gone idle", async () => {
+      await fixture.pending.push(SESSION_ID, "steer", "Wait, change of plan");
+
+      // No turn is running, so pi throws "Cannot steer while idle".
+      await expect(fixture.engine.drainPendingMessages()).rejects.toThrow();
+
+      expect(
+        (await fixture.pending.peek(SESSION_ID)).map((m) => m.text)
+      ).toEqual(["Wait, change of plan"]);
+    });
+
+    it("keeps only the undelivered tail when a later message fails", async () => {
+      fixture.setResponses([fauxAssistantMessage([fauxText("Fine.")])]);
+      await fixture.pending.push(SESSION_ID, "steer", "first");
+      await fixture.pending.push(SESSION_ID, "steer", "second");
+
+      const turn = fixture.engine.prompt("Go");
+      await fixture.engine.drainPendingMessages();
+      await turn;
+
+      // Both landed inside the turn, so nothing comes back.
+      expect(await fixture.pending.peek(SESSION_ID)).toEqual([]);
+
+      // Now the same two, but with no turn to receive them.
+      await fixture.pending.push(SESSION_ID, "steer", "third");
+      await fixture.pending.push(SESSION_ID, "steer", "fourth");
+      await expect(fixture.engine.drainPendingMessages()).rejects.toThrow();
+
+      expect(
+        (await fixture.pending.peek(SESSION_ID)).map((m) => m.text)
+      ).toEqual(["third", "fourth"]);
+    });
   });
 });

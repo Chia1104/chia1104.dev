@@ -340,6 +340,16 @@ Provider 用的是 pi-ai 內建的 `vercelAIGatewayProvider()`，它以 Anthropi
 
 `AgentHarness.steer()` 是方法而不是 callback，所以 turn 進行中經由 HTTP 抵達的訊息碰不到正在跑的 harness。Transport 會寫一列到 `agent_pending_message`；turn 的 drain 迴圈把它 claim 走（atomically，並標記 consumed），再重播進 harness：`steer()` 會打斷當前 turn，`followUp()` 則等到 turn 本來要停下時才插入。列在 `consumedAt` 之後仍保留，讓 transcript 能解釋 agent 為什麼改變方向。
 
+claim 是**先標記 consumed 再投遞**，所以 harness 拒收的訊息會被**放回佇列**——pi 在 idle 狀態會拒絕 `steer()`，而那正是 turn 在 claim 與投遞之間結束時會發生的事。放回去的訊息會出現在下一個 turn，而不是憑空消失。
+
+### 10.1 喚醒通道
+
+只靠輪詢的話，一則 steer 最差要等一個 drain interval 才被看到。當 cache 是 Redis 時，`agent:pending:<sessionId>` 上一個**不帶 payload** 的通知會叫正在跑的 turn 立刻 drain（`apps/service/src/services/agent-pending-notifier.ts`）。
+
+它純粹是加速層。訊息在通知發出前就已經持久化在 Postgres，所以掉一個通知只損失延遲、不損失資料——這也是輪詢維持原本頻率、以及通道不帶 payload 的理由。其他 cache provider 拿到的是 `null` notifier，行為與改動前完全相同。
+
+drain 迴圈有一個細節：同時間只有一次 drain，但**通知在 in-flight drain 已經 claim 之後才到達**時不能直接併掉，否則新訊息要等下一次輪詢，這個通道就白做了。這種請求會設一個旗標，drain 結束後自動補跑一輪；teardown 會跟著這條鏈走到底才 dispose engine。
+
 ## 11. 新增第二種 agent kind
 
 `@chia/agent-core` 與 `@chia/agent-runtime` 都不該需要改動。

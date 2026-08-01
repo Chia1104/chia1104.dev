@@ -1,4 +1,4 @@
-import type { ApprovalRequest } from "@chia/agent-core";
+import type { ApprovalRequest, PendingMessageNotifier } from "@chia/agent-core";
 
 import type {
   AgentDefinition,
@@ -35,6 +35,12 @@ export interface RunAgentTurnOptions<
    */
   flushEvents?: () => Promise<void>;
   drainIntervalMs?: number;
+  /**
+   * Optional wake-up channel that shortens the pending-message wait from "up to one poll interval"
+   * to "as fast as the channel delivers". Purely an accelerator — the poller below is what makes
+   * delivery actually happen, so a missing or broken notifier costs latency and nothing else.
+   */
+  pendingNotifier?: PendingMessageNotifier;
 }
 
 export interface AgentRuntimeFactory<
@@ -78,18 +84,33 @@ export const createAgentRuntime = <
     persistApproval,
     flushEvents,
     drainIntervalMs = DEFAULT_DRAIN_INTERVAL_MS,
+    pendingNotifier,
   }: RunAgentTurnOptions<TCreateOptions, TApproval>) {
     const emit = createOptions.onEvent;
     let engine: THandle | undefined;
     let drainInterval: ReturnType<typeof setInterval> | undefined;
     let activeDrain: Promise<void> | undefined;
+    let drainRequested = false;
+    let notifierSubscription:
+      | Promise<(() => Promise<void>) | undefined>
+      | undefined;
 
     const stopDraining = async () => {
       if (drainInterval) {
         clearInterval(drainInterval);
         drainInterval = undefined;
       }
-      await activeDrain;
+      if (notifierSubscription) {
+        const subscription = notifierSubscription;
+        notifierSubscription = undefined;
+        // Detaching must not fail the turn — the channel is an accelerator, not a dependency.
+        await (await subscription)?.().catch(() => undefined);
+      }
+      // A drain can schedule a follow-up drain (see `drain`), so one await is not enough: awaiting
+      // the in-flight promise resumes only after its `finally` has already assigned the next one,
+      // so this loop drains the chain to its end. Stopping early would dispose the engine out from
+      // under a delivery still in flight.
+      while (activeDrain) await activeDrain;
     };
 
     try {
@@ -100,21 +121,45 @@ export const createAgentRuntime = <
         try {
           await turnEngine.drainPendingMessages();
         } catch {
-          // A failed drain must not kill the turn; a durable store leaves it queued for retry.
+          // A failed drain must not kill the turn. The engine releases whatever it could not
+          // deliver back to the store, so the next drain — this turn's or the next turn's — picks
+          // those messages up again.
         }
       };
-      const drain = () => {
-        if (!activeDrain) {
-          activeDrain = drainPendingMessages().finally(() => {
-            activeDrain = undefined;
-          });
+      /**
+       * At most one drain in flight, and never a lost wake-up.
+       *
+       * Coalescing onto the in-flight promise is not enough on its own: a notification that lands
+       * *after* that drain already claimed its rows would see the new message neither now nor
+       * until the next poll, which would throw away the whole point of the notifier. So a request
+       * arriving mid-drain sets a flag and the drain re-runs when it settles.
+       */
+      const drain = (): Promise<void> => {
+        if (activeDrain) {
+          drainRequested = true;
+          return activeDrain;
         }
+        drainRequested = false;
+        activeDrain = drainPendingMessages().finally(() => {
+          activeDrain = undefined;
+          if (drainRequested) void drain();
+        });
         return activeDrain;
       };
 
       drainInterval = setInterval(() => {
         void drain();
       }, drainIntervalMs);
+
+      /**
+       * Subscribed without awaiting: the turn must not pay a network round trip before its first
+       * token just to set up an optimisation. Teardown awaits this promise before unsubscribing,
+       * and a rejection resolves to `undefined` — losing the accelerator only means falling back
+       * to the poll interval.
+       */
+      notifierSubscription = pendingNotifier
+        ?.subscribe(createOptions.agentSessionId, () => void drain())
+        .catch(() => undefined);
 
       emit({ type: "run:start", sessionId: createOptions.agentSessionId });
       const now = Date.now();

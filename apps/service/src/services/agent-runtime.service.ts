@@ -56,6 +56,7 @@ import {
 } from "../workflows/hooks/agent.hooks";
 
 import { createAgentContentPort } from "./agent-content.port";
+import { getAgentPendingNotifier } from "./agent-pending-notifier";
 
 /**
  * The **writing** agent runtime, registered under `agent_session.kind = "writing"`.
@@ -615,6 +616,17 @@ export const writingAgentRuntime: AgentRuntime = {
     if (!row) return false;
     const { pending } = dependenciesFor(caller);
     await pending.push(input.sessionId, input.queue ?? "steer", input.text);
+
+    /**
+     * Nudge the running turn, strictly after the row is durable — the other order would let a
+     * subscriber drain before the message exists and waste the wake-up. Failure is ignored on
+     * purpose: the message is already stored, so the worst case is the turn's next poll.
+     */
+    try {
+      await getAgentPendingNotifier()?.publish(input.sessionId);
+    } catch {
+      // Accelerator only.
+    }
     return true;
   },
 
