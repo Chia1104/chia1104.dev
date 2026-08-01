@@ -29,6 +29,10 @@
       "types": "./src/pubsub.ts",
       "default": "./src/pubsub.ts"
     },
+    "./provider": {
+      "types": "./src/provider.ts",
+      "default": "./src/provider.ts"
+    },
     "./env": {
       "types": "./src/env.ts",
       "default": "./src/env.ts"

@@ -742,6 +742,9 @@ importers:
       '@orpc/zod':
         specifier: catalog:orpc
         version: 1.14.8(@opentelemetry/api@1.9.1)(@orpc/contract@1.14.8(@opentelemetry/api@1.9.1))(@orpc/server@1.14.8(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1))(crossws@0.4.10(srvx@0.11.22))(ws@8.21.1)(zod@4.4.3)
+      '@redis/client':
+        specifier: ^5.12.1
+        version: 5.12.1(@opentelemetry/api@1.9.1)
       '@t3-oss/env-core':
         specifier: 'catalog:'
         version: 0.13.11(typescript@7.0.2)(zod@4.4.3)

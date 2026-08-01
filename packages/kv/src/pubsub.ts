@@ -1,8 +1,8 @@
 import { createClient } from "@redis/client";
 import type { RedisClientType } from "@redis/client";
 
-import { resolveCacheProvider } from "./clients.ts";
 import { env } from "./env.ts";
+import { resolveCacheProvider } from "./provider.ts";
 
 /**
  * Redis pub/sub, deliberately separate from the Keyv cache client.
