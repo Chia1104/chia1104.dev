@@ -415,13 +415,35 @@ service can be replicated across instances without a coordination layer.
 
 ## 9. Session maintenance
 
-`compact` and `navigate` (rewind) build an engine handle purely to reach its session-tree methods —
-their events belong to no turn, so nothing subscribes to them. Both mutate the tree, so both refuse
-while a run's status is `running`. A merely _live_ run is not enough to refuse on: parked on the
-message hook is the normal idle state.
+`compact` and `navigate` (rewind) use a **maintenance engine**
+(`AgentDefinition.createMaintenanceEngine`): a session and a model, and nothing else — no tools, no
+skills, no system prompt, no approval gate, no event subscriptions. Compaction runs on pi's own
+`SUMMARIZATION_SYSTEM_PROMPT` and branch summaries on `generateBranchSummary`, so neither can read
+the agent's system prompt; building all of that only to discard it was waste. Both mutate the tree,
+so both refuse while a run's status is `running`. A merely _live_ run is not enough to refuse on:
+parked on the message hook is the normal idle state.
 
 `navigate` returns the whole rebuilt transcript, because changing the branch invalidates the
 client's view entirely.
+
+### 9.1 Automatic compaction
+
+Beyond the manual `agent.sessions.compact`, `runTurn` calls `compactIfNeeded()` **at the end of
+every turn**. The engine decides for itself, using pi's `estimateContextTokens` and `shouldCompact`
+against `contextWindow - reserveTokens`, and reports `null` when it declined. The threshold lives in
+the adapter rather than the runtime on purpose: estimating context tokens needs the engine's own
+accounting (provider usage where available, a heuristic otherwise), and a second copy of that
+arithmetic upstream would drift from it.
+
+Two guards are load-bearing. **Nothing is compacted while an approval is pending** — the horizon
+would move out from under the run that resumes later — and **a failed turn keeps its history**,
+because a compacted transcript cannot be diagnosed. A compaction failure never takes the turn down
+with it; the next turn boundary retries.
+
+After the turn rather than before it: the user never waits on a summarisation call to see their
+first token, and the assistant message that just landed carries the provider's own usage, which is
+the most accurate signal available. The `session:compacted` event rides the existing stream, so no
+client change was needed.
 
 ## 10. Steering and follow-up
 

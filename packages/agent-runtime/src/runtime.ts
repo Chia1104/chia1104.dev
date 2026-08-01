@@ -4,6 +4,8 @@ import type {
   AgentDefinition,
   AgentEngineCreateOptions,
   AgentEngineHandle,
+  AgentMaintenanceCreateOptions,
+  AgentMaintenanceEngineHandle,
 } from "./engine.ts";
 
 const DEFAULT_DRAIN_INTERVAL_MS = 1_000;
@@ -41,6 +43,10 @@ export interface AgentRuntimeFactory<
 > {
   kind: string;
   createEngine: (options: TCreateOptions) => Promise<THandle>;
+  /** Present only when the definition supplies one; see `AgentDefinition.createMaintenanceEngine`. */
+  createMaintenanceEngine?: (
+    options: AgentMaintenanceCreateOptions
+  ) => Promise<AgentMaintenanceEngineHandle>;
   runTurn: <TApproval>(
     options: RunAgentTurnOptions<TCreateOptions, TApproval>
   ) => Promise<AgentTurnExecution<TApproval>>;
@@ -64,6 +70,7 @@ export const createAgentRuntime = <
 ): AgentRuntimeFactory<TCreateOptions, THandle> => ({
   kind: definition.kind,
   createEngine: definition.createEngine,
+  createMaintenanceEngine: definition.createMaintenanceEngine,
   async runTurn<TApproval>({
     createOptions,
     message,
@@ -138,6 +145,27 @@ export const createAgentRuntime = <
         const approval = toApproval(request);
         approvals.push(approval);
         await persistApproval(approval);
+      }
+
+      /**
+       * Auto-compaction, at the one moment it is safe and cheap.
+       *
+       * Both guards are load-bearing. A turn parked on an approval must keep its tree still: the
+       * compaction horizon would otherwise move out from under the run that resumes hours later,
+       * which is the same reason the service refuses a manual compact while a turn is live. And a
+       * failed turn keeps its history, because a compacted transcript cannot be diagnosed.
+       *
+       * After the turn, not before it: the user never waits on a summarisation call to see their
+       * first token, and the assistant message that just landed carries the provider's own usage,
+       * which is the most accurate signal the engine will ever have.
+       */
+      if (!failure && approvals.length === 0) {
+        try {
+          await turnEngine.compactIfNeeded?.();
+        } catch {
+          // Compaction must never take the turn down with it; the next turn boundary retries.
+          // Same posture as the pending-message drain above.
+        }
       }
 
       if (failure) emit({ type: "error", message: failure });

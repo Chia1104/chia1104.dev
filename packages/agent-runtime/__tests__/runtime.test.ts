@@ -193,6 +193,139 @@ describe("createAgentRuntime", () => {
     }
   });
 
+  it("compacts at the end of a clean turn", async () => {
+    const handle = createHandle({
+      compactIfNeeded: vi.fn(async () => ({
+        summary: "…",
+        tokensBefore: 120_000,
+      })),
+    });
+    const runtime = createAgentRuntime({
+      kind: "test",
+      createEngine: async () => handle,
+    });
+
+    const result = await runtime.runTurn({
+      createOptions: {
+        agentSessionId: "session-1",
+        onEvent: () => undefined,
+      },
+      message: { text: "Hello" },
+      toApproval: (approval) => approval.toolCallId,
+      persistApproval: async () => undefined,
+    });
+
+    expect(result.status).toBe("done");
+    expect(handle.compactIfNeeded).toHaveBeenCalledOnce();
+  });
+
+  it("leaves the session tree alone while a turn is parked on an approval", async () => {
+    const handle = createHandle({
+      approvalRequests: [
+        {
+          toolCallId: "call-1",
+          toolName: "publish",
+          tier: "commit",
+          args: {},
+        },
+      ],
+      compactIfNeeded: vi.fn(async () => null),
+    });
+    const runtime = createAgentRuntime({
+      kind: "test",
+      createEngine: async () => handle,
+    });
+
+    const result = await runtime.runTurn({
+      createOptions: {
+        agentSessionId: "session-1",
+        onEvent: () => undefined,
+      },
+      message: { text: "Publish it" },
+      toApproval: (approval) => approval.toolCallId,
+      persistApproval: async () => undefined,
+    });
+
+    // Compacting here would move the horizon out from under the run that resumes on approval.
+    expect(result.status).toBe("awaiting_approval");
+    expect(handle.compactIfNeeded).not.toHaveBeenCalled();
+  });
+
+  it("keeps the history of a failed turn so it stays diagnosable", async () => {
+    const handle = createHandle({
+      prompt: vi.fn(async () => {
+        throw new Error("provider failed");
+      }),
+      compactIfNeeded: vi.fn(async () => null),
+    });
+    const runtime = createAgentRuntime({
+      kind: "test",
+      createEngine: async () => handle,
+    });
+
+    const result = await runtime.runTurn({
+      createOptions: {
+        agentSessionId: "session-1",
+        onEvent: () => undefined,
+      },
+      message: { text: "Hello" },
+      toApproval: (approval) => approval.toolCallId,
+      persistApproval: async () => undefined,
+    });
+
+    expect(result.status).toBe("error");
+    expect(handle.compactIfNeeded).not.toHaveBeenCalled();
+  });
+
+  it("completes the turn when compaction fails", async () => {
+    const events: AgentWireEvent[] = [];
+    const handle = createHandle({
+      compactIfNeeded: vi.fn(async () => {
+        throw new Error("summarisation model unavailable");
+      }),
+    });
+    const runtime = createAgentRuntime({
+      kind: "test",
+      createEngine: async () => handle,
+    });
+
+    const result = await runtime.runTurn({
+      createOptions: {
+        agentSessionId: "session-1",
+        onEvent: (event) => events.push(event),
+      },
+      message: { text: "Hello" },
+      toApproval: (approval) => approval.toolCallId,
+      persistApproval: async () => undefined,
+    });
+
+    // The next turn boundary retries; a compaction failure is not the turn's failure.
+    expect(result).toEqual({ status: "done", approvals: [], error: undefined });
+    expect(events.at(-1)).toEqual({ type: "run:end", reason: "done" });
+    expect(events.some((event) => event.type === "error")).toBe(false);
+  });
+
+  it("runs a turn on an engine that cannot compact at all", async () => {
+    const handle = createHandle();
+    const runtime = createAgentRuntime({
+      kind: "test",
+      createEngine: async () => handle,
+    });
+
+    const result = await runtime.runTurn({
+      createOptions: {
+        agentSessionId: "session-1",
+        onEvent: () => undefined,
+      },
+      message: { text: "Hello" },
+      toApproval: (approval) => approval.toolCallId,
+      persistApproval: async () => undefined,
+    });
+
+    expect(handle.compactIfNeeded).toBeUndefined();
+    expect(result.status).toBe("done");
+  });
+
   it("flushes the event sink when engine construction fails", async () => {
     const flushEvents = vi.fn(async () => undefined);
     const runtime = createAgentRuntime({

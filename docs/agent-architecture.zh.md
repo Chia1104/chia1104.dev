@@ -324,9 +324,17 @@ Provider 用的是 pi-ai 內建的 `vercelAIGatewayProvider()`，它以 Anthropi
 
 ## 9. Session 維護
 
-`compact` 與 `navigate`（rewind）建 engine handle 純粹是為了取用它的 session-tree 方法——它們的事件不屬於任何 turn，所以沒有人訂閱。兩者都會改動樹，所以只要 run 的 status 是 `running` 就一律拒絕。單純「run 還活著」不足以構成拒絕理由：park 在 message hook 上就是正常的閒置狀態。
+`compact` 與 `navigate`（rewind）用的是 **maintenance engine**（`AgentDefinition.createMaintenanceEngine`）：只帶 session 與 model，沒有 tools、skills、system prompt、approval gate 或事件訂閱。壓縮走 pi 自己的 `SUMMARIZATION_SYSTEM_PROMPT`，branch summary 走 `generateBranchSummary`，兩者都讀不到 agent 的 system prompt，所以那些東西建了也只是丟掉。兩者都會改動樹，所以只要 run 的 status 是 `running` 就一律拒絕。單純「run 還活著」不足以構成拒絕理由：park 在 message hook 上就是正常的閒置狀態。
 
 `navigate` 會回傳整份重建後的 transcript，因為換分支會讓 client 的視圖整份失效。
+
+### 9.1 自動壓縮
+
+除了手動的 `agent.sessions.compact`，`runTurn` 會在**每個 turn 結束時**呼叫 `compactIfNeeded()`——engine 自行用 pi 的 `estimateContextTokens` + `shouldCompact` 判斷是否超過 `contextWindow - reserveTokens`，沒超過就回 `null`。閾值刻意留在 adapter 而不是 runtime：token 估算要用 engine 自己的帳（有 provider usage 就用，沒有才退回啟發式），runtime 再算一份只會漂移。
+
+兩個守衛缺一不可：**有 approval 待決時不壓**（壓縮會把 horizon 移到之後才 resume 的 run 底下），**turn 失敗時不壓**（壓掉的 transcript 無法診斷）。壓縮失敗永遠不會拖垮 turn，下個 turn 邊界會再試。
+
+選在 turn 之後而非之前，是因為使用者不必等一次 summarization call 才看到第一個 token，而且剛落地的 assistant message 帶著 provider 回報的 usage，是最準的訊號。`session:compacted` 事件走既有的串流路徑，client 不需要任何改動。
 
 ## 10. Steering 與 follow-up
 

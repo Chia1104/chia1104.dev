@@ -1,7 +1,13 @@
-import { AgentHarness } from "@earendil-works/pi-agent-core";
+import {
+  AgentHarness,
+  DEFAULT_COMPACTION_SETTINGS,
+  estimateContextTokens,
+  shouldCompact,
+} from "@earendil-works/pi-agent-core";
 import type {
   PromptTemplate,
   Session,
+  SessionTreeEntry,
   Skill,
 } from "@earendil-works/pi-agent-core";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
@@ -19,7 +25,9 @@ import type {
 } from "@chia/agent-core";
 
 import type {
+  AgentCompactionResult,
   AgentEngineCreateOptions,
+  AgentMaintenanceCreateOptions,
   AgentMaintenanceEngineHandle,
   AgentNavigationOptions,
 } from "../engine.ts";
@@ -58,6 +66,42 @@ export interface PiAgentEngineHandle extends AgentMaintenanceEngineHandle {
     options: AgentNavigationOptions
   ) => Promise<{ cancelled: boolean }>;
 }
+
+/**
+ * Whether a branch has grown past the point where the next turn should be given a fresh context.
+ *
+ * `estimateContextTokens` prefers the last assistant message's provider-reported usage — which is
+ * authoritative, and already accounts for a preceding compaction's summary and retained tail — and
+ * adds a character estimate for everything after it. It only falls back to pure estimation when no
+ * assistant message has replied yet, which is precisely when compaction cannot apply anyway.
+ *
+ * Exported for tests: this is the one piece of judgement the adapter adds, and it is worth pinning
+ * down without standing up a harness and a provider.
+ */
+export const shouldCompactBranch = (
+  entries: SessionTreeEntry[],
+  contextWindow: number
+): boolean => {
+  const messages = entries
+    .filter((entry) => entry.type === "message")
+    .map((entry) => entry.message);
+  if (messages.length === 0) return false;
+  const { tokens } = estimateContextTokens(messages);
+  return shouldCompact(tokens, contextWindow, DEFAULT_COMPACTION_SETTINGS);
+};
+
+/** Shared by both handles so a single threshold governs turn and maintenance paths alike. */
+const compactIfNeededWith =
+  (
+    session: Session,
+    contextWindow: number,
+    compact: () => Promise<AgentCompactionResult>
+  ) =>
+  async (): Promise<AgentCompactionResult | null> => {
+    const entries = await session.getBranch();
+    if (!shouldCompactBranch(entries, contextWindow)) return null;
+    return await compact();
+  };
 
 /**
  * pi implementation of the runtime-neutral agent engine.
@@ -144,6 +188,13 @@ export const createPiAgentEngine = async <TContext extends object>(
     );
   }
 
+  const compact = async (
+    customInstructions?: string
+  ): Promise<AgentCompactionResult> => {
+    const result = await harness.compact(customInstructions);
+    return { summary: result.summary, tokensBefore: result.tokensBefore };
+  };
+
   return {
     approvalRequests: gate.requests,
     async prompt(text) {
@@ -152,10 +203,12 @@ export const createPiAgentEngine = async <TContext extends object>(
     async promptFromTemplate(name, args) {
       await harness.promptFromTemplate(name, args);
     },
-    async compact(customInstructions) {
-      const result = await harness.compact(customInstructions);
-      return { summary: result.summary, tokensBefore: result.tokensBefore };
-    },
+    compact,
+    compactIfNeeded: compactIfNeededWith(
+      options.session,
+      options.model.contextWindow,
+      () => compact()
+    ),
     async navigate(entryId, navigationOptions) {
       const result = await harness.navigateTree(entryId, navigationOptions);
       return { cancelled: result.cancelled };
@@ -172,5 +225,70 @@ export const createPiAgentEngine = async <TContext extends object>(
     dispose() {
       for (const unsubscribe of unsubscribers) unsubscribe();
     },
+  };
+};
+
+export interface CreatePiMaintenanceEngineOptions extends AgentMaintenanceCreateOptions {
+  /** Resolved model. Only the summarisation calls and the context-window threshold use it. */
+  model: Model<Api>;
+  models?: Models;
+}
+
+const maintenanceOnly = (method: string): never => {
+  throw new Error(
+    `${method} is unavailable on a maintenance engine. Build a turn engine instead.`
+  );
+};
+
+/**
+ * pi implementation of a session-tree maintenance handle.
+ *
+ * Deliberately *not* a configuration of {@link createPiAgentEngine}: compaction and branch
+ * navigation need a session and a model, and nothing else. Tools, skills, prompt templates, the
+ * agent system prompt, the approval gate and the event subscriptions all exist to serve a turn, and
+ * building them here only to discard their output is waste that also invites the mistake of
+ * treating this handle as one that can run a turn. Compaction uses pi's own
+ * `SUMMARIZATION_SYSTEM_PROMPT` and branch summaries use `generateBranchSummary`, so neither reads
+ * the agent's system prompt.
+ *
+ * The two harness constructions are kept separate rather than funnelled through a shared builder:
+ * they differ in almost every field, and a builder covering both would be a thicket of optionals.
+ */
+export const createPiMaintenanceEngine = async (
+  options: CreatePiMaintenanceEngineOptions
+): Promise<AgentMaintenanceEngineHandle> => {
+  const harness = new AgentHarness({
+    session: options.session,
+    models: options.models ?? getAgentModels(),
+    model: options.model,
+    tools: [],
+    thinkingLevel: options.settings.thinkingLevel,
+    systemPrompt: "",
+  } as never) as AgentHarness;
+
+  const compact = async (
+    customInstructions?: string
+  ): Promise<AgentCompactionResult> => {
+    const result = await harness.compact(customInstructions);
+    return { summary: result.summary, tokensBefore: result.tokensBefore };
+  };
+
+  return {
+    approvalRequests: [],
+    prompt: () => maintenanceOnly("prompt"),
+    promptFromTemplate: () => maintenanceOnly("promptFromTemplate"),
+    compact,
+    compactIfNeeded: compactIfNeededWith(
+      options.session,
+      options.model.contextWindow,
+      () => compact()
+    ),
+    async navigate(entryId, navigationOptions) {
+      const result = await harness.navigateTree(entryId, navigationOptions);
+      return { cancelled: result.cancelled };
+    },
+    // No pending-message store: a maintenance handle never runs a turn to drain them into.
+    drainPendingMessages: async () => 0,
+    dispose: () => undefined,
   };
 };
