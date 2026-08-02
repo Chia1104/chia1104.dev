@@ -19,6 +19,7 @@ import {
 } from "@chia/db/repos/agent";
 
 import { createAgentContentPort } from "../services/agent-content.port";
+import { getAgentPendingNotifier } from "../services/agent-pending-notifier";
 
 /**
  * One agent turn, as a durable step.
@@ -191,6 +192,8 @@ async function runWritingAgentTurn(
       });
     },
     flushEvents: writer.flush,
+    // Lets a steer sent mid-turn land immediately instead of waiting out the drain interval.
+    pendingNotifier: getAgentPendingNotifier() ?? undefined,
   });
 }
 

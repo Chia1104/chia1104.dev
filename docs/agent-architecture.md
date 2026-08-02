@@ -415,13 +415,35 @@ service can be replicated across instances without a coordination layer.
 
 ## 9. Session maintenance
 
-`compact` and `navigate` (rewind) build an engine handle purely to reach its session-tree methods —
-their events belong to no turn, so nothing subscribes to them. Both mutate the tree, so both refuse
-while a run's status is `running`. A merely _live_ run is not enough to refuse on: parked on the
-message hook is the normal idle state.
+`compact` and `navigate` (rewind) use a **maintenance engine**
+(`AgentDefinition.createMaintenanceEngine`): a session and a model, and nothing else — no tools, no
+skills, no system prompt, no approval gate, no event subscriptions. Compaction runs on pi's own
+`SUMMARIZATION_SYSTEM_PROMPT` and branch summaries on `generateBranchSummary`, so neither can read
+the agent's system prompt; building all of that only to discard it was waste. Both mutate the tree,
+so both refuse while a run's status is `running`. A merely _live_ run is not enough to refuse on:
+parked on the message hook is the normal idle state.
 
 `navigate` returns the whole rebuilt transcript, because changing the branch invalidates the
 client's view entirely.
+
+### 9.1 Automatic compaction
+
+Beyond the manual `agent.sessions.compact`, `runTurn` calls `compactIfNeeded()` **at the end of
+every turn**. The engine decides for itself, using pi's `estimateContextTokens` and `shouldCompact`
+against `contextWindow - reserveTokens`, and reports `null` when it declined. The threshold lives in
+the adapter rather than the runtime on purpose: estimating context tokens needs the engine's own
+accounting (provider usage where available, a heuristic otherwise), and a second copy of that
+arithmetic upstream would drift from it.
+
+Two guards are load-bearing. **Nothing is compacted while an approval is pending** — the horizon
+would move out from under the run that resumes later — and **a failed turn keeps its history**,
+because a compacted transcript cannot be diagnosed. A compaction failure never takes the turn down
+with it; the next turn boundary retries.
+
+After the turn rather than before it: the user never waits on a summarisation call to see their
+first token, and the assistant message that just landed carries the provider's own usage, which is
+the most accurate signal available. The `session:compacted` event rides the existing stream, so no
+client change was needed.
 
 ## 10. Steering and follow-up
 
@@ -430,6 +452,27 @@ reach the running harness. The transport writes a row to `agent_pending_message`
 loop claims it (atomically, marking it consumed) and replays it into the harness as
 `steer()` — interrupts the current turn — or `followUp()` — waits until the turn would otherwise
 stop. Rows are kept after `consumedAt` so the transcript can explain why the agent changed course.
+
+The claim marks rows consumed _before_ they are delivered, so anything the harness refuses is
+**released back** onto the queue — pi rejects `steer()` on an idle harness, which is exactly what
+happens when a turn finishes between the claim and the hand-off. A released message surfaces in the
+next turn rather than vanishing.
+
+### 10.1 Wake-up channel
+
+Polling alone means a steer waits up to one drain interval to be noticed. When the cache is Redis, a
+payload-free notification on `agent:pending:<sessionId>` tells the running turn to drain now
+(`apps/service/src/services/agent-pending-notifier.ts`).
+
+It is strictly an accelerator. The message is already durable in Postgres before the notification is
+published, so a dropped notification costs latency and nothing else — which is why the poller stays
+at its full rate and why the channel carries no payload. Any other cache provider gets a `null`
+notifier and behaves exactly as before.
+
+One subtlety in the drain loop: at most one drain runs at a time, but a notification arriving _after_
+the in-flight drain has already claimed its rows cannot simply be coalesced away, or the new message
+would wait for the next poll and the channel would buy nothing. Such a request sets a flag and the
+drain re-runs when it settles; teardown follows that chain to its end before disposing the engine.
 
 ## 11. Adding a second agent kind
 

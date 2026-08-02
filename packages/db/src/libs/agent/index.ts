@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull } from "drizzle-orm";
 
 import type { DB } from "../../index.ts";
 import {
@@ -403,6 +403,21 @@ export const claimAgentPendingMessages = async (db: DB, sessionId: string) => {
       createdAt: agentPendingMessages.createdAt,
     });
   return rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+};
+
+/**
+ * Puts claimed messages back on the queue.
+ *
+ * `claim` marks rows consumed before they are delivered, so an undeliverable message would
+ * otherwise be lost. `createdAt` is untouched, and the claim query orders by it, so released
+ * messages come back ahead of anything queued in the meantime — original order survives.
+ */
+export const releaseAgentPendingMessages = async (db: DB, ids: string[]) => {
+  if (ids.length === 0) return;
+  await db
+    .update(agentPendingMessages)
+    .set({ consumedAt: null })
+    .where(inArray(agentPendingMessages.id, ids));
 };
 
 export const peekAgentPendingMessages = async (db: DB, sessionId: string) =>

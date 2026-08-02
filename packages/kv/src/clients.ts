@@ -1,11 +1,12 @@
 import type { Keyv } from "keyv";
 
-import { isUrl } from "@chia/utils/is";
-
 import { createPostgresKv } from "./adapters/postgres.ts";
 import { createRedisKv } from "./adapters/redis.ts";
 import { createValkeyKv } from "./adapters/valkey.ts";
 import { env } from "./env.ts";
+import { resolveCacheProvider } from "./provider.ts";
+
+export { resolveCacheProvider, type CacheProvider } from "./provider.ts";
 
 let kv: Keyv | null = null;
 
@@ -14,7 +15,7 @@ export const createKeyv = () => {
     return kv;
   }
 
-  switch (env.CACHE_PROVIDER) {
+  switch (resolveCacheProvider()) {
     case "redis": {
       kv = createRedisKv();
       break;
@@ -25,40 +26,6 @@ export const createKeyv = () => {
     }
     case "postgres": {
       kv = createPostgresKv();
-      break;
-    }
-    case "auto": {
-      const protocol =
-        env.CACHE_URI &&
-        isUrl(env.CACHE_URI, {
-          allowedProtocols: [
-            "redis",
-            "valkey",
-            "rediss",
-            "valkeys",
-            "postgres",
-          ],
-        })
-          ? new URL(env.CACHE_URI).protocol.replace(":", "")
-          : null;
-      switch (protocol) {
-        case "rediss":
-        case "redis": {
-          kv = createRedisKv();
-          break;
-        }
-        case "valkeys":
-        case "valkey": {
-          kv = createValkeyKv();
-          break;
-        }
-        case "postgres": {
-          kv = createPostgresKv();
-          break;
-        }
-        default:
-          throw new Error(`Unsupported protocol: ${protocol}`);
-      }
       break;
     }
     default:

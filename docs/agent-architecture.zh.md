@@ -324,13 +324,31 @@ Provider 用的是 pi-ai 內建的 `vercelAIGatewayProvider()`，它以 Anthropi
 
 ## 9. Session 維護
 
-`compact` 與 `navigate`（rewind）建 engine handle 純粹是為了取用它的 session-tree 方法——它們的事件不屬於任何 turn，所以沒有人訂閱。兩者都會改動樹，所以只要 run 的 status 是 `running` 就一律拒絕。單純「run 還活著」不足以構成拒絕理由：park 在 message hook 上就是正常的閒置狀態。
+`compact` 與 `navigate`（rewind）用的是 **maintenance engine**（`AgentDefinition.createMaintenanceEngine`）：只帶 session 與 model，沒有 tools、skills、system prompt、approval gate 或事件訂閱。壓縮走 pi 自己的 `SUMMARIZATION_SYSTEM_PROMPT`，branch summary 走 `generateBranchSummary`，兩者都讀不到 agent 的 system prompt，所以那些東西建了也只是丟掉。兩者都會改動樹，所以只要 run 的 status 是 `running` 就一律拒絕。單純「run 還活著」不足以構成拒絕理由：park 在 message hook 上就是正常的閒置狀態。
 
 `navigate` 會回傳整份重建後的 transcript，因為換分支會讓 client 的視圖整份失效。
+
+### 9.1 自動壓縮
+
+除了手動的 `agent.sessions.compact`，`runTurn` 會在**每個 turn 結束時**呼叫 `compactIfNeeded()`——engine 自行用 pi 的 `estimateContextTokens` + `shouldCompact` 判斷是否超過 `contextWindow - reserveTokens`，沒超過就回 `null`。閾值刻意留在 adapter 而不是 runtime：token 估算要用 engine 自己的帳（有 provider usage 就用，沒有才退回啟發式），runtime 再算一份只會漂移。
+
+兩個守衛缺一不可：**有 approval 待決時不壓**（壓縮會把 horizon 移到之後才 resume 的 run 底下），**turn 失敗時不壓**（壓掉的 transcript 無法診斷）。壓縮失敗永遠不會拖垮 turn，下個 turn 邊界會再試。
+
+選在 turn 之後而非之前，是因為使用者不必等一次 summarization call 才看到第一個 token，而且剛落地的 assistant message 帶著 provider 回報的 usage，是最準的訊號。`session:compacted` 事件走既有的串流路徑，client 不需要任何改動。
 
 ## 10. Steering 與 follow-up
 
 `AgentHarness.steer()` 是方法而不是 callback，所以 turn 進行中經由 HTTP 抵達的訊息碰不到正在跑的 harness。Transport 會寫一列到 `agent_pending_message`；turn 的 drain 迴圈把它 claim 走（atomically，並標記 consumed），再重播進 harness：`steer()` 會打斷當前 turn，`followUp()` 則等到 turn 本來要停下時才插入。列在 `consumedAt` 之後仍保留，讓 transcript 能解釋 agent 為什麼改變方向。
+
+claim 是**先標記 consumed 再投遞**，所以 harness 拒收的訊息會被**放回佇列**——pi 在 idle 狀態會拒絕 `steer()`，而那正是 turn 在 claim 與投遞之間結束時會發生的事。放回去的訊息會出現在下一個 turn，而不是憑空消失。
+
+### 10.1 喚醒通道
+
+只靠輪詢的話，一則 steer 最差要等一個 drain interval 才被看到。當 cache 是 Redis 時，`agent:pending:<sessionId>` 上一個**不帶 payload** 的通知會叫正在跑的 turn 立刻 drain（`apps/service/src/services/agent-pending-notifier.ts`）。
+
+它純粹是加速層。訊息在通知發出前就已經持久化在 Postgres，所以掉一個通知只損失延遲、不損失資料——這也是輪詢維持原本頻率、以及通道不帶 payload 的理由。其他 cache provider 拿到的是 `null` notifier，行為與改動前完全相同。
+
+drain 迴圈有一個細節：同時間只有一次 drain，但**通知在 in-flight drain 已經 claim 之後才到達**時不能直接併掉，否則新訊息要等下一次輪詢，這個通道就白做了。這種請求會設一個旗標，drain 結束後自動補跑一輪；teardown 會跟著這條鏈走到底才 dispose engine。
 
 ## 11. 新增第二種 agent kind
 

@@ -14,6 +14,7 @@ import type {
   ToolTier,
 } from "@chia/agent-core";
 import {
+  createWritingMaintenanceEngine,
   createWritingTools,
   isWritingModelId,
   listWritingModels,
@@ -23,7 +24,6 @@ import {
   WRITING_SESSION_DEFAULTS,
   writingPolicy,
   writingPromptTemplates,
-  writingAgentRuntime as writingAgentEngineRuntime,
   writingSkills,
 } from "@chia/agent-writing";
 import { registerAgentRuntime } from "@chia/api/orpc/agent-runtime";
@@ -56,6 +56,7 @@ import {
 } from "../workflows/hooks/agent.hooks";
 
 import { createAgentContentPort } from "./agent-content.port";
+import { getAgentPendingNotifier } from "./agent-pending-notifier";
 
 /**
  * The **writing** agent runtime, registered under `agent_session.kind = "writing"`.
@@ -82,14 +83,17 @@ import { createAgentContentPort } from "./agent-content.port";
 // Helpers
 // ============================================
 
+const repoFor = (db: DB) =>
+  new PgSessionRepo(db, {
+    kind: WRITING_AGENT_KIND,
+    defaults: WRITING_SESSION_DEFAULTS,
+  });
+
 const dependenciesFor = (caller: AgentRuntimeCaller) => {
   const db = caller.context.db as DB;
   return {
     db,
-    repo: new PgSessionRepo(db, {
-      kind: WRITING_AGENT_KIND,
-      defaults: WRITING_SESSION_DEFAULTS,
-    }),
+    repo: repoFor(db),
     draft: new PgDraftStore(db),
     pending: new PgPendingMessageStore(db),
     content: createAgentContentPort({
@@ -178,10 +182,27 @@ const summaryOf = (row: {
 };
 
 /**
- * `compact` and `navigate` build an engine only to reach its session-tree methods; their events are
- * not part of any turn, so nothing subscribes to them.
+ * Opens a session plus the stripped-down handle for `compact` and `navigate`.
+ *
+ * These operations only walk the session tree, so they get a maintenance engine — no tools, no
+ * skills, no system prompt, no approval gate, and no event subscriptions, since their events belong
+ * to no turn and had to be discarded anyway. The draft store, pending-message store and content
+ * port are skipped for the same reason, which is why this reaches for `repoFor` rather than the
+ * full `dependenciesFor`.
  */
-const discardEvents = (): void => undefined;
+const openMaintenanceEngine = async (
+  caller: AgentRuntimeCaller,
+  sessionId: string,
+  row: Parameters<typeof settingsOf>[0]
+) => {
+  const session = await repoFor(caller.context.db as DB).openById(sessionId);
+  const engine = await createWritingMaintenanceEngine({
+    agentSessionId: sessionId,
+    session,
+    settings: settingsOf(row),
+  });
+  return { session, engine };
+};
 
 const replayOptions = {
   tierOf: writingPolicy.tierOf,
@@ -595,6 +616,17 @@ export const writingAgentRuntime: AgentRuntime = {
     if (!row) return false;
     const { pending } = dependenciesFor(caller);
     await pending.push(input.sessionId, input.queue ?? "steer", input.text);
+
+    /**
+     * Nudge the running turn, strictly after the row is durable — the other order would let a
+     * subscriber drain before the message exists and waste the wake-up. Failure is ignored on
+     * purpose: the message is already stored, so the worst case is the turn's next poll.
+     */
+    try {
+      await getAgentPendingNotifier()?.publish(input.sessionId);
+    } catch {
+      // Accelerator only.
+    }
     return true;
   },
 
@@ -633,19 +665,11 @@ export const writingAgentRuntime: AgentRuntime = {
     if (!row) return null;
     await assertNoTurnRunning(row.workflowRunId, "compact");
 
-    const { repo, draft, pending, content } = dependenciesFor(caller);
-    const session = await repo.openById(input.sessionId);
-    const engine = await writingAgentEngineRuntime.createEngine({
-      session,
-      settings: settingsOf(row),
-      agentSessionId: input.sessionId,
-      adminId: caller.adminId,
-      targetFeedId: row.targetFeedId ?? undefined,
-      content,
-      draft,
-      pending,
-      onEvent: discardEvents,
-    });
+    const { engine } = await openMaintenanceEngine(
+      caller,
+      input.sessionId,
+      row
+    );
 
     try {
       const result = await engine.compact(input.customInstructions);
@@ -660,19 +684,11 @@ export const writingAgentRuntime: AgentRuntime = {
     if (!row) return null;
     await assertNoTurnRunning(row.workflowRunId, "rewind");
 
-    const { repo, draft, pending, content } = dependenciesFor(caller);
-    const session = await repo.openById(input.sessionId);
-    const engine = await writingAgentEngineRuntime.createEngine({
-      session,
-      settings: settingsOf(row),
-      agentSessionId: input.sessionId,
-      adminId: caller.adminId,
-      targetFeedId: row.targetFeedId ?? undefined,
-      content,
-      draft,
-      pending,
-      onEvent: discardEvents,
-    });
+    const { session, engine } = await openMaintenanceEngine(
+      caller,
+      input.sessionId,
+      row
+    );
 
     try {
       const result = await engine.navigate(input.entryId, {

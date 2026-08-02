@@ -9,9 +9,13 @@ import type {
 import { createAgentRuntime } from "@chia/agent-runtime";
 import type {
   AgentDefinition,
+  AgentMaintenanceCreateOptions,
   AgentMaintenanceEngineHandle,
 } from "@chia/agent-runtime";
-import { createPiAgentEngine } from "@chia/agent-runtime/adapters/pi";
+import {
+  createPiAgentEngine,
+  createPiMaintenanceEngine,
+} from "@chia/agent-runtime/adapters/pi";
 import { Locale } from "@chia/db/types";
 
 import { resolveWritingModel, WRITING_AGENT_KIND } from "./models.ts";
@@ -93,9 +97,32 @@ export const createWritingEngine = (
   });
 };
 
+export interface CreateWritingMaintenanceEngineOptions extends AgentMaintenanceCreateOptions {
+  models?: Models;
+}
+
+/**
+ * Compaction and rewind for a writing session.
+ *
+ * The writing half collapses to one line here — resolving the model — because neither operation
+ * touches tools, skills, the draft, or the system prompt. That is the whole point of the separate
+ * factory: the previous path built all of them and then threw their events away.
+ */
+export const createWritingMaintenanceEngine = (
+  options: CreateWritingMaintenanceEngineOptions
+): Promise<AgentMaintenanceEngineHandle> =>
+  createPiMaintenanceEngine({
+    agentSessionId: options.agentSessionId,
+    session: options.session,
+    settings: options.settings,
+    model: resolveWritingModel(options.settings.modelId, options.models),
+    models: options.models,
+  });
+
 export const writingAgentDefinition = {
   kind: WRITING_AGENT_KIND,
   createEngine: createWritingEngine,
+  createMaintenanceEngine: createWritingMaintenanceEngine,
 } satisfies AgentDefinition<CreateWritingEngineOptions, WritingEngine>;
 
 /** Shared turn lifecycle plus the writing agent's pi engine factory. */
