@@ -91,7 +91,7 @@ export const AgentModelPicker = ({
       if (next.providerId === providerId && next.modelId === modelId) return;
 
       try {
-        await update.mutateAsync({ sessionId, ...next });
+        await update.mutateAsync({ sessionId, model: next });
         await queryClient.invalidateQueries({
           queryKey: orpc.agent.sessions.get.queryKey({ input: { sessionId } }),
         });

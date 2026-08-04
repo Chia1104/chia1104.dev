@@ -7,6 +7,7 @@ import {
 } from "@chia/agent-core";
 
 import {
+  assertWritingModel,
   DEFAULT_WRITING_MODEL,
   isWritingModel,
   listWritingModels,
@@ -109,6 +110,54 @@ describe("resolveWritingModel", () => {
         modelId: "gpt-5.2",
       })
     ).toThrow(UnknownAgentModelError);
+  });
+});
+
+/**
+ * The pre-persistence gate. Its whole reason to exist is that `isWritingModel` returns `true` for
+ * *any* id on a native provider, so policy alone would let a typo be stored and then fail on every
+ * later turn — inside the workflow step, where the operator never sees the cause.
+ */
+describe("assertWritingModel", () => {
+  it("accepts a pair that exists in the catalogue", () => {
+    expect(() => assertWritingModel(DEFAULT_WRITING_MODEL)).not.toThrow();
+    expect(() =>
+      assertWritingModel({
+        providerId: AGENT_PROVIDERS.openai,
+        modelId: "gpt-5.2",
+      })
+    ).not.toThrow();
+  });
+
+  it("rejects an id policy admits but the catalogue has never heard of", () => {
+    expect(() =>
+      assertWritingModel({
+        providerId: AGENT_PROVIDERS.openai,
+        modelId: "gpt-does-not-exist",
+      })
+    ).toThrow(UnknownAgentModelError);
+  });
+
+  it("rejects a vendor outside the gateway's admitted set", () => {
+    expect(() =>
+      assertWritingModel({
+        providerId: AGENT_PROVIDERS.gateway,
+        modelId: "google/gemini-3.1-pro",
+      })
+    ).toThrow(UnknownAgentModelError);
+  });
+
+  /**
+   * Validation runs against the catalogue, not a credential-bearing collection — otherwise whether
+   * a model "exists" would depend on which browser the operator happened to be using.
+   */
+  it("accepts a native model even with no key registered", () => {
+    expect(() =>
+      assertWritingModel({
+        providerId: AGENT_PROVIDERS.anthropic,
+        modelId: "claude-opus-5",
+      })
+    ).not.toThrow();
   });
 });
 

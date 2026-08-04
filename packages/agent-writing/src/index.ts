@@ -14,6 +14,7 @@ export {
   DEFAULT_WRITING_MODEL,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
+  assertWritingModel,
   isWritingModel,
   listWritingModels,
   resolveWritingModel,

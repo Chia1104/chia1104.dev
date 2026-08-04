@@ -38,6 +38,17 @@ export interface AgentStreamCursor {
   startIndex: number;
 }
 
+/**
+ * Model identity, mirroring `agentModelRefSchema`.
+ *
+ * Restated structurally rather than imported from `@chia/agent-core` so this package keeps no
+ * dependency on a provider SDK — the port is a contract, not an implementation.
+ */
+export interface AgentModelRef {
+  providerId: string;
+  modelId: string;
+}
+
 export interface AgentRuntime {
   listSessions(
     caller: AgentRuntimeCaller,
@@ -52,8 +63,7 @@ export interface AgentRuntime {
     input: {
       title?: string;
       targetFeedId?: number;
-      providerId?: string;
-      modelId?: string;
+      model?: AgentModelRef;
       thinkingLevel?: string;
       autoApprove?: string[];
       runtimeConfig?: Record<string, unknown>;
@@ -75,8 +85,7 @@ export interface AgentRuntime {
     input: {
       sessionId: string;
       title?: string;
-      providerId?: string;
-      modelId?: string;
+      model?: AgentModelRef;
       thinkingLevel?: string;
       activeToolNames?: string[] | null;
       autoApprove?: string[];
@@ -154,6 +163,16 @@ export interface AgentRuntime {
     caller: AgentRuntimeCaller,
     input: { sessionId: string }
   ): Promise<agentContracts.AgentDraftPayload | null>;
+
+  /**
+   * Checks a model selection before anything persists it.
+   *
+   * Returns a human-readable reason when the pair is unusable, or `null` when it is fine. A return
+   * value rather than a thrown error, because the caller is a middleware that has to turn this into
+   * a `BAD_REQUEST` — and because which models a kind admits is the kind's own policy, so the
+   * *reason* has to come from here rather than be reconstructed at the transport.
+   */
+  validateModel(ref: AgentModelRef): Promise<string | null>;
 
   /**
    * Takes the caller because `requiresApiKey` depends on which provider keys *they* have

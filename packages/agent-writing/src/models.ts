@@ -2,6 +2,7 @@ import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import {
   AGENT_PROVIDERS,
+  createAgentCatalog,
   createAgentModels,
   listModels,
   resolveModel,
@@ -62,6 +63,22 @@ export const resolveWritingModel = (
   ref: AgentModelRef,
   models: Models = createAgentModels()
 ): Model<Api> => resolveModel(ref, isWritingModel, models);
+
+/**
+ * Validates a selection without executing it. Throws `UnknownAgentModelError` if it fails.
+ *
+ * `isWritingModel` alone is not enough: it admits *any* id on a native provider, so a typo would
+ * persist happily and then fail on every subsequent turn, deep inside the workflow step where the
+ * operator cannot see why. Resolving against the full catalogue checks that the model exists at
+ * all — the one thing policy cannot know.
+ *
+ * Deliberately the catalogue rather than a credential-bearing collection: whether a model *exists*
+ * must not depend on which keys the caller happens to have registered, or the answer would change
+ * between browsers.
+ */
+export const assertWritingModel = (ref: AgentModelRef): void => {
+  resolveModel(ref, isWritingModel, createAgentCatalog());
+};
 
 export const listWritingModels = (
   options?: ListModelsOptions

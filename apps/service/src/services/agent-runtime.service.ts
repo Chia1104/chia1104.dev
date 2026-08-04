@@ -18,7 +18,7 @@ import type {
 import {
   createWritingMaintenanceEngine,
   createWritingTools,
-  isWritingModel,
+  assertWritingModel,
   listWritingModels,
   PgDraftStore,
   WRITING_AGENT_KIND,
@@ -371,14 +371,12 @@ export const writingAgentRuntime: AgentRuntime = {
   async createSession(caller, input) {
     const { repo, draft, content } = dependenciesFor(caller);
 
-    assertKnownModel(input);
-
     const session = await repo.create({
       userId: caller.userId,
       title: input.title,
       settings: {
-        providerId: input.providerId,
-        modelId: input.modelId,
+        providerId: input.model?.providerId,
+        modelId: input.model?.modelId,
         thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
         autoApprove: input.autoApprove as ToolTier[] | undefined,
       },
@@ -439,12 +437,10 @@ export const writingAgentRuntime: AgentRuntime = {
   async updateSettings(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    assertKnownModel(input);
-
     await writeSessionSettings(caller.context.db as DB, input.sessionId, {
       title: input.title,
-      providerId: input.providerId,
-      modelId: input.modelId,
+      providerId: input.model?.providerId,
+      modelId: input.model?.modelId,
       thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
       activeToolNames: input.activeToolNames,
       autoApprove: input.autoApprove as ToolTier[] | undefined,
@@ -742,6 +738,27 @@ export const writingAgentRuntime: AgentRuntime = {
     return (await draft.get(input.sessionId)) as never;
   },
 
+  /**
+   * The pre-persistence check the transport calls.
+   *
+   * Returns a reason instead of throwing because the caller is a middleware turning this into a
+   * `BAD_REQUEST`. `assertWritingModel` checks policy *and* catalogue membership — the latter is
+   * what stops a typo on a native provider from being stored and then failing on every subsequent
+   * turn, deep in the workflow step where the operator cannot see why.
+   */
+  validateModel(ref) {
+    try {
+      assertWritingModel(ref);
+      return Promise.resolve(null);
+    } catch (error) {
+      return Promise.resolve(
+        error instanceof UnknownAgentModelError
+          ? error.message
+          : `Could not validate model "${ref.modelId}".`
+      );
+    }
+  },
+
   listModels(caller) {
     /**
      * Which BYOK providers this caller has a key for. Read from the cookie rather than decrypted:
@@ -800,30 +817,6 @@ const assertNoTurnRunning = async (
     // Re-throw our own refusal; swallow lookup failures for runs that no longer resolve.
     if (error instanceof Error && error.message.startsWith("Cannot "))
       throw error;
-  }
-};
-
-/**
- * Validates a client-supplied model selection.
- *
- * The pair is checked as a unit, and a `modelId` without a `providerId` is refused rather than
- * defaulted: the same model exists under several providers with different ids and different payers,
- * so there is no safe guess. `isWritingModel` is the same predicate the turn resolves through, so a
- * selection accepted here cannot fail policy later.
- */
-const assertKnownModel = (input: {
-  providerId?: string;
-  modelId?: string;
-}): void => {
-  if (!input.modelId && !input.providerId) return;
-  if (!input.modelId || !input.providerId) {
-    throw new Error(
-      "Both providerId and modelId are required to select a model."
-    );
-  }
-  const ref = { providerId: input.providerId, modelId: input.modelId };
-  if (!isWritingModel(ref)) {
-    throw new UnknownAgentModelError(ref);
   }
 };
 
