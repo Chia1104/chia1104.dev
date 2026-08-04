@@ -136,6 +136,13 @@ export const createAgentSessionContract = oc
       title: z.string().max(200).optional(),
       /** Seeds the draft buffer from this post so the agent edits rather than starts fresh. */
       targetFeedId: z.number().int().optional(),
+      /**
+       * Model identity is the `(providerId, modelId)` pair — the same model carries different ids
+       * under different providers. Omitting `providerId` while setting `modelId` is rejected by the
+       * runtime rather than defaulted, because guessing the provider would silently pick whose
+       * account pays.
+       */
+      providerId: z.string().optional(),
       modelId: z.string().optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       autoApprove: z.array(toolTierSchema).optional(),
@@ -174,6 +181,8 @@ export const updateAgentSessionSettingsContract = oc
       kind: z.string().optional(),
       sessionId: z.string(),
       title: z.string().max(200).optional(),
+      /** See `createAgentSessionContract`: the pair is the identity. */
+      providerId: z.string().optional(),
       modelId: z.string().optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       activeToolNames: z.array(z.string()).nullable().optional(),
@@ -413,6 +422,12 @@ export const listAgentModelsContract = oc
         contextWindow: z.number(),
         supportsReasoning: z.boolean(),
         supportsImageInput: z.boolean(),
+        /**
+         * True when the provider runs on a caller-supplied key the caller has not registered yet.
+         * Such models are still listed — the picker offers them and prompts for a key, rather than
+         * hiding an option the operator could have had.
+         */
+        requiresApiKey: z.boolean(),
       })
     )
   );

@@ -1,5 +1,6 @@
 import type { Models } from "@earendil-works/pi-ai";
 
+import { createAgentModels } from "@chia/agent-core";
 import type {
   AgentSessionSettings,
   AgentWireEvent,
@@ -58,6 +59,7 @@ export const createWritingEngine = (
   options: CreateWritingEngineOptions
 ): Promise<WritingEngine> => {
   const defaultLocale = options.defaultLocale ?? Locale.zhTW;
+  const models = options.models ?? createAgentModels();
 
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
@@ -70,7 +72,8 @@ export const createWritingEngine = (
   return createPiAgentEngine<WritingToolContext>({
     session: options.session,
     settings: options.settings,
-    model: resolveWritingModel(options.settings.modelId, options.models),
+    model: resolveWritingModel(options.settings, models),
+    models,
     agentSessionId: options.agentSessionId,
     tools: createWritingTools(),
     toolContext,
@@ -93,7 +96,6 @@ export const createWritingEngine = (
     preAuthorizedToolNames: options.preAuthorizedToolNames,
     pending: options.pending,
     onEvent: options.onEvent,
-    models: options.models,
   });
 };
 
@@ -110,14 +112,16 @@ export interface CreateWritingMaintenanceEngineOptions extends AgentMaintenanceC
  */
 export const createWritingMaintenanceEngine = (
   options: CreateWritingMaintenanceEngineOptions
-): Promise<AgentMaintenanceEngineHandle> =>
-  createPiMaintenanceEngine({
+): Promise<AgentMaintenanceEngineHandle> => {
+  const models = options.models ?? createAgentModels();
+  return createPiMaintenanceEngine({
     agentSessionId: options.agentSessionId,
     session: options.session,
     settings: options.settings,
-    model: resolveWritingModel(options.settings.modelId, options.models),
-    models: options.models,
+    model: resolveWritingModel(options.settings, models),
+    models,
   });
+};
 
 export const writingAgentDefinition = {
   kind: WRITING_AGENT_KIND,

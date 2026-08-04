@@ -11,14 +11,12 @@
 export * from "./types.ts";
 export * from "./ports.ts";
 export {
-  DEFAULT_WRITING_MODEL_ID,
+  DEFAULT_WRITING_MODEL,
   WRITING_AGENT_KIND,
-  WRITING_MODEL_IDS,
   WRITING_SESSION_DEFAULTS,
-  isWritingModelId,
+  isWritingModel,
   listWritingModels,
   resolveWritingModel,
-  type WritingModelId,
 } from "./models.ts";
 export { writingPolicy } from "./policy.ts";
 export {

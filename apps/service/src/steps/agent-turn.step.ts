@@ -1,6 +1,10 @@
 import { FatalError, getWritable } from "workflow";
 
-import { PgPendingMessageStore, PgSessionRepo } from "@chia/agent-core";
+import {
+  createAgentModels,
+  PgPendingMessageStore,
+  PgSessionRepo,
+} from "@chia/agent-core";
 import type { AgentWireEvent, ThinkingLevel, ToolTier } from "@chia/agent-core";
 import {
   PgDraftStore,
@@ -19,7 +23,9 @@ import {
 } from "@chia/db/repos/agent";
 
 import { createAgentContentPort } from "../services/agent-content.port";
+import { decryptAgentCredentials } from "../services/agent-credentials";
 import { getAgentPendingNotifier } from "../services/agent-pending-notifier";
+import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
  * One agent turn, as a durable step.
@@ -58,6 +64,11 @@ export interface AgentTurnRequest {
   text: string;
   template?: { name: string; args?: string[] };
   preAuthorizeToolNames?: string[];
+  /**
+   * The operator's own provider keys, still encrypted — see `services/agent-credentials.ts`.
+   * Absent means the turn runs on the house gateway account.
+   */
+  credentials?: EncryptedAgentCredentials;
 }
 
 export interface AgentApprovalRequestSnapshot {
@@ -154,9 +165,22 @@ async function runWritingAgentTurn(
 
   const writer = createEventWriter();
 
+  /**
+   * Built here, per turn, because it closes over the operator's own keys.
+   *
+   * A `Models` carrying BYOK credentials cannot be a process-wide singleton — it belongs to whoever
+   * sent this message. Providers with no credential are simply not registered, so choosing an
+   * OpenAI model without an OpenAI key fails as "unknown model" rather than quietly billing the
+   * house gateway account.
+   */
+  const models = createAgentModels(
+    decryptAgentCredentials(request.credentials)
+  );
+
   return await writingAgentRuntime.runTurn({
     createOptions: {
       session,
+      models,
       settings: {
         providerId: row.providerId,
         modelId: row.modelId,

@@ -52,6 +52,7 @@ export interface AgentRuntime {
     input: {
       title?: string;
       targetFeedId?: number;
+      providerId?: string;
       modelId?: string;
       thinkingLevel?: string;
       autoApprove?: string[];
@@ -74,6 +75,7 @@ export interface AgentRuntime {
     input: {
       sessionId: string;
       title?: string;
+      providerId?: string;
       modelId?: string;
       thinkingLevel?: string;
       activeToolNames?: string[] | null;
@@ -153,7 +155,11 @@ export interface AgentRuntime {
     input: { sessionId: string }
   ): Promise<agentContracts.AgentDraftPayload | null>;
 
-  listModels(): Promise<
+  /**
+   * Takes the caller because `requiresApiKey` depends on which provider keys *they* have
+   * registered. The catalogue itself is caller-independent.
+   */
+  listModels(caller: AgentRuntimeCaller): Promise<
     {
       providerId: string;
       modelId: string;
@@ -161,6 +167,7 @@ export interface AgentRuntime {
       contextWindow: number;
       supportsReasoning: boolean;
       supportsImageInput: boolean;
+      requiresApiKey: boolean;
     }[]
   >;
 

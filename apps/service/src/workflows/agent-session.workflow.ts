@@ -13,7 +13,9 @@ import {
   agentApprovalToken,
   agentMessageHook,
   agentMessageToken,
+  encryptedAgentCredentialsSchema,
 } from "./hooks/agent.hooks";
+import type { EncryptedAgentCredentials } from "./hooks/agent.hooks";
 
 /**
  * One durable run per agent session.
@@ -43,6 +45,7 @@ export const requestSchema = z.object({
       .object({ name: z.string(), args: z.array(z.string()).optional() })
       .optional(),
     preAuthorizeToolNames: z.array(z.string()).optional(),
+    credentials: encryptedAgentCredentialsSchema.optional(),
   }),
 });
 
@@ -64,12 +67,25 @@ export const agentSessionWorkflow = async (request: Request) => {
   let pending: typeof firstMessage | null = firstMessage;
   let turns = 0;
 
+  /**
+   * The most recent credentials any request handed us.
+   *
+   * The run outlives the request that started it, and the turns that follow an approval are
+   * synthesised below rather than sent by anyone — so there is no cookie to read at the moment they
+   * execute. Holding the last known ciphertext here is what lets those turns reach the operator's
+   * own provider account. Each new prompt or approval overwrites it, so a rotated key takes effect
+   * on the next interaction rather than being pinned for the life of the run.
+   */
+  let credentials: EncryptedAgentCredentials | undefined =
+    firstMessage.credentials;
+
   while (turns < MAX_TURNS_PER_RUN) {
     if (pending === null) {
       // Durable pause: no compute is consumed while waiting for the operator.
       const next = await messages;
       if (next.text === AGENT_END_SENTINEL) break;
       pending = next;
+      credentials = next.credentials ?? credentials;
     }
 
     turns += 1;
@@ -81,6 +97,7 @@ export const agentSessionWorkflow = async (request: Request) => {
       text: pending.text,
       template: pending.template,
       preAuthorizeToolNames: pending.preAuthorizeToolNames,
+      credentials,
     });
     pending = null;
 
@@ -101,6 +118,7 @@ export const agentSessionWorkflow = async (request: Request) => {
       const decision = await agentApprovalHook.create({
         token: agentApprovalToken(sessionId, gated.toolCallId),
       });
+      credentials = decision.credentials ?? credentials;
 
       if (!decision.approved) {
         // Rejected: tell the agent why and let it respond, rather than silently stopping.
@@ -112,6 +130,7 @@ export const agentSessionWorkflow = async (request: Request) => {
             `The operator declined \`${gated.toolName}\`.` +
             (decision.comment ? ` They said: ${decision.comment}` : "") +
             " Do not retry it. Acknowledge and wait for further instructions.",
+          credentials,
         });
         break;
       }
@@ -127,6 +146,7 @@ export const agentSessionWorkflow = async (request: Request) => {
           " Run it now.",
         // The approval is already persisted, so the gate lets this call through.
         preAuthorizeToolNames: [gated.toolName],
+        credentials,
       });
     }
   }

@@ -279,7 +279,9 @@ export const getAgentDraftRoute = contractOS.agent.sessions.draft
 
 export const listAgentModelsRoute = contractOS.agent.models.list
   .use(adminGuard())
-  .handler(async (opts) => getAgentRuntime(opts.input.kind).listModels());
+  .handler(async (opts) =>
+    getAgentRuntime(opts.input.kind).listModels(callerOf(opts))
+  );
 
 export const listAgentCapabilitiesRoute = contractOS.agent.capabilities.list
   .use(adminGuard())
