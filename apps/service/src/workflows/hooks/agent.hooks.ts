@@ -17,6 +17,25 @@ import * as z from "zod";
  * — `defineHook` and zod are both pure.
  */
 
+/**
+ * Caller-supplied provider keys, **still encrypted**.
+ *
+ * Every value here is the RSA ciphertext produced by `encodeApiKey` and stored in the operator's
+ * cookie; it is decrypted only inside the turn step, with `AI_AUTH_PRIVATE_KEY`. Keeping the
+ * ciphertext as the transport form matters because everything crossing this boundary is journaled
+ * durably by the workflow backend — plaintext here would be a plaintext secret at rest.
+ *
+ * Absent means "no bring-your-own key": the turn runs on the house gateway account.
+ */
+export const encryptedAgentCredentialsSchema = z.object({
+  openai: z.string().optional(),
+  anthropic: z.string().optional(),
+});
+
+export type EncryptedAgentCredentials = z.infer<
+  typeof encryptedAgentCredentialsSchema
+>;
+
 export const agentMessageHook = defineHook({
   schema: z.object({
     /** `"/end"` closes the session's run. */
@@ -26,6 +45,7 @@ export const agentMessageHook = defineHook({
       .optional(),
     /** Tool names pre-authorised for this turn only. */
     preAuthorizeToolNames: z.array(z.string()).optional(),
+    credentials: encryptedAgentCredentialsSchema.optional(),
   }),
 });
 
@@ -33,6 +53,13 @@ export const agentApprovalHook = defineHook({
   schema: z.object({
     approved: z.boolean(),
     comment: z.string().optional(),
+    /**
+     * Refreshed on the approval too, because the turns that follow an approval are synthesised by
+     * the workflow itself and have no request of their own to read a cookie from. An approval can
+     * land days after the prompt that triggered it, by which point the operator may well have
+     * rotated their key.
+     */
+    credentials: encryptedAgentCredentialsSchema.optional(),
   }),
 });
 

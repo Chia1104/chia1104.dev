@@ -13,7 +13,9 @@ import {
   agentApprovalToken,
   agentMessageHook,
   agentMessageToken,
+  encryptedAgentCredentialsSchema,
 } from "./hooks/agent.hooks";
+import type { EncryptedAgentCredentials } from "./hooks/agent.hooks";
 
 /**
  * One durable run per agent session.
@@ -43,6 +45,7 @@ export const requestSchema = z.object({
       .object({ name: z.string(), args: z.array(z.string()).optional() })
       .optional(),
     preAuthorizeToolNames: z.array(z.string()).optional(),
+    credentials: encryptedAgentCredentialsSchema.optional(),
   }),
 });
 
@@ -64,12 +67,28 @@ export const agentSessionWorkflow = async (request: Request) => {
   let pending: typeof firstMessage | null = firstMessage;
   let turns = 0;
 
+  /**
+   * The credentials the *most recent* request carried.
+   *
+   * The run outlives the request that started it, and the turns that follow an approval are
+   * synthesised below rather than sent by anyone — so there is no cookie to read at the moment they
+   * execute. Holding the last received ciphertext here is what lets those turns reach the
+   * operator's own provider account.
+   *
+   * Overwritten wholesale, never merged: an absent payload means the operator no longer has that
+   * key registered, and treating it as "keep whatever we had" would let a revoked key keep working
+   * for the life of the run. Each prompt and each approval restates the full set.
+   */
+  let credentials: EncryptedAgentCredentials | undefined =
+    firstMessage.credentials;
+
   while (turns < MAX_TURNS_PER_RUN) {
     if (pending === null) {
       // Durable pause: no compute is consumed while waiting for the operator.
       const next = await messages;
       if (next.text === AGENT_END_SENTINEL) break;
       pending = next;
+      credentials = next.credentials;
     }
 
     turns += 1;
@@ -81,6 +100,7 @@ export const agentSessionWorkflow = async (request: Request) => {
       text: pending.text,
       template: pending.template,
       preAuthorizeToolNames: pending.preAuthorizeToolNames,
+      credentials,
     });
     pending = null;
 
@@ -101,6 +121,7 @@ export const agentSessionWorkflow = async (request: Request) => {
       const decision = await agentApprovalHook.create({
         token: agentApprovalToken(sessionId, gated.toolCallId),
       });
+      credentials = decision.credentials;
 
       if (!decision.approved) {
         // Rejected: tell the agent why and let it respond, rather than silently stopping.
@@ -112,6 +133,7 @@ export const agentSessionWorkflow = async (request: Request) => {
             `The operator declined \`${gated.toolName}\`.` +
             (decision.comment ? ` They said: ${decision.comment}` : "") +
             " Do not retry it. Acknowledge and wait for further instructions.",
+          credentials,
         });
         break;
       }
@@ -127,6 +149,7 @@ export const agentSessionWorkflow = async (request: Request) => {
           " Run it now.",
         // The approval is already persisted, so the gate lets this call through.
         preAuthorizeToolNames: [gated.toolName],
+        credentials,
       });
     }
   }

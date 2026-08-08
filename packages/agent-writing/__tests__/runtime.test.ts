@@ -48,9 +48,15 @@ interface Fixture {
 const build = async (
   settings: Partial<AgentSessionSettings> = {}
 ): Promise<Fixture> => {
+  /**
+   * The faux provider stands in for whichever provider the settings name, so a turn can be driven
+   * through a non-gateway provider without a second scripting harness.
+   */
+  const providerId = settings.providerId ?? "vercel-ai-gateway";
+  const modelId = settings.modelId ?? "anthropic/claude-sonnet-5";
   const faux = fauxProvider({
-    provider: "vercel-ai-gateway",
-    models: [{ id: "anthropic/claude-sonnet-5" }],
+    provider: providerId,
+    models: [{ id: modelId }],
   });
   const models = createModels();
   models.setProvider(faux.provider);
@@ -74,8 +80,8 @@ const build = async (
   const built = await createWritingEngine({
     session,
     settings: {
-      providerId: "vercel-ai-gateway",
-      modelId: "anthropic/claude-sonnet-5",
+      providerId,
+      modelId,
       thinkingLevel: "off",
       activeToolNames: null,
       autoApprove: [],
@@ -139,6 +145,29 @@ describe("createWritingEngine", () => {
       text: "There is already a post about TypeScript.",
       streaming: false,
     });
+  });
+
+  /**
+   * `settings.providerId` was persisted but never read: model resolution hard-coded the gateway, so
+   * a session pointing at any other provider silently ran on the gateway anyway. This pins that it
+   * is now load-bearing — the turn only completes if the engine resolved against the *named*
+   * provider, since that is the only one the faux collection registers.
+   */
+  it("runs a turn against the provider the settings name", async () => {
+    const native = await build({
+      providerId: "openai",
+      modelId: "gpt-5.2",
+    });
+
+    native.setResponses([fauxAssistantMessage("Answered over OpenAI.")]);
+    await native.engine.prompt("Who is answering?");
+
+    const view = foldEvents(native.events);
+    expect(
+      view.items.filter((item) => item.kind === "assistant").at(-1)
+    ).toMatchObject({ text: "Answered over OpenAI.", streaming: false });
+
+    native.dispose();
   });
 
   it("writes the draft buffer and never touches published content", async () => {

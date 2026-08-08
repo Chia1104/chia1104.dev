@@ -29,6 +29,7 @@ import {
 } from "./agent-chat";
 import type { PendingApproval } from "./agent-chat";
 import { AgentDraftPreview } from "./agent-draft-preview";
+import { AgentModelPicker } from "./agent-model-picker";
 import { AgentTranscript } from "./agent-transcript";
 
 type AgentSessionDetail = RouterOutputs["agent"]["sessions"]["get"];
@@ -236,11 +237,13 @@ const AgentSessionContent = ({
           <Card.Title className="truncate">
             {detail.session.title || "Untitled session"}
           </Card.Title>
-          <Card.Description className="truncate">
-            {detail.settings?.modelId ||
-              detail.session.modelId ||
-              "Writing agent"}
-          </Card.Description>
+          <AgentModelPicker
+            kind={detail.session.kind}
+            modelId={detail.settings?.modelId ?? undefined}
+            onChanged={onSessionChanged}
+            providerId={detail.settings?.providerId ?? undefined}
+            sessionId={sessionId}
+          />
         </div>
         <Chip className="ml-auto" color={meta.color} size="sm" variant="soft">
           <Chip.Label>{meta.label}</Chip.Label>
