@@ -41,8 +41,8 @@ catalog:
 
 catalogs:
   agent:
-    "@earendil-works/pi-agent-core": 0.84.1
-    "@earendil-works/pi-ai": 0.84.1
+    "@earendil-works/pi-agent-core": 0.83.0
+    "@earendil-works/pi-ai": 0.83.0
     typebox: 1.3.11
   agent-client:
     "@tanstack/ai": 0.43.1
