@@ -1,5 +1,3 @@
-import { execSync } from "child_process";
-
 import type { S3Client } from "bun";
 
 const PG_HOST = Bun.env.PGHOST || "localhost";
@@ -15,6 +13,7 @@ const R2_BUCKET_NAME = Bun.env.R2_BUCKET_NAME || "backups";
 
 const BACKUP_PREFIX = "postgres-backup-";
 const RETENTION_DAYS = 7;
+const PART_SIZE = 8 * 1024 * 1024;
 
 async function backupPostgres() {
   try {
@@ -22,21 +21,6 @@ async function backupPostgres() {
 
     const timestamp = new Date().valueOf();
     const backupFileName = `${BACKUP_PREFIX}${timestamp}.sql.gz`;
-
-    const pgDumpCmd = `pg_dump -h ${PG_HOST} -p ${PG_PORT} -U ${PG_USER} -d ${PG_DATABASE} | gzip`;
-
-    console.log("Running pg_dump...");
-
-    const backupData = execSync(pgDumpCmd, {
-      encoding: "buffer",
-      env: { ...process.env, PGPASSWORD: PG_PASSWORD },
-    });
-
-    console.log(
-      `Backup size: ${(backupData.length / 1024 / 1024).toFixed(2)} MB`
-    );
-
-    console.log(`Uploading to R2: ${backupFileName}`);
 
     const s3Client = new Bun.S3Client({
       accessKeyId: R2_ACCESS_KEY_ID,
@@ -46,9 +30,80 @@ async function backupPostgres() {
       region: "auto",
     });
 
-    await s3Client.write(backupFileName, backupData);
+    console.log(`Running pg_dump, streaming to R2: ${backupFileName}`);
 
-    console.log(`Backup succeeded: ${backupFileName}`);
+    const dump = Bun.spawn(
+      [
+        "pg_dump",
+        "-h",
+        PG_HOST,
+        "-p",
+        PG_PORT,
+        "-U",
+        PG_USER,
+        "-d",
+        PG_DATABASE,
+      ],
+      {
+        env: { ...process.env, PGPASSWORD: PG_PASSWORD },
+        stdout: "pipe",
+        stderr: "pipe",
+      }
+    );
+
+    const gzip = Bun.spawn(["gzip"], {
+      stdin: dump.stdout,
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+
+    const writer = s3Client.file(backupFileName).writer({
+      retry: 3,
+      queueSize: 4,
+      partSize: PART_SIZE,
+      type: "application/gzip",
+    });
+
+    let uploadedBytes = 0;
+    let pendingBytes = 0;
+
+    try {
+      for await (const chunk of gzip.stdout) {
+        writer.write(chunk);
+        uploadedBytes += chunk.byteLength;
+        pendingBytes += chunk.byteLength;
+        if (pendingBytes >= PART_SIZE) {
+          await writer.flush();
+          pendingBytes = 0;
+        }
+      }
+      const [dumpExitCode, gzipExitCode] = await Promise.all([
+        dump.exited,
+        gzip.exited,
+      ]);
+
+      if (dumpExitCode !== 0) {
+        const stderr = await new Response(dump.stderr).text();
+        throw new Error(`pg_dump exited with ${dumpExitCode}: ${stderr}`);
+      }
+
+      if (gzipExitCode !== 0) {
+        const stderr = await new Response(gzip.stderr).text();
+        throw new Error(`gzip exited with ${gzipExitCode}: ${stderr}`);
+      }
+
+      await writer.end();
+    } catch (error) {
+      dump.kill();
+      gzip.kill();
+      const cause = error instanceof Error ? error : new Error(String(error));
+      await writer.end(cause);
+      throw cause;
+    }
+
+    console.log(
+      `Backup succeeded: ${backupFileName} (${(uploadedBytes / 1024 / 1024).toFixed(2)} MB)`
+    );
 
     await cleanupOldBackups(s3Client);
 
