@@ -12,7 +12,6 @@ export default defineConfig({
     "/**": "./src/server.ts",
   },
   traceDeps: [
-    "jsdom",
     "@workflow-worlds/redis",
     "@workflow/world-postgres",
     "workflow",

@@ -1,4 +1,5 @@
 import { HTTPError } from "ky";
+import { parse as parseHTML } from "node-html-parser";
 
 import { isUrl } from "@chia/utils/is";
 import request from "@chia/utils/request";
@@ -48,8 +49,14 @@ export const linkPreviewRoute = contractOS.toolings["link-preview"]
       throw opts.errors.INTERNAL_SERVER_ERROR();
     }
 
-    const JSDOM = await import("jsdom").then((m) => m.JSDOM);
-    const { document } = new JSDOM(html).window;
+    /**
+     * A parser, not a DOM.
+     *
+     * This used to build a whole `JSDOM` window. Importing jsdom costs ~110MB RSS that is never
+     * released — measured against a plain bun runtime — and the four `querySelector` calls below
+     * are the entire use for it. `node-html-parser` answers the same selectors for a couple of MB.
+     */
+    const document = parseHTML(html);
 
     const preview: LinkPreview = {
       title: document.querySelector("title")?.textContent,

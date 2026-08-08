@@ -202,8 +202,8 @@
     "drizzle-orm": "catalog:drizzle",
     "github-slugger": "^2.0.0",
     "graphql-request": "catalog:",
-    "jsdom": "^30.0.1",
     "ky": "catalog:",
+    "node-html-parser": "^9.0.1",
     "resend": "^6.18.1",
     "server-only": "catalog:",
     "superjson": "catalog:",
@@ -212,7 +212,6 @@
   "devDependencies": {
     "@algolia/client-common": "^5.56.0",
     "@chiastack/tsconfig": "catalog:chiastack",
-    "@types/jsdom": "^30.0.0",
     "typescript": "catalog:"
   }
 }
