@@ -14,6 +14,7 @@ export {
   type AgentDefinition,
   type AgentEngineCreateOptions,
   type AgentEngineHandle,
+  type AgentMaintenanceCreateOptions,
   type AgentMaintenanceEngineHandle,
   type AgentNavigationOptions,
   type AgentNavigationResult,

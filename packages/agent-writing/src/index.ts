@@ -23,9 +23,11 @@ export {
 export { writingPolicy } from "./policy.ts";
 export {
   createWritingEngine,
+  createWritingMaintenanceEngine,
   writingAgentDefinition,
   writingAgentRuntime,
   type CreateWritingEngineOptions,
+  type CreateWritingMaintenanceEngineOptions,
   type WritingEngine,
 } from "./runtime.ts";
 export {

@@ -35,6 +35,7 @@
     "@orpc/openapi": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@orpc/zod": "catalog:orpc",
+    "@redis/client": "^5.12.1",
     "@t3-oss/env-core": "catalog:",
     "@workflow-worlds/redis": "^0.2.2",
     "@workflow/world-postgres": "4.3.1",
