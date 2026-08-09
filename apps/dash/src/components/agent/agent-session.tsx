@@ -136,7 +136,6 @@ const AgentSessionContent = ({
     sendMessage,
     stop,
   } = useChat({
-    id: sessionId,
     threadId: sessionId,
     fetcher,
     initialMessages,

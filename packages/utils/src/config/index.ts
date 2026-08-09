@@ -3,6 +3,9 @@ import { Service } from "../schema/index.ts";
 
 import { serviceEnv } from "./env.ts";
 
+const isServerRuntime = () =>
+  typeof (globalThis as { window?: unknown }).window === "undefined";
+
 const getInternalEnv = () => {
   if (process.env.ENV || process.env.APP_ENV) {
     return process.env.ENV || process.env.APP_ENV;
@@ -98,7 +101,7 @@ export const getBaseUrl = (options?: {
     baseUrl = `http://localhost:${process.env.PORT ?? 3000}`,
     useBaseUrl,
   } = options;
-  if (typeof window !== "undefined" && !isServer) {
+  if (!isServerRuntime() && !isServer) {
     return "";
   }
 
@@ -169,7 +172,7 @@ export const getServiceEndPoint = (
   env?: string,
   options?: GetServiceEndPointOptions
 ) => {
-  const isServer = typeof window === "undefined";
+  const isServer = isServerRuntime();
   const {
     proxyEndpoint = process.env.NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT,
     version = "v1",
@@ -293,7 +296,7 @@ export const withServiceEndpoint = <TService extends Service>(
   service: TService,
   options?: WithServiceEndpointOptions
 ) => {
-  const isServer = typeof window === "undefined";
+  const isServer = isServerRuntime();
   const {
     isInternal,
     // eslint-disable-next-line @typescript-eslint/no-deprecated

@@ -39,7 +39,6 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
-    viewTransition: true,
     authInterrupts: true,
     useTypeScriptCli: true,
   },
