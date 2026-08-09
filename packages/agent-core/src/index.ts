@@ -18,12 +18,20 @@
 export * from "./types.ts";
 export * from "./ports.ts";
 export {
-  AGENT_PROVIDER_ID,
+  AGENT_PROVIDERS,
+  BYOK_PROVIDER_IDS,
   UnknownAgentModelError,
-  getAgentModels,
+  createAgentCatalog,
+  createAgentModels,
+  isByokProviderId,
   listModels,
   resolveModel,
+  type AgentCredentials,
   type AgentModelInfo,
+  type AgentModelPredicate,
+  type AgentModelRef,
+  type ByokProviderId,
+  type ListModelsOptions,
 } from "./models.ts";
 export {
   agentWireEventSchema,

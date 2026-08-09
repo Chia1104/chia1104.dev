@@ -9,14 +9,12 @@ import type {
   Session,
   SessionTreeEntry,
   Skill,
+  ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
+import { clampThinkingLevel } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
-import {
-  createEventMapper,
-  createToolCallGate,
-  getAgentModels,
-} from "@chia/agent-core";
+import { createEventMapper, createToolCallGate } from "@chia/agent-core";
 import type {
   AgentPolicy,
   AgentSessionSettings,
@@ -40,6 +38,14 @@ export interface CreatePiAgentEngineOptions<
   settings: AgentSessionSettings;
   /** Resolved model. Kinds own their own allowlist — see `resolveModel`. */
   model: Model<Api>;
+  /**
+   * The collection `model` was resolved from.
+   *
+   * Required, and required to be the *same* instance: `Models` owns credential resolution, so a
+   * model resolved from a caller's BYOK collection but streamed through a different one would be
+   * billed to whatever key that other collection happens to carry.
+   */
+  models: Models;
   tools: AgentTool<TContext>[];
   /** Static context or a per-turn provider. pi snapshots it at turn start. */
   toolContext: TContext | (() => TContext | Promise<TContext>);
@@ -54,7 +60,6 @@ export interface CreatePiAgentEngineOptions<
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
   pending?: PendingMessageStore;
-  models?: Models;
 }
 
 export interface PiAgentEngineHandle extends AgentMaintenanceEngineHandle {
@@ -90,6 +95,19 @@ export const shouldCompactBranch = (
   return shouldCompact(tokens, contextWindow, DEFAULT_COMPACTION_SETTINGS);
 };
 
+/**
+ * Clamps a session's thinking level to what the resolved model actually supports.
+ *
+ * Sessions persist a thinking level as a bare string, and the model is chosen independently of it,
+ * so switching a session from Claude to GPT (or to a model with no reasoning at all) can leave a
+ * level the new model cannot honour. pi-ai knows each model's supported levels, so the arithmetic
+ * belongs to it rather than to a table here that would drift from the catalogue.
+ */
+const clampSettingsThinkingLevel = (
+  model: Model<Api>,
+  settings: AgentSessionSettings
+): ThinkingLevel => clampThinkingLevel(model, settings.thinkingLevel);
+
 /** Shared by both handles so a single threshold governs turn and maintenance paths alike. */
 const compactIfNeededWith =
   (
@@ -112,8 +130,7 @@ const compactIfNeededWith =
 export const createPiAgentEngine = async <TContext extends object>(
   options: CreatePiAgentEngineOptions<TContext>
 ): Promise<PiAgentEngineHandle> => {
-  const models = options.models ?? getAgentModels();
-  const { policy } = options;
+  const { models, policy } = options;
   const prompt = options.systemPrompt;
   const systemPrompt =
     typeof prompt === "string" ? prompt : async () => await prompt();
@@ -129,7 +146,7 @@ export const createPiAgentEngine = async <TContext extends object>(
     model: options.model,
     tools: options.tools,
     toolContext: options.toolContext,
-    thinkingLevel: options.settings.thinkingLevel,
+    thinkingLevel: clampSettingsThinkingLevel(options.model, options.settings),
     activeToolNames: options.settings.activeToolNames ?? undefined,
     resources: {
       skills: options.skills,
@@ -251,7 +268,8 @@ export const createPiAgentEngine = async <TContext extends object>(
 export interface CreatePiMaintenanceEngineOptions extends AgentMaintenanceCreateOptions {
   /** Resolved model. Only the summarisation calls and the context-window threshold use it. */
   model: Model<Api>;
-  models?: Models;
+  /** The collection `model` was resolved from; see the note on the turn engine's options. */
+  models: Models;
 }
 
 const maintenanceOnly = (method: string): never => {
@@ -279,10 +297,10 @@ export const createPiMaintenanceEngine = async (
 ): Promise<AgentMaintenanceEngineHandle> => {
   const harness = new AgentHarness({
     session: options.session,
-    models: options.models ?? getAgentModels(),
+    models: options.models,
     model: options.model,
     tools: [],
-    thinkingLevel: options.settings.thinkingLevel,
+    thinkingLevel: clampSettingsThinkingLevel(options.model, options.settings),
     systemPrompt: "",
   } as never) as AgentHarness;
 

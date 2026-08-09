@@ -1,5 +1,4 @@
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { getEncoding } from "js-tiktoken";
 import type { Tiktoken } from "js-tiktoken";
 
 /** Target chunk size / overlap in tokens (cl100k_base). */
@@ -13,12 +12,19 @@ const CODE_BLOCK_HEAD_LINES = 12;
 /** Chunks below this token count carry no signal and are dropped. */
 const MIN_CHUNK_TOKENS = 8;
 
-let encoding: Tiktoken | undefined;
-const getTokenizer = () => (encoding ??= getEncoding("cl100k_base"));
+export const loadTokenizer = async (
+  encoding?: Tiktoken | null
+): Promise<Tiktoken> =>
+  (encoding ??= (await import("js-tiktoken")).getEncoding("cl100k_base"));
 
 /** Exact token count for chunk sizing (text-embedding-3-* use cl100k_base). */
-export const countEmbeddingTokens = (text: string): number =>
-  getTokenizer().encode(text).length;
+export const countEmbeddingTokens = (
+  text: string,
+  encoding: Tiktoken | null
+): number => {
+  if (!encoding) throw new Error("Tokenizer not loaded.");
+  return encoding.encode(text).length;
+};
 
 export interface MarkdownChunk {
   /** 0-based chunk index within the translation */
@@ -133,6 +139,7 @@ export const chunkMarkdownForEmbedding = async (params: {
   content: string;
   chunkTokens?: number;
   overlapTokens?: number;
+  encoding: Tiktoken | null;
 }): Promise<MarkdownChunk[]> => {
   const cleaned = cleanMdxKeepStructure(params.content);
   if (!cleaned) {
@@ -143,19 +150,19 @@ export const chunkMarkdownForEmbedding = async (params: {
   const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
     chunkSize: chunkTokens,
     chunkOverlap: params.overlapTokens ?? EMBEDDING_CHUNK_OVERLAP_TOKENS,
-    lengthFunction: countEmbeddingTokens,
+    lengthFunction: (text) => countEmbeddingTokens(text, params.encoding),
   });
 
   const chunks: MarkdownChunk[] = [];
   for (const section of splitByHeadings(cleaned)) {
     const pieces =
-      countEmbeddingTokens(section.text) <= chunkTokens
+      countEmbeddingTokens(section.text, params.encoding) <= chunkTokens
         ? [section.text]
         : await splitter.splitText(section.text);
 
     for (const piece of pieces) {
       const text = piece.trim();
-      const tokenCount = countEmbeddingTokens(text);
+      const tokenCount = countEmbeddingTokens(text, params.encoding);
       if (tokenCount < MIN_CHUNK_TOKENS) {
         continue;
       }

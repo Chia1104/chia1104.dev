@@ -1,3 +1,5 @@
+import { parse as parseHTML } from "node-html-parser";
+
 import type {
   CommitDraftInput,
   CommitDraftResult,
@@ -178,23 +180,31 @@ export const createAgentContentPort = (
       }).get(url);
       const html = (await response.text()).slice(0, MAX_PAGE_CHARS);
 
-      // Dynamic import matches `toolings.route.ts` — jsdom is heavy and only a few routes need it.
-      const JSDOM = await import("jsdom").then((module) => module.JSDOM);
-      const { document } = new JSDOM(html).window;
+      // Matches `toolings.route.ts` — a parser, not a DOM. jsdom cost ~110MB RSS on import and
+      // never gave it back; all this needs is selectors and text.
+      const document = parseHTML(html);
 
       for (const selector of ["script", "style", "noscript", "svg"]) {
         for (const node of document.querySelectorAll(selector)) node.remove();
       }
 
+      /**
+       * `document` itself is the last fallback, not `body`.
+       *
+       * jsdom parsed into a full document and synthesised a `<body>` even for a bare fragment.
+       * A parser does not, so a response with no `<body>` wrapper would otherwise select nothing
+       * and hand the model an empty page.
+       */
       const main =
         document.querySelector("article") ??
         document.querySelector("main") ??
-        document.body;
+        document.querySelector("body") ??
+        document;
 
       return {
         url,
         title: document.querySelector("title")?.textContent ?? undefined,
-        // Collapse the whitespace jsdom preserves; the model does not benefit from blank lines.
+        // Collapse the whitespace the parser preserves; the model does not benefit from blank lines.
         text: (main?.textContent ?? "")
           .split("\n")
           .map((line) => line.trim())

@@ -36,6 +36,20 @@ const thinkingLevelSchema = z.enum([
  */
 const toolTierSchema = z.string();
 
+/**
+ * Model identity: the `(providerId, modelId)` pair, always together.
+ *
+ * One nested object rather than two sibling optionals, so "a model id with no provider" is not a
+ * state a caller can express. The same model carries different ids under different providers
+ * (`anthropic/claude-haiku-4.5` through a gateway is `claude-haiku-4-5` natively), and inferring the
+ * missing half would silently decide whose account pays. Whether the pair actually *exists* is
+ * per-kind policy, checked by the runtime — see `agentSessionGuard`.
+ */
+export const agentModelRefSchema = z.object({
+  providerId: z.string().min(1),
+  modelId: z.string().min(1),
+});
+
 export const agentSessionSummarySchema = z.object({
   id: z.string(),
   title: z.string().nullable(),
@@ -136,7 +150,7 @@ export const createAgentSessionContract = oc
       title: z.string().max(200).optional(),
       /** Seeds the draft buffer from this post so the agent edits rather than starts fresh. */
       targetFeedId: z.number().int().optional(),
-      modelId: z.string().optional(),
+      model: agentModelRefSchema.optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       autoApprove: z.array(toolTierSchema).optional(),
       runtimeConfig: z.record(z.string(), z.unknown()).optional(),
@@ -174,7 +188,7 @@ export const updateAgentSessionSettingsContract = oc
       kind: z.string().optional(),
       sessionId: z.string(),
       title: z.string().max(200).optional(),
-      modelId: z.string().optional(),
+      model: agentModelRefSchema.optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       activeToolNames: z.array(z.string()).nullable().optional(),
       autoApprove: z.array(toolTierSchema).optional(),
@@ -413,6 +427,12 @@ export const listAgentModelsContract = oc
         contextWindow: z.number(),
         supportsReasoning: z.boolean(),
         supportsImageInput: z.boolean(),
+        /**
+         * True when the provider runs on a caller-supplied key the caller has not registered yet.
+         * Such models are still listed — the picker offers them and prompts for a key, rather than
+         * hiding an option the operator could have had.
+         */
+        requiresApiKey: z.boolean(),
       })
     )
   );

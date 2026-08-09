@@ -1,6 +1,8 @@
 import { getHookByToken, getRun, start } from "workflow/api";
 
 import {
+  BYOK_PROVIDER_IDS,
+  createAgentModels,
   entriesToWireEvents,
   PgPendingMessageStore,
   PgSessionRepo,
@@ -16,10 +18,9 @@ import type {
 import {
   createWritingMaintenanceEngine,
   createWritingTools,
-  isWritingModelId,
+  assertWritingModel,
   listWritingModels,
   PgDraftStore,
-  WRITING_MODEL_IDS,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
   writingPolicy,
@@ -56,6 +57,10 @@ import {
 } from "../workflows/hooks/agent.hooks";
 
 import { createAgentContentPort } from "./agent-content.port";
+import {
+  decryptAgentCredentials,
+  readEncryptedAgentCredentials,
+} from "./agent-credentials";
 import { getAgentPendingNotifier } from "./agent-pending-notifier";
 
 /**
@@ -200,9 +205,23 @@ const openMaintenanceEngine = async (
     agentSessionId: sessionId,
     session,
     settings: settingsOf(row),
+    /**
+     * Compaction calls the model too, so a BYOK session needs its key here just as much as in a
+     * turn. This path runs inside the request, so the cookie is read and decrypted directly rather
+     * than travelling through the workflow.
+     */
+    models: modelsFor(caller),
   });
   return { session, engine };
 };
+
+/** Per-request `Models`, carrying whatever provider keys the caller has registered. */
+const modelsFor = (caller: AgentRuntimeCaller) =>
+  createAgentModels(
+    decryptAgentCredentials(
+      readEncryptedAgentCredentials(caller.context.headers)
+    )
+  );
 
 const replayOptions = {
   tierOf: writingPolicy.tierOf,
@@ -352,13 +371,12 @@ export const writingAgentRuntime: AgentRuntime = {
   async createSession(caller, input) {
     const { repo, draft, content } = dependenciesFor(caller);
 
-    if (input.modelId) assertKnownModel(input.modelId);
-
     const session = await repo.create({
       userId: caller.userId,
       title: input.title,
       settings: {
-        modelId: input.modelId,
+        providerId: input.model?.providerId,
+        modelId: input.model?.modelId,
         thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
         autoApprove: input.autoApprove as ToolTier[] | undefined,
       },
@@ -419,11 +437,10 @@ export const writingAgentRuntime: AgentRuntime = {
   async updateSettings(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    if (input.modelId) assertKnownModel(input.modelId);
-
     await writeSessionSettings(caller.context.db as DB, input.sessionId, {
       title: input.title,
-      modelId: input.modelId,
+      providerId: input.model?.providerId,
+      modelId: input.model?.modelId,
       thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
       activeToolNames: input.activeToolNames,
       autoApprove: input.autoApprove as ToolTier[] | undefined,
@@ -455,6 +472,9 @@ export const writingAgentRuntime: AgentRuntime = {
       text: input.text,
       template: input.template,
       preAuthorizeToolNames: input.preAuthorizeToolNames,
+      // Refreshed on every prompt: the run outlives any one request, and the operator may have
+      // registered or rotated a key since the last turn.
+      credentials: readEncryptedAgentCredentials(caller.context.headers),
     };
 
     /**
@@ -654,7 +674,12 @@ export const writingAgentRuntime: AgentRuntime = {
     // Then wake the run, which has been parked on this hook with no compute consumed.
     await agentApprovalHook.resume(
       agentApprovalToken(input.sessionId, input.toolCallId),
-      { approved: input.approved, comment: input.comment }
+      {
+        approved: input.approved,
+        comment: input.comment,
+        // The turns the workflow synthesises after this decision have no request of their own.
+        credentials: readEncryptedAgentCredentials(caller.context.headers),
+      }
     );
 
     return { runId: row.workflowRunId, startIndex };
@@ -713,8 +738,38 @@ export const writingAgentRuntime: AgentRuntime = {
     return (await draft.get(input.sessionId)) as never;
   },
 
-  listModels() {
-    return Promise.resolve(listWritingModels());
+  /**
+   * The pre-persistence check the transport calls.
+   *
+   * Returns a reason instead of throwing because the caller is a middleware turning this into a
+   * `BAD_REQUEST`. `assertWritingModel` checks policy *and* catalogue membership — the latter is
+   * what stops a typo on a native provider from being stored and then failing on every subsequent
+   * turn, deep in the workflow step where the operator cannot see why.
+   */
+  validateModel(ref) {
+    try {
+      assertWritingModel(ref);
+      return Promise.resolve(null);
+    } catch (error) {
+      return Promise.resolve(
+        error instanceof UnknownAgentModelError
+          ? error.message
+          : `Could not validate model "${ref.modelId}".`
+      );
+    }
+  },
+
+  listModels(caller) {
+    /**
+     * Which BYOK providers this caller has a key for. Read from the cookie rather than decrypted:
+     * the picker only needs to know whether a key is *present*, and decrypting to answer a listing
+     * request would put plaintext keys on a path that has no use for them.
+     */
+    const registered = readEncryptedAgentCredentials(caller.context.headers);
+    const configured = BYOK_PROVIDER_IDS.filter(
+      (providerId) => registered?.[providerId]
+    );
+    return Promise.resolve(listWritingModels({ configured }));
   },
 
   listCapabilities() {
@@ -762,12 +817,6 @@ const assertNoTurnRunning = async (
     // Re-throw our own refusal; swallow lookup failures for runs that no longer resolve.
     if (error instanceof Error && error.message.startsWith("Cannot "))
       throw error;
-  }
-};
-
-const assertKnownModel = (modelId: string) => {
-  if (!isWritingModelId(modelId)) {
-    throw new UnknownAgentModelError(modelId, WRITING_MODEL_IDS);
   }
 };
 

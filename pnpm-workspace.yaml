@@ -24,8 +24,8 @@ allowBuilds:
 catalog:
   "@t3-oss/env-core": ^0.13.11
   "@t3-oss/env-nextjs": ^0.13.11
-  "@types/lodash": ^4.17.24
-  "@types/node": 26.1.1
+  "@types/lodash": ^4.17.25
+  "@types/node": 26.2.0
   better-all: 0.0.8
   bun-types: ^1.3.14
   client-only: ^0.0.1
@@ -41,27 +41,27 @@ catalog:
 
 catalogs:
   agent:
-    "@earendil-works/pi-agent-core": 0.82.1
-    "@earendil-works/pi-ai": 0.82.1
-    typebox: 1.1.38
+    "@earendil-works/pi-agent-core": 0.83.0
+    "@earendil-works/pi-ai": 0.83.0
+    typebox: 1.3.11
   agent-client:
-    "@tanstack/ai": 0.42.0
-    "@tanstack/ai-react": 0.18.1
+    "@tanstack/ai": 0.43.1
+    "@tanstack/ai-react": 0.19.1
   ai:
-    "@ai-sdk/anthropic": 4.0.20
-    "@ai-sdk/gateway": 4.0.28
-    "@ai-sdk/google": 4.0.24
-    "@ai-sdk/openai": 4.0.20
-    "@ai-sdk/react": 4.0.40
-    "@anthropic-ai/sdk": 0.115.0
-    "@google/genai": 2.13.0
-    ai: 7.0.37
+    "@ai-sdk/anthropic": 4.0.35
+    "@ai-sdk/gateway": 4.0.45
+    "@ai-sdk/google": 4.0.38
+    "@ai-sdk/openai": 4.0.35
+    "@ai-sdk/react": 4.0.60
+    "@anthropic-ai/sdk": 0.116.0
+    "@google/genai": 2.16.0
+    ai: 7.0.57
     ollama: 0.6.3
-    openai: 6.49.0
+    openai: 7.4.0
   better-auth:
-    "@better-auth/api-key": 1.6.25
-    "@better-auth/passkey": 1.6.25
-    better-auth: 1.6.25
+    "@better-auth/api-key": 1.6.26
+    "@better-auth/passkey": 1.6.26
+    better-auth: 1.6.26
   chiastack:
     "@chiastack/oxlint": 1.1.0
     "@chiastack/tsconfig": 2.1.2
@@ -71,69 +71,69 @@ catalogs:
     drizzle-orm: 1.0.0-rc.4
   fumadocs:
     "@fumadocs/mdx-remote": 1.5.1
-    fumadocs-core: 16.12.1
-    fumadocs-mdx: 15.2.0
-    fumadocs-ui: 16.12.1
+    fumadocs-core: 16.14.2
+    fumadocs-mdx: 15.2.2
+    fumadocs-ui: 16.14.2
   heroui-v3:
-    "@heroui/react": 3.2.2
-    "@heroui/styles": 3.2.2
+    "@heroui/react": 3.2.4
+    "@heroui/styles": 3.2.4
   hono:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2
     "@hono/zod-validator": 0.9.0
-    hono: 4.12.32
+    hono: 4.13.1
     hono-rate-limiter: 0.5.3
   next:
-    "@next/third-parties": 16.3.0-preview.6
-    next: 16.3.0-preview.6
+    "@next/third-parties": 16.3.0
+    next: 16.3.0
   orpc:
-    "@orpc/client": 1.14.8
-    "@orpc/contract": 1.14.8
-    "@orpc/openapi": 1.14.8
-    "@orpc/server": 1.14.8
-    "@orpc/tanstack-query": 1.14.8
-    "@orpc/zod": 1.14.8
+    "@orpc/client": 1.14.15
+    "@orpc/contract": 1.14.15
+    "@orpc/openapi": 1.14.15
+    "@orpc/server": 1.14.15
+    "@orpc/tanstack-query": 1.14.15
+    "@orpc/zod": 1.14.15
   oxc:
-    oxfmt: 0.60.0
-    oxlint: 1.75.0
+    oxfmt: 0.62.0
+    oxlint: 1.77.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
-    platejs: ^53.2.4
+    platejs: ^53.3.3
   radix-ui:
-    "@radix-ui/react-accordion": 1.2.19
-    "@radix-ui/react-avatar": ^1.2.5
-    "@radix-ui/react-collapsible": ^1.1.19
-    "@radix-ui/react-dialog": ^1.1.22
-    "@radix-ui/react-dropdown-menu": ^2.1.23
-    "@radix-ui/react-hover-card": ^1.1.22
-    "@radix-ui/react-label": ^2.1.14
-    "@radix-ui/react-navigation-menu": ^1.2.21
-    "@radix-ui/react-popover": ^1.1.22
-    "@radix-ui/react-progress": ^1.1.15
-    "@radix-ui/react-separator": ^1.1.14
-    "@radix-ui/react-slot": ^1.3.2
-    "@radix-ui/react-tabs": ^1.1.20
-    "@radix-ui/react-tooltip": ^1.2.15
+    "@radix-ui/react-accordion": 1.2.20
+    "@radix-ui/react-avatar": ^1.2.6
+    "@radix-ui/react-collapsible": ^1.1.20
+    "@radix-ui/react-dialog": ^1.1.23
+    "@radix-ui/react-dropdown-menu": ^2.1.24
+    "@radix-ui/react-hover-card": ^1.1.23
+    "@radix-ui/react-label": ^2.1.15
+    "@radix-ui/react-navigation-menu": ^1.2.22
+    "@radix-ui/react-popover": ^1.1.23
+    "@radix-ui/react-progress": ^1.1.16
+    "@radix-ui/react-separator": ^1.1.15
+    "@radix-ui/react-slot": ^1.3.3
+    "@radix-ui/react-tabs": ^1.1.21
+    "@radix-ui/react-tooltip": ^1.2.16
   react-is:
-    "@types/react": ^19.2.17
-    "@types/react-dom": ^19.2.3
+    "@types/react": ^19.2.18
+    "@types/react-dom": ^19.2.4
     babel-plugin-react-compiler: 1.0.0
     react: ^19.2.8
     react-dom: ^19.2.8
   tailwindcss:
     "@tailwindcss/postcss": 4.3.3
-    postcss: 8.5.23
+    postcss: 8.5.26
     tailwind-scrollbar: ^4.0.2
     tailwindcss: 4.3.3
   tanstack:
-    "@tanstack/react-pacer": 0.22.1
+    "@tanstack/react-pacer": 0.23.0
     "@tanstack/react-query": 5.101.4
     "@tanstack/react-query-devtools": 5.101.4
   testing-library:
     "@testing-library/jest-dom": 7.0.0
     "@testing-library/react": 16.3.2
-    "@testing-library/user-event": 14.6.1
-    "@vitejs/plugin-react-swc": 4.3.2
+    "@testing-library/user-event": 14.6.3
+    "@vitejs/plugin-react-swc": 4.3.3
     "@vitest/coverage-v8": 4.1.10
     "@vitest/ui": 4.1.10
     jest-extended: 7.0.0
@@ -143,15 +143,15 @@ catalogs:
     clsx: ^2.1.1
     cmdk: 1.1.1
     cobe: ^2.0.1
-    immer: ^11.1.15
+    immer: ^11.1.16
     katex: ^0.18.1
-    lucide-react: ^1.26.0
-    motion: ^12.42.2
+    lucide-react: ^1.30.0
+    motion: ^13.0.0
     next-themes: ^0.4.6
-    nuqs: ^2.9.2
+    nuqs: ^2.9.5
     react-medium-image-zoom: ^5.4.8
     schema-dts: 2.0.0
-    shiki: ^4.3.1
+    shiki: ^4.4.2
     sonner: 2.0.7
     tailwind-merge: ^3.6.0
     usehooks-ts: ^3.1.1

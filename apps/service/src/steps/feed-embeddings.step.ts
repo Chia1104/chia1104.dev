@@ -1,6 +1,9 @@
 import { fetch, FatalError } from "workflow";
 
-import { chunkMarkdownForEmbedding } from "@chia/ai/embeddings/chunking";
+import {
+  chunkMarkdownForEmbedding,
+  loadTokenizer,
+} from "@chia/ai/embeddings/chunking";
 import type { MarkdownChunk } from "@chia/ai/embeddings/chunking";
 import { ollamaEmbeddings } from "@chia/ai/embeddings/ollama";
 import { generateEmbeddings } from "@chia/ai/embeddings/openai";
@@ -57,6 +60,7 @@ export const prepareTranslationEmbeddingStep = async (
     ? await chunkMarkdownForEmbedding({
         title: translation.title,
         content: translation.content,
+        encoding: await loadTokenizer(),
       })
     : [];
 
