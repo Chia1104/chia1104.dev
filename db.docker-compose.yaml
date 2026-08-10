@@ -1,15 +1,15 @@
 services:
-  postgres:
-    container_name: chia-postgres-v2
-    image: pgvector/pgvector:pg18
+  paradedb:
+    container_name: chia-paradedb
+    image: paradedb/paradedb:pg18
     ports:
       - "5434:5432"
     volumes:
-      - chia-postgres-v2:/var/lib/postgresql/data/pgdata
+      - chia-paradedb:/var/lib/postgresql/data/paradedb
     env_file:
       - .env.global
     environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      - PGDATA=/var/lib/postgresql/data/paradedb
       - DEBUG=true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -31,5 +31,5 @@ services:
       retries: 10
 
 volumes:
-  chia-postgres-v2:
+  chia-paradedb:
   chia-redis:
