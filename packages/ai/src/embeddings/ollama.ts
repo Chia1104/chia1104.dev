@@ -1,7 +1,7 @@
 import { ollama } from "../ollama/index.ts";
 
+import { guardEmbeddingInput, guardEmbeddingInputs } from "./tokenizer.ts";
 import type { EmbeddingTask, OllamaEmbeddingModel } from "./utils.ts";
-import { truncateForEmbedding } from "./utils.ts";
 
 /**
  * Asymmetric models need task-specific prefixes, otherwise retrieval quality
@@ -25,15 +25,20 @@ const withTaskPrefix = (
   }
 };
 
+/**
+ * cl100k_base is not these models' tokenizer, so the count is approximate —
+ * but it errs on the side of truncating more, which is the safe direction.
+ */
 export const ollamaEmbedding = async (
   input: string,
   model: OllamaEmbeddingModel,
   task: EmbeddingTask = "search_query"
 ) => {
+  const { text } = await guardEmbeddingInput(input, { model });
   const [embedding] = (
     await ollama.embed({
       model,
-      input: withTaskPrefix(truncateForEmbedding(input), model, task),
+      input: withTaskPrefix(text, model, task),
       dimensions: 512,
     })
   ).embeddings;
@@ -49,11 +54,10 @@ export const ollamaEmbeddings = async (
   if (inputs.length === 0) {
     return [];
   }
+  const guarded = await guardEmbeddingInputs(inputs, { model });
   const { embeddings } = await ollama.embed({
     model,
-    input: inputs.map((input) =>
-      withTaskPrefix(truncateForEmbedding(input), model, task)
-    ),
+    input: guarded.map(({ text }) => withTaskPrefix(text, model, task)),
     dimensions: 512,
   });
   return embeddings;

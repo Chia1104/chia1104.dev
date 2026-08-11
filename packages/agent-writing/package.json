@@ -52,6 +52,7 @@
   "dependencies": {
     "@chia/agent-core": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
+    "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",

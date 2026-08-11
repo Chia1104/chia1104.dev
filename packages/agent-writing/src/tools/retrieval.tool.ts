@@ -1,5 +1,6 @@
 import { StringEnum } from "@earendil-works/pi-ai";
 
+import { buildDocumentContext } from "@chia/ai/embeddings/context";
 import type { Locale } from "@chia/db/types";
 
 import type { WritingTool } from "../types.ts";
@@ -22,7 +23,12 @@ import {
  * what does this reference page say").
  */
 
-const MAX_POST_BODY_CHARS = 24_000;
+/**
+ * Token budget for one `getPost` call, shared across the post's locales.
+ * Tokens rather than characters: the same character count is ~3x the tokens in
+ * Chinese as in English, so a character cap silently means different things.
+ */
+const POST_BODY_TOKEN_BUDGET = 12_000;
 const MAX_PAGE_CHARS = 16_000;
 
 export const searchPostsTool = defineTool({
@@ -65,7 +71,7 @@ export const searchPostsTool = defineTool({
     const hits = await context.content.searchPosts({
       keyword: params.keyword,
       locale: params.locale as Locale | undefined,
-      mode: params.mode === "keyword" ? "algolia" : "semantic",
+      mode: params.mode === "keyword" ? "keyword" : "semantic",
       limit: params.limit ?? 5,
     });
 
@@ -115,15 +121,48 @@ export const getPostTool = defineTool({
       );
     }
 
-    // Bodies can be very long; truncate per locale so a 3-locale post cannot blow the window.
+    /**
+     * One token budget shared by every locale of the post, rather than a
+     * per-locale character cap. A 3-locale zh-TW post could otherwise be
+     * "within the limit" three times over and still blow the context window,
+     * since Chinese costs far more tokens per character than the character
+     * count suggests.
+     *
+     * Long bodies degrade to their matched sections and then to
+     * summary + outline instead of being cut off mid-sentence, and each kept
+     * heading comes back with the anchor the site renders, so the model can
+     * cite `slug#heading` rather than just naming the post.
+     */
+    const context_ = await buildDocumentContext(
+      post.translations.map((translation) => ({
+        slug: post.slug,
+        locale: translation.locale,
+        title: translation.title,
+        summary: translation.summary ?? translation.description,
+        content: translation.content ?? "",
+      })),
+      { budget: POST_BODY_TOKEN_BUDGET }
+    );
+
+    const byLocale = new Map(
+      context_.documents.map((document) => [document.locale, document])
+    );
     const translations = post.translations.map((translation) => {
-      const body = truncate(translation.content ?? "", MAX_POST_BODY_CHARS);
-      return { ...translation, content: body.text, truncated: body.truncated };
+      const document = byLocale.get(translation.locale);
+      return {
+        ...translation,
+        content: document?.text ?? "",
+        detail: document?.detail ?? "outline",
+        tokenCount: document?.tokenCount ?? 0,
+        anchors: document?.anchors.map((anchor) => anchor.anchor) ?? [],
+      };
     });
 
     return textResult(
-      `Post "${post.slug}":\n\n${jsonBlock({ ...post, translations })}`,
-      { post: { ...post, translations } }
+      `Post "${post.slug}" (${context_.totalTokens} tokens of ${context_.budget}):\n\n${jsonBlock(
+        { ...post, translations }
+      )}`,
+      { post: { ...post, translations }, contextTokens: context_.totalTokens }
     );
   },
 });

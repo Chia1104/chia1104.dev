@@ -74,6 +74,7 @@ vi.mock("@chia/db/repos/feeds", async () => {
     getFeedById: mocks.getFeedById,
     getFeedForIndexing: mocks.getFeedForIndexing,
     getPublicFeedSummariesByIds: mocks.getPublicFeedSummariesByIds,
+    getFeedRefsByTranslationIds: mocks.getFeedRefsByTranslationIds,
     getFeedIdByTranslationId: mocks.getFeedIdByTranslationId,
     upsertFeedTranslation: mocks.upsertFeedTranslation,
     upsertContent: mocks.upsertContent,
@@ -81,12 +82,14 @@ vi.mock("@chia/db/repos/feeds", async () => {
   };
 });
 
-vi.mock("@chia/db/repos/feeds/embedding", async () => {
+vi.mock("@chia/db/repos/feeds/search", async () => {
   const mocks = await import("./__mocks__/db.mock");
-  return {
-    searchFeeds: mocks.searchFeeds,
-    getRelatedFeeds: mocks.getRelatedFeeds,
-  };
+  return { getRelatedFeeds: mocks.getRelatedFeeds };
+});
+
+vi.mock("@chia/api/resources/search", async () => {
+  const mocks = await import("./__mocks__/db.mock");
+  return { searchResources: mocks.searchResources };
 });
 
 vi.mock("@chia/db/repos/public/feeds", async () => {
@@ -144,8 +147,6 @@ export const mockEnv = {
   // KV/Cache env
   CACHE_PROVIDER: "auto",
   CACHE_URI: "redis://localhost:6379",
-  ALGOLIA_APPLICATION_ID: "test-algolia-application-id",
-  ALGOLIA_API_KEY: "test-algolia-api-key",
 };
 
 vi.stubEnv("NODE_ENV", mockEnv.NODE_ENV);
@@ -198,5 +199,3 @@ vi.stubEnv(
 vi.stubEnv("CAPTCHA_SECRET_KEY", mockEnv.CAPTCHA_SECRET_KEY);
 vi.stubEnv("CACHE_PROVIDER", mockEnv.CACHE_PROVIDER);
 vi.stubEnv("CACHE_URI", mockEnv.CACHE_URI);
-vi.stubEnv("ALGOLIA_APPLICATION_ID", mockEnv.ALGOLIA_APPLICATION_ID);
-vi.stubEnv("ALGOLIA_API_KEY", mockEnv.ALGOLIA_API_KEY);

@@ -1,155 +1,22 @@
-import * as z from "zod";
-
-// https://ollama.com/blog/embedding-models
-export const OllamaEmbeddingModel = {
-  "mxbai-embed-large": "mxbai-embed-large",
-  "nomic-embed-text": "nomic-embed-text",
-  "all-minilm": "all-minilm",
-} as const;
-
-export const ollamaEmbeddingModelSchema = z.enum(OllamaEmbeddingModel);
-
-export type OllamaEmbeddingModel = z.infer<typeof ollamaEmbeddingModelSchema>;
-
-export const isOllamaEmbeddingModel = (
-  model?: unknown
-): model is OllamaEmbeddingModel => {
-  return z.enum(OllamaEmbeddingModel).safeParse(model).success;
-};
-
-// https://platform.openai.com/docs/guides/embeddings
-export const TextEmbeddingModel = {
-  "3-small": "text-embedding-3-small",
-  "3-large": "text-embedding-3-large",
-} as const;
-
-export const textEmbeddingModelSchema = z.enum(TextEmbeddingModel);
-
-export type TextEmbeddingModel = z.infer<typeof textEmbeddingModelSchema>;
-
-export const isOpenAIEmbeddingModel = (
-  model?: unknown
-): model is TextEmbeddingModel => {
-  return textEmbeddingModelSchema.safeParse(model).success;
-};
-
-export type EmbeddingModel = TextEmbeddingModel | OllamaEmbeddingModel;
+import { buildHeadingOutline } from "./markdown.ts";
 
 /**
- * Dimensions each model is embedded with in this project (may be lower than
- * the model's native dimensions for Matryoshka models).
+ * Vector dimension used everywhere.
+ *
+ * One dimension, one column. The old two-column setup (1536 + 512) existed so
+ * an Ollama model could be indexed alongside OpenAI's; nothing queried it, and
+ * the cost was a `dimensions === 512 ? … : …` branch in every read and write.
+ * Changing this is a schema change plus a reindex, which at this corpus size is
+ * minutes.
  */
-export const EMBEDDING_MODEL_DIMENSIONS = {
-  [TextEmbeddingModel["3-small"]]: 1536,
-  [TextEmbeddingModel["3-large"]]: 1536,
-  [OllamaEmbeddingModel["nomic-embed-text"]]: 512,
-  [OllamaEmbeddingModel["mxbai-embed-large"]]: 512,
-  [OllamaEmbeddingModel["all-minilm"]]: 512,
-} as const satisfies Record<EmbeddingModel, 512 | 1536>;
-
-export type EmbeddingDimensions =
-  (typeof EMBEDDING_MODEL_DIMENSIONS)[EmbeddingModel];
+export const EMBEDDING_DIMENSIONS = 1536;
 
 /**
- * Bump when preprocessing, chunking strategy, or embedding parameters change
- * in a way that requires re-embedding. Stale detection compares this together
- * with the content hash; rows are re-embedded in place.
+ * Bump when preprocessing, the document card, or embedding parameters change in
+ * a way that requires re-embedding. Folded into `index_key` together with the
+ * provider id, so stale rows re-embed in place.
  */
-export const EMBEDDING_INDEX_VERSION = "2026-07-14.1";
-
-export interface EmbeddingModelConfig {
-  model: EmbeddingModel;
-  provider: "openai" | "ollama";
-  dimensions: EmbeddingDimensions;
-  /** written by the indexing workflow */
-  indexed: boolean;
-  /** powers related feeds / default search; exactly one model may be canonical */
-  canonical: boolean;
-  /** selectable for query-time vector search */
-  queryEnabled: boolean;
-  /** default similarity threshold; calibrate per model with golden queries */
-  defaultThreshold: number;
-}
-
-/**
- * Single source of truth for embedding models, shared by the indexing
- * workflow, search API, and dashboard. Query-side code must not offer models
- * that the workflow does not index.
- */
-export const EMBEDDING_MODEL_REGISTRY = {
-  [TextEmbeddingModel["3-small"]]: {
-    model: TextEmbeddingModel["3-small"],
-    provider: "openai",
-    dimensions: EMBEDDING_MODEL_DIMENSIONS[TextEmbeddingModel["3-small"]],
-    indexed: true,
-    canonical: true,
-    queryEnabled: true,
-    defaultThreshold: 0.3,
-  },
-  [TextEmbeddingModel["3-large"]]: {
-    model: TextEmbeddingModel["3-large"],
-    provider: "openai",
-    dimensions: EMBEDDING_MODEL_DIMENSIONS[TextEmbeddingModel["3-large"]],
-    indexed: false,
-    canonical: false,
-    queryEnabled: false,
-    defaultThreshold: 0.3,
-  },
-  [OllamaEmbeddingModel["nomic-embed-text"]]: {
-    model: OllamaEmbeddingModel["nomic-embed-text"],
-    provider: "ollama",
-    dimensions:
-      EMBEDDING_MODEL_DIMENSIONS[OllamaEmbeddingModel["nomic-embed-text"]],
-    indexed: true,
-    canonical: false,
-    queryEnabled: true,
-    defaultThreshold: 0.3,
-  },
-  [OllamaEmbeddingModel["mxbai-embed-large"]]: {
-    model: OllamaEmbeddingModel["mxbai-embed-large"],
-    provider: "ollama",
-    dimensions:
-      EMBEDDING_MODEL_DIMENSIONS[OllamaEmbeddingModel["mxbai-embed-large"]],
-    indexed: false,
-    canonical: false,
-    queryEnabled: false,
-    defaultThreshold: 0.3,
-  },
-  [OllamaEmbeddingModel["all-minilm"]]: {
-    model: OllamaEmbeddingModel["all-minilm"],
-    provider: "ollama",
-    dimensions: EMBEDDING_MODEL_DIMENSIONS[OllamaEmbeddingModel["all-minilm"]],
-    indexed: false,
-    canonical: false,
-    queryEnabled: false,
-    defaultThreshold: 0.3,
-  },
-} as const satisfies Record<EmbeddingModel, EmbeddingModelConfig>;
-
-export const getEmbeddingModelConfig = (
-  model: EmbeddingModel
-): EmbeddingModelConfig => EMBEDDING_MODEL_REGISTRY[model];
-
-/** Models the indexing workflow writes for every translation. */
-export const INDEXED_EMBEDDING_MODELS = Object.values(EMBEDDING_MODEL_REGISTRY)
-  .filter((config) => config.indexed)
-  .map((config) => config.model);
-
-/** Models the search API / dashboard may offer for vector search. */
-export const QUERYABLE_EMBEDDING_MODELS = Object.values(
-  EMBEDDING_MODEL_REGISTRY
-)
-  .filter((config) => config.indexed && config.queryEnabled)
-  .map((config) => config.model);
-
-export const CANONICAL_EMBEDDING_MODEL = Object.values(
-  EMBEDDING_MODEL_REGISTRY
-).find((config) => config.canonical)!.model;
-
-export const isQueryableEmbeddingModel = (
-  model?: unknown
-): model is EmbeddingModel =>
-  (QUERYABLE_EMBEDDING_MODELS as readonly unknown[]).includes(model);
+export const EMBEDDING_INDEX_VERSION = "2026-08-11.2";
 
 /**
  * Normalizes a search query for cache identity: collapse whitespace and
@@ -165,28 +32,62 @@ export const normalizeQueryForEmbedding = (query: string): string =>
  */
 export type EmbeddingTask = "search_document" | "search_query";
 
-// text-embedding-3-* accept at most 8191 tokens; keep a safety margin
-// since we only estimate the token count.
-export const EMBEDDING_MAX_TOKENS = 7500;
+/** Local model ids — kept for the Ollama task prefixes and model listing. */
+export const OllamaEmbeddingModel = {
+  "mxbai-embed-large": "mxbai-embed-large",
+  "nomic-embed-text": "nomic-embed-text",
+  "all-minilm": "all-minilm",
+} as const;
+
+export type OllamaEmbeddingModel =
+  (typeof OllamaEmbeddingModel)[keyof typeof OllamaEmbeddingModel];
+
+/**
+ * text-embedding-3-* accept at most 8191 tokens. Counting is exact
+ * (`truncateForEmbeddingExact` in `./tokenizer.ts`), so this only leaves a
+ * small margin for provider-side differences rather than covering an
+ * estimate's error.
+ */
+export const EMBEDDING_MAX_TOKENS = 8000;
+
+/** Per-request ceilings for batch embedding calls (OpenAI allows ~300k tokens). */
+export const EMBEDDING_BATCH_MAX_INPUTS = 32;
+export const EMBEDDING_BATCH_MAX_TOKENS = 250_000;
 
 // CJK unified ideographs (incl. ext-A), compatibility ideographs, kana, hangul, fullwidth forms
 const CJK_CHAR_REGEX =
   /[\u3000-\u9fff\uf900-\ufaff\uac00-\ud7af\u3040-\u30ff\uff00-\uffef]/;
 
 /**
- * Conservative token estimate without a tokenizer dependency:
- * CJK characters count as 1 token, everything else as half a token.
+ * Tokens a CJK character is assumed to cost in the heuristic.
+ *
+ * cl100k_base gives common hanzi one token but falls back to UTF-8 bytes
+ * (2\u20133 tokens) for less common ones, and Traditional Chinese hits that
+ * fallback often. This used to be 1, which under-counted `zh-TW` articles
+ * badly enough that the provider rejected them; the heuristic must never
+ * under-count, so it now assumes the worse case.
+ */
+const CJK_TOKENS_PER_CHAR = 2;
+const NON_CJK_TOKENS_PER_CHAR = 0.5;
+
+/**
+ * Deliberately pessimistic token estimate for runtimes without the tokenizer.
+ * Prefer `countEmbeddingTokensAsync` from `./tokenizer.ts` \u2014 this is the
+ * fallback, not the default.
  */
 export const estimateEmbeddingTokens = (text: string): number => {
   let tokens = 0;
   for (const char of text) {
-    tokens += CJK_CHAR_REGEX.test(char) ? 1 : 0.5;
+    tokens += CJK_CHAR_REGEX.test(char)
+      ? CJK_TOKENS_PER_CHAR
+      : NON_CJK_TOKENS_PER_CHAR;
   }
   return Math.ceil(tokens);
 };
 
 /**
- * Truncates text so the estimated token count stays within the model limit.
+ * Heuristic truncation. Kept synchronous for callers that cannot await, and
+ * used as the fallback path of `truncateForEmbeddingExact`.
  */
 export const truncateForEmbedding = (
   text: string,
@@ -195,7 +96,9 @@ export const truncateForEmbedding = (
   let tokens = 0;
   let end = 0;
   for (const char of text) {
-    tokens += CJK_CHAR_REGEX.test(char) ? 1 : 0.5;
+    tokens += CJK_CHAR_REGEX.test(char)
+      ? CJK_TOKENS_PER_CHAR
+      : NON_CJK_TOKENS_PER_CHAR;
     if (tokens > maxTokens) {
       return text.slice(0, end);
     }
@@ -223,19 +126,54 @@ export const stripMdx = (source: string): string => {
 };
 
 /**
- * Builds the canonical text to embed for a feed translation:
- * title + summary (or description) + stripped content.
+ * Tokens of stripped body text used when a translation has no summary at all.
+ * Small on purpose — the card is meant to be a topic summary, and a body
+ * excerpt is a poor stand-in, not a replacement.
  */
-export const buildEmbeddingInput = (input: {
+const CARD_BODY_FALLBACK_TOKENS = 400;
+
+export interface DocumentCardInput {
   title?: string | null;
   description?: string | null;
   summary?: string | null;
+  excerpt?: string | null;
   content?: string | null;
-}): string => {
+  tags?: string[];
+}
+
+/**
+ * Builds the "document card" embedded as a translation's topic-level vector.
+ *
+ * Deliberately *not* the full body. Embedding the whole article meant long
+ * posts were truncated (so their tail did not exist in the vector at all) and
+ * their topic was diluted by every tangent they covered. The card's length is
+ * a function of document structure, so it can never approach the model's token
+ * limit no matter how long the article grows.
+ *
+ * The body excerpt only appears when there is no summary/description/excerpt
+ * to work with; see `CARD_BODY_FALLBACK_TOKENS`.
+ */
+export const buildEmbeddingInput = (input: DocumentCardInput): string => {
+  const summary = [input.summary, input.description, input.excerpt]
+    .map((value) => value?.trim())
+    .find((value): value is string => !!value);
+
+  const tags = input.tags?.filter((tag) => !!tag.trim()) ?? [];
+  const outline = input.content ? buildHeadingOutline(input.content) : "";
+
+  // no summary and no structure to describe the post — fall back to a bounded
+  // slice of the body so the vector is not just the title
+  const bodyFallback =
+    !summary && !outline && input.content
+      ? truncateForEmbedding(stripMdx(input.content), CARD_BODY_FALLBACK_TOKENS)
+      : null;
+
   return [
-    input.title,
-    input.summary?.trim() ? input.summary : input.description,
-    input.content ? stripMdx(input.content) : null,
+    input.title ? `Title: ${input.title}` : null,
+    summary ? `Summary: ${summary}` : null,
+    tags.length > 0 ? `Tags: ${tags.join(", ")}` : null,
+    outline ? `Outline:\n${outline}` : null,
+    bodyFallback?.trim() ? bodyFallback : null,
   ]
     .filter((part): part is string => !!part?.trim())
     .join("\n\n");

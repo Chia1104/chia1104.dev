@@ -29,10 +29,7 @@
         "S3_BUCKET_NAME",
         "S3_ENDPOINT",
         "CF_BYPASS_TOKEN",
-        "CH_API_KEY",
-        "ALGOLIA_APPLICATION_ID",
-        "ALGOLIA_API_KEY",
-        "ALGOLIA_FEEDS_INDEX_NAME"
+        "CH_API_KEY"
       ],
       "env": [
         "BS_UPTIME_TOKEN",
@@ -59,10 +56,7 @@
         "S3_BUCKET_NAME",
         "S3_ENDPOINT",
         "CF_BYPASS_TOKEN",
-        "CH_API_KEY",
-        "ALGOLIA_APPLICATION_ID",
-        "ALGOLIA_API_KEY",
-        "ALGOLIA_FEEDS_INDEX_NAME"
+        "CH_API_KEY"
       ]
     }
   }

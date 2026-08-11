@@ -99,7 +99,7 @@ export interface PostSearchHit {
   slug: string;
   locale: Locale;
   title: string;
-  /** Matched chunk (vector search) or the indexed description (Algolia). */
+  /** Best-matching fragment: a BM25 snippet, or the summary when there is none. */
   snippet: string;
   /** Heading trail of the matched chunk, as stored — e.g. `"Setup > Install"`. */
   headingPath?: string;

@@ -1,7 +1,6 @@
 import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
-import { env as algoliaEnv } from "@chia/api/algolia/env";
 import { env as captchaEnv } from "@chia/api/captcha/env";
 import { env as s3Env } from "@chia/api/s3/env";
 import { env as spotifyEnv } from "@chia/api/spotify/env";
@@ -78,7 +77,6 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
   extends: [
-    algoliaEnv,
     spotifyEnv,
     authEnv,
     dbEnv,

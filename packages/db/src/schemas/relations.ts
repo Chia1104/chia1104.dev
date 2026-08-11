@@ -14,8 +14,6 @@ import { account, passkey, session } from "./auth.schema.ts";
 import {
   assets,
   assetsToTags,
-  contents,
-  feedEmbeddings,
   feeds,
   feedsToTags,
   feedTranslations,
@@ -28,6 +26,7 @@ import {
   organization,
   project,
 } from "./organization.schema.ts";
+import { resourceChunks, resourceEmbeddings } from "./resources.schema.ts";
 import { spotifyCredential } from "./spotify.schema.ts";
 import { user } from "./user.schema.ts";
 
@@ -37,6 +36,8 @@ const schema = {
   account,
   passkey,
   apikey,
+  resourceChunks,
+  resourceEmbeddings,
   spotifyCredential,
   organization,
   member,
@@ -47,8 +48,6 @@ const schema = {
   assets,
   feeds,
   feedTranslations,
-  feedEmbeddings,
-  contents,
   assetsToTags,
   feedsToTags,
   agentSessions,
@@ -168,19 +167,25 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.feedTranslations.feedId,
       to: r.feeds.id,
     }),
-    content: r.one.contents({
+    chunks: r.many.resourceChunks({
       from: r.feedTranslations.id,
-      to: r.contents.feedTranslationId,
-    }),
-    embeddings: r.many.feedEmbeddings({
-      from: r.feedTranslations.id,
-      to: r.feedEmbeddings.feedTranslationId,
+      to: r.resourceChunks.feedTranslationId,
     }),
   },
-  feedEmbeddings: {
+  resourceChunks: {
     feedTranslation: r.one.feedTranslations({
-      from: r.feedEmbeddings.feedTranslationId,
+      from: r.resourceChunks.feedTranslationId,
       to: r.feedTranslations.id,
+    }),
+    embeddings: r.many.resourceEmbeddings({
+      from: r.resourceChunks.id,
+      to: r.resourceEmbeddings.chunkId,
+    }),
+  },
+  resourceEmbeddings: {
+    chunk: r.one.resourceChunks({
+      from: r.resourceEmbeddings.chunkId,
+      to: r.resourceChunks.id,
     }),
   },
   assets: {
@@ -188,12 +193,6 @@ export const relations = defineRelations(schema, (r) => ({
     assetsToTags: r.many.assetsToTags({
       from: r.assets.id,
       to: r.assetsToTags.assetId,
-    }),
-  },
-  contents: {
-    feedTranslation: r.one.feedTranslations({
-      from: r.contents.feedTranslationId,
-      to: r.feedTranslations.id,
     }),
   },
   assetsToTags: {
@@ -299,7 +298,6 @@ export const tagTranslationsRelations = relations.tagTranslations;
 export const feedsRelations = relations.feeds;
 export const feedTranslationsRelations = relations.feedTranslations;
 export const assetsRelations = relations.assets;
-export const contentsRelations = relations.contents;
 export const assetsToTagsRelations = relations.assetsToTags;
 export const feedsToTagsRelations = relations.feedsToTags;
 export const agentSessionsRelations = relations.agentSessions;

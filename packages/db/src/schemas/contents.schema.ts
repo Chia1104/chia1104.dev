@@ -7,7 +7,6 @@ import {
   text,
   uniqueIndex,
   boolean,
-  vector,
 } from "drizzle-orm/pg-core";
 
 import { timestamps, softDelete } from "../libs/common.schema.ts";
@@ -108,6 +107,10 @@ export const feeds = pgTable("feed", baseFeedsColumns, (table) => [
 // Feed Translations
 // ============================================
 
+/**
+ * A translation holds the prose. Search indexes live on `resource_chunk`, which
+ * mirrors `published` / `deleted` / `locale` from here.
+ */
 export const feedTranslations = pgTable(
   "feed_translation",
   {
@@ -121,6 +124,16 @@ export const feedTranslations = pgTable(
     description: text("description"),
     summary: text("summary"),
     readTime: integer("read_time"),
+
+    // ---- body (was the `content` table) ----
+    content: text("content"),
+    source: text("source"),
+    unstableSerializedSource: text("unstable_serialized_source"),
+
+    /** Mirrored from `feed`; the source of truth for chunk visibility. */
+    published: boolean("published").notNull().default(false),
+    deleted: boolean("deleted").notNull().default(false),
+
     ...timestamps,
   },
   (table) => [
@@ -131,90 +144,6 @@ export const feedTranslations = pgTable(
     index("feed_translation_feed_id_idx").on(table.feedId),
     index("feed_translation_locale_idx").on(table.locale),
     index("feed_translation_title_idx").on(table.title),
-  ]
-);
-
-// ============================================
-// Feed Embeddings
-// ============================================
-
-/**
- * One row per (translation, model, chunk). Keeping vectors out of
- * `feed_translation` means adding/replacing an embedding model is a data
- * backfill instead of a schema migration.
- *
- * pgvector columns have a fixed dimension, so each supported dimension gets
- * its own nullable column; `model` decides which one is populated.
- */
-export const feedEmbeddings = pgTable(
-  "feed_embedding",
-  {
-    id: serial("id").primaryKey(),
-    feedTranslationId: integer("feed_translation_id")
-      .notNull()
-      .references(() => feedTranslations.id, { onDelete: "cascade" }),
-    // embedding model name, e.g. "text-embedding-3-small", "nomic-embed-text"
-    model: text("model").notNull(),
-    // "document": one topic-level vector per translation (related feeds).
-    // "chunk": structure-aware section vectors (search / future RAG context).
-    kind: text("kind", { enum: ["document", "chunk"] })
-      .notNull()
-      .default("document"),
-    chunkIndex: integer("chunk_index").notNull().default(0),
-    chunkText: text("chunk_text"),
-    // e.g. "HNSW > ef_search"; only set for chunk rows
-    headingPath: text("heading_path"),
-    tokenCount: integer("token_count"),
-    // sha-256 of the source content; combined with indexVersion for stale detection
-    contentHash: text("content_hash").notNull(),
-    // preprocessing/chunking strategy version — bumping it re-embeds in place
-    indexVersion: text("index_version").notNull(),
-    // OpenAI embedding model: text-embedding-3-small
-    embedding1536: vector("embedding_1536", { dimensions: 1536 }),
-    // Ollama embedding model: nomic-ai/nomic-embed-text-v1.5
-    embedding512: vector("embedding_512", { dimensions: 512 }),
-    ...timestamps,
-  },
-  (table) => [
-    uniqueIndex("feed_embedding_translation_model_kind_chunk_idx").on(
-      table.feedTranslationId,
-      table.model,
-      table.kind,
-      table.chunkIndex
-    ),
-    index("feed_embedding_translation_id_idx").on(table.feedTranslationId),
-    index("feed_embedding_model_idx").on(table.model),
-    index("feed_embedding_kind_idx").on(table.kind),
-    index("feed_embedding_1536_hnsw_idx").using(
-      "hnsw",
-      table.embedding1536.op("vector_cosine_ops")
-    ),
-    index("feed_embedding_512_hnsw_idx").using(
-      "hnsw",
-      table.embedding512.op("vector_cosine_ops")
-    ),
-  ]
-);
-
-// ============================================
-// Contents
-// ============================================
-
-export const contents = pgTable(
-  "content",
-  {
-    id: serial("id").primaryKey(),
-    feedTranslationId: integer("feed_translation_id")
-      .notNull()
-      .references(() => feedTranslations.id, { onDelete: "cascade" })
-      .unique(),
-    content: text("content"),
-    source: text("source"),
-    unstableSerializedSource: text("unstable_serialized_source"),
-    ...timestamps,
-  },
-  (table) => [
-    uniqueIndex("content_feed_translation_id_idx").on(table.feedTranslationId),
   ]
 );
 
@@ -263,7 +192,5 @@ export const feedsToTags = pgTable(
 export type Asset = InferSelectModel<typeof assets>;
 export type Feed = InferSelectModel<typeof feeds>;
 export type FeedTranslation = InferSelectModel<typeof feedTranslations>;
-export type FeedEmbedding = InferSelectModel<typeof feedEmbeddings>;
-export type Content = InferSelectModel<typeof contents>;
 export type Tag = InferSelectModel<typeof tags>;
 export type TagTranslation = InferSelectModel<typeof tagTranslations>;

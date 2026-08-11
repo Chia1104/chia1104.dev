@@ -14,9 +14,8 @@ import type {
   SearchPostsInput,
   TagItem,
 } from "@chia/agent-writing/ports";
-import { CANONICAL_EMBEDDING_MODEL } from "@chia/ai/embeddings/utils";
 import { searchFeedsService } from "@chia/api/feeds/search";
-import { createFeedService, updateFeedService } from "@chia/api/services/feeds";
+import { createFeedService, updateFeedService } from "@chia/api/feeds/write";
 import type { DB } from "@chia/db";
 import {
   getFeedById,
@@ -39,7 +38,7 @@ import request from "@chia/utils/request";
  * rather than issuing its own queries, so the agent is subject to the same slug generation and
  * post-write indexing as a human using the dashboard.
  *
- * Takes a `DB` and a `Keyv` rather than a `ServiceContext`, because it is constructed inside a
+ * Takes a `DB` rather than a `ServiceContext`, because it is constructed inside a
  * workflow step where no request exists. Authorisation happened at the transport boundary before
  * the run was started; `adminId` is the already-verified result of that, never tool input.
  */
@@ -57,44 +56,48 @@ interface TranslationPayload {
 
 export interface CreateContentPortOptions {
   db: DB;
-  kv: Keyv;
+  /**
+   * Retained for callers even though search no longer caches query embeddings —
+   * the port is constructed from a workflow step that has one to hand.
+   */
+  kv?: Keyv;
   /** Already verified by `adminGuard` before the workflow run was started. */
   adminId: string;
 }
 
+/**
+ * BM25 snippets come back with `<b>` markers for UI highlighting; the agent
+ * reads them as prose, so strip the markup rather than leaking it into a prompt.
+ */
+const stripHighlight = (snippet: string | null): string =>
+  snippet?.replaceAll(/<\/?b>/g, "") ?? "";
+
 export const createAgentContentPort = (
   options: CreateContentPortOptions
 ): ContentPort => {
-  const { db, kv, adminId } = options;
+  const { db, adminId } = options;
 
   return {
     async searchPosts(input: SearchPostsInput): Promise<PostSearchHit[]> {
       const result = await searchFeedsService({
         db,
-        kv,
         keyword: input.keyword,
-        model: input.mode === "algolia" ? "algolia" : CANONICAL_EMBEDDING_MODEL,
+        // `keyword` is in-database BM25; `semantic` fuses dense and lexical,
+        // because a single document vector alone under-recalls exact terms
+        // (package names, CLI flags, error messages)
+        model: input.mode === "keyword" ? "bm25" : "hybrid",
         locale: input.locale,
-        // BYO-key clients are for the dashboard's one-shot helpers; the agent uses the
-        // server-configured embedding credentials.
-        client: undefined,
       });
-
-      if (result.provider === "algolia") {
-        return result.items.slice(0, input.limit).map((hit) => ({
-          slug: hit.slug,
-          locale: hit.locale,
-          title: hit.title,
-          snippet: hit.description || hit.content.slice(0, 400),
-        }));
-      }
 
       return result.items.slice(0, input.limit).map((item) => ({
         slug: item.slug,
-        locale: item.locale,
-        title: item.title,
-        snippet: item.chunkText ?? "",
-        headingPath: item.headingPath ?? undefined,
+        locale: (item.summary.locale ?? "zh-TW") as Locale,
+        title: item.summary.title,
+        snippet:
+          stripHighlight(item.bestChunk.snippet) ||
+          item.summary.description ||
+          "",
+        headingPath: item.bestChunk.headingPath ?? undefined,
       }));
     },
 
@@ -295,7 +298,7 @@ const toPostSnapshot = (feed: {
         excerpt?: string | null;
         description?: string | null;
         summary?: string | null;
-        content?: { content?: string | null } | null;
+        content?: string | null;
       }[]
     | null;
   feedsToTags?: { tag?: { slug: string } | null }[] | null;
@@ -313,7 +316,7 @@ const toPostSnapshot = (feed: {
     excerpt: translation.excerpt,
     description: translation.description,
     summary: translation.summary,
-    content: translation.content?.content ?? null,
+    content: translation.content ?? null,
   })),
   tagSlugs: (feed.feedsToTags ?? [])
     .map((relation) => relation.tag?.slug)

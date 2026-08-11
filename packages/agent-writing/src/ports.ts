@@ -34,7 +34,7 @@ export type {
  * Ports this package needs from the host app.
  *
  * The split is deliberate: this package owns the writing agent's *domain* logic (tool contracts,
- * prompt assembly, draft semantics) and stays free of transport, auth and Algolia/S3 concerns.
+ * prompt assembly, draft semantics) and stays free of transport, auth and storage concerns.
  * `apps/service` implements these against the repo's existing repositories and feed services — see
  * `apps/service/src/services/agent-content.port.ts`.
  *
@@ -49,8 +49,8 @@ export type {
 export interface SearchPostsInput {
   keyword: string;
   locale?: Locale;
-  /** `algolia` for keyword search, an embedding model id for semantic search. */
-  mode: "algolia" | "semantic";
+  /** `keyword` is lexical (BM25); `semantic` fuses dense retrieval with it. */
+  mode: "keyword" | "semantic";
   limit: number;
 }
 

@@ -27,7 +27,7 @@ describe("Feeds Controller", () => {
     mockSearchPublicFeedsService.mockResolvedValue([]);
   });
   describe("GET /api/v1/feeds/public/search", () => {
-    it("should return public Algolia search results", async () => {
+    it("should return public search results", async () => {
       mockSearchPublicFeedsService.mockResolvedValue([
         {
           feedId: 1,
