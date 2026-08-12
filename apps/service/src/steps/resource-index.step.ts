@@ -66,7 +66,7 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
   const ref = { sourceType: request.sourceType, sourceId: request.sourceId };
 
   let embedded = 0;
-  for (;;) {
+  while (true) {
     const batch = await listChunksNeedingEmbedding(db, {
       model: provider.id,
       indexVersion: EMBEDDING_INDEX_VERSION,
