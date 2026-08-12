@@ -14,11 +14,15 @@ import {
   File,
   Music2,
   Bot,
+  Database,
+  Boxes,
+  Activity,
+  Wrench,
 } from "lucide-react";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
 
-type RouteGroup = "overview" | "project" | "content" | "settings";
+type RouteGroup = "overview" | "project" | "content" | "rag" | "settings";
 
 export const useRouteItems = () => {
   const segments = useSelectedLayoutSegments();
@@ -86,6 +90,40 @@ export const useRouteItems = () => {
           isActive: segments[0] === "agent",
           icon: <Bot />,
           title: "Writing Agent",
+        },
+      ],
+      rag: [
+        {
+          url: "/rag",
+          isActive: segments[0] === "rag",
+          icon: <Database />,
+          title: "RAG",
+          items: [
+            {
+              url: "/rag",
+              icon: <Database />,
+              title: "Overview",
+              isActive: segments[0] === "rag" && segments.length === 1,
+            },
+            {
+              url: "/rag/chunks",
+              icon: <Boxes />,
+              title: "Chunks",
+              isActive: segments[0] === "rag" && segments[1] === "chunks",
+            },
+            {
+              url: "/rag/runs",
+              icon: <Activity />,
+              title: "Index Runs",
+              isActive: segments[0] === "rag" && segments[1] === "runs",
+            },
+            {
+              url: "/rag/maintenance",
+              icon: <Wrench />,
+              title: "Maintenance",
+              isActive: segments[0] === "rag" && segments[1] === "maintenance",
+            },
+          ],
         },
       ],
       settings: [

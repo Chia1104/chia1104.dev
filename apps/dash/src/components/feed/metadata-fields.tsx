@@ -16,6 +16,8 @@ import { Controller, useFormContext } from "react-hook-form";
 
 import dayjs from "@chia/utils/day";
 
+import { EmbeddingDrawer } from "@/components/rag/embedding-drawer";
+import type { EmbeddingResource } from "@/components/rag/embedding-drawer";
 import { useEditFields } from "@/store/draft";
 import type { FormSchema } from "@/store/draft/slices/edit-fields";
 
@@ -31,7 +33,15 @@ import { SlugField } from "./slug-field";
 import { TitleField } from "./title-field";
 
 export const MetadataFields = memo(
-  ({ feedId, meta }: { feedId?: number; meta?: MetaChipProps }) => {
+  ({
+    feedId,
+    meta,
+    resources,
+  }: {
+    feedId?: number;
+    meta?: MetaChipProps;
+    resources?: EmbeddingResource[];
+  }) => {
     const id = useId();
     const form = useFormContext<FormSchema>();
     const { disabled, mode } = useEditFields();
@@ -46,6 +56,7 @@ export const MetadataFields = memo(
           {showMetaInfo && feedId && (
             <div className="flex items-center gap-2">
               <MetaChip {...meta} />
+              <EmbeddingDrawer feedId={feedId} resources={resources ?? []} />
               <DeleteButton
                 feedId={feedId}
                 type={form.watch("type")}

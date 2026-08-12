@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster as ST } from "sonner";
 
 import type { Theme } from "@chia/ui/theme";
@@ -24,10 +25,12 @@ const RootProvider = ({ children }: Props) => {
   const [queryClient] = useState(() => getQueryClient());
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" enableSystem attribute="class">
-        <Toaster />
-        {children}
-      </ThemeProvider>
+      <NuqsAdapter>
+        <ThemeProvider defaultTheme="system" enableSystem attribute="class">
+          <Toaster />
+          {children}
+        </ThemeProvider>
+      </NuqsAdapter>
     </QueryClientProvider>
   );
 };

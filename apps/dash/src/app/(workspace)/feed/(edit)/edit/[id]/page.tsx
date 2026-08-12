@@ -90,6 +90,12 @@ const Page = async ({
               <EditView
                 feedId={feed.id}
                 defaultValues={defaultValues}
+                // the drawer indexes by translation id, so it needs the ids the
+                // form itself has no use for
+                resources={feed.translations.map((t) => ({
+                  locale: t.locale,
+                  sourceId: t.id,
+                }))}
                 meta={{
                   embedding: Object.fromEntries(
                     feed.translations.map((t) => [t.locale, t.hasEmbedding])

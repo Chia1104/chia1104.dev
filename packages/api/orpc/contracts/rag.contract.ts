@@ -1,0 +1,324 @@
+import { oc } from "@orpc/contract";
+import * as z from "zod";
+
+import { locale } from "@chia/db";
+import {
+  RESOURCE_CHUNK_KIND,
+  RESOURCE_INDEX_RUN_SCOPE,
+  RESOURCE_INDEX_RUN_STATUS,
+} from "@chia/db/schema";
+
+import { isResourceType, resourceTypes } from "../../resources/registry";
+
+import { withMetaSchema } from "./shared";
+
+/**
+ * RAG management contract.
+ *
+ * RPC-only, like the agent contract: every consumer is the dashboard's browser client.
+ *
+ * Two conventions hold across all eleven procedures:
+ * - every output carries the index key it was computed under, because "embedded" is only
+ *   ever true relative to a `(model, index_version)` pair
+ * - the read procedures that gate a trigger button also carry `canTrigger`, decided by
+ *   the service so the dashboard never re-implements the authorization rule
+ */
+
+// ============================================
+// Shared shapes
+// ============================================
+
+/** The `(model, index_version)` pair the response was computed against. */
+const indexKeyShape = {
+  model: z.string(),
+  indexVersion: z.string(),
+};
+
+const chunkStateSchema = z.enum(["current", "stale", "missing"]);
+
+const runStatusSchema = z.enum(RESOURCE_INDEX_RUN_STATUS);
+
+const indexCountsSchema = z.object({
+  total: z.number(),
+  current: z.number(),
+  stale: z.number(),
+  missing: z.number(),
+});
+
+/**
+ * Rejected at the boundary rather than inside `getResourceAdapter`, matching
+ * `resourceIndexRequestSchema` — a bad source type must not become a workflow run that
+ * retries its way to failure.
+ */
+const resourceRefSchema = z.object({
+  sourceType: z.string().refine(isResourceType, {
+    message: `Must be one of: ${resourceTypes.join(", ")}`,
+  }),
+  sourceId: z.number().int().positive(),
+});
+
+const chunkStatusSchema = z.object({
+  chunkId: z.number(),
+  kind: z.enum(RESOURCE_CHUNK_KIND),
+  chunkIndex: z.number(),
+  headingPath: z.string().nullable(),
+  tokenCount: z.number().nullable(),
+  contentHash: z.string(),
+  locale: z.enum(locale.enumValues).nullable(),
+  published: z.boolean(),
+  deleted: z.boolean(),
+  state: chunkStateSchema,
+  updatedAt: z.date(),
+});
+
+const chunkListItemSchema = z.object({
+  ...chunkStatusSchema.shape,
+  sourceType: z.string(),
+  sourceId: z.number(),
+  /** Truncated `content`. The full text is a `chunk:get` away. */
+  preview: z.string(),
+});
+
+const chunkDetailSchema = z.object({
+  ...chunkStatusSchema.shape,
+  sourceType: z.string(),
+  sourceId: z.number(),
+  content: z.string(),
+  metadata: z.unknown(),
+  createdAt: z.date(),
+  /** Every stored vector, so a leftover key is visible rather than inferred. */
+  vectors: z.array(
+    z.object({
+      model: z.string(),
+      indexVersion: z.string(),
+      updatedAt: z.date(),
+    })
+  ),
+});
+
+const embeddingKeyCountSchema = z.object({
+  model: z.string(),
+  indexVersion: z.string(),
+  count: z.number(),
+});
+
+/**
+ * External run id of the run currently holding this target, or `null`.
+ *
+ * The id alone, never a status: these procedures do not reconcile against the workflow
+ * runtime, so a status read here could be a stale `running`. The dashboard hands the id
+ * to `rag["run:get"]`, which does reconcile.
+ */
+const activeRunIdSchema = z.string().nullable();
+
+const runSnapshotSchema = z.object({
+  runId: z.string(),
+  recordId: z.number(),
+  scope: z.enum(RESOURCE_INDEX_RUN_SCOPE),
+  sourceType: z.string().nullable(),
+  sourceId: z.number().nullable(),
+  feedId: z.number().nullable(),
+  status: runStatusSchema,
+  /** The run's own index key, which may predate the current one. */
+  model: z.string(),
+  indexVersion: z.string(),
+  progress: z
+    .object({
+      done: z.number(),
+      total: z.number(),
+      failed: z.array(z.number()),
+    })
+    .nullable(),
+  result: z.unknown(),
+  error: z.string().nullable(),
+  triggeredBy: z.string().nullable(),
+  startedAt: z.date().nullable(),
+  endedAt: z.date().nullable(),
+  createdAt: z.date(),
+});
+
+const runHandleSchema = z.object({
+  ...indexKeyShape,
+  runId: z.string(),
+  recordId: z.number(),
+  status: runStatusSchema,
+  /** True when an in-flight run was handed back instead of a new one started. */
+  reused: z.boolean(),
+});
+
+/** Errors every trigger procedure can answer with. */
+const triggerErrors = {
+  UNAUTHORIZED: {},
+  FORBIDDEN: {},
+  TOO_MANY_REQUESTS: {},
+  SERVICE_UNAVAILABLE: {
+    message: "Indexing is not available in this process.",
+  },
+  INTERNAL_SERVER_ERROR: {},
+} as const;
+
+// ============================================
+// Reads
+// ============================================
+
+export const getRagOverviewContract = oc
+  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .output(
+    z.object({
+      ...indexKeyShape,
+      canTrigger: z.boolean(),
+      counts: indexCountsSchema,
+      bySourceType: z.array(
+        z.object({ sourceType: z.string(), counts: indexCountsSchema })
+      ),
+      byLocale: z.array(
+        z.object({
+          locale: z.enum(locale.enumValues).nullable(),
+          counts: indexCountsSchema,
+        })
+      ),
+      byKind: z.array(
+        z.object({
+          kind: z.enum(RESOURCE_CHUNK_KIND),
+          counts: indexCountsSchema,
+        })
+      ),
+      byVisibility: z.array(
+        z.object({
+          published: z.boolean(),
+          deleted: z.boolean(),
+          counts: indexCountsSchema,
+        })
+      ),
+      /** Vectors per stored key — how leftovers from an older key show up. */
+      byIndexKey: z.array(embeddingKeyCountSchema),
+      /** Chunks with no vector on the current key: `stale` plus `missing`. */
+      needingEmbedding: z.number(),
+      /** The `all`-scope run in flight, if any. */
+      activeRunId: activeRunIdSchema,
+    })
+  );
+
+export const listRagChunksContract = oc
+  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .input(
+    z.object({
+      sourceType: z.string().optional(),
+      locale: z.enum(locale.enumValues).optional(),
+      kind: z.enum(RESOURCE_CHUNK_KIND).optional(),
+      state: chunkStateSchema.optional(),
+      /** Substring match on `content`. */
+      query: z.string().max(200).optional(),
+      /** Inclusive `chunkId` the page starts at. */
+      cursor: z.number().int().nullish(),
+      limit: z.number().int().min(1).max(100).optional(),
+    })
+  )
+  .output(
+    z.object({
+      ...indexKeyShape,
+      ...withMetaSchema(chunkListItemSchema).shape,
+      /**
+       * Narrowed from `withMetaSchema`'s `string | number`: this cursor is a chunk id,
+       * and the input only accepts a number, so widening it here would force every
+       * caller to coerce on the way back in.
+       */
+      nextCursor: z.number().nullable(),
+    })
+  );
+
+export const getRagChunkContract = oc
+  .errors({ UNAUTHORIZED: {}, NOT_FOUND: {}, INTERNAL_SERVER_ERROR: {} })
+  .input(z.object({ chunkId: z.number().int().positive() }))
+  .output(z.object({ ...indexKeyShape, chunk: chunkDetailSchema }));
+
+export const getResourceIndexStatusContract = oc
+  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .input(resourceRefSchema)
+  .output(
+    z.object({
+      ...indexKeyShape,
+      canTrigger: z.boolean(),
+      counts: indexCountsSchema,
+      /** Ordered by kind then chunk index, as the drawer lists them. */
+      chunks: z.array(chunkStatusSchema),
+      /** The `resource`-scope run in flight for this ref, if any. */
+      activeRunId: activeRunIdSchema,
+    })
+  );
+
+export const listIndexRunsContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    SERVICE_UNAVAILABLE: {
+      message: "Indexing is not available in this process.",
+    },
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .input(
+    z.object({
+      limit: z.number().int().min(1).max(100).optional(),
+      cursor: z.union([z.string(), z.number()]).nullish(),
+    })
+  )
+  .output(
+    z.object({
+      ...indexKeyShape,
+      ...withMetaSchema(runSnapshotSchema).shape,
+    })
+  );
+
+export const getIndexRunContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    NOT_FOUND: {},
+    SERVICE_UNAVAILABLE: {
+      message: "Indexing is not available in this process.",
+    },
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .input(z.object({ runId: z.string().min(1) }))
+  .output(z.object({ ...indexKeyShape, run: runSnapshotSchema }));
+
+/** The numbers a full reindex has to show before it may be confirmed. */
+export const previewReindexAllContract = oc
+  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .output(
+    z.object({
+      ...indexKeyShape,
+      /** Resources the run iterates, one per feed translation. */
+      targets: z.number(),
+      counts: indexCountsSchema,
+      needingEmbedding: z.number(),
+      byIndexKey: z.array(embeddingKeyCountSchema),
+    })
+  );
+
+// ============================================
+// Triggers
+// ============================================
+
+export const indexResourceContract = oc
+  .errors(triggerErrors)
+  .input(resourceRefSchema)
+  .output(runHandleSchema);
+
+export const indexFeedContract = oc
+  .errors(triggerErrors)
+  .input(z.object({ feedId: z.number().int().positive() }))
+  .output(runHandleSchema);
+
+export const reindexAllContract = oc
+  .errors(triggerErrors)
+  .input(z.object({ onlyMissing: z.boolean().optional().default(false) }))
+  .output(runHandleSchema);
+
+export const pruneEmbeddingsContract = oc
+  .errors(triggerErrors)
+  .output(z.object({ ...indexKeyShape, deletedCount: z.number() }));
+
+export type RagChunkState = z.infer<typeof chunkStateSchema>;
+export type RagIndexCounts = z.infer<typeof indexCountsSchema>;
+export type RagChunkListItem = z.infer<typeof chunkListItemSchema>;
+export type RagChunkDetail = z.infer<typeof chunkDetailSchema>;
+export type RagIndexRunSnapshot = z.infer<typeof runSnapshotSchema>;
