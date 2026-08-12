@@ -128,7 +128,7 @@ const Page = async ({
           </div>
           <p>{feed.translations[0]?.description}</p>
           <ActionGroup
-            content={feed.translations[0]?.content?.content}
+            content={feed.translations[0]?.content}
             articleUrl={articleUrl}
             className="mt-5 flex justify-end lg:hidden"
           />
@@ -194,7 +194,7 @@ const Page = async ({
               ),
               tocFooter: (
                 <ActionGroup
-                  content={feed.translations[0]?.content?.content}
+                  content={feed.translations[0]?.content}
                   articleUrl={articleUrl}
                   className="mt-5 hidden self-end md:flex"
                 />

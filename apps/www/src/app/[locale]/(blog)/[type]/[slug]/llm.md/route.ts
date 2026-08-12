@@ -20,7 +20,7 @@ export const GET = async (
   if (error || feed.contentType !== "mdx") {
     notFound();
   }
-  return new Response(feed.translations[0]?.content?.content, {
+  return new Response(feed.translations[0]?.content, {
     headers: { "Content-Type": "text/markdown; charset=utf-8" },
   });
 };

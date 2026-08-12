@@ -31,7 +31,7 @@ export const getContentProps = async ({
 }: GetContentPropsArgs): GetContentPropsReturn => {
   switch (contentType) {
     case ContentType.Mdx: {
-      const compiled = await compileMDX(content.content ?? "");
+      const compiled = await compileMDX(content ?? "");
       return {
         type: ContentType.Mdx,
         toc: compiled.toc,
@@ -41,7 +41,7 @@ export const getContentProps = async ({
     default: {
       return {
         type: contentType,
-        content: content.content,
+        content,
       };
     }
   }

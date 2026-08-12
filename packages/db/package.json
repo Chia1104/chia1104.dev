@@ -25,9 +25,17 @@
       "types": "./src/libs/feeds/index.ts",
       "default": "./src/libs/feeds/index.ts"
     },
-    "./repos/feeds/embedding": {
-      "types": "./src/libs/feeds/embedding.ts",
-      "default": "./src/libs/feeds/embedding.ts"
+    "./repos/feeds/search": {
+      "types": "./src/libs/feeds/search.ts",
+      "default": "./src/libs/feeds/search.ts"
+    },
+    "./repos/resources/chunk": {
+      "types": "./src/libs/resources/chunk.ts",
+      "default": "./src/libs/resources/chunk.ts"
+    },
+    "./repos/resources/search": {
+      "types": "./src/libs/resources/search.ts",
+      "default": "./src/libs/resources/search.ts"
     },
     "./repos/users": {
       "types": "./src/libs/users/index.ts",
@@ -94,6 +102,7 @@
   "dependencies": {
     "@chia/ai": "workspace:*",
     "@chia/kv": "workspace:*",
+    "@paradedb/drizzle-paradedb": "catalog:drizzle",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:drizzle",
     "pg": "^8.22.0",

@@ -5,7 +5,7 @@ import {
 } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { feeds, feedTranslations, contents, locale } from "../../schemas";
+import { feeds, feedTranslations, locale } from "../../schemas";
 import { FeedOrderBy, FeedType } from "../../types";
 
 import {
@@ -69,22 +69,27 @@ export type UpdateFeedDTO = z.infer<typeof updateFeedSchema>;
 // Feed Translation Schema
 // ============================================
 
+/**
+ * `published`/`deleted` mirror `feed` and are written by the indexing workflow,
+ * not by callers.
+ */
+const internalTranslationColumns = {
+  id: true,
+  feedId: true,
+  createdAt: true,
+  updatedAt: true,
+  published: true,
+  deleted: true,
+} as const;
+
 export const insertFeedTranslationSchema = z.object({
-  ...createInsertSchema(feedTranslations).omit({
-    id: true,
-    feedId: true,
-    createdAt: true,
-    updatedAt: true,
-  }).shape,
+  ...createInsertSchema(feedTranslations).omit(internalTranslationColumns)
+    .shape,
 });
 
 export const updateFeedTranslationSchema = z.object({
-  ...createUpdateSchema(feedTranslations).omit({
-    id: true,
-    feedId: true,
-    createdAt: true,
-    updatedAt: true,
-  }).shape,
+  ...createUpdateSchema(feedTranslations).omit(internalTranslationColumns)
+    .shape,
 });
 
 export type InsertFeedTranslationDTO = z.infer<
@@ -98,23 +103,24 @@ export type UpdateFeedTranslationDTO = z.infer<
 // Content Schema
 // ============================================
 
-export const insertContentSchema = z.object({
-  ...createInsertSchema(contents).omit({
-    id: true,
-    feedTranslationId: true,
-    createdAt: true,
-    updatedAt: true,
-  }).shape,
-});
+/**
+ * The body lives on `feed_translation` now, so these are a projection of that
+ * table rather than their own. Kept as a separate schema because callers still
+ * write the body independently of the metadata.
+ */
+const contentColumns = {
+  content: true,
+  source: true,
+  unstableSerializedSource: true,
+} as const;
 
-export const updateContentSchema = z.object({
-  ...createUpdateSchema(contents).omit({
-    id: true,
-    feedTranslationId: true,
-    createdAt: true,
-    updatedAt: true,
-  }).shape,
-});
+export const insertContentSchema = createInsertSchema(feedTranslations).pick(
+  contentColumns
+);
+
+export const updateContentSchema = createUpdateSchema(feedTranslations).pick(
+  contentColumns
+);
 
 export type InsertContentDTO = z.infer<typeof insertContentSchema>;
 export type UpdateContentDTO = z.infer<typeof updateContentSchema>;
@@ -133,7 +139,9 @@ export const feedTranslationSchema = z.object({
   ...internal_dateSchema.shape,
 });
 
-export const contentSchema = createSelectSchema(contents);
+export const contentSchema = createSelectSchema(feedTranslations).pick(
+  contentColumns
+);
 
 export type FeedDTO = z.infer<typeof feedSchema>;
 export type FeedTranslationDTO = z.infer<typeof feedTranslationSchema>;

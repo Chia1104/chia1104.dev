@@ -5,13 +5,13 @@ import { locale } from "@chia/db";
 import { Locale } from "@chia/db/types";
 
 import type { SearchFeedsServiceResult } from "../../feeds/search";
-import { searchFeedsSchema } from "../../feeds/validator";
 import {
   publicFeedSearchItemSchema,
+  searchFeedsSchema,
   updateFeedRequestSchema,
   upsertContentRequestSchema,
   upsertFeedTranslationRequestSchema,
-} from "../../services/validators";
+} from "../../feeds/validator";
 
 import {
   feedListSchema,
@@ -204,11 +204,11 @@ export const searchPublicFeedsContract = oc
   .output(z.object({ items: z.array(publicFeedSearchItemSchema) }));
 
 /**
- * Vector or Algolia search over the admin's feeds.
+ * Search over the admin's feeds — dense, BM25, or the two fused by rank.
  *
  * Output is `z.custom` because the payload shape depends on the requested provider
- * (vector hits vs Algolia hits) and both are pass-through; a zod union of the two would
- * have to mirror Algolia's record shape.
+ * and all of them are pass-through; mirroring each shape in a zod union would
+ * duplicate types the repositories already own.
  */
 export const searchFeedsContract = oc
   .route({ method: "GET", path: "/feeds/search" })

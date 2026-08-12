@@ -68,14 +68,13 @@ const Page = async ({
             excerpt: translation.excerpt ?? null,
             summary: translation.summary ?? null,
             readTime: translation.readTime ?? null,
-            content: translation.content
-              ? {
-                  content: translation.content.content ?? null,
-                  source: translation.content.source ?? null,
-                  unstableSerializedSource:
-                    translation.content.unstableSerializedSource ?? null,
-                }
-              : undefined,
+            // the body is flat on the translation now; the form still groups it
+            content: {
+              content: translation.content ?? null,
+              source: translation.source ?? null,
+              unstableSerializedSource:
+                translation.unstableSerializedSource ?? null,
+            },
           };
           return acc;
         },

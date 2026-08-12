@@ -10,7 +10,7 @@ import {
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import { isAppError } from "@chia/service-kit/errors";
 
-import { createFeedService, updateFeedService } from "../../services/feeds";
+import { createFeedService, updateFeedService } from "../../feeds/write";
 import { feedEvents } from "../events";
 import { adminGuard } from "../guards/admin.guard";
 import { authGuard } from "../guards/auth.guard";

@@ -1,65 +1,94 @@
-import type { createOpenAI } from "@chia/ai";
-import type {
-  OllamaEmbeddingModel,
-  TextEmbeddingModel,
-} from "@chia/ai/embeddings/utils";
-import {
-  CANONICAL_EMBEDDING_MODEL,
-  EMBEDDING_INDEX_VERSION,
-  getEmbeddingModelConfig,
-  hashEmbeddingInput,
-  isOllamaEmbeddingModel,
-  isQueryableEmbeddingModel,
-  normalizeQueryForEmbedding,
-} from "@chia/ai/embeddings/utils";
+import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import type { DB } from "@chia/db";
-import { getPublicFeedSummariesByIds } from "@chia/db/repos/feeds";
-import { getRelatedFeeds, searchFeeds } from "@chia/db/repos/feeds/embedding";
+import {
+  getFeedRefsByTranslationIds,
+  getPublicFeedSummariesByIds,
+} from "@chia/db/repos/feeds";
+import { getRelatedFeeds } from "@chia/db/repos/feeds/search";
 import type { Locale } from "@chia/db/types";
-import type { FeedType } from "@chia/db/types";
 import type { Keyv } from "@chia/kv";
 
-import { getAlgoliaClient } from "../algolia/client";
-import { env } from "../algolia/env";
-import type { PublicFeedSearchItem } from "../services/validators";
+import { FEED_TRANSLATION_SOURCE_TYPE } from "../resources/registry";
+import { searchResources } from "../resources/search";
+import type {
+  ResourceSearchHit,
+  ResourceSearchMode,
+  ResourceSearchResult,
+} from "../resources/search";
+
+import type { PublicFeedSearchItem } from "./validator";
+
+export type SearchFeedsProvider = ResourceSearchMode;
+
+/** Chunks reference translations; feed callers key off the feed. */
+export interface SearchFeedsItem extends ResourceSearchHit {
+  feedId: number;
+  slug: string;
+}
+
+export interface SearchFeedsServiceResult extends Omit<
+  ResourceSearchResult,
+  "items"
+> {
+  items: SearchFeedsItem[];
+}
 
 interface SearchFeedsServiceParams {
   db: DB;
-  kv: Keyv;
   keyword: string | undefined;
-  model: TextEmbeddingModel | OllamaEmbeddingModel | "algolia";
+  model: SearchFeedsProvider;
   locale: Locale | undefined;
-  client: ReturnType<typeof createOpenAI> | undefined;
+  limit?: number;
+  kv?: Keyv;
 }
 
-export type VectorSearchResult = Awaited<
-  ReturnType<typeof searchFeeds>
->["items"];
+/** Feed-scoped view of resource search. */
+export async function searchFeedsService({
+  db,
+  keyword,
+  model,
+  locale,
+  limit = 5,
+}: SearchFeedsServiceParams): Promise<SearchFeedsServiceResult> {
+  // resource hits are per translation; without a locale two translations of one
+  // feed both match, so over-fetch and collapse onto feeds below
+  const { mode, items } = await searchResources({
+    db,
+    query: keyword ?? "",
+    mode: model,
+    locale,
+    sourceTypes: [FEED_TRANSLATION_SOURCE_TYPE],
+    limit: locale ? limit : limit * 2,
+  });
 
-export interface AlgoliaFeedHit {
-  version: "2026.07.13";
-  objectID: string | number;
-  feedID: string | number;
-  type: Exclude<FeedType, "all">;
-  locale: Locale;
-  slug: string;
-  title: string;
-  description: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
+  const refs = await resolveFeedRefs(
+    db,
+    items.map((item) => item.sourceId)
+  );
+
+  const seenFeeds = new Set<number>();
+
+  return {
+    mode,
+    items: items
+      .flatMap((item) => {
+        const ref = refs.get(item.sourceId);
+        if (!ref || seenFeeds.has(ref.feedId)) {
+          return [];
+        }
+        seenFeeds.add(ref.feedId);
+        return [{ ...item, ...ref }];
+      })
+      .slice(0, limit),
+  };
 }
 
-export type SearchFeedsServiceResult =
-  | {
-      provider: OllamaEmbeddingModel | TextEmbeddingModel;
-      items: VectorSearchResult;
-    }
-  | {
-      provider: "algolia";
-      items: AlgoliaFeedHit[];
-    };
-
+/**
+ * Public-site keyword search.
+ *
+ * Summaries come from the feed tables so the response keeps the shape the
+ * public site renders.
+ */
 export async function searchPublicFeedsService({
   db,
   keyword,
@@ -71,36 +100,36 @@ export async function searchPublicFeedsService({
   locale: Locale;
   limit?: number;
 }): Promise<PublicFeedSearchItem[]> {
-  const { hits } = await getAlgoliaClient().searchSingleIndex<AlgoliaFeedHit>({
-    indexName: env.ALGOLIA_FEEDS_INDEX_NAME,
-    searchParams: {
-      query: keyword.trim(),
-      facetFilters: [`locale:${locale}`],
-      hitsPerPage: limit,
-    },
+  const { items } = await searchResources({
+    db,
+    query: keyword,
+    mode: "bm25",
+    locale,
+    sourceTypes: [FEED_TRANSLATION_SOURCE_TYPE],
+    limit,
   });
+  if (items.length === 0) {
+    return [];
+  }
 
-  const feedIds = [
-    ...new Set(
-      hits
-        .map(({ feedID }) => Number(feedID))
-        .filter((feedID) => Number.isSafeInteger(feedID))
-    ),
-  ];
+  const refs = await resolveFeedRefs(
+    db,
+    items.map((item) => item.sourceId)
+  );
   const summaries = await getPublicFeedSummariesByIds(db, {
-    feedIds,
+    feedIds: [...new Set([...refs.values()].map((ref) => ref.feedId))],
     locale,
   });
   const summariesById = new Map(
     summaries.map((summary) => [summary.id, summary])
   );
 
-  return hits.flatMap(({ feedID }) => {
-    const summary = summariesById.get(Number(feedID));
+  return items.flatMap((item) => {
+    const ref = refs.get(item.sourceId);
+    const summary = ref ? summariesById.get(ref.feedId) : undefined;
     if (!summary) {
       return [];
     }
-
     return [
       {
         feedId: summary.id,
@@ -115,225 +144,53 @@ export async function searchPublicFeedsService({
   });
 }
 
-export async function searchFeedsService({
-  db,
-  kv,
-  keyword,
-  model,
-  locale,
-  client,
-}: SearchFeedsServiceParams): Promise<SearchFeedsServiceResult> {
-  if (model === "algolia") {
-    const { hits } = await getAlgoliaClient().searchSingleIndex<AlgoliaFeedHit>(
-      {
-        indexName: env.ALGOLIA_FEEDS_INDEX_NAME,
-        searchParams: {
-          query: keyword ?? "",
-          facetFilters: locale ? [`locale:${locale}`] : undefined,
-          hitsPerPage: 5,
-        },
-      }
-    );
-    return {
-      provider: "algolia",
-      items: hits,
-    };
-  }
-
-  // only models the indexing workflow actually writes are searchable —
-  // anything else would burn a query embedding and return nothing
-  if (!isQueryableEmbeddingModel(model)) {
-    throw new UnindexedEmbeddingModelError(model);
-  }
-
-  const config = getEmbeddingModelConfig(model);
-  const isOllama = isOllamaEmbeddingModel(model);
-  const cachedEmbedding = await readCachedQueryEmbedding({
-    kv,
-    keyword: keyword ?? "",
-    model,
-    locale,
-  });
-
-  const { items, embedding } = await searchFeeds(db, {
-    input: keyword ?? "",
-    limit: 5,
-    model: isOllama ? undefined : model,
-    useOllama: isOllama ? { model } : undefined,
-    locale,
-    client,
-    embedding: cachedEmbedding ?? undefined,
-    comparison: config.defaultThreshold,
-  });
-
-  if (!cachedEmbedding && embedding.length === config.dimensions) {
-    await writeCachedQueryEmbedding({
-      kv,
-      keyword: keyword ?? "",
-      model,
-      locale,
-      embedding,
-    });
-  }
-
-  return {
-    provider: model,
-    items,
-  };
-}
-
-// ============================================
-// Query embedding cache
-// ============================================
-
-export class UnindexedEmbeddingModelError extends Error {
-  constructor(readonly model: string) {
-    super(`Embedding model "${model}" is not indexed for search`);
-    this.name = "UnindexedEmbeddingModelError";
-  }
-}
-
-const QUERY_EMBEDDING_CACHE_VERSION = "v1";
-const QUERY_EMBEDDING_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-
-interface CachedQueryEmbedding {
-  model: string;
-  dimensions: number;
-  embedding: number[];
-  createdAt: string;
-}
-
-const queryEmbeddingCacheKey = async (params: {
-  keyword: string;
-  model: TextEmbeddingModel | OllamaEmbeddingModel;
-  locale: Locale | undefined;
-}) => {
-  const normalized = normalizeQueryForEmbedding(params.keyword);
-  const digest = await hashEmbeddingInput(normalized);
-  return `feeds:query-embedding:${QUERY_EMBEDDING_CACHE_VERSION}:${params.model}:${params.locale ?? "all"}:${digest}`;
-};
-
-const readCachedQueryEmbedding = async (params: {
-  kv: Keyv;
-  keyword: string;
-  model: TextEmbeddingModel | OllamaEmbeddingModel;
-  locale: Locale | undefined;
-}): Promise<number[] | null> => {
-  const cacheKey = await queryEmbeddingCacheKey(params);
-  const cached = await params.kv.get<string>(cacheKey);
-  if (!cached) {
-    return null;
-  }
-
-  const config = getEmbeddingModelConfig(params.model);
-  try {
-    const payload = JSON.parse(cached) as Partial<CachedQueryEmbedding>;
-    if (
-      payload.model === params.model &&
-      payload.dimensions === config.dimensions &&
-      Array.isArray(payload.embedding) &&
-      payload.embedding.length === config.dimensions &&
-      payload.embedding.every(
-        (value) => typeof value === "number" && Number.isFinite(value)
-      )
-    ) {
-      return payload.embedding;
-    }
-  } catch {
-    // fall through — corrupt payloads are deleted and regenerated
-  }
-
-  await params.kv.delete(cacheKey);
-  return null;
-};
-
-const writeCachedQueryEmbedding = async (params: {
-  kv: Keyv;
-  keyword: string;
-  model: TextEmbeddingModel | OllamaEmbeddingModel;
-  locale: Locale | undefined;
-  embedding: number[];
-}) => {
-  const cacheKey = await queryEmbeddingCacheKey(params);
-  const config = getEmbeddingModelConfig(params.model);
-  const payload: CachedQueryEmbedding = {
-    model: params.model,
-    dimensions: config.dimensions,
-    embedding: params.embedding,
-    createdAt: new Date().toISOString(),
-  };
-  await params.kv.set(
-    cacheKey,
-    JSON.stringify(payload),
-    QUERY_EMBEDDING_CACHE_TTL_MS
+const resolveFeedRefs = async (
+  db: DB,
+  translationIds: number[]
+): Promise<Map<number, { feedId: number; slug: string }>> => {
+  const rows = await getFeedRefsByTranslationIds(db, { translationIds });
+  return new Map(
+    rows.map((row) => [
+      row.translationId,
+      { feedId: row.feedId, slug: row.slug },
+    ])
   );
 };
 
 // ============================================
-// Related feeds cache
+// Related feeds
 // ============================================
-
-const RELATED_FEEDS_CACHE_VERSION = "v1";
-const RELATED_FEEDS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-// an empty result usually means the feed is not indexed yet — keep it
-// short-lived so freshly embedded feeds surface quickly
-const RELATED_FEEDS_EMPTY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 type RelatedFeedItems = Awaited<ReturnType<typeof getRelatedFeeds>>;
 
-interface CachedRelatedFeeds {
-  items: RelatedFeedItems;
-}
+const RELATED_FEEDS_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
-/**
- * Embedding index version and canonical model are part of the key so bumping
- * either invalidates every cached list without a manual flush; content edits
- * within the TTL rely on expiry.
- */
-const relatedFeedsCacheKey = (params: {
-  slug: string;
-  locale: Locale;
-  limit: number;
-}) =>
-  `feeds:related:${RELATED_FEEDS_CACHE_VERSION}:${EMBEDDING_INDEX_VERSION}:${CANONICAL_EMBEDDING_MODEL}:${params.locale}:${params.limit}:${params.slug}`;
-
-/**
- * Cached wrapper around {@link getRelatedFeeds} — related lists only change
- * on re-indexing, so there is no need to run a vector similarity query per
- * request. Note `createdAt` becomes an ISO string after a cache round-trip;
- * callers only JSON-serialize the items, so the response shape is identical.
- */
+/** Cached: a post's related list barely changes between publishes. */
 export async function getRelatedFeedsService({
   db,
   kv,
   slug,
   locale,
-  limit,
+  limit = 3,
 }: {
   db: DB;
   kv: Keyv;
   slug: string;
   locale: Locale;
-  limit: number;
+  limit?: number;
 }): Promise<RelatedFeedItems> {
-  const cacheKey = relatedFeedsCacheKey({ slug, locale, limit });
-  const cached = await kv.get<string>(cacheKey);
+  const cacheKey = `feeds:related:${locale}:${slug}:${limit}`;
+  const cached = await kv.get<RelatedFeedItems>(cacheKey);
   if (cached) {
-    try {
-      const payload = JSON.parse(cached) as Partial<CachedRelatedFeeds>;
-      if (Array.isArray(payload.items)) {
-        return payload.items;
-      }
-    } catch {
-      // corrupt payloads fall through and get overwritten below
-    }
+    return cached;
   }
 
-  const items = await getRelatedFeeds(db, { slug, locale, limit });
-  await kv.set(
-    cacheKey,
-    JSON.stringify({ items } satisfies CachedRelatedFeeds),
-    items.length ? RELATED_FEEDS_CACHE_TTL_MS : RELATED_FEEDS_EMPTY_CACHE_TTL_MS
-  );
+  const items = await getRelatedFeeds(db, {
+    slug,
+    locale,
+    limit,
+    model: resolveEmbeddingProvider().id,
+  });
+  await kv.set(cacheKey, items, RELATED_FEEDS_CACHE_TTL_MS);
   return items;
 }

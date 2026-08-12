@@ -37,6 +37,10 @@
       "types": "./src/embeddings/openai.ts",
       "default": "./src/embeddings/openai.ts"
     },
+    "./embeddings/provider": {
+      "types": "./src/embeddings/provider.ts",
+      "default": "./src/embeddings/provider.ts"
+    },
     "./embeddings/ollama": {
       "types": "./src/embeddings/ollama.ts",
       "default": "./src/embeddings/ollama.ts"
@@ -48,6 +52,18 @@
     "./embeddings/chunking": {
       "types": "./src/embeddings/chunking.ts",
       "default": "./src/embeddings/chunking.ts"
+    },
+    "./embeddings/markdown": {
+      "types": "./src/embeddings/markdown.ts",
+      "default": "./src/embeddings/markdown.ts"
+    },
+    "./embeddings/context": {
+      "types": "./src/embeddings/context.ts",
+      "default": "./src/embeddings/context.ts"
+    },
+    "./embeddings/tokenizer": {
+      "types": "./src/embeddings/tokenizer.ts",
+      "default": "./src/embeddings/tokenizer.ts"
     },
     "./tools/content": {
       "types": "./src/tools/content.tool.ts",
@@ -68,7 +84,6 @@
     "@anthropic-ai/sdk": "catalog:ai",
     "@chia/utils": "workspace:*",
     "@google/genai": "catalog:ai",
-    "@langchain/textsplitters": "^1.0.1",
     "ai": "catalog:ai",
     "github-slugger": "^2.0.0",
     "js-tiktoken": "^1.0.21",
