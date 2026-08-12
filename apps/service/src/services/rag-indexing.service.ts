@@ -58,6 +58,13 @@ const currentIndexKey = () => ({
 const isActive = (status: ResourceIndexRunStatus): boolean =>
   RESOURCE_INDEX_RUN_ACTIVE_STATUSES.includes(status);
 
+/** The statuses that may be written as a run's final state. */
+const TERMINAL_STATUSES: ResourceIndexRunTerminalStatus[] = [
+  RESOURCE_INDEX_RUN_STATUS.Completed,
+  RESOURCE_INDEX_RUN_STATUS.Failed,
+  RESOURCE_INDEX_RUN_STATUS.Cancelled,
+];
+
 /**
  * How long a row may have no run in the world before it counts as dead.
  *
@@ -135,6 +142,25 @@ const reconcile = async (
 
     const status = await run.status;
     if (status === "pending" || status === "running") {
+      return row;
+    }
+
+    /**
+     * Anything outside the five known statuses is left alone rather than written through.
+     *
+     * The column is plain `text`, so an unmapped value would persist, read as inactive to
+     * `isActive`, fall outside the active partial unique indexes, and free the target for a
+     * second run — while the first one is still going. Holding the row is the safe default:
+     * a genuinely finished run is picked up on the next poll.
+     */
+    if (!TERMINAL_STATUSES.includes(status as ResourceIndexRunTerminalStatus)) {
+      console.error(
+        "Unrecognised workflow run status; leaving the row active",
+        {
+          runId: row.externalRunId,
+          status,
+        }
+      );
       return row;
     }
 

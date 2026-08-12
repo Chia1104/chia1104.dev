@@ -15,6 +15,19 @@ const PREVIEW_LENGTH = 200;
 
 const MAX_LIST_LIMIT = 100;
 
+/**
+ * Clamps on both sides, because only the oRPC contract validates the input today.
+ *
+ * A bare `Math.min` lets `0` through — which yields `LIMIT 1`, an empty page and a
+ * non-null `nextCursor`, so a paging caller never terminates — and lets negatives and
+ * fractions reach Postgres as an invalid `LIMIT`.
+ */
+const listLimit = (limit: number | undefined, fallback: number): number =>
+  Math.min(
+    Math.max(Math.trunc(limit ?? fallback) || fallback, 1),
+    MAX_LIST_LIMIT
+  );
+
 export type ChunkEmbeddingState = "current" | "stale" | "missing";
 
 /** The `(model, index_version)` pair a vector must match to count as current. */
@@ -266,7 +279,7 @@ export const listChunks = withDTO(
       limit?: number;
     }
   ): Promise<{ items: ResourceChunkListItem[]; nextCursor: number | null }> => {
-    const limit = Math.min(dto.limit ?? 50, MAX_LIST_LIMIT);
+    const limit = listLimit(dto.limit, 50);
     const query = dto.query?.trim();
 
     const rows = await db

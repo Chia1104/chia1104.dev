@@ -17,11 +17,17 @@ import { IndexKeyLine, RunStatusChip } from "./rag-shared";
 import { useIndexRun } from "./use-index-run";
 import type { IndexRun } from "./use-index-run";
 
-type ReindexMode = "top-up" | "full";
+/**
+ * Every action on this page is confirmed, including `prune`.
+ *
+ * Prune deletes rows, and the only way back is paying for the embeddings again, so it
+ * belongs behind the same gate as the two reindexes rather than firing on one press.
+ */
+type MaintenanceAction = "top-up" | "full" | "prune";
 
-const MODE_COPY: Record<
-  ReindexMode,
-  { title: string; description: string; confirm: string }
+const ACTION_COPY: Record<
+  MaintenanceAction,
+  { title: string; description: string; confirm: string; destructive?: true }
 > = {
   "top-up": {
     title: "Top up missing vectors",
@@ -34,6 +40,14 @@ const MODE_COPY: Record<
     description:
       "Rebuilds every chunk before embedding it. This is what a bumped index version needs, and it spends embedding credits for the whole corpus.",
     confirm: "Reindex everything",
+    destructive: true,
+  },
+  prune: {
+    title: "Prune stale vectors",
+    description:
+      "Deletes every vector that is not on the current index key. Getting one back means paying for its embedding again.",
+    confirm: "Drop leftover vectors",
+    destructive: true,
   },
 };
 
@@ -43,27 +57,41 @@ const settledMessage = (run: IndexRun): string => {
   return run.error ?? "Reindex failed";
 };
 
-/** The numbers plan §8 requires on screen before a bulk run may be confirmed. */
-const ConfirmReindexModal = ({
-  mode,
+/** The numbers plan §8 requires on screen before a bulk action may be confirmed. */
+const ConfirmActionModal = ({
+  action,
   isPending,
   onCancel,
   onConfirm,
 }: {
-  mode: ReindexMode | null;
+  action: MaintenanceAction | null;
   isPending: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) => {
   const { data, isLoading } = useQuery(
-    orpc.rag["reindex:all:preview"].queryOptions({ enabled: mode !== null })
+    orpc.rag["reindex:all:preview"].queryOptions({ enabled: action !== null })
   );
 
-  const copy = mode ? MODE_COPY[mode] : null;
+  const copy = action ? ACTION_COPY[action] : null;
+
+  // exactly the rows `embeddings:prune` deletes — everything off the current key
+  const leftoverVectors = data
+    ? data.byIndexKey
+        .filter(
+          (row) =>
+            row.model !== data.model || row.indexVersion !== data.indexVersion
+        )
+        .reduce((total, row) => total + row.count, 0)
+    : 0;
 
   return (
     <Modal>
-      <Modal.Backdrop isOpen={mode !== null} onOpenChange={() => onCancel()}>
+      <Modal.Backdrop
+        isOpen={action !== null}
+        onOpenChange={(open) => {
+          if (!open) onCancel();
+        }}>
         <Modal.Container placement="auto">
           <Modal.Dialog className="sm:max-w-md">
             <Modal.CloseTrigger />
@@ -82,20 +110,39 @@ const ConfirmReindexModal = ({
               ) : (
                 <>
                   <dl className="grid grid-cols-2 gap-y-1 text-sm">
-                    <dt className="text-muted-foreground">Resources</dt>
-                    <dd className="text-right font-mono tabular-nums">
-                      {data.targets}
-                    </dd>
-                    <dt className="text-muted-foreground">Chunks</dt>
-                    <dd className="text-right font-mono tabular-nums">
-                      {data.counts.total}
-                    </dd>
-                    <dt className="text-muted-foreground">
-                      Chunks needing a vector
-                    </dt>
-                    <dd className="text-right font-mono tabular-nums">
-                      {data.needingEmbedding}
-                    </dd>
+                    {action === "prune" ? (
+                      <>
+                        <dt className="text-muted-foreground">
+                          Vectors to drop
+                        </dt>
+                        <dd className="text-right font-mono tabular-nums">
+                          {leftoverVectors}
+                        </dd>
+                        <dt className="text-muted-foreground">
+                          Chunks left without a vector
+                        </dt>
+                        <dd className="text-right font-mono tabular-nums">
+                          {data.needingEmbedding}
+                        </dd>
+                      </>
+                    ) : (
+                      <>
+                        <dt className="text-muted-foreground">Resources</dt>
+                        <dd className="text-right font-mono tabular-nums">
+                          {data.targets}
+                        </dd>
+                        <dt className="text-muted-foreground">Chunks</dt>
+                        <dd className="text-right font-mono tabular-nums">
+                          {data.counts.total}
+                        </dd>
+                        <dt className="text-muted-foreground">
+                          Chunks needing a vector
+                        </dt>
+                        <dd className="text-right font-mono tabular-nums">
+                          {data.needingEmbedding}
+                        </dd>
+                      </>
+                    )}
                   </dl>
                   <IndexKeyLine
                     indexVersion={data.indexVersion}
@@ -104,7 +151,7 @@ const ConfirmReindexModal = ({
                 </>
               )}
 
-              {mode === "full" && (
+              {action === "full" && (
                 <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-3">
                   <AlertTriangleIcon className="text-warning mt-0.5 size-5 shrink-0" />
                   <p className="text-sm">
@@ -115,13 +162,15 @@ const ConfirmReindexModal = ({
               )}
             </Modal.Body>
             <Modal.Footer>
-              <Button isPending={isPending} variant="ghost" onPress={onCancel}>
+              <Button isDisabled={isPending} variant="ghost" onPress={onCancel}>
                 Cancel
               </Button>
               <Button
-                isDisabled={!data}
+                isDisabled={
+                  !data || (action === "prune" && leftoverVectors === 0)
+                }
                 isPending={isPending}
-                variant={mode === "full" ? "danger" : "primary"}
+                variant={copy?.destructive ? "danger" : "primary"}
                 onPress={onConfirm}>
                 {copy?.confirm}
               </Button>
@@ -135,7 +184,7 @@ const ConfirmReindexModal = ({
 
 export const RagMaintenance = () => {
   const queryClient = useQueryClient();
-  const [mode, setMode] = useState<ReindexMode | null>(null);
+  const [action, setAction] = useState<MaintenanceAction | null>(null);
   const [startedRunId, setStartedRunId] = useState<string | null>(null);
 
   const overview = useQuery(orpc.rag.overview.queryOptions());
@@ -165,7 +214,7 @@ export const RagMaintenance = () => {
   const reindex = useMutation(
     orpc.rag["reindex:all"].mutationOptions({
       onSuccess(handle) {
-        setMode(null);
+        setAction(null);
         setStartedRunId(handle.runId);
         toast.info(
           handle.reused
@@ -182,6 +231,7 @@ export const RagMaintenance = () => {
   const prune = useMutation(
     orpc.rag["embeddings:prune"].mutationOptions({
       onSuccess(result) {
+        setAction(null);
         invalidate();
         toast.success(
           result.deletedCount === 0
@@ -237,7 +287,7 @@ export const RagMaintenance = () => {
             isDisabled={!canTrigger || isBusy}
             isPending={isBusy}
             variant="primary"
-            onPress={() => setMode("top-up")}>
+            onPress={() => setAction("top-up")}>
             <RefreshCwIcon className="size-4" />
             Top up missing
           </Button>
@@ -245,15 +295,16 @@ export const RagMaintenance = () => {
             isDisabled={!canTrigger || isBusy}
             isPending={isBusy}
             variant="danger"
-            onPress={() => setMode("full")}>
+            onPress={() => setAction("full")}>
             <RefreshCwIcon className="size-4" />
             Full reindex
           </Button>
+          {/* `isActive` matters here: pruning mid-run would delete rows the run is still writing */}
           <Button
-            isDisabled={!canTrigger || prune.isPending}
+            isDisabled={!canTrigger || isActive || prune.isPending}
             isPending={prune.isPending}
             variant="tertiary"
-            onPress={() => prune.mutate({})}>
+            onPress={() => setAction("prune")}>
             <BrushCleaningIcon className="size-4" />
             Prune stale vectors
           </Button>
@@ -266,13 +317,17 @@ export const RagMaintenance = () => {
         </p>
       )}
 
-      <ConfirmReindexModal
-        isPending={reindex.isPending}
-        mode={mode}
-        onCancel={() => setMode(null)}
-        onConfirm={() =>
-          mode && reindex.mutate({ onlyMissing: mode === "top-up" })
-        }
+      <ConfirmActionModal
+        action={action}
+        isPending={reindex.isPending || prune.isPending}
+        onCancel={() => setAction(null)}
+        onConfirm={() => {
+          if (action === "prune") {
+            prune.mutate({});
+          } else if (action) {
+            reindex.mutate({ onlyMissing: action === "top-up" });
+          }
+        }}
       />
     </div>
   );

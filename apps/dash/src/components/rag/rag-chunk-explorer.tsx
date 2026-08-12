@@ -74,7 +74,7 @@ const ChunkDetailDrawer = ({
   chunkId: number | null;
   onClose: () => void;
 }) => {
-  const { data, isLoading } = useQuery(
+  const { data, isLoading, error } = useQuery(
     orpc.rag["chunk:get"].queryOptions({
       input: { chunkId: chunkId ?? 0 },
       enabled: chunkId !== null,
@@ -98,10 +98,15 @@ const ChunkDetailDrawer = ({
             )}
           </Drawer.Header>
           <Drawer.Body className="flex flex-col gap-4">
-            {isLoading || !data ? (
+            {isLoading ? (
               <div className="flex justify-center py-8">
                 <Spinner size="sm" />
               </div>
+            ) : error || !data ? (
+              // without this branch a failed fetch leaves `data` undefined and spins forever
+              <p className="text-danger py-8 text-sm">
+                {error?.message ?? "Could not load this chunk"}
+              </p>
             ) : (
               <>
                 <dl className="grid grid-cols-2 gap-2 text-xs">

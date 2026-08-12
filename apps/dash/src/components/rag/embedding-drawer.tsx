@@ -12,7 +12,7 @@ import {
   Virtualizer,
 } from "@heroui/react";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { BoxesIcon, RefreshCwIcon } from "lucide-react";
+import { RefreshCwIcon, ScanSearchIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Locale } from "@chia/db/types";
@@ -139,7 +139,11 @@ const ResourceSection = ({
     [onInvalidate]
   );
 
-  const { run, isActive } = useIndexRun({ runId: activeRunId, onSettled });
+  const {
+    run,
+    isActive,
+    error: runError,
+  } = useIndexRun({ runId: activeRunId, onSettled });
 
   const trigger = useMutation(
     orpc.rag["resource:index"].mutationOptions({
@@ -165,30 +169,27 @@ const ResourceSection = ({
           {status && <CountsSummary counts={status.counts} />}
           {run && isActive && <RunStatusChip status={run.status} />}
         </div>
-        <Tooltip delay={300} isDisabled={canTrigger}>
-          <Tooltip.Trigger>
-            <Button
-              isDisabled={!canTrigger || isBusy}
-              isPending={isBusy}
-              size="sm"
-              variant="tertiary"
-              onPress={() =>
-                trigger.mutate({
-                  sourceType: FEED_TRANSLATION_SOURCE_TYPE,
-                  sourceId: resource.sourceId,
-                })
-              }>
-              <RefreshCwIcon className="size-3.5" />
-              Recompute
-            </Button>
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            <p className="text-xs">
-              Only the configured admin can trigger this
-            </p>
-          </Tooltip.Content>
-        </Tooltip>
+        <Button
+          isDisabled={!canTrigger || isBusy}
+          isPending={isBusy}
+          size="sm"
+          variant="tertiary"
+          onPress={() =>
+            trigger.mutate({
+              sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+              sourceId: resource.sourceId,
+            })
+          }>
+          <RefreshCwIcon className="size-3.5" />
+          Recompute
+        </Button>
       </div>
+
+      {runError && (
+        <p className="text-danger text-xs">
+          Could not read the run's progress: {runError.message}
+        </p>
+      )}
 
       {isLoading && !status ? (
         <div className="flex justify-center py-4">
@@ -269,31 +270,27 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
   const first = statuses[0]?.data;
   const canTrigger = first?.canTrigger ?? false;
   const isFeedBusy = feedRun.isActive || indexFeed.isPending;
-  const hasEmbedding = statuses.some(
-    (query) => (query.data?.counts.current ?? 0) > 0
-  );
 
   return (
     <>
+      {/*
+       * Deliberately not colour-coded by embedding state: the adjacent `MetaChip` already
+       * carries that signal, and the statuses this component loads only arrive after the
+       * drawer opens, so a second indicator here could only ever be wrong on first paint.
+       */}
       <Tooltip delay={500}>
         <Tooltip.Trigger>
           <Button
-            aria-label="Embedding status"
+            aria-label="Inspect embedding status"
             isIconOnly
             size="sm"
             variant="ghost"
             onPress={() => setIsOpen(true)}>
-            <BoxesIcon
-              className={
-                hasEmbedding
-                  ? "text-primary size-4"
-                  : "text-muted-foreground size-4"
-              }
-            />
+            <ScanSearchIcon className="text-muted-foreground size-4" />
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <p className="text-xs">Embedding status</p>
+          <p className="text-xs">Inspect embedding status</p>
         </Tooltip.Content>
       </Tooltip>
 
@@ -335,24 +332,26 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
                 ) : (
                   <span />
                 )}
-                <Tooltip delay={300} isDisabled={canTrigger}>
-                  <Tooltip.Trigger>
-                    <Button
-                      isDisabled={!canTrigger || isFeedBusy}
-                      isPending={isFeedBusy}
-                      size="sm"
-                      onPress={() => indexFeed.mutate({ feedId })}>
-                      <RefreshCwIcon className="size-3.5" />
-                      Recompute whole feed
-                    </Button>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <p className="text-xs">
-                      Only the configured admin can trigger this
-                    </p>
-                  </Tooltip.Content>
-                </Tooltip>
+                <Button
+                  isDisabled={!canTrigger || isFeedBusy}
+                  isPending={isFeedBusy}
+                  size="sm"
+                  onPress={() => indexFeed.mutate({ feedId })}>
+                  <RefreshCwIcon className="size-3.5" />
+                  Recompute whole feed
+                </Button>
               </div>
+              {/* plain text, not a tooltip: a disabled button never opens one */}
+              {first && !canTrigger && (
+                <p className="text-muted-foreground w-full text-xs">
+                  Only the configured admin can trigger indexing.
+                </p>
+              )}
+              {feedRun.error && (
+                <p className="text-danger w-full text-xs">
+                  Could not read the run's progress: {feedRun.error.message}
+                </p>
+              )}
             </Drawer.Footer>
           </Drawer.Dialog>
         </Drawer.Content>

@@ -58,6 +58,14 @@ export const useIndexRun = ({
   return {
     run,
     isLoading: query.isLoading,
-    isActive: !!runId && !isTerminalRunStatus(run?.status),
+    error: query.error,
+    /**
+     * A failed poll counts as not active.
+     *
+     * Without the `isError` term there is no status to read, so a run whose lookup keeps
+     * failing — the port unregistered, the record gone — would leave every trigger
+     * disabled for as long as the page stays open, with nothing on screen saying why.
+     */
+    isActive: !!runId && !query.isError && !isTerminalRunStatus(run?.status),
   };
 };
