@@ -232,6 +232,9 @@ const queryInfiniteFeeds = async (
               unstableSerializedSource: false,
             },
         extras: {
+          // "has ever been embedded": no `model` / `index_version` comparison, so
+          // a vector left over from an older index key still counts. The exact
+          // state per key comes from `libs/resources/stats.ts`.
           hasEmbedding: (translation, { sql }) =>
             sql<boolean>`exists (
               select 1 from chia_resource_chunk c
@@ -338,6 +341,9 @@ const getFeedDetails = async (
         deleted: feedTranslations.deleted,
         createdAt: feedTranslations.createdAt,
         updatedAt: feedTranslations.updatedAt,
+        // "has ever been embedded", same as the list query above: not compared
+        // against the current `(model, index_version)`; see
+        // `libs/resources/stats.ts` for the per-key state.
         hasEmbedding: sql<boolean>`exists (
           select 1 from chia_resource_chunk c
           join chia_resource_embedding e on e.chunk_id = c.id
@@ -554,6 +560,34 @@ export const getFeedIdByTranslationId = withDTO(
       .limit(1);
 
     return translation?.feedId ?? null;
+  }
+);
+
+/**
+ * Every translation id, ascending — what a full reindex iterates.
+ *
+ * Unfiltered on purpose: unpublished and soft-deleted feeds are indexed too, with
+ * their visibility mirrored onto the chunks so BM25 can filter on it.
+ */
+export const listFeedTranslationIds = withDTO(
+  async (db, _params: Record<string, never>) => {
+    const rows = await db
+      .select({ id: feedTranslations.id })
+      .from(feedTranslations)
+      .orderBy(feedTranslations.id);
+
+    return rows.map((row) => row.id);
+  }
+);
+
+/** The same population as {@link listFeedTranslationIds}, for the reindex preview. */
+export const countFeedTranslations = withDTO(
+  async (db, _params: Record<string, never>) => {
+    const [row] = await db
+      .select({ count: sql<number>`(count(*))::int` })
+      .from(feedTranslations);
+
+    return row?.count ?? 0;
   }
 );
 

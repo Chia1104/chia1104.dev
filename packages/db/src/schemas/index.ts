@@ -77,10 +77,18 @@ export {
 export {
   resourceChunks,
   resourceEmbeddings,
+  resourceIndexRuns,
   RESOURCE_CHUNK_KIND,
+  RESOURCE_INDEX_RUN_ACTIVE_STATUSES,
+  RESOURCE_INDEX_RUN_SCOPE,
+  RESOURCE_INDEX_RUN_STATUS,
   type ResourceChunk,
   type ResourceChunkKind,
   type ResourceEmbedding,
+  type ResourceIndexRun,
+  type ResourceIndexRunProgress,
+  type ResourceIndexRunScope,
+  type ResourceIndexRunStatus,
 } from "./resources.schema.ts";
 
 // Agent

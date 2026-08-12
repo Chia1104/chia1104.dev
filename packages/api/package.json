@@ -169,6 +169,10 @@
       "types": "./orpc/agent-runtime.ts",
       "default": "./orpc/agent-runtime.ts"
     },
+    "./orpc/indexing": {
+      "types": "./orpc/indexing.ts",
+      "default": "./orpc/indexing.ts"
+    },
     "./orpc/routes/feeds.route": {
       "types": "./orpc/routes/feeds.route.ts",
       "default": "./orpc/routes/feeds.route.ts"

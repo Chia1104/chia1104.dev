@@ -37,6 +37,14 @@
       "types": "./src/libs/resources/search.ts",
       "default": "./src/libs/resources/search.ts"
     },
+    "./repos/resources/stats": {
+      "types": "./src/libs/resources/stats.ts",
+      "default": "./src/libs/resources/stats.ts"
+    },
+    "./repos/resources/index-run": {
+      "types": "./src/libs/resources/index-run.ts",
+      "default": "./src/libs/resources/index-run.ts"
+    },
     "./repos/users": {
       "types": "./src/libs/users/index.ts",
       "default": "./src/libs/users/index.ts"

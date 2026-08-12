@@ -7,6 +7,7 @@ import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
 import * as mediaRoutes from "./routes/media.route";
 import * as organizationRoutes from "./routes/organization.route";
+import * as ragRoutes from "./routes/rag.route";
 import * as spotifyRoutes from "./routes/spotify.route";
 import * as toolingsRoutes from "./routes/toolings.route";
 import * as userRoutes from "./routes/user.route";
@@ -97,6 +98,19 @@ export const router = contractOS.router({
       "public-search": contentRoutes.searchPublicFeedsRoute,
       search: contentRoutes.searchFeedsRoute,
     },
+  },
+  rag: {
+    overview: ragRoutes.getRagOverviewRoute,
+    "chunks:list": ragRoutes.listRagChunksRoute,
+    "chunk:get": ragRoutes.getRagChunkRoute,
+    "resource:status": ragRoutes.getResourceIndexStatusRoute,
+    "runs:list": ragRoutes.listIndexRunsRoute,
+    "run:get": ragRoutes.getIndexRunRoute,
+    "reindex:all:preview": ragRoutes.previewReindexAllRoute,
+    "resource:index": ragRoutes.indexResourceRoute,
+    "feed:index": ragRoutes.indexFeedRoute,
+    "reindex:all": ragRoutes.reindexAllRoute,
+    "embeddings:prune": ragRoutes.pruneEmbeddingsRoute,
   },
   media: {
     spotify: {

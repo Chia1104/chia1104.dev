@@ -29,6 +29,7 @@ export function AppSidebar({
         <NavMain title="Overview" items={routeItems.overview} />
         <NavMain title="Projects" items={routeItems.project} />
         <NavMain title="Content" items={routeItems.content} />
+        <NavMain title="RAG" items={routeItems.rag} />
         <NavMain title="Settings" items={routeItems.settings} />
       </SidebarContent>
       <SidebarFooter className="pb-4">

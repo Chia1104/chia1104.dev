@@ -48,6 +48,10 @@ declare namespace __next_route_internal_types__ {
     | `/projects` // ../../../src/app/(workspace)/projects/page.tsx
     | `/projects/api-key` // ../../../src/app/(workspace)/projects/api-key/page.tsx
     | `/projects/create` // ../../../src/app/(workspace)/projects/create/page.tsx
+    | `/rag` // ../../../src/app/(workspace)/rag/page.tsx
+    | `/rag/chunks` // ../../../src/app/(workspace)/rag/chunks/page.tsx
+    | `/rag/maintenance` // ../../../src/app/(workspace)/rag/maintenance/page.tsx
+    | `/rag/runs` // ../../../src/app/(workspace)/rag/runs/page.tsx
     | `/settings` // ../../../src/app/(workspace)/settings/page.tsx
     | `/settings/spotify` // ../../../src/app/(workspace)/settings/spotify/page.tsx
   type DynamicRoutes<T extends string = string> = 

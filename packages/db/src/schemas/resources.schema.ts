@@ -11,15 +11,17 @@ import {
   jsonb,
   primaryKey,
   text,
+  timestamp,
   uniqueIndex,
   vector,
 } from "drizzle-orm/pg-core";
 
 import { timestamps } from "../libs/common.schema.ts";
 
-import { feedTranslations } from "./contents.schema.ts";
+import { feeds, feedTranslations } from "./contents.schema.ts";
 import { locale } from "./enums.ts";
 import { pgTable } from "./table.ts";
+import { user } from "./user.schema.ts";
 
 const { paradedbIndex, paradedbField } = indexing;
 const { icu, simple } = tokenizer;
@@ -171,5 +173,106 @@ export const resourceEmbeddings = pgTable(
   ]
 );
 
+export const RESOURCE_INDEX_RUN_SCOPE = {
+  /** One `(source_type, source_id)` pair. */
+  Resource: "resource",
+  /** Every translation of one feed. */
+  Feed: "feed",
+  /** Every indexable resource. */
+  All: "all",
+} as const;
+
+export type ResourceIndexRunScope =
+  (typeof RESOURCE_INDEX_RUN_SCOPE)[keyof typeof RESOURCE_INDEX_RUN_SCOPE];
+
+export const RESOURCE_INDEX_RUN_STATUS = {
+  Pending: "pending",
+  Running: "running",
+  Completed: "completed",
+  Failed: "failed",
+  Cancelled: "cancelled",
+} as const;
+
+export type ResourceIndexRunStatus =
+  (typeof RESOURCE_INDEX_RUN_STATUS)[keyof typeof RESOURCE_INDEX_RUN_STATUS];
+
+/** The statuses the partial unique indexes below treat as occupying a target. */
+export const RESOURCE_INDEX_RUN_ACTIVE_STATUSES: ResourceIndexRunStatus[] = [
+  RESOURCE_INDEX_RUN_STATUS.Pending,
+  RESOURCE_INDEX_RUN_STATUS.Running,
+];
+
+export interface ResourceIndexRunProgress {
+  done: number;
+  total: number;
+  /** `source_id`s that threw; the run still finishes. */
+  failed: number[];
+}
+
+/**
+ * One indexing trigger and its outcome.
+ *
+ * The three partial unique indexes turn a repeated trigger into a conflict, so
+ * the caller can be handed the in-flight run instead of starting a second one.
+ * They only constrain active rows, so a finalized run never blocks the next
+ * trigger — a run that dies without finalizing does, which is why every read of
+ * an active run reconciles it against the workflow runtime first.
+ *
+ * `feed_id` is `ON DELETE SET NULL` because "a reindex ran for this feed" stays
+ * meaningful after the feed is hard-deleted. `source_id` has no foreign key:
+ * `resource_chunk.source_id` is a generated column, not a referencable key, so
+ * orphans are read through `scope` instead.
+ */
+export const resourceIndexRuns = pgTable(
+  "resource_index_run",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    /** Workflow runtime run id; the handle for reconciling `status`. */
+    externalRunId: text("external_run_id").notNull(),
+    scope: text("scope").$type<ResourceIndexRunScope>().notNull(),
+    /** Set when `scope` is `resource`. */
+    sourceType: text("source_type"),
+    sourceId: integer("source_id"),
+    feedId: integer("feed_id").references(() => feeds.id, {
+      onDelete: "set null",
+    }),
+    status: text("status")
+      .$type<ResourceIndexRunStatus>()
+      .notNull()
+      .default(RESOURCE_INDEX_RUN_STATUS.Pending),
+    triggeredBy: text("triggered_by").references(() => user.id),
+    /** `EmbeddingProvider.id` this run embedded with. */
+    model: text("model").notNull(),
+    indexVersion: text("index_version").notNull(),
+    /** Written per resource by a bulk run; `null` for single-resource runs. */
+    progress: jsonb("progress").$type<ResourceIndexRunProgress>(),
+    result: jsonb("result"),
+    error: text("error"),
+    startedAt: timestamp("started_at", { mode: "date" }),
+    endedAt: timestamp("ended_at", { mode: "date" }),
+    ...timestamps,
+  },
+  (table) => [
+    index("resource_index_run_source_idx").on(table.sourceType, table.sourceId),
+    index("resource_index_run_external_id_idx").on(table.externalRunId),
+    uniqueIndex("resource_index_run_active_resource_idx")
+      .on(table.sourceType, table.sourceId)
+      .where(
+        sql`${table.scope} = 'resource' and ${table.status} in ('pending', 'running')`
+      ),
+    uniqueIndex("resource_index_run_active_feed_idx")
+      .on(table.feedId)
+      .where(
+        sql`${table.scope} = 'feed' and ${table.status} in ('pending', 'running')`
+      ),
+    uniqueIndex("resource_index_run_active_all_idx")
+      .on(table.scope)
+      .where(
+        sql`${table.scope} = 'all' and ${table.status} in ('pending', 'running')`
+      ),
+  ]
+);
+
 export type ResourceChunk = InferSelectModel<typeof resourceChunks>;
 export type ResourceEmbedding = InferSelectModel<typeof resourceEmbeddings>;
+export type ResourceIndexRun = InferSelectModel<typeof resourceIndexRuns>;

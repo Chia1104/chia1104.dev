@@ -7,6 +7,7 @@ import * as fileContracts from "./contracts/file.contract";
 import * as healthContracts from "./contracts/health.contract";
 import * as mediaContracts from "./contracts/media.contract";
 import * as organizationContracts from "./contracts/organization.contract";
+import * as ragContracts from "./contracts/rag.contract";
 import * as spotifyContracts from "./contracts/spotify.contract";
 import * as toolingsContracts from "./contracts/toolings.contract";
 import * as userContracts from "./contracts/user.contract";
@@ -98,6 +99,19 @@ export const routerContract = {
       search: contentContracts.searchFeedsContract,
     },
   },
+  rag: {
+    overview: ragContracts.getRagOverviewContract,
+    "chunks:list": ragContracts.listRagChunksContract,
+    "chunk:get": ragContracts.getRagChunkContract,
+    "resource:status": ragContracts.getResourceIndexStatusContract,
+    "runs:list": ragContracts.listIndexRunsContract,
+    "run:get": ragContracts.getIndexRunContract,
+    "reindex:all:preview": ragContracts.previewReindexAllContract,
+    "resource:index": ragContracts.indexResourceContract,
+    "feed:index": ragContracts.indexFeedContract,
+    "reindex:all": ragContracts.reindexAllContract,
+    "embeddings:prune": ragContracts.pruneEmbeddingsContract,
+  },
   media: {
     spotify: {
       playlist: mediaContracts.getSpotifyPlaylistContract,
@@ -123,6 +137,7 @@ export {
   healthContracts,
   mediaContracts,
   organizationContracts,
+  ragContracts,
   spotifyContracts,
   toolingsContracts,
   userContracts,

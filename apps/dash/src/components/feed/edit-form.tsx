@@ -13,6 +13,7 @@ import { Locale } from "@chia/db/types";
 import SubmitForm from "@chia/ui/submit-form";
 import dayjs from "@chia/utils/day";
 
+import type { EmbeddingResource } from "@/components/rag/embedding-drawer";
 import { orpc } from "@/libs/orpc/client";
 import { DraftProvider } from "@/store/draft";
 import { formSchema } from "@/store/draft/slices/edit-fields";
@@ -25,9 +26,16 @@ export interface EditFormProps {
   defaultValues: Partial<FormSchema>;
   feedId: number;
   meta?: MetaChipProps;
+  /** Translation ids, which the embedding drawer indexes by. */
+  resources?: EmbeddingResource[];
 }
 
-const EditForm = ({ defaultValues, feedId, meta }: EditFormProps) => {
+const EditForm = ({
+  defaultValues,
+  feedId,
+  meta,
+  resources,
+}: EditFormProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -81,6 +89,7 @@ const EditForm = ({ defaultValues, feedId, meta }: EditFormProps) => {
             mode="edit"
             feedId={feedId}
             meta={meta}
+            resources={resources}
           />
           <SubmitForm
             className="w-full max-w-[150px]"

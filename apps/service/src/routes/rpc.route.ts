@@ -16,6 +16,7 @@ import {
   removeFeedFromSearchIndex,
   syncFeedSearchIndex,
 } from "../services/feed-indexing.service";
+import { registerRagIndexingService } from "../services/rag-indexing.service";
 
 /**
  * This app owns search indexing, so it is the one that listens for feed changes.
@@ -36,6 +37,14 @@ registerFeedEventListeners({
  * the feed listeners above.
  */
 registerAgentRuntimeService();
+
+/**
+ * The RAG triggers land here for the same reason: `start()` and the lazy reconcile that
+ * reads a run's real status both need the workflow runtime. Registering beside the router
+ * that serves those procedures is what keeps a call from another process an explicit
+ * `SERVICE_UNAVAILABLE` instead of a trigger that silently never ran.
+ */
+registerRagIndexingService();
 
 /**
  * Procedures whose response *is* a live event stream, so the shared request timeout must not apply.
