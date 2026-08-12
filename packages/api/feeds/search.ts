@@ -15,6 +15,7 @@ import type {
   ResourceSearchMode,
   ResourceSearchResult,
 } from "../resources/search";
+
 import type { PublicFeedSearchItem } from "./validator";
 
 export type SearchFeedsProvider = ResourceSearchMode;
@@ -25,8 +26,10 @@ export interface SearchFeedsItem extends ResourceSearchHit {
   slug: string;
 }
 
-export interface SearchFeedsServiceResult
-  extends Omit<ResourceSearchResult, "items"> {
+export interface SearchFeedsServiceResult extends Omit<
+  ResourceSearchResult,
+  "items"
+> {
   items: SearchFeedsItem[];
 }
 
@@ -47,13 +50,15 @@ export async function searchFeedsService({
   locale,
   limit = 5,
 }: SearchFeedsServiceParams): Promise<SearchFeedsServiceResult> {
+  // resource hits are per translation; without a locale two translations of one
+  // feed both match, so over-fetch and collapse onto feeds below
   const { mode, items } = await searchResources({
     db,
     query: keyword ?? "",
     mode: model,
     locale,
     sourceTypes: [FEED_TRANSLATION_SOURCE_TYPE],
-    limit,
+    limit: locale ? limit : limit * 2,
   });
 
   const refs = await resolveFeedRefs(
@@ -61,12 +66,20 @@ export async function searchFeedsService({
     items.map((item) => item.sourceId)
   );
 
+  const seenFeeds = new Set<number>();
+
   return {
     mode,
-    items: items.flatMap((item) => {
-      const ref = refs.get(item.sourceId);
-      return ref ? [{ ...item, ...ref }] : [];
-    }),
+    items: items
+      .flatMap((item) => {
+        const ref = refs.get(item.sourceId);
+        if (!ref || seenFeeds.has(ref.feedId)) {
+          return [];
+        }
+        seenFeeds.add(ref.feedId);
+        return [{ ...item, ...ref }];
+      })
+      .slice(0, limit),
   };
 }
 

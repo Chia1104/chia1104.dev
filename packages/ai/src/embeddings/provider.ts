@@ -5,6 +5,7 @@ import { generateEmbeddings } from "./openai.ts";
 import {
   EMBEDDING_DIMENSIONS,
   EMBEDDING_INDEX_VERSION,
+  OLLAMA_EMBEDDING_DIMENSIONS,
   OllamaEmbeddingModel,
 } from "./utils.ts";
 
@@ -51,15 +52,16 @@ export const openAIEmbeddingProvider = (
 });
 
 /**
- * Local models for experimentation. Their native dimension differs, so they are
- * only usable once `EMBEDDING_DIMENSIONS` matches — hence the guard rather than
- * a silent mismatch that would fail at insert time.
+ * Local models for experimentation. Each reports its *native* width rather than
+ * the column's, because none of them can be asked for 1536 — see
+ * `OLLAMA_EMBEDDING_DIMENSIONS`. `assertColumnWidth` is what turns that into a
+ * startup error instead of a failed insert.
  */
 export const ollamaEmbeddingProvider = (
   model: OllamaEmbeddingModel = OLLAMA_EMBEDDING_MODEL
 ): EmbeddingProvider => ({
   id: model,
-  dimensions: EMBEDDING_DIMENSIONS,
+  dimensions: OLLAMA_EMBEDDING_DIMENSIONS[model],
   embed: async (texts) => {
     if (!(await isOllamaEnabled(model))) {
       throw new Error(`Ollama model "${model}" is unavailable`);
@@ -69,15 +71,36 @@ export const ollamaEmbeddingProvider = (
 });
 
 /**
+ * One vector column, one width. A provider whose vectors do not fit it is
+ * rejected here rather than at insert time, where the error names a Postgres
+ * column and not the setting that caused it.
+ *
+ * Switching to a narrower model is a schema change (`EMBEDDING_DIMENSIONS` plus
+ * the `resource_embedding.embedding` column) followed by a reindex.
+ */
+const assertColumnWidth = (provider: EmbeddingProvider): EmbeddingProvider => {
+  if (provider.dimensions !== EMBEDDING_DIMENSIONS) {
+    throw new Error(
+      `Embedding provider "${provider.id}" produces ${provider.dimensions}-dimension ` +
+        `vectors, but the resource_embedding.embedding column is ${EMBEDDING_DIMENSIONS}. ` +
+        `Change EMBEDDING_DIMENSIONS and the column together, then reindex.`
+    );
+  }
+  return provider;
+};
+
+/**
  * Resolves the provider for this process. `EMBEDDING_PROVIDER=ollama` opts into
  * the local model; anything else uses OpenAI.
  */
 export const resolveEmbeddingProvider = (
   options: OpenAIProviderOptions = {}
 ): EmbeddingProvider =>
-  process.env.EMBEDDING_PROVIDER === "ollama"
-    ? ollamaEmbeddingProvider()
-    : openAIEmbeddingProvider(options);
+  assertColumnWidth(
+    process.env.EMBEDDING_PROVIDER === "ollama"
+      ? ollamaEmbeddingProvider()
+      : openAIEmbeddingProvider(options)
+  );
 
 /**
  * The value stored in `feed_translation.index_key`.

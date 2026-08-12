@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { chunkMarkdown } from "@chia/ai/embeddings/chunking";
 import {
@@ -140,7 +140,10 @@ export const feedTranslationResource: ChunkableResource = {
       .where(
         and(
           inArray(feedTranslations.id, sourceIds),
-          eq(feedTranslations.deleted, false)
+          // same expression `loadSource` indexes with — reading the mirrored
+          // `feed_translation.deleted` here instead would silently drop hits
+          // whose chunks were indexed from `feed.deleted_at`
+          isNull(feeds.deletedAt)
         )
       );
 

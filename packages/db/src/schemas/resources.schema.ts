@@ -142,8 +142,11 @@ export const resourceChunks = pgTable(
  * "which chunks need embedding" is a left join on
  * `(chunk_id, model, index_version)`.
  *
- * pgvector fixes the dimension per column; a model with a different native
- * dimension either truncates (Matryoshka) or gets its own column.
+ * pgvector fixes the dimension per column, and this is the only one. A model
+ * with a different native width is rejected at startup by
+ * `resolveEmbeddingProvider`; adopting one means changing this column and
+ * reindexing, not adding a second column — the two-column setup this replaced
+ * cost a dimension branch in every read and write and was never queried.
  */
 export const resourceEmbeddings = pgTable(
   "resource_embedding",

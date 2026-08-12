@@ -1,6 +1,7 @@
 import { ollama } from "../ollama/index.ts";
 
 import { guardEmbeddingInput, guardEmbeddingInputs } from "./tokenizer.ts";
+import { EMBEDDING_MAX_TOKENS, OLLAMA_EMBEDDING_MAX_TOKENS } from "./utils.ts";
 import type { EmbeddingTask, OllamaEmbeddingModel } from "./utils.ts";
 
 /**
@@ -26,20 +27,42 @@ const withTaskPrefix = (
 };
 
 /**
+ * The prefix is prepended *after* the guard, so its cost has to come out of the
+ * budget or the prefixed input overshoots the model's limit. The longest prefix
+ * above is well under this.
+ */
+const TASK_PREFIX_TOKEN_RESERVE = 32;
+
+/** Per-model budget, never above the shared ceiling. */
+const inputBudget = (model: OllamaEmbeddingModel): number =>
+  Math.max(
+    1,
+    Math.min(EMBEDDING_MAX_TOKENS, OLLAMA_EMBEDDING_MAX_TOKENS[model]) -
+      TASK_PREFIX_TOKEN_RESERVE
+  );
+
+/**
  * cl100k_base is not these models' tokenizer, so the count is approximate —
  * but it errs on the side of truncating more, which is the safe direction.
+ *
+ * No `dimensions` is requested: only `nomic-embed-text` would honour it, and
+ * the width the caller must get is the model's native one — see
+ * `OLLAMA_EMBEDDING_DIMENSIONS`.
  */
 export const ollamaEmbedding = async (
   input: string,
   model: OllamaEmbeddingModel,
   task: EmbeddingTask = "search_query"
 ) => {
-  const { text } = await guardEmbeddingInput(input, { model });
+  const { text } = await guardEmbeddingInput(
+    input,
+    { model },
+    inputBudget(model)
+  );
   const [embedding] = (
     await ollama.embed({
       model,
       input: withTaskPrefix(text, model, task),
-      dimensions: 512,
     })
   ).embeddings;
   return embedding;
@@ -54,11 +77,14 @@ export const ollamaEmbeddings = async (
   if (inputs.length === 0) {
     return [];
   }
-  const guarded = await guardEmbeddingInputs(inputs, { model });
+  const guarded = await guardEmbeddingInputs(
+    inputs,
+    { model },
+    inputBudget(model)
+  );
   const { embeddings } = await ollama.embed({
     model,
     input: guarded.map(({ text }) => withTaskPrefix(text, model, task)),
-    dimensions: 512,
   });
   return embeddings;
 };

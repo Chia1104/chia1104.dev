@@ -235,19 +235,6 @@ export const saveChunkEmbeddings = withDTO(
   }
 );
 
-/** Drops vectors from models or index versions that are no longer in use. */
-export const pruneStaleEmbeddings = withDTO(
-  async (db, dto: { model: string; indexVersion: string }) => {
-    const deleted = await db
-      .delete(embeddings)
-      .where(
-        sql`(${embeddings.model}, ${embeddings.indexVersion}) <> (${dto.model}, ${dto.indexVersion})`
-      )
-      .returning({ chunkId: embeddings.chunkId });
-    return { deletedCount: deleted.length };
-  }
-);
-
 /** Mirrors a source's visibility onto its chunks. */
 export const syncChunkVisibility = withDTO(
   async (db, dto: { ref: ResourceRef; visibility: ResourceVisibility }) => {

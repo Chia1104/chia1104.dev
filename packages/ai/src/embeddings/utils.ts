@@ -43,6 +43,31 @@ export type OllamaEmbeddingModel =
   (typeof OllamaEmbeddingModel)[keyof typeof OllamaEmbeddingModel];
 
 /**
+ * Native output width of each local model. Only `nomic-embed-text` (v1.5) is
+ * Matryoshka-trained, so it is the only one where asking for fewer dimensions
+ * does anything; the others ignore the request and return their native width.
+ * `resolveEmbeddingProvider` compares these against `EMBEDDING_DIMENSIONS`.
+ */
+export const OLLAMA_EMBEDDING_DIMENSIONS: Record<OllamaEmbeddingModel, number> =
+  {
+    "mxbai-embed-large": 1024,
+    "nomic-embed-text": 768,
+    "all-minilm": 384,
+  };
+
+/**
+ * Effective input limit per local model — the length they were trained for,
+ * not the architecture's ceiling. Inputs above it are silently truncated by the
+ * server, so guarding here is what keeps the stored text and the vector in sync.
+ */
+export const OLLAMA_EMBEDDING_MAX_TOKENS: Record<OllamaEmbeddingModel, number> =
+  {
+    "mxbai-embed-large": 512,
+    "nomic-embed-text": 8192,
+    "all-minilm": 256,
+  };
+
+/**
  * text-embedding-3-* accept at most 8191 tokens. Counting is exact
  * (`truncateForEmbeddingExact` in `./tokenizer.ts`), so this only leaves a
  * small margin for provider-side differences rather than covering an

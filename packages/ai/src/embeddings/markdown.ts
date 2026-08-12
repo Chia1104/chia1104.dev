@@ -51,8 +51,10 @@ export interface MarkdownHeading {
   path: string;
 }
 
-const HEADING_REGEX = /^(#{1,6})\s+(.+)$/;
-const FENCE_REGEX = /^\s*```/;
+// `[ \t]+` rather than `\s+`: both run per line, and `\s+` next to `(.+)` is a
+// polynomial-backtracking pattern on a line of nothing but spaces
+const HEADING_REGEX = /^(#{1,6})[ \t]+(.+)$/;
+const FENCE_REGEX = /^[ \t]*```/;
 
 /**
  * Walks lines, tracking fenced code blocks so a `# comment` inside a shell

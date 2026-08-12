@@ -38,12 +38,17 @@ export const getRelatedFeeds = withDTO(
       return [];
     }
 
+    const limit = dto.limit ?? 3;
+
+    // over-fetch: the hits are per translation, and collapsing them onto feeds
+    // below can drop several. `+ 1` covers only the source's own other
+    // translation, so `limit` was never reachable once two locales matched
     const similar = await findSimilarResources(db, {
       sourceType: FEED_TRANSLATION_SOURCE_TYPE,
       sourceId: source.translationId,
       model: dto.model,
       locale: dto.locale,
-      limit: (dto.limit ?? 3) + 1,
+      limit: limit * 3 + 1,
       threshold: dto.threshold,
     });
 
@@ -70,16 +75,19 @@ export const getRelatedFeeds = withDTO(
 
     const byTranslation = new Map(rows.map((row) => [row.translationId, row]));
 
-    // preserve similarity order; drop other translations of the same feed
+    // preserve similarity order; drop other translations of the same feed, then
+    // apply the caller's limit — before dedup it would count translations
     const seenFeeds = new Set([source.feedId]);
-    return similar.flatMap((hit) => {
-      const row = byTranslation.get(hit.sourceId);
-      if (!row || seenFeeds.has(row.id)) {
-        return [];
-      }
-      seenFeeds.add(row.id);
-      const { translationId: _translationId, ...feed } = row;
-      return [{ ...feed, similarity: hit.similarity }];
-    });
+    return similar
+      .flatMap((hit) => {
+        const row = byTranslation.get(hit.sourceId);
+        if (!row || seenFeeds.has(row.id)) {
+          return [];
+        }
+        seenFeeds.add(row.id);
+        const { translationId: _translationId, ...feed } = row;
+        return [{ ...feed, similarity: hit.similarity }];
+      })
+      .slice(0, limit);
   }
 );

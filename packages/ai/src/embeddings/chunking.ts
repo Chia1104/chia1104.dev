@@ -2,6 +2,7 @@ import type { Tiktoken } from "js-tiktoken";
 
 import { cleanMdxKeepStructure, splitByHeadings } from "./markdown.ts";
 import { countEmbeddingTokens, loadTokenizer } from "./tokenizer.ts";
+import { truncateForEmbedding } from "./utils.ts";
 
 export { countEmbeddingTokens, loadTokenizer };
 export { cleanMdxKeepStructure, splitByHeadings } from "./markdown.ts";
@@ -23,35 +24,94 @@ export interface MarkdownChunk {
   tokenCount: number;
 }
 
-/** Paragraph boundaries first, then sentence-ish punctuation. */
+interface SplitUnit {
+  text: string;
+  /** what to put back when this unit follows another in the same piece */
+  joiner: string;
+}
+
+/**
+ * Paragraph boundaries first, then sentence-ish punctuation.
+ *
+ * The joiner records which boundary a unit came from, so reassembling does not
+ * turn every sentence of one paragraph into a paragraph of its own — the chunk
+ * text is stored and rendered as snippets, not just embedded.
+ */
+const toUnits = (
+  text: string,
+  maxTokens: number,
+  encoding: Tiktoken | null
+): SplitUnit[] =>
+  text.split(/\n{2,}/).flatMap((paragraph) => {
+    if (countEmbeddingTokens(paragraph, encoding) <= maxTokens) {
+      return [{ text: paragraph, joiner: "\n\n" }];
+    }
+    // the lookbehind keeps the delimiter on the preceding sentence, so joining
+    // with "" restores the paragraph verbatim
+    return paragraph.split(/(?<=[。．！？!?;；\n])/).map((sentence, index) => ({
+      text: sentence,
+      joiner: index === 0 ? "\n\n" : "",
+    }));
+  });
+
+/**
+ * Last resort for a unit with no boundary left to split on — a long CJK
+ * paragraph without `。`, a wide table row. Slicing keeps the tail searchable;
+ * emitting it whole would hand the provider an over-length input and store
+ * text that does not match the vector.
+ */
+const sliceToBudget = (text: string, maxTokens: number): string[] => {
+  const slices: string[] = [];
+  let rest = text;
+  while (rest) {
+    const head = truncateForEmbedding(rest, maxTokens);
+    // the estimate is pessimistic, never zero-length for a non-empty input, but
+    // the fallback guarantees progress
+    const take = head.length > 0 ? head : rest.slice(0, 1);
+    slices.push(take);
+    rest = rest.slice(take.length);
+  }
+  return slices;
+};
+
 const splitOversized = (
   text: string,
   maxTokens: number,
   encoding: Tiktoken | null
 ): string[] => {
-  const units = text.split(/\n{2,}/).flatMap((paragraph) =>
-    countEmbeddingTokens(paragraph, encoding) <= maxTokens
-      ? [paragraph]
-      : paragraph.split(/(?<=[。．！？!?;；\n])/)
-  );
-
   const pieces: string[] = [];
   let buffer = "";
   let bufferTokens = 0;
 
-  for (const unit of units) {
-    const unitTokens = countEmbeddingTokens(unit, encoding);
-    if (buffer && bufferTokens + unitTokens > maxTokens) {
+  const flush = () => {
+    if (buffer.trim()) {
       pieces.push(buffer.trim());
-      buffer = "";
-      bufferTokens = 0;
     }
-    buffer += (buffer ? "\n\n" : "") + unit;
+    buffer = "";
+    bufferTokens = 0;
+  };
+
+  for (const unit of toUnits(text, maxTokens, encoding)) {
+    const unitTokens = countEmbeddingTokens(unit.text, encoding);
+
+    if (buffer && bufferTokens + unitTokens > maxTokens) {
+      flush();
+    }
+
+    if (unitTokens > maxTokens) {
+      flush();
+      for (const slice of sliceToBudget(unit.text, maxTokens)) {
+        if (slice.trim()) {
+          pieces.push(slice.trim());
+        }
+      }
+      continue;
+    }
+
+    buffer += (buffer ? unit.joiner : "") + unit.text;
     bufferTokens += unitTokens;
   }
-  if (buffer.trim()) {
-    pieces.push(buffer.trim());
-  }
+  flush();
 
   return pieces;
 };
@@ -110,7 +170,11 @@ export const chunkMarkdown = async (params: {
 
     if (sectionTokens > targetTokens) {
       flush();
-      for (const piece of splitOversized(section.text, targetTokens, encoding)) {
+      for (const piece of splitOversized(
+        section.text,
+        targetTokens,
+        encoding
+      )) {
         buffer.push({ headingPath: section.headingPath, text: piece });
         flush();
       }

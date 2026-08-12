@@ -25,9 +25,7 @@ export interface ResourceIndexRequest {
  * Chunks whose text is unchanged keep their vectors; only new or edited ones
  * are rewritten, which is what makes a one-section edit cost one embedding.
  */
-export const syncResourceChunksStep = async (
-  request: ResourceIndexRequest
-) => {
+export const syncResourceChunksStep = async (request: ResourceIndexRequest) => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
@@ -52,30 +50,32 @@ export const syncResourceChunksStep = async (
 /**
  * Embeds whatever chunks lack a vector for the current model and index version.
  *
+ * Re-queries instead of paging through one snapshot: `listChunksNeedingEmbedding`
+ * only returns chunks with no vector, so every persisted batch shrinks the
+ * backlog and the loop terminates. Paging a single fixed-size read would report
+ * `embedded` for a resource whose tail was never embedded.
+ *
  * A provider 4xx other than 408/429 is permanent, so it becomes `FatalError`
  * rather than burning the step's retries.
  */
-export const embedPendingChunksStep = async (
-  request: ResourceIndexRequest
-) => {
+export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
   const provider = resolveEmbeddingProvider({ fetch });
   const ref = { sourceType: request.sourceType, sourceId: request.sourceId };
 
-  const pending = await listChunksNeedingEmbedding(db, {
-    model: provider.id,
-    indexVersion: EMBEDDING_INDEX_VERSION,
-    ref,
-  });
-  if (pending.length === 0) {
-    return { status: "up-to-date" as const, embedded: 0 };
-  }
-
   let embedded = 0;
-  for (let start = 0; start < pending.length; start += EMBED_BATCH_SIZE) {
-    const batch = pending.slice(start, start + EMBED_BATCH_SIZE);
+  for (;;) {
+    const batch = await listChunksNeedingEmbedding(db, {
+      model: provider.id,
+      indexVersion: EMBEDDING_INDEX_VERSION,
+      ref,
+      limit: EMBED_BATCH_SIZE,
+    });
+    if (batch.length === 0) {
+      break;
+    }
 
     let vectors: number[][];
     try {
@@ -113,10 +113,19 @@ export const embedPendingChunksStep = async (
         embedding: vectors[index]!,
       })),
     });
+    // the next query re-reads the backlog, so a batch that persisted nothing
+    // would spin forever
+    if (savedCount === 0) {
+      throw new FatalError(
+        `Persisted no embeddings for ${batch.length} pending chunks of ${request.sourceType}:${request.sourceId}`
+      );
+    }
     embedded += savedCount;
   }
 
-  return { status: "embedded" as const, embedded };
+  return embedded === 0
+    ? { status: "up-to-date" as const, embedded: 0 }
+    : { status: "embedded" as const, embedded };
 };
 
 export const clearResourceChunksStep = async (

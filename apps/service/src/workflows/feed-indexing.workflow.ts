@@ -58,12 +58,23 @@ export const feedIndexingWorkflow = async (request: Request) => {
     })
   );
 
-  const success = translations.every(
+  // a branch that exhausted its retries leaves the translation unindexed until
+  // the next feed change, so it has to be loud rather than a `success: false`
+  // nobody reads — `syncFeedSearchIndex` returns the run handle without
+  // inspecting the result
+  const failures = translations.filter(
     (translation) =>
-      translation.readingTime === "ok" && translation.index === "ok"
+      translation.readingTime !== "ok" || translation.index !== "ok"
   );
 
-  console.log("Feed indexing workflow finished", { feedID, success });
+  if (failures.length > 0) {
+    console.error("Feed indexing workflow finished with failures", {
+      feedID,
+      failures,
+    });
+  } else {
+    console.log("Feed indexing workflow finished", { feedID, success: true });
+  }
 
-  return { success, translations };
+  return { success: failures.length === 0, translations };
 };

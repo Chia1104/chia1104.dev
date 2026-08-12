@@ -87,6 +87,7 @@ export const createAgentContentPort = (
         // (package names, CLI flags, error messages)
         model: input.mode === "keyword" ? "bm25" : "hybrid",
         locale: input.locale,
+        limit: input.limit,
       });
 
       return result.items.slice(0, input.limit).map((item) => ({

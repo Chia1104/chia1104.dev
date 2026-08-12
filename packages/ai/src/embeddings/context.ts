@@ -73,23 +73,31 @@ export interface BuildContextResult {
 /**
  * Anchors for a document's headings, matching the ids the site generates.
  *
- * A fresh `GithubSlugger` per document: it remembers what it emitted and
- * disambiguates repeats with `-1`, so a shared instance would drift on the
- * second document even though the rendered page starts from scratch.
+ * Always slug the *whole* document, then narrow: `GithubSlugger` disambiguates
+ * repeated titles with `-1`, so slugging a subset of the headings would emit
+ * `#setup` for one the page renders as `#setup-1`. A fresh instance per
+ * document, since the rendered page starts from scratch too.
  */
-export const buildHeadingAnchors = (content: string): HeadingAnchor[] => {
+export const buildHeadingAnchors = (
+  content: string,
+  keepPaths?: ReadonlySet<string>
+): HeadingAnchor[] => {
   const slugger = new GithubSlugger();
-  return extractHeadings(content).map((heading) => ({
+  const anchors = extractHeadings(content).map((heading) => ({
     path: heading.path,
     title: heading.title,
     anchor: `#${slugger.slug(heading.title)}`,
   }));
+  return keepPaths
+    ? anchors.filter((entry) => keepPaths.has(entry.path))
+    : anchors;
 };
 
 const countTokens = (
   text: string,
   encoding: Awaited<ReturnType<typeof tryLoadTokenizer>>
-): number => (encoding ? encoding.encode(text).length : estimateEmbeddingTokens(text));
+): number =>
+  encoding ? encoding.encode(text).length : estimateEmbeddingTokens(text);
 
 const truncateTokens = (
   text: string,
@@ -114,12 +122,10 @@ const buildSectionsView = (
   input: DocumentContextInput,
   maxTokens: number,
   encoding: Awaited<ReturnType<typeof tryLoadTokenizer>>
-): string => {
+): { text: string; keptPaths: Set<string> } => {
   const sections = splitByHeadings(input.content);
   const matched = new Set(
-    (input.matchedHeadingPaths ?? []).filter(
-      (path): path is string => !!path
-    )
+    (input.matchedHeadingPaths ?? []).filter((path): path is string => !!path)
   );
 
   const ordered = [
@@ -132,19 +138,25 @@ const buildSectionsView = (
   ];
 
   const parts: string[] = [];
+  const keptPaths = new Set<string>();
   let used = 0;
   for (const section of ordered) {
-    const heading = section.headingPath ? `## ${section.headingPath}\n` : "";
-    const block = `${heading}${section.text}`;
+    // the leaf title, not the path: this heading is re-slugged downstream and
+    // `## HNSW > ef_search` would anchor to `#hnsw--ef_search`
+    const title = section.headingPath?.split(" > ").at(-1);
+    const block = `${title ? `## ${title}\n` : ""}${section.text}`;
     const cost = countTokens(block, encoding);
     if (used + cost > maxTokens) {
       continue;
     }
     parts.push(block);
+    if (section.headingPath) {
+      keptPaths.add(section.headingPath);
+    }
     used += cost;
   }
 
-  return parts.join("\n\n");
+  return { text: parts.join("\n\n"), keptPaths };
 };
 
 /** Cheapest representation: what the post is about and how it is organised. */
@@ -188,11 +200,20 @@ export const buildDocumentContext = async (
       Math.max(1, Math.floor(budget * MAX_SHARE_PER_DOCUMENT))
     );
 
-    const candidates: { detail: ContextDetail; text: string }[] = [
+    const sections = buildSectionsView(input, allowance, encoding);
+    // anchors always come from the untouched document, so their slugs match the
+    // rendered page whichever view survives; `keepPaths` narrows them to what
+    // the view actually contains
+    const candidates: {
+      detail: ContextDetail;
+      text: string;
+      keepPaths?: ReadonlySet<string>;
+    }[] = [
       { detail: "full", text: input.content },
       {
         detail: "sections",
-        text: buildSectionsView(input, allowance, encoding),
+        text: sections.text,
+        keepPaths: sections.keptPaths,
       },
       { detail: "outline", text: buildOutlineView(input) },
     ];
@@ -211,7 +232,7 @@ export const buildDocumentContext = async (
           detail: candidate.detail,
           text: candidate.text,
           tokenCount: cost,
-          anchors: buildHeadingAnchors(candidate.text),
+          anchors: buildHeadingAnchors(input.content, candidate.keepPaths),
         };
         break;
       }
