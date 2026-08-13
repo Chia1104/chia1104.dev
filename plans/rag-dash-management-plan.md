@@ -12,7 +12,7 @@
 | -------------------------------------- | ------- | ----------------------------------------------------------- |
 | Phase 0：兩個前置缺口（B/C）           | ✅ 完成 | B 以註解 + `stats.ts` 精確查詢處理；C 由 port 落地 run 紀錄 |
 | Phase 1：`resource_index_run` 表       | ✅ 完成 | `20260812083824_resource_index_run`，**migration 尚未套用** |
-| Phase 2：port + stats repo + oRPC 路由 | ✅ 完成 | 11 條路由 + 11 個測試                                       |
+| Phase 2：port + stats repo + oRPC 路由 | ✅ 完成 | 11 條路由（全 admin-only，見 §5.5）+ 13 個測試              |
 | Phase 3：文章編輯區 embedding drawer   | ✅ 完成 | 每語系 chunk 明細 + 觸發 + 輪詢                             |
 | Phase 4：RAG 總覽 + chunk explorer     | ✅ 完成 | 總覽 4 張統計卡 + 4 種分佈；explorer 4 個篩選 + 明細抽屜    |
 | Phase 5：runs 頁 + 維護動作            | ✅ 完成 | 序列 reindex workflow、二次確認、prune                      |
@@ -49,6 +49,8 @@
 - **`dash` 不再包一層 API。** 不新增 `app/api/*` route handler、不寫 server action 去代理 oRPC。既有的 `app/api/v1/health/route.ts` 不動。
 
 這三條也決定了 §3.1 的定位、§5.4 的 transport 分類、以及 §6 的按鈕狀態怎麼來。
+
+需求 3 只提到「觸發」要限 admin —— 那個範圍不夠，唯讀路由也必須是 admin-only，理由見 §5.5。
 
 ## 2. 現況盤點：可直接重用
 
@@ -201,19 +203,21 @@ interface IndexingService {
 
 新增 `packages/api/orpc/contracts/rag.contract.ts` 與 `routes/rag.route.ts`，並註冊進 `router.ts` 與 `router.contract.ts`（兩邊都要，命名沿用現有的 `"a:b"` 風格）。
 
-| 路由                         | 守衛                                  | 說明                                          |
-| ---------------------------- | ------------------------------------- | --------------------------------------------- |
-| `rag.overview`               | `authGuard` + `adminIdGuard`          | 統計卡；回傳 `canTrigger`（§5.5）             |
-| `rag["chunks:list"]`         | `authGuard`                           | explorer                                      |
-| `rag["chunk:get"]`           | `authGuard`                           | chunk 明細                                    |
-| `rag["resource:status"]`     | `authGuard` + `adminIdGuard`          | drawer 主查詢；回傳 `canTrigger`（§5.5）      |
-| `rag["runs:list"]`           | `authGuard`                           | runs 頁。含 lazy reconcile → service-only     |
-| `rag["run:get"]`             | `authGuard`                           | drawer 輪詢。含 lazy reconcile → service-only |
-| `rag["reindex:all:preview"]` | `authGuard`                           | 二次確認要顯示的數字                          |
-| `rag["resource:index"]`      | **`adminGuard()`** + `rateLimitGuard` | 單一 resource 重算                            |
-| `rag["feed:index"]`          | **`adminGuard()`** + `rateLimitGuard` | 整篇重算                                      |
-| `rag["reindex:all"]`         | **`adminGuard()`** + `rateLimitGuard` | 全量                                          |
-| `rag["embeddings:prune"]`    | **`adminGuard()`** + `rateLimitGuard` | 清理舊 index key 的向量                       |
+**11 條路由全部是 `adminGuard()`，唯讀也一樣。** 原本的設計把唯讀路由定成 `authGuard`，那是錯的，理由見 §5.5。
+
+| 路由                         | 守衛                              | 說明                                          |
+| ---------------------------- | --------------------------------- | --------------------------------------------- |
+| `rag.overview`               | `adminGuard()`                    | 統計卡                                        |
+| `rag["chunks:list"]`         | `adminGuard()`                    | explorer                                      |
+| `rag["chunk:get"]`           | `adminGuard()`                    | chunk 明細                                    |
+| `rag["resource:status"]`     | `adminGuard()`                    | drawer 主查詢                                 |
+| `rag["runs:list"]`           | `adminGuard()`                    | runs 頁。含 lazy reconcile → service-only     |
+| `rag["run:get"]`             | `adminGuard()`                    | drawer 輪詢。含 lazy reconcile → service-only |
+| `rag["reindex:all:preview"]` | `adminGuard()`                    | 二次確認要顯示的數字                          |
+| `rag["resource:index"]`      | `adminGuard()` + `rateLimitGuard` | 單一 resource 重算                            |
+| `rag["feed:index"]`          | `adminGuard()` + `rateLimitGuard` | 整篇重算                                      |
+| `rag["reindex:all"]`         | `adminGuard()` + `rateLimitGuard` | 全量                                          |
+| `rag["embeddings:prune"]`    | `adminGuard()` + `rateLimitGuard` | 清理舊 index key 的向量                       |
 
 四個寫入路由都是 mutation。`sourceType` 用 `isResourceType` refine，和 `resourceIndexRequestSchema`（`apps/service/src/workflows/resource-index.workflow.ts`）一致 —— 在邊界擋掉壞值，不要讓它變成一個重試到失敗的 workflow run。
 
@@ -231,13 +235,21 @@ interface IndexingService {
 - 頁面本身是薄殼（`page.tsx` 只組合 client component 並傳 query 參數），與 `posts/page.tsx` 相同。
 - 列表用 `useInfiniteQuery`，抄 `apps/dash/src/components/feed/feed-list.tsx`。
 
-### 5.5 按鈕狀態不在 dash 判定
+### 5.5 為什麼唯讀路由也必須是 admin-only
 
-§1.1 規定授權只在 `apps/service` 驗證，所以 `dash` **不讀 session role、不比對 admin id**。但 UI 仍然需要知道要不要把觸發按鈕設成 disabled。
+原本的設計只要求「觸發 embedding 的 api 限 admin」（需求 3），唯讀路由因此定成 `authGuard`。那是一個資源歸屬層級的漏洞：
 
-作法：唯讀路由 `rag["resource:status"]` 與 `rag.overview` 各回傳一個由 **service 端**算出的 `canTrigger: boolean`，跟 `adminGuard()` 用同一份 `adminPolicy`（`packages/service-kit/src/policies/admin.policy.ts`）判定。`dash` 只是渲染這個布林值。
+- `authGuard` = `sessionPolicy()`，只檢查有沒有登入，任何 role 都通過（`packages/service-kit/src/policies/session.policy.ts`）。
+- 註冊是開放的：`packages/auth/src/base-auth.ts` 有 GitHub / Google OAuth 與 magic link，沒有 `disableSignUp`，新使用者 `role` 預設 `Role.User`。
+- `resource_chunk` 存的是每個被索引資源的**正文**，而且沒有任何歸屬欄位可以過濾。`stats.ts` 的查詢也刻意**不**過濾 `published` / `deleted` —— 管理介面本來就要看得到草稿與已下架的內容。
 
-授權邏輯因此仍然只有一份、只在 service；`dash` 沒有重寫任何判斷，只消費結果。被拒的情況仍然由 `adminGuard()` 擋（`canTrigger` 只影響外觀，不是防線），mutation 收到 `FORBIDDEN` 時顯示錯誤即可。
+三者相加：任何能收信的人都能登入後呼叫 `rag["chunks:list"]` 分頁列舉全部 chunk、用 `query` 參數做 `ILIKE` 全文搜尋，再用 `rag["chunk:get"]` 取完整內文，包含其他使用者未發佈的草稿。對照 `feeds.list` 有 `whereAnd: { userId: session.user.id }`，可見這個 app 的意圖確實是 feed 屬於個別使用者。
+
+所以 11 條路由一律 `adminGuard()`（role ∈ {admin, root} 且 pin 到 `getAdminId()`）。pin 到單一 admin 是正確的範圍：公開站台服務的就是那一位作者的 feed，corpus 本來就屬於他。
+
+**連帶移除 `canTrigger`。** 既然讀取所需的權限與觸發相同，「能讀到資料」本身就是權限訊號，`dash` 用 `!!data` 決定按鈕狀態即可，不需要伺服器再回一個布林值，`adminIdGuard` 也不再需要。§1.1 的第二條約束更嚴格地成立了：`dash` 連一個權限布林值都不用消費。
+
+代價：非 admin 進 RAG 頁會看到 `FORBIDDEN` 訊息而不是被隱藏的側邊欄項目 —— §1.1 不准 `dash` 判權限，所以導覽不會自動隱藏。
 
 ---
 
@@ -249,7 +261,7 @@ heroui `Drawer.*`，抄 `apps/dash/src/components/assets/file-tree-drawer.tsx` �
 
 - **頂部**：model、`EMBEDDING_INDEX_VERSION`、整體覆蓋率（`@chia/ui/progress`）、上次 indexing 完成時間
 - **每個 locale 一段**：chunk 表格 —— kind（card / section）、chunkIndex、headingPath、tokenCount、狀態圓點（current / stale / missing）。card 與 section 分開列，因為它們的用途不同（card 餵相關文章、section 餵搜尋）
-- **底部**：`重新計算此語系` / `重算整篇`。disabled 與否直接讀 `rag["resource:status"]` 回傳的 `canTrigger`（§5.5），dash 不自己判 role
+- **底部**：`重新計算此語系` / `重算整篇`。disabled 與否綁在 `rag["resource:status"]` 是否載到資料上 —— 讀得到就代表有權限（§5.5），dash 不自己判 role
 - **輪詢**：mutation 回傳 `{ runId }` → `rag["run:get"]` 加 `refetchInterval`，status 進入 completed / failed / cancelled 就停止輪詢並 invalidate `rag["resource:status"]`
 
 整個 drawer 是 client component，所有查詢與 mutation 都走 `orpc`（§1.1 / §5.4），沒有 RSC 預取也沒有 server action。
@@ -272,7 +284,7 @@ apps/dash/src/app/(workspace)/rag/maintenance/page.tsx  維護動作
 - **總覽**：統計卡（chunks / current / stale / missing）+ 分佈（sourceType、locale、kind、(model, index_version)）。client 端 `orpc.rag.overview` 取，配 skeleton。
 - **explorer**：篩選 sourceType / locale / kind / 嵌入狀態，可搜尋 content。點一列開明細。分頁用 `withMetaSchema` 的 cursor + `useInfiniteQuery`。
 - **runs**：近期 run 列表（scope、目標、狀態、耗時、觸發者、progress）。有 active run 時加 `refetchInterval`。
-- **維護**：顯示當前 index key、`清理舊向量`、`補齊缺漏`、`全量 reindex`。三顆按鈕的 disabled 讀 `rag.overview` 的 `canTrigger`。
+- **維護**：顯示當前 index key、`清理舊向量`、`補齊缺漏`、`全量 reindex`。三顆按鈕都要二次確認（含 prune），disabled 綁在 `rag.overview` 是否載到資料上。
 
 ## 8. Phase 5：全量 reindex
 
@@ -320,7 +332,7 @@ finalizeReindexRunStep()
 - Phase 0：bump `EMBEDDING_INDEX_VERSION` 後，drawer 顯示 `stale` 而不是「已嵌入」。
 - Phase 1：連按兩次「重新計算」，第二次回傳同一個 runId 且 `reused: true`；手動把 run 的 DB status 改成 `running` 再觸發，lazy reconcile 能自動補正而不是撞 unique 衝突。
 - Phase 2：`apps/dash` 全域 grep 不到 `getAdminId`、`Role.Admin`、`session.user.role`，也沒有新增的 `app/api/*` 或 server action —— 驗證 §1.1 的後兩條約束沒有被繞過；port 未註冊時觸發路由回 `SERVICE_UNAVAILABLE`。
-- Phase 3：非 admin 帳號呼叫 `rag["resource:index"]` 得到 `FORBIDDEN`（且該帳號的 `canTrigger` 為 false）；admin 觸發後 drawer 的進度會自己走完並刷新明細。
+- Phase 3：非 admin 帳號呼叫**任何一條** rag 路由（唯讀也算）都得到 `FORBIDDEN`；admin 觸發後 drawer 的進度會自己走完並刷新明細。
 - Phase 5：`onlyMissing: true` 不改變任何 chunk 的 `content_hash`。
 
 ## 11. 未決
@@ -328,6 +340,7 @@ finalizeReindexRunStep()
 - `meta-chip.tsx` 的 chip 是否改用三態語意（空間只有一個 icon）。目前維持「曾經嵌入過」。
 - 檢索品質基準（`docs/rag-architecture.md` §9 的第一項）不在本規劃範圍。RAG 管理區塊將來是放評測結果的自然位置，但要先有評測腳本。
 - `resource_index_run` 的保留期限 / 清理策略。目前資料量小，暫不處理。
+- **`feeds` 詳情路由缺 userId scope**（既有問題，見 §12）。
 - **跨 scope 不互斥**：`resource` 與 `feed` 兩個 scope 各有自己的 active unique index，所以「重算此語系」與「重算整篇」可以同時在跑，同一批 chunk 會被嵌入兩次。資料不會壞（`saveChunkEmbeddings` 是 upsert），但會多花額度。要擋需要跨 scope 的鎖，先不做。
 - `docs/rag-architecture.md` §9 關於 `pruneStaleEmbeddings` 的描述仍待更新（見 §3.4）。
 
@@ -344,6 +357,14 @@ finalizeReindexRunStep()
 5. **`chunks:list` 的 `nextCursor` 收窄成 `number`**，覆寫 `withMetaSchema` 的 `string | number`。這個 cursor 是 chunk id，輸入端只收 number，不收窄會逼每個呼叫端在回程手動轉型。
 6. **`reindex:all:preview` 補了 `targets`**（translation 數）。原本只有 chunk 總數與待嵌入數，缺 §8 二次確認要求的第一個數字。
 7. **`packages/db` 多了兩個 repo 函式**：`listFeedTranslationIds`（bulk workflow 列舉目標，升序、不過濾，未發佈與軟刪也重算，讓 chunk 的可見性鏡像保持同步）與 `countFeedTranslations`（preview 用）。無 schema 變更。
+
+### 事後修正：唯讀路由的資源歸屬漏洞
+
+初版把 7 條唯讀路由定成 `authGuard`，等於「登入即可讀取全站 chunk 正文（含他人草稿）並全文搜尋」。完整分析與修法見 §5.5。這是規劃階段的疏漏 —— 需求只寫了「觸發限 admin」，我照抄成守衛表時沒有問「讀取要不要保護」。
+
+修正後 11 條路由一律 `adminGuard()`，`canTrigger` 與 `adminIdGuard` 一併移除，並補上 6 條測試斷言「signed-in 非 admin 對每一條唯讀路由都得到 `FORBIDDEN`」。
+
+同時記錄一個**未處理的既有問題**：`feeds["details-by-id"]` 與 `["details-by-slug"]`（`packages/api/orpc/routes/feeds.route.ts`）也只有 `authGuard`、還帶 `enableDeleted: true`，所以「知道 id 或 slug 就能讀他人草稿」在這個 PR 之前就存在。刻意不在此 PR 一起改：那條路徑 dash 編輯頁正在使用，改動範圍與風險都超出這次的題目。
 
 ### 額外加固：`reconcile` 的 60 秒寬限期
 
