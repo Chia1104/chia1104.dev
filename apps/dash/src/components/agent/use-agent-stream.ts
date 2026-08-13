@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { AgentWireEvent } from "@chia/agent-core";
+import type { AgentWireEvent } from "@chia/agent-runtime";
 
 import { client } from "@/libs/orpc/client";
 

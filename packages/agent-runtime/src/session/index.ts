@@ -15,8 +15,7 @@ export {
 } from "./pg-pending-messages.ts";
 
 /**
- * Re-exported so callers never import pi directly — see the package doc comment on why pi's 0.x
- * churn is contained to this package.
+ * Re-exported so callers can use the same Pi session implementation as the runtime.
  */
 export {
   InMemorySessionRepo,

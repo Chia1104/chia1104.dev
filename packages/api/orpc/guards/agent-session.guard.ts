@@ -4,12 +4,12 @@ import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
 import { getAgentSession } from "@chia/db/repos/agent";
 
-import { getAgentRuntime } from "../agent-runtime";
+import { getAgentKindService } from "../agent-service";
 import type {
   AgentModelRef,
-  AgentRuntime,
-  AgentRuntimeCaller,
-} from "../agent-runtime";
+  AgentKindService,
+  AgentServiceCaller,
+} from "../agent-service";
 import type { BaseOSContext } from "../utils";
 
 /**
@@ -35,8 +35,8 @@ type AdminContext = BaseOSContext & {
 /** What the guard hands downstream. */
 export interface AgentSessionContext {
   agent: {
-    caller: AgentRuntimeCaller;
-    runtime: AgentRuntime;
+    caller: AgentServiceCaller;
+    service: AgentKindService;
     kind: string;
   };
 }
@@ -59,7 +59,7 @@ export const agentSessionGuard = () =>
   agentOS
     .errors({ NOT_FOUND: {}, BAD_REQUEST: {} })
     .middleware(async ({ context, errors, next }, input: AgentSessionInput) => {
-      const caller: AgentRuntimeCaller = {
+      const caller: AgentServiceCaller = {
         adminId: context.adminId,
         userId: context.session.user.id,
         context,
@@ -79,15 +79,15 @@ export const agentSessionGuard = () =>
         throw errors.NOT_FOUND();
       }
 
-      const runtime = getAgentRuntime(row.kind);
+      const service = getAgentKindService(row.kind);
 
       if (input.model) {
-        const reason = await runtime.validateModel(input.model);
+        const reason = await service.validateModel(input.model);
         if (reason) throw errors.BAD_REQUEST({ message: reason });
       }
 
       return next({
-        context: { agent: { caller, runtime, kind: row.kind } },
+        context: { agent: { caller, service, kind: row.kind } },
       });
     });
 
@@ -104,7 +104,7 @@ export const agentModelGuard = () =>
         input: { kind: string; model?: AgentModelRef }
       ) => {
         if (input.model) {
-          const reason = await getAgentRuntime(input.kind).validateModel(
+          const reason = await getAgentKindService(input.kind).validateModel(
             input.model
           );
           if (reason) throw errors.BAD_REQUEST({ message: reason });

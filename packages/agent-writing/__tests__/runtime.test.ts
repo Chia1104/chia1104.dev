@@ -8,14 +8,16 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { foldEvents } from "@chia/agent-core";
-import type { AgentWireEvent } from "@chia/agent-core";
-import { InMemoryPendingMessageStore } from "@chia/agent-core";
-import type { AgentSessionSettings } from "@chia/agent-core";
+import { InMemoryPendingMessageStore, foldEvents } from "@chia/agent-runtime";
+import type {
+  AgentSessionSettings,
+  AgentTurnExecution,
+  AgentWireEvent,
+  ApprovalRequest,
+} from "@chia/agent-runtime";
 
 import { InMemoryDraftStore } from "../src/draft/index.ts";
-import { createWritingEngine } from "../src/runtime.ts";
-import type { WritingEngine } from "../src/runtime.ts";
+import { runWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
 import { createFakeContentPort } from "./fixtures.ts";
@@ -33,7 +35,6 @@ const SESSION_ID = "session-1";
 const ADMIN_ID = "admin-1";
 
 interface Fixture {
-  engine: WritingEngine;
   events: AgentWireEvent[];
   content: FakeContentPort;
   draft: InMemoryDraftStore;
@@ -41,8 +42,7 @@ interface Fixture {
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
-  dispose: () => void;
-  approvalRequests: () => readonly { toolName: string }[];
+  run: (text: string) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
 
 const build = async (
@@ -77,38 +77,40 @@ const build = async (
   const pending = new InMemoryPendingMessageStore();
   const events: AgentWireEvent[] = [];
 
-  const built = await createWritingEngine({
-    session,
-    settings: {
-      providerId,
-      modelId,
-      thinkingLevel: "off",
-      activeToolNames: null,
-      autoApprove: [],
-      ...settings,
-    },
-    agentSessionId: SESSION_ID,
-    adminId: ADMIN_ID,
-    content,
-    draft,
-    pending,
-    onEvent: (event) => events.push(event),
-    models,
-  });
+  const sessionSettings: AgentSessionSettings = {
+    providerId,
+    modelId,
+    thinkingLevel: "off",
+    activeToolNames: null,
+    autoApprove: [],
+    ...settings,
+  };
 
   return {
-    engine: built,
     events,
     content,
     draft,
     pending,
     setResponses: faux.setResponses,
-    dispose: built.dispose,
-    approvalRequests: () => built.approvalRequests,
+    run: (text) =>
+      runWritingTurn({
+        session,
+        settings: sessionSettings,
+        agentSessionId: SESSION_ID,
+        adminId: ADMIN_ID,
+        content,
+        draft,
+        pending,
+        message: { text },
+        onEvent: (event) => events.push(event),
+        models,
+        toApproval: (approval) => approval,
+        persistApproval: async () => undefined,
+      }),
   };
 };
 
-describe("createWritingEngine", () => {
+describe("runWritingTurn", () => {
   let fixture: Fixture;
 
   beforeEach(async () => {
@@ -124,7 +126,7 @@ describe("createWritingEngine", () => {
       fauxAssistantMessage("There is already a post about TypeScript."),
     ]);
 
-    await fixture.engine.prompt("Is there a post about TypeScript?");
+    await fixture.run("Is there a post about TypeScript?");
 
     const toolStart = fixture.events.find((e) => e.type === "tool:start");
     const toolEnd = fixture.events.find((e) => e.type === "tool:end");
@@ -160,14 +162,12 @@ describe("createWritingEngine", () => {
     });
 
     native.setResponses([fauxAssistantMessage("Answered over OpenAI.")]);
-    await native.engine.prompt("Who is answering?");
+    await native.run("Who is answering?");
 
     const view = foldEvents(native.events);
     expect(
       view.items.filter((item) => item.kind === "assistant").at(-1)
     ).toMatchObject({ text: "Answered over OpenAI.", streaming: false });
-
-    native.dispose();
   });
 
   it("writes the draft buffer and never touches published content", async () => {
@@ -184,7 +184,7 @@ describe("createWritingEngine", () => {
       fauxAssistantMessage("Draft written."),
     ]);
 
-    await fixture.engine.prompt("Draft something");
+    await fixture.run("Draft something");
 
     const draft = await fixture.draft.get(SESSION_ID);
     expect(draft.translations.en?.content).toBe("## Hello\n\nSome body text.");
@@ -222,10 +222,10 @@ describe("createWritingEngine", () => {
       fauxAssistantMessage("Waiting for your approval."),
     ]);
 
-    await fixture.engine.prompt("Write and commit a post");
+    const result = await fixture.run("Write and commit a post");
 
     expect(fixture.content.commits).toHaveLength(0);
-    expect(fixture.approvalRequests().map((r) => r.toolName)).toEqual([
+    expect(result.approvals.map((request) => request.toolName)).toEqual([
       TOOL_NAMES.commitDraft,
     ]);
 
@@ -270,7 +270,7 @@ describe("createWritingEngine", () => {
       fauxAssistantMessage("Committed."),
     ]);
 
-    await approved.engine.prompt("Write and commit a post");
+    await approved.run("Write and commit a post");
 
     expect(approved.content.commits).toHaveLength(1);
     expect(approved.content.commits[0]).toMatchObject({
@@ -280,7 +280,6 @@ describe("createWritingEngine", () => {
     expect(approved.events.some((e) => e.type === "approval:request")).toBe(
       false
     );
-    approved.dispose();
   });
 
   it("refuses to commit a draft whose default locale has no title", async () => {
@@ -301,14 +300,13 @@ describe("createWritingEngine", () => {
       fauxAssistantMessage("I need a title first."),
     ]);
 
-    await approved.engine.prompt("Commit it");
+    await approved.run("Commit it");
 
     expect(approved.content.commits).toHaveLength(0);
     const commitEvent = approved.events.find(
       (e) => e.type === "tool:end" && e.toolName === TOOL_NAMES.commitDraft
     );
     expect(commitEvent).toMatchObject({ isError: true });
-    approved.dispose();
   });
 
   it("streams text deltas that fold into the finished message", async () => {
@@ -316,7 +314,7 @@ describe("createWritingEngine", () => {
       fauxAssistantMessage([fauxText("Hello there, operator.")]),
     ]);
 
-    await fixture.engine.prompt("Hi");
+    await fixture.run("Hi");
 
     const deltas = fixture.events.filter((e) => e.type === "assistant:delta");
     expect(deltas.length).toBeGreaterThan(0);
@@ -334,56 +332,5 @@ describe("createWritingEngine", () => {
 
     expect(textOf(withDeltas)).toBe("Hello there, operator.");
     expect(textOf(withoutDeltas)).toBe("Hello there, operator.");
-  });
-
-  describe("pending messages", () => {
-    it("delivers a queued steer into a running turn", async () => {
-      fixture.setResponses([fauxAssistantMessage([fauxText("Understood.")])]);
-      await fixture.pending.push(SESSION_ID, "steer", "Actually, stop.");
-
-      const turn = fixture.engine.prompt("Write something");
-      await fixture.engine.drainPendingMessages();
-      await turn;
-
-      expect(await fixture.pending.peek(SESSION_ID)).toEqual([]);
-    });
-
-    /**
-     * The loss window: `claim` marks rows consumed before delivery, and pi refuses `steer()` on an
-     * idle harness. Without the release path the operator's message would be consumed and then
-     * dropped on the floor with nothing to show for it.
-     */
-    it("returns a message to the queue when the harness has gone idle", async () => {
-      await fixture.pending.push(SESSION_ID, "steer", "Wait, change of plan");
-
-      // No turn is running, so pi throws "Cannot steer while idle".
-      await expect(fixture.engine.drainPendingMessages()).rejects.toThrow();
-
-      expect(
-        (await fixture.pending.peek(SESSION_ID)).map((m) => m.text)
-      ).toEqual(["Wait, change of plan"]);
-    });
-
-    it("keeps only the undelivered tail when a later message fails", async () => {
-      fixture.setResponses([fauxAssistantMessage([fauxText("Fine.")])]);
-      await fixture.pending.push(SESSION_ID, "steer", "first");
-      await fixture.pending.push(SESSION_ID, "steer", "second");
-
-      const turn = fixture.engine.prompt("Go");
-      await fixture.engine.drainPendingMessages();
-      await turn;
-
-      // Both landed inside the turn, so nothing comes back.
-      expect(await fixture.pending.peek(SESSION_ID)).toEqual([]);
-
-      // Now the same two, but with no turn to receive them.
-      await fixture.pending.push(SESSION_ID, "steer", "third");
-      await fixture.pending.push(SESSION_ID, "steer", "fourth");
-      await expect(fixture.engine.drainPendingMessages()).rejects.toThrow();
-
-      expect(
-        (await fixture.pending.peek(SESSION_ID)).map((m) => m.text)
-      ).toEqual(["third", "fourth"]);
-    });
   });
 });

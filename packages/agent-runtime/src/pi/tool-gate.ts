@@ -3,7 +3,7 @@ import type {
   ToolCallResult,
 } from "@earendil-works/pi-agent-core";
 
-import type { AgentPolicy, ToolTier } from "./types.ts";
+import type { AgentPolicy, ToolTier } from "../types.ts";
 
 /**
  * Tier-based permission gate, installed as pi's `tool_call` hook.
@@ -26,7 +26,7 @@ export interface ApprovalRequest {
   args: unknown;
 }
 
-export interface ToolCallGateOptions {
+export interface PiToolCallGateOptions {
   policy: AgentPolicy;
   /** Tiers the operator pre-approved for the whole session. */
   autoApprove: readonly ToolTier[];
@@ -44,15 +44,15 @@ export interface ToolCallGateOptions {
   onApprovalRequired: (request: ApprovalRequest) => void;
 }
 
-export interface ToolCallGate {
+export interface PiToolCallGate {
   handle: (event: ToolCallEvent) => ToolCallResult | undefined;
   /** Requests raised during the turn, in order. Drives `run:end{awaiting_approval}`. */
   readonly requests: readonly ApprovalRequest[];
 }
 
-export const createToolCallGate = (
-  options: ToolCallGateOptions
-): ToolCallGate => {
+export const createPiToolCallGate = (
+  options: PiToolCallGateOptions
+): PiToolCallGate => {
   const requests: ApprovalRequest[] = [];
   const approved = options.approvedToolCallIds ?? new Set<string>();
   const preAuthorized = options.preAuthorizedToolNames ?? new Set<string>();

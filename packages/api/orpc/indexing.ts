@@ -11,7 +11,7 @@ import { AppError } from "@chia/service-kit/errors";
  * The oRPC routes live here in `packages/api`, but *starting* an index run needs the
  * workflow runtime, which only exists in the host app. So this module declares the port
  * and `apps/service` registers an implementation at module load, exactly like
- * `./agent-runtime.ts`.
+ * `./agent-service.ts`.
  *
  * Unlike the listeners in `./events.ts`, a missing implementation throws rather than
  * silently doing nothing: a feed event is a fire-and-forget side effect, whereas every

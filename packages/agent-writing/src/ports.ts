@@ -14,7 +14,7 @@ import type {
 } from "./types.ts";
 
 /**
- * Re-exported so an adapter can import a port and every type in its signature from one place.
+ * Re-exported so consumers can import a port and every type in its signature from one place.
  */
 export type {
   CommitDraftInput,
@@ -39,7 +39,7 @@ export type {
  * `apps/service/src/services/agent-content.port.ts`.
  *
  * Transport-agnostic ports that every agent kind needs (the steering queue) live in
- * `@chia/agent-core/ports`.
+ * `@chia/agent-runtime`.
  */
 
 // ============================================

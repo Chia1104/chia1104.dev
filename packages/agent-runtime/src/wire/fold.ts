@@ -1,0 +1,263 @@
+import type { ToolTier } from "../types.ts";
+
+import type { AgentWireEvent } from "./schema.ts";
+
+// ============================================
+// Fold: wire events → view model
+// ============================================
+
+export interface ToolCallView {
+  kind: "tool";
+  toolCallId: string;
+  toolName: string;
+  label: string;
+  tier: ToolTier;
+  args: unknown;
+  status: "running" | "ok" | "error" | "awaiting_approval";
+  summary?: string;
+  details?: unknown;
+  approval?: { approved: boolean; comment?: string };
+}
+
+export interface TextMessageView {
+  kind: "user" | "assistant";
+  messageId: string;
+  text: string;
+  thinking?: string;
+  streaming: boolean;
+  usage?: Extract<AgentWireEvent, { type: "assistant:end" }>["usage"];
+}
+
+export interface NoticeView {
+  kind: "notice";
+  variant: "compacted" | "error";
+  text: string;
+}
+
+export type AgentViewItem = TextMessageView | ToolCallView | NoticeView;
+
+export interface AgentViewState {
+  items: AgentViewItem[];
+  /** Tool calls parked on a human decision. Drives the approval prompt. */
+  pendingApprovals: ToolCallView[];
+  /** Bumped whenever a tool changed durable state the client should refetch. */
+  stateRevision: number;
+  runStatus: "idle" | "running" | "awaiting_approval" | "error";
+}
+
+export const emptyViewState = (): AgentViewState => ({
+  items: [],
+  pendingApprovals: [],
+  stateRevision: 0,
+  runStatus: "idle",
+});
+
+/**
+ * Pure reducer. Applying the same events in the same order always yields the same state,
+ * which is what lets the replayed transcript and the live stream share a renderer.
+ */
+export const applyEvent = (
+  state: AgentViewState,
+  event: AgentWireEvent
+): AgentViewState => {
+  const items = state.items.slice();
+  const findTool = (toolCallId: string) =>
+    items.findIndex(
+      (item) => item.kind === "tool" && item.toolCallId === toolCallId
+    );
+
+  switch (event.type) {
+    case "run:start":
+      return { ...state, items, runStatus: "running" };
+
+    case "user":
+      items.push({
+        kind: "user",
+        messageId: event.messageId,
+        text: event.text,
+        streaming: false,
+      });
+      return { ...state, items, runStatus: "running" };
+
+    case "assistant:start":
+      items.push({
+        kind: "assistant",
+        messageId: event.messageId,
+        text: "",
+        streaming: true,
+      });
+      return { ...state, items, runStatus: "running" };
+
+    case "assistant:delta": {
+      const index = items.findIndex(
+        (item) =>
+          item.kind === "assistant" && item.messageId === event.messageId
+      );
+      if (index === -1) return { ...state, items };
+      const message = items[index] as TextMessageView;
+      items[index] =
+        event.channel === "text"
+          ? { ...message, text: message.text + event.delta }
+          : { ...message, thinking: (message.thinking ?? "") + event.delta };
+      return { ...state, items };
+    }
+
+    case "assistant:end": {
+      const index = items.findIndex(
+        (item) =>
+          item.kind === "assistant" && item.messageId === event.messageId
+      );
+      const view: TextMessageView = {
+        kind: "assistant",
+        messageId: event.messageId,
+        text: event.text,
+        thinking: event.thinking,
+        usage: event.usage,
+        streaming: false,
+      };
+      if (index === -1) items.push(view);
+      else items[index] = view;
+      return { ...state, items };
+    }
+
+    case "tool:start":
+      items.push({
+        kind: "tool",
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        label: event.label,
+        tier: event.tier,
+        args: event.args,
+        status: "running",
+      });
+      return { ...state, items };
+
+    case "tool:update": {
+      const index = findTool(event.toolCallId);
+      if (index === -1) return { ...state, items };
+      items[index] = {
+        ...(items[index] as ToolCallView),
+        summary: event.summary,
+      };
+      return { ...state, items };
+    }
+
+    case "tool:end": {
+      const index = findTool(event.toolCallId);
+      const existing = items[index] as ToolCallView | undefined;
+
+      /**
+       * A gated call still produces a `tool:end`: the permission gate refuses it, and pi turns
+       * the refusal into an error tool result. That result is the gate working, not a failure —
+       * so a call already parked on `awaiting_approval` keeps that status and stays in
+       * `pendingApprovals`, otherwise the approval prompt would vanish the instant it appeared.
+       */
+      const blockedPendingApproval = existing?.status === "awaiting_approval";
+
+      const next: ToolCallView = {
+        ...(existing ?? {
+          kind: "tool",
+          toolCallId: event.toolCallId,
+          toolName: event.toolName,
+          label: event.toolName,
+          tier: "read",
+          args: undefined,
+          status: "running",
+        }),
+        status: blockedPendingApproval
+          ? "awaiting_approval"
+          : event.isError
+            ? "error"
+            : "ok",
+        summary: blockedPendingApproval ? existing.summary : event.summary,
+        details: blockedPendingApproval ? existing.details : event.details,
+      };
+      if (index === -1) items.push(next);
+      else items[index] = next;
+
+      if (blockedPendingApproval) return { ...state, items };
+
+      return {
+        ...state,
+        items,
+        pendingApprovals: state.pendingApprovals.filter(
+          (pending) => pending.toolCallId !== event.toolCallId
+        ),
+      };
+    }
+
+    case "approval:request": {
+      const index = findTool(event.toolCallId);
+      const view: ToolCallView = {
+        ...((items[index] as ToolCallView | undefined) ?? {
+          kind: "tool",
+          toolCallId: event.toolCallId,
+          toolName: event.toolName,
+          label: event.toolName,
+          tier: event.tier,
+          args: event.args,
+          status: "running",
+        }),
+        status: "awaiting_approval",
+      };
+      if (index === -1) items.push(view);
+      else items[index] = view;
+      return {
+        ...state,
+        items,
+        pendingApprovals: [...state.pendingApprovals, view],
+        runStatus: "awaiting_approval",
+      };
+    }
+
+    case "approval:resolved": {
+      const index = findTool(event.toolCallId);
+      if (index !== -1) {
+        items[index] = {
+          ...(items[index] as ToolCallView),
+          approval: { approved: event.approved, comment: event.comment },
+        };
+      }
+      return {
+        ...state,
+        items,
+        pendingApprovals: state.pendingApprovals.filter(
+          (pending) => pending.toolCallId !== event.toolCallId
+        ),
+        runStatus: "running",
+      };
+    }
+
+    case "session:compacted":
+      items.push({
+        kind: "notice",
+        variant: "compacted",
+        text: event.summary,
+      });
+      return { ...state, items };
+
+    case "state:changed":
+      return { ...state, items, stateRevision: event.revision };
+
+    case "error":
+      items.push({ kind: "notice", variant: "error", text: event.message });
+      return { ...state, items, runStatus: "error" };
+
+    case "run:end":
+      return {
+        ...state,
+        items,
+        runStatus:
+          event.reason === "awaiting_approval"
+            ? "awaiting_approval"
+            : event.reason === "error"
+              ? "error"
+              : "idle",
+      };
+  }
+};
+
+export const foldEvents = (
+  events: readonly AgentWireEvent[],
+  initial: AgentViewState = emptyViewState()
+): AgentViewState => events.reduce(applyEvent, initial);

@@ -1,25 +1,27 @@
 import type { Models } from "@earendil-works/pi-ai";
 
-import { createAgentModels } from "@chia/agent-core";
+import {
+  compactPiSession,
+  createAgentModels,
+  navigatePiSession,
+  runPiTurn,
+} from "@chia/agent-runtime";
 import type {
+  AgentCompactionResult,
+  AgentNavigationOptions,
+  AgentNavigationResult,
   AgentSessionSettings,
+  AgentTurnExecution,
+  AgentTurnMessage,
   AgentWireEvent,
+  ApprovalRequest,
+  PendingMessageNotifier,
   PendingMessageStore,
   Session,
-} from "@chia/agent-core";
-import { createAgentRuntime } from "@chia/agent-runtime";
-import type {
-  AgentDefinition,
-  AgentMaintenanceCreateOptions,
-  AgentMaintenanceEngineHandle,
 } from "@chia/agent-runtime";
-import {
-  createPiAgentEngine,
-  createPiMaintenanceEngine,
-} from "@chia/agent-runtime/adapters/pi";
 import { Locale } from "@chia/db/types";
 
-import { resolveWritingModel, WRITING_AGENT_KIND } from "./models.ts";
+import { resolveWritingModel } from "./models.ts";
 import { writingPolicy } from "./policy.ts";
 import type { ContentPort, DraftStore } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
@@ -28,15 +30,7 @@ import { writingPromptTemplates } from "./prompts/templates.ts";
 import { createWritingTools } from "./tools/index.ts";
 import type { WritingToolContext } from "./types.ts";
 
-/**
- * Builds an engine handle for one turn of the writing agent.
- *
- * A thin wrapper over the pi adapter: everything here is the *writing* half — the tool set, prompt,
- * skills, policy and tool context. The turn lifecycle and provider adapter live in
- * `@chia/agent-runtime`; approval and event primitives live in `@chia/agent-core`.
- */
-
-export interface CreateWritingEngineOptions {
+export interface RunWritingTurnOptions<TApproval> {
   session: Session;
   settings: AgentSessionSettings;
   agentSessionId: string;
@@ -45,22 +39,25 @@ export interface CreateWritingEngineOptions {
   content: ContentPort;
   draft: DraftStore;
   pending?: PendingMessageStore;
+  pendingNotifier?: PendingMessageNotifier;
+  message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
   models?: Models;
-  /** Site default locale, surfaced in the system prompt. */
   defaultLocale?: Locale;
+  toApproval: (request: ApprovalRequest) => TApproval;
+  persistApproval: (approval: TApproval) => Promise<void>;
+  flushEvents?: () => Promise<void>;
+  drainIntervalMs?: number;
 }
 
-export type WritingEngine = AgentMaintenanceEngineHandle;
-
-export const createWritingEngine = (
-  options: CreateWritingEngineOptions
-): Promise<WritingEngine> => {
+/** Composes the writing domain and executes one turn on Pi's concrete runtime. */
+export const runWritingTurn = <TApproval>(
+  options: RunWritingTurnOptions<TApproval>
+): Promise<AgentTurnExecution<TApproval>> => {
   const defaultLocale = options.defaultLocale ?? Locale.zhTW;
   const models = options.models ?? createAgentModels();
-
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
     adminId: options.adminId,
@@ -69,18 +66,14 @@ export const createWritingEngine = (
     draft: options.draft,
   };
 
-  return createPiAgentEngine<WritingToolContext>({
+  return runPiTurn({
+    agentSessionId: options.agentSessionId,
     session: options.session,
     settings: options.settings,
     model: resolveWritingModel(options.settings, models),
     models,
-    agentSessionId: options.agentSessionId,
     tools: createWritingTools(),
     toolContext,
-    /**
-     * A callback, not a string: pi re-evaluates it per turn, so the draft state embedded in the
-     * prompt is always current. Costs one cheap query, saves a tool round-trip.
-     */
     systemPrompt: async () =>
       buildSystemPrompt({
         skills: writingSkills,
@@ -95,39 +88,54 @@ export const createWritingEngine = (
     approvedToolCallIds: options.approvedToolCallIds,
     preAuthorizedToolNames: options.preAuthorizedToolNames,
     pending: options.pending,
+    pendingNotifier: options.pendingNotifier,
+    message: options.message,
     onEvent: options.onEvent,
+    toApproval: options.toApproval,
+    persistApproval: options.persistApproval,
+    flushEvents: options.flushEvents,
+    drainIntervalMs: options.drainIntervalMs,
   });
 };
 
-export interface CreateWritingMaintenanceEngineOptions extends AgentMaintenanceCreateOptions {
+export interface WritingSessionOperationOptions {
+  session: Session;
+  settings: AgentSessionSettings;
   models?: Models;
 }
 
-/**
- * Compaction and rewind for a writing session.
- *
- * The writing half collapses to one line here — resolving the model — because neither operation
- * touches tools, skills, the draft, or the system prompt. That is the whole point of the separate
- * factory: the previous path built all of them and then threw their events away.
- */
-export const createWritingMaintenanceEngine = (
-  options: CreateWritingMaintenanceEngineOptions
-): Promise<AgentMaintenanceEngineHandle> => {
+/** Compacts a writing session with its model allowlist and caller-owned credentials. */
+export const compactWritingSession = (
+  options: WritingSessionOperationOptions,
+  customInstructions?: string
+): Promise<AgentCompactionResult> => {
   const models = options.models ?? createAgentModels();
-  return createPiMaintenanceEngine({
-    agentSessionId: options.agentSessionId,
-    session: options.session,
-    settings: options.settings,
-    model: resolveWritingModel(options.settings, models),
-    models,
-  });
+  return compactPiSession(
+    {
+      session: options.session,
+      settings: options.settings,
+      model: resolveWritingModel(options.settings, models),
+      models,
+    },
+    customInstructions
+  );
 };
 
-export const writingAgentDefinition = {
-  kind: WRITING_AGENT_KIND,
-  createEngine: createWritingEngine,
-  createMaintenanceEngine: createWritingMaintenanceEngine,
-} satisfies AgentDefinition<CreateWritingEngineOptions, WritingEngine>;
-
-/** Shared turn lifecycle plus the writing agent's pi engine factory. */
-export const writingAgentRuntime = createAgentRuntime(writingAgentDefinition);
+/** Navigates a writing session with its model allowlist and caller-owned credentials. */
+export const navigateWritingSession = (
+  options: WritingSessionOperationOptions,
+  entryId: string,
+  navigationOptions: AgentNavigationOptions
+): Promise<AgentNavigationResult> => {
+  const models = options.models ?? createAgentModels();
+  return navigatePiSession(
+    {
+      session: options.session,
+      settings: options.settings,
+      model: resolveWritingModel(options.settings, models),
+      models,
+    },
+    entryId,
+    navigationOptions
+  );
+};

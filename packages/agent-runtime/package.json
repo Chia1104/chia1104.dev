@@ -9,17 +9,9 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
-    "./engine": {
-      "types": "./src/engine.ts",
-      "default": "./src/engine.ts"
-    },
-    "./runtime": {
-      "types": "./src/runtime.ts",
-      "default": "./src/runtime.ts"
-    },
-    "./adapters/pi": {
-      "types": "./src/adapters/pi.ts",
-      "default": "./src/adapters/pi.ts"
+    "./events": {
+      "types": "./src/wire/schema.ts",
+      "default": "./src/wire/schema.ts"
     },
     "./transports/tanstack-ai": {
       "types": "./src/transports/tanstack-ai.ts",
@@ -34,7 +26,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
-    "@chia/agent-core": "workspace:*",
+    "@chia/db": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
     "@tanstack/ai": "catalog:agent-client",

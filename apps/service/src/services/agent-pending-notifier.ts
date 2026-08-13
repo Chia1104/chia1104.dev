@@ -1,4 +1,4 @@
-import type { PendingMessageNotifier } from "@chia/agent-core";
+import type { PendingMessageNotifier } from "@chia/agent-runtime";
 import { getRedisPubSub } from "@chia/kv/pubsub";
 
 /**

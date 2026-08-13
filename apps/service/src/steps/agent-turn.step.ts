@@ -4,13 +4,17 @@ import {
   createAgentModels,
   PgPendingMessageStore,
   PgSessionRepo,
-} from "@chia/agent-core";
-import type { AgentWireEvent, ThinkingLevel, ToolTier } from "@chia/agent-core";
+} from "@chia/agent-runtime";
+import type {
+  AgentWireEvent,
+  ThinkingLevel,
+  ToolTier,
+} from "@chia/agent-runtime";
 import {
   PgDraftStore,
+  runWritingTurn,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
-  writingAgentRuntime,
 } from "@chia/agent-writing";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
@@ -177,27 +181,25 @@ async function runWritingAgentTurn(
     decryptAgentCredentials(request.credentials)
   );
 
-  return await writingAgentRuntime.runTurn({
-    createOptions: {
-      session,
-      models,
-      settings: {
-        providerId: row.providerId,
-        modelId: row.modelId,
-        thinkingLevel: row.thinkingLevel as ThinkingLevel,
-        activeToolNames: row.activeToolNames,
-        autoApprove: row.autoApprove as ToolTier[],
-      },
-      agentSessionId: request.sessionId,
-      adminId: request.adminId,
-      targetFeedId: writingState.targetFeedId ?? undefined,
-      content,
-      draft,
-      pending,
-      onEvent: writer.push,
-      approvedToolCallIds,
-      preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+  return await runWritingTurn({
+    session,
+    models,
+    settings: {
+      providerId: row.providerId,
+      modelId: row.modelId,
+      thinkingLevel: row.thinkingLevel as ThinkingLevel,
+      activeToolNames: row.activeToolNames,
+      autoApprove: row.autoApprove as ToolTier[],
     },
+    agentSessionId: request.sessionId,
+    adminId: request.adminId,
+    targetFeedId: writingState.targetFeedId ?? undefined,
+    content,
+    draft,
+    pending,
+    onEvent: writer.push,
+    approvedToolCallIds,
+    preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
     message: {
       text: request.text,
       template: request.template,
@@ -216,7 +218,6 @@ async function runWritingAgentTurn(
       });
     },
     flushEvents: writer.flush,
-    // Lets a steer sent mid-turn land immediately instead of waiting out the drain interval.
     pendingNotifier: getAgentPendingNotifier() ?? undefined,
   });
 }

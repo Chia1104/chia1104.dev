@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { foldEvents } from "../src/events.ts";
-import type { AgentWireEvent } from "../src/events.ts";
+import { foldEvents } from "../src/wire/fold.ts";
+import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
  * The fold is shared by the live stream and the replayed transcript, so its invariants matter more

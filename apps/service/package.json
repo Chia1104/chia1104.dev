@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/gateway": "catalog:ai",
-    "@chia/agent-core": "workspace:*",
+    "@chia/agent-runtime": "workspace:*",
     "@chia/agent-writing": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",

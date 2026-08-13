@@ -14,7 +14,7 @@ import type {
   PendingMessageStore,
 } from "../ports.ts";
 
-/** {@link PendingMessageStore} over `agent_pending_message`. */
+/** Pi turn queue backed by `agent_pending_message`. */
 export class PgPendingMessageStore implements PendingMessageStore {
   constructor(private readonly db: DB) {}
 

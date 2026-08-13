@@ -1,5 +1,5 @@
 /**
- * Ports every agent kind needs, regardless of what it does.
+ * Ports every Pi-backed agent kind needs, regardless of what it does.
  *
  * Domain ports (content access, staging buffers) belong to the kind that defines them — see
  * `@chia/agent-writing/ports`.

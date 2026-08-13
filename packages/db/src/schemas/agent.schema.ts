@@ -29,7 +29,7 @@ import { user } from "./user.schema.ts";
  * The transcript is a **tree**, not a flat log: `agent_session_entry.parentId` points at
  * the previous entry on the branch and `agent_session.leafEntryId` marks the active leaf.
  * That is what lets the agent rewind ("退回三步用另一個角度重寫") and what pi's
- * `SessionStorage` port expects. `@chia/agent-core/session` implements that port over these
+ * `SessionStorage` port expects. `@chia/agent-runtime` implements that port over these
  * tables; the writing-specific `writing_agent_draft` belongs to `@chia/agent-writing`.
  *
  * `writing_agent_draft` is the staging buffer: the agent only ever writes here, and a human

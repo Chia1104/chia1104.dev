@@ -8,18 +8,19 @@ import {
   PgSessionRepo,
   UnknownAgentModelError,
   writeSessionSettings,
-} from "@chia/agent-core";
+} from "@chia/agent-runtime";
 import type {
   AgentSessionSettings,
   AgentWireEvent,
   ThinkingLevel,
   ToolTier,
-} from "@chia/agent-core";
+} from "@chia/agent-runtime";
 import {
-  createWritingMaintenanceEngine,
+  compactWritingSession,
   createWritingTools,
   assertWritingModel,
   listWritingModels,
+  navigateWritingSession,
   PgDraftStore,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
@@ -27,11 +28,11 @@ import {
   writingPromptTemplates,
   writingSkills,
 } from "@chia/agent-writing";
-import { registerAgentRuntime } from "@chia/api/orpc/agent-runtime";
+import { registerAgentKindService } from "@chia/api/orpc/agent-service";
 import type {
-  AgentRuntime,
-  AgentRuntimeCaller,
-} from "@chia/api/orpc/agent-runtime";
+  AgentKindService,
+  AgentServiceCaller,
+} from "@chia/api/orpc/agent-service";
 import type { DB } from "@chia/db";
 import {
   completeAgentRun,
@@ -64,10 +65,10 @@ import {
 import { getAgentPendingNotifier } from "./agent-pending-notifier";
 
 /**
- * The **writing** agent runtime, registered under `agent_session.kind = "writing"`.
+ * The **writing** agent service, registered under `agent_session.kind = "writing"`.
  *
- * Session, approval and wire primitives are `@chia/agent-core`; engine execution is
- * `@chia/agent-runtime`; the writing domain is `@chia/agent-writing`. This module is the
+ * Pi execution, session persistence, approval and wire primitives are `@chia/agent-runtime`;
+ * the writing domain is `@chia/agent-writing`. This module is the
  * transport-facing glue between them and the durable workflow run. A second agent kind is a
  * sibling of this file plus its own domain package.
  *
@@ -94,7 +95,7 @@ const repoFor = (db: DB) =>
     defaults: WRITING_SESSION_DEFAULTS,
   });
 
-const dependenciesFor = (caller: AgentRuntimeCaller) => {
+const dependenciesFor = (caller: AgentServiceCaller) => {
   const db = caller.context.db as DB;
   return {
     db,
@@ -116,7 +117,7 @@ const dependenciesFor = (caller: AgentRuntimeCaller) => {
  * `adminGuard` proves who is calling, not what they may open.
  */
 const loadOwnedSession = async (
-  caller: AgentRuntimeCaller,
+  caller: AgentServiceCaller,
   sessionId: string
 ) => {
   const db = caller.context.db as DB;
@@ -187,22 +188,20 @@ const summaryOf = (row: {
 };
 
 /**
- * Opens a session plus the stripped-down handle for `compact` and `navigate`.
+ * Loads the Pi session inputs used by explicit maintenance operations.
  *
- * These operations only walk the session tree, so they get a maintenance engine — no tools, no
- * skills, no system prompt, no approval gate, and no event subscriptions, since their events belong
- * to no turn and had to be discarded anyway. The draft store, pending-message store and content
+ * These operations only walk the session tree, so the concrete Pi operations receive no tools,
+ * skills, approval gate or event subscriptions. The draft store, pending-message store and content
  * port are skipped for the same reason, which is why this reaches for `repoFor` rather than the
  * full `dependenciesFor`.
  */
-const openMaintenanceEngine = async (
-  caller: AgentRuntimeCaller,
+const writingSessionOperationOptions = async (
+  caller: AgentServiceCaller,
   sessionId: string,
   row: Parameters<typeof settingsOf>[0]
 ) => {
   const session = await repoFor(caller.context.db as DB).openById(sessionId);
-  const engine = await createWritingMaintenanceEngine({
-    agentSessionId: sessionId,
+  return {
     session,
     settings: settingsOf(row),
     /**
@@ -211,12 +210,11 @@ const openMaintenanceEngine = async (
      * than travelling through the workflow.
      */
     models: modelsFor(caller),
-  });
-  return { session, engine };
+  };
 };
 
 /** Per-request `Models`, carrying whatever provider keys the caller has registered. */
-const modelsFor = (caller: AgentRuntimeCaller) =>
+const modelsFor = (caller: AgentServiceCaller) =>
   createAgentModels(
     decryptAgentCredentials(
       readEncryptedAgentCredentials(caller.context.headers)
@@ -231,7 +229,7 @@ const replayOptions = {
 
 /**
  * A promise that never settles, used to drop an exhausted reader out of the two-stream race in
- * {@link agentRuntime.stream} without it winning again.
+ * {@link writingAgentService.stream} without it winning again.
  */
 const NEVER = new Promise<never>(() => undefined);
 
@@ -281,7 +279,7 @@ const undecidedApprovals = async (
     .map((approval) => approval.toolName);
 };
 
-const detailFor = async (caller: AgentRuntimeCaller, sessionId: string) => {
+const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
   const row = await loadOwnedSession(caller, sessionId);
   if (!row) return null;
 
@@ -337,10 +335,10 @@ const detailFor = async (caller: AgentRuntimeCaller, sessionId: string) => {
 };
 
 // ============================================
-// Runtime
+// Service
 // ============================================
 
-export const writingAgentRuntime: AgentRuntime = {
+export const writingAgentService: AgentKindService = {
   async listSessions(caller, input) {
     const { db, repo } = dependenciesFor(caller);
     const metadata = await repo.list({
@@ -690,18 +688,12 @@ export const writingAgentRuntime: AgentRuntime = {
     if (!row) return null;
     await assertNoTurnRunning(row.workflowRunId, "compact");
 
-    const { engine } = await openMaintenanceEngine(
+    const options = await writingSessionOperationOptions(
       caller,
       input.sessionId,
       row
     );
-
-    try {
-      const result = await engine.compact(input.customInstructions);
-      return { summary: result.summary, tokensBefore: result.tokensBefore };
-    } finally {
-      engine.dispose();
-    }
+    return await compactWritingSession(options, input.customInstructions);
   },
 
   async navigate(caller, input) {
@@ -709,26 +701,20 @@ export const writingAgentRuntime: AgentRuntime = {
     if (!row) return null;
     await assertNoTurnRunning(row.workflowRunId, "rewind");
 
-    const { session, engine } = await openMaintenanceEngine(
+    const options = await writingSessionOperationOptions(
       caller,
       input.sessionId,
       row
     );
-
-    try {
-      const result = await engine.navigate(input.entryId, {
-        summarize: input.summarize,
-        label: input.label,
-      });
-      // The branch changed, so the client's whole transcript is stale — hand back the new one.
-      const branch = await session.getBranch();
-      return {
-        cancelled: result.cancelled,
-        events: entriesToWireEvents(branch, replayOptions),
-      };
-    } finally {
-      engine.dispose();
-    }
+    const result = await navigateWritingSession(options, input.entryId, {
+      summarize: input.summarize,
+      label: input.label,
+    });
+    const branch = await options.session.getBranch();
+    return {
+      cancelled: result.cancelled,
+      events: entriesToWireEvents(branch, replayOptions),
+    };
   },
 
   async getDraft(caller, input) {
@@ -820,7 +806,7 @@ const assertNoTurnRunning = async (
   }
 };
 
-/** Registers this runtime under its kind. Called once at module load. */
-export const registerAgentRuntimeService = (): void => {
-  registerAgentRuntime(WRITING_AGENT_KIND, writingAgentRuntime);
+/** Registers this host service under its kind. Called once at module load. */
+export const registerAgentKindServices = (): void => {
+  registerAgentKindService(WRITING_AGENT_KIND, writingAgentService);
 };

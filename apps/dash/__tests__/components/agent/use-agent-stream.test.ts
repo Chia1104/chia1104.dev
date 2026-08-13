@@ -1,4 +1,4 @@
-import type { AgentWireEvent } from "@chia/agent-core";
+import type { AgentWireEvent } from "@chia/agent-runtime";
 
 import { consumeAgentStream } from "@/components/agent/use-agent-stream";
 

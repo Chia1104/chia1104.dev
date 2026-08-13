@@ -1,7 +1,7 @@
 import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { agentWireEventSchema } from "@chia/agent-core/events";
+import { agentWireEventSchema } from "@chia/agent-runtime/events";
 import { tanstackAgentEventSchema } from "@chia/agent-runtime/transports/tanstack-ai";
 import { locale } from "@chia/db";
 
@@ -31,7 +31,7 @@ const thinkingLevelSchema = z.enum([
 ]);
 
 /**
- * Tiers are per-kind policy, so the contract carries the string rather than a union. `@chia/agent-core`
+ * Tiers are per-kind policy, so the contract carries the string rather than a union. `@chia/agent-runtime`
  * deliberately keeps `ToolTier` open for the same reason — narrowing lives in each kind's package.
  */
 const toolTierSchema = z.string();

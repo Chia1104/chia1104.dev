@@ -11,7 +11,7 @@ import {
   withErrorReporting,
 } from "../factories/orpc.factory";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
-import { registerAgentRuntimeService } from "../services/agent-runtime.service";
+import { registerAgentKindServices } from "../services/agent.service";
 import {
   removeFeedFromSearchIndex,
   syncFeedSearchIndex,
@@ -36,7 +36,7 @@ registerFeedEventListeners({
  * handle and the gateway credentials, none of which `packages/api` has. Same registration shape as
  * the feed listeners above.
  */
-registerAgentRuntimeService();
+registerAgentKindServices();
 
 /**
  * The RAG triggers land here for the same reason: `start()` and the lazy reconcile that

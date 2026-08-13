@@ -6,13 +6,13 @@ import {
   createAgentModels,
   listModels,
   resolveModel,
-} from "@chia/agent-core";
+} from "@chia/agent-runtime";
 import type {
   AgentModelInfo,
   AgentModelRef,
   AgentSessionDefaults,
   ListModelsOptions,
-} from "@chia/agent-core";
+} from "@chia/agent-runtime";
 
 /**
  * Which models the *writing* agent may use.
@@ -28,7 +28,7 @@ import type {
  * built against. The native providers need no such filter: a caller who supplied their own OpenAI
  * key is asking for OpenAI models.
  *
- * This lives here rather than in `@chia/agent-core` because it is policy, not infrastructure. A
+ * This lives here rather than in `@chia/agent-runtime` because it is domain policy. A
  * public-facing agent would want a cheaper, wider set.
  */
 const GATEWAY_VENDOR_PREFIXES = ["anthropic/", "openai/"] as const;
