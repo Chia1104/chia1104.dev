@@ -12,11 +12,11 @@ assistant.
 
 ## 1. Layers
 
-| Layer        | Package / app                               | Owns                                                                                                                                             |
-| ------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Pi execution | `@chia/agent-runtime`                       | Pi turn lifecycle, session persistence, models/providers, approval hook, bounded wire events, pending-message ports and client transport mapping |
-| Domain       | `@chia/agent-writing`                       | Writing tools, prompts, skills, model allowlist, policy, draft staging and domain ports                                                          |
-| Host         | `apps/service`, `packages/api`, `apps/dash` | DB/KV/credentials, durable workflow and streams, oRPC service port, auth and UI                                                                  |
+| Layer        | Package / app                               | Owns                                                                                                                      |
+| ------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Pi execution | `@chia/agent-runtime`                       | Pi turn lifecycle, session persistence, models/providers, approval hook, bounded wire events and client transport mapping |
+| Domain       | `@chia/agent-writing`                       | Writing tools, prompts, skills, model allowlist, policy, draft staging and domain ports                                   |
+| Host         | `apps/service`, `packages/api`, `apps/dash` | DB/KV/credentials, durable workflow and streams, oRPC service port, auth and UI                                           |
 
 ```mermaid
 flowchart TB
@@ -75,7 +75,6 @@ and `agent_session.leafEntryId` selects the active leaf. `PgSessionStorage` impl
 agent_session                  generic settings, kind and active leaf
 agent_session_entry            Pi session-tree nodes; seq is insertion order
 agent_run                      durable execution metadata; one active run per session
-agent_pending_message          steer/follow-up queue
 agent_tool_approval            durable approval request and audit trail
 writing_agent_session          writing-specific 1:1 state
 writing_agent_draft            per-locale staging buffer
@@ -118,9 +117,11 @@ sequenceDiagram
 ### Enqueue and durable driver
 
 The oRPC route is protected by `adminGuard`, then the session guard rechecks ownership. The host
-service either resumes the live workflow through its message hook or starts a new run. It rejects a
-message while approval is undecided, before the message hook is registered, or when the text is the
-reserved `/end` sentinel.
+service persists a message into the live workflow's event log through its reusable message hook, or
+starts a new run. The workflow registers that inbox with `getConflict()` before its first turn, so
+messages submitted during a running turn wait durably and become later turns after the current turn
+and any approval handshake finish. Enqueue is refused while approval is undecided, while a new
+workflow has not registered its hook yet, or when the text is the reserved `/end` sentinel.
 
 One durable workflow run drives up to 200 turns. The workflow itself runs in a sandboxed VM; DB,
 provider, timers and network work stay inside steps, and only plain data crosses the boundary. This
@@ -145,12 +146,10 @@ bearing `Models`, and supplies tools, skills, templates, dynamic system prompt a
 
 1. clamp thinking level to the resolved model and construct one harness for the turn;
 2. install the Pi tool-call approval hook and Pi-to-wire event mapping;
-3. start serialized pending-message polling and optional notification wake-ups;
-4. emit `run:start` and the user event, then invoke prompt or prompt template;
-5. stop and await the entire drain chain;
-6. persist approval snapshots;
-7. auto-compact only after a successful turn with no pending approvals;
-8. emit the terminal error/end events, unsubscribe, then flush the durable writer.
+3. emit `run:start` and the user event, then invoke prompt or prompt template;
+4. persist approval snapshots;
+5. auto-compact only after a successful turn with no pending approvals;
+6. emit the terminal error/end events, unsubscribe, then flush the durable writer.
 
 ## 5. Approval handshake
 
@@ -204,18 +203,21 @@ Each run has a coarse durable event stream and a separately batched delta namesp
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
 coarse events. Streams close only when the durable run ends, not after each turn.
 
-## 7. Pending messages
+## 7. Durable message inbox
 
-An HTTP request cannot call methods on a harness running in another step or process. The host first
-writes a durable row to `agent_pending_message`; `runPiTurn` claims rows and calls `steer()` or
-`followUp()` on its local harness.
+Each session workflow creates one deterministic, reusable `agentMessageHook`. Before the first Pi
+step, the workflow awaits `getConflict()`. That registers the hook in the workflow backend and
+prevents two active runs from owning the same session inbox.
 
-Claim marks rows consumed before delivery. If Pi rejects a handoff, the undelivered tail is released
-back to the queue. Drains are serialized. A notification received during an active drain requests
-one more drain, preventing a lost wake-up. Teardown waits for that chain to settle.
+When an active run receives a prompt, the service resumes this hook directly. Every payload becomes
+a durable `hook_received` event, so no Postgres pending table, Redis Pub/Sub, process-local queue or
+timer polling is needed. The workflow consumes one event at a time in event-log order and invokes
+`runAgentTurnStep` for it.
 
-Redis notification is only a latency accelerator. It carries no payload, can fail without failing
-the turn, and never replaces polling; the durable truth remains Postgres.
+The Pi harness still lives entirely inside one opaque step, so a queued message does not interrupt
+the turn currently generating. It becomes a normal new turn after the current turn and any approval
+handshake finish. This is the deliberate product semantic that lets the workflow event log be the
+only message queue.
 
 ## 8. Compaction and navigation
 
@@ -225,7 +227,7 @@ Maintenance uses concrete operations, not a fake turn-capable handle:
 - `navigatePiSession` creates a minimal Pi harness and calls `navigateTree()`;
 - writing wrappers resolve the model through the writing allowlist, then call those operations.
 
-No tools, prompts, approvals, pending drains or subscriptions are constructed for maintenance.
+No tools, prompts, approvals or subscriptions are constructed for maintenance.
 Manual compact and navigate are refused while a turn is running. Navigation returns the entire
 rebuilt transcript because changing the active branch invalidates the current view.
 
@@ -255,14 +257,13 @@ accurate. Skills and prompt templates live under `packages/agent-writing/src/pro
 There is no in-process conversational state. The process-level kind-to-service map contains only
 implementations; all mutable state is durable:
 
-| State                    | Home                                           |
-| ------------------------ | ---------------------------------------------- |
-| Transcript               | `agent_session_entry`                          |
-| Draft                    | `writing_agent_session`, `writing_agent_draft` |
-| Approval decisions       | `agent_tool_approval`                          |
-| Steering/follow-up queue | `agent_pending_message`                        |
-| Run metadata             | `agent_run`                                    |
-| Pauses and event streams | workflow backend                               |
+| State                                   | Home                                           |
+| --------------------------------------- | ---------------------------------------------- |
+| Transcript                              | `agent_session_entry`                          |
+| Draft                                   | `writing_agent_session`, `writing_agent_draft` |
+| Approval decisions                      | `agent_tool_approval`                          |
+| Run metadata                            | `agent_run`                                    |
+| Message inbox, pauses and event streams | workflow backend                               |
 
 ## 11. Adding another agent kind
 
@@ -288,13 +289,13 @@ until a concrete second execution foundation requires a different seam.
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                 |
 | Session over Postgres        | `packages/agent-runtime/src/session/`                                                  |
-| Pending-message ports        | `packages/agent-runtime/src/ports.ts`                                                  |
 | TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                   |
 | Host service port            | `packages/api/orpc/agent-service.ts`                                                   |
 | Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts` |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`               |
 | Database schema              | `packages/db/src/schemas/agent.schema.ts`                                              |
 | Dashboard UI                 | `apps/dash/src/components/agent/`                                                      |

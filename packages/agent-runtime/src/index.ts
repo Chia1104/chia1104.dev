@@ -1,7 +1,6 @@
 /** Pi-first agent execution, persistence, policy, models and wire primitives. */
 
 export * from "./types.ts";
-export * from "./ports.ts";
 export {
   AGENT_PROVIDERS,
   BYOK_PROVIDER_IDS,
@@ -44,10 +43,8 @@ export {
 } from "./pi/maintenance.ts";
 export { runPiTurn, type RunPiTurnOptions } from "./pi/turn.ts";
 export {
-  InMemoryPendingMessageStore,
   InMemorySessionRepo,
   InMemorySessionStorage,
-  PgPendingMessageStore,
   PgSessionRepo,
   PgSessionStorage,
   Session,

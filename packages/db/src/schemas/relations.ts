@@ -1,7 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 
 import {
-  agentPendingMessages,
   agentRuns,
   agentSessionEntries,
   agentSessions,
@@ -55,7 +54,6 @@ const schema = {
   agentSessionEntries,
   writingAgentSessions,
   writingAgentDrafts,
-  agentPendingMessages,
   agentToolApprovals,
 };
 
@@ -220,10 +218,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.agentSessions.id,
       to: r.writingAgentSessions.sessionId,
     }),
-    pendingMessages: r.many.agentPendingMessages({
-      from: r.agentSessions.id,
-      to: r.agentPendingMessages.sessionId,
-    }),
     toolApprovals: r.many.agentToolApprovals({
       from: r.agentSessions.id,
       to: r.agentToolApprovals.sessionId,
@@ -265,12 +259,6 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.writingAgentSessions.sessionId,
     }),
   },
-  agentPendingMessages: {
-    session: r.one.agentSessions({
-      from: r.agentPendingMessages.sessionId,
-      to: r.agentSessions.id,
-    }),
-  },
   agentToolApprovals: {
     session: r.one.agentSessions({
       from: r.agentToolApprovals.sessionId,
@@ -305,5 +293,4 @@ export const agentRunsRelations = relations.agentRuns;
 export const agentSessionEntriesRelations = relations.agentSessionEntries;
 export const writingAgentSessionsRelations = relations.writingAgentSessions;
 export const writingAgentDraftsRelations = relations.writingAgentDrafts;
-export const agentPendingMessagesRelations = relations.agentPendingMessages;
 export const agentToolApprovalsRelations = relations.agentToolApprovals;

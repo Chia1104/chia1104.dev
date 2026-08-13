@@ -1,10 +1,6 @@
 import { FatalError, getWritable } from "workflow";
 
-import {
-  createAgentModels,
-  PgPendingMessageStore,
-  PgSessionRepo,
-} from "@chia/agent-runtime";
+import { createAgentModels, PgSessionRepo } from "@chia/agent-runtime";
 import type {
   AgentWireEvent,
   ThinkingLevel,
@@ -28,7 +24,6 @@ import {
 
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
-import { getAgentPendingNotifier } from "../services/agent-pending-notifier";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
@@ -160,7 +155,6 @@ async function runWritingAgentTurn(
   });
   const session = await repo.openById(request.sessionId);
   const draft = new PgDraftStore(db);
-  const pending = new PgPendingMessageStore(db);
   const content = createAgentContentPort({ db, kv, adminId: request.adminId });
 
   const approvedToolCallIds = new Set(
@@ -196,7 +190,6 @@ async function runWritingAgentTurn(
     targetFeedId: writingState.targetFeedId ?? undefined,
     content,
     draft,
-    pending,
     onEvent: writer.push,
     approvedToolCallIds,
     preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
@@ -218,7 +211,6 @@ async function runWritingAgentTurn(
       });
     },
     flushEvents: writer.flush,
-    pendingNotifier: getAgentPendingNotifier() ?? undefined,
   });
 }
 

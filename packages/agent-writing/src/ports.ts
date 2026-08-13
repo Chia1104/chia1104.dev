@@ -38,8 +38,7 @@ export type {
  * `apps/service` implements these against the repo's existing repositories and feed services — see
  * `apps/service/src/services/agent-content.port.ts`.
  *
- * Transport-agnostic ports that every agent kind needs (the steering queue) live in
- * `@chia/agent-runtime`.
+ * Shared Pi execution and workflow messaging live outside this package.
  */
 
 // ============================================

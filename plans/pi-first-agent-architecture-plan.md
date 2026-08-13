@@ -1,6 +1,6 @@
 # Pi-first Agent 架構收斂計劃
 
-> 狀態：已實作（root format 有既有失敗，見驗證紀錄）
+> 狀態：已實作；pending subsystem 已於 follow-up 收斂為 Workflow Hook-only
 > 建立日期：2026-08-14
 > 最後更新：2026-08-14
 > 範圍：`@chia/agent-core`、`@chia/agent-runtime`、`@chia/agent-writing` 與 service 端 agent turn／maintenance 接線
@@ -10,11 +10,12 @@
 
 | Phase                                            | 狀態    | 目的                                                          |
 | ------------------------------------------------ | ------- | ------------------------------------------------------------- |
-| Phase 0：行為基線與缺口測試                      | ✅ 完成 | 已鎖住 approval、drain、event、compaction 等不可回歸行為      |
+| Phase 0：行為基線與缺口測試                      | ✅ 完成 | 已鎖住 approval、hook queue、event、compaction 等核心行為     |
 | Phase 1：移除 harness-neutral engine abstraction | ✅ 完成 | 已收斂為 `runWritingTurn → runPiTurn → AgentHarness` 單一路徑 |
 | Phase 2：移除 maintenance fake handle            | ✅ 完成 | 已改用具體 compact／navigate operations                       |
 | Phase 3：合併 `agent-core` 與 `agent-runtime`    | ✅ 完成 | package 與測試已搬移，未保留 compatibility package            |
 | Phase 4：命名、exports、文件與 dead-code cleanup | ✅ 完成 | host port 與文件已更新，舊 execution path 已刪除              |
+| Phase 5：Workflow Hook-only message inbox        | ✅ 完成 | 已刪除 steer、pending table、Redis notifier 與 polling        |
 
 ### 0.1 實作紀錄
 
@@ -23,16 +24,20 @@
 - `@chia/agent-core` 已併入 `@chia/agent-runtime`；原有五組 core tests 全數搬移。
 - API host port 已改名為 `AgentKindService`，host implementation 改為
   `writingAgentService`，啟動註冊函式改為 `registerAgentKindServices`。
+- 追加訊息已統一走 reusable `agentMessageHook` 的 durable event log。Workflow 在首個 turn 前
+  透過 `getConflict()` 註冊 inbox；訊息依序成為後續 turn，不再 mid-turn steer。
+- `agent_pending_message`、`PendingMessageStore`／`PendingMessageNotifier`、Redis Pub/Sub
+  notifier、polling/drain logic 與 steer API 已直接刪除；Drizzle migration 會直接移除舊表。
 - `agent_session.kind`、API service Map 與 workflow handler Map 本次保留。這是 persisted domain
   dispatch，不是 harness abstraction；移除它會同時改 API/schema，超出本計劃的 execution
   refactor 範圍。沒有為它新增 descriptor、plugin 或 capability framework。
-- Scoped 驗證：`@chia/agent-runtime` 55 tests、`@chia/agent-writing` 32 tests 通過；runtime、
+- Scoped 驗證：`@chia/agent-runtime` 45 tests、`@chia/agent-writing` 32 tests 通過；runtime、
   writing、API、service、dash TypeScript checks 通過。
-- Root 驗證：54 test files 通過（318 passed、2 skipped）；18 個 typecheck tasks 與 18 個 lint
+- Root 驗證：54 test files 通過（310 passed、2 skipped）；18 個 typecheck tasks 與 18 個 lint
   tasks 通過；完成最終 wire module 拆分後，runtime、writing、API、service 的直接 TypeScript
   checks 與修改範圍 lint 亦通過；service Nitro build 通過。Service build 仍輸出既有的
   dependency source-map 與 JSX config warnings，但 exit code 為 0。
-- 本次新增／修改的 59 個可格式化檔案通過 `oxfmt --check`。Root `format:check` 仍被 13 個
+- 本計畫新增／修改的可格式化檔案通過 `oxfmt --check`。Root `format:check` 仍被 13 個
   本次範圍外、原本就未符合 oxfmt 的檔案擋住（包含 `AGENTS.md`、既有 app layout/env、AI
   tokenizer tests/source、Drizzle snapshots 與 DB resource/validator files）；未擴大本次變更去
   重寫它們。
@@ -158,12 +163,13 @@ runWritingAgentTurn (workflow step)
 
 ### 3.3 Pending messages
 
-1. Postgres row 先落地，notifier 只負責降低 latency。
-2. polling 必須保留；notifier 訂閱或 callback 失敗不能讓 turn 失敗。
-3. 同時間最多一個 drain。
-4. drain 進行中收到通知必須再 drain 一次，不能丟失 wake-up。
-5. claim 後未能交給 `steer()` / `followUp()` 的 messages 必須 release 回 queue。
-6. teardown 必須等待 follow-up drain chain 結束後，才能讓 harness 離開作用域。
+本節已由 Phase 5 的 durable inbox 決策取代：
+
+1. Workflow 必須在第一個 turn 前註冊 reusable message hook。
+2. Active run 收到的訊息直接成為 durable `hook_received` event。
+3. Workflow 依 event-log 順序一次處理一個 turn。
+4. Queued message 不打斷目前 Pi step；它在目前 turn 與 approval handshake 後執行。
+5. 不保留第二份 Postgres queue、Redis notifier、process-local queue 或 timer polling。
 
 ### 3.4 Compaction 與 navigation
 
@@ -191,7 +197,7 @@ apps/dash
               → @chia/agent-writing runWritingTurn
                   → @chia/agent-runtime runPiTurn
                       → Pi AgentHarness
-                      → PgSessionStorage / PendingMessageStore
+                      → PgSessionStorage
 ```
 
 ### 4.1 Package ownership
@@ -224,8 +230,6 @@ runPiTurn({
   policy,
   approvedToolCallIds,
   preAuthorizedToolNames,
-  pending,
-  pendingNotifier,
   message,
   onEvent,
   toApproval,
@@ -282,8 +286,6 @@ navigateWritingSession(options, entryId, navigationOptions)
   - prompt / template dispatch
   - error conversion
   - approval collection / persistence
-  - notifier + polling drain
-  - no concurrent drain / no lost wake-up
   - teardown 與 flush ordering
   - compaction guards
 - `packages/agent-runtime/__tests__/pi-compaction.test.ts`
@@ -294,8 +296,6 @@ navigateWritingSession(options, entryId, navigationOptions)
   - fold live / replay consistency
 - `packages/agent-core/__tests__/permissions.test.ts`
   - approval 的四條 allow path 與 unknown-tool fallback
-- `packages/agent-core/__tests__/pending-messages.test.ts`
-  - claim / release semantics
 - `packages/agent-writing/__tests__/runtime.test.ts`
   - writing model、tool context、dynamic prompt 與 Pi options 組合
 
@@ -303,14 +303,11 @@ navigateWritingSession(options, entryId, navigationOptions)
 
 若現有測試沒有精確覆蓋，先補以下案例：
 
-1. notifier 在 active drain 已 claim 後觸發，會安排第二次 drain。
-2. notifier subscribe promise 在 turn 結束後才 resolve，仍會正確 unsubscribe。
-3. `steer()` 在 idle window 丟錯時，尚未 delivery 的所有 messages 都 release。
-4. `persistApproval()` 失敗仍會 teardown subscriptions 並 flush writer。
-5. prompt failure 不執行 auto-compaction。
-6. approval request 存在時不執行 auto-compaction。
-7. compaction failure 不改變成功 turn 的 `done` outcome。
-8. template invocation 的 name / args 完整交給 Pi。
+1. `persistApproval()` 失敗仍會 teardown subscriptions 並 flush writer。
+2. prompt failure 不執行 auto-compaction。
+3. approval request 存在時不執行 auto-compaction。
+4. compaction failure 不改變成功 turn 的 `done` outcome。
+5. template invocation 的 name / args 完整交給 Pi。
 
 ### 5.3 Phase 0 驗收
 
@@ -325,7 +322,7 @@ pnpm turbo run type:check --filter @chia/agent-core... --filter @chia/agent-runt
 
 ### 6.1 新增 concrete Pi turn runner
 
-把 `packages/agent-runtime/src/runtime.ts` 的 turn lifecycle 與 `adapters/pi.ts` 的 harness 建立、subscriptions、approval gate、pending-message delivery 合成一條 concrete path。
+把 `packages/agent-runtime/src/runtime.ts` 的 turn lifecycle 與 `adapters/pi.ts` 的 harness 建立、subscriptions、approval gate 合成一條 concrete path。
 
 建議先在現有 package 內落成：
 
@@ -347,14 +344,12 @@ Phase 1 暫不搬 `agent-core`，避免「行為收斂」和「package 搬家」
 3. 綁定 approval tool hook。
 4. 綁定 Pi event → wire event subscription。
 5. 綁定 successful state-changing tool result event。
-6. 啟動 poller 與 optional notifier subscription。
-7. emit `run:start` / user event。
-8. 呼叫 `prompt()` 或 `promptFromTemplate()`。
-9. 完整停止 pending-message drain。
-10. persist approval snapshots。
-11. 依 guard 執行 auto-compaction。
-12. emit error / `run:end`。
-13. unsubscribe，最後 flush event writer。
+6. emit `run:start` / user event。
+7. 呼叫 `prompt()` 或 `promptFromTemplate()`。
+8. persist approval snapshots。
+9. 依 guard 執行 auto-compaction。
+10. emit error / `run:end`。
+11. unsubscribe，最後 flush event writer。
 
 ### 6.2 Writing entry point
 
@@ -369,7 +364,7 @@ Phase 1 暫不搬 `agent-core`，避免「行為收斂」和「package 搬家」
 在 `apps/service/src/steps/agent-turn.step.ts`：
 
 - `writingAgentRuntime.runTurn({...})` 改為 `runWritingTurn({...})`。
-- 保持 DB/KV/content/draft/pending/models/event writer 的建立位置不變。
+- 保持 DB/KV/content/draft/models/event writer 的建立位置不變。
 - 保持 `maxRetries = 0` 的 workflow step 設定不變。
 - 保持 approval mapping / persistence 在 host step，runtime 不依賴 DB schema。
 
@@ -480,7 +475,6 @@ wrapper 只建立／接收 `Models` 並透過 writing allowlist resolve model，
 packages/agent-runtime/src/
   index.ts
   types.ts                    shared app-level types
-  ports.ts                    pending store / notifier
   models.ts                   concrete Pi Models/providers
   wire/
     schema.ts                 AgentWireEvent zod schemas + types
@@ -495,7 +489,6 @@ packages/agent-runtime/src/
     index.ts
     pg-storage.ts
     pg-repo.ts
-    pg-pending-messages.ts
   transports/
     tanstack-ai.ts
 ```
@@ -510,7 +503,8 @@ packages/agent-runtime/src/
 - `agent-core/src/permissions.ts` 搬到 `pi/tool-gate.ts`；`AgentPolicy` / approval snapshot 等 app-level types 留在 shared types。
 - `agent-core/src/models.ts` 搬到 runtime `models.ts`，不再由名為 core 的 package 隱藏 Pi providers。
 - `agent-core/src/session/*` 原樣搬到 runtime session module；這是 concrete Pi-over-Postgres integration。
-- `PendingMessageStore` / `PendingMessageNotifier` 保留為 port，因為它們隔離 durable storage 與 optional notification infrastructure。
+- Phase 5 已移除 `PendingMessageStore` / `PendingMessageNotifier`；message queue 由 workflow
+  backend 的 reusable hook event log 單獨負責。
 
 ### 8.4 Dependency / export cleanup
 
@@ -559,7 +553,7 @@ Phase 4 只把 port 改名成 `AgentKindService`，不在 harness refactor 中�
 - 刪除「Pi 被 adapter 隔離、可被另一個 engine 替換」的敘述。
 - 更新 turn flow 為 `runWritingTurn → runPiTurn → AgentHarness`。
 - 更新 maintenance、compaction、event mapping 與 reference file paths。
-- 保留並重新核對 durable workflow、approval handshake、stream、steering 與 statelessness 章節。
+- 保留並重新核對 durable workflow、approval handshake、stream、message inbox 與 statelessness 章節。
 - 「Adding a second agent kind」只描述 domain extension，不再提新增 harness adapter。
 
 ### 9.4 Dead-code gate
@@ -613,8 +607,8 @@ pnpm build:service
 | commit tool 未批准                 | tool 被 Pi hook block、approval request 持久化、workflow park       |
 | approval accepted                  | decision 先落 DB，再 resume，下一 turn pre-authorize 正確 tool      |
 | approval rejected                  | agent 收到 rejection turn 並能回應 operator comment                 |
-| steer mid-turn                     | notification 能立即 drain，失敗 delivery 會 release 回 queue        |
-| notifier failure                   | 最多退回 polling latency，turn 不失敗                               |
+| running turn 期間再送 prompt       | payload durable 入 hook event log，依序成為下一個 turn              |
+| duplicate active workflow          | `getConflict()` 在首個 turn 前拒絕第二個 inbox owner                |
 | successful turn near context limit | turn 結束後 auto-compact，emit `session:compacted`                  |
 | pending approval / failed turn     | 不執行 auto-compaction                                              |
 | manual compact                     | running turn 時拒絕，idle 時回傳相同 summary/tokensBefore           |
@@ -663,9 +657,10 @@ Phase 4 完成後做一次明確決策：
 ## 12. 風險與控制
 
 - **event ordering**：原本 lifecycle 與 Pi adapter 分開，合併時最容易改變 subscribe / emit / flush 順序。以 Phase 0 characterization tests 與 durable stream integration test 控制。
-- **lost wake-up**：pending notifier 的 drain chain 是目前最高風險 concurrency logic；只搬移、不順便重寫演算法。
+- **message ordering**：reusable hook 是唯一 queue；首輪前先 `getConflict()` 註冊，避免 startup
+  window 丟失訊息或兩個 runs 同時擁有 inbox。
 - **approval audit**：`persistApproval` 的位置與 await ordering 不可改成 fire-and-forget。
-- **auto-compaction timing**：必須在 prompt 完成、drain 停止、approval 收集之後，`run:end` 之前維持相同語意。
+- **auto-compaction timing**：必須在 prompt 完成、approval 收集之後，`run:end` 之前維持相同語意。
 - **Pi conditional generics**：目前 `AgentHarness` constructor 有一個局部 `as never`。Pi-first 不代表擴大 cast；cast 必須維持在 constructor 的最小範圍，options interface 仍完整 type-check。
 - **package merge import churn**：Phase 3 只搬 ownership，不同時改 runtime behavior；先完成 Phase 1/2 並綠燈後才執行。
 - **test over-mocking**：全部 mock Pi class 可能讓 public API 漂移而不自知；至少保留一個 real harness integration test。
@@ -679,7 +674,7 @@ Phase 4 完成後做一次明確決策：
 2. generic engine contract、adapter handle 與 factory 全部刪除。
 3. compact / navigate 是 concrete operations，沒有 unsupported maintenance methods。
 4. `@chia/agent-core` 已合併並刪除，沒有 compatibility package。
-5. durable workflow、approval、pending messages、wire replay、BYOK 與 compaction invariants 全部通過測試。
+5. durable workflow inbox、approval、wire replay、BYOK 與 compaction invariants 全部通過測試。
 6. service build、root typecheck、tests、lint、format check 全部通過。
 7. `docs/agent-architecture.md` 與中文版已更新成 as-built Pi-first 架構。
 8. agent-kind registry 是否保留已有明確記錄；若不在本次移除，不能用它重新引入 harness abstraction。

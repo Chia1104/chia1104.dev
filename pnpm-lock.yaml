@@ -748,9 +748,6 @@ importers:
       '@orpc/zod':
         specifier: catalog:orpc
         version: 1.14.15(@opentelemetry/api@1.9.1)(@orpc/contract@1.14.15(@opentelemetry/api@1.9.1))(@orpc/server@1.14.15(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.22))(ws@8.21.3))(crossws@0.4.10(srvx@0.11.22))(ws@8.21.3)(zod@4.4.3)
-      '@redis/client':
-        specifier: ^6.2.0
-        version: 6.2.0(@opentelemetry/api@1.9.1)
       '@t3-oss/env-core':
         specifier: 'catalog:'
         version: 0.13.11(typescript@7.0.2)(zod@4.4.3)
@@ -1489,9 +1486,6 @@ importers:
       '@keyv/valkey':
         specifier: ^1.0.11
         version: 1.0.11(supports-color@8.1.1)
-      '@redis/client':
-        specifier: ^6.2.0
-        version: 6.2.0(@opentelemetry/api@1.9.1)
       '@t3-oss/env-core':
         specifier: 'catalog:'
         version: 0.13.11(typescript@7.0.2)(zod@4.4.3)
@@ -5180,18 +5174,6 @@ packages:
   '@redis/client@5.12.1':
     resolution: {integrity: sha512-7aPGWeqA3uFm43o19umzdl16CEjK/JQGtSXVPevplTaOU3VJA/rseBC1QvYUz9lLDIMBimc4SW/zrW4S89BaCA==}
     engines: {node: '>= 18.19.0'}
-    peerDependencies:
-      '@node-rs/xxhash': ^1.1.0
-      '@opentelemetry/api': '>=1 <2'
-    peerDependenciesMeta:
-      '@node-rs/xxhash':
-        optional: true
-      '@opentelemetry/api':
-        optional: true
-
-  '@redis/client@6.2.0':
-    resolution: {integrity: sha512-HHszna68MTBRiDZV3Wo2wANH7Z5v/nuh+ZyCAGBce0PS8tDcg1/yzZ1vqbKbUyTdz1wB54kqZxXrnPwpR8Ivdw==}
-    engines: {node: '>= 20.0.0'}
     peerDependencies:
       '@node-rs/xxhash': ^1.1.0
       '@opentelemetry/api': '>=1 <2'
@@ -16885,12 +16867,6 @@ snapshots:
       react: 19.2.8
 
   '@redis/client@5.12.1(@opentelemetry/api@1.9.1)':
-    dependencies:
-      cluster-key-slot: 1.1.2
-    optionalDependencies:
-      '@opentelemetry/api': 1.9.1
-
-  '@redis/client@6.2.0(@opentelemetry/api@1.9.1)':
     dependencies:
       cluster-key-slot: 1.1.2
     optionalDependencies:

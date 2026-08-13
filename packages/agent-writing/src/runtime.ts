@@ -15,8 +15,6 @@ import type {
   AgentTurnMessage,
   AgentWireEvent,
   ApprovalRequest,
-  PendingMessageNotifier,
-  PendingMessageStore,
   Session,
 } from "@chia/agent-runtime";
 import { Locale } from "@chia/db/types";
@@ -38,8 +36,6 @@ export interface RunWritingTurnOptions<TApproval> {
   targetFeedId?: number;
   content: ContentPort;
   draft: DraftStore;
-  pending?: PendingMessageStore;
-  pendingNotifier?: PendingMessageNotifier;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
@@ -49,7 +45,6 @@ export interface RunWritingTurnOptions<TApproval> {
   toApproval: (request: ApprovalRequest) => TApproval;
   persistApproval: (approval: TApproval) => Promise<void>;
   flushEvents?: () => Promise<void>;
-  drainIntervalMs?: number;
 }
 
 /** Composes the writing domain and executes one turn on Pi's concrete runtime. */
@@ -87,14 +82,11 @@ export const runWritingTurn = <TApproval>(
     policy: writingPolicy,
     approvedToolCallIds: options.approvedToolCallIds,
     preAuthorizedToolNames: options.preAuthorizedToolNames,
-    pending: options.pending,
-    pendingNotifier: options.pendingNotifier,
     message: options.message,
     onEvent: options.onEvent,
     toApproval: options.toApproval,
     persistApproval: options.persistApproval,
     flushEvents: options.flushEvents,
-    drainIntervalMs: options.drainIntervalMs,
   });
 };
 

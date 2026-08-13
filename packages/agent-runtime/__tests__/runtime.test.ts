@@ -3,13 +3,7 @@ import { createModels } from "@earendil-works/pi-ai";
 import { fauxProvider } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type {
-  AgentPolicy,
-  AgentWireEvent,
-  PendingMessage,
-  PendingMessageNotifier,
-  PendingMessageStore,
-} from "../src/index.ts";
+import type { AgentPolicy, AgentWireEvent } from "../src/index.ts";
 
 const pi = vi.hoisted(() => {
   const handlers = new Map<string, (event: unknown) => unknown>();
@@ -18,8 +12,6 @@ const pi = vi.hoisted(() => {
     prompt: vi.fn(),
     promptFromTemplate: vi.fn(),
     compact: vi.fn(),
-    steer: vi.fn(),
-    followUp: vi.fn(),
     on: vi.fn(),
     subscribe: vi.fn(),
   };
@@ -42,35 +34,6 @@ const policy: AgentPolicy = {
   requiresApproval: (tier) => tier === "commit",
   summarize: () => "",
 };
-
-const createNotifier = () => {
-  let notify: (() => void) | undefined;
-  const unsubscribe = vi.fn(async () => {
-    notify = undefined;
-  });
-  const notifier: PendingMessageNotifier = {
-    publish: vi.fn(async () => undefined),
-    subscribe: vi.fn(async (_sessionId, onNotify) => {
-      notify = onNotify;
-      return unsubscribe;
-    }),
-  };
-  return {
-    notifier,
-    unsubscribe,
-    fire: () => notify?.(),
-    subscribed: () => notify !== undefined,
-  };
-};
-
-const createPendingStore = (
-  overrides: Partial<PendingMessageStore> = {}
-): PendingMessageStore => ({
-  push: vi.fn(async () => undefined),
-  claim: vi.fn(async () => []),
-  release: vi.fn(async () => undefined),
-  ...overrides,
-});
 
 const createOptions = () => {
   const faux = fauxProvider({
@@ -121,8 +84,6 @@ beforeEach(() => {
     summary: "summary",
     tokensBefore: 90_000,
   });
-  pi.harness.steer.mockReset().mockResolvedValue(undefined);
-  pi.harness.followUp.mockReset().mockResolvedValue(undefined);
   pi.harness.on.mockReset().mockImplementation((type, handler) => {
     pi.handlers.set(type, handler);
     const unsubscribe = vi.fn();
@@ -214,176 +175,6 @@ describe("runPiTurn", () => {
       { type: "error", message: "provider failed" },
       { type: "run:end", reason: "error" },
     ]);
-  });
-
-  it("serializes pending-message drains and waits for them before teardown", async () => {
-    vi.useFakeTimers();
-    try {
-      const options = createOptions();
-      const prompt = Promise.withResolvers<void>();
-      const pendingDrain = Promise.withResolvers<[]>();
-      const pending = createPendingStore({
-        claim: vi.fn(() => pendingDrain.promise),
-      });
-      pi.harness.prompt.mockReturnValue(prompt.promise);
-
-      const turn = runPiTurn({
-        ...options,
-        pending,
-        drainIntervalMs: 100,
-      });
-
-      await vi.advanceTimersByTimeAsync(100);
-      expect(pending.claim).toHaveBeenCalledOnce();
-      await vi.advanceTimersByTimeAsync(300);
-      expect(pending.claim).toHaveBeenCalledOnce();
-
-      prompt.resolve();
-      await vi.advanceTimersByTimeAsync(0);
-      expect(
-        pi.unsubscribers.some(
-          (unsubscribe) => unsubscribe.mock.calls.length > 0
-        )
-      ).toBe(false);
-
-      pendingDrain.resolve([]);
-      await turn;
-      expect(
-        pi.unsubscribers.every(
-          (unsubscribe) => unsubscribe.mock.calls.length === 1
-        )
-      ).toBe(true);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("re-drains when a notification lands after the active drain claimed", async () => {
-    vi.useFakeTimers();
-    try {
-      const options = createOptions();
-      const prompt = Promise.withResolvers<void>();
-      const firstDrain = Promise.withResolvers<[]>();
-      const pending = createPendingStore({
-        claim: vi
-          .fn()
-          .mockReturnValueOnce(firstDrain.promise)
-          .mockResolvedValue([]),
-      });
-      const channel = createNotifier();
-      pi.harness.prompt.mockReturnValue(prompt.promise);
-
-      const turn = runPiTurn({
-        ...options,
-        pending,
-        pendingNotifier: channel.notifier,
-        drainIntervalMs: 100_000,
-      });
-
-      await vi.advanceTimersByTimeAsync(0);
-      channel.fire();
-      await vi.advanceTimersByTimeAsync(0);
-      expect(pending.claim).toHaveBeenCalledOnce();
-
-      channel.fire();
-      firstDrain.resolve([]);
-      await vi.advanceTimersByTimeAsync(0);
-      expect(pending.claim).toHaveBeenCalledTimes(2);
-
-      prompt.resolve();
-      await turn;
-      expect(channel.unsubscribe).toHaveBeenCalledOnce();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("releases the undelivered tail when Pi refuses a queued message", async () => {
-    vi.useFakeTimers();
-    try {
-      const options = createOptions();
-      const prompt = Promise.withResolvers<void>();
-      const pending = createPendingStore({
-        claim: vi.fn(async (): Promise<PendingMessage[]> => [
-          { id: "one", kind: "steer", text: "first" },
-          { id: "two", kind: "steer", text: "second" },
-        ]),
-      });
-      const channel = createNotifier();
-      pi.harness.prompt.mockReturnValue(prompt.promise);
-      pi.harness.steer
-        .mockResolvedValueOnce(undefined)
-        .mockRejectedValueOnce(new Error("Cannot steer while idle"));
-
-      const turn = runPiTurn({
-        ...options,
-        pending,
-        pendingNotifier: channel.notifier,
-        drainIntervalMs: 100_000,
-      });
-
-      await vi.advanceTimersByTimeAsync(0);
-      channel.fire();
-      await vi.advanceTimersByTimeAsync(0);
-
-      expect(pending.release).toHaveBeenCalledWith(["two"]);
-      prompt.resolve();
-      await turn;
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("falls back to polling when notifier subscription fails", async () => {
-    vi.useFakeTimers();
-    try {
-      const options = createOptions();
-      const prompt = Promise.withResolvers<void>();
-      const pending = createPendingStore();
-      const notifier: PendingMessageNotifier = {
-        publish: vi.fn(async () => undefined),
-        subscribe: vi.fn(async () => {
-          throw new Error("redis unavailable");
-        }),
-      };
-      pi.harness.prompt.mockReturnValue(prompt.promise);
-
-      const turn = runPiTurn({
-        ...options,
-        pending,
-        pendingNotifier: notifier,
-        drainIntervalMs: 100,
-      });
-
-      await vi.advanceTimersByTimeAsync(100);
-      expect(pending.claim).toHaveBeenCalledOnce();
-      prompt.resolve();
-      await expect(turn).resolves.toMatchObject({ status: "done" });
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("unsubscribes when notifier setup finishes after the prompt", async () => {
-    const options = createOptions();
-    const subscription = Promise.withResolvers<() => Promise<void>>();
-    const unsubscribe = vi.fn(async () => undefined);
-    const notifier: PendingMessageNotifier = {
-      publish: vi.fn(async () => undefined),
-      subscribe: vi.fn(() => subscription.promise),
-    };
-
-    const turn = runPiTurn({
-      ...options,
-      pending: createPendingStore(),
-      pendingNotifier: notifier,
-    });
-    await Promise.resolve();
-    expect(unsubscribe).not.toHaveBeenCalled();
-
-    subscription.resolve(unsubscribe);
-    await turn;
-    expect(unsubscribe).toHaveBeenCalledOnce();
   });
 
   it("tears down and flushes when approval persistence fails", async () => {

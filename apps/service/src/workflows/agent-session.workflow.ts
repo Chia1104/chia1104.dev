@@ -63,8 +63,14 @@ export const agentSessionWorkflow = async (request: Request) => {
   const messages = agentMessageHook.create({
     token: agentMessageToken(sessionId),
   });
+  const conflict = await messages.getConflict();
+  if (conflict) {
+    throw new Error(
+      `Agent session ${sessionId} is already driven by workflow run ${conflict.runId}.`
+    );
+  }
 
-  let pending: typeof firstMessage | null = firstMessage;
+  let currentMessage: typeof firstMessage | null = firstMessage;
   let turns = 0;
 
   /**
@@ -83,11 +89,11 @@ export const agentSessionWorkflow = async (request: Request) => {
     firstMessage.credentials;
 
   while (turns < MAX_TURNS_PER_RUN) {
-    if (pending === null) {
+    if (currentMessage === null) {
       // Durable pause: no compute is consumed while waiting for the operator.
       const next = await messages;
       if (next.text === AGENT_END_SENTINEL) break;
-      pending = next;
+      currentMessage = next;
       credentials = next.credentials;
     }
 
@@ -97,12 +103,12 @@ export const agentSessionWorkflow = async (request: Request) => {
       sessionId,
       adminId,
       userId,
-      text: pending.text,
-      template: pending.template,
-      preAuthorizeToolNames: pending.preAuthorizeToolNames,
+      text: currentMessage.text,
+      template: currentMessage.template,
+      preAuthorizeToolNames: currentMessage.preAuthorizeToolNames,
       credentials,
     });
-    pending = null;
+    currentMessage = null;
 
     /**
      * Approval loop.

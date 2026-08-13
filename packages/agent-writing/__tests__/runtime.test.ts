@@ -8,7 +8,7 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { InMemoryPendingMessageStore, foldEvents } from "@chia/agent-runtime";
+import { foldEvents } from "@chia/agent-runtime";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -38,7 +38,6 @@ interface Fixture {
   events: AgentWireEvent[];
   content: FakeContentPort;
   draft: InMemoryDraftStore;
-  pending: InMemoryPendingMessageStore;
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
@@ -74,7 +73,6 @@ const build = async (
     tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
   });
   const draft = new InMemoryDraftStore();
-  const pending = new InMemoryPendingMessageStore();
   const events: AgentWireEvent[] = [];
 
   const sessionSettings: AgentSessionSettings = {
@@ -90,7 +88,6 @@ const build = async (
     events,
     content,
     draft,
-    pending,
     setResponses: faux.setResponses,
     run: (text) =>
       runWritingTurn({
@@ -100,7 +97,6 @@ const build = async (
         adminId: ADMIN_ID,
         content,
         draft,
-        pending,
         message: { text },
         onEvent: (event) => events.push(event),
         models,

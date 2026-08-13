@@ -128,11 +128,6 @@ export interface AgentKindService {
     input: { sessionId: string }
   ): Promise<boolean>;
 
-  steer(
-    caller: AgentServiceCaller,
-    input: { sessionId: string; text: string; queue?: "steer" | "followUp" }
-  ): Promise<boolean>;
-
   approve(
     caller: AgentServiceCaller,
     input: {

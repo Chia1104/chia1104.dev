@@ -9,10 +9,6 @@ export type {
   PgSessionCreateOptions,
   PgSessionListOptions,
 } from "./pg-repo.ts";
-export {
-  InMemoryPendingMessageStore,
-  PgPendingMessageStore,
-} from "./pg-pending-messages.ts";
 
 /**
  * Re-exported so callers can use the same Pi session implementation as the runtime.

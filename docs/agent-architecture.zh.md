@@ -11,11 +11,11 @@ adapter 包裝。現在唯一上線的 agent kind 是 dashboard 裡的部落格�
 
 ## 1. 分層
 
-| 層           | Package / app                               | 責任                                                                                                                                        |
-| ------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pi execution | `@chia/agent-runtime`                       | Pi turn 生命週期、session persistence、models/providers、approval hook、受限 wire events、pending-message ports 與 client transport mapping |
-| Domain       | `@chia/agent-writing`                       | 寫作 tools、prompts、skills、model allowlist、policy、draft staging 與 domain ports                                                         |
-| Host         | `apps/service`、`packages/api`、`apps/dash` | DB/KV/credentials、durable workflow 與 stream、oRPC service port、auth、UI                                                                  |
+| 層           | Package / app                               | 責任                                                                                                                 |
+| ------------ | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Pi execution | `@chia/agent-runtime`                       | Pi turn 生命週期、session persistence、models/providers、approval hook、受限 wire events 與 client transport mapping |
+| Domain       | `@chia/agent-writing`                       | 寫作 tools、prompts、skills、model allowlist、policy、draft staging 與 domain ports                                  |
+| Host         | `apps/service`、`packages/api`、`apps/dash` | DB/KV/credentials、durable workflow 與 stream、oRPC service port、auth、UI                                           |
 
 ```mermaid
 flowchart TB
@@ -73,7 +73,6 @@ Transcript 是樹而不是 flat log。`agent_session_entry.parentId` 指向 bran
 agent_session                  共用 settings、kind、active leaf
 agent_session_entry            Pi session-tree nodes；seq 是插入順序
 agent_run                      durable execution metadata；每個 session 最多一個 active run
-agent_pending_message          steer / follow-up queue
 agent_tool_approval            durable approval 與 audit trail
 writing_agent_session          writing-specific 1:1 state
 writing_agent_draft            每個 locale 的 staging buffer
@@ -115,9 +114,11 @@ sequenceDiagram
 
 ### Enqueue 與 durable driver
 
-oRPC route 先經過 `adminGuard`，session guard 再驗證 ownership。Host service 會透過 message
-hook 喚醒既有 workflow，或建立新 run。仍有 pending approval、message hook 尚未註冊，或
-文字是保留的 `/end` sentinel 時會拒絕 enqueue，避免訊息看似成功卻無人消費。
+oRPC route 先經過 `adminGuard`，session guard 再驗證 ownership。Host service 會透過 reusable
+message hook 把訊息持久化到既有 workflow 的 event log，或建立新 run。Workflow 在第一個
+turn 前以 `getConflict()` 註冊 inbox，因此 running turn 期間送入的訊息會排隊，等目前 turn
+以及可能的 approval handshake 完成後成為下一個 turn。仍有 pending approval、workflow
+尚在啟動而 hook 未註冊，或文字是保留的 `/end` sentinel 時會拒絕 enqueue。
 
 每個 durable workflow run 最多驅動 200 turns。Workflow function 在 sandboxed VM 執行；
 DB、provider、timer 與 network 都留在 step，跨 boundary 的只有 plain data。這讓 turn、
@@ -142,12 +143,10 @@ model，並組合 tools、skills、templates、dynamic system prompt 與 writing
 
 1. 依 resolved model clamp thinking level，每個 turn 建立一個 harness；
 2. 安裝 Pi tool-call approval hook 與 Pi-to-wire event mapper；
-3. 啟動 serialized pending-message polling 與 optional notification wake-up；
-4. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
-5. 停止並等待整條 drain chain；
-6. 持久化 approval snapshots；
-7. 只在成功且沒有 pending approval 時 auto-compact；
-8. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
+3. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
+4. 持久化 approval snapshots；
+5. 只在成功且沒有 pending approval 時 auto-compact；
+6. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
 
 ## 5. Approval handshake
 
@@ -198,18 +197,19 @@ session:compacted · state:changed · error · run:end
 pending deltas；reader 以 race 讀取兩邊以維持交錯順序。Stream 只在整個 durable run 結束時
 關閉，不會每個 turn 關閉。
 
-## 7. Pending messages
+## 7. Durable message inbox
 
-HTTP request 無法直接操作另一個 step/process 裡的 harness。Host 先把訊息寫入 durable
-`agent_pending_message`，`runPiTurn` 再 claim rows 並呼叫 local harness 的 `steer()` 或
-`followUp()`。
+每個 session workflow 建立一個 deterministic、reusable `agentMessageHook`。Workflow 會在
+第一個 Pi step 前 await `getConflict()`：這既把 hook 註冊到 workflow backend，也阻止兩個
+active runs 同時擁有同一個 session inbox。
 
-Claim 在 delivery 前就標記 consumed，因此 Pi 拒絕 handoff 時，尚未送出的 tail 必須 release
-回 queue。Drain 同時間只允許一個；active drain 期間收到 notification 會要求再 drain 一次，
-避免 lost wake-up。Teardown 會等待整條 chain 完成。
+Active run 收到 prompt 時，service 直接 resume 這個 hook。每筆 payload 都成為 durable
+`hook_received` event，因此不需要 Postgres pending table、Redis Pub/Sub、process-local queue
+或 timer polling。Workflow 依 event-log 順序一次讀取一筆，再呼叫 `runAgentTurnStep`。
 
-Redis notification 只是降低 latency 的 accelerator。它沒有 payload，失敗不能使 turn
-失敗，也永遠不取代 polling；durable truth 仍是 Postgres。
+Pi harness 仍完整位於單一 step 裡，所以 queued message 不會中斷目前正在生成的 turn；它會
+在目前 turn 與任何 approval handshake 結束後成為新的正常 turn。這是刻意選擇的產品語意，
+也讓 workflow event log 成為唯一 message queue。
 
 ## 8. Compaction 與 navigation
 
@@ -219,7 +219,7 @@ Maintenance 使用 concrete operations，不再建立假裝能執行 turn 的 ha
 - `navigatePiSession` 建立最小 Pi harness 後呼叫 `navigateTree()`；
 - writing wrappers 只透過 writing allowlist resolve model，再呼叫上述 operation。
 
-Maintenance 不建立 tools、prompts、approval、pending drain 或 subscriptions。Manual compact
+Maintenance 不建立 tools、prompts、approval 或 subscriptions。Manual compact
 與 navigate 在 turn running 時仍會被拒絕。Navigation 會回傳完整 rebuilt transcript，因為
 active branch 改變後舊 view 已全部失效。
 
@@ -246,14 +246,13 @@ agent。Dynamic system prompt 每個 turn 都重新計算，讓 draft/session �
 Process 內沒有 conversational state。Kind-to-service map 只保存 implementation；所有 mutable
 state 都是 durable：
 
-| State                      | 儲存位置                                       |
-| -------------------------- | ---------------------------------------------- |
-| Transcript                 | `agent_session_entry`                          |
-| Draft                      | `writing_agent_session`、`writing_agent_draft` |
-| Approval decisions         | `agent_tool_approval`                          |
-| Steering / follow-up queue | `agent_pending_message`                        |
-| Run metadata               | `agent_run`                                    |
-| Pauses 與 event streams    | workflow backend                               |
+| State                                | 儲存位置                                       |
+| ------------------------------------ | ---------------------------------------------- |
+| Transcript                           | `agent_session_entry`                          |
+| Draft                                | `writing_agent_session`、`writing_agent_draft` |
+| Approval decisions                   | `agent_tool_approval`                          |
+| Run metadata                         | `agent_run`                                    |
+| Message inbox、pauses、event streams | workflow backend                               |
 
 ## 11. 新增另一個 agent kind
 
@@ -279,13 +278,13 @@ factory、capability plugin system 或 provider-neutral handle。
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                 |
 | Session over Postgres        | `packages/agent-runtime/src/session/`                                                  |
-| Pending-message ports        | `packages/agent-runtime/src/ports.ts`                                                  |
 | TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                   |
 | Host service port            | `packages/api/orpc/agent-service.ts`                                                   |
 | Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts` |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`               |
 | Database schema              | `packages/db/src/schemas/agent.schema.ts`                                              |
 | Dashboard UI                 | `apps/dash/src/components/agent/`                                                      |

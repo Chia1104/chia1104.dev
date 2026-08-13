@@ -4,7 +4,6 @@ import {
   BYOK_PROVIDER_IDS,
   createAgentModels,
   entriesToWireEvents,
-  PgPendingMessageStore,
   PgSessionRepo,
   UnknownAgentModelError,
   writeSessionSettings,
@@ -62,7 +61,6 @@ import {
   decryptAgentCredentials,
   readEncryptedAgentCredentials,
 } from "./agent-credentials";
-import { getAgentPendingNotifier } from "./agent-pending-notifier";
 
 /**
  * The **writing** agent service, registered under `agent_session.kind = "writing"`.
@@ -101,7 +99,6 @@ const dependenciesFor = (caller: AgentServiceCaller) => {
     db,
     repo: repoFor(db),
     draft: new PgDraftStore(db),
-    pending: new PgPendingMessageStore(db),
     content: createAgentContentPort({
       db,
       kv: caller.context.kv,
@@ -191,9 +188,8 @@ const summaryOf = (row: {
  * Loads the Pi session inputs used by explicit maintenance operations.
  *
  * These operations only walk the session tree, so the concrete Pi operations receive no tools,
- * skills, approval gate or event subscriptions. The draft store, pending-message store and content
- * port are skipped for the same reason, which is why this reaches for `repoFor` rather than the
- * full `dependenciesFor`.
+ * skills, approval gate or event subscriptions. The draft store and content port are skipped for
+ * the same reason, which is why this reaches for `repoFor` rather than the full `dependenciesFor`.
  */
 const writingSessionOperationOptions = async (
   caller: AgentServiceCaller,
@@ -249,10 +245,10 @@ const isRunLive = async (runId: string): Promise<boolean> => {
 /**
  * Whether a hook token is registered and can be resumed.
  *
- * `createHook()` does not register on call — registration commits when the workflow first
- * suspends. So there is a window right after `start()` where the run is live but its message hook
- * does not exist yet, and `resume()` on it would throw. Checking first turns that into a
- * retryable answer instead of a 500.
+ * `createHook()` does not register on call. This workflow registers through `getConflict()` before
+ * its first turn, but `start()` may return before the workflow reaches that line. Checking once
+ * turns that startup race into a retryable answer instead of a failed `resume()`; it is not a
+ * timer or polling loop.
  */
 const isHookReady = async (token: string): Promise<boolean> => {
   try {
@@ -451,8 +447,9 @@ export const writingAgentService: AgentKindService = {
   /**
    * Enqueues a turn.
    *
-   * If the session already has a live run, the message is delivered through its hook — the run is
-   * parked waiting for exactly this. Otherwise a new run is started and its id recorded.
+   * If the session already has a live run, its reusable hook durably queues the message. The
+   * workflow consumes it after the current turn and any approval handshake finish. Otherwise a new
+   * run is started and its id recorded.
    *
    * Either way this returns as soon as the message is accepted; the turn itself runs in the run.
    */
@@ -502,8 +499,8 @@ export const writingAgentService: AgentKindService = {
       }
 
       const run = getRun(row.workflowRunId);
-      // Capture the tail *before* enqueuing, so the returned index points at this turn's first
-      // event rather than replaying the whole session.
+      // Capture the tail before enqueuing. If another turn is active, its remaining events and the
+      // queued turn share this continuation stream in durable emission order.
       const startIndex = (await run.getReadable().getTailIndex()) + 1;
       await agentMessageHook.resume(token, message);
       return { runId: row.workflowRunId, startIndex, startedRun: false };
@@ -625,25 +622,6 @@ export const writingAgentService: AgentKindService = {
         row.activeRunId,
         "cancelled"
       );
-    }
-    return true;
-  },
-
-  async steer(caller, input) {
-    const row = await loadOwnedSession(caller, input.sessionId);
-    if (!row) return false;
-    const { pending } = dependenciesFor(caller);
-    await pending.push(input.sessionId, input.queue ?? "steer", input.text);
-
-    /**
-     * Nudge the running turn, strictly after the row is durable — the other order would let a
-     * subscriber drain before the message exists and waste the wake-up. Failure is ignored on
-     * purpose: the message is already stored, so the worst case is the turn's next poll.
-     */
-    try {
-      await getAgentPendingNotifier()?.publish(input.sessionId);
-    } catch {
-      // Accelerator only.
     }
     return true;
   },

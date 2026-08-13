@@ -6,7 +6,6 @@ import type {
 } from "@earendil-works/pi-agent-core";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
-import type { PendingMessageNotifier, PendingMessageStore } from "../ports.ts";
 import type { AgentPolicy, AgentSessionSettings, AgentTool } from "../types.ts";
 import type { AgentTurnExecution, AgentTurnMessage } from "../types.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
@@ -16,8 +15,6 @@ import { createPiWireEventMapper } from "./events.ts";
 import { clampSessionThinkingLevel } from "./settings.ts";
 import { createPiToolCallGate } from "./tool-gate.ts";
 import type { ApprovalRequest } from "./tool-gate.ts";
-
-const DEFAULT_DRAIN_INTERVAL_MS = 1_000;
 
 export interface RunPiTurnOptions<TContext extends object, TApproval> {
   agentSessionId: string;
@@ -34,43 +31,15 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   policy: AgentPolicy;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
-  pending?: PendingMessageStore;
-  pendingNotifier?: PendingMessageNotifier;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   toApproval: (request: ApprovalRequest) => TApproval;
   persistApproval: (approval: TApproval) => Promise<void>;
   flushEvents?: () => Promise<void>;
-  drainIntervalMs?: number;
 }
 
 const messageFor = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
-
-const deliverPendingMessages = async <TContext extends object>(
-  harness: AgentHarness<TContext>,
-  pending: PendingMessageStore | undefined,
-  agentSessionId: string
-): Promise<number> => {
-  if (!pending) return 0;
-  const messages = await pending.claim(agentSessionId);
-  const undelivered = [...messages];
-
-  try {
-    for (const message of messages) {
-      if (message.kind === "steer") await harness.steer(message.text);
-      else await harness.followUp(message.text);
-      undelivered.shift();
-    }
-  } catch (error) {
-    await pending
-      .release(undelivered.map((message) => message.id))
-      .catch(() => undefined);
-    throw error;
-  }
-
-  return messages.length;
-};
 
 /** Executes one complete turn against Pi's concrete `AgentHarness`. */
 export const runPiTurn = async <TContext extends object, TApproval>({
@@ -87,37 +56,15 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   policy,
   approvedToolCallIds,
   preAuthorizedToolNames,
-  pending,
-  pendingNotifier,
   message,
   onEvent,
   toApproval,
   persistApproval,
   flushEvents,
-  drainIntervalMs = DEFAULT_DRAIN_INTERVAL_MS,
 }: RunPiTurnOptions<TContext, TApproval>): Promise<
   AgentTurnExecution<TApproval>
 > => {
   const unsubscribers: (() => void)[] = [];
-  let drainInterval: ReturnType<typeof setInterval> | undefined;
-  let activeDrain: Promise<void> | undefined;
-  let drainRequested = false;
-  let notifierSubscription:
-    | Promise<(() => Promise<void>) | undefined>
-    | undefined;
-
-  const stopDraining = async () => {
-    if (drainInterval) {
-      clearInterval(drainInterval);
-      drainInterval = undefined;
-    }
-    if (notifierSubscription) {
-      const subscription = notifierSubscription;
-      notifierSubscription = undefined;
-      await (await subscription)?.().catch(() => undefined);
-    }
-    while (activeDrain) await activeDrain;
-  };
 
   try {
     const systemPrompt =
@@ -134,8 +81,6 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       activeToolNames: settings.activeToolNames ?? undefined,
       resources: { skills, promptTemplates },
       systemPrompt,
-      steeringMode: "all",
-      followUpMode: "all",
     } as never) as AgentHarness<TContext>;
     const gate = createPiToolCallGate({
       policy,
@@ -186,34 +131,6 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       );
     }
 
-    const drainPendingMessages = async () => {
-      try {
-        await deliverPendingMessages(turnHarness, pending, agentSessionId);
-      } catch {
-        // The undelivered tail was released. A later drain may retry it without failing the turn.
-      }
-    };
-
-    const drain = (): Promise<void> => {
-      if (activeDrain) {
-        drainRequested = true;
-        return activeDrain;
-      }
-      drainRequested = false;
-      activeDrain = drainPendingMessages().finally(() => {
-        activeDrain = undefined;
-        if (drainRequested) void drain();
-      });
-      return activeDrain;
-    };
-
-    if (pending) {
-      drainInterval = setInterval(() => void drain(), drainIntervalMs);
-      notifierSubscription = pendingNotifier
-        ?.subscribe(agentSessionId, () => void drain())
-        .catch(() => undefined);
-    }
-
     onEvent({ type: "run:start", sessionId: agentSessionId });
     const now = Date.now();
     onEvent({
@@ -234,8 +151,6 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       }
     } catch (error) {
       failure = messageFor(error);
-    } finally {
-      await stopDraining();
     }
 
     const approvals: TApproval[] = [];
@@ -272,7 +187,6 @@ export const runPiTurn = async <TContext extends object, TApproval>({
 
     return { status, approvals, error: failure };
   } finally {
-    await stopDraining();
     try {
       for (const unsubscribe of unsubscribers) unsubscribe();
     } finally {

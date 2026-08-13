@@ -164,14 +164,6 @@ export const abortAgentRoute = contractOS.agent.sessions.abort
     return { aborted: await service.abort(caller, opts.input) };
   });
 
-export const steerAgentRoute = contractOS.agent.sessions.steer
-  .use(adminGuard())
-  .use(agentSessionGuard())
-  .handler(async (opts) => {
-    const { caller, service } = opts.context.agent;
-    return { queued: await service.steer(caller, opts.input) };
-  });
-
 export const approveAgentToolRoute = contractOS.agent.sessions.approve
   .use(adminGuard())
   .use(agentSessionGuard())

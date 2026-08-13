@@ -1,8 +1,7 @@
-import { and, asc, desc, eq, gt, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
 
 import type { DB } from "../../index.ts";
 import {
-  agentPendingMessages,
   agentRuns,
   agentSessionEntries,
   agentSessions,
@@ -136,7 +135,7 @@ export const restoreAgentSession = async (db: DB, sessionId: string) => {
     .where(eq(agentSessions.id, sessionId));
 };
 
-/** Hard delete. Runs, entries, kind extensions, pending messages and approvals cascade. */
+/** Hard delete. Runs, entries, kind extensions and approvals cascade. */
 export const deleteAgentSession = async (db: DB, sessionId: string) => {
   await db.delete(agentSessions).where(eq(agentSessions.id, sessionId));
 };
@@ -368,73 +367,6 @@ export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {
     .delete(writingAgentDrafts)
     .where(eq(writingAgentDrafts.sessionId, sessionId));
 };
-
-// ============================================
-// Pending messages
-// ============================================
-
-export const pushAgentPendingMessage = async (
-  db: DB,
-  input: { id: string; sessionId: string; kind: string; text: string }
-) => {
-  await db.insert(agentPendingMessages).values(input);
-};
-
-/**
- * Claims every unconsumed message in one statement.
- *
- * A conditional `UPDATE … RETURNING` is the atomic primitive: a select-then-update pair
- * would let two concurrent drains hand the same message to the harness twice.
- */
-export const claimAgentPendingMessages = async (db: DB, sessionId: string) => {
-  const rows = await db
-    .update(agentPendingMessages)
-    .set({ consumedAt: new Date() })
-    .where(
-      and(
-        eq(agentPendingMessages.sessionId, sessionId),
-        isNull(agentPendingMessages.consumedAt)
-      )
-    )
-    .returning({
-      id: agentPendingMessages.id,
-      kind: agentPendingMessages.kind,
-      text: agentPendingMessages.text,
-      createdAt: agentPendingMessages.createdAt,
-    });
-  return rows.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-};
-
-/**
- * Puts claimed messages back on the queue.
- *
- * `claim` marks rows consumed before they are delivered, so an undeliverable message would
- * otherwise be lost. `createdAt` is untouched, and the claim query orders by it, so released
- * messages come back ahead of anything queued in the meantime — original order survives.
- */
-export const releaseAgentPendingMessages = async (db: DB, ids: string[]) => {
-  if (ids.length === 0) return;
-  await db
-    .update(agentPendingMessages)
-    .set({ consumedAt: null })
-    .where(inArray(agentPendingMessages.id, ids));
-};
-
-export const peekAgentPendingMessages = async (db: DB, sessionId: string) =>
-  await db
-    .select({
-      id: agentPendingMessages.id,
-      kind: agentPendingMessages.kind,
-      text: agentPendingMessages.text,
-    })
-    .from(agentPendingMessages)
-    .where(
-      and(
-        eq(agentPendingMessages.sessionId, sessionId),
-        isNull(agentPendingMessages.consumedAt)
-      )
-    )
-    .orderBy(asc(agentPendingMessages.createdAt));
 
 // ============================================
 // Tool approvals
