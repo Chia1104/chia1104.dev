@@ -21,15 +21,14 @@ import { user } from "./user.schema.ts";
 /**
  * Persistence for agent sessions.
  *
- * `agent_session` / `agent_session_entry` / `agent_run` / `agent_pending_message` /
- * `agent_tool_approval` are **generic** — every agent kind shares them, discriminated by
- * `agent_session.kind`. Writing-specific state lives in `writing_agent_session` and
- * `writing_agent_draft`.
+ * `agent_session` / `agent_session_entry` / `agent_run` / `agent_tool_approval` are **generic** —
+ * every agent kind shares them, discriminated by `agent_session.kind`. Writing-specific state
+ * lives in `writing_agent_session` and `writing_agent_draft`.
  *
  * The transcript is a **tree**, not a flat log: `agent_session_entry.parentId` points at
  * the previous entry on the branch and `agent_session.leafEntryId` marks the active leaf.
  * That is what lets the agent rewind ("退回三步用另一個角度重寫") and what pi's
- * `SessionStorage` port expects. `@chia/agent-core/session` implements that port over these
+ * `SessionStorage` port expects. `@chia/agent-runtime` implements that port over these
  * tables; the writing-specific `writing_agent_draft` belongs to `@chia/agent-writing`.
  *
  * `writing_agent_draft` is the staging buffer: the agent only ever writes here, and a human
@@ -218,41 +217,6 @@ export const writingAgentDrafts = pgTable(
 );
 
 export type WritingAgentDraft = InferSelectModel<typeof writingAgentDrafts>;
-
-// ============================================
-// Agent Pending Message
-// ============================================
-
-/**
- * Steering / follow-up queue.
- *
- * `AgentHarness.steer()` is a method, not a callback, so a message that arrives over HTTP
- * mid-turn cannot reach the running harness directly. The transport writes a row here and
- * the turn drains it at pi's queue drain points. Rows are kept (not deleted) after
- * `consumedAt` so the transcript can explain why the agent changed course.
- */
-export const agentPendingMessages = pgTable(
-  "agent_pending_message",
-  {
-    id: text("id").primaryKey(),
-    sessionId: text("session_id")
-      .notNull()
-      .references(() => agentSessions.id, { onDelete: "cascade" }),
-    /** `steer` interrupts the current turn; `followUp` waits until it would otherwise stop. */
-    kind: text("kind").notNull(),
-    text: text("text").notNull(),
-    consumedAt: timestamp("consumed_at", { mode: "date" }),
-    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-  },
-  (table) => [
-    index("agent_pending_message_pending_idx").on(
-      table.sessionId,
-      table.consumedAt
-    ),
-  ]
-);
-
-export type AgentPendingMessage = InferSelectModel<typeof agentPendingMessages>;
 
 // ============================================
 // Agent Tool Approval

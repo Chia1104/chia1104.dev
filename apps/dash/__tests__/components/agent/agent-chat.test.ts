@@ -1,6 +1,6 @@
 import type { UIMessage } from "@tanstack/ai-react";
 
-import type { AgentWireEvent } from "@chia/agent-core";
+import type { AgentWireEvent } from "@chia/agent-runtime";
 
 import {
   agentEventsToUiMessages,

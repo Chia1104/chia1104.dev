@@ -4,7 +4,7 @@ import {
   AGENT_PROVIDERS,
   UnknownAgentModelError,
   createAgentModels,
-} from "@chia/agent-core";
+} from "@chia/agent-runtime";
 
 import {
   assertWritingModel,

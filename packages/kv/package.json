@@ -25,10 +25,6 @@
       "types": "./src/adapters/valkey.ts",
       "default": "./src/adapters/valkey.ts"
     },
-    "./pubsub": {
-      "types": "./src/pubsub.ts",
-      "default": "./src/pubsub.ts"
-    },
     "./provider": {
       "types": "./src/provider.ts",
       "default": "./src/provider.ts"
@@ -61,7 +57,6 @@
     "@keyv/postgres": "^2.2.3",
     "@keyv/redis": "^5.1.6",
     "@keyv/valkey": "^1.0.11",
-    "@redis/client": "^6.2.0",
     "@t3-oss/env-core": "catalog:",
     "@upstash/ratelimit": "2.0.8",
     "@upstash/redis": "1.38.2",

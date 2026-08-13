@@ -1,7 +1,7 @@
 import { toTanStackAgentEventStream } from "@chia/agent-runtime/transports/tanstack-ai";
 
-import { getAgentRuntime, registeredAgentKinds } from "../agent-runtime";
-import type { AgentRuntimeCaller } from "../agent-runtime";
+import { getAgentKindService, registeredAgentKinds } from "../agent-service";
+import type { AgentServiceCaller } from "../agent-service";
 import { adminGuard } from "../guards/admin.guard";
 import {
   agentModelGuard,
@@ -27,10 +27,10 @@ import { contractOS } from "../utils";
 
 const callerOf = (opts: {
   context: { adminId: string; session: { user: { id: string } } };
-}): AgentRuntimeCaller => ({
+}): AgentServiceCaller => ({
   adminId: opts.context.adminId,
   userId: opts.context.session.user.id,
-  context: opts.context as unknown as AgentRuntimeCaller["context"],
+  context: opts.context as unknown as AgentServiceCaller["context"],
 });
 
 // ============================================
@@ -44,7 +44,7 @@ export const listAgentSessionsRoute = contractOS.agent.sessions.list
     const kinds = opts.input?.kind ? [opts.input.kind] : registeredAgentKinds();
     const pages = await Promise.all(
       kinds.map((kind) =>
-        getAgentRuntime(kind).listSessions(caller, opts.input)
+        getAgentKindService(kind).listSessions(caller, opts.input)
       )
     );
     const limit = opts.input?.limit ?? 50;
@@ -62,15 +62,18 @@ export const createAgentSessionRoute = contractOS.agent.sessions.create
   .use(adminGuard())
   .use(agentModelGuard())
   .handler(async (opts) =>
-    getAgentRuntime(opts.input.kind).createSession(callerOf(opts), opts.input)
+    getAgentKindService(opts.input.kind).createSession(
+      callerOf(opts),
+      opts.input
+    )
   );
 
 export const getAgentSessionRoute = contractOS.agent.sessions.get
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    const detail = await runtime.getSession(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    const detail = await service.getSession(caller, opts.input);
     if (!detail) throw opts.errors.NOT_FOUND();
     return detail;
   });
@@ -79,8 +82,8 @@ export const deleteAgentSessionRoute = contractOS.agent.sessions.delete
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    const deleted = await runtime.deleteSession(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    const deleted = await service.deleteSession(caller, opts.input);
     if (!deleted) throw opts.errors.NOT_FOUND();
     return { sessionId: opts.input.sessionId };
   });
@@ -91,8 +94,8 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    const detail = await runtime.updateSettings(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    const detail = await service.updateSettings(caller, opts.input);
     if (!detail) throw opts.errors.NOT_FOUND();
     return detail;
   });
@@ -102,38 +105,38 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
 // ============================================
 
 /**
- * The handler returns the runtime's async generator directly — oRPC serialises it as an event
+ * The handler returns the service's async generator directly — oRPC serialises it as an event
  * stream, so nothing is buffered and the first token reaches the client as soon as it exists.
  */
 export const promptAgentRoute = contractOS.agent.sessions.prompt
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    return await runtime.prompt(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    return await service.prompt(caller, opts.input);
   });
 
 export const streamAgentRoute = contractOS.agent.sessions.stream
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    return runtime.stream(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    return service.stream(caller, opts.input);
   });
 
 export const chatAgentRoute = contractOS.agent.sessions.chat
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
+    const { caller, service } = opts.context.agent;
 
     const cursor =
       opts.input.action.type === "prompt"
-        ? await runtime.prompt(caller, {
+        ? await service.prompt(caller, {
             sessionId: opts.input.sessionId,
             text: opts.input.action.text,
           })
-        : await runtime.approve(caller, {
+        : await service.approve(caller, {
             sessionId: opts.input.sessionId,
             toolCallId: opts.input.action.toolCallId,
             approved: opts.input.action.approved,
@@ -141,7 +144,7 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
           });
     if (!cursor) throw opts.errors.NOT_FOUND();
 
-    const events = runtime.stream(caller, {
+    const events = service.stream(caller, {
       sessionId: opts.input.sessionId,
       runId: cursor.runId,
       startIndex: cursor.startIndex,
@@ -157,24 +160,16 @@ export const abortAgentRoute = contractOS.agent.sessions.abort
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    return { aborted: await runtime.abort(caller, opts.input) };
-  });
-
-export const steerAgentRoute = contractOS.agent.sessions.steer
-  .use(adminGuard())
-  .use(agentSessionGuard())
-  .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    return { queued: await runtime.steer(caller, opts.input) };
+    const { caller, service } = opts.context.agent;
+    return { aborted: await service.abort(caller, opts.input) };
   });
 
 export const approveAgentToolRoute = contractOS.agent.sessions.approve
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    const cursor = await runtime.approve(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    const cursor = await service.approve(caller, opts.input);
     if (!cursor) throw opts.errors.NOT_FOUND();
     return {
       toolCallId: opts.input.toolCallId,
@@ -190,8 +185,8 @@ export const compactAgentSessionRoute = contractOS.agent.sessions.compact
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    const result = await runtime.compact(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    const result = await service.compact(caller, opts.input);
     if (!result) throw opts.errors.NOT_FOUND();
     return result;
   });
@@ -200,8 +195,8 @@ export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    const result = await runtime.navigate(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    const result = await service.navigate(caller, opts.input);
     if (!result) throw opts.errors.NOT_FOUND();
     return result;
   });
@@ -210,8 +205,8 @@ export const getAgentDraftRoute = contractOS.agent.sessions.draft
   .use(adminGuard())
   .use(agentSessionGuard())
   .handler(async (opts) => {
-    const { caller, runtime } = opts.context.agent;
-    const draft = await runtime.getDraft?.(caller, opts.input);
+    const { caller, service } = opts.context.agent;
+    const draft = await service.getDraft?.(caller, opts.input);
     if (!draft) throw opts.errors.NOT_FOUND();
     return draft;
   });
@@ -223,9 +218,11 @@ export const getAgentDraftRoute = contractOS.agent.sessions.draft
 export const listAgentModelsRoute = contractOS.agent.models.list
   .use(adminGuard())
   .handler(async (opts) =>
-    getAgentRuntime(opts.input.kind).listModels(callerOf(opts))
+    getAgentKindService(opts.input.kind).listModels(callerOf(opts))
   );
 
 export const listAgentCapabilitiesRoute = contractOS.agent.capabilities.list
   .use(adminGuard())
-  .handler(async (opts) => getAgentRuntime(opts.input.kind).listCapabilities());
+  .handler(async (opts) =>
+    getAgentKindService(opts.input.kind).listCapabilities()
+  );

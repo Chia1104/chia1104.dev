@@ -1,0 +1,89 @@
+import * as z from "zod";
+
+const usageSchema = z.object({
+  input: z.number(),
+  output: z.number(),
+  cacheRead: z.number().optional(),
+  cacheWrite: z.number().optional(),
+  costTotal: z.number().optional(),
+});
+
+export const agentWireEventSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("run:start"), sessionId: z.string() }),
+  z.object({
+    type: z.literal("user"),
+    messageId: z.string(),
+    text: z.string(),
+  }),
+  z.object({ type: z.literal("assistant:start"), messageId: z.string() }),
+  z.object({
+    type: z.literal("assistant:delta"),
+    messageId: z.string(),
+    channel: z.enum(["text", "thinking"]),
+    delta: z.string(),
+  }),
+  z.object({
+    type: z.literal("assistant:end"),
+    messageId: z.string(),
+    text: z.string(),
+    thinking: z.string().optional(),
+    usage: usageSchema.optional(),
+    stopReason: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal("tool:start"),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    label: z.string(),
+    tier: z.string(),
+    args: z.unknown(),
+  }),
+  z.object({
+    type: z.literal("tool:update"),
+    toolCallId: z.string(),
+    summary: z.string(),
+  }),
+  z.object({
+    type: z.literal("tool:end"),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    isError: z.boolean(),
+    summary: z.string(),
+    /** Per-tool view model. Shape is the tool's `details`, narrowed by the tool itself. */
+    details: z.unknown().optional(),
+  }),
+  z.object({
+    type: z.literal("approval:request"),
+    toolCallId: z.string(),
+    toolName: z.string(),
+    tier: z.string(),
+    args: z.unknown(),
+  }),
+  z.object({
+    type: z.literal("approval:resolved"),
+    toolCallId: z.string(),
+    approved: z.boolean(),
+    comment: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal("session:compacted"),
+    summary: z.string(),
+    tokensBefore: z.number(),
+  }),
+  z.object({
+    type: z.literal("state:changed"),
+    /**
+     * What changed, as named by the agent kind's policy (`"draft"` for the writing agent).
+     * Bump-only — the client refetches rather than diffing over the wire.
+     */
+    scope: z.string().optional(),
+    revision: z.number(),
+  }),
+  z.object({ type: z.literal("error"), message: z.string() }),
+  z.object({
+    type: z.literal("run:end"),
+    reason: z.enum(["done", "aborted", "error", "awaiting_approval"]),
+  }),
+]);
+
+export type AgentWireEvent = z.infer<typeof agentWireEventSchema>;

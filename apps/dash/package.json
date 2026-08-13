@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "catalog:ai",
-    "@chia/agent-core": "workspace:*",
+    "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/auth": "workspace:*",

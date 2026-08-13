@@ -1,4 +1,4 @@
-import type { AgentTool } from "@chia/agent-core";
+import type { AgentTool } from "@chia/agent-runtime";
 import type { ContentType, FeedType, Locale } from "@chia/db/types";
 
 import type { ContentPort, DraftStore } from "./ports.ts";
@@ -6,7 +6,7 @@ import type { ContentPort, DraftStore } from "./ports.ts";
 /**
  * The writing agent's domain vocabulary.
  *
- * `@chia/agent-core` keeps tiers as plain strings because they are per-kind policy; this is where
+ * `@chia/agent-runtime` keeps tiers as plain strings because they are per-kind policy; this is where
  * the writing agent narrows them.
  */
 
@@ -31,7 +31,7 @@ export const WRITING_STATE_TIERS: readonly WritingToolTier[] = [
 ];
 
 /**
- * Per-turn context handed to every tool by the pi engine adapter.
+ * Per-turn context handed to every tool by Pi's `AgentHarness`.
  *
  * Deliberately holds ports rather than a `DB` handle: the tools are this package's domain logic and
  * stay testable without a database, while `apps/service` owns the wiring.
@@ -142,7 +142,7 @@ export interface TagItem {
 export interface FetchedPage {
   url: string;
   title?: string;
-  /** Plain-text extraction. Truncated by the adapter. */
+  /** Plain-text extraction. Truncated by the host implementation. */
   text: string;
 }
 

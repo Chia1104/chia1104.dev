@@ -12,7 +12,7 @@ import { openaiProvider } from "@earendil-works/pi-ai/providers/openai";
 import { vercelAIGatewayProvider } from "@earendil-works/pi-ai/providers/vercel-ai-gateway";
 
 /**
- * Model layer.
+ * Pi model layer.
  *
  * Three providers, two credential stories:
  *

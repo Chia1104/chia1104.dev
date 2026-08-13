@@ -2,7 +2,7 @@ import { defineHook } from "workflow";
 import * as z from "zod";
 
 /**
- * Durable pause points for an agent session.
+ * Durable inboxes and pause points for an agent session.
  *
  * `defineHook` is preferred over raw `createHook`/`resumeHook` because the payload type is shared
  * between the workflow that awaits and the API route that resumes, and the schema validates at

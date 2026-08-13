@@ -1,16 +1,16 @@
 import { FatalError, getWritable } from "workflow";
 
-import {
-  createAgentModels,
-  PgPendingMessageStore,
-  PgSessionRepo,
-} from "@chia/agent-core";
-import type { AgentWireEvent, ThinkingLevel, ToolTier } from "@chia/agent-core";
+import { createAgentModels, PgSessionRepo } from "@chia/agent-runtime";
+import type {
+  AgentWireEvent,
+  ThinkingLevel,
+  ToolTier,
+} from "@chia/agent-runtime";
 import {
   PgDraftStore,
+  runWritingTurn,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
-  writingAgentRuntime,
 } from "@chia/agent-writing";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
@@ -19,12 +19,11 @@ import {
   getAgentSession,
   getApprovedAgentToolCallIds,
   getWritingAgentSession,
-  recordAgentApprovalRequest,
+  recordAgentApprovalRequests,
 } from "@chia/db/repos/agent";
 
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
-import { getAgentPendingNotifier } from "../services/agent-pending-notifier";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
@@ -156,7 +155,6 @@ async function runWritingAgentTurn(
   });
   const session = await repo.openById(request.sessionId);
   const draft = new PgDraftStore(db);
-  const pending = new PgPendingMessageStore(db);
   const content = createAgentContentPort({ db, kv, adminId: request.adminId });
 
   const approvedToolCallIds = new Set(
@@ -177,27 +175,24 @@ async function runWritingAgentTurn(
     decryptAgentCredentials(request.credentials)
   );
 
-  return await writingAgentRuntime.runTurn({
-    createOptions: {
-      session,
-      models,
-      settings: {
-        providerId: row.providerId,
-        modelId: row.modelId,
-        thinkingLevel: row.thinkingLevel as ThinkingLevel,
-        activeToolNames: row.activeToolNames,
-        autoApprove: row.autoApprove as ToolTier[],
-      },
-      agentSessionId: request.sessionId,
-      adminId: request.adminId,
-      targetFeedId: writingState.targetFeedId ?? undefined,
-      content,
-      draft,
-      pending,
-      onEvent: writer.push,
-      approvedToolCallIds,
-      preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+  return await runWritingTurn({
+    session,
+    models,
+    settings: {
+      providerId: row.providerId,
+      modelId: row.modelId,
+      thinkingLevel: row.thinkingLevel as ThinkingLevel,
+      activeToolNames: row.activeToolNames,
+      autoApprove: row.autoApprove as ToolTier[],
     },
+    agentSessionId: request.sessionId,
+    adminId: request.adminId,
+    targetFeedId: writingState.targetFeedId ?? undefined,
+    content,
+    draft,
+    onEvent: writer.push,
+    approvedToolCallIds,
+    preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
     message: {
       text: request.text,
       template: request.template,
@@ -207,17 +202,18 @@ async function runWritingAgentTurn(
       toolName: approval.toolName,
       args: approval.args as Record<string, unknown> | undefined,
     }),
-    persistApproval: async (approval) => {
-      await recordAgentApprovalRequest(db, {
-        sessionId: request.sessionId,
-        toolCallId: approval.toolCallId,
-        toolName: approval.toolName,
-        args: approval.args,
-      });
+    persistApprovals: async (approvals) => {
+      await recordAgentApprovalRequests(
+        db,
+        approvals.map((approval) => ({
+          sessionId: request.sessionId,
+          toolCallId: approval.toolCallId,
+          toolName: approval.toolName,
+          args: approval.args,
+        }))
+      );
     },
     flushEvents: writer.flush,
-    // Lets a steer sent mid-turn land immediately instead of waiting out the drain interval.
-    pendingNotifier: getAgentPendingNotifier() ?? undefined,
   });
 }
 

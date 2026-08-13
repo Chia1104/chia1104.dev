@@ -98,7 +98,6 @@ export {
   agentSessionEntries,
   writingAgentSessions,
   writingAgentDrafts,
-  agentPendingMessages,
   agentToolApprovals,
   type AgentSession,
   type AgentRun,
@@ -106,7 +105,6 @@ export {
   type AgentSessionEntry,
   type WritingAgentSession,
   type WritingAgentDraft,
-  type AgentPendingMessage,
   type AgentToolApproval,
   type AgentApprovalStatus,
 } from "./agent.schema.ts";
@@ -136,6 +134,5 @@ export {
   agentSessionEntriesRelations,
   writingAgentSessionsRelations,
   writingAgentDraftsRelations,
-  agentPendingMessagesRelations,
   agentToolApprovalsRelations,
 } from "./relations.ts";

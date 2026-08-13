@@ -1,7 +1,10 @@
+import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
+import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
-import { foldEvents } from "../src/events.ts";
-import type { AgentWireEvent } from "../src/events.ts";
+import { foldEvents } from "../src/wire/fold.ts";
+import { entriesToWireEvents } from "../src/wire/replay.ts";
+import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 /**
  * The fold is shared by the live stream and the replayed transcript, so its invariants matter more
@@ -114,5 +117,43 @@ describe("foldEvents", () => {
     expect(textOf(withDeltas.filter((e) => e.type !== "assistant:delta"))).toBe(
       "Hello"
     );
+  });
+
+  it("uses persisted entry ids when replaying assistant messages", () => {
+    const entries: SessionTreeEntry[] = [
+      {
+        type: "message",
+        id: "entry-1",
+        parentId: null,
+        timestamp: "2026-01-01T00:00:00.000Z",
+        message: fauxAssistantMessage("First", { timestamp: 1 }),
+      },
+      {
+        type: "message",
+        id: "entry-2",
+        parentId: "entry-1",
+        timestamp: "2026-01-01T00:00:01.000Z",
+        message: fauxAssistantMessage("Second", { timestamp: 2 }),
+      },
+    ];
+    const presentation = {
+      tierOf: () => "read",
+      labelOf: (name: string) => name,
+      summarize: () => "",
+    };
+
+    const all = entriesToWireEvents(entries, presentation).filter(
+      (event) => event.type === "assistant:end"
+    );
+    const secondOnly = entriesToWireEvents(
+      entries.slice(1),
+      presentation
+    ).filter((event) => event.type === "assistant:end");
+
+    expect(all.map((event) => event.messageId)).toEqual([
+      "a:entry-1",
+      "a:entry-2",
+    ]);
+    expect(secondOnly[0]?.messageId).toBe("a:entry-2");
   });
 });

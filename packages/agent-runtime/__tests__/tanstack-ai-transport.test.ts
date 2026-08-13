@@ -1,9 +1,8 @@
 import { EventType } from "@tanstack/ai";
 import { describe, expect, it } from "vitest";
 
-import type { AgentWireEvent } from "@chia/agent-core";
-
 import { toTanStackAgentEventStream } from "../src/transports/tanstack-ai.ts";
+import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 const eventStream = async function* (
   events: readonly AgentWireEvent[]

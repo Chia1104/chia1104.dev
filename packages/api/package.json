@@ -165,9 +165,9 @@
       "types": "./orpc/guards/auth.guard.ts",
       "default": "./orpc/guards/auth.guard.ts"
     },
-    "./orpc/agent-runtime": {
-      "types": "./orpc/agent-runtime.ts",
-      "default": "./orpc/agent-runtime.ts"
+    "./orpc/agent-service": {
+      "types": "./orpc/agent-service.ts",
+      "default": "./orpc/agent-service.ts"
     },
     "./orpc/indexing": {
       "types": "./orpc/indexing.ts",
@@ -187,7 +187,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1105.0",
     "@aws-sdk/s3-request-presigner": "^3.1105.0",
-    "@chia/agent-core": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",

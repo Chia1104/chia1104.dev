@@ -1,17 +1,17 @@
-import type { AgentWireEvent } from "@chia/agent-core/events";
+import type { AgentWireEvent } from "@chia/agent-runtime/events";
 import type { ServiceContext } from "@chia/service-kit/context";
 
 import type * as agentContracts from "./contracts/agent.contract";
 
 /**
- * Registration seam for the agent runtime.
+ * Registration seam for host-owned agent services.
  *
  * The oRPC routes live here in `packages/api`, but *running* an agent needs a long-lived process
  * that owns harness construction, live-run bookkeeping and provider credentials — all of which
  * belong to the host app. So this module declares the port and `apps/service` registers an
  * implementation at module load, exactly like `registerFeedEventListeners` in `./events.ts`.
  *
- * Keeping the runtime out of the request context is deliberate: it is process-scoped state, not
+ * Keeping the service out of the request context is deliberate: it is process-scoped state, not
  * per-request state, and `ServiceContext` is explicitly documented as free of domain ports.
  */
 
@@ -24,8 +24,8 @@ type Input<K extends keyof Contracts> = Contracts[K] extends {
     : never
   : never;
 
-/** Per-call context the runtime needs from the request that triggered it. */
-export interface AgentRuntimeCaller {
+/** Per-call context the service needs from the request that triggered it. */
+export interface AgentServiceCaller {
   /** Configured admin, already verified by `adminGuard`. */
   adminId: string;
   /** Session user id, for the approval audit trail. */
@@ -41,7 +41,7 @@ export interface AgentStreamCursor {
 /**
  * Model identity, mirroring `agentModelRefSchema`.
  *
- * Restated structurally rather than imported from `@chia/agent-core` so this package keeps no
+ * Restated structurally rather than importing the concrete Pi session so this package keeps no
  * dependency on a provider SDK — the port is a contract, not an implementation.
  */
 export interface AgentModelRef {
@@ -49,9 +49,9 @@ export interface AgentModelRef {
   modelId: string;
 }
 
-export interface AgentRuntime {
+export interface AgentKindService {
   listSessions(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: { limit?: number; includeDeleted?: boolean } | undefined
   ): Promise<{
     items: agentContracts.AgentSessionSummary[];
@@ -59,7 +59,7 @@ export interface AgentRuntime {
   }>;
 
   createSession(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: {
       title?: string;
       targetFeedId?: number;
@@ -71,17 +71,17 @@ export interface AgentRuntime {
   ): Promise<agentContracts.AgentSessionDetail>;
 
   getSession(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: { sessionId: string }
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
   deleteSession(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: { sessionId: string }
   ): Promise<boolean>;
 
   updateSettings(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: {
       sessionId: string;
       title?: string;
@@ -95,10 +95,10 @@ export interface AgentRuntime {
 
   /**
    * Enqueues a turn on the session's durable run and returns immediately. Output is consumed via
-   * {@link AgentRuntime.stream}.
+   * {@link AgentKindService.stream}.
    */
   prompt(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: {
       sessionId: string;
       text: string;
@@ -114,7 +114,7 @@ export interface AgentRuntime {
    * the iterator straight to `eventIterator` without buffering.
    */
   stream(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: {
       sessionId: string;
       runId?: string;
@@ -124,17 +124,12 @@ export interface AgentRuntime {
   ): AsyncGenerator<AgentWireEvent, void, void>;
 
   abort(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: { sessionId: string }
   ): Promise<boolean>;
 
-  steer(
-    caller: AgentRuntimeCaller,
-    input: { sessionId: string; text: string; queue?: "steer" | "followUp" }
-  ): Promise<boolean>;
-
   approve(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: {
       sessionId: string;
       toolCallId: string;
@@ -144,12 +139,12 @@ export interface AgentRuntime {
   ): Promise<AgentStreamCursor | null>;
 
   compact(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: { sessionId: string; customInstructions?: string }
   ): Promise<{ summary: string; tokensBefore: number } | null>;
 
   navigate(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: {
       sessionId: string;
       entryId: string;
@@ -160,7 +155,7 @@ export interface AgentRuntime {
 
   /** Optional writing-domain extension retained for the current dashboard. */
   getDraft?(
-    caller: AgentRuntimeCaller,
+    caller: AgentServiceCaller,
     input: { sessionId: string }
   ): Promise<agentContracts.AgentDraftPayload | null>;
 
@@ -178,7 +173,7 @@ export interface AgentRuntime {
    * Takes the caller because `requiresApiKey` depends on which provider keys *they* have
    * registered. The catalogue itself is caller-independent.
    */
-  listModels(caller: AgentRuntimeCaller): Promise<
+  listModels(caller: AgentServiceCaller): Promise<
     {
       providerId: string;
       modelId: string;
@@ -209,50 +204,51 @@ export interface AgentRuntime {
  * process — the two would silently share one implementation. Keying by kind is what makes a
  * sibling package like `@chia/agent-writing` additive.
  */
-const runtimes = new Map<string, AgentRuntime>();
+const services = new Map<string, AgentKindService>();
 
-export class AgentRuntimeNotRegisteredError extends Error {
+export class AgentKindServiceNotRegisteredError extends Error {
   constructor(kind: string) {
     super(
-      `No agent runtime registered for kind "${kind}". The host app must call ` +
-        "registerAgentRuntime(kind, impl) at startup — see " +
-        "apps/service/src/services/agent-runtime.service.ts."
+      `No agent service registered for kind "${kind}". The host app must call ` +
+        "registerAgentKindService(kind, impl) at startup — see " +
+        "apps/service/src/services/agent.service.ts."
     );
-    this.name = "AgentRuntimeNotRegisteredError";
+    this.name = "AgentKindServiceNotRegisteredError";
   }
 }
 
-export const registerAgentRuntime = (
+export const registerAgentKindService = (
   kind: string,
-  implementation: AgentRuntime
+  implementation: AgentKindService
 ): void => {
-  runtimes.set(kind, implementation);
+  services.set(kind, implementation);
 };
 
-export const getAgentRuntime = (kind: string): AgentRuntime => {
-  const runtime = runtimes.get(kind);
-  if (!runtime) throw new AgentRuntimeNotRegisteredError(kind);
-  return runtime;
+export const getAgentKindService = (kind: string): AgentKindService => {
+  const service = services.get(kind);
+  if (!service) throw new AgentKindServiceNotRegisteredError(kind);
+  return service;
 };
 
-export const isAgentRuntimeRegistered = (kind: string): boolean =>
-  runtimes.has(kind);
+export const isAgentKindServiceRegistered = (kind: string): boolean =>
+  services.has(kind);
 
-/** Kinds with a registered runtime. */
-export const registeredAgentKinds = (): string[] => [...runtimes.keys()];
+/** Kinds with a registered host service. */
+export const registeredAgentKinds = (): string[] => [...services.keys()];
 
 /**
- * Resolves the runtime for a request.
+ * Resolves the host service for a request.
  *
  * Creation and capability requests must provide `kind`. Session-scoped requests should instead
- * load the session and call {@link getAgentRuntime} with the stored kind.
+ * load the session and call {@link getAgentKindService} with the stored kind.
  */
-export const resolveAgentRuntime = (kind?: string): AgentRuntime => {
-  if (kind) return getAgentRuntime(kind);
-  if (runtimes.size === 1) return [...runtimes.values()][0]!;
-  if (runtimes.size === 0) throw new AgentRuntimeNotRegisteredError("(none)");
+export const resolveAgentKindService = (kind?: string): AgentKindService => {
+  if (kind) return getAgentKindService(kind);
+  if (services.size === 1) return [...services.values()][0]!;
+  if (services.size === 0)
+    throw new AgentKindServiceNotRegisteredError("(none)");
   throw new Error(
-    `Multiple agent kinds are registered (${[...runtimes.keys()].join(", ")}); ` +
+    `Multiple agent kinds are registered (${[...services.keys()].join(", ")}); ` +
       "the request must name one."
   );
 };
