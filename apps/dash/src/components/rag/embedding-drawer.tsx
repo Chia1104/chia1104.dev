@@ -268,7 +268,9 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
   );
 
   const first = statuses[0]?.data;
-  const canTrigger = first?.canTrigger ?? false;
+  // reading this drawer at all requires the same authority as triggering (adminGuard),
+  // so a loaded status is the permission signal — there is nothing extra to ask for
+  const canTrigger = !!first;
   const isFeedBusy = feedRun.isActive || indexFeed.isPending;
 
   return (
@@ -341,12 +343,6 @@ export const EmbeddingDrawer = ({ feedId, resources }: Props) => {
                   Recompute whole feed
                 </Button>
               </div>
-              {/* plain text, not a tooltip: a disabled button never opens one */}
-              {first && !canTrigger && (
-                <p className="text-muted-foreground w-full text-xs">
-                  Only the configured admin can trigger indexing.
-                </p>
-              )}
               {feedRun.error && (
                 <p className="text-danger w-full text-xs">
                   Could not read the run's progress: {feedRun.error.message}

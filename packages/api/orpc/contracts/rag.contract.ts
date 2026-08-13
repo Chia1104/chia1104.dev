@@ -17,11 +17,11 @@ import { withMetaSchema } from "./shared";
  *
  * RPC-only, like the agent contract: every consumer is the dashboard's browser client.
  *
- * Two conventions hold across all eleven procedures:
- * - every output carries the index key it was computed under, because "embedded" is only
- *   ever true relative to a `(model, index_version)` pair
- * - the read procedures that gate a trigger button also carry `canTrigger`, decided by
- *   the service so the dashboard never re-implements the authorization rule
+ * Every output carries the index key it was computed under, because "embedded" is only
+ * ever true relative to a `(model, index_version)` pair.
+ *
+ * Every procedure — reads included — is admin-only at the route layer; see
+ * `../routes/rag.route.ts` for why a session alone cannot be enough here.
  */
 
 // ============================================
@@ -162,11 +162,10 @@ const triggerErrors = {
 // ============================================
 
 export const getRagOverviewContract = oc
-  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
   .output(
     z.object({
       ...indexKeyShape,
-      canTrigger: z.boolean(),
       counts: indexCountsSchema,
       bySourceType: z.array(
         z.object({ sourceType: z.string(), counts: indexCountsSchema })
@@ -200,7 +199,7 @@ export const getRagOverviewContract = oc
   );
 
 export const listRagChunksContract = oc
-  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
   .input(
     z.object({
       sourceType: z.string().optional(),
@@ -228,17 +227,21 @@ export const listRagChunksContract = oc
   );
 
 export const getRagChunkContract = oc
-  .errors({ UNAUTHORIZED: {}, NOT_FOUND: {}, INTERNAL_SERVER_ERROR: {} })
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    INTERNAL_SERVER_ERROR: {},
+  })
   .input(z.object({ chunkId: z.number().int().positive() }))
   .output(z.object({ ...indexKeyShape, chunk: chunkDetailSchema }));
 
 export const getResourceIndexStatusContract = oc
-  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
   .input(resourceRefSchema)
   .output(
     z.object({
       ...indexKeyShape,
-      canTrigger: z.boolean(),
       counts: indexCountsSchema,
       /** Ordered by kind then chunk index, as the drawer lists them. */
       chunks: z.array(chunkStatusSchema),
@@ -250,6 +253,7 @@ export const getResourceIndexStatusContract = oc
 export const listIndexRunsContract = oc
   .errors({
     UNAUTHORIZED: {},
+    FORBIDDEN: {},
     SERVICE_UNAVAILABLE: {
       message: "Indexing is not available in this process.",
     },
@@ -271,6 +275,7 @@ export const listIndexRunsContract = oc
 export const getIndexRunContract = oc
   .errors({
     UNAUTHORIZED: {},
+    FORBIDDEN: {},
     NOT_FOUND: {},
     SERVICE_UNAVAILABLE: {
       message: "Indexing is not available in this process.",
@@ -282,7 +287,7 @@ export const getIndexRunContract = oc
 
 /** The numbers a full reindex has to show before it may be confirmed. */
 export const previewReindexAllContract = oc
-  .errors({ UNAUTHORIZED: {}, INTERNAL_SERVER_ERROR: {} })
+  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
   .output(
     z.object({
       ...indexKeyShape,

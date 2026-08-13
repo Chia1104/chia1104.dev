@@ -185,42 +185,55 @@ describe("rag routes", () => {
     });
   });
 
-  describe("canTrigger", () => {
-    it("is true for the configured admin", async () => {
-      const overview = await call(routes.getRagOverviewRoute, undefined, {
-        context: admin(),
-      });
-
-      expect(overview.canTrigger).toBe(true);
+  /**
+   * `resource_chunk` stores the body text of every indexed resource and carries no
+   * ownership column, and these queries deliberately include unpublished and deleted rows.
+   * Sign-up is open, so a session-only guard would hand the whole corpus to anyone.
+   */
+  describe("reads are admin-only, not merely signed-in", () => {
+    it("rejects a signed-in non-admin on overview", async () => {
+      await expect(
+        call(routes.getRagOverviewRoute, undefined, { context: member() })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
     });
 
-    it("is false for a signed-in non-admin", async () => {
-      const overview = await call(routes.getRagOverviewRoute, undefined, {
-        context: member(),
-      });
-
-      expect(overview.canTrigger).toBe(false);
+    it("rejects a signed-in non-admin on reindex:all:preview", async () => {
+      await expect(
+        call(routes.previewReindexAllRoute, undefined, { context: member() })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
     });
 
-    it("is false on resource:status for a signed-in non-admin", async () => {
-      const status = await call(
-        routes.getResourceIndexStatusRoute,
-        { sourceType: "feed_translation", sourceId: 1 },
-        { context: member() }
-      );
-
-      expect(status.canTrigger).toBe(false);
-      expect(status.activeRunId).toBeNull();
+    it("rejects a signed-in non-admin on chunks:list", async () => {
+      await expect(
+        call(routes.listRagChunksRoute, {}, { context: member() })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
     });
 
-    it("is true on resource:status for the configured admin", async () => {
+    it("rejects a signed-in non-admin on chunk:get", async () => {
+      await expect(
+        call(routes.getRagChunkRoute, { chunkId: 1 }, { context: member() })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+
+    it("rejects a signed-in non-admin on resource:status", async () => {
+      await expect(
+        call(
+          routes.getResourceIndexStatusRoute,
+          { sourceType: "feed_translation", sourceId: 1 },
+          { context: member() }
+        )
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+
+    it("still serves the configured admin", async () => {
       const status = await call(
         routes.getResourceIndexStatusRoute,
         { sourceType: "feed_translation", sourceId: 1 },
         { context: admin() }
       );
 
-      expect(status.canTrigger).toBe(true);
+      expect(status.counts.total).toBe(0);
+      expect(status.activeRunId).toBeNull();
     });
   });
 });
