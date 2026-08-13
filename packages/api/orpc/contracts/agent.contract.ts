@@ -1,7 +1,7 @@
 import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { agentWireEventSchema } from "@chia/agent-core/events";
+import { agentWireEventSchema } from "@chia/agent-runtime/events";
 import { tanstackAgentEventSchema } from "@chia/agent-runtime/transports/tanstack-ai";
 import { locale } from "@chia/db";
 
@@ -31,7 +31,7 @@ const thinkingLevelSchema = z.enum([
 ]);
 
 /**
- * Tiers are per-kind policy, so the contract carries the string rather than a union. `@chia/agent-core`
+ * Tiers are per-kind policy, so the contract carries the string rather than a union. `@chia/agent-runtime`
  * deliberately keeps `ToolTier` open for the same reason — narrowing lives in each kind's package.
  */
 const toolTierSchema = z.string();
@@ -214,7 +214,6 @@ export const promptAgentContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     BAD_REQUEST: {},
-    CONFLICT: { message: "A turn is already running for this session." },
   })
   .input(
     z.object({
@@ -237,8 +236,8 @@ export const promptAgentContract = oc
     z.object({
       runId: z.string(),
       /**
-       * Index to start streaming from to see this turn and nothing earlier. `-1` when the run's
-       * stream is still empty.
+       * First event emitted after this message was accepted. When another turn is already running,
+       * its remaining events may precede this queued turn on the same durable stream.
        */
       startIndex: z.number(),
       /** True when this call started a new run rather than resuming the session's existing one. */
@@ -285,7 +284,6 @@ export const chatAgentContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     BAD_REQUEST: {},
-    CONFLICT: { message: "A turn is already running for this session." },
   })
   .input(
     z.object({
@@ -322,23 +320,6 @@ export const abortAgentContract = oc
     })
   )
   .output(z.object({ aborted: z.boolean() }));
-
-export const steerAgentContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(
-    z.object({
-      /** Agent kind. Optional while only one is registered. */
-      kind: z.string().optional(),
-      sessionId: z.string(),
-      text: z.string().min(1),
-      /**
-       * `steer` interrupts the running turn; `followUp` waits for it to finish.
-       * Named `queue` rather than `kind` — `kind` selects the *agent* kind on every procedure.
-       */
-      queue: z.enum(["steer", "followUp"]).optional(),
-    })
-  )
-  .output(z.object({ queued: z.boolean() }));
 
 export const approveAgentToolContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })

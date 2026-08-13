@@ -1,567 +1,337 @@
-import { describe, expect, it, vi } from "vitest";
+import type * as PiAgentCore from "@earendil-works/pi-agent-core";
+import { createModels } from "@earendil-works/pi-ai";
+import { fauxProvider } from "@earendil-works/pi-ai/providers/faux";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { AgentWireEvent, PendingMessageNotifier } from "@chia/agent-core";
+import type { AgentPolicy, AgentWireEvent } from "../src/index.ts";
 
-import type { AgentEngineHandle } from "../src/engine.ts";
-import { createAgentRuntime } from "../src/runtime.ts";
-
-const createHandle = (
-  overrides: Partial<AgentEngineHandle> = {}
-): AgentEngineHandle => ({
-  approvalRequests: [],
-  prompt: vi.fn(async () => undefined),
-  promptFromTemplate: vi.fn(async () => undefined),
-  drainPendingMessages: vi.fn(async () => 0),
-  dispose: vi.fn(),
-  ...overrides,
+const pi = vi.hoisted(() => {
+  const handlers = new Map<string, (event: unknown) => unknown>();
+  const unsubscribers: ReturnType<typeof vi.fn>[] = [];
+  const harness = {
+    prompt: vi.fn(),
+    promptFromTemplate: vi.fn(),
+    compact: vi.fn(),
+    on: vi.fn(),
+    subscribe: vi.fn(),
+  };
+  const AgentHarness = vi.fn(function MockAgentHarness() {
+    return harness;
+  });
+  return { AgentHarness, handlers, harness, unsubscribers };
 });
 
-/** A notifier whose channel the test drives by hand. */
-const createNotifier = () => {
-  let notify: (() => void) | undefined;
-  // Detaches for real, so a test cannot fire into a turn that already tore down.
-  const unsubscribe = vi.fn(async () => {
-    notify = undefined;
+vi.mock("@earendil-works/pi-agent-core", async (importOriginal) => {
+  const actual = await importOriginal<typeof PiAgentCore>();
+  return { ...actual, AgentHarness: pi.AgentHarness };
+});
+
+import { runPiTurn } from "../src/pi/turn.ts";
+
+const policy: AgentPolicy = {
+  tierOf: (toolName) => (toolName === "publish" ? "commit" : "read"),
+  labelOf: (toolName) => toolName,
+  requiresApproval: (tier) => tier === "commit",
+  summarize: () => "",
+};
+
+const createOptions = () => {
+  const faux = fauxProvider({
+    provider: "faux",
+    models: [{ id: "test-model", contextWindow: 100_000 }],
   });
-  const notifier: PendingMessageNotifier = {
-    publish: vi.fn(async () => undefined),
-    subscribe: vi.fn(async (_sessionId: string, onNotify: () => void) => {
-      notify = onNotify;
-      return unsubscribe;
-    }),
-  };
+  const models = createModels();
+  models.setProvider(faux.provider);
+  const events: AgentWireEvent[] = [];
+  const session = {
+    getBranch: vi.fn(async () => []),
+  } as unknown as PiAgentCore.Session;
+
   return {
-    notifier,
-    unsubscribe,
-    fire: () => notify?.(),
-    subscribed: () => notify !== undefined,
+    agentSessionId: "session-1",
+    session,
+    settings: {
+      providerId: "faux",
+      modelId: "test-model",
+      thinkingLevel: "off" as const,
+      activeToolNames: null,
+      autoApprove: [],
+    },
+    model: faux.getModel(),
+    models,
+    tools: [],
+    toolContext: {},
+    systemPrompt: "",
+    policy,
+    message: { text: "Hello" },
+    onEvent: (event: AgentWireEvent) => events.push(event),
+    toApproval: (approval: { toolCallId: string }) => approval.toolCallId,
+    persistApprovals: vi.fn(async () => undefined),
+    events,
   };
 };
 
-describe("createAgentRuntime", () => {
-  it("runs a prompt, persists approvals, and owns the turn event lifecycle", async () => {
-    const events: AgentWireEvent[] = [];
-    const handle = createHandle({
-      approvalRequests: [
-        {
-          toolCallId: "call-1",
-          toolName: "publish",
-          tier: "commit",
-          args: { slug: "hello" },
-        },
-      ],
-    });
-    const persisted: string[] = [];
+beforeEach(() => {
+  pi.handlers.clear();
+  pi.unsubscribers.splice(0);
+  pi.AgentHarness.mockReset();
+  pi.AgentHarness.mockImplementation(function MockAgentHarness() {
+    return pi.harness;
+  });
+  pi.harness.prompt.mockReset().mockResolvedValue(undefined);
+  pi.harness.promptFromTemplate.mockReset().mockResolvedValue(undefined);
+  pi.harness.compact.mockReset().mockResolvedValue({
+    summary: "summary",
+    tokensBefore: 90_000,
+  });
+  pi.harness.on.mockReset().mockImplementation((type, handler) => {
+    pi.handlers.set(type, handler);
+    const unsubscribe = vi.fn();
+    pi.unsubscribers.push(unsubscribe);
+    return unsubscribe;
+  });
+  pi.harness.subscribe.mockReset().mockImplementation(() => {
+    const unsubscribe = vi.fn();
+    pi.unsubscribers.push(unsubscribe);
+    return unsubscribe;
+  });
+});
+
+describe("runPiTurn", () => {
+  it("runs a prompt and owns the wire event lifecycle", async () => {
+    const options = createOptions();
     const flushEvents = vi.fn(async () => undefined);
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: vi.fn(async () => handle),
-    });
 
-    const result = await runtime.runTurn({
-      createOptions: {
-        agentSessionId: "session-1",
-        onEvent: (event) => events.push(event),
-      },
-      message: { text: "Publish it" },
-      toApproval: (approval) => approval.toolCallId,
-      persistApproval: async (approval) => {
-        persisted.push(approval);
-      },
-      flushEvents,
-    });
+    const result = await runPiTurn({ ...options, flushEvents });
 
-    expect(handle.prompt).toHaveBeenCalledWith("Publish it");
-    expect(handle.promptFromTemplate).not.toHaveBeenCalled();
-    expect(persisted).toEqual(["call-1"]);
-    expect(result).toEqual({
-      status: "awaiting_approval",
-      approvals: ["call-1"],
-      error: undefined,
-    });
-    expect(events.map((event) => event.type)).toEqual([
+    expect(pi.harness.prompt).toHaveBeenCalledWith("Hello");
+    expect(pi.harness.promptFromTemplate).not.toHaveBeenCalled();
+    expect(result).toEqual({ status: "done", approvals: [], error: undefined });
+    expect(options.events.map((event) => event.type)).toEqual([
       "run:start",
       "user",
       "run:end",
     ]);
-    expect(events.at(-1)).toEqual({
-      type: "run:end",
-      reason: "awaiting_approval",
-    });
-    expect(handle.dispose).toHaveBeenCalledOnce();
+    expect(
+      pi.unsubscribers.every(
+        (unsubscribe) => unsubscribe.mock.calls.length === 1
+      )
+    ).toBe(true);
     expect(flushEvents).toHaveBeenCalledOnce();
   });
 
-  it("dispatches templates and turns engine failures into terminal wire events", async () => {
-    const events: AgentWireEvent[] = [];
-    const handle = createHandle({
-      promptFromTemplate: vi.fn(async () => {
-        throw new Error("provider failed");
-      }),
+  it("atomically persists approval requests before publishing them", async () => {
+    const options = createOptions();
+    options.persistApprovals.mockImplementation(async () => {
+      expect(
+        options.events.some((event) => event.type === "approval:request")
+      ).toBe(false);
     });
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: async () => handle,
+    pi.harness.prompt.mockImplementation(async () => {
+      const handler = pi.handlers.get("tool_call");
+      await handler?.({
+        type: "tool_call",
+        toolCallId: "call-1",
+        toolName: "publish",
+        input: { slug: "hello" },
+      });
+      await handler?.({
+        type: "tool_call",
+        toolCallId: "call-2",
+        toolName: "publish",
+        input: { slug: "second" },
+      });
     });
 
-    const result = await runtime.runTurn({
-      createOptions: {
-        agentSessionId: "session-1",
-        onEvent: (event) => events.push(event),
-      },
+    const result = await runPiTurn(options);
+
+    expect(options.persistApprovals).toHaveBeenCalledOnce();
+    expect(options.persistApprovals).toHaveBeenCalledWith(["call-1", "call-2"]);
+    expect(result).toEqual({
+      status: "awaiting_approval",
+      approvals: ["call-1", "call-2"],
+      error: undefined,
+    });
+    expect(
+      options.events
+        .filter((event) => event.type === "approval:request")
+        .map((event) => event.toolCallId)
+    ).toEqual(["call-1", "call-2"]);
+  });
+
+  it("dispatches templates and turns provider failures into terminal events", async () => {
+    const options = createOptions();
+    pi.harness.promptFromTemplate.mockRejectedValue(
+      new Error("provider failed")
+    );
+
+    const result = await runPiTurn({
+      ...options,
       message: {
         text: "Ignored when a template is selected",
         template: { name: "draft", args: ["zh-TW"] },
       },
-      toApproval: (approval) => approval.toolCallId,
-      persistApproval: async () => undefined,
     });
 
-    expect(handle.promptFromTemplate).toHaveBeenCalledWith("draft", ["zh-TW"]);
+    expect(pi.harness.promptFromTemplate).toHaveBeenCalledWith("draft", [
+      "zh-TW",
+    ]);
     expect(result).toEqual({
       status: "error",
       approvals: [],
       error: "provider failed",
     });
-    expect(events.slice(-2)).toEqual([
+    expect(options.events.slice(-2)).toEqual([
       { type: "error", message: "provider failed" },
       { type: "run:end", reason: "error" },
     ]);
-    expect(handle.dispose).toHaveBeenCalledOnce();
   });
 
-  it("serializes pending-message drains and waits for them before disposal", async () => {
-    vi.useFakeTimers();
-
-    try {
-      const prompt = Promise.withResolvers<void>();
-      const pendingDrain = Promise.withResolvers<number>();
-      const handle = createHandle({
-        prompt: vi.fn(() => prompt.promise),
-        drainPendingMessages: vi.fn(() => pendingDrain.promise),
-      });
-      const runtime = createAgentRuntime({
-        kind: "test",
-        createEngine: async () => handle,
-      });
-
-      const turn = runtime.runTurn({
-        createOptions: {
-          agentSessionId: "session-1",
-          onEvent: () => undefined,
-        },
-        message: { text: "Hello" },
-        toApproval: (approval) => approval.toolCallId,
-        persistApproval: async () => undefined,
-        drainIntervalMs: 100,
-      });
-
-      await vi.advanceTimersByTimeAsync(100);
-      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
-
-      await vi.advanceTimersByTimeAsync(300);
-      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
-
-      prompt.resolve();
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handle.dispose).not.toHaveBeenCalled();
-
-      pendingDrain.resolve(1);
-      await turn;
-      expect(handle.dispose).toHaveBeenCalledOnce();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("allows a later drain to retry after a failed attempt", async () => {
-    vi.useFakeTimers();
-
-    try {
-      const prompt = Promise.withResolvers<void>();
-      const handle = createHandle({
-        prompt: vi.fn(() => prompt.promise),
-        drainPendingMessages: vi
-          .fn()
-          .mockRejectedValueOnce(new Error("temporary failure"))
-          .mockResolvedValue(0),
-      });
-      const runtime = createAgentRuntime({
-        kind: "test",
-        createEngine: async () => handle,
-      });
-
-      const turn = runtime.runTurn({
-        createOptions: {
-          agentSessionId: "session-1",
-          onEvent: () => undefined,
-        },
-        message: { text: "Hello" },
-        toApproval: (approval) => approval.toolCallId,
-        persistApproval: async () => undefined,
-        drainIntervalMs: 100,
-      });
-
-      await vi.advanceTimersByTimeAsync(100);
-      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
-
-      await vi.advanceTimersByTimeAsync(100);
-      expect(handle.drainPendingMessages).toHaveBeenCalledTimes(2);
-
-      prompt.resolve();
-      await turn;
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("compacts at the end of a clean turn", async () => {
-    const handle = createHandle({
-      compactIfNeeded: vi.fn(async () => ({
-        summary: "…",
-        tokensBefore: 120_000,
-      })),
-    });
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: async () => handle,
-    });
-
-    const result = await runtime.runTurn({
-      createOptions: {
-        agentSessionId: "session-1",
-        onEvent: () => undefined,
-      },
-      message: { text: "Hello" },
-      toApproval: (approval) => approval.toolCallId,
-      persistApproval: async () => undefined,
-    });
-
-    expect(result.status).toBe("done");
-    expect(handle.compactIfNeeded).toHaveBeenCalledOnce();
-  });
-
-  it("leaves the session tree alone while a turn is parked on an approval", async () => {
-    const handle = createHandle({
-      approvalRequests: [
-        {
-          toolCallId: "call-1",
-          toolName: "publish",
-          tier: "commit",
-          args: {},
-        },
-      ],
-      compactIfNeeded: vi.fn(async () => null),
-    });
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: async () => handle,
-    });
-
-    const result = await runtime.runTurn({
-      createOptions: {
-        agentSessionId: "session-1",
-        onEvent: () => undefined,
-      },
-      message: { text: "Publish it" },
-      toApproval: (approval) => approval.toolCallId,
-      persistApproval: async () => undefined,
-    });
-
-    // Compacting here would move the horizon out from under the run that resumes on approval.
-    expect(result.status).toBe("awaiting_approval");
-    expect(handle.compactIfNeeded).not.toHaveBeenCalled();
-  });
-
-  it("keeps the history of a failed turn so it stays diagnosable", async () => {
-    const handle = createHandle({
-      prompt: vi.fn(async () => {
-        throw new Error("provider failed");
-      }),
-      compactIfNeeded: vi.fn(async () => null),
-    });
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: async () => handle,
-    });
-
-    const result = await runtime.runTurn({
-      createOptions: {
-        agentSessionId: "session-1",
-        onEvent: () => undefined,
-      },
-      message: { text: "Hello" },
-      toApproval: (approval) => approval.toolCallId,
-      persistApproval: async () => undefined,
-    });
-
-    expect(result.status).toBe("error");
-    expect(handle.compactIfNeeded).not.toHaveBeenCalled();
-  });
-
-  it("completes the turn when compaction fails", async () => {
-    const events: AgentWireEvent[] = [];
-    const handle = createHandle({
-      compactIfNeeded: vi.fn(async () => {
-        throw new Error("summarisation model unavailable");
-      }),
-    });
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: async () => handle,
-    });
-
-    const result = await runtime.runTurn({
-      createOptions: {
-        agentSessionId: "session-1",
-        onEvent: (event) => events.push(event),
-      },
-      message: { text: "Hello" },
-      toApproval: (approval) => approval.toolCallId,
-      persistApproval: async () => undefined,
-    });
-
-    // The next turn boundary retries; a compaction failure is not the turn's failure.
-    expect(result).toEqual({ status: "done", approvals: [], error: undefined });
-    expect(events.at(-1)).toEqual({ type: "run:end", reason: "done" });
-    expect(events.some((event) => event.type === "error")).toBe(false);
-  });
-
-  it("runs a turn on an engine that cannot compact at all", async () => {
-    const handle = createHandle();
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: async () => handle,
-    });
-
-    const result = await runtime.runTurn({
-      createOptions: {
-        agentSessionId: "session-1",
-        onEvent: () => undefined,
-      },
-      message: { text: "Hello" },
-      toApproval: (approval) => approval.toolCallId,
-      persistApproval: async () => undefined,
-    });
-
-    expect(handle.compactIfNeeded).toBeUndefined();
-    expect(result.status).toBe("done");
-  });
-
-  it("drains as soon as the notifier fires, without waiting for the interval", async () => {
-    vi.useFakeTimers();
-
-    try {
-      const prompt = Promise.withResolvers<void>();
-      const handle = createHandle({ prompt: vi.fn(() => prompt.promise) });
-      const channel = createNotifier();
-      const runtime = createAgentRuntime({
-        kind: "test",
-        createEngine: async () => handle,
-      });
-
-      const turn = runtime.runTurn({
-        createOptions: {
-          agentSessionId: "session-1",
-          onEvent: () => undefined,
-        },
-        message: { text: "Hello" },
-        toApproval: (approval) => approval.toolCallId,
-        persistApproval: async () => undefined,
-        drainIntervalMs: 100_000,
-        pendingNotifier: channel.notifier,
-      });
-
-      // Let the subscription be established without advancing anywhere near the poll interval.
-      await vi.advanceTimersByTimeAsync(0);
-      expect(channel.subscribed()).toBe(true);
-      expect(handle.drainPendingMessages).not.toHaveBeenCalled();
-
-      channel.fire();
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
-
-      prompt.resolve();
-      await turn;
-      expect(channel.unsubscribe).toHaveBeenCalledOnce();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("re-drains when a notification lands mid-drain", async () => {
-    vi.useFakeTimers();
-
-    try {
-      const prompt = Promise.withResolvers<void>();
-      const firstDrain = Promise.withResolvers<number>();
-      const handle = createHandle({
-        prompt: vi.fn(() => prompt.promise),
-        drainPendingMessages: vi
-          .fn()
-          .mockReturnValueOnce(firstDrain.promise)
-          .mockResolvedValue(0),
-      });
-      const channel = createNotifier();
-      const runtime = createAgentRuntime({
-        kind: "test",
-        createEngine: async () => handle,
-      });
-
-      const turn = runtime.runTurn({
-        createOptions: {
-          agentSessionId: "session-1",
-          onEvent: () => undefined,
-        },
-        message: { text: "Hello" },
-        toApproval: (approval) => approval.toolCallId,
-        persistApproval: async () => undefined,
-        drainIntervalMs: 100_000,
-        pendingNotifier: channel.notifier,
-      });
-
-      await vi.advanceTimersByTimeAsync(0);
-      channel.fire();
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
-
-      // This one arrives after the in-flight drain already claimed. Coalescing it away would make
-      // the message wait for the next poll, which is exactly what the notifier exists to avoid.
-      channel.fire();
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
-
-      firstDrain.resolve(1);
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handle.drainPendingMessages).toHaveBeenCalledTimes(2);
-
-      prompt.resolve();
-      await turn;
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("waits for a follow-up drain before disposing the engine", async () => {
-    vi.useFakeTimers();
-
-    try {
-      const prompt = Promise.withResolvers<void>();
-      const firstDrain = Promise.withResolvers<number>();
-      const secondDrain = Promise.withResolvers<number>();
-      const handle = createHandle({
-        prompt: vi.fn(() => prompt.promise),
-        drainPendingMessages: vi
-          .fn()
-          .mockReturnValueOnce(firstDrain.promise)
-          .mockReturnValueOnce(secondDrain.promise)
-          .mockResolvedValue(0),
-      });
-      const channel = createNotifier();
-      const runtime = createAgentRuntime({
-        kind: "test",
-        createEngine: async () => handle,
-      });
-
-      const turn = runtime.runTurn({
-        createOptions: {
-          agentSessionId: "session-1",
-          onEvent: () => undefined,
-        },
-        message: { text: "Hello" },
-        toApproval: (approval) => approval.toolCallId,
-        persistApproval: async () => undefined,
-        drainIntervalMs: 100_000,
-        pendingNotifier: channel.notifier,
-      });
-
-      await vi.advanceTimersByTimeAsync(0);
-      channel.fire();
-      await vi.advanceTimersByTimeAsync(0);
-      // Owed a second drain while the first is still in flight.
-      channel.fire();
-      await vi.advanceTimersByTimeAsync(0);
-
-      // The turn now ends and enters teardown with a drain running and another owed.
-      prompt.resolve();
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handle.dispose).not.toHaveBeenCalled();
-
-      firstDrain.resolve(0);
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handle.drainPendingMessages).toHaveBeenCalledTimes(2);
-      // Disposing here would pull the engine out from under the second delivery.
-      expect(handle.dispose).not.toHaveBeenCalled();
-
-      secondDrain.resolve(0);
-      await turn;
-      expect(handle.dispose).toHaveBeenCalledOnce();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("falls back to polling when the notifier cannot subscribe", async () => {
-    vi.useFakeTimers();
-
-    try {
-      const prompt = Promise.withResolvers<void>();
-      const handle = createHandle({ prompt: vi.fn(() => prompt.promise) });
-      const notifier: PendingMessageNotifier = {
-        publish: vi.fn(async () => undefined),
-        subscribe: vi.fn(async () => {
-          throw new Error("redis unavailable");
-        }),
-      };
-      const runtime = createAgentRuntime({
-        kind: "test",
-        createEngine: async () => handle,
-      });
-
-      const turn = runtime.runTurn({
-        createOptions: {
-          agentSessionId: "session-1",
-          onEvent: () => undefined,
-        },
-        message: { text: "Hello" },
-        toApproval: (approval) => approval.toolCallId,
-        persistApproval: async () => undefined,
-        drainIntervalMs: 100,
-        pendingNotifier: notifier,
-      });
-
-      await vi.advanceTimersByTimeAsync(100);
-      expect(handle.drainPendingMessages).toHaveBeenCalledOnce();
-
-      prompt.resolve();
-      const result = await turn;
-      expect(result.status).toBe("done");
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("flushes the event sink when engine construction fails", async () => {
+  it("terminalizes and flushes when approval persistence fails", async () => {
+    const options = createOptions();
     const flushEvents = vi.fn(async () => undefined);
-    const runtime = createAgentRuntime({
-      kind: "test",
-      createEngine: async () => {
-        throw new Error("engine unavailable");
-      },
+    options.persistApprovals.mockRejectedValue(
+      new Error("database unavailable")
+    );
+    pi.harness.prompt.mockImplementation(async () => {
+      await pi.handlers.get("tool_call")?.({
+        type: "tool_call",
+        toolCallId: "call-1",
+        toolName: "publish",
+        input: {},
+      });
     });
 
-    await expect(
-      runtime.runTurn({
-        createOptions: {
-          agentSessionId: "session-1",
-          onEvent: () => undefined,
+    await expect(runPiTurn({ ...options, flushEvents })).resolves.toEqual({
+      status: "error",
+      approvals: [],
+      error: "database unavailable",
+    });
+    expect(options.events).not.toContainEqual(
+      expect.objectContaining({ type: "approval:request" })
+    );
+    expect(options.events.slice(-2)).toEqual([
+      { type: "error", message: "database unavailable" },
+      { type: "run:end", reason: "error" },
+    ]);
+    expect(
+      pi.unsubscribers.every(
+        (unsubscribe) => unsubscribe.mock.calls.length === 1
+      )
+    ).toBe(true);
+    expect(flushEvents).toHaveBeenCalledOnce();
+  });
+
+  it("does not persist approvals raised by a failed provider turn", async () => {
+    const options = createOptions();
+    pi.harness.prompt.mockImplementation(async () => {
+      await pi.handlers.get("tool_call")?.({
+        type: "tool_call",
+        toolCallId: "call-1",
+        toolName: "publish",
+        input: {},
+      });
+      throw new Error("provider failed");
+    });
+
+    await expect(runPiTurn(options)).resolves.toEqual({
+      status: "error",
+      approvals: [],
+      error: "provider failed",
+    });
+    expect(options.persistApprovals).not.toHaveBeenCalled();
+    expect(options.events).not.toContainEqual(
+      expect.objectContaining({ type: "approval:request" })
+    );
+  });
+
+  it("does not compact a successful turn that requests approval", async () => {
+    const options = createOptions();
+    Object.assign(options.session, {
+      getBranch: vi.fn(async () => [
+        {
+          type: "message",
+          id: "entry-1",
+          parentId: null,
+          timestamp: "2026-01-01T00:00:00.000Z",
+          message: { role: "user", content: "x".repeat(400_000) },
         },
-        message: { text: "Hello" },
-        toApproval: (approval) => approval.toolCallId,
-        persistApproval: async () => undefined,
-        flushEvents,
-      })
-    ).rejects.toThrow("engine unavailable");
+      ]),
+    });
+    pi.harness.prompt.mockImplementation(async () => {
+      await pi.handlers.get("tool_call")?.({
+        type: "tool_call",
+        toolCallId: "call-1",
+        toolName: "publish",
+        input: {},
+      });
+    });
+
+    await expect(runPiTurn(options)).resolves.toMatchObject({
+      status: "awaiting_approval",
+    });
+    expect(pi.harness.compact).not.toHaveBeenCalled();
+  });
+
+  it("only compacts successful turns without approvals", async () => {
+    const clean = createOptions();
+    Object.assign(clean.session, {
+      getBranch: vi.fn(async () => [
+        {
+          type: "message",
+          id: "entry-1",
+          parentId: null,
+          timestamp: "2026-01-01T00:00:00.000Z",
+          message: { role: "user", content: "x".repeat(400_000) },
+        },
+      ]),
+    });
+
+    await runPiTurn(clean);
+    expect(pi.harness.compact).toHaveBeenCalledOnce();
+
+    pi.harness.compact.mockClear();
+    const failed = createOptions();
+    Object.assign(failed.session, { getBranch: clean.session.getBranch });
+    pi.harness.prompt.mockRejectedValueOnce(new Error("provider failed"));
+    await runPiTurn(failed);
+    expect(pi.harness.compact).not.toHaveBeenCalled();
+  });
+
+  it("keeps a successful turn successful when compaction fails", async () => {
+    const options = createOptions();
+    Object.assign(options.session, {
+      getBranch: vi.fn(async () => [
+        {
+          type: "message",
+          id: "entry-1",
+          parentId: null,
+          timestamp: "2026-01-01T00:00:00.000Z",
+          message: { role: "user", content: "x".repeat(400_000) },
+        },
+      ]),
+    });
+    pi.harness.compact.mockRejectedValue(
+      new Error("summarisation unavailable")
+    );
+
+    await expect(runPiTurn(options)).resolves.toEqual({
+      status: "done",
+      approvals: [],
+      error: undefined,
+    });
+  });
+
+  it("flushes the event sink when Pi construction fails", async () => {
+    const options = createOptions();
+    const flushEvents = vi.fn(async () => undefined);
+    pi.AgentHarness.mockImplementationOnce(() => {
+      throw new Error("harness unavailable");
+    });
+
+    await expect(runPiTurn({ ...options, flushEvents })).rejects.toThrow(
+      "harness unavailable"
+    );
     expect(flushEvents).toHaveBeenCalledOnce();
   });
 });

@@ -1,28 +1,62 @@
-/**
- * `@chia/agent-runtime` — engine-neutral agent execution and provider adapters.
- *
- * Agent kinds depend on the contracts and runtime factory from this package, then bind their
- * prompts, tools and policy to a concrete adapter. Host applications call the resulting runtime
- * without knowing which provider SDK implements it.
- *
- * Provider adapters are explicit subpath imports such as `@chia/agent-runtime/adapters/pi`, so the
- * neutral entrypoint does not load a provider SDK.
- */
+/** Pi-first agent execution, persistence, policy, models and wire primitives. */
 
+export * from "./types.ts";
 export {
-  type AgentCompactionResult,
-  type AgentDefinition,
-  type AgentEngineCreateOptions,
-  type AgentEngineHandle,
-  type AgentMaintenanceCreateOptions,
-  type AgentMaintenanceEngineHandle,
-  type AgentNavigationOptions,
-  type AgentNavigationResult,
-} from "./engine.ts";
+  AGENT_PROVIDERS,
+  BYOK_PROVIDER_IDS,
+  UnknownAgentModelError,
+  createAgentCatalog,
+  createAgentModels,
+  isByokProviderId,
+  listModels,
+  resolveModel,
+  type AgentCredentials,
+  type AgentModelInfo,
+  type AgentModelPredicate,
+  type AgentModelRef,
+  type ByokProviderId,
+  type ListModelsOptions,
+} from "./models.ts";
+export { agentWireEventSchema, type AgentWireEvent } from "./wire/schema.ts";
 export {
-  createAgentRuntime,
-  type AgentRuntimeFactory,
-  type AgentTurnExecution,
-  type AgentTurnMessage,
-  type RunAgentTurnOptions,
-} from "./runtime.ts";
+  applyEvent,
+  emptyViewState,
+  foldEvents,
+  type AgentViewItem,
+  type AgentViewState,
+  type NoticeView,
+  type TextMessageView,
+  type ToolCallView,
+} from "./wire/fold.ts";
+export { entriesToWireEvents } from "./wire/replay.ts";
+export {
+  createPiWireEventMapper,
+  type PiWireEventMapperOptions,
+} from "./pi/events.ts";
+export {
+  createPiToolCallGate,
+  type ApprovalRequest,
+  type PiToolCallGate,
+  type PiToolCallGateOptions,
+} from "./pi/tool-gate.ts";
+export {
+  compactPiSession,
+  navigatePiSession,
+  type PiSessionOperationOptions,
+} from "./pi/maintenance.ts";
+export { runPiTurn, type RunPiTurnOptions } from "./pi/turn.ts";
+export {
+  InMemorySessionRepo,
+  InMemorySessionStorage,
+  PgSessionRepo,
+  PgSessionStorage,
+  Session,
+  readSessionSettings,
+  toPgSession,
+  uuidv7,
+  writeSessionSettings,
+  type PgSessionCreateOptions,
+  type PgSessionListOptions,
+  type PgSessionMetadata,
+  type SessionTreeEntry,
+} from "./session/index.ts";

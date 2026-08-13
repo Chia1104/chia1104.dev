@@ -2,7 +2,7 @@ import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
 
-import { shouldCompactBranch } from "../src/adapters/pi.ts";
+import { shouldCompactBranch } from "../src/pi/compaction.ts";
 
 /**
  * The threshold is pi's: compact once context exceeds `contextWindow - reserveTokens`, where the

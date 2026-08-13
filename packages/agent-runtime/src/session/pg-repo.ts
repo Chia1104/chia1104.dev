@@ -51,7 +51,7 @@ export interface PgSessionRepoOptions {
 }
 
 /**
- * pi's {@link SessionRepo} over `agent_session`.
+ * Pi's {@link SessionRepo} over `agent_session`.
  *
  * `fork` is the interesting one — it powers "rewind three steps and try another angle". pi's
  * `getEntriesToFork` picks the prefix to copy, and the copy lands in a *new* session row so the

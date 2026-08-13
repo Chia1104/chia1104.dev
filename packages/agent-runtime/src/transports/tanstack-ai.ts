@@ -1,7 +1,7 @@
 import { EventType } from "@tanstack/ai";
 import * as z from "zod";
 
-import type { AgentWireEvent } from "@chia/agent-core/events";
+import type { AgentWireEvent } from "../wire/schema.ts";
 
 const runStartedSchema = z.object({
   type: z.literal(EventType.RUN_STARTED),

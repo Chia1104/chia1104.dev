@@ -2,10 +2,10 @@
  * `@chia/agent-writing` — the blog authoring agent.
  *
  * The *domain* half of the agent: tools, prompts, the draft staging buffer, and the policy that
- * classifies and gates them. The turn loop and provider adapters live in `@chia/agent-runtime`;
- * session persistence, approval gates and wire events live in `@chia/agent-core`.
+ * classifies and gates them. The concrete Pi turn, provider/model construction, session
+ * persistence, approval gate and wire events live in `@chia/agent-runtime`.
  *
- * Adding another agent kind means adding a sibling package like this one — not editing core.
+ * Adding another agent kind means adding a sibling domain package like this one.
  */
 
 export * from "./types.ts";
@@ -21,13 +21,11 @@ export {
 } from "./models.ts";
 export { writingPolicy } from "./policy.ts";
 export {
-  createWritingEngine,
-  createWritingMaintenanceEngine,
-  writingAgentDefinition,
-  writingAgentRuntime,
-  type CreateWritingEngineOptions,
-  type CreateWritingMaintenanceEngineOptions,
-  type WritingEngine,
+  compactWritingSession,
+  navigateWritingSession,
+  runWritingTurn,
+  type RunWritingTurnOptions,
+  type WritingSessionOperationOptions,
 } from "./runtime.ts";
 export {
   EditNotAppliedError,

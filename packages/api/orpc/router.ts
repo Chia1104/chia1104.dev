@@ -25,7 +25,6 @@ export const router = contractOS.router({
       stream: agentRoutes.streamAgentRoute,
       chat: agentRoutes.chatAgentRoute,
       abort: agentRoutes.abortAgentRoute,
-      steer: agentRoutes.steerAgentRoute,
       approve: agentRoutes.approveAgentToolRoute,
       compact: agentRoutes.compactAgentSessionRoute,
       navigate: agentRoutes.navigateAgentSessionRoute,

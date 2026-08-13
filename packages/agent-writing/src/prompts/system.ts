@@ -1,7 +1,7 @@
 import { formatSkillsForSystemPrompt } from "@earendil-works/pi-agent-core";
 import type { Skill } from "@earendil-works/pi-agent-core";
 
-import type { ToolTier } from "@chia/agent-core";
+import type { ToolTier } from "@chia/agent-runtime";
 import type { Locale } from "@chia/db/types";
 
 import type { FeedDraft } from "../types.ts";

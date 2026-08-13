@@ -1,4 +1,4 @@
-import type { AgentPolicy } from "@chia/agent-core";
+import type { AgentPolicy } from "@chia/agent-runtime";
 
 import { TOOL_LABEL_BY_NAME, TOOL_TIER_BY_NAME } from "./tools/registry.ts";
 import { summarizeToolResult } from "./tools/summarize.ts";
@@ -8,7 +8,7 @@ import type { WritingToolTier } from "./types.ts";
 /**
  * The writing agent's {@link AgentPolicy}.
  *
- * This is what `@chia/agent-core` consumes instead of reaching into a module-level table of *this*
+ * This is what `@chia/agent-runtime` consumes instead of reaching into a module-level table of *this*
  * package's tool names — which is what previously made the gate unusable by a second agent kind.
  *
  * `tierOf` falls back to the most restrictive tier for an unknown name. Within this kind that is a

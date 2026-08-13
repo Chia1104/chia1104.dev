@@ -1,0 +1,1 @@
+DROP TABLE "chia_agent_pending_message";
