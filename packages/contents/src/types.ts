@@ -2,7 +2,6 @@ import type { ConfigType } from "dayjs";
 import type { TableOfContents } from "fumadocs-core/toc";
 import type { MDXComponents } from "mdx/types";
 
-import type { Content } from "@chia/db/schema";
 import type { ContentType } from "@chia/db/types";
 
 export interface BaseProps {
@@ -70,10 +69,8 @@ export type ContentContextProps = BaseProps &
 
 export interface GetContentPropsArgs {
   contentType: ContentType;
-  content: Partial<Omit<Content, "createdAt" | "updatedAt">> & {
-    createdAt?: ConfigType;
-    updatedAt?: ConfigType;
-  };
+  /** the raw body; the wrapper object it used to take was never read */
+  content: string | null | undefined;
 }
 
 export type GetContentPropsReturn = Promise<ContentProps>;

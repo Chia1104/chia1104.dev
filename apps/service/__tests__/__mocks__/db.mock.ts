@@ -58,11 +58,6 @@ export const mockFeedsResponse = {
   nextCursor: null,
 };
 
-const mockSearchFeedsResult = {
-  items: mockFeeds,
-  embedding: [0.1, 0.2, 0.3],
-};
-
 // Mock functions for @chia/db/repos/feeds
 export const getInfiniteFeedsByUserId: Mock = vi
   .fn()
@@ -80,15 +75,18 @@ export const getPublicFeedSummariesByIds: Mock = vi
   .fn()
   .mockResolvedValue(mockFeeds);
 export const getFeedIdByTranslationId: Mock = vi.fn().mockResolvedValue(1);
+export const getFeedRefsByTranslationIds: Mock = vi.fn().mockResolvedValue([]);
 export const upsertFeedTranslation: Mock = vi.fn().mockResolvedValue(undefined);
 export const upsertContent: Mock = vi.fn().mockResolvedValue(undefined);
 export const updateFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 
-// Mock functions for @chia/db/repos/feeds/embedding
-export const searchFeeds: Mock = vi
-  .fn()
-  .mockResolvedValue(mockSearchFeedsResult);
+// Mock functions for @chia/db/repos/feeds/search
 export const getRelatedFeeds: Mock = vi.fn().mockResolvedValue([]);
+
+// Mock functions for @chia/api/resources/search
+export const searchResources: Mock = vi
+  .fn()
+  .mockResolvedValue({ mode: "hybrid", items: [] });
 
 // Mock functions for @chia/db/repos/public/feeds
 export const getPublicFeedsTotal: Mock = vi.fn().mockResolvedValue(100);
@@ -102,10 +100,11 @@ export const resetAllDbMocks = () => {
   getFeedForIndexing.mockClear();
   getPublicFeedSummariesByIds.mockClear();
   getFeedIdByTranslationId.mockClear();
+  getFeedRefsByTranslationIds.mockClear();
   upsertFeedTranslation.mockClear();
   upsertContent.mockClear();
   updateFeed.mockClear();
-  searchFeeds.mockClear();
   getRelatedFeeds.mockClear();
+  searchResources.mockClear();
   getPublicFeedsTotal.mockClear();
 };

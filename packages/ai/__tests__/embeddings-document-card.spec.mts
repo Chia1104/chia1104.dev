@@ -1,0 +1,173 @@
+import { getEncoding } from "js-tiktoken";
+import { describe, expect, it } from "vitest";
+
+import { chunkMarkdown, SECTION_CHUNK_TOKENS } from "../src/embeddings/chunking";
+import {
+  buildHeadingOutline,
+  extractHeadings,
+} from "../src/embeddings/markdown";
+import { buildEmbeddingInput } from "../src/embeddings/utils";
+
+const encoding = getEncoding("cl100k_base");
+const tokens = (text: string) => encoding.encode(text).length;
+
+const ARTICLE = `
+import Banner from "@/components/banner";
+
+# 向量搜尋與嵌入技術
+
+前言段落。
+
+## 什麼是 embedding
+
+內文。
+
+### 維度取捨
+
+內文。
+
+## HNSW 調校
+
+\`\`\`sql
+SET hnsw.ef_search = 100;
+-- # this is not a heading
+\`\`\`
+
+內文。
+
+#### 太深的標題
+
+不該出現在 outline。
+`;
+
+describe("extractHeadings", () => {
+  it("tracks ancestor paths and ignores headings inside code fences", () => {
+    const headings = extractHeadings(ARTICLE);
+    expect(headings.map((heading) => heading.path)).toEqual([
+      "向量搜尋與嵌入技術",
+      "向量搜尋與嵌入技術 > 什麼是 embedding",
+      "向量搜尋與嵌入技術 > 什麼是 embedding > 維度取捨",
+      "向量搜尋與嵌入技術 > HNSW 調校",
+      "向量搜尋與嵌入技術 > HNSW 調校 > 太深的標題",
+    ]);
+  });
+});
+
+describe("buildHeadingOutline", () => {
+  it("indents relative to the shallowest kept level and honours maxDepth", () => {
+    expect(buildHeadingOutline(ARTICLE)).toBe(
+      [
+        "- 向量搜尋與嵌入技術",
+        "  - 什麼是 embedding",
+        "    - 維度取捨",
+        "  - HNSW 調校",
+      ].join("\n")
+    );
+  });
+
+  it("returns empty for content without headings", () => {
+    expect(buildHeadingOutline("just a paragraph")).toBe("");
+  });
+});
+
+describe("buildEmbeddingInput (document card)", () => {
+  it("builds a card from title, summary, tags and outline", () => {
+    const card = buildEmbeddingInput({
+      title: "向量搜尋",
+      summary: "介紹 pgvector 與 HNSW。",
+      tags: ["postgres", "rag"],
+      content: ARTICLE,
+    });
+    expect(card).toContain("Title: 向量搜尋");
+    expect(card).toContain("Summary: 介紹 pgvector 與 HNSW。");
+    expect(card).toContain("Tags: postgres, rag");
+    expect(card).toContain("Outline:\n- 向量搜尋與嵌入技術");
+  });
+
+  it("does not embed the body when a summary and outline exist", () => {
+    const card = buildEmbeddingInput({
+      title: "向量搜尋",
+      summary: "介紹 pgvector 與 HNSW。",
+      content: ARTICLE,
+    });
+    expect(card).not.toContain("不該出現在 outline");
+    expect(card).not.toContain("前言段落");
+  });
+
+  it("stays bounded no matter how long the article is", () => {
+    // 500 copies of the body under the same outline: the card must not grow
+    const long = ARTICLE + "\n\n" + "很長的內文段落。".repeat(5000);
+    const card = buildEmbeddingInput({
+      title: "向量搜尋",
+      summary: "介紹 pgvector 與 HNSW。",
+      content: long,
+    });
+    expect(tokens(card)).toBeLessThan(500);
+  });
+
+  it("falls back through summary → description → excerpt", () => {
+    expect(
+      buildEmbeddingInput({ title: "t", description: "desc", content: ARTICLE })
+    ).toContain("Summary: desc");
+    expect(
+      buildEmbeddingInput({ title: "t", excerpt: "exc", content: ARTICLE })
+    ).toContain("Summary: exc");
+  });
+
+  it("uses a bounded body excerpt only when there is no summary and no outline", () => {
+    const card = buildEmbeddingInput({
+      title: "t",
+      content: "沒有標題的純文字內容。".repeat(2000),
+    });
+    expect(card).toContain("沒有標題的純文字內容");
+    expect(tokens(card)).toBeLessThanOrEqual(500);
+  });
+});
+
+describe("chunkMarkdown", () => {
+  const longArticle = Array.from(
+    { length: 12 },
+    (_, index) =>
+      `## 章節 ${index}\n\n${"這是一段中文內文，用來把章節推過切片大小。".repeat(40)}`
+  ).join("\n\n");
+
+  it("splits at heading boundaries and carries the heading path", async () => {
+    const chunks = await chunkMarkdown({ content: ARTICLE, encoding });
+
+    expect(chunks.length).toBeGreaterThan(0);
+    expect(chunks.map((chunk) => chunk.chunkIndex)).toEqual(
+      chunks.map((_, index) => index)
+    );
+    // small sections pack together, so every heading they covered is kept
+    expect(
+      chunks.some((chunk) =>
+        chunk.headingPaths.some((path) => path.includes("HNSW 調校"))
+      )
+    ).toBe(true);
+  });
+
+  it("keeps chunks near the target size", async () => {
+    const chunks = await chunkMarkdown({ content: longArticle, encoding });
+
+    expect(chunks.length).toBeGreaterThan(1);
+    for (const chunk of chunks) {
+      expect(chunk.tokenCount).toBeGreaterThan(0);
+      // packing may overshoot by at most the unit it could not split further
+      expect(chunk.tokenCount).toBeLessThan(SECTION_CHUNK_TOKENS * 2);
+    }
+  });
+
+  it("splits a single oversized section instead of emitting it whole", async () => {
+    const oneHugeSection = `## 只有一節\n\n${"很長的一段內文。".repeat(2000)}`;
+    const chunks = await chunkMarkdown({ content: oneHugeSection, encoding });
+
+    expect(chunks.length).toBeGreaterThan(1);
+    for (const chunk of chunks) {
+      expect(chunk.tokenCount).toBeLessThan(SECTION_CHUNK_TOKENS * 2);
+    }
+  });
+
+  it("returns nothing for empty content", async () => {
+    expect(await chunkMarkdown({ content: "   ", encoding })).toEqual([]);
+  });
+});

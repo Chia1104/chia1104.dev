@@ -67,6 +67,7 @@ catalogs:
     "@chiastack/tsconfig": 2.1.2
     "@chiastack/ui": 1.2.2
   drizzle:
+    "@paradedb/drizzle-paradedb": 0.4.0
     drizzle-kit: 1.0.0-rc.4
     drizzle-orm: 1.0.0-rc.4
   fumadocs:
@@ -165,3 +166,7 @@ minimumReleaseAgeExclude:
   - '@earendil-works/pi-ai@0.82.1'
 
 strictPeerDependencies: false
+
+overrides:
+  "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4
+  

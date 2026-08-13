@@ -1,9 +1,3 @@
-import { createOpenAI } from "@chia/ai";
-import {
-  isOllamaEmbeddingModel,
-  isOpenAIEmbeddingModel,
-} from "@chia/ai/embeddings/utils";
-import { isOllamaEnabled } from "@chia/ai/ollama/utils";
 import {
   getFeedById,
   getFeedBySlug,
@@ -13,18 +7,15 @@ import {
   upsertContent,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
-import { OllamaUnavailableError } from "@chia/db/repos/feeds/embedding";
 import { getPublicFeedsTotal } from "@chia/db/repos/public/feeds";
 
 import {
   getRelatedFeedsService,
   searchFeedsService,
   searchPublicFeedsService,
-  UnindexedEmbeddingModelError,
 } from "../../feeds/search";
 import { feedEvents } from "../events";
 import { adminIdGuard } from "../guards/admin.guard";
-import { aiKeyGuard } from "../guards/ai-key.guard";
 import { apiKeyGuard } from "../guards/apikey.guard";
 import { sessionGuard } from "../guards/auth.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
@@ -229,42 +220,23 @@ export const searchPublicFeedsRoute = contractOS.content.feeds["public-search"]
 
 export const searchFeedsRoute = contractOS.content.feeds.search
   .use(rateLimitGuard({ prefix: "rate-limiter:feeds" }))
-  // Authenticated for every model, and root-only for the OpenAI-hosted ones — the same
-  // requirement the Hono route enforced via `verifyAuth(isOpenAIEmbeddingModel(model))`.
-  // Unlike the public `public-search` procedure, this one returns full record bodies.
+  /**
+   * Authenticated for every mode, and root-only for the modes that embed the
+   * query — those spend the server's embedding credentials, `bm25` does not.
+   *
+   * The provider is resolved server-side now, so there is no caller-supplied
+   * key to gate on (the old `aiKeyGuard` covered the BYO-key path).
+   */
   .use(sessionGuard, (input) => ({
-    rootOnly: isOpenAIEmbeddingModel(input.model),
-  }))
-  // Only OpenAI-hosted embedding models need a caller-supplied key; Ollama and Algolia
-  // run without one, so the guard is conditional on the requested model.
-  .use(aiKeyGuard({ provider: "openai" }), (input) => ({
-    enabled: isOpenAIEmbeddingModel(input.model),
+    rootOnly: input.model !== "bm25",
   }))
   .handler(async (opts) => {
     const { keyword, model, locale } = opts.input;
-    const isOllama =
-      isOllamaEmbeddingModel(model) && (await isOllamaEnabled(model));
 
-    const client = isOllama
-      ? undefined
-      : createOpenAI({ apiKey: opts.context.AI_AUTH_TOKEN });
-
-    try {
-      return await searchFeedsService({
-        db: opts.context.db,
-        kv: opts.context.kv,
-        keyword,
-        model,
-        locale,
-        client,
-      });
-    } catch (error) {
-      if (error instanceof UnindexedEmbeddingModelError) {
-        throw opts.errors.BAD_REQUEST({ message: error.message });
-      }
-      if (error instanceof OllamaUnavailableError) {
-        throw opts.errors.SERVICE_UNAVAILABLE({ message: error.message });
-      }
-      throw error;
-    }
+    return await searchFeedsService({
+      db: opts.context.db,
+      keyword,
+      model,
+      locale,
+    });
   });

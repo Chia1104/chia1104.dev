@@ -13,22 +13,16 @@ import { ContentType, Locale } from "@chia/db/types";
 import type { FeedType, Locale as LocaleType } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
 
-import { feedEvents } from "../../orpc/events";
+import { feedEvents } from "../orpc/events";
 
 /**
- * Feed write services.
+ * Feed writes, shared by the oRPC procedures (a request, with `adminGuard`
+ * supplying `adminId`) and the writing agent's durable turn (a workflow step,
+ * no request at all). Each caller authorises in its own way before calling in;
+ * authorisation belongs at the transport boundary.
  *
- * Extracted out of `orpc/routes/feeds.route.ts` because there are now two callers with
- * different transports: the oRPC procedures (a request, with `adminGuard` supplying
- * `adminId`) and the writing agent's durable turn (a workflow step, with no request at all).
- *
- * The alternative — having the step invoke the oRPC procedure in-process — would have meant
- * synthesising a session so `adminGuard` could re-authorise it. Authorisation belongs at the
- * transport boundary, not re-enacted from a background job, so the shared logic lives here and
- * each caller authorises in its own way before calling in.
- *
- * Errors are `AppError`, which every transport adapter already renders (`toORPCError`), so the
- * oRPC routes keep their exact error contract.
+ * Errors are `AppError`, which every transport adapter already renders
+ * (`toORPCError`).
  */
 
 export interface FeedContentInput {
@@ -113,16 +107,15 @@ export const createFeedService = async (
       ([locale, translation]) => ({
         ...translation,
         locale: locale as LocaleType,
-        content: translation.content ?? {
-          content: null,
-          source: null,
-          unstableSerializedSource: null,
-        },
+        content: translation.content?.content ?? null,
+        source: translation.content?.source ?? null,
+        unstableSerializedSource:
+          translation.content?.unstableSerializedSource ?? null,
       })
     ),
   });
 
-  // Fires reading-time, Algolia and embedding indexing. Skipping it is the main hazard of
+  // Fires reading-time, BM25 and embedding indexing. Skipping it is the main hazard of
   // reaching for the repository layer directly, which is why it lives in here.
   if (data) {
     await feedEvents.changed(data.id);

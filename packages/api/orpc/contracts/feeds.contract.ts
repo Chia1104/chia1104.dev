@@ -7,7 +7,6 @@ import {
   infiniteSchema,
   feedSchema,
   feedTranslationSchema,
-  contentSchema,
   insertFeedSchema,
   insertContentSchema,
 } from "@chia/db/validator/feeds";
@@ -135,26 +134,35 @@ export const publicFeedsInfiniteSchema = z.object({
 // Output Schemas
 // ============================================
 
-const serializedContentSchema = contentSchema
-  .omit({ createdAt: true, updatedAt: true })
-  .extend({
-    createdAt: z.string(),
-    updatedAt: z.string(),
-  })
-  .nullable();
+/**
+ * What a translation looks like on the wire.
+ *
+ * `published`/`deleted` mirror `feed` and stay server-side; a client reads them
+ * from the feed. The body columns are optional because list queries skip them
+ * unless `withContent` was set.
+ */
+const translationOutputSchema = z.object({
+  ...feedTranslationSchema.omit({
+    createdAt: true,
+    updatedAt: true,
+    published: true,
+    deleted: true,
+    content: true,
+    source: true,
+    unstableSerializedSource: true,
+  }).shape,
+  content: z.string().nullable().optional(),
+  source: z.string().nullable().optional(),
+  unstableSerializedSource: z.string().nullable().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  hasEmbedding: z.boolean(),
+});
 
 export const feedWithTranslationsSchema = z.object({
   ...feedSchema.shape,
   deletedAt: z.string().nullable(),
-  translations: z.array(
-    z.object({
-      ...feedTranslationSchema.omit({ createdAt: true, updatedAt: true }).shape,
-      createdAt: z.string(),
-      updatedAt: z.string(),
-      hasEmbedding: z.boolean(),
-      content: serializedContentSchema,
-    })
-  ),
+  translations: z.array(translationOutputSchema),
   feedsToTags: z
     .array(
       z.object({
@@ -177,20 +185,12 @@ export const feedWithTranslationsSchema = z.object({
     .optional(),
 });
 
-export const feedListSchema = feedWithTranslationsSchema.extend({
-  translations: z.array(
-    z.object({
-      ...feedTranslationSchema.omit({
-        createdAt: true,
-        updatedAt: true,
-      }).shape,
-      createdAt: z.string(),
-      updatedAt: z.string(),
-      hasEmbedding: z.boolean(),
-      content: serializedContentSchema,
-    })
-  ),
-});
+/**
+ * Identical to {@link feedWithTranslationsSchema} — it used to differ only by
+ * carrying no content, which is now expressed by the body columns being
+ * optional on the shared translation shape.
+ */
+export const feedListSchema = feedWithTranslationsSchema;
 
 // ============================================
 // Contracts

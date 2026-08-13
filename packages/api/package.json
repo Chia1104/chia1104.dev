@@ -41,14 +41,6 @@
       "types": "./spotify/account.ts",
       "default": "./spotify/account.ts"
     },
-    "./services/validators": {
-      "types": "./services/validators.ts",
-      "default": "./services/validators.ts"
-    },
-    "./services/feeds": {
-      "types": "./services/feeds/index.ts",
-      "default": "./services/feeds/index.ts"
-    },
     "./services/env": {
       "types": "./services/env.ts",
       "default": "./services/env.ts"
@@ -101,14 +93,6 @@
       "types": "./s3/s3.service.ts",
       "default": "./s3/s3.service.ts"
     },
-    "./algolia": {
-      "types": "./algolia/client.ts",
-      "default": "./algolia/client.ts"
-    },
-    "./algolia/env": {
-      "types": "./algolia/env.ts",
-      "default": "./algolia/env.ts"
-    },
     "./orpc/events": {
       "types": "./orpc/events.ts",
       "default": "./orpc/events.ts"
@@ -137,9 +121,25 @@
       "types": "./feeds/search.ts",
       "default": "./feeds/search.ts"
     },
+    "./resources/registry": {
+      "types": "./resources/registry.ts",
+      "default": "./resources/registry.ts"
+    },
+    "./resources/search": {
+      "types": "./resources/search.ts",
+      "default": "./resources/search.ts"
+    },
+    "./resources/types": {
+      "types": "./resources/types.ts",
+      "default": "./resources/types.ts"
+    },
     "./feeds/validator": {
       "types": "./feeds/validator.ts",
       "default": "./feeds/validator.ts"
+    },
+    "./feeds/write": {
+      "types": "./feeds/write.ts",
+      "default": "./feeds/write.ts"
     },
     "./orpc/guards/apikey.guard": {
       "types": "./orpc/guards/apikey.guard.ts",
@@ -169,6 +169,10 @@
       "types": "./orpc/agent-runtime.ts",
       "default": "./orpc/agent-runtime.ts"
     },
+    "./orpc/indexing": {
+      "types": "./orpc/indexing.ts",
+      "default": "./orpc/indexing.ts"
+    },
     "./orpc/routes/feeds.route": {
       "types": "./orpc/routes/feeds.route.ts",
       "default": "./orpc/routes/feeds.route.ts"
@@ -196,7 +200,6 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
-    "algoliasearch": "^5.56.0",
     "client-only": "catalog:",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
@@ -210,7 +213,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@algolia/client-common": "^5.56.0",
     "@chiastack/tsconfig": "catalog:chiastack",
     "typescript": "catalog:"
   }

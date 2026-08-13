@@ -7,11 +7,6 @@ import { Button, Spinner, ButtonGroup, ScrollShadow } from "@heroui/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer";
 import { Search } from "lucide-react";
 
-import type {
-  OllamaEmbeddingModel,
-  TextEmbeddingModel,
-} from "@chia/ai/embeddings/utils";
-import { QUERYABLE_EMBEDDING_MODELS } from "@chia/ai/embeddings/utils";
 import { Locale } from "@chia/db/types";
 import {
   CommandDialog,
@@ -30,16 +25,39 @@ interface SearchFormProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/** Result rows differ per provider; the list only needs id + title + preview. */
+interface NormalisedHit {
+  feedId: number;
+  title: string;
+  excerpt: string;
+}
+
+const stripHighlight = (value: string | null | undefined) =>
+  value?.replaceAll(/<\/?b>/g, "") ?? "";
+
+/** All modes return the same row shape, so this is one mapping. */
+const normaliseHits = (
+  result: ReturnType<typeof useSearchFeeds>["data"]
+): NormalisedHit[] =>
+  result?.items.map((hit) => ({
+    feedId: hit.feedId,
+    title: hit.summary.title,
+    excerpt:
+      stripHighlight(hit.bestChunk.snippet) || hit.summary.description || "",
+  })) ?? [];
+
 const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [locale, setLocale] = useState<Locale>(Locale.zhTW);
-  const [model, setModel] = useState<
-    TextEmbeddingModel | OllamaEmbeddingModel | "algolia"
-  >("text-embedding-3-small");
+  const [model, setModel] = useState<"hybrid" | "bm25" | "semantic">("hybrid");
 
-  // only indexed + query-enabled models — anything else has no stored vectors
-  const supportedModels = [...QUERYABLE_EMBEDDING_MODELS, "algolia"] as const;
+  /**
+   * `hybrid` is the default: a document-level vector alone under-recalls exact
+   * terms (package names, CLI flags, error messages), which is what BM25 is
+   * there to catch. The other two isolate one half for comparison.
+   */
+  const supportedModels = ["hybrid", "bm25", "semantic"] as const;
 
   const {
     mutate: searchFeeds,
@@ -134,33 +152,21 @@ const SearchForm = ({ isOpen, onOpenChange }: SearchFormProps) => {
         {feeds?.items.length === 0 && (
           <CommandEmpty>No results found.</CommandEmpty>
         )}
-        {feeds?.provider === "algolia"
-          ? feeds?.items.map((feed) => (
-              <CommandItem
-                key={feed.objectID}
-                onSelect={() => handleSelect(feed.feedID)}
-                disabled={isPending}>
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm font-medium">{feed.title}</p>
-                  <p className="text-muted-foreground line-clamp-2 text-xs">
-                    {feed.description}
-                  </p>
-                </div>
-              </CommandItem>
-            ))
-          : feeds?.items.map((feed) => (
-              <CommandItem
-                key={feed.id}
-                onSelect={() => handleSelect(feed.id)}
-                disabled={isPending}>
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm font-medium">{feed.title}</p>
-                  <p className="text-muted-foreground line-clamp-2 text-xs">
-                    {feed.description}
-                  </p>
-                </div>
-              </CommandItem>
-            ))}
+        {normaliseHits(feeds).map((hit) => (
+          <CommandItem
+            key={`${hit.feedId}-${hit.title}`}
+            onSelect={() => handleSelect(hit.feedId)}
+            disabled={isPending}>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium">{hit.title}</p>
+              {hit.excerpt && (
+                <p className="text-muted-foreground line-clamp-2 text-xs">
+                  {hit.excerpt}
+                </p>
+              )}
+            </div>
+          </CommandItem>
+        ))}
       </CommandList>
     </CommandDialog>
   );

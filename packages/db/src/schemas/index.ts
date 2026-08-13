@@ -64,18 +64,32 @@ export {
   assets,
   feeds,
   feedTranslations,
-  feedEmbeddings,
-  contents,
   assetsToTags,
   feedsToTags,
   type Asset,
   type Feed,
   type FeedTranslation,
-  type FeedEmbedding,
-  type Content,
   type Tag,
   type TagTranslation,
 } from "./contents.schema.ts";
+
+// Resources (chunks + vectors)
+export {
+  resourceChunks,
+  resourceEmbeddings,
+  resourceIndexRuns,
+  RESOURCE_CHUNK_KIND,
+  RESOURCE_INDEX_RUN_ACTIVE_STATUSES,
+  RESOURCE_INDEX_RUN_SCOPE,
+  RESOURCE_INDEX_RUN_STATUS,
+  type ResourceChunk,
+  type ResourceChunkKind,
+  type ResourceEmbedding,
+  type ResourceIndexRun,
+  type ResourceIndexRunProgress,
+  type ResourceIndexRunScope,
+  type ResourceIndexRunStatus,
+} from "./resources.schema.ts";
 
 // Agent
 export {
@@ -115,7 +129,6 @@ export {
   feedsRelations,
   feedTranslationsRelations,
   assetsRelations,
-  contentsRelations,
   assetsToTagsRelations,
   feedsToTagsRelations,
   agentSessionsRelations,

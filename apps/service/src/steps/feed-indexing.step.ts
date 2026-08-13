@@ -6,7 +6,11 @@ import dayjs from "@chia/utils/day";
 export interface FeedIndexingSnapshot {
   type: "post" | "note";
   slug: string;
+  /** `published && !deleted` — the single flag most branches care about */
   enabled: boolean;
+  /** kept separate because the BM25 table stores both as filterable columns */
+  published: boolean;
+  deleted: boolean;
   createdAt: string;
   updatedAt: string;
   translations: {
@@ -15,13 +19,16 @@ export interface FeedIndexingSnapshot {
     title: string;
     description: string | null;
     summary: string | null;
+    excerpt: string | null;
     content: string | null;
+    /** tag names in this locale — part of the document card */
+    tags: string[];
   }[];
 }
 
 /**
  * Loads the feed snapshot every indexing branch (embeddings, reading time,
- * Algolia) is built from. Runs as a step so the workflow replays the same
+ * BM25) is built from. Runs as a step so the workflow replays the same
  * snapshot on retries.
  */
 export const loadFeedForIndexingStep = async (
@@ -35,10 +42,22 @@ export const loadFeedForIndexingStep = async (
     return null;
   }
 
+  // tag names are stored per locale; fall back to every name when a locale has
+  // no tag translations so the card is not silently missing its tags
+  const tagNamesByLocale = new Map<string, string[]>();
+  for (const tag of feed.tags) {
+    const names = tagNamesByLocale.get(tag.locale) ?? [];
+    names.push(tag.name);
+    tagNamesByLocale.set(tag.locale, names);
+  }
+  const allTagNames = [...new Set(feed.tags.map((tag) => tag.name))];
+
   return {
     type: feed.type,
     slug: feed.slug,
     enabled: feed.published && !feed.deletedAt,
+    published: feed.published,
+    deleted: !!feed.deletedAt,
     createdAt: dayjs(feed.createdAt).toISOString(),
     updatedAt: dayjs(feed.updatedAt).toISOString(),
     translations: feed.translations.map((translation) => ({
@@ -47,7 +66,9 @@ export const loadFeedForIndexingStep = async (
       title: translation.title,
       description: translation.description,
       summary: translation.summary,
-      content: translation.content?.content ?? null,
+      excerpt: translation.excerpt,
+      content: translation.content,
+      tags: tagNamesByLocale.get(translation.locale) ?? allTagNames,
     })),
   };
 };

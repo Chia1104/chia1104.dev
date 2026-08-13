@@ -1,184 +1,193 @@
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import type { Tiktoken } from "js-tiktoken";
 
-/** Target chunk size / overlap in tokens (cl100k_base). */
-export const EMBEDDING_CHUNK_TOKENS = 512;
-export const EMBEDDING_CHUNK_OVERLAP_TOKENS = 64;
+import { cleanMdxKeepStructure, splitByHeadings } from "./markdown.ts";
+import { countEmbeddingTokens, loadTokenizer } from "./tokenizer.ts";
+import { truncateForEmbedding } from "./utils.ts";
 
-/** Code blocks up to this many lines are kept verbatim in chunks. */
-const MAX_CODE_BLOCK_LINES = 24;
-/** Longer code blocks keep their head — identifiers, imports, comments live there. */
-const CODE_BLOCK_HEAD_LINES = 12;
-/** Chunks below this token count carry no signal and are dropped. */
+export { countEmbeddingTokens, loadTokenizer };
+export { cleanMdxKeepStructure, splitByHeadings } from "./markdown.ts";
+
+/** Target size of a section chunk. */
+export const SECTION_CHUNK_TOKENS = 512;
+
+/** Chunks below this carry no signal. */
 const MIN_CHUNK_TOKENS = 8;
 
-export const loadTokenizer = async (
-  encoding?: Tiktoken | null
-): Promise<Tiktoken> =>
-  (encoding ??= (await import("js-tiktoken")).getEncoding("cl100k_base"));
-
-/** Exact token count for chunk sizing (text-embedding-3-* use cl100k_base). */
-export const countEmbeddingTokens = (
-  text: string,
-  encoding: Tiktoken | null
-): number => {
-  if (!encoding) throw new Error("Tokenizer not loaded.");
-  return encoding.encode(text).length;
-};
-
 export interface MarkdownChunk {
-  /** 0-based chunk index within the translation */
+  /** 0-based within the document */
   chunkIndex: number;
-  /** raw chunk text as stored for citation/preview */
-  chunkText: string;
-  /** e.g. "HNSW > ef_search 調校" */
+  content: string;
+  /** First heading covered by the chunk. */
   headingPath: string | null;
+  /** Every heading covered, when a chunk packs more than one section. */
+  headingPaths: string[];
   tokenCount: number;
-  /** text actually embedded: title + heading path + chunk */
-  embeddingInput: string;
+}
+
+interface SplitUnit {
+  text: string;
+  /** what to put back when this unit follows another in the same piece */
+  joiner: string;
 }
 
 /**
- * MDX cleanup that keeps document structure (headings, lists, code fences)
- * so the splitter can respect boundaries. Unlike `stripMdx` (topic-level
- * document vectors), this keeps code content — function names, CLI commands,
- * and error messages are exactly what technical queries search for.
+ * Paragraph boundaries first, then sentence-ish punctuation.
+ *
+ * The joiner records which boundary a unit came from, so reassembling does not
+ * turn every sentence of one paragraph into a paragraph of its own — the chunk
+ * text is stored and rendered as snippets, not just embedded.
  */
-export const cleanMdxKeepStructure = (source: string): string => {
-  return source
-    .replace(/^(?:import|export)\s[^\n]*$/gm, "") // ESM statements
-    .replace(/```(\w*)\n([\s\S]*?)```/g, (_match, lang: string, code: string) =>
-      condenseCodeBlock(lang, code)
-    )
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1") // images -> alt text
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // links -> label
-    .replace(/<\/?[A-Za-z][^>\n]*>/g, "") // JSX / HTML tags, keep children
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+const toUnits = (
+  text: string,
+  maxTokens: number,
+  encoding: Tiktoken | null
+): SplitUnit[] =>
+  text.split(/\n{2,}/).flatMap((paragraph) => {
+    if (countEmbeddingTokens(paragraph, encoding) <= maxTokens) {
+      return [{ text: paragraph, joiner: "\n\n" }];
+    }
+    // the lookbehind keeps the delimiter on the preceding sentence, so joining
+    // with "" restores the paragraph verbatim
+    return paragraph.split(/(?<=[。．！？!?;；\n])/).map((sentence, index) => ({
+      text: sentence,
+      joiner: index === 0 ? "\n\n" : "",
+    }));
+  });
+
+/**
+ * Last resort for a unit with no boundary left to split on — a long CJK
+ * paragraph without `。`, a wide table row. Slicing keeps the tail searchable;
+ * emitting it whole would hand the provider an over-length input and store
+ * text that does not match the vector.
+ */
+const sliceToBudget = (text: string, maxTokens: number): string[] => {
+  const slices: string[] = [];
+  let rest = text;
+  while (rest) {
+    const head = truncateForEmbedding(rest, maxTokens);
+    // the estimate is pessimistic, never zero-length for a non-empty input, but
+    // the fallback guarantees progress
+    const take = head.length > 0 ? head : rest.slice(0, 1);
+    slices.push(take);
+    rest = rest.slice(take.length);
+  }
+  return slices;
 };
 
-const condenseCodeBlock = (lang: string, code: string): string => {
-  const lines = code.replace(/\s+$/, "").split("\n");
-  const kept =
-    lines.length <= MAX_CODE_BLOCK_LINES
-      ? lines
-      : [...lines.slice(0, CODE_BLOCK_HEAD_LINES), "…"];
-  return ["```" + lang, ...kept, "```"].join("\n");
-};
-
-interface MarkdownSection {
-  headingPath: string | null;
-  text: string;
-}
-
-/** Splits cleaned markdown into sections at heading boundaries, tracking the heading path. */
-const splitByHeadings = (content: string): MarkdownSection[] => {
-  const sections: MarkdownSection[] = [];
-  const headingStack: { level: number; title: string }[] = [];
-  let buffer: string[] = [];
-  let insideCodeFence = false;
+const splitOversized = (
+  text: string,
+  maxTokens: number,
+  encoding: Tiktoken | null
+): string[] => {
+  const pieces: string[] = [];
+  let buffer = "";
+  let bufferTokens = 0;
 
   const flush = () => {
-    const text = buffer.join("\n").trim();
-    if (text) {
-      sections.push({
-        headingPath:
-          headingStack.map((heading) => heading.title).join(" > ") || null,
-        text,
-      });
+    if (buffer.trim()) {
+      pieces.push(buffer.trim());
     }
-    buffer = [];
+    buffer = "";
+    bufferTokens = 0;
   };
 
-  for (const line of content.split("\n")) {
-    if (/^\s*```/.test(line)) {
-      insideCodeFence = !insideCodeFence;
-    }
-    const heading = insideCodeFence ? null : /^(#{1,6})\s+(.+)$/.exec(line);
-    if (heading?.[1] && heading[2]) {
+  for (const unit of toUnits(text, maxTokens, encoding)) {
+    const unitTokens = countEmbeddingTokens(unit.text, encoding);
+
+    if (buffer && bufferTokens + unitTokens > maxTokens) {
       flush();
-      const level = heading[1].length;
-      while (
-        headingStack.length > 0 &&
-        headingStack[headingStack.length - 1]!.level >= level
-      ) {
-        headingStack.pop();
+    }
+
+    if (unitTokens > maxTokens) {
+      flush();
+      for (const slice of sliceToBudget(unit.text, maxTokens)) {
+        if (slice.trim()) {
+          pieces.push(slice.trim());
+        }
       }
-      headingStack.push({ level, title: heading[2].trim() });
       continue;
     }
-    buffer.push(line);
+
+    buffer += (buffer ? unit.joiner : "") + unit.text;
+    bufferTokens += unitTokens;
   }
   flush();
 
-  return sections;
-};
-
-const buildChunkEmbeddingInput = (params: {
-  title?: string | null;
-  headingPath: string | null;
-  text: string;
-}): string => {
-  return [
-    params.title ? `Title: ${params.title}` : null,
-    params.headingPath ? `Section: ${params.headingPath}` : null,
-    "",
-    params.text,
-  ]
-    .filter((line): line is string => line !== null)
-    .join("\n");
+  return pieces;
 };
 
 /**
- * Structure-aware chunking: split at heading boundaries, then let the
- * markdown-aware recursive splitter (LangChain textsplitters) handle
- * oversized sections with token-based sizing and overlap.
+ * Splits a document into section chunks at heading boundaries, packing small
+ * sections together and splitting oversized ones.
+ *
+ * `headingPath` is carried through for citation anchors.
  */
-export const chunkMarkdownForEmbedding = async (params: {
-  title?: string | null;
+export const chunkMarkdown = async (params: {
   content: string;
-  chunkTokens?: number;
-  overlapTokens?: number;
-  encoding: Tiktoken | null;
+  targetTokens?: number;
+  encoding?: Tiktoken | null;
 }): Promise<MarkdownChunk[]> => {
   const cleaned = cleanMdxKeepStructure(params.content);
   if (!cleaned) {
     return [];
   }
 
-  const chunkTokens = params.chunkTokens ?? EMBEDDING_CHUNK_TOKENS;
-  const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
-    chunkSize: chunkTokens,
-    chunkOverlap: params.overlapTokens ?? EMBEDDING_CHUNK_OVERLAP_TOKENS,
-    lengthFunction: (text) => countEmbeddingTokens(text, params.encoding),
-  });
+  const encoding = params.encoding ?? (await loadTokenizer());
+  const targetTokens = params.targetTokens ?? SECTION_CHUNK_TOKENS;
 
   const chunks: MarkdownChunk[] = [];
-  for (const section of splitByHeadings(cleaned)) {
-    const pieces =
-      countEmbeddingTokens(section.text, params.encoding) <= chunkTokens
-        ? [section.text]
-        : await splitter.splitText(section.text);
+  let buffer: { headingPath: string | null; text: string }[] = [];
+  let bufferTokens = 0;
 
-    for (const piece of pieces) {
-      const text = piece.trim();
-      const tokenCount = countEmbeddingTokens(text, params.encoding);
-      if (tokenCount < MIN_CHUNK_TOKENS) {
-        continue;
-      }
+  const flush = () => {
+    if (buffer.length === 0) {
+      return;
+    }
+    const content = buffer.map((entry) => entry.text).join("\n\n");
+    const tokenCount = countEmbeddingTokens(content, encoding);
+    if (tokenCount >= MIN_CHUNK_TOKENS) {
+      const headingPaths = [
+        ...new Set(
+          buffer
+            .map((entry) => entry.headingPath)
+            .filter((path): path is string => !!path)
+        ),
+      ];
       chunks.push({
         chunkIndex: chunks.length,
-        chunkText: text,
-        headingPath: section.headingPath,
+        content,
+        headingPath: headingPaths[0] ?? null,
+        headingPaths,
         tokenCount,
-        embeddingInput: buildChunkEmbeddingInput({
-          title: params.title,
-          headingPath: section.headingPath,
-          text,
-        }),
       });
     }
+    buffer = [];
+    bufferTokens = 0;
+  };
+
+  for (const section of splitByHeadings(cleaned)) {
+    const sectionTokens = countEmbeddingTokens(section.text, encoding);
+
+    if (sectionTokens > targetTokens) {
+      flush();
+      for (const piece of splitOversized(
+        section.text,
+        targetTokens,
+        encoding
+      )) {
+        buffer.push({ headingPath: section.headingPath, text: piece });
+        flush();
+      }
+      continue;
+    }
+
+    if (bufferTokens + sectionTokens > targetTokens) {
+      flush();
+    }
+    buffer.push({ headingPath: section.headingPath, text: section.text });
+    bufferTokens += sectionTokens;
   }
+  flush();
 
   return chunks;
 };
