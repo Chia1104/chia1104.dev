@@ -136,7 +136,7 @@ export const RagRunsTable = () => {
                     </Table.Row>
                   )}
                 </Table.Collection>
-                {hasNextPage && (
+                {hasNextPage && isSuccess && (
                   <Table.LoadMore
                     isLoading={isFetchingNextPage}
                     scrollOffset={0}
