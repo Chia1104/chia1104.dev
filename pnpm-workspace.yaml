@@ -48,10 +48,10 @@ catalogs:
     "@tanstack/ai": 0.43.1
     "@tanstack/ai-react": 0.19.1
   ai:
-    "@ai-sdk/anthropic": 4.0.35
+    "@ai-sdk/anthropic": 4.0.36
     "@ai-sdk/gateway": 4.0.45
     "@ai-sdk/google": 4.0.38
-    "@ai-sdk/openai": 4.0.35
+    "@ai-sdk/openai": 4.0.36
     "@ai-sdk/react": 4.0.60
     "@anthropic-ai/sdk": 0.116.0
     "@google/genai": 2.16.0
