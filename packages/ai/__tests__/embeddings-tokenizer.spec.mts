@@ -1,5 +1,5 @@
 import { getEncoding } from "js-tiktoken";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   countEmbeddingTokensAsync,
@@ -100,13 +100,26 @@ describe("guardEmbeddingInput", () => {
   });
 });
 
-describe("lazy loading (the encoding costs ~32MB and is never freed)", () => {
-  it("does not load the encoding for inputs the estimate already clears", async () => {
-    // fresh module registry so a previous test's load does not mask this
+describe("tokenizer lifecycle", () => {
+  const importWithConstructorSpy = async () => {
     vi.resetModules();
-    const fresh = await import("../src/embeddings/tokenizer");
+    const constructor = vi.fn(() => encoding);
 
-    expect(fresh.isTokenizerLoaded()).toBe(false);
+    vi.doMock("js-tiktoken/lite", () => ({ Tiktoken: constructor }));
+    vi.doMock("js-tiktoken/ranks/cl100k_base", () => ({ default: {} }));
+
+    const fresh = await import("../src/embeddings/tokenizer");
+    return { constructor, fresh };
+  };
+
+  afterEach(() => {
+    vi.doUnmock("js-tiktoken/lite");
+    vi.doUnmock("js-tiktoken/ranks/cl100k_base");
+    vi.resetModules();
+  });
+
+  it("does not construct a tokenizer for inputs the estimate already clears", async () => {
+    const { constructor, fresh } = await importWithConstructorSpy();
 
     // a search query is capped at 256 characters — this stands in for one
     await fresh.guardEmbeddingInput("向量搜尋 pgvector ef_search", {
@@ -114,16 +127,19 @@ describe("lazy loading (the encoding costs ~32MB and is never freed)", () => {
     });
     await fresh.truncateForEmbeddingExact(MIXED);
 
-    expect(fresh.isTokenizerLoaded()).toBe(false);
+    expect(constructor).not.toHaveBeenCalled();
   });
 
-  it("loads it only once an input might actually exceed the budget", async () => {
-    vi.resetModules();
-    const fresh = await import("../src/embeddings/tokenizer");
+  it("shares one tokenizer only within an oversized batch", async () => {
+    const { constructor, fresh } = await importWithConstructorSpy();
 
-    expect(fresh.isTokenizerLoaded()).toBe(false);
-    await fresh.guardEmbeddingInput(ZH_TW.repeat(2000), { model: "test" });
-    expect(fresh.isTokenizerLoaded()).toBe(true);
+    await fresh.guardEmbeddingInputs(
+      [ZH_TW.repeat(400), ZH_TW.repeat(400)],
+      { model: "test" },
+      300
+    );
+
+    expect(constructor).toHaveBeenCalledTimes(1);
   });
 
   it("still truncates correctly through the fast path", async () => {
@@ -138,12 +154,12 @@ describe("lazy loading (the encoding costs ~32MB and is never freed)", () => {
 });
 
 describe("loadTokenizer", () => {
-  it("memoizes the encoding across calls", async () => {
+  it("does not retain the encoding across calls", async () => {
     const [first, second] = await Promise.all([
       loadTokenizer(),
       loadTokenizer(),
     ]);
-    expect(first).toBe(second);
+    expect(first).not.toBe(second);
   });
 
   it("counts asynchronously without a caller-held encoding", async () => {

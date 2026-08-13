@@ -1,4 +1,4 @@
-import type { Tiktoken } from "js-tiktoken";
+import type { Tiktoken } from "js-tiktoken/lite";
 
 import {
   EMBEDDING_MAX_TOKENS,
@@ -20,23 +20,6 @@ import {
  */
 
 /**
- * Memoized on the module so the BPE ranks are parsed once per process instead
- * of once per translation. The import stays dynamic because the encoding table
- * must not be bundled into builds that never embed.
- *
- * The encoding costs ~32MB of retained heap and `js-tiktoken`'s `Tiktoken` has
- * no `free()`, so once loaded it stays for the life of the process. That is
- * the right trade for the indexing workflow, which tokenizes every translation
- * — but it must not be paid by a process that only ever embeds short search
- * queries. Hence `withinBudgetByEstimate` below: callers that provably do not
- * need exact counting never trigger the load at all.
- */
-let encodingPromise: Promise<Tiktoken> | null = null;
-
-/** Whether the encoding is currently resident (diagnostics and tests). */
-export const isTokenizerLoaded = (): boolean => encodingPromise !== null;
-
-/**
  * True when even the deliberately pessimistic estimate fits the budget.
  *
  * `estimateEmbeddingTokens` never under-counts, so "the estimate fits" implies
@@ -47,20 +30,25 @@ export const isTokenizerLoaded = (): boolean => encodingPromise !== null;
 const withinBudgetByEstimate = (text: string, maxTokens: number): boolean =>
   estimateEmbeddingTokens(text) <= maxTokens;
 
-export const loadTokenizer = async (
-  encoding?: Tiktoken | null
-): Promise<Tiktoken> => {
-  if (encoding) {
-    return encoding;
-  }
-  encodingPromise ??= import("js-tiktoken")
-    .then((module) => module.getEncoding("cl100k_base"))
-    .catch((error: unknown) => {
-      // let the next caller retry instead of caching the failure forever
-      encodingPromise = null;
-      throw error;
-    });
-  return encodingPromise;
+/**
+ * Creates a tokenizer for one operation.
+ *
+ * Do not retain the returned instance at module scope. `Tiktoken` expands the
+ * BPE ranks into large `Map`s, so a module-level promise would keep those maps
+ * alive for the lifetime of a warm worker. The dynamically imported modules
+ * may remain in the runtime's import cache, but the expanded instance becomes
+ * collectible when its caller finishes.
+ *
+ * The lite entry point plus the one rank table also avoids loading every
+ * tokenizer distributed by `js-tiktoken`.
+ */
+export const loadTokenizer = async (): Promise<Tiktoken> => {
+  const [{ Tiktoken }, { default: cl100kBase }] = await Promise.all([
+    import("js-tiktoken/lite"),
+    import("js-tiktoken/ranks/cl100k_base"),
+  ]);
+
+  return new Tiktoken(cl100kBase);
 };
 
 /**
@@ -144,20 +132,12 @@ export interface TokenGuardResult {
   truncated: boolean;
 }
 
-/**
- * Last line of defence before an embedding API call: guarantees the input is
- * within the model's limit, and logs when something upstream let an oversized
- * one through. An under-estimate must never reach the provider as a 400, and
- * when it happens the log has to say which input it was.
- */
-export const guardEmbeddingInput = async (
+const guardEmbeddingInputWithEncoding = (
   text: string,
   context: { model: string; index?: number; label?: string },
-  maxTokens = EMBEDDING_MAX_TOKENS
-): Promise<TokenGuardResult> => {
-  // Fast path for anything comfortably inside the budget — search queries are
-  // capped at 256 characters and can never approach the limit, so the query
-  // path must not drag the encoding into a long-lived web process.
+  maxTokens: number,
+  encoding: Tiktoken | null
+): TokenGuardResult => {
   if (withinBudgetByEstimate(text, maxTokens)) {
     return {
       text,
@@ -166,7 +146,6 @@ export const guardEmbeddingInput = async (
     };
   }
 
-  const encoding = await tryLoadTokenizer();
   if (!encoding) {
     const fallback = truncateForEmbedding(text, maxTokens);
     return {
@@ -197,6 +176,31 @@ export const guardEmbeddingInput = async (
 };
 
 /**
+ * Last line of defence before an embedding API call: guarantees the input is
+ * within the model's limit, and logs when something upstream let an oversized
+ * one through. An under-estimate must never reach the provider as a 400, and
+ * when it happens the log has to say which input it was.
+ */
+export const guardEmbeddingInput = async (
+  text: string,
+  context: { model: string; index?: number; label?: string },
+  maxTokens = EMBEDDING_MAX_TOKENS
+): Promise<TokenGuardResult> => {
+  // Search queries are capped at 256 characters and should not initialize the
+  // tokenizer in a long-lived web process.
+  const encoding = withinBudgetByEstimate(text, maxTokens)
+    ? null
+    : await tryLoadTokenizer();
+
+  return guardEmbeddingInputWithEncoding(
+    text,
+    context,
+    maxTokens,
+    encoding
+  );
+};
+
+/**
  * Guards a whole batch, keeping input order so the returned vectors still line
  * up with the caller's rows.
  */
@@ -205,11 +209,20 @@ export const guardEmbeddingInputs = async (
   context: { model: string; label?: string },
   maxTokens = EMBEDDING_MAX_TOKENS
 ): Promise<TokenGuardResult[]> => {
-  const results: TokenGuardResult[] = [];
-  for (const [index, input] of inputs.entries()) {
-    results.push(
-      await guardEmbeddingInput(input, { ...context, index }, maxTokens)
-    );
-  }
-  return results;
+  // Keep one tokenizer only for this batch. This avoids constructing one per
+  // oversized input without turning it back into a process-lifetime cache.
+  const encoding = inputs.some(
+    (input) => !withinBudgetByEstimate(input, maxTokens)
+  )
+    ? await tryLoadTokenizer()
+    : null;
+
+  return inputs.map((input, index) =>
+    guardEmbeddingInputWithEncoding(
+      input,
+      { ...context, index },
+      maxTokens,
+      encoding
+    )
+  );
 };
