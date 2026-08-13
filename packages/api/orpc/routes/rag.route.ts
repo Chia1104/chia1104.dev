@@ -1,6 +1,5 @@
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
-import type { Session } from "@chia/auth/types";
 import { countFeedTranslations } from "@chia/db/repos/feeds";
 import { getActiveResourceIndexRun } from "@chia/db/repos/resources/index-run";
 import {
@@ -13,12 +12,10 @@ import {
 } from "@chia/db/repos/resources/stats";
 import type { ResourceIndexKey } from "@chia/db/repos/resources/stats";
 import { RESOURCE_INDEX_RUN_SCOPE } from "@chia/db/schema";
-import { Role } from "@chia/db/types";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import { isAppError } from "@chia/service-kit/errors";
 
-import { adminGuard, adminIdGuard } from "../guards/admin.guard";
-import { authGuard } from "../guards/auth.guard";
+import { adminGuard } from "../guards/admin.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
 import { getIndexingService } from "../indexing";
 import type { IndexingCaller } from "../indexing";
@@ -31,29 +28,15 @@ import { contractOS } from "../utils";
  * which is only registered in the process that owns the workflow runtime — calling one
  * anywhere else fails with `SERVICE_UNAVAILABLE` instead of pretending to have started.
  *
- * `adminGuard()` pins to the configured admin id, so a logged-in non-admin cannot reach
- * a trigger even with a valid session. It matters here because these routes spend
- * embedding credits.
+ * **Every route is `adminGuard()`, reads included.** A session alone is not enough:
+ * `resource_chunk` holds the body text of every indexed resource with no ownership column
+ * to filter on, and the stats queries deliberately include unpublished and soft-deleted
+ * rows because that is what an operator needs to see. Gating reads on `authGuard` would
+ * therefore let anyone who can sign up — magic link and OAuth are both open — page and
+ * full-text search the whole corpus, drafts included. `adminGuard()` also pins to the
+ * configured admin id, which is the right scope: the public site serves that one author's
+ * feeds, so the corpus is theirs.
  */
-
-/** Roles allowed to trigger, mirroring `adminPolicy`'s default. */
-const TRIGGER_ROLES: Role[] = [Role.Admin, Role.Root];
-
-/**
- * The one evaluation of "may this session trigger indexing".
- *
- * Restates `adminPolicy({ pinToAdminId: true })` because the read routes need the answer
- * as a value rather than as a rejection — the dashboard disables its buttons from this
- * and never decides authorization itself. `adminGuard()` is still the only thing that
- * blocks a trigger; this only affects appearance.
- */
-const canTrigger = (
-  session: Session | null | undefined,
-  adminId: string
-): boolean =>
-  !!session?.user &&
-  TRIGGER_ROLES.includes(session.user.role) &&
-  session.user.id === adminId;
 
 /** The key everything is measured against: provider id plus strategy version. */
 const currentIndexKey = (): ResourceIndexKey => ({
@@ -73,8 +56,7 @@ const callerOf = (opts: {
 // ============================================
 
 export const getRagOverviewRoute = contractOS.rag.overview
-  .use(authGuard)
-  .use(adminIdGuard)
+  .use(adminGuard())
   .handler(async (opts) => {
     const key = currentIndexKey();
     const [overview, byIndexKey, needingEmbedding, activeRun] =
@@ -89,7 +71,6 @@ export const getRagOverviewRoute = contractOS.rag.overview
 
     return {
       ...key,
-      canTrigger: canTrigger(opts.context.session, opts.context.adminId),
       ...overview,
       byIndexKey,
       needingEmbedding,
@@ -98,7 +79,7 @@ export const getRagOverviewRoute = contractOS.rag.overview
   });
 
 export const listRagChunksRoute = contractOS.rag["chunks:list"]
-  .use(authGuard)
+  .use(adminGuard())
   .handler(async (opts) => {
     const key = currentIndexKey();
     const page = await listChunks(opts.context.db, {
@@ -111,7 +92,7 @@ export const listRagChunksRoute = contractOS.rag["chunks:list"]
   });
 
 export const getRagChunkRoute = contractOS.rag["chunk:get"]
-  .use(authGuard)
+  .use(adminGuard())
   .handler(async (opts) => {
     const key = currentIndexKey();
     const chunk = await getChunkDetail(opts.context.db, {
@@ -126,8 +107,7 @@ export const getRagChunkRoute = contractOS.rag["chunk:get"]
   });
 
 export const getResourceIndexStatusRoute = contractOS.rag["resource:status"]
-  .use(authGuard)
-  .use(adminIdGuard)
+  .use(adminGuard())
   .handler(async (opts) => {
     const key = currentIndexKey();
     const [status, activeRun] = await Promise.all([
@@ -141,7 +121,6 @@ export const getResourceIndexStatusRoute = contractOS.rag["resource:status"]
 
     return {
       ...key,
-      canTrigger: canTrigger(opts.context.session, opts.context.adminId),
       ...status,
       activeRunId: activeRun?.externalRunId ?? null,
     };
@@ -149,7 +128,7 @@ export const getResourceIndexStatusRoute = contractOS.rag["resource:status"]
 
 /** Goes through the port rather than the repository: the rows need reconciling first. */
 export const listIndexRunsRoute = contractOS.rag["runs:list"]
-  .use(authGuard)
+  .use(adminGuard())
   .handler(async (opts) => {
     try {
       const page = await getIndexingService().listRuns({
@@ -164,7 +143,7 @@ export const listIndexRunsRoute = contractOS.rag["runs:list"]
   });
 
 export const getIndexRunRoute = contractOS.rag["run:get"]
-  .use(authGuard)
+  .use(adminGuard())
   .handler(async (opts) => {
     try {
       const run = await getIndexingService().getRun(opts.input);
@@ -180,7 +159,7 @@ export const getIndexRunRoute = contractOS.rag["run:get"]
 
 /** Read directly here: the numbers are queries, not something a run has to report. */
 export const previewReindexAllRoute = contractOS.rag["reindex:all:preview"]
-  .use(authGuard)
+  .use(adminGuard())
   .handler(async (opts) => {
     const key = currentIndexKey();
     const [overview, byIndexKey, needingEmbedding, targets] = await Promise.all(

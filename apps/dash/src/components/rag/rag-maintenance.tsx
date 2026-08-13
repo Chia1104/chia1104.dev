@@ -188,7 +188,8 @@ export const RagMaintenance = () => {
   const [startedRunId, setStartedRunId] = useState<string | null>(null);
 
   const overview = useQuery(orpc.rag.overview.queryOptions());
-  const canTrigger = overview.data?.canTrigger ?? false;
+  // every RAG route is adminGuard(), so a loaded overview already proves the authority
+  const canTrigger = !!overview.data;
   // a bulk run started before this page was opened is reported by the overview
   const activeRunId = startedRunId ?? overview.data?.activeRunId ?? null;
 
@@ -310,12 +311,6 @@ export const RagMaintenance = () => {
           </Button>
         </Card.Content>
       </Card>
-
-      {!canTrigger && overview.data && (
-        <p className="text-muted-foreground text-xs">
-          Only the configured admin can run these.
-        </p>
-      )}
 
       <ConfirmActionModal
         action={action}
