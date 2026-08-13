@@ -29,7 +29,10 @@ export {
   type ToolCallView,
 } from "./wire/fold.ts";
 export { entriesToWireEvents } from "./wire/replay.ts";
-export { createPiWireEventMapper } from "./pi/events.ts";
+export {
+  createPiWireEventMapper,
+  type PiWireEventMapperOptions,
+} from "./pi/events.ts";
 export {
   createPiToolCallGate,
   type ApprovalRequest,

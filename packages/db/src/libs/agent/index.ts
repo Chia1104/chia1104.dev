@@ -372,23 +372,27 @@ export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {
 // Tool approvals
 // ============================================
 
-export const recordAgentApprovalRequest = async (
+export const recordAgentApprovalRequests = async (
   db: DB,
-  input: {
+  inputs: readonly {
     sessionId: string;
     toolCallId: string;
     toolName: string;
     args?: Record<string, unknown>;
-  }
+  }[]
 ) => {
+  if (inputs.length === 0) return;
+
   await db
     .insert(agentToolApprovals)
-    .values({
-      sessionId: input.sessionId,
-      toolCallId: input.toolCallId,
-      toolName: input.toolName,
-      args: input.args ?? null,
-    })
+    .values(
+      inputs.map((input) => ({
+        sessionId: input.sessionId,
+        toolCallId: input.toolCallId,
+        toolName: input.toolName,
+        args: input.args ?? null,
+      }))
+    )
     // The model may re-issue a gated call; the first request wins so an existing decision
     // is never overwritten by a fresh request.
     .onConflictDoNothing({

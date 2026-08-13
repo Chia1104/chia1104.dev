@@ -14,6 +14,7 @@ import type {
   AgentTurnExecution,
   AgentWireEvent,
   ApprovalRequest,
+  TextMessageView,
 } from "@chia/agent-runtime";
 
 import { InMemoryDraftStore } from "../src/draft/index.ts";
@@ -101,7 +102,7 @@ const build = async (
         onEvent: (event) => events.push(event),
         models,
         toApproval: (approval) => approval,
-        persistApproval: async () => undefined,
+        persistApprovals: async () => undefined,
       }),
   };
 };
@@ -328,5 +329,24 @@ describe("runWritingTurn", () => {
 
     expect(textOf(withDeltas)).toBe("Hello there, operator.");
     expect(textOf(withoutDeltas)).toBe("Hello there, operator.");
+  });
+
+  it("keeps assistant message ids distinct across turns", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage("First answer."),
+      fauxAssistantMessage("Second answer."),
+    ]);
+
+    await fixture.run("First question");
+    await fixture.run("Second question");
+
+    const assistants = foldEvents(fixture.events).items.filter(
+      (item): item is TextMessageView => item.kind === "assistant"
+    );
+    expect(assistants.map((item) => item.text)).toEqual([
+      "First answer.",
+      "Second answer.",
+    ]);
+    expect(new Set(assistants.map((item) => item.messageId)).size).toBe(2);
   });
 });

@@ -1,4 +1,4 @@
-import { AgentHarness } from "@earendil-works/pi-agent-core";
+import { AgentHarness, uuidv7 } from "@earendil-works/pi-agent-core";
 import type {
   PromptTemplate,
   Session,
@@ -34,7 +34,8 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   toApproval: (request: ApprovalRequest) => TApproval;
-  persistApproval: (approval: TApproval) => Promise<void>;
+  /** Persists the whole batch atomically, or rejects without leaving partial rows. */
+  persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
   flushEvents?: () => Promise<void>;
 }
 
@@ -59,7 +60,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   message,
   onEvent,
   toApproval,
-  persistApproval,
+  persistApprovals,
   flushEvents,
 }: RunPiTurnOptions<TContext, TApproval>): Promise<
   AgentTurnExecution<TApproval>
@@ -87,20 +88,14 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       autoApprove: settings.autoApprove,
       approvedToolCallIds,
       preAuthorizedToolNames,
-      onApprovalRequired: (request) =>
-        onEvent({
-          type: "approval:request",
-          toolCallId: request.toolCallId,
-          toolName: request.toolName,
-          tier: request.tier,
-          args: request.args,
-        }),
     });
     unsubscribers.push(
       turnHarness.on("tool_call", (event) => gate.handle(event))
     );
 
+    const turnId = uuidv7();
     const mapEvent = createPiWireEventMapper({
+      messageIdPrefix: turnId,
       tierOf: policy.tierOf,
       labelOf: policy.labelOf,
       summarize: policy.summarize,
@@ -132,10 +127,9 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     }
 
     onEvent({ type: "run:start", sessionId: agentSessionId });
-    const now = Date.now();
     onEvent({
       type: "user",
-      messageId: `u-${now.toString(36)}`,
+      messageId: `u:${turnId}`,
       text: message.text,
     });
 
@@ -153,11 +147,27 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       failure = messageFor(error);
     }
 
-    const approvals: TApproval[] = [];
-    for (const request of gate.requests) {
-      const approval = toApproval(request);
-      approvals.push(approval);
-      await persistApproval(approval);
+    let approvals: TApproval[] = [];
+    if (!failure && gate.requests.length > 0) {
+      try {
+        const pending = gate.requests.map(toApproval);
+        await persistApprovals(pending);
+        approvals = pending;
+      } catch (error) {
+        failure = messageFor(error);
+      }
+    }
+
+    if (!failure) {
+      for (const request of gate.requests) {
+        onEvent({
+          type: "approval:request",
+          toolCallId: request.toolCallId,
+          toolName: request.toolName,
+          tier: request.tier,
+          args: request.args,
+        });
+      }
     }
 
     if (!failure && approvals.length === 0) {

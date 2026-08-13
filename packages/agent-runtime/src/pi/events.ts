@@ -8,11 +8,15 @@ import type { AgentWireEvent } from "../wire/schema.ts";
 // ============================================
 
 /**
- * pi's assistant messages carry no id, so the mapper assigns one per assistant message and
- * accumulates text/thinking to emit a single terminal `assistant:end`. That means the
- * mapper is **stateful per turn** — create one per run, never share.
+ * pi's assistant messages carry no id, so the mapper combines a caller-owned turn id with a
+ * per-turn sequence and accumulates text/thinking to emit a single terminal `assistant:end`.
  */
-export const createPiWireEventMapper = (options: AgentEventPresentation) => {
+export interface PiWireEventMapperOptions extends AgentEventPresentation {
+  /** Stable, unique identifier for the turn that owns these live events. */
+  messageIdPrefix: string;
+}
+
+export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
   let assistantSeq = 0;
   let current: { id: string; text: string; thinking: string } | undefined;
 
@@ -21,7 +25,11 @@ export const createPiWireEventMapper = (options: AgentEventPresentation) => {
       case "message_start": {
         if (event.message.role !== "assistant") return [];
         assistantSeq += 1;
-        current = { id: `a${assistantSeq}`, text: "", thinking: "" };
+        current = {
+          id: `a:${options.messageIdPrefix}:${assistantSeq}`,
+          text: "",
+          thinking: "",
+        };
         return [{ type: "assistant:start", messageId: current.id }];
       }
 

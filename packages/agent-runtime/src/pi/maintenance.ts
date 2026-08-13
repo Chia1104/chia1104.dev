@@ -31,7 +31,7 @@ const createMaintenanceHarness = ({
     tools: [],
     thinkingLevel: clampSessionThinkingLevel(model, settings),
     systemPrompt: "",
-  } as never) as AgentHarness;
+  });
 
 /** Runs Pi's native compaction without constructing writing tools or turn subscriptions. */
 export const compactPiSession = async (

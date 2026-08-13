@@ -147,7 +147,8 @@ bearing `Models`, and supplies tools, skills, templates, dynamic system prompt a
 1. clamp thinking level to the resolved model and construct one harness for the turn;
 2. install the Pi tool-call approval hook and Pi-to-wire event mapping;
 3. emit `run:start` and the user event, then invoke prompt or prompt template;
-4. persist approval snapshots;
+4. after a successful provider turn, atomically persist all approval snapshots and then emit their
+   `approval:request` events;
 5. auto-compact only after a successful turn with no pending approvals;
 6. emit the terminal error/end events, unsubscribe, then flush the durable writer.
 
@@ -160,13 +161,16 @@ a consistent state instead of waiting on an in-memory promise that would be lost
 sequenceDiagram
     participant M as Model
     participant G as createPiToolCallGate
+    participant R as runPiTurn
     participant WF as Workflow
     participant OP as Operator
     participant DB as agent_tool_approval
 
     M->>G: commit tool call
     G-->>M: blocked; stop and await approval
-    G->>DB: persist request
+    G-->>R: collect request
+    R->>DB: atomically persist collected requests
+    R-->>WF: emit approval:request after persistence
     WF->>WF: park on approval hook
     OP->>DB: persist decision
     OP->>WF: resume hook
@@ -179,6 +183,10 @@ A call is allowed when its tier needs no approval, its tier is session-auto-appr
 was durably approved, or its tool name is pre-authorized for this turn. The decision is stored
 before the workflow is resumed. Rejections also receive a follow-up turn so the agent can
 acknowledge the operator's comment.
+
+Approval requests are published only after the provider turn succeeds and the whole request batch
+has been persisted. A provider or persistence failure therefore returns an `error` turn with no
+undecided approval rows, so the workflow never waits for a hook that it cannot resume.
 
 ## 6. Wire events and streaming
 
@@ -193,8 +201,9 @@ approval:request · approval:resolved
 session:compacted · state:changed · error · run:end
 ```
 
-- `createPiWireEventMapper` maps live Pi events and is stateful per turn.
-- `entriesToWireEvents` rebuilds history from persisted Pi entries.
+- `createPiWireEventMapper` maps live Pi events and prefixes assistant ids with a unique turn id.
+- `entriesToWireEvents` rebuilds history from persisted Pi entries and uses each entry id as the
+  stable assistant identity.
 - `applyEvent` / `foldEvents` give live and replayed events one dashboard rendering path.
 - `@chia/agent-runtime/transports/tanstack-ai` maps the bounded events to the AG-UI subset used by
   TanStack AI.

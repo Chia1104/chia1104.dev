@@ -40,8 +40,6 @@ export interface PiToolCallGateOptions {
    * common path avoid burning a turn on the refusal handshake.
    */
   preAuthorizedToolNames?: ReadonlySet<string>;
-  /** Called for each refusal so the transport can surface an approval prompt. */
-  onApprovalRequired: (request: ApprovalRequest) => void;
 }
 
 export interface PiToolCallGate {
@@ -80,7 +78,6 @@ export const createPiToolCallGate = (
         args: event.input,
       };
       requests.push(request);
-      options.onApprovalRequired(request);
 
       return {
         block: true,

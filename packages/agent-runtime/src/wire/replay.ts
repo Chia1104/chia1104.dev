@@ -18,7 +18,6 @@ export const entriesToWireEvents = (
   options: AgentEventPresentation
 ): AgentWireEvent[] => {
   const events: AgentWireEvent[] = [];
-  let assistantSeq = 0;
 
   for (const entry of entries) {
     if (entry.type === "compaction") {
@@ -42,8 +41,7 @@ export const entriesToWireEvents = (
     }
 
     if (message.role === "assistant") {
-      assistantSeq += 1;
-      const messageId = `a${assistantSeq}`;
+      const messageId = `a:${entry.id}`;
       const text = message.content
         .filter((part) => part.type === "text")
         .map((part) => part.text)

@@ -66,7 +66,7 @@ const createOptions = () => {
     message: { text: "Hello" },
     onEvent: (event: AgentWireEvent) => events.push(event),
     toApproval: (approval: { toolCallId: string }) => approval.toolCallId,
-    persistApproval: vi.fn(async () => undefined),
+    persistApprovals: vi.fn(async () => undefined),
     events,
   };
 };
@@ -120,8 +120,13 @@ describe("runPiTurn", () => {
     expect(flushEvents).toHaveBeenCalledOnce();
   });
 
-  it("persists approval requests raised by Pi's tool hook", async () => {
+  it("atomically persists approval requests before publishing them", async () => {
     const options = createOptions();
+    options.persistApprovals.mockImplementation(async () => {
+      expect(
+        options.events.some((event) => event.type === "approval:request")
+      ).toBe(false);
+    });
     pi.harness.prompt.mockImplementation(async () => {
       const handler = pi.handlers.get("tool_call");
       await handler?.({
@@ -130,23 +135,28 @@ describe("runPiTurn", () => {
         toolName: "publish",
         input: { slug: "hello" },
       });
+      await handler?.({
+        type: "tool_call",
+        toolCallId: "call-2",
+        toolName: "publish",
+        input: { slug: "second" },
+      });
     });
 
     const result = await runPiTurn(options);
 
-    expect(options.persistApproval).toHaveBeenCalledWith("call-1");
+    expect(options.persistApprovals).toHaveBeenCalledOnce();
+    expect(options.persistApprovals).toHaveBeenCalledWith(["call-1", "call-2"]);
     expect(result).toEqual({
       status: "awaiting_approval",
-      approvals: ["call-1"],
+      approvals: ["call-1", "call-2"],
       error: undefined,
     });
-    expect(options.events).toContainEqual({
-      type: "approval:request",
-      toolCallId: "call-1",
-      toolName: "publish",
-      tier: "commit",
-      args: { slug: "hello" },
-    });
+    expect(
+      options.events
+        .filter((event) => event.type === "approval:request")
+        .map((event) => event.toolCallId)
+    ).toEqual(["call-1", "call-2"]);
   });
 
   it("dispatches templates and turns provider failures into terminal events", async () => {
@@ -177,10 +187,10 @@ describe("runPiTurn", () => {
     ]);
   });
 
-  it("tears down and flushes when approval persistence fails", async () => {
+  it("terminalizes and flushes when approval persistence fails", async () => {
     const options = createOptions();
     const flushEvents = vi.fn(async () => undefined);
-    options.persistApproval.mockRejectedValue(
+    options.persistApprovals.mockRejectedValue(
       new Error("database unavailable")
     );
     pi.harness.prompt.mockImplementation(async () => {
@@ -192,15 +202,47 @@ describe("runPiTurn", () => {
       });
     });
 
-    await expect(runPiTurn({ ...options, flushEvents })).rejects.toThrow(
-      "database unavailable"
+    await expect(runPiTurn({ ...options, flushEvents })).resolves.toEqual({
+      status: "error",
+      approvals: [],
+      error: "database unavailable",
+    });
+    expect(options.events).not.toContainEqual(
+      expect.objectContaining({ type: "approval:request" })
     );
+    expect(options.events.slice(-2)).toEqual([
+      { type: "error", message: "database unavailable" },
+      { type: "run:end", reason: "error" },
+    ]);
     expect(
       pi.unsubscribers.every(
         (unsubscribe) => unsubscribe.mock.calls.length === 1
       )
     ).toBe(true);
     expect(flushEvents).toHaveBeenCalledOnce();
+  });
+
+  it("does not persist approvals raised by a failed provider turn", async () => {
+    const options = createOptions();
+    pi.harness.prompt.mockImplementation(async () => {
+      await pi.handlers.get("tool_call")?.({
+        type: "tool_call",
+        toolCallId: "call-1",
+        toolName: "publish",
+        input: {},
+      });
+      throw new Error("provider failed");
+    });
+
+    await expect(runPiTurn(options)).resolves.toEqual({
+      status: "error",
+      approvals: [],
+      error: "provider failed",
+    });
+    expect(options.persistApprovals).not.toHaveBeenCalled();
+    expect(options.events).not.toContainEqual(
+      expect.objectContaining({ type: "approval:request" })
+    );
   });
 
   it("does not compact a successful turn that requests approval", async () => {
@@ -249,8 +291,10 @@ describe("runPiTurn", () => {
     expect(pi.harness.compact).toHaveBeenCalledOnce();
 
     pi.harness.compact.mockClear();
+    const failed = createOptions();
+    Object.assign(failed.session, { getBranch: clean.session.getBranch });
     pi.harness.prompt.mockRejectedValueOnce(new Error("provider failed"));
-    await runPiTurn(createOptions());
+    await runPiTurn(failed);
     expect(pi.harness.compact).not.toHaveBeenCalled();
   });
 

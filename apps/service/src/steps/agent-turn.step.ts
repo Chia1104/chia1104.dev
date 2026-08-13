@@ -19,7 +19,7 @@ import {
   getAgentSession,
   getApprovedAgentToolCallIds,
   getWritingAgentSession,
-  recordAgentApprovalRequest,
+  recordAgentApprovalRequests,
 } from "@chia/db/repos/agent";
 
 import { createAgentContentPort } from "../services/agent-content.port";
@@ -202,13 +202,16 @@ async function runWritingAgentTurn(
       toolName: approval.toolName,
       args: approval.args as Record<string, unknown> | undefined,
     }),
-    persistApproval: async (approval) => {
-      await recordAgentApprovalRequest(db, {
-        sessionId: request.sessionId,
-        toolCallId: approval.toolCallId,
-        toolName: approval.toolName,
-        args: approval.args,
-      });
+    persistApprovals: async (approvals) => {
+      await recordAgentApprovalRequests(
+        db,
+        approvals.map((approval) => ({
+          sessionId: request.sessionId,
+          toolCallId: approval.toolCallId,
+          toolName: approval.toolName,
+          args: approval.args,
+        }))
+      );
     },
     flushEvents: writer.flush,
   });

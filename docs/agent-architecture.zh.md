@@ -144,7 +144,8 @@ model，並組合 tools、skills、templates、dynamic system prompt 與 writing
 1. 依 resolved model clamp thinking level，每個 turn 建立一個 harness；
 2. 安裝 Pi tool-call approval hook 與 Pi-to-wire event mapper；
 3. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
-4. 持久化 approval snapshots；
+4. provider turn 成功後，原子批次持久化所有 approval snapshots，再 emit 對應的
+   `approval:request`；
 5. 只在成功且沒有 pending approval 時 auto-compact；
 6. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
 
@@ -157,13 +158,16 @@ turn 以一致狀態結束，不會停在 deploy 後就消失的 in-memory promi
 sequenceDiagram
     participant M as Model
     participant G as createPiToolCallGate
+    participant R as runPiTurn
     participant WF as Workflow
     participant OP as Operator
     participant DB as agent_tool_approval
 
     M->>G: commit tool call
     G-->>M: blocked；停止並等待核准
-    G->>DB: persist request
+    G-->>R: 收集 request
+    R->>DB: 原子批次持久化收集到的 requests
+    R-->>WF: 持久化成功後 emit approval:request
     WF->>WF: park on approval hook
     OP->>DB: persist decision
     OP->>WF: resume hook
@@ -175,6 +179,10 @@ sequenceDiagram
 四種放行條件是：tier 不需核准、tier 在 session `autoApprove`、tool call id 已持久化核准，
 或 tool name 僅在本 turn 被 pre-authorize。Decision 一定先寫 DB 再喚醒 workflow。Rejected
 request 也會有一個後續 turn，讓 agent 回應 operator comment。
+
+Approval request 只會在 provider turn 成功且整批 request 完成持久化後發布。Provider 或
+persistence 失敗會回傳沒有 undecided approval rows 的 `error` turn，因此 workflow 不會等待
+一個實際上無法 resume 的 hook。
 
 ## 6. Wire events 與 streaming
 
@@ -188,8 +196,10 @@ approval:request · approval:resolved
 session:compacted · state:changed · error · run:end
 ```
 
-- `createPiWireEventMapper`：live Pi event → wire event，每個 turn 各建一個。
-- `entriesToWireEvents`：persisted Pi entries → replay history。
+- `createPiWireEventMapper`：live Pi event → wire event，並用唯一 turn id 作為 assistant id
+  前綴。
+- `entriesToWireEvents`：persisted Pi entries → replay history，使用 entry id 作為穩定的
+  assistant identity。
 - `applyEvent` / `foldEvents`：讓 live 與 replay 共用 dashboard rendering path。
 - `@chia/agent-runtime/transports/tanstack-ai`：映射為 TanStack AI 使用的 AG-UI subset。
 

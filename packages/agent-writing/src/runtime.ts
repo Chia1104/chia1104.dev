@@ -43,7 +43,7 @@ export interface RunWritingTurnOptions<TApproval> {
   models?: Models;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
-  persistApproval: (approval: TApproval) => Promise<void>;
+  persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
   flushEvents?: () => Promise<void>;
 }
 
@@ -85,7 +85,7 @@ export const runWritingTurn = <TApproval>(
     message: options.message,
     onEvent: options.onEvent,
     toApproval: options.toApproval,
-    persistApproval: options.persistApproval,
+    persistApprovals: options.persistApprovals,
     flushEvents: options.flushEvents,
   });
 };
