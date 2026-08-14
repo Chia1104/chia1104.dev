@@ -246,7 +246,16 @@ export const upsertFeedTranslationRoute = contractOS.feeds["translation:upsert"]
 export const upsertContentRoute = contractOS.feeds["content:upsert"]
   .use(contentWriteGuard)
   .handler(async (opts) => {
-    await upsertContent(opts.context.db, opts.input);
+    /**
+     * An `UPDATE` keyed on the translation id, so an unknown id matches no row and returns
+     * nothing. Ignoring that answered 2xx to a write that never landed, which the content
+     * pipeline had no way to notice.
+     */
+    const content = await upsertContent(opts.context.db, opts.input);
+
+    if (!content) {
+      throw opts.errors.NOT_FOUND();
+    }
 
     const feedID = await getFeedIdByTranslationId(opts.context.db, {
       translationId: opts.input.feedTranslationId,

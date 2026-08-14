@@ -49,6 +49,18 @@ describe("feeds.search:advanced authentication", () => {
     expect(res.status).toBe(200);
   });
 
+  /**
+   * Omitting `model` is not the lexical path: the contract defaults it to `hybrid`, which
+   * embeds the query. The guard must therefore still demand root.
+   */
+  it("requires Role.Root when the model is omitted", async () => {
+    mockGetSession.mockResolvedValue(session("admin"));
+
+    const res = await search({ keyword: "kubernetes" });
+
+    expect(res.status).toBe(403);
+  });
+
   it.each(["hybrid", "semantic"])(
     "requires Role.Root for %s, which spends embedding credentials",
     async (model) => {

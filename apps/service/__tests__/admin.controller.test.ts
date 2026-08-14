@@ -64,6 +64,17 @@ describe("feeds writes require the right tier", () => {
       );
     });
 
+    it("reports a content:upsert against an unknown translation as NOT_FOUND", async () => {
+      dbMocks.upsertContent.mockResolvedValue(undefined);
+
+      const res = await rpc("content:upsert", {
+        feedTranslationId: 999,
+        content: "# hello",
+      });
+
+      expect(res.status).toBe(404);
+    });
+
     it("may not delete a feed", async () => {
       const res = await rpc("delete", { feedId: 1 });
 

@@ -133,10 +133,10 @@ export const feedsInfiniteSchema = z.object({
   // Composite feed cursors are strings (`feed:[timestamp,id]`); bare numeric ids still work.
   nextCursor: z.union([z.string(), z.number()]).optional(),
   withContent: flexibleBoolean.optional().default(false),
-  locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   type: z.enum(FeedType).optional(),
+  ...localeQuerySchema.shape,
   ...feedVisibilitySchema.shape,
 });
 

@@ -77,7 +77,9 @@ export const getPublicFeedSummariesByIds: Mock = vi
 export const getFeedIdByTranslationId: Mock = vi.fn().mockResolvedValue(1);
 export const getFeedRefsByTranslationIds: Mock = vi.fn().mockResolvedValue([]);
 export const upsertFeedTranslation: Mock = vi.fn().mockResolvedValue(undefined);
-export const upsertContent: Mock = vi.fn().mockResolvedValue(undefined);
+export const upsertContent: Mock = vi
+  .fn()
+  .mockResolvedValue({ feedTranslationId: 9 });
 export const updateFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const softDeleteFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 export const deleteFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
@@ -90,7 +92,6 @@ export const getRelatedFeeds: Mock = vi.fn().mockResolvedValue([]);
 export const searchResources: Mock = vi
   .fn()
   .mockResolvedValue({ mode: "hybrid", items: [] });
-
 
 // Helper function to reset all mocks
 export const resetAllDbMocks = () => {
