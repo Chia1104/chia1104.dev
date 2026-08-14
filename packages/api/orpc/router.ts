@@ -1,11 +1,9 @@
 import * as agentRoutes from "./routes/agent.route";
 import * as apikeyRoutes from "./routes/apikey.route";
-import * as contentRoutes from "./routes/content.route";
 import * as emailRoutes from "./routes/email.route";
 import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
-import * as mediaRoutes from "./routes/media.route";
 import * as organizationRoutes from "./routes/organization.route";
 import * as ragRoutes from "./routes/rag.route";
 import * as spotifyRoutes from "./routes/spotify.route";
@@ -49,13 +47,18 @@ export const router = contractOS.router({
     update: apikeyRoutes.updateApiKeyRoute,
   },
   feeds: {
-    list: feedsRoutes.getFeedsWithMetaRoute,
+    list: feedsRoutes.getFeedsRoute,
     "details-by-slug": feedsRoutes.getFeedBySlugRoute,
     "details-by-id": feedsRoutes.getFeedByIdRoute,
+    related: feedsRoutes.getRelatedFeedsRoute,
+    search: feedsRoutes.searchFeedsRoute,
+    "search:advanced": feedsRoutes.searchFeedsAdvancedRoute,
     create: feedsRoutes.createFeedRoute,
     update: feedsRoutes.updateFeedRoute,
     delete: feedsRoutes.deleteFeedRoute,
     restore: feedsRoutes.restoreFeedRoute,
+    "translation:upsert": feedsRoutes.upsertFeedTranslationRoute,
+    "content:upsert": feedsRoutes.upsertContentRoute,
   },
   organization: {
     details: organizationRoutes.getOrganizationRoute,
@@ -83,21 +86,6 @@ export const router = contractOS.router({
   email: {
     send: emailRoutes.sendContactEmailRoute,
   },
-  content: {
-    feeds: {
-      list: contentRoutes.getPublicFeedsRoute,
-      total: contentRoutes.getPublicFeedsTotalRoute,
-      "details-by-slug": contentRoutes.getPublicFeedBySlugRoute,
-      "details-by-id": contentRoutes.getPublicFeedByIdRoute,
-      related: contentRoutes.getPublicRelatedFeedsRoute,
-      "translation:upsert": contentRoutes.upsertPublicFeedTranslationRoute,
-      "content:upsert": contentRoutes.upsertPublicFeedContentRoute,
-      update: contentRoutes.updatePublicFeedRoute,
-      "public-list": contentRoutes.listPublicFeedsRoute,
-      "public-search": contentRoutes.searchPublicFeedsRoute,
-      search: contentRoutes.searchFeedsRoute,
-    },
-  },
   rag: {
     overview: ragRoutes.getRagOverviewRoute,
     "chunks:list": ragRoutes.listRagChunksRoute,
@@ -111,18 +99,12 @@ export const router = contractOS.router({
     "reindex:all": ragRoutes.reindexAllRoute,
     "embeddings:prune": ragRoutes.pruneEmbeddingsRoute,
   },
-  media: {
-    spotify: {
-      playlist: mediaRoutes.getSpotifyPlaylistRoute,
-      playing: mediaRoutes.getSpotifyNowPlayingRoute,
-    },
-  },
   spotify: {
-    manage: {
-      accounts: spotifyRoutes.getSpotifyAccountsRoute,
-      authorize: spotifyRoutes.createSpotifyAuthorizationRoute,
-      activate: spotifyRoutes.activateSpotifyAccountRoute,
-      disconnect: spotifyRoutes.disconnectSpotifyAccountRoute,
-    },
+    playlist: spotifyRoutes.getSpotifyPlaylistRoute,
+    playing: spotifyRoutes.getSpotifyNowPlayingRoute,
+    accounts: spotifyRoutes.getSpotifyAccountsRoute,
+    authorize: spotifyRoutes.createSpotifyAuthorizationRoute,
+    activate: spotifyRoutes.activateSpotifyAccountRoute,
+    disconnect: spotifyRoutes.disconnectSpotifyAccountRoute,
   },
 });

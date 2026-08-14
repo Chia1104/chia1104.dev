@@ -1,11 +1,9 @@
 import * as agentContracts from "./contracts/agent.contract";
 import * as apikeyContracts from "./contracts/apikey.contract";
-import * as contentContracts from "./contracts/content.contract";
 import * as emailContracts from "./contracts/email.contract";
 import * as feedsContracts from "./contracts/feeds.contract";
 import * as fileContracts from "./contracts/file.contract";
 import * as healthContracts from "./contracts/health.contract";
-import * as mediaContracts from "./contracts/media.contract";
 import * as organizationContracts from "./contracts/organization.contract";
 import * as ragContracts from "./contracts/rag.contract";
 import * as spotifyContracts from "./contracts/spotify.contract";
@@ -52,13 +50,18 @@ export const routerContract = {
     list: userContracts.getInfiniteUsersContract,
   },
   feeds: {
-    list: feedsContracts.getFeedsWithMetaContract,
+    list: feedsContracts.getFeedsContract,
     "details-by-slug": feedsContracts.getFeedBySlugContract,
     "details-by-id": feedsContracts.getFeedByIdContract,
+    related: feedsContracts.getRelatedFeedsContract,
+    search: feedsContracts.searchFeedsContract,
+    "search:advanced": feedsContracts.searchFeedsAdvancedContract,
     create: feedsContracts.createFeedContract,
     update: feedsContracts.updateFeedContract,
     delete: feedsContracts.deleteFeedContract,
     restore: feedsContracts.restoreFeedContract,
+    "translation:upsert": feedsContracts.upsertFeedTranslationContract,
+    "content:upsert": feedsContracts.upsertContentContract,
   },
   organization: {
     details: organizationContracts.getOrganizationContract,
@@ -82,22 +85,6 @@ export const routerContract = {
   email: {
     send: emailContracts.sendContactEmailContract,
   },
-  content: {
-    feeds: {
-      list: contentContracts.getPublicFeedsContract,
-      total: contentContracts.getPublicFeedsTotalContract,
-      "details-by-slug": contentContracts.getPublicFeedBySlugContract,
-      "details-by-id": contentContracts.getPublicFeedByIdContract,
-      related: contentContracts.getPublicRelatedFeedsContract,
-      "translation:upsert":
-        contentContracts.upsertPublicFeedTranslationContract,
-      "content:upsert": contentContracts.upsertPublicFeedContentContract,
-      update: contentContracts.updatePublicFeedContract,
-      "public-list": contentContracts.listPublicFeedsContract,
-      "public-search": contentContracts.searchPublicFeedsContract,
-      search: contentContracts.searchFeedsContract,
-    },
-  },
   rag: {
     overview: ragContracts.getRagOverviewContract,
     "chunks:list": ragContracts.listRagChunksContract,
@@ -111,30 +98,22 @@ export const routerContract = {
     "reindex:all": ragContracts.reindexAllContract,
     "embeddings:prune": ragContracts.pruneEmbeddingsContract,
   },
-  media: {
-    spotify: {
-      playlist: mediaContracts.getSpotifyPlaylistContract,
-      playing: mediaContracts.getSpotifyNowPlayingContract,
-    },
-  },
   spotify: {
-    manage: {
-      accounts: spotifyContracts.getSpotifyAccountsContract,
-      authorize: spotifyContracts.createSpotifyAuthorizationContract,
-      activate: spotifyContracts.activateSpotifyAccountContract,
-      disconnect: spotifyContracts.disconnectSpotifyAccountContract,
-    },
+    playlist: spotifyContracts.getSpotifyPlaylistContract,
+    playing: spotifyContracts.getSpotifyNowPlayingContract,
+    accounts: spotifyContracts.getSpotifyAccountsContract,
+    authorize: spotifyContracts.createSpotifyAuthorizationContract,
+    activate: spotifyContracts.activateSpotifyAccountContract,
+    disconnect: spotifyContracts.disconnectSpotifyAccountContract,
   },
 };
 
 export {
   agentContracts,
   apikeyContracts,
-  contentContracts,
   emailContracts,
   feedsContracts,
   healthContracts,
-  mediaContracts,
   organizationContracts,
   ragContracts,
   spotifyContracts,

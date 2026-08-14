@@ -154,11 +154,9 @@ export const DeleteButton = memo(
     const queryClient = useQueryClient();
 
     const invalidateAndRedirect = async (redirect = true) => {
-      await queryClient.invalidateQueries(
-        orpc.feeds.list.queryOptions({
-          input: { type },
-        })
-      );
+      // Partial key: the list is queried with visibility flags and paging input the
+      // caller here does not know, so an exact key would match nothing.
+      await queryClient.invalidateQueries({ queryKey: orpc.feeds.list.key() });
       if (redirect) {
         router.push(`/feed/${type}s`);
       }

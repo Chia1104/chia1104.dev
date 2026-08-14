@@ -2,6 +2,7 @@ import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
 import { baseOS } from "@chia/api/orpc/utils";
+import { CallerTier } from "@chia/service-kit/policies";
 
 // ============================================
 // oRPC guards
@@ -18,13 +19,69 @@ const FAKE_API_KEY = {
   enabled: true,
 };
 
-/** Mock for the oRPC `apiKeyGuard` — skips API key verification. */
-export const orpcApiKeyGuard = vi.fn(() =>
-  baseOS.middleware(({ next }) => next({ context: { apiKey: FAKE_API_KEY } }))
-);
-
 /** Mock for the oRPC `rateLimitGuard` — skips rate limiting. */
 export const orpcRateLimitGuard = vi.fn(() =>
+  baseOS.middleware(({ next }) => next())
+);
+
+/** Matches `LOCAL_ADMIN_ID` in `setup.ts`, which is what `getAdminId()` resolves under test. */
+export const TEST_ADMIN_ID = "test-local-admin-id";
+
+const TEST_SESSION = {
+  session: { id: "test-session-id" },
+  user: {
+    id: TEST_ADMIN_ID,
+    email: "test@example.com",
+    name: "Test User",
+    role: "root",
+  },
+};
+
+let callerTier: CallerTier = CallerTier.Root;
+
+/**
+ * Drives the tier the mocked `callerGuard` reports, so a controller test can exercise the
+ * same procedure as each audience. Credential *verification* is what is mocked away here;
+ * the tier → visible-scope rule the routes apply is real and still runs.
+ */
+export const setCallerTier = (tier: CallerTier) => {
+  callerTier = tier;
+};
+
+/**
+ * Mock for the oRPC `callerGuard`.
+ *
+ * Credential *verification* is what is stubbed out; the `minTier` admission check is real,
+ * so a controller test still covers which tier each procedure demands.
+ */
+export const orpcCallerGuard = vi.fn((options: { minTier?: CallerTier } = {}) =>
+  baseOS
+    .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+    .middleware(({ next, errors }) => {
+      if (callerTier < (options.minTier ?? CallerTier.Anonymous)) {
+        throw callerTier === CallerTier.Anonymous
+          ? errors.UNAUTHORIZED()
+          : errors.FORBIDDEN();
+      }
+
+      return next({
+        context: {
+          caller: {
+            tier: callerTier,
+            adminId: TEST_ADMIN_ID,
+            session:
+              callerTier >= CallerTier.Session
+                ? (TEST_SESSION as never)
+                : undefined,
+            apiKey: callerTier === CallerTier.ApiKey ? FAKE_API_KEY : undefined,
+          },
+        },
+      });
+    })
+);
+
+/** Mock for the oRPC `tieredRateLimitGuard` — skips rate limiting. */
+export const orpcTieredRateLimitGuard = vi.fn(() =>
   baseOS.middleware(({ next }) => next())
 );
 
@@ -72,17 +129,6 @@ export const verifyAuth = vi.fn((_rootOnly?: boolean) =>
 );
 
 /**
- * Mock for apikeyVerify
- * 在測試中跳過 API key 驗證
- */
-export const apikeyVerify = vi.fn(
-  (_options?: { permissions?: Record<string, string[]>; projectId?: number }) =>
-    createMiddleware(async (_c, next) => {
-      await next();
-    })
-);
-
-/**
  * Mock for ai guard
  * 在測試中跳過 AI API key 驗證
  */
@@ -101,8 +147,8 @@ export const AI_AUTH_TOKEN = "AI_AUTH_TOKEN";
 export const resetAllGuardMocks = () => {
   rateLimiterGuard.mockClear();
   verifyAuth.mockClear();
-  apikeyVerify.mockClear();
   ai.mockClear();
+  callerTier = CallerTier.Root;
 };
 
 /**
@@ -123,21 +169,6 @@ export const mockVerifyAuthForbidden = () => {
   verifyAuth.mockImplementationOnce(() =>
     createMiddleware(async (c) => {
       return c.json({ error: "Forbidden" }, 403);
-    })
-  );
-};
-
-// 讓 apikeyVerify 返回未授權錯誤
-export const mockApikeyVerifyUnauthorized = () => {
-  apikeyVerify.mockImplementationOnce(() =>
-    createMiddleware(async (c) => {
-      return c.json(
-        {
-          error: "Unauthorized",
-          issues: [{ field: "api_key", message: "Missing or invalid API key" }],
-        },
-        401
-      );
     })
   );
 };

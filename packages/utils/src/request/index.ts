@@ -1,9 +1,6 @@
 import type { Options, HTTPError, SearchParamsOption } from "ky";
 import ky from "ky";
 
-import { withServiceEndpoint } from "../config";
-import { Service } from "../schema";
-
 export type { HTTPError };
 
 export interface ErrorResponse {
@@ -38,38 +35,7 @@ const request = (defaultOptions?: Options) => {
   });
 };
 
-type ServiceRequestOptions = Options &
-  (
-    | {
-        isInternal?: false;
-      }
-    | {
-        isInternal: true;
-        internal_requestSecret: {
-          cfBypassToken: string;
-          apiKey: string;
-        };
-      }
-  );
-
 export const X_CF_BYPASS_TOKEN = "x-cf-bypass-token";
-
-export const serviceRequest = (defaultOptions?: ServiceRequestOptions) => {
-  return request({
-    ...defaultOptions,
-    prefix: withServiceEndpoint("/", Service.LegacyService, {
-      isInternal: defaultOptions?.isInternal,
-    }),
-    headers: {
-      [X_CF_BYPASS_TOKEN]: defaultOptions?.isInternal
-        ? defaultOptions.internal_requestSecret.cfBypassToken
-        : undefined,
-      "x-ch-api-key": defaultOptions?.isInternal
-        ? defaultOptions.internal_requestSecret.apiKey
-        : undefined,
-    },
-  });
-};
 
 interface SetSearchParamsOptions {
   baseUrl?: string;

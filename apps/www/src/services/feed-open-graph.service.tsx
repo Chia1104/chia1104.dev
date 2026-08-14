@@ -28,7 +28,7 @@ export async function createFeedOpenGraphImage({
   theme = "light",
 }: CreateFeedOpenGraphImageOptions) {
   const { error, data: post } = await safe(
-    client.content.feeds["details-by-slug"]({
+    client.feeds["details-by-slug"]({
       slug,
       locale: dbLocaleResolver(locale),
     })

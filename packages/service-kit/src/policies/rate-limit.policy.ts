@@ -20,6 +20,9 @@ export interface RateLimitPolicyOptions {
   prefix?: string;
   /**
    * Derives the counter key from the context. Defaults to the client IP.
+   *
+   * Returns the whole identifier including its own namespace (`ip-…`, `user-…`), so a
+   * budget keyed by session can never collide with one keyed by address.
    */
   keyGenerator?: (context: {
     clientIP: string;
@@ -71,9 +74,9 @@ export const rateLimitPolicy = (options: RateLimitPolicyOptions): Policy => {
           clientIP: context.clientIP,
           headers: context.headers,
         })
-      : context.clientIP;
+      : `ip-${context.clientIP}`;
 
-    const key = `${prefix}:ip-${identifier}`;
+    const key = `${prefix}:${identifier}`;
     const now = Date.now();
 
     let entry: RateLimitEntry;

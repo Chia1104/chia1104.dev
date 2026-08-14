@@ -20,19 +20,31 @@ vi.mock("../src/services/spotify.service", () => ({
     `http://localhost:3001/settings/spotify?spotify=${status}`,
 }));
 
-// The playback reads moved to `@chia/api/spotify/playback`, next to the oRPC procedures
-// that now serve `/spotify/playing` and `/spotify/playlist/:id`. The URLs and the
-// assertions below are unchanged — only the mock target follows the code.
+// The playback reads live in `@chia/api/spotify/playback`, behind the oRPC procedures.
+// `playing` keeps its public REST URL for the browser; `playlist` is RPC-only and behind
+// the project API key, because only `apps/www`'s server-side client reads it.
 vi.mock("@chia/api/spotify/playback", () => ({
   getSpotifyNowPlayingService: mocks.getSpotifyNowPlayingService,
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,
 }));
 
+import { CallerTier } from "@chia/service-kit/policies";
+
 import { app } from "../src/server";
+
+import * as guardMocks from "./__mocks__/guards.mock";
+
+const playlist = (playlistId: string) =>
+  app.request("/api/v1/rpc/spotify/playlist", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ json: { playlistId } }),
+  });
 
 describe("Spotify Controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    guardMocks.resetAllGuardMocks();
     mocks.getSpotifyPlaylistService.mockResolvedValue({
       id: "playlist-id",
     });
@@ -63,19 +75,30 @@ describe("Spotify Controller", () => {
     });
   });
 
-  describe("GET /api/v1/spotify/playlist/:id", () => {
+  describe("spotify.playlist", () => {
+    beforeEach(() => guardMocks.setCallerTier(CallerTier.ApiKey));
+
     it("should return response from default playlist", async () => {
-      const res = await app.request("/api/v1/spotify/playlist/default");
+      const res = await playlist("default");
 
       expect(res.status).toBe(200);
       expect(mocks.getSpotifyPlaylistService).toHaveBeenCalledWith("default");
     });
 
     it("should handle playlist ID parameter", async () => {
-      const res = await app.request("/api/v1/spotify/playlist/test-id");
+      const res = await playlist("test-id");
 
       expect(res.status).toBe(200);
       expect(mocks.getSpotifyPlaylistService).toHaveBeenCalledWith("test-id");
+    });
+
+    it("rejects an anonymous caller", async () => {
+      guardMocks.setCallerTier(CallerTier.Anonymous);
+
+      const res = await playlist("default");
+
+      expect(res.status).toBe(401);
+      expect(mocks.getSpotifyPlaylistService).not.toHaveBeenCalled();
     });
   });
 

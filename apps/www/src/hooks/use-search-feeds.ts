@@ -21,7 +21,7 @@ export function useSearchFeeds(keyword: string, locale: Locale) {
   const canSearch = debouncedKeyword.length >= MIN_SEARCH_LENGTH;
 
   const query = useQuery({
-    ...orpc.content.feeds["public-search"].queryOptions({
+    ...orpc.feeds.search.queryOptions({
       input: { keyword: debouncedKeyword, locale },
     }),
     enabled: canSearch,

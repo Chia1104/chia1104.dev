@@ -17,7 +17,7 @@ const { mockQueryFn, mockQueryOptions } = vi.hoisted(() => {
     // react-query machinery.
     mockQueryOptions: vi.fn(
       ({ input }: { input: { keyword: string; locale: string } }) => ({
-        queryKey: ["content", "feeds", "public-search", input],
+        queryKey: ["feeds", "search", input],
         queryFn: () => queryFn(input),
       })
     ),
@@ -26,10 +26,8 @@ const { mockQueryFn, mockQueryOptions } = vi.hoisted(() => {
 
 vi.mock("@/libs/orpc/client", () => ({
   orpc: {
-    content: {
-      feeds: {
-        "public-search": { queryOptions: mockQueryOptions },
-      },
+    feeds: {
+      search: { queryOptions: mockQueryOptions },
     },
   },
 }));
@@ -100,9 +98,7 @@ describe("useSearchFeeds", () => {
     });
 
     await waitFor(() => {
-      expect(
-        orpc.content.feeds["public-search"].queryOptions
-      ).toHaveBeenCalledWith({
+      expect(orpc.feeds.search.queryOptions).toHaveBeenCalledWith({
         input: { keyword: "React", locale: Locale.En },
       });
       expect(mockQueryFn).toHaveBeenCalledWith({

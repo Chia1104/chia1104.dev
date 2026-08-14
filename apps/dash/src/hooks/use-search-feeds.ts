@@ -7,4 +7,4 @@ import { orpc } from "@/libs/orpc/client";
  * not cached like a query.
  */
 export const useSearchFeeds = () =>
-  useMutation(orpc.content.feeds.search.mutationOptions());
+  useMutation(orpc.feeds["search:advanced"].mutationOptions());

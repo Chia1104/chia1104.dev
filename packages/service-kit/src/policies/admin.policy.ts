@@ -55,11 +55,3 @@ export const adminPolicy = (
     return allow({ session, adminId });
   };
 };
-
-/**
- * Performs no authorization — only exposes the configured admin id. For public routes
- * that read the admin's own data.
- */
-export const adminIdPolicy = (): Policy<{ adminId: string }> => {
-  return () => allow({ adminId: getAdminId() });
-};

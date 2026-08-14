@@ -49,10 +49,6 @@
       "types": "./src/libs/users/index.ts",
       "default": "./src/libs/users/index.ts"
     },
-    "./repos/public/feeds": {
-      "types": "./src/libs/public/feeds/index.ts",
-      "default": "./src/libs/public/feeds.ts"
-    },
     "./repos/organization": {
       "types": "./src/libs/organization/index.ts",
       "default": "./src/libs/organization/index.ts"

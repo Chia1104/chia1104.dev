@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const feedsSitemapData = (
     await Promise.all(
       Object.values(Locale).map(async (locale) => {
-        const { items } = await client.content.feeds.list({
+        const { items } = await client.feeds.list({
           limit: 1000,
           type: FeedType.All,
           orderBy: FeedOrderBy.UpdatedAt,

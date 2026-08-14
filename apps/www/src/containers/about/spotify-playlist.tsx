@@ -6,10 +6,10 @@ import FadeIn from "@chia/ui/fade-in";
 import Image from "@chia/ui/image";
 import { NoiseBackground } from "@chia/ui/noise-background";
 import { cn } from "@chia/ui/utils/cn.util";
-import { serviceRequest } from "@chia/utils/request";
 
 import PreviewLink from "@/components/commons/preview-link";
 import { env } from "@/env";
+import { client } from "@/libs/orpc/client.rsc";
 
 const ImageItem: FC<{
   src: string;
@@ -117,15 +117,9 @@ const getTop4 = (data: PlayList) => {
 };
 
 export async function SpotifyPlaylist() {
-  const playlist = await serviceRequest({
-    isInternal: true,
-    internal_requestSecret: {
-      cfBypassToken: env.CF_BYPASS_TOKEN,
-      apiKey: env.CH_API_KEY ?? "",
-    },
-  })
-    .get(`spotify/playlist/${env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default"}`)
-    .json<PlayList>();
+  const playlist = await client.spotify.playlist({
+    playlistId: env.SPOTIFY_FAVORITE_PLAYLIST_ID ?? "default",
+  });
   const data = getTop4(playlist);
   const href = `https://open.spotify.com/playlist/${playlist.id}`;
 

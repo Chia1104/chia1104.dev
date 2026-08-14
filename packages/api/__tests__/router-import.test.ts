@@ -21,7 +21,7 @@ describe("oRPC router import", () => {
     const { router } = await import("../orpc/router");
 
     expect(Object.keys(router)).toEqual(
-      expect.arrayContaining(["content", "email", "toolings", "media"])
+      expect.arrayContaining(["feeds", "email", "toolings", "spotify"])
     );
 
     vi.unstubAllEnvs();

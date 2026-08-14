@@ -12,7 +12,7 @@ export const GET = async (
 ) => {
   const { locale, slug } = await params;
   const { error, data: feed } = await safe(
-    client.content.feeds["details-by-slug"]({
+    client.feeds["details-by-slug"]({
       slug,
       locale: dbLocaleResolver(locale),
     })

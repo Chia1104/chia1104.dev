@@ -44,7 +44,9 @@ const EditForm = ({
       async onSuccess(_data, { type }) {
         toast.success("Feed updated successfully");
         router.push(`/feed/${type}s`);
-        await queryClient.invalidateQueries(orpc.feeds.list.queryOptions());
+        await queryClient.invalidateQueries({
+          queryKey: orpc.feeds.list.key(),
+        });
       },
       onError(err) {
         toast.error(err.message);
