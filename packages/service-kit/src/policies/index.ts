@@ -5,7 +5,10 @@ export type { SessionPolicyOptions } from "./session.policy";
 export { sessionPolicy } from "./session.policy";
 
 export type { AdminPolicyOptions } from "./admin.policy";
-export { adminIdPolicy, adminPolicy } from "./admin.policy";
+export { adminPolicy } from "./admin.policy";
+
+export type { Caller, CallerPolicyOptions } from "./caller.policy";
+export { CallerTier, callerPolicy } from "./caller.policy";
 
 export type { ApiKeyPolicyOptions } from "./apikey.policy";
 export { apiKeyPolicy } from "./apikey.policy";

@@ -1,11 +1,27 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
+import type { CurrentPlaying, PlayList } from "../../spotify/types";
 import { spotifyCredentialUserSchema } from "../../spotify/validator";
+
+/**
+ * The whole Spotify surface: the public playback reads the site renders, and the account
+ * management the operator drives. They used to sit in two top-level namespaces (`media`
+ * and `spotify`) that each held exactly one child.
+ */
 
 // ============================================
 // Output Schemas
 // ============================================
+
+/**
+ * Spotify payloads are passed straight through, so the shape is Spotify's to own.
+ * `z.custom` keeps the types exact for consumers without committing us to maintaining a
+ * zod mirror of their schema that breaks whenever they add a field — the trade-off is no
+ * runtime validation and no response schema in the OpenAPI document.
+ */
+const spotifyPlaylistSchema = z.custom<PlayList>();
+const spotifyNowPlayingSchema = z.custom<CurrentPlaying | null>();
 
 const spotifyAccountSchema = z.object({
   userId: z.string(),
@@ -36,7 +52,38 @@ const spotifyActivateSchema = z.object({
 });
 
 // ============================================
-// Contracts
+// Playback
+// ============================================
+
+/**
+ * Only `apps/www`'s server-side client reads the playlist, so it sits behind the project
+ * API key. RPC-only for the same reason — the REST path it used to carry existed for the
+ * hand-built `serviceRequest` call that now goes through the typed client.
+ */
+export const getSpotifyPlaylistContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    INTERNAL_SERVER_ERROR: {},
+    TOO_MANY_REQUESTS: {},
+  })
+  .input(z.object({ playlistId: z.string().min(1) }))
+  .output(spotifyPlaylistSchema);
+
+/**
+ * Reached from the browser, so it stays public and keeps the URL the Hono route served.
+ */
+export const getSpotifyNowPlayingContract = oc
+  .route({ method: "GET", path: "/spotify/playing" })
+  .errors({
+    SERVICE_UNAVAILABLE: {},
+    INTERNAL_SERVER_ERROR: {},
+    TOO_MANY_REQUESTS: {},
+  })
+  .output(spotifyNowPlayingSchema);
+
+// ============================================
+// Account management (admin)
 // ============================================
 
 export const getSpotifyAccountsContract = oc

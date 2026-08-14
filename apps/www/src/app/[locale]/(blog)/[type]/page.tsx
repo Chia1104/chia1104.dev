@@ -42,7 +42,7 @@ const CacheFeeds = async ({
   const formattedType = type === "posts" ? "post" : "note";
 
   await queryClient.prefetchInfiniteQuery(
-    orpc.content.feeds["public-list"].infiniteOptions({
+    orpc.feeds.list.infiniteOptions({
       input: () => ({
         limit,
         orderBy: "createdAt",

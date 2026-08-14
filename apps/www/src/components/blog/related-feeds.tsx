@@ -44,7 +44,7 @@ export async function RelatedFeeds({ locale, slug }: RelatedFeedsProps) {
   const t = await getTranslations("blog");
   const dbLocale = dbLocaleResolver(locale);
 
-  const feeds = await client.content.feeds.related({
+  const feeds = await client.feeds.related({
     slug,
     locale: dbLocale,
     limit: 3,

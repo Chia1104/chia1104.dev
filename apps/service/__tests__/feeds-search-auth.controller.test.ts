@@ -3,8 +3,8 @@ const { mockGetSession } = vi.hoisted(() => ({
 }));
 
 // Deliberately NOT using the pass-through guard mocks — this test exists because the
-// session requirement on `GET /feeds/search` was dropped when the route moved from Hono
-// to oRPC. It asserts the requirement is back.
+// session requirement on the model-selectable search was once dropped in a migration.
+// It asserts the requirement is still there.
 vi.mock("@chia/auth", () => ({
   createAuth: () => ({ api: { getSession: mockGetSession } }),
 }));
@@ -18,9 +18,16 @@ const session = (role: string) => ({
   user: { id: "u1", role },
 });
 
-const search = (query: string) => app.request(`/api/v1/feeds/search?${query}`);
+// The colon in the procedure key is percent-encoded because this URL is hand-built; an
+// oRPC client encodes it for you.
+const search = (input: Record<string, unknown>) =>
+  app.request("/api/v1/rpc/feeds/search%3Aadvanced", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ json: input }),
+  });
 
-describe("feeds.search authentication", () => {
+describe("feeds.search:advanced authentication", () => {
   beforeEach(() => {
     dbMocks.resetAllDbMocks();
     mockGetSession.mockReset();
@@ -29,19 +36,7 @@ describe("feeds.search authentication", () => {
   it("rejects an anonymous request even for the default hybrid model", async () => {
     mockGetSession.mockResolvedValue(null);
 
-    const res = await search("keyword=kubernetes");
-
-    expect(res.status).toBe(401);
-  });
-
-  it("rejects an anonymous request over the RPC surface too", async () => {
-    mockGetSession.mockResolvedValue(null);
-
-    const res = await app.request("/api/v1/rpc/content/feeds/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ json: { keyword: "kubernetes" } }),
-    });
+    const res = await search({ keyword: "kubernetes" });
 
     expect(res.status).toBe(401);
   });
@@ -49,7 +44,7 @@ describe("feeds.search authentication", () => {
   it("allows a non-root session for the lexical-only model", async () => {
     mockGetSession.mockResolvedValue(session("admin"));
 
-    const res = await search("keyword=kubernetes&model=bm25");
+    const res = await search({ keyword: "kubernetes", model: "bm25" });
 
     expect(res.status).toBe(200);
   });
@@ -59,7 +54,7 @@ describe("feeds.search authentication", () => {
     async (model) => {
       mockGetSession.mockResolvedValue(session("admin"));
 
-      const res = await search(`keyword=kubernetes&model=${model}`);
+      const res = await search({ keyword: "kubernetes", model });
 
       expect(res.status).toBe(403);
     }
@@ -68,7 +63,10 @@ describe("feeds.search authentication", () => {
   it("rejects a model that is not a supported mode", async () => {
     mockGetSession.mockResolvedValue(session("root"));
 
-    const res = await search("keyword=kubernetes&model=text-embedding-3-small");
+    const res = await search({
+      keyword: "kubernetes",
+      model: "text-embedding-3-small",
+    });
 
     expect(res.status).toBe(400);
   });

@@ -4,14 +4,31 @@ import * as z from "zod";
 import { locale } from "@chia/db";
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import {
-  infiniteSchema,
   feedSchema,
   feedTranslationSchema,
   insertFeedSchema,
   insertContentSchema,
 } from "@chia/db/validator/feeds";
 
+import type { SearchFeedsServiceResult } from "../../feeds/search";
+import {
+  publicFeedSearchItemSchema,
+  searchFeedsSchema,
+  upsertContentRequestSchema,
+  upsertFeedTranslationRequestSchema,
+} from "../../feeds/validator";
+
 import { withMetaSchema } from "./shared";
+
+/**
+ * One feed surface for every audience.
+ *
+ * The reads used to exist three times over — once for the browser, once for `apps/www`'s
+ * API-key-authenticated RSC calls, and once for a dash session — because each audience
+ * needed a different slice of the same table. They are now single procedures whose scope
+ * widens with `context.caller.tier`; see `feeds/access.ts` for the rule and
+ * `__tests__/feeds-access.test.ts` for the cases that pin it down.
+ */
 
 const dateSchema = z.object({
   createdAt: z.number().optional(),
@@ -68,58 +85,50 @@ export const updateFeedSchema = z.object({
   ...dateSchema.shape,
 });
 
-export const upsertFeedTranslationSchema = z.object({
-  feedId: z.number(),
-  locale: z.enum(locale.enumValues),
-  title: z.string().min(1).optional(),
-  excerpt: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
-  summary: z.string().optional().nullable(),
-  readTime: z.number().optional().nullable(),
-});
-
-export const upsertContentSchema = z.object({
-  feedTranslationId: z.number(),
-  content: z.string().optional().nullable(),
-  source: z.string().optional().nullable(),
-  unstableSerializedSource: z.string().optional().nullable(),
-});
-
 export const deleteFeedSchema = z.object({
   feedId: z.number(),
   hard: z.boolean().optional().default(false),
 });
 
-export const getFeedBySlugSchema = z.object({
-  slug: z.string(),
-  locale: z.enum(locale.enumValues).optional(),
-});
-
-export const getFeedByIdSchema = z.object({
+export const restoreFeedSchema = z.object({
   feedId: z.number(),
-  locale: z.enum(locale.enumValues).optional(),
 });
 
 /**
- * Accepts a JSON boolean or its query-string spelling.
- *
- * The same procedure is reachable over RPC (where values arrive as real JSON) and as
- * `GET /admin/public/feeds` (where every value is a string), so the flags have to take
- * both. A bare `z.stringbool()` would reject `true`; a bare `z.boolean()` would reject
- * `"true"`.
+ * Accepts a JSON boolean or its query-string spelling, so the same schema works over RPC
+ * (real JSON) and over the OpenAPI mount (every value a string).
  */
 const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
 
 /**
- * Input for the public feed list.
+ * Requests to widen the visible set beyond the public one.
  *
- * `published` and `userId` are deliberately **absent**: this is the public blog surface,
- * so the handler pins them to the configured admin's published feeds. The previous schema
- * accepted `published` as a query param, which let a caller ask for drafts.
+ * These are *requests*, never assertions: `resolveFeedVisibility` clamps each one away
+ * for callers below the required tier rather than rejecting the call, so a browser that
+ * sends `includeUnpublished` receives the published set instead of a 403.
  */
-export const publicFeedsInfiniteSchema = z.object({
-  // Deliberately uncapped, matching the previous schema: the sitemap asks for every
-  // published feed in one call.
+const feedVisibilitySchema = z.object({
+  /** Include drafts. Requires the project API key or a session. */
+  includeUnpublished: flexibleBoolean.optional().default(false),
+  /** Include soft-deleted feeds. Requires a session. */
+  includeDeleted: flexibleBoolean.optional().default(false),
+});
+
+const localeQuerySchema = z.object({
+  locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
+});
+
+/**
+ * Input for the feed list.
+ *
+ * `userId` is deliberately absent: this is a single-author site, so the author is derived
+ * from the caller's tier rather than accepted from the request.
+ */
+export const feedsInfiniteSchema = z.object({
+  /**
+   * Clamped per tier by `resolveFeedLimit` — an anonymous caller cannot walk the whole
+   * table in one call, while `apps/www`'s sitemap can ask for 1000 with its API key.
+   */
   limit: z.coerce.number().int().positive().optional().default(20),
   // Composite feed cursors are strings (`feed:[timestamp,id]`); bare numeric ids still work.
   nextCursor: z.union([z.string(), z.number()]).optional(),
@@ -128,6 +137,19 @@ export const publicFeedsInfiniteSchema = z.object({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   type: z.enum(FeedType).optional(),
+  ...feedVisibilitySchema.shape,
+});
+
+export const getFeedBySlugSchema = z.object({
+  slug: z.string().min(1),
+  ...localeQuerySchema.shape,
+  ...feedVisibilitySchema.shape,
+});
+
+export const getFeedByIdSchema = z.object({
+  feedId: z.coerce.number().int(),
+  ...localeQuerySchema.shape,
+  ...feedVisibilitySchema.shape,
 });
 
 // ============================================
@@ -192,88 +214,136 @@ export const feedWithTranslationsSchema = z.object({
  */
 export const feedListSchema = feedWithTranslationsSchema;
 
+export const relatedFeedItemSchema = z.object({
+  id: z.number(),
+  type: z.string(),
+  slug: z.string(),
+  locale: z.enum(locale.enumValues),
+  title: z.string(),
+  description: z.string().nullable(),
+  excerpt: z.string().nullable(),
+  createdAt: z.union([z.string(), z.date()]),
+  similarity: z.number().optional(),
+});
+
 // ============================================
-// Contracts
+// Reads
 // ============================================
 
-export const getFeedsWithMetaContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
-  .input(infiniteSchema)
+const READ_ERRORS = {
+  UNAUTHORIZED: {},
+  FORBIDDEN: {},
+  NOT_FOUND: {},
+  TOO_MANY_REQUESTS: {},
+  INTERNAL_SERVER_ERROR: {},
+} as const;
+
+export const getFeedsContract = oc
+  .errors(READ_ERRORS)
+  .input(feedsInfiniteSchema)
   .output(withMetaSchema(feedListSchema));
 
 export const getFeedBySlugContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
+  .errors(READ_ERRORS)
   .input(getFeedBySlugSchema)
   .output(feedWithTranslationsSchema);
 
 export const getFeedByIdContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
+  .errors(READ_ERRORS)
   .input(getFeedByIdSchema)
   .output(feedWithTranslationsSchema);
 
-export const createFeedContract = oc
+export const getRelatedFeedsContract = oc
+  .errors(READ_ERRORS)
+  .input(
+    z.object({
+      slug: z.string().min(1),
+      ...localeQuerySchema.shape,
+      limit: z.coerce.number().int().min(1).max(6).optional().default(3),
+    })
+  )
+  .output(z.object({ items: z.array(relatedFeedItemSchema) }));
+
+// ============================================
+// Search
+//
+// Two procedures rather than one: they answer different questions and, unlike the reads
+// above, cannot share an output. `search` backs a search box and returns display items;
+// `search:advanced` is an operator tool that returns whichever shape the requested
+// retrieval mode produced.
+// ============================================
+
+export const searchFeedsContract = oc
   .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
+    BAD_REQUEST: {},
+    TOO_MANY_REQUESTS: {},
     INTERNAL_SERVER_ERROR: {},
-    BAD_REQUEST: {
-      message: "",
-    },
   })
+  .input(
+    z.object({
+      keyword: z.string().trim().min(2).max(100),
+      ...localeQuerySchema.shape,
+      limit: z.coerce.number().int().min(1).max(10).optional().default(5),
+    })
+  )
+  .output(z.object({ items: z.array(publicFeedSearchItemSchema) }));
+
+/**
+ * Output is `z.custom` because the payload shape depends on the requested retrieval mode
+ * and all of them are pass-through; mirroring each shape in a zod union would duplicate
+ * types the repositories already own.
+ */
+export const searchFeedsAdvancedContract = oc
+  .errors({
+    BAD_REQUEST: {},
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    TOO_MANY_REQUESTS: {},
+    SERVICE_UNAVAILABLE: {},
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .input(
+    z.object({
+      ...searchFeedsSchema.shape,
+      locale: z.enum(locale.enumValues).optional(),
+    })
+  )
+  .output(z.custom<SearchFeedsServiceResult>());
+
+// ============================================
+// Writes
+// ============================================
+
+const WRITE_ERRORS = {
+  UNAUTHORIZED: {},
+  FORBIDDEN: {},
+  NOT_FOUND: {},
+  BAD_REQUEST: {},
+  INTERNAL_SERVER_ERROR: {},
+} as const;
+
+export const createFeedContract = oc
+  .errors(WRITE_ERRORS)
   .input(createFeedSchema);
 
 export const updateFeedContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
+  .errors(WRITE_ERRORS)
   .input(updateFeedSchema);
 
-export const upsertFeedTranslationContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
-  .input(upsertFeedTranslationSchema);
-
-export const upsertContentContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
-  .input(upsertContentSchema);
-
 export const deleteFeedContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
+  .errors(WRITE_ERRORS)
   .input(deleteFeedSchema);
 
-export const restoreFeedSchema = z.object({
-  feedId: z.number(),
-});
-
 export const restoreFeedContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    NOT_FOUND: {},
-    INTERNAL_SERVER_ERROR: {},
-  })
+  .errors(WRITE_ERRORS)
   .input(restoreFeedSchema);
+
+export const upsertFeedTranslationContract = oc
+  .errors(WRITE_ERRORS)
+  .input(upsertFeedTranslationRequestSchema)
+  .output(z.void());
+
+export const upsertContentContract = oc
+  .errors(WRITE_ERRORS)
+  .input(upsertContentRequestSchema)
+  .output(z.void());

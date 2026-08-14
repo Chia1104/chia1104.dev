@@ -16,7 +16,7 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
       <NavigationMenu>
         <NavigationMenuList className="gap-5">
           <FeedNavigation
-            feeds={client.content.feeds.list({
+            feeds={client.feeds.list({
               limit: 4,
               withContent: false,
               orderBy: FeedOrderBy.CreatedAt,
@@ -27,7 +27,7 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
             type="post"
           />
           <FeedNavigation
-            feeds={client.content.feeds.list({
+            feeds={client.feeds.list({
               limit: 4,
               withContent: false,
               orderBy: FeedOrderBy.CreatedAt,

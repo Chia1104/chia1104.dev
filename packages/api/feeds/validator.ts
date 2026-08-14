@@ -2,8 +2,6 @@ import * as z from "zod";
 
 import { locale } from "@chia/db";
 import { FeedType } from "@chia/db/types";
-import { updateFeedSchema } from "@chia/db/validator/feeds";
-import { NumericStringSchema } from "@chia/utils/schema";
 
 export const searchFeedsSchema = z.object({
   keyword: z.string().trim().min(1).max(256),
@@ -16,20 +14,18 @@ export const searchFeedsSchema = z.object({
   model: z.enum(["hybrid", "bm25", "semantic"]).default("hybrid"),
 });
 
-export const updateFeedRequestSchema = updateFeedSchema;
-
 export const upsertFeedTranslationRequestSchema = z.object({
-  feedId: NumericStringSchema,
+  feedId: z.coerce.number().int(),
   locale: z.enum(locale.enumValues),
   title: z.string().min(1).optional(),
   excerpt: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   summary: z.string().optional().nullable(),
-  readTime: NumericStringSchema.optional().nullable(),
+  readTime: z.coerce.number().int().optional().nullable(),
 });
 
 export const upsertContentRequestSchema = z.object({
-  feedTranslationId: NumericStringSchema,
+  feedTranslationId: z.coerce.number().int(),
   content: z.string().optional().nullable(),
   source: z.string().optional().nullable(),
   unstableSerializedSource: z.string().optional().nullable(),

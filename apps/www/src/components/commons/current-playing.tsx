@@ -30,7 +30,7 @@ import { experimental_getImgAverageRGB } from "@chia/ui/utils/get-img-average-rg
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
-type CurrentPlayingResponse = RouterOutputs["media"]["spotify"]["playing"];
+type CurrentPlayingResponse = RouterOutputs["spotify"]["playing"];
 
 interface ExtendsProps {
   className?: string;
@@ -366,7 +366,7 @@ export const CurrentPlaying = ({
   experimental,
 }: Props) => {
   const result = useQuery({
-    ...orpc.media.spotify.playing.queryOptions(),
+    ...orpc.spotify.playing.queryOptions(),
     refetchInterval: (ctx) => calculateRefetchInterval(ctx.state.data),
     refetchOnWindowFocus: "always",
     ...queryOptions,

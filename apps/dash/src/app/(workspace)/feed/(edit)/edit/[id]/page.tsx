@@ -42,8 +42,12 @@ const Page = async ({
       notFound();
     }
 
+    // The edit view is reached for drafts and for feeds in the trash — it renders both
+    // states — so it has to opt out of the published, non-deleted default.
     const feed = await client.feeds["details-by-id"]({
       feedId: Number(id),
+      includeUnpublished: true,
+      includeDeleted: true,
     });
 
     if (!feed) {

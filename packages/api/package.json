@@ -141,10 +141,6 @@
       "types": "./feeds/write.ts",
       "default": "./feeds/write.ts"
     },
-    "./orpc/guards/apikey.guard": {
-      "types": "./orpc/guards/apikey.guard.ts",
-      "default": "./orpc/guards/apikey.guard.ts"
-    },
     "./orpc/guards/rate-limit.guard": {
       "types": "./orpc/guards/rate-limit.guard.ts",
       "default": "./orpc/guards/rate-limit.guard.ts"
@@ -164,6 +160,10 @@
     "./orpc/guards/auth.guard": {
       "types": "./orpc/guards/auth.guard.ts",
       "default": "./orpc/guards/auth.guard.ts"
+    },
+    "./orpc/guards/caller.guard": {
+      "types": "./orpc/guards/caller.guard.ts",
+      "default": "./orpc/guards/caller.guard.ts"
     },
     "./orpc/agent-service": {
       "types": "./orpc/agent-service.ts",

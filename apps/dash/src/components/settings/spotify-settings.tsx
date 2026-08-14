@@ -68,10 +68,10 @@ export const SpotifySettings = () => {
   const queryClient = useQueryClient();
   const callbackStatus = searchParams.get("spotify");
 
-  const accountsQuery = useQuery(orpc.spotify.manage.accounts.queryOptions());
+  const accountsQuery = useQuery(orpc.spotify.accounts.queryOptions());
 
   const authorizationMutation = useMutation(
-    orpc.spotify.manage.authorize.mutationOptions({
+    orpc.spotify.authorize.mutationOptions({
       onSuccess: ({ url }) => {
         window.location.assign(url);
       },
@@ -82,10 +82,10 @@ export const SpotifySettings = () => {
   );
 
   const activateMutation = useMutation(
-    orpc.spotify.manage.activate.mutationOptions({
+    orpc.spotify.activate.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: orpc.spotify.manage.accounts.queryKey(),
+          queryKey: orpc.spotify.accounts.queryKey(),
         });
         toast.success("Active playback account updated");
       },
@@ -96,10 +96,10 @@ export const SpotifySettings = () => {
   );
 
   const disconnectMutation = useMutation(
-    orpc.spotify.manage.disconnect.mutationOptions({
+    orpc.spotify.disconnect.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          queryKey: orpc.spotify.manage.accounts.queryKey(),
+          queryKey: orpc.spotify.accounts.queryKey(),
         });
         toast.success("Spotify account disconnected");
       },
@@ -118,7 +118,7 @@ export const SpotifySettings = () => {
     if (result?.type === "success") {
       toast.success(result.message);
       void queryClient.invalidateQueries({
-        queryKey: orpc.spotify.manage.accounts.queryKey(),
+        queryKey: orpc.spotify.accounts.queryKey(),
       });
     } else {
       toast.error(result?.message ?? "Spotify authorization failed");

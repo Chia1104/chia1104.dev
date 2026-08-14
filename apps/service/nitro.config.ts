@@ -21,16 +21,6 @@ export default defineConfig({
     tsconfigPath: "./tsconfig.build.json",
   },
   preset: process.env.NITRO_PRESET === "bun" ? "bun" : "node-server",
-  /**
-   * `src/server.ts` is **not** listed under `routes`.
-   *
-   * Nitro already mounts it: `serverEntry` defaults to resolving `./server` inside
-   * `serverDir`. Naming it again as a `/**` route registered the same app twice, and
-   * Nitro composes duplicate handlers with `multiHandler(app, app)` — the first copy runs
-   * as h3 middleware, which treats any 404 as "not handled" and falls through to the
-   * second copy. The retry re-entered the app with the request body already consumed, so
-   * every 404 on a POST hung until the request timeout instead of returning.
-   */
   traceDeps: [
     "@workflow-worlds/redis",
     "@workflow/world-postgres",

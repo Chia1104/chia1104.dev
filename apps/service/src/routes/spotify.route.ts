@@ -11,7 +11,8 @@ import { getSpotifyDashboardRedirect } from "../services/spotify.service";
 /**
  * Only the OAuth callback stays on Hono: it answers a browser navigation with a 302, so
  * it is HTTP-shaped rather than an application procedure. The playlist and now-playing
- * reads moved to `media.spotify.*` on the oRPC router and kept their previous URLs.
+ * reads live on the oRPC router as `spotify.playlist` / `spotify.playing` and kept their
+ * previous URLs.
  */
 const api = new Hono<HonoContext>().use(timeout(env.TIMEOUT_MS)).get(
   "/oauth/callback",

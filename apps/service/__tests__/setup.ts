@@ -28,13 +28,6 @@ vi.mock("../src/guards/auth.guard", async () => {
   };
 });
 
-vi.mock("../src/guards/apikey-verify.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return {
-    apikeyVerify: mocks.apikeyVerify,
-  };
-});
-
 vi.mock("../src/guards/ai.guard", async () => {
   const mocks = await import("./__mocks__/guards.mock");
   return {
@@ -44,14 +37,17 @@ vi.mock("../src/guards/ai.guard", async () => {
 });
 
 // Mock oRPC guards — the routes migrated off Hono are guarded by these instead.
-vi.mock("@chia/api/orpc/guards/apikey.guard", async () => {
-  const mocks = await import("./__mocks__/guards.mock");
-  return { apiKeyGuard: mocks.orpcApiKeyGuard };
-});
-
 vi.mock("@chia/api/orpc/guards/rate-limit.guard", async () => {
   const mocks = await import("./__mocks__/guards.mock");
   return { rateLimitGuard: mocks.orpcRateLimitGuard };
+});
+
+vi.mock("@chia/api/orpc/guards/caller.guard", async () => {
+  const mocks = await import("./__mocks__/guards.mock");
+  return {
+    callerGuard: mocks.orpcCallerGuard,
+    tieredRateLimitGuard: mocks.orpcTieredRateLimitGuard,
+  };
 });
 
 vi.mock("@chia/api/orpc/guards/captcha.guard", async () => {
@@ -63,6 +59,12 @@ vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
   const mocks = await import("./__mocks__/guards.mock");
   return { aiKeyGuard: mocks.orpcAiKeyGuard };
 });
+
+// The feed change/removal listeners start durable workflows, which have no runtime here.
+vi.mock("../src/services/feed-indexing.service", () => ({
+  syncFeedSearchIndex: vi.fn().mockResolvedValue(undefined),
+  removeFeedFromSearchIndex: vi.fn().mockResolvedValue(undefined),
+}));
 
 // Mock database repos
 vi.mock("@chia/db/repos/feeds", async () => {
@@ -79,6 +81,9 @@ vi.mock("@chia/db/repos/feeds", async () => {
     upsertFeedTranslation: mocks.upsertFeedTranslation,
     upsertContent: mocks.upsertContent,
     updateFeed: mocks.updateFeed,
+    softDeleteFeed: mocks.softDeleteFeed,
+    deleteFeed: mocks.deleteFeed,
+    restoreFeed: mocks.restoreFeed,
   };
 });
 
@@ -90,13 +95,6 @@ vi.mock("@chia/db/repos/feeds/search", async () => {
 vi.mock("@chia/api/resources/search", async () => {
   const mocks = await import("./__mocks__/db.mock");
   return { searchResources: mocks.searchResources };
-});
-
-vi.mock("@chia/db/repos/public/feeds", async () => {
-  const mocks = await import("./__mocks__/db.mock");
-  return {
-    getPublicFeedsTotal: mocks.getPublicFeedsTotal,
-  };
 });
 
 export const mockEnv = {

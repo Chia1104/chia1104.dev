@@ -30,7 +30,7 @@ import { dbLocaleResolver } from "@/libs/utils/i18n";
 export const revalidate = 300;
 
 export const generateStaticParams = async () => {
-  const feeds = await client.content.feeds.list({
+  const feeds = await client.feeds.list({
     limit: 100,
     type: FeedType.All,
     withContent: false,
@@ -53,7 +53,7 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { slug, locale } = await params;
   try {
-    const feed = await client.content.feeds["details-by-slug"]({
+    const feed = await client.feeds["details-by-slug"]({
       slug,
       locale: dbLocaleResolver(locale),
     });
@@ -79,7 +79,7 @@ const Page = async ({
   const { feed, t } = await all({
     feed: async () => {
       const { error, data } = await safe(
-        client.content.feeds["details-by-slug"]({ slug, locale: dbLocale })
+        client.feeds["details-by-slug"]({ slug, locale: dbLocale })
       );
       return error ? null : data;
     },

@@ -283,8 +283,12 @@ const FeedList = ({ initFeed, nextCursor, query = {} }: Props) => {
   } = useInfiniteQuery(
     orpc.feeds.list.infiniteOptions({
       input: (pageParam) => ({
+        // The management view is the whole set: `feeds.list` defaults to the published,
+        // non-deleted slice it serves the public site with.
+        includeUnpublished: true,
+        includeDeleted: true,
         ...query,
-        cursor: pageParam,
+        nextCursor: pageParam ?? undefined,
       }),
       getNextPageParam: (lastPage: RouterOutputs["feeds"]["list"]) => {
         if (!lastPage.nextCursor) return null;
