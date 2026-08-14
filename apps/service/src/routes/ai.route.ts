@@ -1,4 +1,3 @@
-import { gateway } from "@ai-sdk/gateway";
 import { zValidator } from "@hono/zod-validator";
 import { streamText, createTextStreamResponse } from "ai";
 import { Hono } from "hono";
@@ -28,7 +27,6 @@ import {
 import { SupportedTools } from "@chia/ai/types";
 import { baseRequestSchema } from "@chia/ai/types";
 import { Provider } from "@chia/ai/types";
-import { createModel } from "@chia/ai/utils";
 import { encodeApiKey } from "@chia/ai/utils";
 import { getCookieDomain } from "@chia/auth/utils";
 import { errorGenerator } from "@chia/utils/server";
@@ -38,6 +36,19 @@ import { ai, AI_AUTH_TOKEN } from "../guards/ai.guard";
 import { verifyAuth } from "../guards/auth.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { errorResponse } from "../utils/error.util";
+
+/**
+ * The provider SDKs and the gateway client are reached through these rather than imported:
+ * `server.ts` mounts every route into one Hono app, so a static import here loads all three
+ * provider SDKs at boot for a process that may only ever serve content routes.
+ *
+ * `ai` itself stays a static import — `baseRequestSchema` needs `modelMessageSchema` to build
+ * the `/generate` validator, which is evaluated when the route is defined.
+ */
+const getCreateModel = async () =>
+  (await import("@chia/ai/utils/model")).createModel;
+
+const getGateway = async () => (await import("@ai-sdk/gateway")).gateway;
 
 const cookieName = (provider?: Provider) => {
   switch (provider) {
@@ -105,8 +116,9 @@ const api = new Hono<HonoContext>()
       }
     ),
     ai(),
-    (c) => {
+    async (c) => {
       const { model, messages, system } = c.req.valid("json");
+      const createModel = await getCreateModel();
       const result = streamText({
         model: createModel({
           model,
@@ -124,7 +136,7 @@ const api = new Hono<HonoContext>()
     }
   )
   .get("/models", async (c) => {
-    const availableModels = await gateway.getAvailableModels();
+    const availableModels = await (await getGateway()).getAvailableModels();
     return c.json(availableModels.models);
   })
   .post(

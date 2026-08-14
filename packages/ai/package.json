@@ -33,6 +33,10 @@
       "types": "./src/utils/index.ts",
       "default": "./src/utils/index.ts"
     },
+    "./utils/model": {
+      "types": "./src/utils/model.ts",
+      "default": "./src/utils/model.ts"
+    },
     "./embeddings/openai": {
       "types": "./src/embeddings/openai.ts",
       "default": "./src/embeddings/openai.ts"

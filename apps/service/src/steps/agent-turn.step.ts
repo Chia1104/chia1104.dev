@@ -1,17 +1,10 @@
 import { FatalError, getWritable } from "workflow";
 
-import { createAgentModels, PgSessionRepo } from "@chia/agent-runtime";
 import type {
   AgentWireEvent,
   ThinkingLevel,
   ToolTier,
 } from "@chia/agent-runtime";
-import {
-  PgDraftStore,
-  runWritingTurn,
-  WRITING_AGENT_KIND,
-  WRITING_SESSION_DEFAULTS,
-} from "@chia/agent-writing";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
 import {
@@ -124,9 +117,15 @@ export const runAgentTurnStep = async (
 /**
  * Static registration is intentional: workflow steps are deployment-versioned bundles. A new kind
  * adds a handler here and a sibling HTTP runtime, while the workflow stays free of domain imports.
+ *
+ * Keyed by the literal rather than `WRITING_AGENT_KIND`, because importing that constant pulls
+ * `@chia/agent-writing` and the whole provider stack behind it. This module is registered at boot
+ * for every process that hosts the workflow, so a domain import here is an eager one. The key is
+ * matched against `agent_session.kind`, which is a database string either way; the handler asserts
+ * the constant once its domain module is loaded.
  */
 const AGENT_TURN_HANDLERS: Readonly<Record<string, AgentTurnHandler>> = {
-  [WRITING_AGENT_KIND]: runWritingAgentTurn,
+  writing: runWritingAgentTurn,
 };
 
 async function runWritingAgentTurn(
@@ -134,9 +133,27 @@ async function runWritingAgentTurn(
   row: AgentSessionRow,
   request: AgentTurnRequest
 ): Promise<AgentTurnOutcome> {
-  const kv = await import("@chia/kv/redis").then((module) =>
-    module.getRedisKv()
-  );
+  const [
+    { createAgentModels, PgSessionRepo },
+    {
+      PgDraftStore,
+      runWritingTurn,
+      WRITING_AGENT_KIND,
+      WRITING_SESSION_DEFAULTS,
+    },
+    kv,
+  ] = await Promise.all([
+    import("@chia/agent-runtime"),
+    import("@chia/agent-writing"),
+    import("@chia/kv/redis").then((module) => module.getRedisKv()),
+  ]);
+
+  if (row.kind !== WRITING_AGENT_KIND) {
+    throw new FatalError(
+      `Agent session ${request.sessionId} dispatched to the writing turn as kind "${row.kind}".`
+    );
+  }
+
   const writingState = await getWritingAgentSession(db, request.sessionId);
   if (!writingState) {
     throw new FatalError(
