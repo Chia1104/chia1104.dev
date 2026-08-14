@@ -105,10 +105,4 @@ export const baseRequestSchema = z.object({
 
 export type BaseRequest = z.infer<typeof baseRequestSchema>;
 
-export const authTokenSchema = z.object({
-  apiKey: z.string().min(1),
-});
-
-export type AuthToken = z.infer<typeof authTokenSchema>;
-
 export { ModelMessage };

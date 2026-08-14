@@ -1,6 +1,13 @@
-import { s3Service } from "../../s3/s3.service";
 import { adminGuard } from "../guards/admin.guard";
 import { contractOS, slugger } from "../utils";
+
+/**
+ * Loaded on demand rather than imported statically: the router imports every route
+ * module at boot, so a static import would put the whole AWS SDK in the eager module
+ * graph of processes that never touch a file route.
+ */
+const getS3Service = async () =>
+  (await import("../../s3/s3.service")).s3Service;
 
 export const createSignedUrlForUploadRoute = contractOS.file[
   "signed-url:create"
@@ -21,7 +28,9 @@ export const createSignedUrlForUploadRoute = contractOS.file[
       const uuid = crypto.randomUUID();
       const name = `${opts.input.area}/${sluggedFilename}-${uuid}${extension}`;
 
-      const { url } = await s3Service.createSignedUrlForUpload(name, {
+      const { url } = await (
+        await getS3Service()
+      ).createSignedUrlForUpload(name, {
         sha256Checksum: opts.input.sha256Checksum,
         type: opts.input.type,
         size: opts.input.size,
@@ -35,7 +44,7 @@ export const createSignedUrlForUploadRoute = contractOS.file[
 export const listObjectsRoute = contractOS.file.list
   .use(adminGuard())
   .handler(async (opts) => {
-    const objects = await s3Service.listObjects();
+    const objects = await (await getS3Service()).listObjects();
     if (!objects) {
       throw opts.errors.BAD_REQUEST();
     }
@@ -51,7 +60,7 @@ export const deleteObjectRoute = contractOS.file.delete
   .use(adminGuard())
   .handler(async (opts) => {
     try {
-      await s3Service.deleteFile(opts.input.key);
+      await (await getS3Service()).deleteFile(opts.input.key);
       return { success: true };
     } catch {
       throw opts.errors.INTERNAL_SERVER_ERROR();

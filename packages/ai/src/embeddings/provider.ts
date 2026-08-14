@@ -1,7 +1,6 @@
 import { isOllamaEnabled } from "../ollama/utils.ts";
 
 import { ollamaEmbeddings } from "./ollama.ts";
-import { generateEmbeddings } from "./openai.ts";
 import {
   EMBEDDING_DIMENSIONS,
   EMBEDDING_INDEX_VERSION,
@@ -38,13 +37,20 @@ export interface OpenAIProviderOptions {
   ) => Promise<Response>;
 }
 
+/**
+ * `./openai.ts` is imported inside `embed` rather than at module scope: resolving a
+ * provider is part of the boot path of everything that indexes, but `@ai-sdk/openai`
+ * and `ai` are only needed once vectors are actually requested.
+ */
 export const openAIEmbeddingProvider = (
   options: OpenAIProviderOptions = {}
 ): EmbeddingProvider => ({
   id: OPENAI_EMBEDDING_MODEL,
   dimensions: EMBEDDING_DIMENSIONS,
-  embed: (texts) =>
-    generateEmbeddings(texts, {
+  embed: async (texts) =>
+    await (
+      await import("./openai.ts")
+    ).generateEmbeddings(texts, {
       model: OPENAI_EMBEDDING_MODEL,
       apiKey: options.apiKey,
       fetch: options.fetch,
