@@ -38,10 +38,9 @@ export interface FeedHooks {
  * oRPC handler context: {@link ServiceContext} plus what the hosting process supplies.
  *
  * `config` is required — every process that runs the router has a rate-limit budget to
- * name. The ports are optional because not every process has them: `apps/service` owns
- * the workflow runtime and wires all of these in `createORPCContext`; the dashboard's
- * in-process router client leaves them out, and a route that needs one answers
- * `SERVICE_UNAVAILABLE`.
+ * name. The ports are optional because a context need not have them: `apps/service` owns
+ * the workflow runtime and wires all of these in `createORPCContext`; a context that
+ * leaves one out (tests do) gets `SERVICE_UNAVAILABLE` from a route that needs it.
  */
 export interface BaseOSContext extends ServiceContext {
   config: ORPCConfig;

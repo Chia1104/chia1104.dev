@@ -462,15 +462,9 @@ importers:
       '@chia/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@chia/kv':
-        specifier: workspace:*
-        version: link:../../packages/kv
       '@chia/meta':
         specifier: workspace:*
         version: link:../../packages/meta
-      '@chia/service-kit':
-        specifier: workspace:*
-        version: link:../../packages/service-kit
       '@chia/themes':
         specifier: workspace:*
         version: link:../../packages/themes
@@ -579,9 +573,6 @@ importers:
       nuqs:
         specifier: catalog:ui
         version: 2.9.5(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
-      pg:
-        specifier: ^8.22.0
-        version: 8.22.0
       react:
         specifier: catalog:react-is
         version: 19.2.8

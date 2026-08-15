@@ -48,13 +48,13 @@ It doubles as the place where new stack and architecture ideas get tried for rea
 
 **Guards and policies.** Authorization logic lives once in `packages/service-kit/src/policies` (`sessionPolicy`, `apiKeyPolicy`, `adminPolicy`, `rateLimitPolicy`, `captchaPolicy`, `aiKeyPolicy`) and is bound to each transport by a thin adapter: `toHonoMiddleware` for Hono middleware (`apps/service/src/guards/`), `runPolicy` for oRPC middleware (`packages/api/orpc/guards/`). Write new authorization as a policy, not as a guard.
 
-**Context injection.** `packages/api` parses no env of its own. Everything the guards and routes need from the host travels on the oRPC context (`BaseOSContext` in `packages/api/orpc/utils.ts`): `config` (rate-limit budget, project id, AI key material — required), plus the optional domain ports `hooks.onFeedChanged` / `onFeedRemoved`, `indexing` and `agentKinds`. The port interfaces live in `packages/api/orpc/services/`. `createORPCContext` in `apps/service/src/factories/orpc.factory.ts` is the one place `apps/service` supplies them; the dashboard's in-process router client supplies `config` and leaves the ports out, so the routes that need one answer `SERVICE_UNAVAILABLE`. Anything needing a long-lived process, a DB handle, or gateway credentials belongs in the app, not in `packages/api`.
+**Context injection.** `packages/api` parses no env of its own. Everything the guards and routes need from the host travels on the oRPC context (`BaseOSContext` in `packages/api/orpc/utils.ts`): `config` (rate-limit budget, project id, AI key material — required), plus the optional domain ports `hooks.onFeedChanged` / `onFeedRemoved`, `indexing` and `agentKinds`. The port interfaces live in `packages/api/orpc/services/`. `createORPCContext` in `apps/service/src/factories/orpc.factory.ts` is the one place they are supplied — `apps/service` is the only process that runs the router. A context that leaves a port out (tests do) gets `SERVICE_UNAVAILABLE` from the routes that need it. Anything needing a long-lived process, a DB handle, or gateway credentials belongs in the app, not in `packages/api`.
 
 **Data access.** oRPC handlers never write raw Drizzle queries; they call repositories exported as `@chia/db/repos/*`. Write logic shared with workflow steps lives in `packages/api/<domain>/write` so a durable turn can call it without a request to authorize against.
 
 ## Client wiring and the deployment split
 
-`www` runs on **Vercel**; `dash` and `service` run on **Railway**. That asymmetry is the reason there are two client files per app.
+`www` runs on **Vercel**; `dash` and `service` run on **Railway**. That asymmetry is the reason `www` has two client files and `dash` has one.
 
 `apps/www`:
 
@@ -63,8 +63,7 @@ It doubles as the place where new stack and architecture ideas get tried for rea
 
 `apps/dash`:
 
-- `libs/orpc/client.rsc.ts` — imported for side effects by `app/layout.tsx` and `instrumentation.ts`. It sets `globalThis.$client` to a `createRouterClient(router)`, so server-side dash calls the router **in-process** (its own DB/auth context) instead of over HTTP.
-- `libs/orpc/client.ts` — falls back to `globalThis.$client` when set, otherwise an `RPCLink` with `credentials: "include"`; the browser talks to `service` with session cookies. Railway's private network is what makes the network path cheap here.
+- `libs/orpc/client.ts` — the only client. An `RPCLink` with `credentials: "include"`; every procedure call is made **from the browser** with the session cookie. Pages are thin server shells (or client pages) and data fetching lives in client components via `orpc.*.queryOptions`. There is no server-side or in-process oRPC path, so `dash` holds no DB, KV or auth-server context of its own.
 
 Endpoint resolution goes through `withServiceEndpoint(path, Service.X, { isInternal, version })` in `packages/utils/src/config`. On a server runtime it resolves `INTERNAL_*_ENDPOINT`; in the browser it resolves `NEXT_PUBLIC_SERVICE_PROXY_ENDPOINT`. Never hand-build a service URL.
 

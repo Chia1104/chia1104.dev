@@ -41,7 +41,7 @@ export const withErrorReporting = async <T>(
  * hence the spread rather than a field-by-field mapping. Everything after the spread is
  * what this process supplies on top: its env-derived config, and — because it is the only
  * process with a workflow runtime — the ports that index feeds, start index runs and run
- * agent turns. The dashboard's in-process router client builds its context without those.
+ * agent turns.
  */
 export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   ...c.var,
