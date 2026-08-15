@@ -68,7 +68,7 @@ export const connectDatabase = async (
     prod: async () =>
       internalEnv.DATABASE_URL_REPLICA_1
         ? withReplicas(await getConnection(internalEnv.DATABASE_URL, options), [
-            await getConnection(internalEnv.DATABASE_URL_REPLICA_1),
+            await getConnection(internalEnv.DATABASE_URL_REPLICA_1, options),
           ])
         : await getConnection(internalEnv.DATABASE_URL ?? "", options),
     beta: async () =>

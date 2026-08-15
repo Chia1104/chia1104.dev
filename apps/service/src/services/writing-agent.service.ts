@@ -242,6 +242,22 @@ const isRunLive = async (runId: string): Promise<boolean> => {
 };
 
 /**
+ * Cancels a run that was live a moment ago.
+ *
+ * `cancel()` refuses a run that has since reached a terminal state — the storage layer
+ * throws `EntityConflictError` rather than no-op — so the check is redone on failure: a
+ * run that finished on its own is exactly the outcome the caller wanted, while a run
+ * that is still live means the cancel genuinely failed and must surface.
+ */
+const cancelLiveRun = async (runId: string): Promise<void> => {
+  try {
+    await getRun(runId).cancel();
+  } catch (error) {
+    if (await isRunLive(runId)) throw error;
+  }
+};
+
+/**
  * Whether a hook token is registered and can be resumed.
  *
  * `createHook()` does not register on call. This workflow registers through `getConflict()` before
@@ -414,7 +430,7 @@ export const writingAgentService: AgentKindService = {
     // *approval* hook, where a queued message is never read — and once the session is
     // deleted nobody can decide the approval, so the run would stay parked for good.
     if (row.workflowRunId && (await isRunLive(row.workflowRunId))) {
-      await getRun(row.workflowRunId).cancel();
+      await cancelLiveRun(row.workflowRunId);
     }
     if (row.activeRunId) {
       await completeAgentRun(
@@ -615,7 +631,7 @@ export const writingAgentService: AgentKindService = {
 
     // Cancels the whole run, which is the session's driver — the next prompt starts a fresh one and
     // picks the transcript back up from Postgres.
-    await getRun(row.workflowRunId).cancel();
+    await cancelLiveRun(row.workflowRunId);
     if (row.activeRunId) {
       await completeAgentRun(
         caller.context.db as DB,
