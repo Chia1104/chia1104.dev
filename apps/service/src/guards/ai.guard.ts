@@ -19,7 +19,7 @@ export { AI_AUTH_TOKEN };
 
 type AiContext = HonoContext<undefined, Variables & { AI_AUTH_TOKEN: string }>;
 
-const cookieName = (provider?: Provider) => {
+export const providerCookieName = (provider?: Provider) => {
   switch (provider) {
     case Provider.OpenAI:
       return OPENAI_API_KEY;
@@ -63,7 +63,7 @@ export const ai = (
     const denied = await applyPolicy(
       c,
       aiKeyPolicy({
-        cookieName: cookieName(provider ?? json?.model?.provider),
+        cookieName: providerCookieName(provider ?? json?.model?.provider),
         verify: (encoded) => verifyApiKey(encoded, privateKey),
       })
     );

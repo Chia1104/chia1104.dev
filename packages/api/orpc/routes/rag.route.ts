@@ -17,16 +17,16 @@ import { isAppError } from "@chia/service-kit/errors";
 
 import { adminGuard } from "../guards/admin.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
-import { getIndexingService } from "../indexing";
-import type { IndexingCaller } from "../indexing";
+import { requireIndexing } from "../services/indexing.service";
+import type { IndexingCaller } from "../services/indexing.service";
 import { contractOS } from "../utils";
 
 /**
  * RAG management routes.
  *
- * Reads go straight to the stats repository; triggers go through the indexing port,
- * which is only registered in the process that owns the workflow runtime — calling one
- * anywhere else fails with `SERVICE_UNAVAILABLE` instead of pretending to have started.
+ * Reads go straight to the stats repository; triggers go through the indexing port on
+ * the context, which only the process that owns the workflow runtime supplies — calling
+ * one anywhere else fails with `SERVICE_UNAVAILABLE` instead of pretending to have started.
  *
  * **Every route is `adminGuard()`, reads included.** A session alone is not enough:
  * `resource_chunk` holds the body text of every indexed resource with no ownership column
@@ -131,7 +131,7 @@ export const listIndexRunsRoute = contractOS.rag["runs:list"]
   .use(adminGuard())
   .handler(async (opts) => {
     try {
-      const page = await getIndexingService().listRuns({
+      const page = await requireIndexing(opts.context).listRuns({
         limit: opts.input.limit,
         cursor: opts.input.cursor ?? null,
       });
@@ -146,7 +146,7 @@ export const getIndexRunRoute = contractOS.rag["run:get"]
   .use(adminGuard())
   .handler(async (opts) => {
     try {
-      const run = await getIndexingService().getRun(opts.input);
+      const run = await requireIndexing(opts.context).getRun(opts.input);
       if (!run) {
         throw opts.errors.NOT_FOUND();
       }
@@ -189,7 +189,7 @@ export const indexResourceRoute = contractOS.rag["resource:index"]
   .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
   .handler(async (opts) => {
     try {
-      const handle = await getIndexingService().indexResource(
+      const handle = await requireIndexing(opts.context).indexResource(
         callerOf(opts),
         opts.input
       );
@@ -205,7 +205,7 @@ export const indexFeedRoute = contractOS.rag["feed:index"]
   .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
   .handler(async (opts) => {
     try {
-      const handle = await getIndexingService().indexFeed(
+      const handle = await requireIndexing(opts.context).indexFeed(
         callerOf(opts),
         opts.input
       );
@@ -228,7 +228,7 @@ export const reindexAllRoute = contractOS.rag["reindex:all"]
   )
   .handler(async (opts) => {
     try {
-      const handle = await getIndexingService().reindexAll(
+      const handle = await requireIndexing(opts.context).reindexAll(
         callerOf(opts),
         opts.input
       );
@@ -250,7 +250,9 @@ export const pruneEmbeddingsRoute = contractOS.rag["embeddings:prune"]
   )
   .handler(async (opts) => {
     try {
-      const result = await getIndexingService().pruneEmbeddings(callerOf(opts));
+      const result = await requireIndexing(opts.context).pruneEmbeddings(
+        callerOf(opts)
+      );
 
       return { ...currentIndexKey(), ...result };
     } catch (error) {

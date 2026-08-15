@@ -13,6 +13,7 @@ import { errorGenerator, getClientIP } from "@chia/utils/server";
 
 import { isAppError, toErrorResponse } from "./errors";
 import type { ServiceHonoEnv } from "./hono";
+import { bodyLimit } from "./middlewares/body-limit";
 import type { MaintenanceOptions } from "./middlewares/maintenance";
 import { maintenance } from "./middlewares/maintenance";
 
@@ -70,11 +71,17 @@ export interface BootstrapOptions {
    * @default true
    */
   logger?: boolean;
+  /**
+   * Request body cap in bytes. Every surface parses JSON bodies, so an unbounded body is
+   * an unbounded allocation.
+   * @default 5 MB
+   */
+  maxBodySize?: number;
 }
 
 /**
  * Applies the middleware every service app shares: logging, Sentry, the global error
- * handler, maintenance mode and CORS.
+ * handler, the body-size cap, CORS and maintenance mode.
  *
  * The error handler is the single place HTTP error bodies are produced, so an
  * {@link AppError} thrown anywhere yields the same body the oRPC adapter produces.
@@ -117,8 +124,10 @@ export const bootstrap = <
     return c.json(errorGenerator(500), 500);
   });
 
-  app.use(maintenance(options?.maintenance));
+  app.use(bodyLimit(options?.maxBodySize ?? 5 * 1024 * 1024));
 
+  // CORS before maintenance: a maintenance 503 (including the preflight answer) must
+  // carry CORS headers, or a browser client sees an opaque CORS failure instead.
   if (options?.cors) {
     app.use(
       cors({
@@ -127,6 +136,8 @@ export const bootstrap = <
       })
     );
   }
+
+  app.use(maintenance(options?.maintenance));
 
   return app;
 };

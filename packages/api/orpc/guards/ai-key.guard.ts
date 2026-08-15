@@ -7,7 +7,6 @@ import { verifyApiKey } from "@chia/ai/utils";
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
 import { aiKeyPolicy } from "@chia/service-kit/policies";
 
-import { getORPCConfig } from "../config";
 import { baseOS } from "../utils";
 
 export type AiProvider = "openai" | "anthropic" | "google";
@@ -46,7 +45,7 @@ export const aiKeyGuard = (defaults?: { provider?: AiProvider }) =>
         });
       }
 
-      const privateKey = getORPCConfig().aiAuthPrivateKey;
+      const privateKey = context.config.aiAuthPrivateKey;
 
       if (!privateKey) {
         throw errors.SERVICE_UNAVAILABLE();

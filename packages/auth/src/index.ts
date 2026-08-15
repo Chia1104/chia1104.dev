@@ -1,4 +1,3 @@
-import type { Auth as BetterAuth } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
@@ -11,12 +10,8 @@ import { baseAuthConfig } from "./base-auth";
 
 export const name = "auth-core";
 
-let auth: BetterAuth<typeof baseAuthConfig> | undefined;
-
-export const createAuth = (db: DB, kv: Keyv) => {
-  if (auth) return auth;
-
-  return betterAuth({
+const buildAuth = (db: DB, kv: Keyv) =>
+  betterAuth({
     ...baseAuthConfig,
     account: {
       skipStateCookieCheck: !IS_PRODUCTION,
@@ -45,6 +40,14 @@ export const createAuth = (db: DB, kv: Keyv) => {
       },
     },
   });
-};
 
-export type Auth = ReturnType<typeof createAuth>;
+/**
+ * Memoized: `betterAuth()` eagerly builds the full auth context and endpoint router
+ * (~0.7 MB allocated per call), and `db`/`kv` are process singletons, so one instance
+ * serves every request.
+ */
+let auth: ReturnType<typeof buildAuth> | undefined;
+
+export const createAuth = (db: DB, kv: Keyv) => (auth ??= buildAuth(db, kv));
+
+export type Auth = ReturnType<typeof buildAuth>;

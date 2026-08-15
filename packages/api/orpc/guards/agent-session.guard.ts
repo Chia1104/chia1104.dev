@@ -4,12 +4,12 @@ import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
 import { getAgentSession } from "@chia/db/repos/agent";
 
-import { getAgentKindService } from "../agent-service";
+import { requireAgentKind } from "../services/agent.service";
 import type {
   AgentModelRef,
   AgentKindService,
   AgentServiceCaller,
-} from "../agent-service";
+} from "../services/agent.service";
 import type { BaseOSContext } from "../utils";
 
 /**
@@ -21,7 +21,7 @@ import type { BaseOSContext } from "../utils";
  * a missing ownership check reads exactly like a working route.
  *
  * The kind comes from the **stored session**, never from the request, so a client cannot drive a
- * session through another kind's tools by supplying a different registry key. An explicit `kind` in
+ * session through another kind's tools by supplying a different kind. An explicit `kind` in
  * the input is only ever a cross-check.
  *
  * Runs after `adminGuard()`, whose context it consumes.
@@ -79,7 +79,7 @@ export const agentSessionGuard = () =>
         throw errors.NOT_FOUND();
       }
 
-      const service = getAgentKindService(row.kind);
+      const service = requireAgentKind(context, row.kind);
 
       if (input.model) {
         const reason = await service.validateModel(input.model);
@@ -100,13 +100,14 @@ export const agentModelGuard = () =>
     .errors({ BAD_REQUEST: {} })
     .middleware(
       async (
-        { errors, next },
+        { context, errors, next },
         input: { kind: string; model?: AgentModelRef }
       ) => {
         if (input.model) {
-          const reason = await getAgentKindService(input.kind).validateModel(
-            input.model
-          );
+          const reason = await requireAgentKind(
+            context,
+            input.kind
+          ).validateModel(input.model);
           if (reason) throw errors.BAD_REQUEST({ message: reason });
         }
         return next();

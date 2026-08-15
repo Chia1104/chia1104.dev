@@ -4,7 +4,6 @@ import * as z from "zod";
 import { env as s3Env } from "@chia/api/s3/env";
 import { env as serviceEnv } from "@chia/api/services/env";
 import { adminEnv } from "@chia/auth/env";
-import { env as dbEnv } from "@chia/db/env";
 import { NodeEnvSchema, AppEnvSchema } from "@chia/utils/schema";
 
 export const getClientEnv = () => {
@@ -51,5 +50,5 @@ export const env = createEnv({
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
 
-  extends: [dbEnv, adminEnv, serviceEnv, s3Env],
+  extends: [adminEnv, serviceEnv, s3Env],
 });

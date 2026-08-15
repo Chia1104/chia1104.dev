@@ -8,7 +8,6 @@ import {
   rateLimitPolicy,
 } from "@chia/service-kit/policies";
 
-import { getORPCConfig } from "../config";
 import type { BaseOSContext } from "../utils";
 import { baseOS } from "../utils";
 
@@ -38,7 +37,7 @@ export const callerGuard = (options: CallerPolicyOptions = {}) =>
           callerPolicy({
             minTier: options.minTier,
             permissions: options.permissions,
-            projectId: options.projectId ?? getORPCConfig().projectId,
+            projectId: options.projectId ?? context.config.projectId,
           }),
           context
         ),
@@ -89,7 +88,7 @@ export const tieredRateLimitGuard = (options: {
       TOO_MANY_REQUESTS: {},
     })
     .middleware(async ({ next, context }) => {
-      const defaults = getORPCConfig().rateLimit;
+      const defaults = context.config.rateLimit;
       const base = options.limit ?? defaults.limit;
 
       await runPolicy(

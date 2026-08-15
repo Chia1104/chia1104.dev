@@ -1,12 +1,15 @@
 import { toTanStackAgentEventStream } from "@chia/agent-runtime/transports/tanstack-ai";
 
-import { getAgentKindService, registeredAgentKinds } from "../agent-service";
-import type { AgentServiceCaller } from "../agent-service";
 import { adminGuard } from "../guards/admin.guard";
 import {
   agentModelGuard,
   agentSessionGuard,
 } from "../guards/agent-session.guard";
+import {
+  availableAgentKinds,
+  requireAgentKind,
+} from "../services/agent.service";
+import type { AgentServiceCaller } from "../services/agent.service";
 import { contractOS } from "../utils";
 
 /**
@@ -14,7 +17,7 @@ import { contractOS } from "../utils";
  *
  * Thin by design: creation/capability requests resolve by an explicit kind, while session-scoped
  * requests resolve from the persisted session. A client cannot drive a session through another
- * kind's tools by supplying a different registry key.
+ * kind's tools by supplying a different kind.
  *
  * `adminGuard()` pins to the configured admin id, so a logged-in non-admin cannot reach these even
  * with a valid session. That matters more here than on the read routes: these tools can write to
@@ -41,10 +44,12 @@ export const listAgentSessionsRoute = contractOS.agent.sessions.list
   .use(adminGuard())
   .handler(async (opts) => {
     const caller = callerOf(opts);
-    const kinds = opts.input?.kind ? [opts.input.kind] : registeredAgentKinds();
+    const kinds = opts.input?.kind
+      ? [opts.input.kind]
+      : availableAgentKinds(opts.context);
     const pages = await Promise.all(
       kinds.map((kind) =>
-        getAgentKindService(kind).listSessions(caller, opts.input)
+        requireAgentKind(opts.context, kind).listSessions(caller, opts.input)
       )
     );
     const limit = opts.input?.limit ?? 50;
@@ -62,7 +67,7 @@ export const createAgentSessionRoute = contractOS.agent.sessions.create
   .use(adminGuard())
   .use(agentModelGuard())
   .handler(async (opts) =>
-    getAgentKindService(opts.input.kind).createSession(
+    requireAgentKind(opts.context, opts.input.kind).createSession(
       callerOf(opts),
       opts.input
     )
@@ -218,11 +223,11 @@ export const getAgentDraftRoute = contractOS.agent.sessions.draft
 export const listAgentModelsRoute = contractOS.agent.models.list
   .use(adminGuard())
   .handler(async (opts) =>
-    getAgentKindService(opts.input.kind).listModels(callerOf(opts))
+    requireAgentKind(opts.context, opts.input.kind).listModels(callerOf(opts))
   );
 
 export const listAgentCapabilitiesRoute = contractOS.agent.capabilities.list
   .use(adminGuard())
   .handler(async (opts) =>
-    getAgentKindService(opts.input.kind).listCapabilities()
+    requireAgentKind(opts.context, opts.input.kind).listCapabilities()
   );
