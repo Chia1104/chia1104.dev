@@ -21,8 +21,8 @@ vi.mock("../src/services/spotify.service", () => ({
 }));
 
 // The playback reads live in `@chia/api/spotify/playback`, behind the oRPC procedures.
-// `playing` keeps its public REST URL for the browser; `playlist` is RPC-only and behind
-// the project API key, because only `apps/www`'s server-side client reads it.
+// `playing` is public; `playlist` sits behind the project API key, because only
+// `apps/www`'s server-side client reads it.
 vi.mock("@chia/api/spotify/playback", () => ({
   getSpotifyNowPlayingService: mocks.getSpotifyNowPlayingService,
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,
@@ -54,9 +54,16 @@ describe("Spotify Controller", () => {
     mocks.completeSpotifyAuthorizationService.mockResolvedValue("connected");
   });
 
-  describe("GET /api/v1/spotify/playing", () => {
+  describe("spotify.playing", () => {
+    const playing = () =>
+      app.request("/api/v1/rpc/spotify/playing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
     it("returns the current playback from the service", async () => {
-      const res = await app.request("/api/v1/spotify/playing");
+      const res = await playing();
 
       expect(res.status).toBe(200);
       expect(mocks.getSpotifyNowPlayingService).toHaveBeenCalledWith(
@@ -69,7 +76,7 @@ describe("Spotify Controller", () => {
         new mocks.SpotifyCredentialUnavailableError()
       );
 
-      const res = await app.request("/api/v1/spotify/playing");
+      const res = await playing();
 
       expect(res.status).toBe(503);
     });

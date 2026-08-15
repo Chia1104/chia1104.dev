@@ -22,11 +22,11 @@ It doubles as the place where new stack and architecture ideas get tried for rea
 - **Minimal but extensible is the target shape.** Ship the smallest thing that works end to end, and put the seam where the next capability will attach — a contract, a policy, a port, a repository. Extensibility means a clean seam, not a config flag or a plugin system nobody asked for.
 - **Nothing needs to be kept for compatibility.** There is one deploy of each app and one consumer of every internal API, so obsolete code gets deleted outright. Migrating both sides of a contract in the same change is normal and preferred.
 
-| App | Stack | Role |
-| --- | --- | --- |
-| `apps/www` | Next.js 16 (App Router, React 19), port 3000 | Public site — profile, blog, projects, contact |
-| `apps/dash` | Next.js 16, port 3001 | Admin dashboard — feeds/content, assets, RAG, agent, API keys, projects |
-| `apps/service` | Hono on Nitro, port 3005 | The only backend. Owns auth, DB, workflows, AI/agent runtime |
+| App            | Stack                                        | Role                                                                    |
+| -------------- | -------------------------------------------- | ----------------------------------------------------------------------- |
+| `apps/www`     | Next.js 16 (App Router, React 19), port 3000 | Public site — profile, blog, projects, contact                          |
+| `apps/dash`    | Next.js 16, port 3001                        | Admin dashboard — feeds/content, assets, RAG, agent, API keys, projects |
+| `apps/service` | Hono on Nitro, port 3005                     | The only backend. Owns auth, DB, workflows, AI/agent runtime            |
 
 `apps/gateway` is Caddy/Nginx config, `apps/functions/pg-dump-cron` is a scheduled job, and `apps/ai` / `apps/auth` / `apps/workflow` are env-only placeholders for a future split of `service`. `legacy/` is dead code kept for reference — it is lint-ignored and must not be imported.
 
@@ -34,7 +34,7 @@ It doubles as the place where new stack and architecture ideas get tried for rea
 
 **Contract-first oRPC.** The wire contract lives in `packages/api/orpc/contracts/*.contract.ts` and is composed in `router.contract.ts`. Handlers live in `packages/api/orpc/routes/*.route.ts` and are composed in `router.ts` via `contractOS` (`implement(routerContract)`). The two trees must stay key-for-key identical.
 
-`apps/service` mounts that router; both frontends import the *contract type* only and get an end-to-end typed client. There is no tRPC and no Next.js API-route proxy layer — the frontends call `service` endpoints directly. The only Next route handlers that exist are `/api/v1/health` in each app.
+`apps/service` mounts that router; both frontends import the _contract type_ only and get an end-to-end typed client. There is no tRPC and no Next.js API-route proxy layer — the frontends call `service` endpoints directly. The only Next route handlers that exist are `/api/v1/health` in each app.
 
 **Service surface** (`apps/service/src/server.ts`, all under `/api/v1`):
 
@@ -44,10 +44,7 @@ It doubles as the place where new stack and architecture ideas get tried for rea
 /health
 /ai
 /spotify
-/          openapi catch-all — serves the same oRPC router over REST
 ```
-
-`openapiRoutes` is mounted last on purpose: hand-written Hono routes keep precedence, so a Hono route can be replaced by an oRPC procedure at the same URL without a flag day.
 
 **Guards and policies.** Authorization logic lives once in `packages/service-kit/src/policies` (`sessionPolicy`, `apiKeyPolicy`, `adminPolicy`, `rateLimitPolicy`, `captchaPolicy`, `aiKeyPolicy`) and is bound to each transport by a thin adapter: `toHonoMiddleware` for Hono middleware (`apps/service/src/guards/`), `runPolicy` for oRPC middleware (`packages/api/orpc/guards/`). Write new authorization as a policy, not as a guard.
 

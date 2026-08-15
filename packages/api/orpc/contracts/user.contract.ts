@@ -17,9 +17,6 @@ const userSchema = z.object({
 });
 
 export const updateUserProfileContract = oc
-  // Without an explicit route the REST path would percent-encode the `:` in the router
-  // key (`/user/profile%3Aupdate`).
-  .route({ method: "PATCH", path: "/users/profile" })
   .errors({
     UNAUTHORIZED: {},
     NOT_FOUND: {},

@@ -19,8 +19,8 @@ configureORPC({
 });
 
 /**
- * Wraps a handler invocation with the error reporting both oRPC handlers share, so the
- * RPC and REST surfaces report identically.
+ * Wraps a handler invocation with the error reporting the oRPC handler applies to every
+ * procedure.
  */
 export const withErrorReporting = async <T>(
   context: Pick<BaseOSContext, "hooks">,

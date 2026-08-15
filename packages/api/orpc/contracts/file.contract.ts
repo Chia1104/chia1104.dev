@@ -2,9 +2,6 @@ import { oc } from "@orpc/contract";
 import * as z from "zod";
 
 export const createSignedUrlForUploadContract = oc
-  // Without an explicit route the REST path would percent-encode the `:` in the router
-  // key (`/file/signed-url%3Acreate`).
-  .route({ method: "POST", path: "/files/signed-url" })
   .errors({
     UNAUTHORIZED: {},
     FORBIDDEN: {},

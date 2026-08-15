@@ -1,12 +1,7 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
-/**
- * `path` keeps the URL the Hono route served, so the migration is invisible to callers
- * that still speak REST.
- */
 export const sendContactEmailContract = oc
-  .route({ method: "POST", path: "/email/send" })
   .errors({
     BAD_REQUEST: {},
     TOO_MANY_REQUESTS: {},
@@ -24,5 +19,4 @@ export const sendContactEmailContract = oc
       captchaToken: z.string().min(1),
     })
   )
-  // The Hono route answered `c.json(null)`; kept as-is so REST callers see no change.
   .output(z.null());

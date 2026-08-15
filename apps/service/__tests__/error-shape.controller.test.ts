@@ -4,27 +4,12 @@ import * as guardMocks from "./__mocks__/guards.mock";
 
 const invalidInput = { href: "not-a-url" };
 
-describe("Error body shape per surface", () => {
+describe("Error body shape", () => {
   beforeEach(() => {
     guardMocks.resetAllGuardMocks();
   });
 
-  it("REST emits the errorGenerator shape the frontends parse", async () => {
-    const res = await app.request("/api/v1/toolings/link-preview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(invalidInput),
-    });
-
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({
-      code: "Bad Request",
-      status: 400,
-      errors: [{ field: "href", message: "Invalid URL" }],
-    });
-  });
-
-  it("RPC keeps oRPC's own shape, which its client requires", async () => {
+  it("RPC emits oRPC's own shape, which its client requires", async () => {
     const res = await app.request("/api/v1/rpc/toolings/link-preview", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
