@@ -1,3 +1,4 @@
+import type { Auth as BetterAuth } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
@@ -10,8 +11,12 @@ import { baseAuthConfig } from "./base-auth";
 
 export const name = "auth-core";
 
-export const createAuth = (db: DB, kv: Keyv) =>
-  betterAuth({
+let auth: BetterAuth<typeof baseAuthConfig> | undefined;
+
+export const createAuth = (db: DB, kv: Keyv) => {
+  if (auth) return auth;
+
+  return betterAuth({
     ...baseAuthConfig,
     account: {
       skipStateCookieCheck: !IS_PRODUCTION,
@@ -40,5 +45,6 @@ export const createAuth = (db: DB, kv: Keyv) =>
       },
     },
   });
+};
 
 export type Auth = ReturnType<typeof createAuth>;
