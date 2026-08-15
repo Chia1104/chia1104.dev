@@ -1,12 +1,15 @@
 import { toTanStackAgentEventStream } from "@chia/agent-runtime/transports/tanstack-ai";
 
-import { availableAgentKinds, requireAgentKind } from "../agent-service";
-import type { AgentServiceCaller } from "../agent-service";
 import { adminGuard } from "../guards/admin.guard";
 import {
   agentModelGuard,
   agentSessionGuard,
 } from "../guards/agent-session.guard";
+import {
+  availableAgentKinds,
+  requireAgentKind,
+} from "../services/agent.service";
+import type { AgentServiceCaller } from "../services/agent.service";
 import { contractOS } from "../utils";
 
 /**

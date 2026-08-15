@@ -1,4 +1,4 @@
-import type { AgentKindService } from "@chia/api/orpc/agent-service";
+import type { AgentKindService } from "@chia/api/orpc/services/agent.service";
 
 /**
  * The agent kinds this process serves, split from their implementation.

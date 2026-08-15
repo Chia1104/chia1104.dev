@@ -4,12 +4,12 @@ import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
 import { getAgentSession } from "@chia/db/repos/agent";
 
-import { requireAgentKind } from "../agent-service";
+import { requireAgentKind } from "../services/agent.service";
 import type {
   AgentModelRef,
   AgentKindService,
   AgentServiceCaller,
-} from "../agent-service";
+} from "../services/agent.service";
 import type { BaseOSContext } from "../utils";
 
 /**

@@ -6,7 +6,7 @@ import type {
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import { AppError } from "@chia/service-kit/errors";
 
-import type { BaseOSContext } from "./utils";
+import type { BaseOSContext } from "../utils";
 
 /**
  * Port for resource indexing.

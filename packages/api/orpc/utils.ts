@@ -4,9 +4,25 @@ import GithubSlugger from "github-slugger";
 
 import type { ServiceContext } from "@chia/service-kit/context";
 
-import type { AgentKindService } from "./agent-service";
-import type { IndexingService } from "./indexing";
 import { routerContract } from "./router.contract";
+import type { AgentKindService } from "./services/agent.service";
+import type { IndexingService } from "./services/indexing.service";
+
+/**
+ * Values the guards need that only the hosting app knows (env-driven budgets, project
+ * ids, key material). Carried on the context so `packages/api` parses no env of its own.
+ */
+export interface ORPCConfig {
+  rateLimit: {
+    windowMs: number;
+    /** Budget for an anonymous caller. Higher tiers multiply it — see `TIER_MULTIPLIER`. */
+    limit: number;
+  };
+  /** Project the `X-CH-API-KEY` must belong to, when the app scopes keys per project. */
+  projectId?: number;
+  /** Private half of the keypair the AI provider-key cookies are encrypted with. */
+  aiAuthPrivateKey?: string;
+}
 
 /**
  * Feed lifecycle hooks. Fired by the content write paths; the host that owns search
@@ -21,12 +37,14 @@ export interface FeedHooks {
 /**
  * oRPC handler context: {@link ServiceContext} plus what the hosting process supplies.
  *
- * Every field beyond `ServiceContext` is optional because not every process that runs
- * the router has it: `apps/service` owns the workflow runtime and wires all of these in
- * `createORPCContext`; the dashboard's in-process router client leaves them out, and a
- * route that needs one answers `SERVICE_UNAVAILABLE`.
+ * `config` is required — every process that runs the router has a rate-limit budget to
+ * name. The ports are optional because not every process has them: `apps/service` owns
+ * the workflow runtime and wires all of these in `createORPCContext`; the dashboard's
+ * in-process router client leaves them out, and a route that needs one answers
+ * `SERVICE_UNAVAILABLE`.
  */
 export interface BaseOSContext extends ServiceContext {
+  config: ORPCConfig;
   hooks?: FeedHooks & {
     onError?: (error: unknown) => void;
   };

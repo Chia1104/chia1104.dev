@@ -5,10 +5,19 @@ import { createRouterClient } from "@orpc/server";
 import { all } from "better-all";
 
 import { router } from "@chia/api/orpc/router";
+import type { ORPCConfig } from "@chia/api/orpc/utils";
 import { createAuth } from "@chia/auth";
 import { authClient } from "@chia/auth/client";
 import { connectDatabase } from "@chia/db/client";
 import { resolveClientIP } from "@chia/service-kit/context";
+
+/**
+ * The in-process client is only reached from RSC on a session; API keys and AI provider
+ * cookies never travel this path, so only the rate-limit budget is meaningful here.
+ */
+const config: ORPCConfig = {
+  rateLimit: { windowMs: 5 * 60_000, limit: 300 },
+};
 
 globalThis.$client = createRouterClient(router, {
   context: async () => {
@@ -20,6 +29,7 @@ globalThis.$client = createRouterClient(router, {
     return {
       headers: requestHeaders,
       clientIP: resolveClientIP(requestHeaders),
+      config,
       db,
       kv,
       session: await authClient

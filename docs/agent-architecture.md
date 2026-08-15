@@ -45,7 +45,7 @@ selects:
 Session-scoped requests resolve kind from the persisted session. Client input can only cross-check
 it, so a caller cannot drive a writing session through another kind's tools.
 
-`packages/api/orpc/agent-service.ts` defines `AgentKindService`. This is a valid host dependency
+`packages/api/orpc/services/agent.service.ts` defines `AgentKindService`. This is a valid host dependency
 inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
 puts `{ writing: writingAgentService }` on every request context (`createORPCContext`). It is
 unrelated to the removed harness abstraction.
@@ -302,7 +302,7 @@ until a concrete second execution foundation requires a different seam.
 | TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                   |
-| Host service port            | `packages/api/orpc/agent-service.ts`                                                   |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |
 | Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts` |
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |

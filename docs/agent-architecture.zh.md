@@ -43,7 +43,7 @@ discriminator。它選擇：
 所有 session-scoped request 都從已持久化的 session 取得 kind；client 傳入的值只能交叉
 驗證，不能拿另一個 kind 的 tools 去驅動既有 writing session。
 
-`packages/api/orpc/agent-service.ts` 宣告 `AgentKindService`。這個 host port 應保留：
+`packages/api/orpc/services/agent.service.ts` 宣告 `AgentKindService`。這個 host port 應保留：
 `packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在
 `createORPCContext` 把 `{ writing: writingAgentService }` 放到每個 request context 上。它和已刪除的
 harness abstraction 是不同層次的概念。
@@ -292,7 +292,7 @@ factory、capability plugin system 或 provider-neutral handle。
 | TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                   |
-| Host service port            | `packages/api/orpc/agent-service.ts`                                                   |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |
 | Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts` |
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |

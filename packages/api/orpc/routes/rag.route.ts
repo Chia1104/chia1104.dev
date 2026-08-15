@@ -17,8 +17,8 @@ import { isAppError } from "@chia/service-kit/errors";
 
 import { adminGuard } from "../guards/admin.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
-import { requireIndexing } from "../indexing";
-import type { IndexingCaller } from "../indexing";
+import { requireIndexing } from "../services/indexing.service";
+import type { IndexingCaller } from "../services/indexing.service";
 import { contractOS } from "../utils";
 
 /**

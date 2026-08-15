@@ -1,7 +1,6 @@
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
 import { rateLimitPolicy } from "@chia/service-kit/policies";
 
-import { getORPCConfig } from "../config";
 import { baseOS } from "../utils";
 
 /**
@@ -20,7 +19,7 @@ export const rateLimitGuard = (options: {
       TOO_MANY_REQUESTS: {},
     })
     .middleware(async ({ next, context }) => {
-      const defaults = getORPCConfig().rateLimit;
+      const defaults = context.config.rateLimit;
 
       await runPolicy(
         rateLimitPolicy({

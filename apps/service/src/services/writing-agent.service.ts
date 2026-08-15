@@ -30,7 +30,7 @@ import {
 import type {
   AgentKindService,
   AgentServiceCaller,
-} from "@chia/api/orpc/agent-service";
+} from "@chia/api/orpc/services/agent.service";
 import type { DB } from "@chia/db";
 import {
   completeAgentRun,

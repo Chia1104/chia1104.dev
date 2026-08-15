@@ -8,7 +8,7 @@ import type {
   IndexingService,
   IndexRunHandle,
   IndexRunSnapshot,
-} from "@chia/api/orpc/indexing";
+} from "@chia/api/orpc/services/indexing.service";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
 import {

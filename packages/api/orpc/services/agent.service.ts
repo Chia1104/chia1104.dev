@@ -3,8 +3,8 @@ import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
 import { AppError } from "@chia/service-kit/errors";
 
-import type * as agentContracts from "./contracts/agent.contract";
-import type { BaseOSContext } from "./utils";
+import type * as agentContracts from "../contracts/agent.contract";
+import type { BaseOSContext } from "../utils";
 
 /**
  * Port for host-owned agent services.

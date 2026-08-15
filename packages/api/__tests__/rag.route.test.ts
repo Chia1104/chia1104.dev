@@ -54,6 +54,7 @@ const contextOf = (session: Session | null): BaseOSContext =>
   ({
     headers: new Headers(),
     clientIP: "127.0.0.1",
+    config: { rateLimit: { windowMs: 60_000, limit: 100 } },
     db: {},
     session,
   }) as unknown as BaseOSContext;
