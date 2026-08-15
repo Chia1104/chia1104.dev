@@ -130,7 +130,11 @@ export const agentSessionWorkflow = async (request: Request) => {
       credentials = decision.credentials;
 
       if (!decision.approved) {
+        turns += 1;
         // Rejected: tell the agent why and let it respond, rather than silently stopping.
+        // Loops back rather than breaking: this turn can itself gate another tool, and
+        // breaking would discard that `awaiting_approval` outcome — the run would park on
+        // the message hook while the persisted approval has no hook to resume.
         outcome = await runAgentTurnStep({
           sessionId,
           adminId,
@@ -141,7 +145,7 @@ export const agentSessionWorkflow = async (request: Request) => {
             " Do not retry it. Acknowledge and wait for further instructions.",
           credentials,
         });
-        break;
+        continue;
       }
 
       turns += 1;

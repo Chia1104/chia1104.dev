@@ -6,11 +6,6 @@ import { timeout } from "hono/timeout";
 import * as z from "zod";
 
 import {
-  OPENAI_API_KEY,
-  ANTHROPIC_API_KEY,
-  GENAI_API_KEY,
-} from "@chia/ai/constants";
-import {
   generateSlug,
   generateDescription,
   generateSlugInput,
@@ -32,7 +27,7 @@ import { getCookieDomain } from "@chia/auth/utils";
 import { errorGenerator } from "@chia/utils/server";
 
 import { env } from "../env";
-import { ai, AI_AUTH_TOKEN } from "../guards/ai.guard";
+import { ai, AI_AUTH_TOKEN, providerCookieName } from "../guards/ai.guard";
 import { verifyAuth } from "../guards/auth.guard";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 import { errorResponse } from "../utils/error.util";
@@ -49,19 +44,6 @@ const getCreateModel = async () =>
   (await import("@chia/ai/utils/model")).createModel;
 
 const getGateway = async () => (await import("@ai-sdk/gateway")).gateway;
-
-const cookieName = (provider?: Provider) => {
-  switch (provider) {
-    case Provider.OpenAI:
-      return OPENAI_API_KEY;
-    case Provider.Anthropic:
-      return ANTHROPIC_API_KEY;
-    case Provider.Google:
-      return GENAI_API_KEY;
-    default:
-      return "";
-  }
-};
 
 const api = new Hono<HonoContext>()
   .use(
@@ -91,9 +73,15 @@ const api = new Hono<HonoContext>()
           "Retry-After": "3600",
         });
       }
+      const name = providerCookieName(c.req.valid("json").provider);
+      if (!name) {
+        // Previously an omitted provider silently wrote the key to a nameless cookie
+        // nothing ever read back.
+        return c.json(errorGenerator(400), 400);
+      }
       setCookie(
         c,
-        cookieName(c.req.valid("json").provider),
+        name,
         encodeApiKey(c.req.valid("json").apiKey, env.AI_AUTH_PUBLIC_KEY),
         {
           domain: getCookieDomain({ env }),

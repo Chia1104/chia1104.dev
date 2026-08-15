@@ -72,6 +72,33 @@ export interface CreateContentPortOptions {
 const stripHighlight = (snippet: string | null): string =>
   snippet?.replaceAll(/<\/?b>/g, "") ?? "";
 
+/** Byte cap for a fetched page; `MAX_PAGE_CHARS` alone caps only after the full download. */
+const MAX_PAGE_BYTES = 2 * 1024 * 1024;
+
+/**
+ * Reads the body incrementally and stops at the cap, so a huge (or unbounded) response
+ * costs at most `MAX_PAGE_BYTES` of memory instead of being buffered whole before the
+ * `MAX_PAGE_CHARS` slice.
+ */
+const readBoundedText = async (response: Response): Promise<string> => {
+  const reader = response.body?.getReader();
+  if (!reader) return "";
+
+  const decoder = new TextDecoder();
+  let text = "";
+  let bytes = 0;
+
+  while (bytes < MAX_PAGE_BYTES && text.length < MAX_PAGE_CHARS) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    bytes += value.byteLength;
+    text += decoder.decode(value, { stream: true });
+  }
+
+  await reader.cancel().catch(() => undefined);
+  return text.slice(0, MAX_PAGE_CHARS);
+};
+
 export const createAgentContentPort = (
   options: CreateContentPortOptions
 ): ContentPort => {
@@ -182,7 +209,7 @@ export const createAgentContentPort = (
       const response = await request({
         headers: { Accept: "text/html,application/xhtml+xml" },
       }).get(url);
-      const html = (await response.text()).slice(0, MAX_PAGE_CHARS);
+      const html = await readBoundedText(response);
 
       // Matches `toolings.route.ts` — a parser, not a DOM. jsdom cost ~110MB RSS on import and
       // never gave it back; all this needs is selectors and text.

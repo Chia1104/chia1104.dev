@@ -47,7 +47,7 @@ import { resourceReindexWorkflow } from "../workflows/resource-reindex.workflow"
  * it is a fire-and-forget side effect with no operator to attribute and nobody waiting.
  */
 
-/** Fresh handle every time: a cached read would serve a run its own stale status. */
+/** The cache-free connection: a cached read would serve a run its own stale status. */
 const openDatabase = () => connectDatabase(undefined, { withCache: false });
 
 const currentIndexKey = () => ({

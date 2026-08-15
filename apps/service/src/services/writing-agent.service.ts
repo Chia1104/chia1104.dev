@@ -410,10 +410,11 @@ export const writingAgentService: AgentKindService = {
     if (!row) return false;
 
     // End the run before soft-deleting, so it is not left parked on a hook forever.
+    // Cancelled rather than sent the end sentinel: the run may be parked on an
+    // *approval* hook, where a queued message is never read — and once the session is
+    // deleted nobody can decide the approval, so the run would stay parked for good.
     if (row.workflowRunId && (await isRunLive(row.workflowRunId))) {
-      await agentMessageHook.resume(agentMessageToken(input.sessionId), {
-        text: AGENT_END_SENTINEL,
-      });
+      await getRun(row.workflowRunId).cancel();
     }
     if (row.activeRunId) {
       await completeAgentRun(
