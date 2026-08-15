@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
+    "srvx": "catalog:hono",
     "typescript": "catalog:"
   }
 }

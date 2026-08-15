@@ -1,6 +1,5 @@
 import { sentry } from "@hono/sentry";
 import type { Env, Hono, Schema } from "hono";
-import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { createFactory } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
@@ -14,6 +13,7 @@ import { errorGenerator, getClientIP } from "@chia/utils/server";
 
 import { isAppError, toErrorResponse } from "./errors";
 import type { ServiceHonoEnv } from "./hono";
+import { bodyLimit } from "./middlewares/body-limit";
 import type { MaintenanceOptions } from "./middlewares/maintenance";
 import { maintenance } from "./middlewares/maintenance";
 
@@ -124,7 +124,7 @@ export const bootstrap = <
     return c.json(errorGenerator(500), 500);
   });
 
-  app.use(bodyLimit({ maxSize: options?.maxBodySize ?? 5 * 1024 * 1024 }));
+  app.use(bodyLimit(options?.maxBodySize ?? 5 * 1024 * 1024));
 
   // CORS before maintenance: a maintenance 503 (including the preflight answer) must
   // carry CORS headers, or a browser client sees an opaque CORS failure instead.
