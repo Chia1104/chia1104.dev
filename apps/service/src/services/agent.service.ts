@@ -1,16 +1,15 @@
-import { registerAgentKindService } from "@chia/api/orpc/agent-service";
 import type { AgentKindService } from "@chia/api/orpc/agent-service";
 
 /**
- * Registration for the writing agent kind, split from its implementation.
+ * The agent kinds this process serves, split from their implementation.
  *
- * `rpc.route.ts` imports this module at boot so the kind is registered before the first request.
- * The implementation reaches `@chia/agent-runtime` and `@chia/agent-writing`, which carry the whole
- * provider stack — importing it here would put that stack in the eager module graph of a process
- * whose other routes never touch an agent. The delegate below defers it to the first agent call.
+ * `orpc.factory.ts` puts this map on every request context. The implementation reaches
+ * `@chia/agent-runtime` and `@chia/agent-writing`, which carry the whole provider stack —
+ * importing it here would put that stack in the eager module graph of a process whose other
+ * routes never touch an agent. The delegate below defers it to the first agent call.
  *
- * The registry key is the literal rather than `WRITING_AGENT_KIND` for the same reason: importing
- * that constant pulls the domain package. It is matched against `agent_session.kind`, a database
+ * The key is the literal rather than `WRITING_AGENT_KIND` for the same reason: importing that
+ * constant pulls the domain package. It is matched against `agent_session.kind`, a database
  * string, and `writingAgentService` asserts the constant once its module is loaded.
  */
 const impl = async (): Promise<AgentKindService> =>
@@ -78,7 +77,6 @@ const writingAgentServiceDelegate: AgentKindService = {
   },
 };
 
-/** Registers this host service under its kind. Called once at module load. */
-export const registerAgentKindServices = (): void => {
-  registerAgentKindService("writing", writingAgentServiceDelegate);
+export const agentKinds: Readonly<Record<string, AgentKindService>> = {
+  writing: writingAgentServiceDelegate,
 };

@@ -3,20 +3,19 @@ import type {
   ResourceIndexRunScope,
   ResourceIndexRunStatus,
 } from "@chia/db/schema";
+import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import { AppError } from "@chia/service-kit/errors";
 
+import type { BaseOSContext } from "./utils";
+
 /**
- * Registration seam for resource indexing.
+ * Port for resource indexing.
  *
  * The oRPC routes live here in `packages/api`, but *starting* an index run needs the
- * workflow runtime, which only exists in the host app. So this module declares the port
- * and `apps/service` registers an implementation at module load, exactly like
- * `./agent-service.ts`.
- *
- * Unlike the listeners in `./events.ts`, a missing implementation throws rather than
- * silently doing nothing: a feed event is a fire-and-forget side effect, whereas every
- * method here has a caller waiting on a run handle, so silence would render as a
- * trigger that succeeded and never ran.
+ * workflow runtime, which only exists in the host app. The host supplies an implementation
+ * on the request context (`BaseOSContext.indexing`); a process without one answers
+ * `SERVICE_UNAVAILABLE` rather than pretending to have started a run — every method
+ * here has a caller waiting on a handle, so silence would read as success.
  */
 
 /** Per-call context, taken from the request that triggered the run. */
@@ -99,27 +98,14 @@ export interface IndexingService {
   }>;
 }
 
-let service: IndexingService | undefined;
-
-export const registerIndexingService = (
-  implementation: IndexingService
-): void => {
-  service = implementation;
-};
-
-export const getIndexingService = (): IndexingService => {
-  if (!service) {
-    throw new AppError("SERVICE_UNAVAILABLE", {
-      message:
-        "No indexing service registered. The host app must call " +
-        "registerIndexingService(impl) at startup — see " +
-        "apps/service/src/services/rag-indexing.service.ts.",
-    });
+/** The context's indexing port, or `SERVICE_UNAVAILABLE` when this process has none. */
+export const requireIndexing = (context: BaseOSContext): IndexingService => {
+  if (!context.indexing) {
+    throw toORPCError(
+      new AppError("SERVICE_UNAVAILABLE", {
+        message: "Indexing is not available in this process.",
+      })
+    );
   }
-  return service;
-};
-
-/** Test helper — drops the registered implementation. */
-export const resetIndexingService = (): void => {
-  service = undefined;
+  return context.indexing;
 };

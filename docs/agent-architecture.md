@@ -38,7 +38,7 @@ clients, not an interchangeable harness API.
 `agent_session.kind` is a domain discriminator (`writing` today), not a harness discriminator. It
 selects:
 
-- the host implementation registered through `registerAgentKindService(kind, service)`;
+- the host implementation the request context carries in `agentKinds[kind]`;
 - the durable step handler in `AGENT_TURN_HANDLERS`;
 - the kind-specific extension row, such as `writing_agent_session`.
 
@@ -47,7 +47,8 @@ it, so a caller cannot drive a writing session through another kind's tools.
 
 `packages/api/orpc/agent-service.ts` defines `AgentKindService`. This is a valid host dependency
 inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
-registers `writingAgentService` at startup. It is unrelated to the removed harness abstraction.
+puts `{ writing: writingAgentService }` on every request context (`createORPCContext`). It is
+unrelated to the removed harness abstraction.
 
 ## 3. Policy, sessions and data
 
@@ -280,7 +281,7 @@ Another domain kind uses the same concrete Pi runtime:
 
 1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports;
 2. add its extension table when it needs kind-specific persisted state;
-3. implement `AgentKindService` in `apps/service` and register it by kind;
+3. implement `AgentKindService` in `apps/service` and add it to the `agentKinds` map;
 4. register a durable turn handler that calls the new domain's `run<Kind>Turn`;
 5. reuse `runPiTurn`, wire events, approval semantics and durable stream plumbing.
 

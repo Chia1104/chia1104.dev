@@ -30,13 +30,16 @@ import {
 import type { Keyv } from "@chia/kv";
 import request from "@chia/utils/request";
 
+import { feedHooks } from "./feed-indexing.service";
+
 /**
  * {@link ContentPort} implementation.
  *
  * This is the whole IO surface of the writing agent. It reuses what already exists —
  * `searchFeedsService`, `@chia/db/repos/feeds`, `createFeedService`/`updateFeedService` —
- * rather than issuing its own queries, so the agent is subject to the same slug generation and
- * post-write indexing as a human using the dashboard.
+ * rather than issuing its own queries, so the agent is subject to the same slug generation as a
+ * human using the dashboard. Post-write indexing is passed in explicitly: this runs in a workflow
+ * step with no request context to carry it.
  *
  * Takes a `DB` rather than a `ServiceContext`, because it is constructed inside a
  * workflow step where no request exists. Authorisation happened at the transport boundary before
@@ -269,31 +272,39 @@ export const createAgentContentPort = (
       }
 
       if (input.feedId === undefined) {
-        const created = await createFeedService(db, {
-          adminId,
-          slug: input.feedMeta.slug,
-          type: input.feedMeta.type ?? FeedTypeEnum.Post,
-          contentType: input.feedMeta.contentType ?? ContentTypeEnum.Mdx,
-          defaultLocale: input.feedMeta.defaultLocale,
-          mainImage: input.feedMeta.mainImage ?? undefined,
-          // Never published on commit — publishing is separately approved.
-          published: false,
-          translations,
-        });
+        const created = await createFeedService(
+          db,
+          {
+            adminId,
+            slug: input.feedMeta.slug,
+            type: input.feedMeta.type ?? FeedTypeEnum.Post,
+            contentType: input.feedMeta.contentType ?? ContentTypeEnum.Mdx,
+            defaultLocale: input.feedMeta.defaultLocale,
+            mainImage: input.feedMeta.mainImage ?? undefined,
+            // Never published on commit — publishing is separately approved.
+            published: false,
+            translations,
+          },
+          feedHooks
+        );
         if (!created) {
           throw new Error("Creating the feed returned no row.");
         }
         return { feedId: created.id, slug: created.slug, created: true };
       }
 
-      const updated = await updateFeedService(db, {
-        feedId: input.feedId,
-        type: input.feedMeta.type,
-        contentType: input.feedMeta.contentType,
-        defaultLocale: input.feedMeta.defaultLocale,
-        mainImage: input.feedMeta.mainImage ?? undefined,
-        translations,
-      });
+      const updated = await updateFeedService(
+        db,
+        {
+          feedId: input.feedId,
+          type: input.feedMeta.type,
+          contentType: input.feedMeta.contentType,
+          defaultLocale: input.feedMeta.defaultLocale,
+          mainImage: input.feedMeta.mainImage ?? undefined,
+          translations,
+        },
+        feedHooks
+      );
       return { feedId: updated.id, slug: updated.slug, created: false };
     },
 
@@ -301,10 +312,11 @@ export const createAgentContentPort = (
       if (input.adminId !== adminId) {
         throw new Error("Agent tool context admin does not match the request.");
       }
-      const updated = await updateFeedService(db, {
-        feedId: input.feedId,
-        published: input.published,
-      });
+      const updated = await updateFeedService(
+        db,
+        { feedId: input.feedId, published: input.published },
+        feedHooks
+      );
       return { feedId: updated.id, published: updated.published };
     },
   };

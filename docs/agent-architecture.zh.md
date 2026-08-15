@@ -36,7 +36,7 @@ flowchart TB
 `agent_session.kind` 是 domain discriminator（目前只有 `writing`），不是 harness
 discriminator。它選擇：
 
-- 透過 `registerAgentKindService(kind, service)` 註冊的 host implementation；
+- request context 上 `agentKinds[kind]` 帶的 host implementation；
 - `AGENT_TURN_HANDLERS` 中的 durable step handler；
 - `writing_agent_session` 這類 kind-specific extension row。
 
@@ -44,8 +44,9 @@ discriminator。它選擇：
 驗證，不能拿另一個 kind 的 tools 去驅動既有 writing session。
 
 `packages/api/orpc/agent-service.ts` 宣告 `AgentKindService`。這個 host port 應保留：
-`packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在啟動時
-註冊 `writingAgentService`。它和已刪除的 harness abstraction 是不同層次的概念。
+`packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在
+`createORPCContext` 把 `{ writing: writingAgentService }` 放到每個 request context 上。它和已刪除的
+harness abstraction 是不同層次的概念。
 
 ## 3. Policy、session 與資料
 
@@ -270,7 +271,7 @@ state 都是 durable：
 
 1. 新增 `@chia/agent-<kind>`，包含 tools、prompts、skills、policy、model allowlist 與 domain ports；
 2. 需要 kind-specific persistence 時新增 extension table；
-3. 在 `apps/service` 實作 `AgentKindService` 並依 kind 註冊；
+3. 在 `apps/service` 實作 `AgentKindService` 並加進 `agentKinds` map；
 4. 註冊呼叫新 domain `run<Kind>Turn` 的 durable turn handler；
 5. 共用 `runPiTurn`、wire events、approval semantics 與 durable stream plumbing。
 

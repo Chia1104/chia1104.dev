@@ -107,7 +107,7 @@ describe("rag routes", () => {
     vi.clearAllMocks();
   });
 
-  describe("indexing port not registered", () => {
+  describe("context without an indexing port", () => {
     it("fails the trigger with SERVICE_UNAVAILABLE rather than a silent no-op", async () => {
       await expect(
         call(

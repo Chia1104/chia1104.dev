@@ -13,13 +13,18 @@ import { ContentType, Locale } from "@chia/db/types";
 import type { FeedType, Locale as LocaleType } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
 
-import { feedEvents } from "../orpc/events";
+import type { FeedHooks } from "../orpc/utils";
 
 /**
  * Feed writes, shared by the oRPC procedures (a request, with `adminGuard`
  * supplying `adminId`) and the writing agent's durable turn (a workflow step,
  * no request at all). Each caller authorises in its own way before calling in;
  * authorisation belongs at the transport boundary.
+ *
+ * `hooks` is a required argument, not an optional one: a write that skips
+ * `onFeedChanged` leaves the feed unindexed, and that is the main hazard of
+ * reaching for the repository layer directly. A caller with no indexer passes
+ * `{}` and says so.
  *
  * Errors are `AppError`, which every transport adapter already renders
  * (`toORPCError`).
@@ -74,7 +79,8 @@ const slugify = (text: string): string => new GithubSlugger().slug(text);
 
 export const createFeedService = async (
   db: DB,
-  input: CreateFeedServiceInput
+  input: CreateFeedServiceInput,
+  hooks: FeedHooks
 ) => {
   const defaultLocale = input.defaultLocale ?? Locale.zhTW;
   const defaultTranslation = input.translations[defaultLocale];
@@ -115,10 +121,9 @@ export const createFeedService = async (
     ),
   });
 
-  // Fires reading-time, BM25 and embedding indexing. Skipping it is the main hazard of
-  // reaching for the repository layer directly, which is why it lives in here.
+  // reading-time, BM25 and embedding indexing
   if (data) {
-    await feedEvents.changed(data.id);
+    await hooks.onFeedChanged?.(data.id);
   }
 
   return data;
@@ -138,7 +143,8 @@ export interface UpdateFeedServiceInput {
 
 export const updateFeedService = async (
   db: DB,
-  input: UpdateFeedServiceInput
+  input: UpdateFeedServiceInput,
+  hooks: FeedHooks
 ) => {
   const feedData = await updateFeed(db, {
     feedId: input.feedId,
@@ -194,7 +200,7 @@ export const updateFeedService = async (
     contents: contentsData,
   };
 
-  await feedEvents.changed(updatedFeed.id);
+  await hooks.onFeedChanged?.(updatedFeed.id);
 
   return updatedFeed;
 };

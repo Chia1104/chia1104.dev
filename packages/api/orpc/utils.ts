@@ -4,19 +4,36 @@ import GithubSlugger from "github-slugger";
 
 import type { ServiceContext } from "@chia/service-kit/context";
 
+import type { AgentKindService } from "./agent-service";
+import type { IndexingService } from "./indexing";
 import { routerContract } from "./router.contract";
 
 /**
- * oRPC handler context. Intentionally nothing more than {@link ServiceContext} plus a
- * single error sink, so mounting the handler is a spread of the Hono `c.var`.
+ * Feed lifecycle hooks. Fired by the content write paths; the host that owns search
+ * indexing supplies them. Absent means the process has no indexer — the write still
+ * happens, nothing is scheduled.
+ */
+export interface FeedHooks {
+  onFeedChanged?: (feedID: number) => Promise<void>;
+  onFeedRemoved?: (translationIDs: readonly number[]) => Promise<void>;
+}
+
+/**
+ * oRPC handler context: {@link ServiceContext} plus what the hosting process supplies.
  *
- * Domain side effects (search reindexing, …) are **not** here — they are registered
- * per app via `packages/api/orpc/events.ts`.
+ * Every field beyond `ServiceContext` is optional because not every process that runs
+ * the router has it: `apps/service` owns the workflow runtime and wires all of these in
+ * `createORPCContext`; the dashboard's in-process router client leaves them out, and a
+ * route that needs one answers `SERVICE_UNAVAILABLE`.
  */
 export interface BaseOSContext extends ServiceContext {
-  hooks?: {
+  hooks?: FeedHooks & {
     onError?: (error: unknown) => void;
   };
+  /** Starts and reconciles resource index runs. Needs the workflow runtime. */
+  indexing?: IndexingService;
+  /** Agent kind services, keyed by `agent_session.kind`. */
+  agentKinds?: Readonly<Record<string, AgentKindService>>;
 }
 
 export const baseOS = os.$context<BaseOSContext>();

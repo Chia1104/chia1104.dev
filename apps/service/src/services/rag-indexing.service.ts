@@ -3,7 +3,6 @@ import type { Run } from "workflow/api";
 
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
-import { registerIndexingService } from "@chia/api/orpc/indexing";
 import type {
   IndexingCaller,
   IndexingService,
@@ -38,12 +37,13 @@ import { resourceReindexWorkflow } from "../workflows/resource-reindex.workflow"
 
 /**
  * `IndexingService` for this app, which is the only process with a workflow runtime.
+ * `orpc.factory.ts` puts it on every request context.
  *
  * What it adds over `start()`: every operator-triggered run gets a `resource_index_run`
  * row, so the dashboard can poll it, attribute it, and be handed the in-flight run instead
  * of starting a second one.
  *
- * Scope boundary: the automatic feed-event path (`syncFeedSearchIndex`) stays unrecorded —
+ * Scope boundary: the automatic feed-event path (`feedHooks.onFeedChanged`) stays unrecorded —
  * it is a fire-and-forget side effect with no operator to attribute and nobody waiting.
  */
 
@@ -306,9 +306,4 @@ export const ragIndexingService: IndexingService = {
 
     return { items: items.map(snapshotOf), nextCursor: page.nextCursor };
   },
-};
-
-/** Registers the indexing port. Called once at module load. */
-export const registerRagIndexingService = (): void => {
-  registerIndexingService(ragIndexingService);
 };

@@ -60,7 +60,7 @@ export const feedIndexingWorkflow = async (request: Request) => {
 
   // a branch that exhausted its retries leaves the translation unindexed until
   // the next feed change, so it has to be loud rather than a `success: false`
-  // nobody reads — `syncFeedSearchIndex` returns the run handle without
+  // nobody reads — `feedHooks.onFeedChanged` starts the run without
   // inspecting the result
   const failures = translations.filter(
     (translation) =>

@@ -2,7 +2,6 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
-import { registerFeedEventListeners } from "@chia/api/orpc/events";
 import { router } from "@chia/api/orpc/router";
 
 import { env } from "../env";
@@ -11,40 +10,6 @@ import {
   withErrorReporting,
 } from "../factories/orpc.factory";
 import { rateLimiterGuard } from "../guards/rate-limiter.guard";
-import { registerAgentKindServices } from "../services/agent.service";
-import {
-  removeFeedFromSearchIndex,
-  syncFeedSearchIndex,
-} from "../services/feed-indexing.service";
-import { registerRagIndexingService } from "../services/rag-indexing.service";
-
-/**
- * This app owns search indexing, so it is the one that listens for feed changes.
- * Registered once at module load rather than carried on every request context.
- */
-registerFeedEventListeners({
-  async onFeedChanged(feedID) {
-    await syncFeedSearchIndex(feedID);
-  },
-  async onFeedRemoved(translationIDs) {
-    await removeFeedFromSearchIndex(translationIDs);
-  },
-});
-
-/**
- * This app also owns the agent runtime: running a turn needs a long-lived process, a database
- * handle and the gateway credentials, none of which `packages/api` has. Same registration shape as
- * the feed listeners above.
- */
-registerAgentKindServices();
-
-/**
- * The RAG triggers land here for the same reason: `start()` and the lazy reconcile that
- * reads a run's real status both need the workflow runtime. Registering beside the router
- * that serves those procedures is what keeps a call from another process an explicit
- * `SERVICE_UNAVAILABLE` instead of a trigger that silently never ran.
- */
-registerRagIndexingService();
 
 /**
  * Procedures whose response *is* a live event stream, so the shared request timeout must not apply.

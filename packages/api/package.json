@@ -93,10 +93,6 @@
       "types": "./s3/s3.service.ts",
       "default": "./s3/s3.service.ts"
     },
-    "./orpc/events": {
-      "types": "./orpc/events.ts",
-      "default": "./orpc/events.ts"
-    },
     "./orpc/utils": {
       "types": "./orpc/utils.ts",
       "default": "./orpc/utils.ts"
