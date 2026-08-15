@@ -1,123 +1,32 @@
+import "server-only";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 
-import { all } from "better-all";
 import * as z from "zod";
 
-import { FeedType } from "@chia/db/types";
-import type { Locale } from "@chia/db/types";
-import { ErrorBoundary } from "@chia/ui/error-boundary";
-import dayjs from "@chia/utils/day";
 import { NumericStringSchema } from "@chia/utils/schema";
 
-import EditView from "@/containers/feed/edit-view";
-import { client } from "@/libs/orpc/client";
-import type { FormSchema } from "@/store/draft/slices/edit-fields";
+import { EditFeed } from "@/containers/feed/edit-feed";
 
 export const dynamic = "force-dynamic";
 
-const schema = z.object({
-  id: NumericStringSchema,
-  type: z.enum(FeedType).nullish(),
-});
+const paramsSchema = z.object({ id: NumericStringSchema });
 
-const Page = async ({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) => {
-  try {
-    const {
-      params: { id },
-      searchParams: { type },
-    } = await all({
-      params: () => params,
-      searchParams: () => searchParams,
-    });
-
-    const validation = schema.safeParse({ id, type });
-    if (!validation.success) {
-      notFound();
-    }
-
-    // The edit view is reached for drafts and for feeds in the trash — it renders both
-    // states — so it has to opt out of the published, non-deleted default.
-    const feed = await client.feeds["details-by-id"]({
-      feedId: Number(id),
-      includeUnpublished: true,
-      includeDeleted: true,
-    });
-
-    if (!feed) {
-      notFound();
-    }
-
-    const defaultValues = {
-      type: feed.type,
-      slug: feed.slug,
-      updatedAt: dayjs(feed.updatedAt).valueOf(),
-      createdAt: dayjs(feed.createdAt).valueOf(),
-      contentType: feed.contentType,
-      published: feed.published,
-      defaultLocale: feed.defaultLocale,
-      translations: feed.translations.reduce<
-        Record<Locale, FormSchema["translations"][Locale]>
-      >(
-        (acc, translation) => {
-          acc[translation.locale] = {
-            title: translation.title,
-            description: translation.description ?? null,
-            excerpt: translation.excerpt ?? null,
-            summary: translation.summary ?? null,
-            readTime: translation.readTime ?? null,
-            // the body is flat on the translation now; the form still groups it
-            content: {
-              content: translation.content ?? null,
-              source: translation.source ?? null,
-              unstableSerializedSource:
-                translation.unstableSerializedSource ?? null,
-            },
-          };
-          return acc;
-        },
-        {} as Record<Locale, FormSchema["translations"][Locale]>
-      ),
-    };
-
-    return (
-      <ViewTransition>
-        <ErrorBoundary>
-          <section className="flex min-h-screen w-full justify-center">
-            <div className="w-full max-w-4xl px-4 py-8 md:px-6 lg:px-8">
-              <EditView
-                feedId={feed.id}
-                defaultValues={defaultValues}
-                // the drawer indexes by translation id, so it needs the ids the
-                // form itself has no use for
-                resources={feed.translations.map((t) => ({
-                  locale: t.locale,
-                  sourceId: t.id,
-                }))}
-                meta={{
-                  embedding: Object.fromEntries(
-                    feed.translations.map((t) => [t.locale, t.hasEmbedding])
-                  ),
-                  published: feed.published,
-                  deleted: feed.deletedAt
-                    ? dayjs(feed.deletedAt).toISOString()
-                    : null,
-                }}
-              />
-            </div>
-          </section>
-        </ErrorBoundary>
-      </ViewTransition>
-    );
-  } catch {
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
+  const parsed = paramsSchema.safeParse(await params);
+  if (!parsed.success) {
     notFound();
   }
+
+  return (
+    <ViewTransition>
+      <section className="flex min-h-screen w-full justify-center">
+        <div className="w-full max-w-4xl px-4 py-8 md:px-6 lg:px-8">
+          <EditFeed feedId={Number(parsed.data.id)} />
+        </div>
+      </section>
+    </ViewTransition>
+  );
 };
 
 export default Page;

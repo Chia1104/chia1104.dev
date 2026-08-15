@@ -10,12 +10,7 @@ export const linkPreviewSchema = z.object({
 
 export type LinkPreview = z.infer<typeof linkPreviewSchema>;
 
-/**
- * `path` keeps the URL the Hono route served, so the migration is invisible to callers
- * that still speak REST.
- */
 export const linkPreviewContract = oc
-  .route({ method: "POST", path: "/toolings/link-preview" })
   .errors({
     BAD_REQUEST: {},
     TOO_MANY_REQUESTS: {},

@@ -25,8 +25,8 @@ export type ServiceContext = {
   kv: Keyv;
   auth?: Auth;
   /**
-   * Pre-resolved session. Populated by in-process callers (e.g. a Next.js RSC
-   * router client) so guards can skip the `getSession` round trip.
+   * Pre-resolved session. A caller that already holds one (an in-process router
+   * client, a test context) sets it so guards skip the `getSession` round trip.
    */
   session?: Session | null;
 };

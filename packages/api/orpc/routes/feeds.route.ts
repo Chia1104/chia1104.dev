@@ -26,7 +26,6 @@ import {
   searchPublicFeedsService,
 } from "../../feeds/search";
 import { createFeedService, updateFeedService } from "../../feeds/write";
-import { feedEvents } from "../events";
 import { sessionGuard } from "../guards/auth.guard";
 import { callerGuard, tieredRateLimitGuard } from "../guards/caller.guard";
 import { contractOS } from "../utils";
@@ -180,10 +179,11 @@ export const createFeedRoute = contractOS.feeds.create
     // The write logic lives in `feeds/write` because the writing agent's durable turn calls
     // it too, from a workflow step that has no request to authorise against.
     try {
-      return await createFeedService(opts.context.db, {
-        ...opts.input,
-        adminId: opts.context.caller.adminId,
-      });
+      return await createFeedService(
+        opts.context.db,
+        { ...opts.input, adminId: opts.context.caller.adminId },
+        opts.context.hooks ?? {}
+      );
     } catch (error) {
       throw isAppError(error) ? toORPCError(error) : error;
     }
@@ -193,7 +193,11 @@ export const updateFeedRoute = contractOS.feeds.update
   .use(contentWriteGuard)
   .handler(async (opts) => {
     try {
-      return await updateFeedService(opts.context.db, opts.input);
+      return await updateFeedService(
+        opts.context.db,
+        opts.input,
+        opts.context.hooks ?? {}
+      );
     } catch (error) {
       throw isAppError(error) ? toORPCError(error) : error;
     }
@@ -215,7 +219,9 @@ export const deleteFeedRoute = contractOS.feeds.delete
       await softDeleteFeed(opts.context.db, { feedId: opts.input.feedId });
     }
 
-    await feedEvents.removed(feed.translations.map(({ id }) => id));
+    await opts.context.hooks?.onFeedRemoved?.(
+      feed.translations.map(({ id }) => id)
+    );
   });
 
 export const restoreFeedRoute = contractOS.feeds.restore
@@ -227,7 +233,7 @@ export const restoreFeedRoute = contractOS.feeds.restore
     if (!data) {
       throw opts.errors.NOT_FOUND();
     }
-    await feedEvents.changed(data.id);
+    await opts.context.hooks?.onFeedChanged?.(data.id);
   });
 
 export const upsertFeedTranslationRoute = contractOS.feeds["translation:upsert"]
@@ -239,7 +245,7 @@ export const upsertFeedTranslationRoute = contractOS.feeds["translation:upsert"]
     );
 
     if (translation) {
-      await feedEvents.changed(translation.feedId);
+      await opts.context.hooks?.onFeedChanged?.(translation.feedId);
     }
   });
 
@@ -262,6 +268,6 @@ export const upsertContentRoute = contractOS.feeds["content:upsert"]
     });
 
     if (feedID) {
-      await feedEvents.changed(feedID);
+      await opts.context.hooks?.onFeedChanged?.(feedID);
     }
   });

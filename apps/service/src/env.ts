@@ -24,8 +24,8 @@ export const env = createEnv({
     RATELIMIT_WINDOW_MS: z
       .number()
       .optional()
-      .default(5 * 60000),
-    RATELIMIT_MAX: z.number().optional().default(300),
+      .default(15 * 60000),
+    RATELIMIT_MAX: z.number().optional().default(87),
     OPENAI_API_KEY: z.string().optional(),
     AI_AUTH_PUBLIC_KEY: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
@@ -50,10 +50,10 @@ export const env = createEnv({
     ZEABUR_SERVICE_ID: process.env.ZEABUR_SERVICE_ID,
     RATELIMIT_WINDOW_MS: process.env.RATELIMIT_WINDOW_MS
       ? Number(process.env.RATELIMIT_WINDOW_MS)
-      : 15 * 60000,
+      : undefined,
     RATELIMIT_MAX: process.env.RATELIMIT_MAX
       ? Number(process.env.RATELIMIT_MAX)
-      : 87,
+      : undefined,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
@@ -76,15 +76,7 @@ export const env = createEnv({
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
     process.env.SKIP_ENV_VALIDATION === "1",
-  extends: [
-    spotifyEnv,
-    authEnv,
-    dbEnv,
-    captchaEnv,
-    kvEnv,
-    s3Env,
-    serviceEnv,
-  ],
+  extends: [spotifyEnv, authEnv, dbEnv, captchaEnv, kvEnv, s3Env, serviceEnv],
 });
 
 export type ENV = typeof env;

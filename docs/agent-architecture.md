@@ -38,16 +38,17 @@ clients, not an interchangeable harness API.
 `agent_session.kind` is a domain discriminator (`writing` today), not a harness discriminator. It
 selects:
 
-- the host implementation registered through `registerAgentKindService(kind, service)`;
+- the host implementation the request context carries in `agentKinds[kind]`;
 - the durable step handler in `AGENT_TURN_HANDLERS`;
 - the kind-specific extension row, such as `writing_agent_session`.
 
 Session-scoped requests resolve kind from the persisted session. Client input can only cross-check
 it, so a caller cannot drive a writing session through another kind's tools.
 
-`packages/api/orpc/agent-service.ts` defines `AgentKindService`. This is a valid host dependency
+`packages/api/orpc/services/agent.service.ts` defines `AgentKindService`. This is a valid host dependency
 inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
-registers `writingAgentService` at startup. It is unrelated to the removed harness abstraction.
+puts `{ writing: writingAgentService }` on every request context (`createORPCContext`). It is
+unrelated to the removed harness abstraction.
 
 ## 3. Policy, sessions and data
 
@@ -280,7 +281,7 @@ Another domain kind uses the same concrete Pi runtime:
 
 1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports;
 2. add its extension table when it needs kind-specific persisted state;
-3. implement `AgentKindService` in `apps/service` and register it by kind;
+3. implement `AgentKindService` in `apps/service` and add it to the `agentKinds` map;
 4. register a durable turn handler that calls the new domain's `run<Kind>Turn`;
 5. reuse `runPiTurn`, wire events, approval semantics and durable stream plumbing.
 
@@ -301,7 +302,7 @@ until a concrete second execution foundation requires a different seam.
 | TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                   |
-| Host service port            | `packages/api/orpc/agent-service.ts`                                                   |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |
 | Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts` |
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |

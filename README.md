@@ -1,316 +1,70 @@
 # Chia1104.dev
 
-[![www deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/Production%20%E2%80%93%20chia1104?style=for-the-badge&logo=vercel&label=www)](https://chia1104.dev)
-[![Next.js version](https://img.shields.io/github/package-json/dependency-version/chia1104/chia1104.dev/next/main/apps/www?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
-[![Licensed under MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=for-the-badge&logo=unlicense)](LICENSE)
-[![GitHub repo size](https://img.shields.io/github/repo-size/chia1104/chia1104.dev?style=for-the-badge&logo=turborepo)](https://github.com/chia1104/chia1104.dev)
+[![www deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/Production%20%E2%80%93%20chia1104?style=flat-square&logo=vercel&label=www)](https://chia1104.dev)
+[![License: MIT](https://img.shields.io/github/license/chia1104/chia1104.dev?style=flat-square)](LICENSE)
 
-> This project is actively under development.
+The source of [chia1104.dev](https://chia1104.dev): a personal site, the dashboard that manages its content, and the backend service behind both, in one pnpm + Turborepo monorepo. It is also where new stack ideas get tried for real, so the dependencies run ahead of stable.
 
-A modern full-stack personal website and content management system built with Next.js and Hono, featuring a monorepo architecture powered by Turborepo.
+## What is in here
 
-## ✨ Features
+| App            | Stack                           | Role                                                          |
+| -------------- | ------------------------------- | ------------------------------------------------------------- |
+| `apps/www`     | Next.js 16, React 19, port 3000 | Public site: profile, blog, projects, contact                 |
+| `apps/dash`    | Next.js 16, port 3001           | Admin dashboard: content, assets, RAG index, writing agent    |
+| `apps/service` | Hono on Nitro, port 3005        | The only backend: auth, database, durable workflows, AI/agent |
 
-### Frontend
+The frontends talk to `service` through a contract-first [oRPC](https://orpc.dev) client; the contract, handlers and guards live in `packages/api`. Auth is [Better Auth](https://better-auth.com), data is Postgres through Drizzle, sessions and caches are in Redis, and long-running work (indexing, agent turns) runs on the [Vercel Workflow SDK](https://github.com/vercel/workflow). Content is MDX rendered with Fumadocs; search is BM25 plus embeddings over ParadeDB.
 
-- 🚀 **Next.js 16** with App Router and React 19
-- 🎨 **Tailwind CSS 4** for styling
-- 🎭 **Framer Motion** for animations
-- 🌐 **next-intl** for internationalization
-- 🎯 **HeroUI** - Modern React component library
-- 📊 **Vercel Analytics & Speed Insights**
-
-### Backend
-
-- 🔥 **Hono** - Fast, lightweight backend service
-- 🔐 **Better Auth** - Modern authentication solution
-- 🌧️ **Drizzle ORM** - Type-safe database operations
-- 🗄️ **PostgreSQL** - Primary database
-- 💾 **Redis/Upstash** - Caching and rate limiting
-- 📨 **Resend** - Email delivery
-
-### Content & AI
-
-- 📄 **MDX** with [Fumadocs](https://fumadocs.vercel.app/) for rich content
-- 📝 **Custom CMS** for content management
-- 🧠 **AI Integration** - Vector search and text generation
-- 🤖 **OpenAI, Anthropic, Google GenAI, Deepseek & Ollama** support
-
-### Developer Experience
-
-- 📦 **Turborepo** - High-performance monorepo build system
-- 🧪 **Vitest** - Fast unit testing
-- 🎭 **Playwright** - End-to-end testing
-- ✍️ **Husky & Lint Staged** - Pre-commit hooks
-- 🔍 **Oxlint** - Fast ESLint-compatible linting
-- 📐 **TypeScript 6** - Type safety
-- 🐳 **Docker** - Containerization support
-
-## 🔨 Tech Stack
-
-![typescript](https://img.shields.io/badge/-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![nextjs](https://img.shields.io/badge/-Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![react](https://img.shields.io/badge/-React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![hono](https://img.shields.io/badge/-Hono-FF6600?style=for-the-badge&logo=hono&logoColor=white)
-![turborepo](https://img.shields.io/badge/-Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white)
-![tailwindcss](https://img.shields.io/badge/-Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![framer-motion](https://img.shields.io/badge/-Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
-![vitest](https://img.shields.io/badge/-Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
-![playwright](https://img.shields.io/badge/-Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)
-![docker](https://img.shields.io/badge/-Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![postgresql](https://img.shields.io/badge/-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
-![redis](https://img.shields.io/badge/-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![trpc](https://img.shields.io/badge/-tRPC-2596BE?style=for-the-badge&logo=trpc&logoColor=white)
-
-## 🚀 Deploy your own
-
-### Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FChia1104%2Fchia1104.dev)
-
-- Create a new project on Vercel, select the `apps/www` (or `apps/dash`) folder as the root directory:
-
-![Vercel build settings](./.github/public/vercel-deploy2.png)
-
-### Railway
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/QTqT7m?referralCode=HYbEt0)
-
-- Overwrite the `railway.json` file with the following content (recommended):
-
-![Railway environment variables](./.github/public/railway-deploy2.png)
-
-- or add the following environment variables:
-
-![Railway environment variables](./.github/public/railway-deploy.png)
-
-### Zeabur
-
-you can deploy `www`, `dash` and `service` applications to Zeabur, and make sure that the services name are `www`, `dash` and `service` respectively.
-
-![Zeabur build settings](./.github/public/zeabur-deploy.png)
-
-## 🏗️ Project Structure
-
-```bash
-chia1104.dev/
-├── apps/
-│   ├── www/              # Main website (Next.js 16)
-│   ├── dash/             # Admin dashboard (Next.js 16)
-│   ├── service/          # Backend API service (Hono + Nitro)
-│   └── gateway/          # Nginx gateway configuration
-├── packages/
-│   ├── ai/               # AI integrations (OpenAI, Anthropic, Google, Deepseek, Ollama)
-│   ├── api/              # tRPC/ORPC routes and external API clients
-│   ├── auth/             # Better Auth configuration
-│   ├── contents/         # MDX content management
-│   ├── db/               # Drizzle ORM schemas and migrations
-│   ├── editor/           # Editor components (Monaco)
-│   ├── i18n/             # Internationalization configuration
-│   ├── kv/               # Redis/Upstash key-value store
-│   ├── meta/             # Project metadata
-│   ├── shaders/          # Three.js shaders and WebGL effects
-│   ├── tailwind/         # Tailwind CSS configuration
-│   ├── themes/           # Theme management and design tokens
-│   ├── ui/               # Shared React components
-│   └── utils/            # Shared utilities
-├── tests/
-│   └── www-e2e/          # Playwright end-to-end tests
-└── toolings/
-    ├── eslint/           # ESLint configuration
-    ├── tsconfig/         # TypeScript configurations
-    ├── vitest/           # Vitest test configurations
-    └── scripts/          # Build and deployment scripts
+```
+apps/          www, dash, service, gateway (Caddy/Nginx), functions/pg-dump-cron
+packages/      @chia/* — api, db, service-kit, auth, kv, ai, agent-runtime, agent-writing,
+               contents, ui, editor, themes, tailwind, shaders, i18n, meta, utils
+tests/www-e2e  Playwright
+docs/          architecture notes for the agent and RAG subsystems
+infra/railway/ per-service Railway config
 ```
 
-## 🎉 Getting Started
+For how the pieces fit together see [`AGENTS.md`](AGENTS.md), [`apps/AGENTS.md`](apps/AGENTS.md) and [`packages/AGENTS.md`](packages/AGENTS.md).
 
-### Prerequisites
+## Getting started
 
-- **Node.js** >= 22
-- **pnpm** 10.32.1
-- **Docker** (optional, for containerized deployment)
-- **PostgreSQL** database
-- **Redis** instance (optional, for caching)
-
-### Installation
-
-Clone the repository:
+Requirements: Node >= 22, pnpm 11 (the version is pinned in `package.json`), Docker for the local Postgres and Redis.
 
 ```bash
 git clone https://github.com/chia1104/chia1104.dev.git
 cd chia1104.dev
-```
-
-Install dependencies:
-
-```bash
-pnpm install
-```
-
-Set up environment variables - create `.env` files in the respective app directories (`apps/www`, `apps/dash`, `apps/service`) based on the `.env.example` files.
-
-Initialize the database:
-
-```bash
-# Start PostgreSQL and Redis with Docker
-pnpm db:up
-
-# Run database migrations
+make init          # pnpm install + copies the three .env.example files
+pnpm db:up         # Postgres + Redis in Docker
 pnpm db:migrate
-
-# (Optional) Seed the database
-pnpm db:seed
+pnpm db:seed       # optional
 ```
 
-### Development
+Then fill in the `.env` files under `apps/www`, `apps/dash` and `apps/service`.
 
-**Run all applications:**
+## Commands
 
 ```bash
-pnpm dev
+pnpm dev:www          # www + service      pnpm dev:dash / dev:service / dev (all)
+pnpm build:www        # build:dash / build:service / build
+pnpm test             # vitest             pnpm test:watch / test:ui / test:e2e
+pnpm lint             # oxlint             pnpm lint:fix
+pnpm format           # oxfmt
+pnpm type:check
+pnpm db:generate / db:migrate / db:push / db:studio
 ```
 
-**Run specific applications:**
+`make help` lists the same targets.
+
+## Deployment
+
+`www` deploys to Vercel from `apps/www`. `dash` and `service` deploy to Railway from `Dockerfile.dash` and `Dockerfile.node-service`; the per-service settings are in `infra/railway/`. Local containers:
 
 ```bash
-# Main website (localhost:3000)
-pnpm dev:www
-
-# Dashboard (localhost:3001)
-pnpm dev:dash
-
-# Backend service
-pnpm dev:service
-```
-
-### Testing
-
-```bash
-# Run unit tests
-pnpm test
-
-# Run tests in watch mode
-pnpm test:watch
-
-# Run end-to-end tests
-pnpm test:e2e
-
-# Generate coverage report
-pnpm test:cov
-```
-
-### Building
-
-```bash
-# Build all applications
-pnpm build
-
-# Build specific applications
-pnpm build:www
-pnpm build:dash
-pnpm build:service
-```
-
-### Docker Deployment
-
-```bash
-# Build Docker images
 docker build -f Dockerfile.www -t chia1104-www .
 docker build -f Dockerfile.dash -t chia1104-dash .
-docker build -f Dockerfile.service -t chia1104-service .
-
-# Run containers
-docker run -p 3000:3000 chia1104-www
-docker run -p 3001:3001 chia1104-dash
-docker run -p 8080:8080 chia1104-service
+docker build -f Dockerfile.node-service -t chia1104-service .
 ```
 
-### Useful Commands
+## License
 
-```bash
-# Lint code
-pnpm lint
-
-# Format code
-pnpm format
-
-# Type check
-pnpm type:check
-
-# Database studio
-pnpm db:studio
-
-# Clean workspace
-pnpm clean:workspaces
-```
-
-## 📚 Key Technologies
-
-### Authentication
-
-- **Better Auth** - Modern, type-safe authentication library
-- Email/password authentication
-- OAuth providers support
-- Session management with Redis
-
-### Database & ORM
-
-- **Drizzle ORM** - Lightweight TypeScript ORM
-- **PostgreSQL** - Relational database
-- Type-safe queries and migrations
-- Database connection pooling
-
-### API Layer
-
-- **tRPC** - End-to-end typesafe APIs
-- **ORPC** - Type-safe RPC alternative
-- **Hono** - Ultrafast web framework
-- Type inference from server to client
-- Built-in validation with Zod
-
-### UI Components
-
-- **HeroUI** - Modern React component library
-- **Tailwind CSS 4** - Utility-first CSS framework
-- **Framer Motion** - Animation library
-- Custom design system
-
-### Content Management
-
-- **Fumadocs** - Documentation framework
-- **MDX** - Markdown with JSX
-- Syntax highlighting with Shiki
-- Math equations with KaTeX
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/):
-   - `feat: add new feature`
-   - `fix: resolve a bug`
-   - `docs: update documentation`
-   - `refactor: restructure code without behavior change`
-   - `test: add or update tests`
-   - `chore: maintenance tasks (deps, tooling, etc.)`
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👤 Author
-
-### Chia1104
-
-- Website: <https://chia1104.dev>
-- GitHub: [@chia1104](https://github.com/chia1104)
-- Email: <yuyuchia7423@gmail.com>
-
-## ⭐ Show your support
-
-Give a ⭐️ if this project helped you!
+MIT — see [LICENSE](LICENSE).

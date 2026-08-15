@@ -60,10 +60,12 @@ vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
   return { aiKeyGuard: mocks.orpcAiKeyGuard };
 });
 
-// The feed change/removal listeners start durable workflows, which have no runtime here.
+// The feed hooks start durable workflows, which have no runtime here.
 vi.mock("../src/services/feed-indexing.service", () => ({
-  syncFeedSearchIndex: vi.fn().mockResolvedValue(undefined),
-  removeFeedFromSearchIndex: vi.fn().mockResolvedValue(undefined),
+  feedHooks: {
+    onFeedChanged: vi.fn().mockResolvedValue(undefined),
+    onFeedRemoved: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 // Mock database repos

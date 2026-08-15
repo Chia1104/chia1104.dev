@@ -1,28 +1,20 @@
 import type { AgentWireEvent } from "@chia/agent-runtime/events";
+import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
+import { AppError } from "@chia/service-kit/errors";
 
-import type * as agentContracts from "./contracts/agent.contract";
+import type * as agentContracts from "../contracts/agent.contract";
+import type { BaseOSContext } from "../utils";
 
 /**
- * Registration seam for host-owned agent services.
+ * Port for host-owned agent services.
  *
  * The oRPC routes live here in `packages/api`, but *running* an agent needs a long-lived process
  * that owns harness construction, live-run bookkeeping and provider credentials — all of which
- * belong to the host app. So this module declares the port and `apps/service` registers an
- * implementation at module load, exactly like `registerFeedEventListeners` in `./events.ts`.
- *
- * Keeping the service out of the request context is deliberate: it is process-scoped state, not
- * per-request state, and `ServiceContext` is explicitly documented as free of domain ports.
+ * belong to the host app. The host supplies one implementation per `agent_session.kind` on the
+ * request context (`BaseOSContext.agentKinds`); keying by kind is what lets a second agent
+ * package be additive rather than replace the first.
  */
-
-type Contracts = typeof agentContracts;
-type Input<K extends keyof Contracts> = Contracts[K] extends {
-  "~orpc": { inputSchema?: infer S };
-}
-  ? S extends { "~standard": { types?: { output: infer O } } }
-    ? O
-    : never
-  : never;
 
 /** Per-call context the service needs from the request that triggered it. */
 export interface AgentServiceCaller {
@@ -197,61 +189,22 @@ export interface AgentKindService {
   }>;
 }
 
-/**
- * Registry keyed by `agent_session.kind`.
- *
- * A single slot would have been overwritten by the second agent kind registered in the same
- * process — the two would silently share one implementation. Keying by kind is what makes a
- * sibling package like `@chia/agent-writing` additive.
- */
-const services = new Map<string, AgentKindService>();
-
-export class AgentKindServiceNotRegisteredError extends Error {
-  constructor(kind: string) {
-    super(
-      `No agent service registered for kind "${kind}". The host app must call ` +
-        "registerAgentKindService(kind, impl) at startup — see " +
-        "apps/service/src/services/agent.service.ts."
+/** The context's service for `kind`, or `SERVICE_UNAVAILABLE` when this process has none. */
+export const requireAgentKind = (
+  context: BaseOSContext,
+  kind: string
+): AgentKindService => {
+  const service = context.agentKinds?.[kind];
+  if (!service) {
+    throw toORPCError(
+      new AppError("SERVICE_UNAVAILABLE", {
+        message: `Agent kind "${kind}" is not available in this process.`,
+      })
     );
-    this.name = "AgentKindServiceNotRegisteredError";
   }
-}
-
-export const registerAgentKindService = (
-  kind: string,
-  implementation: AgentKindService
-): void => {
-  services.set(kind, implementation);
-};
-
-export const getAgentKindService = (kind: string): AgentKindService => {
-  const service = services.get(kind);
-  if (!service) throw new AgentKindServiceNotRegisteredError(kind);
   return service;
 };
 
-export const isAgentKindServiceRegistered = (kind: string): boolean =>
-  services.has(kind);
-
-/** Kinds with a registered host service. */
-export const registeredAgentKinds = (): string[] => [...services.keys()];
-
-/**
- * Resolves the host service for a request.
- *
- * Creation and capability requests must provide `kind`. Session-scoped requests should instead
- * load the session and call {@link getAgentKindService} with the stored kind.
- */
-export const resolveAgentKindService = (kind?: string): AgentKindService => {
-  if (kind) return getAgentKindService(kind);
-  if (services.size === 1) return [...services.values()][0]!;
-  if (services.size === 0)
-    throw new AgentKindServiceNotRegisteredError("(none)");
-  throw new Error(
-    `Multiple agent kinds are registered (${[...services.keys()].join(", ")}); ` +
-      "the request must name one."
-  );
-};
-
-// `Input` is exported for the host app to derive handler argument types without restating them.
-export type { Input as AgentContractInput };
+/** Kinds this process can serve. */
+export const availableAgentKinds = (context: BaseOSContext): string[] =>
+  Object.keys(context.agentKinds ?? {});

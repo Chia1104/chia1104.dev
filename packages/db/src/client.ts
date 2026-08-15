@@ -26,7 +26,13 @@ export async function getConnection(
     withCache = true,
     cacheOptions = { strategy: "explicit", ttlMs: 60_000 },
   } = options ?? {};
-  const existingConnection = connections.get(url);
+  // Keyed by URL *and* cache config: a `withCache: false` caller (workflow steps that
+  // must never read stale rows) must not silently receive whichever connection was
+  // created first.
+  const connectionKey = withCache
+    ? `${url}#cache:${cacheOptions.strategy ?? "explicit"}:${cacheOptions.ttlMs ?? 60_000}`
+    : `${url}#nocache`;
+  const existingConnection = connections.get(connectionKey);
   if (existingConnection) {
     return await existingConnection;
   }
@@ -43,12 +49,12 @@ export async function getConnection(
       relations,
       cache,
     }))();
-  connections.set(url, connection);
+  connections.set(connectionKey, connection);
 
   try {
     return await connection;
   } catch (error) {
-    connections.delete(url);
+    connections.delete(connectionKey);
     console.error("Failed to create database connection:", error);
     throw error;
   }
@@ -62,7 +68,7 @@ export const connectDatabase = async (
     prod: async () =>
       internalEnv.DATABASE_URL_REPLICA_1
         ? withReplicas(await getConnection(internalEnv.DATABASE_URL, options), [
-            await getConnection(internalEnv.DATABASE_URL_REPLICA_1),
+            await getConnection(internalEnv.DATABASE_URL_REPLICA_1, options),
           ])
         : await getConnection(internalEnv.DATABASE_URL ?? "", options),
     beta: async () =>

@@ -54,6 +54,7 @@ const contextOf = (session: Session | null): BaseOSContext =>
   ({
     headers: new Headers(),
     clientIP: "127.0.0.1",
+    config: { rateLimit: { windowMs: 60_000, limit: 100 } },
     db: {},
     session,
   }) as unknown as BaseOSContext;
@@ -107,7 +108,7 @@ describe("rag routes", () => {
     vi.clearAllMocks();
   });
 
-  describe("indexing port not registered", () => {
+  describe("context without an indexing port", () => {
     it("fails the trigger with SERVICE_UNAVAILABLE rather than a silent no-op", async () => {
       await expect(
         call(

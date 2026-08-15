@@ -146,9 +146,14 @@ export const getFeedBySlugSchema = z.object({
   ...feedVisibilitySchema.shape,
 });
 
+/**
+ * No locale default, unlike the other reads: this backs the dash edit view, which needs
+ * every translation — the form edits all of them and the embedding drawer indexes each
+ * one. Defaulting to `zh-TW` filtered the rest out.
+ */
 export const getFeedByIdSchema = z.object({
   feedId: z.coerce.number().int(),
-  ...localeQuerySchema.shape,
+  locale: z.enum(locale.enumValues).optional(),
   ...feedVisibilitySchema.shape,
 });
 

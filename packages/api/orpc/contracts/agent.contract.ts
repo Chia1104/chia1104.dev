@@ -10,10 +10,8 @@ import { withMetaSchema } from "./shared";
 /**
  * Shared agent transport contract.
  *
- * RPC-only — no `.route({ method, path })` annotations. The REST surface is a catch-all over the
- * same router, and an event-iterator procedure is not meaningfully addressable as REST, so these
- * are deliberately kept off it. Kind-specific fields stay optional; the runtime selected by
- * `agent_session.kind` owns their validation.
+ * Kind-specific fields stay optional; the runtime selected by `agent_session.kind` owns
+ * their validation.
  */
 
 // ============================================

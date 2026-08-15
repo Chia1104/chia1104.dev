@@ -93,17 +93,9 @@
       "types": "./s3/s3.service.ts",
       "default": "./s3/s3.service.ts"
     },
-    "./orpc/events": {
-      "types": "./orpc/events.ts",
-      "default": "./orpc/events.ts"
-    },
     "./orpc/utils": {
       "types": "./orpc/utils.ts",
       "default": "./orpc/utils.ts"
-    },
-    "./orpc/config": {
-      "types": "./orpc/config.ts",
-      "default": "./orpc/config.ts"
     },
     "./spotify/playback": {
       "types": "./spotify/playback.ts",
@@ -165,13 +157,13 @@
       "types": "./orpc/guards/caller.guard.ts",
       "default": "./orpc/guards/caller.guard.ts"
     },
-    "./orpc/agent-service": {
-      "types": "./orpc/agent-service.ts",
-      "default": "./orpc/agent-service.ts"
+    "./orpc/services/agent.service": {
+      "types": "./orpc/services/agent.service.ts",
+      "default": "./orpc/services/agent.service.ts"
     },
-    "./orpc/indexing": {
-      "types": "./orpc/indexing.ts",
-      "default": "./orpc/indexing.ts"
+    "./orpc/services/indexing.service": {
+      "types": "./orpc/services/indexing.service.ts",
+      "default": "./orpc/services/indexing.service.ts"
     },
     "./orpc/routes/feeds.route": {
       "types": "./orpc/routes/feeds.route.ts",

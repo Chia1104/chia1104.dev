@@ -116,11 +116,11 @@ Outline 只取到 H3、最多 40 個 heading。所以一篇 2k token 和一篇 2
 
 ### 3.1 觸發
 
-寫入端不直接呼叫索引。`packages/api` 的 handler 發出 domain event，由擁有副作用的 app（`apps/service`）在啟動時註冊 listener：
+寫入端不直接呼叫索引。`packages/api` 的 handler 呼叫 oRPC context 上的 `hooks.onFeedChanged` / `hooks.onFeedRemoved`，由擁有副作用的 app（`apps/service`）在 `createORPCContext` 裡供給（`feedHooks`）；`feeds/write.ts` 因為也被 workflow step 呼叫（沒有 request），改成把 hooks 當必填參數收：
 
 ```
-upsertFeed / upsertContent → feedEvents.changed(feedID)   → syncFeedSearchIndex → feedIndexingWorkflow
-軟刪除                      → feedEvents.removed(ids)     → removeFeedFromSearchIndex → removeFeedFromSearchIndexWorkflow
+upsertFeed / upsertContent → context.hooks.onFeedChanged(feedID)  → feedIndexingWorkflow
+軟刪除                      → context.hooks.onFeedRemoved(ids)     → removeFeedFromSearchIndexWorkflow
 ```
 
 軟刪除需要獨立的 workflow：硬刪除靠 FK cascade 就夠了，但軟刪除的 row 還在，不主動清掉的話文章下架後仍然搜得到。還原時會重新發 `changed`，chunk 就重建回來。
@@ -327,7 +327,7 @@ full（原文全文）
 | Feed 層搜尋 service（去重、快取）           | `packages/api/feeds/search.ts`                                                             |
 | Indexing workflow / steps                   | `apps/service/src/workflows/feed-indexing.workflow.ts`、`src/steps/resource-index.step.ts` |
 | 軟刪除移除 workflow                         | `apps/service/src/workflows/feed-removal.workflow.ts`                                      |
-| Domain event 註冊                           | `packages/api/orpc/events.ts`、`apps/service/src/routes/rpc.route.ts`                      |
+| Feed hooks / indexing port（context 注入）  | `packages/api/orpc/utils.ts`、`apps/service/src/factories/orpc.factory.ts`                 |
 
 ## 9. 已知限制
 

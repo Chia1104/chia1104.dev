@@ -18,7 +18,7 @@ import { spotifyCredentialUserSchema } from "../../spotify/validator";
  * Spotify payloads are passed straight through, so the shape is Spotify's to own.
  * `z.custom` keeps the types exact for consumers without committing us to maintaining a
  * zod mirror of their schema that breaks whenever they add a field — the trade-off is no
- * runtime validation and no response schema in the OpenAPI document.
+ * runtime validation.
  */
 const spotifyPlaylistSchema = z.custom<PlayList>();
 const spotifyNowPlayingSchema = z.custom<CurrentPlaying | null>();
@@ -57,8 +57,7 @@ const spotifyActivateSchema = z.object({
 
 /**
  * Only `apps/www`'s server-side client reads the playlist, so it sits behind the project
- * API key. RPC-only for the same reason — the REST path it used to carry existed for the
- * hand-built `serviceRequest` call that now goes through the typed client.
+ * API key.
  */
 export const getSpotifyPlaylistContract = oc
   .errors({
@@ -71,10 +70,9 @@ export const getSpotifyPlaylistContract = oc
   .output(spotifyPlaylistSchema);
 
 /**
- * Reached from the browser, so it stays public and keeps the URL the Hono route served.
+ * Reached from the browser, so it stays public.
  */
 export const getSpotifyNowPlayingContract = oc
-  .route({ method: "GET", path: "/spotify/playing" })
   .errors({
     SERVICE_UNAVAILABLE: {},
     INTERNAL_SERVER_ERROR: {},
