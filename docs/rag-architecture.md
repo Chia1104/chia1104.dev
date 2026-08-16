@@ -204,9 +204,12 @@ MDX 原文
                               （code block ≤24 行完整保留，更長則保留前 12 行 + "…"）
   → splitByHeadings()         以 heading 邊界切 section 並追蹤 heading path
                               （code fence 內的 "#" 不會被誤判成 heading）
+  → withHeadingPrefix()       把完整 heading path 接在每個 section 文字開頭
   → 小的 section 打包在一起，超過 512 token 的交給 splitOversized()
   → < 8 token 的成品丟棄（MIN_CHUNK_TOKENS）
 ```
+
+**Heading path 會烙進 chunk 的 `content` 第一行**（`"HNSW 調校 > 參數"` 這樣的一行）。`splitByHeadings` 會把 heading 行從正文剝掉，而 `content` 同時是 BM25 索引欄位和 embedding 輸入——不烙進去的話，查 heading 的字（"CSRF"、"hydrateRoot"）打不到回答它的那個 section，因為 heading 的字正是正文最不會重複的字。超長 section 切出來的每一片都各自重複這個前綴，因為每一片都是獨立的 chunk。
 
 `splitOversized` 的層級：先段落（`\n{2,}`），還是太大才用句末標點（`。．！？!?;；\n`）。切開的單位重組時會記住自己來自哪一層——同一段落內的句子用 `""` 接回去，不是 `"\n\n"`。chunk 的 `content` 會被存起來並用來產生搜尋 snippet，不是只拿去嵌入，所以重組後的文字必須跟原文一致。
 
@@ -235,13 +238,13 @@ Hybrid 的融合是兩個 CTE 各自 `row_number()` 出排名，`FULL OUTER JOIN
 ```
 chunk hits
   → aggregateChunkHits()：依 (source_type, source_id) 分組
-      分數 = 該 resource 前 3 高 chunk 的平均分
+      分數 = 前 3 高 chunk 的衰減加權和（權重 1, ¼, ¹⁄₁₆）
       bestChunk = 最高分的那個（citation / 預覽用）
   → 依分數排序、slice(limit)
   → adapter.hydrate()：批次取回 title / description / href / locale
 ```
 
-分數用「前 N 高的平均」而不是「單一最高分」：一個剛好用詞相符的段落，不應該贏過通篇都相關的文章。chunk 數不足 N 的就對現有的取平均。
+分數是**衰減加權和**而不是平均或純加總，兩個都試過、都輸給它（`toolings/scripts/rag-eval` 有數據）：平均無法獎勵廣度——多一個相關 chunk 只會拉低或持平分數，通篇相關的文章贏不了單一僥倖段落；純加總在 RRF 的平坦分數下（rank 1 ≈ 0.016、rank 30 ≈ 0.011）會讓長文章三個平庸 chunk 的總分壓過短文章一個 rank-1 chunk。衰減讓最佳 chunk 主導、廣度仍加分。
 
 `hydrate` 是每個 resource type 各自負責的一次批次查詢，並且會過濾掉已刪除的來源。它用的刪除判定必須和 `buildChunks` 索引時用的**同一個**——不一致的話 chunk 進得了結果、hydrate 卻把它丟掉，使用者只會看到少一筆。
 
@@ -275,7 +278,7 @@ full（原文全文）
 
 ### 什麼時候 bump `EMBEDDING_INDEX_VERSION`
 
-常數在 `packages/ai/src/embeddings/utils.ts`（目前 `"2026-08-11.2"`）。它和 provider id 一起構成「這個向量是用什麼算出來的」，所以以下改動要 bump：
+常數在 `packages/ai/src/embeddings/utils.ts`（目前 `"2026-08-16.1"`）。它和 provider id 一起構成「這個向量是用什麼算出來的」，所以以下改動要 bump：
 
 - 改 `cleanMdxKeepStructure` / `stripMdx` / `buildEmbeddingInput` 的前處理
 - 改 chunk 目標大小、最小 chunk 門檻、切分策略
@@ -335,4 +338,5 @@ full（原文全文）
 - **Hybrid 模式沒有 snippet**：ParadeDB 不允許 snippet 和 window function 並存，需要高亮就得用 `bm25` 模式。
 - **`feed_translation.published` / `deleted` 是會過期的鏡像**：只有 `createFeed` 會寫，`updateFeed` / `softDeleteFeed` / `restoreFeed` 都不維護。chunk 的可見性是從 `feed` 表算出來的，所以搜尋不受影響，但別把這兩欄當成真相來源。
 - **兩個沒接線的函式**：`pruneStaleEmbeddings`（`chunk.ts`）和 `buildIndexKey`（`provider.ts`）目前沒有任何呼叫端，`feed_translation.index_key` 這個欄位也不存在。
+- **HNSW 索引目前沒被用到**：這個語料量下 planner 對向量查詢選 seq scan + sort（精確結果，`EXPLAIN` 可驗證）。語料成長到 planner 改走 HNSW 時，pgvector 預設的 `hnsw.ef_search = 40` 會把過濾後的候選截到低於 hybrid 要的數量——屆時要在查詢的交易內 `SET LOCAL hnsw.ef_search`（≥ candidateLimit），並考慮 `hnsw.iterative_scan = relaxed_order`（pgvector 0.8+，現行版本支援）。
 - **Extension 不由 migration 建立**：`vector` 和 ParadeDB 的 `pg_search` 都得由資料庫本身提供，migration 沒有 `CREATE EXTENSION`。

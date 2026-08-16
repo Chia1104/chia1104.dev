@@ -8,7 +8,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "clean": "git clean -xdf .turbo node_modules .cache",
-    "eval": "tsx --env-file=../../../.env.global index.ts"
+    "eval": "tsx --env-file=../../../.env.global index.ts",
+    "reindex": "tsx --env-file=../../../.env.global reindex.ts"
   },
   "devDependencies": {
     "@chia/ai": "workspace:*",

@@ -117,10 +117,23 @@ const splitOversized = (
 };
 
 /**
+ * A section's heading path, baked into the chunk text as its first line.
+ *
+ * `splitByHeadings` strips heading lines, and the chunk `content` is what gets
+ * embedded and BM25-indexed — without this, a query for the heading's words
+ * ("CSRF", "hydrateRoot") cannot reach the section that answers it, because
+ * headings are precisely the words a body rarely repeats. The full ancestor
+ * path rather than the leaf, so "參數" arrives as "HNSW 調校 > 參數".
+ */
+const withHeadingPrefix = (headingPath: string | null, text: string): string =>
+  headingPath ? `${headingPath}\n\n${text}` : text;
+
+/**
  * Splits a document into section chunks at heading boundaries, packing small
  * sections together and splitting oversized ones.
  *
- * `headingPath` is carried through for citation anchors.
+ * `headingPath` is carried through for citation anchors, and additionally
+ * prefixed onto each section's text (see `withHeadingPrefix`).
  */
 export const chunkMarkdown = async (params: {
   content: string;
@@ -166,16 +179,25 @@ export const chunkMarkdown = async (params: {
   };
 
   for (const section of splitByHeadings(cleaned)) {
-    const sectionTokens = countEmbeddingTokens(section.text, encoding);
+    const text = withHeadingPrefix(section.headingPath, section.text);
+    const sectionTokens = countEmbeddingTokens(text, encoding);
 
     if (sectionTokens > targetTokens) {
       flush();
+      // every piece repeats the prefix — each becomes its own chunk and must
+      // carry the heading context itself — so the split budget pays for it
+      const prefixTokens = section.headingPath
+        ? sectionTokens - countEmbeddingTokens(section.text, encoding)
+        : 0;
       for (const piece of splitOversized(
         section.text,
-        targetTokens,
+        Math.max(targetTokens - prefixTokens, 1),
         encoding
       )) {
-        buffer.push({ headingPath: section.headingPath, text: piece });
+        buffer.push({
+          headingPath: section.headingPath,
+          text: withHeadingPrefix(section.headingPath, piece),
+        });
         flush();
       }
       continue;
@@ -184,7 +206,7 @@ export const chunkMarkdown = async (params: {
     if (bufferTokens + sectionTokens > targetTokens) {
       flush();
     }
-    buffer.push({ headingPath: section.headingPath, text: section.text });
+    buffer.push({ headingPath: section.headingPath, text });
     bufferTokens += sectionTokens;
   }
   flush();

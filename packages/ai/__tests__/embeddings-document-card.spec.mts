@@ -1,7 +1,10 @@
 import { getEncoding } from "js-tiktoken";
 import { describe, expect, it } from "vitest";
 
-import { chunkMarkdown, SECTION_CHUNK_TOKENS } from "../src/embeddings/chunking";
+import {
+  chunkMarkdown,
+  SECTION_CHUNK_TOKENS,
+} from "../src/embeddings/chunking";
 import {
   buildHeadingOutline,
   extractHeadings,
@@ -164,6 +167,27 @@ describe("chunkMarkdown", () => {
     expect(chunks.length).toBeGreaterThan(1);
     for (const chunk of chunks) {
       expect(chunk.tokenCount).toBeLessThan(SECTION_CHUNK_TOKENS * 2);
+    }
+  });
+
+  it("bakes the heading path into every chunk's content", async () => {
+    const chunks = await chunkMarkdown({ content: ARTICLE, encoding });
+    const hnswChunk = chunks.find((chunk) =>
+      chunk.headingPaths.some((path) => path.includes("HNSW 調校"))
+    );
+
+    // the section body never mentions its own heading — only the baked-in
+    // prefix makes the chunk findable by the heading's words
+    expect(hnswChunk?.content).toContain("向量搜尋與嵌入技術 > HNSW 調校");
+
+    const splitChunks = await chunkMarkdown({
+      content: `## 只有一節\n\n${"很長的一段內文。".repeat(2000)}`,
+      encoding,
+    });
+    // every piece of an oversized section repeats the prefix — each is its own
+    // chunk and must carry the heading context itself
+    for (const chunk of splitChunks) {
+      expect(chunk.content.startsWith("只有一節\n\n")).toBe(true);
     }
   });
 
