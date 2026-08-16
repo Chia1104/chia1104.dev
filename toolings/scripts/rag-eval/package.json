@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "rag-eval",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "clean": "git clean -xdf .turbo node_modules .cache",
+    "eval": "tsx --env-file=../../../.env.global index.ts"
+  },
+  "devDependencies": {
+    "@chia/ai": "workspace:*",
+    "@chia/api": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "drizzle-orm": "catalog:drizzle",
+    "typescript": "catalog:"
+  }
+}

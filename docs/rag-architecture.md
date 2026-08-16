@@ -331,7 +331,7 @@ full（原文全文）
 
 ## 9. 已知限制
 
-- **沒有檢索品質基準**：golden query + Recall@5 / MRR 的評測腳本尚未建立。RRF 的 `k = 60`、top-N 平均的 `N = 3` 都還沒校正過。
+- **檢索品質基準在 `toolings/scripts/rag-eval`**：golden query + Recall@K / MRR / citation accuracy，動排序相關的程式前先跑一次留 baseline。RRF 的 `k = 60`、top-N 平均的 `N = 3` 仍未校正過。
 - **Hybrid 模式沒有 snippet**：ParadeDB 不允許 snippet 和 window function 並存，需要高亮就得用 `bm25` 模式。
 - **`feed_translation.published` / `deleted` 是會過期的鏡像**：只有 `createFeed` 會寫，`updateFeed` / `softDeleteFeed` / `restoreFeed` 都不維護。chunk 的可見性是從 `feed` 表算出來的，所以搜尋不受影響，但別把這兩欄當成真相來源。
 - **兩個沒接線的函式**：`pruneStaleEmbeddings`（`chunk.ts`）和 `buildIndexKey`（`provider.ts`）目前沒有任何呼叫端，`feed_translation.index_key` 這個欄位也不存在。
