@@ -27,7 +27,6 @@ import {
   ContentType as ContentTypeEnum,
   FeedType as FeedTypeEnum,
 } from "@chia/db/types";
-import type { Keyv } from "@chia/kv";
 import request from "@chia/utils/request";
 
 import { feedHooks } from "./feed-indexing.service";
@@ -59,11 +58,6 @@ interface TranslationPayload {
 
 export interface CreateContentPortOptions {
   db: DB;
-  /**
-   * Retained for callers even though search no longer caches query embeddings —
-   * the port is constructed from a workflow step that has one to hand.
-   */
-  kv?: Keyv;
   /** Already verified by `adminGuard` before the workflow run was started. */
   adminId: string;
 }
@@ -74,6 +68,14 @@ export interface CreateContentPortOptions {
  */
 const stripHighlight = (snippet: string | null): string =>
   snippet?.replaceAll(/<\/?b>/g, "") ?? "";
+
+/** A chunk is up to ~512 tokens; a search hit only needs enough to orient. */
+const SNIPPET_MAX_CHARS = 500;
+
+const truncateSnippet = (content: string): string =>
+  content.length <= SNIPPET_MAX_CHARS
+    ? content
+    : `${content.slice(0, SNIPPET_MAX_CHARS)}…`;
 
 /** Byte cap for a fetched page; `MAX_PAGE_CHARS` alone caps only after the full download. */
 const MAX_PAGE_BYTES = 2 * 1024 * 1024;
@@ -124,8 +126,13 @@ export const createAgentContentPort = (
         slug: item.slug,
         locale: (item.summary.locale ?? "zh-TW") as Locale,
         title: item.summary.title,
+        // hybrid hits carry no highlighted snippet (ParadeDB cannot combine
+        // one with the fused query), so fall back to the matched chunk's own
+        // text before the generic description — the agent needs to see *why*
+        // a post matched, not just that it did
         snippet:
           stripHighlight(item.bestChunk.snippet) ||
+          truncateSnippet(item.bestChunk.content) ||
           item.summary.description ||
           "",
         headingPath: item.bestChunk.headingPath ?? undefined,

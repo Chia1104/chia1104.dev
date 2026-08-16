@@ -39,7 +39,6 @@ interface SearchFeedsServiceParams {
   model: SearchFeedsProvider;
   locale: Locale | undefined;
   limit?: number;
-  kv?: Keyv;
 }
 
 /** Feed-scoped view of resource search. */

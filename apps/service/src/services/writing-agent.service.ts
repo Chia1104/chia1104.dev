@@ -100,7 +100,6 @@ const dependenciesFor = (caller: AgentServiceCaller) => {
     draft: new PgDraftStore(db),
     content: createAgentContentPort({
       db,
-      kv: caller.context.kv,
       adminId: caller.adminId,
     }),
   };

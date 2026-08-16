@@ -46,12 +46,112 @@ const sourceColumns = (ref: ResourceRef) => {
 const sourceFilter = (ref: ResourceRef) =>
   and(eq(chunks.sourceType, ref.sourceType), eq(chunks.sourceId, ref.sourceId));
 
+export interface ExistingChunkRow {
+  id: number;
+  kind: string;
+  chunkIndex: number;
+  contentHash: string;
+}
+
+export interface ChunkReplacementPlan {
+  /** same kind, index and hash — only the mirrored visibility is refreshed */
+  unchanged: number[];
+  /** same content at a new position — the row moves and its vectors survive */
+  moved: { id: number; chunk: ResourceChunkInput }[];
+  /** new content at an existing position — rewritten in place, vectors dropped */
+  rewritten: { id: number; chunk: ResourceChunkInput }[];
+  inserted: ResourceChunkInput[];
+  removed: number[];
+}
+
 /**
- * Replaces a resource's chunks in one transaction.
+ * Matches incoming chunks to existing rows by *content*, not position.
  *
- * Rows whose `content_hash` is unchanged are left alone, so their vectors
- * survive; only edited or new chunks are rewritten (which cascades their
- * vectors away) and stale positions are removed.
+ * Identity used to be `(kind, chunk_index)`: inserting one paragraph shifted
+ * every later chunk's index, so each compared against the wrong predecessor
+ * and the whole tail re-embedded. Matching by hash first means an edit costs
+ * what actually changed — shifted chunks are recognised as moves and keep
+ * their vectors.
+ *
+ * Matching order: exact `(kind, index, hash)` first (stable rows), then
+ * `(kind, hash)` in document order (moves), then `(kind, index)` (in-place
+ * rewrites), and whatever remains is an insert or a removal. Duplicate hashes
+ * are claimed row-by-row, so repeated content cannot double-match.
+ */
+export const planChunkReplacement = (
+  existing: ExistingChunkRow[],
+  incoming: ResourceChunkInput[]
+): ChunkReplacementPlan => {
+  const claimedRows = new Set<number>();
+  const matched = new Map<ResourceChunkInput, ExistingChunkRow>();
+
+  const claimWith = (
+    keyOf: (entry: {
+      kind: string;
+      chunkIndex: number;
+      contentHash: string;
+    }) => string
+  ) => {
+    const pool = new Map<string, ExistingChunkRow[]>();
+    for (const row of existing) {
+      if (claimedRows.has(row.id)) {
+        continue;
+      }
+      const key = keyOf(row);
+      pool.set(key, [...(pool.get(key) ?? []), row]);
+    }
+    for (const chunk of incoming) {
+      if (matched.has(chunk)) {
+        continue;
+      }
+      const row = pool.get(keyOf(chunk))?.shift();
+      if (row) {
+        claimedRows.add(row.id);
+        matched.set(chunk, row);
+      }
+    }
+  };
+
+  claimWith(
+    (entry) => `${entry.kind}:${entry.chunkIndex}:${entry.contentHash}`
+  );
+  claimWith((entry) => `${entry.kind}:${entry.contentHash}`);
+  claimWith((entry) => `${entry.kind}:${entry.chunkIndex}`);
+
+  const plan: ChunkReplacementPlan = {
+    unchanged: [],
+    moved: [],
+    rewritten: [],
+    inserted: [],
+    removed: existing
+      .filter((row) => !claimedRows.has(row.id))
+      .map((row) => row.id),
+  };
+
+  for (const chunk of incoming) {
+    const row = matched.get(chunk);
+    if (!row) {
+      plan.inserted.push(chunk);
+    } else if (row.contentHash !== chunk.contentHash) {
+      plan.rewritten.push({ id: row.id, chunk });
+    } else if (row.chunkIndex !== chunk.chunkIndex) {
+      plan.moved.push({ id: row.id, chunk });
+    } else {
+      plan.unchanged.push(row.id);
+    }
+  }
+
+  return plan;
+};
+
+/**
+ * Replaces a resource's chunks in one transaction, per `planChunkReplacement`.
+ *
+ * Moves land in two phases because of the unique `(source, kind, chunk_index)`
+ * index: a moved row's target position may still be held by another row that
+ * has not moved yet, so every moved row first parks on a negative index (real
+ * indexes are ≥ 0, and final indexes are unique, so `-(index + 1)` cannot
+ * collide) and takes its final position after inserts.
  */
 export const replaceResourceChunks = withDTO(
   async (
@@ -73,72 +173,80 @@ export const replaceResourceChunks = withDTO(
         .from(chunks)
         .where(sourceFilter(dto.ref));
 
-      const key = (kind: string, index: number) => `${kind}:${index}`;
-      const existingByKey = new Map(
-        existing.map((row) => [key(row.kind, row.chunkIndex), row])
-      );
+      const plan = planChunkReplacement(existing, dto.chunks);
 
-      let written = 0;
-      let unchanged = 0;
+      const visibility = {
+        locale: dto.visibility.locale ?? null,
+        published: dto.visibility.published,
+        deleted: dto.visibility.deleted,
+      };
+      const fieldsOf = (chunk: ResourceChunkInput) => ({
+        chunkIndex: chunk.chunkIndex,
+        headingPath: chunk.headingPath ?? null,
+        tokenCount: chunk.tokenCount ?? null,
+        metadata: chunk.metadata ?? null,
+        ...visibility,
+        updatedAt: new Date(),
+      });
 
-      for (const chunk of dto.chunks) {
-        const previous = existingByKey.get(key(chunk.kind, chunk.chunkIndex));
-
-        if (previous?.contentHash === chunk.contentHash) {
-          // text is identical; refresh only the mirrored visibility
-          await trx
-            .update(chunks)
-            .set({
-              locale: dto.visibility.locale ?? null,
-              published: dto.visibility.published,
-              deleted: dto.visibility.deleted,
-            })
-            .where(eq(chunks.id, previous.id));
-          unchanged++;
-          continue;
-        }
-
-        const values = {
-          ...sourceColumns(dto.ref),
-          kind: chunk.kind,
-          chunkIndex: chunk.chunkIndex,
-          content: chunk.content,
-          headingPath: chunk.headingPath ?? null,
-          tokenCount: chunk.tokenCount ?? null,
-          metadata: chunk.metadata ?? null,
-          contentHash: chunk.contentHash,
-          locale: dto.visibility.locale ?? null,
-          published: dto.visibility.published,
-          deleted: dto.visibility.deleted,
-        };
-
-        if (previous) {
-          // content changed — the update cascades the old vector away
-          await trx
-            .update(chunks)
-            .set({ ...values, updatedAt: new Date() })
-            .where(eq(chunks.id, previous.id));
-          await trx
-            .delete(embeddings)
-            .where(eq(embeddings.chunkId, previous.id));
-        } else {
-          await trx.insert(chunks).values(values);
-        }
-        written++;
+      if (plan.removed.length > 0) {
+        await trx.delete(chunks).where(inArray(chunks.id, plan.removed));
       }
 
-      const keptKeys = dto.chunks.map((chunk) =>
-        key(chunk.kind, chunk.chunkIndex)
-      );
-      const orphans = existing
-        .filter((row) => !keptKeys.includes(key(row.kind, row.chunkIndex)))
-        .map((row) => row.id);
-
-      if (orphans.length > 0) {
-        await trx.delete(chunks).where(inArray(chunks.id, orphans));
+      if (plan.unchanged.length > 0) {
+        await trx
+          .update(chunks)
+          .set(visibility)
+          .where(inArray(chunks.id, plan.unchanged));
       }
 
-      return { written, unchanged, removed: orphans.length };
+      // phase one: park every moved row off the index space
+      for (const move of plan.moved) {
+        await trx
+          .update(chunks)
+          .set({ chunkIndex: -(move.chunk.chunkIndex + 1) })
+          .where(eq(chunks.id, move.id));
+      }
+
+      for (const rewrite of plan.rewritten) {
+        await trx
+          .update(chunks)
+          .set({
+            ...fieldsOf(rewrite.chunk),
+            content: rewrite.chunk.content,
+            contentHash: rewrite.chunk.contentHash,
+          })
+          .where(eq(chunks.id, rewrite.id));
+        // content changed — the stored vector no longer describes it
+        await trx.delete(embeddings).where(eq(embeddings.chunkId, rewrite.id));
+      }
+
+      if (plan.inserted.length > 0) {
+        await trx.insert(chunks).values(
+          plan.inserted.map((chunk) => ({
+            ...sourceColumns(dto.ref),
+            kind: chunk.kind,
+            content: chunk.content,
+            contentHash: chunk.contentHash,
+            ...fieldsOf(chunk),
+          }))
+        );
+      }
+
+      // phase two: land the moved rows on their final indexes, vectors intact
+      for (const move of plan.moved) {
+        await trx
+          .update(chunks)
+          .set(fieldsOf(move.chunk))
+          .where(eq(chunks.id, move.id));
+      }
+
+      return {
+        written: plan.rewritten.length + plan.inserted.length,
+        unchanged: plan.unchanged.length,
+        moved: plan.moved.length,
+        removed: plan.removed.length,
+      };
     });
   }
 );

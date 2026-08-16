@@ -83,6 +83,9 @@ catalogs:
     '@types/lodash':
       specifier: ^4.17.25
       version: 4.17.25
+    '@types/mdast':
+      specifier: ^4.0.4
+      version: 4.0.4
     '@types/node':
       specifier: 26.2.0
       version: 26.2.0
@@ -107,6 +110,18 @@ catalogs:
     lodash:
       specifier: ^4.18.1
       version: 4.18.1
+    mdast-util-to-string:
+      specifier: ^4.0.0
+      version: 4.0.0
+    remark-gfm:
+      specifier: ^4.0.1
+      version: 4.0.1
+    remark-mdx:
+      specifier: ^3.1.1
+      version: 3.1.1
+    remark-parse:
+      specifier: ^11.0.0
+      version: 11.0.0
     server-only:
       specifier: ^0.0.1
       version: 0.0.1
@@ -119,6 +134,12 @@ catalogs:
     typescript:
       specifier: 7.0.2
       version: 7.0.2
+    unified:
+      specifier: ^11.0.5
+      version: 11.0.5
+    unist-util-visit:
+      specifier: ^5.1.0
+      version: 5.1.0
     zod:
       specifier: 4.4.3
       version: 4.4.3
@@ -1136,6 +1157,9 @@ importers:
       js-tiktoken:
         specifier: ^1.0.21
         version: 1.0.21
+      mdast-util-to-string:
+        specifier: 'catalog:'
+        version: 4.0.0
       next:
         specifier: catalog:next
         version: 16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1145,6 +1169,21 @@ importers:
       openai:
         specifier: catalog:ai
         version: 7.4.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3)
+      remark-gfm:
+        specifier: 'catalog:'
+        version: 4.0.1
+      remark-mdx:
+        specifier: 'catalog:'
+        version: 3.1.1
+      remark-parse:
+        specifier: 'catalog:'
+        version: 11.0.0
+      unified:
+        specifier: 'catalog:'
+        version: 11.0.5
+      unist-util-visit:
+        specifier: 'catalog:'
+        version: 5.1.0
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -1152,6 +1191,9 @@ importers:
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
+      '@types/mdast':
+        specifier: 'catalog:'
+        version: 4.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 26.2.0
@@ -1806,15 +1848,32 @@ importers:
 
   toolings/scripts/hash: {}
 
-  toolings/scripts/seed:
-    dependencies:
-      drizzle-orm:
-        specifier: catalog:drizzle
-        version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@sinclair/typebox@0.34.52)(@types/pg@8.21.0)(@upstash/redis@1.38.2)(bun-types@1.3.14)(pg@8.22.0)(sqlite3@5.1.7)(typebox@1.3.11)(zod@4.4.3)
+  toolings/scripts/rag-eval:
     devDependencies:
       '@chia/ai':
         specifier: workspace:*
         version: link:../../../packages/ai
+      '@chia/api':
+        specifier: workspace:*
+        version: link:../../../packages/api
+      '@chia/db':
+        specifier: workspace:*
+        version: link:../../../packages/db
+      '@chiastack/tsconfig':
+        specifier: catalog:chiastack
+        version: 2.1.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.2.0
+      drizzle-orm:
+        specifier: catalog:drizzle
+        version: 1.0.0-rc.4(@opentelemetry/api@1.9.1)(@sinclair/typebox@0.34.52)(@types/pg@8.21.0)(@upstash/redis@1.38.2)(bun-types@1.3.14)(pg@8.22.0)(sqlite3@5.1.7)(typebox@1.3.11)(zod@4.4.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
+  toolings/scripts/seed:
+    devDependencies:
       '@chia/db':
         specifier: workspace:*
         version: link:../../../packages/db

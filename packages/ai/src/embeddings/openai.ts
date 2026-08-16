@@ -1,9 +1,7 @@
 import { createOpenAI as createAiSdkOpenAI } from "@ai-sdk/openai";
 import { embedMany } from "ai";
-import type OpenAI from "openai";
-import type { ClientOptions } from "openai";
 
-import { guardEmbeddingInput, guardEmbeddingInputs } from "./tokenizer.ts";
+import { guardEmbeddingInputs } from "./tokenizer.ts";
 import {
   EMBEDDING_BATCH_MAX_INPUTS,
   EMBEDDING_BATCH_MAX_TOKENS,
@@ -14,36 +12,6 @@ import {
 export type TextEmbeddingModel =
   | "text-embedding-3-small"
   | "text-embedding-3-large";
-
-export interface Options {
-  client?: OpenAI;
-  model?: TextEmbeddingModel;
-  clientOptions?: ClientOptions;
-}
-
-export const generateEmbedding = async (value: string, options?: Options) => {
-  options ??= {};
-  const {
-    client = (await import("../index.ts").then((m) => m.createOpenAI))(
-      options?.clientOptions
-    ),
-    model = "text-embedding-3-small",
-  } = options;
-  // keep the input within the model's token limit; long articles would
-  // otherwise be rejected by the API
-  const { text: input } = await guardEmbeddingInput(
-    value.replaceAll("\n", " "),
-    { model }
-  );
-
-  const { data } = await client.embeddings.create({
-    model,
-    input,
-    dimensions: EMBEDDING_DIMENSIONS,
-  });
-
-  return data[0]?.embedding;
-};
 
 export interface BatchOptions {
   model?: TextEmbeddingModel;

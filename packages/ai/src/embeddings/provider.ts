@@ -3,10 +3,10 @@ import { isOllamaEnabled } from "../ollama/utils.ts";
 import { ollamaEmbeddings } from "./ollama.ts";
 import {
   EMBEDDING_DIMENSIONS,
-  EMBEDDING_INDEX_VERSION,
   OLLAMA_EMBEDDING_DIMENSIONS,
   OllamaEmbeddingModel,
 } from "./utils.ts";
+import type { EmbeddingTask } from "./utils.ts";
 
 /**
  * The one seam for swapping embedding models.
@@ -18,11 +18,16 @@ import {
  *
  * `id` is folded into the index key, so switching providers invalidates every
  * stored vector automatically instead of silently comparing across models.
+ *
+ * `task` is required, not defaulted: most embedding models worth trying next
+ * (nomic, mxbai, e5, voyage) are asymmetric — a query embedded with the
+ * document prefix silently degrades retrieval — so every caller has to state
+ * which side of the search it is on. Symmetric models ignore it.
  */
 export interface EmbeddingProvider {
   readonly id: string;
   readonly dimensions: number;
-  embed(texts: string[]): Promise<number[][]>;
+  embed(texts: string[], task: EmbeddingTask): Promise<number[][]>;
 }
 
 export const OPENAI_EMBEDDING_MODEL = "text-embedding-3-small";
@@ -47,7 +52,8 @@ export const openAIEmbeddingProvider = (
 ): EmbeddingProvider => ({
   id: OPENAI_EMBEDDING_MODEL,
   dimensions: EMBEDDING_DIMENSIONS,
-  embed: async (texts) =>
+  // text-embedding-3-* are symmetric; the task carries no prefix here
+  embed: async (texts, _task) =>
     await (
       await import("./openai.ts")
     ).generateEmbeddings(texts, {
@@ -68,11 +74,11 @@ export const ollamaEmbeddingProvider = (
 ): EmbeddingProvider => ({
   id: model,
   dimensions: OLLAMA_EMBEDDING_DIMENSIONS[model],
-  embed: async (texts) => {
+  embed: async (texts, task) => {
     if (!(await isOllamaEnabled(model))) {
       throw new Error(`Ollama model "${model}" is unavailable`);
     }
-    return await ollamaEmbeddings(texts, model, "search_document");
+    return await ollamaEmbeddings(texts, model, task);
   },
 });
 
@@ -107,15 +113,3 @@ export const resolveEmbeddingProvider = (
       ? ollamaEmbeddingProvider()
       : openAIEmbeddingProvider(options)
   );
-
-/**
- * The value stored in `feed_translation.index_key`.
- *
- * Folds the strategy version and the provider id together with the content
- * hash, so a change to any of the three re-indexes exactly the rows it should.
- */
-export const buildIndexKey = (params: {
-  provider: EmbeddingProvider;
-  contentHash: string;
-}): string =>
-  `${EMBEDDING_INDEX_VERSION}:${params.provider.id}:${params.contentHash}`;

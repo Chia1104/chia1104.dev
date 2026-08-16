@@ -38,7 +38,8 @@ export const searchPostsTool = defineTool({
     "Search existing published posts. Use this BEFORE writing anything new: it is how you avoid " +
     "duplicating a post that already exists, and how you find posts worth cross-linking. " +
     "`semantic` matches on meaning (best for topics); `keyword` matches on literal terms (best for " +
-    "names, APIs, error messages).",
+    "names, APIs, error messages). Each hit's `headingPath` names the section that matched — pass " +
+    "it to `get_post`'s `focusHeadings` to read that section first.",
   parameters: Type.Object({
     keyword: Type.String({
       description: "The topic or phrase to look for.",
@@ -102,6 +103,13 @@ export const getPostTool = defineTool({
     locale: Type.Optional(
       LocaleSchema("Return only this locale. Omit for all locales.")
     ),
+    focusHeadings: Type.Optional(
+      Type.Array(Type.String(), {
+        description:
+          "Heading paths (from search results' `headingPath`) to keep first when the post is too " +
+          "long to return in full.",
+      })
+    ),
   }),
   executionMode: "parallel",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
@@ -140,6 +148,9 @@ export const getPostTool = defineTool({
         title: translation.title,
         summary: translation.summary ?? translation.description,
         content: translation.content ?? "",
+        // when the body degrades to sections, the ones the search matched
+        // survive first instead of whichever happens to fit
+        matchedHeadingPaths: params.focusHeadings,
       })),
       { budget: POST_BODY_TOKEN_BUDGET }
     );

@@ -67,7 +67,7 @@ const buildChunkSet = async (
 ): Promise<ResourceChunkSet> => {
   const chunks: ResourceChunkInput[] = [];
 
-  const card = buildEmbeddingInput({
+  const card = await buildEmbeddingInput({
     title: source.title,
     description: source.description,
     summary: source.summary,
