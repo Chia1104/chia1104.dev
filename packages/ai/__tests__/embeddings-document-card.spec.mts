@@ -194,4 +194,34 @@ describe("chunkMarkdown", () => {
   it("returns nothing for empty content", async () => {
     expect(await chunkMarkdown({ content: "   ", encoding })).toEqual([]);
   });
+
+  it("does not pack across top-level groups, so an edit cannot cascade", async () => {
+    const groups = Array.from(
+      { length: 3 },
+      (_, index) =>
+        `## 主題 ${index}\n\n第一段。\n\n### 主題 ${index} 的細節\n\n第二段。`
+    ).join("\n\n");
+
+    const before = await chunkMarkdown({ content: groups, encoding });
+    // small sections still pack within their group, never across groups
+    for (const chunk of before) {
+      const tops = new Set(
+        chunk.headingPaths.map((path) => path.split(" > ")[0])
+      );
+      expect(tops.size).toBe(1);
+    }
+
+    // prepending a whole new group must leave every later group's chunk
+    // byte-identical — that is what lets replaceResourceChunks treat them as
+    // moves and keep their vectors
+    const after = await chunkMarkdown({
+      content: `## 新主題\n\n新的段落。\n\n${groups}`,
+      encoding,
+    });
+    const beforeContents = new Set(before.map((chunk) => chunk.content));
+    const surviving = after.filter((chunk) =>
+      beforeContents.has(chunk.content)
+    );
+    expect(surviving).toHaveLength(before.length);
+  });
 });

@@ -41,6 +41,8 @@ export const cleanMdxKeepStructure = (source: string): string => {
 
 export interface MarkdownSection {
   headingPath: string | null;
+  /** level of the section's own heading; null for preamble text */
+  level: number | null;
   text: string;
 }
 
@@ -112,6 +114,7 @@ export const splitByHeadings = (content: string): MarkdownSection[] => {
       sections.push({
         headingPath:
           headingStack.map((heading) => heading.title).join(" > ") || null,
+        level: headingStack[headingStack.length - 1]?.level ?? null,
         text,
       });
     }

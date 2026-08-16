@@ -146,14 +146,15 @@ flowchart TD
 
 ```
 adapter.buildChunks() → 得到 card + sections，每個都帶 content_hash
-  → 在一個交易內比對現有 rows（key = kind:chunk_index）
-      hash 相同 → 只更新鏡像的可見性欄位（unchanged）
-      hash 不同 → 更新 chunk 並刪掉它的向量（written）
-      新的      → insert（written）
-      多出來的  → 刪掉（removed）
+  → planChunkReplacement()：以「內容」而非「位置」比對現有 rows
+      (kind, index, hash) 全同 → 只更新鏡像的可見性欄位（unchanged）
+      (kind, hash) 同、位置不同 → 移動 row，向量保留（moved）
+      (kind, index) 同、內容不同 → 原地改寫並刪掉向量（written）
+      配不到的新 chunk → insert（written）
+      配不到的舊 row   → 刪掉（removed）
 ```
 
-這就是「改一個段落只花一次 embedding」的原因：向量掛在 chunk 上，只有 hash 變了的 chunk 會失去向量。回傳 `{ written, unchanged, removed }`。
+Identity 是內容不是位置：以前的 key 是 `(kind, chunk_index)`，在文章前面插一段會讓後面所有 chunk 的 index 位移、逐一跟「位置上的前任」比對失敗，整條尾巴重新嵌入。改成 hash 優先配對後，位移只是 move——「改一個段落只花一次 embedding」對插入、刪除、搬動段落都成立。搬動要分兩階段落位（先停到負數 index 再放到目標位），因為 `(source, kind, chunk_index)` 的唯一索引在中間狀態可能撞到還沒搬走的 row。回傳 `{ written, unchanged, moved, removed }`。
 
 ### 3.4 `embedPendingChunksStep`：把 backlog 抽乾
 
@@ -176,9 +177,14 @@ while (true):
 interface EmbeddingProvider {
   readonly id: string; // 折進 index key，換 provider 自動使所有舊向量失效
   readonly dimensions: number;
-  embed(texts: string[]): Promise<number[][]>;
+  embed(
+    texts: string[],
+    task: "search_document" | "search_query"
+  ): Promise<number[][]>;
 }
 ```
+
+`task` 是必填：下一個值得試的模型多半是非對稱的（nomic、mxbai、e5、voyage），查詢誤用 document prefix 會安靜地劣化檢索品質，所以每個呼叫端都得聲明自己在搜尋的哪一側。對稱模型（OpenAI text-embedding-3-*）忽略它。
 
 | `EMBEDDING_PROVIDER` | provider | id                       | 維度 |
 | -------------------- | -------- | ------------------------ | ---- |
@@ -191,7 +197,7 @@ Ollama 分支目前**會在解析時直接丟錯**，因為 768 ≠ `EMBEDDING_D
 
 - **Token 保護**：`guardEmbeddingInput(s)` 是打 API 前的最後一道防線。OpenAI 用 `EMBEDDING_MAX_TOKENS`（8000，text-embedding-3 上限是 8191）；Ollama 用 per-model 的限制（mxbai 512、nomic 8192、all-minilm 256）並預留 32 token 給 task prefix，因為 prefix 是 guard 之後才接上的。
 - **Batch 切分**：`generateEmbeddings` 同時尊重「一次幾筆」（32）和「一次幾個 token」（250k）兩個上限。
-- **Task prefix**：非對稱的本地模型需要 `search_document:` / `search_query:` 前綴，由 `ollamaEmbeddings` 自動加。
+- **Task prefix**：非對稱的本地模型需要 `search_document:` / `search_query:` 前綴，`ollamaEmbeddings` 依 `embed()` 收到的 task 自動加。
 - **Tokenizer 是動態載入且 memoized 的**。`js-tiktoken` 的 cl100k_base 編碼表要 ~32MB 常駐堆積且無法釋放，所以只在「悲觀估算都超過預算」時才載。搜尋查詢上限 256 字元，永遠走估算路徑，不會把編碼表拖進長壽的 web process。估算函式（CJK 算 2 token/字、其他 0.5）刻意高估，「估算過關」就蘊含「精確計數也過關」。
 
 ## 5. Chunking
@@ -205,9 +211,12 @@ MDX 原文
   → splitByHeadings()         以 heading 邊界切 section 並追蹤 heading path
                               （code fence 內的 "#" 不會被誤判成 heading）
   → withHeadingPrefix()       把完整 heading path 接在每個 section 文字開頭
-  → 小的 section 打包在一起，超過 512 token 的交給 splitOversized()
+  → 小的 section 打包在一起（不跨 top-level heading group），
+    超過 512 token 的交給 splitOversized()
   → < 8 token 的成品丟棄（MIN_CHUNK_TOKENS）
 ```
+
+打包不跨 group，**每個 H1 / H2 heading 都是 group 邊界**：全文件貪婪打包會級聯——在開頭插一段文字就改變之後每個 chunk 的組成，所有 hash 全變，`planChunkReplacement`（§3.3）看到的是整篇改寫而不是搬移。邊界規則只看該 heading 自己的 level（刻意不做「相對全文結構」的自適應——那會讓文件他處的編輯改變 group 定義，級聯就回來了），所以一處編輯的重嵌入範圍被限制在它所在的 group。
 
 **Heading path 會烙進 chunk 的 `content` 第一行**（`"HNSW 調校 > 參數"` 這樣的一行）。`splitByHeadings` 會把 heading 行從正文剝掉，而 `content` 同時是 BM25 索引欄位和 embedding 輸入——不烙進去的話，查 heading 的字（"CSRF"、"hydrateRoot"）打不到回答它的那個 section，因為 heading 的字正是正文最不會重複的字。超長 section 切出來的每一片都各自重複這個前綴，因為每一片都是獨立的 chunk。
 
@@ -229,7 +238,7 @@ MDX 原文
 | `semantic` | 純 cosine 距離，走 HNSW                                                           |
 | `hybrid`   | 兩邊各取候選，在**一個 statement 內**用 RRF 融合                                  |
 
-Hybrid 的融合是兩個 CTE 各自 `row_number()` 出排名，`FULL OUTER JOIN`（讓只被一邊找到的 chunk 也能存活），分數是 `Σ 1/(60 + rank)`。融合後的查詢**不會**回傳 snippet：ParadeDB 不允許 `pdb.snippet()` 和 window function 同時出現。需要高亮片段時用 `bm25` 模式。
+Hybrid 的融合是兩個 CTE 各自 `row_number()` 出排名，`FULL OUTER JOIN`（讓只被一邊找到的 chunk 也能存活），分數是 `Σ 1/(60 + rank)`。融合後的查詢**不會**回傳高亮 snippet：ParadeDB 不允許 `pdb.snippet()` 和 window function 同時出現，需要 `<b>` 高亮就用 `bm25` 模式。不過每個 `ChunkHit` 都帶回 `content`（chunk 原文），所以 hybrid / semantic 的命中仍然看得到「為什麼命中」——agent 的搜尋結果就用它當 snippet 的 fallback。
 
 取數有兩層緩衝，因為 chunk 命中之後還要聚合成 resource：`searchResources` 先要 `max(limit × 6, 30)` 個 chunk，hybrid 內部再讓兩邊各取這個數字的三倍（下限 40）當融合前的候選。
 
@@ -278,7 +287,7 @@ full（原文全文）
 
 ### 什麼時候 bump `EMBEDDING_INDEX_VERSION`
 
-常數在 `packages/ai/src/embeddings/utils.ts`（目前 `"2026-08-16.1"`）。它和 provider id 一起構成「這個向量是用什麼算出來的」，所以以下改動要 bump：
+常數在 `packages/ai/src/embeddings/utils.ts`（目前 `"2026-08-16.2"`）。它和 provider id 一起構成「這個向量是用什麼算出來的」，所以以下改動要 bump：
 
 - 改 `cleanMdxKeepStructure` / `stripMdx` / `buildEmbeddingInput` 的前處理
 - 改 chunk 目標大小、最小 chunk 門檻、切分策略
@@ -337,6 +346,5 @@ full（原文全文）
 - **檢索品質基準在 `toolings/scripts/rag-eval`**：golden query + Recall@K / MRR / citation accuracy，動排序相關的程式前先跑一次留 baseline。RRF 的 `k = 60`、top-N 平均的 `N = 3` 仍未校正過。
 - **Hybrid 模式沒有 snippet**：ParadeDB 不允許 snippet 和 window function 並存，需要高亮就得用 `bm25` 模式。
 - **`feed_translation.published` / `deleted` 是會過期的鏡像**：只有 `createFeed` 會寫，`updateFeed` / `softDeleteFeed` / `restoreFeed` 都不維護。chunk 的可見性是從 `feed` 表算出來的，所以搜尋不受影響，但別把這兩欄當成真相來源。
-- **兩個沒接線的函式**：`pruneStaleEmbeddings`（`chunk.ts`）和 `buildIndexKey`（`provider.ts`）目前沒有任何呼叫端，`feed_translation.index_key` 這個欄位也不存在。
 - **HNSW 索引目前沒被用到**：這個語料量下 planner 對向量查詢選 seq scan + sort（精確結果，`EXPLAIN` 可驗證）。語料成長到 planner 改走 HNSW 時，pgvector 預設的 `hnsw.ef_search = 40` 會把過濾後的候選截到低於 hybrid 要的數量——屆時要在查詢的交易內 `SET LOCAL hnsw.ef_search`（≥ candidateLimit），並考慮 `hnsw.iterative_scan = relaxed_order`（pgvector 0.8+，現行版本支援）。
 - **Extension 不由 migration 建立**：`vector` 和 ParadeDB 的 `pg_search` 都得由資料庫本身提供，migration 沒有 `CREATE EXTENSION`。

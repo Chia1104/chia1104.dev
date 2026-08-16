@@ -10,11 +10,7 @@
     "clean": "git clean -xdf .turbo node_modules .cache",
     "db:seed": "tsx --env-file=../../../.env.global index.ts"
   },
-  "dependencies": {
-    "drizzle-orm": "catalog:drizzle"
-  },
   "devDependencies": {
-    "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/utils": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",

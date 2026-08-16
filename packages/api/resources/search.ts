@@ -27,7 +27,10 @@ const embedQuery = async (query: string): Promise<number[]> => {
   if (!query.trim()) {
     return [];
   }
-  const [embedding] = await resolveEmbeddingProvider().embed([query]);
+  const [embedding] = await resolveEmbeddingProvider().embed(
+    [query],
+    "search_query"
+  );
   return embedding ?? [];
 };
 

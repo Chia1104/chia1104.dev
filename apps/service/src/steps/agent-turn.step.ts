@@ -141,11 +141,9 @@ async function runWritingAgentTurn(
       WRITING_AGENT_KIND,
       WRITING_SESSION_DEFAULTS,
     },
-    kv,
   ] = await Promise.all([
     import("@chia/agent-runtime"),
     import("@chia/agent-writing"),
-    import("@chia/kv/redis").then((module) => module.getRedisKv()),
   ]);
 
   if (row.kind !== WRITING_AGENT_KIND) {
@@ -172,7 +170,7 @@ async function runWritingAgentTurn(
   });
   const session = await repo.openById(request.sessionId);
   const draft = new PgDraftStore(db);
-  const content = createAgentContentPort({ db, kv, adminId: request.adminId });
+  const content = createAgentContentPort({ db, adminId: request.adminId });
 
   const approvedToolCallIds = new Set(
     await getApprovedAgentToolCallIds(db, request.sessionId)

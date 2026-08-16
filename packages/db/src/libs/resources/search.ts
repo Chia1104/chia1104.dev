@@ -35,6 +35,12 @@ export interface ChunkHit {
   kind: ResourceChunkKind;
   chunkIndex: number;
   headingPath: string | null;
+  /**
+   * The chunk's stored text. Hybrid and semantic hits have no highlighted
+   * snippet (ParadeDB rejects `pdb.snippet()` beside a window function), so
+   * this is what shows why a chunk matched.
+   */
+  content: string;
   /** `<b>`-highlighted fragment, when the lexical path produced one */
   snippet: string | null;
   /** comparable only within one result set */
@@ -89,6 +95,7 @@ const chunkColumns = {
   kind: chunks.kind,
   chunkIndex: chunks.chunkIndex,
   headingPath: chunks.headingPath,
+  content: chunks.content,
 };
 
 /**

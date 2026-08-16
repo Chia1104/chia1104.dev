@@ -129,8 +129,21 @@ const withHeadingPrefix = (headingPath: string | null, text: string): string =>
   headingPath ? `${headingPath}\n\n${text}` : text;
 
 /**
+ * Headings at or above this level start a new pack group.
+ *
+ * Packing may not cross group boundaries, because a greedy pack over the whole
+ * document cascades: text inserted at the top changes which sections land in
+ * every later chunk, so every hash changes and `planChunkReplacement` sees a
+ * full rewrite instead of moves. A boundary at every H1/H2 bounds that cascade
+ * to one group — and the rule reads only the heading's own level, so an edit
+ * elsewhere in the document can never change where a group starts.
+ */
+const GROUP_BOUNDARY_LEVEL = 2;
+
+/**
  * Splits a document into section chunks at heading boundaries, packing small
- * sections together and splitting oversized ones.
+ * sections together (never across an H1/H2 boundary — see
+ * `GROUP_BOUNDARY_LEVEL`) and splitting oversized ones.
  *
  * `headingPath` is carried through for citation anchors, and additionally
  * prefixed onto each section's text (see `withHeadingPrefix`).
@@ -179,6 +192,10 @@ export const chunkMarkdown = async (params: {
   };
 
   for (const section of splitByHeadings(cleaned)) {
+    if (section.level !== null && section.level <= GROUP_BOUNDARY_LEVEL) {
+      flush();
+    }
+
     const text = withHeadingPrefix(section.headingPath, section.text);
     const sectionTokens = countEmbeddingTokens(text, encoding);
 

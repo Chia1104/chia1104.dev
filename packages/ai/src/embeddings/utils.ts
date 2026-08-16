@@ -16,15 +16,7 @@ export const EMBEDDING_DIMENSIONS = 1536;
  * a way that requires re-embedding. Folded into `index_key` together with the
  * provider id, so stale rows re-embed in place.
  */
-export const EMBEDDING_INDEX_VERSION = "2026-08-16.1";
-
-/**
- * Normalizes a search query for cache identity: collapse whitespace and
- * lowercase, but keep punctuation — "pg-vector" and "pg vector" are different
- * queries. Hash the result (sha-256) to build the cache key.
- */
-export const normalizeQueryForEmbedding = (query: string): string =>
-  query.trim().replace(/\s+/g, " ").toLowerCase();
+export const EMBEDDING_INDEX_VERSION = "2026-08-16.2";
 
 /**
  * Asymmetric embedding task type. Models like nomic-embed-text require

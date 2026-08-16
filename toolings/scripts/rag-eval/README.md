@@ -38,6 +38,13 @@ DATABASE_URL="<local…/chia-eval>" \
 pnpm --filter rag-eval eval "db-url=<local…/chia-eval>" out=reports/baseline.json
 ```
 
+After a chunking or index-version change, rebuild the copy and measure again:
+
+```bash
+pnpm --filter rag-eval reindex "db-url=<local…/chia-eval>"
+pnpm --filter rag-eval eval "db-url=<local…/chia-eval>" out=reports/after.json
+```
+
 ## Reading the report
 
 - The per-query table shows the rank of the first expected slug per mode

@@ -105,7 +105,10 @@ const main = async (): Promise<void> => {
     if (batch.length === 0) {
       break;
     }
-    const vectors = await provider.embed(batch.map((chunk) => chunk.content));
+    const vectors = await provider.embed(
+      batch.map((chunk) => chunk.content),
+      "search_document"
+    );
     if (vectors.length !== batch.length) {
       throw new Error(
         `Expected ${batch.length} embeddings, received ${vectors.length}`

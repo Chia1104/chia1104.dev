@@ -14,6 +14,7 @@ const hit = (
   kind: "section",
   chunkIndex: 0,
   headingPath: null,
+  content: "",
   snippet: null,
   score,
   lexicalRank: null,
