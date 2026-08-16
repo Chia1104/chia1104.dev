@@ -78,12 +78,12 @@ export interface BuildContextResult {
  * `#setup` for one the page renders as `#setup-1`. A fresh instance per
  * document, since the rendered page starts from scratch too.
  */
-export const buildHeadingAnchors = (
+export const buildHeadingAnchors = async (
   content: string,
   keepPaths?: ReadonlySet<string>
-): HeadingAnchor[] => {
+): Promise<HeadingAnchor[]> => {
   const slugger = new GithubSlugger();
-  const anchors = extractHeadings(content).map((heading) => ({
+  const anchors = (await extractHeadings(content)).map((heading) => ({
     path: heading.path,
     title: heading.title,
     anchor: `#${slugger.slug(heading.title)}`,
@@ -118,12 +118,12 @@ const truncateTokens = (
  * Sections whose heading path was matched by the retriever, in match order,
  * then the rest — so degrading keeps the parts the query actually hit.
  */
-const buildSectionsView = (
+const buildSectionsView = async (
   input: DocumentContextInput,
   maxTokens: number,
   encoding: Awaited<ReturnType<typeof tryLoadTokenizer>>
-): { text: string; keptPaths: Set<string> } => {
-  const sections = splitByHeadings(input.content);
+): Promise<{ text: string; keptPaths: Set<string> }> => {
+  const sections = await splitByHeadings(input.content);
   const matched = new Set(
     (input.matchedHeadingPaths ?? []).filter((path): path is string => !!path)
   );
@@ -160,10 +160,10 @@ const buildSectionsView = (
 };
 
 /** Cheapest representation: what the post is about and how it is organised. */
-const buildOutlineView = (input: DocumentContextInput): string =>
+const buildOutlineView = async (input: DocumentContextInput): Promise<string> =>
   [
     input.summary?.trim() ? input.summary.trim() : null,
-    buildHeadingOutline(input.content),
+    await buildHeadingOutline(input.content),
   ]
     .filter((part): part is string => !!part)
     .join("\n\n");
@@ -200,7 +200,8 @@ export const buildDocumentContext = async (
       Math.max(1, Math.floor(budget * MAX_SHARE_PER_DOCUMENT))
     );
 
-    const sections = buildSectionsView(input, allowance, encoding);
+    const sections = await buildSectionsView(input, allowance, encoding);
+    const outlineView = await buildOutlineView(input);
     // anchors always come from the untouched document, so their slugs match the
     // rendered page whichever view survives; `keepPaths` narrows them to what
     // the view actually contains
@@ -215,7 +216,7 @@ export const buildDocumentContext = async (
         text: sections.text,
         keepPaths: sections.keptPaths,
       },
-      { detail: "outline", text: buildOutlineView(input) },
+      { detail: "outline", text: outlineView },
     ];
 
     let chosen: DocumentContext | null = null;
@@ -232,7 +233,10 @@ export const buildDocumentContext = async (
           detail: candidate.detail,
           text: candidate.text,
           tokenCount: cost,
-          anchors: buildHeadingAnchors(input.content, candidate.keepPaths),
+          anchors: await buildHeadingAnchors(
+            input.content,
+            candidate.keepPaths
+          ),
         };
         break;
       }
@@ -242,7 +246,7 @@ export const buildDocumentContext = async (
     // document, so the model at least knows the post exists
     if (!chosen) {
       const text = truncateTokens(
-        buildOutlineView(input) || input.title,
+        outlineView || input.title,
         allowance,
         encoding
       );

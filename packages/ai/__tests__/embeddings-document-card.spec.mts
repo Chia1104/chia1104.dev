@@ -1,7 +1,10 @@
 import { getEncoding } from "js-tiktoken";
 import { describe, expect, it } from "vitest";
 
-import { chunkMarkdown, SECTION_CHUNK_TOKENS } from "../src/embeddings/chunking";
+import {
+  chunkMarkdown,
+  SECTION_CHUNK_TOKENS,
+} from "../src/embeddings/chunking";
 import {
   buildHeadingOutline,
   extractHeadings,
@@ -41,8 +44,8 @@ SET hnsw.ef_search = 100;
 `;
 
 describe("extractHeadings", () => {
-  it("tracks ancestor paths and ignores headings inside code fences", () => {
-    const headings = extractHeadings(ARTICLE);
+  it("tracks ancestor paths and ignores headings inside code fences", async () => {
+    const headings = await extractHeadings(ARTICLE);
     expect(headings.map((heading) => heading.path)).toEqual([
       "向量搜尋與嵌入技術",
       "向量搜尋與嵌入技術 > 什麼是 embedding",
@@ -54,8 +57,8 @@ describe("extractHeadings", () => {
 });
 
 describe("buildHeadingOutline", () => {
-  it("indents relative to the shallowest kept level and honours maxDepth", () => {
-    expect(buildHeadingOutline(ARTICLE)).toBe(
+  it("indents relative to the shallowest kept level and honours maxDepth", async () => {
+    expect(await buildHeadingOutline(ARTICLE)).toBe(
       [
         "- 向量搜尋與嵌入技術",
         "  - 什麼是 embedding",
@@ -65,14 +68,14 @@ describe("buildHeadingOutline", () => {
     );
   });
 
-  it("returns empty for content without headings", () => {
-    expect(buildHeadingOutline("just a paragraph")).toBe("");
+  it("returns empty for content without headings", async () => {
+    expect(await buildHeadingOutline("just a paragraph")).toBe("");
   });
 });
 
 describe("buildEmbeddingInput (document card)", () => {
-  it("builds a card from title, summary, tags and outline", () => {
-    const card = buildEmbeddingInput({
+  it("builds a card from title, summary, tags and outline", async () => {
+    const card = await buildEmbeddingInput({
       title: "向量搜尋",
       summary: "介紹 pgvector 與 HNSW。",
       tags: ["postgres", "rag"],
@@ -84,8 +87,8 @@ describe("buildEmbeddingInput (document card)", () => {
     expect(card).toContain("Outline:\n- 向量搜尋與嵌入技術");
   });
 
-  it("does not embed the body when a summary and outline exist", () => {
-    const card = buildEmbeddingInput({
+  it("does not embed the body when a summary and outline exist", async () => {
+    const card = await buildEmbeddingInput({
       title: "向量搜尋",
       summary: "介紹 pgvector 與 HNSW。",
       content: ARTICLE,
@@ -94,10 +97,10 @@ describe("buildEmbeddingInput (document card)", () => {
     expect(card).not.toContain("前言段落");
   });
 
-  it("stays bounded no matter how long the article is", () => {
+  it("stays bounded no matter how long the article is", async () => {
     // 500 copies of the body under the same outline: the card must not grow
     const long = ARTICLE + "\n\n" + "很長的內文段落。".repeat(5000);
-    const card = buildEmbeddingInput({
+    const card = await buildEmbeddingInput({
       title: "向量搜尋",
       summary: "介紹 pgvector 與 HNSW。",
       content: long,
@@ -105,17 +108,25 @@ describe("buildEmbeddingInput (document card)", () => {
     expect(tokens(card)).toBeLessThan(500);
   });
 
-  it("falls back through summary → description → excerpt", () => {
+  it("falls back through summary → description → excerpt", async () => {
     expect(
-      buildEmbeddingInput({ title: "t", description: "desc", content: ARTICLE })
+      await buildEmbeddingInput({
+        title: "t",
+        description: "desc",
+        content: ARTICLE,
+      })
     ).toContain("Summary: desc");
     expect(
-      buildEmbeddingInput({ title: "t", excerpt: "exc", content: ARTICLE })
+      await buildEmbeddingInput({
+        title: "t",
+        excerpt: "exc",
+        content: ARTICLE,
+      })
     ).toContain("Summary: exc");
   });
 
-  it("uses a bounded body excerpt only when there is no summary and no outline", () => {
-    const card = buildEmbeddingInput({
+  it("uses a bounded body excerpt only when there is no summary and no outline", async () => {
+    const card = await buildEmbeddingInput({
       title: "t",
       content: "沒有標題的純文字內容。".repeat(2000),
     });
@@ -167,7 +178,58 @@ describe("chunkMarkdown", () => {
     }
   });
 
+  it("bakes the heading path into every chunk's content", async () => {
+    const chunks = await chunkMarkdown({ content: ARTICLE, encoding });
+    const hnswChunk = chunks.find((chunk) =>
+      chunk.headingPaths.some((path) => path.includes("HNSW 調校"))
+    );
+
+    // the section body never mentions its own heading — only the baked-in
+    // prefix makes the chunk findable by the heading's words
+    expect(hnswChunk?.content).toContain("向量搜尋與嵌入技術 > HNSW 調校");
+
+    const splitChunks = await chunkMarkdown({
+      content: `## 只有一節\n\n${"很長的一段內文。".repeat(2000)}`,
+      encoding,
+    });
+    // every piece of an oversized section repeats the prefix — each is its own
+    // chunk and must carry the heading context itself
+    for (const chunk of splitChunks) {
+      expect(chunk.content.startsWith("只有一節\n\n")).toBe(true);
+    }
+  });
+
   it("returns nothing for empty content", async () => {
     expect(await chunkMarkdown({ content: "   ", encoding })).toEqual([]);
+  });
+
+  it("does not pack across top-level groups, so an edit cannot cascade", async () => {
+    const groups = Array.from(
+      { length: 3 },
+      (_, index) =>
+        `## 主題 ${index}\n\n第一段。\n\n### 主題 ${index} 的細節\n\n第二段。`
+    ).join("\n\n");
+
+    const before = await chunkMarkdown({ content: groups, encoding });
+    // small sections still pack within their group, never across groups
+    for (const chunk of before) {
+      const tops = new Set(
+        chunk.headingPaths.map((path) => path.split(" > ")[0])
+      );
+      expect(tops.size).toBe(1);
+    }
+
+    // prepending a whole new group must leave every later group's chunk
+    // byte-identical — that is what lets replaceResourceChunks treat them as
+    // moves and keep their vectors
+    const after = await chunkMarkdown({
+      content: `## 新主題\n\n新的段落。\n\n${groups}`,
+      encoding,
+    });
+    const beforeContents = new Set(before.map((chunk) => chunk.content));
+    const surviving = after.filter((chunk) =>
+      beforeContents.has(chunk.content)
+    );
+    expect(surviving).toHaveLength(before.length);
   });
 });

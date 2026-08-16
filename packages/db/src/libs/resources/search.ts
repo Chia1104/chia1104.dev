@@ -15,6 +15,19 @@ const RRF_K = 60;
 /** How many of a resource's best chunks contribute to its score. */
 const RESOURCE_SCORE_TOP_N = 3;
 
+/**
+ * Weight multiplier per rank inside a resource's top-N (1, ¼, ¹⁄₁₆).
+ *
+ * A plain sum broke on RRF scores, which are nearly flat (rank 1 ≈ 0.016,
+ * rank 30 ≈ 0.011): three mediocre chunks of a long article out-summed the
+ * single top-ranked chunk of a short one, so one-section articles lost to
+ * length. The decay keeps the best chunk dominant while additional relevant
+ * chunks still add — breadth is rewarded, piling up is not. 0.25 measured
+ * better than 0.5 on the hybrid path, which is what the API and the agent
+ * actually serve; see `toolings/scripts/rag-eval`.
+ */
+const RESOURCE_SCORE_DECAY = 0.25;
+
 export interface ChunkHit {
   chunkId: number;
   sourceType: string;
@@ -22,6 +35,12 @@ export interface ChunkHit {
   kind: ResourceChunkKind;
   chunkIndex: number;
   headingPath: string | null;
+  /**
+   * The chunk's stored text. Hybrid and semantic hits have no highlighted
+   * snippet (ParadeDB rejects `pdb.snippet()` beside a window function), so
+   * this is what shows why a chunk matched.
+   */
+  content: string;
   /** `<b>`-highlighted fragment, when the lexical path produced one */
   snippet: string | null;
   /** comparable only within one result set */
@@ -33,7 +52,7 @@ export interface ChunkHit {
 export interface ResourceHit {
   sourceType: string;
   sourceId: number;
-  /** mean of the resource's top chunk scores */
+  /** decayed sum of the resource's top chunk scores */
   score: number;
   matchedChunks: number;
   /** best-scoring chunk, for citation and preview */
@@ -76,6 +95,7 @@ const chunkColumns = {
   kind: chunks.kind,
   chunkIndex: chunks.chunkIndex,
   headingPath: chunks.headingPath,
+  content: chunks.content,
 };
 
 /**
@@ -196,12 +216,17 @@ export const searchChunksHybrid = withDTO(
       db
         .select({
           id: chunks.id,
-          rank: sql<number>`row_number() over (order by ${distance})`.as("rank"),
+          rank: sql<number>`row_number() over (order by ${distance})`.as(
+            "rank"
+          ),
         })
         .from(chunks)
         .innerJoin(
           embeddings,
-          and(eq(embeddings.chunkId, chunks.id), eq(embeddings.model, dto.model))
+          and(
+            eq(embeddings.chunkId, chunks.id),
+            eq(embeddings.model, dto.model)
+          )
         )
         .where(scope)
         .orderBy(distance)
@@ -213,7 +238,9 @@ export const searchChunksHybrid = withDTO(
         .select({
           id: sql<number>`coalesce(${lexical.id}, ${semantic.id})`.as("id"),
           lexicalRank: sql<number | null>`${lexical.rank}`.as("lexical_rank"),
-          semanticRank: sql<number | null>`${semantic.rank}`.as("semantic_rank"),
+          semanticRank: sql<number | null>`${semantic.rank}`.as(
+            "semantic_rank"
+          ),
           score: sql<number>`
             coalesce(1.0 / (${RRF_K} + ${lexical.rank}), 0)
             + coalesce(1.0 / (${RRF_K} + ${semantic.rank}), 0)
@@ -243,10 +270,13 @@ export const searchChunksHybrid = withDTO(
 /**
  * Collapses chunk hits into one hit per resource.
  *
- * Scored on the mean of a resource's top-N chunks rather than its single best:
- * one coincidentally-worded passage should not outrank a resource that is
- * relevant throughout. Resources with fewer than N chunks average over what
- * they have.
+ * Scored on the decayed sum of a resource's top-N chunk scores
+ * (`RESOURCE_SCORE_DECAY`): a resource that is relevant throughout should
+ * outrank one with a single coincidentally-worded passage — under a mean a
+ * second relevant chunk could only drag the score down, so breadth was never
+ * rewarded — but the best chunk stays dominant so a short focused article
+ * still beats a long tangential one. Comparable only within one result set,
+ * like the chunk scores it sums.
  */
 export const aggregateChunkHits = (
   hits: ChunkHit[],
@@ -266,7 +296,10 @@ export const aggregateChunkHits = (
     .map((bucket) => {
       // hits arrive in score order, so the head is already the best
       const top = bucket.slice(0, topN);
-      const score = top.reduce((sum, hit) => sum + hit.score, 0) / top.length;
+      const score = top.reduce(
+        (sum, hit, index) => sum + hit.score * RESOURCE_SCORE_DECAY ** index,
+        0
+      );
       const best = bucket[0]!;
       return {
         sourceType: best.sourceType,
@@ -304,7 +337,10 @@ export const findSimilarResources = withDTO(
         .from(chunks)
         .innerJoin(
           embeddings,
-          and(eq(embeddings.chunkId, chunks.id), eq(embeddings.model, dto.model))
+          and(
+            eq(embeddings.chunkId, chunks.id),
+            eq(embeddings.model, dto.model)
+          )
         )
         .where(
           and(

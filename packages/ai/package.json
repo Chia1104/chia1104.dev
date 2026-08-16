@@ -91,13 +91,20 @@
     "ai": "catalog:ai",
     "github-slugger": "^2.0.0",
     "js-tiktoken": "^1.0.21",
+    "mdast-util-to-string": "catalog:",
     "next": "catalog:next",
     "ollama": "catalog:ai",
     "openai": "catalog:ai",
+    "remark-gfm": "catalog:",
+    "remark-mdx": "catalog:",
+    "remark-parse": "catalog:",
+    "unified": "catalog:",
+    "unist-util-visit": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/mdast": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }

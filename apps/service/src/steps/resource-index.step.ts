@@ -79,7 +79,10 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
 
     let vectors: number[][];
     try {
-      vectors = await provider.embed(batch.map((chunk) => chunk.content));
+      vectors = await provider.embed(
+        batch.map((chunk) => chunk.content),
+        "search_document"
+      );
     } catch (error) {
       const status =
         typeof error === "object" && error !== null && "status" in error
@@ -145,6 +148,8 @@ export type ResourceIndexResult =
       status: "indexed";
       written: number;
       unchanged: number;
+      /** chunks that changed position but kept their content and vectors */
+      moved: number;
       removed: number;
       embedded: number;
     };
@@ -170,6 +175,7 @@ export const indexResource = async (
     status: "indexed",
     written: synced.written,
     unchanged: synced.unchanged,
+    moved: synced.moved,
     removed: synced.removed,
     embedded,
   };

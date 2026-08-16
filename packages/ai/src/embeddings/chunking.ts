@@ -117,17 +117,43 @@ const splitOversized = (
 };
 
 /**
- * Splits a document into section chunks at heading boundaries, packing small
- * sections together and splitting oversized ones.
+ * A section's heading path, baked into the chunk text as its first line.
  *
- * `headingPath` is carried through for citation anchors.
+ * `splitByHeadings` strips heading lines, and the chunk `content` is what gets
+ * embedded and BM25-indexed — without this, a query for the heading's words
+ * ("CSRF", "hydrateRoot") cannot reach the section that answers it, because
+ * headings are precisely the words a body rarely repeats. The full ancestor
+ * path rather than the leaf, so "參數" arrives as "HNSW 調校 > 參數".
+ */
+const withHeadingPrefix = (headingPath: string | null, text: string): string =>
+  headingPath ? `${headingPath}\n\n${text}` : text;
+
+/**
+ * Headings at or above this level start a new pack group.
+ *
+ * Packing may not cross group boundaries, because a greedy pack over the whole
+ * document cascades: text inserted at the top changes which sections land in
+ * every later chunk, so every hash changes and `planChunkReplacement` sees a
+ * full rewrite instead of moves. A boundary at every H1/H2 bounds that cascade
+ * to one group — and the rule reads only the heading's own level, so an edit
+ * elsewhere in the document can never change where a group starts.
+ */
+const GROUP_BOUNDARY_LEVEL = 2;
+
+/**
+ * Splits a document into section chunks at heading boundaries, packing small
+ * sections together (never across an H1/H2 boundary — see
+ * `GROUP_BOUNDARY_LEVEL`) and splitting oversized ones.
+ *
+ * `headingPath` is carried through for citation anchors, and additionally
+ * prefixed onto each section's text (see `withHeadingPrefix`).
  */
 export const chunkMarkdown = async (params: {
   content: string;
   targetTokens?: number;
   encoding?: Tiktoken | null;
 }): Promise<MarkdownChunk[]> => {
-  const cleaned = cleanMdxKeepStructure(params.content);
+  const cleaned = await cleanMdxKeepStructure(params.content);
   if (!cleaned) {
     return [];
   }
@@ -165,17 +191,30 @@ export const chunkMarkdown = async (params: {
     bufferTokens = 0;
   };
 
-  for (const section of splitByHeadings(cleaned)) {
-    const sectionTokens = countEmbeddingTokens(section.text, encoding);
+  for (const section of await splitByHeadings(cleaned)) {
+    if (section.level !== null && section.level <= GROUP_BOUNDARY_LEVEL) {
+      flush();
+    }
+
+    const text = withHeadingPrefix(section.headingPath, section.text);
+    const sectionTokens = countEmbeddingTokens(text, encoding);
 
     if (sectionTokens > targetTokens) {
       flush();
+      // every piece repeats the prefix — each becomes its own chunk and must
+      // carry the heading context itself — so the split budget pays for it
+      const prefixTokens = section.headingPath
+        ? sectionTokens - countEmbeddingTokens(section.text, encoding)
+        : 0;
       for (const piece of splitOversized(
         section.text,
-        targetTokens,
+        Math.max(targetTokens - prefixTokens, 1),
         encoding
       )) {
-        buffer.push({ headingPath: section.headingPath, text: piece });
+        buffer.push({
+          headingPath: section.headingPath,
+          text: withHeadingPrefix(section.headingPath, piece),
+        });
         flush();
       }
       continue;
@@ -184,7 +223,7 @@ export const chunkMarkdown = async (params: {
     if (bufferTokens + sectionTokens > targetTokens) {
       flush();
     }
-    buffer.push({ headingPath: section.headingPath, text: section.text });
+    buffer.push({ headingPath: section.headingPath, text });
     bufferTokens += sectionTokens;
   }
   flush();

@@ -1,4 +1,4 @@
-import { buildHeadingOutline } from "./markdown.ts";
+import { buildHeadingOutline, stripMdx } from "./markdown.ts";
 
 /**
  * Vector dimension used everywhere.
@@ -16,15 +16,7 @@ export const EMBEDDING_DIMENSIONS = 1536;
  * a way that requires re-embedding. Folded into `index_key` together with the
  * provider id, so stale rows re-embed in place.
  */
-export const EMBEDDING_INDEX_VERSION = "2026-08-11.2";
-
-/**
- * Normalizes a search query for cache identity: collapse whitespace and
- * lowercase, but keep punctuation — "pg-vector" and "pg vector" are different
- * queries. Hash the result (sha-256) to build the cache key.
- */
-export const normalizeQueryForEmbedding = (query: string): string =>
-  query.trim().replace(/\s+/g, " ").toLowerCase();
+export const EMBEDDING_INDEX_VERSION = "2026-08-16.3";
 
 /**
  * Asymmetric embedding task type. Models like nomic-embed-text require
@@ -133,24 +125,6 @@ export const truncateForEmbedding = (
 };
 
 /**
- * Strips MDX/Markdown noise (imports, JSX tags, code blocks, md syntax) so
- * the embedding captures the article topic instead of markup.
- */
-export const stripMdx = (source: string): string => {
-  return source
-    .replace(/```[\s\S]*?(```|$)/g, " ") // fenced code blocks
-    .replace(/^(?:import|export)\s[^\n]*$/gm, " ") // ESM statements
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1") // images -> alt text
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // links -> label
-    .replace(/<\/?[A-Za-z][^>\n]*>/g, " ") // JSX / HTML tags
-    .replace(/`([^`]*)`/g, "$1") // inline code
-    .replace(/^[#>\-*+\s]+/gm, "") // headings, quotes, list markers
-    .replace(/[*_~]{1,3}([^*_~\n]+)[*_~]{1,3}/g, "$1") // emphasis
-    .replace(/\s+/g, " ")
-    .trim();
-};
-
-/**
  * Tokens of stripped body text used when a translation has no summary at all.
  * Small on purpose — the card is meant to be a topic summary, and a body
  * excerpt is a poor stand-in, not a replacement.
@@ -178,19 +152,24 @@ export interface DocumentCardInput {
  * The body excerpt only appears when there is no summary/description/excerpt
  * to work with; see `CARD_BODY_FALLBACK_TOKENS`.
  */
-export const buildEmbeddingInput = (input: DocumentCardInput): string => {
+export const buildEmbeddingInput = async (
+  input: DocumentCardInput
+): Promise<string> => {
   const summary = [input.summary, input.description, input.excerpt]
     .map((value) => value?.trim())
     .find((value): value is string => !!value);
 
   const tags = input.tags?.filter((tag) => !!tag.trim()) ?? [];
-  const outline = input.content ? buildHeadingOutline(input.content) : "";
+  const outline = input.content ? await buildHeadingOutline(input.content) : "";
 
   // no summary and no structure to describe the post — fall back to a bounded
   // slice of the body so the vector is not just the title
   const bodyFallback =
     !summary && !outline && input.content
-      ? truncateForEmbedding(stripMdx(input.content), CARD_BODY_FALLBACK_TOKENS)
+      ? truncateForEmbedding(
+          await stripMdx(input.content),
+          CARD_BODY_FALLBACK_TOKENS
+        )
       : null;
 
   return [

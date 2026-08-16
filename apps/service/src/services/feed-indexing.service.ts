@@ -17,11 +17,11 @@ export const feedHooks: FeedHooks = {
   /**
    * Drops a feed's translations from the search index.
    *
-   * A *hard* delete needs nothing here — `feed_search_document` and
-   * `feed_embedding` both cascade from `feed_translation`. A *soft* delete is why
-   * this exists: the rows survive, so without an explicit removal the post stays
-   * searchable after being unpublished. Restoring re-emits `changed`, which
-   * rebuilds them.
+   * A *hard* delete needs nothing here — `resource_chunk` cascades from
+   * `feed_translation` and `resource_embedding` from the chunk. A *soft* delete
+   * is why this exists: the rows survive, so without an explicit removal the
+   * post stays searchable after being unpublished. Restoring re-emits
+   * `changed`, which rebuilds them.
    */
   async onFeedRemoved(translationIDs) {
     if (translationIDs.length === 0) {
