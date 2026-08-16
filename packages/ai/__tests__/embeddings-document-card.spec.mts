@@ -44,8 +44,8 @@ SET hnsw.ef_search = 100;
 `;
 
 describe("extractHeadings", () => {
-  it("tracks ancestor paths and ignores headings inside code fences", () => {
-    const headings = extractHeadings(ARTICLE);
+  it("tracks ancestor paths and ignores headings inside code fences", async () => {
+    const headings = await extractHeadings(ARTICLE);
     expect(headings.map((heading) => heading.path)).toEqual([
       "向量搜尋與嵌入技術",
       "向量搜尋與嵌入技術 > 什麼是 embedding",
@@ -57,8 +57,8 @@ describe("extractHeadings", () => {
 });
 
 describe("buildHeadingOutline", () => {
-  it("indents relative to the shallowest kept level and honours maxDepth", () => {
-    expect(buildHeadingOutline(ARTICLE)).toBe(
+  it("indents relative to the shallowest kept level and honours maxDepth", async () => {
+    expect(await buildHeadingOutline(ARTICLE)).toBe(
       [
         "- 向量搜尋與嵌入技術",
         "  - 什麼是 embedding",
@@ -68,14 +68,14 @@ describe("buildHeadingOutline", () => {
     );
   });
 
-  it("returns empty for content without headings", () => {
-    expect(buildHeadingOutline("just a paragraph")).toBe("");
+  it("returns empty for content without headings", async () => {
+    expect(await buildHeadingOutline("just a paragraph")).toBe("");
   });
 });
 
 describe("buildEmbeddingInput (document card)", () => {
-  it("builds a card from title, summary, tags and outline", () => {
-    const card = buildEmbeddingInput({
+  it("builds a card from title, summary, tags and outline", async () => {
+    const card = await buildEmbeddingInput({
       title: "向量搜尋",
       summary: "介紹 pgvector 與 HNSW。",
       tags: ["postgres", "rag"],
@@ -87,8 +87,8 @@ describe("buildEmbeddingInput (document card)", () => {
     expect(card).toContain("Outline:\n- 向量搜尋與嵌入技術");
   });
 
-  it("does not embed the body when a summary and outline exist", () => {
-    const card = buildEmbeddingInput({
+  it("does not embed the body when a summary and outline exist", async () => {
+    const card = await buildEmbeddingInput({
       title: "向量搜尋",
       summary: "介紹 pgvector 與 HNSW。",
       content: ARTICLE,
@@ -97,10 +97,10 @@ describe("buildEmbeddingInput (document card)", () => {
     expect(card).not.toContain("前言段落");
   });
 
-  it("stays bounded no matter how long the article is", () => {
+  it("stays bounded no matter how long the article is", async () => {
     // 500 copies of the body under the same outline: the card must not grow
     const long = ARTICLE + "\n\n" + "很長的內文段落。".repeat(5000);
-    const card = buildEmbeddingInput({
+    const card = await buildEmbeddingInput({
       title: "向量搜尋",
       summary: "介紹 pgvector 與 HNSW。",
       content: long,
@@ -108,17 +108,25 @@ describe("buildEmbeddingInput (document card)", () => {
     expect(tokens(card)).toBeLessThan(500);
   });
 
-  it("falls back through summary → description → excerpt", () => {
+  it("falls back through summary → description → excerpt", async () => {
     expect(
-      buildEmbeddingInput({ title: "t", description: "desc", content: ARTICLE })
+      await buildEmbeddingInput({
+        title: "t",
+        description: "desc",
+        content: ARTICLE,
+      })
     ).toContain("Summary: desc");
     expect(
-      buildEmbeddingInput({ title: "t", excerpt: "exc", content: ARTICLE })
+      await buildEmbeddingInput({
+        title: "t",
+        excerpt: "exc",
+        content: ARTICLE,
+      })
     ).toContain("Summary: exc");
   });
 
-  it("uses a bounded body excerpt only when there is no summary and no outline", () => {
-    const card = buildEmbeddingInput({
+  it("uses a bounded body excerpt only when there is no summary and no outline", async () => {
+    const card = await buildEmbeddingInput({
       title: "t",
       content: "沒有標題的純文字內容。".repeat(2000),
     });

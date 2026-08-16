@@ -1,7 +1,7 @@
 # RAG 架構：Chunk、Embedding 與檢索
 
 > 狀態：現行架構（as-built）
-> 最後更新：2026-08-12
+> 最後更新：2026-08-16
 
 本文件說明部落格的檢索系統：內容如何被切成可檢索的單位、向量如何產生與儲存、查詢端如何檢索與排序，以及維護時該從哪裡改。
 
@@ -204,17 +204,20 @@ Ollama 分支目前**會在解析時直接丟錯**，因為 768 ≠ `EMBEDDING_D
 
 實作在 `packages/ai/src/embeddings/chunking.ts`，目標大小 `SECTION_CHUNK_TOKENS = 512`。
 
-```
+````
 MDX 原文
-  → cleanMdxKeepStructure()   移除 import/export 與 JSX tag；保留 heading、list、code fence
-                              （code block ≤24 行完整保留，更長則保留前 12 行 + "…"）
-  → splitByHeadings()         以 heading 邊界切 section 並追蹤 heading path
-                              （code fence 內的 "#" 不會被誤判成 heading）
+  → cleanMdxKeepStructure()   remark (mdx+gfm) 解析後按節點位置就地移除 import/export、
+                              JSX tag（保留 children）、{expression}；保留 heading、list。
+                              code fence 一律重建為 ```lang（meta 移除），≤24 行完整保留，
+                              更長則保留前 12 行 + "…"。無效 MDX 退回純 markdown 解析
+  → splitByHeadings()         以 top-level heading 邊界切 section 並追蹤 heading path
+                              （heading 標題取純文字，`code` 與 **bold** 標記會被剝掉——
+                              和渲染頁面產生 anchor 的行為一致）
   → withHeadingPrefix()       把完整 heading path 接在每個 section 文字開頭
   → 小的 section 打包在一起（不跨 top-level heading group），
     超過 512 token 的交給 splitOversized()
   → < 8 token 的成品丟棄（MIN_CHUNK_TOKENS）
-```
+````
 
 打包不跨 group，**每個 H1 / H2 heading 都是 group 邊界**：全文件貪婪打包會級聯——在開頭插一段文字就改變之後每個 chunk 的組成，所有 hash 全變，`planChunkReplacement`（§3.3）看到的是整篇改寫而不是搬移。邊界規則只看該 heading 自己的 level（刻意不做「相對全文結構」的自適應——那會讓文件他處的編輯改變 group 定義，級聯就回來了），所以一處編輯的重嵌入範圍被限制在它所在的 group。
 
@@ -287,7 +290,7 @@ full（原文全文）
 
 ### 什麼時候 bump `EMBEDDING_INDEX_VERSION`
 
-常數在 `packages/ai/src/embeddings/utils.ts`（目前 `"2026-08-16.2"`）。它和 provider id 一起構成「這個向量是用什麼算出來的」，所以以下改動要 bump：
+常數在 `packages/ai/src/embeddings/utils.ts`（目前 `"2026-08-16.3"`）。它和 provider id 一起構成「這個向量是用什麼算出來的」，所以以下改動要 bump：
 
 - 改 `cleanMdxKeepStructure` / `stripMdx` / `buildEmbeddingInput` 的前處理
 - 改 chunk 目標大小、最小 chunk 門檻、切分策略

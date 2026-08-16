@@ -28,8 +28,10 @@ const long = (sections: number, repeat: number) =>
   ).join("\n\n");
 
 describe("buildHeadingAnchors", () => {
-  it("produces github-style anchors per heading", () => {
-    const anchors = buildHeadingAnchors("# Hello World\n\n## ef_search 調校");
+  it("produces github-style anchors per heading", async () => {
+    const anchors = await buildHeadingAnchors(
+      "# Hello World\n\n## ef_search 調校"
+    );
     expect(anchors.map((anchor) => anchor.anchor)).toEqual([
       "#hello-world",
       "#ef_search-調校",
@@ -37,14 +39,14 @@ describe("buildHeadingAnchors", () => {
     expect(anchors[1]?.path).toBe("Hello World > ef_search 調校");
   });
 
-  it("restarts numbering per document so repeated headings do not drift", () => {
+  it("restarts numbering per document so repeated headings do not drift", async () => {
     const content = "## Setup\n\ntext\n\n## Setup\n\ntext";
-    expect(buildHeadingAnchors(content).map((a) => a.anchor)).toEqual([
+    expect((await buildHeadingAnchors(content)).map((a) => a.anchor)).toEqual([
       "#setup",
       "#setup-1",
     ]);
     // a second call must behave identically, not continue from -1
-    expect(buildHeadingAnchors(content).map((a) => a.anchor)).toEqual([
+    expect((await buildHeadingAnchors(content)).map((a) => a.anchor)).toEqual([
       "#setup",
       "#setup-1",
     ]);
@@ -144,7 +146,9 @@ describe("buildDocumentContext", () => {
       { budget: 4000 }
     );
     // the second document still made it in
-    expect(result.documents.map((document) => document.slug)).toContain("small");
+    expect(result.documents.map((document) => document.slug)).toContain(
+      "small"
+    );
     expect(result.droppedSlugs).toEqual([]);
   });
 

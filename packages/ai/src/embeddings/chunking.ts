@@ -153,7 +153,7 @@ export const chunkMarkdown = async (params: {
   targetTokens?: number;
   encoding?: Tiktoken | null;
 }): Promise<MarkdownChunk[]> => {
-  const cleaned = cleanMdxKeepStructure(params.content);
+  const cleaned = await cleanMdxKeepStructure(params.content);
   if (!cleaned) {
     return [];
   }
@@ -191,7 +191,7 @@ export const chunkMarkdown = async (params: {
     bufferTokens = 0;
   };
 
-  for (const section of splitByHeadings(cleaned)) {
+  for (const section of await splitByHeadings(cleaned)) {
     if (section.level !== null && section.level <= GROUP_BOUNDARY_LEVEL) {
       flush();
     }
