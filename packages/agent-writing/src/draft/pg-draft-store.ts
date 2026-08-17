@@ -1,3 +1,4 @@
+import type { PostSnapshot } from "@chia/agent-content";
 import type { DB } from "@chia/db";
 import {
   deleteWritingAgentDrafts,
@@ -9,12 +10,7 @@ import {
 import type { Locale } from "@chia/db/types";
 
 import type { DraftStore } from "../ports.ts";
-import type {
-  DraftFeedMeta,
-  DraftTranslation,
-  FeedDraft,
-  PostSnapshot,
-} from "../types.ts";
+import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
 import { emptyDraft } from "./operations.ts";
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package",
-  "name": "@chia/agent-runtime",
+  "name": "@chia/agent-content",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -8,18 +8,6 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
-    },
-    "./events": {
-      "types": "./src/wire/schema.ts",
-      "default": "./src/wire/schema.ts"
-    },
-    "./transports/tanstack-ai": {
-      "types": "./src/transports/tanstack-ai.ts",
-      "default": "./src/transports/tanstack-ai.ts"
-    },
-    "./tools": {
-      "types": "./src/tools.ts",
-      "default": "./src/tools.ts"
     }
   },
   "scripts": {
@@ -30,12 +18,12 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@chia/agent-runtime": "workspace:*",
+    "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
-    "@tanstack/ai": "catalog:agent-client",
-    "typebox": "catalog:agent",
-    "zod": "catalog:"
+    "typebox": "catalog:agent"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",

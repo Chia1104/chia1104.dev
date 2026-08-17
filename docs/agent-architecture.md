@@ -15,6 +15,7 @@ assistant.
 | Layer        | Package / app                               | Owns                                                                                                                      |
 | ------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Pi execution | `@chia/agent-runtime`                       | Pi turn lifecycle, session persistence, models/providers, approval hook, bounded wire events and client transport mapping |
+| Shared tools | `@chia/agent-content`                       | Read-only content tools every reading kind composes, their `ContentReadPort`, names, labels and summaries                 |
 | Domain       | `@chia/agent-writing`                       | Writing tools, prompts, skills, model allowlist, policy, draft staging and domain ports                                   |
 | Host         | `apps/service`, `packages/api`, `apps/dash` | DB/KV/credentials, durable workflow and streams, oRPC service port, auth and UI                                           |
 
@@ -23,7 +24,9 @@ flowchart TB
     dash["apps/dash<br/>agent workspace"] --> api["packages/api<br/>oRPC contracts · AgentKindService"]
     api --> service["apps/service<br/>durable workflow · host wiring"]
     service --> writing["@chia/agent-writing<br/>runWritingTurn · tools · prompts · policy"]
+    writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
+    content --> runtime
     runtime --> pi["Pi AgentHarness"]
     runtime --> pg[("Postgres agent_* tables")]
 ```
@@ -271,10 +274,19 @@ from Pi; the domain decides which `(providerId, modelId)` pairs it permits.
 
 ## 10. Writing domain and durable state
 
-The writing agent reads published content through `ContentPort`, writes drafts through
-`DraftStore`, and only commit-tier tools promote staged data to live feed/content tables. Tool order
-encourages the model to read, draft and then commit. Destructive deletion and image upload are not
-available agent tools.
+The writing agent reads content through `ContentPort` — `@chia/agent-content`'s `ContentReadPort`
+plus `fetch_url` and the writes — stages drafts through `DraftStore`, and only commit-tier tools
+promote staged data to live feed/content tables. Tool order encourages the model to read, draft and
+then commit. Destructive deletion and image upload are not available agent tools.
+
+### Content visibility
+
+The read tools cannot widen what they see: visibility is fixed when the host builds the port
+(`apps/service/src/services/content-read.port.ts`). An `author` port sees the configured author's
+drafts; a `public` port scopes every detail read to `published: true` and answers a request for
+drafts with nothing rather than overriding the filter. Search needs no branch — the chunk index is
+published-only for every caller. The writing agent's port is `author`; a public kind builds
+`public` and never gets `fetch_url`.
 
 The dynamic system prompt is recomputed per turn so current draft/session and approval state remain
 accurate. Skills and prompt templates live under `packages/agent-writing/src/prompts/`.
@@ -294,7 +306,9 @@ implementations; all mutable state is durable:
 
 Another domain kind uses the same concrete Pi runtime:
 
-1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports;
+1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports —
+   composing `contentReadTools` from `@chia/agent-content` when it reads the blog, with the tool
+   context extending `ContentToolContext`;
 2. add its extension table when it needs kind-specific persisted state;
 3. implement `AgentKindService` in `apps/service` — including the `minTier` it admits — and add it
    to the `agentKinds` map;
@@ -316,6 +330,8 @@ until a concrete second execution foundation requires a different seam.
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                 |
 | Session over Postgres        | `packages/agent-runtime/src/session/`                                                  |
 | TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                  |
+| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`        |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                   |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |

@@ -172,11 +172,10 @@ async function runWritingAgentTurn(
   const draft = new PgDraftStore(db);
   /**
    * The writing agent acts as the configured author. The kind's `minTier` is `Root`, which pins
-   * session ownership to that same id, so this states whose posts the tools touch rather than
+   * session ownership to that same id, so this states whose posts the port touches rather than
    * performing a second authorization check.
    */
-  const adminId = getAdminId();
-  const content = createAgentContentPort({ db, adminId });
+  const content = createAgentContentPort({ db, adminId: getAdminId() });
 
   const approvedToolCallIds = new Set(
     await getApprovedAgentToolCallIds(db, request.sessionId)
@@ -207,7 +206,6 @@ async function runWritingAgentTurn(
       autoApprove: row.autoApprove as ToolTier[],
     },
     agentSessionId: request.sessionId,
-    adminId,
     targetFeedId: writingState.targetFeedId ?? undefined,
     content,
     draft,
