@@ -23,4 +23,4 @@ export const CONTENT_TOOL_LABEL_BY_NAME: Record<ContentToolName, string> = {
 };
 
 export const isContentToolName = (name: string): name is ContentToolName =>
-  name in CONTENT_TOOL_LABEL_BY_NAME;
+  Object.prototype.hasOwnProperty.call(CONTENT_TOOL_LABEL_BY_NAME, name);
