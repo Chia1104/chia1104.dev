@@ -663,9 +663,8 @@ export const writingAgentService: AgentKindService = {
     });
     if (!decided) return null;
 
-    // Capture the cursor before waking the workflow. The TanStack compatibility transport opens a
-    // fresh request for an approval continuation, unlike the native dashboard's old long-lived
-    // subscription, so it needs the same exact replay boundary as a normal prompt.
+    // Capture the cursor before waking the workflow. The chat transport opens a fresh request for
+    // an approval continuation, so it needs the same exact replay boundary as a normal prompt.
     const run = getRun(row.workflowRunId);
     const startIndex = (await run.getReadable().getTailIndex()) + 1;
 

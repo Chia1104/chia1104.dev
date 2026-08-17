@@ -111,7 +111,7 @@ sequenceDiagram
     participant PI as runPiTurn / AgentHarness
     participant PG as Postgres
 
-    UI->>RPC: agent.sessions.prompt
+    UI->>RPC: agent.sessions.chat (prompt)
     RPC->>SVC: prompt(caller, input)
     alt 已有 active durable run
         SVC->>WF: resume message hook
@@ -119,7 +119,8 @@ sequenceDiagram
         SVC->>WF: start workflow
         SVC->>PG: create agent_run
     end
-    SVC-->>UI: runId + stream cursor
+    SVC-->>RPC: runId + stream cursor
+    RPC->>SVC: stream(caller, cursor)
     WF->>STEP: execute turn step
     STEP->>WR: runWritingTurn(options)
     WR->>PI: runPiTurn(concrete Pi inputs)

@@ -112,26 +112,6 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
 // Turns
 // ============================================
 
-/**
- * The handler returns the service's async generator directly — oRPC serialises it as an event
- * stream, so nothing is buffered and the first token reaches the client as soon as it exists.
- */
-export const promptAgentRoute = contractOS.agent.sessions.prompt
-  .use(resolveCaller)
-  .use(agentSessionGuard())
-  .handler(async (opts) => {
-    const { caller, service } = opts.context.agent;
-    return await service.prompt(caller, opts.input);
-  });
-
-export const streamAgentRoute = contractOS.agent.sessions.stream
-  .use(resolveCaller)
-  .use(agentSessionGuard())
-  .handler(async (opts) => {
-    const { caller, service } = opts.context.agent;
-    return service.stream(caller, opts.input);
-  });
-
 export const chatAgentRoute = contractOS.agent.sessions.chat
   .use(resolveCaller)
   .use(agentSessionGuard())

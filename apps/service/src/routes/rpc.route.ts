@@ -14,14 +14,10 @@ import { rateLimiterGuard } from "../guards/rate-limiter.guard";
 /**
  * Procedures whose response *is* a live event stream, so the shared request timeout must not apply.
  *
- * Only the stream endpoint needs this. `agent.sessions.prompt` used to as well, but the turn now
- * runs inside a durable workflow run — so `prompt` returns as soon as the message is enqueued and
- * keeps the normal timeout.
- *
- * Matched against the oRPC procedure path (`/agent/sessions/stream`), which is what appears after
+ * Matched against the oRPC procedure path (`/agent/sessions/chat`), which is what appears after
  * the `/api/v1/rpc` mount prefix.
  */
-const STREAMING_PROCEDURE_PATHS = ["/agent/sessions/stream"];
+const STREAMING_PROCEDURE_PATHS = ["/agent/sessions/chat"];
 
 const isStreamingProcedure = (path: string): boolean =>
   STREAMING_PROCEDURE_PATHS.some((candidate) => path.endsWith(candidate));

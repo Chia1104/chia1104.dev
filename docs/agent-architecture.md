@@ -115,7 +115,7 @@ sequenceDiagram
     participant PI as runPiTurn / AgentHarness
     participant PG as Postgres
 
-    UI->>RPC: agent.sessions.prompt
+    UI->>RPC: agent.sessions.chat (prompt)
     RPC->>SVC: prompt(caller, input)
     alt active durable run
         SVC->>WF: resume message hook
@@ -123,7 +123,8 @@ sequenceDiagram
         SVC->>WF: start workflow
         SVC->>PG: create agent_run
     end
-    SVC-->>UI: runId + stream cursor
+    SVC-->>RPC: runId + stream cursor
+    RPC->>SVC: stream(caller, cursor)
     WF->>STEP: execute turn step
     STEP->>WR: runWritingTurn(options)
     WR->>PI: runPiTurn(concrete Pi inputs)
@@ -225,7 +226,9 @@ session:compacted · state:changed · error · run:end
   stable assistant identity.
 - `applyEvent` / `foldEvents` give live and replayed events one dashboard rendering path.
 - `@chia/agent-runtime/transports/tanstack-ai` maps the bounded events to the AG-UI subset used by
-  TanStack AI.
+  TanStack AI. `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval
+  decision through the kind service, then tails the run's durable stream from the returned cursor
+  and emits it in that form. History arrives through `agent.sessions.get` as wire events.
 
 Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
