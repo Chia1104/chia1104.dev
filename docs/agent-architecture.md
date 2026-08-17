@@ -262,6 +262,17 @@ Each run has a coarse durable event stream and a separately batched delta namesp
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
 coarse events. Streams close only when the durable run ends, not after each turn.
 
+### Rejoining a running turn
+
+The dashboard chat is server-authoritative (TanStack AI `persistence: true`): on mount it hydrates
+from `agent.sessions.get` and, when `run.status` is `running`, rejoins the turn through
+`agent.sessions.chat` with `{ type: "attach" }`. The turn step records where each turn begins in
+`agent_run.metadata.turnStart` — the session leaf before the turn and the first coarse stream index
+it writes — before writing anything. `get` cuts the replayed transcript after that leaf while a turn
+is running, and `attach` tails the stream from that index; both key off the same marker, so a
+reload mid-turn shows every message exactly once and finishes the turn in place. `prompt` seeds the
+same marker on a fresh run, because its first turn can reach the step before the run row exists.
+
 ## 7. Durable message inbox
 
 Each session workflow creates one deterministic, reusable `agentMessageHook`. Before the first Pi

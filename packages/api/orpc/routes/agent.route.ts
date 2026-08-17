@@ -118,18 +118,21 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
 
+    const { action } = opts.input;
     const cursor =
-      opts.input.action.type === "prompt"
+      action.type === "prompt"
         ? await service.prompt(caller, {
             sessionId: opts.input.sessionId,
-            text: opts.input.action.text,
+            text: action.text,
           })
-        : await service.approve(caller, {
-            sessionId: opts.input.sessionId,
-            toolCallId: opts.input.action.toolCallId,
-            approved: opts.input.action.approved,
-            comment: opts.input.action.comment,
-          });
+        : action.type === "approve"
+          ? await service.approve(caller, {
+              sessionId: opts.input.sessionId,
+              toolCallId: action.toolCallId,
+              approved: action.approved,
+              comment: action.comment,
+            })
+          : await service.attach(caller, { sessionId: opts.input.sessionId });
     if (!cursor) throw opts.errors.NOT_FOUND();
 
     const events = service.stream(caller, {

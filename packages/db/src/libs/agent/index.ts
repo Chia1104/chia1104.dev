@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type { DB } from "../../index.ts";
 import {
@@ -190,6 +190,20 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
 /** The run row that owns a workflow run; how a turn step finds its own record. */
 export const getAgentRunByExternalId = async (db: DB, externalRunId: string) =>
   await db.query.agentRuns.findFirst({ where: { externalRunId } });
+
+/** Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten. */
+export const patchAgentRunMetadata = async (
+  db: DB,
+  externalRunId: string,
+  patch: Record<string, unknown>
+) => {
+  await db
+    .update(agentRuns)
+    .set({
+      metadata: sql`${agentRuns.metadata} || ${JSON.stringify(patch)}::jsonb`,
+    })
+    .where(eq(agentRuns.externalRunId, externalRunId));
+};
 
 export const completeAgentRun = async (
   db: DB,

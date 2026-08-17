@@ -11,6 +11,7 @@ import {
 import type {
   AgentSessionSettings,
   AgentWireEvent,
+  SessionTreeEntry,
   ThinkingLevel,
   ToolTier,
 } from "@chia/agent-runtime";
@@ -46,7 +47,12 @@ import {
 } from "@chia/db/repos/agent";
 import { CallerTier } from "@chia/service-kit/policies";
 
-import { AGENT_DELTA_NAMESPACE } from "../steps/agent-turn.step";
+import {
+  AGENT_DELTA_NAMESPACE,
+  AGENT_TURN_START_KEY,
+  readAgentTurnStart,
+} from "../steps/agent-turn.step";
+import type { AgentTurnStart } from "../steps/agent-turn.step";
 import { agentSessionWorkflow } from "../workflows/agent-session.workflow";
 import {
   AGENT_END_SENTINEL,
@@ -134,6 +140,7 @@ const loadOwnedSession = async (
     feedMeta: writingState.feedMeta,
     activeRunId: activeRun?.id ?? null,
     workflowRunId: activeRun?.externalRunId ?? null,
+    turnStart: activeRun ? readAgentTurnStart(activeRun.metadata) : undefined,
   };
 };
 
@@ -242,6 +249,26 @@ const isRunLive = async (runId: string): Promise<boolean> => {
 };
 
 /**
+ * What the durable run is doing right now. `running` is a turn step executing; `waiting` is the
+ * run parked on its message or approval hook; `null` means no live run.
+ */
+const runStateOf = async (
+  runId: string | null
+): Promise<{ id: string; status: "running" | "waiting" } | null> => {
+  if (!runId) return null;
+  try {
+    const run = getRun(runId);
+    if (!(await run.exists)) return null;
+    const status = await run.status;
+    if (status === "running") return { id: runId, status: "running" };
+    if (status === "pending") return { id: runId, status: "waiting" };
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+/**
  * Cancels a run that was live a moment ago.
  *
  * `cancel()` refuses a run that has since reached a terminal state — the storage layer
@@ -290,6 +317,31 @@ const undecidedApprovals = async (
     .map((approval) => approval.toolName);
 };
 
+/**
+ * The branch up to the leaf the running turn started from, plus that turn's own leading user
+ * messages: the live replay carries no user text (the client already has what it sent), so the
+ * prompt the turn is answering has to come from here for a rejoining client to see it.
+ */
+const entriesBeforeTurn = (
+  entries: SessionTreeEntry[],
+  turnStart: AgentTurnStart
+): SessionTreeEntry[] => {
+  const leafIndex =
+    turnStart.leafEntryId === null
+      ? -1
+      : entries.findIndex((entry) => entry.id === turnStart.leafEntryId);
+  // A marker that is not on this branch cannot cut it; show everything rather than guess.
+  if (turnStart.leafEntryId !== null && leafIndex === -1) return entries;
+
+  let end = leafIndex + 1;
+  while (end < entries.length) {
+    const entry = entries[end];
+    if (entry?.type !== "message" || entry.message.role !== "user") break;
+    end += 1;
+  }
+  return entries.slice(0, end);
+};
+
 const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
   const row = await loadOwnedSession(caller, sessionId);
   if (!row) return null;
@@ -297,11 +349,12 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
   const { db, repo, draft } = dependenciesFor(caller);
   const session = await repo.openById(sessionId);
 
-  const [branch, draftState, stats, approvals] = await Promise.all([
+  const [branch, draftState, stats, approvals, run] = await Promise.all([
     session.getBranch(),
     draft.get(sessionId),
     session.getSessionStats(),
     getAgentApprovals(db, sessionId),
+    runStateOf(row.workflowRunId),
   ]);
 
   // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
@@ -317,6 +370,13 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     if (storedEntries.every((entry) => entry.parentId === null)) {
       transcriptEntries = storedEntries;
     }
+  }
+  /**
+   * A running turn is not replayed from the transcript: `attach` replays it from the run's stream
+   * instead, and both cut at the same recorded marker so the client sees each message once.
+   */
+  if (run?.status === "running" && row.turnStart) {
+    transcriptEntries = entriesBeforeTurn(transcriptEntries, row.turnStart);
   }
   const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
@@ -335,6 +395,7 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     runtimeConfig: row.runtimeConfig,
     configVersion: row.configVersion,
     draft: draftState as never,
+    run,
     events,
     pendingApprovals,
     stats: {
@@ -537,15 +598,33 @@ export const writingAgentService: AgentKindService = {
       },
     ]);
 
+    // The first turn may reach its step before this row exists, in which case its own marker write
+    // finds nothing to update; a fresh run always starts its first turn at index 0 from the leaf as
+    // it stands now, so the same marker is seeded here.
+    const turnStart: AgentTurnStart = {
+      leafEntryId: row.leafEntryId,
+      streamIndex: 0,
+    };
     await createAgentRun(caller.context.db as DB, {
       id: run.runId,
       sessionId: input.sessionId,
       harnessKind: "workflow",
       externalRunId: run.runId,
-      metadata: { agentKind: WRITING_AGENT_KIND },
+      metadata: {
+        agentKind: WRITING_AGENT_KIND,
+        [AGENT_TURN_START_KEY]: turnStart,
+      },
     });
 
     return { runId: run.runId, startIndex: 0, startedRun: true };
+  },
+
+  async attach(caller, input) {
+    const row = await loadOwnedSession(caller, input.sessionId);
+    if (!row?.workflowRunId || !row.turnStart) return null;
+    const run = await runStateOf(row.workflowRunId);
+    if (run?.status !== "running") return null;
+    return { runId: row.workflowRunId, startIndex: row.turnStart.streamIndex };
   },
 
   /**

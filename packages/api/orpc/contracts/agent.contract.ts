@@ -104,8 +104,19 @@ export const agentSessionDetailSchema = z.object({
   /** Writing-agent state. Other kinds expose their own state contract. */
   draft: agentDraftSchema.optional(),
   /**
+   * The session's live durable run, or `null` when none is alive. `running` means a turn step is
+   * executing right now; `waiting` means the run is parked on its message or approval hook.
+   */
+  run: z
+    .object({
+      id: z.string(),
+      status: z.enum(["running", "waiting"]),
+    })
+    .nullable(),
+  /**
    * The transcript replayed as wire events, so the client folds it with the exact same reducer it
-   * uses for the live stream.
+   * uses for the live stream. While a turn is running it stops before that turn; `chat` with
+   * `{ type: "attach" }` replays the running turn from its start and tails it live.
    */
   events: z.array(agentWireEventSchema),
   pendingApprovals: z.array(
@@ -236,6 +247,11 @@ export const chatAgentContract = oc
           approved: z.boolean(),
           comment: z.string().max(1000).optional(),
         }),
+        /**
+         * Rejoin the turn that is running right now, replayed from its start. Enqueues nothing;
+         * NOT_FOUND when no turn is running.
+         */
+        z.object({ type: z.literal("attach") }),
       ]),
     })
   )
