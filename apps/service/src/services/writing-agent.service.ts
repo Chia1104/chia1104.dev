@@ -49,10 +49,10 @@ import { CallerTier } from "@chia/service-kit/policies";
 
 import {
   AGENT_DELTA_NAMESPACE,
-  AGENT_TURN_START_KEY,
-  readAgentTurnStart,
+  AGENT_TURN_KEY,
+  readAgentTurnMarker,
 } from "../steps/agent-turn.step";
-import type { AgentTurnStart } from "../steps/agent-turn.step";
+import type { AgentTurnMarker } from "../steps/agent-turn.step";
 import { agentSessionWorkflow } from "../workflows/agent-session.workflow";
 import {
   AGENT_END_SENTINEL,
@@ -140,7 +140,7 @@ const loadOwnedSession = async (
     feedMeta: writingState.feedMeta,
     activeRunId: activeRun?.id ?? null,
     workflowRunId: activeRun?.externalRunId ?? null,
-    turnStart: activeRun ? readAgentTurnStart(activeRun.metadata) : undefined,
+    turn: activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined,
   };
 };
 
@@ -250,22 +250,19 @@ const isRunLive = async (runId: string): Promise<boolean> => {
 
 /**
  * What the durable run is doing right now. `running` is a turn step executing; `waiting` is the
- * run parked on its message or approval hook; `null` means no live run.
+ * run parked on its message or approval hook; `null` means no live run. The SDK's own status
+ * cannot tell the first two apart — a parked run is `running` too — so the turn marker the step
+ * maintains decides.
  */
-const runStateOf = async (
-  runId: string | null
-): Promise<{ id: string; status: "running" | "waiting" } | null> => {
-  if (!runId) return null;
-  try {
-    const run = getRun(runId);
-    if (!(await run.exists)) return null;
-    const status = await run.status;
-    if (status === "running") return { id: runId, status: "running" };
-    if (status === "pending") return { id: runId, status: "waiting" };
-    return null;
-  } catch {
-    return null;
-  }
+const runStateOf = async (row: {
+  workflowRunId: string | null;
+  turn: AgentTurnMarker | undefined;
+}): Promise<{ id: string; status: "running" | "waiting" } | null> => {
+  if (!row.workflowRunId || !(await isRunLive(row.workflowRunId))) return null;
+  return {
+    id: row.workflowRunId,
+    status: row.turn?.running ? "running" : "waiting",
+  };
 };
 
 /**
@@ -324,14 +321,14 @@ const undecidedApprovals = async (
  */
 const entriesBeforeTurn = (
   entries: SessionTreeEntry[],
-  turnStart: AgentTurnStart
+  turn: AgentTurnMarker
 ): SessionTreeEntry[] => {
   const leafIndex =
-    turnStart.leafEntryId === null
+    turn.leafEntryId === null
       ? -1
-      : entries.findIndex((entry) => entry.id === turnStart.leafEntryId);
+      : entries.findIndex((entry) => entry.id === turn.leafEntryId);
   // A marker that is not on this branch cannot cut it; show everything rather than guess.
-  if (turnStart.leafEntryId !== null && leafIndex === -1) return entries;
+  if (turn.leafEntryId !== null && leafIndex === -1) return entries;
 
   let end = leafIndex + 1;
   while (end < entries.length) {
@@ -354,7 +351,7 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     draft.get(sessionId),
     session.getSessionStats(),
     getAgentApprovals(db, sessionId),
-    runStateOf(row.workflowRunId),
+    runStateOf(row),
   ]);
 
   // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
@@ -375,8 +372,8 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
    * A running turn is not replayed from the transcript: `attach` replays it from the run's stream
    * instead, and both cut at the same recorded marker so the client sees each message once.
    */
-  if (run?.status === "running" && row.turnStart) {
-    transcriptEntries = entriesBeforeTurn(transcriptEntries, row.turnStart);
+  if (run?.status === "running" && row.turn) {
+    transcriptEntries = entriesBeforeTurn(transcriptEntries, row.turn);
   }
   const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
@@ -600,20 +597,19 @@ export const writingAgentService: AgentKindService = {
 
     // The first turn may reach its step before this row exists, in which case its own marker write
     // finds nothing to update; a fresh run always starts its first turn at index 0 from the leaf as
-    // it stands now, so the same marker is seeded here.
-    const turnStart: AgentTurnStart = {
+    // it stands now, so the same marker is seeded here. The step's end-of-turn write lands either
+    // way, so `running` cannot stick.
+    const turn: AgentTurnMarker = {
       leafEntryId: row.leafEntryId,
       streamIndex: 0,
+      running: true,
     };
     await createAgentRun(caller.context.db as DB, {
       id: run.runId,
       sessionId: input.sessionId,
       harnessKind: "workflow",
       externalRunId: run.runId,
-      metadata: {
-        agentKind: WRITING_AGENT_KIND,
-        [AGENT_TURN_START_KEY]: turnStart,
-      },
+      metadata: { agentKind: WRITING_AGENT_KIND, [AGENT_TURN_KEY]: turn },
     });
 
     return { runId: run.runId, startIndex: 0, startedRun: true };
@@ -621,10 +617,10 @@ export const writingAgentService: AgentKindService = {
 
   async attach(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
-    if (!row?.workflowRunId || !row.turnStart) return null;
-    const run = await runStateOf(row.workflowRunId);
+    if (!row?.workflowRunId || !row.turn) return null;
+    const run = await runStateOf(row);
     if (run?.status !== "running") return null;
-    return { runId: row.workflowRunId, startIndex: row.turnStart.streamIndex };
+    return { runId: row.workflowRunId, startIndex: row.turn.streamIndex };
   },
 
   /**
@@ -766,7 +762,7 @@ export const writingAgentService: AgentKindService = {
   async compact(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await assertNoTurnRunning(row.workflowRunId, "compact");
+    await assertNoTurnRunning(row, "compact");
 
     const options = await writingSessionOperationOptions(
       caller,
@@ -779,7 +775,7 @@ export const writingAgentService: AgentKindService = {
   async navigate(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await assertNoTurnRunning(row.workflowRunId, "rewind");
+    await assertNoTurnRunning(row, "rewind");
 
     const options = await writingSessionOperationOptions(
       caller,
@@ -860,28 +856,16 @@ export const writingAgentService: AgentKindService = {
 
 /**
  * Compaction and rewinding both mutate the session tree, so they cannot run while a turn is
- * appending to it.
- *
- * A live run is not enough to refuse on — it may simply be parked on the message hook, which is the
- * normal idle state. Only an actually-executing turn conflicts, and `running` is the closest signal
- * the run exposes.
+ * appending to it. A live run is not enough to refuse on — parked on the message hook is its
+ * normal idle state — so this reads the turn marker, like everything else that needs to know.
  */
 const assertNoTurnRunning = async (
-  runId: string | null,
+  row: { workflowRunId: string | null; turn: AgentTurnMarker | undefined },
   action: string
 ): Promise<void> => {
-  if (!runId) return;
-  try {
-    const run = getRun(runId);
-    if (!(await run.exists)) return;
-    if ((await run.status) === "running") {
-      throw new Error(
-        `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
-      );
-    }
-  } catch (error) {
-    // Re-throw our own refusal; swallow lookup failures for runs that no longer resolve.
-    if (error instanceof Error && error.message.startsWith("Cannot "))
-      throw error;
+  if ((await runStateOf(row))?.status === "running") {
+    throw new Error(
+      `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
+    );
   }
 };

@@ -254,12 +254,13 @@ pending deltas；reader 以 race 讀取兩邊以維持交錯順序。Stream 只�
 
 Dashboard 的 chat 是 server-authoritative（TanStack AI `persistence: true`）：mount 時從
 `agent.sessions.get` hydrate，若 `run.status` 是 `running`，就用 `agent.sessions.chat` 的
-`{ type: "attach" }` 接回那個 turn。Turn step 在寫入任何東西之前，會把 turn 的起點記在
-`agent_run.metadata.turnStart`——turn 開始前的 session leaf，以及它要寫的第一個 coarse stream
-index。Turn 執行中時 `get` 把 replay 的 transcript 截在那個 leaf 之後，`attach` 則從那個 index
-tail stream；兩邊用同一個 marker，所以在 turn 進行中重整頁面，每則訊息只會出現一次，turn 也會
-原地跑完。`prompt` 在開新 run 時會先種下同一個 marker，因為第一個 turn 可能在 run row 建立前
-就到達 step。
+`{ type: "attach" }` 接回那個 turn。Turn step 維護 `agent_run.metadata.turn`——turn 開始前的
+session leaf、它要寫的第一個 coarse stream index，以及 `running`（進 handler 前設、`finally`
+清）。最後這個 workflow SDK 給不了：對 SDK 來說停在 message hook 上的 run 和正在跑 step 的 run
+都是 `running`，所以 `run.status`、`attach` 與 compact/rewind 的檢查都改讀這個 marker。Turn 執行
+中時 `get` 把 replay 的 transcript 截在那個 leaf 之後，`attach` 則從那個 index tail stream；兩邊
+用同一個 marker，所以在 turn 進行中重整頁面，每則訊息只會出現一次，turn 也會原地跑完。`prompt`
+在開新 run 時會先種下 marker，因為第一個 turn 可能在 run row 建立前就到達 step。
 
 ## 7. Durable message inbox
 

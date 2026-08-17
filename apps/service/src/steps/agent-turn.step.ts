@@ -50,34 +50,41 @@ export const AGENT_DELTA_NAMESPACE = "agent:deltas";
 const DELTA_FLUSH_MS = 80;
 
 // ============================================
-// Turn start marker
+// Turn marker
 // ============================================
 
 /**
- * Where the current turn begins, kept in `agent_run.metadata` so a client can rejoin it: `get`
- * cuts the replayed transcript after `leafEntryId`, and `attach` tails the run's stream from
- * `streamIndex`. Both key off the same marker, so whichever of the two runs first, the join never
+ * The turn the run is on, kept in `agent_run.metadata` because the workflow SDK cannot say it: a
+ * run parked on its message hook is `running` just like one executing a step. `running` here is
+ * true only while the turn step is inside its handler. `leafEntryId`/`streamIndex` say where the
+ * turn began, so a client can rejoin it: `get` cuts the replayed transcript after that leaf and
+ * `attach` tails the run's stream from that index — both off one marker, so the join never
  * duplicates or drops a message.
  */
-export const AGENT_TURN_START_KEY = "turnStart";
+export const AGENT_TURN_KEY = "turn";
 
-export interface AgentTurnStart {
+export interface AgentTurnMarker {
   /** Active leaf before this turn appended anything; `null` for an empty session. */
   leafEntryId: string | null;
   /** First coarse stream index this turn writes to. */
   streamIndex: number;
+  running: boolean;
 }
 
-export const readAgentTurnStart = (
+export const readAgentTurnMarker = (
   metadata: Record<string, unknown>
-): AgentTurnStart | undefined => {
-  const value = metadata[AGENT_TURN_START_KEY];
+): AgentTurnMarker | undefined => {
+  const value = metadata[AGENT_TURN_KEY];
   if (typeof value !== "object" || value === null) return undefined;
-  const { leafEntryId, streamIndex } = value as Record<string, unknown>;
+  const { leafEntryId, streamIndex, running } = value as Record<
+    string,
+    unknown
+  >;
   if (typeof streamIndex !== "number") return undefined;
   return {
     leafEntryId: typeof leafEntryId === "string" ? leafEntryId : null,
     streamIndex,
+    running: running === true,
   };
 };
 
@@ -150,15 +157,20 @@ export const runAgentTurnStep = async (
   // Recorded before the first event of this turn is written. The previous turn flushed its writer
   // before returning, so the tail is the last index it wrote.
   const { workflowRunId } = getWorkflowMetadata();
-  const turnStart: AgentTurnStart = {
+  const marker: AgentTurnMarker = {
     leafEntryId: row.leafEntryId,
     streamIndex: (await getRun(workflowRunId).getReadable().getTailIndex()) + 1,
+    running: true,
   };
-  await patchAgentRunMetadata(db, workflowRunId, {
-    [AGENT_TURN_START_KEY]: turnStart,
-  });
+  await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
 
-  return await handler(db, row, request);
+  try {
+    return await handler(db, row, request);
+  } finally {
+    await patchAgentRunMetadata(db, workflowRunId, {
+      [AGENT_TURN_KEY]: { ...marker, running: false },
+    });
+  }
 };
 
 /**

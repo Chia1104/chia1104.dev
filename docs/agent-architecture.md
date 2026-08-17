@@ -266,12 +266,15 @@ coarse events. Streams close only when the durable run ends, not after each turn
 
 The dashboard chat is server-authoritative (TanStack AI `persistence: true`): on mount it hydrates
 from `agent.sessions.get` and, when `run.status` is `running`, rejoins the turn through
-`agent.sessions.chat` with `{ type: "attach" }`. The turn step records where each turn begins in
-`agent_run.metadata.turnStart` — the session leaf before the turn and the first coarse stream index
-it writes — before writing anything. `get` cuts the replayed transcript after that leaf while a turn
-is running, and `attach` tails the stream from that index; both key off the same marker, so a
-reload mid-turn shows every message exactly once and finishes the turn in place. `prompt` seeds the
-same marker on a fresh run, because its first turn can reach the step before the run row exists.
+`agent.sessions.chat` with `{ type: "attach" }`. The turn step maintains `agent_run.metadata.turn`
+— the session leaf before the turn, the first coarse stream index it writes, and `running`, set
+before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
+run parked on its message hook is `running` to the SDK just like one executing a step, so
+`run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` cuts the
+replayed transcript after that leaf while a turn is running, and `attach` tails the stream from
+that index; both key off the same marker, so a reload mid-turn shows every message exactly once
+and finishes the turn in place. `prompt` seeds the marker on a fresh run, because its first turn
+can reach the step before the run row exists.
 
 ## 7. Durable message inbox
 
