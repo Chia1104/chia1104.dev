@@ -1,7 +1,7 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-14
+> Last updated: 2026-08-17
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -49,6 +49,21 @@ it, so a caller cannot drive a writing session through another kind's tools.
 inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
 puts `{ writing: writingAgentService }` on every request context (`createORPCContext`). It is
 unrelated to the removed harness abstraction.
+
+### Who may use a kind
+
+Access is a property of the kind, not of the routes. Every agent route runs `callerGuard()`, which
+only resolves the caller's `CallerTier`; the agent guards (`agentKindGuard` for creation and
+capability listings, `agentSessionGuard` for session-scoped requests) then compare that tier with
+the kind's `AgentKindService.minTier`. Any tier below `Session` is refused first — a session row has
+an owner, so an anonymous or API-key caller has no one to be. `list` with no kind returns only the
+kinds the caller may use.
+
+The service receives an `AgentServiceCaller`: the resolved `Caller` (tier, session, configured
+`adminId`) plus `userId`. Nothing agent-generic carries an admin identity — the writing kind sets
+`minTier: Root`, which is what makes its caller _be_ the configured author, and reads
+`getAdminId()` itself where its content port needs it. A public kind sets `minTier: Session` and
+never sees an admin id.
 
 ## 3. Policy, sessions and data
 
@@ -117,9 +132,9 @@ sequenceDiagram
 
 ### Enqueue and durable driver
 
-The oRPC route is protected by `adminGuard`, then the session guard rechecks ownership. The host
-service persists a message into the live workflow's event log through its reusable message hook, or
-starts a new run. The workflow registers that inbox with `getConflict()` before its first turn, so
+The oRPC route resolves the caller's tier, then the session guard checks ownership and the kind's
+`minTier`. The host service persists a message into the live workflow's event log through its
+reusable message hook, or starts a new run. The workflow registers that inbox with `getConflict()` before its first turn, so
 messages submitted during a running turn wait durably and become later turns after the current turn
 and any approval handshake finish. Enqueue is refused while approval is undecided, while a new
 workflow has not registered its hook yet, or when the text is the reserved `/end` sentinel.
@@ -281,7 +296,8 @@ Another domain kind uses the same concrete Pi runtime:
 
 1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports;
 2. add its extension table when it needs kind-specific persisted state;
-3. implement `AgentKindService` in `apps/service` and add it to the `agentKinds` map;
+3. implement `AgentKindService` in `apps/service` — including the `minTier` it admits — and add it
+   to the `agentKinds` map;
 4. register a durable turn handler that calls the new domain's `run<Kind>Turn`;
 5. reuse `runPiTurn`, wire events, approval semantics and durable stream plumbing.
 

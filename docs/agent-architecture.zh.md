@@ -1,7 +1,7 @@
 # Agent 架構與 Turn 流程
 
 > 狀態：as-built
-> 最後更新：2026-08-14
+> 最後更新：2026-08-17
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 > 相關文件：[docs/rag-architecture.md](./rag-architecture.md)
 
@@ -47,6 +47,19 @@ discriminator。它選擇：
 `packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在
 `createORPCContext` 把 `{ writing: writingAgentService }` 放到每個 request context 上。它和已刪除的
 harness abstraction 是不同層次的概念。
+
+### 誰可以使用某個 kind
+
+存取權是 kind 的屬性，不是 route 的屬性。每條 agent route 都先跑 `callerGuard()`，它只解析呼叫者的
+`CallerTier`；接著 agent guard（建立與能力列表用 `agentKindGuard`，session-scoped 請求用
+`agentSessionGuard`）把這個 tier 和 kind 的 `AgentKindService.minTier` 比對。低於 `Session` 的 tier
+一律先被拒絕——session row 有 owner，匿名或 API-key 呼叫者沒有可以「是」的人。沒帶 kind 的 `list`
+只回傳呼叫者可用的 kind。
+
+Service 收到的是 `AgentServiceCaller`：解析後的 `Caller`（tier、session、設定檔裡的 `adminId`）加上
+`userId`。agent 的 generic 層不帶任何 admin 身分——writing kind 設 `minTier: Root`，這使得它的呼叫者
+*就是*設定的作者，content port 需要時由 kind 自己讀 `getAdminId()`。公開 kind 設
+`minTier: Session`，從頭到尾看不到 admin id。
 
 ## 3. Policy、session 與資料
 
@@ -115,7 +128,7 @@ sequenceDiagram
 
 ### Enqueue 與 durable driver
 
-oRPC route 先經過 `adminGuard`，session guard 再驗證 ownership。Host service 會透過 reusable
+oRPC route 先解析呼叫者的 tier，session guard 再驗證 ownership 與 kind 的 `minTier`。Host service 會透過 reusable
 message hook 把訊息持久化到既有 workflow 的 event log，或建立新 run。Workflow 在第一個
 turn 前以 `getConflict()` 註冊 inbox，因此 running turn 期間送入的訊息會排隊，等目前 turn
 以及可能的 approval handshake 完成後成為下一個 turn。仍有 pending approval、workflow
@@ -271,7 +284,7 @@ state 都是 durable：
 
 1. 新增 `@chia/agent-<kind>`，包含 tools、prompts、skills、policy、model allowlist 與 domain ports；
 2. 需要 kind-specific persistence 時新增 extension table；
-3. 在 `apps/service` 實作 `AgentKindService` 並加進 `agentKinds` map；
+3. 在 `apps/service` 實作 `AgentKindService`（含它允許的 `minTier`）並加進 `agentKinds` map；
 4. 註冊呼叫新 domain `run<Kind>Turn` 的 durable turn handler；
 5. 共用 `runPiTurn`、wire events、approval semantics 與 durable stream plumbing。
 

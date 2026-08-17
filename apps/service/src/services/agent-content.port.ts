@@ -42,7 +42,8 @@ import { feedHooks } from "./feed-indexing.service";
  *
  * Takes a `DB` rather than a `ServiceContext`, because it is constructed inside a
  * workflow step where no request exists. Authorisation happened at the transport boundary before
- * the run was started; `adminId` is the already-verified result of that, never tool input.
+ * the run was started — the writing kind admits only the configured admin — so `adminId` is that
+ * configured author, never tool input.
  */
 
 const MAX_PAGE_CHARS = 200_000;
@@ -58,7 +59,7 @@ interface TranslationPayload {
 
 export interface CreateContentPortOptions {
   db: DB;
-  /** Already verified by `adminGuard` before the workflow run was started. */
+  /** The configured author the writing agent acts as; its kind admits no one else. */
   adminId: string;
 }
 
