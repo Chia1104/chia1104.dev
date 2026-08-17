@@ -32,7 +32,6 @@ export interface RunWritingTurnOptions<TApproval> {
   session: Session;
   settings: AgentSessionSettings;
   agentSessionId: string;
-  adminId: string;
   targetFeedId?: number;
   content: ContentPort;
   draft: DraftStore;
@@ -55,7 +54,6 @@ export const runWritingTurn = <TApproval>(
   const models = options.models ?? createAgentModels();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
-    adminId: options.adminId,
     targetFeedId: options.targetFeedId,
     content: options.content,
     draft: options.draft,

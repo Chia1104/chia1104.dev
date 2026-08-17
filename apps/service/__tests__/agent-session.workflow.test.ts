@@ -73,7 +73,6 @@ describe("agentSessionWorkflow", () => {
     await expect(
       agentSessionWorkflow({
         sessionId: "session-1",
-        adminId: "admin-1",
         userId: "user-1",
         firstMessage: {
           text: "first",
@@ -90,7 +89,6 @@ describe("agentSessionWorkflow", () => {
     );
     expect(mocks.runTurn).toHaveBeenNthCalledWith(1, {
       sessionId: "session-1",
-      adminId: "admin-1",
       userId: "user-1",
       text: "first",
       template: undefined,
@@ -99,7 +97,6 @@ describe("agentSessionWorkflow", () => {
     });
     expect(mocks.runTurn).toHaveBeenNthCalledWith(2, {
       sessionId: "session-1",
-      adminId: "admin-1",
       userId: "user-1",
       text: "second",
       template: undefined,
@@ -117,7 +114,6 @@ describe("agentSessionWorkflow", () => {
     await expect(
       agentSessionWorkflow({
         sessionId: "session-1",
-        adminId: "admin-1",
         userId: "user-1",
         firstMessage: { text: "first" },
       })

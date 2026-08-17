@@ -34,8 +34,8 @@ Three deployables: `apps/www` (public site, Next.js, Vercel), `apps/dash` (admin
 
 ```
 apps/          www, dash, service (+ gateway, functions/pg-dump-cron, env-only placeholders)
-packages/      @chia/* — api, db, service-kit, auth, kv, ai, agent-runtime, agent-writing,
-               contents, ui, editor, themes, tailwind, shaders, i18n, meta, utils
+packages/      @chia/* — api, db, service-kit, auth, kv, ai, agent-runtime, agent-content,
+               agent-writing, contents, ui, editor, themes, tailwind, shaders, i18n, meta, utils
 tests/www-e2e  Playwright
 toolings/      shared scripts
 docs/          architecture deep dives

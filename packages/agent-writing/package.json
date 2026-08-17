@@ -50,6 +50,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@chia/agent-content": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",

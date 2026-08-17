@@ -60,7 +60,6 @@ export const commitDraftTool = defineTool({
     }
 
     const result = await context.content.commitDraft({
-      adminId: context.adminId,
       feedId: draft.committedFeedId ?? context.targetFeedId,
       feedMeta: { ...draft.feedMeta, defaultLocale },
       translations: draft.translations,
@@ -110,7 +109,6 @@ export const setPublishedTool = defineTool({
     }
 
     const result = await context.content.setPublished({
-      adminId: context.adminId,
       feedId,
       published: params.published,
     });

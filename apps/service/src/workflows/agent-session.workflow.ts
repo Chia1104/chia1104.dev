@@ -37,7 +37,7 @@ import type { EncryptedAgentCredentials } from "./hooks/agent.hooks";
 
 export const requestSchema = z.object({
   sessionId: z.string(),
-  adminId: z.string(),
+  /** Session owner; every turn step re-checks it against the stored row. */
   userId: z.string(),
   firstMessage: z.object({
     text: z.string(),
@@ -57,8 +57,7 @@ const MAX_TURNS_PER_RUN = 200;
 export const agentSessionWorkflow = async (request: Request) => {
   "use workflow";
 
-  const { sessionId, adminId, userId, firstMessage } =
-    requestSchema.parse(request);
+  const { sessionId, userId, firstMessage } = requestSchema.parse(request);
 
   const messages = agentMessageHook.create({
     token: agentMessageToken(sessionId),
@@ -101,7 +100,6 @@ export const agentSessionWorkflow = async (request: Request) => {
 
     let outcome: AgentTurnOutcome = await runAgentTurnStep({
       sessionId,
-      adminId,
       userId,
       text: currentMessage.text,
       template: currentMessage.template,
@@ -137,7 +135,6 @@ export const agentSessionWorkflow = async (request: Request) => {
         // the message hook while the persisted approval has no hook to resume.
         outcome = await runAgentTurnStep({
           sessionId,
-          adminId,
           userId,
           text:
             `The operator declined \`${gated.toolName}\`.` +
@@ -151,7 +148,6 @@ export const agentSessionWorkflow = async (request: Request) => {
       turns += 1;
       outcome = await runAgentTurnStep({
         sessionId,
-        adminId,
         userId,
         text:
           `The operator approved \`${gated.toolName}\`.` +

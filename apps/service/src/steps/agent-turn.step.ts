@@ -14,6 +14,7 @@ import {
   getWritingAgentSession,
   recordAgentApprovalRequests,
 } from "@chia/db/repos/agent";
+import { getAdminId } from "@chia/utils/config";
 
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
@@ -51,7 +52,6 @@ const DELTA_FLUSH_MS = 80;
 export interface AgentTurnRequest {
   sessionId: string;
   /** Verified at the transport boundary before the run was started. */
-  adminId: string;
   userId: string;
   text: string;
   template?: { name: string; args?: string[] };
@@ -170,7 +170,12 @@ async function runWritingAgentTurn(
   });
   const session = await repo.openById(request.sessionId);
   const draft = new PgDraftStore(db);
-  const content = createAgentContentPort({ db, adminId: request.adminId });
+  /**
+   * The writing agent acts as the configured author. The kind's `minTier` is `Root`, which pins
+   * session ownership to that same id, so this states whose posts the port touches rather than
+   * performing a second authorization check.
+   */
+  const content = createAgentContentPort({ db, adminId: getAdminId() });
 
   const approvedToolCallIds = new Set(
     await getApprovedAgentToolCallIds(db, request.sessionId)
@@ -201,7 +206,6 @@ async function runWritingAgentTurn(
       autoApprove: row.autoApprove as ToolTier[],
     },
     agentSessionId: request.sessionId,
-    adminId: request.adminId,
     targetFeedId: writingState.targetFeedId ?? undefined,
     content,
     draft,

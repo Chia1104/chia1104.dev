@@ -33,7 +33,6 @@ import type { FakeContentPort } from "./fixtures.ts";
  */
 
 const SESSION_ID = "session-1";
-const ADMIN_ID = "admin-1";
 
 interface Fixture {
   events: AgentWireEvent[];
@@ -95,7 +94,6 @@ const build = async (
         session,
         settings: sessionSettings,
         agentSessionId: SESSION_ID,
-        adminId: ADMIN_ID,
         content,
         draft,
         message: { text },
@@ -271,7 +269,6 @@ describe("runWritingTurn", () => {
 
     expect(approved.content.commits).toHaveLength(1);
     expect(approved.content.commits[0]).toMatchObject({
-      adminId: ADMIN_ID,
       feedMeta: { slug: "a-post", defaultLocale: "en" },
     });
     expect(approved.events.some((e) => e.type === "approval:request")).toBe(

@@ -1,8 +1,8 @@
 import { os } from "@orpc/server";
 
-import type { Session } from "@chia/auth/types";
 import type { DB } from "@chia/db";
 import { getAgentSession } from "@chia/db/repos/agent";
+import { CallerTier } from "@chia/service-kit/policies";
 
 import { requireAgentKind } from "../services/agent.service";
 import type {
@@ -10,29 +10,19 @@ import type {
   AgentKindService,
   AgentServiceCaller,
 } from "../services/agent.service";
-import type { BaseOSContext } from "../utils";
+
+import type { CallerContext } from "./caller.guard";
 
 /**
- * Resolves a session-scoped agent request once, for every route that needs it.
+ * Agent guards. Both run after `callerGuard()`, whose resolved `caller` they consume, and both
+ * hand the same `agent` context downstream so every handler reads one shape.
  *
- * Every session route used to repeat the same four steps inline — load the row, check it is not
- * deleted, check the caller owns it, then look up the runtime for its `kind`. Twelve copies of an
- * authorization check is twelve chances for one of them to drift, and the drift would be silent:
- * a missing ownership check reads exactly like a working route.
- *
- * The kind comes from the **stored session**, never from the request, so a client cannot drive a
- * session through another kind's tools by supplying a different kind. An explicit `kind` in
- * the input is only ever a cross-check.
- *
- * Runs after `adminGuard()`, whose context it consumes.
+ * Which tier may use a kind is the kind's own policy (`AgentKindService.minTier`), so neither guard
+ * hard-codes a role: the writing kind pins to the configured admin, a public kind admits any
+ * session-bearing visitor, and the routes are shared between them.
  */
 
-type AdminContext = BaseOSContext & {
-  adminId: string;
-  session: Session;
-};
-
-/** What the guard hands downstream. */
+/** What the guards hand downstream. */
 export interface AgentSessionContext {
   agent: {
     caller: AgentServiceCaller;
@@ -41,7 +31,16 @@ export interface AgentSessionContext {
   };
 }
 
-const agentOS = os.$context<AdminContext>();
+const agentOS = os.$context<CallerContext>();
+
+/**
+ * Whether `caller` may use `service` at all. Written once because the two guards and the
+ * kind-less list route each need the same answer.
+ */
+export const canUseAgentKind = (
+  caller: AgentServiceCaller,
+  service: AgentKindService
+): boolean => caller.tier >= service.minTier;
 
 /**
  * The subset of a route's input this guard reads.
@@ -55,22 +54,32 @@ interface AgentSessionInput {
   model?: AgentModelRef;
 }
 
+/**
+ * Resolves a session-scoped agent request once, for every route that needs it.
+ *
+ * Every session route used to repeat the same steps inline — load the row, check it is not
+ * deleted, check the caller owns it, then look up the runtime for its `kind`. Twelve copies of an
+ * authorization check is twelve chances for one of them to drift, and the drift would be silent:
+ * a missing ownership check reads exactly like a working route.
+ *
+ * The kind comes from the **stored session**, never from the request, so a client cannot drive a
+ * session through another kind's tools by supplying a different kind. An explicit `kind` in
+ * the input is only ever a cross-check.
+ */
 export const agentSessionGuard = () =>
   agentOS
-    .errors({ NOT_FOUND: {}, BAD_REQUEST: {} })
+    .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, BAD_REQUEST: {} })
     .middleware(async ({ context, errors, next }, input: AgentSessionInput) => {
-      const caller: AgentServiceCaller = {
-        adminId: context.adminId,
-        userId: context.session.user.id,
-        context,
-      };
+      const caller = agentCallerOf(context, errors);
 
       const row = await getAgentSession(context.db as DB, input.sessionId);
       /**
        * One `NOT_FOUND` for "absent", "deleted" and "someone else's".
        *
        * Distinguishing them would let a caller probe which session ids exist, and there is nothing
-       * the legitimate operator can do differently in any of the three cases anyway.
+       * the legitimate operator can do differently in any of the three cases anyway. Ownership is
+       * checked before tier for the same reason: a lower-tier caller learns nothing about sessions
+       * of a kind it cannot use.
        */
       if (!row || row.deletedAt !== null || row.userId !== caller.userId) {
         throw errors.NOT_FOUND();
@@ -80,6 +89,7 @@ export const agentSessionGuard = () =>
       }
 
       const service = requireAgentKind(context, row.kind);
+      if (!canUseAgentKind(caller, service)) throw errors.FORBIDDEN();
 
       if (input.model) {
         const reason = await service.validateModel(input.model);
@@ -92,24 +102,46 @@ export const agentSessionGuard = () =>
     });
 
 /**
- * Model validation for routes with **no** session to resolve — creation, where the kind arrives in
- * the input because there is nothing stored to read it from.
+ * Resolves a request that names its kind explicitly because it has **no** session to read it
+ * from — creation, and the capability listings.
  */
-export const agentModelGuard = () =>
+export const agentKindGuard = () =>
   agentOS
-    .errors({ BAD_REQUEST: {} })
+    .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, BAD_REQUEST: {} })
     .middleware(
       async (
         { context, errors, next },
         input: { kind: string; model?: AgentModelRef }
       ) => {
+        const caller = agentCallerOf(context, errors);
+        const service = requireAgentKind(context, input.kind);
+        if (!canUseAgentKind(caller, service)) throw errors.FORBIDDEN();
+
         if (input.model) {
-          const reason = await requireAgentKind(
-            context,
-            input.kind
-          ).validateModel(input.model);
+          const reason = await service.validateModel(input.model);
           if (reason) throw errors.BAD_REQUEST({ message: reason });
         }
-        return next();
+
+        return next({
+          context: { agent: { caller, service, kind: input.kind } },
+        });
       }
     );
+
+/**
+ * The caller every agent route needs: a resolved tier plus a session user to own things.
+ *
+ * `callerGuard()` alone admits anonymous and API-key callers, and both are legitimate on other
+ * routes; here they have no user to own a session, so they are refused before any lookup.
+ * Exported for the one route (`list`) that has no kind to resolve through a guard.
+ */
+export const agentCallerOf = (
+  context: CallerContext,
+  errors: { UNAUTHORIZED: () => Error }
+): AgentServiceCaller => {
+  const { caller } = context;
+  if (!caller.session || caller.tier < CallerTier.Session) {
+    throw errors.UNAUTHORIZED();
+  }
+  return { ...caller, userId: caller.session.user.id, context };
+};

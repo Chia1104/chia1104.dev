@@ -1,5 +1,6 @@
+import type { ContentToolContext, PostFeedType } from "@chia/agent-content";
 import type { AgentTool } from "@chia/agent-runtime";
-import type { ContentType, FeedType, Locale } from "@chia/db/types";
+import type { ContentType, Locale } from "@chia/db/types";
 
 import type { ContentPort, DraftStore } from "./ports.ts";
 
@@ -36,13 +37,12 @@ export const WRITING_STATE_TIERS: readonly WritingToolTier[] = [
  * Deliberately holds ports rather than a `DB` handle: the tools are this package's domain logic and
  * stay testable without a database, while `apps/service` owns the wiring.
  */
-export interface WritingToolContext {
+export interface WritingToolContext extends ContentToolContext {
   /** Agent session this turn belongs to. Scopes the draft buffer and the audit trail. */
   agentSessionId: string;
-  /** Configured admin whose posts the agent may read and write. */
-  adminId: string;
   /** Set when the session was opened from an existing post. */
   targetFeedId?: number;
+  /** The read port plus the writing agent's own fetch and write access. */
   content: ContentPort;
   draft: DraftStore;
 }
@@ -85,60 +85,6 @@ export interface FeedDraft {
   committedFeedId?: number;
 }
 
-// ============================================
-// Content port shapes
-// ============================================
-
-/**
- * `FeedType` includes `"all"`, which is a *filter* value rather than a storable one. A draft or a
- * real post is only ever `post` or `note`.
- */
-export type PostFeedType = Exclude<FeedType, "all">;
-
-export interface PostSearchHit {
-  slug: string;
-  locale: Locale;
-  title: string;
-  /** Best-matching fragment: a BM25 snippet, or the summary when there is none. */
-  snippet: string;
-  /** Heading trail of the matched chunk, as stored — e.g. `"Setup > Install"`. */
-  headingPath?: string;
-}
-
-export interface PostListItem {
-  feedId: number;
-  slug: string;
-  type: PostFeedType;
-  published: boolean;
-  defaultLocale: Locale;
-  title: string;
-  updatedAt: string;
-}
-
-export interface PostSnapshot {
-  feedId: number;
-  slug: string;
-  type: PostFeedType;
-  contentType: ContentType;
-  published: boolean;
-  defaultLocale: Locale;
-  mainImage?: string | null;
-  translations: {
-    locale: Locale;
-    title: string;
-    excerpt?: string | null;
-    description?: string | null;
-    summary?: string | null;
-    content?: string | null;
-  }[];
-  tagSlugs: string[];
-}
-
-export interface TagItem {
-  slug: string;
-  names: Partial<Record<Locale, string>>;
-}
-
 export interface FetchedPage {
   url: string;
   title?: string;
@@ -147,7 +93,6 @@ export interface FetchedPage {
 }
 
 export interface CommitDraftInput {
-  adminId: string;
   feedId?: number;
   feedMeta: DraftFeedMeta;
   translations: Partial<Record<Locale, DraftTranslation>>;

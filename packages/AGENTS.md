@@ -51,9 +51,9 @@ Keyv over Redis (also Valkey, Postgres, Upstash adapters). `kv` is the process s
 
 Embeddings (`embeddings/`: provider resolution, OpenAI + Ollama, chunking, markdown, `EMBEDDING_INDEX_VERSION`), the Vercel AI SDK content tools (`tools/content`), `utils/model` (`createModel` over the provider SDKs — imported lazily by its callers), and the API-key crypto used by the AI cookie flow (`utils`). Constants name the provider-key cookies.
 
-### `agent-runtime` and `agent-writing`
+### `agent-runtime`, `agent-content` and `agent-writing`
 
-`agent-runtime` — the kind-agnostic agent runtime on top of Pi: session model and Postgres storage (`session/`), the turn loop, tool gate, compaction and event mapping (`pi/`), wire events and replay (`wire/`), model construction with BYOK credentials (`models.ts`), and the TanStack AI transport. `agent-writing` — the writing agent: tools, prompts, skills, policy (tool tiers), draft store, model allowlist and its `ContentPort`. A second agent kind is a sibling package of `agent-writing`. Read `docs/agent-architecture.md` first.
+`agent-runtime` — the kind-agnostic agent runtime on top of Pi: session model and Postgres storage (`session/`), the turn loop, tool gate, compaction and event mapping (`pi/`), wire events and replay (`wire/`), model construction with BYOK credentials (`models.ts`), tool-authoring helpers (`tools.ts`, exported as `./tools`), and the TanStack AI transport. `agent-content` — the read-only content tools every kind that reads the blog shares (`search_posts`, `get_post`, `list_posts`, `list_tags`), the `ContentReadPort` they need and their names/labels/summaries; visibility (drafts or published only) is fixed by whichever port the host builds. `agent-writing` — the writing agent: `fetch_url` and the draft/commit tools on top of the content tools, prompts, skills, policy (tool tiers), draft store, model allowlist and its `ContentPort` (the read port plus fetch and writes). A second agent kind is a sibling package of `agent-writing` that composes `agent-content`. Read `docs/agent-architecture.md` first.
 
 ### `contents`
 

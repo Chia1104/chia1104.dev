@@ -19,8 +19,6 @@ export const router = contractOS.router({
       get: agentRoutes.getAgentSessionRoute,
       delete: agentRoutes.deleteAgentSessionRoute,
       "settings:update": agentRoutes.updateAgentSessionSettingsRoute,
-      prompt: agentRoutes.promptAgentRoute,
-      stream: agentRoutes.streamAgentRoute,
       chat: agentRoutes.chatAgentRoute,
       abort: agentRoutes.abortAgentRoute,
       approve: agentRoutes.approveAgentToolRoute,

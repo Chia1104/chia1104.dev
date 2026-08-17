@@ -34,4 +34,3 @@ export { summarizeToolResult } from "./summarize.ts";
 export { retrievalTools } from "./retrieval.tool.ts";
 export { draftTools } from "./draft.tool.ts";
 export { commitTools } from "./commit.tool.ts";
-export { zodToTypebox } from "./schema.ts";

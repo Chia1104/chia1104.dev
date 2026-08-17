@@ -44,6 +44,7 @@ import {
   getWritingAgentSession,
   softDeleteAgentSession,
 } from "@chia/db/repos/agent";
+import { CallerTier } from "@chia/service-kit/policies";
 
 import { AGENT_DELTA_NAMESPACE } from "../steps/agent-turn.step";
 import { agentSessionWorkflow } from "../workflows/agent-session.workflow";
@@ -109,7 +110,7 @@ const dependenciesFor = (caller: AgentServiceCaller) => {
  * Loads a session **scoped to the caller**.
  *
  * The session id arrives from client input, so ownership is re-checked here rather than trusted —
- * `adminGuard` proves who is calling, not what they may open.
+ * the guard proves who is calling, not what they may open.
  */
 const loadOwnedSession = async (
   caller: AgentServiceCaller,
@@ -349,6 +350,13 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
 // ============================================
 
 export const writingAgentService: AgentKindService = {
+  /**
+   * The configured admin only. These tools write to and publish the blog, so a logged-in visitor
+   * must not reach them; `Root` also makes `caller.adminId` and `caller.userId` the same person,
+   * which is what lets the content port act as the author.
+   */
+  minTier: CallerTier.Root,
+
   async listSessions(caller, input) {
     const { db, repo } = dependenciesFor(caller);
     const metadata = await repo.list({
@@ -524,7 +532,6 @@ export const writingAgentService: AgentKindService = {
     const run = await start(agentSessionWorkflow, [
       {
         sessionId: input.sessionId,
-        adminId: caller.adminId,
         userId: caller.userId,
         firstMessage: message,
       },
@@ -656,9 +663,8 @@ export const writingAgentService: AgentKindService = {
     });
     if (!decided) return null;
 
-    // Capture the cursor before waking the workflow. The TanStack compatibility transport opens a
-    // fresh request for an approval continuation, unlike the native dashboard's old long-lived
-    // subscription, so it needs the same exact replay boundary as a normal prompt.
+    // Capture the cursor before waking the workflow. The chat transport opens a fresh request for
+    // an approval continuation, so it needs the same exact replay boundary as a normal prompt.
     const run = getRun(row.workflowRunId);
     const startIndex = (await run.getReadable().getTailIndex()) + 1;
 
