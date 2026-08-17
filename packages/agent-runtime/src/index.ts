@@ -17,9 +17,16 @@ export {
   type ByokProviderId,
   type ListModelsOptions,
 } from "./models.ts";
-export { agentWireEventSchema, type AgentWireEvent } from "./wire/schema.ts";
 export {
+  agentErrorKindSchema,
+  agentWireEventSchema,
+  type AgentWireEvent,
+} from "./wire/schema.ts";
+export { clipDetails } from "./wire/clip.ts";
+export {
+  AGENT_ERROR_HEADLINE,
   applyEvent,
+  describeAgentError,
   emptyViewState,
   foldEvents,
   type AgentViewItem,

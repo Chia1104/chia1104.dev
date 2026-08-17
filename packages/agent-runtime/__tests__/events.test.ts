@@ -2,6 +2,7 @@ import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
+import { DETAILS_MAX_STRING_CHARS } from "../src/wire/clip.ts";
 import { foldEvents } from "../src/wire/fold.ts";
 import { entriesToWireEvents } from "../src/wire/replay.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
@@ -155,5 +156,77 @@ describe("foldEvents", () => {
       "a:entry-2",
     ]);
     expect(secondOnly[0]?.messageId).toBe("a:entry-2");
+  });
+
+  it("replays a failed assistant message as the same error notice the live turn emits", () => {
+    const failed = fauxAssistantMessage("", { timestamp: 1 });
+    failed.stopReason = "error";
+    failed.errorMessage = "429 Too Many Requests";
+    const entries: SessionTreeEntry[] = [
+      {
+        type: "message",
+        id: "entry-1",
+        parentId: null,
+        timestamp: "2026-01-01T00:00:00.000Z",
+        message: failed,
+      },
+    ];
+
+    const events = entriesToWireEvents(entries, {
+      tierOf: () => "read",
+      labelOf: (name: string) => name,
+      summarize: () => "",
+    });
+
+    expect(events.map((event) => event.type)).toEqual([
+      "assistant:end",
+      "error",
+    ]);
+    expect(events[1]).toEqual({
+      type: "error",
+      kind: "rate_limited",
+      message: "429 Too Many Requests",
+    });
+    expect(foldEvents(events).items.at(-1)).toEqual({
+      kind: "notice",
+      variant: "error",
+      code: "rate_limited",
+      text: "429 Too Many Requests",
+    });
+  });
+
+  it("clips oversized tool details on replay while keeping their shape", () => {
+    const body = "x".repeat(DETAILS_MAX_STRING_CHARS + 100);
+    const entries: SessionTreeEntry[] = [
+      {
+        type: "message",
+        id: "entry-1",
+        parentId: null,
+        timestamp: "2026-01-01T00:00:00.000Z",
+        message: {
+          role: "toolResult",
+          toolCallId: "call-1",
+          toolName: "get_post",
+          content: [{ type: "text", text: "" }],
+          details: { post: { slug: "hello", content: body } },
+          isError: false,
+          timestamp: 1,
+        },
+      },
+    ];
+
+    const [event] = entriesToWireEvents(entries, {
+      tierOf: () => "read",
+      labelOf: (name: string) => name,
+      summarize: () => "",
+    });
+
+    expect(event?.type).toBe("tool:end");
+    const details = (
+      event as { details: { post: { slug: string; content: string } } }
+    ).details;
+    expect(details.post.slug).toBe("hello");
+    expect(details.post.content.length).toBeLessThan(body.length);
+    expect(details.post.content).toContain("[truncated 100 chars]");
   });
 });

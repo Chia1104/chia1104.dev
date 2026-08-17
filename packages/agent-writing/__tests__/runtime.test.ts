@@ -1,5 +1,7 @@
 import { InMemorySessionRepo } from "@earendil-works/pi-agent-core";
+import type { Session } from "@earendil-works/pi-agent-core";
 import { createModels } from "@earendil-works/pi-ai";
+import type { Context } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxProvider,
@@ -38,10 +40,14 @@ interface Fixture {
   events: AgentWireEvent[];
   content: FakeContentPort;
   draft: InMemoryDraftStore;
+  session: Session;
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
-  run: (text: string) => Promise<AgentTurnExecution<ApprovalRequest>>;
+  run: (
+    text: string,
+    options?: { shouldAbort?: () => boolean }
+  ) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
 
 const build = async (
@@ -88,8 +94,9 @@ const build = async (
     events,
     content,
     draft,
+    session,
     setResponses: faux.setResponses,
-    run: (text) =>
+    run: (text, options) =>
       runWritingTurn({
         session,
         settings: sessionSettings,
@@ -101,6 +108,7 @@ const build = async (
         models,
         toApproval: (approval) => approval,
         persistApprovals: async () => undefined,
+        shouldAbort: options?.shouldAbort,
       }),
   };
 };
@@ -345,5 +353,97 @@ describe("runWritingTurn", () => {
       "Second answer.",
     ]);
     expect(new Set(assistants.map((item) => item.messageId)).size).toBe(2);
+  });
+
+  it("sends the draft state as a volatile last message, not in the system prompt or transcript", async () => {
+    await fixture.draft.patchFeedMeta(SESSION_ID, { slug: "hello-world" });
+    const seen: Context[] = [];
+    fixture.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage([
+          fauxToolCall(TOOL_NAMES.listTags, {}, { id: "call-tags" }),
+        ]);
+      },
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("Done.");
+      },
+    ]);
+
+    await fixture.run("What is the draft slug?");
+
+    expect(seen).toHaveLength(2);
+    for (const context of seen) {
+      expect(context.systemPrompt).not.toContain("# Current session");
+      const last = context.messages.at(-1);
+      expect(last?.role).toBe("user");
+      const text = JSON.stringify(last?.content);
+      expect(text).toContain("# Current session");
+      expect(text).toContain("Draft slug: hello-world");
+      expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
+    }
+    // Both requests share one system prompt: the cacheable prefix is stable across hops.
+    expect(seen[0]?.systemPrompt).toBe(seen[1]?.systemPrompt);
+
+    const persisted = JSON.stringify(await fixture.session.getBranch());
+    expect(persisted).not.toContain("# Current session");
+    expect(fixture.events.filter((e) => e.type === "user")).toHaveLength(1);
+  });
+
+  it("reports a provider failure as a classified error instead of a silent done", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage("", {
+        stopReason: "error",
+        errorMessage: "401 Unauthorized: invalid x-api-key",
+      }),
+    ]);
+
+    const result = await fixture.run("Hi");
+
+    expect(result.status).toBe("error");
+    expect(result.error).toEqual({
+      kind: "auth",
+      message: "401 Unauthorized: invalid x-api-key",
+    });
+    expect(fixture.events.slice(-2)).toEqual([
+      {
+        type: "error",
+        kind: "auth",
+        message: "401 Unauthorized: invalid x-api-key",
+      },
+      { type: "run:end", reason: "error" },
+    ]);
+  });
+
+  it("stops at the provider boundary when the host asks to abort", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage([
+        fauxToolCall(TOOL_NAMES.listTags, {}, { id: "call-tags" }),
+      ]),
+      fauxAssistantMessage("Should never be generated."),
+    ]);
+    // Let the first request through, then abort before the second.
+    let requests = 0;
+    const shouldAbort = () => {
+      requests += 1;
+      return requests > 1;
+    };
+
+    const result = await fixture.run("List the tags", { shouldAbort });
+
+    expect(result.status).toBe("aborted");
+    expect(fixture.events.at(-1)).toEqual({
+      type: "run:end",
+      reason: "aborted",
+    });
+    expect(
+      fixture.events.some(
+        (e) => e.type === "tool:end" && e.toolName === TOOL_NAMES.listTags
+      )
+    ).toBe(true);
+    expect(JSON.stringify(fixture.events)).not.toContain(
+      "Should never be generated."
+    );
   });
 });

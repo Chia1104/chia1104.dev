@@ -636,7 +636,9 @@ export const writingAgentService: AgentKindService = {
     if (!(await isRunLive(row.workflowRunId))) return false;
 
     // Cancels the whole run, which is the session's driver — the next prompt starts a fresh one and
-    // picks the transcript back up from Postgres.
+    // picks the transcript back up from Postgres. Cancelling does not reach a step already in
+    // flight; the turn step polls the `cancelled` row below before each provider request and stops
+    // the harness itself.
     await cancelLiveRun(row.workflowRunId);
     if (row.activeRunId) {
       await completeAgentRun(

@@ -1,6 +1,7 @@
-import { FatalError, getWritable } from "workflow";
+import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
 
 import type {
+  AgentTurnError,
   AgentWireEvent,
   ThinkingLevel,
   ToolTier,
@@ -9,6 +10,7 @@ import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
 import {
   completeActiveAgentRuns,
+  getAgentRunByExternalId,
   getAgentSession,
   getApprovedAgentToolCallIds,
   getWritingAgentSession,
@@ -70,9 +72,9 @@ export interface AgentApprovalRequestSnapshot {
 }
 
 export interface AgentTurnOutcome {
-  status: "done" | "awaiting_approval" | "error";
+  status: "done" | "awaiting_approval" | "aborted" | "error";
   approvals: AgentApprovalRequestSnapshot[];
-  error?: string;
+  error?: AgentTurnError;
 }
 
 type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
@@ -195,6 +197,18 @@ async function runWritingAgentTurn(
     decryptAgentCredentials(request.credentials)
   );
 
+  /**
+   * `abort` cancels the workflow run and marks its `agent_run` row cancelled, but a step keeps
+   * executing — nothing from the SDK reaches code already inside it. Polling the row before each
+   * provider request is what lets the harness stop instead of generating to the end. No row yet
+   * (the first request can race `createAgentRun`) means not cancelled.
+   */
+  const { workflowRunId } = getWorkflowMetadata();
+  const shouldAbort = async () => {
+    const run = await getAgentRunByExternalId(db, workflowRunId);
+    return run?.status === "cancelled";
+  };
+
   return await runWritingTurn({
     session,
     models,
@@ -212,6 +226,7 @@ async function runWritingAgentTurn(
     onEvent: writer.push,
     approvedToolCallIds,
     preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+    shouldAbort,
     message: {
       text: request.text,
       template: request.template,

@@ -1,7 +1,7 @@
 import type { UIMessage } from "@tanstack/ai-react";
 
 import type { AgentWireEvent, ToolCallView } from "@chia/agent-runtime";
-import { foldEvents } from "@chia/agent-runtime";
+import { describeAgentError, foldEvents } from "@chia/agent-runtime";
 
 export interface PendingApproval {
   toolCallId: string;
@@ -94,7 +94,14 @@ export const agentEventsToUiMessages = (
       messages.push({
         id: `history:notice:${index}`,
         role: "assistant",
-        parts: [{ type: "text", content: item.text }],
+        parts: [
+          {
+            type: "text",
+            content: item.code
+              ? describeAgentError({ kind: item.code, message: item.text })
+              : item.text,
+          },
+        ],
       });
       continue;
     }

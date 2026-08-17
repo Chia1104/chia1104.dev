@@ -127,7 +127,7 @@ sequenceDiagram
     PI->>PI: new AgentHarness(...).prompt(...)
     PI-->>UI: bounded durable AgentWireEvent stream
     PI->>PG: session entries 與 domain writes
-    STEP-->>WF: done / error / awaiting_approval
+    STEP-->>WF: done / aborted / error / awaiting_approval
 ```
 
 ### Enqueue 與 durable driver
@@ -155,17 +155,36 @@ runAgentTurnStep → runWritingTurn → runPiTurn → new AgentHarness
 ```
 
 `runWritingTurn` 建立 writing tool context，從 caller credential 所屬的 `Models` resolve
-model，並組合 tools、skills、templates、dynamic system prompt 與 writing policy。
+model，並組合 tools、skills、templates、穩定的 system prompt、每次請求都重算的 volatile
+context 與 writing policy。
 
 `runPiTurn` 負責完整生命週期：
 
 1. 依 resolved model clamp thinking level，每個 turn 建立一個 harness；
-2. 安裝 Pi tool-call approval hook 與 Pi-to-wire event mapper；
+2. 安裝 Pi tool-call approval hook、附加 volatile block 的 `context` hook、輪詢 host abort
+   訊號的 `before_provider_request` hook，以及 Pi-to-wire event mapper；
 3. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
-4. provider turn 成功後，原子批次持久化所有 approval snapshots，再 emit 對應的
+4. 檢查回傳的 assistant message：`stopReason: "error"` 是分類過的 provider 失敗，
+   `"aborted"` 讓 turn 以 aborted 結束；harness 或 hook 拋出的例外歸為 `internal`；
+5. provider turn 成功後，原子批次持久化所有 approval snapshots，再 emit 對應的
    `approval:request`；
-5. 只在成功且沒有 pending approval 時 auto-compact；
-6. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
+6. 只在成功且沒有 pending approval 時 auto-compact；
+7. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
+
+### Prompt 分層
+
+System prompt 在一個 session 內是穩定的——規則、skills 索引、approval posture——因為它位於
+每個 provider request 的最前面，一變就會讓 system prompt、tool schema 與其後整段 transcript
+的 cached prefix 失效。每個 turn 會變的東西（draft 狀態、時鐘）是 **volatile context**：透過
+Pi 的 `context` hook 附加為每個 provider request 的最後一則 user message，不持久化，因此永遠
+是最新的，也不會累積在 transcript 裡。模型必須看到最新狀態的東西放這裡，不放 system prompt。
+
+### Abort
+
+`abort` 取消 session 的 workflow run，並把它的 `agent_run` 列標成 `cancelled`。取消到不了
+已經在執行中的 step，所以 turn step 在每次 provider request 前透過 `shouldAbort` 輪詢那一列；
+讀到 `cancelled` 就在該邊界 abort harness，turn 以 `run:end{aborted}` 結束。Aborted turn 不會
+持久化 approval，也不會 compaction。下一次 prompt 會在持久化的 transcript 上開一個新 run。
 
 ## 5. Approval handshake
 
@@ -217,7 +236,13 @@ session:compacted · state:changed · error · run:end
 - `createPiWireEventMapper`：live Pi event → wire event，並用唯一 turn id 作為 assistant id
   前綴。
 - `entriesToWireEvents`：persisted Pi entries → replay history，使用 entry id 作為穩定的
-  assistant identity。
+  assistant identity。`stopReason: "error"` 的持久化 assistant message 會 replay 成與 live
+  turn 相同的 `error` event。
+- `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · provider · internal`），
+  讓 client 能提示下一步；`describeAgentError` 是共用的 headline。
+- `tool:end.details` 上 wire 前會經過 `clipDetails`——長字串、陣列、寬物件與深巢狀就地縮短、
+  保留形狀——因為每個 coarse event 都是 durable write，且會 replay 給每個重連的 client。模型
+  讀的是 tool 的 `content`，不是這份副本。
 - `applyEvent` / `foldEvents`：讓 live 與 replay 共用 dashboard rendering path。
 - `@chia/agent-runtime/transports/tanstack-ai`：映射為 TanStack AI 使用的 AG-UI subset。
 
@@ -268,9 +293,9 @@ Writing package 擁有自己的 model allowlist。Gateway、OpenAI、Anthropic c
 
 Writing agent 透過 `ContentPort`（`@chia/agent-content` 的 `ContentReadPort` 加上 `fetch_url`
 與寫入）讀內容、透過 `DraftStore` 寫 staging buffer；只有 commit-tier tool 會把 staged data
-提升到正式 feed/content。刪除內容與圖片上傳不開放給 agent。Dynamic system prompt 每個 turn
-都重新計算，讓 draft/session 與 approval 狀態保持最新；skills 與 templates 位於
-`packages/agent-writing/src/prompts/`。
+提升到正式 feed/content。刪除內容與圖片上傳不開放給 agent。`buildSystemPrompt` 是穩定的
+system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatile block（見 §4）；skills
+與 templates 位於 `packages/agent-writing/src/prompts/`。
 
 ### 內容可見性
 
@@ -312,6 +337,8 @@ factory、capability plugin system 或 provider-neutral handle。
 | ---------------------------- | -------------------------------------------------------------------------------------- |
 | Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                |
 | Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                              |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                              |
 | Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                     |
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |

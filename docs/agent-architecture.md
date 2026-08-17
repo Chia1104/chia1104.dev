@@ -131,7 +131,7 @@ sequenceDiagram
     PI->>PI: new AgentHarness(...).prompt(...)
     PI-->>UI: bounded durable AgentWireEvent stream
     PI->>PG: session entries and domain writes
-    STEP-->>WF: done / error / awaiting_approval
+    STEP-->>WF: done / aborted / error / awaiting_approval
 ```
 
 ### Enqueue and durable driver
@@ -160,17 +160,38 @@ runAgentTurnStep → runWritingTurn → runPiTurn → new AgentHarness
 ```
 
 `runWritingTurn` creates the writing tool context, resolves a model from the caller's credential-
-bearing `Models`, and supplies tools, skills, templates, dynamic system prompt and writing policy.
+bearing `Models`, and supplies tools, skills, templates, the stable system prompt, the volatile
+turn context and the writing policy.
 
 `runPiTurn` owns the complete lifecycle:
 
 1. clamp thinking level to the resolved model and construct one harness for the turn;
-2. install the Pi tool-call approval hook and Pi-to-wire event mapping;
+2. install the Pi tool-call approval hook, the `context` hook that appends the volatile block, the
+   `before_provider_request` hook that polls the host's abort signal, and Pi-to-wire event mapping;
 3. emit `run:start` and the user event, then invoke prompt or prompt template;
-4. after a successful provider turn, atomically persist all approval snapshots and then emit their
+4. read the resolved assistant message: `stopReason: "error"` is a classified provider failure,
+   `"aborted"` ends the turn as aborted; a thrown harness or hook error is `internal`;
+5. after a successful provider turn, atomically persist all approval snapshots and then emit their
    `approval:request` events;
-5. auto-compact only after a successful turn with no pending approvals;
-6. emit the terminal error/end events, unsubscribe, then flush the durable writer.
+6. auto-compact only after a successful turn with no pending approvals;
+7. emit the terminal error/end events, unsubscribe, then flush the durable writer.
+
+### Prompt layering
+
+The system prompt is stable for a session — rules, skills index, approval posture — because it
+heads every provider request and a changed prefix invalidates the cached system prompt, tool
+schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock)
+is the **volatile context**: appended as the last user message of each provider request through
+Pi's `context` hook, never persisted, so it is always current and never accumulates in the
+transcript. Anything the model must see fresh belongs there, not in the system prompt.
+
+### Abort
+
+`abort` cancels the session's workflow run and marks its `agent_run` row `cancelled`. Cancelling
+does not reach a step already executing, so the turn step polls that row before each provider
+request through `shouldAbort`; when it reads `cancelled` it aborts the harness at that boundary
+and the turn ends with `run:end{aborted}`. No approvals are persisted and no compaction runs for
+an aborted turn. The next prompt starts a fresh run over the persisted transcript.
 
 ## 5. Approval handshake
 
@@ -223,7 +244,14 @@ session:compacted · state:changed · error · run:end
 
 - `createPiWireEventMapper` maps live Pi events and prefixes assistant ids with a unique turn id.
 - `entriesToWireEvents` rebuilds history from persisted Pi entries and uses each entry id as the
-  stable assistant identity.
+  stable assistant identity. A persisted assistant message with `stopReason: "error"` replays as
+  the same `error` event the live turn emitted.
+- `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · provider ·
+internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
+- `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
+  wide objects and deep nesting are shortened in place, shape preserved — because every coarse
+  event is a durable write that is replayed to every reconnecting client. The model reads the
+  tool's `content`, never this copy.
 - `applyEvent` / `foldEvents` give live and replayed events one dashboard rendering path.
 - `@chia/agent-runtime/transports/tanstack-ai` maps the bounded events to the AG-UI subset used by
   TanStack AI. `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval
@@ -291,8 +319,9 @@ drafts with nothing rather than overriding the filter. Search needs no branch �
 published-only for every caller. The writing agent's port is `author`; a public kind builds
 `public` and never gets `fetch_url`.
 
-The dynamic system prompt is recomputed per turn so current draft/session and approval state remain
-accurate. Skills and prompt templates live under `packages/agent-writing/src/prompts/`.
+`buildSystemPrompt` is the stable system prompt; `buildTurnContext` is the volatile block with the
+draft state and current time (see §4). Skills and prompt templates live under
+`packages/agent-writing/src/prompts/`.
 
 There is no in-process conversational state. The process-level kind-to-service map contains only
 implementations; all mutable state is durable:
@@ -327,6 +356,8 @@ until a concrete second execution foundation requires a different seam.
 | ---------------------------- | -------------------------------------------------------------------------------------- |
 | Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                |
 | Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                              |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                              |
 | Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                     |
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |

@@ -187,6 +187,10 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
     orderBy: { startedAt: "desc" },
   });
 
+/** The run row that owns a workflow run; how a turn step finds its own record. */
+export const getAgentRunByExternalId = async (db: DB, externalRunId: string) =>
+  await db.query.agentRuns.findFirst({ where: { externalRunId } });
+
 export const completeAgentRun = async (
   db: DB,
   runId: string,

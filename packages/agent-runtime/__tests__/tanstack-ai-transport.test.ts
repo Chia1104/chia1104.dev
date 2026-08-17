@@ -137,4 +137,19 @@ describe("TanStack AI transport", () => {
       finishReason: "stop",
     });
   });
+
+  it("carries the error kind and a headline the client can show as-is", async () => {
+    const chunks = await collect([
+      { type: "run:start", sessionId: "session-1" },
+      { type: "error", kind: "auth", message: "401 invalid x-api-key" },
+      { type: "run:end", reason: "error" },
+    ]);
+
+    expect(chunks).toContainEqual({
+      type: EventType.RUN_ERROR,
+      runId: "client-run-1",
+      code: "auth",
+      message: "The provider rejected the API key: 401 invalid x-api-key",
+    });
+  });
 });

@@ -1,16 +1,27 @@
 import { AgentHarness, uuidv7 } from "@earendil-works/pi-agent-core";
 import type {
+  AgentMessage,
   PromptTemplate,
   Session,
   Skill,
 } from "@earendil-works/pi-agent-core";
-import type { Api, Model, Models } from "@earendil-works/pi-ai";
+import type {
+  Api,
+  AssistantMessage,
+  Model,
+  Models,
+} from "@earendil-works/pi-ai";
 
 import type { AgentPolicy, AgentSessionSettings, AgentTool } from "../types.ts";
-import type { AgentTurnExecution, AgentTurnMessage } from "../types.ts";
+import type {
+  AgentTurnError,
+  AgentTurnExecution,
+  AgentTurnMessage,
+} from "../types.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
 import { compactPiHarnessIfNeeded } from "./compaction.ts";
+import { errorOfAssistantMessage, errorOfThrown } from "./errors.ts";
 import { createPiWireEventMapper } from "./events.ts";
 import { clampSessionThinkingLevel } from "./settings.ts";
 import { createPiToolCallGate } from "./tool-gate.ts";
@@ -25,7 +36,24 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   models: Models;
   tools: AgentTool<TContext>[];
   toolContext: TContext | (() => TContext | Promise<TContext>);
+  /**
+   * Stable for the life of a session. It heads every provider request, so anything that changes
+   * turn to turn belongs in `volatileContext` instead — a changed system prompt invalidates the
+   * cached prefix for the system prompt, the tool schemas and the whole transcript behind it.
+   */
   systemPrompt: string | (() => string | Promise<string>);
+  /**
+   * Current state the model should see on every provider request: draft status, clock, anything
+   * that would be stale by the next hop. Appended as the last message of the request and never
+   * persisted, so it costs no transcript space and cannot go stale in history. Undefined omits it.
+   */
+  volatileContext?: () => string | undefined | Promise<string | undefined>;
+  /**
+   * Polled before every provider request. Returning true stops the run at that boundary — the
+   * step hosting this turn has no signal from the outside, so this is how an operator's abort
+   * reaches a harness that is otherwise mid-generation.
+   */
+  shouldAbort?: () => boolean | Promise<boolean>;
   skills?: Skill[];
   promptTemplates?: PromptTemplate[];
   policy: AgentPolicy;
@@ -39,8 +67,11 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   flushEvents?: () => Promise<void>;
 }
 
-const messageFor = (error: unknown) =>
-  error instanceof Error ? error.message : String(error);
+const volatileMessage = (text: string): AgentMessage => ({
+  role: "user",
+  content: [{ type: "text", text }],
+  timestamp: Date.now(),
+});
 
 /** Executes one complete turn against Pi's concrete `AgentHarness`. */
 export const runPiTurn = async <TContext extends object, TApproval>({
@@ -52,6 +83,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   tools,
   toolContext,
   systemPrompt: prompt,
+  volatileContext,
+  shouldAbort,
   skills,
   promptTemplates,
   policy,
@@ -93,6 +126,34 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       turnHarness.on("tool_call", (event) => gate.handle(event))
     );
 
+    if (volatileContext) {
+      // Pi's contract for this hook is "must not throw"; a failed state read drops the block for
+      // this request rather than failing the turn.
+      unsubscribers.push(
+        turnHarness.on("context", async (event) => {
+          try {
+            const text = await volatileContext();
+            if (!text) return undefined;
+            return { messages: [...event.messages, volatileMessage(text)] };
+          } catch {
+            return undefined;
+          }
+        })
+      );
+    }
+
+    if (shouldAbort) {
+      unsubscribers.push(
+        turnHarness.on("before_provider_request", async () => {
+          if (!(await shouldAbort())) return undefined;
+          // Not awaited: `abort()` waits for the run to settle, and this hook is on the run's own
+          // path. Signalling is enough — the loop observes the aborted signal and unwinds.
+          void turnHarness.abort().catch(() => undefined);
+          return undefined;
+        })
+      );
+    }
+
     const turnId = uuidv7();
     const mapEvent = createPiWireEventMapper({
       messageIdPrefix: turnId,
@@ -133,32 +194,37 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       text: message.text,
     });
 
-    let failure: string | undefined;
+    let failure: AgentTurnError | undefined;
+    let aborted = false;
     try {
-      if (message.template) {
-        await turnHarness.promptFromTemplate(
-          message.template.name,
-          message.template.args
-        );
-      } else {
-        await turnHarness.prompt(message.text);
+      // Pi resolves provider failures as an assistant message rather than throwing: `error`
+      // carries the provider's text (post-retry), `aborted` means the run's signal fired.
+      const reply: AssistantMessage = message.template
+        ? await turnHarness.promptFromTemplate(
+            message.template.name,
+            message.template.args
+          )
+        : await turnHarness.prompt(message.text);
+      if (reply.stopReason === "aborted") aborted = true;
+      else if (reply.stopReason === "error") {
+        failure = errorOfAssistantMessage(reply, model.contextWindow);
       }
     } catch (error) {
-      failure = messageFor(error);
+      failure = errorOfThrown(error);
     }
 
     let approvals: TApproval[] = [];
-    if (!failure && gate.requests.length > 0) {
+    if (!failure && !aborted && gate.requests.length > 0) {
       try {
         const pending = gate.requests.map(toApproval);
         await persistApprovals(pending);
         approvals = pending;
       } catch (error) {
-        failure = messageFor(error);
+        failure = errorOfThrown(error);
       }
     }
 
-    if (!failure) {
+    if (!failure && !aborted) {
       for (const request of gate.requests) {
         onEvent({
           type: "approval:request",
@@ -170,7 +236,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       }
     }
 
-    if (!failure && approvals.length === 0) {
+    if (!failure && !aborted && approvals.length === 0) {
       try {
         await compactPiHarnessIfNeeded(
           turnHarness,
@@ -182,18 +248,17 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       }
     }
 
-    if (failure) onEvent({ type: "error", message: failure });
+    if (failure) onEvent({ type: "error", ...failure });
 
     const status: AgentTurnExecution<TApproval>["status"] = failure
       ? "error"
-      : approvals.length > 0
-        ? "awaiting_approval"
-        : "done";
+      : aborted
+        ? "aborted"
+        : approvals.length > 0
+          ? "awaiting_approval"
+          : "done";
 
-    onEvent({
-      type: "run:end",
-      reason: status === "awaiting_approval" ? "awaiting_approval" : status,
-    });
+    onEvent({ type: "run:end", reason: status });
 
     return { status, approvals, error: failure };
   } finally {

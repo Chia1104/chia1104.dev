@@ -1,6 +1,7 @@
 import { EventType } from "@tanstack/ai";
 import * as z from "zod";
 
+import { describeAgentError } from "../wire/fold.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
 const runStartedSchema = z.object({
@@ -448,7 +449,9 @@ export const createTanStackAgentEventMapper = ({
           {
             type: EventType.RUN_ERROR,
             runId,
-            message: event.message,
+            // TanStack's client keeps only `message`, so the headline rides in it.
+            message: describeAgentError(event),
+            code: event.kind,
           },
         ];
 

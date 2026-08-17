@@ -1,7 +1,9 @@
 import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
 
+import { errorOfAssistantMessage } from "../pi/errors.ts";
 import type { AgentEventPresentation } from "../types.ts";
 
+import { clipDetails } from "./clip.ts";
 import type { AgentWireEvent } from "./schema.ts";
 
 // ============================================
@@ -67,6 +69,11 @@ export const entriesToWireEvents = (
             }
           : undefined,
       });
+      // The live turn emits `error` beside a failed assistant message; replay must too, or the
+      // notice vanishes on reload.
+      if (message.stopReason === "error") {
+        events.push({ type: "error", ...errorOfAssistantMessage(message) });
+      }
 
       for (const part of message.content) {
         if (part.type !== "toolCall") continue;
@@ -89,7 +96,7 @@ export const entriesToWireEvents = (
         toolName: message.toolName,
         isError: message.isError,
         summary: options.summarize(message.toolName, message, message.isError),
-        details: message.details,
+        details: clipDetails(message.details),
       });
     }
   }

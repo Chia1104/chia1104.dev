@@ -12,6 +12,7 @@ const pi = vi.hoisted(() => {
     prompt: vi.fn(),
     promptFromTemplate: vi.fn(),
     compact: vi.fn(),
+    abort: vi.fn(),
     on: vi.fn(),
     subscribe: vi.fn(),
   };
@@ -27,6 +28,12 @@ vi.mock("@earendil-works/pi-agent-core", async (importOriginal) => {
 });
 
 import { runPiTurn } from "../src/pi/turn.ts";
+
+/** Pi resolves a turn with the final assistant message; these are the shapes runPiTurn reads. */
+const reply = (
+  stopReason: "stop" | "error" | "aborted",
+  errorMessage?: string
+) => ({ role: "assistant", stopReason, errorMessage, content: [] });
 
 const policy: AgentPolicy = {
   tierOf: (toolName) => (toolName === "publish" ? "commit" : "read"),
@@ -78,8 +85,9 @@ beforeEach(() => {
   pi.AgentHarness.mockImplementation(function MockAgentHarness() {
     return pi.harness;
   });
-  pi.harness.prompt.mockReset().mockResolvedValue(undefined);
-  pi.harness.promptFromTemplate.mockReset().mockResolvedValue(undefined);
+  pi.harness.prompt.mockReset().mockResolvedValue(reply("stop"));
+  pi.harness.promptFromTemplate.mockReset().mockResolvedValue(reply("stop"));
+  pi.harness.abort.mockReset().mockResolvedValue(undefined);
   pi.harness.compact.mockReset().mockResolvedValue({
     summary: "summary",
     tokensBefore: 90_000,
@@ -141,6 +149,7 @@ describe("runPiTurn", () => {
         toolName: "publish",
         input: { slug: "second" },
       });
+      return reply("stop");
     });
 
     const result = await runPiTurn(options);
@@ -179,12 +188,151 @@ describe("runPiTurn", () => {
     expect(result).toEqual({
       status: "error",
       approvals: [],
-      error: "provider failed",
+      error: { kind: "internal", message: "provider failed" },
     });
     expect(options.events.slice(-2)).toEqual([
-      { type: "error", message: "provider failed" },
+      { type: "error", kind: "internal", message: "provider failed" },
       { type: "run:end", reason: "error" },
     ]);
+  });
+
+  it("classifies a provider failure that Pi resolves as an error message", async () => {
+    const options = createOptions();
+    pi.harness.prompt.mockResolvedValue(
+      reply("error", "401 Unauthorized: invalid x-api-key")
+    );
+
+    await expect(runPiTurn(options)).resolves.toEqual({
+      status: "error",
+      approvals: [],
+      error: { kind: "auth", message: "401 Unauthorized: invalid x-api-key" },
+    });
+    expect(options.events.slice(-2)).toEqual([
+      {
+        type: "error",
+        kind: "auth",
+        message: "401 Unauthorized: invalid x-api-key",
+      },
+      { type: "run:end", reason: "error" },
+    ]);
+    expect(pi.harness.compact).not.toHaveBeenCalled();
+  });
+
+  it("ends an aborted turn without approvals, compaction or an error", async () => {
+    const options = createOptions();
+    Object.assign(options.session, {
+      getBranch: vi.fn(async () => [
+        {
+          type: "message",
+          id: "entry-1",
+          parentId: null,
+          timestamp: "2026-01-01T00:00:00.000Z",
+          message: { role: "user", content: "x".repeat(400_000) },
+        },
+      ]),
+    });
+    pi.harness.prompt.mockImplementation(async () => {
+      await pi.handlers.get("tool_call")?.({
+        type: "tool_call",
+        toolCallId: "call-1",
+        toolName: "publish",
+        input: {},
+      });
+      return reply("aborted");
+    });
+
+    await expect(runPiTurn(options)).resolves.toEqual({
+      status: "aborted",
+      approvals: [],
+      error: undefined,
+    });
+    expect(options.persistApprovals).not.toHaveBeenCalled();
+    expect(pi.harness.compact).not.toHaveBeenCalled();
+    expect(options.events.at(-1)).toEqual({
+      type: "run:end",
+      reason: "aborted",
+    });
+  });
+
+  it("aborts the harness at the provider boundary when the host says so", async () => {
+    const options = createOptions();
+    const shouldAbort = vi.fn(async () => true);
+    pi.harness.prompt.mockImplementation(async () => {
+      await pi.handlers.get("before_provider_request")?.({
+        type: "before_provider_request",
+      });
+      return reply("aborted");
+    });
+
+    await runPiTurn({ ...options, shouldAbort });
+
+    expect(shouldAbort).toHaveBeenCalledOnce();
+    expect(pi.harness.abort).toHaveBeenCalledOnce();
+  });
+
+  it("does not poll or abort when the host has no abort signal", async () => {
+    const options = createOptions();
+    await runPiTurn(options);
+    expect(pi.handlers.has("before_provider_request")).toBe(false);
+  });
+
+  it("appends the volatile context as an ephemeral last message", async () => {
+    const options = createOptions();
+    const volatileContext = vi.fn(
+      async () => "# Current session\n- draft: empty"
+    );
+    let transformed: unknown;
+    pi.harness.prompt.mockImplementation(async () => {
+      transformed = await pi.handlers.get("context")?.({
+        type: "context",
+        messages: [{ role: "user", content: "Hello", timestamp: 1 }],
+      });
+      return reply("stop");
+    });
+
+    await runPiTurn({ ...options, volatileContext });
+
+    expect(volatileContext).toHaveBeenCalledOnce();
+    expect(transformed).toEqual({
+      messages: [
+        { role: "user", content: "Hello", timestamp: 1 },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "# Current session\n- draft: empty" },
+          ],
+          timestamp: expect.any(Number),
+        },
+      ],
+    });
+    // Nothing about the ephemeral block reaches the wire.
+    expect(options.events.map((event) => event.type)).toEqual([
+      "run:start",
+      "user",
+      "run:end",
+    ]);
+  });
+
+  it("drops the volatile context for a request when reading it fails", async () => {
+    const options = createOptions();
+    let transformed: unknown = "unset";
+    pi.harness.prompt.mockImplementation(async () => {
+      transformed = await pi.handlers.get("context")?.({
+        type: "context",
+        messages: [],
+      });
+      return reply("stop");
+    });
+
+    await expect(
+      runPiTurn({
+        ...options,
+        volatileContext: async () => {
+          throw new Error("draft store down");
+        },
+      })
+    ).resolves.toMatchObject({ status: "done" });
+    expect(transformed).toBeUndefined();
   });
 
   it("terminalizes and flushes when approval persistence fails", async () => {
@@ -200,18 +348,19 @@ describe("runPiTurn", () => {
         toolName: "publish",
         input: {},
       });
+      return reply("stop");
     });
 
     await expect(runPiTurn({ ...options, flushEvents })).resolves.toEqual({
       status: "error",
       approvals: [],
-      error: "database unavailable",
+      error: { kind: "internal", message: "database unavailable" },
     });
     expect(options.events).not.toContainEqual(
       expect.objectContaining({ type: "approval:request" })
     );
     expect(options.events.slice(-2)).toEqual([
-      { type: "error", message: "database unavailable" },
+      { type: "error", kind: "internal", message: "database unavailable" },
       { type: "run:end", reason: "error" },
     ]);
     expect(
@@ -237,7 +386,7 @@ describe("runPiTurn", () => {
     await expect(runPiTurn(options)).resolves.toEqual({
       status: "error",
       approvals: [],
-      error: "provider failed",
+      error: { kind: "internal", message: "provider failed" },
     });
     expect(options.persistApprovals).not.toHaveBeenCalled();
     expect(options.events).not.toContainEqual(
@@ -265,6 +414,7 @@ describe("runPiTurn", () => {
         toolName: "publish",
         input: {},
       });
+      return reply("stop");
     });
 
     await expect(runPiTurn(options)).resolves.toMatchObject({
