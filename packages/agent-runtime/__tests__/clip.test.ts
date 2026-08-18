@@ -72,4 +72,19 @@ describe("clipDetails", () => {
     expect(clipped.posts.at(-1)).toMatch(/more items/);
     expect(clipped.posts[0]).toMatchObject({ slug: "post-0" });
   });
+
+  it("keeps a key whole or not at all", () => {
+    const longKey = "k".repeat(DETAILS_MAX_TOTAL_CHARS + 10);
+    const clipped = clipDetails({ first: 1, [longKey]: 2, last: 3 }) as Record<
+      string,
+      unknown
+    >;
+
+    expect(clipped.first).toBe(1);
+    expect(Object.keys(clipped).some((key) => key.length > 1_000)).toBe(false);
+    expect(clipped["…"]).toBe("2 more keys");
+    expect(JSON.stringify(clipped).length).toBeLessThan(
+      DETAILS_MAX_TOTAL_CHARS
+    );
+  });
 });

@@ -189,13 +189,14 @@ transcript. Anything the model must see fresh belongs there, not in the system p
 
 Nothing in the workflow SDK reaches a step already executing — cancelling the run only stops it
 from being scheduled again — so a stop travels through a second, tiny durable run: the session
-run's **abort controller** (`apps/service/src/workflows/agent-abort.workflow.ts`). It parks on
-`agentAbortHook`, keyed by the session's workflow run id, and when resumed writes one message to
-its own stream. Each turn step finds or starts that controller, subscribes to its stream and hands
-the resulting `AbortSignal` to `runPiTurn`, releasing the subscription when the turn ends. `abort`
-resumes the hook first, then cancels the session run and marks the `agent_run` row `cancelled`;
-`completeAgentRunStep` resumes it too, so a finished run does not leave a controller parked until
-its TTL. Firing the signal aborts the harness at once, mid-generation included: Pi cancels the
+run's **abort controller** (`apps/service/src/workflows/agent-abort.workflow.ts`). `prompt` starts
+it before the session run and passes its `{ id, runId }` in the session run's request (and into
+`agent_run.metadata`); it parks on `agentAbortHook` and, when resumed, writes one message to its
+own stream. Each turn step subscribes to that stream by run id — no lookup, so there is exactly one
+controller per session run — hands the resulting `AbortSignal` to `runPiTurn`, and releases the
+subscription when the turn ends. `abort` resumes the hook first, then cancels the session run and
+marks the `agent_run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
+not leave a controller parked until its TTL. Firing the signal aborts the harness at once, mid-generation included: Pi cancels the
 in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
 `run:end{aborted}`; no approvals are persisted and no compaction runs. Delivery is the SDK's own
 durable stream, so it works from any process — no registry, no timer, no second channel. The next

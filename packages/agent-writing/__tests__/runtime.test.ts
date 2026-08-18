@@ -46,7 +46,10 @@ interface Fixture {
   ) => void;
   run: (
     text: string,
-    options?: { signal?: AbortSignal }
+    options?: {
+      signal?: AbortSignal;
+      onEvent?: (event: AgentWireEvent) => void;
+    }
   ) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
 
@@ -106,7 +109,10 @@ const build = async (
         content,
         draft,
         message: { text },
-        onEvent: (event) => events.push(event),
+        onEvent: (event) => {
+          events.push(event);
+          options?.onEvent?.(event);
+        },
         models,
         toApproval: (approval) => approval,
         persistApprovals: async () => undefined,
@@ -428,10 +434,19 @@ describe("runWritingTurn", () => {
     slow.setResponses([fauxAssistantMessage(text)]);
     const controller = new AbortController();
 
+    // Abort once the first token has actually streamed, so the assertion below is about a
+    // partial reply rather than an empty one.
+    let firstDelta: () => void = () => undefined;
+    const streamedSomething = new Promise<void>((resolve) => {
+      firstDelta = resolve;
+    });
     const pending = slow.run("Write something long", {
       signal: controller.signal,
+      onEvent: (event) => {
+        if (event.type === "assistant:delta") firstDelta();
+      },
     });
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await streamedSomething;
     controller.abort();
     const result = await pending;
 
@@ -441,6 +456,7 @@ describe("runWritingTurn", () => {
       .filter((e) => e.type === "assistant:delta")
       .map((e) => (e.type === "assistant:delta" ? e.delta : ""))
       .join("");
+    expect(streamed.length).toBeGreaterThan(0);
     expect(streamed.length).toBeLessThan(text.length);
     // The partial reply is persisted as aborted, so the next turn sees what was said.
     const branch = await slow.session.getBranch();

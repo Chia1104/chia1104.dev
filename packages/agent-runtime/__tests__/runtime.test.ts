@@ -304,6 +304,46 @@ describe("runPiTurn", () => {
     expect(result.status).toBe("aborted");
   });
 
+  it("does not persist approvals or compact when the abort lands after the reply", async () => {
+    const options = createOptions();
+    Object.assign(options.session, {
+      getBranch: vi.fn(async () => [
+        {
+          type: "message",
+          id: "entry-1",
+          parentId: null,
+          timestamp: "2026-01-01T00:00:00.000Z",
+          message: { role: "user", content: "x".repeat(400_000) },
+        },
+      ]),
+    });
+    const controller = new AbortController();
+    pi.harness.prompt.mockImplementation(async () => {
+      await pi.handlers.get("tool_call")?.({
+        type: "tool_call",
+        toolCallId: "call-1",
+        toolName: "publish",
+        input: {},
+      });
+      // The provider turn completes normally; the operator stops in the same instant.
+      controller.abort();
+      return reply("stop");
+    });
+
+    const result = await runPiTurn({ ...options, signal: controller.signal });
+
+    expect(result).toEqual({
+      status: "aborted",
+      approvals: [],
+      error: undefined,
+    });
+    expect(options.persistApprovals).not.toHaveBeenCalled();
+    expect(pi.harness.compact).not.toHaveBeenCalled();
+    expect(options.events).not.toContainEqual(
+      expect.objectContaining({ type: "approval:request" })
+    );
+  });
+
   it("stops listening once the turn is over", async () => {
     const options = createOptions();
     const controller = new AbortController();

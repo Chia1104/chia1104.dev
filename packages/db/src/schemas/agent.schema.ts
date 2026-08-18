@@ -119,7 +119,7 @@ export const agentRuns = pgTable(
   },
   (table) => [
     index("agent_run_session_status_idx").on(table.sessionId, table.status),
-    index("agent_run_external_id_idx").on(table.externalRunId),
+    uniqueIndex("agent_run_external_id_idx").on(table.externalRunId),
     uniqueIndex("agent_run_one_active_per_session_idx")
       .on(table.sessionId)
       .where(sql`${table.status} = 'active'`),

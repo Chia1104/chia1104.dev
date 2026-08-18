@@ -20,12 +20,12 @@ import {
 import { getAdminId } from "@chia/utils/config";
 
 import {
-  ensureAgentAbortController,
   signalAgentAbort,
   subscribeAgentAbort,
 } from "../services/agent-abort-controller";
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
+import type { AgentAbortControllerRef } from "../workflows/hooks/agent.hooks";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
@@ -100,6 +100,8 @@ export interface AgentTurnRequest {
   sessionId: string;
   /** Verified at the transport boundary before the run was started. */
   userId: string;
+  /** The run's abort controller; the turn subscribes to it for the harness's `AbortSignal`. */
+  abortController: AgentAbortControllerRef;
   text: string;
   template?: { name: string; args?: string[] };
   preAuthorizeToolNames?: string[];
@@ -169,16 +171,21 @@ export const runAgentTurnStep = async (
   };
   await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
 
-  const abort = subscribeAgentAbort(
-    await ensureAgentAbortController(workflowRunId)
-  );
-  try {
-    return await handler(db, row, request, abort.signal);
-  } finally {
-    abort.dispose();
-    await patchAgentRunMetadata(db, workflowRunId, {
+  const clearMarker = () =>
+    patchAgentRunMetadata(db, workflowRunId, {
       [AGENT_TURN_KEY]: { ...marker, running: false },
     });
+  const abort = subscribeAgentAbort(request.abortController.runId);
+  try {
+    const outcome = await handler(db, row, request, abort.signal);
+    abort.dispose();
+    await clearMarker();
+    return outcome;
+  } catch (error) {
+    abort.dispose();
+    // The handler's error is the one that matters; a failed cleanup must not replace it.
+    await clearMarker().catch(() => undefined);
+    throw error;
   }
 };
 
@@ -399,11 +406,12 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
  * so it does not sit parked until its TTL.
  */
 export const completeAgentRunStep = async (
-  sessionId: string
+  sessionId: string,
+  abortController: AgentAbortControllerRef
 ): Promise<void> => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
   await completeActiveAgentRuns(db, sessionId, "completed");
-  await signalAgentAbort(getWorkflowMetadata().workflowRunId, "run finished");
+  await signalAgentAbort(abortController.id, "run finished");
 };

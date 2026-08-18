@@ -1,43 +1,45 @@
-import { getHookByToken, getRun, start } from "workflow/api";
+import { getRun, start } from "workflow/api";
 
 import type { AgentAbortMessage } from "../steps/agent-abort.step";
 import { agentAbortWorkflow } from "../workflows/agent-abort.workflow";
 import {
+  agentAbortControllerRefSchema,
   agentAbortHook,
   agentAbortToken,
 } from "../workflows/hooks/agent.hooks";
+import type { AgentAbortControllerRef } from "../workflows/hooks/agent.hooks";
 
 /**
- * Host side of `agent-abort.workflow.ts`: find or start the controller for a session run,
- * subscribe a turn to it, and fire it. See the workflow for why this exists.
+ * Host side of `agent-abort.workflow.ts`: start the controller for a session run, subscribe a
+ * turn to it, and fire it. See the workflow for why this exists.
  */
 
 /** Long enough that a parked session run rarely outlives it; expiry is harmless either way. */
 const AGENT_ABORT_TTL_MS = 24 * 60 * 60 * 1000;
 
-const controllerRunIdFor = async (
-  workflowRunId: string
-): Promise<string | null> => {
-  const hook = await getHookByToken(agentAbortToken(workflowRunId)).catch(
-    () => null
+export type { AgentAbortControllerRef };
+
+/** Key under which `agent_run.metadata` carries the ref, for `abort` to find it. */
+export const AGENT_ABORT_CONTROLLER_KEY = "abortController";
+
+export const readAgentAbortControllerRef = (
+  metadata: Record<string, unknown>
+): AgentAbortControllerRef | undefined => {
+  const parsed = agentAbortControllerRefSchema.safeParse(
+    metadata[AGENT_ABORT_CONTROLLER_KEY]
   );
-  return hook?.runId ?? null;
+  return parsed.success ? parsed.data : undefined;
 };
 
-/**
- * The controller run for a session run, started on first use. Only the turn step calls this, and
- * turns of one run are sequential, so two controllers for one run cannot race into existence.
- */
-export const ensureAgentAbortController = async (
-  workflowRunId: string
-): Promise<string> => {
-  const existing = await controllerRunIdFor(workflowRunId);
-  if (existing) return existing;
-  const run = await start(agentAbortWorkflow, [
-    { workflowRunId, ttlMs: AGENT_ABORT_TTL_MS },
-  ]);
-  return run.runId;
-};
+/** Starts a fresh controller. Called once per session run, before that run is started. */
+export const startAgentAbortController =
+  async (): Promise<AgentAbortControllerRef> => {
+    const id = crypto.randomUUID();
+    const run = await start(agentAbortWorkflow, [
+      { id, ttlMs: AGENT_ABORT_TTL_MS },
+    ]);
+    return { id, runId: run.runId };
+  };
 
 /**
  * An `AbortSignal` that fires when the controller does. `dispose` must be called when the turn
@@ -58,7 +60,7 @@ export const subscribeAgentAbort = (
         const { done, value } = await reader.read();
         if (done) break;
         if (value.type === "abort" && !value.expired) {
-          controller.abort(value.reason);
+          controller.abort(new DOMException(value.reason, "AbortError"));
           break;
         }
       }
@@ -76,19 +78,18 @@ export const subscribeAgentAbort = (
 };
 
 /**
- * Fires the controller for a session run. False when the run never had one — nothing was
- * subscribed, so there is nothing to stop.
+ * Fires a controller. False when it could not be resumed: already fired, expired, or not yet
+ * registered because the controller run has not reached its hook — a window of the session run's
+ * first moments, during which a stop still cancels the run but cannot reach the turn in flight.
  */
 export const signalAgentAbort = async (
-  workflowRunId: string,
+  controllerId: string,
   reason: string
 ): Promise<boolean> => {
-  if (!(await controllerRunIdFor(workflowRunId))) return false;
   try {
-    await agentAbortHook.resume(agentAbortToken(workflowRunId), { reason });
+    await agentAbortHook.resume(agentAbortToken(controllerId), { reason });
     return true;
   } catch {
-    // Already resumed or expired between the lookup and the resume: equally settled.
     return false;
   }
 };

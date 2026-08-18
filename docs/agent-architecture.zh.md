@@ -183,9 +183,11 @@ Pi 的 `context` hook 附加為每個 provider request 的最後一則 user mess
 
 Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 只是讓它不再被排程——所以 stop
 是透過第二個很小的 durable run 送達：session run 的 **abort controller**
-（`apps/service/src/workflows/agent-abort.workflow.ts`）。它以 session 的 workflow run id 為 key
-停在 `agentAbortHook` 上，被 resume 時往自己的 stream 寫一則訊息。每個 turn step 找到或建立這
-個 controller、訂閱它的 stream，把得到的 `AbortSignal` 交給 `runPiTurn`，turn 結束時釋放訂閱。
+（`apps/service/src/workflows/agent-abort.workflow.ts`）。`prompt` 在開 session run 之前先開它，
+並把 `{ id, runId }` 放進 session run 的 request（與 `agent_run.metadata`）；它停在
+`agentAbortHook` 上，被 resume 時往自己的 stream 寫一則訊息。每個 turn step 直接以 run id 訂閱
+那條 stream——不查詢，所以一個 session run 恰好一個 controller——把得到的 `AbortSignal` 交給
+`runPiTurn`，turn 結束時釋放訂閱。
 `abort` 先 resume 這個 hook，再取消 session run、把 `agent_run` 列標成 `cancelled`；
 `completeAgentRunStep` 也會 resume 它，讓跑完的 run 不會留下一個停到 TTL 的 controller。Signal 一
 觸發 harness 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`

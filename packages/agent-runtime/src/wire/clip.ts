@@ -68,7 +68,8 @@ const createClipper = () => {
     ) {
       if (remaining <= 0) break;
       const [key, item] = entries[index]!;
-      take(key.length);
+      // A key is kept whole or not at all; one that does not fit ends the object here.
+      if (take(key.length) < key.length) break;
       kept[key] = clipValue(item, depth + 1);
     }
     if (index < entries.length) {

@@ -114,13 +114,11 @@ const contentColumns = {
   unstableSerializedSource: true,
 } as const;
 
-export const insertContentSchema = createInsertSchema(feedTranslations).pick(
-  contentColumns
-);
+export const insertContentSchema =
+  createInsertSchema(feedTranslations).pick(contentColumns);
 
-export const updateContentSchema = createUpdateSchema(feedTranslations).pick(
-  contentColumns
-);
+export const updateContentSchema =
+  createUpdateSchema(feedTranslations).pick(contentColumns);
 
 export type InsertContentDTO = z.infer<typeof insertContentSchema>;
 export type UpdateContentDTO = z.infer<typeof updateContentSchema>;
@@ -139,9 +137,8 @@ export const feedTranslationSchema = z.object({
   ...internal_dateSchema.shape,
 });
 
-export const contentSchema = createSelectSchema(feedTranslations).pick(
-  contentColumns
-);
+export const contentSchema =
+  createSelectSchema(feedTranslations).pick(contentColumns);
 
 export type FeedDTO = z.infer<typeof feedSchema>;
 export type FeedTranslationDTO = z.infer<typeof feedTranslationSchema>;

@@ -19,6 +19,10 @@ vi.mock("../src/workflows/hooks/agent.hooks", async () => {
   const z = await import("zod");
   return {
     AGENT_END_SENTINEL: "/end",
+    agentAbortControllerRefSchema: z.object({
+      id: z.string(),
+      runId: z.string(),
+    }),
     agentApprovalHook: { create: mocks.createApprovalHook },
     agentApprovalToken: (sessionId: string, toolCallId: string) =>
       `agent:approve:${sessionId}:${toolCallId}`,
@@ -74,6 +78,7 @@ describe("agentSessionWorkflow", () => {
       agentSessionWorkflow({
         sessionId: "session-1",
         userId: "user-1",
+        abortController: { id: "abort-1", runId: "abort-run-1" },
         firstMessage: {
           text: "first",
           credentials: { anthropic: "initial" },
@@ -90,6 +95,7 @@ describe("agentSessionWorkflow", () => {
     expect(mocks.runTurn).toHaveBeenNthCalledWith(1, {
       sessionId: "session-1",
       userId: "user-1",
+      abortController: { id: "abort-1", runId: "abort-run-1" },
       text: "first",
       template: undefined,
       preAuthorizeToolNames: undefined,
@@ -98,12 +104,16 @@ describe("agentSessionWorkflow", () => {
     expect(mocks.runTurn).toHaveBeenNthCalledWith(2, {
       sessionId: "session-1",
       userId: "user-1",
+      abortController: { id: "abort-1", runId: "abort-run-1" },
       text: "second",
       template: undefined,
       preAuthorizeToolNames: undefined,
       credentials: { openai: "rotated" },
     });
-    expect(mocks.completeRun).toHaveBeenCalledWith("session-1");
+    expect(mocks.completeRun).toHaveBeenCalledWith("session-1", {
+      id: "abort-1",
+      runId: "abort-run-1",
+    });
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
   });
 
@@ -115,6 +125,7 @@ describe("agentSessionWorkflow", () => {
       agentSessionWorkflow({
         sessionId: "session-1",
         userId: "user-1",
+        abortController: { id: "abort-1", runId: "abort-run-1" },
         firstMessage: { text: "first" },
       })
     ).rejects.toThrow(

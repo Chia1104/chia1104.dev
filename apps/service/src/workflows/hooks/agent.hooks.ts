@@ -65,11 +65,25 @@ export const agentApprovalHook = defineHook({
 
 /**
  * Resumed to abort the turn a session's run is executing — see `agent-abort.workflow.ts`. Keyed by
- * the session's workflow run id: one controller per run, reconnected by every turn.
+ * the controller's own id, minted by `prompt` when it starts the session run.
  */
 export const agentAbortHook = defineHook({
   schema: z.object({ reason: z.string() }),
 });
+
+/**
+ * How a session run refers to its abort controller: the hook token's id and the controller run
+ * whose stream turns subscribe to. Carried in the session run's request and `agent_run.metadata`.
+ * Lives here, not with the host helper, because the workflow sandbox imports it.
+ */
+export const agentAbortControllerRefSchema = z.object({
+  id: z.string(),
+  runId: z.string(),
+});
+
+export type AgentAbortControllerRef = z.infer<
+  typeof agentAbortControllerRefSchema
+>;
 
 /** Sentinel that ends the session's workflow run rather than starting another turn. */
 export const AGENT_END_SENTINEL = "/end";
@@ -82,5 +96,5 @@ export const agentApprovalToken = (
   toolCallId: string
 ): string => `agent:approve:${sessionId}:${toolCallId}`;
 
-export const agentAbortToken = (workflowRunId: string): string =>
-  `agent:abort:${workflowRunId}`;
+export const agentAbortToken = (controllerId: string): string =>
+  `agent:abort:${controllerId}`;

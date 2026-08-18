@@ -231,6 +231,9 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         failure = hostFailure ?? errorOfThrown(error);
       }
     }
+    // An abort that lands after the reply resolved must still keep the turn from persisting
+    // approvals or compacting: the run is being cancelled, and rows written now would outlive it.
+    if (!failure && signal?.aborted) aborted = true;
 
     let approvals: TApproval[] = [];
     if (!failure && !aborted && gate.requests.length > 0) {

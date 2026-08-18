@@ -62,7 +62,12 @@ import {
   agentMessageToken,
 } from "../workflows/hooks/agent.hooks";
 
-import { signalAgentAbort } from "./agent-abort-controller";
+import {
+  AGENT_ABORT_CONTROLLER_KEY,
+  readAgentAbortControllerRef,
+  signalAgentAbort,
+  startAgentAbortController,
+} from "./agent-abort-controller";
 import { createAgentContentPort } from "./agent-content.port";
 import {
   decryptAgentCredentials,
@@ -142,6 +147,9 @@ const loadOwnedSession = async (
     activeRunId: activeRun?.id ?? null,
     workflowRunId: activeRun?.externalRunId ?? null,
     turn: activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined,
+    abortController: activeRun
+      ? readAgentAbortControllerRef(activeRun.metadata)
+      : undefined,
   };
 };
 
@@ -347,13 +355,24 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
   const { db, repo, draft } = dependenciesFor(caller);
   const session = await repo.openById(sessionId);
 
-  const [branch, draftState, stats, approvals, run] = await Promise.all([
+  const [branch, draftState, stats, approvals] = await Promise.all([
     session.getBranch(),
     draft.get(sessionId),
     session.getSessionStats(),
     getAgentApprovals(db, sessionId),
-    runStateOf(row),
   ]);
+  /**
+   * Read after the branch, on purpose: the cut below and the entries it cuts must come from the same
+   * observation. A turn that finished between the two reads has already persisted its reply; a
+   * marker read before the branch would still say `running`, cut that reply out, and leave nothing
+   * for `attach` to replay.
+   */
+  const activeRun = await getActiveAgentRun(db, sessionId);
+  const turn = activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined;
+  const run = await runStateOf({
+    workflowRunId: activeRun?.externalRunId ?? null,
+    turn,
+  });
 
   // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
   // an empty active branch. Replay those entries in insertion order so existing development
@@ -373,8 +392,8 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
    * A running turn is not replayed from the transcript: `attach` replays it from the run's stream
    * instead, and both cut at the same recorded marker so the client sees each message once.
    */
-  if (run?.status === "running" && row.turn) {
-    transcriptEntries = entriesBeforeTurn(transcriptEntries, row.turn);
+  if (run?.status === "running" && turn) {
+    transcriptEntries = entriesBeforeTurn(transcriptEntries, turn);
   }
   const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
@@ -588,10 +607,14 @@ export const writingAgentService: AgentKindService = {
       return { runId: row.workflowRunId, startIndex, startedRun: false };
     }
 
+    // Started before the session run so its ref can travel in the run's request: every turn then
+    // subscribes to this one controller by run id, and `abort` resumes it by id.
+    const abortController = await startAgentAbortController();
     const run = await start(agentSessionWorkflow, [
       {
         sessionId: input.sessionId,
         userId: caller.userId,
+        abortController,
         firstMessage: message,
       },
     ]);
@@ -610,7 +633,11 @@ export const writingAgentService: AgentKindService = {
       sessionId: input.sessionId,
       harnessKind: "workflow",
       externalRunId: run.runId,
-      metadata: { agentKind: WRITING_AGENT_KIND, [AGENT_TURN_KEY]: turn },
+      metadata: {
+        agentKind: WRITING_AGENT_KIND,
+        [AGENT_TURN_KEY]: turn,
+        [AGENT_ABORT_CONTROLLER_KEY]: abortController,
+      },
     });
 
     return { runId: run.runId, startIndex: 0, startedRun: true };
@@ -716,7 +743,9 @@ export const writingAgentService: AgentKindService = {
     // picks the transcript back up from Postgres. The row is marked last so a failed cancel never
     // leaves a live run behind a non-active row (the next prompt would start a second workflow and
     // hit the hook conflict).
-    await signalAgentAbort(row.workflowRunId, "stopped by the operator");
+    if (row.abortController) {
+      await signalAgentAbort(row.abortController.id, "stopped by the operator");
+    }
     await cancelLiveRun(row.workflowRunId);
     if (row.activeRunId) {
       await completeAgentRun(
