@@ -8,6 +8,8 @@ import type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
+  WebSearchInput,
+  WebSearchResult,
 } from "./types.ts";
 
 /**
@@ -20,6 +22,9 @@ export type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
+  WebSearchInput,
+  WebSearchRecency,
+  WebSearchResult,
 } from "./types.ts";
 
 /**
@@ -38,19 +43,31 @@ export type {
 // ============================================
 
 /**
- * The shared read port plus what only the writing agent may do: fetch outside pages and write
- * the author's posts.
+ * The shared read port plus what only the writing agent may do: write the author's posts.
  *
  * Carries no author id: the host builds this port *for* the configured author, so the tools have
  * nothing to restate. Authorization happened before the turn started.
  */
 export interface ContentPort extends ContentReadPort {
-  fetchPage(url: string): Promise<FetchedPage>;
   commitDraft(input: CommitDraftInput): Promise<CommitDraftResult>;
   setPublished(input: {
     feedId: number;
     published: boolean;
   }): Promise<{ feedId: number; published: boolean }>;
+}
+
+// ============================================
+// Web port
+// ============================================
+
+/**
+ * Outbound web access: search-engine discovery and page fetch. Both cost money and are an SSRF
+ * surface, so only the operator's own authoring session gets this port; a public kind never
+ * builds one.
+ */
+export interface WebPort {
+  search(input: WebSearchInput): Promise<WebSearchResult[]>;
+  fetchPage(url: string): Promise<FetchedPage>;
 }
 
 // ============================================

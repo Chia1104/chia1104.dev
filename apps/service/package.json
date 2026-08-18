@@ -41,6 +41,7 @@
     "better-auth": "catalog:better-auth",
     "dayjs": "catalog:",
     "drizzle-orm": "catalog:drizzle",
+    "firecrawl": "catalog:ai",
     "hono": "catalog:hono",
     "ky": "catalog:",
     "lodash": "catalog:",

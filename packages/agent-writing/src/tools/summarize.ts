@@ -33,6 +33,13 @@ export const summarizeToolResult = <TResult>(
   if (!details) return "Done.";
 
   switch (toolName) {
+    case TOOL_NAMES.webSearch: {
+      const query = asString(details.query);
+      const count = asNumber(details.count);
+      return query
+        ? `Searched "${query}"${count === undefined ? "" : ` (${count} results)`}.`
+        : "Searched the web.";
+    }
     case TOOL_NAMES.fetchUrl: {
       const url = asString(details.url);
       return url ? `Fetched ${hostOf(url)}.` : "Fetched page.";

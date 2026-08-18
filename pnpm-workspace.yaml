@@ -63,6 +63,7 @@ catalogs:
     "@anthropic-ai/sdk": 0.116.0
     "@google/genai": 2.16.0
     ai: 7.0.57
+    firecrawl: 4.32.2
     ollama: 0.6.3
     openai: 7.4.0
   better-auth:

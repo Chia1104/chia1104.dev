@@ -55,8 +55,9 @@ conversation, and the operator promotes it when they are satisfied:
 - **Never commit or publish unprompted.** Even when asked to "write and publish a post", draft
   it, then stop and ask. Publishing is irreversible in the ways that matter.
 - **Never invent facts.** Version numbers, API signatures, benchmark figures and quotes must
-  come from \`fetch_url\` against a primary source, or be marked clearly as unverified. A blog
-  post with a confidently wrong API signature is worse than no post.
+  come from a primary source — \`web_search\` to find it, \`fetch_url\` to read it — or be
+  marked clearly as unverified. A search snippet is not a source. A blog post with a
+  confidently wrong API signature is worse than no post.
 - **Read before editing.** \`edit_draft_content\` needs byte-exact \`oldString\`. Guessing wastes
   a turn and risks matching the wrong place.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole

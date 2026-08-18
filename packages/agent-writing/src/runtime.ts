@@ -21,7 +21,7 @@ import { Locale } from "@chia/db/types";
 
 import { resolveWritingModel } from "./models.ts";
 import { writingPolicy } from "./policy.ts";
-import type { ContentPort, DraftStore } from "./ports.ts";
+import type { ContentPort, DraftStore, WebPort } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
@@ -34,6 +34,7 @@ export interface RunWritingTurnOptions<TApproval> {
   agentSessionId: string;
   targetFeedId?: number;
   content: ContentPort;
+  web: WebPort;
   draft: DraftStore;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
@@ -58,6 +59,7 @@ export const runWritingTurn = <TApproval>(
     agentSessionId: options.agentSessionId,
     targetFeedId: options.targetFeedId,
     content: options.content,
+    web: options.web,
     draft: options.draft,
   };
 

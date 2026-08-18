@@ -5,11 +5,13 @@ import type {
   TagItem,
 } from "@chia/agent-content/types";
 
-import type { ContentPort } from "../src/ports.ts";
+import type { ContentPort, WebPort } from "../src/ports.ts";
 import type {
   CommitDraftInput,
   CommitDraftResult,
   FetchedPage,
+  WebSearchInput,
+  WebSearchResult,
 } from "../src/types.ts";
 
 /** Scriptable {@link ContentPort} for tests. */
@@ -18,7 +20,6 @@ export interface FakeContentPortOptions {
   posts?: PostSnapshot[];
   list?: PostListItem[];
   tags?: TagItem[];
-  pages?: Record<string, FetchedPage>;
 }
 
 export interface FakeContentPort extends ContentPort {
@@ -47,10 +48,6 @@ export const createFakeContentPort = (
       ),
     listPosts: () => Promise.resolve(options.list ?? []),
     listTags: () => Promise.resolve(options.tags ?? []),
-    fetchPage: (url) =>
-      Promise.resolve(
-        options.pages?.[url] ?? { url, title: "Untitled", text: "" }
-      ),
     commitDraft: (input) => {
       commits.push(input);
       const feedId = input.feedId ?? nextFeedId++;
@@ -68,5 +65,37 @@ export const createFakeContentPort = (
         published: input.published,
       });
     },
+  };
+};
+
+/** Scriptable {@link WebPort} for tests. */
+export interface FakeWebPortOptions {
+  pages?: Record<string, FetchedPage>;
+  results?: WebSearchResult[];
+}
+
+export interface FakeWebPort extends WebPort {
+  readonly searches: WebSearchInput[];
+  /** What every `search` returns; mutable so a test can script it after construction. */
+  readonly results: WebSearchResult[];
+}
+
+export const createFakeWebPort = (
+  options: FakeWebPortOptions = {}
+): FakeWebPort => {
+  const searches: WebSearchInput[] = [];
+  const results: WebSearchResult[] = options.results ?? [];
+
+  return {
+    searches,
+    results,
+    search: (input) => {
+      searches.push(input);
+      return Promise.resolve([...results]);
+    },
+    fetchPage: (url) =>
+      Promise.resolve(
+        options.pages?.[url] ?? { url, title: "Untitled", text: "" }
+      ),
   };
 };

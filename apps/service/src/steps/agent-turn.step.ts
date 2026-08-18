@@ -27,6 +27,7 @@ import {
 } from "../services/agent-abort-controller";
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
+import { createAgentWebPort } from "../services/agent-web.port";
 import type { AgentAbortControllerRef } from "../workflows/hooks/agent.hooks";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
@@ -247,6 +248,7 @@ async function runWritingAgentTurn(
    * performing a second authorization check.
    */
   const content = createAgentContentPort({ db, adminId: getAdminId() });
+  const web = createAgentWebPort();
 
   const approvedToolCallIds = new Set(
     await getApprovedAgentToolCallIds(db, request.sessionId)
@@ -281,6 +283,7 @@ async function runWritingAgentTurn(
     agentSessionId: request.sessionId,
     targetFeedId: writingState.targetFeedId ?? undefined,
     content,
+    web,
     draft,
     onEvent: writer.push,
     approvedToolCallIds,

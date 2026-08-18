@@ -1,7 +1,7 @@
 # Agent 架構與 Turn 流程
 
 > 狀態：as-built
-> 最後更新：2026-08-17
+> 最後更新：2026-08-19
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 > 相關文件：[docs/rag-architecture.md](./rag-architecture.md)
 
@@ -319,9 +319,12 @@ Writing package 擁有自己的 model allowlist。Gateway、OpenAI、Anthropic c
 
 ## 10. Writing domain 與 durable state
 
-Writing agent 透過 `ContentPort`（`@chia/agent-content` 的 `ContentReadPort` 加上 `fetch_url`
-與寫入）讀內容、透過 `DraftStore` 寫 staging buffer；只有 commit-tier tool 會把 staged data
-提升到正式 feed/content。刪除內容與圖片上傳不開放給 agent。`buildSystemPrompt` 是穩定的
+Writing agent 透過 `ContentPort`（`@chia/agent-content` 的 `ContentReadPort` 加上寫入）讀內容、
+透過 `WebPort`（`web_search` 找來源、`fetch_url` 讀頁面）連外、透過 `DraftStore` 寫 staging
+buffer；只有 commit-tier tool 會把 staged data 提升到正式 feed/content。刪除內容與圖片上傳不
+開放給 agent。`WebPort` 由 host 實作在 `apps/service/src/services/agent-web.port.ts`：search 走
+Firecrawl（`FIRECRAWL_API_KEY`），只回 snippet、不逐筆 scrape，所以每次呼叫成本固定，模型要讀
+哪一頁再自己用 `fetch_url` 決定。`buildSystemPrompt` 是穩定的
 system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatile block（見 §4）；skills
 與 templates 位於 `packages/agent-writing/src/prompts/`。
 
@@ -331,7 +334,7 @@ Read tools 無法擴大自己能看到的範圍：可見性在 host 建 port 時
 （`apps/service/src/services/content-read.port.ts`）。`author` port 看得到設定作者的草稿；
 `public` port 把每次 detail read 都限定在 `published: true`，被要求列草稿時回空而不是覆寫
 filter。搜尋不需要分支——chunk index 對所有呼叫者都只含已發佈內容。Writing agent 的 port 是
-`author`；公開 kind 建 `public`，而且永遠拿不到 `fetch_url`。
+`author`；公開 kind 建 `public`，而且永遠拿不到 `WebPort`。
 
 Process 內沒有 conversational state。Kind-to-service map 只保存 implementation；所有 mutable
 state 都是 durable：
