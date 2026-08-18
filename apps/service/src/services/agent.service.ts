@@ -44,6 +44,10 @@ const writingAgentServiceDelegate: AgentKindService = {
     return await (await impl()).prompt(caller, input);
   },
 
+  async attach(caller, input) {
+    return await (await impl()).attach(caller, input);
+  },
+
   async *stream(caller, input) {
     yield* (await impl()).stream(caller, input);
   },

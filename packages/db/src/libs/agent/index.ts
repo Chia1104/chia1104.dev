@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type { DB } from "../../index.ts";
 import {
@@ -186,6 +186,20 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
     where: { sessionId, status: "active" },
     orderBy: { startedAt: "desc" },
   });
+
+/** Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten. */
+export const patchAgentRunMetadata = async (
+  db: DB,
+  externalRunId: string,
+  patch: Record<string, unknown>
+) => {
+  await db
+    .update(agentRuns)
+    .set({
+      metadata: sql`${agentRuns.metadata} || ${JSON.stringify(patch)}::jsonb`,
+    })
+    .where(eq(agentRuns.externalRunId, externalRunId));
+};
 
 export const completeAgentRun = async (
   db: DB,

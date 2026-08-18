@@ -1,6 +1,7 @@
 import type { AgentHarnessEvent } from "@earendil-works/pi-agent-core";
 
 import type { AgentEventPresentation } from "../types.ts";
+import { clipDetails } from "../wire/clip.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
 // ============================================
@@ -110,8 +111,9 @@ export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
               event.result,
               event.isError
             ),
-            details: (event.result as { details?: unknown } | undefined)
-              ?.details,
+            details: clipDetails(
+              (event.result as { details?: unknown } | undefined)?.details
+            ),
           },
         ];
 

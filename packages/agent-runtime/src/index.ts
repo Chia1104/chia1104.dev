@@ -1,4 +1,7 @@
-/** Pi-first agent execution, persistence, policy, models and wire primitives. */
+/**
+ * Pi-first agent execution, persistence, policy, models and wire primitives. Server-only: it pulls
+ * in Pi and the provider SDKs. Clients import `@chia/agent-runtime/events` instead.
+ */
 
 export * from "./types.ts";
 export {
@@ -17,17 +20,7 @@ export {
   type ByokProviderId,
   type ListModelsOptions,
 } from "./models.ts";
-export { agentWireEventSchema, type AgentWireEvent } from "./wire/schema.ts";
-export {
-  applyEvent,
-  emptyViewState,
-  foldEvents,
-  type AgentViewItem,
-  type AgentViewState,
-  type NoticeView,
-  type TextMessageView,
-  type ToolCallView,
-} from "./wire/fold.ts";
+export * from "./wire/index.ts";
 export { entriesToWireEvents } from "./wire/replay.ts";
 export {
   createPiWireEventMapper,

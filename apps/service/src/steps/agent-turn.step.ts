@@ -1,6 +1,8 @@
-import { FatalError, getWritable } from "workflow";
+import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
+import { getRun } from "workflow/api";
 
 import type {
+  AgentTurnError,
   AgentWireEvent,
   ThinkingLevel,
   ToolTier,
@@ -12,12 +14,18 @@ import {
   getAgentSession,
   getApprovedAgentToolCallIds,
   getWritingAgentSession,
+  patchAgentRunMetadata,
   recordAgentApprovalRequests,
 } from "@chia/db/repos/agent";
 import { getAdminId } from "@chia/utils/config";
 
+import {
+  signalAgentAbort,
+  subscribeAgentAbort,
+} from "../services/agent-abort-controller";
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
+import type { AgentAbortControllerRef } from "../workflows/hooks/agent.hooks";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
@@ -46,6 +54,45 @@ export const AGENT_DELTA_NAMESPACE = "agent:deltas";
 const DELTA_FLUSH_MS = 80;
 
 // ============================================
+// Turn marker
+// ============================================
+
+/**
+ * The turn the run is on, kept in `agent_run.metadata` because the workflow SDK cannot say it: a
+ * run parked on its message hook is `running` just like one executing a step. `running` here is
+ * true only while the turn step is inside its handler. `leafEntryId`/`streamIndex` say where the
+ * turn began, so a client can rejoin it: `get` cuts the replayed transcript after that leaf and
+ * `attach` tails the run's stream from that index — both off one marker, so the join never
+ * duplicates or drops a message.
+ */
+export const AGENT_TURN_KEY = "turn";
+
+export interface AgentTurnMarker {
+  /** Active leaf before this turn appended anything; `null` for an empty session. */
+  leafEntryId: string | null;
+  /** First coarse stream index this turn writes to. */
+  streamIndex: number;
+  running: boolean;
+}
+
+export const readAgentTurnMarker = (
+  metadata: Record<string, unknown>
+): AgentTurnMarker | undefined => {
+  const value = metadata[AGENT_TURN_KEY];
+  if (typeof value !== "object" || value === null) return undefined;
+  const { leafEntryId, streamIndex, running } = value as Record<
+    string,
+    unknown
+  >;
+  if (typeof streamIndex !== "number") return undefined;
+  return {
+    leafEntryId: typeof leafEntryId === "string" ? leafEntryId : null,
+    streamIndex,
+    running: running === true,
+  };
+};
+
+// ============================================
 // Step contract
 // ============================================
 
@@ -53,6 +100,8 @@ export interface AgentTurnRequest {
   sessionId: string;
   /** Verified at the transport boundary before the run was started. */
   userId: string;
+  /** The run's abort controller; the turn subscribes to it for the harness's `AbortSignal`. */
+  abortController: AgentAbortControllerRef;
   text: string;
   template?: { name: string; args?: string[] };
   preAuthorizeToolNames?: string[];
@@ -70,9 +119,9 @@ export interface AgentApprovalRequestSnapshot {
 }
 
 export interface AgentTurnOutcome {
-  status: "done" | "awaiting_approval" | "error";
+  status: "done" | "awaiting_approval" | "aborted" | "error";
   approvals: AgentApprovalRequestSnapshot[];
-  error?: string;
+  error?: AgentTurnError;
 }
 
 type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
@@ -80,7 +129,8 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 type AgentTurnHandler = (
   db: DB,
   row: AgentSessionRow,
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ) => Promise<AgentTurnOutcome>;
 
 // ============================================
@@ -111,7 +161,32 @@ export const runAgentTurnStep = async (
     );
   }
 
-  return await handler(db, row, request);
+  // Recorded before the first event of this turn is written. The previous turn flushed its writer
+  // before returning, so the tail is the last index it wrote.
+  const { workflowRunId } = getWorkflowMetadata();
+  const marker: AgentTurnMarker = {
+    leafEntryId: row.leafEntryId,
+    streamIndex: (await getRun(workflowRunId).getReadable().getTailIndex()) + 1,
+    running: true,
+  };
+  await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
+
+  const clearMarker = () =>
+    patchAgentRunMetadata(db, workflowRunId, {
+      [AGENT_TURN_KEY]: { ...marker, running: false },
+    });
+  const abort = subscribeAgentAbort(request.abortController.runId);
+  try {
+    const outcome = await handler(db, row, request, abort.signal);
+    abort.dispose();
+    await clearMarker();
+    return outcome;
+  } catch (error) {
+    abort.dispose();
+    // The handler's error is the one that matters; a failed cleanup must not replace it.
+    await clearMarker().catch(() => undefined);
+    throw error;
+  }
 };
 
 /**
@@ -131,7 +206,8 @@ const AGENT_TURN_HANDLERS: Readonly<Record<string, AgentTurnHandler>> = {
 async function runWritingAgentTurn(
   db: DB,
   row: AgentSessionRow,
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ): Promise<AgentTurnOutcome> {
   const [
     { createAgentModels, PgSessionRepo },
@@ -212,6 +288,7 @@ async function runWritingAgentTurn(
     onEvent: writer.push,
     approvedToolCallIds,
     preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+    signal,
     message: {
       text: request.text,
       template: request.template,
@@ -324,12 +401,17 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
   await Promise.allSettled([coarse.close(), deltas.close()]);
 };
 
-/** Marks the durable run inactive once its orchestration loop ends. */
+/**
+ * Marks the durable run inactive once its orchestration loop ends, and closes its abort controller
+ * so it does not sit parked until its TTL.
+ */
 export const completeAgentRunStep = async (
-  sessionId: string
+  sessionId: string,
+  abortController: AgentAbortControllerRef
 ): Promise<void> => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
   await completeActiveAgentRuns(db, sessionId, "completed");
+  await signalAgentAbort(abortController.id, "run finished");
 };

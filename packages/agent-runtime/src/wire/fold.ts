@@ -1,4 +1,4 @@
-import type { ToolTier } from "../types.ts";
+import type { AgentErrorKind, ToolTier } from "../types.ts";
 
 import type { AgentWireEvent } from "./schema.ts";
 
@@ -32,9 +32,27 @@ export interface NoticeView {
   kind: "notice";
   variant: "compacted" | "error";
   text: string;
+  /** Set on `error` notices. */
+  code?: AgentErrorKind;
 }
 
 export type AgentViewItem = TextMessageView | ToolCallView | NoticeView;
+
+/** What the operator can do about an error kind; the provider's own text follows it. */
+export const AGENT_ERROR_HEADLINE: Record<AgentErrorKind, string> = {
+  auth: "The provider rejected the API key",
+  quota: "The provider account is out of quota or credit",
+  rate_limited: "The provider is rate limiting requests",
+  context_overflow:
+    "The conversation no longer fits the model's context — compact it",
+  provider: "The provider failed",
+  internal: "The agent failed",
+};
+
+export const describeAgentError = (error: {
+  kind: AgentErrorKind;
+  message: string;
+}): string => `${AGENT_ERROR_HEADLINE[error.kind]}: ${error.message}`;
 
 export interface AgentViewState {
   items: AgentViewItem[];
@@ -240,7 +258,12 @@ export const applyEvent = (
       return { ...state, items, stateRevision: event.revision };
 
     case "error":
-      items.push({ kind: "notice", variant: "error", text: event.message });
+      items.push({
+        kind: "notice",
+        variant: "error",
+        text: event.message,
+        code: event.kind,
+      });
       return { ...state, items, runStatus: "error" };
 
     case "run:end":

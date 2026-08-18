@@ -23,7 +23,7 @@ import { resolveWritingModel } from "./models.ts";
 import { writingPolicy } from "./policy.ts";
 import type { ContentPort, DraftStore } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
-import { buildSystemPrompt } from "./prompts/system.ts";
+import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
 import { createWritingTools } from "./tools/index.ts";
 import type { WritingToolContext } from "./types.ts";
@@ -39,6 +39,8 @@ export interface RunWritingTurnOptions<TApproval> {
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
+  /** Host-owned abort; see `RunPiTurnOptions.signal`. */
+  signal?: AbortSignal;
   models?: Models;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
@@ -67,14 +69,18 @@ export const runWritingTurn = <TApproval>(
     models,
     tools: createWritingTools(),
     toolContext,
-    systemPrompt: async () =>
-      buildSystemPrompt({
-        skills: writingSkills,
+    systemPrompt: buildSystemPrompt({
+      skills: writingSkills,
+      autoApprove: options.settings.autoApprove,
+    }),
+    volatileContext: async () =>
+      buildTurnContext({
         draft: await options.draft.get(options.agentSessionId),
-        autoApprove: options.settings.autoApprove,
         targetFeedId: options.targetFeedId,
         defaultLocale,
+        now: new Date(),
       }),
+    signal: options.signal,
     skills: writingSkills,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,

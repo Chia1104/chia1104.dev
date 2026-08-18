@@ -1,4 +1,9 @@
-export { buildSystemPrompt, type SystemPromptInput } from "./system.ts";
+export {
+  buildSystemPrompt,
+  buildTurnContext,
+  type SystemPromptInput,
+  type TurnContextInput,
+} from "./system.ts";
 export {
   writingSkills,
   mdxAuthoringSkill,

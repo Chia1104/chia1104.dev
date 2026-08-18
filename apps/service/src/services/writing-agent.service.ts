@@ -11,6 +11,7 @@ import {
 import type {
   AgentSessionSettings,
   AgentWireEvent,
+  SessionTreeEntry,
   ThinkingLevel,
   ToolTier,
 } from "@chia/agent-runtime";
@@ -46,7 +47,12 @@ import {
 } from "@chia/db/repos/agent";
 import { CallerTier } from "@chia/service-kit/policies";
 
-import { AGENT_DELTA_NAMESPACE } from "../steps/agent-turn.step";
+import {
+  AGENT_DELTA_NAMESPACE,
+  AGENT_TURN_KEY,
+  readAgentTurnMarker,
+} from "../steps/agent-turn.step";
+import type { AgentTurnMarker } from "../steps/agent-turn.step";
 import { agentSessionWorkflow } from "../workflows/agent-session.workflow";
 import {
   AGENT_END_SENTINEL,
@@ -56,6 +62,12 @@ import {
   agentMessageToken,
 } from "../workflows/hooks/agent.hooks";
 
+import {
+  AGENT_ABORT_CONTROLLER_KEY,
+  readAgentAbortControllerRef,
+  signalAgentAbort,
+  startAgentAbortController,
+} from "./agent-abort-controller";
 import { createAgentContentPort } from "./agent-content.port";
 import {
   decryptAgentCredentials,
@@ -134,6 +146,10 @@ const loadOwnedSession = async (
     feedMeta: writingState.feedMeta,
     activeRunId: activeRun?.id ?? null,
     workflowRunId: activeRun?.externalRunId ?? null,
+    turn: activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined,
+    abortController: activeRun
+      ? readAgentAbortControllerRef(activeRun.metadata)
+      : undefined,
   };
 };
 
@@ -242,6 +258,23 @@ const isRunLive = async (runId: string): Promise<boolean> => {
 };
 
 /**
+ * What the durable run is doing right now. `running` is a turn step executing; `waiting` is the
+ * run parked on its message or approval hook; `null` means no live run. The SDK's own status
+ * cannot tell the first two apart — a parked run is `running` too — so the turn marker the step
+ * maintains decides.
+ */
+const runStateOf = async (row: {
+  workflowRunId: string | null;
+  turn: AgentTurnMarker | undefined;
+}): Promise<{ id: string; status: "running" | "waiting" } | null> => {
+  if (!row.workflowRunId || !(await isRunLive(row.workflowRunId))) return null;
+  return {
+    id: row.workflowRunId,
+    status: row.turn?.running ? "running" : "waiting",
+  };
+};
+
+/**
  * Cancels a run that was live a moment ago.
  *
  * `cancel()` refuses a run that has since reached a terminal state — the storage layer
@@ -290,6 +323,31 @@ const undecidedApprovals = async (
     .map((approval) => approval.toolName);
 };
 
+/**
+ * The branch up to the leaf the running turn started from, plus that turn's own leading user
+ * messages: the live replay carries no user text (the client already has what it sent), so the
+ * prompt the turn is answering has to come from here for a rejoining client to see it.
+ */
+const entriesBeforeTurn = (
+  entries: SessionTreeEntry[],
+  turn: AgentTurnMarker
+): SessionTreeEntry[] => {
+  const leafIndex =
+    turn.leafEntryId === null
+      ? -1
+      : entries.findIndex((entry) => entry.id === turn.leafEntryId);
+  // A marker that is not on this branch cannot cut it; show everything rather than guess.
+  if (turn.leafEntryId !== null && leafIndex === -1) return entries;
+
+  let end = leafIndex + 1;
+  while (end < entries.length) {
+    const entry = entries[end];
+    if (entry?.type !== "message" || entry.message.role !== "user") break;
+    end += 1;
+  }
+  return entries.slice(0, end);
+};
+
 const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
   const row = await loadOwnedSession(caller, sessionId);
   if (!row) return null;
@@ -303,6 +361,18 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     session.getSessionStats(),
     getAgentApprovals(db, sessionId),
   ]);
+  /**
+   * Read after the branch, on purpose: the cut below and the entries it cuts must come from the same
+   * observation. A turn that finished between the two reads has already persisted its reply; a
+   * marker read before the branch would still say `running`, cut that reply out, and leave nothing
+   * for `attach` to replay.
+   */
+  const activeRun = await getActiveAgentRun(db, sessionId);
+  const turn = activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined;
+  const run = await runStateOf({
+    workflowRunId: activeRun?.externalRunId ?? null,
+    turn,
+  });
 
   // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
   // an empty active branch. Replay those entries in insertion order so existing development
@@ -317,6 +387,13 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     if (storedEntries.every((entry) => entry.parentId === null)) {
       transcriptEntries = storedEntries;
     }
+  }
+  /**
+   * A running turn is not replayed from the transcript: `attach` replays it from the run's stream
+   * instead, and both cut at the same recorded marker so the client sees each message once.
+   */
+  if (run?.status === "running" && turn) {
+    transcriptEntries = entriesBeforeTurn(transcriptEntries, turn);
   }
   const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
@@ -335,6 +412,7 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     runtimeConfig: row.runtimeConfig,
     configVersion: row.configVersion,
     draft: draftState as never,
+    run,
     events,
     pendingApprovals,
     stats: {
@@ -529,23 +607,48 @@ export const writingAgentService: AgentKindService = {
       return { runId: row.workflowRunId, startIndex, startedRun: false };
     }
 
+    // Started before the session run so its ref can travel in the run's request: every turn then
+    // subscribes to this one controller by run id, and `abort` resumes it by id.
+    const abortController = await startAgentAbortController();
     const run = await start(agentSessionWorkflow, [
       {
         sessionId: input.sessionId,
         userId: caller.userId,
+        abortController,
         firstMessage: message,
       },
     ]);
 
+    // The first turn may reach its step before this row exists, in which case its own marker write
+    // finds nothing to update; a fresh run always starts its first turn at index 0 from the leaf as
+    // it stands now, so the same marker is seeded here. The step's end-of-turn write lands either
+    // way, so `running` cannot stick.
+    const turn: AgentTurnMarker = {
+      leafEntryId: row.leafEntryId,
+      streamIndex: 0,
+      running: true,
+    };
     await createAgentRun(caller.context.db as DB, {
       id: run.runId,
       sessionId: input.sessionId,
       harnessKind: "workflow",
       externalRunId: run.runId,
-      metadata: { agentKind: WRITING_AGENT_KIND },
+      metadata: {
+        agentKind: WRITING_AGENT_KIND,
+        [AGENT_TURN_KEY]: turn,
+        [AGENT_ABORT_CONTROLLER_KEY]: abortController,
+      },
     });
 
     return { runId: run.runId, startIndex: 0, startedRun: true };
+  },
+
+  async attach(caller, input) {
+    const row = await loadOwnedSession(caller, input.sessionId);
+    if (!row?.workflowRunId || !row.turn) return null;
+    const run = await runStateOf(row);
+    if (run?.status !== "running") return null;
+    return { runId: row.workflowRunId, startIndex: row.turn.streamIndex };
   },
 
   /**
@@ -635,8 +738,14 @@ export const writingAgentService: AgentKindService = {
     if (!row?.workflowRunId) return false;
     if (!(await isRunLive(row.workflowRunId))) return false;
 
-    // Cancels the whole run, which is the session's driver — the next prompt starts a fresh one and
-    // picks the transcript back up from Postgres.
+    // Stop the harness first — cancelling the run does not reach a step already in flight — then
+    // cancel the whole run, which is the session's driver; the next prompt starts a fresh one and
+    // picks the transcript back up from Postgres. The row is marked last so a failed cancel never
+    // leaves a live run behind a non-active row (the next prompt would start a second workflow and
+    // hit the hook conflict).
+    if (row.abortController) {
+      await signalAgentAbort(row.abortController.id, "stopped by the operator");
+    }
     await cancelLiveRun(row.workflowRunId);
     if (row.activeRunId) {
       await completeAgentRun(
@@ -685,7 +794,7 @@ export const writingAgentService: AgentKindService = {
   async compact(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await assertNoTurnRunning(row.workflowRunId, "compact");
+    await assertNoTurnRunning(row, "compact");
 
     const options = await writingSessionOperationOptions(
       caller,
@@ -698,7 +807,7 @@ export const writingAgentService: AgentKindService = {
   async navigate(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await assertNoTurnRunning(row.workflowRunId, "rewind");
+    await assertNoTurnRunning(row, "rewind");
 
     const options = await writingSessionOperationOptions(
       caller,
@@ -779,28 +888,16 @@ export const writingAgentService: AgentKindService = {
 
 /**
  * Compaction and rewinding both mutate the session tree, so they cannot run while a turn is
- * appending to it.
- *
- * A live run is not enough to refuse on — it may simply be parked on the message hook, which is the
- * normal idle state. Only an actually-executing turn conflicts, and `running` is the closest signal
- * the run exposes.
+ * appending to it. A live run is not enough to refuse on — parked on the message hook is its
+ * normal idle state — so this reads the turn marker, like everything else that needs to know.
  */
 const assertNoTurnRunning = async (
-  runId: string | null,
+  row: { workflowRunId: string | null; turn: AgentTurnMarker | undefined },
   action: string
 ): Promise<void> => {
-  if (!runId) return;
-  try {
-    const run = getRun(runId);
-    if (!(await run.exists)) return;
-    if ((await run.status) === "running") {
-      throw new Error(
-        `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
-      );
-    }
-  } catch (error) {
-    // Re-throw our own refusal; swallow lookup failures for runs that no longer resolve.
-    if (error instanceof Error && error.message.startsWith("Cannot "))
-      throw error;
+  if ((await runStateOf(row))?.status === "running") {
+    throw new Error(
+      `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
+    );
   }
 };

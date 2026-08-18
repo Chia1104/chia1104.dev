@@ -116,6 +116,15 @@ export interface AgentKindService {
   ): Promise<{ runId: string; startIndex: number; startedRun: boolean }>;
 
   /**
+   * Cursor to the start of the turn currently executing, or `null` when no turn is running. Reads
+   * only; the caller then tails `stream` from it.
+   */
+  attach(
+    caller: AgentServiceCaller,
+    input: { sessionId: string }
+  ): Promise<AgentStreamCursor | null>;
+
+  /**
    * Streams a run's durable event stream.
    *
    * Returning an async generator (rather than taking a callback) is what lets the oRPC handler hand

@@ -63,8 +63,25 @@ export interface AgentTurnMessage {
   template?: { name: string; args?: string[] };
 }
 
+/**
+ * Why a turn failed, coarse enough for a client to pick the next step: rotate a key, wait, compact
+ * the session, or report a bug. Values are the closed vocabulary shared by the wire `error` event.
+ */
+export type AgentErrorKind =
+  | "auth"
+  | "quota"
+  | "rate_limited"
+  | "context_overflow"
+  | "provider"
+  | "internal";
+
+export interface AgentTurnError {
+  kind: AgentErrorKind;
+  message: string;
+}
+
 export interface AgentTurnExecution<TApproval> {
-  status: "done" | "awaiting_approval" | "error";
+  status: "done" | "awaiting_approval" | "aborted" | "error";
   approvals: TApproval[];
-  error?: string;
+  error?: AgentTurnError;
 }
