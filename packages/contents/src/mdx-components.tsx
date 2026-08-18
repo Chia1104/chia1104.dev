@@ -21,61 +21,62 @@ import { cn } from "@chia/ui/utils/cn.util";
 
 import { Mermaid } from "./components/mermaid";
 
-export const FumadocsComponents = {
-  ...defaultComponents,
-  Tabs,
-  Tab,
-  Callout,
-  TypeTable,
-  Accordion,
-  Accordions,
-  Banner,
-  File,
-  Folder,
-  Files,
-  pre: ({ ref: _ref, ...props }: any) => (
-    <CodeBlock {...props}>
-      <Pre>{props.children}</Pre>
-    </CodeBlock>
-  ),
-  blockquote: (props: any) => <Callout>{props.children}</Callout>,
-  Image: (props: any) => (
-    <ImageZoom wrapElement="span">
-      <Image
-        {...props}
-        className="h-auto w-full rounded-lg object-cover"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
-      />
-    </ImageZoom>
-  ),
-  img: (props: any) => (
-    <ImageZoom wrapElement="span">
-      <Image
-        {...props}
-        className="h-auto w-full rounded-lg object-cover"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
-      />
-    </ImageZoom>
-  ),
-  h1: (props: any) => (
-    <Heading as="h1" {...props} className="prose-a:no-underline" />
-  ),
-  h2: (props: any) => (
-    <Heading as="h2" {...props} className="prose-a:no-underline" />
-  ),
-  h3: (props: any) => (
-    <Heading as="h3" {...props} className="prose-a:no-underline" />
-  ),
-  h4: (props: any) => (
-    <Heading as="h4" {...props} className="prose-a:no-underline" />
-  ),
-  h5: (props: any) => (
-    <Heading as="h5" {...props} className="prose-a:no-underline" />
-  ),
-  h6: (props: any) => (
-    <Heading as="h6" {...props} className="prose-a:no-underline" />
-  ),
-} as MDXComponents;
+export const FumadocsComponents =
+  /* SAFETY: The producer contract guarantees this value satisfies MDXComponents. */ {
+    ...defaultComponents,
+    Tabs,
+    Tab,
+    Callout,
+    TypeTable,
+    Accordion,
+    Accordions,
+    Banner,
+    File,
+    Folder,
+    Files,
+    pre: ({ ref: _ref, ...props }: any) => (
+      <CodeBlock {...props}>
+        <Pre>{props.children}</Pre>
+      </CodeBlock>
+    ),
+    blockquote: (props: any) => <Callout>{props.children}</Callout>,
+    Image: (props: any) => (
+      <ImageZoom wrapElement="span">
+        <Image
+          {...props}
+          className="h-auto w-full rounded-lg object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
+        />
+      </ImageZoom>
+    ),
+    img: (props: any) => (
+      <ImageZoom wrapElement="span">
+        <Image
+          {...props}
+          className="h-auto w-full rounded-lg object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
+        />
+      </ImageZoom>
+    ),
+    h1: (props: any) => (
+      <Heading as="h1" {...props} className="prose-a:no-underline" />
+    ),
+    h2: (props: any) => (
+      <Heading as="h2" {...props} className="prose-a:no-underline" />
+    ),
+    h3: (props: any) => (
+      <Heading as="h3" {...props} className="prose-a:no-underline" />
+    ),
+    h4: (props: any) => (
+      <Heading as="h4" {...props} className="prose-a:no-underline" />
+    ),
+    h5: (props: any) => (
+      <Heading as="h5" {...props} className="prose-a:no-underline" />
+    ),
+    h6: (props: any) => (
+      <Heading as="h6" {...props} className="prose-a:no-underline" />
+    ),
+  } as MDXComponents;
 
 /**
  * V1 MDX Components

@@ -45,7 +45,7 @@ export interface FeedHooks {
 export interface BaseOSContext extends ServiceContext {
   config: ORPCConfig;
   hooks?: FeedHooks & {
-    onError?: (error: unknown) => void;
+    onError?: (cause: unknown) => void;
   };
   /** Starts and reconciles resource index runs. Needs the workflow runtime. */
   indexing?: IndexingService;

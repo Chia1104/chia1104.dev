@@ -3,35 +3,40 @@ import { getHookByToken, getRun, start } from "workflow/api";
 import {
   BYOK_PROVIDER_IDS,
   createAgentModels,
-  entriesToWireEvents,
-  PgSessionRepo,
   UnknownAgentModelError,
+} from "@chia/agent-runtime/models";
+import {
+  PgSessionRepo,
   writeSessionSettings,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/session/pg-repo";
+import type { SessionTreeEntry } from "@chia/agent-runtime/session/pi";
 import type {
   AgentSessionSettings,
-  AgentWireEvent,
   ThinkingLevel,
   ToolTier,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/types";
+import { entriesToWireEvents } from "@chia/agent-runtime/wire/replay";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import { PgDraftStore } from "@chia/agent-writing/draft/pg-draft-store";
 import {
-  compactWritingSession,
-  createWritingTools,
   assertWritingModel,
   listWritingModels,
-  navigateWritingSession,
-  PgDraftStore,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
-  writingPolicy,
-  writingPromptTemplates,
-  writingSkills,
-} from "@chia/agent-writing";
+} from "@chia/agent-writing/models";
+import { writingPolicy } from "@chia/agent-writing/policy";
+import { writingSkills } from "@chia/agent-writing/prompts/skills";
+import { writingPromptTemplates } from "@chia/agent-writing/prompts/templates";
+import {
+  compactWritingSession,
+  navigateWritingSession,
+} from "@chia/agent-writing/runtime";
+import { createWritingTools } from "@chia/agent-writing/tools/tool-set";
 import type {
   AgentKindService,
   AgentServiceCaller,
 } from "@chia/api/orpc/services/agent.service";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import {
   completeAgentRun,
   createAgentRun,
@@ -44,8 +49,14 @@ import {
   getWritingAgentSession,
   softDeleteAgentSession,
 } from "@chia/db/repos/agent";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
-import { AGENT_DELTA_NAMESPACE } from "../steps/agent-turn.step";
+import {
+  AGENT_DELTA_NAMESPACE,
+  AGENT_TURN_KEY,
+  readAgentTurnMarker,
+} from "../steps/agent-turn.step";
+import type { AgentTurnMarker } from "../steps/agent-turn.step";
 import { agentSessionWorkflow } from "../workflows/agent-session.workflow";
 import {
   AGENT_END_SENTINEL,
@@ -55,6 +66,12 @@ import {
   agentMessageToken,
 } from "../workflows/hooks/agent.hooks";
 
+import {
+  AGENT_ABORT_CONTROLLER_KEY,
+  readAgentAbortControllerRef,
+  signalAgentAbort,
+  startAgentAbortController,
+} from "./agent-abort-controller";
 import { createAgentContentPort } from "./agent-content.port";
 import {
   decryptAgentCredentials,
@@ -93,7 +110,9 @@ const repoFor = (db: DB) =>
   });
 
 const dependenciesFor = (caller: AgentServiceCaller) => {
-  const db = caller.context.db as DB;
+  const db =
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+      .context.db as DB;
   return {
     db,
     repo: repoFor(db),
@@ -109,13 +128,15 @@ const dependenciesFor = (caller: AgentServiceCaller) => {
  * Loads a session **scoped to the caller**.
  *
  * The session id arrives from client input, so ownership is re-checked here rather than trusted —
- * `adminGuard` proves who is calling, not what they may open.
+ * the guard proves who is calling, not what they may open.
  */
 const loadOwnedSession = async (
   caller: AgentServiceCaller,
   sessionId: string
 ) => {
-  const db = caller.context.db as DB;
+  const db =
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+      .context.db as DB;
   const row = await getAgentSession(db, sessionId);
   if (!row || row.deletedAt !== null) return null;
   if (row.userId !== caller.userId) return null;
@@ -133,6 +154,10 @@ const loadOwnedSession = async (
     feedMeta: writingState.feedMeta,
     activeRunId: activeRun?.id ?? null,
     workflowRunId: activeRun?.externalRunId ?? null,
+    turn: activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined,
+    abortController: activeRun
+      ? readAgentAbortControllerRef(activeRun.metadata)
+      : undefined,
   };
 };
 
@@ -150,9 +175,11 @@ const settingsOf = (row: {
   return {
     providerId: row.providerId,
     modelId: row.modelId,
-    thinkingLevel: row.thinkingLevel as ThinkingLevel,
+    thinkingLevel:
+      /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
     activeToolNames: row.activeToolNames,
-    autoApprove: row.autoApprove as ToolTier[],
+    autoApprove:
+      /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
   };
 };
 
@@ -194,7 +221,10 @@ const writingSessionOperationOptions = async (
   sessionId: string,
   row: Parameters<typeof settingsOf>[0]
 ) => {
-  const session = await repoFor(caller.context.db as DB).openById(sessionId);
+  const session = await repoFor(
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+      .context.db as DB
+  ).openById(sessionId);
   return {
     session,
     settings: settingsOf(row),
@@ -238,6 +268,23 @@ const isRunLive = async (runId: string): Promise<boolean> => {
     // A run from a previous deployment may no longer resolve; treat it as gone.
     return false;
   }
+};
+
+/**
+ * What the durable run is doing right now. `running` is a turn step executing; `waiting` is the
+ * run parked on its message or approval hook; `null` means no live run. The SDK's own status
+ * cannot tell the first two apart — a parked run is `running` too — so the turn marker the step
+ * maintains decides.
+ */
+const runStateOf = async (row: {
+  workflowRunId: string | null;
+  turn: AgentTurnMarker | undefined;
+}): Promise<{ id: string; status: "running" | "waiting" } | null> => {
+  if (!row.workflowRunId || !(await isRunLive(row.workflowRunId))) return null;
+  return {
+    id: row.workflowRunId,
+    status: row.turn?.running ? "running" : "waiting",
+  };
 };
 
 /**
@@ -289,6 +336,31 @@ const undecidedApprovals = async (
     .map((approval) => approval.toolName);
 };
 
+/**
+ * The branch up to the leaf the running turn started from, plus that turn's own leading user
+ * messages: the live replay carries no user text (the client already has what it sent), so the
+ * prompt the turn is answering has to come from here for a rejoining client to see it.
+ */
+const entriesBeforeTurn = (
+  entries: SessionTreeEntry[],
+  turn: AgentTurnMarker
+): SessionTreeEntry[] => {
+  const leafIndex =
+    turn.leafEntryId === null
+      ? -1
+      : entries.findIndex((entry) => entry.id === turn.leafEntryId);
+  // A marker that is not on this branch cannot cut it; show everything rather than guess.
+  if (turn.leafEntryId !== null && leafIndex === -1) return entries;
+
+  let end = leafIndex + 1;
+  while (end < entries.length) {
+    const entry = entries[end];
+    if (entry?.type !== "message" || entry.message.role !== "user") break;
+    end += 1;
+  }
+  return entries.slice(0, end);
+};
+
 const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
   const row = await loadOwnedSession(caller, sessionId);
   if (!row) return null;
@@ -302,6 +374,18 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     session.getSessionStats(),
     getAgentApprovals(db, sessionId),
   ]);
+  /**
+   * Read after the branch, on purpose: the cut below and the entries it cuts must come from the same
+   * observation. A turn that finished between the two reads has already persisted its reply; a
+   * marker read before the branch would still say `running`, cut that reply out, and leave nothing
+   * for `attach` to replay.
+   */
+  const activeRun = await getActiveAgentRun(db, sessionId);
+  const turn = activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined;
+  const run = await runStateOf({
+    workflowRunId: activeRun?.externalRunId ?? null,
+    turn,
+  });
 
   // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
   // an empty active branch. Replay those entries in insertion order so existing development
@@ -316,6 +400,13 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     if (storedEntries.every((entry) => entry.parentId === null)) {
       transcriptEntries = storedEntries;
     }
+  }
+  /**
+   * A running turn is not replayed from the transcript: `attach` replays it from the run's stream
+   * instead, and both cut at the same recorded marker so the client sees each message once.
+   */
+  if (run?.status === "running" && turn) {
+    transcriptEntries = entriesBeforeTurn(transcriptEntries, turn);
   }
   const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
@@ -333,7 +424,9 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     settings: settingsOf(row),
     runtimeConfig: row.runtimeConfig,
     configVersion: row.configVersion,
-    draft: draftState as never,
+    draft:
+      /* SAFETY: The producer contract guarantees this value satisfies never. */ draftState as never,
+    run,
     events,
     pendingApprovals,
     stats: {
@@ -349,6 +442,13 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
 // ============================================
 
 export const writingAgentService: AgentKindService = {
+  /**
+   * The configured admin only. These tools write to and publish the blog, so a logged-in visitor
+   * must not reach them; `Root` also makes `caller.adminId` and `caller.userId` the same person,
+   * which is what lets the content port act as the author.
+   */
+  minTier: CallerTier.Root,
+
   async listSessions(caller, input) {
     const { db, repo } = dependenciesFor(caller);
     const metadata = await repo.list({
@@ -385,17 +485,27 @@ export const writingAgentService: AgentKindService = {
       settings: {
         providerId: input.model?.providerId,
         modelId: input.model?.modelId,
-        thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
-        autoApprove: input.autoApprove as ToolTier[] | undefined,
+        thinkingLevel:
+          /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel | undefined. */ input.thinkingLevel as
+            | ThinkingLevel
+            | undefined,
+        autoApprove:
+          /* SAFETY: The producer contract guarantees this value satisfies ToolTier[] | undefined. */ input.autoApprove as
+            | ToolTier[]
+            | undefined,
       },
       runtimeConfig: input.runtimeConfig,
     });
     const { id } = await session.getMetadata();
     try {
-      await createWritingAgentSession(caller.context.db as DB, {
-        sessionId: id,
-        targetFeedId: input.targetFeedId,
-      });
+      await createWritingAgentSession(
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
+        {
+          sessionId: id,
+          targetFeedId: input.targetFeedId,
+        }
+      );
 
       // Opening a session against an existing post seeds the buffer, so the agent edits the real
       // content instead of guessing at it.
@@ -411,7 +521,11 @@ export const writingAgentService: AgentKindService = {
     } catch (error) {
       // Core and writing state live in separate repositories. Compensate if extension setup or
       // draft seeding fails so callers never receive an unusable half-created session.
-      await deleteAgentSession(caller.context.db as DB, id);
+      await deleteAgentSession(
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
+        id
+      );
       throw error;
     }
   },
@@ -433,28 +547,44 @@ export const writingAgentService: AgentKindService = {
     }
     if (row.activeRunId) {
       await completeAgentRun(
-        caller.context.db as DB,
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
         row.activeRunId,
         "cancelled"
       );
     }
 
-    await softDeleteAgentSession(caller.context.db as DB, input.sessionId);
+    await softDeleteAgentSession(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      input.sessionId
+    );
     return true;
   },
 
   async updateSettings(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await writeSessionSettings(caller.context.db as DB, input.sessionId, {
-      title: input.title,
-      providerId: input.model?.providerId,
-      modelId: input.model?.modelId,
-      thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
-      activeToolNames: input.activeToolNames,
-      autoApprove: input.autoApprove as ToolTier[] | undefined,
-      runtimeConfig: input.runtimeConfig,
-    });
+    await writeSessionSettings(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      input.sessionId,
+      {
+        title: input.title,
+        providerId: input.model?.providerId,
+        modelId: input.model?.modelId,
+        thinkingLevel:
+          /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel | undefined. */ input.thinkingLevel as
+            | ThinkingLevel
+            | undefined,
+        activeToolNames: input.activeToolNames,
+        autoApprove:
+          /* SAFETY: The producer contract guarantees this value satisfies ToolTier[] | undefined. */ input.autoApprove as
+            | ToolTier[]
+            | undefined,
+        runtimeConfig: input.runtimeConfig,
+      }
+    );
 
     return detailFor(caller, input.sessionId);
   },
@@ -495,7 +625,8 @@ export const writingAgentService: AgentKindService = {
      * message would simply appear to do nothing. Better to say why.
      */
     const outstanding = await undecidedApprovals(
-      caller.context.db as DB,
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
       input.sessionId
     );
     if (outstanding.length > 0) {
@@ -521,24 +652,55 @@ export const writingAgentService: AgentKindService = {
       return { runId: row.workflowRunId, startIndex, startedRun: false };
     }
 
+    // Started before the session run so its ref can travel in the run's request: every turn then
+    // subscribes to this one controller by run id, and `abort` resumes it by id.
+    const abortController = await startAgentAbortController();
     const run = await start(agentSessionWorkflow, [
       {
         sessionId: input.sessionId,
-        adminId: caller.adminId,
         userId: caller.userId,
+        abortController,
         firstMessage: message,
       },
     ]);
 
-    await createAgentRun(caller.context.db as DB, {
-      id: run.runId,
-      sessionId: input.sessionId,
-      harnessKind: "workflow",
-      externalRunId: run.runId,
-      metadata: { agentKind: WRITING_AGENT_KIND },
-    });
+    // The first turn may reach its step before this row exists, in which case its own marker write
+    // finds nothing to update; a fresh run always starts its first turn at index 0 from the leaf as
+    // it stands now, so the same marker is seeded here. The step's end-of-turn write lands either
+    // way, so `running` cannot stick.
+    const turn: AgentTurnMarker = {
+      leafEntryId: row.leafEntryId,
+      streamIndex: 0,
+      running: true,
+    };
+    await createAgentRun(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      {
+        id: run.runId,
+        sessionId: input.sessionId,
+        harnessKind: "workflow",
+        externalRunId: run.runId,
+        metadata: {
+          agentKind: WRITING_AGENT_KIND,
+          [AGENT_TURN_KEY]: turn,
+          [AGENT_ABORT_CONTROLLER_KEY]: {
+            id: abortController.id,
+            runId: abortController.runId,
+          },
+        },
+      }
+    );
 
     return { runId: run.runId, startIndex: 0, startedRun: true };
+  },
+
+  async attach(caller, input) {
+    const row = await loadOwnedSession(caller, input.sessionId);
+    if (!row?.workflowRunId || !row.turn) return null;
+    const run = await runStateOf(row);
+    if (run?.status !== "running") return null;
+    return { runId: row.workflowRunId, startIndex: row.turn.streamIndex };
   },
 
   /**
@@ -628,12 +790,19 @@ export const writingAgentService: AgentKindService = {
     if (!row?.workflowRunId) return false;
     if (!(await isRunLive(row.workflowRunId))) return false;
 
-    // Cancels the whole run, which is the session's driver — the next prompt starts a fresh one and
-    // picks the transcript back up from Postgres.
+    // Stop the harness first — cancelling the run does not reach a step already in flight — then
+    // cancel the whole run, which is the session's driver; the next prompt starts a fresh one and
+    // picks the transcript back up from Postgres. The row is marked last so a failed cancel never
+    // leaves a live run behind a non-active row (the next prompt would start a second workflow and
+    // hit the hook conflict).
+    if (row.abortController) {
+      await signalAgentAbort(row.abortController.id, "stopped by the operator");
+    }
     await cancelLiveRun(row.workflowRunId);
     if (row.activeRunId) {
       await completeAgentRun(
-        caller.context.db as DB,
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
         row.activeRunId,
         "cancelled"
       );
@@ -647,18 +816,21 @@ export const writingAgentService: AgentKindService = {
 
     // Persist first: the decision must outlive the run, and the permission gate reads it back from
     // here when the tool call is re-issued.
-    const decided = await decideAgentApproval(caller.context.db as DB, {
-      sessionId: input.sessionId,
-      toolCallId: input.toolCallId,
-      approved: input.approved,
-      comment: input.comment,
-      decidedBy: caller.userId,
-    });
+    const decided = await decideAgentApproval(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      {
+        sessionId: input.sessionId,
+        toolCallId: input.toolCallId,
+        approved: input.approved,
+        comment: input.comment,
+        decidedBy: caller.userId,
+      }
+    );
     if (!decided) return null;
 
-    // Capture the cursor before waking the workflow. The TanStack compatibility transport opens a
-    // fresh request for an approval continuation, unlike the native dashboard's old long-lived
-    // subscription, so it needs the same exact replay boundary as a normal prompt.
+    // Capture the cursor before waking the workflow. The chat transport opens a fresh request for
+    // an approval continuation, so it needs the same exact replay boundary as a normal prompt.
     const run = getRun(row.workflowRunId);
     const startIndex = (await run.getReadable().getTailIndex()) + 1;
 
@@ -679,7 +851,7 @@ export const writingAgentService: AgentKindService = {
   async compact(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await assertNoTurnRunning(row.workflowRunId, "compact");
+    await assertNoTurnRunning(row, "compact");
 
     const options = await writingSessionOperationOptions(
       caller,
@@ -692,7 +864,7 @@ export const writingAgentService: AgentKindService = {
   async navigate(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await assertNoTurnRunning(row.workflowRunId, "rewind");
+    await assertNoTurnRunning(row, "rewind");
 
     const options = await writingSessionOperationOptions(
       caller,
@@ -714,7 +886,9 @@ export const writingAgentService: AgentKindService = {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
     const { draft } = dependenciesFor(caller);
-    return (await draft.get(input.sessionId)) as never;
+    return /* SAFETY: The producer contract guarantees this value satisfies never. */ (await draft.get(
+      input.sessionId
+    )) as never;
   },
 
   /**
@@ -773,28 +947,16 @@ export const writingAgentService: AgentKindService = {
 
 /**
  * Compaction and rewinding both mutate the session tree, so they cannot run while a turn is
- * appending to it.
- *
- * A live run is not enough to refuse on — it may simply be parked on the message hook, which is the
- * normal idle state. Only an actually-executing turn conflicts, and `running` is the closest signal
- * the run exposes.
+ * appending to it. A live run is not enough to refuse on — parked on the message hook is its
+ * normal idle state — so this reads the turn marker, like everything else that needs to know.
  */
 const assertNoTurnRunning = async (
-  runId: string | null,
+  row: { workflowRunId: string | null; turn: AgentTurnMarker | undefined },
   action: string
 ): Promise<void> => {
-  if (!runId) return;
-  try {
-    const run = getRun(runId);
-    if (!(await run.exists)) return;
-    if ((await run.status) === "running") {
-      throw new Error(
-        `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
-      );
-    }
-  } catch (error) {
-    // Re-throw our own refusal; swallow lookup failures for runs that no longer resolve.
-    if (error instanceof Error && error.message.startsWith("Cannot "))
-      throw error;
+  if ((await runStateOf(row))?.status === "running") {
+    throw new Error(
+      `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
+    );
   }
 };

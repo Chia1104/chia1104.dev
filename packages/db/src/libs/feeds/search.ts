@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 
-import { withDTO } from "../";
-import type { Locale } from "../..";
-import { schema } from "../..";
+import type { Locale } from "../../schemas/enums.ts";
+import * as schema from "../../schemas/schema.ts";
+import { withDTO } from "../index.ts";
 import { findSimilarResources } from "../resources/search.ts";
 
 const t = schema.feedTranslations;

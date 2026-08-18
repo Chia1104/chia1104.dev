@@ -1,15 +1,17 @@
 import { toTanStackAgentEventStream } from "@chia/agent-runtime/transports/tanstack-ai";
 
-import { adminGuard } from "../guards/admin.guard";
 import {
-  agentModelGuard,
+  agentCallerOf,
+  agentKindGuard,
   agentSessionGuard,
+  canUseAgentKind,
 } from "../guards/agent-session.guard";
+import { callerGuard } from "../guards/caller.guard";
 import {
   availableAgentKinds,
   requireAgentKind,
 } from "../services/agent.service";
-import type { AgentServiceCaller } from "../services/agent.service";
+import type { AgentKindService } from "../services/agent.service";
 import { contractOS } from "../utils";
 
 /**
@@ -19,38 +21,42 @@ import { contractOS } from "../utils";
  * requests resolve from the persisted session. A client cannot drive a session through another
  * kind's tools by supplying a different kind.
  *
- * `adminGuard()` pins to the configured admin id, so a logged-in non-admin cannot reach these even
- * with a valid session. That matters more here than on the read routes: these tools can write to
- * and publish the blog.
+ * `callerGuard()` only resolves the tier; who may use a kind is that kind's `minTier`, enforced by
+ * `agentKindGuard()` / `agentSessionGuard()`. The writing kind pins to the configured admin because
+ * its tools write to and publish the blog; a public kind admits any session-bearing visitor. The
+ * routes stay shared because the guards, not the routes, know the difference.
  *
- * `agentSessionGuard()` then owns session resolution and ownership for every session-scoped route,
- * so the handlers below are left with only their own work — see the guard for why that is not
- * merely tidier.
+ * `agentSessionGuard()` owns session resolution and ownership for every session-scoped route, so
+ * the handlers below are left with only their own work — see the guard for why that is not merely
+ * tidier.
  */
 
-const callerOf = (opts: {
-  context: { adminId: string; session: { user: { id: string } } };
-}): AgentServiceCaller => ({
-  adminId: opts.context.adminId,
-  userId: opts.context.session.user.id,
-  context: opts.context as unknown as AgentServiceCaller["context"],
-});
+const resolveCaller = callerGuard();
 
 // ============================================
 // Sessions
 // ============================================
 
+/**
+ * The one route whose kind is optional, so it resolves access inline: an explicit kind the caller
+ * may not use is refused, an omitted kind lists whichever kinds the caller may use.
+ */
 export const listAgentSessionsRoute = contractOS.agent.sessions.list
-  .use(adminGuard())
+  .use(resolveCaller)
   .handler(async (opts) => {
-    const caller = callerOf(opts);
-    const kinds = opts.input?.kind
-      ? [opts.input.kind]
-      : availableAgentKinds(opts.context);
+    const agentCaller = agentCallerOf(opts.context, opts.errors);
+    let services: AgentKindService[];
+    if (opts.input?.kind) {
+      const service = requireAgentKind(opts.context, opts.input.kind);
+      if (!canUseAgentKind(agentCaller, service)) throw opts.errors.FORBIDDEN();
+      services = [service];
+    } else {
+      services = availableAgentKinds(opts.context)
+        .map((kind) => requireAgentKind(opts.context, kind))
+        .filter((service) => canUseAgentKind(agentCaller, service));
+    }
     const pages = await Promise.all(
-      kinds.map((kind) =>
-        requireAgentKind(opts.context, kind).listSessions(caller, opts.input)
-      )
+      services.map((service) => service.listSessions(agentCaller, opts.input))
     );
     const limit = opts.input?.limit ?? 50;
     return {
@@ -62,19 +68,16 @@ export const listAgentSessionsRoute = contractOS.agent.sessions.list
     };
   });
 
-/** The one session route with no session to resolve, so it validates the model on its own. */
 export const createAgentSessionRoute = contractOS.agent.sessions.create
-  .use(adminGuard())
-  .use(agentModelGuard())
-  .handler(async (opts) =>
-    requireAgentKind(opts.context, opts.input.kind).createSession(
-      callerOf(opts),
-      opts.input
-    )
-  );
+  .use(resolveCaller)
+  .use(agentKindGuard())
+  .handler(async (opts) => {
+    const { caller, service } = opts.context.agent;
+    return await service.createSession(caller, opts.input);
+  });
 
 export const getAgentSessionRoute = contractOS.agent.sessions.get
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -84,7 +87,7 @@ export const getAgentSessionRoute = contractOS.agent.sessions.get
   });
 
 export const deleteAgentSessionRoute = contractOS.agent.sessions.delete
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -96,7 +99,7 @@ export const deleteAgentSessionRoute = contractOS.agent.sessions.delete
 export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
   "settings:update"
 ]
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -109,44 +112,27 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
 // Turns
 // ============================================
 
-/**
- * The handler returns the service's async generator directly — oRPC serialises it as an event
- * stream, so nothing is buffered and the first token reaches the client as soon as it exists.
- */
-export const promptAgentRoute = contractOS.agent.sessions.prompt
-  .use(adminGuard())
-  .use(agentSessionGuard())
-  .handler(async (opts) => {
-    const { caller, service } = opts.context.agent;
-    return await service.prompt(caller, opts.input);
-  });
-
-export const streamAgentRoute = contractOS.agent.sessions.stream
-  .use(adminGuard())
-  .use(agentSessionGuard())
-  .handler(async (opts) => {
-    const { caller, service } = opts.context.agent;
-    return service.stream(caller, opts.input);
-  });
-
 export const chatAgentRoute = contractOS.agent.sessions.chat
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
 
+    const { action } = opts.input;
     const cursor =
-      opts.input.action.type === "prompt"
+      action.type === "prompt"
         ? await service.prompt(caller, {
             sessionId: opts.input.sessionId,
-            text: opts.input.action.text,
+            text: action.text,
           })
-        : await service.approve(caller, {
-            sessionId: opts.input.sessionId,
-            toolCallId: opts.input.action.toolCallId,
-            approved: opts.input.action.approved,
-            comment: opts.input.action.comment,
-          });
+        : action.type === "approve"
+          ? await service.approve(caller, {
+              sessionId: opts.input.sessionId,
+              toolCallId: action.toolCallId,
+              approved: action.approved,
+              comment: action.comment,
+            })
+          : await service.attach(caller, { sessionId: opts.input.sessionId });
     if (!cursor) throw opts.errors.NOT_FOUND();
 
     const events = service.stream(caller, {
@@ -162,7 +148,7 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
   });
 
 export const abortAgentRoute = contractOS.agent.sessions.abort
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -170,7 +156,7 @@ export const abortAgentRoute = contractOS.agent.sessions.abort
   });
 
 export const approveAgentToolRoute = contractOS.agent.sessions.approve
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -187,7 +173,7 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
 // ============================================
 
 export const compactAgentSessionRoute = contractOS.agent.sessions.compact
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -197,7 +183,7 @@ export const compactAgentSessionRoute = contractOS.agent.sessions.compact
   });
 
 export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -207,7 +193,7 @@ export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
   });
 
 export const getAgentDraftRoute = contractOS.agent.sessions.draft
-  .use(adminGuard())
+  .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
@@ -221,13 +207,14 @@ export const getAgentDraftRoute = contractOS.agent.sessions.draft
 // ============================================
 
 export const listAgentModelsRoute = contractOS.agent.models.list
-  .use(adminGuard())
-  .handler(async (opts) =>
-    requireAgentKind(opts.context, opts.input.kind).listModels(callerOf(opts))
-  );
+  .use(resolveCaller)
+  .use(agentKindGuard())
+  .handler(async (opts) => {
+    const { caller, service } = opts.context.agent;
+    return await service.listModels(caller);
+  });
 
 export const listAgentCapabilitiesRoute = contractOS.agent.capabilities.list
-  .use(adminGuard())
-  .handler(async (opts) =>
-    requireAgentKind(opts.context, opts.input.kind).listCapabilities()
-  );
+  .use(resolveCaller)
+  .use(agentKindGuard())
+  .handler(async (opts) => await opts.context.agent.service.listCapabilities());

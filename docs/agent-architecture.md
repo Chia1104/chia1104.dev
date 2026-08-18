@@ -1,7 +1,7 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-14
+> Last updated: 2026-08-17
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -15,6 +15,7 @@ assistant.
 | Layer        | Package / app                               | Owns                                                                                                                      |
 | ------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Pi execution | `@chia/agent-runtime`                       | Pi turn lifecycle, session persistence, models/providers, approval hook, bounded wire events and client transport mapping |
+| Shared tools | `@chia/agent-content`                       | Read-only content tools every reading kind composes, their `ContentReadPort`, names, labels and summaries                 |
 | Domain       | `@chia/agent-writing`                       | Writing tools, prompts, skills, model allowlist, policy, draft staging and domain ports                                   |
 | Host         | `apps/service`, `packages/api`, `apps/dash` | DB/KV/credentials, durable workflow and streams, oRPC service port, auth and UI                                           |
 
@@ -23,7 +24,9 @@ flowchart TB
     dash["apps/dash<br/>agent workspace"] --> api["packages/api<br/>oRPC contracts · AgentKindService"]
     api --> service["apps/service<br/>durable workflow · host wiring"]
     service --> writing["@chia/agent-writing<br/>runWritingTurn · tools · prompts · policy"]
+    writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
+    content --> runtime
     runtime --> pi["Pi AgentHarness"]
     runtime --> pg[("Postgres agent_* tables")]
 ```
@@ -49,6 +52,21 @@ it, so a caller cannot drive a writing session through another kind's tools.
 inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
 puts `{ writing: writingAgentService }` on every request context (`createORPCContext`). It is
 unrelated to the removed harness abstraction.
+
+### Who may use a kind
+
+Access is a property of the kind, not of the routes. Every agent route runs `callerGuard()`, which
+only resolves the caller's `CallerTier`; the agent guards (`agentKindGuard` for creation and
+capability listings, `agentSessionGuard` for session-scoped requests) then compare that tier with
+the kind's `AgentKindService.minTier`. Any tier below `Session` is refused first — a session row has
+an owner, so an anonymous or API-key caller has no one to be. `list` with no kind returns only the
+kinds the caller may use.
+
+The service receives an `AgentServiceCaller`: the resolved `Caller` (tier, session, configured
+`adminId`) plus `userId`. Nothing agent-generic carries an admin identity — the writing kind sets
+`minTier: Root`, which is what makes its caller _be_ the configured author, and reads
+`getAdminId()` itself where its content port needs it. A public kind sets `minTier: Session` and
+never sees an admin id.
 
 ## 3. Policy, sessions and data
 
@@ -97,7 +115,7 @@ sequenceDiagram
     participant PI as runPiTurn / AgentHarness
     participant PG as Postgres
 
-    UI->>RPC: agent.sessions.prompt
+    UI->>RPC: agent.sessions.chat (prompt)
     RPC->>SVC: prompt(caller, input)
     alt active durable run
         SVC->>WF: resume message hook
@@ -105,21 +123,22 @@ sequenceDiagram
         SVC->>WF: start workflow
         SVC->>PG: create agent_run
     end
-    SVC-->>UI: runId + stream cursor
+    SVC-->>RPC: runId + stream cursor
+    RPC->>SVC: stream(caller, cursor)
     WF->>STEP: execute turn step
     STEP->>WR: runWritingTurn(options)
     WR->>PI: runPiTurn(concrete Pi inputs)
     PI->>PI: new AgentHarness(...).prompt(...)
     PI-->>UI: bounded durable AgentWireEvent stream
     PI->>PG: session entries and domain writes
-    STEP-->>WF: done / error / awaiting_approval
+    STEP-->>WF: done / aborted / error / awaiting_approval
 ```
 
 ### Enqueue and durable driver
 
-The oRPC route is protected by `adminGuard`, then the session guard rechecks ownership. The host
-service persists a message into the live workflow's event log through its reusable message hook, or
-starts a new run. The workflow registers that inbox with `getConflict()` before its first turn, so
+The oRPC route resolves the caller's tier, then the session guard checks ownership and the kind's
+`minTier`. The host service persists a message into the live workflow's event log through its
+reusable message hook, or starts a new run. The workflow registers that inbox with `getConflict()` before its first turn, so
 messages submitted during a running turn wait durably and become later turns after the current turn
 and any approval handshake finish. Enqueue is refused while approval is undecided, while a new
 workflow has not registered its hook yet, or when the text is the reserved `/end` sentinel.
@@ -141,17 +160,56 @@ runAgentTurnStep → runWritingTurn → runPiTurn → new AgentHarness
 ```
 
 `runWritingTurn` creates the writing tool context, resolves a model from the caller's credential-
-bearing `Models`, and supplies tools, skills, templates, dynamic system prompt and writing policy.
+bearing `Models`, and supplies tools, skills, templates, the stable system prompt, the volatile
+turn context and the writing policy.
 
 `runPiTurn` owns the complete lifecycle:
 
 1. clamp thinking level to the resolved model and construct one harness for the turn;
-2. install the Pi tool-call approval hook and Pi-to-wire event mapping;
+2. install the Pi tool-call approval hook, the `context` hook that appends the volatile block, the
+   host abort signal, and Pi-to-wire event mapping;
 3. emit `run:start` and the user event, then invoke prompt or prompt template;
-4. after a successful provider turn, atomically persist all approval snapshots and then emit their
+4. read the resolved assistant message: `stopReason: "error"` is a classified provider failure,
+   `"aborted"` ends the turn as aborted; a thrown harness or hook error is `internal`;
+5. after a successful provider turn, atomically persist all approval snapshots and then emit their
    `approval:request` events;
-5. auto-compact only after a successful turn with no pending approvals;
-6. emit the terminal error/end events, unsubscribe, then flush the durable writer.
+6. auto-compact only after a successful turn with no pending approvals;
+7. emit the terminal error/end events, unsubscribe, then flush the durable writer.
+
+### Prompt layering
+
+The system prompt is stable for a session — rules, skills index, approval posture — because it
+heads every provider request and a changed prefix invalidates the cached system prompt, tool
+schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock)
+is the **volatile context**: appended as the last user message of each provider request through
+Pi's `context` hook, never persisted, so it is always current and never accumulates in the
+transcript. Anything the model must see fresh belongs there, not in the system prompt.
+
+### Abort
+
+Nothing in the workflow SDK reaches a step already executing — cancelling the run only stops it
+from being scheduled again — so a stop travels through a second, tiny durable run: the session
+run's **abort controller** (`apps/service/src/workflows/agent-abort.workflow.ts`). `prompt` starts
+it before the session run and passes its `{ id, runId }` in the session run's request (and into
+`agent_run.metadata`); it parks on `agentAbortHook` and, when resumed, writes one message to its
+own stream. Each turn step subscribes to that stream by run id — no lookup, so there is exactly one
+controller per session run — hands the resulting `AbortSignal` to `runPiTurn`, and releases the
+subscription when the turn ends. `abort` resumes the hook first, then cancels the session run and
+marks the `agent_run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
+not leave a controller parked until its TTL. Firing the signal aborts the harness at once, mid-generation included: Pi cancels the
+in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
+`run:end{aborted}`; no approvals are persisted and no compaction runs. Delivery is the SDK's own
+durable stream, so it works from any process — no registry, no timer, no second channel. The next
+prompt starts a fresh session run over the persisted transcript. An expired controller (TTL) never
+aborts a turn; readers ignore `expired` and the next turn starts a new one.
+
+### Host failures inside Pi hooks
+
+Pi turns a hook that throws into an assistant message with `stopReason: "error"`, which would be
+classified like a provider failure. The hooks `runPiTurn` installs therefore catch their own
+errors, record them as a host failure and abort the harness; the turn then fails as `internal`. A
+volatile-context read that fails ends the turn this way rather than letting the model act without
+seeing the current state.
 
 ## 5. Approval handshake
 
@@ -204,14 +262,37 @@ session:compacted · state:changed · error · run:end
 
 - `createPiWireEventMapper` maps live Pi events and prefixes assistant ids with a unique turn id.
 - `entriesToWireEvents` rebuilds history from persisted Pi entries and uses each entry id as the
-  stable assistant identity.
+  stable assistant identity. A persisted assistant message with `stopReason: "error"` replays as
+  the same `error` event the live turn emitted.
+- `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · provider ·
+internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
+- `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
+  wide objects and deep nesting are shortened in place, shape preserved — because every coarse
+  event is a durable write that is replayed to every reconnecting client. The model reads the
+  tool's `content`, never this copy.
 - `applyEvent` / `foldEvents` give live and replayed events one dashboard rendering path.
 - `@chia/agent-runtime/transports/tanstack-ai` maps the bounded events to the AG-UI subset used by
-  TanStack AI.
+  TanStack AI. `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval
+  decision through the kind service, then tails the run's durable stream from the returned cursor
+  and emits it in that form. History arrives through `agent.sessions.get` as wire events.
 
 Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
 coarse events. Streams close only when the durable run ends, not after each turn.
+
+### Rejoining a running turn
+
+The dashboard chat is server-authoritative (TanStack AI `persistence: true`): on mount it hydrates
+from `agent.sessions.get` and, when `run.status` is `running`, rejoins the turn through
+`agent.sessions.chat` with `{ type: "attach" }`. The turn step maintains `agent_run.metadata.turn`
+— the session leaf before the turn, the first coarse stream index it writes, and `running`, set
+before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
+run parked on its message hook is `running` to the SDK just like one executing a step, so
+`run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` cuts the
+replayed transcript after that leaf while a turn is running, and `attach` tails the stream from
+that index; both key off the same marker, so a reload mid-turn shows every message exactly once
+and finishes the turn in place. `prompt` seeds the marker on a fresh run, because its first turn
+can reach the step before the run row exists.
 
 ## 7. Durable message inbox
 
@@ -256,13 +337,23 @@ from Pi; the domain decides which `(providerId, modelId)` pairs it permits.
 
 ## 10. Writing domain and durable state
 
-The writing agent reads published content through `ContentPort`, writes drafts through
-`DraftStore`, and only commit-tier tools promote staged data to live feed/content tables. Tool order
-encourages the model to read, draft and then commit. Destructive deletion and image upload are not
-available agent tools.
+The writing agent reads content through `ContentPort` — `@chia/agent-content`'s `ContentReadPort`
+plus `fetch_url` and the writes — stages drafts through `DraftStore`, and only commit-tier tools
+promote staged data to live feed/content tables. Tool order encourages the model to read, draft and
+then commit. Destructive deletion and image upload are not available agent tools.
 
-The dynamic system prompt is recomputed per turn so current draft/session and approval state remain
-accurate. Skills and prompt templates live under `packages/agent-writing/src/prompts/`.
+### Content visibility
+
+The read tools cannot widen what they see: visibility is fixed when the host builds the port
+(`apps/service/src/services/content-read.port.ts`). An `author` port sees the configured author's
+drafts; a `public` port scopes every detail read to `published: true` and answers a request for
+drafts with nothing rather than overriding the filter. Search needs no branch — the chunk index is
+published-only for every caller. The writing agent's port is `author`; a public kind builds
+`public` and never gets `fetch_url`.
+
+`buildSystemPrompt` is the stable system prompt; `buildTurnContext` is the volatile block with the
+draft state and current time (see §4). Skills and prompt templates live under
+`packages/agent-writing/src/prompts/`.
 
 There is no in-process conversational state. The process-level kind-to-service map contains only
 implementations; all mutable state is durable:
@@ -279,9 +370,12 @@ implementations; all mutable state is durable:
 
 Another domain kind uses the same concrete Pi runtime:
 
-1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports;
+1. add `@chia/agent-<kind>` with tools, prompts, skills, policy, model allowlist and domain ports —
+   composing `contentReadTools` from `@chia/agent-content` when it reads the blog, with the tool
+   context extending `ContentToolContext`;
 2. add its extension table when it needs kind-specific persisted state;
-3. implement `AgentKindService` in `apps/service` and add it to the `agentKinds` map;
+3. implement `AgentKindService` in `apps/service` — including the `minTier` it admits — and add it
+   to the `agentKinds` map;
 4. register a durable turn handler that calls the new domain's `run<Kind>Turn`;
 5. reuse `runPiTurn`, wire events, approval semantics and durable stream plumbing.
 
@@ -290,22 +384,27 @@ until a concrete second execution foundation requires a different seam.
 
 ## 12. Reference
 
-| Concern                      | File                                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                     |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                 |
-| Session over Postgres        | `packages/agent-runtime/src/session/`                                                  |
-| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                   |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts` |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`               |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                              |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                      |
+| Concern                      | File                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
+| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                             |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
+| Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
+| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                         |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
+| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                           |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
+| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`         |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
+| Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |

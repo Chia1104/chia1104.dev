@@ -108,7 +108,10 @@ const Item: FC<{
 };
 
 const getTop4 = (data: PlayList) => {
-  return data.tracks.items.slice(0, 4) as [
+  return /* SAFETY: The producer contract guarantees this value satisfies [ PlayList["tracks"]["items"][0], PlayList["tracks"]["items"][1], PlayList["tracks"]["items"][2], Pl. */ data.tracks.items.slice(
+    0,
+    4
+  ) as [
     PlayList["tracks"]["items"][0],
     PlayList["tracks"]["items"][1],
     PlayList["tracks"]["items"][2],
@@ -127,7 +130,7 @@ export async function SpotifyPlaylist() {
     <FadeIn className="w-full flex-col">
       <NoiseBackground
         style={
-          {
+          /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
             "--noise-gradient-1": "#F9C851",
             "--noise-gradient-2": "#FCA5A5",
             "--noise-gradient-3": "#FECACA",

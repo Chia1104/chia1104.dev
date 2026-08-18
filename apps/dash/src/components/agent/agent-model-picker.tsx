@@ -28,14 +28,14 @@ interface AgentModelPickerProps {
  */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"] as const;
 
-const PROVIDER_LABELS: Record<string, string> = {
-  "vercel-ai-gateway": "Gateway",
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-};
+const PROVIDER_LABELS = new Map<string, string>([
+  ["vercel-ai-gateway", "Gateway"],
+  ["openai", "OpenAI"],
+  ["anthropic", "Anthropic"],
+]);
 
 const providerLabel = (providerId: string) =>
-  PROVIDER_LABELS[providerId] ?? providerId;
+  PROVIDER_LABELS.get(providerId) ?? providerId;
 
 /**
  * The picker's key.
@@ -54,7 +54,7 @@ const parseKey = (key: string) => {
 
 const rank = (providerId: string) => {
   const index = PROVIDER_ORDER.indexOf(
-    providerId as (typeof PROVIDER_ORDER)[number]
+    /* SAFETY: The producer contract guarantees this value satisfies (typeof PROVIDER_ORDER)[number]. */ providerId as (typeof PROVIDER_ORDER)[number]
   );
   return index === -1 ? PROVIDER_ORDER.length : index;
 };
@@ -112,7 +112,13 @@ export const AgentModelPicker = ({
     <Select
       aria-label="Agent model"
       isDisabled={update.isPending || models.length === 0}
-      onChange={(key) => void select(key as string | null)}
+      onChange={(key) =>
+        void select(
+          /* SAFETY: The producer contract guarantees this value satisfies string | null. */ key as
+            | string
+            | null
+        )
+      }
       placeholder="Select a model"
       value={selectedKey}>
       <Select.Trigger className="min-w-56">

@@ -35,10 +35,13 @@ const createFeedsPromise = (
   items: FeedsList["items"] = []
 ): Promise<FeedsList> => {
   const value: FeedsList = { items, nextCursor: null };
-  const promise = Promise.resolve(value) as Promise<FeedsList> & {
-    status: "fulfilled";
-    value: FeedsList;
-  };
+  const promise =
+    /* SAFETY: This fixture implements the Promise<FeedsList> & { status: "fulfilled"; value: FeedsList; } members exercised by this case. */ Promise.resolve(
+      value
+    ) as Promise<FeedsList> & {
+      status: "fulfilled";
+      value: FeedsList;
+    };
   promise.status = "fulfilled";
   promise.value = value;
   return promise;

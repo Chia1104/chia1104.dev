@@ -5,13 +5,13 @@ import navItems from "@/shared/routes";
 describe("Navigation Routes", () => {
   it("應該定義所有導航項目", () => {
     expect(navItems).toBeDefined();
-    expect(typeof navItems).toBe("object");
+    expect(navItems).toEqual(expect.any(Object));
   });
 
   it("每個路由應該有 nameKey", () => {
     Object.entries(navItems).forEach(([, item]) => {
       expect(item.nameKey).toBeDefined();
-      expect(typeof item.nameKey).toBe("string");
+      expect(item.nameKey).toEqual(expect.any(String));
       expect(item.nameKey.length).toBeGreaterThan(0);
     });
   });

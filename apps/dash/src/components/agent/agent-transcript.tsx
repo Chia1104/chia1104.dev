@@ -23,7 +23,7 @@ interface AgentTranscriptProps {
 
 type ToolPart = Extract<UIMessage["parts"][number], { type: "tool-call" }>;
 
-const jsonOf = (value: unknown) => {
+const jsonOf = <TValue,>(value: TValue) => {
   if (value === undefined) return null;
   try {
     return JSON.stringify(value, null, 2);

@@ -54,6 +54,7 @@ export const readDraftTool = defineTool({
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
     const draft = await context.draft.get(context.agentSessionId);
+    // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
     const locales = Object.keys(draft.translations) as Locale[];
 
     if (!params.locale) {
@@ -67,7 +68,7 @@ export const readDraftTool = defineTool({
       );
     }
 
-    const locale = params.locale as Locale;
+    const locale = params.locale;
     const translation = draft.translations[locale];
 
     if (!translation) {
@@ -162,7 +163,8 @@ export const patchDraftMetaTool = defineTool({
 
     const warnings: string[] = [];
     if (
-      typeof description === "string" &&
+      description !== null &&
+      description !== undefined &&
       description.length > MAX_DESCRIPTION_CHARS
     ) {
       warnings.push(
@@ -172,22 +174,21 @@ export const patchDraftMetaTool = defineTool({
 
     let draft = await context.draft.get(context.agentSessionId);
 
-    const feedMetaPatch = {
-      ...feedMeta,
-      ...(feedMeta.slug === undefined ? {} : { slug: slugify(feedMeta.slug) }),
-    };
+    const feedMetaPatch = { ...feedMeta };
+    if (feedMeta.slug !== undefined)
+      feedMetaPatch.slug = slugify(feedMeta.slug);
 
     if (Object.values(feedMetaPatch).some((value) => value !== undefined)) {
       draft = await context.draft.patchFeedMeta(
         context.agentSessionId,
-        feedMetaPatch as Parameters<typeof context.draft.patchFeedMeta>[1]
+        feedMetaPatch
       );
     }
 
     if (hasPerLocale && locale) {
       draft = await context.draft.patchTranslation(
         context.agentSessionId,
-        locale as Locale,
+        locale,
         perLocale
       );
     }
@@ -220,7 +221,7 @@ export const writeDraftContentTool = defineTool({
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
     await context.draft.setContent(
       context.agentSessionId,
-      params.locale as Locale,
+      params.locale,
       params.content
     );
     const lineCount = params.content.split("\n").length;
@@ -257,7 +258,7 @@ export const editDraftContentTool = defineTool({
   }),
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
-    const locale = params.locale as Locale;
+    const locale = params.locale;
     const draft = await context.draft.get(context.agentSessionId);
     const current = draft.translations[locale]?.content;
 

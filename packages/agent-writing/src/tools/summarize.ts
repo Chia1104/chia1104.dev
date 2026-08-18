@@ -1,3 +1,12 @@
+import { summarizeContentToolResult } from "@chia/agent-content/tools/summarize";
+import {
+  asArray,
+  asNumber,
+  asString,
+  toolErrorText,
+  toolResultDetails,
+} from "@chia/agent-runtime/tools";
+
 import { TOOL_NAMES } from "./registry.ts";
 
 /**
@@ -10,36 +19,22 @@ import { TOOL_NAMES } from "./registry.ts";
  * `result` is `unknown` because it arrives from pi as `any` — every branch narrows defensively
  * rather than trusting the shape.
  */
-export const summarizeToolResult = (
+export const summarizeToolResult = <TResult>(
   toolName: string,
-  result: unknown,
+  result: TResult,
   isError: boolean
 ): string => {
-  if (isError) return errorText(result) ?? "Failed.";
+  if (isError) return toolErrorText(result) ?? "Failed.";
 
-  const details = extractDetails(result);
+  const shared = summarizeContentToolResult(toolName, result);
+  if (shared !== undefined) return shared;
+
+  const details = toolResultDetails(result);
   if (!details) return "Done.";
 
   switch (toolName) {
-    case TOOL_NAMES.searchPosts: {
-      const hits = asArray(details.hits);
-      return hits ? `${hits.length} match(es).` : "Searched.";
-    }
-    case TOOL_NAMES.getPost: {
-      const post = asRecord(details.post);
-      const slug = typeof post?.slug === "string" ? post.slug : undefined;
-      return slug ? `Read \`${slug}\`.` : "Read post.";
-    }
-    case TOOL_NAMES.listPosts: {
-      const posts = asArray(details.posts);
-      return posts ? `${posts.length} post(s).` : "Listed posts.";
-    }
-    case TOOL_NAMES.listTags: {
-      const tags = asArray(details.tags);
-      return tags ? `${tags.length} tag(s).` : "Listed tags.";
-    }
     case TOOL_NAMES.fetchUrl: {
-      const url = typeof details.url === "string" ? details.url : undefined;
+      const url = asString(details.url);
       return url ? `Fetched ${hostOf(url)}.` : "Fetched page.";
     }
     case TOOL_NAMES.readDraft: {
@@ -82,44 +77,6 @@ export const summarizeToolResult = (
     default:
       return "Done.";
   }
-};
-
-// ============================================
-// Narrowing helpers
-// ============================================
-
-const asRecord = (value: unknown): Record<string, unknown> | undefined =>
-  typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
-
-const asArray = (value: unknown): unknown[] | undefined =>
-  Array.isArray(value) ? value : undefined;
-
-const asString = (value: unknown): string | undefined =>
-  typeof value === "string" ? value : undefined;
-
-const asNumber = (value: unknown): number | undefined =>
-  typeof value === "number" ? value : undefined;
-
-/**
- * Tool results arrive either as pi's `AgentToolResult` (`{ content, details }`) or as a
- * persisted `ToolResultMessage` (also `{ content, details }`), so one accessor covers both.
- */
-const extractDetails = (result: unknown): Record<string, unknown> | undefined =>
-  asRecord(asRecord(result)?.details);
-
-const errorText = (result: unknown): string | undefined => {
-  const record = asRecord(result);
-  const content = asArray(record?.content);
-  const first = asRecord(content?.[0]);
-  const text = asString(first?.text);
-  if (!text) return undefined;
-  // Keep the transcript to one line; the card shows the whole thing.
-  const [firstLine] = text.split("\n");
-  return firstLine && firstLine.length > 160
-    ? `${firstLine.slice(0, 160)}…`
-    : firstLine;
 };
 
 const hostOf = (url: string): string => {

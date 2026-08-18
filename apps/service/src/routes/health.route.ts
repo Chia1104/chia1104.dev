@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { timeout } from "hono/timeout";
 
-import { isMaintenanceEnabled } from "@chia/service-kit";
+import { isMaintenanceEnabled } from "@chia/service-kit/middlewares/maintenance";
 
 import { env } from "../env";
 

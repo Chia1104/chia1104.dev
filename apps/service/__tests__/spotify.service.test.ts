@@ -53,8 +53,8 @@ import {
   getSpotifyNowPlayingService,
   resolveSpotifyAccessToken,
 } from "@chia/api/spotify/playback";
-import type { DB } from "@chia/db";
-import type { Keyv } from "@chia/kv";
+import type { DB } from "@chia/db/client";
+import type { Keyv } from "@chia/kv/types";
 
 const db = {} as DB;
 

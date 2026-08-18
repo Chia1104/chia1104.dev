@@ -23,6 +23,9 @@ interface CacheEntryMetadata {
 const TABLE_INDEX_PREFIX = "drizzle:cache:table:";
 const ENTRY_METADATA_PREFIX = "drizzle:cache:entry:";
 
+const isStringTable = (table: string | Table): table is string =>
+  Object.prototype.toString.call(table) === "[object String]";
+
 export class DrizzleCache extends Cache {
   private globalTtlMs: number;
   private _strategy: "explicit" | "all";
@@ -150,7 +153,7 @@ export class DrizzleCache extends Cache {
   }
 
   private resolveTableName(table: string | Table): string {
-    return typeof table === "string" ? table : getTableName(table);
+    return isStringTable(table) ? table : getTableName(table);
   }
 
   private entryMetadataKey(key: string): string {

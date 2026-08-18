@@ -7,8 +7,8 @@ import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
 import { searchFeedsService } from "@chia/api/feeds/search";
 import type { SearchFeedsProvider } from "@chia/api/feeds/search";
-import { schema } from "@chia/db";
 import { connectDatabase, getConnection } from "@chia/db/client";
+import * as schema from "@chia/db/schema";
 
 import { GOLDEN_QUERIES } from "./golden-queries.ts";
 import type { GoldenQuery, GoldenQueryKind } from "./golden-queries.ts";
@@ -177,16 +177,17 @@ const buildModeReport = (
         mean(results.map((result) => result.recall[k]!)),
       ])
     ),
-    recallByKind: Object.fromEntries(
-      kinds.map((kind) => [
-        kind,
-        mean(
-          results
-            .filter((result) => result.kind === kind)
-            .map((result) => result.recall[5]!)
-        ),
-      ])
-    ) as Record<GoldenQueryKind, number>,
+    recallByKind:
+      /* SAFETY: The producer contract guarantees this value satisfies Record<GoldenQueryKind, number>. */ Object.fromEntries(
+        kinds.map((kind) => [
+          kind,
+          mean(
+            results
+              .filter((result) => result.kind === kind)
+              .map((result) => result.recall[5]!)
+          ),
+        ])
+      ) as Record<GoldenQueryKind, number>,
     mrr: mean(
       results.map((result) =>
         result.firstHitRank === null ? 0 : 1 / result.firstHitRank

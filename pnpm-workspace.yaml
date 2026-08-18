@@ -101,8 +101,9 @@ catalogs:
     "@orpc/server": 1.14.15
     "@orpc/tanstack-query": 1.14.15
   oxc:
+    "@oxlint/plugins": 1.79.0
     oxfmt: 0.62.0
-    oxlint: 1.77.0
+    oxlint: 1.79.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
     platejs: ^53.3.3
@@ -170,9 +171,29 @@ linkWorkspacePackages: true
 minimumReleaseAgeExclude:
   - '@earendil-works/pi-agent-core@0.82.1'
   - '@earendil-works/pi-ai@0.82.1'
+  - '@oxlint/binding-android-arm-eabi@1.79.0'
+  - '@oxlint/binding-android-arm64@1.79.0'
+  - '@oxlint/binding-darwin-arm64@1.79.0'
+  - '@oxlint/binding-darwin-x64@1.79.0'
+  - '@oxlint/binding-freebsd-x64@1.79.0'
+  - '@oxlint/binding-linux-arm-gnueabihf@1.79.0'
+  - '@oxlint/binding-linux-arm-musleabihf@1.79.0'
+  - '@oxlint/binding-linux-arm64-gnu@1.79.0'
+  - '@oxlint/binding-linux-arm64-musl@1.79.0'
+  - '@oxlint/binding-linux-ppc64-gnu@1.79.0'
+  - '@oxlint/binding-linux-riscv64-gnu@1.79.0'
+  - '@oxlint/binding-linux-riscv64-musl@1.79.0'
+  - '@oxlint/binding-linux-s390x-gnu@1.79.0'
+  - '@oxlint/binding-linux-x64-gnu@1.79.0'
+  - '@oxlint/binding-linux-x64-musl@1.79.0'
+  - '@oxlint/binding-openharmony-arm64@1.79.0'
+  - '@oxlint/binding-win32-arm64-msvc@1.79.0'
+  - '@oxlint/binding-win32-ia32-msvc@1.79.0'
+  - '@oxlint/binding-win32-x64-msvc@1.79.0'
+  - '@oxlint/plugins@1.79.0'
+  - oxlint@1.79.0
 
 strictPeerDependencies: false
 
 overrides:
   "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4
-  

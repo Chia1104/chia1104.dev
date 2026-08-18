@@ -1,3 +1,4 @@
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { withReplicas } from "drizzle-orm/pg-core";
 
@@ -6,7 +7,7 @@ import { switchEnv } from "@chia/utils/config";
 import { env as internalEnv } from "./env.ts";
 import { relations } from "./schemas/relations.ts";
 
-import type { DB } from ".";
+export type DB = NodePgDatabase<typeof relations>;
 
 const connections = new Map<string, Promise<DB>>();
 
@@ -40,7 +41,9 @@ export async function getConnection(
   const DrizzleCache = withCache
     ? await import("@chia/kv/drizzle/cache").then((m) => m.DrizzleCache)
     : undefined;
-  const kv = withCache ? await import("@chia/kv").then((m) => m.kv) : undefined;
+  const kv = withCache
+    ? await import("@chia/kv/redis").then((m) => m.getRedisKv())
+    : undefined;
   const cache =
     kv && DrizzleCache ? new DrizzleCache(kv, cacheOptions) : undefined;
 

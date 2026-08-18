@@ -40,10 +40,10 @@ const ADMIN_ID = "admin-user";
 
 /** Minimal session, shaped as `adminPolicy` reads it. */
 const sessionOf = (id: string, role: string): Session =>
-  ({
+  /* SAFETY: This fixture implements the Session members exercised by this case. */ ({
     session: { id: "s1", userId: id },
     user: { id, role },
-  }) as unknown as Session;
+  }) as Session;
 
 /**
  * Context with a pre-resolved session, the form an in-process caller supplies, so the
@@ -51,13 +51,14 @@ const sessionOf = (id: string, role: string): Session =>
  * makes `rateLimitGuard` fail open — the budget is not what these tests are about.
  */
 const contextOf = (session: Session | null): BaseOSContext =>
-  ({
+  /* SAFETY: This fixture implements the BaseOSContext members exercised by this case. */ ({
+    /* SAFETY: This fixture provides only the BaseOSContext fields exercised by these routes. */
     headers: new Headers(),
     clientIP: "127.0.0.1",
     config: { rateLimit: { windowMs: 60_000, limit: 100 } },
     db: {},
     session,
-  }) as unknown as BaseOSContext;
+  }) as BaseOSContext;
 
 const admin = () => contextOf(sessionOf(ADMIN_ID, "admin"));
 const member = () => contextOf(sessionOf("someone-else", "user"));

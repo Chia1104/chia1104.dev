@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import type { Session } from "@chia/auth/types";
-import type { Caller } from "@chia/service-kit/policies";
-import { CallerTier } from "@chia/service-kit/policies";
+import type { Caller } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import { resolveFeedLimit, resolveFeedVisibility } from "../feeds/access";
 
 const ADMIN_ID = "admin-1";
 
 const session = (userId: string) =>
-  ({ user: { id: userId } }) as unknown as Session;
+  /* SAFETY: This fixture implements the Session members exercised by this case. */ ({
+    user: { id: userId },
+  }) as Session;
 
 const caller = (tier: CallerTier, userId?: string): Caller => ({
   tier,

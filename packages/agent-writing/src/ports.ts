@@ -1,3 +1,4 @@
+import type { ContentReadPort, PostSnapshot } from "@chia/agent-content/types";
 import type { Locale } from "@chia/db/types";
 
 import type {
@@ -7,10 +8,6 @@ import type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
-  PostListItem,
-  PostSearchHit,
-  PostSnapshot,
-  TagItem,
 } from "./types.ts";
 
 /**
@@ -23,11 +20,6 @@ export type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
-  PostFeedType,
-  PostListItem,
-  PostSearchHit,
-  PostSnapshot,
-  TagItem,
 } from "./types.ts";
 
 /**
@@ -45,42 +37,17 @@ export type {
 // Content port
 // ============================================
 
-export interface SearchPostsInput {
-  keyword: string;
-  locale?: Locale;
-  /** `keyword` is lexical (BM25); `semantic` fuses dense retrieval with it. */
-  mode: "keyword" | "semantic";
-  limit: number;
-}
-
-export interface ListPostsInput {
-  adminId: string;
-  limit: number;
-  /** Omit for both. */
-  published?: boolean;
-}
-
-export interface GetPostInput {
-  slug?: string;
-  feedId?: number;
-  locale?: Locale;
-}
-
 /**
- * Read/write access to the published content domain.
+ * The shared read port plus what only the writing agent may do: fetch outside pages and write
+ * the author's posts.
  *
- * Every method is scoped by the caller to the configured admin — this port does no
- * authorization of its own, the oRPC `adminGuard` already ran.
+ * Carries no author id: the host builds this port *for* the configured author, so the tools have
+ * nothing to restate. Authorization happened before the turn started.
  */
-export interface ContentPort {
-  searchPosts(input: SearchPostsInput): Promise<PostSearchHit[]>;
-  getPost(input: GetPostInput): Promise<PostSnapshot | null>;
-  listPosts(input: ListPostsInput): Promise<PostListItem[]>;
-  listTags(): Promise<TagItem[]>;
+export interface ContentPort extends ContentReadPort {
   fetchPage(url: string): Promise<FetchedPage>;
   commitDraft(input: CommitDraftInput): Promise<CommitDraftResult>;
   setPublished(input: {
-    adminId: string;
     feedId: number;
     published: boolean;
   }): Promise<{ feedId: number; published: boolean }>;

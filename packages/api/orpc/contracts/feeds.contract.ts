@@ -1,7 +1,7 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { locale } from "@chia/db";
+import { locale } from "@chia/db/schema/enums";
 import { FeedOrderBy, FeedType, Locale } from "@chia/db/types";
 import {
   feedSchema,
@@ -30,60 +30,60 @@ import { withMetaSchema } from "./shared";
  * `__tests__/feeds-access.test.ts` for the cases that pin it down.
  */
 
-const dateSchema = z.object({
+const dateFields = {
   createdAt: z.number().optional(),
   updatedAt: z.number().optional(),
-});
+};
 
 // ============================================
 // Input Schemas
 // ============================================
 
-export const createFeedSchema = z.object({
-  ...insertFeedSchema
-    .omit({ userId: true, createdAt: true, updatedAt: true })
-    .partial({ slug: true }).shape,
-  translations: z.record(
-    z.enum(locale.enumValues),
-    z.object({
-      title: z.string().min(1),
-      excerpt: z.string().optional().nullable(),
-      description: z.string().optional().nullable(),
-      summary: z.string().optional().nullable(),
-      readTime: z.number().optional().nullable(),
-      content: insertContentSchema.optional(),
-    })
-  ),
-  ...dateSchema.shape,
-});
-
-export type CreateFeedInput = z.infer<typeof createFeedSchema>;
-
-export const updateFeedSchema = z.object({
-  feedId: z.number(),
-  ...insertFeedSchema
-    .omit({
-      userId: true,
-      createdAt: true,
-      updatedAt: true,
-      slug: true,
-    })
-    .partial().shape,
-  translations: z
-    .record(
+export const createFeedSchema = insertFeedSchema
+  .omit({ userId: true, createdAt: true, updatedAt: true })
+  .partial({ slug: true })
+  .extend({
+    translations: z.record(
       z.enum(locale.enumValues),
       z.object({
-        title: z.string().min(1).optional(),
+        title: z.string().min(1),
         excerpt: z.string().optional().nullable(),
         description: z.string().optional().nullable(),
         summary: z.string().optional().nullable(),
         readTime: z.number().optional().nullable(),
         content: insertContentSchema.optional(),
       })
-    )
-    .optional(),
-  ...dateSchema.shape,
-});
+    ),
+    ...dateFields,
+  });
+
+export type CreateFeedInput = z.infer<typeof createFeedSchema>;
+
+export const updateFeedSchema = insertFeedSchema
+  .omit({
+    userId: true,
+    createdAt: true,
+    updatedAt: true,
+    slug: true,
+  })
+  .partial()
+  .extend({
+    feedId: z.number(),
+    translations: z
+      .record(
+        z.enum(locale.enumValues),
+        z.object({
+          title: z.string().min(1).optional(),
+          excerpt: z.string().optional().nullable(),
+          description: z.string().optional().nullable(),
+          summary: z.string().optional().nullable(),
+          readTime: z.number().optional().nullable(),
+          content: insertContentSchema.optional(),
+        })
+      )
+      .optional(),
+    ...dateFields,
+  });
 
 export const deleteFeedSchema = z.object({
   feedId: z.number(),
@@ -107,16 +107,16 @@ const flexibleBoolean = z.union([z.boolean(), z.stringbool()]);
  * for callers below the required tier rather than rejecting the call, so a browser that
  * sends `includeUnpublished` receives the published set instead of a 403.
  */
-const feedVisibilitySchema = z.object({
+const feedVisibilityFields = {
   /** Include drafts. Requires the project API key or a session. */
   includeUnpublished: flexibleBoolean.optional().default(false),
   /** Include soft-deleted feeds. Requires a session. */
   includeDeleted: flexibleBoolean.optional().default(false),
-});
+};
 
-const localeQuerySchema = z.object({
+const localeQueryFields = {
   locale: z.enum(locale.enumValues).optional().default(Locale.zhTW),
-});
+};
 
 /**
  * Input for the feed list.
@@ -136,14 +136,14 @@ export const feedsInfiniteSchema = z.object({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.CreatedAt),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
   type: z.enum(FeedType).optional(),
-  ...localeQuerySchema.shape,
-  ...feedVisibilitySchema.shape,
+  ...localeQueryFields,
+  ...feedVisibilityFields,
 });
 
 export const getFeedBySlugSchema = z.object({
   slug: z.string().min(1),
-  ...localeQuerySchema.shape,
-  ...feedVisibilitySchema.shape,
+  ...localeQueryFields,
+  ...feedVisibilityFields,
 });
 
 /**
@@ -154,7 +154,7 @@ export const getFeedBySlugSchema = z.object({
 export const getFeedByIdSchema = z.object({
   feedId: z.coerce.number().int(),
   locale: z.enum(locale.enumValues).optional(),
-  ...feedVisibilitySchema.shape,
+  ...feedVisibilityFields,
 });
 
 // ============================================
@@ -168,8 +168,8 @@ export const getFeedByIdSchema = z.object({
  * from the feed. The body columns are optional because list queries skip them
  * unless `withContent` was set.
  */
-const translationOutputSchema = z.object({
-  ...feedTranslationSchema.omit({
+const translationOutputSchema = feedTranslationSchema
+  .omit({
     createdAt: true,
     updatedAt: true,
     published: true,
@@ -177,17 +177,17 @@ const translationOutputSchema = z.object({
     content: true,
     source: true,
     unstableSerializedSource: true,
-  }).shape,
-  content: z.string().nullable().optional(),
-  source: z.string().nullable().optional(),
-  unstableSerializedSource: z.string().nullable().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  hasEmbedding: z.boolean(),
-});
+  })
+  .extend({
+    content: z.string().nullable().optional(),
+    source: z.string().nullable().optional(),
+    unstableSerializedSource: z.string().nullable().optional(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    hasEmbedding: z.boolean(),
+  });
 
-export const feedWithTranslationsSchema = z.object({
-  ...feedSchema.shape,
+export const feedWithTranslationsSchema = feedSchema.extend({
   deletedAt: z.string().nullable(),
   translations: z.array(translationOutputSchema),
   feedsToTags: z
@@ -263,7 +263,7 @@ export const getRelatedFeedsContract = oc
   .input(
     z.object({
       slug: z.string().min(1),
-      ...localeQuerySchema.shape,
+      ...localeQueryFields,
       limit: z.coerce.number().int().min(1).max(6).optional().default(3),
     })
   )
@@ -287,7 +287,7 @@ export const searchFeedsContract = oc
   .input(
     z.object({
       keyword: z.string().trim().min(2).max(100),
-      ...localeQuerySchema.shape,
+      ...localeQueryFields,
       limit: z.coerce.number().int().min(1).max(10).optional().default(5),
     })
   )
@@ -308,8 +308,7 @@ export const searchFeedsAdvancedContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(
-    z.object({
-      ...searchFeedsSchema.shape,
+    searchFeedsSchema.extend({
       locale: z.enum(locale.enumValues).optional(),
     })
   )

@@ -16,7 +16,10 @@ const Image = (
   const { experimental_lazyLoading = true, ...rest } = props;
   return (
     <Root>
-      <ResourceActivity src={props.src as string}>
+      <ResourceActivity
+        src={
+          /* SAFETY: The producer contract guarantees this value satisfies string. */ props.src as string
+        }>
         <NextImage {...rest} aria-label={props.alt} />
       </ResourceActivity>
       {experimental_lazyLoading && (

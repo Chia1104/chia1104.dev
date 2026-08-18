@@ -1,4 +1,20 @@
+/**
+ * The wire contract and its client-side view model (`./fold.ts`), with no runtime dependency on
+ * Pi or any provider SDK — these are the modules browsers and SSR bundles import. `./replay.ts`
+ * is deliberately not among them: rebuilding events from persisted Pi entries classifies
+ * provider errors and so needs pi-ai.
+ */
+
 import * as z from "zod";
+
+export const agentErrorKindSchema = z.enum([
+  "auth",
+  "quota",
+  "rate_limited",
+  "context_overflow",
+  "provider",
+  "internal",
+]);
 
 const usageSchema = z.object({
   input: z.number(),
@@ -79,7 +95,12 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     scope: z.string().optional(),
     revision: z.number(),
   }),
-  z.object({ type: z.literal("error"), message: z.string() }),
+  z.object({
+    type: z.literal("error"),
+    /** See `AgentErrorKind`; lets a client suggest the next step instead of echoing the provider. */
+    kind: agentErrorKindSchema,
+    message: z.string(),
+  }),
   z.object({
     type: z.literal("run:end"),
     reason: z.enum(["done", "aborted", "error", "awaiting_approval"]),

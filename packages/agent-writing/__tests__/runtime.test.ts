@@ -1,5 +1,7 @@
 import { InMemorySessionRepo } from "@earendil-works/pi-agent-core";
+import type { Session } from "@earendil-works/pi-agent-core";
 import { createModels } from "@earendil-works/pi-ai";
+import type { Context } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxProvider,
@@ -8,16 +10,16 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { foldEvents } from "@chia/agent-runtime";
+import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
-  AgentWireEvent,
-  ApprovalRequest,
-  TextMessageView,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/types";
+import { foldEvents } from "@chia/agent-runtime/wire/fold";
+import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
-import { InMemoryDraftStore } from "../src/draft/index.ts";
+import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { runWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
@@ -33,20 +35,27 @@ import type { FakeContentPort } from "./fixtures.ts";
  */
 
 const SESSION_ID = "session-1";
-const ADMIN_ID = "admin-1";
 
 interface Fixture {
   events: AgentWireEvent[];
   content: FakeContentPort;
   draft: InMemoryDraftStore;
+  session: Session;
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
-  run: (text: string) => Promise<AgentTurnExecution<ApprovalRequest>>;
+  run: (
+    text: string,
+    options?: {
+      signal?: AbortSignal;
+      onEvent?: (event: AgentWireEvent) => void;
+    }
+  ) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
 
 const build = async (
-  settings: Partial<AgentSessionSettings> = {}
+  settings: Partial<AgentSessionSettings> = {},
+  fauxOptions: { tokensPerSecond?: number } = {}
 ): Promise<Fixture> => {
   /**
    * The faux provider stands in for whichever provider the settings name, so a turn can be driven
@@ -57,6 +66,7 @@ const build = async (
   const faux = fauxProvider({
     provider: providerId,
     models: [{ id: modelId }],
+    ...fauxOptions,
   });
   const models = createModels();
   models.setProvider(faux.provider);
@@ -89,20 +99,24 @@ const build = async (
     events,
     content,
     draft,
+    session,
     setResponses: faux.setResponses,
-    run: (text) =>
+    run: (text, options) =>
       runWritingTurn({
         session,
         settings: sessionSettings,
         agentSessionId: SESSION_ID,
-        adminId: ADMIN_ID,
         content,
         draft,
         message: { text },
-        onEvent: (event) => events.push(event),
+        onEvent: (event) => {
+          events.push(event);
+          options?.onEvent?.(event);
+        },
         models,
         toApproval: (approval) => approval,
         persistApprovals: async () => undefined,
+        signal: options?.signal,
       }),
   };
 };
@@ -271,7 +285,6 @@ describe("runWritingTurn", () => {
 
     expect(approved.content.commits).toHaveLength(1);
     expect(approved.content.commits[0]).toMatchObject({
-      adminId: ADMIN_ID,
       feedMeta: { slug: "a-post", defaultLocale: "en" },
     });
     expect(approved.events.some((e) => e.type === "approval:request")).toBe(
@@ -348,5 +361,110 @@ describe("runWritingTurn", () => {
       "Second answer.",
     ]);
     expect(new Set(assistants.map((item) => item.messageId)).size).toBe(2);
+  });
+
+  it("sends the draft state as a volatile last message, not in the system prompt or transcript", async () => {
+    await fixture.draft.patchFeedMeta(SESSION_ID, { slug: "hello-world" });
+    const seen: Context[] = [];
+    fixture.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage([
+          fauxToolCall(TOOL_NAMES.listTags, {}, { id: "call-tags" }),
+        ]);
+      },
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("Done.");
+      },
+    ]);
+
+    await fixture.run("What is the draft slug?");
+
+    expect(seen).toHaveLength(2);
+    for (const context of seen) {
+      expect(context.systemPrompt).not.toContain("# Current session");
+      const last = context.messages.at(-1);
+      expect(last?.role).toBe("user");
+      const text = JSON.stringify(last?.content);
+      expect(text).toContain("# Current session");
+      expect(text).toContain("Draft slug: hello-world");
+      expect(text).toMatch(/Current time: \d{4}-\d{2}-\d{2}T/);
+    }
+    // Both requests share one system prompt: the cacheable prefix is stable across hops.
+    expect(seen[0]?.systemPrompt).toBe(seen[1]?.systemPrompt);
+
+    const persisted = JSON.stringify(await fixture.session.getBranch());
+    expect(persisted).not.toContain("# Current session");
+    expect(fixture.events.filter((e) => e.type === "user")).toHaveLength(1);
+  });
+
+  it("reports a provider failure as a classified error instead of a silent done", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage("", {
+        stopReason: "error",
+        errorMessage: "401 Unauthorized: invalid x-api-key",
+      }),
+    ]);
+
+    const result = await fixture.run("Hi");
+
+    expect(result.status).toBe("error");
+    expect(result.error).toEqual({
+      kind: "auth",
+      message: "401 Unauthorized: invalid x-api-key",
+    });
+    expect(fixture.events.slice(-2)).toEqual([
+      {
+        type: "error",
+        kind: "auth",
+        message: "401 Unauthorized: invalid x-api-key",
+      },
+      { type: "run:end", reason: "error" },
+    ]);
+  });
+
+  it("stops mid-generation when the host aborts, with no tool boundary in between", async () => {
+    // ~50 tokens at 25 tokens/s: a couple of seconds of streaming, aborted after 100 ms.
+    const slow = await build({}, { tokensPerSecond: 25 });
+    const text = Array.from(
+      { length: 40 },
+      (_, i) => `sentence number ${i} of a deliberately long answer.`
+    ).join(" ");
+    slow.setResponses([fauxAssistantMessage(text)]);
+    const controller = new AbortController();
+
+    // Abort once the first token has actually streamed, so the assertion below is about a
+    // partial reply rather than an empty one.
+    let firstDelta: () => void = () => undefined;
+    const streamedSomething = new Promise<void>((resolve) => {
+      firstDelta = resolve;
+    });
+    const pending = slow.run("Write something long", {
+      signal: controller.signal,
+      onEvent: (event) => {
+        if (event.type === "assistant:delta") firstDelta();
+      },
+    });
+    await streamedSomething;
+    controller.abort();
+    const result = await pending;
+
+    expect(result.status).toBe("aborted");
+    expect(slow.events.at(-1)).toEqual({ type: "run:end", reason: "aborted" });
+    const streamed = slow.events
+      .filter((e) => e.type === "assistant:delta")
+      .map((e) => (e.type === "assistant:delta" ? e.delta : ""))
+      .join("");
+    expect(streamed.length).toBeGreaterThan(0);
+    expect(streamed.length).toBeLessThan(text.length);
+    // The partial reply is persisted as aborted, so the next turn sees what was said.
+    const branch = await slow.session.getBranch();
+    const last = branch.at(-1);
+    expect(
+      last?.type === "message" && last.message.role === "assistant"
+        ? last.message.stopReason
+        : undefined
+    ).toBe("aborted");
   });
 });

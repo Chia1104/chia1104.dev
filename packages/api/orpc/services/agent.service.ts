@@ -1,7 +1,12 @@
-import type { AgentWireEvent } from "@chia/agent-runtime/events";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type { JsonObject } from "@chia/db/json";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
 import { AppError } from "@chia/service-kit/errors";
+import type {
+  Caller,
+  CallerTier,
+} from "@chia/service-kit/policies/caller.policy";
 
 import type * as agentContracts from "../contracts/agent.contract";
 import type { BaseOSContext } from "../utils";
@@ -16,11 +21,19 @@ import type { BaseOSContext } from "../utils";
  * package be additive rather than replace the first.
  */
 
-/** Per-call context the service needs from the request that triggered it. */
-export interface AgentServiceCaller {
-  /** Configured admin, already verified by `adminGuard`. */
-  adminId: string;
-  /** Session user id, for the approval audit trail. */
+/**
+ * Per-call context the service needs from the request that triggered it.
+ *
+ * Extends the resolved {@link Caller} rather than restating a role: which tier a kind admits is
+ * the kind's own policy ({@link AgentKindService.minTier}), so the transport passes what it
+ * learned and lets the kind read `tier`, `session` or `adminId` as it needs. By the time a service
+ * sees this the guard has already enforced the kind's minimum tier.
+ */
+export interface AgentServiceCaller extends Caller {
+  /**
+   * Session user who owns every session this call may touch. Always present: a session row has
+   * an owner, so every kind requires at least a session-bearing tier.
+   */
   userId: string;
   context: ServiceContext;
 }
@@ -42,6 +55,13 @@ export interface AgentModelRef {
 }
 
 export interface AgentKindService {
+  /**
+   * Lowest {@link CallerTier} allowed to touch this kind at all — creation, listing and every
+   * session-scoped route. Never below `Session`: sessions are owned by a user, so an anonymous or
+   * API-key caller has no owner to be.
+   */
+  readonly minTier: CallerTier;
+
   listSessions(
     caller: AgentServiceCaller,
     input: { limit?: number; includeDeleted?: boolean } | undefined
@@ -58,7 +78,7 @@ export interface AgentKindService {
       model?: AgentModelRef;
       thinkingLevel?: string;
       autoApprove?: string[];
-      runtimeConfig?: Record<string, unknown>;
+      runtimeConfig?: JsonObject;
     }
   ): Promise<agentContracts.AgentSessionDetail>;
 
@@ -81,7 +101,7 @@ export interface AgentKindService {
       thinkingLevel?: string;
       activeToolNames?: string[] | null;
       autoApprove?: string[];
-      runtimeConfig?: Record<string, unknown>;
+      runtimeConfig?: JsonObject;
     }
   ): Promise<agentContracts.AgentSessionDetail | null>;
 
@@ -98,6 +118,15 @@ export interface AgentKindService {
       preAuthorizeToolNames?: string[];
     }
   ): Promise<{ runId: string; startIndex: number; startedRun: boolean }>;
+
+  /**
+   * Cursor to the start of the turn currently executing, or `null` when no turn is running. Reads
+   * only; the caller then tails `stream` from it.
+   */
+  attach(
+    caller: AgentServiceCaller,
+    input: { sessionId: string }
+  ): Promise<AgentStreamCursor | null>;
 
   /**
    * Streams a run's durable event stream.

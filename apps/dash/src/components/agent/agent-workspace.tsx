@@ -18,8 +18,8 @@ const updatedAtFormatter = new Intl.DateTimeFormat("en", {
   timeStyle: "short",
 });
 
-const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Something went wrong.";
+const errorMessage = (cause: unknown) =>
+  cause instanceof Error ? cause.message : "Something went wrong.";
 
 export const AgentWorkspace = () => {
   const pathname = usePathname();

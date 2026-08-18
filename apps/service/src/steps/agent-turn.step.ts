@@ -1,22 +1,33 @@
-import { FatalError, getWritable } from "workflow";
+import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
+import { getRun } from "workflow/api";
+import * as z from "zod";
 
 import type {
-  AgentWireEvent,
+  AgentTurnError,
   ThinkingLevel,
   ToolTier,
-} from "@chia/agent-runtime";
-import type { DB } from "@chia/db";
+} from "@chia/agent-runtime/types";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
+import type { JsonObject } from "@chia/db/json";
 import {
   completeActiveAgentRuns,
   getAgentSession,
   getApprovedAgentToolCallIds,
   getWritingAgentSession,
+  patchAgentRunMetadata,
   recordAgentApprovalRequests,
 } from "@chia/db/repos/agent";
+import { getAdminId } from "@chia/utils/config";
 
+import {
+  signalAgentAbort,
+  subscribeAgentAbort,
+} from "../services/agent-abort-controller";
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
+import type { AgentAbortControllerRef } from "../workflows/hooks/agent.hooks";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
@@ -45,14 +56,46 @@ export const AGENT_DELTA_NAMESPACE = "agent:deltas";
 const DELTA_FLUSH_MS = 80;
 
 // ============================================
+// Turn marker
+// ============================================
+
+/**
+ * The turn the run is on, kept in `agent_run.metadata` because the workflow SDK cannot say it: a
+ * run parked on its message hook is `running` just like one executing a step. `running` here is
+ * true only while the turn step is inside its handler. `leafEntryId`/`streamIndex` say where the
+ * turn began, so a client can rejoin it: `get` cuts the replayed transcript after that leaf and
+ * `attach` tails the run's stream from that index — both off one marker, so the join never
+ * duplicates or drops a message.
+ */
+export const AGENT_TURN_KEY = "turn";
+
+export interface AgentTurnMarker extends JsonObject {
+  /** Active leaf before this turn appended anything; `null` for an empty session. */
+  leafEntryId: string | null;
+  /** First coarse stream index this turn writes to. */
+  streamIndex: number;
+  running: boolean;
+}
+
+const agentTurnMarkerSchema = z.object({
+  leafEntryId: z.string().nullable(),
+  streamIndex: z.number(),
+  running: z.boolean(),
+});
+
+export const readAgentTurnMarker = (metadata: JsonObject) =>
+  agentTurnMarkerSchema.safeParse(metadata[AGENT_TURN_KEY]).data;
+
+// ============================================
 // Step contract
 // ============================================
 
 export interface AgentTurnRequest {
   sessionId: string;
   /** Verified at the transport boundary before the run was started. */
-  adminId: string;
   userId: string;
+  /** The run's abort controller; the turn subscribes to it for the harness's `AbortSignal`. */
+  abortController: AgentAbortControllerRef;
   text: string;
   template?: { name: string; args?: string[] };
   preAuthorizeToolNames?: string[];
@@ -66,13 +109,13 @@ export interface AgentTurnRequest {
 export interface AgentApprovalRequestSnapshot {
   toolCallId: string;
   toolName: string;
-  args?: Record<string, unknown>;
+  args?: JsonObject;
 }
 
 export interface AgentTurnOutcome {
-  status: "done" | "awaiting_approval" | "error";
+  status: "done" | "awaiting_approval" | "aborted" | "error";
   approvals: AgentApprovalRequestSnapshot[];
-  error?: string;
+  error?: AgentTurnError;
 }
 
 type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
@@ -80,7 +123,8 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 type AgentTurnHandler = (
   db: DB,
   row: AgentSessionRow,
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ) => Promise<AgentTurnOutcome>;
 
 // ============================================
@@ -104,14 +148,39 @@ export const runAgentTurnStep = async (
     );
   }
 
-  const handler = AGENT_TURN_HANDLERS[row.kind];
+  const handler = AGENT_TURN_HANDLERS.get(row.kind);
   if (!handler) {
     throw new FatalError(
       `No turn handler registered for agent kind "${row.kind}".`
     );
   }
 
-  return await handler(db, row, request);
+  // Recorded before the first event of this turn is written. The previous turn flushed its writer
+  // before returning, so the tail is the last index it wrote.
+  const { workflowRunId } = getWorkflowMetadata();
+  const marker: AgentTurnMarker = {
+    leafEntryId: row.leafEntryId,
+    streamIndex: (await getRun(workflowRunId).getReadable().getTailIndex()) + 1,
+    running: true,
+  };
+  await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
+
+  const clearMarker = () =>
+    patchAgentRunMetadata(db, workflowRunId, {
+      [AGENT_TURN_KEY]: { ...marker, running: false },
+    });
+  const abort = subscribeAgentAbort(request.abortController.runId);
+  try {
+    const outcome = await handler(db, row, request, abort.signal);
+    abort.dispose();
+    await clearMarker();
+    return outcome;
+  } catch (error) {
+    abort.dispose();
+    // The handler's error is the one that matters; a failed cleanup must not replace it.
+    await clearMarker().catch(() => undefined);
+    throw error;
+  }
 };
 
 /**
@@ -124,26 +193,28 @@ export const runAgentTurnStep = async (
  * matched against `agent_session.kind`, which is a database string either way; the handler asserts
  * the constant once its domain module is loaded.
  */
-const AGENT_TURN_HANDLERS: Readonly<Record<string, AgentTurnHandler>> = {
-  writing: runWritingAgentTurn,
-};
+const AGENT_TURN_HANDLERS = new Map<string, AgentTurnHandler>([
+  ["writing", runWritingAgentTurn],
+]);
 
 async function runWritingAgentTurn(
   db: DB,
   row: AgentSessionRow,
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ): Promise<AgentTurnOutcome> {
   const [
-    { createAgentModels, PgSessionRepo },
-    {
-      PgDraftStore,
-      runWritingTurn,
-      WRITING_AGENT_KIND,
-      WRITING_SESSION_DEFAULTS,
-    },
+    { createAgentModels },
+    { PgSessionRepo },
+    { PgDraftStore },
+    { runWritingTurn },
+    { WRITING_AGENT_KIND, WRITING_SESSION_DEFAULTS },
   ] = await Promise.all([
-    import("@chia/agent-runtime"),
-    import("@chia/agent-writing"),
+    import("@chia/agent-runtime/models"),
+    import("@chia/agent-runtime/session/pg-repo"),
+    import("@chia/agent-writing/draft/pg-draft-store"),
+    import("@chia/agent-writing/runtime"),
+    import("@chia/agent-writing/models"),
   ]);
 
   if (row.kind !== WRITING_AGENT_KIND) {
@@ -170,7 +241,12 @@ async function runWritingAgentTurn(
   });
   const session = await repo.openById(request.sessionId);
   const draft = new PgDraftStore(db);
-  const content = createAgentContentPort({ db, adminId: request.adminId });
+  /**
+   * The writing agent acts as the configured author. The kind's `minTier` is `Root`, which pins
+   * session ownership to that same id, so this states whose posts the port touches rather than
+   * performing a second authorization check.
+   */
+  const content = createAgentContentPort({ db, adminId: getAdminId() });
 
   const approvedToolCallIds = new Set(
     await getApprovedAgentToolCallIds(db, request.sessionId)
@@ -196,18 +272,20 @@ async function runWritingAgentTurn(
     settings: {
       providerId: row.providerId,
       modelId: row.modelId,
-      thinkingLevel: row.thinkingLevel as ThinkingLevel,
+      thinkingLevel:
+        /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
       activeToolNames: row.activeToolNames,
-      autoApprove: row.autoApprove as ToolTier[],
+      autoApprove:
+        /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
     },
     agentSessionId: request.sessionId,
-    adminId: request.adminId,
     targetFeedId: writingState.targetFeedId ?? undefined,
     content,
     draft,
     onEvent: writer.push,
     approvedToolCallIds,
     preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+    signal,
     message: {
       text: request.text,
       template: request.template,
@@ -215,7 +293,8 @@ async function runWritingAgentTurn(
     toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
-      args: approval.args as Record<string, unknown> | undefined,
+      // SAFETY: tool arguments passed their registered TypeBox schema before execution.
+      args: approval.args as JsonObject | undefined,
     }),
     persistApprovals: async (approvals) => {
       await recordAgentApprovalRequests(
@@ -320,12 +399,17 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
   await Promise.allSettled([coarse.close(), deltas.close()]);
 };
 
-/** Marks the durable run inactive once its orchestration loop ends. */
+/**
+ * Marks the durable run inactive once its orchestration loop ends, and closes its abort controller
+ * so it does not sit parked until its TTL.
+ */
 export const completeAgentRunStep = async (
-  sessionId: string
+  sessionId: string,
+  abortController: AgentAbortControllerRef
 ): Promise<void> => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
   await completeActiveAgentRuns(db, sessionId, "completed");
+  await signalAgentAbort(abortController.id, "run finished");
 };

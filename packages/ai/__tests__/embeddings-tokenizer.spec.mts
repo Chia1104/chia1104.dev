@@ -67,9 +67,9 @@ describe("truncateForEmbeddingExact", () => {
 describe("truncateForEmbedding (fallback path)", () => {
   it.each(CASES)("keeps %s within the limit", (_name, text) => {
     const maxTokens = 500;
-    expect(exactTokens(truncateForEmbedding(text, maxTokens))).toBeLessThanOrEqual(
-      maxTokens
-    );
+    expect(
+      exactTokens(truncateForEmbedding(text, maxTokens))
+    ).toBeLessThanOrEqual(maxTokens);
   });
 });
 

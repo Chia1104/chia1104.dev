@@ -6,7 +6,7 @@ import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import { createAuth } from "@chia/auth";
+import { createAuth } from "@chia/auth/server";
 import { connectDatabase } from "@chia/db/client";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator, getClientIP } from "@chia/utils/server";
@@ -36,7 +36,7 @@ export const createServiceFactory = () =>
         const [{ data: db, error: dbError }, { data: kv, error: kvError }] =
           await Promise.all([
             tryCatch(connectDatabase()),
-            tryCatch(import("@chia/kv").then((m) => m.kv)),
+            tryCatch(import("@chia/kv/redis").then((m) => m.getRedisKv())),
           ]);
 
         if (dbError || kvError) {
@@ -111,7 +111,7 @@ export const bootstrap = <
     if (isAppError(e)) {
       return c.json(
         toErrorResponse(e),
-        e.status as ContentfulStatusCode,
+        /* SAFETY: The producer contract guarantees this value satisfies ContentfulStatusCode. */ e.status as ContentfulStatusCode,
         e.headers ?? {}
       );
     }

@@ -2,14 +2,14 @@ import type { SQLWrapper } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
+import * as schema from "../../schemas/schema.ts";
+import { FeedOrderBy } from "../../types";
 import {
   buildCursorWhere,
   parseCursorForOrder,
   sliceNextCursor,
   withDTO,
-} from "../";
-import { schema } from "../..";
-import { FeedOrderBy } from "../../types";
+} from "../index.ts";
 import type { InsertProjectDTO, InfiniteDTO } from "../validator/organization";
 
 const ORGANIZATION_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);
@@ -61,11 +61,11 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
         sortOrder === "asc" ? asc(project[orderBy]) : desc(project[orderBy]),
       ],
       limit: limit + 1,
-      where: {
-        organizationId,
-        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
-        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
-      },
+      where: cursorFilter
+        ? { organizationId, AND: [cursorFilter, ...rawFilters] }
+        : rawFilters.length
+          ? { organizationId, AND: rawFilters }
+          : { organizationId },
     });
 
     const { items, nextCursor } = sliceNextCursor(

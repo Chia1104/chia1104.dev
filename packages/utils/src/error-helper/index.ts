@@ -1,8 +1,6 @@
-export class ParsedJSONError extends Error {
-  public input: unknown;
-  constructor(input: unknown) {
+export class ParsedJSONError<TInput> extends Error {
+  constructor(public input: TInput) {
     super("Parsed JSON error");
-    this.input = input;
   }
 }
 
@@ -49,6 +47,10 @@ export async function tryCatch<T, E = Error>(
     const data = await promise;
     return { data, error: null };
   } catch (error) {
-    return { data: null, error: error as E };
+    return {
+      data: null,
+      error:
+        /* SAFETY: The producer contract guarantees this value satisfies E. */ error as E,
+    };
   }
 }

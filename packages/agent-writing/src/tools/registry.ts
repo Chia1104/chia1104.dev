@@ -1,19 +1,21 @@
-import type { ToolTier } from "@chia/agent-runtime";
+import {
+  CONTENT_TOOL_LABEL_BY_NAME,
+  CONTENT_TOOL_NAMES,
+} from "@chia/agent-content/tools/registry";
+import type { ToolTier } from "@chia/agent-runtime/types";
 
 /**
  * Single source of truth for tool identity: name → tier and name → UI label.
  *
- * Kept in its own module (rather than derived from the tool objects) so `permissions.ts` and
- * `events.ts` can classify a tool call without constructing the tools — which need ports,
- * which need a database.
+ * Kept in its own module (rather than derived from the tool objects) so `policy.ts` and
+ * `summarize.ts` can classify a tool call without constructing the tools — which need ports,
+ * which need a database. The shared content read tools bring their own names and labels; this
+ * module only assigns them a tier.
  */
 
 export const TOOL_NAMES = {
   // read
-  searchPosts: "search_posts",
-  getPost: "get_post",
-  listPosts: "list_posts",
-  listTags: "list_tags",
+  ...CONTENT_TOOL_NAMES,
   fetchUrl: "fetch_url",
   // draft
   readDraft: "read_draft",
@@ -28,7 +30,7 @@ export const TOOL_NAMES = {
 
 export type ToolName = (typeof TOOL_NAMES)[keyof typeof TOOL_NAMES];
 
-export const TOOL_TIER_BY_NAME: Record<string, ToolTier> = {
+export const TOOL_TIER_BY_NAME = {
   [TOOL_NAMES.searchPosts]: "read",
   [TOOL_NAMES.getPost]: "read",
   [TOOL_NAMES.listPosts]: "read",
@@ -43,13 +45,10 @@ export const TOOL_TIER_BY_NAME: Record<string, ToolTier> = {
 
   [TOOL_NAMES.commitDraft]: "commit",
   [TOOL_NAMES.setPublished]: "commit",
-};
+} satisfies Record<ToolName, ToolTier>;
 
-export const TOOL_LABEL_BY_NAME: Record<string, string> = {
-  [TOOL_NAMES.searchPosts]: "Search posts",
-  [TOOL_NAMES.getPost]: "Read post",
-  [TOOL_NAMES.listPosts]: "List posts",
-  [TOOL_NAMES.listTags]: "List tags",
+export const TOOL_LABEL_BY_NAME = {
+  ...CONTENT_TOOL_LABEL_BY_NAME,
   [TOOL_NAMES.fetchUrl]: "Fetch page",
 
   [TOOL_NAMES.readDraft]: "Read draft",
@@ -60,7 +59,13 @@ export const TOOL_LABEL_BY_NAME: Record<string, string> = {
 
   [TOOL_NAMES.commitDraft]: "Commit draft",
   [TOOL_NAMES.setPublished]: "Change published state",
-};
+} satisfies Record<ToolName, string>;
+
+export const isToolName = (toolName: string): toolName is ToolName =>
+  Object.hasOwn(TOOL_TIER_BY_NAME, toolName);
 
 export const labelOf = (toolName: string): string =>
-  TOOL_LABEL_BY_NAME[toolName] ?? toolName;
+  isToolName(toolName) ? TOOL_LABEL_BY_NAME[toolName] : toolName;
+
+export const tierOf = (toolName: string): ToolTier =>
+  isToolName(toolName) ? TOOL_TIER_BY_NAME[toolName] : "commit";

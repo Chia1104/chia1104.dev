@@ -5,10 +5,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./types": {
       "types": "./src/types.ts",
       "default": "./src/types.ts"
@@ -29,17 +25,53 @@
       "types": "./src/runtime.ts",
       "default": "./src/runtime.ts"
     },
-    "./draft": {
-      "types": "./src/draft/index.ts",
-      "default": "./src/draft/index.ts"
+    "./draft/operations": {
+      "types": "./src/draft/operations.ts",
+      "default": "./src/draft/operations.ts"
     },
-    "./prompts": {
-      "types": "./src/prompts/index.ts",
-      "default": "./src/prompts/index.ts"
+    "./draft/pg-draft-store": {
+      "types": "./src/draft/pg-draft-store.ts",
+      "default": "./src/draft/pg-draft-store.ts"
     },
-    "./tools": {
-      "types": "./src/tools/index.ts",
-      "default": "./src/tools/index.ts"
+    "./draft/memory-draft-store": {
+      "types": "./src/draft/memory-draft-store.ts",
+      "default": "./src/draft/memory-draft-store.ts"
+    },
+    "./prompts/system": {
+      "types": "./src/prompts/system.ts",
+      "default": "./src/prompts/system.ts"
+    },
+    "./prompts/skills": {
+      "types": "./src/prompts/skills.ts",
+      "default": "./src/prompts/skills.ts"
+    },
+    "./prompts/templates": {
+      "types": "./src/prompts/templates.ts",
+      "default": "./src/prompts/templates.ts"
+    },
+    "./tools/tool-set": {
+      "types": "./src/tools/tool-set.ts",
+      "default": "./src/tools/tool-set.ts"
+    },
+    "./tools/registry": {
+      "types": "./src/tools/registry.ts",
+      "default": "./src/tools/registry.ts"
+    },
+    "./tools/summarize": {
+      "types": "./src/tools/summarize.ts",
+      "default": "./src/tools/summarize.ts"
+    },
+    "./tools/retrieval.tool": {
+      "types": "./src/tools/retrieval.tool.ts",
+      "default": "./src/tools/retrieval.tool.ts"
+    },
+    "./tools/draft.tool": {
+      "types": "./src/tools/draft.tool.ts",
+      "default": "./src/tools/draft.tool.ts"
+    },
+    "./tools/commit.tool": {
+      "types": "./src/tools/commit.tool.ts",
+      "default": "./src/tools/commit.tool.ts"
     }
   },
   "scripts": {
@@ -50,6 +82,7 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@chia/agent-content": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",

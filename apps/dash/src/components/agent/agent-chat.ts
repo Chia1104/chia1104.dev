@@ -1,7 +1,8 @@
 import type { UIMessage } from "@tanstack/ai-react";
 
-import type { AgentWireEvent, ToolCallView } from "@chia/agent-runtime";
-import { foldEvents } from "@chia/agent-runtime";
+import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
+import { describeAgentError, foldEvents } from "@chia/agent-runtime/wire/fold";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 export interface PendingApproval {
   toolCallId: string;
@@ -14,7 +15,7 @@ export interface ApprovalContinuation {
   approved: boolean;
 }
 
-const jsonOf = (value: unknown): string => {
+const jsonOf = <TValue>(value: TValue): string => {
   try {
     return JSON.stringify(value) ?? "";
   } catch {
@@ -55,15 +56,11 @@ const toolMessage = (
         arguments: jsonOf(tool.args),
         input: tool.args,
         state,
-        ...(state === "approval-requested"
-          ? {
-              approval: {
-                id: tool.toolCallId,
-                needsApproval: true,
-              },
-            }
-          : {}),
-        ...(output === undefined ? {} : { output }),
+        approval:
+          state === "approval-requested"
+            ? { id: tool.toolCallId, needsApproval: true }
+            : undefined,
+        output,
       },
     ],
   };
@@ -94,7 +91,14 @@ export const agentEventsToUiMessages = (
       messages.push({
         id: `history:notice:${index}`,
         role: "assistant",
-        parts: [{ type: "text", content: item.text }],
+        parts: [
+          {
+            type: "text",
+            content: item.code
+              ? describeAgentError({ kind: item.code, message: item.text })
+              : item.text,
+          },
+        ],
       });
       continue;
     }

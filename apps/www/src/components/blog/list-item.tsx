@@ -23,7 +23,7 @@ const ListItem = ({
           {...props}>
           <div className="text-sm leading-none font-medium">{title}</div>
           <p className="line-clamp-2 text-sm leading-snug">
-            {typeof children !== "function" && children}
+            {!(children instanceof Function) && children}
           </p>
         </Link>
       </NavigationMenuLink>

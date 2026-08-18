@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/agent-content",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    },
+    "./tools/read": {
+      "types": "./src/tools/read.tool.ts",
+      "default": "./src/tools/read.tool.ts"
+    },
+    "./tools/registry": {
+      "types": "./src/tools/registry.ts",
+      "default": "./src/tools/registry.ts"
+    },
+    "./tools/summarize": {
+      "types": "./src/tools/summarize.ts",
+      "default": "./src/tools/summarize.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "vitest --run",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chia/agent-runtime": "workspace:*",
+    "@chia/ai": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@earendil-works/pi-agent-core": "catalog:agent",
+    "@earendil-works/pi-ai": "catalog:agent",
+    "typebox": "catalog:agent"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}

@@ -1,4 +1,5 @@
-import type { DB } from "@chia/db";
+import type { PostSnapshot } from "@chia/agent-content/types";
+import type { DB } from "@chia/db/client";
 import {
   deleteWritingAgentDrafts,
   getWritingAgentDrafts,
@@ -9,12 +10,7 @@ import {
 import type { Locale } from "@chia/db/types";
 
 import type { DraftStore } from "../ports.ts";
-import type {
-  DraftFeedMeta,
-  DraftTranslation,
-  FeedDraft,
-  PostSnapshot,
-} from "../types.ts";
+import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
 import { emptyDraft } from "./operations.ts";
 
@@ -37,6 +33,7 @@ export class PgDraftStore implements DraftStore {
 
     const draft = emptyDraft();
     if (writingState?.feedMeta) {
+      // SAFETY: this JSONB value is written exclusively from DraftFeedMeta in this store.
       draft.feedMeta = writingState.feedMeta as DraftFeedMeta;
     }
     if (writingState?.targetFeedId != null) {
@@ -44,6 +41,7 @@ export class PgDraftStore implements DraftStore {
     }
     for (const row of rows) {
       draft.translations[row.locale] = {
+        // SAFETY: row.meta is persisted exclusively from DraftTranslation below.
         ...(row.meta as DraftTranslation),
         content: row.content ?? undefined,
       };
@@ -58,7 +56,7 @@ export class PgDraftStore implements DraftStore {
     const current = await this.get(sessionId);
     const feedMeta = stripUndefined({ ...current.feedMeta, ...patch });
     await updateWritingAgentSession(this.db, sessionId, { feedMeta });
-    return { ...current, feedMeta: feedMeta as DraftFeedMeta };
+    return { ...current, feedMeta };
   }
 
   async patchTranslation(
@@ -70,7 +68,7 @@ export class PgDraftStore implements DraftStore {
     const merged = stripUndefined({
       ...(current.translations[locale] ?? {}),
       ...patch,
-    }) as DraftTranslation;
+    });
 
     // `content` has its own column; everything else goes to the jsonb blob.
     const { content, ...meta } = merged;
@@ -143,5 +141,10 @@ export class PgDraftStore implements DraftStore {
  * jsonb round-trips `undefined` as `null`, which would turn "field not set" into "field
  * explicitly cleared". Drop undefined keys before persisting.
  */
-const stripUndefined = <T extends object>(value: T): Record<string, unknown> =>
-  Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined));
+const stripUndefined = <T extends object>(value: T): Partial<T> => {
+  const entries = Object.entries(value).filter(
+    ([, entry]) => entry !== undefined
+  );
+  // SAFETY: filtering entries removes values but never changes a surviving key or value.
+  return Object.fromEntries(entries) as Partial<T>;
+};

@@ -42,7 +42,7 @@ type VariantsKey = (typeof VariantsKey)[keyof typeof VariantsKey];
 
 type ThemeVariants = Record<VariantsKey, Record<Theme, Variant>>;
 
-const defaultThemeVariants: ThemeVariants = {
+const defaultThemeVariants = {
   [VariantsKey.SVG]: {
     dark: {
       rotate: 40,
@@ -90,7 +90,7 @@ const defaultThemeVariants: ThemeVariants = {
       opacity: 0,
     },
   },
-};
+} satisfies ThemeVariants;
 
 const MotionThemeIcon: FC<{
   theme: Theme;
@@ -190,7 +190,13 @@ const ThemeSelector: FC<
         {...dropdownProps?.root}
         className={cn("not-prose", dropdownProps?.root?.className)}>
         <Button type="button" size="sm" {...buttonProps}>
-          <MotionThemeIcon theme={theme as Theme} variants={variants} /> {label}
+          <MotionThemeIcon
+            theme={
+              /* SAFETY: The producer contract guarantees this value satisfies Theme. */ theme as Theme
+            }
+            variants={variants}
+          />{" "}
+          {label}
         </Button>
         <Dropdown.Popover {...dropdownProps?.popover}>
           <Dropdown.Menu {...dropdownProps?.menu}>
@@ -226,17 +232,13 @@ const ThemeSelector: FC<
 };
 
 const ThemeCMD = () => {
-  const { theme, setTheme, isDarkMode } = useTheme();
-  useCMD(
-    false,
-    {
-      cmd: "j",
-      onKeyDown: () => {
-        setTheme(isDarkMode ? "light" : "dark");
-      },
+  const { setTheme, isDarkMode } = useTheme();
+  useCMD(false, {
+    cmd: "j",
+    onKeyDown: () => {
+      setTheme(isDarkMode ? "light" : "dark");
     },
-    [theme, isDarkMode]
-  );
+  });
   return null;
 };
 

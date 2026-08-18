@@ -1,12 +1,15 @@
 import { os } from "@orpc/server";
 
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import type { Caller, CallerPolicyOptions } from "@chia/service-kit/policies";
+import type {
+  Caller,
+  CallerPolicyOptions,
+} from "@chia/service-kit/policies/caller.policy";
 import {
   CallerTier,
   callerPolicy,
-  rateLimitPolicy,
-} from "@chia/service-kit/policies";
+} from "@chia/service-kit/policies/caller.policy";
+import { rateLimitPolicy } from "@chia/service-kit/policies/rate-limit.policy";
 
 import type { BaseOSContext } from "../utils";
 import { baseOS } from "../utils";
@@ -51,12 +54,12 @@ export const callerGuard = (options: CallerPolicyOptions = {}) =>
  * number (`RATELIMIT_MAX`), and the *relative* trust between tiers is a property of the
  * architecture, not of the environment.
  */
-const TIER_MULTIPLIER: Record<CallerTier, number> = {
+const TIER_MULTIPLIER = {
   [CallerTier.Anonymous]: 1,
   [CallerTier.ApiKey]: 10,
   [CallerTier.Session]: 10,
   [CallerTier.Root]: 100,
-};
+} satisfies Record<CallerTier, number>;
 
 /**
  * Identity the budget is counted against.

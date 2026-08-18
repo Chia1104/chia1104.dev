@@ -46,7 +46,10 @@ const toDefaultValues = (feed: Feed) => ({
       };
       return acc;
     },
-    {} as Record<Locale, FormSchema["translations"][Locale]>
+    /* SAFETY: The producer contract guarantees this value satisfies Record<Locale, FormSchema["translations"][Locale]>. */ {} as Record<
+      Locale,
+      FormSchema["translations"][Locale]
+    >
   ),
 });
 

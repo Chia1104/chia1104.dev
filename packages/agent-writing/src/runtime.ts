@@ -1,11 +1,13 @@
 import type { Models } from "@earendil-works/pi-ai";
 
+import { createAgentModels } from "@chia/agent-runtime/models";
 import {
   compactPiSession,
-  createAgentModels,
   navigatePiSession,
-  runPiTurn,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/pi/maintenance";
+import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
+import { runPiTurn } from "@chia/agent-runtime/pi/turn";
+import type { Session } from "@chia/agent-runtime/session/pi";
 import type {
   AgentCompactionResult,
   AgentNavigationOptions,
@@ -13,26 +15,23 @@ import type {
   AgentSessionSettings,
   AgentTurnExecution,
   AgentTurnMessage,
-  AgentWireEvent,
-  ApprovalRequest,
-  Session,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/types";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
 
 import { resolveWritingModel } from "./models.ts";
 import { writingPolicy } from "./policy.ts";
 import type { ContentPort, DraftStore } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
-import { buildSystemPrompt } from "./prompts/system.ts";
+import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
-import { createWritingTools } from "./tools/index.ts";
+import { createWritingTools } from "./tools/tool-set.ts";
 import type { WritingToolContext } from "./types.ts";
 
 export interface RunWritingTurnOptions<TApproval> {
   session: Session;
   settings: AgentSessionSettings;
   agentSessionId: string;
-  adminId: string;
   targetFeedId?: number;
   content: ContentPort;
   draft: DraftStore;
@@ -40,6 +39,8 @@ export interface RunWritingTurnOptions<TApproval> {
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
+  /** Host-owned abort; see `RunPiTurnOptions.signal`. */
+  signal?: AbortSignal;
   models?: Models;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
@@ -55,7 +56,6 @@ export const runWritingTurn = <TApproval>(
   const models = options.models ?? createAgentModels();
   const toolContext: WritingToolContext = {
     agentSessionId: options.agentSessionId,
-    adminId: options.adminId,
     targetFeedId: options.targetFeedId,
     content: options.content,
     draft: options.draft,
@@ -69,14 +69,18 @@ export const runWritingTurn = <TApproval>(
     models,
     tools: createWritingTools(),
     toolContext,
-    systemPrompt: async () =>
-      buildSystemPrompt({
-        skills: writingSkills,
+    systemPrompt: buildSystemPrompt({
+      skills: writingSkills,
+      autoApprove: options.settings.autoApprove,
+    }),
+    volatileContext: async () =>
+      buildTurnContext({
         draft: await options.draft.get(options.agentSessionId),
-        autoApprove: options.settings.autoApprove,
         targetFeedId: options.targetFeedId,
         defaultLocale,
+        now: new Date(),
       }),
+    signal: options.signal,
     skills: writingSkills,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,

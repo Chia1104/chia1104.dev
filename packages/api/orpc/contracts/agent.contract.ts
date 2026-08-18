@@ -1,9 +1,9 @@
 import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { agentWireEventSchema } from "@chia/agent-runtime/events";
 import { tanstackAgentEventSchema } from "@chia/agent-runtime/transports/tanstack-ai";
-import { locale } from "@chia/db";
+import { agentWireEventSchema } from "@chia/agent-runtime/wire/schema";
+import { locale } from "@chia/db/schema/enums";
 
 import { withMetaSchema } from "./shared";
 
@@ -97,15 +97,26 @@ export const agentSessionDetailSchema = z.object({
     })
     .optional(),
   /** Versioned kind-owned configuration persisted on the shared session record. */
-  runtimeConfig: z.record(z.string(), z.unknown()).optional(),
+  runtimeConfig: z.record(z.string(), z.json()).optional(),
   configVersion: z.number().int().positive().optional(),
   /** Optional runtime-owned state for kinds that do not have a dedicated public contract yet. */
   state: z.unknown().optional(),
   /** Writing-agent state. Other kinds expose their own state contract. */
   draft: agentDraftSchema.optional(),
   /**
+   * The session's live durable run, or `null` when none is alive. `running` means a turn step is
+   * executing right now; `waiting` means the run is parked on its message or approval hook.
+   */
+  run: z
+    .object({
+      id: z.string(),
+      status: z.enum(["running", "waiting"]),
+    })
+    .nullable(),
+  /**
    * The transcript replayed as wire events, so the client folds it with the exact same reducer it
-   * uses for the live stream.
+   * uses for the live stream. While a turn is running it stops before that turn; `chat` with
+   * `{ type: "attach" }` replays the running turn from its start and tails it live.
    */
   events: z.array(agentWireEventSchema),
   pendingApprovals: z.array(
@@ -151,7 +162,7 @@ export const createAgentSessionContract = oc
       model: agentModelRefSchema.optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       autoApprove: z.array(toolTierSchema).optional(),
-      runtimeConfig: z.record(z.string(), z.unknown()).optional(),
+      runtimeConfig: z.record(z.string(), z.json()).optional(),
     })
   )
   .output(agentSessionDetailSchema);
@@ -190,7 +201,7 @@ export const updateAgentSessionSettingsContract = oc
       thinkingLevel: thinkingLevelSchema.optional(),
       activeToolNames: z.array(z.string()).nullable().optional(),
       autoApprove: z.array(toolTierSchema).optional(),
-      runtimeConfig: z.record(z.string(), z.unknown()).optional(),
+      runtimeConfig: z.record(z.string(), z.json()).optional(),
     })
   )
   .output(agentSessionDetailSchema);
@@ -200,81 +211,14 @@ export const updateAgentSessionSettingsContract = oc
 // ============================================
 
 /**
- * Enqueues a turn on the session's durable run and returns **immediately**.
+ * The turn transport: one prompt or approval decision in, that turn's events out, as the AG-UI
+ * subset TanStack AI consumes.
  *
- * Deliberately not a streaming procedure. The turn is executed by a workflow run, so the HTTP
- * request that starts it does not need to stay open for minutes — and the turn survives a deploy
- * or restart, which an open request could not. Consume `agent.sessions.stream` for the output.
- */
-export const promptAgentContract = oc
-  .errors({
-    UNAUTHORIZED: {},
-    FORBIDDEN: {},
-    NOT_FOUND: {},
-    BAD_REQUEST: {},
-  })
-  .input(
-    z.object({
-      /** Agent kind. Optional while only one is registered. */
-      kind: z.string().optional(),
-      sessionId: z.string(),
-      text: z.string().min(1),
-      /** Invoke a prompt template (slash command) instead of sending raw text. */
-      template: z
-        .object({ name: z.string(), args: z.array(z.string()).optional() })
-        .optional(),
-      /**
-       * Tool names pre-authorised for this turn only — the "run and commit" affordance, which
-       * skips the refusal handshake for the common path.
-       */
-      preAuthorizeToolNames: z.array(z.string()).optional(),
-    })
-  )
-  .output(
-    z.object({
-      runId: z.string(),
-      /**
-       * First event emitted after this message was accepted. When another turn is already running,
-       * its remaining events may precede this queued turn on the same durable stream.
-       */
-      startIndex: z.number(),
-      /** True when this call started a new run rather than resuming the session's existing one. */
-      startedRun: z.boolean(),
-    })
-  );
-
-/**
- * Streams a run's events, replaying from `startIndex` before tailing live ones.
- *
- * Backed by the workflow run's durable stream, so this survives reconnects, restarts and multiple
- * concurrent viewers — the client just remembers the last index it saw.
- *
- * Token-level deltas live on a separate namespace (`deltas: true`) so a reconnecting client can
- * replay the coarse transcript cheaply and opt into the typing animation only if it wants it.
- */
-export const streamAgentContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(
-    z.object({
-      /** Agent kind. Optional while only one is registered. */
-      kind: z.string().optional(),
-      sessionId: z.string(),
-      /** Defaults to the session's current run. */
-      runId: z.string().optional(),
-      /** Negative values read relative to the end, e.g. `-20` for the last 20 events. */
-      startIndex: z.number().int().optional(),
-      /** Include token-level deltas. Off by default — replay does not need them. */
-      deltas: z.boolean().optional(),
-    })
-  )
-  .output(eventIterator(agentWireEventSchema));
-
-/**
- * TanStack AI compatibility facade.
- *
- * The client run remains request-scoped, while the runtime below it keeps using one durable,
- * multi-turn workflow. Only the newest prompt or approval decision crosses this boundary; the
- * server-owned session remains the source of truth for conversation history.
+ * The request is scoped to one client run, while the runtime below it keeps using one durable,
+ * multi-turn workflow: the message is enqueued durably first and this request then tails the
+ * run's stream from that point, so a dropped connection loses the view, never the turn — the
+ * transcript is replayed from the server-owned session on the next `get`. Only the newest
+ * prompt or approval decision crosses this boundary; the server owns conversation history.
  */
 export const chatAgentContract = oc
   .errors({
@@ -303,6 +247,11 @@ export const chatAgentContract = oc
           approved: z.boolean(),
           comment: z.string().max(1000).optional(),
         }),
+        /**
+         * Rejoin the turn that is running right now, replayed from its start. Enqueues nothing;
+         * NOT_FOUND when no turn is running.
+         */
+        z.object({ type: z.literal("attach") }),
       ]),
     })
   )

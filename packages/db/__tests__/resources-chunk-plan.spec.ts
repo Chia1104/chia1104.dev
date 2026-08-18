@@ -18,7 +18,7 @@ const input = (
   chunkIndex: number,
   contentHash: string
 ): ResourceChunkInput => ({
-  kind: kind as ResourceChunkInput["kind"],
+  kind: /* SAFETY: This fixture implements the ResourceChunkInput["kind"] members exercised by this case. */ kind as ResourceChunkInput["kind"],
   chunkIndex,
   content: `content-${contentHash}`,
   contentHash,

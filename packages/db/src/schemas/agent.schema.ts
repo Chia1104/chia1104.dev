@@ -11,6 +11,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+import type { JsonObject } from "../json.ts";
 import { timestamps, softDelete } from "../libs/common.schema.ts";
 
 import { feeds } from "./contents.schema.ts";
@@ -68,7 +69,7 @@ export const agentSessions = pgTable(
     autoApprove: jsonb("auto_approve").$type<string[]>().notNull().default([]),
     /** Kind-owned configuration that does not deserve a shared column. */
     runtimeConfig: jsonb("runtime_config")
-      .$type<Record<string, unknown>>()
+      .$type<JsonObject>()
       .notNull()
       .default({}),
     /** Schema version for validating and migrating `runtimeConfig`. */
@@ -110,16 +111,13 @@ export const agentRuns = pgTable(
     status: text("status").$type<AgentRunStatus>().notNull().default("active"),
     /** Provider/workflow-owned identifier used to stream, resume or cancel this run. */
     externalRunId: text("external_run_id").notNull(),
-    metadata: jsonb("metadata")
-      .$type<Record<string, unknown>>()
-      .notNull()
-      .default({}),
+    metadata: jsonb("metadata").$type<JsonObject>().notNull().default({}),
     startedAt: timestamp("started_at", { mode: "date" }).defaultNow().notNull(),
     endedAt: timestamp("ended_at", { mode: "date" }),
   },
   (table) => [
     index("agent_run_session_status_idx").on(table.sessionId, table.status),
-    index("agent_run_external_id_idx").on(table.externalRunId),
+    uniqueIndex("agent_run_external_id_idx").on(table.externalRunId),
     uniqueIndex("agent_run_one_active_per_session_idx")
       .on(table.sessionId)
       .where(sql`${table.status} = 'active'`),
@@ -151,7 +149,7 @@ export const agentSessionEntries = pgTable(
       .references(() => agentSessions.id, { onDelete: "cascade" }),
     parentId: text("parent_id"),
     type: text("type").notNull(),
-    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    payload: jsonb("payload").$type<JsonObject>().notNull(),
     timestamp: timestamp("timestamp", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => [
@@ -182,10 +180,7 @@ export const writingAgentSessions = pgTable(
       onDelete: "set null",
     }),
     /** Feed-level draft fields (slug/type/published/mainImage/…). */
-    feedMeta: jsonb("feed_meta")
-      .$type<Record<string, unknown>>()
-      .notNull()
-      .default({}),
+    feedMeta: jsonb("feed_meta").$type<JsonObject>().notNull().default({}),
   },
   (table) => [
     index("writing_agent_session_target_feed_idx").on(table.targetFeedId),
@@ -206,7 +201,7 @@ export const writingAgentDrafts = pgTable(
       .references(() => agentSessions.id, { onDelete: "cascade" }),
     locale: locale("locale").notNull(),
     /** title/excerpt/description/summary — kept as jsonb so adding a field needs no migration. */
-    meta: jsonb("meta").$type<Record<string, unknown>>().notNull().default({}),
+    meta: jsonb("meta").$type<JsonObject>().notNull().default({}),
     content: text("content"),
     updatedAt: timestamp("updated_at", { mode: "date" })
       .defaultNow()
@@ -239,7 +234,7 @@ export const agentToolApprovals = pgTable(
       .references(() => agentSessions.id, { onDelete: "cascade" }),
     toolCallId: text("tool_call_id").notNull(),
     toolName: text("tool_name").notNull(),
-    args: jsonb("args").$type<Record<string, unknown>>(),
+    args: jsonb("args").$type<JsonObject>(),
     status: text("status")
       .$type<AgentApprovalStatus>()
       .notNull()

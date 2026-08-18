@@ -28,6 +28,6 @@ export const isUrl = <T = unknown, TStrict extends boolean = false>(
   }
 };
 
-export const isURLInstance = (url: unknown): url is URL => {
+export const isURLInstance = <TValue>(url: TValue): url is TValue & URL => {
   return isUrl(url, { strict: true });
 };

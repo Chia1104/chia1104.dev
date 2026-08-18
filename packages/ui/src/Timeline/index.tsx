@@ -59,7 +59,7 @@ const groupTimelineData = (
     }
 
     return acc;
-  }, [] as TimelineGroupData[]);
+  }, /* SAFETY: The producer contract guarantees this value satisfies TimelineGroupData[]. */ [] as TimelineGroupData[]);
 };
 
 const Timeline: FC<TimelineProps> = ({

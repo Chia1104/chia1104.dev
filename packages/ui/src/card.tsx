@@ -42,7 +42,7 @@ const Card: FC<Props> = ({ className, children, wrapperProps, ...props }) => {
         wrapperProps?.className
       )}
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies WrapperStyle. */ {
           "--x": useMotionTemplate`${mouseX}px`,
           "--y": useMotionTemplate`${mouseY}px`,
           ...wrapperProps?.style,

@@ -1,12 +1,12 @@
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import {
   getFeedRefsByTranslationIds,
   getPublicFeedSummariesByIds,
 } from "@chia/db/repos/feeds";
 import { getRelatedFeeds } from "@chia/db/repos/feeds/search";
 import type { Locale } from "@chia/db/types";
-import type { Keyv } from "@chia/kv";
+import type { Keyv } from "@chia/kv/types";
 
 import { FEED_TRANSLATION_SOURCE_TYPE } from "../resources/registry";
 import { searchResources } from "../resources/search";

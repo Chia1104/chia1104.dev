@@ -85,8 +85,8 @@ export const embedPendingChunksStep = async (request: ResourceIndexRequest) => {
       );
     } catch (error) {
       const status =
-        typeof error === "object" && error !== null && "status" in error
-          ? Number((error as { status?: unknown }).status)
+        error instanceof Error && "status" in error
+          ? Number(error.status)
           : undefined;
       if (
         status &&

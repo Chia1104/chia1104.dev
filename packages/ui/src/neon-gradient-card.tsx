@@ -108,7 +108,7 @@ const NeonGradientCard: React.FC<NeonGradientCardProps> = ({
     <div
       ref={containerRef}
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
           "--border-size": `${borderSize}px`,
           "--border-radius": `${borderRadius}px`,
           "--neon-first-color": neonColors.firstColor,

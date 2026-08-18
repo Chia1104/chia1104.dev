@@ -1,5 +1,5 @@
 import { toHonoMiddleware } from "@chia/service-kit/adapters/hono";
-import { rateLimitPolicy } from "@chia/service-kit/policies";
+import { rateLimitPolicy } from "@chia/service-kit/policies/rate-limit.policy";
 
 import { env } from "../env";
 

@@ -1,4 +1,5 @@
 import type { AgentKindService } from "@chia/api/orpc/services/agent.service";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 /**
  * The agent kinds this process serves, split from their implementation.
@@ -16,6 +17,9 @@ const impl = async (): Promise<AgentKindService> =>
   (await import("./writing-agent.service")).writingAgentService;
 
 const writingAgentServiceDelegate: AgentKindService = {
+  /** Restated rather than read through `impl()`: the guard needs it before any agent call. */
+  minTier: CallerTier.Root,
+
   async listSessions(caller, input) {
     return await (await impl()).listSessions(caller, input);
   },
@@ -38,6 +42,10 @@ const writingAgentServiceDelegate: AgentKindService = {
 
   async prompt(caller, input) {
     return await (await impl()).prompt(caller, input);
+  },
+
+  async attach(caller, input) {
+    return await (await impl()).attach(caller, input);
   },
 
   async *stream(caller, input) {
@@ -77,6 +85,6 @@ const writingAgentServiceDelegate: AgentKindService = {
   },
 };
 
-export const agentKinds: Readonly<Record<string, AgentKindService>> = {
+export const agentKinds = {
   writing: writingAgentServiceDelegate,
-};
+} satisfies Readonly<Record<string, AgentKindService>>;

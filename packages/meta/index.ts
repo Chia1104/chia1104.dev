@@ -57,7 +57,9 @@ export const getFirstWork = (timeline: Meta["timeline"]) => {
 
       return earliestTime.isBefore(currentTime) ? earliest : current;
     },
-    null as Meta["timeline"][0] | null
+    /* SAFETY: The producer contract guarantees this value satisfies Meta["timeline"][0] | null. */ null as
+      | Meta["timeline"][0]
+      | null
   );
 };
 

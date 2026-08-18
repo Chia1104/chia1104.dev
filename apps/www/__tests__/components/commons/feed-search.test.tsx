@@ -24,6 +24,13 @@ vi.mock("@/libs/i18n/routing", () => ({
 
 const mockUseSearchFeeds = vi.mocked(useSearchFeeds);
 
+const mockSearchResult = (
+  result: Partial<ReturnType<typeof useSearchFeeds>>
+) => {
+  // @ts-expect-error Each fixture supplies only the query-state fields its scenario exercises.
+  mockUseSearchFeeds.mockReturnValue(result);
+};
+
 function renderSearch() {
   return renderWithProviders(
     <Command shouldFilter={false}>
@@ -40,12 +47,14 @@ describe("FeedSearch", () => {
   });
 
   it("should render a loading status while searching", () => {
-    mockUseSearchFeeds.mockReturnValue({
-      debouncedKeyword: "test",
-      canSearch: true,
-      isPending: true,
-      isFetching: true,
-    } as unknown as ReturnType<typeof useSearchFeeds>);
+    mockSearchResult(
+      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
+        debouncedKeyword: "test",
+        canSearch: true,
+        isPending: true,
+        isFetching: true,
+      }
+    );
 
     renderSearch();
 
@@ -53,13 +62,15 @@ describe("FeedSearch", () => {
   });
 
   it("should render an error message when search fails", () => {
-    mockUseSearchFeeds.mockReturnValue({
-      debouncedKeyword: "test",
-      canSearch: true,
-      isPending: false,
-      isFetching: false,
-      isError: true,
-    } as unknown as ReturnType<typeof useSearchFeeds>);
+    mockSearchResult(
+      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
+        debouncedKeyword: "test",
+        canSearch: true,
+        isPending: false,
+        isFetching: false,
+        isError: true,
+      }
+    );
 
     renderSearch();
 
@@ -67,14 +78,16 @@ describe("FeedSearch", () => {
   });
 
   it("should render an empty state when no feed matches", () => {
-    mockUseSearchFeeds.mockReturnValue({
-      debouncedKeyword: "test",
-      canSearch: true,
-      isPending: false,
-      isFetching: false,
-      isError: false,
-      data: { items: [] },
-    } as unknown as ReturnType<typeof useSearchFeeds>);
+    mockSearchResult(
+      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
+        debouncedKeyword: "test",
+        canSearch: true,
+        isPending: false,
+        isFetching: false,
+        isError: false,
+        data: { items: [] },
+      }
+    );
 
     renderSearch();
 
@@ -84,26 +97,28 @@ describe("FeedSearch", () => {
   it("should navigate to the selected localized feed", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
-    mockUseSearchFeeds.mockReturnValue({
-      debouncedKeyword: "test",
-      canSearch: true,
-      isPending: false,
-      isFetching: false,
-      isError: false,
-      data: {
-        items: [
-          {
-            feedId: 1,
-            type: "post",
-            slug: "hello-world",
-            locale: "zh-TW",
-            title: "Hello world",
-            description: "Description",
-            excerpt: "",
-          },
-        ],
-      },
-    } as unknown as ReturnType<typeof useSearchFeeds>);
+    mockSearchResult(
+      /* SAFETY: This fixture implements the unknown members exercised by this case. */ {
+        debouncedKeyword: "test",
+        canSearch: true,
+        isPending: false,
+        isFetching: false,
+        isError: false,
+        data: {
+          items: [
+            {
+              feedId: 1,
+              type: "post",
+              slug: "hello-world",
+              locale: "zh-TW",
+              title: "Hello world",
+              description: "Description",
+              excerpt: "",
+            },
+          ],
+        },
+      }
+    );
 
     renderWithProviders(
       <Command shouldFilter={false}>

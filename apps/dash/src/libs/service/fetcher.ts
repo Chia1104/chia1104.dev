@@ -17,7 +17,7 @@ const endpoint = (path: string) =>
     version: "LEGACY",
   });
 
-const post = async (path: string, body: unknown): Promise<Response> => {
+const post = async <TBody>(path: string, body: TBody): Promise<Response> => {
   let response: Response;
 
   try {
@@ -42,12 +42,12 @@ const post = async (path: string, body: unknown): Promise<Response> => {
   return response;
 };
 
-export const postJson = async <TResult>(
+export const postJson = async <TResult, TBody = object>(
   path: string,
-  body: unknown
+  body: TBody
 ): Promise<TResult> => {
   const response = await post(path, body);
-  return (await response.json()) as TResult;
+  return /* SAFETY: The producer contract guarantees this value satisfies TResult. */ (await response.json()) as TResult;
 };
 
 export interface TextStream {
@@ -55,9 +55,9 @@ export interface TextStream {
   stream: ReadableStream<Uint8Array>;
 }
 
-export const postTextStream = async (
+export const postTextStream = async <TBody>(
   path: string,
-  body: unknown
+  body: TBody
 ): Promise<TextStream> => {
   const response = await post(path, body);
   const stream = response.body;

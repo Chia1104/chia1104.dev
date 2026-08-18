@@ -8,9 +8,9 @@ describe("ParsedJSONError", () => {
   });
 
   it("should throw a ParsedJSONError when parsing invalid JSON", async () => {
-    const parser = (input: unknown) => {
+    const parser = (input: string) => {
       try {
-        JSON.parse(input as string);
+        JSON.parse(input);
       } catch {
         throw new ParsedJSONError(input);
       }
@@ -19,6 +19,7 @@ describe("ParsedJSONError", () => {
       (async () => await Promise.resolve(parser("{'123': '456'}")))()
     );
     expect(error).toBeInstanceOf(ParsedJSONError);
-    expect((error as unknown as ParsedJSONError).input).toBe("{'123': '456'}");
+    if (!(error instanceof ParsedJSONError)) throw error;
+    expect(error.input).toBe("{'123': '456'}");
   });
 });

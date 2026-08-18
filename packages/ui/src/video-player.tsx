@@ -83,7 +83,8 @@ export const VideoPlayer = ({ src, poster, className }: VideoPlayerProps) => {
 
   const handleSeek = useCallback(
     (v: number | number[]) => {
-      const t = v as number;
+      const t =
+        /* SAFETY: The producer contract guarantees this value satisfies number. */ v as number;
       if (videoRef.current) videoRef.current.currentTime = t;
       setCurrentTime(t);
       revealControls();

@@ -26,7 +26,7 @@ export const createQueryClient = () =>
 let clientQueryClientSingleton: QueryClient | undefined;
 
 export const getQueryClient = () => {
-  if (typeof window === "undefined") {
+  if (!("window" in globalThis)) {
     // Server: always make a new query client
     return createQueryClient();
   } else {

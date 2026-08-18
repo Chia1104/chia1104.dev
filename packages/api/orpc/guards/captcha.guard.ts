@@ -1,5 +1,5 @@
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import { captchaPolicy } from "@chia/service-kit/policies";
+import { captchaPolicy } from "@chia/service-kit/policies/captcha.policy";
 
 import { captchaSiteverifyWithCredentials } from "../../captcha";
 import { baseOS } from "../utils";

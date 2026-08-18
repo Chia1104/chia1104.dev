@@ -1,27 +1,33 @@
 import { formatSkillsForSystemPrompt } from "@earendil-works/pi-agent-core";
 import type { Skill } from "@earendil-works/pi-agent-core";
 
-import type { ToolTier } from "@chia/agent-runtime";
+import type { ToolTier } from "@chia/agent-runtime/types";
 import type { Locale } from "@chia/db/types";
 
 import type { FeedDraft } from "../types.ts";
 
 /**
- * System prompt assembly.
+ * Prompt assembly, split by how often the text changes.
  *
- * Built per turn (pi calls the `systemPrompt` callback with a fresh turn snapshot) so the
- * draft state and approval posture in the prompt always match reality — a stale "the draft is
- * empty" line is worse than no line at all.
+ * `buildSystemPrompt` is stable for a session — rules, skills index and approval posture — so the
+ * provider's cached prefix (system prompt, tool schemas, transcript) survives from turn to turn.
+ * `buildTurnContext` is the volatile block: draft state and the clock, refreshed on every provider
+ * request through Pi's `context` hook and never persisted, so it is always current and never
+ * accumulates in the transcript.
  */
 
 export interface SystemPromptInput {
   skills: readonly Skill[];
-  draft: FeedDraft;
   /** Tiers the operator pre-approved. Changes what the model should expect to be blocked. */
   autoApprove: readonly ToolTier[];
+}
+
+export interface TurnContextInput {
+  draft: FeedDraft;
   /** Set when the session is editing an existing post. */
   targetFeedId?: number;
   defaultLocale: Locale;
+  now: Date;
 }
 
 const CORE = `
@@ -37,7 +43,8 @@ You never edit the live blog directly. You edit a **staging draft** attached to 
 conversation, and the operator promotes it when they are satisfied:
 
 1. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
-   near-duplicate of an existing post. \`get_post\` to match established voice and structure.
+   near-duplicate of an existing post. \`list_posts\` shows drafts in flight too. \`get_post\` to
+   match established voice and structure; \`list_tags\` before proposing a new tag.
 2. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
    Set metadata with \`patch_draft_meta\`.
 3. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
@@ -63,7 +70,7 @@ conversation, and the operator promotes it when they are satisfied:
 `;
 
 export const buildSystemPrompt = (input: SystemPromptInput): string => {
-  const sections = [CORE.trim(), formatDraftState(input)];
+  const sections = [CORE.trim()];
 
   if (input.skills.length > 0) {
     sections.push(formatSkillsForSystemPrompt([...input.skills]));
@@ -78,12 +85,15 @@ export const buildSystemPrompt = (input: SystemPromptInput): string => {
  * Concrete current state.
  *
  * Without it the model re-reads the draft at the start of every turn just to orient itself,
- * which wastes a tool round-trip on something cheap to inline.
+ * which wastes a tool round-trip on something cheap to inline. The clock is there because the
+ * model otherwise has no anchor for "today", "latest" or a publish date.
  */
-const formatDraftState = (input: SystemPromptInput): string => {
+export const buildTurnContext = (input: TurnContextInput): string => {
+  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
   const locales = Object.keys(input.draft.translations) as Locale[];
   const lines: string[] = ["# Current session"];
 
+  lines.push(`- Current time: ${input.now.toISOString()} (UTC)`);
   lines.push(
     input.targetFeedId === undefined &&
       input.draft.committedFeedId === undefined

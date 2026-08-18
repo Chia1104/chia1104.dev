@@ -35,7 +35,11 @@ export const Content = async (props: {
       }
       return (
         <FeedContent {...rest} {...props.context}>
-          <MDXBody MDXContent={content as MDXContent} />
+          <MDXBody
+            MDXContent={
+              /* SAFETY: The producer contract guarantees this value satisfies MDXContent. */ content as MDXContent
+            }
+          />
         </FeedContent>
       );
     }

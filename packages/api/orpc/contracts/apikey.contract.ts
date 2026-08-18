@@ -45,9 +45,8 @@ export const baseApiKeySchema = z.object({
 });
 
 // https://github.com/better-auth/better-auth/blob/canary/packages/better-auth/src/plugins/api-key/types.ts
-export const originalApiKeySchema = z
-  .object({
-    ...baseApiKeySchema.shape,
+export const originalApiKeySchema = baseApiKeySchema
+  .extend({
     lastRequest: z.date().nullable(),
     lastRefillAt: z.date().nullable(),
     expiresAt: z.date().nullable(),
@@ -86,8 +85,7 @@ export const projectSchema = z
     deletedAt: data.deletedAt ? dayjs(data.deletedAt).toISOString() : null,
   }));
 
-export const apiKeySchema = z.object({
-  ...baseApiKeySchema.shape,
+export const apiKeySchema = baseApiKeySchema.extend({
   lastRequest: z.string().nullable(),
   lastRefillAt: z.string().nullable(),
   expiresAt: z.string().nullable(),
@@ -104,9 +102,8 @@ export const createAPIKeyContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(
-    z.object({
+    createAPIKeySchema.extend({
       projectId: z.number().optional(),
-      ...createAPIKeySchema.shape,
     })
   )
   .output(originalApiKeySchema);
@@ -119,9 +116,8 @@ export const getAllApiKeysWithMetaContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(
-    z
-      .object({
-        ...baseInfiniteSchema.shape,
+    baseInfiniteSchema
+      .extend({
         withProject: z.boolean().optional(),
       })
       .optional()
@@ -141,8 +137,7 @@ export const getProjectApiKeysContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(
-    z.object({
-      ...baseInfiniteSchema.shape,
+    baseInfiniteSchema.extend({
       projectId: z.number(),
     })
   )

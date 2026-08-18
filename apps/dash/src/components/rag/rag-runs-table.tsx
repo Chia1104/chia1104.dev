@@ -36,7 +36,11 @@ export const RagRunsTable = () => {
     orpc.rag["runs:list"].infiniteOptions({
       input: (pageParam) => ({ cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
-      initialPageParam: null as string | number | null,
+      initialPageParam:
+        /* SAFETY: The producer contract guarantees this value satisfies string | number | null. */ null as
+          | string
+          | number
+          | null,
       // an in-flight run is the only thing that changes without a user action
       refetchInterval: ({ state }) =>
         state.data?.pages.some((page) =>

@@ -1,7 +1,7 @@
 # Agent 架構與 Turn 流程
 
 > 狀態：as-built
-> 最後更新：2026-08-14
+> 最後更新：2026-08-17
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 > 相關文件：[docs/rag-architecture.md](./rag-architecture.md)
 
@@ -14,6 +14,7 @@ adapter 包裝。現在唯一上線的 agent kind 是 dashboard 裡的部落格�
 | 層           | Package / app                               | 責任                                                                                                                 |
 | ------------ | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Pi execution | `@chia/agent-runtime`                       | Pi turn 生命週期、session persistence、models/providers、approval hook、受限 wire events 與 client transport mapping |
+| Shared tools | `@chia/agent-content`                       | 所有會讀部落格的 kind 共用的唯讀 content tools、它們的 `ContentReadPort`、名稱、標籤與摘要                           |
 | Domain       | `@chia/agent-writing`                       | 寫作 tools、prompts、skills、model allowlist、policy、draft staging 與 domain ports                                  |
 | Host         | `apps/service`、`packages/api`、`apps/dash` | DB/KV/credentials、durable workflow 與 stream、oRPC service port、auth、UI                                           |
 
@@ -22,7 +23,9 @@ flowchart TB
     dash["apps/dash<br/>agent workspace"] --> api["packages/api<br/>oRPC contracts · AgentKindService"]
     api --> service["apps/service<br/>durable workflow · host wiring"]
     service --> writing["@chia/agent-writing<br/>runWritingTurn · tools · prompts · policy"]
+    writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
+    content --> runtime
     runtime --> pi["Pi AgentHarness"]
     runtime --> pg[("Postgres agent_* tables")]
 ```
@@ -47,6 +50,19 @@ discriminator。它選擇：
 `packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在
 `createORPCContext` 把 `{ writing: writingAgentService }` 放到每個 request context 上。它和已刪除的
 harness abstraction 是不同層次的概念。
+
+### 誰可以使用某個 kind
+
+存取權是 kind 的屬性，不是 route 的屬性。每條 agent route 都先跑 `callerGuard()`，它只解析呼叫者的
+`CallerTier`；接著 agent guard（建立與能力列表用 `agentKindGuard`，session-scoped 請求用
+`agentSessionGuard`）把這個 tier 和 kind 的 `AgentKindService.minTier` 比對。低於 `Session` 的 tier
+一律先被拒絕——session row 有 owner，匿名或 API-key 呼叫者沒有可以「是」的人。沒帶 kind 的 `list`
+只回傳呼叫者可用的 kind。
+
+Service 收到的是 `AgentServiceCaller`：解析後的 `Caller`（tier、session、設定檔裡的 `adminId`）加上
+`userId`。agent 的 generic 層不帶任何 admin 身分——writing kind 設 `minTier: Root`，這使得它的呼叫者
+*就是*設定的作者，content port 需要時由 kind 自己讀 `getAdminId()`。公開 kind 設
+`minTier: Session`，從頭到尾看不到 admin id。
 
 ## 3. Policy、session 與資料
 
@@ -95,7 +111,7 @@ sequenceDiagram
     participant PI as runPiTurn / AgentHarness
     participant PG as Postgres
 
-    UI->>RPC: agent.sessions.prompt
+    UI->>RPC: agent.sessions.chat (prompt)
     RPC->>SVC: prompt(caller, input)
     alt 已有 active durable run
         SVC->>WF: resume message hook
@@ -103,19 +119,20 @@ sequenceDiagram
         SVC->>WF: start workflow
         SVC->>PG: create agent_run
     end
-    SVC-->>UI: runId + stream cursor
+    SVC-->>RPC: runId + stream cursor
+    RPC->>SVC: stream(caller, cursor)
     WF->>STEP: execute turn step
     STEP->>WR: runWritingTurn(options)
     WR->>PI: runPiTurn(concrete Pi inputs)
     PI->>PI: new AgentHarness(...).prompt(...)
     PI-->>UI: bounded durable AgentWireEvent stream
     PI->>PG: session entries 與 domain writes
-    STEP-->>WF: done / error / awaiting_approval
+    STEP-->>WF: done / aborted / error / awaiting_approval
 ```
 
 ### Enqueue 與 durable driver
 
-oRPC route 先經過 `adminGuard`，session guard 再驗證 ownership。Host service 會透過 reusable
+oRPC route 先解析呼叫者的 tier，session guard 再驗證 ownership 與 kind 的 `minTier`。Host service 會透過 reusable
 message hook 把訊息持久化到既有 workflow 的 event log，或建立新 run。Workflow 在第一個
 turn 前以 `getConflict()` 註冊 inbox，因此 running turn 期間送入的訊息會排隊，等目前 turn
 以及可能的 approval handshake 完成後成為下一個 turn。仍有 pending approval、workflow
@@ -138,17 +155,52 @@ runAgentTurnStep → runWritingTurn → runPiTurn → new AgentHarness
 ```
 
 `runWritingTurn` 建立 writing tool context，從 caller credential 所屬的 `Models` resolve
-model，並組合 tools、skills、templates、dynamic system prompt 與 writing policy。
+model，並組合 tools、skills、templates、穩定的 system prompt、每次請求都重算的 volatile
+context 與 writing policy。
 
 `runPiTurn` 負責完整生命週期：
 
 1. 依 resolved model clamp thinking level，每個 turn 建立一個 harness；
-2. 安裝 Pi tool-call approval hook 與 Pi-to-wire event mapper；
+2. 安裝 Pi tool-call approval hook、附加 volatile block 的 `context` hook、host 的 abort
+   signal，以及 Pi-to-wire event mapper；
 3. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
-4. provider turn 成功後，原子批次持久化所有 approval snapshots，再 emit 對應的
+4. 檢查回傳的 assistant message：`stopReason: "error"` 是分類過的 provider 失敗，
+   `"aborted"` 讓 turn 以 aborted 結束；harness 或 hook 拋出的例外歸為 `internal`；
+5. provider turn 成功後，原子批次持久化所有 approval snapshots，再 emit 對應的
    `approval:request`；
-5. 只在成功且沒有 pending approval 時 auto-compact；
-6. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
+6. 只在成功且沒有 pending approval 時 auto-compact；
+7. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
+
+### Prompt 分層
+
+System prompt 在一個 session 內是穩定的——規則、skills 索引、approval posture——因為它位於
+每個 provider request 的最前面，一變就會讓 system prompt、tool schema 與其後整段 transcript
+的 cached prefix 失效。每個 turn 會變的東西（draft 狀態、時鐘）是 **volatile context**：透過
+Pi 的 `context` hook 附加為每個 provider request 的最後一則 user message，不持久化，因此永遠
+是最新的，也不會累積在 transcript 裡。模型必須看到最新狀態的東西放這裡，不放 system prompt。
+
+### Abort
+
+Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 只是讓它不再被排程——所以 stop
+是透過第二個很小的 durable run 送達：session run 的 **abort controller**
+（`apps/service/src/workflows/agent-abort.workflow.ts`）。`prompt` 在開 session run 之前先開它，
+並把 `{ id, runId }` 放進 session run 的 request（與 `agent_run.metadata`）；它停在
+`agentAbortHook` 上，被 resume 時往自己的 stream 寫一則訊息。每個 turn step 直接以 run id 訂閱
+那條 stream——不查詢，所以一個 session run 恰好一個 controller——把得到的 `AbortSignal` 交給
+`runPiTurn`，turn 結束時釋放訂閱。
+`abort` 先 resume 這個 hook，再取消 session run、把 `agent_run` 列標成 `cancelled`；
+`completeAgentRunStep` 也會 resume 它，讓跑完的 run 不會留下一個停到 TTL 的 controller。Signal 一
+觸發 harness 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`
+持久化，turn 以 `run:end{aborted}` 結束；不持久化 approval，也不 compaction。送達走的是 SDK 自
+己的 durable stream，所以跨 process 也成立——沒有 registry、沒有 timer、沒有第二條 channel。下一
+次 prompt 會在持久化的 transcript 上開新 session run。過期（TTL）的 controller 不會中止任何 turn；
+reader 忽略 `expired`，下一個 turn 會建新的。
+
+### Pi hook 裡的 host 失敗
+
+Hook 拋錯時 Pi 會把它包成 `stopReason: "error"` 的 assistant message，跟 provider 失敗長得一樣。
+因此 `runPiTurn` 安裝的 hook 都自己攔錯、記成 host failure 並中止 harness，turn 以 `internal`
+收尾。Volatile context 讀失敗就是這樣結束，而不是讓模型在看不到目前狀態的情況下繼續動作。
 
 ## 5. Approval handshake
 
@@ -200,13 +252,31 @@ session:compacted · state:changed · error · run:end
 - `createPiWireEventMapper`：live Pi event → wire event，並用唯一 turn id 作為 assistant id
   前綴。
 - `entriesToWireEvents`：persisted Pi entries → replay history，使用 entry id 作為穩定的
-  assistant identity。
+  assistant identity。`stopReason: "error"` 的持久化 assistant message 會 replay 成與 live
+  turn 相同的 `error` event。
+- `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · provider · internal`），
+  讓 client 能提示下一步；`describeAgentError` 是共用的 headline。
+- `tool:end.details` 上 wire 前會經過 `clipDetails`——長字串、陣列、寬物件與深巢狀就地縮短、
+  保留形狀——因為每個 coarse event 都是 durable write，且會 replay 給每個重連的 client。模型
+  讀的是 tool 的 `content`，不是這份副本。
 - `applyEvent` / `foldEvents`：讓 live 與 replay 共用 dashboard rendering path。
 - `@chia/agent-runtime/transports/tanstack-ai`：映射為 TanStack AI 使用的 AG-UI subset。
 
 每個 run 有 coarse durable stream 與獨立 batch 的 delta namespace。Coarse event 會先 flush
 pending deltas；reader 以 race 讀取兩邊以維持交錯順序。Stream 只在整個 durable run 結束時
 關閉，不會每個 turn 關閉。
+
+### 重新接上執行中的 turn
+
+Dashboard 的 chat 是 server-authoritative（TanStack AI `persistence: true`）：mount 時從
+`agent.sessions.get` hydrate，若 `run.status` 是 `running`，就用 `agent.sessions.chat` 的
+`{ type: "attach" }` 接回那個 turn。Turn step 維護 `agent_run.metadata.turn`——turn 開始前的
+session leaf、它要寫的第一個 coarse stream index，以及 `running`（進 handler 前設、`finally`
+清）。最後這個 workflow SDK 給不了：對 SDK 來說停在 message hook 上的 run 和正在跑 step 的 run
+都是 `running`，所以 `run.status`、`attach` 與 compact/rewind 的檢查都改讀這個 marker。Turn 執行
+中時 `get` 把 replay 的 transcript 截在那個 leaf 之後，`attach` 則從那個 index tail stream；兩邊
+用同一個 marker，所以在 turn 進行中重整頁面，每則訊息只會出現一次，turn 也會原地跑完。`prompt`
+在開新 run 時會先種下 marker，因為第一個 turn 可能在 run row 建立前就到達 step。
 
 ## 7. Durable message inbox
 
@@ -249,10 +319,19 @@ Writing package 擁有自己的 model allowlist。Gateway、OpenAI、Anthropic c
 
 ## 10. Writing domain 與 durable state
 
-Writing agent 透過 `ContentPort` 讀正式內容、透過 `DraftStore` 寫 staging buffer；只有
-commit-tier tool 會把 staged data 提升到正式 feed/content。刪除內容與圖片上傳不開放給
-agent。Dynamic system prompt 每個 turn 都重新計算，讓 draft/session 與 approval 狀態保持
-最新；skills 與 templates 位於 `packages/agent-writing/src/prompts/`。
+Writing agent 透過 `ContentPort`（`@chia/agent-content` 的 `ContentReadPort` 加上 `fetch_url`
+與寫入）讀內容、透過 `DraftStore` 寫 staging buffer；只有 commit-tier tool 會把 staged data
+提升到正式 feed/content。刪除內容與圖片上傳不開放給 agent。`buildSystemPrompt` 是穩定的
+system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatile block（見 §4）；skills
+與 templates 位於 `packages/agent-writing/src/prompts/`。
+
+### 內容可見性
+
+Read tools 無法擴大自己能看到的範圍：可見性在 host 建 port 時就固定
+（`apps/service/src/services/content-read.port.ts`）。`author` port 看得到設定作者的草稿；
+`public` port 把每次 detail read 都限定在 `published: true`，被要求列草稿時回空而不是覆寫
+filter。搜尋不需要分支——chunk index 對所有呼叫者都只含已發佈內容。Writing agent 的 port 是
+`author`；公開 kind 建 `public`，而且永遠拿不到 `fetch_url`。
 
 Process 內沒有 conversational state。Kind-to-service map 只保存 implementation；所有 mutable
 state 都是 durable：
@@ -269,9 +348,11 @@ state 都是 durable：
 
 新的 domain kind 共用相同 concrete Pi runtime：
 
-1. 新增 `@chia/agent-<kind>`，包含 tools、prompts、skills、policy、model allowlist 與 domain ports；
+1. 新增 `@chia/agent-<kind>`，包含 tools、prompts、skills、policy、model allowlist 與 domain ports——
+   會讀部落格的 kind 從 `@chia/agent-content` 組合 `contentReadTools`，tool context 繼承
+   `ContentToolContext`；
 2. 需要 kind-specific persistence 時新增 extension table；
-3. 在 `apps/service` 實作 `AgentKindService` 並加進 `agentKinds` map；
+3. 在 `apps/service` 實作 `AgentKindService`（含它允許的 `minTier`）並加進 `agentKinds` map；
 4. 註冊呼叫新 domain `run<Kind>Turn` 的 durable turn handler；
 5. 共用 `runPiTurn`、wire events、approval semantics 與 durable stream plumbing。
 
@@ -280,22 +361,27 @@ factory、capability plugin system 或 provider-neutral handle。
 
 ## 12. 參考位置
 
-| Concern                      | File                                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                     |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                 |
-| Session over Postgres        | `packages/agent-runtime/src/session/`                                                  |
-| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                   |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts` |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`               |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                              |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                      |
+| Concern                      | File                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
+| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                             |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
+| Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
+| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                         |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
+| Content read tools / port    | `packages/agent-content/src/`、`apps/service/src/services/content-read.port.ts`                |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                           |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
+| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts`         |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                       |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
+| Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |

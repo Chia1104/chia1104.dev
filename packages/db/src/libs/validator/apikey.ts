@@ -1,7 +1,7 @@
 import { createInsertSchema } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { apikey } from "../../schemas";
+import { apikey } from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
 
 import {
@@ -9,21 +9,21 @@ import {
   baseInfiniteSchema as baseInfiniteSchemaShared,
 } from "./shared";
 
-export const insertApiKeySchema = z.object({
-  ...createInsertSchema(apikey).omit({
+export const insertApiKeySchema = createInsertSchema(apikey)
+  .omit({
     createdAt: true,
     updatedAt: true,
     expiresAt: true,
-  }).shape,
-  createdAt: dateSchema.optional(),
-  updatedAt: dateSchema.optional(),
-  expiresAt: dateSchema.optional(),
-});
+  })
+  .extend({
+    createdAt: dateSchema.optional(),
+    updatedAt: dateSchema.optional(),
+    expiresAt: dateSchema.optional(),
+  });
 
 export type InsertApiKeyDTO = z.infer<typeof insertApiKeySchema>;
 
-export const baseInfiniteSchema = z.object({
-  ...baseInfiniteSchemaShared.shape,
+export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z
     .enum([FeedOrderBy.CreatedAt, FeedOrderBy.Id])
     .optional()

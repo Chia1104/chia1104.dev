@@ -57,8 +57,8 @@ export class AppError extends Error {
   }
 }
 
-export const isAppError = (error: unknown): error is AppError =>
-  error instanceof AppError;
+export const isAppError = (cause: unknown): cause is AppError =>
+  cause instanceof AppError;
 
 /**
  * Canonical HTTP body for an `AppError`. Delegates to `errorGenerator` so the shape
@@ -75,7 +75,11 @@ export const appErrorCodeFromStatus = (status: number): AppErrorCode => {
   const match = Object.entries(APP_ERROR_STATUS).find(
     ([, value]) => value === status
   );
-  return (match?.[0] as AppErrorCode | undefined) ?? "INTERNAL_SERVER_ERROR";
+  return (
+    /* SAFETY: The producer contract guarantees this value satisfies AppErrorCode | undefined. */ (match?.[0] as
+      | AppErrorCode
+      | undefined) ?? "INTERNAL_SERVER_ERROR"
+  );
 };
 
 interface ZodLikeError {

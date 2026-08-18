@@ -1,5 +1,5 @@
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import { sessionPolicy } from "@chia/service-kit/policies";
+import { sessionPolicy } from "@chia/service-kit/policies/session.policy";
 
 import { baseOS } from "../utils";
 

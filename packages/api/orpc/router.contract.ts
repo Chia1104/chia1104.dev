@@ -18,8 +18,6 @@ export const routerContract = {
       get: agentContracts.getAgentSessionContract,
       delete: agentContracts.deleteAgentSessionContract,
       "settings:update": agentContracts.updateAgentSessionSettingsContract,
-      prompt: agentContracts.promptAgentContract,
-      stream: agentContracts.streamAgentContract,
       chat: agentContracts.chatAgentContract,
       abort: agentContracts.abortAgentContract,
       approve: agentContracts.approveAgentToolContract,

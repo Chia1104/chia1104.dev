@@ -12,7 +12,7 @@ import {
   TextArea,
 } from "@heroui/react";
 import { useChat } from "@tanstack/ai-react";
-import type { ChatFetcher } from "@tanstack/ai-react";
+import type { UseChatOptions } from "@tanstack/ai-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, CircleAlert, Send, Square, X } from "lucide-react";
 import { toast } from "sonner";
@@ -33,6 +33,7 @@ import { AgentModelPicker } from "./agent-model-picker";
 import { AgentTranscript } from "./agent-transcript";
 
 type AgentSessionDetail = RouterOutputs["agent"]["sessions"]["get"];
+type ChatConnection = NonNullable<UseChatOptions["connection"]>;
 
 interface AgentSessionProps {
   sessionId: string;
@@ -41,11 +42,11 @@ interface AgentSessionProps {
 
 interface AgentSessionContentProps extends AgentSessionProps {
   detail: AgentSessionDetail;
-  refetch: () => Promise<unknown>;
+  refetch: () => Promise<object>;
 }
 
-const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Something went wrong.";
+const errorMessage = (cause: unknown) =>
+  cause instanceof Error ? cause.message : "Something went wrong.";
 
 const statusMeta = {
   awaiting_approval: { color: "warning", label: "Needs approval" },
@@ -83,49 +84,85 @@ const AgentSessionContent = ({
     [detail.events, detail.pendingApprovals]
   );
 
-  const fetcher = useCallback<ChatFetcher>(
-    async ({ messages, runId, threadId }, { signal }) => {
-      const approval = nextApprovalContinuation(
-        messages,
-        handledApprovalIdsRef.current
-      );
+  /**
+   * The server owns the conversation, so the chat is server-authoritative (`persistence: true`):
+   * TanStack hydrates the transcript from `sessions.get` on mount and, when that reports a turn
+   * still running, rejoins it through `attach` — a reload or a second tab picks the turn up where
+   * the durable run has it, instead of waiting for the next prompt to find out.
+   */
+  const connection = useMemo<ChatConnection>(
+    () => ({
+      connect: async function* (messages, _data, signal, runContext) {
+        const approval = nextApprovalContinuation(
+          /* SAFETY: The producer contract guarantees this value satisfies Parameters<typeof nextApprovalContinuation>[0]. */ messages as Parameters<
+            typeof nextApprovalContinuation
+          >[0],
+          handledApprovalIdsRef.current
+        );
 
-      let action:
-        | { type: "prompt"; text: string }
-        | {
-            type: "approve";
-            toolCallId: string;
-            approved: boolean;
+        let action:
+          | { type: "prompt"; text: string }
+          | { type: "approve"; toolCallId: string; approved: boolean };
+        if (approval) {
+          handledApprovalIdsRef.current.add(approval.approvalId);
+          action = {
+            type: "approve",
+            toolCallId: approval.approvalId,
+            approved: approval.approved,
           };
-      if (approval) {
-        handledApprovalIdsRef.current.add(approval.approvalId);
-        action = {
-          type: "approve",
-          toolCallId: approval.approvalId,
-          approved: approval.approved,
-        };
-      } else {
-        const text = latestUserText(messages);
-        if (!text) throw new Error("The agent prompt is empty.");
-        action = { type: "prompt", text };
-      }
+        } else {
+          const text = latestUserText(
+            /* SAFETY: The producer contract guarantees this value satisfies Parameters<typeof latestUserText>[0]. */ messages as Parameters<
+              typeof latestUserText
+            >[0]
+          );
+          if (!text) throw new Error("The agent prompt is empty.");
+          action = { type: "prompt", text };
+        }
 
-      try {
+        let stream: Awaited<ReturnType<typeof client.agent.sessions.chat>>;
+        try {
+          stream = await client.agent.sessions.chat({
+            sessionId,
+            threadId: runContext?.threadId ?? sessionId,
+            runId: runContext?.runId ?? crypto.randomUUID(),
+            action,
+          });
+        } catch (error) {
+          if (approval) {
+            handledApprovalIdsRef.current.delete(approval.approvalId);
+          }
+          throw error;
+        }
+        yield* withAbortSignal(stream, signal ?? new AbortController().signal);
+      },
+
+      hydrate: async () => {
+        const latest = await queryClient.fetchQuery(
+          orpc.agent.sessions.get.queryOptions({ input: { sessionId } })
+        );
+        return {
+          messages: agentEventsToUiMessages(
+            latest.events,
+            latest.pendingApprovals
+          ),
+          activeRun:
+            latest.run?.status === "running" ? { runId: latest.run.id } : null,
+          interrupts: null,
+        };
+      },
+
+      joinRun: async function* (runId, signal) {
         const stream = await client.agent.sessions.chat({
           sessionId,
-          threadId,
+          threadId: sessionId,
           runId,
-          action,
+          action: { type: "attach" },
         });
-        return withAbortSignal(stream, signal);
-      } catch (error) {
-        if (approval) {
-          handledApprovalIdsRef.current.delete(approval.approvalId);
-        }
-        throw error;
-      }
-    },
-    [sessionId]
+        yield* withAbortSignal(stream, signal ?? new AbortController().signal);
+      },
+    }),
+    [queryClient, sessionId]
   );
 
   const {
@@ -137,7 +174,8 @@ const AgentSessionContent = ({
     stop,
   } = useChat({
     threadId: sessionId,
-    fetcher,
+    connection,
+    persistence: true,
     initialMessages,
     queue: "drop",
     onChunk: (chunk) => {
@@ -216,11 +254,12 @@ const AgentSessionContent = ({
     stop,
   ]);
 
-  const isBusy = isLoading || abortMutation.isPending;
+  const turnRunning = isLoading || detail.run?.status === "running";
+  const isBusy = turnRunning || abortMutation.isPending;
   const composerDisabled = isBusy || pendingApprovals.length > 0;
   const meta =
     statusMeta[
-      isLoading
+      turnRunning
         ? "running"
         : pendingApprovals.length > 0
           ? "awaiting_approval"
@@ -244,7 +283,20 @@ const AgentSessionContent = ({
             sessionId={sessionId}
           />
         </div>
-        <Chip className="ml-auto" color={meta.color} size="sm" variant="soft">
+        <Chip
+          className="ml-auto"
+          size="sm"
+          title={detail.run ? `workflow run ${detail.run.id}` : undefined}
+          variant="soft">
+          <Chip.Label>
+            {detail.run
+              ? detail.run.status === "running"
+                ? "Run: turn executing"
+                : "Run: parked"
+              : "No live run"}
+          </Chip.Label>
+        </Chip>
+        <Chip color={meta.color} size="sm" variant="soft">
           <Chip.Label>{meta.label}</Chip.Label>
         </Chip>
         {isBusy ? (

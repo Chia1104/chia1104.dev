@@ -26,7 +26,7 @@ export default function useDarkMode(): UseDarkModeOutput {
 
   useEffect(() => {
     setTheme(!theme ? systemTheme : localTheme);
-  }, [systemTheme]);
+  }, [localTheme, setTheme, systemTheme, theme]);
 
   return {
     isDarkMode: theme === "dark",

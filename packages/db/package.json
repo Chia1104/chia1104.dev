@@ -5,10 +5,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./client": {
       "types": "./src/client.ts",
       "default": "./src/client.ts"
@@ -17,9 +13,13 @@
       "types": "./src/types.ts",
       "default": "./src/types.ts"
     },
+    "./json": {
+      "types": "./src/json.ts",
+      "default": "./src/json.ts"
+    },
     "./schema": {
-      "types": "./src/schemas/index.ts",
-      "default": "./src/schemas/index.ts"
+      "types": "./src/schemas/schema.ts",
+      "default": "./src/schemas/schema.ts"
     },
     "./repos/feeds": {
       "types": "./src/libs/feeds/index.ts",
@@ -88,6 +88,10 @@
     "./repos/agent": {
       "types": "./src/libs/agent/index.ts",
       "default": "./src/libs/agent/index.ts"
+    },
+    "./schema/enums": {
+      "types": "./src/schemas/enums.ts",
+      "default": "./src/schemas/enums.ts"
     }
   },
   "scripts": {

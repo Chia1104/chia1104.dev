@@ -15,7 +15,7 @@ const TextShimmer: FC<TextShimmerProps> = ({
   return (
     <p
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
           "--shimmer-width": `${shimmerWidth}px`,
         } as CSSProperties
       }

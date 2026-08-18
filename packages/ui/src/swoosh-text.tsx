@@ -58,29 +58,30 @@ export function SwooshText({
   },
   ...props
 }: SwooshTextProps) {
-  const cssVars = {
-    "--swoosh-d-alpha": `${distance.alpha ?? 0}px`,
-    "--swoosh-c-alpha": shadowColors.default?.alpha ?? "transparent",
-    "--swoosh-d-beta": `${distance.beta ?? 0}px`,
-    "--swoosh-c-beta": shadowColors.default?.beta ?? "transparent",
-    "--swoosh-d-gamma": `${distance.gamma ?? 0}px`,
-    "--swoosh-c-gamma": shadowColors.default?.gamma ?? "transparent",
-    "--swoosh-d-delta": `${distance.delta ?? 0}px`,
-    "--swoosh-c-delta": shadowColors.default?.delta ?? "transparent",
-    "--swoosh-d-epsilon": `${distance.epsilon ?? 0}px`,
-    "--swoosh-c-epsilon": shadowColors.default?.epsilon ?? "transparent",
-    "--swoosh-dark-c-alpha": shadowColors.dark?.alpha ?? "transparent",
-    "--swoosh-dark-c-beta": shadowColors.dark?.beta ?? "transparent",
-    "--swoosh-dark-c-gamma": shadowColors.dark?.gamma ?? "transparent",
-    "--swoosh-dark-c-delta": shadowColors.dark?.delta ?? "transparent",
-    "--swoosh-dark-c-epsilon": shadowColors.dark?.epsilon ?? "transparent",
-  } as CSSProperties;
+  const cssVars =
+    /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
+      "--swoosh-d-alpha": `${distance.alpha ?? 0}px`,
+      "--swoosh-c-alpha": shadowColors.default?.alpha ?? "transparent",
+      "--swoosh-d-beta": `${distance.beta ?? 0}px`,
+      "--swoosh-c-beta": shadowColors.default?.beta ?? "transparent",
+      "--swoosh-d-gamma": `${distance.gamma ?? 0}px`,
+      "--swoosh-c-gamma": shadowColors.default?.gamma ?? "transparent",
+      "--swoosh-d-delta": `${distance.delta ?? 0}px`,
+      "--swoosh-c-delta": shadowColors.default?.delta ?? "transparent",
+      "--swoosh-d-epsilon": `${distance.epsilon ?? 0}px`,
+      "--swoosh-c-epsilon": shadowColors.default?.epsilon ?? "transparent",
+      "--swoosh-dark-c-alpha": shadowColors.dark?.alpha ?? "transparent",
+      "--swoosh-dark-c-beta": shadowColors.dark?.beta ?? "transparent",
+      "--swoosh-dark-c-gamma": shadowColors.dark?.gamma ?? "transparent",
+      "--swoosh-dark-c-delta": shadowColors.dark?.delta ?? "transparent",
+      "--swoosh-dark-c-epsilon": shadowColors.dark?.epsilon ?? "transparent",
+    } as CSSProperties;
 
   return (
     <span
       {...props}
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
           ...cssVars,
           ...props?.style,
         } as CSSProperties

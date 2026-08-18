@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 
 import { applyPolicy } from "@chia/service-kit/adapters/hono";
-import { sessionPolicy } from "@chia/service-kit/policies";
+import { sessionPolicy } from "@chia/service-kit/policies/session.policy";
 
 type AuthContext = HonoContext;
 
@@ -22,7 +22,7 @@ export const verifyAuth = (
 ) =>
   createMiddleware<AuthContext>(async (c, next) => {
     const requireRoot =
-      typeof rootOnly === "function" ? await rootOnly(c) : !!rootOnly;
+      rootOnly instanceof Function ? await rootOnly(c) : Boolean(rootOnly);
 
     const denied = await applyPolicy(
       c,

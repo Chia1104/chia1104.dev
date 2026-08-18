@@ -1,7 +1,10 @@
 import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
+import * as z from "zod";
 
+import { errorOfAssistantMessage } from "../pi/errors.ts";
 import type { AgentEventPresentation } from "../types.ts";
 
+import { clipDetails } from "./clip.ts";
 import type { AgentWireEvent } from "./schema.ts";
 
 // ============================================
@@ -67,6 +70,11 @@ export const entriesToWireEvents = (
             }
           : undefined,
       });
+      // The live turn emits `error` beside a failed assistant message; replay must too, or the
+      // notice vanishes on reload.
+      if (message.stopReason === "error") {
+        events.push({ type: "error", ...errorOfAssistantMessage(message) });
+      }
 
       for (const part of message.content) {
         if (part.type !== "toolCall") continue;
@@ -89,7 +97,7 @@ export const entriesToWireEvents = (
         toolName: message.toolName,
         isError: message.isError,
         summary: options.summarize(message.toolName, message, message.isError),
-        details: message.details,
+        details: clipDetails(message.details),
       });
     }
   }
@@ -99,10 +107,13 @@ export const entriesToWireEvents = (
 
 const contentToText = (
   content: string | readonly { type: string; text?: string }[]
-): string =>
-  typeof content === "string"
-    ? content
-    : content
-        .filter((part) => part.type === "text")
-        .map((part) => part.text ?? "")
-        .join("");
+): string => {
+  const text = z.string().safeParse(content).data;
+  if (text !== undefined) return text;
+  return z
+    .array(z.object({ type: z.string(), text: z.string().optional() }))
+    .parse(content)
+    .filter((part) => part.type === "text")
+    .map((part) => part.text ?? "")
+    .join("");
+};

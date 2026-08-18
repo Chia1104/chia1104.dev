@@ -1,12 +1,15 @@
+import type {
+  PostListItem,
+  PostSearchHit,
+  PostSnapshot,
+  TagItem,
+} from "@chia/agent-content/types";
+
 import type { ContentPort } from "../src/ports.ts";
 import type {
   CommitDraftInput,
   CommitDraftResult,
   FetchedPage,
-  PostListItem,
-  PostSearchHit,
-  PostSnapshot,
-  TagItem,
 } from "../src/types.ts";
 
 /** Scriptable {@link ContentPort} for tests. */

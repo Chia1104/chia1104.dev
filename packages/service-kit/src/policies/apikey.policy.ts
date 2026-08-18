@@ -29,21 +29,25 @@ const invalidKey = (
  * Maps better-auth's `verifyApiKey` failure codes onto {@link AppError}, preserving the
  * exact status codes and issue payloads the previous Hono guard returned.
  */
-const KEY_ERRORS: Record<string, AppError> = {
-  KEY_NOT_FOUND: invalidKey("NOT_FOUND", "API key not found", "KEY_NOT_FOUND"),
-  KEY_DISABLED: invalidKey("FORBIDDEN", "API key is disabled", "KEY_DISABLED"),
-  KEY_EXPIRED: invalidKey("FORBIDDEN", "API key is expired", "KEY_EXPIRED"),
-  RATE_LIMITED: invalidKey(
-    "TOO_MANY_REQUESTS",
-    "API key is rate limited",
-    "RATE_LIMITED"
-  ),
-  USAGE_EXCEEDED: invalidKey(
-    "FORBIDDEN",
-    "API key usage exceeded",
-    "USAGE_EXCEEDED"
-  ),
-};
+const KEY_ERRORS = new Map<string, AppError>([
+  [
+    "KEY_NOT_FOUND",
+    invalidKey("NOT_FOUND", "API key not found", "KEY_NOT_FOUND"),
+  ],
+  [
+    "KEY_DISABLED",
+    invalidKey("FORBIDDEN", "API key is disabled", "KEY_DISABLED"),
+  ],
+  ["KEY_EXPIRED", invalidKey("FORBIDDEN", "API key is expired", "KEY_EXPIRED")],
+  [
+    "RATE_LIMITED",
+    invalidKey("TOO_MANY_REQUESTS", "API key is rate limited", "RATE_LIMITED"),
+  ],
+  [
+    "USAGE_EXCEEDED",
+    invalidKey("FORBIDDEN", "API key usage exceeded", "USAGE_EXCEEDED"),
+  ],
+]);
 
 /**
  * Verifies the `X-CH-API-KEY` header against better-auth's api-key plugin.
@@ -86,7 +90,7 @@ export const apiKeyPolicy = (
 
     if (verified.error) {
       const mapped = verified.error.code
-        ? KEY_ERRORS[verified.error.code]
+        ? KEY_ERRORS.get(verified.error.code)
         : undefined;
       return deny(mapped ?? new AppError("FORBIDDEN"));
     }
@@ -95,7 +99,11 @@ export const apiKeyPolicy = (
       return deny(new AppError("FORBIDDEN"));
     }
 
-    const apiKey = verified.key as Omit<ApiKey, "key">;
+    const apiKey =
+      /* SAFETY: The producer contract guarantees this value satisfies Omit<ApiKey, "key">. */ verified.key as Omit<
+        ApiKey,
+        "key"
+      >;
 
     if (
       options.projectId !== undefined &&

@@ -139,7 +139,9 @@ export const withRateLimiter = <
     };
   } catch (error) {
     if (config?.onError) {
-      return config?.onError(error as TError);
+      return config?.onError(
+        /* SAFETY: The producer contract guarantees this value satisfies TError. */ error as TError
+      );
     }
   }
 };

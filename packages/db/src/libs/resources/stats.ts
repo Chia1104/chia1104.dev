@@ -1,9 +1,9 @@
 import { and, desc, eq, ilike, ne, not, or, sql } from "drizzle-orm";
 
-import { withDTO } from "../";
-import type { Locale } from "../..";
-import { schema } from "../..";
+import type { Locale } from "../../schemas/enums.ts";
 import type { ResourceChunkKind } from "../../schemas/resources.schema.ts";
+import * as schema from "../../schemas/schema.ts";
+import { withDTO } from "../index.ts";
 
 import type { ResourceRef } from "./chunk.ts";
 

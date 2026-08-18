@@ -1,5 +1,5 @@
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import { rateLimitPolicy } from "@chia/service-kit/policies";
+import { rateLimitPolicy } from "@chia/service-kit/policies/rate-limit.policy";
 
 import { baseOS } from "../utils";
 

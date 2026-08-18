@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { locale } from "@chia/db";
+import { locale } from "@chia/db/schema/enums";
 import { FeedType } from "@chia/db/types";
 
 export const searchFeedsSchema = z.object({

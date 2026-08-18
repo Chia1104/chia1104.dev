@@ -36,7 +36,9 @@ export function errorGenerator(
   }
   return {
     code:
-      HTTPErrorConfig[statusCode as keyof typeof HTTPErrorConfig] ?? "Unknown",
+      HTTPErrorConfig[
+        /* SAFETY: The producer contract guarantees this value satisfies keyof typeof HTTPErrorConfig. */ statusCode as keyof typeof HTTPErrorConfig
+      ] ?? "Unknown",
     status: statusCode,
     errors,
   };

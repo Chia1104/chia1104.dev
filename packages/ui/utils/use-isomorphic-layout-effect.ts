@@ -3,6 +3,6 @@
 import { useEffect, useLayoutEffect } from "react";
 
 const useIsomorphicLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+  "window" in globalThis ? useLayoutEffect : useEffect;
 
 export default useIsomorphicLayoutEffect;

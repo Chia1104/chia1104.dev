@@ -3,9 +3,9 @@ import { eq } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { parseCursorForOrder, sliceNextCursor, withDTO } from "../";
-import { schema } from "../..";
+import * as schema from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
+import { parseCursorForOrder, sliceNextCursor, withDTO } from "../index.ts";
 import type { InfiniteDTO } from "../validator/apikey";
 
 const APIKEY_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);
@@ -66,11 +66,11 @@ export const getInfiniteApiKeysByProjectId = withDTO(
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
       limit: limit + 1,
-      where: {
-        projectId,
-        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
-        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
-      },
+      where: cursorFilter
+        ? { projectId, AND: [cursorFilter, ...rawFilters] }
+        : rawFilters.length
+          ? { projectId, AND: rawFilters }
+          : { projectId },
     });
 
     const { items, nextCursor } = sliceNextCursor(
@@ -136,10 +136,11 @@ export const getInfiniteApiKeys = withDTO(
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
       limit: limit + 1,
-      where: {
-        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
-        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
-      },
+      where: cursorFilter
+        ? { AND: [cursorFilter, ...rawFilters] }
+        : rawFilters.length
+          ? { AND: rawFilters }
+          : {},
       with: withProject
         ? {
             project: true,

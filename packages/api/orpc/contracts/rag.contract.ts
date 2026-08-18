@@ -1,12 +1,12 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { locale } from "@chia/db";
 import {
   RESOURCE_CHUNK_KIND,
   RESOURCE_INDEX_RUN_SCOPE,
   RESOURCE_INDEX_RUN_STATUS,
 } from "@chia/db/schema";
+import { locale } from "@chia/db/schema/enums";
 
 import { isResourceType, resourceTypes } from "../../resources/registry";
 
@@ -29,7 +29,7 @@ import { withMetaSchema } from "./shared";
 // ============================================
 
 /** The `(model, index_version)` pair the response was computed against. */
-const indexKeyShape = {
+const indexKeyFields = {
   model: z.string(),
   indexVersion: z.string(),
 };
@@ -71,16 +71,14 @@ const chunkStatusSchema = z.object({
   updatedAt: z.date(),
 });
 
-const chunkListItemSchema = z.object({
-  ...chunkStatusSchema.shape,
+const chunkListItemSchema = chunkStatusSchema.extend({
   sourceType: z.string(),
   sourceId: z.number(),
   /** Truncated `content`. The full text is a `chunk:get` away. */
   preview: z.string(),
 });
 
-const chunkDetailSchema = z.object({
-  ...chunkStatusSchema.shape,
+const chunkDetailSchema = chunkStatusSchema.extend({
   sourceType: z.string(),
   sourceId: z.number(),
   content: z.string(),
@@ -138,7 +136,7 @@ const runSnapshotSchema = z.object({
 });
 
 const runHandleSchema = z.object({
-  ...indexKeyShape,
+  ...indexKeyFields,
   runId: z.string(),
   recordId: z.number(),
   status: runStatusSchema,
@@ -165,7 +163,7 @@ export const getRagOverviewContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
   .output(
     z.object({
-      ...indexKeyShape,
+      ...indexKeyFields,
       counts: indexCountsSchema,
       bySourceType: z.array(
         z.object({ sourceType: z.string(), counts: indexCountsSchema })
@@ -214,9 +212,8 @@ export const listRagChunksContract = oc
     })
   )
   .output(
-    z.object({
-      ...indexKeyShape,
-      ...withMetaSchema(chunkListItemSchema).shape,
+    withMetaSchema(chunkListItemSchema).extend({
+      ...indexKeyFields,
       /**
        * Narrowed from `withMetaSchema`'s `string | number`: this cursor is a chunk id,
        * and the input only accepts a number, so widening it here would force every
@@ -234,14 +231,14 @@ export const getRagChunkContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(z.object({ chunkId: z.number().int().positive() }))
-  .output(z.object({ ...indexKeyShape, chunk: chunkDetailSchema }));
+  .output(z.object({ ...indexKeyFields, chunk: chunkDetailSchema }));
 
 export const getResourceIndexStatusContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
   .input(resourceRefSchema)
   .output(
     z.object({
-      ...indexKeyShape,
+      ...indexKeyFields,
       counts: indexCountsSchema,
       /** Ordered by kind then chunk index, as the drawer lists them. */
       chunks: z.array(chunkStatusSchema),
@@ -265,12 +262,7 @@ export const listIndexRunsContract = oc
       cursor: z.union([z.string(), z.number()]).nullish(),
     })
   )
-  .output(
-    z.object({
-      ...indexKeyShape,
-      ...withMetaSchema(runSnapshotSchema).shape,
-    })
-  );
+  .output(withMetaSchema(runSnapshotSchema).extend(indexKeyFields));
 
 export const getIndexRunContract = oc
   .errors({
@@ -283,14 +275,14 @@ export const getIndexRunContract = oc
     INTERNAL_SERVER_ERROR: {},
   })
   .input(z.object({ runId: z.string().min(1) }))
-  .output(z.object({ ...indexKeyShape, run: runSnapshotSchema }));
+  .output(z.object({ ...indexKeyFields, run: runSnapshotSchema }));
 
 /** The numbers a full reindex has to show before it may be confirmed. */
 export const previewReindexAllContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, INTERNAL_SERVER_ERROR: {} })
   .output(
     z.object({
-      ...indexKeyShape,
+      ...indexKeyFields,
       /** Resources the run iterates, one per feed translation. */
       targets: z.number(),
       counts: indexCountsSchema,
@@ -320,7 +312,7 @@ export const reindexAllContract = oc
 
 export const pruneEmbeddingsContract = oc
   .errors(triggerErrors)
-  .output(z.object({ ...indexKeyShape, deletedCount: z.number() }));
+  .output(z.object({ ...indexKeyFields, deletedCount: z.number() }));
 
 export type RagChunkState = z.infer<typeof chunkStateSchema>;
 export type RagIndexCounts = z.infer<typeof indexCountsSchema>;

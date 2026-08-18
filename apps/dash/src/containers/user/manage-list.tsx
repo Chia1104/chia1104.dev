@@ -71,8 +71,16 @@ const UserTablePrimitive = memo(
         case "role":
           return (
             <Chip
-              variant={ROLE_VARIANT[item.role as Role] ?? "secondary"}
-              color={ROLE_COLOR[item.role as Role] ?? "default"}>
+              variant={
+                ROLE_VARIANT[
+                  /* SAFETY: The producer contract guarantees this value satisfies Role. */ item.role as Role
+                ] ?? "secondary"
+              }
+              color={
+                ROLE_COLOR[
+                  /* SAFETY: The producer contract guarantees this value satisfies Role. */ item.role as Role
+                ] ?? "default"
+              }>
               {item.role}
             </Chip>
           );

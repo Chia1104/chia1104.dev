@@ -1,7 +1,5 @@
 import { and, desc, eq, inArray, isNull, lte } from "drizzle-orm";
 
-import { withDTO } from "../";
-import { schema } from "../..";
 import {
   RESOURCE_INDEX_RUN_ACTIVE_STATUSES,
   RESOURCE_INDEX_RUN_SCOPE,
@@ -13,6 +11,8 @@ import type {
   ResourceIndexRunScope,
   ResourceIndexRunStatus,
 } from "../../schemas/resources.schema.ts";
+import * as schema from "../../schemas/schema.ts";
+import { withDTO } from "../index.ts";
 
 const runs = schema.resourceIndexRuns;
 

@@ -26,7 +26,7 @@ export const BorderBeam: FC<BorderBeamProps> = ({
   return (
     <div
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
           "--size": size,
           "--duration": duration,
           "--anchor": anchor,

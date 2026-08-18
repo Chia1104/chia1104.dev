@@ -9,8 +9,9 @@ export const mockFeed = {
   title: "測試文章標題",
   description: "這是一個測試文章描述",
   content: "# 測試內容\n\n這是測試文章的內容。",
-  type: "post" as FeedType,
-  locale: "zh-TW" as Locale,
+  type: /* SAFETY: This fixture implements the FeedType members exercised by this case. */ "post" as FeedType,
+  locale:
+    /* SAFETY: This fixture implements the Locale members exercised by this case. */ "zh-TW" as Locale,
   published: true,
   createdAt: new Date("2024-01-01"),
   updatedAt: new Date("2024-01-02"),
@@ -29,7 +30,7 @@ export const mockFeeds = [
     id: "test-feed-3",
     slug: "test-note-slug",
     title: "測試筆記標題",
-    type: "note" as FeedType,
+    type: /* SAFETY: This fixture implements the FeedType members exercised by this case. */ "note" as FeedType,
   },
 ];
 

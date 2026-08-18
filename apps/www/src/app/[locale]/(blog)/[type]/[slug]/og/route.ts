@@ -27,6 +27,9 @@ export async function GET(
   return createFeedOpenGraphImage({
     locale,
     slug,
-    theme: theme as "light" | "dark",
+    theme:
+      /* SAFETY: The producer contract guarantees this value satisfies "light" | "dark". */ theme as
+        | "light"
+        | "dark",
   });
 }

@@ -25,7 +25,7 @@ describe("useChangeLocale Hook", () => {
   });
   it("應該返回 changeLocale 函數", () => {
     const { result } = renderHook(() => useChangeLocale());
-    expect(typeof result.current).toBe("function");
+    expect(result.current).toEqual(expect.any(Function));
   });
 
   it("應該使用新的 locale 調用 router.push", () => {

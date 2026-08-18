@@ -1,5 +1,5 @@
 import { searchPublicFeedsService } from "@chia/api/feeds/search";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 
 import * as dbMocks from "./__mocks__/db.mock";
 

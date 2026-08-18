@@ -1,7 +1,12 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { project, member, invitation, organization } from "../../schemas";
+import {
+  project,
+  member,
+  invitation,
+  organization,
+} from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
 
 import {
@@ -10,19 +15,19 @@ import {
   dateTransformSchema,
 } from "./shared";
 
-export const insertProjectSchema = z.object({
-  ...createInsertSchema(project).omit({
+export const insertProjectSchema = createInsertSchema(project)
+  .omit({
     createdAt: true,
     deletedAt: true,
-  }).shape,
-  createdAt: dateSchema.optional(),
-  deletedAt: dateSchema.optional(),
-});
+  })
+  .extend({
+    createdAt: dateSchema.optional(),
+    deletedAt: dateSchema.optional(),
+  });
 
 export type InsertProjectDTO = z.infer<typeof insertProjectSchema>;
 
-export const baseInfiniteSchema = z.object({
-  ...baseInfiniteSchemaShared.shape,
+export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z
     .enum([FeedOrderBy.CreatedAt, FeedOrderBy.Id, FeedOrderBy.Slug])
     .optional()
@@ -38,56 +43,48 @@ export const infiniteSchema = baseInfiniteSchema.optional().default({
 
 export type InfiniteDTO = z.infer<typeof infiniteSchema>;
 
-export const projectSchema = z.object({
-  ...createSelectSchema(project).shape,
+export const projectSchema = createSelectSchema(project).extend({
   createdAt: dateSchema,
   deletedAt: dateSchema.nullable(),
 });
 export type ProjectDTO = z.infer<typeof projectSchema>;
 
-export const projectTransformSchema = z.object({
-  ...projectSchema.shape,
+export const projectTransformSchema = projectSchema.extend({
   createdAt: dateTransformSchema,
   deletedAt: dateTransformSchema.nullable(),
 });
 export type ProjectTransformDTO = z.infer<typeof projectTransformSchema>;
 
-export const memberSchema = z.object({
-  ...createSelectSchema(member).shape,
+export const memberSchema = createSelectSchema(member).extend({
   createdAt: dateSchema,
 });
 export type MemberDTO = z.infer<typeof memberSchema>;
 
-export const memberTransformSchema = z.object({
-  ...memberSchema.shape,
+export const memberTransformSchema = memberSchema.extend({
   role: z.string(),
   createdAt: dateTransformSchema,
   teamId: z.string().nullish(),
 });
 export type MemberTransformDTO = z.infer<typeof memberTransformSchema>;
 
-export const invitationSchema = z.object({
-  ...createSelectSchema(invitation).shape,
+export const invitationSchema = createSelectSchema(invitation).extend({
   expiresAt: dateSchema,
 });
 export type InvitationDTO = z.infer<typeof invitationSchema>;
 
-export const invitationTransformSchema = z.object({
-  ...invitationSchema.shape,
+export const invitationTransformSchema = invitationSchema.extend({
   expiresAt: dateTransformSchema,
   teamId: z.string().nullish(),
 });
 export type InvitationTransformDTO = z.infer<typeof invitationTransformSchema>;
 
-export const organizationSchema = z.object({
-  ...createSelectSchema(organization).shape,
+export const organizationSchema = createSelectSchema(organization).extend({
   slug: z.string(),
   createdAt: dateSchema,
 });
 export type OrganizationDTO = z.infer<typeof organizationSchema>;
 
-export const organizationTransformSchema = z.object({
-  ...organizationSchema.shape,
+export const organizationTransformSchema = organizationSchema.extend({
   createdAt: dateTransformSchema,
   logo: z.string().nullish(),
   metadata: z.any().nullish(),

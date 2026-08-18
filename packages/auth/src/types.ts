@@ -1,7 +1,7 @@
 import { APIError } from "better-auth/api";
 import * as z from "zod";
 
-import type { Auth } from "./";
+import type { Auth } from "./server.ts";
 
 export const Provider = {
   google: "google",

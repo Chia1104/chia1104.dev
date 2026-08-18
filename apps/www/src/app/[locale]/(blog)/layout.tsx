@@ -49,7 +49,11 @@ const Layout = async ({ children, params }: LayoutProps<"/[locale]">) => {
   return (
     <section className="prose dark:prose-invert mt-10 flex min-h-[calc(100vh-140px)] w-full min-w-full flex-col items-start justify-start md:mt-20">
       <div className="z-30">
-        <Navigation locale={locale as PropsWithLocale["locale"]} />
+        <Navigation
+          locale={
+            /* SAFETY: The producer contract guarantees this value satisfies PropsWithLocale["locale"]. */ locale as PropsWithLocale["locale"]
+          }
+        />
       </div>
       {children}
     </section>

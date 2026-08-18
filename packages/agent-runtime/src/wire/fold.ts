@@ -1,4 +1,4 @@
-import type { ToolTier } from "../types.ts";
+import type { AgentErrorKind, ToolTier } from "../types.ts";
 
 import type { AgentWireEvent } from "./schema.ts";
 
@@ -32,9 +32,27 @@ export interface NoticeView {
   kind: "notice";
   variant: "compacted" | "error";
   text: string;
+  /** Set on `error` notices. */
+  code?: AgentErrorKind;
 }
 
 export type AgentViewItem = TextMessageView | ToolCallView | NoticeView;
+
+/** What the operator can do about an error kind; the provider's own text follows it. */
+export const AGENT_ERROR_HEADLINE = {
+  auth: "The provider rejected the API key",
+  quota: "The provider account is out of quota or credit",
+  rate_limited: "The provider is rate limiting requests",
+  context_overflow:
+    "The conversation no longer fits the model's context — compact it",
+  provider: "The provider failed",
+  internal: "The agent failed",
+} satisfies Record<AgentErrorKind, string>;
+
+export const describeAgentError = (error: {
+  kind: AgentErrorKind;
+  message: string;
+}): string => `${AGENT_ERROR_HEADLINE[error.kind]}: ${error.message}`;
 
 export interface AgentViewState {
   items: AgentViewItem[];
@@ -94,7 +112,10 @@ export const applyEvent = (
           item.kind === "assistant" && item.messageId === event.messageId
       );
       if (index === -1) return { ...state, items };
-      const message = items[index] as TextMessageView;
+      const message =
+        /* SAFETY: The producer contract guarantees this value satisfies TextMessageView. */ items[
+          index
+        ] as TextMessageView;
       items[index] =
         event.channel === "text"
           ? { ...message, text: message.text + event.delta }
@@ -135,6 +156,7 @@ export const applyEvent = (
     case "tool:update": {
       const index = findTool(event.toolCallId);
       if (index === -1) return { ...state, items };
+      // SAFETY: findTool only returns indices for ToolCallView items.
       items[index] = {
         ...(items[index] as ToolCallView),
         summary: event.summary,
@@ -144,7 +166,10 @@ export const applyEvent = (
 
     case "tool:end": {
       const index = findTool(event.toolCallId);
-      const existing = items[index] as ToolCallView | undefined;
+      const existing =
+        /* SAFETY: The producer contract guarantees this value satisfies ToolCallView | undefined. */ items[
+          index
+        ] as ToolCallView | undefined;
 
       /**
        * A gated call still produces a `tool:end`: the permission gate refuses it, and pi turns
@@ -188,8 +213,11 @@ export const applyEvent = (
 
     case "approval:request": {
       const index = findTool(event.toolCallId);
+      // SAFETY: an existing index comes from tool:start; otherwise the fallback creates the view.
       const view: ToolCallView = {
-        ...((items[index] as ToolCallView | undefined) ?? {
+        .../* SAFETY: The producer contract guarantees this value satisfies ToolCallView | undefined. */ ((items[
+          index
+        ] as ToolCallView | undefined) ?? {
           kind: "tool",
           toolCallId: event.toolCallId,
           toolName: event.toolName,
@@ -213,6 +241,7 @@ export const applyEvent = (
     case "approval:resolved": {
       const index = findTool(event.toolCallId);
       if (index !== -1) {
+        // SAFETY: approval events can only target tool items created by tool:start.
         items[index] = {
           ...(items[index] as ToolCallView),
           approval: { approved: event.approved, comment: event.comment },
@@ -240,7 +269,12 @@ export const applyEvent = (
       return { ...state, items, stateRevision: event.revision };
 
     case "error":
-      items.push({ kind: "notice", variant: "error", text: event.message });
+      items.push({
+        kind: "notice",
+        variant: "error",
+        text: event.message,
+        code: event.kind,
+      });
       return { ...state, items, runStatus: "error" };
 
     case "run:end":

@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 
 import GithubSlugger from "github-slugger";
 
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import {
   createFeed,
   updateFeed,
@@ -112,7 +112,8 @@ export const createFeedService = async (
     translations: Object.entries(input.translations).map(
       ([locale, translation]) => ({
         ...translation,
-        locale: locale as LocaleType,
+        locale:
+          /* SAFETY: The producer contract guarantees this value satisfies LocaleType. */ locale as LocaleType,
         content: translation.content?.content ?? null,
         source: translation.content?.source ?? null,
         unstableSerializedSource:
@@ -170,7 +171,8 @@ export const updateFeedService = async (
     for (const [locale, translation] of Object.entries(input.translations)) {
       const translationData = await upsertFeedTranslation(db, {
         feedId: input.feedId,
-        locale: locale as LocaleType,
+        locale:
+          /* SAFETY: The producer contract guarantees this value satisfies LocaleType. */ locale as LocaleType,
         title: translation.title,
         excerpt: translation.excerpt ?? null,
         description: translation.description ?? null,

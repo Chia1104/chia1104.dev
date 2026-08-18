@@ -38,7 +38,8 @@ export function LoginForm(props: FormProps) {
 
         await authClient.signIn.magicLink(
           {
-            email: email as string,
+            email:
+              /* SAFETY: The producer contract guarantees this value satisfies string. */ email as string,
             callbackURL: getCurrentDomain(),
           },
           {

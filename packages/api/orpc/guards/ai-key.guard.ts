@@ -5,17 +5,17 @@ import {
 } from "@chia/ai/constants";
 import { verifyApiKey } from "@chia/ai/utils";
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import { aiKeyPolicy } from "@chia/service-kit/policies";
+import { aiKeyPolicy } from "@chia/service-kit/policies/ai-key.policy";
 
 import { baseOS } from "../utils";
 
 export type AiProvider = "openai" | "anthropic" | "google";
 
-const COOKIE_BY_PROVIDER: Record<AiProvider, string> = {
+const COOKIE_BY_PROVIDER = {
   openai: OPENAI_API_KEY,
   anthropic: ANTHROPIC_API_KEY,
   google: GENAI_API_KEY,
-};
+} satisfies Record<AiProvider, string>;
 
 export interface AiKeyGuardInput {
   /**
@@ -41,7 +41,12 @@ export const aiKeyGuard = (defaults?: { provider?: AiProvider }) =>
     .middleware(async ({ next, context, errors }, input: AiKeyGuardInput) => {
       if (!input.enabled) {
         return next({
-          context: { AI_AUTH_TOKEN: undefined as string | undefined },
+          context: {
+            AI_AUTH_TOKEN:
+              /* SAFETY: The producer contract guarantees this value satisfies string | undefined. */ undefined as
+                | string
+                | undefined,
+          },
         });
       }
 
@@ -62,6 +67,11 @@ export const aiKeyGuard = (defaults?: { provider?: AiProvider }) =>
       );
 
       return next({
-        context: { AI_AUTH_TOKEN: AI_AUTH_TOKEN as string | undefined },
+        context: {
+          AI_AUTH_TOKEN:
+            /* SAFETY: The producer contract guarantees this value satisfies string | undefined. */ AI_AUTH_TOKEN as
+              | string
+              | undefined,
+        },
       });
     });

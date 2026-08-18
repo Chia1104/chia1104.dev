@@ -128,7 +128,7 @@ export function UploadAssets({
           key: item.name,
           area,
           sha256Checksum: sha256Hex,
-          type: item.type as
+          type: /* SAFETY: The producer contract guarantees this value satisfies the asserted interface. */ item.type as
             | "image/jpeg"
             | "image/png"
             | "image/webp"

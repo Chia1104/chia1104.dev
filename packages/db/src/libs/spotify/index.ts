@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 
-import type { DB } from "../..";
-import { schema } from "../..";
+import type { DB } from "../../client.ts";
+import * as schema from "../../schemas/schema.ts";
 import type { SpotifyCredential } from "../../schemas/spotify.schema";
 
 export interface UpsertSpotifyCredentialDTO {

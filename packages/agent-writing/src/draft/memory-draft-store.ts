@@ -1,12 +1,8 @@
+import type { PostSnapshot } from "@chia/agent-content/types";
 import type { Locale } from "@chia/db/types";
 
 import type { DraftStore } from "../ports.ts";
-import type {
-  DraftFeedMeta,
-  DraftTranslation,
-  FeedDraft,
-  PostSnapshot,
-} from "../types.ts";
+import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
 import { emptyDraft, patchFeedMeta, patchTranslation } from "./operations.ts";
 

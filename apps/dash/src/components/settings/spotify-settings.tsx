@@ -32,31 +32,46 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   timeStyle: "short",
 });
 
-const callbackMessages: Record<
+const callbackMessages = new Map<
   string,
   { type: "success" | "error"; message: string }
-> = {
-  connected: {
-    type: "success",
-    message: "Spotify account connected",
-  },
-  cancelled: {
-    type: "error",
-    message: "Spotify authorization cancelled",
-  },
-  invalid_callback: {
-    type: "error",
-    message: "Invalid Spotify callback",
-  },
-  invalid_state: {
-    type: "error",
-    message: "Spotify authorization expired. Please reconnect.",
-  },
-  exchange_failed: {
-    type: "error",
-    message: "Unable to complete Spotify authorization",
-  },
-};
+>([
+  [
+    "connected",
+    {
+      type: "success",
+      message: "Spotify account connected",
+    },
+  ],
+  [
+    "cancelled",
+    {
+      type: "error",
+      message: "Spotify authorization cancelled",
+    },
+  ],
+  [
+    "invalid_callback",
+    {
+      type: "error",
+      message: "Invalid Spotify callback",
+    },
+  ],
+  [
+    "invalid_state",
+    {
+      type: "error",
+      message: "Spotify authorization expired. Please reconnect.",
+    },
+  ],
+  [
+    "exchange_failed",
+    {
+      type: "error",
+      message: "Unable to complete Spotify authorization",
+    },
+  ],
+]);
 
 const formatDate = (value: string) => {
   return dateFormatter.format(new Date(value));
@@ -114,7 +129,7 @@ export const SpotifySettings = () => {
       return;
     }
 
-    const result = callbackMessages[callbackStatus];
+    const result = callbackMessages.get(callbackStatus);
     if (result?.type === "success") {
       toast.success(result.message);
       void queryClient.invalidateQueries({
