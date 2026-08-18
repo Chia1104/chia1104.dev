@@ -10,8 +10,8 @@
       "default": "./src/index.ts"
     },
     "./events": {
-      "types": "./src/wire/schema.ts",
-      "default": "./src/wire/schema.ts"
+      "types": "./src/wire/index.ts",
+      "default": "./src/wire/index.ts"
     },
     "./transports/tanstack-ai": {
       "types": "./src/transports/tanstack-ai.ts",
