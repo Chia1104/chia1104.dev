@@ -188,15 +188,19 @@ transcript. Anything the model must see fresh belongs there, not in the system p
 ### Abort
 
 Nothing in the workflow SDK reaches a step already executing — cancelling the run only stops it
-from being scheduled again — so the turn step registers an `AbortController` for its workflow run
-id in a process-local registry (`apps/service/src/services/agent-turn-registry.ts`) and hands the
-signal to `runPiTurn`. `abort` fires that controller first, then cancels the run and marks the
-`agent_run` row `cancelled`. Firing the signal aborts the harness at once, mid-generation included:
-Pi cancels the in-flight provider stream, the partial reply is persisted as `aborted`, and the turn
-ends with `run:end{aborted}`; no approvals are persisted and no compaction runs. The next prompt
-starts a fresh run over the persisted transcript. The registry is the whole mechanism because the
-service runs one replica and the workflow world executes steps in-process; more replicas would
-need a broadcast (`LISTEN`/`NOTIFY`, which the postgres world already uses for its streams).
+from being scheduled again — so a stop travels through a second, tiny durable run: the session
+run's **abort controller** (`apps/service/src/workflows/agent-abort.workflow.ts`). It parks on
+`agentAbortHook`, keyed by the session's workflow run id, and when resumed writes one message to
+its own stream. Each turn step finds or starts that controller, subscribes to its stream and hands
+the resulting `AbortSignal` to `runPiTurn`, releasing the subscription when the turn ends. `abort`
+resumes the hook first, then cancels the session run and marks the `agent_run` row `cancelled`;
+`completeAgentRunStep` resumes it too, so a finished run does not leave a controller parked until
+its TTL. Firing the signal aborts the harness at once, mid-generation included: Pi cancels the
+in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
+`run:end{aborted}`; no approvals are persisted and no compaction runs. Delivery is the SDK's own
+durable stream, so it works from any process — no registry, no timer, no second channel. The next
+prompt starts a fresh session run over the persisted transcript. An expired controller (TTL) never
+aborts a turn; readers ignore `expired` and the next turn starts a new one.
 
 ### Host failures inside Pi hooks
 
@@ -379,27 +383,27 @@ until a concrete second execution foundation requires a different seam.
 
 ## 12. Reference
 
-| Concern                      | File                                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
-| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                              |
-| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                              |
-| Running-turn abort registry  | `apps/service/src/services/agent-turn-registry.ts`                                     |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                     |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                 |
-| Session over Postgres        | `packages/agent-runtime/src/session/`                                                  |
-| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
-| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                  |
-| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`        |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                   |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts` |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`               |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                              |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                      |
+| Concern                      | File                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
+| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                             |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
+| Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
+| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                         |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
+| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                           |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
+| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`         |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
+| Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |

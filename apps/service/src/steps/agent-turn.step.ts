@@ -19,9 +19,13 @@ import {
 } from "@chia/db/repos/agent";
 import { getAdminId } from "@chia/utils/config";
 
+import {
+  ensureAgentAbortController,
+  signalAgentAbort,
+  subscribeAgentAbort,
+} from "../services/agent-abort-controller";
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
-import { registerRunningTurn } from "../services/agent-turn-registry";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
@@ -165,11 +169,13 @@ export const runAgentTurnStep = async (
   };
   await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
 
-  const turn = registerRunningTurn(workflowRunId);
+  const abort = subscribeAgentAbort(
+    await ensureAgentAbortController(workflowRunId)
+  );
   try {
-    return await handler(db, row, request, turn.signal);
+    return await handler(db, row, request, abort.signal);
   } finally {
-    turn.unregister();
+    abort.dispose();
     await patchAgentRunMetadata(db, workflowRunId, {
       [AGENT_TURN_KEY]: { ...marker, running: false },
     });
@@ -388,7 +394,10 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
   await Promise.allSettled([coarse.close(), deltas.close()]);
 };
 
-/** Marks the durable run inactive once its orchestration loop ends. */
+/**
+ * Marks the durable run inactive once its orchestration loop ends, and closes its abort controller
+ * so it does not sit parked until its TTL.
+ */
 export const completeAgentRunStep = async (
   sessionId: string
 ): Promise<void> => {
@@ -396,4 +405,5 @@ export const completeAgentRunStep = async (
 
   const db = await connectDatabase(undefined, { withCache: false });
   await completeActiveAgentRuns(db, sessionId, "completed");
+  await signalAgentAbort(getWorkflowMetadata().workflowRunId, "run finished");
 };

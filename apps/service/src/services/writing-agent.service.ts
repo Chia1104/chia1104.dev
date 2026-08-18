@@ -62,12 +62,12 @@ import {
   agentMessageToken,
 } from "../workflows/hooks/agent.hooks";
 
+import { signalAgentAbort } from "./agent-abort-controller";
 import { createAgentContentPort } from "./agent-content.port";
 import {
   decryptAgentCredentials,
   readEncryptedAgentCredentials,
 } from "./agent-credentials";
-import { abortRunningTurn } from "./agent-turn-registry";
 
 /**
  * The **writing** agent service, registered under `agent_session.kind = "writing"`.
@@ -716,7 +716,7 @@ export const writingAgentService: AgentKindService = {
     // picks the transcript back up from Postgres. The row is marked last so a failed cancel never
     // leaves a live run behind a non-active row (the next prompt would start a second workflow and
     // hit the hook conflict).
-    abortRunningTurn(row.workflowRunId);
+    await signalAgentAbort(row.workflowRunId, "stopped by the operator");
     await cancelLiveRun(row.workflowRunId);
     if (row.activeRunId) {
       await completeAgentRun(

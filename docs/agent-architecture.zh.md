@@ -181,14 +181,18 @@ Pi 的 `context` hook 附加為每個 provider request 的最後一則 user mess
 
 ### Abort
 
-Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 只是讓它不再被排程——所以 turn
-step 會以 workflow run id 在 process 內的 registry（`apps/service/src/services/agent-turn-registry.ts`）
-註冊一個 `AbortController`，把 signal 交給 `runPiTurn`。`abort` 先觸發那個 controller，再取消
-run、把 `agent_run` 列標成 `cancelled`。Signal 一觸發 harness 立刻中止，生成到一半也一樣：Pi
-取消進行中的 provider stream，部分回覆以 `aborted` 持久化，turn 以 `run:end{aborted}` 結束；不
-持久化 approval，也不 compaction。下一次 prompt 會在持久化的 transcript 上開新 run。Registry
-就是全部機制，因為 service 只跑一個 replica，且 workflow world 在 process 內執行 step；replica
-變多時需要廣播（`LISTEN`/`NOTIFY`，postgres world 的 stream 已經在用）。
+Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 只是讓它不再被排程——所以 stop
+是透過第二個很小的 durable run 送達：session run 的 **abort controller**
+（`apps/service/src/workflows/agent-abort.workflow.ts`）。它以 session 的 workflow run id 為 key
+停在 `agentAbortHook` 上，被 resume 時往自己的 stream 寫一則訊息。每個 turn step 找到或建立這
+個 controller、訂閱它的 stream，把得到的 `AbortSignal` 交給 `runPiTurn`，turn 結束時釋放訂閱。
+`abort` 先 resume 這個 hook，再取消 session run、把 `agent_run` 列標成 `cancelled`；
+`completeAgentRunStep` 也會 resume 它，讓跑完的 run 不會留下一個停到 TTL 的 controller。Signal 一
+觸發 harness 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`
+持久化，turn 以 `run:end{aborted}` 結束；不持久化 approval，也不 compaction。送達走的是 SDK 自
+己的 durable stream，所以跨 process 也成立——沒有 registry、沒有 timer、沒有第二條 channel。下一
+次 prompt 會在持久化的 transcript 上開新 session run。過期（TTL）的 controller 不會中止任何 turn；
+reader 忽略 `expired`，下一個 turn 會建新的。
 
 ### Pi hook 裡的 host 失敗
 
@@ -355,27 +359,27 @@ factory、capability plugin system 或 provider-neutral handle。
 
 ## 12. 參考位置
 
-| Concern                      | File                                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
-| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                              |
-| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                              |
-| Running-turn abort registry  | `apps/service/src/services/agent-turn-registry.ts`                                     |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                     |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                 |
-| Session over Postgres        | `packages/agent-runtime/src/session/`                                                  |
-| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                 |
-| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                  |
-| Content read tools / port    | `packages/agent-content/src/`、`apps/service/src/services/content-read.port.ts`        |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                   |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                          |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                           |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts` |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                      |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`               |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                              |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                      |
+| Concern                      | File                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
+| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                             |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
+| Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
+| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                         |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
+| Content read tools / port    | `packages/agent-content/src/`、`apps/service/src/services/content-read.port.ts`                |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                           |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
+| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts`         |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                       |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
+| Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |
