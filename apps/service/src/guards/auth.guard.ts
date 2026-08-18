@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 
 import { applyPolicy } from "@chia/service-kit/adapters/hono";
-import { sessionPolicy } from "@chia/service-kit/policies";
+import { sessionPolicy } from "@chia/service-kit/policies/session.policy";
 
 type AuthContext = HonoContext;
 

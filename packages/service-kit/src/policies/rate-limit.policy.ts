@@ -1,4 +1,4 @@
-import type { Keyv } from "@chia/kv";
+import type { Keyv } from "@chia/kv/types";
 
 import { AppError } from "../errors";
 

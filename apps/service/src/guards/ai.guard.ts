@@ -9,7 +9,10 @@ import {
 import { Provider } from "@chia/ai/types";
 import { verifyApiKey } from "@chia/ai/utils";
 import { applyPolicy } from "@chia/service-kit/adapters/hono";
-import { aiKeyPolicy, AI_AUTH_TOKEN } from "@chia/service-kit/policies";
+import {
+  aiKeyPolicy,
+  AI_AUTH_TOKEN,
+} from "@chia/service-kit/policies/ai-key.policy";
 import { tryCatch } from "@chia/utils/error-helper";
 import { errorGenerator } from "@chia/utils/server";
 

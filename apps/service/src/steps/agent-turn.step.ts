@@ -4,11 +4,11 @@ import * as z from "zod";
 
 import type {
   AgentTurnError,
-  AgentWireEvent,
   ThinkingLevel,
   ToolTier,
-} from "@chia/agent-runtime";
-import type { DB } from "@chia/db";
+} from "@chia/agent-runtime/types";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import type { JsonObject } from "@chia/db/json";
 import {
@@ -204,16 +204,17 @@ async function runWritingAgentTurn(
   signal: AbortSignal
 ): Promise<AgentTurnOutcome> {
   const [
-    { createAgentModels, PgSessionRepo },
-    {
-      PgDraftStore,
-      runWritingTurn,
-      WRITING_AGENT_KIND,
-      WRITING_SESSION_DEFAULTS,
-    },
+    { createAgentModels },
+    { PgSessionRepo },
+    { PgDraftStore },
+    { runWritingTurn },
+    { WRITING_AGENT_KIND, WRITING_SESSION_DEFAULTS },
   ] = await Promise.all([
-    import("@chia/agent-runtime"),
-    import("@chia/agent-writing"),
+    import("@chia/agent-runtime/models"),
+    import("@chia/agent-runtime/session/pg-repo"),
+    import("@chia/agent-writing/draft/pg-draft-store"),
+    import("@chia/agent-writing/runtime"),
+    import("@chia/agent-writing/models"),
   ]);
 
   if (row.kind !== WRITING_AGENT_KIND) {

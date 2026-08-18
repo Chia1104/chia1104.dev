@@ -1,3 +1,10 @@
+/**
+ * The wire contract and its client-side view model (`./fold.ts`), with no runtime dependency on
+ * Pi or any provider SDK — these are the modules browsers and SSR bundles import. `./replay.ts`
+ * is deliberately not among them: rebuilding events from persisted Pi entries classifies
+ * provider errors and so needs pi-ai.
+ */
+
 import * as z from "zod";
 
 export const agentErrorKindSchema = z.enum([

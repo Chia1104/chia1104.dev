@@ -2,9 +2,9 @@ import { eq } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { schema } from "../..";
+import * as schema from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
-import { parseCursorForOrder, sliceNextCursor, withDTO } from "../index";
+import { parseCursorForOrder, sliceNextCursor, withDTO } from "../index.ts";
 import type { InsertUserDTO, InfiniteDTO } from "../validator/users";
 
 const USER_DATE_ORDER_BY = new Set([

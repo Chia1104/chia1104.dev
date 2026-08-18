@@ -5,9 +5,21 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    },
+    "./tools/read": {
+      "types": "./src/tools/read.tool.ts",
+      "default": "./src/tools/read.tool.ts"
+    },
+    "./tools/registry": {
+      "types": "./src/tools/registry.ts",
+      "default": "./src/tools/registry.ts"
+    },
+    "./tools/summarize": {
+      "types": "./src/tools/summarize.ts",
+      "default": "./src/tools/summarize.ts"
     }
   },
   "scripts": {

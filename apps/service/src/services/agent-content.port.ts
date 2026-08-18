@@ -7,7 +7,7 @@ import type {
   FetchedPage,
 } from "@chia/agent-writing/ports";
 import { createFeedService, updateFeedService } from "@chia/api/feeds/write";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import type { Locale } from "@chia/db/types";
 import {
   ContentType as ContentTypeEnum,

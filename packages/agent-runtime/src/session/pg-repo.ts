@@ -12,7 +12,7 @@ import type {
   SessionRepo,
 } from "@earendil-works/pi-agent-core";
 
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import type { JsonObject } from "@chia/db/json";
 import {
   createAgentSession,

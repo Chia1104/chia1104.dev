@@ -1,4 +1,4 @@
-import type { AgentPolicy } from "@chia/agent-runtime";
+import type { AgentPolicy } from "@chia/agent-runtime/types";
 
 import { labelOf, tierOf } from "./tools/registry.ts";
 import { summarizeToolResult } from "./tools/summarize.ts";

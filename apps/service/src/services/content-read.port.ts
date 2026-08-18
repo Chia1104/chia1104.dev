@@ -8,9 +8,9 @@ import type {
   PostSnapshot,
   SearchPostsInput,
   TagItem,
-} from "@chia/agent-content";
+} from "@chia/agent-content/types";
 import { searchFeedsService } from "@chia/api/feeds/search";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import {
   getFeedById,
   getFeedBySlug,

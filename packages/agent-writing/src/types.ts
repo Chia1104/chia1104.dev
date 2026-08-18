@@ -1,5 +1,18 @@
-import type { ContentToolContext, PostFeedType } from "@chia/agent-content";
-import type { AgentTool } from "@chia/agent-runtime";
+/**
+ * `@chia/agent-writing` — the blog authoring agent.
+ *
+ * The *domain* half of the agent: tools, prompts, the draft staging buffer, and the policy that
+ * classifies and gates them. The concrete Pi turn, provider/model construction, session
+ * persistence, approval gate and wire events live in `@chia/agent-runtime`.
+ *
+ * Adding another agent kind means adding a sibling domain package like this one.
+ */
+
+import type {
+  ContentToolContext,
+  PostFeedType,
+} from "@chia/agent-content/types";
+import type { AgentTool } from "@chia/agent-runtime/types";
 import type { ContentType, Locale } from "@chia/db/types";
 
 import type { ContentPort, DraftStore } from "./ports.ts";

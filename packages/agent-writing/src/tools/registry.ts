@@ -1,8 +1,8 @@
 import {
   CONTENT_TOOL_LABEL_BY_NAME,
   CONTENT_TOOL_NAMES,
-} from "@chia/agent-content";
-import type { ToolTier } from "@chia/agent-runtime";
+} from "@chia/agent-content/tools/registry";
+import type { ToolTier } from "@chia/agent-runtime/types";
 
 /**
  * Single source of truth for tool identity: name → tier and name → UI label.

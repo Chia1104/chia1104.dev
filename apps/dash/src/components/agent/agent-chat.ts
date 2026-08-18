@@ -1,7 +1,8 @@
 import type { UIMessage } from "@tanstack/ai-react";
 
-import type { AgentWireEvent, ToolCallView } from "@chia/agent-runtime/events";
-import { describeAgentError, foldEvents } from "@chia/agent-runtime/events";
+import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
+import { describeAgentError, foldEvents } from "@chia/agent-runtime/wire/fold";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 export interface PendingApproval {
   toolCallId: string;

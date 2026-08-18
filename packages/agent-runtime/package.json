@@ -5,21 +5,65 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
     },
-    "./events": {
-      "types": "./src/wire/index.ts",
-      "default": "./src/wire/index.ts"
-    },
-    "./transports/tanstack-ai": {
-      "types": "./src/transports/tanstack-ai.ts",
-      "default": "./src/transports/tanstack-ai.ts"
+    "./models": {
+      "types": "./src/models.ts",
+      "default": "./src/models.ts"
     },
     "./tools": {
       "types": "./src/tools.ts",
       "default": "./src/tools.ts"
+    },
+    "./wire/schema": {
+      "types": "./src/wire/schema.ts",
+      "default": "./src/wire/schema.ts"
+    },
+    "./wire/fold": {
+      "types": "./src/wire/fold.ts",
+      "default": "./src/wire/fold.ts"
+    },
+    "./wire/clip": {
+      "types": "./src/wire/clip.ts",
+      "default": "./src/wire/clip.ts"
+    },
+    "./wire/replay": {
+      "types": "./src/wire/replay.ts",
+      "default": "./src/wire/replay.ts"
+    },
+    "./pi/events": {
+      "types": "./src/pi/events.ts",
+      "default": "./src/pi/events.ts"
+    },
+    "./pi/tool-gate": {
+      "types": "./src/pi/tool-gate.ts",
+      "default": "./src/pi/tool-gate.ts"
+    },
+    "./pi/maintenance": {
+      "types": "./src/pi/maintenance.ts",
+      "default": "./src/pi/maintenance.ts"
+    },
+    "./pi/turn": {
+      "types": "./src/pi/turn.ts",
+      "default": "./src/pi/turn.ts"
+    },
+    "./session/pi": {
+      "types": "./src/session/pi.ts",
+      "default": "./src/session/pi.ts"
+    },
+    "./session/pg-repo": {
+      "types": "./src/session/pg-repo.ts",
+      "default": "./src/session/pg-repo.ts"
+    },
+    "./session/pg-storage": {
+      "types": "./src/session/pg-storage.ts",
+      "default": "./src/session/pg-storage.ts"
+    },
+    "./transports/tanstack-ai": {
+      "types": "./src/transports/tanstack-ai.ts",
+      "default": "./src/transports/tanstack-ai.ts"
     }
   },
   "scripts": {

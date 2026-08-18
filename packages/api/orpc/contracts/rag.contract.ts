@@ -1,12 +1,12 @@
 import { oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { locale } from "@chia/db";
 import {
   RESOURCE_CHUNK_KIND,
   RESOURCE_INDEX_RUN_SCOPE,
   RESOURCE_INDEX_RUN_STATUS,
 } from "@chia/db/schema";
+import { locale } from "@chia/db/schema/enums";
 
 import { isResourceType, resourceTypes } from "../../resources/registry";
 

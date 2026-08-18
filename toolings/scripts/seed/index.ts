@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 
-import { schema } from "@chia/db";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
+import * as schema from "@chia/db/schema";
 import { getAdminId } from "@chia/utils/config";
 
 const withReplicas = (

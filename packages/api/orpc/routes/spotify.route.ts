@@ -1,4 +1,4 @@
-import { CallerTier } from "@chia/service-kit/policies";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
   activateSpotifyAccountService,

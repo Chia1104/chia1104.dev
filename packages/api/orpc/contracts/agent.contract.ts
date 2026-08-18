@@ -1,9 +1,9 @@
 import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { agentWireEventSchema } from "@chia/agent-runtime/events";
 import { tanstackAgentEventSchema } from "@chia/agent-runtime/transports/tanstack-ai";
-import { locale } from "@chia/db";
+import { agentWireEventSchema } from "@chia/agent-runtime/wire/schema";
+import { locale } from "@chia/db/schema/enums";
 
 import { withMetaSchema } from "./shared";
 

@@ -2,14 +2,14 @@ import type { SQLWrapper } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
+import * as schema from "../../schemas/schema.ts";
+import { FeedOrderBy } from "../../types";
 import {
   buildCursorWhere,
   parseCursorForOrder,
   sliceNextCursor,
   withDTO,
-} from "../";
-import { schema } from "../..";
-import { FeedOrderBy } from "../../types";
+} from "../index.ts";
 import type { InsertProjectDTO, InfiniteDTO } from "../validator/organization";
 
 const ORGANIZATION_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);

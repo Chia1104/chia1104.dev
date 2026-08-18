@@ -1,5 +1,5 @@
-import type { PostSnapshot } from "@chia/agent-content";
-import type { DB } from "@chia/db";
+import type { PostSnapshot } from "@chia/agent-content/types";
+import type { DB } from "@chia/db/client";
 import {
   deleteWritingAgentDrafts,
   getWritingAgentDrafts,

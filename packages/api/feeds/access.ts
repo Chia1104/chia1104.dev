@@ -1,5 +1,5 @@
-import type { Caller } from "@chia/service-kit/policies";
-import { CallerTier } from "@chia/service-kit/policies";
+import type { Caller } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 /**
  * What the caller asked to see beyond the public set.

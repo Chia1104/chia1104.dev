@@ -2,16 +2,17 @@ const { kvStore } = vi.hoisted(() => ({
   kvStore: new Map<string, unknown>(),
 }));
 
-vi.mock("@chia/kv", () => ({
-  kv: {
+vi.mock("@chia/kv/redis", () => {
+  const kv = {
     get: vi.fn((key: string) => kvStore.get(key)),
     set: vi.fn((key: string, value: unknown) => {
       kvStore.set(key, value);
       return true;
     }),
     delete: vi.fn((key: string) => kvStore.delete(key)),
-  },
-}));
+  };
+  return { getRedisKv: () => kv };
+});
 
 // Mock guards
 vi.mock("../src/guards/rate-limiter.guard", async () => {

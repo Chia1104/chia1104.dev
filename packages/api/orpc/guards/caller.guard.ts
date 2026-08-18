@@ -1,12 +1,15 @@
 import { os } from "@orpc/server";
 
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import type { Caller, CallerPolicyOptions } from "@chia/service-kit/policies";
+import type {
+  Caller,
+  CallerPolicyOptions,
+} from "@chia/service-kit/policies/caller.policy";
 import {
   CallerTier,
   callerPolicy,
-  rateLimitPolicy,
-} from "@chia/service-kit/policies";
+} from "@chia/service-kit/policies/caller.policy";
+import { rateLimitPolicy } from "@chia/service-kit/policies/rate-limit.policy";
 
 import type { BaseOSContext } from "../utils";
 import { baseOS } from "../utils";

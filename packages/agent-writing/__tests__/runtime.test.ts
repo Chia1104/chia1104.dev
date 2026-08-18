@@ -10,16 +10,16 @@ import {
 } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { foldEvents } from "@chia/agent-runtime";
+import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
-  AgentWireEvent,
-  ApprovalRequest,
-  TextMessageView,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/types";
+import { foldEvents } from "@chia/agent-runtime/wire/fold";
+import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
-import { InMemoryDraftStore } from "../src/draft/index.ts";
+import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { runWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 

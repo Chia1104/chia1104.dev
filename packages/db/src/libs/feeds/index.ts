@@ -4,15 +4,15 @@ import * as z from "zod";
 
 import dayjs from "@chia/utils/day";
 
-import type { DB } from "../../index.ts";
-import type { Locale, relations } from "../../schemas/index.ts";
+import type { DB } from "../../client.ts";
+import type { Locale, relations } from "../../schemas/schema.ts";
 import {
   feeds,
   feedsToTags,
   feedTranslations,
   tags,
   tagTranslations,
-} from "../../schemas/index.ts";
+} from "../../schemas/schema.ts";
 import { FeedOrderBy, FeedType, Locale as LocaleEnum } from "../../types.ts";
 import { parseCursorForOrder, withDTO } from "../index.ts";
 import type {

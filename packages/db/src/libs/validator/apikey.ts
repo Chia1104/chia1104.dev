@@ -1,7 +1,7 @@
 import { createInsertSchema } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { apikey } from "../../schemas";
+import { apikey } from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
 
 import {

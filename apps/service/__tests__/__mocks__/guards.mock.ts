@@ -2,7 +2,7 @@ import { createMiddleware } from "hono/factory";
 import { vi } from "vitest";
 
 import { baseOS } from "@chia/api/orpc/utils";
-import { CallerTier } from "@chia/service-kit/policies";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 // ============================================
 // oRPC guards

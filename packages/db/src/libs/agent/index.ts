@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 
-import type { DB } from "../../index.ts";
+import type { DB } from "../../client.ts";
 import type { JsonObject } from "../../json.ts";
 import {
   agentRuns,
@@ -9,8 +9,8 @@ import {
   agentToolApprovals,
   writingAgentDrafts,
   writingAgentSessions,
-} from "../../schemas/index.ts";
-import type { AgentRunStatus, Locale } from "../../schemas/index.ts";
+} from "../../schemas/schema.ts";
+import type { AgentRunStatus, Locale } from "../../schemas/schema.ts";
 
 /**
  * Repository for shared agent persistence and kind-owned extensions.

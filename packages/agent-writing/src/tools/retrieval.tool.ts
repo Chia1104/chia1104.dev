@@ -1,4 +1,4 @@
-import { contentReadTools } from "@chia/agent-content";
+import { contentReadTools } from "@chia/agent-content/tools/read";
 
 import type { WritingTool } from "../types.ts";
 

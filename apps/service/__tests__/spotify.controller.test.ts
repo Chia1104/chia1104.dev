@@ -28,7 +28,7 @@ vi.mock("@chia/api/spotify/playback", () => ({
   getSpotifyPlaylistService: mocks.getSpotifyPlaylistService,
 }));
 
-import { CallerTier } from "@chia/service-kit/policies";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import { app } from "../src/server";
 

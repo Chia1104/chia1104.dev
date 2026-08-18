@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import {
   deleteSpotifyCredential,
   getActiveSpotifyCredential,
@@ -9,7 +9,7 @@ import {
   setActiveSpotifyCredential,
   upsertSpotifyCredential,
 } from "@chia/db/repos/spotify";
-import type { Keyv } from "@chia/kv";
+import type { Keyv } from "@chia/kv/types";
 
 import { env } from "./env";
 import type { SpotifyOAuthCallbackDTO } from "./validator";

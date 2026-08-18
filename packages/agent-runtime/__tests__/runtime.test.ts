@@ -5,7 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { JsonObject } from "@chia/db/json";
 
-import type { AgentPolicy, AgentWireEvent } from "../src/index.ts";
+import type { AgentPolicy } from "../src/types.ts";
+import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 interface HarnessEvent extends JsonObject {
   type: string;

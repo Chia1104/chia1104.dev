@@ -1,6 +1,6 @@
 import dayjs from "@chia/utils/day";
 
-import type { DB } from "../";
+import type { DB } from "../client.ts";
 
 export const cursorTransform = (
   cursor: string | number,

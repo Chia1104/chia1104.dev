@@ -5,7 +5,7 @@ import {
 } from "@chia/ai/constants";
 import { verifyApiKey } from "@chia/ai/utils";
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import { aiKeyPolicy } from "@chia/service-kit/policies";
+import { aiKeyPolicy } from "@chia/service-kit/policies/ai-key.policy";
 
 import { baseOS } from "../utils";
 

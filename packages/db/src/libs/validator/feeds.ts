@@ -5,7 +5,7 @@ import {
 } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { feeds, feedTranslations, locale } from "../../schemas";
+import { feeds, feedTranslations, locale } from "../../schemas/schema.ts";
 import { FeedOrderBy, FeedType } from "../../types";
 
 import {

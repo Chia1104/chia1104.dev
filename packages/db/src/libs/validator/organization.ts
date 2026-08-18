@@ -1,7 +1,12 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { project, member, invitation, organization } from "../../schemas";
+import {
+  project,
+  member,
+  invitation,
+  organization,
+} from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
 
 import {

@@ -7,7 +7,7 @@ import type { TSchema } from "typebox";
 import { Type } from "typebox";
 import * as z from "zod";
 
-import { locale } from "@chia/db";
+import { locale } from "@chia/db/schema/enums";
 
 /**
  * Kind-agnostic helpers for authoring Pi tools.

@@ -9,7 +9,7 @@ import type {
   IndexRunHandle,
   IndexRunSnapshot,
 } from "@chia/api/orpc/services/indexing.service";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
   claimResourceIndexRun,

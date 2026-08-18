@@ -1,5 +1,5 @@
 import type { AgentKindService } from "@chia/api/orpc/services/agent.service";
-import { CallerTier } from "@chia/service-kit/policies";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 /**
  * The agent kinds this process serves, split from their implementation.

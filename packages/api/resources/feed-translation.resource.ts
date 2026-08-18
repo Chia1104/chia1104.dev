@@ -5,7 +5,7 @@ import {
   buildEmbeddingInput,
   hashEmbeddingInput,
 } from "@chia/ai/embeddings/utils";
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import { feeds, feedTranslations, RESOURCE_CHUNK_KIND } from "@chia/db/schema";
 import type { Locale } from "@chia/db/types";
 

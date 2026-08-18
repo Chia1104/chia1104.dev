@@ -1,11 +1,13 @@
 import type { Models } from "@earendil-works/pi-ai";
 
+import { createAgentModels } from "@chia/agent-runtime/models";
 import {
   compactPiSession,
-  createAgentModels,
   navigatePiSession,
-  runPiTurn,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/pi/maintenance";
+import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
+import { runPiTurn } from "@chia/agent-runtime/pi/turn";
+import type { Session } from "@chia/agent-runtime/session/pi";
 import type {
   AgentCompactionResult,
   AgentNavigationOptions,
@@ -13,10 +15,8 @@ import type {
   AgentSessionSettings,
   AgentTurnExecution,
   AgentTurnMessage,
-  AgentWireEvent,
-  ApprovalRequest,
-  Session,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/types";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
 
 import { resolveWritingModel } from "./models.ts";
@@ -25,7 +25,7 @@ import type { ContentPort, DraftStore } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
-import { createWritingTools } from "./tools/index.ts";
+import { createWritingTools } from "./tools/tool-set.ts";
 import type { WritingToolContext } from "./types.ts";
 
 export interface RunWritingTurnOptions<TApproval> {

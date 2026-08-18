@@ -1,6 +1,6 @@
 import { runPolicy } from "@chia/service-kit/adapters/orpc";
-import type { AdminPolicyOptions } from "@chia/service-kit/policies";
-import { adminPolicy } from "@chia/service-kit/policies";
+import type { AdminPolicyOptions } from "@chia/service-kit/policies/admin.policy";
+import { adminPolicy } from "@chia/service-kit/policies/admin.policy";
 
 import { baseOS } from "../utils";
 

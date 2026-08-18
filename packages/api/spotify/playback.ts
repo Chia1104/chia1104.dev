@@ -1,6 +1,6 @@
 import { HTTPError } from "ky";
 
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import {
   getActiveSpotifyCredential,
   withLockedSpotifyCredential,

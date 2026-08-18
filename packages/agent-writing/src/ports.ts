@@ -1,4 +1,4 @@
-import type { ContentReadPort, PostSnapshot } from "@chia/agent-content";
+import type { ContentReadPort, PostSnapshot } from "@chia/agent-content/types";
 import type { Locale } from "@chia/db/types";
 
 import type {

@@ -6,13 +6,13 @@ import {
   createAgentModels,
   listModels,
   resolveModel,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/models";
 import type {
   AgentModelInfo,
   AgentModelRef,
-  AgentSessionDefaults,
   ListModelsOptions,
-} from "@chia/agent-runtime";
+} from "@chia/agent-runtime/models";
+import type { AgentSessionDefaults } from "@chia/agent-runtime/types";
 
 /**
  * Which models the *writing* agent may use.

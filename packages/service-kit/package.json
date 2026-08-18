@@ -5,21 +5,61 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./context": {
       "types": "./src/context.ts",
       "default": "./src/context.ts"
+    },
+    "./hono": {
+      "types": "./src/hono.ts",
+      "default": "./src/hono.ts"
     },
     "./errors": {
       "types": "./src/errors.ts",
       "default": "./src/errors.ts"
     },
-    "./policies": {
-      "types": "./src/policies/index.ts",
-      "default": "./src/policies/index.ts"
+    "./bootstrap": {
+      "types": "./src/bootstrap.ts",
+      "default": "./src/bootstrap.ts"
+    },
+    "./middlewares/maintenance": {
+      "types": "./src/middlewares/maintenance.ts",
+      "default": "./src/middlewares/maintenance.ts"
+    },
+    "./middlewares/body-limit": {
+      "types": "./src/middlewares/body-limit.ts",
+      "default": "./src/middlewares/body-limit.ts"
+    },
+    "./policies/types": {
+      "types": "./src/policies/types.ts",
+      "default": "./src/policies/types.ts"
+    },
+    "./policies/session.policy": {
+      "types": "./src/policies/session.policy.ts",
+      "default": "./src/policies/session.policy.ts"
+    },
+    "./policies/admin.policy": {
+      "types": "./src/policies/admin.policy.ts",
+      "default": "./src/policies/admin.policy.ts"
+    },
+    "./policies/caller.policy": {
+      "types": "./src/policies/caller.policy.ts",
+      "default": "./src/policies/caller.policy.ts"
+    },
+    "./policies/apikey.policy": {
+      "types": "./src/policies/apikey.policy.ts",
+      "default": "./src/policies/apikey.policy.ts"
+    },
+    "./policies/captcha.policy": {
+      "types": "./src/policies/captcha.policy.ts",
+      "default": "./src/policies/captcha.policy.ts"
+    },
+    "./policies/rate-limit.policy": {
+      "types": "./src/policies/rate-limit.policy.ts",
+      "default": "./src/policies/rate-limit.policy.ts"
+    },
+    "./policies/ai-key.policy": {
+      "types": "./src/policies/ai-key.policy.ts",
+      "default": "./src/policies/ai-key.policy.ts"
     },
     "./adapters/hono": {
       "types": "./src/adapters/hono.ts",
@@ -28,10 +68,6 @@
     "./adapters/orpc": {
       "types": "./src/adapters/orpc.ts",
       "default": "./src/adapters/orpc.ts"
-    },
-    "./bootstrap": {
-      "types": "./src/bootstrap.ts",
-      "default": "./src/bootstrap.ts"
     }
   },
   "scripts": {

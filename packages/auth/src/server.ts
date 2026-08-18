@@ -1,9 +1,9 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import * as schemas from "@chia/db/schema";
-import type { Keyv } from "@chia/kv";
+import type { Keyv } from "@chia/kv/types";
 import { IS_PRODUCTION } from "@chia/utils/config";
 
 import { baseAuthConfig } from "./base-auth";

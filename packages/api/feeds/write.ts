@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 
 import GithubSlugger from "github-slugger";
 
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import {
   createFeed,
   updateFeed,

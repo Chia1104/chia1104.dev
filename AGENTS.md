@@ -65,6 +65,7 @@ Filter a single workspace with `pnpm turbo run <task> --filter <name>...`. Prefe
 
 - **Dependency versions live in the pnpm catalogs** in `pnpm-workspace.yaml` (`catalog:`, `catalog:ai`, `catalog:orpc`, …). Add a version there and reference the catalog — never pin a version inline in a package.json. Internal packages use `workspace:*` (enforced by manypkg).
 - **Package exports are source, not build output.** `@chia/*` packages export `./src/...ts` directly and are transpiled by the consumer. Adding a new entry point means adding it to that package's `exports` map.
+- **Every export is a path; no package has a root (`.`) entry and no barrel re-exports it.** One `exports` key per module, mirroring its path under `src/`, so an import names the module it actually needs. Do not add an `index.ts` that only re-exports siblings — the one aggregate that survives is `@chia/db/schema` (`src/schemas/schema.ts`), because Drizzle and Better Auth need the whole schema as one namespace.
 - **Env is validated with `@t3-oss/env-*`**, one `env.ts` per app/package, composed with `extends: [...]`. Add a variable to the owning package's schema, not to a consumer. Turbo needs new global vars listed in `turbo.json` `globalEnv`/`globalPassThroughEnv`.
 - **Lint/format is oxlint + oxfmt**, not ESLint/Prettier. Husky + lint-staged runs oxfmt on commit.
 - **Tests** are Vitest (`__tests__/` or `*.test.ts` beside source), configured per workspace and aggregated by the root `vitest.config.ts`. E2E is Playwright in `tests/www-e2e`.

@@ -3,7 +3,7 @@ import type {
   PostSearchHit,
   PostSnapshot,
   TagItem,
-} from "@chia/agent-content";
+} from "@chia/agent-content/types";
 
 import type { ContentPort } from "../src/ports.ts";
 import type {

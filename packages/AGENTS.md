@@ -2,7 +2,7 @@
 
 Read the root [`AGENTS.md`](../AGENTS.md) first for the engineering rules, commands and conventions. This file describes the shared packages and the architecture they implement. The deployables are described in [`apps/AGENTS.md`](../apps/AGENTS.md).
 
-Every package is `@chia/<name>`, depends on siblings with `workspace:*`, and **exports source, not build output** — `exports` maps point at `./src/...ts` and the consumer transpiles. Adding an entry point means adding it to that package's `exports` map. Env is validated per package with `@t3-oss/env-core` in an `env.ts` the apps compose via `extends`.
+Every package is `@chia/<name>`, depends on siblings with `workspace:*`, and **exports source, not build output** — `exports` maps point at `./src/...ts` and the consumer transpiles. Adding an entry point means adding it to that package's `exports` map. There are no root (`.`) entries and no barrel modules: each key maps one module at the path it lives at under `src/`, so `@chia/service-kit/policies/caller.policy` rather than a `policies` index. The single aggregate left is `@chia/db/schema`, which Drizzle and Better Auth need as one namespace. Env is validated per package with `@t3-oss/env-core` in an `env.ts` the apps compose via `extends`.
 
 ## API architecture
 
@@ -37,15 +37,15 @@ What every service app boots with. `bootstrap.ts` — `createServiceFactory()` (
 
 ### `db`
 
-Drizzle 1.0 on Postgres. `src/schemas/` — tables and relations; `src/libs/` — repositories, exported as `./repos/<domain>` (`feeds`, `resources/*`, `users`, `organization`, `apikey`, `spotify`, `agent`). `src/client.ts` — `connectDatabase(env, { withCache })`, memoized per URL **and** cache setting; the request path uses the `DrizzleCache` (Redis, explicit `$withCache` only), workflow steps ask for `withCache: false`. `src/types.ts` — pure enums (`Locale`, `FeedType`, `Role`, …) safe to import anywhere. Migrations in `.drizzle/`.
+Drizzle 1.0 on Postgres. `src/schemas/` — tables and relations, aggregated by `schema.ts` (`./schema`) for Drizzle and Better Auth; `src/libs/` — repositories, exported as `./repos/<domain>` (`feeds`, `resources/*`, `users`, `organization`, `apikey`, `spotify`, `agent`). `src/client.ts` — `connectDatabase(env, { withCache })`, memoized per URL **and** cache setting; the request path uses the `DrizzleCache` (Redis, explicit `$withCache` only), workflow steps ask for `withCache: false`. `src/types.ts` — pure enums (`Locale`, `FeedType`, `Role`, …) safe to import anywhere. Migrations in `.drizzle/`.
 
 ### `auth`
 
-Better Auth. `base-auth.ts` — the options (magic link, passkey, API key, admin, organization plugins; `resend` and the email template are imported lazily). `index.ts` — `createAuth(db, kv)`, memoized to one instance per process. `client.ts` / `client.rsc.ts` — the browser and RSC clients; `utils.ts` — cookie helpers and the `X-CH-API-KEY` header name.
+Better Auth. `base-auth.ts` — the options (magic link, passkey, API key, admin, organization plugins; `resend` and the email template are imported lazily). `server.ts` — `createAuth(db, kv)`, memoized to one instance per process. `client.ts` / `client.rsc.ts` — the browser and RSC clients; `utils.ts` — cookie helpers and the `X-CH-API-KEY` header name.
 
 ### `kv`
 
-Keyv over Redis (also Valkey, Postgres, Upstash adapters). `kv` is the process singleton the request context carries; `drizzle/cache.ts` is the `DrizzleCache` `db` plugs in; `upstash/with-rate-limiter` wraps Upstash's limiter.
+Keyv over Redis (also Valkey, Postgres, Upstash adapters). `adapters/redis.ts` exposes `getRedisKv()`, the memoized singleton the request context carries; `drizzle/cache.ts` is the `DrizzleCache` `db` plugs in; `upstash/with-rate-limiter` wraps Upstash's limiter.
 
 ### `ai`
 
@@ -53,7 +53,7 @@ Embeddings (`embeddings/`: provider resolution, OpenAI + Ollama, chunking, markd
 
 ### `agent-runtime`, `agent-content` and `agent-writing`
 
-`agent-runtime` — the kind-agnostic agent runtime on top of Pi: session model and Postgres storage (`session/`), the turn loop, tool gate, compaction and event mapping (`pi/`), wire events and replay (`wire/`), model construction with BYOK credentials (`models.ts`), tool-authoring helpers (`tools.ts`, exported as `./tools`), and the TanStack AI transport. The package root is server-only (it loads Pi and the provider SDKs); browsers and SSR bundles import the wire contract and view model from `./events`, which has no Pi dependency. `agent-content` — the read-only content tools every kind that reads the blog shares (`search_posts`, `get_post`, `list_posts`, `list_tags`), the `ContentReadPort` they need and their names/labels/summaries; visibility (drafts or published only) is fixed by whichever port the host builds. `agent-writing` — the writing agent: `fetch_url` and the draft/commit tools on top of the content tools, prompts, skills, policy (tool tiers), draft store, model allowlist and its `ContentPort` (the read port plus fetch and writes). A second agent kind is a sibling package of `agent-writing` that composes `agent-content`. Read `docs/agent-architecture.md` first.
+`agent-runtime` — the kind-agnostic agent runtime on top of Pi: session model and Postgres storage (`session/`), the turn loop, tool gate, compaction and event mapping (`pi/`), wire events and replay (`wire/`), model construction with BYOK credentials (`models.ts`), tool-authoring helpers (`tools.ts`, exported as `./tools`), and the TanStack AI transport. `./pi/*`, `./session/*` and `./models` are server-only (they load Pi and the provider SDKs); browsers and SSR bundles import `./wire/schema` and `./wire/fold`, which have no Pi dependency. `./wire/replay` is the exception — it classifies provider errors and so needs pi-ai. `agent-content` — the read-only content tools every kind that reads the blog shares (`search_posts`, `get_post`, `list_posts`, `list_tags`), the `ContentReadPort` they need and their names/labels/summaries; visibility (drafts or published only) is fixed by whichever port the host builds. `agent-writing` — the writing agent: `fetch_url` and the draft/commit tools on top of the content tools, prompts, skills, policy (tool tiers), draft store, model allowlist and its `ContentPort` (the read port plus fetch and writes). A second agent kind is a sibling package of `agent-writing` that composes `agent-content`. Read `docs/agent-architecture.md` first.
 
 ### `contents`
 

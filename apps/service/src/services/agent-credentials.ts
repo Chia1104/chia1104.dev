@@ -1,6 +1,6 @@
 import { parse } from "hono/utils/cookie";
 
-import type { AgentCredentials } from "@chia/agent-runtime";
+import type { AgentCredentials } from "@chia/agent-runtime/models";
 import { ANTHROPIC_API_KEY, OPENAI_API_KEY } from "@chia/ai/constants";
 import { verifyApiKey } from "@chia/ai/utils";
 

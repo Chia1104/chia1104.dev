@@ -1,7 +1,7 @@
 import { createInsertSchema } from "drizzle-orm/zod";
 import * as z from "zod";
 
-import { user } from "../../schemas";
+import { user } from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
 
 import { baseInfiniteSchema as baseInfiniteSchemaShared } from "./shared";

@@ -5,10 +5,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./content-context": {
       "types": "./src/content.context.ts",
       "default": "./src/content.context.ts"

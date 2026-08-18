@@ -1,4 +1,4 @@
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import type {
   ResourceChunkInput,
   ResourceRef,

@@ -3,9 +3,9 @@ import { eq } from "drizzle-orm";
 
 import dayjs from "@chia/utils/day";
 
-import { parseCursorForOrder, sliceNextCursor, withDTO } from "../";
-import { schema } from "../..";
+import * as schema from "../../schemas/schema.ts";
 import { FeedOrderBy } from "../../types";
+import { parseCursorForOrder, sliceNextCursor, withDTO } from "../index.ts";
 import type { InfiniteDTO } from "../validator/apikey";
 
 const APIKEY_DATE_ORDER_BY = new Set([FeedOrderBy.CreatedAt]);

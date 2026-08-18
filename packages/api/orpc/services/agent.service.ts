@@ -1,9 +1,12 @@
-import type { AgentWireEvent } from "@chia/agent-runtime/events";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { JsonObject } from "@chia/db/json";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
 import { AppError } from "@chia/service-kit/errors";
-import type { Caller, CallerTier } from "@chia/service-kit/policies";
+import type {
+  Caller,
+  CallerTier,
+} from "@chia/service-kit/policies/caller.policy";
 
 import type * as agentContracts from "../contracts/agent.contract";
 import type { BaseOSContext } from "../utils";

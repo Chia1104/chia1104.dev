@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { Session } from "@chia/auth/types";
-import type { Caller } from "@chia/service-kit/policies";
-import { CallerTier } from "@chia/service-kit/policies";
+import type { Caller } from "@chia/service-kit/policies/caller.policy";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import { resolveFeedLimit, resolveFeedVisibility } from "../feeds/access";
 

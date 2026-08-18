@@ -5,7 +5,7 @@ const { mockGetSession } = vi.hoisted(() => ({
 // Deliberately NOT using the pass-through guard mocks — this test exists because the
 // session requirement on the model-selectable search was once dropped in a migration.
 // It asserts the requirement is still there.
-vi.mock("@chia/auth", () => ({
+vi.mock("@chia/auth/server", () => ({
   createAuth: () => ({ api: { getSession: mockGetSession } }),
 }));
 

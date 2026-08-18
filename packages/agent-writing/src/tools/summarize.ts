@@ -1,4 +1,4 @@
-import { summarizeContentToolResult } from "@chia/agent-content";
+import { summarizeContentToolResult } from "@chia/agent-content/tools/summarize";
 import {
   asArray,
   asNumber,

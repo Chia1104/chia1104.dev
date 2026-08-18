@@ -12,7 +12,7 @@ import {
 } from "@chia/db/repos/feeds";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import { isAppError } from "@chia/service-kit/errors";
-import { CallerTier } from "@chia/service-kit/policies";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
   resolveFeedLimit,

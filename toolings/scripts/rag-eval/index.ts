@@ -7,8 +7,8 @@ import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
 import { searchFeedsService } from "@chia/api/feeds/search";
 import type { SearchFeedsProvider } from "@chia/api/feeds/search";
-import { schema } from "@chia/db";
 import { connectDatabase, getConnection } from "@chia/db/client";
+import * as schema from "@chia/db/schema";
 
 import { GOLDEN_QUERIES } from "./golden-queries.ts";
 import type { GoldenQuery, GoldenQueryKind } from "./golden-queries.ts";

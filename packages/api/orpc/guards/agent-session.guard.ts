@@ -1,8 +1,8 @@
 import { os } from "@orpc/server";
 
-import type { DB } from "@chia/db";
+import type { DB } from "@chia/db/client";
 import { getAgentSession } from "@chia/db/repos/agent";
-import { CallerTier } from "@chia/service-kit/policies";
+import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import { requireAgentKind } from "../services/agent.service";
 import type {
