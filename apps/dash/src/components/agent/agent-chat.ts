@@ -14,7 +14,7 @@ export interface ApprovalContinuation {
   approved: boolean;
 }
 
-const jsonOf = (value: unknown): string => {
+const jsonOf = <TValue>(value: TValue): string => {
   try {
     return JSON.stringify(value) ?? "";
   } catch {
@@ -55,15 +55,11 @@ const toolMessage = (
         arguments: jsonOf(tool.args),
         input: tool.args,
         state,
-        ...(state === "approval-requested"
-          ? {
-              approval: {
-                id: tool.toolCallId,
-                needsApproval: true,
-              },
-            }
-          : {}),
-        ...(output === undefined ? {} : { output }),
+        approval:
+          state === "approval-requested"
+            ? { id: tool.toolCallId, needsApproval: true }
+            : undefined,
+        output,
       },
     ],
   };

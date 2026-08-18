@@ -33,9 +33,14 @@ const { icu, simple } = tokenizer;
  * resolves.
  */
 type ParadedbIndexArgs = Parameters<ReturnType<typeof paradedbIndex>["on"]>;
-const pdbKeyField = (column: unknown) => column as ParadedbIndexArgs[0];
-const pdbField = (column: unknown) => column as ParadedbIndexArgs[1];
-const pdbTokenized = (column: unknown) =>
+const pdbKeyField = <TColumn>(column: TColumn) =>
+  // SAFETY: ParadeDB accepts the same Drizzle column at runtime across duplicated type instances.
+  column as ParadedbIndexArgs[0];
+const pdbField = <TColumn>(column: TColumn) =>
+  // SAFETY: ParadeDB accepts the same Drizzle column at runtime across duplicated type instances.
+  column as ParadedbIndexArgs[1];
+const pdbTokenized = <TColumn>(column: TColumn) =>
+  // SAFETY: ParadeDB accepts the same Drizzle column at runtime across duplicated type instances.
   column as Parameters<typeof paradedbField>[0];
 
 /** Every source column that can own a chunk. Add one per new resource type. */

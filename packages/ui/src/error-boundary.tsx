@@ -56,7 +56,7 @@ export class ErrorBoundary<TError extends Error> extends Component<
       return (
         <>
           {this.props.errorElement ? (
-            typeof this.props.errorElement === "function" ? (
+            this.props.errorElement instanceof Function ? (
               this.props.errorElement({
                 error: this.state.error,
                 errorMessage: this.props.errorMessage,

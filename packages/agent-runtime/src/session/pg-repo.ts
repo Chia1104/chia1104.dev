@@ -13,6 +13,7 @@ import type {
 } from "@earendil-works/pi-agent-core";
 
 import type { DB } from "@chia/db";
+import type { JsonObject } from "@chia/db/json";
 import {
   createAgentSession,
   getAgentSession,
@@ -35,7 +36,7 @@ export interface PgSessionCreateOptions extends SessionCreateOptions {
   userId: string;
   title?: string;
   settings?: Partial<AgentSessionSettings>;
-  runtimeConfig?: Record<string, unknown>;
+  runtimeConfig?: JsonObject;
   configVersion?: number;
 }
 
@@ -209,7 +210,7 @@ export const writeSessionSettings = async (
   sessionId: string,
   patch: Partial<AgentSessionSettings> & {
     title?: string;
-    runtimeConfig?: Record<string, unknown>;
+    runtimeConfig?: JsonObject;
   }
 ): Promise<void> => {
   await updateAgentSession(db, sessionId, {
@@ -237,8 +238,10 @@ const settingsFromRow = (row: {
   return {
     providerId: row.providerId,
     modelId: row.modelId,
-    thinkingLevel: row.thinkingLevel as ThinkingLevel,
+    thinkingLevel:
+      /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
     activeToolNames: row.activeToolNames,
-    autoApprove: row.autoApprove as ToolTier[],
+    autoApprove:
+      /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
   };
 };

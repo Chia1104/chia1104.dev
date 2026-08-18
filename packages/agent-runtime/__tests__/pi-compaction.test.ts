@@ -20,9 +20,9 @@ const usage = (totalTokens: number): Usage => ({
 });
 
 let seq = 0;
-const entry = (message: unknown): SessionTreeEntry => {
+const entry = <TMessage>(message: TMessage): SessionTreeEntry => {
   seq += 1;
-  return {
+  return /* SAFETY: This fixture implements the SessionTreeEntry members exercised by this case. */ {
     type: "message",
     id: `e${seq}`,
     parentId: seq === 1 ? null : `e${seq - 1}`,
@@ -38,12 +38,12 @@ const assistantEntry = (text: string, totalTokens?: number) =>
     role: "assistant",
     content: [{ type: "text", text }],
     stopReason: "stop",
-    ...(totalTokens === undefined ? {} : { usage: usage(totalTokens) }),
+    usage: totalTokens === undefined ? undefined : usage(totalTokens),
   });
 
 const compactionEntry = (): SessionTreeEntry => {
   seq += 1;
-  return {
+  return /* SAFETY: This fixture implements the SessionTreeEntry members exercised by this case. */ {
     type: "compaction",
     id: `e${seq}`,
     parentId: `e${seq - 1}`,

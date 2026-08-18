@@ -86,7 +86,7 @@ export interface ThemeState {
   dark: ThemeConfig;
 }
 
-export const COLOR_CSS_VAR_MAP: Record<keyof ThemeColors, string> = {
+export const COLOR_CSS_VAR_MAP = {
   background: "--background",
   foreground: "--foreground",
   card: "--card",
@@ -138,16 +138,16 @@ export const COLOR_CSS_VAR_MAP: Record<keyof ThemeColors, string> = {
   surfaceForeground: "--surface-foreground",
   warning: "--warning",
   warningForeground: "--warning-foreground",
-};
+} satisfies Record<keyof ThemeColors, string>;
 
-export const LAYOUT_CSS_VAR_MAP: Record<keyof ThemeLayout, string> = {
+export const LAYOUT_CSS_VAR_MAP = {
   radius: "--radius",
   fieldRadius: "--field-radius",
-};
+} satisfies Record<keyof ThemeLayout, string>;
 
-export const TYPOGRAPHY_CSS_VAR_MAP: Record<keyof ThemeTypography, string> = {
+export const TYPOGRAPHY_CSS_VAR_MAP = {
   fontSans: "--font-sans",
-};
+} satisfies Record<keyof ThemeTypography, string>;
 
 const emptyThemeConfig: ThemeConfig = {
   colors: {},

@@ -1,7 +1,7 @@
 "use client";
 
-import type { KeyboardEvent, Dispatch, DependencyList } from "react";
-import { useState, useEffect } from "react";
+import type { KeyboardEvent, Dispatch } from "react";
+import { useState, useEffect, useEffectEvent } from "react";
 
 import type { DialogProps } from "@radix-ui/react-dialog";
 import type { ClassValue } from "clsx";
@@ -17,17 +17,19 @@ export const useCMD = (
   options?: {
     cmd?: string;
     onKeyDown?: (e: KeyboardEvent) => void;
-  },
-  deps?: DependencyList
+  }
 ): [boolean, Dispatch<boolean>] => {
   const cmd = options?.cmd ?? "k";
   const [open, setOpen] = useState(defaultOpen);
+  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    options?.onKeyDown?.(event);
+  });
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === cmd && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
-        options?.onKeyDown?.(e);
+        onKeyDown(e);
       }
     };
 
@@ -35,7 +37,7 @@ export const useCMD = (
     document.addEventListener("keydown", down);
     // @ts-expect-error - are we cool?
     return () => document.removeEventListener("keydown", down);
-  }, deps ?? []);
+  }, [cmd]);
   return [open, setOpen];
 };
 

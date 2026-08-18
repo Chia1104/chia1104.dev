@@ -17,7 +17,11 @@ export interface AgentPolicy {
   labelOf: (toolName: string) => string;
   requiresApproval: (tier: ToolTier) => boolean;
   changesState?: (tier: ToolTier) => boolean;
-  summarize: (toolName: string, result: unknown, isError: boolean) => string;
+  summarize: <TResult>(
+    toolName: string,
+    result: TResult,
+    isError: boolean
+  ) => string;
   stateScope?: string;
 }
 
@@ -25,7 +29,11 @@ export interface AgentPolicy {
 export interface AgentEventPresentation {
   tierOf: (toolName: string) => ToolTier;
   labelOf: (toolName: string) => string;
-  summarize: (toolName: string, result: unknown, isError: boolean) => string;
+  summarize: <TResult>(
+    toolName: string,
+    result: TResult,
+    isError: boolean
+  ) => string;
 }
 
 export type AgentTool<TContext extends object> = AgentHarnessTool<TContext>;

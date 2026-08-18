@@ -19,6 +19,22 @@ export const DETAILS_MAX_TOTAL_CHARS = 64_000;
 
 const OMITTED = "[…]";
 
+type DetailValue =
+  | string
+  | number
+  | boolean
+  | null
+  | DetailValue[]
+  | DetailObject;
+
+interface DetailObject {
+  [key: string]: DetailValue;
+}
+
+const detailSchema = z.json();
+const detailRecordSchema = z.record(z.string(), detailSchema);
+const primitiveDetailSchema = z.union([z.number(), z.boolean(), z.null()]);
+
 const createClipper = () => {
   let remaining = DETAILS_MAX_TOTAL_CHARS;
 
@@ -36,13 +52,15 @@ const createClipper = () => {
     return `${value.slice(0, kept)}… [truncated ${value.length - kept} chars]`;
   };
 
-  const clipValue = (value: unknown, depth: number): unknown => {
-    if (typeof value === "string") return clipString(value);
-    if (typeof value !== "object" || value === null) return value;
+  const clipValue = (value: DetailValue, depth: number): DetailValue => {
+    const stringValue = z.string().safeParse(value).data;
+    if (stringValue !== undefined) return clipString(stringValue);
+    const primitive = primitiveDetailSchema.safeParse(value).data;
+    if (primitive !== undefined) return primitive;
     if (depth >= DETAILS_MAX_DEPTH || remaining <= 0) return OMITTED;
 
     if (Array.isArray(value)) {
-      const items: unknown[] = [];
+      const items: DetailValue[] = [];
       let index = 0;
       for (
         ;
@@ -50,7 +68,8 @@ const createClipper = () => {
         index += 1
       ) {
         if (remaining <= 0) break;
-        items.push(clipValue(value[index], depth + 1));
+        const item = value[index];
+        if (item !== undefined) items.push(clipValue(item, depth + 1));
       }
       if (index < value.length) {
         items.push(`… [${value.length - index} more items]`);
@@ -58,8 +77,10 @@ const createClipper = () => {
       return items;
     }
 
-    const entries = Object.entries(value as Record<string, unknown>);
-    const kept: Record<string, unknown> = {};
+    const record = detailRecordSchema.safeParse(value).data;
+    if (!record) return OMITTED;
+    const entries = Object.entries(record);
+    const kept: DetailObject = {};
     let index = 0;
     for (
       ;
@@ -81,5 +102,11 @@ const createClipper = () => {
   return clipValue;
 };
 
-export const clipDetails = (details: unknown): unknown =>
-  details === undefined ? undefined : createClipper()(details, 0);
+export const clipDetails = <TDetails>(
+  details: TDetails
+): DetailValue | undefined => {
+  if (details === undefined) return undefined;
+  const parsed = detailSchema.safeParse(details);
+  return parsed.success ? createClipper()(parsed.data, 0) : String(details);
+};
+import * as z from "zod";

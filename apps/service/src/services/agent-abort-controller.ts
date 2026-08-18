@@ -1,5 +1,7 @@
 import { getRun, start } from "workflow/api";
 
+import type { JsonObject } from "@chia/db/json";
+
 import type { AgentAbortMessage } from "../steps/agent-abort.step";
 import { agentAbortWorkflow } from "../workflows/agent-abort.workflow";
 import {
@@ -23,7 +25,7 @@ export type { AgentAbortControllerRef };
 export const AGENT_ABORT_CONTROLLER_KEY = "abortController";
 
 export const readAgentAbortControllerRef = (
-  metadata: Record<string, unknown>
+  metadata: JsonObject
 ): AgentAbortControllerRef | undefined => {
   const parsed = agentAbortControllerRefSchema.safeParse(
     metadata[AGENT_ABORT_CONTROLLER_KEY]
@@ -46,9 +48,7 @@ export const startAgentAbortController =
  * ends: the subscription is a live read on a durable stream and would otherwise stay open until
  * the controller closes.
  */
-export const subscribeAgentAbort = (
-  controllerRunId: string
-): { signal: AbortSignal; dispose: () => void } => {
+export const subscribeAgentAbort = (controllerRunId: string) => {
   const controller = new AbortController();
   const reader = getRun(controllerRunId)
     .getReadable<AgentAbortMessage>()

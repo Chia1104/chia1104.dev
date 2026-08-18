@@ -134,7 +134,9 @@ export const createAgentContentPort = (
       // Built with an explicit loop rather than `Object.entries().map()`: the draft's translation
       // map is a `Partial<Record<Locale, …>>`, and entries-then-fromEntries loses the key type.
       const translations: Record<string, TranslationPayload> = {};
-      for (const locale of Object.keys(input.translations) as Locale[]) {
+      for (const locale of /* SAFETY: The producer contract guarantees this value satisfies Locale[]. */ Object.keys(
+        input.translations
+      ) as Locale[]) {
         const translation = input.translations[locale];
         if (!translation) continue;
         translations[locale] = {
@@ -142,9 +144,10 @@ export const createAgentContentPort = (
           excerpt: translation.excerpt ?? null,
           description: translation.description ?? null,
           summary: translation.summary ?? null,
-          ...(translation.content === undefined
-            ? {}
-            : { content: { content: translation.content } }),
+          content:
+            translation.content === undefined
+              ? undefined
+              : { content: translation.content },
         };
       }
 

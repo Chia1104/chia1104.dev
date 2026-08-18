@@ -27,7 +27,9 @@ export function ThemeVarsSync() {
     const colors = themeState[resolvedMode]?.colors;
     const root = document.documentElement;
 
-    (Object.keys(COLOR_CSS_VAR_MAP) as (keyof ThemeColors)[]).forEach((key) => {
+    /* SAFETY: The producer contract guarantees this value satisfies (keyof ThemeColors)[]. */ (
+      Object.keys(COLOR_CSS_VAR_MAP) as (keyof ThemeColors)[]
+    ).forEach((key) => {
       const value = colors?.[key];
       const cssVar = COLOR_CSS_VAR_MAP[key];
       if (value) {

@@ -128,7 +128,9 @@ export const handleKyError = async <TError extends HTTPError>(
       const { response } = error;
       if (response?.body) {
         try {
-          return (await error.response.clone().json()) as ErrorResponse;
+          return /* SAFETY: The producer contract guarantees this value satisfies ErrorResponse. */ (await error.response
+            .clone()
+            .json()) as ErrorResponse;
         } catch (err) {
           console.error(err);
           return {

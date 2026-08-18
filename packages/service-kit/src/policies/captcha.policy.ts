@@ -60,8 +60,8 @@ export const captchaPolicy = (options: CaptchaPolicyOptions): Policy => {
       }
     } catch (error) {
       const code =
-        error && typeof error === "object" && "code" in error
-          ? String((error as { code: unknown }).code)
+        error instanceof Error && "code" in error
+          ? String(error.code)
           : undefined;
 
       console.error("Captcha error: ", { error: code, response: error });

@@ -89,6 +89,7 @@ export const buildSystemPrompt = (input: SystemPromptInput): string => {
  * model otherwise has no anchor for "today", "latest" or a publish date.
  */
 export const buildTurnContext = (input: TurnContextInput): string => {
+  // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
   const locales = Object.keys(input.draft.translations) as Locale[];
   const lines: string[] = ["# Current session"];
 

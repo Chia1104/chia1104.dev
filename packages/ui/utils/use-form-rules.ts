@@ -54,7 +54,7 @@ export const useFormRules = () => {
       /**
        * dayjs 實例
        */
-      dayjs: z.instanceof(dayjs as unknown as typeof dayjs.Dayjs, {
+      dayjs: z.custom<dayjs.Dayjs>((value) => dayjs.isDayjs(value), {
         error: messages.primitive.invalid_type_error,
       }),
       /**

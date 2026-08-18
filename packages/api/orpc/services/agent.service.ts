@@ -1,4 +1,5 @@
 import type { AgentWireEvent } from "@chia/agent-runtime/events";
+import type { JsonObject } from "@chia/db/json";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
 import { AppError } from "@chia/service-kit/errors";
@@ -74,7 +75,7 @@ export interface AgentKindService {
       model?: AgentModelRef;
       thinkingLevel?: string;
       autoApprove?: string[];
-      runtimeConfig?: Record<string, unknown>;
+      runtimeConfig?: JsonObject;
     }
   ): Promise<agentContracts.AgentSessionDetail>;
 
@@ -97,7 +98,7 @@ export interface AgentKindService {
       thinkingLevel?: string;
       activeToolNames?: string[] | null;
       autoApprove?: string[];
-      runtimeConfig?: Record<string, unknown>;
+      runtimeConfig?: JsonObject;
     }
   ): Promise<agentContracts.AgentSessionDetail | null>;
 

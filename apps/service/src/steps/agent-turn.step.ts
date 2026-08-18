@@ -1,5 +1,6 @@
 import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
 import { getRun } from "workflow/api";
+import * as z from "zod";
 
 import type {
   AgentTurnError,
@@ -9,6 +10,7 @@ import type {
 } from "@chia/agent-runtime";
 import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
+import type { JsonObject } from "@chia/db/json";
 import {
   completeActiveAgentRuns,
   getAgentSession,
@@ -67,7 +69,7 @@ const DELTA_FLUSH_MS = 80;
  */
 export const AGENT_TURN_KEY = "turn";
 
-export interface AgentTurnMarker {
+export interface AgentTurnMarker extends JsonObject {
   /** Active leaf before this turn appended anything; `null` for an empty session. */
   leafEntryId: string | null;
   /** First coarse stream index this turn writes to. */
@@ -75,22 +77,14 @@ export interface AgentTurnMarker {
   running: boolean;
 }
 
-export const readAgentTurnMarker = (
-  metadata: Record<string, unknown>
-): AgentTurnMarker | undefined => {
-  const value = metadata[AGENT_TURN_KEY];
-  if (typeof value !== "object" || value === null) return undefined;
-  const { leafEntryId, streamIndex, running } = value as Record<
-    string,
-    unknown
-  >;
-  if (typeof streamIndex !== "number") return undefined;
-  return {
-    leafEntryId: typeof leafEntryId === "string" ? leafEntryId : null,
-    streamIndex,
-    running: running === true,
-  };
-};
+const agentTurnMarkerSchema = z.object({
+  leafEntryId: z.string().nullable(),
+  streamIndex: z.number(),
+  running: z.boolean(),
+});
+
+export const readAgentTurnMarker = (metadata: JsonObject) =>
+  agentTurnMarkerSchema.safeParse(metadata[AGENT_TURN_KEY]).data;
 
 // ============================================
 // Step contract
@@ -115,7 +109,7 @@ export interface AgentTurnRequest {
 export interface AgentApprovalRequestSnapshot {
   toolCallId: string;
   toolName: string;
-  args?: Record<string, unknown>;
+  args?: JsonObject;
 }
 
 export interface AgentTurnOutcome {
@@ -154,7 +148,7 @@ export const runAgentTurnStep = async (
     );
   }
 
-  const handler = AGENT_TURN_HANDLERS[row.kind];
+  const handler = AGENT_TURN_HANDLERS.get(row.kind);
   if (!handler) {
     throw new FatalError(
       `No turn handler registered for agent kind "${row.kind}".`
@@ -199,9 +193,9 @@ export const runAgentTurnStep = async (
  * matched against `agent_session.kind`, which is a database string either way; the handler asserts
  * the constant once its domain module is loaded.
  */
-const AGENT_TURN_HANDLERS: Readonly<Record<string, AgentTurnHandler>> = {
-  writing: runWritingAgentTurn,
-};
+const AGENT_TURN_HANDLERS = new Map<string, AgentTurnHandler>([
+  ["writing", runWritingAgentTurn],
+]);
 
 async function runWritingAgentTurn(
   db: DB,
@@ -277,9 +271,11 @@ async function runWritingAgentTurn(
     settings: {
       providerId: row.providerId,
       modelId: row.modelId,
-      thinkingLevel: row.thinkingLevel as ThinkingLevel,
+      thinkingLevel:
+        /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
       activeToolNames: row.activeToolNames,
-      autoApprove: row.autoApprove as ToolTier[],
+      autoApprove:
+        /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
     },
     agentSessionId: request.sessionId,
     targetFeedId: writingState.targetFeedId ?? undefined,
@@ -296,7 +292,8 @@ async function runWritingAgentTurn(
     toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
-      args: approval.args as Record<string, unknown> | undefined,
+      // SAFETY: tool arguments passed their registered TypeBox schema before execution.
+      args: approval.args as JsonObject | undefined,
     }),
     persistApprovals: async (approvals) => {
       await recordAgentApprovalRequests(

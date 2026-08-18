@@ -148,7 +148,10 @@ const collectCleanEdits = (nodes: RootContent[], edits: SourceEdit[]): void => {
       }
       default:
         if ("children" in node) {
-          collectCleanEdits(node.children as RootContent[], edits);
+          collectCleanEdits(
+            /* SAFETY: The producer contract guarantees this value satisfies RootContent[]. */ node.children as RootContent[],
+            edits
+          );
         }
     }
   }
@@ -209,7 +212,11 @@ const walkHeadings = (
     if (node.type === "heading") {
       visit(node, parser.toString(node).trim());
     } else if ("children" in node && node.type !== "mdxJsxTextElement") {
-      walkHeadings(node.children as RootContent[], parser, visit);
+      walkHeadings(
+        /* SAFETY: The producer contract guarantees this value satisfies RootContent[]. */ node.children as RootContent[],
+        parser,
+        visit
+      );
     }
   }
 };
@@ -359,7 +366,11 @@ const collectPlainText = (
         parts.push(text);
       }
     } else if ("children" in node) {
-      collectPlainText(node.children as RootContent[], parser, parts);
+      collectPlainText(
+        /* SAFETY: The producer contract guarantees this value satisfies RootContent[]. */ node.children as RootContent[],
+        parser,
+        parts
+      );
     }
   }
 };

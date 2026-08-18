@@ -17,8 +17,7 @@ import {
 // Infinite Query Schema
 // ============================================
 
-export const baseInfiniteSchema = z.object({
-  ...baseInfiniteSchemaShared.shape,
+export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z.enum(FeedOrderBy).optional().default(FeedOrderBy.UpdatedAt),
   type: z.enum(FeedType).optional(),
   withContent: z.boolean().optional().default(false),
@@ -39,28 +38,26 @@ export type InfiniteDTO = z.infer<typeof infiniteSchema>;
 // Feed Schema
 // ============================================
 
-const internal_dateSchema = z.object({
+const internalDateFields = {
   createdAt: dateSchema.optional(),
   updatedAt: dateSchema.optional(),
-});
+};
 
-export const insertFeedSchema = z.object({
-  ...createInsertSchema(feeds).omit({
+export const insertFeedSchema = createInsertSchema(feeds)
+  .omit({
     id: true,
     createdAt: true,
     updatedAt: true,
-  }).shape,
-  ...internal_dateSchema.shape,
-});
+  })
+  .extend(internalDateFields);
 
-export const updateFeedSchema = z.object({
-  ...createUpdateSchema(feeds).omit({
+export const updateFeedSchema = createUpdateSchema(feeds)
+  .omit({
     id: true,
     createdAt: true,
     updatedAt: true,
-  }).shape,
-  ...internal_dateSchema.shape,
-});
+  })
+  .extend(internalDateFields);
 
 export type InsertFeedDTO = z.infer<typeof insertFeedSchema>;
 export type UpdateFeedDTO = z.infer<typeof updateFeedSchema>;
@@ -82,15 +79,13 @@ const internalTranslationColumns = {
   deleted: true,
 } as const;
 
-export const insertFeedTranslationSchema = z.object({
-  ...createInsertSchema(feedTranslations).omit(internalTranslationColumns)
-    .shape,
-});
+export const insertFeedTranslationSchema = createInsertSchema(
+  feedTranslations
+).omit(internalTranslationColumns);
 
-export const updateFeedTranslationSchema = z.object({
-  ...createUpdateSchema(feedTranslations).omit(internalTranslationColumns)
-    .shape,
-});
+export const updateFeedTranslationSchema = createUpdateSchema(
+  feedTranslations
+).omit(internalTranslationColumns);
 
 export type InsertFeedTranslationDTO = z.infer<
   typeof insertFeedTranslationSchema
@@ -127,15 +122,10 @@ export type UpdateContentDTO = z.infer<typeof updateContentSchema>;
 // Select Schema (for output validation)
 // ============================================
 
-export const feedSchema = z.object({
-  ...createSelectSchema(feeds).shape,
-  ...internal_dateSchema.shape,
-});
+export const feedSchema = createSelectSchema(feeds).extend(internalDateFields);
 
-export const feedTranslationSchema = z.object({
-  ...createSelectSchema(feedTranslations).shape,
-  ...internal_dateSchema.shape,
-});
+export const feedTranslationSchema =
+  createSelectSchema(feedTranslations).extend(internalDateFields);
 
 export const contentSchema =
   createSelectSchema(feedTranslations).pick(contentColumns);

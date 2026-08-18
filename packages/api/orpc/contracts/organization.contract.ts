@@ -20,8 +20,7 @@ export const getOrganizationContract = oc
   })
   .input(z.object({ slug: z.string() }))
   .output(
-    z.object({
-      ...organizationTransformSchema.shape,
+    organizationTransformSchema.extend({
       members: z.array(memberTransformSchema),
       invitations: z.array(invitationTransformSchema),
     })
@@ -43,8 +42,7 @@ export const createOrganizationContract = oc
     })
   )
   .output(
-    z.object({
-      ...organizationTransformSchema.shape,
+    organizationTransformSchema.extend({
       members: z.array(memberTransformSchema.optional()),
     })
   );
@@ -100,8 +98,7 @@ export const getInfiniteProjectsContract = oc
     NOT_FOUND: {},
   })
   .input(
-    z.object({
-      ...baseInfiniteSchema.shape,
+    baseInfiniteSchema.extend({
       organizationId: z.string(),
     })
   )

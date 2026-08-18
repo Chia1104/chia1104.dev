@@ -8,7 +8,6 @@ import {
   toolDefiner,
 } from "@chia/agent-runtime/tools";
 import { buildDocumentContext } from "@chia/ai/embeddings/context";
-import type { Locale } from "@chia/db/types";
 
 import type { ContentTool, ContentToolContext } from "../types.ts";
 
@@ -70,7 +69,7 @@ export const searchPostsTool = defineTool({
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
     const hits = await context.content.searchPosts({
       keyword: params.keyword,
-      locale: params.locale as Locale | undefined,
+      locale: params.locale,
       mode: params.mode === "keyword" ? "keyword" : "semantic",
       limit: params.limit ?? 5,
     });
@@ -116,7 +115,7 @@ export const getPostTool = defineTool({
     const post = await context.content.getPost({
       slug: params.slug,
       feedId: params.feedId,
-      locale: params.locale as Locale | undefined,
+      locale: params.locale,
     });
 
     if (!post) {

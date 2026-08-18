@@ -8,7 +8,7 @@ import type { ServiceHonoEnv } from "../hono";
 import type { Policy } from "../policies/types";
 
 interface MutableContext {
-  set: (key: string, value: unknown) => void;
+  set: <TValue>(key: string, value: TValue) => void;
   header: (name: string, value: string) => void;
 }
 
@@ -29,17 +29,21 @@ export const applyPolicy = async <TEnv extends Env, TPatch extends object>(
   // Every service app declares `Variables` as (a superset of) `ServiceContext`; Hono's
   // `Context` is invariant in its env, so the cast is what keeps this callable from a
   // route whose context has been widened by an upstream middleware.
-  const result = await policy(c.var as unknown as ServiceContext);
+  // Every service Hono env includes ServiceContext, but Context remains invariant in TEnv.
+  // @ts-expect-error The runtime Variables contract is a superset of ServiceContext.
+  const serviceContext: ServiceContext = c.var;
+  const result = await policy(serviceContext);
 
   if (!result.ok) {
     return c.json(
       toErrorResponse(result.error),
-      result.error.status as ContentfulStatusCode,
+      /* SAFETY: The producer contract guarantees this value satisfies ContentfulStatusCode. */ result
+        .error.status as ContentfulStatusCode,
       result.error.headers ?? {}
     );
   }
 
-  const mutable = c as unknown as MutableContext;
+  const mutable: MutableContext = c;
 
   if (result.patch) {
     for (const [key, value] of Object.entries(result.patch)) {

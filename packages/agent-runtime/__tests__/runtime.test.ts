@@ -3,10 +3,19 @@ import { createModels } from "@earendil-works/pi-ai";
 import { fauxProvider } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { JsonObject } from "@chia/db/json";
+
 import type { AgentPolicy, AgentWireEvent } from "../src/index.ts";
 
+interface HarnessEvent extends JsonObject {
+  type: string;
+}
+
 const pi = vi.hoisted(() => {
-  const handlers = new Map<string, (event: unknown) => unknown>();
+  const handlers = new Map<
+    string,
+    (event: HarnessEvent) => void | Promise<void>
+  >();
   const unsubscribers: ReturnType<typeof vi.fn>[] = [];
   const harness = {
     prompt: vi.fn(),
@@ -50,9 +59,10 @@ const createOptions = () => {
   const models = createModels();
   models.setProvider(faux.provider);
   const events: AgentWireEvent[] = [];
-  const session = {
+  // @ts-expect-error The fixture intentionally implements only getBranch, the method under test.
+  const session: PiAgentCore.Session = {
     getBranch: vi.fn(async () => []),
-  } as unknown as PiAgentCore.Session;
+  };
 
   return {
     agentSessionId: "session-1",

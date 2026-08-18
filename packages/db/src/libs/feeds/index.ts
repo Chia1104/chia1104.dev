@@ -1,5 +1,6 @@
 import type { KnownKeysOnly, RelationsFilterColumns } from "drizzle-orm";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import * as z from "zod";
 
 import dayjs from "@chia/utils/day";
 
@@ -87,14 +88,15 @@ const parseFeedCursor = (
   cursor: string | number | null | undefined,
   orderBy: FeedOrderBy
 ): ParsedFeedCursor | null => {
-  if (typeof cursor === "string" && cursor.startsWith(FEED_CURSOR_PREFIX)) {
+  const cursorString = z.string().safeParse(cursor).data;
+  if (cursorString?.startsWith(FEED_CURSOR_PREFIX)) {
     try {
-      const parsed = JSON.parse(cursor.slice(FEED_CURSOR_PREFIX.length));
-      if (
-        Array.isArray(parsed) &&
-        (typeof parsed[0] === "string" || typeof parsed[0] === "number") &&
-        typeof parsed[1] === "number"
-      ) {
+      const parsed = z
+        .tuple([z.union([z.string(), z.number()]), z.number()])
+        .safeParse(
+          JSON.parse(cursorString.slice(FEED_CURSOR_PREFIX.length))
+        ).data;
+      if (parsed) {
         const value = parseCursorForOrder(
           parsed[0],
           orderBy,
@@ -173,18 +175,21 @@ const queryInfiniteFeeds = async (
   }
   if (parsedCursor) {
     if (parsedCursor.id === undefined) {
-      filters.push({
-        [orderBy]: {
-          [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor.value,
-        },
-      } as FeedWhere);
+      filters.push(
+        /* SAFETY: The producer contract guarantees this value satisfies FeedWhere. */ {
+          [orderBy]: {
+            [sortOrder === "asc" ? "gte" : "lte"]: parsedCursor.value,
+          },
+        } as FeedWhere
+      );
     } else {
       const comparison = sortOrder === "asc" ? "gt" : "lt";
-      const primaryFilter = {
-        [orderBy]: {
-          [comparison]: parsedCursor.value,
-        },
-      } as FeedWhere;
+      const primaryFilter =
+        /* SAFETY: The producer contract guarantees this value satisfies FeedWhere. */ {
+          [orderBy]: {
+            [comparison]: parsedCursor.value,
+          },
+        } as FeedWhere;
       filters.push(
         orderBy === FeedOrderBy.Id
           ? primaryFilter
@@ -193,7 +198,7 @@ const queryInfiniteFeeds = async (
                 primaryFilter,
                 {
                   AND: [
-                    {
+                    /* SAFETY: The producer contract guarantees this value satisfies FeedWhere. */ {
                       [orderBy]: parsedCursor.value,
                     } as FeedWhere,
                     {

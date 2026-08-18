@@ -43,7 +43,9 @@ export const readEncryptedAgentCredentials = (
   for (const [providerId, cookieName] of Object.entries(COOKIE_BY_PROVIDER)) {
     const encoded = cookies[cookieName];
     if (encoded) {
-      credentials[providerId as keyof EncryptedAgentCredentials] = encoded;
+      credentials[
+        /* SAFETY: The producer contract guarantees this value satisfies keyof EncryptedAgentCredentials. */ providerId as keyof EncryptedAgentCredentials
+      ] = encoded;
     }
   }
   return Object.keys(credentials).length > 0 ? credentials : undefined;
@@ -81,10 +83,9 @@ export const decryptAgentCredentials = (
   for (const [providerId, encoded] of Object.entries(encrypted)) {
     if (!encoded) continue;
     try {
-      credentials[providerId as keyof AgentCredentials] = verifyApiKey(
-        encoded,
-        privateKey
-      ).apiKey;
+      credentials[
+        /* SAFETY: The producer contract guarantees this value satisfies keyof AgentCredentials. */ providerId as keyof AgentCredentials
+      ] = verifyApiKey(encoded, privateKey).apiKey;
     } catch (error) {
       throw new AgentCredentialError(providerId, { cause: error });
     }

@@ -39,7 +39,7 @@ const draft6Headers = (
   limit: number,
   remaining: number,
   resetSeconds: number
-): Record<string, string> => ({
+) => ({
   "RateLimit-Limit": String(limit),
   "RateLimit-Remaining": String(Math.max(remaining, 0)),
   "RateLimit-Reset": String(Math.max(resetSeconds, 0)),

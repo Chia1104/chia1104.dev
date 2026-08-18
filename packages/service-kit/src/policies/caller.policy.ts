@@ -110,10 +110,11 @@ export const callerPolicy = (
       // An expired or absent cookie is an ordinary visitor, not an error.
       if (result.ok && result.patch) {
         caller.session = result.patch.session;
-        caller.tier = Math.max(
-          caller.tier,
-          tierForSession(result.patch.session, adminId)
-        ) as CallerTier;
+        caller.tier =
+          /* SAFETY: The producer contract guarantees this value satisfies CallerTier. */ Math.max(
+            caller.tier,
+            tierForSession(result.patch.session, adminId)
+          ) as CallerTier;
       }
     }
 

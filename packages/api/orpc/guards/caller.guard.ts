@@ -51,12 +51,12 @@ export const callerGuard = (options: CallerPolicyOptions = {}) =>
  * number (`RATELIMIT_MAX`), and the *relative* trust between tiers is a property of the
  * architecture, not of the environment.
  */
-const TIER_MULTIPLIER: Record<CallerTier, number> = {
+const TIER_MULTIPLIER = {
   [CallerTier.Anonymous]: 1,
   [CallerTier.ApiKey]: 10,
   [CallerTier.Session]: 10,
   [CallerTier.Root]: 100,
-};
+} satisfies Record<CallerTier, number>;
 
 /**
  * Identity the budget is counted against.

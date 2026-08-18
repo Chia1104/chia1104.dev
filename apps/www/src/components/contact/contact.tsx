@@ -30,7 +30,7 @@ import useTheme from "@chia/ui/utils/use-theme";
 
 import { env } from "@/env";
 import { orpc } from "@/libs/orpc/client";
-import type { Contact } from "@/shared/validator";
+import type { Contact as ContactInput } from "@/shared/validator";
 import { contactSchema } from "@/shared/validator";
 
 const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), {
@@ -62,7 +62,7 @@ export const ContactForm = ({
     orpc.email.send.mutationOptions()
   );
 
-  const form = useForm<Contact>({
+  const form = useForm<ContactInput>({
     defaultValues: {
       email: "",
       title: "",
@@ -87,9 +87,10 @@ export const ContactForm = ({
         // The captcha code travels in the error payload's issues, which is the shape
         // `AppError` serialises to on both the REST and RPC surfaces.
         if (error instanceof ORPCError) {
-          const issues = error.data as
-            | { errors?: { message?: string }[] }
-            | undefined;
+          const issues =
+            /* SAFETY: The producer contract guarantees this value satisfies the asserted interface. */ error.data as
+              | { errors?: { message?: string }[] }
+              | undefined;
 
           switch (issues?.errors?.[0]?.message) {
             case CaptchaErrorCode.CaptchaFailed:

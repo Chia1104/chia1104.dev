@@ -1,4 +1,5 @@
 import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
+import * as z from "zod";
 
 import { errorOfAssistantMessage } from "../pi/errors.ts";
 import type { AgentEventPresentation } from "../types.ts";
@@ -106,10 +107,13 @@ export const entriesToWireEvents = (
 
 const contentToText = (
   content: string | readonly { type: string; text?: string }[]
-): string =>
-  typeof content === "string"
-    ? content
-    : content
-        .filter((part) => part.type === "text")
-        .map((part) => part.text ?? "")
-        .join("");
+): string => {
+  const text = z.string().safeParse(content).data;
+  if (text !== undefined) return text;
+  return z
+    .array(z.object({ type: z.string(), text: z.string().optional() }))
+    .parse(content)
+    .filter((part) => part.type === "text")
+    .map((part) => part.text ?? "")
+    .join("");
+};

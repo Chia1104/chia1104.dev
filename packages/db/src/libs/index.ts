@@ -30,8 +30,14 @@ export function parseCursorForOrder<T extends CursorPaginationOrderBy>(
 ): ReturnType<typeof cursorTransform> {
   if (cursor == null) return null;
   const isDateOrder = Array.isArray(dateOrderByValues)
-    ? dateOrderByValues.includes(orderBy as string)
-    : (dateOrderByValues as ReadonlySet<string>).has(orderBy as string);
+    ? dateOrderByValues.includes(
+        /* SAFETY: The producer contract guarantees this value satisfies string. */ orderBy as string
+      )
+    : /* SAFETY: The producer contract guarantees this value satisfies ReadonlySet<string>. */ (
+        dateOrderByValues as ReadonlySet<string>
+      ).has(
+        /* SAFETY: The producer contract guarantees this value satisfies string. */ orderBy as string
+      );
   return cursorTransform(cursor, isDateOrder ? "date" : "default");
 }
 
@@ -47,7 +53,7 @@ export function buildCursorWhere<T extends CursorPaginationOrderBy>(
   };
 }
 
-export function sliceNextCursor<T extends Record<string, unknown>>(
+export function sliceNextCursor<T extends object>(
   items: T[],
   limit: number,
   orderBy: keyof T & string,
@@ -59,11 +65,19 @@ export function sliceNextCursor<T extends Record<string, unknown>>(
     const raw = nextItem?.[orderBy];
     const isDateOrder = Array.isArray(dateOrderByValues)
       ? dateOrderByValues.includes(orderBy)
-      : (dateOrderByValues as ReadonlySet<string>).has(orderBy);
+      : /* SAFETY: The producer contract guarantees this value satisfies ReadonlySet<string>. */ (
+          dateOrderByValues as ReadonlySet<string>
+        ).has(orderBy);
+    // SAFETY: orderBy selects a cursor-compatible scalar column from the same row.
     nextCursor =
       isDateOrder && raw != null
-        ? dateToTimestamp(raw as dayjs.ConfigType)
-        : ((raw as string | number | null) ?? null);
+        ? dateToTimestamp(
+            /* SAFETY: The producer contract guarantees this value satisfies dayjs.ConfigType. */ raw as dayjs.ConfigType
+          )
+        : /* SAFETY: The producer contract guarantees this value satisfies string | number | null. */ ((raw as
+            | string
+            | number
+            | null) ?? null);
   }
   return { items, nextCursor };
 }

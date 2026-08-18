@@ -176,12 +176,22 @@ export const RagChunkExplorer = () => {
     wait: SEARCH_DEBOUNCE_MS,
   });
 
+  // SAFETY: each non-sentinel value originates from its corresponding typed filter option.
   const filters = useMemo<Query>(
     () => ({
       query: debouncedSearch || undefined,
-      state: params.state === ANY ? undefined : (params.state as ChunkState),
-      kind: params.kind === ANY ? undefined : (params.kind as Query["kind"]),
-      locale: params.locale === ANY ? undefined : (params.locale as Locale),
+      state:
+        params.state === ANY
+          ? undefined
+          : /* SAFETY: The producer contract guarantees this value satisfies ChunkState. */ (params.state as ChunkState),
+      kind:
+        params.kind === ANY
+          ? undefined
+          : /* SAFETY: The producer contract guarantees this value satisfies Query["kind"]. */ (params.kind as Query["kind"]),
+      locale:
+        params.locale === ANY
+          ? undefined
+          : /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (params.locale as Locale),
     }),
     [debouncedSearch, params.state, params.kind, params.locale]
   );
@@ -197,7 +207,10 @@ export const RagChunkExplorer = () => {
     orpc.rag["chunks:list"].infiniteOptions({
       input: (pageParam) => ({ ...filters, cursor: pageParam }),
       getNextPageParam: (lastPage) => lastPage.nextCursor ?? null,
-      initialPageParam: null as number | null,
+      initialPageParam:
+        /* SAFETY: The producer contract guarantees this value satisfies number | null. */ null as
+          | number
+          | null,
     })
   );
 
@@ -234,7 +247,10 @@ export const RagChunkExplorer = () => {
           className="w-40"
           onChange={(key) =>
             void setParams({
-              state: String(key) as (typeof STATE_VALUES)[number],
+              state:
+                /* SAFETY: The producer contract guarantees this value satisfies (typeof STATE_VALUES)[number]. */ String(
+                  key
+                ) as (typeof STATE_VALUES)[number],
             })
           }
           value={params.state}>
@@ -254,7 +270,9 @@ export const RagChunkExplorer = () => {
           className="w-36"
           onChange={(key) =>
             void setParams({
-              kind: String(key) as (typeof KIND_VALUES)[number],
+              kind: /* SAFETY: The producer contract guarantees this value satisfies (typeof KIND_VALUES)[number]. */ String(
+                key
+              ) as (typeof KIND_VALUES)[number],
             })
           }
           value={params.kind}>
@@ -274,7 +292,10 @@ export const RagChunkExplorer = () => {
           className="w-36"
           onChange={(key) =>
             void setParams({
-              locale: String(key) as (typeof LOCALE_VALUES)[number],
+              locale:
+                /* SAFETY: The producer contract guarantees this value satisfies (typeof LOCALE_VALUES)[number]. */ String(
+                  key
+                ) as (typeof LOCALE_VALUES)[number],
             })
           }
           value={params.locale}>

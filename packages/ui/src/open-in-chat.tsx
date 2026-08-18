@@ -29,7 +29,7 @@ type Provider =
   | "markdown"
   | "gemini";
 
-export const providers: Record<Provider, ProviderInfo> = {
+export const providers = {
   github: {
     title: "Open in GitHub",
     createUrl: (url) => url,
@@ -423,7 +423,7 @@ export const providers: Record<Provider, ProviderInfo> = {
       </svg>
     ),
   },
-};
+} satisfies Record<Provider, ProviderInfo>;
 
 const OpenInContext = createContext<
   { query: string; providers: Record<Provider, ProviderInfo> } | undefined

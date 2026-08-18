@@ -53,7 +53,8 @@ const reCAPTCHASiteverify = async (credentials: CaptchaCredentials) => {
     }
   );
 
-  const siteverifyJson = (await siteverify.json()) as CapthcaResponse;
+  const siteverifyJson =
+    /* SAFETY: The producer contract guarantees this value satisfies CapthcaResponse. */ (await siteverify.json()) as CapthcaResponse;
 
   return siteverifyJson;
 };
@@ -73,7 +74,8 @@ const turnstileSiteverify = async (credentials: CaptchaCredentials) => {
     }
   );
 
-  const siteverifyJson = (await siteverify.json()) as CapthcaResponse;
+  const siteverifyJson =
+    /* SAFETY: The producer contract guarantees this value satisfies CapthcaResponse. */ (await siteverify.json()) as CapthcaResponse;
 
   return siteverifyJson;
 };

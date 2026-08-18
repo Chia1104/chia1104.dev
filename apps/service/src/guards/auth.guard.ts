@@ -22,7 +22,7 @@ export const verifyAuth = (
 ) =>
   createMiddleware<AuthContext>(async (c, next) => {
     const requireRoot =
-      typeof rootOnly === "function" ? await rootOnly(c) : !!rootOnly;
+      rootOnly instanceof Function ? await rootOnly(c) : Boolean(rootOnly);
 
     const denied = await applyPolicy(
       c,

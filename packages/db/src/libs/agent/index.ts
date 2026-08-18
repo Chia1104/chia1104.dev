@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type { DB } from "../../index.ts";
+import type { JsonObject } from "../../json.ts";
 import {
   agentRuns,
   agentSessionEntries,
@@ -34,7 +35,7 @@ export interface InsertAgentSessionDTO {
   thinkingLevel?: string | null;
   activeToolNames?: string[] | null;
   autoApprove?: string[];
-  runtimeConfig?: Record<string, unknown>;
+  runtimeConfig?: JsonObject;
   configVersion?: number;
   leafEntryId?: string | null;
 }
@@ -94,7 +95,7 @@ export interface UpdateAgentSessionDTO {
   thinkingLevel?: string | null;
   activeToolNames?: string[] | null;
   autoApprove?: string[];
-  runtimeConfig?: Record<string, unknown>;
+  runtimeConfig?: JsonObject;
   configVersion?: number;
   leafEntryId?: string | null;
 }
@@ -110,9 +111,9 @@ export const updateAgentSession = async (
   sessionId: string,
   patch: UpdateAgentSessionDTO
 ) => {
-  const set: Record<string, unknown> = {};
+  const set: Partial<UpdateAgentSessionDTO> = {};
   for (const [key, value] of Object.entries(patch)) {
-    if (value !== undefined) set[key] = value;
+    if (value !== undefined) Object.assign(set, { [key]: value });
   }
   if (Object.keys(set).length === 0) return;
   await db
@@ -156,7 +157,7 @@ export const createAgentRun = async (
     harnessKind: string;
     harnessVersion?: number;
     externalRunId: string;
-    metadata?: Record<string, unknown>;
+    metadata?: JsonObject;
   }
 ) =>
   await db.transaction(async (tx) => {
@@ -191,7 +192,7 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
 export const patchAgentRunMetadata = async (
   db: DB,
   externalRunId: string,
-  patch: Record<string, unknown>
+  patch: JsonObject
 ) => {
   await db
     .update(agentRuns)
@@ -234,7 +235,7 @@ export interface InsertAgentSessionEntryDTO {
   sessionId: string;
   parentId: string | null;
   type: string;
-  payload: Record<string, unknown>;
+  payload: JsonObject;
   timestamp: Date;
 }
 
@@ -305,7 +306,7 @@ export const createWritingAgentSession = async (
   input: {
     sessionId: string;
     targetFeedId?: number | null;
-    feedMeta?: Record<string, unknown>;
+    feedMeta?: JsonObject;
   }
 ) => {
   const [row] = await db
@@ -329,12 +330,12 @@ export const updateWritingAgentSession = async (
   sessionId: string,
   patch: {
     targetFeedId?: number | null;
-    feedMeta?: Record<string, unknown>;
+    feedMeta?: JsonObject;
   }
 ) => {
-  const set: Record<string, unknown> = {};
+  const set = {};
   for (const [key, value] of Object.entries(patch)) {
-    if (value !== undefined) set[key] = value;
+    if (value !== undefined) Object.assign(set, { [key]: value });
   }
   if (Object.keys(set).length === 0) return;
   await db
@@ -354,11 +355,16 @@ export const upsertWritingAgentDraft = async (
   input: {
     sessionId: string;
     locale: Locale;
-    meta: Record<string, unknown>;
+    meta: JsonObject;
     /** `undefined` leaves the existing body untouched; `null` clears it. */
     content?: string | null;
   }
 ) => {
+  const update =
+    input.content === undefined
+      ? { meta: input.meta }
+      : { meta: input.meta, content: input.content };
+
   await db
     .insert(writingAgentDrafts)
     .values({
@@ -369,10 +375,7 @@ export const upsertWritingAgentDraft = async (
     })
     .onConflictDoUpdate({
       target: [writingAgentDrafts.sessionId, writingAgentDrafts.locale],
-      set: {
-        meta: input.meta,
-        ...(input.content === undefined ? {} : { content: input.content }),
-      },
+      set: update,
     });
 };
 
@@ -392,7 +395,7 @@ export const recordAgentApprovalRequests = async (
     sessionId: string;
     toolCallId: string;
     toolName: string;
-    args?: Record<string, unknown>;
+    args?: JsonObject;
   }[]
 ) => {
   if (inputs.length === 0) return;

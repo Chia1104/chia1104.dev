@@ -29,7 +29,7 @@ const ShimmerButton = ({
   return (
     <button
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
           "--spread": "90deg",
           "--shimmer-color": shimmerColor,
           "--radius": borderRadius,

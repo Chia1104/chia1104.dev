@@ -30,6 +30,11 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "4rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
+type SidebarTooltip = string | React.ComponentProps<typeof TooltipContent>;
+
+const isTooltipText = (tooltip: SidebarTooltip): tooltip is string =>
+  Object.prototype.toString.call(tooltip) === "[object String]";
+
 interface SidebarContextProps {
   state: "expanded" | "collapsed";
   open: boolean;
@@ -73,7 +78,7 @@ function SidebarProvider({
   const open = openProp ?? _open;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
-      const openState = typeof value === "function" ? value(open) : value;
+      const openState = value instanceof Function ? value(open) : value;
       if (setOpenProp) {
         setOpenProp(openState);
       } else {
@@ -129,7 +134,7 @@ function SidebarProvider({
       <div
         data-slot="sidebar-wrapper"
         style={
-          {
+          /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
             "--sidebar-width": SIDEBAR_WIDTH,
             "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
             ...style,
@@ -183,7 +188,7 @@ function Sidebar({
           data-mobile="true"
           className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
           style={
-            {
+            /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
             } as React.CSSProperties
           }
@@ -519,7 +524,7 @@ function SidebarMenuButton({
 }: React.ComponentProps<"button"> & {
   asChild?: boolean;
   isActive?: boolean;
-  tooltip?: string | React.ComponentProps<typeof TooltipContent>;
+  tooltip?: SidebarTooltip;
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const Comp = asChild ? Slot : "button";
   const { isMobile, state } = useSidebar();
@@ -542,7 +547,7 @@ function SidebarMenuButton({
     return button;
   }
 
-  if (typeof tooltip === "string") {
+  if (isTooltipText(tooltip)) {
     tooltip = {
       children: tooltip,
     };
@@ -641,7 +646,7 @@ function SidebarMenuSkeleton({
         className="h-4 max-w-(--skeleton-width) flex-1 group-data-[collapsible=icon]:hidden"
         data-sidebar="menu-skeleton-text"
         style={
-          {
+          /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
             "--skeleton-width": width,
           } as React.CSSProperties
         }

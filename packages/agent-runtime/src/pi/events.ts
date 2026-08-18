@@ -112,7 +112,9 @@ export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
               event.isError
             ),
             details: clipDetails(
-              (event.result as { details?: unknown } | undefined)?.details
+              /* SAFETY: The producer contract guarantees this value satisfies { details?: unknown } | undefined. */ (
+                event.result as { details?: unknown } | undefined
+              )?.details
             ),
           },
         ];

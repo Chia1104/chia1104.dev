@@ -31,12 +31,12 @@ export interface FeedVisibility {
  * table in one call; `apps/www`'s sitemap asks for 1000 in one go and holds the project
  * API key, which is what the higher cap is for.
  */
-const MAX_LIMIT: Record<CallerTier, number> = {
+const MAX_LIMIT = {
   [CallerTier.Anonymous]: 50,
   [CallerTier.ApiKey]: 1000,
   [CallerTier.Session]: 1000,
   [CallerTier.Root]: 1000,
-};
+} satisfies Record<CallerTier, number>;
 
 export const resolveFeedLimit = (tier: CallerTier, requested: number): number =>
   Math.min(requested, MAX_LIMIT[tier]);

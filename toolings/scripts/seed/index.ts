@@ -29,7 +29,7 @@ const getCLIOptions = <TOptions extends Record<string, string>>(): TOptions => {
     options[key] = value;
   });
 
-  return options as TOptions;
+  return /* SAFETY: The producer contract guarantees this value satisfies TOptions. */ options as TOptions;
 };
 
 const CONTENT = `

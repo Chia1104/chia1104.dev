@@ -179,7 +179,9 @@ describe("Contact Form Integration", () => {
         };
 
         // 移除一個必要欄位
-        delete data[field as keyof typeof data];
+        delete data[
+          /* SAFETY: This fixture implements the keyof typeof data members exercised by this case. */ field as keyof typeof data
+        ];
 
         const result = contactSchema.safeParse(data);
         expect(result.success).toBe(false);

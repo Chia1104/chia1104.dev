@@ -77,7 +77,9 @@ export const createContentReadPort = (
 
       return result.items.slice(0, input.limit).map((item) => ({
         slug: item.slug,
-        locale: (item.summary.locale ?? "zh-TW") as Locale,
+        locale:
+          /* SAFETY: The producer contract guarantees this value satisfies Locale. */ (item
+            .summary.locale ?? "zh-TW") as Locale,
         title: item.summary.title,
         // hybrid hits carry no highlighted snippet (ParadeDB cannot combine
         // one with the fused query), so fall back to the matched chunk's own
@@ -121,6 +123,8 @@ export const createContentReadPort = (
       // truth ("none") rather than a filter being silently overridden.
       if (publishedScope === true && input.published === false) return [];
 
+      const published = input.published ?? publishedScope;
+
       const data = await getInfiniteFeeds(db, {
         limit: input.limit,
         cursor: null,
@@ -130,9 +134,7 @@ export const createContentReadPort = (
         enableDeleted: false,
         whereAnd: {
           userId: authorId,
-          ...((input.published ?? publishedScope) === undefined
-            ? {}
-            : { published: input.published ?? publishedScope }),
+          published,
         },
       });
 
@@ -144,9 +146,10 @@ export const createContentReadPort = (
         return {
           feedId: feed.id,
           slug: feed.slug,
-          type: feed.type as PostFeedType,
+          type: /* SAFETY: The producer contract guarantees this value satisfies PostFeedType. */ feed.type as PostFeedType,
           published: feed.published,
-          defaultLocale: feed.defaultLocale as Locale,
+          defaultLocale:
+            /* SAFETY: The producer contract guarantees this value satisfies Locale. */ feed.defaultLocale as Locale,
           title: translation?.title ?? "(untitled)",
           updatedAt: new Date(feed.updatedAt).toISOString(),
         };
@@ -167,12 +170,13 @@ export const createContentReadPort = (
       });
       return rows.map((tag) => ({
         slug: tag.slug,
-        names: Object.fromEntries(
-          (tag.translations ?? []).map((translation) => [
-            translation.locale,
-            translation.name,
-          ])
-        ) as TagItem["names"],
+        names:
+          /* SAFETY: The producer contract guarantees this value satisfies TagItem["names"]. */ Object.fromEntries(
+            (tag.translations ?? []).map((translation) => [
+              translation.locale,
+              translation.name,
+            ])
+          ) as TagItem["names"],
       }));
     },
   };
@@ -201,13 +205,16 @@ const toPostSnapshot = (feed: {
 }): PostSnapshot => ({
   feedId: feed.id,
   slug: feed.slug,
-  type: feed.type as PostFeedType,
-  contentType: feed.contentType as ContentType,
+  type: /* SAFETY: The producer contract guarantees this value satisfies PostFeedType. */ feed.type as PostFeedType,
+  contentType:
+    /* SAFETY: The producer contract guarantees this value satisfies ContentType. */ feed.contentType as ContentType,
   published: feed.published,
-  defaultLocale: feed.defaultLocale as Locale,
+  defaultLocale:
+    /* SAFETY: The producer contract guarantees this value satisfies Locale. */ feed.defaultLocale as Locale,
   mainImage: feed.mainImage,
   translations: (feed.translations ?? []).map((translation) => ({
-    locale: translation.locale as Locale,
+    locale:
+      /* SAFETY: The producer contract guarantees this value satisfies Locale. */ translation.locale as Locale,
     title: translation.title,
     excerpt: translation.excerpt,
     description: translation.description,
@@ -216,5 +223,5 @@ const toPostSnapshot = (feed: {
   })),
   tagSlugs: (feed.feedsToTags ?? [])
     .map((relation) => relation.tag?.slug)
-    .filter((slug): slug is string => typeof slug === "string"),
+    .filter((slug): slug is string => slug !== undefined),
 });

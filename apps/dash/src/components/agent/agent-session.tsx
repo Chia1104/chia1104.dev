@@ -42,11 +42,11 @@ interface AgentSessionProps {
 
 interface AgentSessionContentProps extends AgentSessionProps {
   detail: AgentSessionDetail;
-  refetch: () => Promise<unknown>;
+  refetch: () => Promise<object>;
 }
 
-const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Something went wrong.";
+const errorMessage = (cause: unknown) =>
+  cause instanceof Error ? cause.message : "Something went wrong.";
 
 const statusMeta = {
   awaiting_approval: { color: "warning", label: "Needs approval" },
@@ -94,7 +94,9 @@ const AgentSessionContent = ({
     () => ({
       connect: async function* (messages, _data, signal, runContext) {
         const approval = nextApprovalContinuation(
-          messages as Parameters<typeof nextApprovalContinuation>[0],
+          /* SAFETY: The producer contract guarantees this value satisfies Parameters<typeof nextApprovalContinuation>[0]. */ messages as Parameters<
+            typeof nextApprovalContinuation
+          >[0],
           handledApprovalIdsRef.current
         );
 
@@ -110,7 +112,9 @@ const AgentSessionContent = ({
           };
         } else {
           const text = latestUserText(
-            messages as Parameters<typeof latestUserText>[0]
+            /* SAFETY: The producer contract guarantees this value satisfies Parameters<typeof latestUserText>[0]. */ messages as Parameters<
+              typeof latestUserText
+            >[0]
           );
           if (!text) throw new Error("The agent prompt is empty.");
           action = { type: "prompt", text };

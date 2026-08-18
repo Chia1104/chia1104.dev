@@ -153,7 +153,11 @@ const reconcile = async (
      * second run — while the first one is still going. Holding the row is the safe default:
      * a genuinely finished run is picked up on the next poll.
      */
-    if (!TERMINAL_STATUSES.includes(status as ResourceIndexRunTerminalStatus)) {
+    if (
+      !TERMINAL_STATUSES.includes(
+        /* SAFETY: The producer contract guarantees this value satisfies ResourceIndexRunTerminalStatus. */ status as ResourceIndexRunTerminalStatus
+      )
+    ) {
       console.error(
         "Unrecognised workflow run status; leaving the row active",
         {
@@ -226,10 +230,10 @@ const trigger = async (
   });
 
   if (reused) {
-    await run.cancel().catch((error: unknown) => {
+    await run.cancel().catch((cause: unknown) => {
       console.error("Could not cancel a superseded index run", {
         runId: run.runId,
-        error: String(error),
+        error: String(cause),
       });
     });
     return handleOf(row, true);
@@ -248,7 +252,7 @@ const numericCursor = (
   if (cursor == null) {
     return null;
   }
-  const value = typeof cursor === "number" ? cursor : Number(cursor);
+  const value = Number(cursor);
   return Number.isFinite(value) ? value : null;
 };
 

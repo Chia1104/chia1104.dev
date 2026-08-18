@@ -1,6 +1,7 @@
 import {
   asArray,
   asRecord,
+  asString,
   toolResultDetails,
 } from "@chia/agent-runtime/tools";
 
@@ -13,9 +14,9 @@ import { CONTENT_TOOL_NAMES } from "./registry.ts";
  * Errors are not handled here: how an error reads is the same for every tool, so the kind's
  * summarizer does that once before dispatching.
  */
-export const summarizeContentToolResult = (
+export const summarizeContentToolResult = <TResult>(
   toolName: string,
-  result: unknown
+  result: TResult
 ): string | undefined => {
   const details = toolResultDetails(result);
 
@@ -26,7 +27,7 @@ export const summarizeContentToolResult = (
     }
     case CONTENT_TOOL_NAMES.getPost: {
       const post = asRecord(details?.post);
-      const slug = typeof post?.slug === "string" ? post.slug : undefined;
+      const slug = asString(post?.slug);
       return slug ? `Read \`${slug}\`.` : "Read post.";
     }
     case CONTENT_TOOL_NAMES.listPosts: {

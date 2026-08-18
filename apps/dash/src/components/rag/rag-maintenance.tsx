@@ -25,15 +25,13 @@ import type { IndexRun } from "./use-index-run";
  */
 type MaintenanceAction = "top-up" | "full" | "prune";
 
-const ACTION_COPY: Record<
-  MaintenanceAction,
-  { title: string; description: string; confirm: string; destructive?: true }
-> = {
+const ACTION_COPY = {
   "top-up": {
     title: "Top up missing vectors",
     description:
       "Leaves every chunk's text alone and only embeds the ones with no vector on the current index key. Cost is predictable.",
     confirm: "Top up",
+    destructive: false,
   },
   full: {
     title: "Full reindex",
@@ -49,7 +47,10 @@ const ACTION_COPY: Record<
     confirm: "Drop leftover vectors",
     destructive: true,
   },
-};
+} satisfies Record<
+  MaintenanceAction,
+  { title: string; description: string; confirm: string; destructive: boolean }
+>;
 
 const settledMessage = (run: IndexRun): string => {
   if (run.status === "completed") return "Reindex finished";

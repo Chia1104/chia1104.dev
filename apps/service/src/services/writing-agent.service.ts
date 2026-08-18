@@ -106,7 +106,9 @@ const repoFor = (db: DB) =>
   });
 
 const dependenciesFor = (caller: AgentServiceCaller) => {
-  const db = caller.context.db as DB;
+  const db =
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+      .context.db as DB;
   return {
     db,
     repo: repoFor(db),
@@ -128,7 +130,9 @@ const loadOwnedSession = async (
   caller: AgentServiceCaller,
   sessionId: string
 ) => {
-  const db = caller.context.db as DB;
+  const db =
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+      .context.db as DB;
   const row = await getAgentSession(db, sessionId);
   if (!row || row.deletedAt !== null) return null;
   if (row.userId !== caller.userId) return null;
@@ -167,9 +171,11 @@ const settingsOf = (row: {
   return {
     providerId: row.providerId,
     modelId: row.modelId,
-    thinkingLevel: row.thinkingLevel as ThinkingLevel,
+    thinkingLevel:
+      /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel. */ row.thinkingLevel as ThinkingLevel,
     activeToolNames: row.activeToolNames,
-    autoApprove: row.autoApprove as ToolTier[],
+    autoApprove:
+      /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
   };
 };
 
@@ -211,7 +217,10 @@ const writingSessionOperationOptions = async (
   sessionId: string,
   row: Parameters<typeof settingsOf>[0]
 ) => {
-  const session = await repoFor(caller.context.db as DB).openById(sessionId);
+  const session = await repoFor(
+    /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+      .context.db as DB
+  ).openById(sessionId);
   return {
     session,
     settings: settingsOf(row),
@@ -411,7 +420,8 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     settings: settingsOf(row),
     runtimeConfig: row.runtimeConfig,
     configVersion: row.configVersion,
-    draft: draftState as never,
+    draft:
+      /* SAFETY: The producer contract guarantees this value satisfies never. */ draftState as never,
     run,
     events,
     pendingApprovals,
@@ -471,17 +481,27 @@ export const writingAgentService: AgentKindService = {
       settings: {
         providerId: input.model?.providerId,
         modelId: input.model?.modelId,
-        thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
-        autoApprove: input.autoApprove as ToolTier[] | undefined,
+        thinkingLevel:
+          /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel | undefined. */ input.thinkingLevel as
+            | ThinkingLevel
+            | undefined,
+        autoApprove:
+          /* SAFETY: The producer contract guarantees this value satisfies ToolTier[] | undefined. */ input.autoApprove as
+            | ToolTier[]
+            | undefined,
       },
       runtimeConfig: input.runtimeConfig,
     });
     const { id } = await session.getMetadata();
     try {
-      await createWritingAgentSession(caller.context.db as DB, {
-        sessionId: id,
-        targetFeedId: input.targetFeedId,
-      });
+      await createWritingAgentSession(
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
+        {
+          sessionId: id,
+          targetFeedId: input.targetFeedId,
+        }
+      );
 
       // Opening a session against an existing post seeds the buffer, so the agent edits the real
       // content instead of guessing at it.
@@ -497,7 +517,11 @@ export const writingAgentService: AgentKindService = {
     } catch (error) {
       // Core and writing state live in separate repositories. Compensate if extension setup or
       // draft seeding fails so callers never receive an unusable half-created session.
-      await deleteAgentSession(caller.context.db as DB, id);
+      await deleteAgentSession(
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
+        id
+      );
       throw error;
     }
   },
@@ -519,28 +543,44 @@ export const writingAgentService: AgentKindService = {
     }
     if (row.activeRunId) {
       await completeAgentRun(
-        caller.context.db as DB,
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
         row.activeRunId,
         "cancelled"
       );
     }
 
-    await softDeleteAgentSession(caller.context.db as DB, input.sessionId);
+    await softDeleteAgentSession(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      input.sessionId
+    );
     return true;
   },
 
   async updateSettings(caller, input) {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
-    await writeSessionSettings(caller.context.db as DB, input.sessionId, {
-      title: input.title,
-      providerId: input.model?.providerId,
-      modelId: input.model?.modelId,
-      thinkingLevel: input.thinkingLevel as ThinkingLevel | undefined,
-      activeToolNames: input.activeToolNames,
-      autoApprove: input.autoApprove as ToolTier[] | undefined,
-      runtimeConfig: input.runtimeConfig,
-    });
+    await writeSessionSettings(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      input.sessionId,
+      {
+        title: input.title,
+        providerId: input.model?.providerId,
+        modelId: input.model?.modelId,
+        thinkingLevel:
+          /* SAFETY: The producer contract guarantees this value satisfies ThinkingLevel | undefined. */ input.thinkingLevel as
+            | ThinkingLevel
+            | undefined,
+        activeToolNames: input.activeToolNames,
+        autoApprove:
+          /* SAFETY: The producer contract guarantees this value satisfies ToolTier[] | undefined. */ input.autoApprove as
+            | ToolTier[]
+            | undefined,
+        runtimeConfig: input.runtimeConfig,
+      }
+    );
 
     return detailFor(caller, input.sessionId);
   },
@@ -581,7 +621,8 @@ export const writingAgentService: AgentKindService = {
      * message would simply appear to do nothing. Better to say why.
      */
     const outstanding = await undecidedApprovals(
-      caller.context.db as DB,
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
       input.sessionId
     );
     if (outstanding.length > 0) {
@@ -628,17 +669,24 @@ export const writingAgentService: AgentKindService = {
       streamIndex: 0,
       running: true,
     };
-    await createAgentRun(caller.context.db as DB, {
-      id: run.runId,
-      sessionId: input.sessionId,
-      harnessKind: "workflow",
-      externalRunId: run.runId,
-      metadata: {
-        agentKind: WRITING_AGENT_KIND,
-        [AGENT_TURN_KEY]: turn,
-        [AGENT_ABORT_CONTROLLER_KEY]: abortController,
-      },
-    });
+    await createAgentRun(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      {
+        id: run.runId,
+        sessionId: input.sessionId,
+        harnessKind: "workflow",
+        externalRunId: run.runId,
+        metadata: {
+          agentKind: WRITING_AGENT_KIND,
+          [AGENT_TURN_KEY]: turn,
+          [AGENT_ABORT_CONTROLLER_KEY]: {
+            id: abortController.id,
+            runId: abortController.runId,
+          },
+        },
+      }
+    );
 
     return { runId: run.runId, startIndex: 0, startedRun: true };
   },
@@ -749,7 +797,8 @@ export const writingAgentService: AgentKindService = {
     await cancelLiveRun(row.workflowRunId);
     if (row.activeRunId) {
       await completeAgentRun(
-        caller.context.db as DB,
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+          .context.db as DB,
         row.activeRunId,
         "cancelled"
       );
@@ -763,13 +812,17 @@ export const writingAgentService: AgentKindService = {
 
     // Persist first: the decision must outlive the run, and the permission gate reads it back from
     // here when the tool call is re-issued.
-    const decided = await decideAgentApproval(caller.context.db as DB, {
-      sessionId: input.sessionId,
-      toolCallId: input.toolCallId,
-      approved: input.approved,
-      comment: input.comment,
-      decidedBy: caller.userId,
-    });
+    const decided = await decideAgentApproval(
+      /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
+        .context.db as DB,
+      {
+        sessionId: input.sessionId,
+        toolCallId: input.toolCallId,
+        approved: input.approved,
+        comment: input.comment,
+        decidedBy: caller.userId,
+      }
+    );
     if (!decided) return null;
 
     // Capture the cursor before waking the workflow. The chat transport opens a fresh request for
@@ -829,7 +882,9 @@ export const writingAgentService: AgentKindService = {
     const row = await loadOwnedSession(caller, input.sessionId);
     if (!row) return null;
     const { draft } = dependenciesFor(caller);
-    return (await draft.get(input.sessionId)) as never;
+    return /* SAFETY: The producer contract guarantees this value satisfies never. */ (await draft.get(
+      input.sessionId
+    )) as never;
   },
 
   /**

@@ -30,7 +30,7 @@ export const TOOL_NAMES = {
 
 export type ToolName = (typeof TOOL_NAMES)[keyof typeof TOOL_NAMES];
 
-export const TOOL_TIER_BY_NAME: Record<string, ToolTier> = {
+export const TOOL_TIER_BY_NAME = {
   [TOOL_NAMES.searchPosts]: "read",
   [TOOL_NAMES.getPost]: "read",
   [TOOL_NAMES.listPosts]: "read",
@@ -45,9 +45,9 @@ export const TOOL_TIER_BY_NAME: Record<string, ToolTier> = {
 
   [TOOL_NAMES.commitDraft]: "commit",
   [TOOL_NAMES.setPublished]: "commit",
-};
+} satisfies Record<ToolName, ToolTier>;
 
-export const TOOL_LABEL_BY_NAME: Record<string, string> = {
+export const TOOL_LABEL_BY_NAME = {
   ...CONTENT_TOOL_LABEL_BY_NAME,
   [TOOL_NAMES.fetchUrl]: "Fetch page",
 
@@ -59,7 +59,13 @@ export const TOOL_LABEL_BY_NAME: Record<string, string> = {
 
   [TOOL_NAMES.commitDraft]: "Commit draft",
   [TOOL_NAMES.setPublished]: "Change published state",
-};
+} satisfies Record<ToolName, string>;
+
+export const isToolName = (toolName: string): toolName is ToolName =>
+  Object.hasOwn(TOOL_TIER_BY_NAME, toolName);
 
 export const labelOf = (toolName: string): string =>
-  TOOL_LABEL_BY_NAME[toolName] ?? toolName;
+  isToolName(toolName) ? TOOL_LABEL_BY_NAME[toolName] : toolName;
+
+export const tierOf = (toolName: string): ToolTier =>
+  isToolName(toolName) ? TOOL_TIER_BY_NAME[toolName] : "commit";

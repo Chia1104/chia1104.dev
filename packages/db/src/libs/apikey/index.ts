@@ -66,11 +66,11 @@ export const getInfiniteApiKeysByProjectId = withDTO(
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
       limit: limit + 1,
-      where: {
-        projectId,
-        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
-        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
-      },
+      where: cursorFilter
+        ? { projectId, AND: [cursorFilter, ...rawFilters] }
+        : rawFilters.length
+          ? { projectId, AND: rawFilters }
+          : { projectId },
     });
 
     const { items, nextCursor } = sliceNextCursor(
@@ -136,10 +136,11 @@ export const getInfiniteApiKeys = withDTO(
         sortOrder === "asc" ? asc(apikey[orderBy]) : desc(apikey[orderBy]),
       ],
       limit: limit + 1,
-      where: {
-        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
-        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
-      },
+      where: cursorFilter
+        ? { AND: [cursorFilter, ...rawFilters] }
+        : rawFilters.length
+          ? { AND: rawFilters }
+          : {},
       with: withProject
         ? {
             project: true,

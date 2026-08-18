@@ -18,7 +18,15 @@ interface Props {
 
 const Toaster = () => {
   const { theme } = useTheme();
-  return <ST theme={theme as Theme} position="bottom-left" richColors />;
+  return (
+    <ST
+      theme={
+        /* SAFETY: The producer contract guarantees this value satisfies Theme. */ theme as Theme
+      }
+      position="bottom-left"
+      richColors
+    />
+  );
 };
 
 const RootProvider = ({ children }: Props) => {

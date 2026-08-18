@@ -72,7 +72,10 @@ export const agentSessionGuard = () =>
     .middleware(async ({ context, errors, next }, input: AgentSessionInput) => {
       const caller = agentCallerOf(context, errors);
 
-      const row = await getAgentSession(context.db as DB, input.sessionId);
+      const row = await getAgentSession(
+        /* SAFETY: The producer contract guarantees this value satisfies DB. */ context.db as DB,
+        input.sessionId
+      );
       /**
        * One `NOT_FOUND` for "absent", "deleted" and "someone else's".
        *

@@ -102,20 +102,23 @@ export const runPiTurn = async <TContext extends object, TApproval>({
 
   try {
     const systemPrompt =
-      typeof prompt === "string" ? prompt : async () => await prompt();
+      prompt instanceof Function ? async () => await prompt() : prompt;
 
     /** Pi cannot reduce its conditional `toolContext` type while `TContext` is unresolved. */
-    const turnHarness = new AgentHarness({
-      session,
-      models,
-      model,
-      tools,
-      toolContext,
-      thinkingLevel: clampSessionThinkingLevel(model, settings),
-      activeToolNames: settings.activeToolNames ?? undefined,
-      resources: { skills, promptTemplates },
-      systemPrompt,
-    } as never) as AgentHarness<TContext>;
+    const turnHarness =
+      /* SAFETY: The producer contract guarantees this value satisfies the asserted interface. */ new AgentHarness(
+        /* SAFETY: The producer contract guarantees this value satisfies never. */ {
+          session,
+          models,
+          model,
+          tools,
+          toolContext,
+          thinkingLevel: clampSessionThinkingLevel(model, settings),
+          activeToolNames: settings.activeToolNames ?? undefined,
+          resources: { skills, promptTemplates },
+          systemPrompt,
+        } as never
+      ) as AgentHarness<TContext>;
     const gate = createPiToolCallGate({
       policy,
       autoApprove: settings.autoApprove,

@@ -106,21 +106,22 @@ export const NoiseBackground = ({
   const velocityRef = useRef({ x: 0, y: 0 });
   const lastDirectionChangeRef = useRef(0);
 
-  const cssVars = {
-    "--noise-opacity": noiseIntensity,
-    "--noise-gradient-1": gradientColors[0],
-    "--noise-gradient-2": gradientColors[1],
-    "--noise-gradient-3": gradientColors[2],
-    "--noise-gradient-1-dark": gradientColors[0],
-    "--noise-gradient-2-dark": gradientColors[1],
-    "--noise-gradient-3-dark": gradientColors[2],
-    "--noise-layer-1-opacity": gradientLayerOpacity.first ?? 0.4,
-    "--noise-layer-2-opacity": gradientLayerOpacity.second ?? 0.3,
-    "--noise-layer-1-x": "0px",
-    "--noise-layer-1-y": "0px",
-    "--noise-layer-2-x": "0px",
-    "--noise-layer-2-y": "0px",
-  } as CSSProperties;
+  const cssVars =
+    /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
+      "--noise-opacity": noiseIntensity,
+      "--noise-gradient-1": gradientColors[0],
+      "--noise-gradient-2": gradientColors[1],
+      "--noise-gradient-3": gradientColors[2],
+      "--noise-gradient-1-dark": gradientColors[0],
+      "--noise-gradient-2-dark": gradientColors[1],
+      "--noise-gradient-3-dark": gradientColors[2],
+      "--noise-layer-1-opacity": gradientLayerOpacity.first ?? 0.4,
+      "--noise-layer-2-opacity": gradientLayerOpacity.second ?? 0.3,
+      "--noise-layer-1-x": "0px",
+      "--noise-layer-1-y": "0px",
+      "--noise-layer-2-x": "0px",
+      "--noise-layer-2-y": "0px",
+    } as CSSProperties;
 
   useMotionValueEvent(springX, "change", () => {
     syncLayerPositionVars(containerRef.current, springX, springY);
@@ -208,7 +209,7 @@ export const NoiseBackground = ({
       ref={containerRef}
       {...props}
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
           ...cssVars,
           ...style,
         } as CSSProperties

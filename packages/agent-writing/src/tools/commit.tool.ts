@@ -33,6 +33,7 @@ export const commitDraftTool = defineTool({
   executionMode: "sequential",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
     const draft = await context.draft.get(context.agentSessionId);
+    // SAFETY: FeedDraft.translations is keyed exclusively by Locale.
     const locales = Object.keys(draft.translations) as Locale[];
 
     if (locales.length === 0) {

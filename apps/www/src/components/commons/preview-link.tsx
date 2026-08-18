@@ -180,7 +180,7 @@ const PreviewLink = ({
 
   const renderPreviewContent = () => {
     if (previewContent) {
-      return typeof previewContent === "function"
+      return previewContent instanceof Function
         ? previewContent(result)
         : previewContent;
     }
@@ -203,7 +203,7 @@ const PreviewLink = ({
           rel="noopener noreferrer"
           {...props}
           href={href.toString()}>
-          {typeof children === "function" ? children(result) : children}
+          {children instanceof Function ? children(result) : children}
         </Link>
       </HoverCardTrigger>
       <HoverCardContent

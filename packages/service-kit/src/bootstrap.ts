@@ -111,7 +111,7 @@ export const bootstrap = <
     if (isAppError(e)) {
       return c.json(
         toErrorResponse(e),
-        e.status as ContentfulStatusCode,
+        /* SAFETY: The producer contract guarantees this value satisfies ContentfulStatusCode. */ e.status as ContentfulStatusCode,
         e.headers ?? {}
       );
     }

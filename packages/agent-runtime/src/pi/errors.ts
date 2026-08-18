@@ -39,7 +39,7 @@ export const errorOfAssistantMessage = (
 };
 
 /** Classifies an error thrown by the harness, a hook, or turn persistence. */
-export const errorOfThrown = (error: unknown): AgentTurnError => ({
+export const errorOfThrown = (cause: unknown): AgentTurnError => ({
   kind: "internal",
-  message: error instanceof Error ? error.message : String(error),
+  message: cause instanceof Error ? cause.message : String(cause),
 });

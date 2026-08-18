@@ -11,7 +11,7 @@ interface AgentDraftPreviewProps {
   draft: AgentDraft;
 }
 
-const jsonOf = (value: unknown) => JSON.stringify(value, null, 2);
+const jsonOf = <TValue,>(value: TValue) => JSON.stringify(value, null, 2);
 
 export const AgentDraftPreview = ({ draft }: AgentDraftPreviewProps) => {
   if (!draft) {

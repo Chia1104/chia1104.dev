@@ -97,7 +97,7 @@ export const agentSessionDetailSchema = z.object({
     })
     .optional(),
   /** Versioned kind-owned configuration persisted on the shared session record. */
-  runtimeConfig: z.record(z.string(), z.unknown()).optional(),
+  runtimeConfig: z.record(z.string(), z.json()).optional(),
   configVersion: z.number().int().positive().optional(),
   /** Optional runtime-owned state for kinds that do not have a dedicated public contract yet. */
   state: z.unknown().optional(),
@@ -162,7 +162,7 @@ export const createAgentSessionContract = oc
       model: agentModelRefSchema.optional(),
       thinkingLevel: thinkingLevelSchema.optional(),
       autoApprove: z.array(toolTierSchema).optional(),
-      runtimeConfig: z.record(z.string(), z.unknown()).optional(),
+      runtimeConfig: z.record(z.string(), z.json()).optional(),
     })
   )
   .output(agentSessionDetailSchema);
@@ -201,7 +201,7 @@ export const updateAgentSessionSettingsContract = oc
       thinkingLevel: thinkingLevelSchema.optional(),
       activeToolNames: z.array(z.string()).nullable().optional(),
       autoApprove: z.array(toolTierSchema).optional(),
-      runtimeConfig: z.record(z.string(), z.unknown()).optional(),
+      runtimeConfig: z.record(z.string(), z.json()).optional(),
     })
   )
   .output(agentSessionDetailSchema);

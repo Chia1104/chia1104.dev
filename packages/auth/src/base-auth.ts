@@ -126,11 +126,12 @@ export const baseAuthConfig = {
     }),
     admin({
       adminRoles: ["admin"],
-      adminUserIds: [
-        env.ADMIN_ID,
-        env.BETA_ADMIN_ID,
-        env.LOCAL_ADMIN_ID,
-      ].filter(Boolean) as string[],
+      adminUserIds:
+        /* SAFETY: The producer contract guarantees this value satisfies string[]. */ [
+          env.ADMIN_ID,
+          env.BETA_ADMIN_ID,
+          env.LOCAL_ADMIN_ID,
+        ].filter(Boolean) as string[],
     }),
     organization(),
   ],

@@ -8,6 +8,7 @@ import type {
 } from "@earendil-works/pi-agent-core";
 
 import type { DB } from "@chia/db";
+import type { JsonObject } from "@chia/db/json";
 import {
   appendAgentSessionEntry,
   getAgentSession,
@@ -34,7 +35,7 @@ interface EntryRow {
   id: string;
   parentId: string | null;
   type: string;
-  payload: Record<string, unknown>;
+  payload: JsonObject;
   timestamp: Date;
 }
 
@@ -85,7 +86,8 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
       sessionId: this.sessionId,
       parentId: parentId ?? null,
       type,
-      payload: payload as Record<string, unknown>,
+      // SAFETY: Pi session entries contain only JSON-serializable transcript fields.
+      payload: payload as JsonObject,
       timestamp: new Date(timestamp),
     });
 
@@ -108,7 +110,9 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
       this.sessionId,
       type
     );
-    return rows.map(toEntry) as Extract<SessionTreeEntry, { type: TType }>[];
+    return /* SAFETY: The producer contract guarantees this value satisfies Extract<SessionTreeEntry, { type: TType }>[]. */ rows.map(
+      toEntry
+    ) as Extract<SessionTreeEntry, { type: TType }>[];
   }
 
   async getLabel(id: string): Promise<string | undefined> {
@@ -221,7 +225,7 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
  * upgrade adding an entry type needs no migration here.
  */
 const toEntry = (row: EntryRow): SessionTreeEntry =>
-  ({
+  /* SAFETY: The producer contract guarantees this value satisfies SessionTreeEntry. */ ({
     ...row.payload,
     id: row.id,
     parentId: row.parentId,

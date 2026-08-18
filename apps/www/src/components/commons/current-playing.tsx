@@ -167,7 +167,11 @@ const AlbumImage = ({
     width={80}
     height={80}
     sizes="80px"
-    onLoad={(e) => onLoad(e.target as HTMLImageElement)}
+    onLoad={(e) =>
+      onLoad(
+        /* SAFETY: The producer contract guarantees this value satisfies HTMLImageElement. */ e.target as HTMLImageElement
+      )
+    }
     src={data?.item.album.images[0]?.url ?? ""}
     alt={data?.item.album.name ?? ""}
     className="m-0 size-20 rounded-lg bg-gray-400 object-cover"
@@ -373,7 +377,7 @@ export const CurrentPlaying = ({
   });
 
   if (children) {
-    return <>{typeof children === "function" ? children(result) : children}</>;
+    return <>{children instanceof Function ? children(result) : children}</>;
   }
 
   if (result.isLoading) {

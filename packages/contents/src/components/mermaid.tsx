@@ -21,7 +21,8 @@ function cachePromise<T>(
   setPromise: () => Promise<T>
 ): Promise<T> {
   const cached = cache.get(key);
-  if (cached) return cached as Promise<T>;
+  if (cached)
+    return /* SAFETY: The producer contract guarantees this value satisfies Promise<T>. */ cached as Promise<T>;
   const promise = setPromise();
   cache.set(key, promise);
   return promise;

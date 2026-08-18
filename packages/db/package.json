@@ -17,6 +17,10 @@
       "types": "./src/types.ts",
       "default": "./src/types.ts"
     },
+    "./json": {
+      "types": "./src/json.ts",
+      "default": "./src/json.ts"
+    },
     "./schema": {
       "types": "./src/schemas/index.ts",
       "default": "./src/schemas/index.ts"

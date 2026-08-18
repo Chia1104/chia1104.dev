@@ -85,6 +85,6 @@ const writingAgentServiceDelegate: AgentKindService = {
   },
 };
 
-export const agentKinds: Readonly<Record<string, AgentKindService>> = {
+export const agentKinds = {
   writing: writingAgentServiceDelegate,
-};
+} satisfies Readonly<Record<string, AgentKindService>>;

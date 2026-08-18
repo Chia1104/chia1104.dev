@@ -22,7 +22,7 @@ const mergeDefined = <T extends object>(base: T, patch: Partial<T>): T => {
   const next = { ...base };
   for (const [key, value] of Object.entries(patch)) {
     if (value === undefined) continue;
-    (next as Record<string, unknown>)[key] = value;
+    Object.assign(next, { [key]: value });
   }
   return next;
 };

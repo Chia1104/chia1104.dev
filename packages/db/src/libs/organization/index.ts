@@ -61,11 +61,11 @@ export const getInfiniteProjectsByOrganizationId = withDTO(
         sortOrder === "asc" ? asc(project[orderBy]) : desc(project[orderBy]),
       ],
       limit: limit + 1,
-      where: {
-        organizationId,
-        ...(cursorFilter ? { AND: [cursorFilter, ...rawFilters] } : {}),
-        ...(!cursorFilter && rawFilters.length ? { AND: rawFilters } : {}),
-      },
+      where: cursorFilter
+        ? { organizationId, AND: [cursorFilter, ...rawFilters] }
+        : rawFilters.length
+          ? { organizationId, AND: rawFilters }
+          : { organizationId },
     });
 
     const { items, nextCursor } = sliceNextCursor(

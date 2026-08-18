@@ -35,7 +35,8 @@ export const handlers = [
 
   // Mock email send API
   http.post("*/api/v1/email/send", async ({ request }) => {
-    const body = (await request.json()) as typeof mockEmail;
+    const body =
+      /* SAFETY: This fixture implements the typeof mockEmail members exercised by this case. */ (await request.json()) as typeof mockEmail;
 
     // 驗證必要欄位
     if (!body.email || !body.title || !body.message) {

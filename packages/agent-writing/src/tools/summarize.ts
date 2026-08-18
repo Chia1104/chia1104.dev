@@ -19,9 +19,9 @@ import { TOOL_NAMES } from "./registry.ts";
  * `result` is `unknown` because it arrives from pi as `any` — every branch narrows defensively
  * rather than trusting the shape.
  */
-export const summarizeToolResult = (
+export const summarizeToolResult = <TResult>(
   toolName: string,
-  result: unknown,
+  result: TResult,
   isError: boolean
 ): string => {
   if (isError) return toolErrorText(result) ?? "Failed.";
@@ -34,7 +34,7 @@ export const summarizeToolResult = (
 
   switch (toolName) {
     case TOOL_NAMES.fetchUrl: {
-      const url = typeof details.url === "string" ? details.url : undefined;
+      const url = asString(details.url);
       return url ? `Fetched ${hostOf(url)}.` : "Fetched page.";
     }
     case TOOL_NAMES.readDraft: {

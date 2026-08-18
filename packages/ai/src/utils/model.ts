@@ -16,7 +16,7 @@ export const createModel = (
   formater?: ((model: BaseRequest["model"]) => LanguageModel) | "ai-gateway-v3"
 ): LanguageModel => {
   if (formater) {
-    if (typeof formater === "function") {
+    if (formater instanceof Function) {
       return formater(options.model);
     }
     switch (formater) {

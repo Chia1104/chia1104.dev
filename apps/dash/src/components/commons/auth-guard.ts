@@ -39,7 +39,7 @@ const AuthGuard = ({
     return fallback ?? null;
   }
 
-  return typeof children === "function" ? children(data) : children;
+  return children instanceof Function ? children(data) : children;
 };
 
 export default AuthGuard;

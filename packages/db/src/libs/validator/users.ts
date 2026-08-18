@@ -6,18 +6,18 @@ import { FeedOrderBy } from "../../types";
 
 import { baseInfiniteSchema as baseInfiniteSchemaShared } from "./shared";
 
-export const insertUserSchema = z.object({
-  ...createInsertSchema(user).omit({
+export const insertUserSchema = createInsertSchema(user)
+  .omit({
     id: true,
     emailVerified: true,
-  }).shape,
-  id: z.uuid(),
-});
+  })
+  .extend({
+    id: z.uuid(),
+  });
 
 export type InsertUserDTO = z.infer<typeof insertUserSchema>;
 
-export const baseInfiniteSchema = z.object({
-  ...baseInfiniteSchemaShared.shape,
+export const baseInfiniteSchema = baseInfiniteSchemaShared.extend({
   orderBy: z
     .enum([FeedOrderBy.CreatedAt, FeedOrderBy.UpdatedAt])
     .optional()

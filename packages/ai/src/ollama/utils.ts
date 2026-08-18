@@ -4,7 +4,9 @@ import { OllamaModel } from "./types.ts";
 
 import { ollama } from "./index.ts";
 
-export const isOllamaModel = (model?: unknown): model is OllamaModel => {
+export const isOllamaModel = <TModel>(
+  model?: TModel
+): model is TModel & OllamaModel => {
   return z.enum(OllamaModel).safeParse(model).success;
 };
 

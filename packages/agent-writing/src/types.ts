@@ -22,15 +22,6 @@ export type WritingToolTier = (typeof WRITING_TOOL_TIERS)[number];
 
 export const WRITING_TOOL_TIERS = ["read", "draft", "commit"] as const;
 
-/** Only `commit` touches published data. */
-export const WRITING_APPROVAL_TIERS: readonly WritingToolTier[] = ["commit"];
-
-/** Tiers whose successful calls mean the client should refetch the draft. */
-export const WRITING_STATE_TIERS: readonly WritingToolTier[] = [
-  "draft",
-  "commit",
-];
-
 /**
  * Per-turn context handed to every tool by Pi's `AgentHarness`.
  *

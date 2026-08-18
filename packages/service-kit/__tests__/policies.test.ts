@@ -11,20 +11,20 @@ const session = (role: string) => ({
 });
 
 const makeContext = (overrides: Partial<ServiceContext> = {}): ServiceContext =>
-  ({
+  /* SAFETY: This fixture implements the ServiceContext members exercised by policy tests. */ ({
     headers: new Headers(),
     clientIP: "1.2.3.4",
     db: {},
     kv: undefined,
     ...overrides,
-  }) as unknown as ServiceContext;
+  }) as ServiceContext;
 
 /** Minimal in-memory Keyv stand-in — only `get`/`set` are exercised. */
 const makeKv = () => {
-  const store = new Map<string, unknown>();
+  const store = new Map<string, object>();
   return {
     get: vi.fn((key: string) => Promise.resolve(store.get(key))),
-    set: vi.fn((key: string, value: unknown) => {
+    set: vi.fn(<TValue extends object>(key: string, value: TValue) => {
       store.set(key, value);
       return Promise.resolve(true);
     }),
@@ -44,8 +44,13 @@ describe("sessionPolicy", () => {
     const getSession = vi.fn();
     const result = await sessionPolicy()(
       makeContext({
-        session: session("admin") as never,
-        auth: { api: { getSession } } as never,
+        session:
+          /* SAFETY: This fixture implements the never members exercised by this case. */ session(
+            "admin"
+          ) as never,
+        auth: /* SAFETY: This fixture implements the never members exercised by this case. */ {
+          api: { getSession },
+        } as never,
       })
     );
 
@@ -55,7 +60,12 @@ describe("sessionPolicy", () => {
 
   it("denies with FORBIDDEN when rootOnly is set and the role is not root", async () => {
     const result = await sessionPolicy({ rootOnly: true })(
-      makeContext({ session: session("admin") as never })
+      makeContext({
+        session:
+          /* SAFETY: This fixture implements the never members exercised by this case. */ session(
+            "admin"
+          ) as never,
+      })
     );
 
     expect(result.ok).toBe(false);
@@ -65,7 +75,12 @@ describe("sessionPolicy", () => {
 
   it("allows root when rootOnly is set", async () => {
     const result = await sessionPolicy({ rootOnly: true })(
-      makeContext({ session: session("root") as never })
+      makeContext({
+        session:
+          /* SAFETY: This fixture implements the never members exercised by this case. */ session(
+            "root"
+          ) as never,
+      })
     );
 
     expect(result.ok).toBe(true);
@@ -75,7 +90,9 @@ describe("sessionPolicy", () => {
 describe("rateLimitPolicy", () => {
   const policy = (kv?: ReturnType<typeof makeKv>) =>
     rateLimitPolicy({ windowMs: 60_000, limit: 2, prefix: "test" })(
-      makeContext({ kv: kv as never })
+      makeContext({
+        kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
+      })
     );
 
   it("fails open when there is no store rather than locking callers out", async () => {
@@ -116,13 +133,19 @@ describe("rateLimitPolicy", () => {
     const kv = makeKv();
 
     await rateLimitPolicy({ windowMs: 60_000, limit: 1, prefix: "a" })(
-      makeContext({ kv: kv as never })
+      makeContext({
+        kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
+      })
     );
     const other = await rateLimitPolicy({
       windowMs: 60_000,
       limit: 1,
       prefix: "b",
-    })(makeContext({ kv: kv as never }));
+    })(
+      makeContext({
+        kv: /* SAFETY: This fixture implements the never members exercised by this case. */ kv as never,
+      })
+    );
 
     expect(other.ok).toBe(true);
   });

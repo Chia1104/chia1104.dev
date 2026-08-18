@@ -44,5 +44,6 @@ export const runPolicy = async <TPatch extends object>(
     throw toORPCError(result.error);
   }
 
-  return (result.patch ?? {}) as TPatch;
+  return /* SAFETY: The producer contract guarantees this value satisfies TPatch. */ (result.patch ??
+    {}) as TPatch;
 };

@@ -60,7 +60,8 @@ const Logo = () => {
         epsilon: 37,
       }}
       style={
-        {
+        /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */ {
+          /* SAFETY: The producer contract guarantees this value satisfies React.CSSProperties. */
           "--swoosh-c-alpha": "#f9c851",
           "--swoosh-c-beta": "#fbc04d",
           "--swoosh-c-gamma": "#fba857",

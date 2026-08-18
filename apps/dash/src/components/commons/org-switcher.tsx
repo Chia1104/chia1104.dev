@@ -67,8 +67,7 @@ const OrgList = ({
       handleOpenCreateModal();
     } else {
       startTransition(async () => {
-        if (typeof key !== "string") return;
-        const slug = key.split("-")[1];
+        const slug = String(key).split("-")[1];
         if (slug) {
           await setCurrentOrg(slug);
           router.refresh();

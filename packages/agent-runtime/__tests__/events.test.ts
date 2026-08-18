@@ -222,9 +222,10 @@ describe("foldEvents", () => {
     });
 
     expect(event?.type).toBe("tool:end");
-    const details = (
-      event as { details: { post: { slug: string; content: string } } }
-    ).details;
+    const details =
+      /* SAFETY: This fixture implements the { details: { post: { slug: string; content: string } } } members exercised by this case. */ (
+        event as { details: { post: { slug: string; content: string } } }
+      ).details;
     expect(details.post.slug).toBe("hello");
     expect(details.post.content.length).toBeLessThan(body.length);
     expect(details.post.content).toContain("[truncated 100 chars]");

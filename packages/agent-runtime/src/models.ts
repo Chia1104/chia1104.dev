@@ -48,7 +48,9 @@ export type ByokProviderId = (typeof BYOK_PROVIDER_IDS)[number];
 export const isByokProviderId = (
   providerId: string
 ): providerId is ByokProviderId =>
-  (BYOK_PROVIDER_IDS as readonly string[]).includes(providerId);
+  /* SAFETY: The producer contract guarantees this value satisfies readonly string[]. */ (
+    BYOK_PROVIDER_IDS as readonly string[]
+  ).includes(providerId);
 
 /**
  * Decrypted, request-scoped provider keys.
@@ -79,7 +81,17 @@ const fixedCredentialStore = (
 ): CredentialStore => {
   const entries = new Map<string, Credential>(
     Object.entries(credentials).flatMap(([providerId, key]) =>
-      key ? [[providerId, { type: "api_key", key } as Credential]] : []
+      key
+        ? [
+            [
+              providerId,
+              /* SAFETY: The producer contract guarantees this value satisfies Credential. */ {
+                type: "api_key",
+                key,
+              } as Credential,
+            ],
+          ]
+        : []
     )
   );
   return {

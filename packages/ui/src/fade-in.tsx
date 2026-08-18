@@ -34,7 +34,7 @@ const FadeIn: FC<FadeInProps> = ({ className, children, ...props }) => {
         y: 20,
       }}
       {...props}>
-      {typeof children === "function" ? children(isInView) : children}
+      {children instanceof Function ? children(isInView) : children}
     </motion.span>
   );
 };

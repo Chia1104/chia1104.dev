@@ -76,7 +76,10 @@ export const generateEmbeddings = async (
     apiKey: options?.apiKey ?? process.env.OPENAI_API_KEY,
     // the SDK types demand fetch.preconnect but never call it; the workflow
     // runtime's instrumented fetch does not carry it
-    fetch: options?.fetch as typeof globalThis.fetch | undefined,
+    fetch:
+      /* SAFETY: The producer contract guarantees this value satisfies typeof globalThis.fetch | undefined. */ options?.fetch as
+        | typeof globalThis.fetch
+        | undefined,
   });
 
   const guarded = await guardEmbeddingInputs(values, { model });

@@ -1,10 +1,8 @@
-import type { AppEnv } from "../schema/index.ts";
-import { Service } from "../schema/index.ts";
+import { AppEnvSchema, Service } from "../schema/index.ts";
 
 import { serviceEnv } from "./env.ts";
 
-const isServerRuntime = () =>
-  typeof (globalThis as { window?: unknown }).window === "undefined";
+const isServerRuntime = () => !("window" in globalThis);
 
 const getInternalEnv = () => {
   if (process.env.ENV || process.env.APP_ENV) {
@@ -28,12 +26,14 @@ const getInternalEnv = () => {
   }
 };
 
-export const getEnv = (env?: string): AppEnv =>
-  (env ??
-    process.env.VERCEL_ENV ??
-    getInternalEnv() ??
-    process.env.NODE_ENV ??
-    "local") as AppEnv;
+export const getEnv = (env?: string) =>
+  AppEnvSchema.parse(
+    env ??
+      process.env.VERCEL_ENV ??
+      getInternalEnv() ??
+      process.env.NODE_ENV ??
+      "local"
+  );
 
 export const switchEnv = <TResult = unknown>(
   env: string | undefined,

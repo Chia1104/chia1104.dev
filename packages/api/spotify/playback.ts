@@ -23,8 +23,8 @@ const isAccessTokenUsable = (expiresAt: Date) => {
   return expiresAt.getTime() - ACCESS_TOKEN_EXPIRY_BUFFER_MS > Date.now();
 };
 
-const isUnauthorizedError = (error: unknown) => {
-  return error instanceof HTTPError && error.response.status === 401;
+const isUnauthorizedError = (cause: unknown) => {
+  return cause instanceof HTTPError && cause.response.status === 401;
 };
 
 const resolveFallbackAccessToken = async (): Promise<string | undefined> => {

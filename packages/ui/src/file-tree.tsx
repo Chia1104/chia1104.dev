@@ -51,7 +51,7 @@ function formatBytes(bytes: number, decimals = 2): string {
 }
 
 export function isFileType(
-  filename: unknown,
+  filename: string,
   type:
     | "image"
     | "video"
@@ -66,8 +66,6 @@ export function isFileType(
     | "css"
     | "config"
 ): filename is string {
-  if (typeof filename !== "string") return false;
-
   const ext = filename.split(".").pop()?.toLowerCase() || "";
 
   switch (type) {

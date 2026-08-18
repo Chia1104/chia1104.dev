@@ -150,7 +150,7 @@ interface ToolState {
   pendingApproval: boolean;
 }
 
-const jsonOf = (value: unknown): string => {
+const jsonOf = <TValue>(value: TValue): string => {
   try {
     return JSON.stringify(value) ?? "null";
   } catch {
@@ -314,15 +314,20 @@ export const createTanStackAgentEventMapper = ({
         };
         tools.set(event.toolCallId, tool);
         return [
-          {
-            type: EventType.TOOL_CALL_START,
-            toolCallId: tool.id,
-            toolCallName: tool.name,
-            toolName: tool.name,
-            ...(activeAssistantId
-              ? { parentMessageId: activeAssistantId }
-              : {}),
-          },
+          activeAssistantId
+            ? {
+                type: EventType.TOOL_CALL_START,
+                toolCallId: tool.id,
+                toolCallName: tool.name,
+                toolName: tool.name,
+                parentMessageId: activeAssistantId,
+              }
+            : {
+                type: EventType.TOOL_CALL_START,
+                toolCallId: tool.id,
+                toolCallName: tool.name,
+                toolName: tool.name,
+              },
           {
             type: EventType.TOOL_CALL_ARGS,
             toolCallId: tool.id,

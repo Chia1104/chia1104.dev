@@ -177,16 +177,17 @@ const buildModeReport = (
         mean(results.map((result) => result.recall[k]!)),
       ])
     ),
-    recallByKind: Object.fromEntries(
-      kinds.map((kind) => [
-        kind,
-        mean(
-          results
-            .filter((result) => result.kind === kind)
-            .map((result) => result.recall[5]!)
-        ),
-      ])
-    ) as Record<GoldenQueryKind, number>,
+    recallByKind:
+      /* SAFETY: The producer contract guarantees this value satisfies Record<GoldenQueryKind, number>. */ Object.fromEntries(
+        kinds.map((kind) => [
+          kind,
+          mean(
+            results
+              .filter((result) => result.kind === kind)
+              .map((result) => result.recall[5]!)
+          ),
+        ])
+      ) as Record<GoldenQueryKind, number>,
     mrr: mean(
       results.map((result) =>
         result.firstHitRank === null ? 0 : 1 / result.firstHitRank

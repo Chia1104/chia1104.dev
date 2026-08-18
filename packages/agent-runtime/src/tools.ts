@@ -42,6 +42,7 @@ export const LocaleSchema = (description: string) =>
  * shape, which is what the model is being asked to produce.
  */
 export const zodToTypebox = (schema: z.ZodType): TSchema =>
+  // SAFETY: Zod's JSON Schema output is consumed only by TypeBox-compatible tool validators.
   z.toJSONSchema(schema, {
     io: "input",
     reused: "inline",
@@ -82,59 +83,56 @@ export const textResult = <TDetails>(
  * Tools return prose + JSON rather than raw JSON so the model gets an explicit framing
  * sentence — it reliably improves how well small results are used.
  */
-export const jsonBlock = (value: unknown): string =>
+export const jsonBlock = <TValue>(value: TValue): string =>
   `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;
 
 /**
  * Truncates long text for the model's context with an explicit marker, so the model knows it
  * is looking at a prefix and can ask for more rather than assuming it saw everything.
  */
-export const truncate = (
-  text: string,
-  maxChars: number
-): { text: string; truncated: boolean } => {
-  if (text.length <= maxChars) return { text, truncated: false };
+export const truncate = (text: string, maxChars: number) => {
+  if (text.length <= maxChars) return { text, truncated: false } as const;
   return {
     text: `${text.slice(0, maxChars)}\n\n… [truncated ${text.length - maxChars} more characters]`,
     truncated: true,
-  };
+  } as const;
 };
 
 // ============================================
 // Tool result narrowing (for transcript summaries)
 // ============================================
 
-/**
- * Tool results reach a summarizer as `unknown` — pi hands them over as `any`, and a persisted
- * `ToolResultMessage` has the same `{ content, details }` shape — so summarizers narrow
- * defensively through these rather than trusting the shape.
- */
-export const asRecord = (
-  value: unknown
-): Record<string, unknown> | undefined =>
-  typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
+/** Tool results are parsed before a transcript summarizer reads their structured fields. */
+const jsonRecordSchema = z.record(z.string(), z.json());
+const jsonArraySchema = z.array(z.json());
+const textContentSchema = z.object({ text: z.string().optional() }).loose();
+const summarizedToolResultSchema = z
+  .object({
+    content: z.array(textContentSchema).optional(),
+    details: jsonRecordSchema.optional(),
+  })
+  .loose();
 
-export const asArray = (value: unknown): unknown[] | undefined =>
-  Array.isArray(value) ? value : undefined;
+export const asRecord = <TValue>(value: TValue) =>
+  jsonRecordSchema.safeParse(value).data;
 
-export const asString = (value: unknown): string | undefined =>
-  typeof value === "string" ? value : undefined;
+export const asArray = <TValue>(value: TValue) =>
+  jsonArraySchema.safeParse(value).data;
 
-export const asNumber = (value: unknown): number | undefined =>
-  typeof value === "number" ? value : undefined;
+export const asString = <TValue>(value: TValue) =>
+  z.string().safeParse(value).data;
+
+export const asNumber = <TValue>(value: TValue) =>
+  z.number().safeParse(value).data;
 
 /** The `details` a tool returned, from either the live or the persisted result shape. */
-export const toolResultDetails = (
-  result: unknown
-): Record<string, unknown> | undefined => asRecord(asRecord(result)?.details);
+export const toolResultDetails = <TResult>(result: TResult) =>
+  summarizedToolResultSchema.safeParse(result).data?.details;
 
 /** First line of an error result's text, capped so the transcript stays one line. */
-export const toolErrorText = (result: unknown): string | undefined => {
-  const text = asString(
-    asRecord(asArray(asRecord(result)?.content)?.[0])?.text
-  );
+export const toolErrorText = <TResult>(result: TResult): string | undefined => {
+  const parsed = summarizedToolResultSchema.safeParse(result).data;
+  const text = parsed?.content?.[0]?.text;
   if (!text) return undefined;
   const [firstLine] = text.split("\n");
   return firstLine && firstLine.length > 160

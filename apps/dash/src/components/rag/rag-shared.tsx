@@ -13,7 +13,7 @@ export type ChunkState =
 export type IndexCounts = RouterOutputs["rag"]["overview"]["counts"];
 export type RunStatus = RouterOutputs["rag"]["run:get"]["run"]["status"];
 
-const STATE_META: Record<ChunkState, { label: string; className: string }> = {
+const STATE_META = {
   current: {
     label: "Embedded on the current index key",
     className: "bg-success",
@@ -23,7 +23,7 @@ const STATE_META: Record<ChunkState, { label: string; className: string }> = {
     className: "bg-warning",
   },
   missing: { label: "No vector at all", className: "bg-muted-foreground" },
-};
+} satisfies Record<ChunkState, { label: string; className: string }>;
 
 export const StateDot = ({
   state,
@@ -111,16 +111,13 @@ export const CountsSummary = ({ counts }: { counts: IndexCounts }) => (
   </div>
 );
 
-const RUN_STATUS_COLOR: Record<
-  RunStatus,
-  "default" | "success" | "warning" | "danger"
-> = {
+const RUN_STATUS_COLOR = {
   pending: "default",
   running: "warning",
   completed: "success",
   failed: "danger",
   cancelled: "default",
-};
+} satisfies Record<RunStatus, "default" | "success" | "warning" | "danger">;
 
 export const RunStatusChip = ({ status }: { status: RunStatus }) => (
   <Chip color={RUN_STATUS_COLOR[status]} size="sm" variant="soft">

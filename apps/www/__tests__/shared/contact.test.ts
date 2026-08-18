@@ -5,16 +5,16 @@ import contact from "@/shared/contact";
 describe("Contact Information", () => {
   it("應該定義聯絡資訊", () => {
     expect(contact).toBeDefined();
-    expect(typeof contact).toBe("object");
+    expect(contact).toEqual(expect.any(Object));
   });
 
   it("每個聯絡方式應該有必要的屬性", () => {
     Object.entries(contact).forEach(([, item]) => {
       expect(item.name).toBeDefined();
-      expect(typeof item.name).toBe("string");
+      expect(item.name).toEqual(expect.any(String));
 
       expect(item.link).toBeDefined();
-      expect(typeof item.link).toBe("string");
+      expect(item.link).toEqual(expect.any(String));
 
       expect(item.icon).toBeDefined();
     });
