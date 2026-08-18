@@ -1,3 +1,5 @@
+
+
 # Chia1104.dev
 
 [![www deployment](https://img.shields.io/github/deployments/chia1104/chia1104.dev/Production%20%E2%80%93%20chia1104?style=flat-square&logo=vercel&label=www)](https://chia1104.dev)
@@ -18,7 +20,7 @@ The frontends talk to `service` through a contract-first [oRPC](https://orpc.dev
 ```
 apps/          www, dash, service, gateway (Caddy/Nginx), functions/pg-dump-cron
 packages/      @chia/* — api, db, service-kit, auth, kv, ai, agent-runtime, agent-writing,
-               contents, ui, editor, themes, tailwind, shaders, i18n, meta, utils
+               agent-content, contents, ui, editor, themes, tailwind, shaders, i18n, meta, utils
 tests/www-e2e  Playwright
 docs/          architecture notes for the agent and RAG subsystems
 infra/railway/ per-service Railway config
