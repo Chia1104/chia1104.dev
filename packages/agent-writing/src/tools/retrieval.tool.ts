@@ -73,8 +73,8 @@ export const fetchUrlTool = defineTool({
   name: TOOL_NAMES.fetchUrl,
   label: labelOf(TOOL_NAMES.fetchUrl),
   description:
-    "Fetch a public web page and return its readable text. Use it to check a fact or read a " +
-    "reference the operator linked. Returns plain text only — no scripts, no images.",
+    "Fetch a public web page (or PDF) and return its main content as markdown. Use it to " +
+    "check a fact or read a reference the operator linked.",
   parameters: Type.Object({
     url: Type.String({
       description: "Absolute http(s) URL.",

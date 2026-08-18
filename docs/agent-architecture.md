@@ -343,9 +343,10 @@ read a page), stages drafts through `DraftStore`, and only commit-tier tools pro
 to live feed/content tables. Tool order encourages the model to read, draft and then commit.
 Destructive deletion and image upload are not available agent tools.
 
-`WebPort` is host-implemented in `apps/service/src/services/agent-web.port.ts`: search is
-Firecrawl (`FIRECRAWL_API_KEY`), snippets only — no per-result scrape — so a call has a fixed
-cost and the model reads a page only when it chooses to with `fetch_url`.
+`WebPort` is host-implemented on Firecrawl (`apps/service/src/services/agent-web.port.ts`,
+`FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
+fixed cost; `fetch_url` is one scrape per page, main content as markdown, and is how the model
+reads a source it chose. There is no direct outbound fetch in the agent path.
 
 ### Content visibility
 

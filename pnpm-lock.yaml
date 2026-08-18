@@ -799,9 +799,6 @@ importers:
       nitro:
         specifier: 3.0.260610-beta
         version: 3.0.260610-beta(@upstash/redis@1.38.2)(@vercel/functions@3.9.1(@aws-sdk/credential-provider-web-identity@3.972.49)(ws@8.21.3))(@vercel/queue@0.3.1)(chokidar@5.0.0)(dotenv@17.4.2)(drizzle-orm@1.0.0-rc.4(@opentelemetry/api@1.9.1)(@sinclair/typebox@0.34.52)(@types/pg@8.21.0)(@upstash/redis@1.38.2)(bun-types@1.3.14)(pg@8.20.0)(sqlite3@5.1.7(supports-color@8.1.1))(typebox@1.3.11)(zod@4.4.3))(giget@3.3.1)(ioredis@5.11.1(supports-color@8.1.1))(jiti@2.7.0)(lru-cache@11.5.2)(rollup@4.62.4)(sqlite3@5.1.7(supports-color@8.1.1))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.11)(yaml@2.9.0))
-      node-html-parser:
-        specifier: ^9.0.1
-        version: 9.0.1
       react:
         specifier: catalog:react-is
         version: 19.2.8

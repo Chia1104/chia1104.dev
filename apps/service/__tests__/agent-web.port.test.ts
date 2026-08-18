@@ -1,4 +1,7 @@
-const { search } = vi.hoisted(() => ({ search: vi.fn() }));
+const { search, scrape } = vi.hoisted(() => ({
+  search: vi.fn(),
+  scrape: vi.fn(),
+}));
 
 vi.mock("firecrawl", () => {
   class SdkError extends Error {
@@ -10,6 +13,7 @@ vi.mock("firecrawl", () => {
   }
   class Firecrawl {
     search = search;
+    scrape = scrape;
   }
   return { Firecrawl, SdkError };
 });
@@ -20,8 +24,9 @@ import { createAgentWebPort } from "../src/services/agent-web.port";
 
 /**
  * The port is the only place Firecrawl's request and response shapes are known. These pin the
- * mapping the tool relies on: recency → `tbs`, no `scrapeOptions` (cost), and hits reduced to
- * `{ url, title, description }` whichever shape the SDK returns.
+ * mapping the tools rely on: recency → `tbs`, no `scrapeOptions` on search (cost), hits reduced
+ * to `{ url, title, description }` whichever shape the SDK returns, and a scrape reduced to
+ * `{ url, title, text }`.
  */
 
 describe("createAgentWebPort.search", () => {
@@ -95,6 +100,50 @@ describe("createAgentWebPort.search", () => {
 
     await expect(port.search({ query: "q", limit: 5 })).rejects.toThrow(
       "Web search failed (HTTP 402)."
+    );
+  });
+});
+
+describe("createAgentWebPort.fetchPage", () => {
+  const port = createAgentWebPort();
+
+  beforeEach(() => {
+    scrape.mockReset();
+  });
+
+  it("scrapes main content as markdown and returns the resolved URL and title", async () => {
+    scrape.mockResolvedValue({
+      markdown: "# Hello\n\nBody.",
+      metadata: { sourceURL: "https://example.com/final", title: "Hello" },
+    });
+
+    await expect(port.fetchPage("https://example.com/")).resolves.toEqual({
+      url: "https://example.com/final",
+      title: "Hello",
+      text: "# Hello\n\nBody.",
+    });
+    expect(scrape).toHaveBeenCalledWith("https://example.com/", {
+      formats: ["markdown"],
+      onlyMainContent: true,
+      timeout: 30_000,
+    });
+  });
+
+  it("falls back to the requested URL and empty text when the document is bare", async () => {
+    scrape.mockResolvedValue({});
+
+    await expect(port.fetchPage("https://example.com/")).resolves.toEqual({
+      url: "https://example.com/",
+      title: undefined,
+      text: "",
+    });
+  });
+
+  it("replaces a provider error with a short message carrying only the status", async () => {
+    scrape.mockRejectedValue(new SdkError("<html>blocked</html>", 403));
+
+    await expect(port.fetchPage("https://example.com/")).rejects.toThrow(
+      "Fetching the page failed (HTTP 403)."
     );
   });
 });

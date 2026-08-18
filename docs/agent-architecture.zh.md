@@ -322,9 +322,10 @@ Writing package 擁有自己的 model allowlist。Gateway、OpenAI、Anthropic c
 Writing agent 透過 `ContentPort`（`@chia/agent-content` 的 `ContentReadPort` 加上寫入）讀內容、
 透過 `WebPort`（`web_search` 找來源、`fetch_url` 讀頁面）連外、透過 `DraftStore` 寫 staging
 buffer；只有 commit-tier tool 會把 staged data 提升到正式 feed/content。刪除內容與圖片上傳不
-開放給 agent。`WebPort` 由 host 實作在 `apps/service/src/services/agent-web.port.ts`：search 走
-Firecrawl（`FIRECRAWL_API_KEY`），只回 snippet、不逐筆 scrape，所以每次呼叫成本固定，模型要讀
-哪一頁再自己用 `fetch_url` 決定。`buildSystemPrompt` 是穩定的
+開放給 agent。`WebPort` 由 host 用 Firecrawl 實作（`apps/service/src/services/agent-web.port.ts`、
+`FIRECRAWL_API_KEY`）：search 只回 snippet、不逐筆 scrape，所以每次呼叫成本固定；`fetch_url`
+是一頁一次 scrape、回主要內容的 markdown，模型要讀哪一頁自己決定。Agent 路徑上沒有直接對外的
+fetch。`buildSystemPrompt` 是穩定的
 system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatile block（見 §4）；skills
 與 templates 位於 `packages/agent-writing/src/prompts/`。
 

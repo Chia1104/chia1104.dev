@@ -98,7 +98,7 @@ export interface FeedDraft {
 export interface FetchedPage {
   url: string;
   title?: string;
-  /** Plain-text extraction. Truncated by the host implementation. */
+  /** Main content as markdown. The tool truncates it for the model. */
   text: string;
 }
 
