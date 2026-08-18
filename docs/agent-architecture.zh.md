@@ -161,8 +161,8 @@ context 與 writing policy。
 `runPiTurn` 負責完整生命週期：
 
 1. 依 resolved model clamp thinking level，每個 turn 建立一個 harness；
-2. 安裝 Pi tool-call approval hook、附加 volatile block 的 `context` hook、輪詢 host abort
-   訊號的 `before_provider_request` hook，以及 Pi-to-wire event mapper；
+2. 安裝 Pi tool-call approval hook、附加 volatile block 的 `context` hook、host 的 abort
+   signal，以及 Pi-to-wire event mapper；
 3. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
 4. 檢查回傳的 assistant message：`stopReason: "error"` 是分類過的 provider 失敗，
    `"aborted"` 讓 turn 以 aborted 結束；harness 或 hook 拋出的例外歸為 `internal`；
@@ -181,10 +181,20 @@ Pi 的 `context` hook 附加為每個 provider request 的最後一則 user mess
 
 ### Abort
 
-`abort` 取消 session 的 workflow run，並把它的 `agent_run` 列標成 `cancelled`。取消到不了
-已經在執行中的 step，所以 turn step 在每次 provider request 前透過 `shouldAbort` 輪詢那一列；
-讀到 `cancelled` 就在該邊界 abort harness，turn 以 `run:end{aborted}` 結束。Aborted turn 不會
-持久化 approval，也不會 compaction。下一次 prompt 會在持久化的 transcript 上開一個新 run。
+Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 只是讓它不再被排程——所以 turn
+step 會以 workflow run id 在 process 內的 registry（`apps/service/src/services/agent-turn-registry.ts`）
+註冊一個 `AbortController`，把 signal 交給 `runPiTurn`。`abort` 先觸發那個 controller，再取消
+run、把 `agent_run` 列標成 `cancelled`。Signal 一觸發 harness 立刻中止，生成到一半也一樣：Pi
+取消進行中的 provider stream，部分回覆以 `aborted` 持久化，turn 以 `run:end{aborted}` 結束；不
+持久化 approval，也不 compaction。下一次 prompt 會在持久化的 transcript 上開新 run。Registry
+就是全部機制，因為 service 只跑一個 replica，且 workflow world 在 process 內執行 step；replica
+變多時需要廣播（`LISTEN`/`NOTIFY`，postgres world 的 stream 已經在用）。
+
+### Pi hook 裡的 host 失敗
+
+Hook 拋錯時 Pi 會把它包成 `stopReason: "error"` 的 assistant message，跟 provider 失敗長得一樣。
+因此 `runPiTurn` 安裝的 hook 都自己攔錯、記成 host failure 並中止 harness，turn 以 `internal`
+收尾。Volatile context 讀失敗就是這樣結束，而不是讓模型在看不到目前狀態的情況下繼續動作。
 
 ## 5. Approval handshake
 
@@ -351,6 +361,7 @@ factory、capability plugin system 或 provider-neutral handle。
 | Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
 | Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                              |
 | Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                              |
+| Running-turn abort registry  | `apps/service/src/services/agent-turn-registry.ts`                                     |
 | Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                     |
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |

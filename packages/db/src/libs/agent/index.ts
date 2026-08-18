@@ -187,10 +187,6 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
     orderBy: { startedAt: "desc" },
   });
 
-/** The run row that owns a workflow run; how a turn step finds its own record. */
-export const getAgentRunByExternalId = async (db: DB, externalRunId: string) =>
-  await db.query.agentRuns.findFirst({ where: { externalRunId } });
-
 /** Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten. */
 export const patchAgentRunMetadata = async (
   db: DB,

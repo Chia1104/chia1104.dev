@@ -11,7 +11,6 @@ import type { DB } from "@chia/db";
 import { connectDatabase } from "@chia/db/client";
 import {
   completeActiveAgentRuns,
-  getAgentRunByExternalId,
   getAgentSession,
   getApprovedAgentToolCallIds,
   getWritingAgentSession,
@@ -22,6 +21,7 @@ import { getAdminId } from "@chia/utils/config";
 
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
+import { registerRunningTurn } from "../services/agent-turn-registry";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
@@ -123,7 +123,8 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 type AgentTurnHandler = (
   db: DB,
   row: AgentSessionRow,
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ) => Promise<AgentTurnOutcome>;
 
 // ============================================
@@ -164,9 +165,11 @@ export const runAgentTurnStep = async (
   };
   await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
 
+  const turn = registerRunningTurn(workflowRunId);
   try {
-    return await handler(db, row, request);
+    return await handler(db, row, request, turn.signal);
   } finally {
+    turn.unregister();
     await patchAgentRunMetadata(db, workflowRunId, {
       [AGENT_TURN_KEY]: { ...marker, running: false },
     });
@@ -190,7 +193,8 @@ const AGENT_TURN_HANDLERS: Readonly<Record<string, AgentTurnHandler>> = {
 async function runWritingAgentTurn(
   db: DB,
   row: AgentSessionRow,
-  request: AgentTurnRequest
+  request: AgentTurnRequest,
+  signal: AbortSignal
 ): Promise<AgentTurnOutcome> {
   const [
     { createAgentModels, PgSessionRepo },
@@ -254,18 +258,6 @@ async function runWritingAgentTurn(
     decryptAgentCredentials(request.credentials)
   );
 
-  /**
-   * `abort` cancels the workflow run and marks its `agent_run` row cancelled, but a step keeps
-   * executing — nothing from the SDK reaches code already inside it. Polling the row before each
-   * provider request is what lets the harness stop instead of generating to the end. No row yet
-   * (the first request can race `createAgentRun`) means not cancelled.
-   */
-  const { workflowRunId } = getWorkflowMetadata();
-  const shouldAbort = async () => {
-    const run = await getAgentRunByExternalId(db, workflowRunId);
-    return run?.status === "cancelled";
-  };
-
   return await runWritingTurn({
     session,
     models,
@@ -283,7 +275,7 @@ async function runWritingAgentTurn(
     onEvent: writer.push,
     approvedToolCallIds,
     preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
-    shouldAbort,
+    signal,
     message: {
       text: request.text,
       template: request.template,

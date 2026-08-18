@@ -39,8 +39,8 @@ export interface RunWritingTurnOptions<TApproval> {
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
-  /** Host-owned abort signal, polled before each provider request. */
-  shouldAbort?: () => boolean | Promise<boolean>;
+  /** Host-owned abort; see `RunPiTurnOptions.signal`. */
+  signal?: AbortSignal;
   models?: Models;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
@@ -80,7 +80,7 @@ export const runWritingTurn = <TApproval>(
         defaultLocale,
         now: new Date(),
       }),
-    shouldAbort: options.shouldAbort,
+    signal: options.signal,
     skills: writingSkills,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,

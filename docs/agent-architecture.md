@@ -167,7 +167,7 @@ turn context and the writing policy.
 
 1. clamp thinking level to the resolved model and construct one harness for the turn;
 2. install the Pi tool-call approval hook, the `context` hook that appends the volatile block, the
-   `before_provider_request` hook that polls the host's abort signal, and Pi-to-wire event mapping;
+   host abort signal, and Pi-to-wire event mapping;
 3. emit `run:start` and the user event, then invoke prompt or prompt template;
 4. read the resolved assistant message: `stopReason: "error"` is a classified provider failure,
    `"aborted"` ends the turn as aborted; a thrown harness or hook error is `internal`;
@@ -187,11 +187,24 @@ transcript. Anything the model must see fresh belongs there, not in the system p
 
 ### Abort
 
-`abort` cancels the session's workflow run and marks its `agent_run` row `cancelled`. Cancelling
-does not reach a step already executing, so the turn step polls that row before each provider
-request through `shouldAbort`; when it reads `cancelled` it aborts the harness at that boundary
-and the turn ends with `run:end{aborted}`. No approvals are persisted and no compaction runs for
-an aborted turn. The next prompt starts a fresh run over the persisted transcript.
+Nothing in the workflow SDK reaches a step already executing — cancelling the run only stops it
+from being scheduled again — so the turn step registers an `AbortController` for its workflow run
+id in a process-local registry (`apps/service/src/services/agent-turn-registry.ts`) and hands the
+signal to `runPiTurn`. `abort` fires that controller first, then cancels the run and marks the
+`agent_run` row `cancelled`. Firing the signal aborts the harness at once, mid-generation included:
+Pi cancels the in-flight provider stream, the partial reply is persisted as `aborted`, and the turn
+ends with `run:end{aborted}`; no approvals are persisted and no compaction runs. The next prompt
+starts a fresh run over the persisted transcript. The registry is the whole mechanism because the
+service runs one replica and the workflow world executes steps in-process; more replicas would
+need a broadcast (`LISTEN`/`NOTIFY`, which the postgres world already uses for its streams).
+
+### Host failures inside Pi hooks
+
+Pi turns a hook that throws into an assistant message with `stopReason: "error"`, which would be
+classified like a provider failure. The hooks `runPiTurn` installs therefore catch their own
+errors, record them as a host failure and abort the harness; the turn then fails as `internal`. A
+volatile-context read that fails ends the turn this way rather than letting the model act without
+seeing the current state.
 
 ## 5. Approval handshake
 
@@ -372,6 +385,7 @@ until a concrete second execution foundation requires a different seam.
 | Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                           |
 | Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                              |
 | Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                              |
+| Running-turn abort registry  | `apps/service/src/services/agent-turn-registry.ts`                                     |
 | Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                     |
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                     |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                              |

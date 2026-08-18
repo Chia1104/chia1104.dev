@@ -254,26 +254,64 @@ describe("runPiTurn", () => {
     });
   });
 
-  it("aborts the harness at the provider boundary when the host says so", async () => {
+  it("aborts the harness the moment the host signal fires", async () => {
     const options = createOptions();
-    const shouldAbort = vi.fn(async () => true);
+    const controller = new AbortController();
     pi.harness.prompt.mockImplementation(async () => {
+      // No hook boundary at all: a single generation that "takes a while".
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return reply(pi.harness.abort.mock.calls.length > 0 ? "aborted" : "stop");
+    });
+
+    const pending = runPiTurn({ ...options, signal: controller.signal });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    controller.abort();
+    const result = await pending;
+
+    expect(pi.harness.abort).toHaveBeenCalledOnce();
+    expect(result.status).toBe("aborted");
+    expect(options.events.at(-1)).toEqual({
+      type: "run:end",
+      reason: "aborted",
+    });
+  });
+
+  it("re-issues the abort at the provider boundary if it fired before the run was armed", async () => {
+    const options = createOptions();
+    const controller = new AbortController();
+    pi.harness.prompt.mockImplementation(async () => {
+      controller.abort();
+      // The event listener already ran once; the boundary hook must call again.
       await pi.handlers.get("before_provider_request")?.({
         type: "before_provider_request",
       });
       return reply("aborted");
     });
 
-    await runPiTurn({ ...options, shouldAbort });
+    await runPiTurn({ ...options, signal: controller.signal });
 
-    expect(shouldAbort).toHaveBeenCalledOnce();
-    expect(pi.harness.abort).toHaveBeenCalledOnce();
+    expect(pi.harness.abort).toHaveBeenCalledTimes(2);
   });
 
-  it("does not poll or abort when the host has no abort signal", async () => {
+  it("skips the provider entirely when the signal is already aborted", async () => {
     const options = createOptions();
-    await runPiTurn(options);
-    expect(pi.handlers.has("before_provider_request")).toBe(false);
+    const controller = new AbortController();
+    controller.abort();
+
+    const result = await runPiTurn({ ...options, signal: controller.signal });
+
+    expect(pi.harness.prompt).not.toHaveBeenCalled();
+    expect(result.status).toBe("aborted");
+  });
+
+  it("stops listening once the turn is over", async () => {
+    const options = createOptions();
+    const controller = new AbortController();
+
+    await runPiTurn({ ...options, signal: controller.signal });
+    controller.abort();
+
+    expect(pi.harness.abort).not.toHaveBeenCalled();
   });
 
   it("appends the volatile context as an ephemeral last message", async () => {
@@ -313,15 +351,16 @@ describe("runPiTurn", () => {
     ]);
   });
 
-  it("drops the volatile context for a request when reading it fails", async () => {
+  it("fails the turn as internal when the volatile context cannot be read", async () => {
     const options = createOptions();
-    let transformed: unknown = "unset";
     pi.harness.prompt.mockImplementation(async () => {
-      transformed = await pi.handlers.get("context")?.({
+      const transformed = await pi.handlers.get("context")?.({
         type: "context",
         messages: [],
       });
-      return reply("stop");
+      // The hook must not throw into Pi; it hands the loop back untouched and aborts instead.
+      expect(transformed).toBeUndefined();
+      return reply("aborted");
     });
 
     await expect(
@@ -331,8 +370,16 @@ describe("runPiTurn", () => {
           throw new Error("draft store down");
         },
       })
-    ).resolves.toMatchObject({ status: "done" });
-    expect(transformed).toBeUndefined();
+    ).resolves.toEqual({
+      status: "error",
+      approvals: [],
+      error: { kind: "internal", message: "draft store down" },
+    });
+    expect(pi.harness.abort).toHaveBeenCalled();
+    expect(options.events.slice(-2)).toEqual([
+      { type: "error", kind: "internal", message: "draft store down" },
+      { type: "run:end", reason: "error" },
+    ]);
   });
 
   it("terminalizes and flushes when approval persistence fails", async () => {

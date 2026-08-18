@@ -49,11 +49,11 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
    */
   volatileContext?: () => string | undefined | Promise<string | undefined>;
   /**
-   * Polled before every provider request. Returning true stops the run at that boundary — the
-   * step hosting this turn has no signal from the outside, so this is how an operator's abort
-   * reaches a harness that is otherwise mid-generation.
+   * Host-owned abort. Firing it aborts the harness at once, mid-generation included: Pi cancels
+   * the in-flight provider stream and the turn ends as `aborted`. Already-aborted on entry skips
+   * the provider entirely.
    */
-  shouldAbort?: () => boolean | Promise<boolean>;
+  signal?: AbortSignal;
   skills?: Skill[];
   promptTemplates?: PromptTemplate[];
   policy: AgentPolicy;
@@ -84,7 +84,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   toolContext,
   systemPrompt: prompt,
   volatileContext,
-  shouldAbort,
+  signal,
   skills,
   promptTemplates,
   policy,
@@ -126,29 +126,45 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       turnHarness.on("tool_call", (event) => gate.handle(event))
     );
 
+    /**
+     * A failure raised by the host inside a Pi hook. Pi turns a throwing hook into an assistant
+     * message with `stopReason: "error"`, indistinguishable from a provider failure, so hooks catch
+     * their own errors here and the turn is failed as `internal` once the harness has unwound.
+     */
+    let hostFailure: AgentTurnError | undefined;
+
     if (volatileContext) {
-      // Pi's contract for this hook is "must not throw"; a failed state read drops the block for
-      // this request rather than failing the turn.
       unsubscribers.push(
         turnHarness.on("context", async (event) => {
           try {
             const text = await volatileContext();
             if (!text) return undefined;
             return { messages: [...event.messages, volatileMessage(text)] };
-          } catch {
+          } catch (error) {
+            // Fail closed: a model that cannot see the current state must not act on it. Not awaited
+            // — `abort()` waits for the run to settle, and this hook is on the run's own path.
+            hostFailure = errorOfThrown(error);
+            void turnHarness.abort().catch(() => undefined);
             return undefined;
           }
         })
       );
     }
 
-    if (shouldAbort) {
+    if (signal) {
+      // Not awaited: `abort()` waits for the run to settle, and the hook below is on the run's own
+      // path. Signalling is enough — the loop observes the aborted controller and unwinds.
+      const abortHarness = () =>
+        void turnHarness.abort().catch(() => undefined);
+      signal.addEventListener("abort", abortHarness, { once: true });
+      unsubscribers.push(() =>
+        signal.removeEventListener("abort", abortHarness)
+      );
+      // An abort that fires before the run has armed its controller is a no-op for the harness;
+      // re-checking at the next provider boundary closes that window without any I/O.
       unsubscribers.push(
-        turnHarness.on("before_provider_request", async () => {
-          if (!(await shouldAbort())) return undefined;
-          // Not awaited: `abort()` waits for the run to settle, and this hook is on the run's own
-          // path. Signalling is enough — the loop observes the aborted signal and unwinds.
-          void turnHarness.abort().catch(() => undefined);
+        turnHarness.on("before_provider_request", () => {
+          if (signal.aborted) abortHarness();
           return undefined;
         })
       );
@@ -195,22 +211,25 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     });
 
     let failure: AgentTurnError | undefined;
-    let aborted = false;
-    try {
-      // Pi resolves provider failures as an assistant message rather than throwing: `error`
-      // carries the provider's text (post-retry), `aborted` means the run's signal fired.
-      const reply: AssistantMessage = message.template
-        ? await turnHarness.promptFromTemplate(
-            message.template.name,
-            message.template.args
-          )
-        : await turnHarness.prompt(message.text);
-      if (reply.stopReason === "aborted") aborted = true;
-      else if (reply.stopReason === "error") {
-        failure = errorOfAssistantMessage(reply, model.contextWindow);
+    let aborted = signal?.aborted ?? false;
+    if (!aborted) {
+      try {
+        // Pi resolves provider failures as an assistant message rather than throwing: `error`
+        // carries the provider's text (post-retry), `aborted` means the run's controller fired.
+        const reply: AssistantMessage = message.template
+          ? await turnHarness.promptFromTemplate(
+              message.template.name,
+              message.template.args
+            )
+          : await turnHarness.prompt(message.text);
+        if (hostFailure) failure = hostFailure;
+        else if (reply.stopReason === "aborted") aborted = true;
+        else if (reply.stopReason === "error") {
+          failure = errorOfAssistantMessage(reply, model.contextWindow);
+        }
+      } catch (error) {
+        failure = hostFailure ?? errorOfThrown(error);
       }
-    } catch (error) {
-      failure = errorOfThrown(error);
     }
 
     let approvals: TApproval[] = [];

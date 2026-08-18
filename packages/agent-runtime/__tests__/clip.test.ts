@@ -5,6 +5,7 @@ import {
   DETAILS_MAX_DEPTH,
   DETAILS_MAX_OBJECT_KEYS,
   DETAILS_MAX_STRING_CHARS,
+  DETAILS_MAX_TOTAL_CHARS,
   clipDetails,
 } from "../src/wire/clip.ts";
 
@@ -51,5 +52,24 @@ describe("clipDetails", () => {
       cursor = cursor.nested as Record<string, unknown>;
     }
     expect(cursor.nested).toBe("[…]");
+  });
+
+  it("bounds the whole value, not just each part", () => {
+    // Every part is within its own cap, but together they are ~800K characters.
+    const details = {
+      posts: Array.from({ length: DETAILS_MAX_ARRAY_ITEMS }, (_, i) => ({
+        slug: `post-${i}`,
+        body: "z".repeat(DETAILS_MAX_STRING_CHARS),
+      })),
+    };
+
+    const clipped = clipDetails(details) as { posts: unknown[] };
+    const serialized = JSON.stringify(clipped);
+
+    // Markers and JSON punctuation ride on top of the budget, but not by much.
+    expect(serialized.length).toBeLessThan(DETAILS_MAX_TOTAL_CHARS * 1.25);
+    expect(clipped.posts.length).toBeLessThan(DETAILS_MAX_ARRAY_ITEMS);
+    expect(clipped.posts.at(-1)).toMatch(/more items/);
+    expect(clipped.posts[0]).toMatchObject({ slug: "post-0" });
   });
 });

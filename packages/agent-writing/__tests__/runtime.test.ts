@@ -46,12 +46,13 @@ interface Fixture {
   ) => void;
   run: (
     text: string,
-    options?: { shouldAbort?: () => boolean }
+    options?: { signal?: AbortSignal }
   ) => Promise<AgentTurnExecution<ApprovalRequest>>;
 }
 
 const build = async (
-  settings: Partial<AgentSessionSettings> = {}
+  settings: Partial<AgentSessionSettings> = {},
+  fauxOptions: { tokensPerSecond?: number } = {}
 ): Promise<Fixture> => {
   /**
    * The faux provider stands in for whichever provider the settings name, so a turn can be driven
@@ -62,6 +63,7 @@ const build = async (
   const faux = fauxProvider({
     provider: providerId,
     models: [{ id: modelId }],
+    ...fauxOptions,
   });
   const models = createModels();
   models.setProvider(faux.provider);
@@ -108,7 +110,7 @@ const build = async (
         models,
         toApproval: (approval) => approval,
         persistApprovals: async () => undefined,
-        shouldAbort: options?.shouldAbort,
+        signal: options?.signal,
       }),
   };
 };
@@ -416,34 +418,37 @@ describe("runWritingTurn", () => {
     ]);
   });
 
-  it("stops at the provider boundary when the host asks to abort", async () => {
-    fixture.setResponses([
-      fauxAssistantMessage([
-        fauxToolCall(TOOL_NAMES.listTags, {}, { id: "call-tags" }),
-      ]),
-      fauxAssistantMessage("Should never be generated."),
-    ]);
-    // Let the first request through, then abort before the second.
-    let requests = 0;
-    const shouldAbort = () => {
-      requests += 1;
-      return requests > 1;
-    };
+  it("stops mid-generation when the host aborts, with no tool boundary in between", async () => {
+    // ~50 tokens at 25 tokens/s: a couple of seconds of streaming, aborted after 100 ms.
+    const slow = await build({}, { tokensPerSecond: 25 });
+    const text = Array.from(
+      { length: 40 },
+      (_, i) => `sentence number ${i} of a deliberately long answer.`
+    ).join(" ");
+    slow.setResponses([fauxAssistantMessage(text)]);
+    const controller = new AbortController();
 
-    const result = await fixture.run("List the tags", { shouldAbort });
+    const pending = slow.run("Write something long", {
+      signal: controller.signal,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    controller.abort();
+    const result = await pending;
 
     expect(result.status).toBe("aborted");
-    expect(fixture.events.at(-1)).toEqual({
-      type: "run:end",
-      reason: "aborted",
-    });
+    expect(slow.events.at(-1)).toEqual({ type: "run:end", reason: "aborted" });
+    const streamed = slow.events
+      .filter((e) => e.type === "assistant:delta")
+      .map((e) => (e.type === "assistant:delta" ? e.delta : ""))
+      .join("");
+    expect(streamed.length).toBeLessThan(text.length);
+    // The partial reply is persisted as aborted, so the next turn sees what was said.
+    const branch = await slow.session.getBranch();
+    const last = branch.at(-1);
     expect(
-      fixture.events.some(
-        (e) => e.type === "tool:end" && e.toolName === TOOL_NAMES.listTags
-      )
-    ).toBe(true);
-    expect(JSON.stringify(fixture.events)).not.toContain(
-      "Should never be generated."
-    );
+      last?.type === "message" && last.message.role === "assistant"
+        ? last.message.stopReason
+        : undefined
+    ).toBe("aborted");
   });
 });
