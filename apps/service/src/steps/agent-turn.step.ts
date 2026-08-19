@@ -7,6 +7,7 @@ import type {
   ThinkingLevel,
   ToolTier,
 } from "@chia/agent-runtime/types";
+import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
@@ -98,6 +99,8 @@ export interface AgentTurnRequest {
   abortController: AgentAbortControllerRef;
   text: string;
   template?: { name: string; args?: string[] };
+  /** Set when this turn relays an operator's decision on a gated call; see `AgentTurnMessage`. */
+  decision?: OperatorDecision;
   preAuthorizeToolNames?: string[];
   /**
    * The operator's own provider keys, still encrypted — see `services/agent-credentials.ts`.
@@ -294,6 +297,7 @@ async function runWritingAgentTurn(
     message: {
       text: request.text,
       template: request.template,
+      decision: request.decision,
     },
     toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,

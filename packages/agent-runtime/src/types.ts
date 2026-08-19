@@ -5,6 +5,8 @@ import type {
   ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
 
+import type { OperatorDecision } from "./wire/operator-decision.ts";
+
 export type { PromptTemplate, Skill, ThinkingLevel };
 
 export type ToolTier = string;
@@ -69,6 +71,12 @@ export interface AgentNavigationResult {
 export interface AgentTurnMessage {
   text: string;
   template?: { name: string; args?: string[] };
+  /**
+   * The operator decision this turn relays, when the workflow synthesised it after an approval.
+   * The turn then announces the decision on the wire before the model runs and marks its own
+   * user message as not operator-typed.
+   */
+  decision?: OperatorDecision;
 }
 
 /**

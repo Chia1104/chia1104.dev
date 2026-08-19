@@ -124,6 +124,16 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       autoApprove: settings.autoApprove,
       approvedToolCallIds,
       preAuthorizedToolNames,
+      // Announced at once so the approval card replaces the tool card while the model is still
+      // writing its hand-back, instead of appearing only after the turn has ended.
+      onRequest: (request) =>
+        onEvent({
+          type: "approval:request",
+          toolCallId: request.toolCallId,
+          toolName: request.toolName,
+          tier: request.tier,
+          args: request.args,
+        }),
     });
     unsubscribers.push(
       turnHarness.on("tool_call", (event) => gate.handle(event))
@@ -207,11 +217,22 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     }
 
     onEvent({ type: "run:start", sessionId: agentSessionId });
+    if (message.decision) {
+      // The decision was persisted by the host before this turn was woken, so announcing it
+      // here is a replay of fact, not a new state; it closes the approval card on the live view.
+      onEvent({
+        type: "approval:resolved",
+        toolCallId: message.decision.toolCallId,
+        approved: message.decision.approved,
+        comment: message.decision.comment,
+      });
+    }
     onEvent({
       type: "user",
       messageId: `u:${turnId}`,
       text: message.text,
       at: Date.now(),
+      origin: message.decision ? "operator-decision" : undefined,
     });
 
     let failure: AgentTurnError | undefined;
@@ -247,18 +268,6 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         approvals = pending;
       } catch (error) {
         failure = errorOfThrown(error);
-      }
-    }
-
-    if (!failure && !aborted) {
-      for (const request of gate.requests) {
-        onEvent({
-          type: "approval:request",
-          toolCallId: request.toolCallId,
-          toolName: request.toolName,
-          tier: request.tier,
-          args: request.args,
-        });
       }
     }
 

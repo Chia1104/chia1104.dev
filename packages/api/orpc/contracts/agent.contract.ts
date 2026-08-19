@@ -118,11 +118,17 @@ export const agentSessionDetailSchema = z.object({
    * `{ type: "attach" }` replays the running turn from its start and tails it live.
    */
   events: z.array(agentWireEventSchema),
-  pendingApprovals: z.array(
+  /**
+   * Every approval row of the session. The transcript never replays approval events, so the client
+   * re-applies these: a pending row restores the prompt, a decided row closes its card.
+   */
+  approvals: z.array(
     z.object({
       toolCallId: z.string(),
       toolName: z.string(),
       args: z.unknown().optional(),
+      status: z.enum(["pending", "approved", "rejected"]),
+      comment: z.string().optional(),
     })
   ),
   stats: z.object({

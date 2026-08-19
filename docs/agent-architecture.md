@@ -226,14 +226,15 @@ sequenceDiagram
     participant DB as agent_tool_approval
 
     M->>G: commit tool call
+    G-->>R: emit approval:request at once
     G-->>M: blocked; stop and await approval
-    G-->>R: collect request
-    R->>DB: atomically persist collected requests
-    R-->>WF: emit approval:request after persistence
+    R->>DB: atomically persist collected requests at turn end
+    R-->>WF: run:end{awaiting_approval}
     WF->>WF: park on approval hook
     OP->>DB: persist decision
     OP->>WF: resume hook
-    WF->>M: acknowledgement/execution turn
+    WF->>R: relay turn (text from formatOperatorDecision, plus the decision)
+    R-->>OP: approval:resolved, then user{origin: operator-decision}
     M->>G: re-issued call
     G-->>M: allowed when pre-authorized
 ```
@@ -243,9 +244,19 @@ was durably approved, or its tool name is pre-authorized for this turn. The deci
 before the workflow is resumed. Rejections also receive a follow-up turn so the agent can
 acknowledge the operator's comment.
 
-Approval requests are published only after the provider turn succeeds and the whole request batch
-has been persisted. A provider or persistence failure therefore returns an `error` turn with no
-undecided approval rows, so the workflow never waits for a hook that it cannot resume.
+`approval:request` is announced the moment the gate refuses, so the client swaps the tool card for
+the approval card while the model is still writing its hand-back. Persistence still waits for the
+provider turn to succeed and writes the whole batch atomically, so a provider or persistence failure
+returns an `error` turn with no undecided approval rows and the workflow never waits for a hook it
+cannot resume; the client retracts announced-but-unpersisted cards on any `run:end` other than
+`awaiting_approval`.
+
+The relay turn is a real user message to the model — that is what makes it act — but the operator
+did not type it. `AgentTurnMessage.decision` marks it: the turn emits `approval:resolved` before
+`user`, and the `user` event carries `origin: "operator-decision"` so the client renders a notice
+rather than a user bubble. Replay cannot see the marker, so the text itself is recognisable
+(`wire/operator-decision.ts`), and the session detail lists every approval row — pending rows
+restore the prompt on reload, decided rows close their card the way the live stream did.
 
 ## 6. Wire events and streaming
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert } from "@heroui/react";
-import { Archive, CircleAlert } from "lucide-react";
+import { Archive, CircleAlert, ShieldCheck } from "lucide-react";
 
 import type { NoticeView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -13,9 +13,23 @@ export interface NoticeProps {
   className?: string;
 }
 
-/** Compaction and agent-side errors, inline where they happened in the transcript. */
+/**
+ * Compaction, relayed approval decisions and agent-side errors, inline where they happened in the
+ * transcript.
+ */
 export const Notice = ({ className, notice }: NoticeProps) => {
   const labels = useAgentLabels();
+
+  if (notice.variant === "decision") {
+    return (
+      <div
+        className={cn("text-muted flex items-center gap-2 text-xs", className)}>
+        <ShieldCheck className="size-3.5" />
+        <span className="font-medium">{labels.decisionRelayed}</span>
+        <span className="truncate">{notice.text}</span>
+      </div>
+    );
+  }
 
   if (notice.variant === "compacted") {
     return (

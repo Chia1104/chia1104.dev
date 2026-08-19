@@ -31,6 +31,7 @@
   "notePlaceholder": "Tell the agent why, or what to do instead…",
   "alwaysAllow": "Allow all {tier} tools for the rest of this session",
   "compacted": "Conversation compacted",
+  "decisionRelayed": "Decision relayed to the agent",
   "modelPicker": "Model",
   "thinkingLevel": "Thinking",
   "thinkingLevelNames": {
