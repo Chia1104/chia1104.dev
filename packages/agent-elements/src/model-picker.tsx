@@ -174,7 +174,7 @@ export const ModelPicker = ({
                         className={cn(
                           "relative size-9",
                           active
-                            ? "bg-surface-secondary text-foreground before:bg-accent before:absolute before:top-2 before:-right-[2px] before:bottom-2 before:w-0.5 before:rounded-full"
+                            ? "bg-surface-secondary text-foreground "
                             : "text-muted"
                         )}
                         isIconOnly

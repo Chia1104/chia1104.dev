@@ -106,7 +106,7 @@ export const Composer = ({
           <TextArea
             ref={inputRef}
             aria-label={labels.send}
-            className="min-h-6 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus:ring-0"
+            className="min-h-6 w-full resize-none rounded-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus:ring-0"
             disabled={!canPrompt}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
