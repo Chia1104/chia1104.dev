@@ -23,8 +23,8 @@ import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { runWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
-import { createFakeContentPort } from "./fixtures.ts";
-import type { FakeContentPort } from "./fixtures.ts";
+import { createFakeContentPort, createFakeWebPort } from "./fixtures.ts";
+import type { FakeContentPort, FakeWebPort } from "./fixtures.ts";
 
 /**
  * End-to-end runtime tests against pi-ai's `faux` provider.
@@ -39,6 +39,7 @@ const SESSION_ID = "session-1";
 interface Fixture {
   events: AgentWireEvent[];
   content: FakeContentPort;
+  web: FakeWebPort;
   draft: InMemoryDraftStore;
   session: Session;
   setResponses: (
@@ -83,6 +84,7 @@ const build = async (
     ],
     tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
   });
+  const web = createFakeWebPort();
   const draft = new InMemoryDraftStore();
   const events: AgentWireEvent[] = [];
 
@@ -98,6 +100,7 @@ const build = async (
   return {
     events,
     content,
+    web,
     draft,
     session,
     setResponses: faux.setResponses,
@@ -107,6 +110,7 @@ const build = async (
         settings: sessionSettings,
         agentSessionId: SESSION_ID,
         content,
+        web,
         draft,
         message: { text },
         onEvent: (event) => {
@@ -157,6 +161,53 @@ describe("runWritingTurn", () => {
     expect(assistant.at(-1)).toMatchObject({
       text: "There is already a post about TypeScript.",
       streaming: false,
+    });
+  });
+
+  it("searches the web through the port and hands the model titles, URLs and snippets", async () => {
+    fixture.web.results.push(
+      {
+        url: "https://docs.example.com/release-notes",
+        title: "Release notes",
+        description: "What changed in 2.0.",
+      },
+      { url: "https://example.com/bare" }
+    );
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.webSearch, {
+            query: "example 2.0 release notes",
+            recency: "month",
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Found the release notes."),
+    ]);
+
+    await fixture.run("What changed in example 2.0?");
+
+    expect(fixture.web.searches).toEqual([
+      { query: "example 2.0 release notes", limit: 5, recency: "month" },
+    ]);
+
+    const toolEnd = fixture.events.find(
+      (e) => e.type === "tool:end" && e.toolName === TOOL_NAMES.webSearch
+    );
+    expect(toolEnd).toMatchObject({
+      isError: false,
+      summary: 'Searched "example 2.0 release notes" (2 results).',
+      details: {
+        query: "example 2.0 release notes",
+        count: 2,
+        results: [
+          expect.objectContaining({
+            url: "https://docs.example.com/release-notes",
+          }),
+          { url: "https://example.com/bare" },
+        ],
+      },
     });
   });
 

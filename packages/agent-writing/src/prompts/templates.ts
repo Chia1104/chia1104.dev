@@ -78,8 +78,9 @@ export const factCheckTemplate = template(
 Fact-check the current draft.
 
 List every checkable claim: version numbers, API names and signatures, benchmark figures,
-historical statements, quoted behaviour. For each, use \`fetch_url\` against primary sources
-(official docs, release notes, the actual repository) — not blog posts.
+historical statements, quoted behaviour. For each, find the primary source with
+\`web_search\` if you do not already know its URL, then read it with \`fetch_url\` — official
+docs, release notes, the actual repository, not blog posts.
 
 Report a table of claim / verdict / source URL. For anything wrong or unverifiable, propose the
 exact correction but do NOT edit the draft until I confirm.

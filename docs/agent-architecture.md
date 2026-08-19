@@ -1,7 +1,7 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-17
+> Last updated: 2026-08-19
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -338,9 +338,15 @@ from Pi; the domain decides which `(providerId, modelId)` pairs it permits.
 ## 10. Writing domain and durable state
 
 The writing agent reads content through `ContentPort` — `@chia/agent-content`'s `ContentReadPort`
-plus `fetch_url` and the writes — stages drafts through `DraftStore`, and only commit-tier tools
-promote staged data to live feed/content tables. Tool order encourages the model to read, draft and
-then commit. Destructive deletion and image upload are not available agent tools.
+plus the writes — reaches the web through `WebPort` (`web_search` for discovery, `fetch_url` to
+read a page), stages drafts through `DraftStore`, and only commit-tier tools promote staged data
+to live feed/content tables. Tool order encourages the model to read, draft and then commit.
+Destructive deletion and image upload are not available agent tools.
+
+`WebPort` is host-implemented on Firecrawl (`apps/service/src/services/agent-web.port.ts`,
+`FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
+fixed cost; `fetch_url` is one scrape per page, main content as markdown, and is how the model
+reads a source it chose. There is no direct outbound fetch in the agent path.
 
 ### Content visibility
 
@@ -349,7 +355,7 @@ The read tools cannot widen what they see: visibility is fixed when the host bui
 drafts; a `public` port scopes every detail read to `published: true` and answers a request for
 drafts with nothing rather than overriding the filter. Search needs no branch — the chunk index is
 published-only for every caller. The writing agent's port is `author`; a public kind builds
-`public` and never gets `fetch_url`.
+`public` and never gets a `WebPort`.
 
 `buildSystemPrompt` is the stable system prompt; `buildTurnContext` is the volatile block with the
 draft state and current time (see §4). Skills and prompt templates live under
