@@ -63,5 +63,9 @@
     "internal": "agent 發生錯誤"
   },
   "truncated": "內容已截斷。",
-  "connectionLost": "與 agent 的連線中斷，請重新整理再試。"
+  "connectionLost": "與 agent 的連線中斷，請重新整理再試。",
+  "linkSafetyTitle": "開啟外部連結？",
+  "linkSafetyDescription": "這個連結來自 agent 的回覆，會離開本站。",
+  "openLink": "開啟連結",
+  "cancel": "取消"
 }

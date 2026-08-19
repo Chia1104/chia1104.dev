@@ -63,5 +63,9 @@
     "internal": "The agent failed"
   },
   "truncated": "Truncated to fit.",
-  "connectionLost": "Lost the connection to the agent. Reload to try again."
+  "connectionLost": "Lost the connection to the agent. Reload to try again.",
+  "linkSafetyTitle": "Open external link?",
+  "linkSafetyDescription": "This link came from the agent and leads outside this site.",
+  "openLink": "Open link",
+  "cancel": "Cancel"
 }
