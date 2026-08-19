@@ -17,6 +17,7 @@ adapter 包裝。現在唯一上線的 agent kind 是 dashboard 裡的部落格�
 | Shared tools | `@chia/agent-content`                       | 所有會讀部落格的 kind 共用的唯讀 content tools、它們的 `ContentReadPort`、名稱、標籤與摘要                           |
 | Domain       | `@chia/agent-writing`                       | 寫作 tools、prompts、skills、model allowlist、policy、draft staging 與 domain ports                                  |
 | Host         | `apps/service`、`packages/api`、`apps/dash` | DB/KV/credentials、durable workflow 與 stream、oRPC service port、auth、UI                                           |
+| Client       | `@chia/agent-elements`                      | 每個 session 一個 zustand store（fold wire events），以及兩個前端共用的 HeroUI chat elements                         |
 
 ```mermaid
 flowchart TB
@@ -259,8 +260,15 @@ session:compacted · state:changed · error · run:end
 - `tool:end.details` 上 wire 前會經過 `clipDetails`——長字串、陣列、寬物件與深巢狀就地縮短、
   保留形狀——因為每個 coarse event 都是 durable write，且會 replay 給每個重連的 client。模型
   讀的是 tool 的 `content`，不是這份副本。
-- `applyEvent` / `foldEvents`：讓 live 與 replay 共用 dashboard rendering path。
-- `@chia/agent-runtime/transports/tanstack-ai`：映射為 TanStack AI 使用的 AG-UI subset。
+- `applyEvent` / `foldEvents`：讓 live 與 replay 共用同一條 client rendering path。
+- `agent.sessions.chat` 是唯一的 turn transport：透過 kind service enqueue prompt 或 approval
+  decision，再從回傳的 cursor tail run 的 durable stream，原樣送出 wire events，到該 turn 的
+  `run:end` 為止。History 由 `agent.sessions.get` 以同樣的 wire events 回傳，client 用同一個
+  reducer fold 兩者。
+- `@chia/agent-elements` 就是那個 client：每個 session 一個 zustand store
+  （`createAgentSessionStore`）——從 `get` hydrate、用 `applyEvent` fold live turn、擁有 approval
+  與 abort actions——加上兩個前端共用的 HeroUI elements（thread、composer、approval card、
+  model picker、session tabs）。它只吃 contract-typed 的 `client.agent`，不依賴任何 app。
 
 每個 run 有 coarse durable stream 與獨立 batch 的 delta namespace。Coarse event 會先 flush
 pending deltas；reader 以 race 讀取兩邊以維持交錯順序。Stream 只在整個 durable run 結束時
@@ -268,9 +276,11 @@ pending deltas；reader 以 race 讀取兩邊以維持交錯順序。Stream 只�
 
 ### 重新接上執行中的 turn
 
-Dashboard 的 chat 是 server-authoritative（TanStack AI `persistence: true`）：mount 時從
-`agent.sessions.get` hydrate，若 `run.status` 是 `running`，就用 `agent.sessions.chat` 的
-`{ type: "attach" }` 接回那個 turn。Turn step 維護 `agent_run.metadata.turn`——turn 開始前的
+Chat 是 server-authoritative：session store 在 mount 時從 `agent.sessions.get` hydrate，若
+`run.status` 是 `running`，就用 `agent.sessions.chat` 的 `{ type: "attach" }` 接回那個 turn。
+以 `run:end` 結束的 stream 只重新抓 session detail（保留它自己 fold 出來的 view；下面的
+marker 可能比 terminal event 晚一點清掉，所以那次讀取會短暫重試）；更早斷掉的 stream 則從
+`get` 重建並帶 backoff 重新 attach。Turn step 維護 `agent_run.metadata.turn`——turn 開始前的
 session leaf、它要寫的第一個 coarse stream index，以及 `running`（進 handler 前設、`finally`
 清）。最後這個 workflow SDK 給不了：對 SDK 來說停在 message hook 上的 run 和正在跑 step 的 run
 都是 `running`，所以 `run.status`、`attach` 與 compact/rewind 的檢查都改讀這個 marker。Turn 執行
@@ -377,7 +387,6 @@ factory、capability plugin system 或 provider-neutral handle。
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
 | Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
-| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                         |
 | Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
 | Content read tools / port    | `packages/agent-content/src/`、`apps/service/src/services/content-read.port.ts`                |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
@@ -388,4 +397,5 @@ factory、capability plugin system 或 provider-neutral handle。
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                       |
 | Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
+| Client store 與 elements     | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                            |
 | Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |

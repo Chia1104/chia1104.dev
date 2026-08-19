@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/agent-elements",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    },
+    "./store": {
+      "types": "./src/store.ts",
+      "default": "./src/store.ts"
+    },
+    "./stream": {
+      "types": "./src/stream.ts",
+      "default": "./src/stream.ts"
+    },
+    "./labels": {
+      "types": "./src/labels.ts",
+      "default": "./src/labels.ts"
+    },
+    "./provider": {
+      "types": "./src/provider.tsx",
+      "default": "./src/provider.tsx"
+    },
+    "./chat": {
+      "types": "./src/chat.tsx",
+      "default": "./src/chat.tsx"
+    },
+    "./thread": {
+      "types": "./src/thread.tsx",
+      "default": "./src/thread.tsx"
+    },
+    "./message": {
+      "types": "./src/message.tsx",
+      "default": "./src/message.tsx"
+    },
+    "./tool-call": {
+      "types": "./src/tool-call.tsx",
+      "default": "./src/tool-call.tsx"
+    },
+    "./approval-card": {
+      "types": "./src/approval-card.tsx",
+      "default": "./src/approval-card.tsx"
+    },
+    "./notice": {
+      "types": "./src/notice.tsx",
+      "default": "./src/notice.tsx"
+    },
+    "./composer": {
+      "types": "./src/composer.tsx",
+      "default": "./src/composer.tsx"
+    },
+    "./model-picker": {
+      "types": "./src/model-picker.tsx",
+      "default": "./src/model-picker.tsx"
+    },
+    "./session-tabs": {
+      "types": "./src/session-tabs.tsx",
+      "default": "./src/session-tabs.tsx"
+    },
+    "./empty-state": {
+      "types": "./src/empty-state.tsx",
+      "default": "./src/empty-state.tsx"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "vitest --run",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chia/agent-runtime": "workspace:*",
+    "@chia/api": "workspace:*",
+    "@chia/ui": "workspace:*",
+    "@heroui/react": "catalog:heroui-v3",
+    "@orpc/contract": "catalog:orpc",
+    "lucide-react": "catalog:ui",
+    "react": "catalog:react-is",
+    "zustand": "catalog:ui"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/react": "catalog:react-is",
+    "tailwindcss": "catalog:tailwindcss",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}
