@@ -226,14 +226,15 @@ sequenceDiagram
     participant DB as agent_tool_approval
 
     M->>G: commit tool call
+    G-->>R: emit approval:request at once
     G-->>M: blocked; stop and await approval
-    G-->>R: collect request
-    R->>DB: atomically persist collected requests
-    R-->>WF: emit approval:request after persistence
+    R->>DB: atomically persist collected requests at turn end
+    R-->>WF: run:end{awaiting_approval}
     WF->>WF: park on approval hook
     OP->>DB: persist decision
     OP->>WF: resume hook
-    WF->>M: acknowledgement/execution turn
+    WF->>R: relay turn (text from formatOperatorDecision, plus the decision)
+    R-->>OP: approval:resolved, then user{origin: operator-decision}
     M->>G: re-issued call
     G-->>M: allowed when pre-authorized
 ```
@@ -243,9 +244,20 @@ was durably approved, or its tool name is pre-authorized for this turn. The deci
 before the workflow is resumed. Rejections also receive a follow-up turn so the agent can
 acknowledge the operator's comment.
 
-Approval requests are published only after the provider turn succeeds and the whole request batch
-has been persisted. A provider or persistence failure therefore returns an `error` turn with no
-undecided approval rows, so the workflow never waits for a hook that it cannot resume.
+`approval:request` is announced the moment the gate refuses, so the client swaps the tool card for
+the approval card while the model is still writing its hand-back. Persistence still waits for the
+provider turn to succeed and writes the whole batch atomically, so a provider or persistence failure
+returns an `error` turn with no undecided approval rows and the workflow never waits for a hook it
+cannot resume. The client keeps the card locked until `run:end{awaiting_approval}` (or a reloaded
+pending row) — a decision sent before the row exists would have nothing to land on — and retracts
+announced-but-unpersisted cards on any other `run:end`.
+
+The relay turn is a real user message to the model — that is what makes it act — but the operator
+did not type it. `AgentTurnMessage.decision` marks it: the turn emits `approval:resolved` before
+`user`, and the `user` event carries `origin: "operator-decision"` so the client renders a notice
+rather than a user bubble. Replay cannot see the marker, so the text itself is recognisable
+(`wire/operator-decision.ts`), and the session detail lists every approval row — pending rows
+restore the prompt on reload, decided rows close their card the way the live stream did.
 
 ## 6. Wire events and streaming
 
@@ -270,11 +282,17 @@ internal`) so a client can say what to do next; `describeAgentError` is the shar
   wide objects and deep nesting are shortened in place, shape preserved — because every coarse
   event is a durable write that is replayed to every reconnecting client. The model reads the
   tool's `content`, never this copy.
-- `applyEvent` / `foldEvents` give live and replayed events one dashboard rendering path.
-- `@chia/agent-runtime/transports/tanstack-ai` maps the bounded events to the AG-UI subset used by
-  TanStack AI. `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval
-  decision through the kind service, then tails the run's durable stream from the returned cursor
-  and emits it in that form. History arrives through `agent.sessions.get` as wire events.
+- `applyEvent` / `foldEvents` give live and replayed events one client rendering path.
+- `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval decision
+  through the kind service, then tails the run's durable stream from the returned cursor and emits
+  the wire events as-is, ending at that turn's `run:end`. History arrives through
+  `agent.sessions.get` as the same wire events, so the client folds both with one reducer.
+- `@chia/agent-elements` is that client: a zustand store per session (`createAgentSessionStore`)
+  that folds live turns with `applyEvent` and owns prompt/approval streaming, over the host's
+  TanStack `QueryClient` for everything request/response (session detail, models, settings,
+  abort — `./queries`), plus the HeroUI elements (thread, composer, approval card, model picker,
+  session tabs) both frontends compose. It takes the contract-typed `client.agent` and nothing
+  app-specific.
 
 Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
@@ -282,9 +300,11 @@ coarse events. Streams close only when the durable run ends, not after each turn
 
 ### Rejoining a running turn
 
-The dashboard chat is server-authoritative (TanStack AI `persistence: true`): on mount it hydrates
-from `agent.sessions.get` and, when `run.status` is `running`, rejoins the turn through
-`agent.sessions.chat` with `{ type: "attach" }`. The turn step maintains `agent_run.metadata.turn`
+The chat is server-authoritative: on mount the session store hydrates from `agent.sessions.get`
+and, when `run.status` is `running`, rejoins the turn through `agent.sessions.chat` with
+`{ type: "attach" }`. A stream that ends with `run:end` only refreshes the session detail (the
+view it built is kept, and the marker below may lag the terminal event by a moment, so that read
+is retried briefly); a stream that breaks earlier rebuilds from `get` and re-attaches with backoff. The turn step maintains `agent_run.metadata.turn`
 — the session leaf before the turn, the first coarse stream index it writes, and `running`, set
 before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
 run parked on its message hook is `running` to the SDK just like one executing a step, so
@@ -359,7 +379,15 @@ published-only for every caller. The writing agent's port is `author`; a public 
 
 `buildSystemPrompt` is the stable system prompt; `buildTurnContext` is the volatile block with the
 draft state and current time (see §4). Skills and prompt templates live under
-`packages/agent-writing/src/prompts/`.
+`packages/agent-writing/src/prompts/`. The system prompt carries only the skills _index_ (name
+and description); the model loads a skill's full text with the `read_skill` tool (tier `read`).
+That tool is the only read path — Pi's own convention of reading `SKILL.md` from disk has no file
+tool behind it here — and it leaves a tool call in the thread, so the operator can see which rules
+were consulted.
+
+The draft store's merge semantics (`undefined` leaves a field alone, `null` clears it) live once in
+`draft/operations.ts`; both `PgDraftStore` and `InMemoryDraftStore` go through it, so the store the
+tests run against cannot diverge from the one production uses.
 
 There is no in-process conversational state. The process-level kind-to-service map contains only
 implementations; all mutable state is durable:
@@ -402,7 +430,6 @@ until a concrete second execution foundation requires a different seam.
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
 | Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
-| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                         |
 | Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
 | Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
@@ -413,4 +440,5 @@ until a concrete second execution foundation requires a different seam.
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |
 | Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
+| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                            |
 | Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |

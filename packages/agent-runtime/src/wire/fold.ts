@@ -24,13 +24,15 @@ export interface TextMessageView {
   messageId: string;
   text: string;
   thinking?: string;
+  /** Epoch ms; unset while an assistant message is still streaming. */
+  at?: number;
   streaming: boolean;
   usage?: Extract<AgentWireEvent, { type: "assistant:end" }>["usage"];
 }
 
 export interface NoticeView {
   kind: "notice";
-  variant: "compacted" | "error";
+  variant: "compacted" | "error" | "decision";
   text: string;
   /** Set on `error` notices. */
   code?: AgentErrorKind;
@@ -89,10 +91,16 @@ export const applyEvent = (
       return { ...state, items, runStatus: "running" };
 
     case "user":
+      if (event.origin === "operator-decision") {
+        // Synthesised by the workflow to relay the operator's decision, not typed by them.
+        items.push({ kind: "notice", variant: "decision", text: event.text });
+        return { ...state, items, runStatus: "running" };
+      }
       items.push({
         kind: "user",
         messageId: event.messageId,
         text: event.text,
+        at: event.at,
         streaming: false,
       });
       return { ...state, items, runStatus: "running" };
@@ -134,6 +142,7 @@ export const applyEvent = (
         text: event.text,
         thinking: event.thinking,
         usage: event.usage,
+        at: event.at,
         streaming: false,
       };
       if (index === -1) items.push(view);
@@ -230,11 +239,13 @@ export const applyEvent = (
       };
       if (index === -1) items.push(view);
       else items[index] = view;
+      // The request is announced while the turn is still running and before it is persisted;
+      // only `run:end{awaiting_approval}` (or a reloaded pending row) makes it decidable, so the
+      // run status is left to that event and the card stays locked until then.
       return {
         ...state,
         items,
         pendingApprovals: [...state.pendingApprovals, view],
-        runStatus: "awaiting_approval",
       };
     }
 
@@ -242,8 +253,18 @@ export const applyEvent = (
       const index = findTool(event.toolCallId);
       if (index !== -1) {
         // SAFETY: approval events can only target tool items created by tool:start.
+        const existing = items[index] as ToolCallView;
         items[index] = {
-          ...(items[index] as ToolCallView),
+          ...existing,
+          // The gated call itself never ran — a decision closes the card, and the re-issued call
+          // arrives as its own tool item. Leave `awaiting_approval` or a later `tool:end` would
+          // read as the gate still holding it.
+          status:
+            existing.status === "awaiting_approval"
+              ? event.approved
+                ? "ok"
+                : "error"
+              : existing.status,
           approval: { approved: event.approved, comment: event.comment },
         };
       }
@@ -278,15 +299,21 @@ export const applyEvent = (
       return { ...state, items, runStatus: "error" };
 
     case "run:end":
+      if (event.reason === "awaiting_approval") {
+        return { ...state, items, runStatus: "awaiting_approval" };
+      }
+      // `approval:request` is announced as soon as the gate refuses, before the turn has proven it
+      // can persist the request. A turn that then ends any other way has nothing for the operator
+      // to decide — drop the prompts rather than leave cards nobody can act on.
       return {
         ...state,
-        items,
-        runStatus:
-          event.reason === "awaiting_approval"
-            ? "awaiting_approval"
-            : event.reason === "error"
-              ? "error"
-              : "idle",
+        items: items.map((item) =>
+          item.kind === "tool" && item.status === "awaiting_approval"
+            ? { ...item, status: "error" }
+            : item
+        ),
+        pendingApprovals: [],
+        runStatus: event.reason === "error" ? "error" : "idle",
       };
   }
 };

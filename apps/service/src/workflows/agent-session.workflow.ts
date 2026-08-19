@@ -1,5 +1,8 @@
 import * as z from "zod";
 
+import { formatOperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
+import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decision";
+
 import {
   closeAgentStreamsStep,
   completeAgentRunStep,
@@ -132,6 +135,13 @@ export const agentSessionWorkflow = async (request: Request) => {
       });
       credentials = decision.credentials;
 
+      const relayed: OperatorDecision = {
+        toolCallId: gated.toolCallId,
+        toolName: gated.toolName,
+        approved: decision.approved,
+        comment: decision.comment,
+      };
+
       if (!decision.approved) {
         turns += 1;
         // Rejected: tell the agent why and let it respond, rather than silently stopping.
@@ -142,10 +152,8 @@ export const agentSessionWorkflow = async (request: Request) => {
           sessionId,
           userId,
           abortController,
-          text:
-            `The operator declined \`${gated.toolName}\`.` +
-            (decision.comment ? ` They said: ${decision.comment}` : "") +
-            " Do not retry it. Acknowledge and wait for further instructions.",
+          text: formatOperatorDecision(relayed),
+          decision: relayed,
           credentials,
         });
         continue;
@@ -156,10 +164,8 @@ export const agentSessionWorkflow = async (request: Request) => {
         sessionId,
         userId,
         abortController,
-        text:
-          `The operator approved \`${gated.toolName}\`.` +
-          (decision.comment ? ` They said: ${decision.comment}` : "") +
-          " Run it now.",
+        text: formatOperatorDecision(relayed),
+        decision: relayed,
         // The approval is already persisted, so the gate lets this call through.
         preAuthorizeToolNames: [gated.toolName],
         credentials,

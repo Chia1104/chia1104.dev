@@ -101,8 +101,9 @@ export const getPostTool = defineTool({
     focusHeadings: Type.Optional(
       Type.Array(Type.String(), {
         description:
-          "Heading paths (from search results' `headingPath`) to keep first when the post is too " +
-          "long to return in full.",
+          "Heading paths to keep first when the post is too long to return in full. Pass each " +
+          "search hit's `headingPath` string unchanged, e.g. " +
+          '`["Setup > Install", "Caveats"]`.',
       })
     ),
   }),

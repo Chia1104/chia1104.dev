@@ -12,7 +12,11 @@ import type { Locale } from "@chia/db/types";
 import type { DraftStore } from "../ports.ts";
 import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
-import { emptyDraft } from "./operations.ts";
+import {
+  emptyDraft,
+  patchFeedMeta as mergeFeedMeta,
+  patchTranslation as mergeTranslation,
+} from "./operations.ts";
 
 /**
  * {@link DraftStore} over `writing_agent_draft` (per-locale) +
@@ -53,10 +57,13 @@ export class PgDraftStore implements DraftStore {
     sessionId: string,
     patch: DraftFeedMeta
   ): Promise<FeedDraft> {
-    const current = await this.get(sessionId);
-    const feedMeta = stripUndefined({ ...current.feedMeta, ...patch });
-    await updateWritingAgentSession(this.db, sessionId, { feedMeta });
-    return { ...current, feedMeta };
+    // Merge semantics live in `operations.ts` so this store and the in-memory one cannot drift:
+    // an omitted field arrives as an explicit `undefined` key and a plain spread would wipe it.
+    const next = mergeFeedMeta(await this.get(sessionId), patch);
+    await updateWritingAgentSession(this.db, sessionId, {
+      feedMeta: stripUndefined(next.feedMeta),
+    });
+    return next;
   }
 
   async patchTranslation(
@@ -64,25 +71,18 @@ export class PgDraftStore implements DraftStore {
     locale: Locale,
     patch: DraftTranslation
   ): Promise<FeedDraft> {
-    const current = await this.get(sessionId);
-    const merged = stripUndefined({
-      ...(current.translations[locale] ?? {}),
-      ...patch,
-    });
+    const next = mergeTranslation(await this.get(sessionId), locale, patch);
 
     // `content` has its own column; everything else goes to the jsonb blob.
-    const { content, ...meta } = merged;
+    const { content, ...meta } = next.translations[locale] ?? {};
     await upsertWritingAgentDraft(this.db, {
       sessionId,
       locale,
-      meta,
+      meta: stripUndefined(meta),
       content,
     });
 
-    return {
-      ...current,
-      translations: { ...current.translations, [locale]: merged },
-    };
+    return next;
   }
 
   setContent(

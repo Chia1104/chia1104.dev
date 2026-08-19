@@ -337,28 +337,20 @@ const undecidedApprovals = async (
 };
 
 /**
- * The branch up to the leaf the running turn started from, plus that turn's own leading user
- * messages: the live replay carries no user text (the client already has what it sent), so the
- * prompt the turn is answering has to come from here for a rejoining client to see it.
+ * The branch up to the leaf the running turn started from. Everything after it — the turn's own
+ * user message included — is replayed by `attach` from the run's stream, which starts at the
+ * marker's `streamIndex`, before the turn announces `user`. Taking the user message from both
+ * sources showed it twice to a client that rejoined mid-turn.
  */
 const entriesBeforeTurn = (
   entries: SessionTreeEntry[],
   turn: AgentTurnMarker
 ): SessionTreeEntry[] => {
-  const leafIndex =
-    turn.leafEntryId === null
-      ? -1
-      : entries.findIndex((entry) => entry.id === turn.leafEntryId);
+  if (turn.leafEntryId === null) return [];
+  const leafIndex = entries.findIndex((entry) => entry.id === turn.leafEntryId);
   // A marker that is not on this branch cannot cut it; show everything rather than guess.
-  if (turn.leafEntryId !== null && leafIndex === -1) return entries;
-
-  let end = leafIndex + 1;
-  while (end < entries.length) {
-    const entry = entries[end];
-    if (entry?.type !== "message" || entry.message.role !== "user") break;
-    end += 1;
-  }
-  return entries.slice(0, end);
+  if (leafIndex === -1) return entries;
+  return entries.slice(0, leafIndex + 1);
 };
 
 const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
@@ -410,14 +402,15 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
   }
   const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
-  // Surface approvals still waiting on a decision, so a reload restores the prompt.
-  const pendingApprovals = approvals
-    .filter((approval) => approval.status === "pending")
-    .map((approval) => ({
-      toolCallId: approval.toolCallId,
-      toolName: approval.toolName,
-      args: approval.args ?? undefined,
-    }));
+  // Approval events are never replayed from the transcript; the rows are. A pending row restores
+  // the prompt on reload, a decided one closes its card the way the live stream did.
+  const approvalRows = approvals.map((approval) => ({
+    toolCallId: approval.toolCallId,
+    toolName: approval.toolName,
+    args: approval.args ?? undefined,
+    status: approval.status,
+    comment: approval.comment ?? undefined,
+  }));
 
   return {
     session: summaryOf(row),
@@ -428,7 +421,7 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
       /* SAFETY: The producer contract guarantees this value satisfies never. */ draftState as never,
     run,
     events,
-    pendingApprovals,
+    approvals: approvalRows,
     stats: {
       messageCount: stats.messageCount,
       totalTokens: stats.totalTokens,

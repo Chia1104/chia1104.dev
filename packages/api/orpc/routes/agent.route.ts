@@ -1,4 +1,4 @@
-import { toTanStackAgentEventStream } from "@chia/agent-runtime/transports/tanstack-ai";
+import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 import {
   agentCallerOf,
@@ -112,6 +112,19 @@ export const updateAgentSessionSettingsRoute = contractOS.agent.sessions[
 // Turns
 // ============================================
 
+/**
+ * The durable stream stays open for the run's whole life; a chat request is scoped to one turn, so
+ * it ends at that turn's `run:end` — which `runPiTurn` always emits, after any `error`.
+ */
+const oneTurn = async function* (
+  events: AsyncIterable<AgentWireEvent>
+): AsyncGenerator<AgentWireEvent, void, void> {
+  for await (const event of events) {
+    yield event;
+    if (event.type === "run:end") return;
+  }
+};
+
 export const chatAgentRoute = contractOS.agent.sessions.chat
   .use(resolveCaller)
   .use(agentSessionGuard())
@@ -135,16 +148,14 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
           : await service.attach(caller, { sessionId: opts.input.sessionId });
     if (!cursor) throw opts.errors.NOT_FOUND();
 
-    const events = service.stream(caller, {
-      sessionId: opts.input.sessionId,
-      runId: cursor.runId,
-      startIndex: cursor.startIndex,
-      deltas: true,
-    });
-    return toTanStackAgentEventStream(events, {
-      threadId: opts.input.threadId,
-      runId: opts.input.runId,
-    });
+    return oneTurn(
+      service.stream(caller, {
+        sessionId: opts.input.sessionId,
+        runId: cursor.runId,
+        startIndex: cursor.startIndex,
+        deltas: true,
+      })
+    );
   });
 
 export const abortAgentRoute = contractOS.agent.sessions.abort

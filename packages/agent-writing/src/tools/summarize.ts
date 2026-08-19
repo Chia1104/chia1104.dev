@@ -33,6 +33,10 @@ export const summarizeToolResult = <TResult>(
   if (!details) return "Done.";
 
   switch (toolName) {
+    case TOOL_NAMES.readSkill: {
+      const name = asString(details.name);
+      return name ? `Read skill \`${name}\`.` : "Read skill.";
+    }
     case TOOL_NAMES.webSearch: {
       const query = asString(details.query);
       const count = asNumber(details.count);
@@ -54,9 +58,11 @@ export const summarizeToolResult = <TResult>(
     }
     case TOOL_NAMES.patchDraftMeta: {
       const warnings = asArray(details.warnings);
+      const locale = asString(details.locale);
+      const scope = locale ? `${locale} metadata` : "Metadata";
       return warnings && warnings.length > 0
-        ? `Metadata updated with ${warnings.length} warning(s).`
-        : "Metadata updated.";
+        ? `${scope} updated with ${warnings.length} warning(s).`
+        : `${scope} updated.`;
     }
     case TOOL_NAMES.writeDraftContent: {
       const locale = asString(details.locale);

@@ -1,9 +1,10 @@
 import type { Skill } from "@earendil-works/pi-agent-core";
 
 /**
- * Skills, in pi's first-class sense: `formatSkillsForSystemPrompt` inserts the name and
- * description into the system prompt, and pi loads the full `content` through its skill resource
- * API when the model selects one.
+ * Skills, in pi's first-class sense. The system prompt carries only name and description
+ * (`formatSkillsIndex` in `system.ts`); the model loads `content` on demand through the
+ * `read_skill` tool, which is the only read path — pi's default convention of reading the skill
+ * file from disk has no tool to back it here.
  *
  * They live inline rather than as `SKILL.md` files on disk because this package is consumed
  * source-only (no build step) and is loaded inside a server bundle — a runtime `fs.readFile`
@@ -185,8 +186,8 @@ actually covers, not a hook.
 ## \`slug\`
 
 Lowercase, hyphenated, English even for zh-TW posts, and stable — changing it breaks inbound
-links. Call \`slugify\` to see the normalised form before setting it. Keep it short: 3–6 words.
-Omit stop words.
+links. \`patch_draft_meta\` normalises what you pass and echoes the result; \`slugify\` exists to
+compare candidates before you choose. Keep it short: 3–6 words. Omit stop words.
 `
 );
 

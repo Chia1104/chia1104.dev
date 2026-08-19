@@ -5,6 +5,7 @@ import { errorOfAssistantMessage } from "../pi/errors.ts";
 import type { AgentEventPresentation } from "../types.ts";
 
 import { clipDetails } from "./clip.ts";
+import { isOperatorDecisionText } from "./operator-decision.ts";
 import type { AgentWireEvent } from "./schema.ts";
 
 // ============================================
@@ -35,10 +36,13 @@ export const entriesToWireEvents = (
     const message = entry.message;
 
     if (message.role === "user") {
+      const text = contentToText(message.content);
       events.push({
         type: "user",
         messageId: entry.id,
-        text: contentToText(message.content),
+        text,
+        at: message.timestamp,
+        origin: isOperatorDecisionText(text) ? "operator-decision" : undefined,
       });
       continue;
     }
@@ -60,6 +64,7 @@ export const entriesToWireEvents = (
         text,
         thinking: thinking || undefined,
         stopReason: message.stopReason,
+        at: message.timestamp,
         usage: message.usage
           ? {
               input: message.usage.input,

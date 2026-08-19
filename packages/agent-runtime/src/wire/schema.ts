@@ -30,6 +30,13 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     type: z.literal("user"),
     messageId: z.string(),
     text: z.string(),
+    /** Epoch ms. Optional only so streams written before it existed still parse. */
+    at: z.number().optional(),
+    /**
+     * Set when the turn was synthesised by the session's workflow rather than typed by the
+     * operator — today only the relayed approval decision. Clients render these as notices.
+     */
+    origin: z.enum(["operator-decision"]).optional(),
   }),
   z.object({ type: z.literal("assistant:start"), messageId: z.string() }),
   z.object({
@@ -45,6 +52,8 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     thinking: z.string().optional(),
     usage: usageSchema.optional(),
     stopReason: z.string().optional(),
+    /** Epoch ms of the completed message. */
+    at: z.number().optional(),
   }),
   z.object({
     type: z.literal("tool:start"),

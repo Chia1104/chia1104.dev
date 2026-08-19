@@ -15,6 +15,7 @@ import type { ToolTier } from "@chia/agent-runtime/types";
 
 export const TOOL_NAMES = {
   // read
+  readSkill: "read_skill",
   ...CONTENT_TOOL_NAMES,
   webSearch: "web_search",
   fetchUrl: "fetch_url",
@@ -32,6 +33,7 @@ export const TOOL_NAMES = {
 export type ToolName = (typeof TOOL_NAMES)[keyof typeof TOOL_NAMES];
 
 export const TOOL_TIER_BY_NAME = {
+  [TOOL_NAMES.readSkill]: "read",
   [TOOL_NAMES.searchPosts]: "read",
   [TOOL_NAMES.getPost]: "read",
   [TOOL_NAMES.listPosts]: "read",
@@ -50,6 +52,7 @@ export const TOOL_TIER_BY_NAME = {
 } satisfies Record<ToolName, ToolTier>;
 
 export const TOOL_LABEL_BY_NAME = {
+  [TOOL_NAMES.readSkill]: "Read skill",
   ...CONTENT_TOOL_LABEL_BY_NAME,
   [TOOL_NAMES.webSearch]: "Search web",
   [TOOL_NAMES.fetchUrl]: "Fetch page",
