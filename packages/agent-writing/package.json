@@ -61,6 +61,10 @@
       "types": "./src/tools/summarize.ts",
       "default": "./src/tools/summarize.ts"
     },
+    "./tools/skill.tool": {
+      "types": "./src/tools/skill.tool.ts",
+      "default": "./src/tools/skill.tool.ts"
+    },
     "./tools/retrieval.tool": {
       "types": "./src/tools/retrieval.tool.ts",
       "default": "./src/tools/retrieval.tool.ts"

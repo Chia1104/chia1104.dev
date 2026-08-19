@@ -367,7 +367,15 @@ published-only for every caller. The writing agent's port is `author`; a public 
 
 `buildSystemPrompt` is the stable system prompt; `buildTurnContext` is the volatile block with the
 draft state and current time (see §4). Skills and prompt templates live under
-`packages/agent-writing/src/prompts/`.
+`packages/agent-writing/src/prompts/`. The system prompt carries only the skills _index_ (name
+and description); the model loads a skill's full text with the `read_skill` tool (tier `read`).
+That tool is the only read path — Pi's own convention of reading `SKILL.md` from disk has no file
+tool behind it here — and it leaves a tool call in the thread, so the operator can see which rules
+were consulted.
+
+The draft store's merge semantics (`undefined` leaves a field alone, `null` clears it) live once in
+`draft/operations.ts`; both `PgDraftStore` and `InMemoryDraftStore` go through it, so the store the
+tests run against cannot diverge from the one production uses.
 
 There is no in-process conversational state. The process-level kind-to-service map contains only
 implementations; all mutable state is durable:

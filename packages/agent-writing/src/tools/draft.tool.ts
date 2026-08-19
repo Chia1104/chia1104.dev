@@ -5,7 +5,7 @@ import { ContentType, FeedType } from "@chia/db/types";
 import type { Locale } from "@chia/db/types";
 
 import { applyEdit, withLineNumbers } from "../draft/operations.ts";
-import type { WritingTool } from "../types.ts";
+import type { DraftFeedMeta, DraftTranslation, WritingTool } from "../types.ts";
 
 import { TOOL_NAMES, labelOf } from "./registry.ts";
 import {
@@ -37,6 +37,14 @@ const slugify = (text: string): string => new GithubSlugger().slug(text);
 
 /** SEO description cap enforced by the site's metadata layer. */
 const MAX_DESCRIPTION_CHARS = 160;
+
+/** What `patch_draft_meta` echoes back: the merged state, scoped to the locale it touched. */
+interface MetaReadback {
+  feedMeta: DraftFeedMeta;
+  locales: string[];
+  locale?: Locale;
+  translation?: Omit<DraftTranslation, "content">;
+}
 
 export const readDraftTool = defineTool({
   name: TOOL_NAMES.readDraft,
@@ -99,7 +107,7 @@ export const patchDraftMetaTool = defineTool({
   description:
     "Update draft metadata. Omitted fields are left alone; pass `null` to clear an optional field. " +
     "Feed-level fields (slug/type/tags) apply to the whole post; the rest are per-locale and " +
-    "require `locale`.",
+    "require `locale`. The result echoes the merged metadata, so no read-back call is needed.",
   parameters: Type.Object({
     locale: Type.Optional(
       LocaleSchema("Required when setting any per-locale field.")
@@ -123,7 +131,8 @@ export const patchDraftMetaTool = defineTool({
     slug: Type.Optional(
       Type.String({
         description:
-          "URL slug for the whole post. Will be normalised; call slugify first to see the result.",
+          "URL slug for the whole post. Normalised on write; the result echoes the final form. " +
+          "Use `slugify` only to compare candidates beforehand.",
       })
     ),
     type: Type.Optional(
@@ -193,13 +202,27 @@ export const patchDraftMetaTool = defineTool({
       );
     }
 
+    // Echo the merged per-locale fields so the model can confirm the patch from this result
+    // instead of spending a `read_draft` round-trip on it.
+    const readback: MetaReadback = {
+      feedMeta: draft.feedMeta,
+      locales: Object.keys(draft.translations),
+    };
+    if (locale) {
+      const translation = draft.translations[locale];
+      readback.locale = locale;
+      readback.translation = {
+        title: translation?.title,
+        excerpt: translation?.excerpt,
+        description: translation?.description,
+        summary: translation?.summary,
+      };
+    }
+
     return textResult(
       `Draft metadata updated.${warnings.length > 0 ? `\n\nWarnings:\n- ${warnings.join("\n- ")}` : ""}\n\n` +
-        jsonBlock({
-          feedMeta: draft.feedMeta,
-          locales: Object.keys(draft.translations),
-        }),
-      { feedMeta: draft.feedMeta, warnings }
+        jsonBlock(readback),
+      { ...readback, warnings }
     );
   },
 });
