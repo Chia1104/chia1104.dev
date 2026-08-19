@@ -16,6 +16,7 @@ import type { ToolTier } from "@chia/agent-runtime/types";
 export const TOOL_NAMES = {
   // read
   ...CONTENT_TOOL_NAMES,
+  webSearch: "web_search",
   fetchUrl: "fetch_url",
   // draft
   readDraft: "read_draft",
@@ -35,6 +36,7 @@ export const TOOL_TIER_BY_NAME = {
   [TOOL_NAMES.getPost]: "read",
   [TOOL_NAMES.listPosts]: "read",
   [TOOL_NAMES.listTags]: "read",
+  [TOOL_NAMES.webSearch]: "read",
   [TOOL_NAMES.fetchUrl]: "read",
 
   [TOOL_NAMES.readDraft]: "draft",
@@ -49,6 +51,7 @@ export const TOOL_TIER_BY_NAME = {
 
 export const TOOL_LABEL_BY_NAME = {
   ...CONTENT_TOOL_LABEL_BY_NAME,
+  [TOOL_NAMES.webSearch]: "Search web",
   [TOOL_NAMES.fetchUrl]: "Fetch page",
 
   [TOOL_NAMES.readDraft]: "Read draft",

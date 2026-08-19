@@ -15,7 +15,7 @@ import type {
 import type { AgentTool } from "@chia/agent-runtime/types";
 import type { ContentType, Locale } from "@chia/db/types";
 
-import type { ContentPort, DraftStore } from "./ports.ts";
+import type { ContentPort, DraftStore, WebPort } from "./ports.ts";
 
 /**
  * The writing agent's domain vocabulary.
@@ -46,8 +46,10 @@ export interface WritingToolContext extends ContentToolContext {
   agentSessionId: string;
   /** Set when the session was opened from an existing post. */
   targetFeedId?: number;
-  /** The read port plus the writing agent's own fetch and write access. */
+  /** The read port plus the writing agent's write access. */
   content: ContentPort;
+  /** Outbound web: search and page fetch. Only the writing agent gets this. */
+  web: WebPort;
   draft: DraftStore;
 }
 
@@ -89,11 +91,33 @@ export interface FeedDraft {
   committedFeedId?: number;
 }
 
+// ============================================
+// Web shapes
+// ============================================
+
 export interface FetchedPage {
   url: string;
   title?: string;
-  /** Plain-text extraction. Truncated by the host implementation. */
+  /** Main content as markdown. The tool truncates it for the model. */
   text: string;
+}
+
+/** Search-engine recency window; the host maps it to the provider's own filter syntax. */
+export type WebSearchRecency = (typeof WEB_SEARCH_RECENCIES)[number];
+
+export const WEB_SEARCH_RECENCIES = ["day", "week", "month", "year"] as const;
+
+export interface WebSearchInput {
+  query: string;
+  limit: number;
+  recency?: WebSearchRecency;
+}
+
+/** One search hit: discovery only, no page body — `fetch_url` reads what is worth reading. */
+export interface WebSearchResult {
+  url: string;
+  title?: string;
+  description?: string;
 }
 
 export interface CommitDraftInput {

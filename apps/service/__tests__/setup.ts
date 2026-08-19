@@ -105,6 +105,7 @@ export const mockEnv = {
   SKIP_ENV_VALIDATION: "false",
   CORS_ALLOWED_ORIGIN: "http://localhost:3000",
   RESEND_API_KEY: "test-resend-api-key",
+  FIRECRAWL_API_KEY: "test-firecrawl-api-key",
   // Database env
   DATABASE_URL: "postgres://postgres:password@localhost:5432/test",
   DATABASE_URL_REPLICA_1: undefined,
@@ -154,6 +155,7 @@ vi.stubEnv("NODE_ENV", mockEnv.NODE_ENV);
 vi.stubEnv("SKIP_ENV_VALIDATION", mockEnv.SKIP_ENV_VALIDATION);
 vi.stubEnv("CORS_ALLOWED_ORIGIN", mockEnv.CORS_ALLOWED_ORIGIN);
 vi.stubEnv("RESEND_API_KEY", mockEnv.RESEND_API_KEY);
+vi.stubEnv("FIRECRAWL_API_KEY", mockEnv.FIRECRAWL_API_KEY);
 vi.stubEnv("DATABASE_URL", mockEnv.DATABASE_URL);
 vi.stubEnv("DATABASE_URL_REPLICA_1", mockEnv.DATABASE_URL_REPLICA_1);
 vi.stubEnv("BETA_DATABASE_URL", mockEnv.BETA_DATABASE_URL);

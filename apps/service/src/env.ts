@@ -40,6 +40,7 @@ export const env = createEnv({
     GENAI_API_KEY: z.string().optional(),
     OLLAMA_BASE_URL: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
+    FIRECRAWL_API_KEY: z.string().min(1),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -72,6 +73,7 @@ export const env = createEnv({
     GENAI_API_KEY: process.env.GENAI_API_KEY,
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
+    FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||
