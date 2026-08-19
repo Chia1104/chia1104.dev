@@ -73,6 +73,9 @@ const tailKey = (items: readonly AgentViewItem[], pending: string | null) => {
   return `${last.messageId}:${last.text.length}:${last.thinking?.length ?? 0}`;
 };
 
+/** How close to the bottom still counts as "following the conversation". */
+const PIN_THRESHOLD_PX = 48;
+
 export interface ThreadProps {
   renderers?: ToolRenderers;
   /** Shown instead of the transcript while it is empty. */
@@ -84,17 +87,30 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
   const items = useAgentSession((state) => state.view.items);
   const pendingPrompt = useAgentSession((state) => state.pendingPrompt);
   const connection = useAgentSession((state) => state.connection);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // Whether the operator is at (or near) the bottom; only then does the view follow new content,
+  // so scrolling up to read during a stream is not undone by every chunk.
+  const pinnedRef = useRef(true);
 
   const groups = useMemo(() => groupItems(items), [items]);
   const key = tailKey(items, pendingPrompt);
 
   useEffect(() => {
+    if (!pinnedRef.current) return;
     const frame = requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({ block: "end" });
+      const element = scrollRef.current;
+      if (element) element.scrollTop = element.scrollHeight;
     });
     return () => cancelAnimationFrame(frame);
   }, [key]);
+
+  const onScroll = () => {
+    const element = scrollRef.current;
+    if (!element) return;
+    pinnedRef.current =
+      element.scrollHeight - element.scrollTop - element.clientHeight <
+      PIN_THRESHOLD_PX;
+  };
 
   const showEmpty = items.length === 0 && !pendingPrompt;
   const last = items.at(-1);
@@ -107,7 +123,9 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
 
   return (
     <ScrollShadow
+      ref={scrollRef}
       className={cn("min-h-0 flex-1 px-4 py-6", className)}
+      onScroll={onScroll}
       size={48}>
       {connection === "hydrating" && items.length === 0 ? (
         <div className="flex min-h-40 items-center justify-center">
@@ -142,7 +160,6 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
               <Spinner className="mt-1.5" size="sm" />
             </div>
           ) : null}
-          <div ref={bottomRef} />
         </div>
       )}
     </ScrollShadow>

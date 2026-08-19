@@ -27,7 +27,7 @@ export interface AgentSessionClient {
     ) => Promise<AsyncIterable<AgentWireEvent>>;
     abort: (
       input: Parameters<SessionProcedures["abort"]>[0]
-    ) => Promise<{ aborted: boolean }>;
+    ) => Promise<Awaited<ReturnType<SessionProcedures["abort"]>>>;
     "settings:update": (
       input: Parameters<SessionProcedures["settings:update"]>[0]
     ) => Promise<AgentSessionDetail>;

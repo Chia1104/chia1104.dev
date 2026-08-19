@@ -31,5 +31,9 @@ export const mergeLabels = (
           ...defaultAgentLabels.thinkingLevelNames,
           ...overrides.thinkingLevelNames,
         },
+        errorHeadlines: {
+          ...defaultAgentLabels.errorHeadlines,
+          ...overrides.errorHeadlines,
+        },
       }
     : defaultAgentLabels;

@@ -5,14 +5,18 @@ import * as z from "zod";
 
 import { TOOL_NAMES } from "@chia/agent-writing/tools/registry";
 
+import { useAgentLabels } from "../provider.tsx";
 import { DefaultToolBody } from "../tool-call.tsx";
 import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
+
+/** Only web URLs reach an `href`; a model-chosen `javascript:` or `file:` never does. */
+const httpUrl = z.url({ protocol: /^https?$/ });
 
 const searchDetails = z.object({
   query: z.string().optional(),
   results: z.array(
     z.object({
-      url: z.string(),
+      url: httpUrl,
       title: z.string().optional(),
       description: z.string().optional(),
     })
@@ -20,7 +24,7 @@ const searchDetails = z.object({
 });
 
 const pageDetails = z.object({
-  url: z.string(),
+  url: httpUrl,
   title: z.string().optional(),
   truncated: z.boolean().optional(),
 });
@@ -77,12 +81,13 @@ const WebSearch: ToolRenderer = ({ tool }) => {
 };
 
 const FetchUrl: ToolRenderer = ({ tool }) => {
+  const labels = useAgentLabels();
   const parsed = pageDetails.safeParse(tool.details);
   if (!parsed.success) return <DefaultToolBody tool={tool} />;
   return (
     <ul>
       <Source
-        description={parsed.data.truncated ? "Truncated to fit." : undefined}
+        description={parsed.data.truncated ? labels.truncated : undefined}
         title={parsed.data.title}
         url={parsed.data.url}
       />

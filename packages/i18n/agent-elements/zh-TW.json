@@ -52,5 +52,16 @@
   "untitledSession": "未命名",
   "dismiss": "關閉",
   "copy": "複製",
-  "copied": "已複製"
+  "copied": "已複製",
+  "errorFallback": "錯誤",
+  "errorHeadlines": {
+    "auth": "供應商拒絕了這把 API key",
+    "quota": "供應商帳戶的額度或餘額已用盡",
+    "rate_limited": "供應商正在限制請求速率",
+    "context_overflow": "對話已超出模型的 context，請壓縮對話",
+    "provider": "供應商發生錯誤",
+    "internal": "agent 發生錯誤"
+  },
+  "truncated": "內容已截斷。",
+  "connectionLost": "與 agent 的連線中斷，請重新整理再試。"
 }

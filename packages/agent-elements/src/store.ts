@@ -137,7 +137,7 @@ export const createAgentSessionStore = ({
 
     const scoped = { sessionId, kind };
     const detailQuery = sessionDetailQuery(client, scoped);
-    const detailKey = agentQueryKeys.session(sessionId);
+    const detailKey = agentQueryKeys.session(scoped);
 
     /** A fresh detail, written to the cache on the way through. */
     const fetchDetail = () =>
@@ -170,8 +170,10 @@ export const createAgentSessionStore = ({
       await get().hydrate();
     };
 
-    // Consecutive streams that ended without progress; backs off the reconnect.
-    let brokenStreak = 0;
+    // Streams that broke before `run:end` since the last clean turn end; backs off and bounds
+    // the reconnect — events arriving do not reset it, only a turn that actually finishes does.
+    let reconnects = 0;
+    const MAX_RECONNECTS = 6;
 
     /**
      * Runs one turn stream. Rejects only when `start` (the request) fails, so the caller can react
@@ -205,7 +207,6 @@ export const createAgentSessionStore = ({
           iterable,
           (event) => {
             if (mine !== generation) return;
-            brokenStreak = 0;
             if (event.type === "run:end") ended = true;
             set((state) => ({
               view: applyEvent(state.view, event),
@@ -230,12 +231,17 @@ export const createAgentSessionStore = ({
 
       set({ connection: "idle", pendingPrompt: null });
       if (ended) {
+        reconnects = 0;
         await settle(mine);
       } else {
-        // Broke before `run:end` (connection lost, server restarted): rebuild and rejoin, but not
-        // in a tight loop if the server keeps saying "running" while the stream keeps dropping.
-        brokenStreak++;
-        await sleep(Math.min(500 * 2 ** (brokenStreak - 1), 10_000));
+        // Broke before `run:end` (connection lost, server restarted): rebuild and rejoin with
+        // backoff, and give up after a few rounds rather than reconnecting forever in silence.
+        reconnects++;
+        if (reconnects > MAX_RECONNECTS) {
+          set({ failure: get().labels.connectionLost });
+          return;
+        }
+        await sleep(Math.min(500 * 2 ** (reconnects - 1), 10_000));
         if (mine !== generation) return;
         await get().hydrate();
       }

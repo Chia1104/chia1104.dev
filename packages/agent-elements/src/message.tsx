@@ -1,5 +1,7 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
 import { Disclosure } from "@heroui/react";
 import { Sparkles } from "lucide-react";
 
@@ -10,6 +12,20 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { Markdown } from "./markdown.tsx";
 import { useAgentLabels } from "./provider.tsx";
 import { formatMessageTime, formatMessageTimeFull } from "./time.ts";
+
+// Nothing to subscribe to: mounted-ness never changes after the first client render.
+const subscribeNever = () => () => undefined;
+
+/**
+ * True only after hydration. Times are formatted in the browser's locale and zone, which SSR
+ * cannot know, so they render client-side only — the server HTML and first client render agree.
+ */
+const useMounted = () =>
+  useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false
+  );
 
 /**
  * Time and copy under a message. Revealed on hover or keyboard focus so the thread stays quiet;
@@ -25,13 +41,14 @@ const MessageMeta = ({
   align: "start" | "end";
 }) => {
   const labels = useAgentLabels();
+  const mounted = useMounted();
   return (
     <div
       className={cn(
         "text-muted flex h-6 items-center gap-1 text-[11px]",
         align === "end" ? "flex-row-reverse justify-end" : "justify-start"
       )}>
-      {at ? (
+      {at && mounted ? (
         <time
           className="tabular-nums"
           dateTime={new Date(at).toISOString()}

@@ -4,7 +4,6 @@ import { Alert } from "@heroui/react";
 import { Archive, CircleAlert } from "lucide-react";
 
 import type { NoticeView } from "@chia/agent-runtime/wire/fold";
-import { AGENT_ERROR_HEADLINE } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useAgentLabels } from "./provider.tsx";
@@ -36,7 +35,9 @@ export const Notice = ({ className, notice }: NoticeProps) => {
       </Alert.Indicator>
       <Alert.Content>
         <Alert.Title>
-          {notice.code ? AGENT_ERROR_HEADLINE[notice.code] : "Error"}
+          {notice.code
+            ? labels.errorHeadlines[notice.code]
+            : labels.errorFallback}
         </Alert.Title>
         <Alert.Description className="break-words">
           {notice.text}

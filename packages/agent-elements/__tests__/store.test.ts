@@ -123,7 +123,9 @@ const makeStore = (
     sessionId: "s1",
   });
   const cachedDetail = () =>
-    queryClient.getQueryData<AgentSessionDetail>(agentQueryKeys.session("s1"));
+    queryClient.getQueryData<AgentSessionDetail>(
+      agentQueryKeys.session({ sessionId: "s1" })
+    );
   return { store, queryClient, cachedDetail };
 };
 

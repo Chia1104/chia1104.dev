@@ -6,5 +6,9 @@
     "www/**/*",
     "agent-elements/**/*"
   ],
-  "type": "module"
+  "type": "module",
+  "exports": {
+    "./www/*.json": "./www/*.json",
+    "./agent-elements/*.json": "./agent-elements/*.json"
+  }
 }

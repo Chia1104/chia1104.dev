@@ -15,8 +15,8 @@ export interface AgentSessionScope {
 
 export const agentQueryKeys = {
   all: ["agent-elements"] as const,
-  session: (sessionId: string) =>
-    [...agentQueryKeys.all, "session", sessionId] as const,
+  session: (scope: AgentSessionScope) =>
+    [...agentQueryKeys.all, "session", scope.sessionId, scope.kind] as const,
   models: (kind: string) => [...agentQueryKeys.all, "models", kind] as const,
 };
 
@@ -30,7 +30,7 @@ export const sessionDetailQuery = (
   scope: AgentSessionScope
 ) =>
   queryOptions<AgentSessionDetail>({
-    queryKey: agentQueryKeys.session(scope.sessionId),
+    queryKey: agentQueryKeys.session(scope),
     queryFn: () => client.sessions.get(scope),
     staleTime: Infinity,
     refetchOnWindowFocus: false,

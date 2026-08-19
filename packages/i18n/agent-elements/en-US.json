@@ -52,5 +52,16 @@
   "untitledSession": "Untitled",
   "dismiss": "Dismiss",
   "copy": "Copy",
-  "copied": "Copied"
+  "copied": "Copied",
+  "errorFallback": "Error",
+  "errorHeadlines": {
+    "auth": "The provider rejected the API key",
+    "quota": "The provider account is out of quota or credit",
+    "rate_limited": "The provider is rate limiting requests",
+    "context_overflow": "The conversation no longer fits the model's context — compact it",
+    "provider": "The provider failed",
+    "internal": "The agent failed"
+  },
+  "truncated": "Truncated to fit.",
+  "connectionLost": "Lost the connection to the agent. Reload to try again."
 }

@@ -3,9 +3,9 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-import { Button, Card } from "@heroui/react";
+import { Button, Card, Spinner } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, Plus } from "lucide-react";
+import { Bot, CircleAlert, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { AgentSessionProvider } from "@chia/agent-elements/provider";
@@ -80,7 +80,22 @@ export const AgentWorkspace = () => {
   return (
     <main className="flex h-[calc(100svh-4rem)] flex-col overflow-hidden p-4">
       <Card className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
-        {selectedSessionId ? (
+        {sessionsQuery.isLoading ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Spinner aria-label="Loading writing sessions" size="sm" />
+          </div>
+        ) : sessionsQuery.isError ? (
+          <Card.Content className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <CircleAlert className="text-danger size-6" />
+            <p>Unable to load sessions.</p>
+            <Button
+              onPress={() => void sessionsQuery.refetch()}
+              size="sm"
+              variant="secondary">
+              Try again
+            </Button>
+          </Card.Content>
+        ) : selectedSessionId ? (
           <AgentSessionProvider
             key={selectedSessionId}
             client={client.agent}

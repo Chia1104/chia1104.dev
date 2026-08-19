@@ -31,7 +31,6 @@ export const Markdown = ({
       mermaid: false,
     }}
     isAnimating={streaming}
-    linkSafety={{ enabled: false }}
     mode={streaming ? "streaming" : "static"}
     plugins={{ cjk, code }}
     shikiTheme={["github-light", "github-dark"]}>

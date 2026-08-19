@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button, Checkbox, Chip, Label, TextArea } from "@heroui/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, MessageSquareText, ShieldAlert, X } from "lucide-react";
 
 import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
@@ -15,7 +16,9 @@ import {
   useSessionDetail,
   useUpdateSettings,
 } from "./provider.tsx";
+import { agentQueryKeys } from "./queries.ts";
 import { jsonOf } from "./tool-call.tsx";
+import type { AgentSessionDetail } from "./types.ts";
 
 /** A tool item is rendered as an approval once a decision was asked of the operator. */
 export const isApprovalItem = (tool: ToolCallView): boolean =>
@@ -36,6 +39,9 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   const labels = useAgentLabels();
   const approve = useAgentSession((state) => state.approve);
   const updateSettings = useUpdateSettings();
+  const queryClient = useQueryClient();
+  const sessionId = useAgentSession((state) => state.sessionId);
+  const kind = useAgentSession((state) => state.kind);
   const autoApprove = useSessionDetail().data?.settings?.autoApprove;
   const streaming = useAgentSession(
     (state) => state.connection === "streaming"
@@ -51,9 +57,16 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   const decide = async (approved: boolean) => {
     setDeciding(approved);
     try {
-      if (approved && always && canOfferAlways) {
+      // The tier must be on the session before the follow-up turn starts, or later calls of the
+      // same tier in that turn ask again. Read the latest list at decision time and dedupe, so a
+      // retry or a second card deciding at the same moment cannot double or drop a tier.
+      const latest =
+        queryClient.getQueryData<AgentSessionDetail>(
+          agentQueryKeys.session({ sessionId, kind })
+        )?.settings?.autoApprove ?? [];
+      if (approved && always && !latest.includes(tool.tier)) {
         await updateSettings.mutateAsync({
-          autoApprove: [...(autoApprove ?? []), tool.tier],
+          autoApprove: [...new Set([...latest, tool.tier])],
         });
       }
       await approve(tool.toolCallId, approved, note.trim() || undefined);

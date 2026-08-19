@@ -10,9 +10,9 @@ export const consumeStream = async <T>(
   signal: AbortSignal
 ): Promise<void> => {
   const iterator = iterable[Symbol.asyncIterator]();
-  const close = () => {
-    void iterator.return?.();
-  };
+  // `return()` on a torn-down transport may reject; that must neither go unhandled nor replace
+  // the stream's own error.
+  const close = () => iterator.return?.()?.catch(() => undefined);
   signal.addEventListener("abort", close, { once: true });
 
   try {
@@ -23,6 +23,6 @@ export const consumeStream = async <T>(
     }
   } finally {
     signal.removeEventListener("abort", close);
-    await iterator.return?.();
+    await close();
   }
 };
