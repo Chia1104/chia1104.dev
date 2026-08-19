@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button, ListBox, Popover, SearchField, Tooltip } from "@heroui/react";
 import { ChevronDown } from "lucide-react";
@@ -9,7 +9,13 @@ import { cn } from "@chia/ui/utils/cn.util";
 
 import { ProviderMark, providerLabelOf, vendorOf } from "./provider-icons.tsx";
 import type { ProviderIcon } from "./provider-icons.tsx";
-import { useAgentLabels, useAgentSession } from "./provider.tsx";
+import {
+  useAgentLabels,
+  useAgentModels,
+  useAgentSession,
+  useSessionDetail,
+  useUpdateSettings,
+} from "./provider.tsx";
 import { ThinkingSlider } from "./thinking-slider.tsx";
 import type { AgentModel, AgentThinkingLevel } from "./types.ts";
 
@@ -42,13 +48,12 @@ export const ModelPicker = ({
   providerOrder = [],
 }: ModelPickerProps) => {
   const labels = useAgentLabels();
-  const settings = useAgentSession((state) => state.detail?.settings);
-  const models = useAgentSession((state) => state.models);
-  const loadModels = useAgentSession((state) => state.loadModels);
-  const updateSettings = useAgentSession((state) => state.updateSettings);
+  const settings = useSessionDetail().data?.settings;
+  const models = useAgentModels().data;
+  const updateSettings = useUpdateSettings();
   const busy = useAgentSession((state) => state.connection !== "idle");
+  const saving = updateSettings.isPending;
   const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState("");
   const [rail, setRail] = useState<string | null>(null);
   // Slider position while dragging; the session value takes over once the drag commits.
@@ -56,12 +61,6 @@ export const ModelPicker = ({
 
   const nameOf = (id: string) =>
     providerLabels?.[id] ?? providerLabelOf(id) ?? id;
-
-  // Loaded up front so the trigger can show the model's display name, not its raw id.
-  const ready = settings !== undefined;
-  useEffect(() => {
-    if (ready) void loadModels();
-  }, [loadModels, ready]);
 
   const providers = useMemo(() => {
     const groups = new Map<string, AgentModel[]>();
@@ -105,16 +104,8 @@ export const ModelPicker = ({
   const supportsReasoning = current?.supportsReasoning ?? true;
   const level = draftLevel ?? settings?.thinkingLevel ?? "off";
 
-  const save = async (input: Parameters<typeof updateSettings>[0]) => {
-    setSaving(true);
-    try {
-      await updateSettings(input);
-    } catch {
-      // Recorded in `failure`.
-    } finally {
-      setSaving(false);
-    }
-  };
+  const save = (input: Parameters<typeof updateSettings.mutate>[0]) =>
+    updateSettings.mutate(input);
 
   const triggerVendor = settings ? vendorOf(settings) : null;
   const triggerModel = current?.name ?? settings?.modelId ?? labels.modelPicker;
@@ -224,7 +215,7 @@ export const ModelPicker = ({
                   if (!next || (settings && keyOf(next) === keyOf(settings))) {
                     return;
                   }
-                  void save({
+                  save({
                     model: {
                       providerId: next.providerId,
                       modelId: next.modelId,
@@ -279,7 +270,7 @@ export const ModelPicker = ({
                 onCommit={(next) => {
                   setDraftLevel(null);
                   if (next !== settings?.thinkingLevel) {
-                    void save({ thinkingLevel: next });
+                    save({ thinkingLevel: next });
                   }
                 }}
                 value={level}

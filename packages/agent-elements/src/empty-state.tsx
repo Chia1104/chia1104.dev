@@ -5,8 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { useAgentLabels, useAgentSession } from "./provider.tsx";
-import { selectCanPrompt } from "./store.ts";
+import { useAgentLabels, useAgentSession, useCanPrompt } from "./provider.tsx";
 
 export interface EmptyStateProps {
   title?: string;
@@ -24,7 +23,7 @@ export const EmptyState = ({
 }: EmptyStateProps) => {
   const labels = useAgentLabels();
   const prompt = useAgentSession((state) => state.prompt);
-  const canPrompt = useAgentSession(selectCanPrompt);
+  const canPrompt = useCanPrompt();
 
   return (
     <div

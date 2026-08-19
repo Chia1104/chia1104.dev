@@ -8,7 +8,12 @@ import { Check, MessageSquareText, ShieldAlert, X } from "lucide-react";
 import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { useAgentLabels, useAgentSession } from "./provider.tsx";
+import {
+  useAgentLabels,
+  useAgentSession,
+  useSessionDetail,
+  useUpdateSettings,
+} from "./provider.tsx";
 import { jsonOf } from "./tool-call.tsx";
 
 /** A tool item is rendered as an approval once a decision was asked of the operator. */
@@ -29,10 +34,8 @@ export interface ApprovalCardProps {
 export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   const labels = useAgentLabels();
   const approve = useAgentSession((state) => state.approve);
-  const updateSettings = useAgentSession((state) => state.updateSettings);
-  const autoApprove = useAgentSession(
-    (state) => state.detail?.settings?.autoApprove
-  );
+  const updateSettings = useUpdateSettings();
+  const autoApprove = useSessionDetail().data?.settings?.autoApprove;
   const streaming = useAgentSession(
     (state) => state.connection === "streaming"
   );
@@ -48,7 +51,7 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
     setDeciding(approved);
     try {
       if (approved && always && canOfferAlways) {
-        await updateSettings({
+        await updateSettings.mutateAsync({
           autoApprove: [...(autoApprove ?? []), tool.tier],
         });
       }

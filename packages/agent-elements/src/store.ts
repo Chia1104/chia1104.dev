@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { createStore } from "zustand/vanilla";
 
 import type { AgentViewState } from "@chia/agent-runtime/wire/fold";
@@ -8,28 +9,26 @@ import {
 } from "@chia/agent-runtime/wire/fold";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
+import { agentQueryKeys, sessionDetailQuery } from "./queries.ts";
 import { consumeStream } from "./stream.ts";
-import type {
-  AgentSessionClient,
-  AgentModel,
-  AgentModelRef,
-  AgentSessionDetail,
-  AgentThinkingLevel,
-} from "./types.ts";
+import type { AgentSessionClient, AgentSessionDetail } from "./types.ts";
 
 export type AgentConnection = "hydrating" | "idle" | "streaming";
 
 export type AgentRunStatus = AgentViewState["runStatus"];
 
+/**
+ * The live side of a session: the folded transcript and the turn stream feeding it. Everything
+ * the server owns and answers on request (detail, models, settings) lives in the query cache
+ * (`./queries.ts`); the store reads the detail through that cache and refreshes it there.
+ */
 export interface AgentSessionState {
   sessionId: string;
   kind: string | undefined;
-  detail: AgentSessionDetail | null;
   view: AgentViewState;
   connection: AgentConnection;
   /** Prompt already sent, shown until the stream echoes it back as a `user` event. */
   pendingPrompt: string | null;
-  models: AgentModel[] | null;
   /**
    * A transport or request failure. Agent-side failures arrive as `error` wire events and live in
    * the transcript instead.
@@ -40,8 +39,6 @@ export interface AgentSessionState {
 export interface AgentSessionActions {
   /** Loads the server-owned transcript and rejoins a turn that is still running. */
   hydrate: () => Promise<void>;
-  /** Refetches `detail` (settings, run, kind state) without touching the transcript view. */
-  refreshDetail: () => Promise<void>;
   /** Rejects when the request itself fails; stream failures land in `failure`. */
   prompt: (text: string) => Promise<void>;
   approve: (
@@ -49,13 +46,8 @@ export interface AgentSessionActions {
     approved: boolean,
     comment?: string
   ) => Promise<void>;
-  abort: () => Promise<void>;
-  updateSettings: (input: {
-    model?: AgentModelRef;
-    thinkingLevel?: AgentThinkingLevel;
-    autoApprove?: string[];
-  }) => Promise<void>;
-  loadModels: () => Promise<void>;
+  /** Surfaces a failure from outside the stream (a mutation) in the same place. */
+  reportFailure: (message: string) => void;
   dismissFailure: () => void;
   /** Cancels any open stream. The store is unusable afterwards. */
   dispose: () => void;
@@ -72,6 +64,7 @@ export interface AgentSessionCallbacks {
 
 export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
   client: AgentSessionClient;
+  queryClient: QueryClient;
   sessionId: string;
   kind?: string;
 }
@@ -121,6 +114,7 @@ export const createAgentSessionStore = ({
   kind,
   onStateChanged,
   onTurnEnd,
+  queryClient,
   sessionId,
 }: AgentSessionStoreOptions) => {
   let controller: AbortController | null = null;
@@ -134,12 +128,18 @@ export const createAgentSessionStore = ({
     };
 
     const scoped = { sessionId, kind };
+    const detailQuery = sessionDetailQuery(client, scoped);
+    const detailKey = agentQueryKeys.session(sessionId);
+
+    /** A fresh detail, written to the cache on the way through. */
+    const fetchDetail = () =>
+      queryClient.fetchQuery({ ...detailQuery, staleTime: 0 });
 
     const sleep = (ms: number) =>
       new Promise<void>((resolve) => setTimeout(resolve, ms));
 
     /**
-     * Re-syncs `detail` after a turn ended with `run:end`, keeping the view the stream built.
+     * Re-syncs the detail after a turn ended with `run:end`, keeping the view the stream built.
      *
      * The step clears its running marker only after the terminal event is flushed, so a `get`
      * issued straight away can still report the finished turn as running; that is retried briefly.
@@ -149,16 +149,13 @@ export const createAgentSessionStore = ({
       for (let attempt = 0; attempt < 5; attempt++) {
         let detail: AgentSessionDetail;
         try {
-          detail = await client.sessions.get(scoped);
+          detail = await fetchDetail();
         } catch (cause) {
           if (mine === generation) set({ failure: messageOf(cause) });
           return;
         }
         if (mine !== generation) return;
-        if (detail.run?.status !== "running") {
-          set({ detail });
-          return;
-        }
+        if (detail.run?.status !== "running") return;
         await sleep(200 * (attempt + 1));
         if (mine !== generation) return;
       }
@@ -173,8 +170,8 @@ export const createAgentSessionStore = ({
      * — for example put the prompt back into the composer. Everything after that is a state
      * change: events fold into the view, and a mid-stream failure lands in `failure`.
      *
-     * When the stream is cancelled by this store (abort, dispose, a newer hydrate or run), the
-     * canceller owns what happens next; `run` only re-syncs streams that ended on their own.
+     * When the stream is cancelled by this store (dispose, a newer hydrate or run), the canceller
+     * owns what happens next; `run` only re-syncs streams that ended on their own.
      */
     const run = async (
       start: (signal: AbortSignal) => Promise<AsyncIterable<AgentWireEvent>>
@@ -207,8 +204,8 @@ export const createAgentSessionStore = ({
               pendingPrompt: event.type === "user" ? null : state.pendingPrompt,
             }));
             if (event.type === "state:changed") {
-              // Kind state (a draft, …) rides on `detail`; refresh it while the turn is still going.
-              void get().refreshDetail();
+              // Kind state (a draft, …) rides on the detail; refresh it while the turn is going.
+              void queryClient.invalidateQueries({ queryKey: detailKey });
               onStateChanged?.(event);
             }
           },
@@ -248,11 +245,9 @@ export const createAgentSessionStore = ({
     return {
       sessionId,
       kind,
-      detail: null,
       view: emptyViewState(),
       connection: "idle",
       pendingPrompt: null,
-      models: null,
       failure: null,
 
       hydrate: async () => {
@@ -261,7 +256,7 @@ export const createAgentSessionStore = ({
         set({ connection: "hydrating" });
         let detail: AgentSessionDetail;
         try {
-          detail = await client.sessions.get(scoped);
+          detail = await fetchDetail();
         } catch (cause) {
           if (mine === generation) {
             set({ connection: "idle", failure: messageOf(cause) });
@@ -269,25 +264,19 @@ export const createAgentSessionStore = ({
           return;
         }
         if (mine !== generation) return;
-        set({ detail, view: foldDetail(detail), connection: "idle" });
+        set({ view: foldDetail(detail), connection: "idle" });
         if (detail.run?.status === "running") {
           try {
             await attach();
           } catch {
             // Usually the turn finished between `get` and `attach` (NOT_FOUND); the fresh detail
             // says so, and a real transport failure surfaces from that read instead.
-            if (mine === generation) await get().refreshDetail();
+            if (mine === generation) {
+              await fetchDetail().catch((cause: unknown) => {
+                if (mine === generation) set({ failure: messageOf(cause) });
+              });
+            }
           }
-        }
-      },
-
-      refreshDetail: async () => {
-        const mine = generation;
-        try {
-          const detail = await client.sessions.get(scoped);
-          if (mine === generation) set({ detail });
-        } catch (cause) {
-          if (mine === generation) set({ failure: messageOf(cause) });
         }
       },
 
@@ -323,42 +312,7 @@ export const createAgentSessionStore = ({
         }
       },
 
-      abort: async () => {
-        try {
-          await client.sessions.abort(scoped);
-        } catch (cause) {
-          set({ failure: messageOf(cause) });
-          throw cause;
-        }
-        // Whether or not a run was live, the server is the truth now — resync from it.
-        stopStream();
-        await get().hydrate();
-      },
-
-      updateSettings: async (input) => {
-        try {
-          const detail = await client.sessions["settings:update"]({
-            ...scoped,
-            ...input,
-          });
-          set({ detail });
-        } catch (cause) {
-          set({ failure: messageOf(cause) });
-          throw cause;
-        }
-      },
-
-      loadModels: async () => {
-        if (get().models) return;
-        const sessionKind = kind ?? get().detail?.session.kind;
-        if (!sessionKind) return;
-        try {
-          const models = await client.models.list({ kind: sessionKind });
-          set({ models });
-        } catch (cause) {
-          set({ failure: messageOf(cause) });
-        }
-      },
+      reportFailure: (message) => set({ failure: message }),
 
       dismissFailure: () => set({ failure: null }),
 
@@ -373,25 +327,30 @@ export const createAgentSessionStore = ({
 export type AgentSessionStoreApi = ReturnType<typeof createAgentSessionStore>;
 
 // ============================================
-// Selectors
+// Derived status (store + cached detail)
 // ============================================
 
 export type AgentStatus = "awaiting_approval" | "error" | "idle" | "running";
 
+type RunInfo = Pick<AgentSessionDetail, "run"> | undefined;
+
 /** What the session is doing right now, from the live connection first and the server second. */
-export const selectStatus = (state: AgentSessionState): AgentStatus => {
+export const statusOf = (
+  state: AgentSessionState,
+  detail: RunInfo
+): AgentStatus => {
   if (state.connection === "streaming") return "running";
   if (state.view.pendingApprovals.length > 0) return "awaiting_approval";
-  if (state.detail?.run?.status === "running") return "running";
+  if (detail?.run?.status === "running") return "running";
   return state.view.runStatus === "error" ? "error" : "idle";
 };
 
 /** A turn is executing (here or elsewhere) — the composer offers Stop instead of Send. */
-export const selectIsBusy = (state: AgentSessionState): boolean =>
-  state.connection === "streaming" || state.detail?.run?.status === "running";
+export const isBusy = (state: AgentSessionState, detail: RunInfo): boolean =>
+  state.connection === "streaming" || detail?.run?.status === "running";
 
-export const selectCanPrompt = (state: AgentSessionState): boolean =>
-  state.detail !== null &&
+export const canPrompt = (state: AgentSessionState, detail: RunInfo): boolean =>
+  detail !== undefined &&
   state.connection === "idle" &&
-  state.detail.run?.status !== "running" &&
+  detail.run?.status !== "running" &&
   state.view.pendingApprovals.length === 0;

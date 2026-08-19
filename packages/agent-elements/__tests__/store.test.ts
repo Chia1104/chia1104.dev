@@ -1,7 +1,9 @@
+import { QueryClient } from "@tanstack/react-query";
 import { describe, expect, it, vi } from "vitest";
 
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
+import { agentQueryKeys } from "../src/queries.ts";
 import { createAgentSessionStore, foldDetail } from "../src/store.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "../src/types.ts";
 
@@ -106,6 +108,25 @@ const fakeClient = (overrides: {
   return { client, get, chat, abort, update, models };
 };
 
+const makeStore = (
+  options: Omit<
+    Parameters<typeof createAgentSessionStore>[0],
+    "queryClient" | "sessionId"
+  >
+) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const store = createAgentSessionStore({
+    ...options,
+    queryClient,
+    sessionId: "s1",
+  });
+  const cachedDetail = () =>
+    queryClient.getQueryData<AgentSessionDetail>(agentQueryKeys.session("s1"));
+  return { store, queryClient, cachedDetail };
+};
+
 const turn = (text: string): AgentWireEvent[] => [
   { type: "run:start", sessionId: "s1" },
   { type: "user", messageId: "u1", text },
@@ -182,14 +203,14 @@ describe("createAgentSessionStore", () => {
           ],
         }),
     });
-    const store = createAgentSessionStore({ client, sessionId: "s1" });
+    const { store, cachedDetail } = makeStore({ client });
 
     await store.getState().hydrate();
 
     expect(get).toHaveBeenCalledWith({ sessionId: "s1", kind: undefined });
     expect(store.getState().connection).toBe("idle");
     expect(store.getState().view.items).toHaveLength(2);
-    expect(store.getState().detail?.session.id).toBe("s1");
+    expect(cachedDetail()?.session.id).toBe("s1");
   });
 
   it("rejoins a running turn on hydrate", async () => {
@@ -202,7 +223,7 @@ describe("createAgentSessionStore", () => {
       get: async () => details.shift() ?? details[0]!,
       chat: async () => stream.iterable,
     });
-    const store = createAgentSessionStore({ client, sessionId: "s1" });
+    const { store, cachedDetail } = makeStore({ client });
 
     const hydrated = store.getState().hydrate();
     await flush();
@@ -225,7 +246,7 @@ describe("createAgentSessionStore", () => {
     await hydrated;
 
     expect(store.getState().connection).toBe("idle");
-    expect(store.getState().detail?.run?.status).toBe("waiting");
+    expect(cachedDetail()?.run?.status).toBe("waiting");
   });
 
   it("streams a prompt into the view and re-syncs when the turn ends", async () => {
@@ -236,11 +257,7 @@ describe("createAgentSessionStore", () => {
       get: async () => detail,
       chat: async () => stream.iterable,
     });
-    const store = createAgentSessionStore({
-      client,
-      sessionId: "s1",
-      onTurnEnd,
-    });
+    const { store, cachedDetail } = makeStore({ client, onTurnEnd });
     await store.getState().hydrate();
 
     const prompted = store.getState().prompt("hello");
@@ -275,7 +292,7 @@ describe("createAgentSessionStore", () => {
       { kind: "user", text: "hello" },
       { kind: "assistant", text: "Hi", streaming: false },
     ]);
-    expect(store.getState().detail?.stats.messageCount).toBe(2);
+    expect(cachedDetail()?.stats.messageCount).toBe(2);
     expect(get).toHaveBeenCalledTimes(2);
     expect(onTurnEnd).toHaveBeenCalledTimes(1);
   });
@@ -287,7 +304,7 @@ describe("createAgentSessionStore", () => {
       get: async () => detail,
       chat: async () => stream.iterable,
     });
-    const store = createAgentSessionStore({ client, sessionId: "s1" });
+    const { store } = makeStore({ client });
     await store.getState().hydrate();
 
     const prompted = store.getState().prompt("hello");
@@ -316,7 +333,7 @@ describe("createAgentSessionStore", () => {
         throw new Error("offline");
       },
     });
-    const store = createAgentSessionStore({ client, sessionId: "s1" });
+    const { store } = makeStore({ client });
     await store.getState().hydrate();
 
     await expect(store.getState().prompt("hello")).rejects.toThrow("offline");
@@ -329,11 +346,7 @@ describe("createAgentSessionStore", () => {
     const stream = channel();
     const onStateChanged = vi.fn();
     const { client } = fakeClient({ chat: async () => stream.iterable });
-    const store = createAgentSessionStore({
-      client,
-      sessionId: "s1",
-      onStateChanged,
-    });
+    const { store } = makeStore({ client, onStateChanged });
     await store.getState().hydrate();
 
     const prompted = store.getState().prompt("draft it");
@@ -351,7 +364,7 @@ describe("createAgentSessionStore", () => {
   it("sends an approval decision as a follow-up turn", async () => {
     const stream = channel();
     const { client, chat } = fakeClient({ chat: async () => stream.iterable });
-    const store = createAgentSessionStore({ client, sessionId: "s1" });
+    const { store } = makeStore({ client });
     await store.getState().hydrate();
 
     const approved = store.getState().approve("t1", true, "go");
@@ -374,14 +387,14 @@ describe("createAgentSessionStore", () => {
     await approved;
   });
 
-  it("aborts: asks the server, closes the stream and re-syncs", async () => {
+  it("hydrate cancels an open stream and rebuilds from the server", async () => {
     const stream = channel();
     let detail = detailOf({ run: { id: "r1", status: "waiting" } });
-    const { client, abort, get } = fakeClient({
+    const { client, get } = fakeClient({
       get: async () => detail,
       chat: async () => stream.iterable,
     });
-    const store = createAgentSessionStore({ client, sessionId: "s1" });
+    const { store, cachedDetail } = makeStore({ client });
     await store.getState().hydrate();
 
     const prompted = store.getState().prompt("long task");
@@ -389,24 +402,24 @@ describe("createAgentSessionStore", () => {
     stream.push({ type: "user", messageId: "u1", text: "long task" });
     await flush();
 
+    // What `useAbortSession` does after the server confirmed the abort.
     detail = detailOf({
       run: null,
       events: [{ type: "user", messageId: "u1", text: "long task" }],
     });
-    await store.getState().abort();
+    await store.getState().hydrate();
     await prompted;
 
-    expect(abort).toHaveBeenCalledOnce();
     expect(stream.returned).toBe(true);
     expect(store.getState().connection).toBe("idle");
-    expect(store.getState().detail?.run).toBeNull();
+    expect(cachedDetail()?.run).toBeNull();
     expect(get).toHaveBeenCalledTimes(2);
   });
 
   it("dispose closes the stream and drops late events", async () => {
     const stream = channel();
     const { client } = fakeClient({ chat: async () => stream.iterable });
-    const store = createAgentSessionStore({ client, sessionId: "s1" });
+    const { store } = makeStore({ client });
     await store.getState().hydrate();
 
     const prompted = store.getState().prompt("hello");

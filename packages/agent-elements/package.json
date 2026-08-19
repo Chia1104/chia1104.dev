@@ -21,6 +21,10 @@
       "types": "./src/labels.ts",
       "default": "./src/labels.ts"
     },
+    "./queries": {
+      "types": "./src/queries.ts",
+      "default": "./src/queries.ts"
+    },
     "./provider": {
       "types": "./src/provider.tsx",
       "default": "./src/provider.tsx"
@@ -103,6 +107,7 @@
     "@orpc/contract": "catalog:orpc",
     "@streamdown/cjk": "catalog:streamdown",
     "@streamdown/code": "catalog:streamdown",
+    "@tanstack/react-query": "catalog:tanstack",
     "lucide-react": "catalog:ui",
     "react": "catalog:react-is",
     "streamdown": "catalog:streamdown",

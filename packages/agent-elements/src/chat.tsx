@@ -9,15 +9,14 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { Composer } from "./composer.tsx";
 import { EmptyState } from "./empty-state.tsx";
 import type { EmptyStateProps } from "./empty-state.tsx";
-import { useAgentLabels, useAgentSession } from "./provider.tsx";
-import { selectStatus } from "./store.ts";
+import { useAgentLabels, useAgentStatus } from "./provider.tsx";
 import { Thread } from "./thread.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
 /** The session's status as a chip, for a host header. */
 export const StatusChip = ({ className }: { className?: string }) => {
   const labels = useAgentLabels();
-  const status = useAgentSession(selectStatus);
+  const status = useAgentStatus();
   const meta = {
     running: { color: "accent", label: labels.statusStreaming },
     awaiting_approval: {

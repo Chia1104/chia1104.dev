@@ -266,9 +266,11 @@ session:compacted · state:changed · error · run:end
   `run:end` 為止。History 由 `agent.sessions.get` 以同樣的 wire events 回傳，client 用同一個
   reducer fold 兩者。
 - `@chia/agent-elements` 就是那個 client：每個 session 一個 zustand store
-  （`createAgentSessionStore`）——從 `get` hydrate、用 `applyEvent` fold live turn、擁有 approval
-  與 abort actions——加上兩個前端共用的 HeroUI elements（thread、composer、approval card、
-  model picker、session tabs）。它只吃 contract-typed 的 `client.agent`，不依賴任何 app。
+  （`createAgentSessionStore`）只管 live 這一段——用 `applyEvent` fold live turn、prompt/approval
+  的 stream loop——request/response 的部分（session detail、models、settings、abort）走 host 的
+  TanStack `QueryClient`（`./queries`），store 也是透過同一個 cache 讀寫 detail；再加上兩個前端
+  共用的 HeroUI elements（thread、composer、approval card、model picker、session tabs）。它只吃
+  contract-typed 的 `client.agent`，不依賴任何 app。
 
 每個 run 有 coarse durable stream 與獨立 batch 的 delta namespace。Coarse event 會先 flush
 pending deltas；reader 以 race 讀取兩邊以維持交錯順序。Stream 只在整個 durable run 結束時

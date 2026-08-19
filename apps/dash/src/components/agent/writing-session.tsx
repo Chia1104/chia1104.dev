@@ -8,7 +8,7 @@ import { StatusChip } from "@chia/agent-elements/chat";
 import { Composer } from "@chia/agent-elements/composer";
 import { EmptyState } from "@chia/agent-elements/empty-state";
 import { ModelPicker } from "@chia/agent-elements/model-picker";
-import { useAgentSession } from "@chia/agent-elements/provider";
+import { useSessionDetail } from "@chia/agent-elements/provider";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
 import { webToolRenderers } from "@chia/agent-elements/renderers/web";
 import { Thread } from "@chia/agent-elements/thread";
@@ -31,7 +31,7 @@ const SUGGESTIONS = [
 
 /** The writing agent's session view: the shared chat elements plus its draft preview. */
 export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
-  const draft = useAgentSession((state) => state.detail?.draft);
+  const draft = useSessionDetail().data?.draft;
 
   return (
     <>

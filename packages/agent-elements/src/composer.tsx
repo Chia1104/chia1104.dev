@@ -9,8 +9,14 @@ import { ArrowUp, Square } from "lucide-react";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { ModelPicker } from "./model-picker.tsx";
-import { useAgentLabels, useAgentSession } from "./provider.tsx";
-import { selectCanPrompt, selectIsBusy, selectStatus } from "./store.ts";
+import {
+  useAbortSession,
+  useAgentBusy,
+  useAgentLabels,
+  useAgentSession,
+  useAgentStatus,
+  useCanPrompt,
+} from "./provider.tsx";
 
 /** Tallest the input grows before it scrolls, in px — about eight lines. */
 const MAX_INPUT_HEIGHT = 200;
@@ -37,14 +43,13 @@ export const Composer = ({
 }: ComposerProps) => {
   const labels = useAgentLabels();
   const prompt = useAgentSession((state) => state.prompt);
-  const abort = useAgentSession((state) => state.abort);
   const dismissFailure = useAgentSession((state) => state.dismissFailure);
   const failure = useAgentSession((state) => state.failure);
-  const canPrompt = useAgentSession(selectCanPrompt);
-  const busy = useAgentSession(selectIsBusy);
-  const status = useAgentSession(selectStatus);
+  const abort = useAbortSession();
+  const canPrompt = useCanPrompt();
+  const busy = useAgentBusy();
+  const status = useAgentStatus();
   const [text, setText] = useState("");
-  const [stopping, setStopping] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Grow with the content: measure the natural height, cap it, and let the rest scroll.
@@ -67,17 +72,6 @@ export const Composer = ({
     } catch {
       // The request never left: give the operator their text back to retry.
       setText(value);
-    }
-  };
-
-  const stop = async () => {
-    setStopping(true);
-    try {
-      await abort();
-    } catch {
-      // Recorded in `failure`.
-    } finally {
-      setStopping(false);
     }
   };
 
@@ -133,8 +127,8 @@ export const Composer = ({
               <Button
                 aria-label={labels.stop}
                 isIconOnly
-                isPending={stopping}
-                onPress={() => void stop()}
+                isPending={abort.isPending}
+                onPress={() => abort.mutate()}
                 size="sm"
                 variant="danger-soft">
                 <Square className="size-3.5 fill-current" />

@@ -276,9 +276,11 @@ internal`) so a client can say what to do next; `describeAgentError` is the shar
   the wire events as-is, ending at that turn's `run:end`. History arrives through
   `agent.sessions.get` as the same wire events, so the client folds both with one reducer.
 - `@chia/agent-elements` is that client: a zustand store per session (`createAgentSessionStore`)
-  that hydrates from `get`, folds live turns with `applyEvent`, owns the approval and abort
-  actions, plus the HeroUI elements (thread, composer, approval card, model picker, session tabs)
-  both frontends compose. It takes the contract-typed `client.agent` and nothing app-specific.
+  that folds live turns with `applyEvent` and owns prompt/approval streaming, over the host's
+  TanStack `QueryClient` for everything request/response (session detail, models, settings,
+  abort — `./queries`), plus the HeroUI elements (thread, composer, approval card, model picker,
+  session tabs) both frontends compose. It takes the contract-typed `client.agent` and nothing
+  app-specific.
 
 Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
