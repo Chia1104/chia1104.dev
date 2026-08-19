@@ -23,9 +23,8 @@ Work in this order:
 
 1. \`search_posts\` for the topic. If something close already exists, stop and tell me — we
    should update that post instead of adding a near-duplicate.
-2. \`read_skill\` \`mdx-authoring\`, \`seo-metadata\` and the tone skill for the locale you
-   will write in.
-3. Decide the default locale (zh-TW unless the topic is clearly English-first) and set the
+2. Decide the default locale (zh-TW unless the topic is clearly English-first).
+3. \`read_skill\` \`mdx-authoring\`, \`seo-metadata\` and the tone skill for that locale. Set the
    feed metadata: \`type\`, \`slug\`, \`defaultLocale\`.
 4. Write the body for the default locale, then set its title, excerpt, description and summary.
 5. Stop and show me a summary. Do NOT commit — I will tell you when.

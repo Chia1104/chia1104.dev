@@ -30,8 +30,9 @@ export interface ApprovalCardProps {
 }
 
 /**
- * The approval handshake, in place in the transcript. Deciding starts the follow-up turn through
- * the store, so both buttons lock the moment one is pressed. A note travels with the decision as
+ * The approval handshake, in place in the transcript. The buttons unlock when the turn has handed
+ * back and lock again the moment one is pressed — deciding starts the follow-up turn through the
+ * store. A note travels with the decision as
  * its comment; "always allow" adds the tool's tier to the session's auto-approve list first, so
  * the same tier never asks again this session.
  */
@@ -43,8 +44,11 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   const sessionId = useAgentSession((state) => state.sessionId);
   const kind = useAgentSession((state) => state.kind);
   const autoApprove = useSessionDetail().data?.settings?.autoApprove;
-  const streaming = useAgentSession(
-    (state) => state.connection === "streaming"
+  // Decidable only once the turn has handed back: the request is announced while the model is
+  // still writing and before the server has persisted it, and a decision sent in that window
+  // has no row to land on. `run:end{awaiting_approval}` and a reloaded pending row both set this.
+  const decidable = useAgentSession(
+    (state) => state.view.runStatus === "awaiting_approval"
   );
   const [deciding, setDeciding] = useState<boolean | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -78,7 +82,7 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
   };
 
   const pending = tool.approval === undefined;
-  const locked = streaming || deciding !== null;
+  const locked = !decidable || deciding !== null;
   const args = jsonOf(tool.args);
 
   return (

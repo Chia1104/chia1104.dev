@@ -48,6 +48,18 @@ describe("approval fold", () => {
     expect(view.runStatus).toBe("awaiting_approval");
   });
 
+  it("does not make the request decidable before the turn has handed back", () => {
+    const { view, tool } = toolOf([
+      { type: "run:start", sessionId: "s" },
+      toolStart,
+      request,
+      refusal,
+    ]);
+    // Announced and visible, but the row is not persisted yet — the card must stay locked.
+    expect(tool.status).toBe("awaiting_approval");
+    expect(view.runStatus).toBe("running");
+  });
+
   it("closes the card on the relayed decision and renders the relay as a notice", () => {
     const { view, tool } = toolOf([
       toolStart,

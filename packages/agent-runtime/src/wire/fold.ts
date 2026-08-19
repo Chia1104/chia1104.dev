@@ -239,11 +239,13 @@ export const applyEvent = (
       };
       if (index === -1) items.push(view);
       else items[index] = view;
+      // The request is announced while the turn is still running and before it is persisted;
+      // only `run:end{awaiting_approval}` (or a reloaded pending row) makes it decidable, so the
+      // run status is left to that event and the card stays locked until then.
       return {
         ...state,
         items,
         pendingApprovals: [...state.pendingApprovals, view],
-        runStatus: "awaiting_approval",
       };
     }
 

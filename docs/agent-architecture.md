@@ -248,8 +248,9 @@ acknowledge the operator's comment.
 the approval card while the model is still writing its hand-back. Persistence still waits for the
 provider turn to succeed and writes the whole batch atomically, so a provider or persistence failure
 returns an `error` turn with no undecided approval rows and the workflow never waits for a hook it
-cannot resume; the client retracts announced-but-unpersisted cards on any `run:end` other than
-`awaiting_approval`.
+cannot resume. The client keeps the card locked until `run:end{awaiting_approval}` (or a reloaded
+pending row) — a decision sent before the row exists would have nothing to land on — and retracts
+announced-but-unpersisted cards on any other `run:end`.
 
 The relay turn is a real user message to the model — that is what makes it act — but the operator
 did not type it. `AgentTurnMessage.decision` marks it: the turn emits `approval:resolved` before
