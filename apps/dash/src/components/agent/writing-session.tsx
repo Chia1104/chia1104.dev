@@ -9,6 +9,8 @@ import { Composer } from "@chia/agent-elements/composer";
 import { EmptyState } from "@chia/agent-elements/empty-state";
 import { ModelPicker } from "@chia/agent-elements/model-picker";
 import { useAgentSession } from "@chia/agent-elements/provider";
+import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
+import { webToolRenderers } from "@chia/agent-elements/renderers/web";
 import { Thread } from "@chia/agent-elements/thread";
 
 import { AgentDraftPreview } from "./agent-draft-preview";
@@ -23,6 +25,8 @@ const PROVIDER_LABELS = {
   openai: "OpenAI",
   anthropic: "Anthropic",
 };
+
+const TOOL_RENDERERS = { ...contentToolRenderers, ...webToolRenderers };
 
 const SUGGESTIONS = [
   "Outline a post about what I've been building lately.",
@@ -67,6 +71,7 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
           className="flex min-h-0 flex-1 flex-col p-0"
           id="conversation">
           <Thread
+            renderers={TOOL_RENDERERS}
             empty={
               <EmptyState
                 description="I can search and read the blog, draft posts per locale, and only publish once you approve."

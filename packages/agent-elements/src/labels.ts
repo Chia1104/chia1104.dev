@@ -30,6 +30,9 @@ export interface AgentLabels {
   rejected: string;
   approvedNote: string;
   rejectedNote: string;
+  addNote: string;
+  notePlaceholder: string;
+  alwaysAllow: (tier: string) => string;
   compacted: string;
   modelPicker: string;
   thinkingLevel: string;
@@ -73,6 +76,9 @@ export const defaultAgentLabels: AgentLabels = {
   rejected: "Rejected",
   approvedNote: "Approved by you",
   rejectedNote: "Nothing was executed",
+  addNote: "Add a note",
+  notePlaceholder: "Tell the agent why, or what to do instead…",
+  alwaysAllow: (tier) => `Allow all ${tier} tools for the rest of this session`,
   compacted: "Conversation compacted",
   modelPicker: "Model",
   thinkingLevel: "Thinking",

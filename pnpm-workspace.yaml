@@ -47,6 +47,10 @@ catalog:
   zod: 4.4.3
 
 catalogs:
+  streamdown:
+    "@streamdown/cjk": 1.0.3
+    "@streamdown/code": 1.1.1
+    streamdown: 2.5.0
   agent:
     "@earendil-works/pi-agent-core": 0.83.0
     "@earendil-works/pi-ai": 0.83.0
@@ -195,3 +199,10 @@ strictPeerDependencies: false
 
 overrides:
   "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4
+
+# streamdown's types import shiki but it only lists shiki as a devDependency; without this the
+# import resolves to whatever shiki is hoisted (v4 here) and no longer matches @streamdown/code's v3.
+packageExtensions:
+  streamdown:
+    dependencies:
+      shiki: ^3.19.0

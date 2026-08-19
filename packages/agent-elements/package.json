@@ -33,6 +33,18 @@
       "types": "./src/thread.tsx",
       "default": "./src/thread.tsx"
     },
+    "./markdown": {
+      "types": "./src/markdown.tsx",
+      "default": "./src/markdown.tsx"
+    },
+    "./renderers/content": {
+      "types": "./src/renderers/content.tsx",
+      "default": "./src/renderers/content.tsx"
+    },
+    "./renderers/web": {
+      "types": "./src/renderers/web.tsx",
+      "default": "./src/renderers/web.tsx"
+    },
     "./message": {
       "types": "./src/message.tsx",
       "default": "./src/message.tsx"
@@ -74,13 +86,19 @@
     "type:check": "tsc --noEmit"
   },
   "dependencies": {
+    "@chia/agent-content": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
+    "@chia/agent-writing": "workspace:*",
     "@chia/api": "workspace:*",
     "@chia/ui": "workspace:*",
     "@heroui/react": "catalog:heroui-v3",
     "@orpc/contract": "catalog:orpc",
+    "@streamdown/cjk": "catalog:streamdown",
+    "@streamdown/code": "catalog:streamdown",
     "lucide-react": "catalog:ui",
     "react": "catalog:react-is",
+    "streamdown": "catalog:streamdown",
+    "zod": "catalog:",
     "zustand": "catalog:ui"
   },
   "devDependencies": {

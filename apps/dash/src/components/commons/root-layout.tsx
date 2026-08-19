@@ -21,7 +21,7 @@ const RootLayout: FC<Props> = ({ children, htmlProps, bodyProps }) => {
       <body
         {...bodyProps}
         className={cn(
-          "scrollbar-thin scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full overflow-x-hidden",
+          "scrollbar-thumb-primary dark:scrollbar-thumb-secondary scrollbar-thumb-rounded-full scrollbar-thin overflow-x-hidden",
           bodyProps?.className
         )}>
         {children}

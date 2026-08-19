@@ -6,6 +6,7 @@ import { Sparkles } from "lucide-react";
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { Markdown } from "./markdown.tsx";
 import { useAgentLabels } from "./provider.tsx";
 
 export const UserMessage = ({
@@ -20,14 +21,6 @@ export const UserMessage = ({
       {text}
     </div>
   </div>
-);
-
-/** Blinking insertion point shown at the end of text still being streamed. */
-export const StreamingCaret = () => (
-  <span
-    aria-hidden="true"
-    className="bg-accent ml-0.5 inline-block h-[1em] w-0.5 animate-pulse align-[-0.15em]"
-  />
 );
 
 export const AgentBadge = ({ className }: { className?: string }) => (
@@ -95,10 +88,7 @@ export const AssistantMessage = ({
         />
       ) : null}
       {message.text || !message.thinking ? (
-        <p className="text-foreground text-[15px] leading-7 whitespace-pre-wrap">
-          {message.text}
-          {message.streaming ? <StreamingCaret /> : null}
-        </p>
+        <Markdown streaming={message.streaming} text={message.text} />
       ) : null}
     </div>
   );
