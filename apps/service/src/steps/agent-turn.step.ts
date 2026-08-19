@@ -27,7 +27,6 @@ import {
 } from "../services/agent-abort-controller";
 import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
-import { createAgentWebPort } from "../services/agent-web.port";
 import type { AgentAbortControllerRef } from "../workflows/hooks/agent.hooks";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
@@ -210,12 +209,15 @@ async function runWritingAgentTurn(
     { PgDraftStore },
     { runWritingTurn },
     { WRITING_AGENT_KIND, WRITING_SESSION_DEFAULTS },
+    // Constructs the Firecrawl client at module scope, so it must stay off the boot path.
+    { createAgentWebPort },
   ] = await Promise.all([
     import("@chia/agent-runtime/models"),
     import("@chia/agent-runtime/session/pg-repo"),
     import("@chia/agent-writing/draft/pg-draft-store"),
     import("@chia/agent-writing/runtime"),
     import("@chia/agent-writing/models"),
+    import("../services/agent-web.port"),
   ]);
 
   if (row.kind !== WRITING_AGENT_KIND) {
