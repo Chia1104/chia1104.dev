@@ -211,6 +211,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       type: "user",
       messageId: `u:${turnId}`,
       text: message.text,
+      at: Date.now(),
     });
 
     let failure: AgentTurnError | undefined;

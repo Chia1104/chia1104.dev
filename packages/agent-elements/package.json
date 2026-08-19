@@ -33,6 +33,10 @@
       "types": "./src/chat.tsx",
       "default": "./src/chat.tsx"
     },
+    "./time": {
+      "types": "./src/time.ts",
+      "default": "./src/time.ts"
+    },
     "./thread": {
       "types": "./src/thread.tsx",
       "default": "./src/thread.tsx"

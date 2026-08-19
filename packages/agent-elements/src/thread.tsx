@@ -16,7 +16,7 @@ import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
 type Group =
-  | { kind: "user"; key: string; text: string }
+  | { kind: "user"; key: string; text: string; at?: number }
   | { kind: "agent"; key: string; items: AgentViewItem[] };
 
 /** Consecutive agent-side items (text, tools, notices) share one badge, like one reply. */
@@ -28,6 +28,7 @@ const groupItems = (items: readonly AgentViewItem[]): Group[] => {
         kind: "user",
         key: `u:${item.messageId}`,
         text: item.text,
+        at: item.at,
       });
       continue;
     }
@@ -118,7 +119,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
           {groups.map((group) =>
             group.kind === "user" ? (
-              <UserMessage key={group.key} text={group.text} />
+              <UserMessage key={group.key} at={group.at} text={group.text} />
             ) : (
               <div key={group.key} className="flex gap-3">
                 <AgentBadge className="mt-0.5" />

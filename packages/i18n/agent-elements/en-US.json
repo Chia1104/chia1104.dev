@@ -50,5 +50,7 @@
   "searchSessions": "Search conversations",
   "noSessions": "No matching conversations",
   "untitledSession": "Untitled",
-  "dismiss": "Dismiss"
+  "dismiss": "Dismiss",
+  "copy": "Copy",
+  "copied": "Copied"
 }

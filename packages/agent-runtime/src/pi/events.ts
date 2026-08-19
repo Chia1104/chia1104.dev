@@ -74,6 +74,7 @@ export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
             text: done.text,
             thinking: done.thinking || undefined,
             stopReason: message.stopReason,
+            at: message.timestamp,
             usage: message.usage
               ? {
                   input: message.usage.input,
