@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { AgentSessionProvider } from "@chia/agent-elements/provider";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
+import agentLabels from "@chia/i18n/agent-elements/en-US.json";
 
 import { client, orpc } from "@/libs/orpc/client";
 
@@ -69,6 +70,7 @@ export const AgentWorkspace = () => {
       activeId={selectedSessionId}
       className="min-w-0 flex-1"
       isCreating={createMutation.isPending}
+      labels={agentLabels}
       onCreate={() => void createSession()}
       onSelect={selectSession}
       sessions={sessions}
@@ -83,6 +85,7 @@ export const AgentWorkspace = () => {
             key={selectedSessionId}
             client={client.agent}
             kind={WRITING_AGENT_KIND}
+            labels={agentLabels}
             onTurnEnd={invalidateSessions}
             sessionId={selectedSessionId}>
             <WritingSession tabs={tabs} />

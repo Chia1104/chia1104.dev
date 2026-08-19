@@ -8,6 +8,7 @@ import { Check, MessageSquareText, ShieldAlert, X } from "lucide-react";
 import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { fill } from "./labels.ts";
 import {
   useAgentLabels,
   useAgentSession,
@@ -82,7 +83,7 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
           {labels.approvalTag} · {tool.toolName}
         </span>
         <h4 className="text-foreground text-sm font-semibold">
-          {labels.approvalTitle(tool.label)}
+          {fill(labels.approvalTitle, { tool: tool.label })}
         </h4>
       </div>
 
@@ -149,7 +150,7 @@ export const ApprovalCard = ({ className, tool }: ApprovalCardProps) => {
                   <Checkbox.Indicator />
                 </Checkbox.Control>
                 <Label className="text-muted text-xs">
-                  {labels.alwaysAllow(tool.tier)}
+                  {fill(labels.alwaysAllow, { tier: tool.tier })}
                 </Label>
               </Checkbox.Content>
             </Checkbox>

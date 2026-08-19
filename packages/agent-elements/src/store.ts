@@ -9,6 +9,8 @@ import {
 } from "@chia/agent-runtime/wire/fold";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
+import type { AgentLabels } from "./labels.ts";
+import { mergeLabels } from "./labels.ts";
 import { agentQueryKeys, sessionDetailQuery } from "./queries.ts";
 import { consumeStream } from "./stream.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "./types.ts";
@@ -25,6 +27,8 @@ export type AgentRunStatus = AgentViewState["runStatus"];
 export interface AgentSessionState {
   sessionId: string;
   kind: string | undefined;
+  /** The catalog every element renders from; the host supplies its locale's. */
+  labels: AgentLabels;
   view: AgentViewState;
   connection: AgentConnection;
   /** Prompt already sent, shown until the stream echoes it back as a `user` event. */
@@ -46,6 +50,8 @@ export interface AgentSessionActions {
     approved: boolean,
     comment?: string
   ) => Promise<void>;
+  /** Swaps or partially overrides the catalog — e.g. when the host's locale changes. */
+  setLabels: (labels: Partial<AgentLabels> | undefined) => void;
   /** Surfaces a failure from outside the stream (a mutation) in the same place. */
   reportFailure: (message: string) => void;
   dismissFailure: () => void;
@@ -67,6 +73,7 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
   queryClient: QueryClient;
   sessionId: string;
   kind?: string;
+  labels?: Partial<AgentLabels>;
 }
 
 const messageOf = (cause: unknown): string =>
@@ -112,6 +119,7 @@ export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
 export const createAgentSessionStore = ({
   client,
   kind,
+  labels,
   onStateChanged,
   onTurnEnd,
   queryClient,
@@ -245,6 +253,7 @@ export const createAgentSessionStore = ({
     return {
       sessionId,
       kind,
+      labels: mergeLabels(labels),
       view: emptyViewState(),
       connection: "idle",
       pendingPrompt: null,
@@ -311,6 +320,8 @@ export const createAgentSessionStore = ({
           throw cause;
         }
       },
+
+      setLabels: (next) => set({ labels: mergeLabels(next) }),
 
       reportFailure: (message) => set({ failure: message }),
 

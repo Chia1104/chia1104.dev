@@ -1,105 +1,35 @@
-import type { AgentThinkingLevel } from "./types.ts";
+import enUS from "@chia/i18n/agent-elements/en-US.json";
 
-/** Every user-visible string, so a host can localise without forking the elements. */
-export interface AgentLabels {
-  emptyTitle: string;
-  emptyDescription: string;
-  composerPlaceholder: string;
-  composerPlaceholderRunning: string;
-  composerPlaceholderApproval: string;
-  composerHint: string;
-  statusReady: string;
-  statusStreaming: string;
-  statusAwaitingApproval: string;
-  send: string;
-  stop: string;
-  thinking: string;
-  thought: string;
-  toolRunning: string;
-  toolDone: string;
-  toolFailed: string;
-  toolAwaitingApproval: string;
-  arguments: string;
-  result: string;
-  approvalTag: string;
-  approvalTitle: (toolLabel: string) => string;
-  approvalHint: string;
-  approve: string;
-  reject: string;
-  approved: string;
-  rejected: string;
-  approvedNote: string;
-  rejectedNote: string;
-  addNote: string;
-  notePlaceholder: string;
-  alwaysAllow: (tier: string) => string;
-  compacted: string;
-  modelPicker: string;
-  thinkingLevel: string;
-  thinkingLevelNames: Record<AgentThinkingLevel, string>;
-  needsApiKey: string;
-  searchModels: string;
-  noModels: string;
-  newSession: string;
-  moreSessions: string;
-  searchSessions: string;
-  noSessions: string;
-  untitledSession: string;
-  dismiss: string;
-}
+/**
+ * Every user-visible string, shaped by the `en-US` catalog in `@chia/i18n/agent-elements`. A
+ * host passes the catalog for its locale (or any partial override) into the store; the elements
+ * read it from there, so both apps localise the same way.
+ */
+export type AgentLabels = typeof enUS;
 
-export const defaultAgentLabels: AgentLabels = {
-  emptyTitle: "What do you need?",
-  emptyDescription:
-    "Ask a question. Anything that writes outside this conversation asks you first.",
-  composerPlaceholder: "Ask anything…",
-  composerPlaceholderRunning: "The agent is working…",
-  composerPlaceholderApproval: "Approve or reject the pending tool first.",
-  composerHint: "Enter to send · Shift+Enter for a new line",
-  statusReady: "Ready",
-  statusStreaming: "Streaming",
-  statusAwaitingApproval: "Needs approval",
-  send: "Send",
-  stop: "Stop",
-  thinking: "Thinking",
-  thought: "Thought",
-  toolRunning: "Running…",
-  toolDone: "Done",
-  toolFailed: "Failed",
-  toolAwaitingApproval: "Waiting for approval",
-  arguments: "Arguments",
-  result: "Result",
-  approvalTag: "Approval needed",
-  approvalTitle: (toolLabel) => `Allow ${toolLabel}?`,
-  approvalHint: "This tool writes outside the conversation.",
-  approve: "Allow",
-  reject: "Reject",
-  approved: "Allowed",
-  rejected: "Rejected",
-  approvedNote: "Approved by you",
-  rejectedNote: "Nothing was executed",
-  addNote: "Add a note",
-  notePlaceholder: "Tell the agent why, or what to do instead…",
-  alwaysAllow: (tier) => `Allow all ${tier} tools for the rest of this session`,
-  compacted: "Conversation compacted",
-  modelPicker: "Model",
-  thinkingLevel: "Thinking",
-  thinkingLevelNames: {
-    off: "Off",
-    minimal: "Minimal",
-    low: "Low",
-    medium: "Medium",
-    high: "High",
-    xhigh: "Extra high",
-    max: "Max",
-  },
-  needsApiKey: "needs API key",
-  searchModels: "Search models…",
-  noModels: "No matching models",
-  newSession: "New chat",
-  moreSessions: "More",
-  searchSessions: "Search conversations",
-  noSessions: "No matching conversations",
-  untitledSession: "Untitled",
-  dismiss: "Dismiss",
-};
+export const defaultAgentLabels: AgentLabels = enUS;
+
+/** Fills `{name}` placeholders in a catalog template. */
+export const fill = (
+  template: string,
+  params: Readonly<Record<string, string>>
+): string =>
+  template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    Object.prototype.hasOwnProperty.call(params, key)
+      ? (params[key] ?? match)
+      : match
+  );
+
+export const mergeLabels = (
+  overrides: Partial<AgentLabels> | undefined
+): AgentLabels =>
+  overrides
+    ? {
+        ...defaultAgentLabels,
+        ...overrides,
+        thinkingLevelNames: {
+          ...defaultAgentLabels.thinkingLevelNames,
+          ...overrides.thinkingLevelNames,
+        },
+      }
+    : defaultAgentLabels;

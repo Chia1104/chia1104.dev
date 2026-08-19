@@ -7,7 +7,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "zustand";
 
 import type { AgentLabels } from "./labels.ts";
-import { defaultAgentLabels } from "./labels.ts";
 import { agentModelsQuery, sessionDetailQuery } from "./queries.ts";
 import type {
   AgentSessionCallbacks,
@@ -37,12 +36,11 @@ const AgentSessionContext = createContext<AgentSessionContextValue | undefined>(
   undefined
 );
 
-const AgentLabelsContext = createContext<AgentLabels>(defaultAgentLabels);
-
 export interface AgentSessionProviderProps extends AgentSessionCallbacks {
   client: AgentSessionClient;
   sessionId: string;
   kind?: string;
+  /** The catalog for the host's locale (`@chia/i18n/agent-elements/<locale>.json`), or overrides. */
   labels?: Partial<AgentLabels>;
   children: ReactNode;
 }
@@ -72,6 +70,7 @@ export const AgentSessionProvider = ({
       queryClient,
       sessionId,
       kind,
+      labels,
       onStateChanged: (event) => callbacks.current.onStateChanged?.(event),
       onTurnEnd: () => callbacks.current.onTurnEnd?.(),
     });
@@ -83,20 +82,17 @@ export const AgentSessionProvider = ({
     return () => store.getState().dispose();
   }, [store]);
 
+  // A locale switch in the host arrives as a new `labels` value; the store keeps the current one.
+  useEffect(() => {
+    store.getState().setLabels(labels);
+  }, [labels, store]);
+
   const value = useMemo(
     () => ({ store, client, sessionId, kind }),
     [client, kind, sessionId, store]
   );
-  const mergedLabels = useMemo(
-    () => ({ ...defaultAgentLabels, ...labels }),
-    [labels]
-  );
 
-  return (
-    <AgentSessionContext value={value}>
-      <AgentLabelsContext value={mergedLabels}>{children}</AgentLabelsContext>
-    </AgentSessionContext>
-  );
+  return <AgentSessionContext value={value}>{children}</AgentSessionContext>;
 };
 
 const useContextValue = (): AgentSessionContextValue => {
@@ -117,7 +113,8 @@ export const useAgentSession = <T,>(
   selector: (state: AgentSessionStore) => T
 ): T => useStore(useAgentSessionStore(), selector);
 
-export const useAgentLabels = (): AgentLabels => use(AgentLabelsContext);
+export const useAgentLabels = (): AgentLabels =>
+  useAgentSession((state) => state.labels);
 
 // ============================================
 // Server state (TanStack Query)

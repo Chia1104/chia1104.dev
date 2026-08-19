@@ -497,6 +497,9 @@ importers:
       '@chia/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@chia/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@chia/meta':
         specifier: workspace:*
         version: link:../../packages/meta
@@ -1116,6 +1119,9 @@ importers:
       '@chia/api':
         specifier: workspace:*
         version: link:../api
+      '@chia/i18n':
+        specifier: workspace:*
+        version: link:../i18n
       '@chia/ui':
         specifier: workspace:*
         version: link:../ui
