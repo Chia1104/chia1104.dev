@@ -9,6 +9,7 @@ import { Bot, CircleAlert, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { AgentSessionProvider } from "@chia/agent-elements/provider";
+import { agentQueryKeys } from "@chia/agent-elements/queries";
 import { SessionTabs } from "@chia/agent-elements/session-tabs";
 import agentLabels from "@chia/i18n/agent-elements/en-US.json";
 
@@ -65,6 +66,89 @@ export const AgentWorkspace = () => {
     }
   }, [createMutation]);
 
+  /**
+   * List-level, not the provider's `useUpdateSettings`: the overflow list renames sessions other
+   * than the active one, which the provider does not know about.
+   */
+  const renameMutation = useMutation(
+    orpc.agent.sessions["settings:update"].mutationOptions({
+      onSuccess: (detail) => {
+        queryClient.setQueryData(listOptions.queryKey, (current) =>
+          current
+            ? {
+                ...current,
+                items: current.items.map((item) =>
+                  item.id === detail.session.id ? detail.session : item
+                ),
+              }
+            : current
+        );
+        queryClient.setQueryData(
+          agentQueryKeys.session({
+            sessionId: detail.session.id,
+            kind: WRITING_AGENT_KIND,
+          }),
+          detail
+        );
+      },
+    })
+  );
+
+  const renameSession = useCallback(
+    async (sessionId: string, title: string) => {
+      try {
+        await renameMutation.mutateAsync({
+          kind: WRITING_AGENT_KIND,
+          sessionId,
+          title,
+        });
+      } catch (error) {
+        toast.error(errorMessage(error));
+        throw error;
+      }
+    },
+    [renameMutation]
+  );
+
+  const deleteMutation = useMutation(
+    orpc.agent.sessions.delete.mutationOptions({
+      onSuccess: async ({ sessionId }) => {
+        // Drop the detail before the list refetches, so nothing tries to rehydrate a deleted
+        // session when the active tab moves.
+        queryClient.removeQueries({
+          queryKey: agentQueryKeys.session({
+            sessionId,
+            kind: WRITING_AGENT_KIND,
+          }),
+        });
+        if (sessionId === selectedSessionId) {
+          const next = sessions.find((session) => session.id !== sessionId);
+          const params = new URLSearchParams(searchParams.toString());
+          if (next) params.set("session", next.id);
+          else params.delete("session");
+          const query = params.toString();
+          router.replace(query ? `${pathname}?${query}` : pathname);
+        }
+        await queryClient.invalidateQueries({ queryKey: listOptions.queryKey });
+      },
+    })
+  );
+
+  const deleteSession = useCallback(
+    async (sessionId: string) => {
+      try {
+        await deleteMutation.mutateAsync({
+          kind: WRITING_AGENT_KIND,
+          sessionId,
+        });
+      } catch (error) {
+        toast.error(errorMessage(error));
+        throw error;
+      }
+    },
+    [deleteMutation]
+  );
+
   const tabs = (
     <SessionTabs
       activeId={selectedSessionId}
@@ -72,6 +156,8 @@ export const AgentWorkspace = () => {
       isCreating={createMutation.isPending}
       labels={agentLabels}
       onCreate={() => void createSession()}
+      onDelete={deleteSession}
+      onRename={renameSession}
       onSelect={selectSession}
       sessions={sessions}
     />

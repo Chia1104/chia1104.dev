@@ -53,6 +53,10 @@
       "types": "./src/pi/turn.ts",
       "default": "./src/pi/turn.ts"
     },
+    "./pi/title": {
+      "types": "./src/pi/title.ts",
+      "default": "./src/pi/title.ts"
+    },
     "./session/pi": {
       "types": "./src/session/pi.ts",
       "default": "./src/session/pi.ts"
