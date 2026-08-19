@@ -270,11 +270,17 @@ internal`) so a client can say what to do next; `describeAgentError` is the shar
   wide objects and deep nesting are shortened in place, shape preserved — because every coarse
   event is a durable write that is replayed to every reconnecting client. The model reads the
   tool's `content`, never this copy.
-- `applyEvent` / `foldEvents` give live and replayed events one dashboard rendering path.
-- `@chia/agent-runtime/transports/tanstack-ai` maps the bounded events to the AG-UI subset used by
-  TanStack AI. `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval
-  decision through the kind service, then tails the run's durable stream from the returned cursor
-  and emits it in that form. History arrives through `agent.sessions.get` as wire events.
+- `applyEvent` / `foldEvents` give live and replayed events one client rendering path.
+- `agent.sessions.chat` is the only turn transport: it enqueues the prompt or approval decision
+  through the kind service, then tails the run's durable stream from the returned cursor and emits
+  the wire events as-is, ending at that turn's `run:end`. History arrives through
+  `agent.sessions.get` as the same wire events, so the client folds both with one reducer.
+- `@chia/agent-elements` is that client: a zustand store per session (`createAgentSessionStore`)
+  that folds live turns with `applyEvent` and owns prompt/approval streaming, over the host's
+  TanStack `QueryClient` for everything request/response (session detail, models, settings,
+  abort — `./queries`), plus the HeroUI elements (thread, composer, approval card, model picker,
+  session tabs) both frontends compose. It takes the contract-typed `client.agent` and nothing
+  app-specific.
 
 Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
@@ -282,9 +288,11 @@ coarse events. Streams close only when the durable run ends, not after each turn
 
 ### Rejoining a running turn
 
-The dashboard chat is server-authoritative (TanStack AI `persistence: true`): on mount it hydrates
-from `agent.sessions.get` and, when `run.status` is `running`, rejoins the turn through
-`agent.sessions.chat` with `{ type: "attach" }`. The turn step maintains `agent_run.metadata.turn`
+The chat is server-authoritative: on mount the session store hydrates from `agent.sessions.get`
+and, when `run.status` is `running`, rejoins the turn through `agent.sessions.chat` with
+`{ type: "attach" }`. A stream that ends with `run:end` only refreshes the session detail (the
+view it built is kept, and the marker below may lag the terminal event by a moment, so that read
+is retried briefly); a stream that breaks earlier rebuilds from `get` and re-attaches with backoff. The turn step maintains `agent_run.metadata.turn`
 — the session leaf before the turn, the first coarse stream index it writes, and `running`, set
 before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
 run parked on its message hook is `running` to the SDK just like one executing a step, so
@@ -402,7 +410,6 @@ until a concrete second execution foundation requires a different seam.
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
 | Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
-| TanStack AI transport        | `packages/agent-runtime/src/transports/tanstack-ai.ts`                                         |
 | Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
 | Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
@@ -413,4 +420,5 @@ until a concrete second execution foundation requires a different seam.
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |
 | Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
+| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                            |
 | Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |

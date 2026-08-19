@@ -39,7 +39,7 @@ Admin dashboard. One oRPC client:
 
 - `src/libs/orpc/client.ts` — an `RPCLink` with `credentials: "include"`. **Every procedure call is made from the browser** with the session cookie. Pages are thin server shells (`server-only` + `force-dynamic`) or `"use client"` pages, and data fetching lives in client components via `orpc.*.queryOptions` / `mutationOptions`. There is no server-side or in-process oRPC path, so `dash` holds no DB, KV or auth-server context of its own and needs no `DATABASE_URL`.
 
-Layout: `src/app` (routes), `src/components` (feature UI: feed, rag, agent, projects, assets, settings), `src/containers` (client containers that fetch and mount a view), `src/store` (zustand — draft/edit state, organization), `src/hooks`, `src/resources` (typed wrappers over the non-oRPC `/ai` routes), `src/server` (`next-safe-action` actions — today only the `currentOrg` cookie; no oRPC there).
+Layout: `src/app` (routes), `src/components` (feature UI: feed, rag, agent — composed from `@chia/agent-elements` plus the writing draft preview —, projects, assets, settings), `src/containers` (client containers that fetch and mount a view), `src/store` (zustand — draft/edit state, organization), `src/hooks`, `src/resources` (typed wrappers over the non-oRPC `/ai` routes), `src/server` (`next-safe-action` actions — today only the `currentOrg` cookie; no oRPC there).
 
 Auth is a Better Auth session; the client comes from `@chia/auth/client`.
 

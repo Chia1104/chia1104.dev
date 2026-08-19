@@ -60,10 +60,6 @@
     "./session/pg-storage": {
       "types": "./src/session/pg-storage.ts",
       "default": "./src/session/pg-storage.ts"
-    },
-    "./transports/tanstack-ai": {
-      "types": "./src/transports/tanstack-ai.ts",
-      "default": "./src/transports/tanstack-ai.ts"
     }
   },
   "scripts": {
@@ -77,7 +73,6 @@
     "@chia/db": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
-    "@tanstack/ai": "catalog:agent-client",
     "typebox": "catalog:agent",
     "zod": "catalog:"
   },

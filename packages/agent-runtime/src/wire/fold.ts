@@ -24,6 +24,8 @@ export interface TextMessageView {
   messageId: string;
   text: string;
   thinking?: string;
+  /** Epoch ms; unset while an assistant message is still streaming. */
+  at?: number;
   streaming: boolean;
   usage?: Extract<AgentWireEvent, { type: "assistant:end" }>["usage"];
 }
@@ -93,6 +95,7 @@ export const applyEvent = (
         kind: "user",
         messageId: event.messageId,
         text: event.text,
+        at: event.at,
         streaming: false,
       });
       return { ...state, items, runStatus: "running" };
@@ -134,6 +137,7 @@ export const applyEvent = (
         text: event.text,
         thinking: event.thinking,
         usage: event.usage,
+        at: event.at,
         streaming: false,
       };
       if (index === -1) items.push(view);

@@ -1,7 +1,6 @@
 import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
 
-import { tanstackAgentEventSchema } from "@chia/agent-runtime/transports/tanstack-ai";
 import { agentWireEventSchema } from "@chia/agent-runtime/wire/schema";
 import { locale } from "@chia/db/schema/enums";
 
@@ -211,14 +210,14 @@ export const updateAgentSessionSettingsContract = oc
 // ============================================
 
 /**
- * The turn transport: one prompt or approval decision in, that turn's events out, as the AG-UI
- * subset TanStack AI consumes.
+ * The turn transport: one prompt or approval decision in, that turn's wire events out.
  *
- * The request is scoped to one client run, while the runtime below it keeps using one durable,
+ * The request is scoped to one turn, while the runtime below it keeps using one durable,
  * multi-turn workflow: the message is enqueued durably first and this request then tails the
  * run's stream from that point, so a dropped connection loses the view, never the turn — the
  * transcript is replayed from the server-owned session on the next `get`. Only the newest
  * prompt or approval decision crosses this boundary; the server owns conversation history.
+ * The stream carries the same `AgentWireEvent`s `get` replays, so one client reducer folds both.
  */
 export const chatAgentContract = oc
   .errors({
@@ -232,10 +231,6 @@ export const chatAgentContract = oc
       /** Agent kind. Optional while only one is registered. */
       kind: z.string().optional(),
       sessionId: z.string(),
-      /** Stable TanStack conversation id. */
-      threadId: z.string(),
-      /** Per-send TanStack run id; deliberately distinct from the workflow run id. */
-      runId: z.string(),
       action: z.discriminatedUnion("type", [
         z.object({
           type: z.literal("prompt"),
@@ -255,7 +250,7 @@ export const chatAgentContract = oc
       ]),
     })
   )
-  .output(eventIterator(tanstackAgentEventSchema));
+  .output(eventIterator(agentWireEventSchema));
 
 export const abortAgentContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })

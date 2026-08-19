@@ -39,6 +39,7 @@ export const entriesToWireEvents = (
         type: "user",
         messageId: entry.id,
         text: contentToText(message.content),
+        at: message.timestamp,
       });
       continue;
     }
@@ -60,6 +61,7 @@ export const entriesToWireEvents = (
         text,
         thinking: thinking || undefined,
         stopReason: message.stopReason,
+        at: message.timestamp,
         usage: message.usage
           ? {
               input: message.usage.input,
