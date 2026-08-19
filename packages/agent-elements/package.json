@@ -65,6 +65,14 @@
       "types": "./src/composer.tsx",
       "default": "./src/composer.tsx"
     },
+    "./provider-icons": {
+      "types": "./src/provider-icons.tsx",
+      "default": "./src/provider-icons.tsx"
+    },
+    "./thinking-slider": {
+      "types": "./src/thinking-slider.tsx",
+      "default": "./src/thinking-slider.tsx"
+    },
     "./model-picker": {
       "types": "./src/model-picker.tsx",
       "default": "./src/model-picker.tsx"

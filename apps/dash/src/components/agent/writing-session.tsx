@@ -20,11 +20,6 @@ import { AgentDraftPreview } from "./agent-draft-preview";
  * setup; the bring-your-own-key providers follow.
  */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
-const PROVIDER_LABELS = {
-  "vercel-ai-gateway": "Gateway",
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-};
 
 const TOOL_RENDERERS = { ...contentToolRenderers, ...webToolRenderers };
 
@@ -42,11 +37,6 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
     <>
       <header className="border-border flex items-center gap-3 border-b px-4 py-3">
         {tabs}
-        <ModelPicker
-          className="shrink-0"
-          providerLabels={PROVIDER_LABELS}
-          providerOrder={PROVIDER_ORDER}
-        />
         <StatusChip className="shrink-0" />
       </header>
 
@@ -80,7 +70,10 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
               />
             }
           />
-          <Composer placeholder="Ask the writing agent…" />
+          <Composer
+            placeholder="Ask the writing agent…"
+            toolbar={<ModelPicker providerOrder={PROVIDER_ORDER} />}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel className="flex min-h-0 flex-1 p-0" id="draft">

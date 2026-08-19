@@ -1,22 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { Alert, Button, CloseButton, TextArea } from "@heroui/react";
 import { ArrowUp, Square } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { ModelPicker } from "./model-picker.tsx";
 import { useAgentLabels, useAgentSession } from "./provider.tsx";
 import { selectCanPrompt, selectIsBusy, selectStatus } from "./store.ts";
+
+/** Tallest the input grows before it scrolls, in px — about eight lines. */
+const MAX_INPUT_HEIGHT = 200;
 
 export interface ComposerProps {
   className?: string;
   /** Overrides the placeholder while the composer accepts input. */
   placeholder?: string;
+  /**
+   * Controls on the toolbar's left, beside the send button. Defaults to the model picker; pass
+   * `null` for none.
+   */
+  toolbar?: ReactNode;
 }
 
-export const Composer = ({ className, placeholder }: ComposerProps) => {
+/**
+ * The input on top, a toolbar below: model picker (or whatever the host puts there) on the left,
+ * send/stop on the right. The input grows with its content up to a cap, then scrolls.
+ */
+export const Composer = ({
+  className,
+  placeholder,
+  toolbar = <ModelPicker />,
+}: ComposerProps) => {
   const labels = useAgentLabels();
   const prompt = useAgentSession((state) => state.prompt);
   const abort = useAgentSession((state) => state.abort);
@@ -27,6 +45,18 @@ export const Composer = ({ className, placeholder }: ComposerProps) => {
   const status = useAgentSession(selectStatus);
   const [text, setText] = useState("");
   const [stopping, setStopping] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Grow with the content: measure the natural height, cap it, and let the rest scroll.
+  useLayoutEffect(() => {
+    const element = inputRef.current;
+    if (!element) return;
+    element.style.height = "0px";
+    const next = Math.min(element.scrollHeight, MAX_INPUT_HEIGHT);
+    element.style.height = `${next}px`;
+    element.style.overflowY =
+      element.scrollHeight > MAX_INPUT_HEIGHT ? "auto" : "hidden";
+  }, [text]);
 
   const send = async () => {
     const value = text.trim();
@@ -72,10 +102,11 @@ export const Composer = ({ className, placeholder }: ComposerProps) => {
           </Alert>
         ) : null}
 
-        <div className="bg-surface border-border focus-within:border-field-border-focus flex items-end gap-2 rounded-2xl border p-2 pl-3.5 shadow-xs transition-colors">
+        <div className="bg-surface border-border focus-within:border-field-border-focus flex flex-col gap-1 rounded-2xl border px-3 pt-3 pb-2 shadow-xs transition-colors">
           <TextArea
+            ref={inputRef}
             aria-label={labels.send}
-            className="max-h-44 min-h-6 flex-1 resize-none border-0 bg-transparent px-0 py-1.5 text-sm shadow-none focus:ring-0"
+            className="min-h-6 w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus:ring-0"
             disabled={!canPrompt}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
@@ -94,26 +125,32 @@ export const Composer = ({ className, placeholder }: ComposerProps) => {
             value={text}
             variant="secondary"
           />
-          {busy ? (
-            <Button
-              aria-label={labels.stop}
-              isIconOnly
-              isPending={stopping}
-              onPress={() => void stop()}
-              size="sm"
-              variant="danger-soft">
-              <Square className="size-3.5 fill-current" />
-            </Button>
-          ) : (
-            <Button
-              aria-label={labels.send}
-              isDisabled={!canPrompt || !text.trim()}
-              isIconOnly
-              onPress={() => void send()}
-              size="sm">
-              <ArrowUp className="size-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-1">
+              {toolbar}
+            </div>
+            {busy ? (
+              <Button
+                aria-label={labels.stop}
+                isIconOnly
+                isPending={stopping}
+                onPress={() => void stop()}
+                size="sm"
+                variant="danger-soft">
+                <Square className="size-3.5 fill-current" />
+              </Button>
+            ) : (
+              <Button
+                aria-label={labels.send}
+                className="rounded-full"
+                isDisabled={!canPrompt || !text.trim()}
+                isIconOnly
+                onPress={() => void send()}
+                size="sm">
+                <ArrowUp className="size-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="text-muted flex justify-between px-1 text-[11px]">

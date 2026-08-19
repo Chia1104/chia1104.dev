@@ -2,23 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Button, ListBox, Popover, Separator, Tabs } from "@heroui/react";
+import { Button, ListBox, Popover, SearchField, Tooltip } from "@heroui/react";
 import { ChevronDown } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { ProviderMark, providerLabelOf, vendorOf } from "./provider-icons.tsx";
+import type { ProviderIcon } from "./provider-icons.tsx";
 import { useAgentLabels, useAgentSession } from "./provider.tsx";
+import { ThinkingSlider } from "./thinking-slider.tsx";
 import type { AgentModel, AgentThinkingLevel } from "./types.ts";
-
-const THINKING_LEVELS: readonly AgentThinkingLevel[] = [
-  "off",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-];
 
 /**
  * A model is identified by its `(providerId, modelId)` pair — the same model carries different
@@ -28,19 +21,23 @@ const keyOf = (model: { providerId: string; modelId: string }) =>
   `${model.providerId} ${model.modelId}`;
 
 export interface ModelPickerProps {
-  /** Display names per provider id; anything missing shows its raw id. */
+  /** Display names per provider or vendor id, on top of the built-in ones. */
   providerLabels?: Readonly<Record<string, string>>;
+  /** Marks per provider or vendor id, on top of the built-in ones. */
+  providerIcons?: Readonly<Record<string, ProviderIcon>>;
   /** Providers in the order offered; the rest follow alphabetically. */
   providerOrder?: readonly string[];
   className?: string;
 }
 
 /**
- * Provider tabs → model list → thinking level, in one popover. Choosing anything persists it on
- * the session straight away; the trigger reflects the session's current settings.
+ * One popover: a rail of provider marks, a searchable model list for the active provider, and
+ * the thinking slider. Choosing anything persists it on the session straight away; the trigger
+ * reflects the session's current settings with the model vendor's mark.
  */
 export const ModelPicker = ({
   className,
+  providerIcons,
   providerLabels,
   providerOrder = [],
 }: ModelPickerProps) => {
@@ -52,6 +49,13 @@ export const ModelPicker = ({
   const busy = useAgentSession((state) => state.connection !== "idle");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [query, setQuery] = useState("");
+  const [rail, setRail] = useState<string | null>(null);
+  // Slider position while dragging; the session value takes over once the drag commits.
+  const [draftLevel, setDraftLevel] = useState<AgentThinkingLevel | null>(null);
+
+  const nameOf = (id: string) =>
+    providerLabels?.[id] ?? providerLabelOf(id) ?? id;
 
   // Loaded up front so the trigger can show the model's display name, not its raw id.
   const ready = settings !== undefined;
@@ -74,25 +78,32 @@ export const ModelPicker = ({
       .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
       .map(([id, list]) => ({
         id,
-        label: providerLabels?.[id] ?? id,
         models: list.toSorted((a, b) => a.name.localeCompare(b.name)),
       }));
-  }, [models, providerLabels, providerOrder]);
+  }, [models, providerOrder]);
 
-  const [tab, setTab] = useState<string | null>(null);
   const activeProvider =
     providers.find(
-      (provider) => provider.id === (tab ?? settings?.providerId)
+      (provider) => provider.id === (rail ?? settings?.providerId)
     ) ?? providers[0];
 
+  const visibleModels = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const list = activeProvider?.models ?? [];
+    return needle
+      ? list.filter(
+          (model) =>
+            model.name.toLowerCase().includes(needle) ||
+            model.modelId.toLowerCase().includes(needle)
+        )
+      : list;
+  }, [activeProvider, query]);
+
   const current = settings
-    ? (models ?? []).find(
-        (model) =>
-          model.providerId === settings.providerId &&
-          model.modelId === settings.modelId
-      )
+    ? (models ?? []).find((model) => keyOf(model) === keyOf(settings))
     : undefined;
   const supportsReasoning = current?.supportsReasoning ?? true;
+  const level = draftLevel ?? settings?.thinkingLevel ?? "off";
 
   const save = async (input: Parameters<typeof updateSettings>[0]) => {
     setSaving(true);
@@ -105,30 +116,37 @@ export const ModelPicker = ({
     }
   };
 
+  const triggerVendor = settings ? vendorOf(settings) : null;
   const triggerModel = current?.name ?? settings?.modelId ?? labels.modelPicker;
-  const triggerProvider = settings
-    ? (providerLabels?.[settings.providerId] ?? settings.providerId)
-    : null;
 
   return (
-    <Popover isOpen={open} onOpenChange={setOpen}>
+    <Popover
+      isOpen={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setQuery("");
+      }}>
       <Popover.Trigger>
         <Button
           aria-label={labels.modelPicker}
-          className={cn("h-8 gap-2 px-2.5 text-xs", className)}
+          className={cn("h-8 gap-1.5 px-2 text-xs", className)}
           isDisabled={!settings || busy || saving}
           isPending={saving}
           size="sm"
-          variant="secondary">
-          {triggerProvider ? (
-            <span className="text-muted">{triggerProvider}</span>
+          variant="ghost">
+          {triggerVendor ? (
+            <ProviderMark
+              className="size-3.5"
+              icons={providerIcons}
+              id={triggerVendor}
+            />
           ) : null}
-          <span className="max-w-40 truncate">{triggerModel}</span>
+          <span className="max-w-40 truncate font-medium">{triggerModel}</span>
           {settings && supportsReasoning ? (
             <>
-              <span className="bg-separator h-3 w-px" />
+              <span className="bg-separator mx-0.5 h-3 w-px" />
               <span className="text-muted">
-                {labels.thinkingLevelNames[settings.thinkingLevel]}
+                {labels.thinkingLevelNames[level]}
               </span>
             </>
           ) : null}
@@ -140,101 +158,133 @@ export const ModelPicker = ({
           />
         </Button>
       </Popover.Trigger>
-      <Popover.Content className="w-80 p-0" placement="bottom end">
-        <Popover.Dialog className="flex flex-col gap-1 p-1.5">
-          {providers.length > 1 ? (
-            <Tabs
-              onSelectionChange={(key) => setTab(String(key))}
-              selectedKey={activeProvider?.id}
-              variant="secondary">
-              <Tabs.ListContainer>
-                <Tabs.List aria-label={labels.modelPicker} className="w-full">
-                  {providers.map((provider) => (
-                    <Tabs.Tab
-                      key={provider.id}
-                      className="flex-1"
-                      id={provider.id}>
-                      {provider.label}
-                      <Tabs.Indicator />
-                    </Tabs.Tab>
-                  ))}
-                </Tabs.List>
-              </Tabs.ListContainer>
-            </Tabs>
-          ) : null}
 
-          <ListBox
-            aria-label={labels.modelPicker}
-            // Focuses the selected model on open, which also scrolls it into view.
-            autoFocus
-            className="max-h-72 overflow-y-auto"
-            disallowEmptySelection
-            onSelectionChange={(keys) => {
-              const key = [...keys][0];
-              const next = (models ?? []).find((model) => keyOf(model) === key);
-              if (!next || (settings && keyOf(next) === keyOf(settings)))
-                return;
-              void save({
-                model: { providerId: next.providerId, modelId: next.modelId },
-              });
-            }}
-            selectedKeys={
-              settings ? new Set([keyOf(settings)]) : new Set<string>()
-            }
-            selectionMode="single">
-            {(activeProvider?.models ?? []).map((model) => (
-              <ListBox.Item
-                key={keyOf(model)}
-                id={keyOf(model)}
-                isDisabled={model.requiresApiKey}
-                textValue={model.name}>
-                <span className="flex-1 truncate">{model.name}</span>
-                {model.requiresApiKey ? (
-                  <span className="text-muted text-xs">
-                    {labels.needsApiKey}
-                  </span>
-                ) : null}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-            ))}
-          </ListBox>
+      <Popover.Content className="w-[26rem] p-0" placement="top start">
+        <Popover.Dialog className="flex flex-col p-0">
+          <div className="flex min-h-0">
+            <div className="border-border flex w-12 shrink-0 flex-col items-center gap-1 border-r py-2">
+              {providers.map((provider) => {
+                const active = provider.id === activeProvider?.id;
+                return (
+                  <Tooltip key={provider.id} delay={300}>
+                    <Tooltip.Trigger>
+                      <Button
+                        aria-label={nameOf(provider.id)}
+                        aria-pressed={active}
+                        className={cn(
+                          "relative size-9",
+                          active
+                            ? "bg-surface-secondary text-foreground before:bg-accent before:absolute before:top-2 before:-right-[2px] before:bottom-2 before:w-0.5 before:rounded-full"
+                            : "text-muted"
+                        )}
+                        isIconOnly
+                        onPress={() => setRail(provider.id)}
+                        size="sm"
+                        variant="ghost">
+                        <ProviderMark
+                          className="size-[18px]"
+                          icons={providerIcons}
+                          id={provider.id}
+                        />
+                      </Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content placement="right">
+                      {nameOf(provider.id)}
+                    </Tooltip.Content>
+                  </Tooltip>
+                );
+              })}
+            </div>
 
-          {supportsReasoning ? (
-            <>
-              <Separator className="my-0.5" />
-              <span className="text-muted px-2 pt-1 text-[11px] tracking-wide uppercase">
-                {labels.thinkingLevel}
-              </span>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="p-2 pb-1">
+                <SearchField
+                  aria-label={labels.searchModels}
+                  fullWidth
+                  onChange={setQuery}
+                  value={query}>
+                  <SearchField.Group>
+                    <SearchField.SearchIcon />
+                    <SearchField.Input placeholder={labels.searchModels} />
+                    <SearchField.ClearButton />
+                  </SearchField.Group>
+                </SearchField>
+              </div>
               <ListBox
-                aria-label={labels.thinkingLevel}
+                aria-label={labels.modelPicker}
+                // Focuses the selected model on open, which also scrolls it into view.
+                autoFocus
+                className="max-h-64 overflow-y-auto px-1.5 pb-1.5"
                 disallowEmptySelection
                 onSelectionChange={(keys) => {
                   const key = [...keys][0];
-                  const level = THINKING_LEVELS.find(
-                    (candidate) => candidate === key
+                  const next = (models ?? []).find(
+                    (model) => keyOf(model) === key
                   );
-                  if (!level || level === settings?.thinkingLevel) return;
-                  void save({ thinkingLevel: level });
+                  if (!next || (settings && keyOf(next) === keyOf(settings))) {
+                    return;
+                  }
+                  void save({
+                    model: {
+                      providerId: next.providerId,
+                      modelId: next.modelId,
+                    },
+                  });
                 }}
+                renderEmptyState={() => (
+                  <p className="text-muted px-3 py-6 text-center text-xs">
+                    {labels.noModels}
+                  </p>
+                )}
                 selectedKeys={
-                  settings
-                    ? new Set([settings.thinkingLevel])
-                    : new Set<string>()
+                  settings ? new Set([keyOf(settings)]) : new Set<string>()
                 }
                 selectionMode="single">
-                {THINKING_LEVELS.map((level) => (
-                  <ListBox.Item
-                    key={level}
-                    id={level}
-                    textValue={labels.thinkingLevelNames[level]}>
-                    <span className="flex-1">
-                      {labels.thinkingLevelNames[level]}
-                    </span>
-                    <ListBox.ItemIndicator />
-                  </ListBox.Item>
-                ))}
+                {visibleModels.map((model) => {
+                  const vendor = vendorOf(model);
+                  return (
+                    <ListBox.Item
+                      key={keyOf(model)}
+                      className="py-2"
+                      id={keyOf(model)}
+                      isDisabled={model.requiresApiKey}
+                      textValue={model.name}>
+                      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <span className="truncate">{model.name}</span>
+                        <span className="text-muted flex items-center gap-1.5 text-xs">
+                          <ProviderMark
+                            className="size-3"
+                            icons={providerIcons}
+                            id={vendor}
+                          />
+                          {nameOf(vendor)}
+                          {model.requiresApiKey
+                            ? ` · ${labels.needsApiKey}`
+                            : ""}
+                        </span>
+                      </span>
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  );
+                })}
               </ListBox>
-            </>
+            </div>
+          </div>
+
+          {supportsReasoning ? (
+            <div className="border-border border-t px-4 py-3">
+              <ThinkingSlider
+                isDisabled={saving}
+                onChange={setDraftLevel}
+                onCommit={(next) => {
+                  setDraftLevel(null);
+                  if (next !== settings?.thinkingLevel) {
+                    void save({ thinkingLevel: next });
+                  }
+                }}
+                value={level}
+              />
+            </div>
           ) : null}
         </Popover.Dialog>
       </Popover.Content>

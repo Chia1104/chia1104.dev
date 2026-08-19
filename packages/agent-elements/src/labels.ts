@@ -38,6 +38,8 @@ export interface AgentLabels {
   thinkingLevel: string;
   thinkingLevelNames: Record<AgentThinkingLevel, string>;
   needsApiKey: string;
+  searchModels: string;
+  noModels: string;
   newSession: string;
   moreSessions: string;
   searchSessions: string;
@@ -92,6 +94,8 @@ export const defaultAgentLabels: AgentLabels = {
     max: "Max",
   },
   needsApiKey: "needs API key",
+  searchModels: "Search models…",
+  noModels: "No matching models",
   newSession: "New chat",
   moreSessions: "More",
   searchSessions: "Search conversations",
