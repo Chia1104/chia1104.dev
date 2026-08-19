@@ -76,7 +76,7 @@ export const AgentWorkspace = () => {
   );
 
   return (
-    <main className="flex min-h-[calc(100svh-4rem)] flex-1 flex-col p-4 lg:overflow-hidden">
+    <main className="flex h-[calc(100svh-4rem)] flex-col overflow-hidden p-4">
       <Card className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
         {selectedSessionId ? (
           <AgentSessionProvider

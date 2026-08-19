@@ -53,7 +53,7 @@ const ThinkingBlock = ({
       className="bg-surface border-border rounded-xl border"
       defaultExpanded={streaming}>
       <Disclosure.Heading>
-        <Disclosure.Trigger className="text-muted h-9 w-full justify-start gap-2 px-3 text-xs">
+        <Disclosure.Trigger className="text-muted flex h-9 w-full items-center justify-start gap-2 px-3 text-xs">
           <span
             className={cn(
               "size-1.5 rounded-full",

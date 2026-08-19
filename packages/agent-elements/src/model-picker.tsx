@@ -53,9 +53,11 @@ export const ModelPicker = ({
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Loaded up front so the trigger can show the model's display name, not its raw id.
+  const ready = settings !== undefined;
   useEffect(() => {
-    if (open) void loadModels();
-  }, [loadModels, open]);
+    if (ready) void loadModels();
+  }, [loadModels, ready]);
 
   const providers = useMemo(() => {
     const groups = new Map<string, AgentModel[]>();
@@ -163,6 +165,9 @@ export const ModelPicker = ({
 
           <ListBox
             aria-label={labels.modelPicker}
+            // Focuses the selected model on open, which also scrolls it into view.
+            autoFocus
+            className="max-h-72 overflow-y-auto"
             disallowEmptySelection
             onSelectionChange={(keys) => {
               const key = [...keys][0];
@@ -189,6 +194,7 @@ export const ModelPicker = ({
                     {labels.needsApiKey}
                   </span>
                 ) : null}
+                <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}
           </ListBox>
@@ -221,7 +227,10 @@ export const ModelPicker = ({
                     key={level}
                     id={level}
                     textValue={labels.thinkingLevelNames[level]}>
-                    {labels.thinkingLevelNames[level]}
+                    <span className="flex-1">
+                      {labels.thinkingLevelNames[level]}
+                    </span>
+                    <ListBox.ItemIndicator />
                   </ListBox.Item>
                 ))}
               </ListBox>

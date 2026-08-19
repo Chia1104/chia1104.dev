@@ -102,7 +102,7 @@ export const ToolCall = ({ className, renderers, tool }: ToolCallProps) => {
     <Disclosure
       className={cn("bg-surface border-border rounded-xl border", className)}>
       <Disclosure.Heading>
-        <Disclosure.Trigger className="h-10 w-full justify-start gap-2.5 px-3 text-left text-sm">
+        <Disclosure.Trigger className="flex h-10 w-full items-center justify-start gap-2.5 px-3 text-left text-sm">
           <Wrench className="text-muted size-3.5 shrink-0" />
           <span className="text-foreground truncate">{tool.label}</span>
           <span className="text-muted hidden truncate font-mono text-xs sm:inline">
