@@ -29,7 +29,7 @@ const MessageMeta = ({
     <div
       className={cn(
         "text-muted flex h-6 items-center gap-1 text-[11px]",
-        align === "end" ? "justify-end" : "justify-start"
+        align === "end" ? "flex-row-reverse justify-end" : "justify-start"
       )}>
       {at ? (
         <time
@@ -61,7 +61,7 @@ export const UserMessage = ({
   at?: number;
   className?: string;
 }) => (
-  <div className={cn("group flex flex-col items-end", className)}>
+  <div className={cn("group flex flex-col items-end gap-1", className)}>
     <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-6 whitespace-pre-wrap">
       {text}
     </div>
