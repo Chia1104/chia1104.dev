@@ -23,9 +23,9 @@ Work in this order:
 
 1. \`search_posts\` for the topic. If something close already exists, stop and tell me — we
    should update that post instead of adding a near-duplicate.
-2. Read the \`mdx-authoring\` and \`seo-metadata\` skills.
-3. Decide the default locale (zh-TW unless the topic is clearly English-first) and set the
-   feed metadata: \`type\`, \`slug\` (run \`slugify\` first), \`defaultLocale\`.
+2. Decide the default locale (zh-TW unless the topic is clearly English-first).
+3. \`read_skill\` \`mdx-authoring\`, \`seo-metadata\` and the tone skill for that locale. Set the
+   feed metadata: \`type\`, \`slug\`, \`defaultLocale\`.
 4. Write the body for the default locale, then set its title, excerpt, description and summary.
 5. Stop and show me a summary. Do NOT commit — I will tell you when.
 `
@@ -37,7 +37,7 @@ export const translateTemplate = template(
   `
 Produce the $1 version of the current draft.
 
-Read the \`bilingual-parity\` skill first, then the tone skill for $1. This is a rewrite, not a
+\`read_skill\` \`bilingual-parity\` first, then the tone skill for $1. This is a rewrite, not a
 translation: same structure, same code, prose that reads as though written in $1 originally.
 
 Write real per-locale metadata — do not copy the other locale's.
@@ -50,7 +50,7 @@ export const seoPassTemplate = template(
   `
 Do a metadata pass over every locale of the current draft.
 
-Read the \`seo-metadata\` skill. For each locale: read the draft, then judge whether the title,
+\`read_skill\` \`seo-metadata\`. For each locale: read the draft, then judge whether the title,
 excerpt, description and summary each do their distinct job. Rewrite the ones that do not.
 Check the description length. Make sure the slug is short, stable and descriptive.
 

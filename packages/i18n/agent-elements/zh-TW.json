@@ -31,6 +31,7 @@
   "notePlaceholder": "告訴 agent 原因，或改怎麼做…",
   "alwaysAllow": "本次對話接下來都允許 {tier} 類工具",
   "compacted": "對話已壓縮",
+  "decisionRelayed": "決定已轉達給 agent",
   "modelPicker": "模型",
   "thinkingLevel": "思考程度",
   "thinkingLevelNames": {

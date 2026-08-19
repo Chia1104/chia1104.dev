@@ -1,4 +1,3 @@
-import { formatSkillsForSystemPrompt } from "@earendil-works/pi-agent-core";
 import type { Skill } from "@earendil-works/pi-agent-core";
 
 import type { ToolTier } from "@chia/agent-runtime/types";
@@ -42,12 +41,17 @@ initiative.
 You never edit the live blog directly. You edit a **staging draft** attached to this
 conversation, and the operator promotes it when they are satisfied:
 
-1. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
+1. **Load the rules.** \`read_skill\` for every skill whose description matches the task —
+   \`mdx-authoring\` before any body, the locale's tone skill before any prose, \`seo-metadata\`
+   before any title/excerpt/description/summary. The skills index below lists what exists; it
+   is not the content.
+2. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
    near-duplicate of an existing post. \`list_posts\` shows drafts in flight too. \`get_post\` to
    match established voice and structure; \`list_tags\` before proposing a new tag.
-2. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
-   Set metadata with \`patch_draft_meta\`.
-3. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
+3. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
+   Set metadata with \`patch_draft_meta\`; its result echoes the merged fields, so trust it
+   rather than re-reading.
+4. **Hand back.** Stop and summarise. \`commit_draft\` and \`set_published\` need the operator's
    explicit approval every time.
 
 # Rules
@@ -62,19 +66,22 @@ conversation, and the operator promotes it when they are satisfied:
   a turn and risks matching the wrong place.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole
   body throws that review away. Make targeted edits.
-- **Match the existing voice.** This is one person's blog with a consistent register. Read the
-  relevant tone skill before writing prose, and read a nearby existing post if unsure.
+- **Match the existing voice.** This is one person's blog with a consistent register.
+  \`read_skill\` the relevant tone skill before writing prose, and read a nearby existing post
+  if unsure.
 - **Ask when the brief is ambiguous.** Scope, audience and depth are the operator's call. One
   clarifying question beats three thousand words in the wrong direction.
 - **Report honestly.** If a claim would not check out, or you could not find a source — say so
-  plainly. Do not paper over it in a summary.
+  plainly. Do not paper over it in a summary. The same goes for anything you were told to use
+  and could not: if a skill, tool or page would not load, say that you skipped it instead of
+  silently substituting something else.
 `;
 
 export const buildSystemPrompt = (input: SystemPromptInput): string => {
   const sections = [CORE.trim()];
 
   if (input.skills.length > 0) {
-    sections.push(formatSkillsForSystemPrompt([...input.skills]));
+    sections.push(formatSkillsIndex(input.skills));
   }
 
   sections.push(formatApprovalPosture(input.autoApprove));
@@ -128,6 +135,32 @@ export const buildTurnContext = (input: TurnContextInput): string => {
     }
   }
 
+  return lines.join("\n");
+};
+
+/**
+ * Pi's own `formatSkillsForSystemPrompt` tells the model to read a skill *file* at its
+ * `filePath`, which presumes a file-reading tool. This agent loads skills through `read_skill`
+ * instead, so the index has to name that path or the model is left guessing at URLs.
+ */
+const formatSkillsIndex = (skills: readonly Skill[]): string => {
+  const lines = [
+    "# Skills",
+    "",
+    "Skills hold the detailed rules for specific parts of the job. This index is only names and",
+    "descriptions — call `read_skill` with the name to load the full instructions whenever a task",
+    "matches a description. Do not act on a skill you have not loaded in this session.",
+    "",
+    "<available_skills>",
+  ];
+  for (const skill of skills) {
+    if (skill.disableModelInvocation) continue;
+    lines.push("  <skill>");
+    lines.push(`    <name>${skill.name}</name>`);
+    lines.push(`    <description>${skill.description}</description>`);
+    lines.push("  </skill>");
+  }
+  lines.push("</available_skills>");
   return lines.join("\n");
 };
 

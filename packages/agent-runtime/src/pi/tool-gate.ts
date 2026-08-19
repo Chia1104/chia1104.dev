@@ -40,6 +40,12 @@ export interface PiToolCallGateOptions {
    * common path avoid burning a turn on the refusal handshake.
    */
   preAuthorizedToolNames?: ReadonlySet<string>;
+  /**
+   * Called the moment a call is refused, before the model has even seen the refusal. Lets the
+   * host announce the request while the turn is still streaming; persistence still waits for the
+   * turn to finish, so a turn that fails afterwards leaves no durable request behind.
+   */
+  onRequest?: (request: ApprovalRequest) => void;
 }
 
 export interface PiToolCallGate {
@@ -78,6 +84,7 @@ export const createPiToolCallGate = (
         args: event.input,
       };
       requests.push(request);
+      options.onRequest?.(request);
 
       return {
         block: true,

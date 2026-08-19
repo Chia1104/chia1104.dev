@@ -38,6 +38,7 @@ vi.mock("@earendil-works/pi-agent-core", async (importOriginal) => {
 });
 
 import { runPiTurn } from "../src/pi/turn.ts";
+import { formatOperatorDecision } from "../src/wire/operator-decision.ts";
 
 /** Pi resolves a turn with the final assistant message; these are the shapes runPiTurn reads. */
 const reply = (
@@ -139,12 +140,14 @@ describe("runPiTurn", () => {
     expect(flushEvents).toHaveBeenCalledOnce();
   });
 
-  it("atomically persists approval requests before publishing them", async () => {
+  it("announces approval requests as they are refused and persists them atomically at the end", async () => {
     const options = createOptions();
     options.persistApprovals.mockImplementation(async () => {
+      // The client has already been told, so the card can replace the tool while the model is
+      // still writing; the durable request is the one thing that waits for the turn to succeed.
       expect(
-        options.events.some((event) => event.type === "approval:request")
-      ).toBe(false);
+        options.events.filter((event) => event.type === "approval:request")
+      ).toHaveLength(2);
     });
     pi.harness.prompt.mockImplementation(async () => {
       const handler = pi.handlers.get("tool_call");
@@ -177,6 +180,44 @@ describe("runPiTurn", () => {
         .filter((event) => event.type === "approval:request")
         .map((event) => event.toolCallId)
     ).toEqual(["call-1", "call-2"]);
+  });
+
+  it("relays an operator decision before the model runs and marks its own message as synthesised", async () => {
+    const options = createOptions();
+    const text = formatOperatorDecision({
+      toolName: "publish",
+      approved: true,
+      comment: "go",
+    });
+
+    await runPiTurn({
+      ...options,
+      message: {
+        text,
+        decision: {
+          toolCallId: "call-1",
+          toolName: "publish",
+          approved: true,
+          comment: "go",
+        },
+      },
+    });
+
+    expect(pi.harness.prompt).toHaveBeenCalledWith(text);
+    expect(options.events.slice(0, 3)).toEqual([
+      { type: "run:start", sessionId: "session-1" },
+      {
+        type: "approval:resolved",
+        toolCallId: "call-1",
+        approved: true,
+        comment: "go",
+      },
+      expect.objectContaining({
+        type: "user",
+        text,
+        origin: "operator-decision",
+      }),
+    ]);
   });
 
   it("dispatches templates and turns provider failures into terminal events", async () => {
@@ -350,9 +391,17 @@ describe("runPiTurn", () => {
     });
     expect(options.persistApprovals).not.toHaveBeenCalled();
     expect(pi.harness.compact).not.toHaveBeenCalled();
-    expect(options.events).not.toContainEqual(
-      expect.objectContaining({ type: "approval:request" })
+    // Announced live when refused; the client retracts it on `run:end{aborted}`.
+    expect(options.events).toContainEqual(
+      expect.objectContaining({
+        type: "approval:request",
+        toolCallId: "call-1",
+      })
     );
+    expect(options.events.at(-1)).toEqual({
+      type: "run:end",
+      reason: "aborted",
+    });
   });
 
   it("stops listening once the turn is over", async () => {
@@ -454,8 +503,11 @@ describe("runPiTurn", () => {
       approvals: [],
       error: { kind: "internal", message: "database unavailable" },
     });
-    expect(options.events).not.toContainEqual(
-      expect.objectContaining({ type: "approval:request" })
+    expect(options.events).toContainEqual(
+      expect.objectContaining({
+        type: "approval:request",
+        toolCallId: "call-1",
+      })
     );
     expect(options.events.slice(-2)).toEqual([
       { type: "error", kind: "internal", message: "database unavailable" },
@@ -487,9 +539,14 @@ describe("runPiTurn", () => {
       error: { kind: "internal", message: "provider failed" },
     });
     expect(options.persistApprovals).not.toHaveBeenCalled();
-    expect(options.events).not.toContainEqual(
-      expect.objectContaining({ type: "approval:request" })
+    // Announced live when refused; `run:end{error}` is what retracts it on the client.
+    expect(options.events).toContainEqual(
+      expect.objectContaining({
+        type: "approval:request",
+        toolCallId: "call-1",
+      })
     );
+    expect(options.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
   it("does not compact a successful turn that requests approval", async () => {

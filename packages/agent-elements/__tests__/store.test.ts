@@ -30,7 +30,7 @@ const detailOf = (
   },
   run: null,
   events: [],
-  pendingApprovals: [],
+  approvals: [],
   stats: { messageCount: 0, totalTokens: 0, costTotal: 0 },
   ...overrides,
 });
@@ -164,8 +164,13 @@ describe("foldDetail", () => {
             summary: "blocked",
           },
         ],
-        pendingApprovals: [
-          { toolCallId: "t1", toolName: "commit_post", args: { slug: "x" } },
+        approvals: [
+          {
+            toolCallId: "t1",
+            toolName: "commit_post",
+            args: { slug: "x" },
+            status: "pending",
+          },
         ],
       })
     );
@@ -175,6 +180,47 @@ describe("foldDetail", () => {
     const tool = view.items.find((item) => item.kind === "tool");
     expect(tool).toMatchObject({ status: "awaiting_approval", tier: "commit" });
     expect(view.runStatus).toBe("awaiting_approval");
+  });
+
+  it("closes a decided approval's card on reload the way the live stream did", () => {
+    const view = foldDetail(
+      detailOf({
+        events: [
+          { type: "user", messageId: "u1", text: "publish" },
+          {
+            type: "tool:start",
+            toolCallId: "t1",
+            toolName: "commit_post",
+            label: "Commit post",
+            tier: "commit",
+            args: { slug: "x" },
+          },
+          {
+            type: "tool:end",
+            toolCallId: "t1",
+            toolName: "commit_post",
+            isError: true,
+            summary: "blocked",
+          },
+        ],
+        approvals: [
+          {
+            toolCallId: "t1",
+            toolName: "commit_post",
+            args: { slug: "x" },
+            status: "approved",
+            comment: "ship it",
+          },
+        ],
+      })
+    );
+    expect(view.pendingApprovals).toEqual([]);
+    const tool = view.items.find((item) => item.kind === "tool");
+    expect(tool).toMatchObject({
+      status: "ok",
+      approval: { approved: true, comment: "ship it" },
+    });
+    expect(view.runStatus).toBe("idle");
   });
 
   it("derives the run status from the server run, not the last replayed event", () => {

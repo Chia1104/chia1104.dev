@@ -13,6 +13,29 @@ interface AgentDraftPreviewProps {
 
 const jsonOf = <TValue,>(value: TValue) => JSON.stringify(value, null, 2);
 
+/** Per-locale fields `commit_draft` carries; shown even when empty so a gap is visible. */
+const TRANSLATION_FIELDS = ["excerpt", "description", "summary"] as const;
+
+const MetaField = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) => (
+  <div className="flex flex-col gap-1">
+    <div className="flex items-center gap-2">
+      <span className="text-muted text-xs font-medium uppercase">{label}</span>
+      {value ? null : (
+        <Chip color="warning" size="sm" variant="soft">
+          <Chip.Label>missing</Chip.Label>
+        </Chip>
+      )}
+    </div>
+    {value ? <p className="text-sm">{value}</p> : null}
+  </div>
+);
+
 export const AgentDraftPreview = ({ draft }: AgentDraftPreviewProps) => {
   if (!draft) {
     return (
@@ -60,14 +83,23 @@ export const AgentDraftPreview = ({ draft }: AgentDraftPreviewProps) => {
             <Card key={locale} variant="secondary">
               <Card.Header className="flex-row items-center gap-2">
                 <Card.Title>{translation.title || "Untitled"}</Card.Title>
+                {translation.title ? null : (
+                  <Chip color="warning" size="sm" variant="soft">
+                    <Chip.Label>missing title</Chip.Label>
+                  </Chip>
+                )}
                 <Chip className="ml-auto" size="sm" variant="soft">
                   <Chip.Label>{locale}</Chip.Label>
                 </Chip>
               </Card.Header>
               <Card.Content className="gap-4">
-                {translation.excerpt ? (
-                  <p className="text-muted text-sm">{translation.excerpt}</p>
-                ) : null}
+                {TRANSLATION_FIELDS.map((field) => (
+                  <MetaField
+                    key={field}
+                    label={field}
+                    value={translation[field]}
+                  />
+                ))}
                 <pre className="bg-surface max-h-120 overflow-auto rounded-xl p-4 text-sm leading-6 whitespace-pre-wrap">
                   {translation.content || "No content yet."}
                 </pre>

@@ -80,28 +80,30 @@ const messageOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
 
 /**
- * The persisted transcript never replays approval events, so the server lists undecided
- * approvals separately; they are re-applied here so a reload restores the prompt in place.
+ * The persisted transcript never replays approval events, so the server lists the approval rows
+ * separately; they are re-applied here so a reload shows each card as the live stream left it.
  */
 export const foldDetail = (detail: AgentSessionDetail): AgentViewState => {
   let view = foldEvents(detail.events);
-  for (const approval of detail.pendingApprovals) {
-    if (
-      view.pendingApprovals.some(
-        (pending) => pending.toolCallId === approval.toolCallId
-      )
-    ) {
-      continue;
-    }
+  for (const approval of detail.approvals) {
     const tool = view.items.find(
       (item) => item.kind === "tool" && item.toolCallId === approval.toolCallId
     );
+    // A row for a call that is not on this branch (a rewound session) has nothing to attach to.
+    if (tool?.kind !== "tool") continue;
     view = applyEvent(view, {
       type: "approval:request",
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
-      tier: tool?.kind === "tool" ? tool.tier : "",
-      args: approval.args ?? (tool?.kind === "tool" ? tool.args : undefined),
+      tier: tool.tier,
+      args: approval.args ?? tool.args,
+    });
+    if (approval.status === "pending") continue;
+    view = applyEvent(view, {
+      type: "approval:resolved",
+      toolCallId: approval.toolCallId,
+      approved: approval.status === "approved",
+      comment: approval.comment,
     });
   }
   // Replay carries no run boundaries, so the reducer's status reflects the last event, not the run.
