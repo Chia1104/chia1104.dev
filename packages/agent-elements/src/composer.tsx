@@ -81,7 +81,7 @@ export const ComposerAttachment = ({
       )}>
       {onPress ? (
         <button
-          className="hover:text-foreground text-foreground/80 flex min-w-0 flex-1 cursor-pointer items-center gap-2 transition-colors focus-visible:outline-none"
+          className="hover:text-foreground text-foreground/80 focus-visible:ring-focus flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-md transition-colors outline-none focus-visible:ring-2"
           onClick={onPress}
           type="button">
           {body}

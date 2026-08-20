@@ -48,7 +48,9 @@ export const normalizeSessionTitle = (raw: string): string | null => {
     .map((part) => part.trim())
     .find((part) => part.length > 0);
   if (!line) return null;
+  // Nothing past the clip can survive, so it must not pay for the stripping passes either.
   const stripped = line
+    .slice(0, SESSION_TITLE_MAX_LENGTH * 4)
     .replace(/^(?:title\s*[:：]\s*)/i, "")
     .replace(/^(?:\d+[.)、]|[-*•])\s+/, "")
     .replace(/^[`"'“”‘’「」『』«»\s]+/, "")

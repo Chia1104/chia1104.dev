@@ -13,6 +13,7 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { ApprovalCard, isApprovalItem } from "./approval-card.tsx";
 import { AgentBadge, AssistantMessage, UserMessage } from "./message.tsx";
 import { Notice } from "./notice.tsx";
+import { orbStateOf } from "./orb-state.ts";
 import { useAgentBusy, useAgentLabels, useAgentSession } from "./provider.tsx";
 import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
@@ -203,19 +204,23 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
           empty
         ) : (
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-            {groups.map((group) =>
-              group.kind === "user" ? (
-                <UserMessage key={group.key} at={group.at} text={group.text} />
-              ) : (
+            {groups.map((group) => {
+              if (group.kind === "user") {
+                return (
+                  <UserMessage
+                    key={group.key}
+                    at={group.at}
+                    text={group.text}
+                  />
+                );
+              }
+              const live = orbStateOf(group.items);
+              return (
                 <div key={group.key} className="flex gap-3">
                   <AgentBadge
                     className="mt-0.5"
-                    state="composing"
-                    paused={
-                      !group.items.some(
-                        (item) => item.kind === "assistant" && item.streaming
-                      )
-                    }
+                    state={live ?? "composing"}
+                    paused={live === null}
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-3">
                     {group.items.map((item, index) => (
@@ -227,8 +232,8 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
                     ))}
                   </div>
                 </div>
-              )
-            )}
+              );
+            })}
             {pendingPrompt ? <UserMessage text={pendingPrompt} /> : null}
             {working ? (
               <div className="flex gap-3">
