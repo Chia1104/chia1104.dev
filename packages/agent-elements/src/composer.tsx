@@ -5,7 +5,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 import { Alert, Button, CloseButton, TextArea } from "@heroui/react";
 import { BorderBeam } from "border-beam";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Square, X } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -31,13 +31,85 @@ export interface ComposerProps {
    * `null` for none.
    */
   toolbar?: ReactNode;
+  /**
+   * Stacked above the input and tucked under its top edge: the context the next prompt acts on
+   * (drafts, attachments, pending items). Compose from `ComposerAttachment` rows.
+   */
+  attachments?: ReactNode;
 }
+
+export interface ComposerAttachmentProps {
+  icon: ReactNode;
+  label: ReactNode;
+  /** Trailing detail beside the label, e.g. a locale or status chip. */
+  meta?: ReactNode;
+  /** An explicit control at the row's end; separate from the row press so the two never compete. */
+  action?: ReactNode;
+  /** Makes the whole row a button. */
+  onPress?: () => void;
+  /** Adds a trailing dismiss button. */
+  onDismiss?: () => void;
+  className?: string;
+}
+
+/** One row in the composer's attachment stack. */
+export const ComposerAttachment = ({
+  action,
+  className,
+  icon,
+  label,
+  meta,
+  onDismiss,
+  onPress,
+}: ComposerAttachmentProps) => {
+  const labels = useAgentLabels();
+  const body = (
+    <>
+      <span className="text-muted flex size-4 shrink-0 items-center justify-center [&>svg]:size-3">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-left text-xs">{label}</span>
+      {meta}
+    </>
+  );
+
+  return (
+    <div
+      className={cn(
+        "text-foreground flex min-h-8 items-center gap-2 px-2 py-1",
+        className
+      )}>
+      {onPress ? (
+        <button
+          className="hover:text-foreground text-foreground/80 flex min-w-0 flex-1 cursor-pointer items-center gap-2 transition-colors focus-visible:outline-none"
+          onClick={onPress}
+          type="button">
+          {body}
+        </button>
+      ) : (
+        <div className="flex min-w-0 flex-1 items-center gap-2">{body}</div>
+      )}
+      {action}
+      {onDismiss ? (
+        <Button
+          aria-label={labels.dismiss}
+          isIconOnly
+          onPress={onDismiss}
+          size="sm"
+          variant="ghost">
+          <X className="size-3.5" />
+        </Button>
+      ) : null}
+    </div>
+  );
+};
 
 /**
  * The input on top, a toolbar below: model picker (or whatever the host puts there) on the left,
  * send/stop on the right. The input grows with its content up to a cap, then scrolls.
  */
 export const Composer = ({
+  attachments,
   className,
   placeholder,
   toolbar = <ModelPicker />,
@@ -97,7 +169,14 @@ export const Composer = ({
           </Alert>
         ) : null}
 
+        {attachments ? (
+          <div className="bg-surface-secondary border-border divide-border -mb-5 max-h-40 w-full max-w-[95%] divide-y self-center overflow-y-auto rounded-t-2xl border border-b-0 pb-3">
+            {attachments}
+          </div>
+        ) : null}
+
         <BorderBeam
+          className="relative z-10"
           duration={3.5}
           size="pulse-inner"
           theme="light"
