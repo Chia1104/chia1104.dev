@@ -1,5 +1,3 @@
-"use client";
-
 import type { ComponentType, JSX } from "react";
 
 import { Alert, ScrollShadow } from "@heroui/react";
