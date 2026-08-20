@@ -140,7 +140,12 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
               <UserMessage key={group.key} at={group.at} text={group.text} />
             ) : (
               <div key={group.key} className="flex gap-3">
-                <AgentBadge className="mt-0.5" />
+                <AgentBadge
+                  className="mt-0.5"
+                  isThinking={group.items.some(
+                    (item) => item.kind === "assistant" && item.streaming
+                  )}
+                />
                 <div className="flex min-w-0 flex-1 flex-col gap-3">
                   {group.items.map((item, index) => (
                     <AgentItem
@@ -156,7 +161,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
           {pendingPrompt ? <UserMessage text={pendingPrompt} /> : null}
           {working ? (
             <div className="flex gap-3">
-              <AgentBadge className="mt-0.5" />
+              <AgentBadge className="mt-0.5" isThinking />
               <Spinner className="mt-1.5" size="sm" />
             </div>
           ) : null}

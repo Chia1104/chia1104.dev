@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 
 import { Tabs } from "@heroui/react";
 
-import { StatusChip } from "@chia/agent-elements/chat";
 import { Composer } from "@chia/agent-elements/composer";
 import { EmptyState } from "@chia/agent-elements/empty-state";
 import { ModelPicker } from "@chia/agent-elements/model-picker";
@@ -37,7 +36,6 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
     <>
       <header className="border-border flex items-center gap-3 border-b px-4 py-3">
         {tabs}
-        <StatusChip className="shrink-0" />
       </header>
 
       <Tabs

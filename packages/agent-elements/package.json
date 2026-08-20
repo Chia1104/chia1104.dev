@@ -113,9 +113,11 @@
     "@streamdown/cjk": "catalog:streamdown",
     "@streamdown/code": "catalog:streamdown",
     "@tanstack/react-query": "catalog:tanstack",
+    "border-beam": "catalog:ui",
     "lucide-react": "catalog:ui",
     "react": "catalog:react-is",
     "streamdown": "catalog:streamdown",
+    "thinking-orbs": "catalog:ui",
     "zod": "catalog:",
     "zustand": "catalog:ui"
   },

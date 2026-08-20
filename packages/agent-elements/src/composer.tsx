@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { Alert, Button, CloseButton, TextArea } from "@heroui/react";
+import { BorderBeam } from "border-beam";
 import { ArrowUp, Square } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
@@ -96,56 +97,62 @@ export const Composer = ({
           </Alert>
         ) : null}
 
-        <div className="bg-surface border-border focus-within:border-field-border-focus flex flex-col gap-1 rounded-2xl border px-3 pt-3 pb-2 shadow-xs transition-colors">
-          <TextArea
-            ref={inputRef}
-            aria-label={labels.send}
-            className="min-h-6 w-full resize-none rounded-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus:ring-0"
-            disabled={!canPrompt}
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (
-                event.key !== "Enter" ||
-                event.shiftKey ||
-                event.nativeEvent.isComposing
-              ) {
-                return;
-              }
-              event.preventDefault();
-              void send();
-            }}
-            placeholder={composerPlaceholder}
-            rows={1}
-            value={text}
-            variant="secondary"
-          />
-          <div className="flex items-center gap-2">
-            <div className="flex min-w-0 flex-1 items-center gap-1">
-              {toolbar}
+        <BorderBeam
+          duration={3.5}
+          size="pulse-inner"
+          theme="light"
+          strength={100}>
+          <div className="bg-surface border-border focus-within:border-field-border-focus flex flex-col gap-1 rounded-2xl border px-3 pt-3 pb-2 shadow-xs transition-colors">
+            <TextArea
+              ref={inputRef}
+              aria-label={labels.send}
+              className="min-h-10 w-full resize-none rounded-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus:ring-0"
+              disabled={!canPrompt}
+              onChange={(event) => setText(event.target.value)}
+              onKeyDown={(event) => {
+                if (
+                  event.key !== "Enter" ||
+                  event.shiftKey ||
+                  event.nativeEvent.isComposing
+                ) {
+                  return;
+                }
+                event.preventDefault();
+                void send();
+              }}
+              placeholder={composerPlaceholder}
+              rows={1}
+              value={text}
+              variant="secondary"
+            />
+            <div className="z-20 flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-1">
+                {toolbar}
+              </div>
+              {busy ? (
+                <Button
+                  aria-label={labels.stop}
+                  isIconOnly
+                  isPending={abort.isPending}
+                  onPress={() => abort.mutate()}
+                  size="sm"
+                  variant="danger-soft">
+                  <Square className="size-3.5 fill-current" />
+                </Button>
+              ) : (
+                <Button
+                  aria-label={labels.send}
+                  className="rounded-full"
+                  isDisabled={!canPrompt || !text.trim()}
+                  isIconOnly
+                  onPress={() => void send()}
+                  size="sm">
+                  <ArrowUp className="size-4" />
+                </Button>
+              )}
             </div>
-            {busy ? (
-              <Button
-                aria-label={labels.stop}
-                isIconOnly
-                isPending={abort.isPending}
-                onPress={() => abort.mutate()}
-                size="sm"
-                variant="danger-soft">
-                <Square className="size-3.5 fill-current" />
-              </Button>
-            ) : (
-              <Button
-                aria-label={labels.send}
-                className="rounded-full"
-                isDisabled={!canPrompt || !text.trim()}
-                isIconOnly
-                onPress={() => void send()}
-                size="sm">
-                <ArrowUp className="size-4" />
-              </Button>
-            )}
           </div>
-        </div>
+        </BorderBeam>
 
         <div className="text-muted flex justify-between px-1 text-[11px]">
           <span>{labels.composerHint}</span>

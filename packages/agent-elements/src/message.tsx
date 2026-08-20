@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 
 import { Disclosure } from "@heroui/react";
-import { Sparkles } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
 
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
 import { CopyButton } from "@chia/ui/copy-button";
@@ -86,14 +86,19 @@ export const UserMessage = ({
   </div>
 );
 
-export const AgentBadge = ({ className }: { className?: string }) => (
-  <span
-    className={cn(
-      "bg-accent-soft text-accent-soft-foreground flex size-7 shrink-0 items-center justify-center rounded-full",
-      className
-    )}>
-    <Sparkles className="size-3.5" />
-  </span>
+export const AgentBadge = ({
+  className,
+  isThinking,
+}: {
+  className?: string;
+  isThinking?: boolean;
+}) => (
+  <ThinkingOrb
+    state="composing"
+    size={20}
+    className={cn("size-5", className)}
+    paused={!isThinking}
+  />
 );
 
 const ThinkingBlock = ({
