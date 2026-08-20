@@ -67,6 +67,7 @@ export async function searchResources({
   mode = "hybrid",
   locale,
   sourceTypes,
+  includeUnpublished = false,
   limit = 5,
   chunkLimit,
 }: {
@@ -75,12 +76,14 @@ export async function searchResources({
   mode?: ResourceSearchMode;
   locale?: Locale;
   sourceTypes?: string[];
+  /** Only a caller that already passed an author check may set this. */
+  includeUnpublished?: boolean;
   /** resources returned after aggregation */
   limit?: number;
   /** chunks fetched before aggregation */
   chunkLimit?: number;
 }): Promise<ResourceSearchResult> {
-  const scope = { locale, sourceTypes };
+  const scope = { locale, sourceTypes, includeUnpublished };
   const candidates = chunkLimit ?? Math.max(limit * 6, 30);
 
   let hits: ChunkHit[];

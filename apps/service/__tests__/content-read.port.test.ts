@@ -4,6 +4,11 @@ import { createContentReadPort } from "../src/services/content-read.port";
 
 import * as dbMocks from "./__mocks__/db.mock";
 
+const searchFeedsService = vi.hoisted(() =>
+  vi.fn(async () => ({ mode: "hybrid", items: [] }))
+);
+vi.mock("@chia/api/feeds/search", () => ({ searchFeedsService }));
+
 /**
  * Visibility is fixed when the port is built and cannot be widened by a tool call. These pin
  * the property a public agent's safety rests on: a `public` port never asks the repository for
@@ -16,6 +21,7 @@ const db = {} as DB;
 describe("createContentReadPort visibility", () => {
   beforeEach(() => {
     dbMocks.resetAllDbMocks();
+    searchFeedsService.mockClear();
   });
 
   describe("public", () => {
@@ -50,6 +56,14 @@ describe("createContentReadPort visibility", () => {
       );
     });
 
+    it("searches published chunks only", async () => {
+      await port.searchPosts({ keyword: "x", mode: "keyword", limit: 5 });
+
+      expect(searchFeedsService).toHaveBeenCalledWith(
+        expect.objectContaining({ includeUnpublished: false })
+      );
+    });
+
     it("answers a request for drafts with nothing, without querying", async () => {
       await expect(
         port.listPosts({ limit: 10, published: false })
@@ -72,6 +86,14 @@ describe("createContentReadPort visibility", () => {
       expect(dbMocks.getFeedById).toHaveBeenCalledWith(
         db,
         expect.objectContaining({ userId: AUTHOR, published: undefined })
+      );
+    });
+
+    it("searches draft chunks as well", async () => {
+      await port.searchPosts({ keyword: "x", mode: "semantic", limit: 5 });
+
+      expect(searchFeedsService).toHaveBeenCalledWith(
+        expect.objectContaining({ includeUnpublished: true })
       );
     });
 
