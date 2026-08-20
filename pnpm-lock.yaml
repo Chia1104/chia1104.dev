@@ -1125,6 +1125,9 @@ importers:
       '@chia/api':
         specifier: workspace:*
         version: link:../api
+      '@chia/contents':
+        specifier: workspace:*
+        version: link:../contents
       '@chia/i18n':
         specifier: workspace:*
         version: link:../i18n

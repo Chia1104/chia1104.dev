@@ -110,6 +110,7 @@
     "@chia/agent-runtime": "workspace:*",
     "@chia/agent-writing": "workspace:*",
     "@chia/api": "workspace:*",
+    "@chia/contents": "workspace:*",
     "@chia/i18n": "workspace:*",
     "@chia/ui": "workspace:*",
     "@heroui/react": "catalog:heroui-v3",
