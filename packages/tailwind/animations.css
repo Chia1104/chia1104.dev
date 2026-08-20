@@ -4,7 +4,7 @@
   --animate-cia-marquee: cia-marquee var(--cia-marquee-duration) linear infinite;
   --animate-cia-marquee-vertical: cia-marquee-vertical
     var(--cia-marquee-duration) linear infinite;
-  --animate-cia-shimmer: cia-shimmer 8s infinite;
+  --animate-cia-shimmer: cia-shimmer var(--shimmer-duration, 8s) infinite;
   --animate-cia-grid: cia-grid 15s linear infinite;
   --animate-cia-meteor: cia-meteor 5s linear infinite;
   --animate-cia-border-beam: cia-border-beam calc(var(--duration) * 1s) infinite

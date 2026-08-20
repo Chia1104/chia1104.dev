@@ -57,6 +57,10 @@
       "types": "./src/message.tsx",
       "default": "./src/message.tsx"
     },
+    "./orb-state": {
+      "types": "./src/orb-state.ts",
+      "default": "./src/orb-state.ts"
+    },
     "./tool-call": {
       "types": "./src/tool-call.tsx",
       "default": "./src/tool-call.tsx"

@@ -6,12 +6,13 @@ import { useEffect, useMemo, useRef } from "react";
 import { ScrollShadow, Spinner } from "@heroui/react";
 
 import type { AgentViewItem } from "@chia/agent-runtime/wire/fold";
+import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { ApprovalCard, isApprovalItem } from "./approval-card.tsx";
 import { AgentBadge, AssistantMessage, UserMessage } from "./message.tsx";
 import { Notice } from "./notice.tsx";
-import { useAgentSession } from "./provider.tsx";
+import { useAgentLabels, useAgentSession } from "./provider.tsx";
 import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
@@ -87,6 +88,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
   const items = useAgentSession((state) => state.view.items);
   const pendingPrompt = useAgentSession((state) => state.pendingPrompt);
   const connection = useAgentSession((state) => state.connection);
+  const labels = useAgentLabels();
   const scrollRef = useRef<HTMLDivElement>(null);
   // Whether the operator is at (or near) the bottom; only then does the view follow new content,
   // so scrolling up to read during a stream is not undone by every chunk.
@@ -142,9 +144,12 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
               <div key={group.key} className="flex gap-3">
                 <AgentBadge
                   className="mt-0.5"
-                  isThinking={group.items.some(
-                    (item) => item.kind === "assistant" && item.streaming
-                  )}
+                  state="composing"
+                  paused={
+                    !group.items.some(
+                      (item) => item.kind === "assistant" && item.streaming
+                    )
+                  }
                 />
                 <div className="flex min-w-0 flex-1 flex-col gap-3">
                   {group.items.map((item, index) => (
@@ -161,8 +166,14 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
           {pendingPrompt ? <UserMessage text={pendingPrompt} /> : null}
           {working ? (
             <div className="flex gap-3">
-              <AgentBadge className="mt-0.5" isThinking />
-              <Spinner className="mt-1.5" size="sm" />
+              <AgentBadge className="mt-0.5" state="composing" />
+              <TextShimmer
+                as="span"
+                active
+                className="text-xs leading-6"
+                duration={2.5}>
+                {labels.thinking}
+              </TextShimmer>
             </div>
           ) : null}
         </div>

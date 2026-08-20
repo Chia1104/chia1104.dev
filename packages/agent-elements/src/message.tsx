@@ -7,9 +7,11 @@ import { ThinkingOrb } from "thinking-orbs";
 
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
 import { CopyButton } from "@chia/ui/copy-button";
+import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { Markdown } from "./markdown.tsx";
+import type { OrbState } from "./orb-state.ts";
 import { useAgentLabels } from "./provider.tsx";
 import { formatMessageTime, formatMessageTimeFull } from "./time.ts";
 
@@ -86,18 +88,22 @@ export const UserMessage = ({
   </div>
 );
 
+/** `state` is what the agent is doing now; `null` is the resting avatar of a finished reply. */
 export const AgentBadge = ({
   className,
-  isThinking,
+  state,
+  paused,
 }: {
   className?: string;
-  isThinking?: boolean;
+  state: OrbState | null;
+  paused?: boolean;
 }) => (
   <ThinkingOrb
-    state="composing"
+    aria-hidden
+    state={state ?? "breathing"}
     size={20}
-    className={cn("size-5", className)}
-    paused={!isThinking}
+    className={cn("size-5 shrink-0", className)}
+    paused={paused}
   />
 );
 
@@ -115,13 +121,16 @@ const ThinkingBlock = ({
       defaultExpanded={streaming}>
       <Disclosure.Heading>
         <Disclosure.Trigger className="text-muted flex h-9 w-full items-center justify-start gap-2 px-3 text-xs">
-          <span
-            className={cn(
-              "size-1.5 rounded-full",
-              streaming ? "bg-accent animate-pulse" : "bg-muted"
-            )}
+          <ThinkingOrb
+            aria-hidden
+            state="solving"
+            size={20}
+            className="size-4 shrink-0"
+            paused={!streaming}
           />
-          {streaming ? labels.thinking : labels.thought}
+          <TextShimmer as="span" active={streaming} duration={2.5}>
+            {streaming ? labels.thinking : labels.thought}
+          </TextShimmer>
           <Disclosure.Indicator className="ml-auto" />
         </Disclosure.Trigger>
       </Disclosure.Heading>
