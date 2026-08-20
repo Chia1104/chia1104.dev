@@ -7,6 +7,7 @@ import { ExternalLink } from "lucide-react";
 import { Streamdown } from "streamdown";
 import type { Components, LinkSafetyModalProps } from "streamdown";
 
+import { markdownElements } from "@chia/contents/markdown-elements";
 import { CopyButton } from "@chia/ui/copy-button";
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -15,11 +16,13 @@ import { useAgentLabels } from "./provider.tsx";
 /**
  * Streamdown's defaults are styled with shadcn tokens (`bg-muted`, `text-muted-foreground`…).
  * HeroUI defines `muted` as a text colour, so those defaults come out as mid-grey slabs in both
- * schemes. These overrides restate the affected elements in HeroUI tokens; everything not listed
+ * schemes. Tables and emphasis come from the blog's shared elements so assistant prose reads like
+ * an article; the rest restates the affected elements in HeroUI tokens. Everything not listed
  * (headings, lists, code blocks) keeps Streamdown's rendering. A host can layer its own on top
  * through `components`.
  */
 export const markdownComponents: Components = {
+  ...markdownElements,
   inlineCode: ({ className, node: _node, ...props }) => (
     <code
       className={cn(
@@ -37,30 +40,6 @@ export const markdownComponents: Components = {
       )}
       {...props}
     />
-  ),
-  table: ({ className, node: _node, ...props }) => (
-    <table
-      className={cn("my-4 w-full border-collapse text-sm", className)}
-      {...props}
-    />
-  ),
-  thead: ({ className, node: _node, ...props }) => (
-    <thead className={cn("bg-surface-secondary", className)} {...props} />
-  ),
-  tr: ({ className, node: _node, ...props }) => (
-    <tr className={cn("border-border border-b", className)} {...props} />
-  ),
-  th: ({ className, node: _node, ...props }) => (
-    <th
-      className={cn(
-        "text-foreground px-3 py-2 text-left font-semibold",
-        className
-      )}
-      {...props}
-    />
-  ),
-  td: ({ className, node: _node, ...props }) => (
-    <td className={cn("px-3 py-2 align-top", className)} {...props} />
   ),
   hr: ({ className, node: _node, ...props }) => (
     <hr className={cn("border-border my-6", className)} {...props} />

@@ -3,7 +3,6 @@
 
 import Image from "next/image";
 
-import { Alert, ScrollShadow } from "@heroui/react";
 import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 import { Banner } from "fumadocs-ui/components/banner";
 import { Callout } from "fumadocs-ui/components/callout";
@@ -15,11 +14,10 @@ import { TypeTable } from "fumadocs-ui/components/type-table";
 import defaultComponents from "fumadocs-ui/mdx";
 import type { MDXComponents } from "mdx/types";
 
-import { ErrorBoundary } from "@chia/ui/error-boundary";
 import ImageZoom from "@chia/ui/image-zoom";
-import { cn } from "@chia/ui/utils/cn.util";
 
 import { Mermaid } from "./components/mermaid";
+import { markdownElements } from "./markdown-elements";
 
 export const FumadocsComponents =
   /* SAFETY: The producer contract guarantees this value satisfies MDXComponents. */ {
@@ -95,41 +93,6 @@ export const V1MDXComponents: MDXComponents = {
   FlexCenter: (props: any) => (
     <div className="flex w-full justify-center">{props.children}</div>
   ),
-  table: (props: any) => (
-    <ErrorBoundary
-      errorElement={
-        <Alert status="danger" className="not-prose my-2">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>Error loading table</Alert.Title>
-            <Alert.Description>Please try again later.</Alert.Description>
-          </Alert.Content>
-        </Alert>
-      }>
-      <div className="table-root table-root--primary my-6">
-        <ScrollShadow orientation="horizontal">
-          <table className="not-prose table__content min-w-[600px]">
-            {props.children}
-          </table>
-        </ScrollShadow>
-      </div>
-    </ErrorBoundary>
-  ),
-  thead: (props: any) => (
-    <thead className="table__header">{props.children}</thead>
-  ),
-  tbody: (props: any) => (
-    <tbody className="table__body">{props.children}</tbody>
-  ),
-  tr: (props: any) => <tr>{props.children}</tr>,
-  th: (props: any) => (
-    <th className={cn("table__column min-w-40")}>{props.children}</th>
-  ),
-  td: (props: any) => <td className="table__cell">{props.children}</td>,
-  strong: (props: any) => (
-    <strong className="dark:c-text-bg-purple-half c-text-bg-pink-half">
-      {props.children}
-    </strong>
-  ),
+  ...markdownElements,
   Mermaid,
 };
