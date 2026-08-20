@@ -154,21 +154,18 @@ export const SessionTabs = ({
         {shown.map((session) => {
           const isActive = session.id === activeId;
           return (
-            <div
+            <Button
+              render={(props) => <span {...props} />}
               key={session.id}
               className={cn(
-                "group/tab flex h-8 max-w-40 min-w-40 flex-1 shrink-0 items-center rounded-lg",
-                isActive && "bg-surface-tertiary"
-              )}>
-              <Button
-                className="h-8 min-w-0 flex-1 justify-start rounded-lg px-2 text-xs font-normal"
-                onPress={() => onSelect(session.id)}
-                size="sm"
-                variant={isActive ? "tertiary" : "ghost"}>
-                <span className="truncate">
-                  {session.title ?? labels.untitledSession}
-                </span>
-              </Button>
+                "group/tab h-8 max-w-40 min-w-40 flex-1 shrink-0 items-center justify-between rounded-lg pr-0 pl-2 text-xs font-normal"
+              )}
+              onPress={() => onSelect(session.id)}
+              size="sm"
+              variant={isActive ? "tertiary" : "ghost"}>
+              <span className="truncate">
+                {session.title ?? labels.untitledSession}
+              </span>
               {actions(
                 session,
                 cn(
@@ -176,7 +173,7 @@ export const SessionTabs = ({
                   isActive && "opacity-100"
                 )
               )}
-            </div>
+            </Button>
           );
         })}
       </div>
