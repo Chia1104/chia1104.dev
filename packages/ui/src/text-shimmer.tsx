@@ -4,19 +4,36 @@ import { cn } from "../utils/cn.util";
 
 interface TextShimmerProps extends ComponentPropsWithoutRef<"p"> {
   shimmerWidth?: number;
+  /** Off renders plain text in the inherited colour — no gradient, no animation. */
+  active?: boolean;
+  /** `span` for inline use inside interactive elements, where a `<p>` is invalid. */
+  as?: "p" | "span";
+  /** Seconds per sweep cycle. */
+  duration?: number;
 }
 
 const TextShimmer: FC<TextShimmerProps> = ({
+  active = true,
+  as: Tag = "p",
   children,
   className,
+  duration = 8,
   shimmerWidth = 100,
   ...props
 }) => {
+  if (!active) {
+    return (
+      <Tag className={className} {...props}>
+        {children}
+      </Tag>
+    );
+  }
   return (
-    <p
+    <Tag
       style={
         /* SAFETY: The producer contract guarantees this value satisfies CSSProperties. */ {
           "--shimmer-width": `${shimmerWidth}px`,
+          "--shimmer-duration": `${duration}s`,
         } as CSSProperties
       }
       className={cn(
@@ -27,7 +44,7 @@ const TextShimmer: FC<TextShimmerProps> = ({
       )}
       {...props}>
       {children}
-    </p>
+    </Tag>
   );
 };
 

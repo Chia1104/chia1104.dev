@@ -3,17 +3,14 @@
 import type { ComponentType } from "react";
 
 import { Chip, Disclosure } from "@heroui/react";
-import {
-  Check,
-  CircleX,
-  LoaderCircle,
-  ShieldAlert,
-  Wrench,
-} from "lucide-react";
+import { Check, CircleX, LoaderCircle, ShieldAlert } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
 
 import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
+import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { orbStateOfTool } from "./orb-state.ts";
 import { useAgentLabels } from "./provider.tsx";
 
 /**
@@ -98,13 +95,26 @@ export interface ToolCallProps {
 
 export const ToolCall = ({ className, renderers, tool }: ToolCallProps) => {
   const Body = renderers?.[tool.toolName] ?? DefaultToolBody;
+  const live = tool.status === "running" || tool.status === "awaiting_approval";
   return (
     <Disclosure
       className={cn("bg-surface border-border rounded-xl border", className)}>
       <Disclosure.Heading>
         <Disclosure.Trigger className="flex h-10 w-full items-center justify-start gap-2.5 px-3 text-left text-sm">
-          <Wrench className="text-muted size-3.5 shrink-0" />
-          <span className="text-foreground truncate">{tool.label}</span>
+          <ThinkingOrb
+            aria-hidden
+            state={orbStateOfTool(tool)}
+            size={20}
+            className="size-4 shrink-0"
+            paused={!live}
+          />
+          <TextShimmer
+            as="span"
+            active={live}
+            className="text-foreground truncate"
+            duration={2.5}>
+            {tool.label}
+          </TextShimmer>
           <span className="text-muted hidden truncate font-mono text-xs sm:inline">
             {tool.toolName}
           </span>

@@ -1,7 +1,7 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-19
+> Last updated: 2026-08-20
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -101,6 +101,19 @@ writing_agent_draft            per-locale staging buffer
 
 Entry payloads are opaque JSON matching Pi's session-entry union. Kind-specific state uses
 extension tables instead of widening the shared session table.
+
+### Session title
+
+`agent_session.title` is the operator's handle for a session: `null` until named, then either
+the operator's own name (`settings:update`) or one condensed from their first prompt. The turn
+step names an untitled session alongside its first operator turn (`titleSession` in
+`apps/service/src/steps/agent-turn.step.ts`): `generateSessionTitle` in
+`@chia/agent-runtime/pi/title` asks the house gateway's cheap model — never the session's own,
+which may be BYOK — and falls back to the prompt's first line when the model fails, so a title
+always lands. Two invariants: the write is `setAgentSessionTitleIfUnset` (`WHERE title IS NULL`),
+so a rename made while the first turn runs wins over the generated title; and the turn's `run:end`
+is held back until the title settles (bounded by `SESSION_TITLE_TIMEOUT_MS`), so the client's
+turn-end refresh of the session list already sees it. Operator-decision relay turns never title.
 
 ## 4. One turn
 
