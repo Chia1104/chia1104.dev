@@ -29,13 +29,10 @@ const table: Element<"table"> = ({ className, node: _node, ...props }) => (
         </Alert.Content>
       </Alert>
     }>
-    <div className="my-6 w-full">
+    <div className="table-root table-root--primary my-6">
       <ScrollShadow orientation="horizontal">
         <table
-          className={cn(
-            "not-prose w-full min-w-[600px] border-collapse text-sm",
-            className
-          )}
+          className={cn("not-prose table__content min-w-[600px]", className)}
           {...props}
         />
       </ScrollShadow>
@@ -44,29 +41,21 @@ const table: Element<"table"> = ({ className, node: _node, ...props }) => (
 );
 
 const thead: Element<"thead"> = ({ className, node: _node, ...props }) => (
-  <thead className={cn("bg-surface-secondary", className)} {...props} />
+  <thead className={cn("table__header", className)} {...props} />
 );
 
-const tbody: Element<"tbody"> = ({ node: _node, ...props }) => (
-  <tbody {...props} />
+const tbody: Element<"tbody"> = ({ className, node: _node, ...props }) => (
+  <tbody className={cn("table__body", className)} {...props} />
 );
 
-const tr: Element<"tr"> = ({ className, node: _node, ...props }) => (
-  <tr className={cn("border-border border-b", className)} {...props} />
-);
+const tr: Element<"tr"> = ({ node: _node, ...props }) => <tr {...props} />;
 
 const th: Element<"th"> = ({ className, node: _node, ...props }) => (
-  <th
-    className={cn(
-      "text-foreground min-w-40 px-3 py-2 text-left font-semibold",
-      className
-    )}
-    {...props}
-  />
+  <th className={cn("table__column min-w-40", className)} {...props} />
 );
 
 const td: Element<"td"> = ({ className, node: _node, ...props }) => (
-  <td className={cn("px-3 py-2 align-top", className)} {...props} />
+  <td className={cn("table__cell", className)} {...props} />
 );
 
 const strong: Element<"strong"> = ({ className, node: _node, ...props }) => (
