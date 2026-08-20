@@ -80,7 +80,9 @@ export const UserMessage = ({
   at?: number;
   className?: string;
 }) => (
-  <div className={cn("group flex flex-col items-end gap-1", className)}>
+  <div
+    className={cn("group flex flex-col items-end gap-1", className)}
+    data-role="user">
     <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-6 whitespace-pre-wrap">
       {text}
     </div>

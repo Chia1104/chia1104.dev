@@ -11,6 +11,8 @@
   "send": "送出",
   "stop": "停止",
   "thinking": "思考中",
+  "scrollToBottom": "跳到最新",
+  "scrollToLatestPrompt": "回到你的訊息",
   "thought": "已思考",
   "toolRunning": "執行中…",
   "toolDone": "完成",

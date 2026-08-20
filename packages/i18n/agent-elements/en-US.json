@@ -11,6 +11,8 @@
   "send": "Send",
   "stop": "Stop",
   "thinking": "Thinking",
+  "scrollToBottom": "Jump to latest",
+  "scrollToLatestPrompt": "Back to your message",
   "thought": "Thought",
   "toolRunning": "Running…",
   "toolDone": "Done",
