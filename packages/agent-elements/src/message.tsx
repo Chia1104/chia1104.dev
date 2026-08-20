@@ -3,13 +3,15 @@
 import { useSyncExternalStore } from "react";
 
 import { Disclosure } from "@heroui/react";
-import { Sparkles } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
 
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
 import { CopyButton } from "@chia/ui/copy-button";
+import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { Markdown } from "./markdown.tsx";
+import type { OrbState } from "./orb-state.ts";
 import { useAgentLabels } from "./provider.tsx";
 import { formatMessageTime, formatMessageTimeFull } from "./time.ts";
 
@@ -78,7 +80,9 @@ export const UserMessage = ({
   at?: number;
   className?: string;
 }) => (
-  <div className={cn("group flex flex-col items-end gap-1", className)}>
+  <div
+    className={cn("group flex flex-col items-end gap-1", className)}
+    data-role="user">
     <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-6 whitespace-pre-wrap">
       {text}
     </div>
@@ -86,14 +90,23 @@ export const UserMessage = ({
   </div>
 );
 
-export const AgentBadge = ({ className }: { className?: string }) => (
-  <span
-    className={cn(
-      "bg-accent-soft text-accent-soft-foreground flex size-7 shrink-0 items-center justify-center rounded-full",
-      className
-    )}>
-    <Sparkles className="size-3.5" />
-  </span>
+/** `state` is what the agent is doing now; `null` is the resting avatar of a finished reply. */
+export const AgentBadge = ({
+  className,
+  state,
+  paused,
+}: {
+  className?: string;
+  state: OrbState | null;
+  paused?: boolean;
+}) => (
+  <ThinkingOrb
+    aria-hidden
+    state={state ?? "breathing"}
+    size={20}
+    className={cn("size-5 shrink-0", className)}
+    paused={paused}
+  />
 );
 
 const ThinkingBlock = ({
@@ -110,13 +123,16 @@ const ThinkingBlock = ({
       defaultExpanded={streaming}>
       <Disclosure.Heading>
         <Disclosure.Trigger className="text-muted flex h-9 w-full items-center justify-start gap-2 px-3 text-xs">
-          <span
-            className={cn(
-              "size-1.5 rounded-full",
-              streaming ? "bg-accent animate-pulse" : "bg-muted"
-            )}
+          <ThinkingOrb
+            aria-hidden
+            state="solving"
+            size={20}
+            className="size-4 shrink-0"
+            paused={!streaming}
           />
-          {streaming ? labels.thinking : labels.thought}
+          <TextShimmer as="span" active={streaming} duration={2.5}>
+            {streaming ? labels.thinking : labels.thought}
+          </TextShimmer>
           <Disclosure.Indicator className="ml-auto" />
         </Disclosure.Trigger>
       </Disclosure.Heading>

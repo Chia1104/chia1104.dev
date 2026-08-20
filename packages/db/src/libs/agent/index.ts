@@ -122,6 +122,26 @@ export const updateAgentSession = async (
     .where(eq(agentSessions.id, sessionId));
 };
 
+/**
+ * Writes a generated title only while the session still has none.
+ *
+ * Auto-titling runs alongside the first turn, and the operator may rename the session in that
+ * window; a conditional update, rather than read-then-write, is what guarantees their name wins.
+ * Returns whether the title landed.
+ */
+export const setAgentSessionTitleIfUnset = async (
+  db: DB,
+  sessionId: string,
+  title: string
+): Promise<boolean> => {
+  const rows = await db
+    .update(agentSessions)
+    .set({ title })
+    .where(and(eq(agentSessions.id, sessionId), isNull(agentSessions.title)))
+    .returning({ id: agentSessions.id });
+  return rows.length > 0;
+};
+
 export const softDeleteAgentSession = async (db: DB, sessionId: string) => {
   await db
     .update(agentSessions)

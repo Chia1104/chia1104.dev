@@ -1,7 +1,7 @@
 # Agent 架構與 Turn 流程
 
 > 狀態：as-built
-> 最後更新：2026-08-19
+> 最後更新：2026-08-20
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 > 相關文件：[docs/rag-architecture.md](./rag-architecture.md)
 
@@ -98,6 +98,18 @@ writing_agent_draft            每個 locale 的 staging buffer
 
 Entry payload 是符合 Pi session-entry union 的 opaque JSON。Kind-specific state 以 extension
 table 表達，不把共用 session table 擴成大量 nullable columns。
+
+### Session title
+
+`agent_session.title` 是 operator 辨識 session 用的名稱：尚未命名時為 `null`，之後不是 operator
+自己取的（`settings:update`），就是從第一則 prompt 精簡而來。Turn step 會在未命名 session 的第一個
+operator turn 旁邊同時命名（`apps/service/src/steps/agent-turn.step.ts` 的 `titleSession`）：
+`@chia/agent-runtime/pi/title` 的 `generateSessionTitle` 固定問 house gateway 的便宜模型——
+不用 session 自己選的模型，那可能是 BYOK——模型失敗時退回 prompt 第一行，所以一定會有標題。
+兩個 invariant：寫入走 `setAgentSessionTitleIfUnset`（`WHERE title IS NULL`），第一輪進行中
+operator 的 rename 永遠贏過自動產生的標題；turn 的 `run:end` 會等到標題落地才寫出（上限
+`SESSION_TITLE_TIMEOUT_MS`），client 在 turn 結束時重抓 session 列表就已經看得到。Operator
+decision 的 relay turn 不命名。
 
 ## 4. 一個 turn 的完整路徑
 

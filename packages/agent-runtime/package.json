@@ -53,6 +53,10 @@
       "types": "./src/pi/turn.ts",
       "default": "./src/pi/turn.ts"
     },
+    "./pi/title": {
+      "types": "./src/pi/title.ts",
+      "default": "./src/pi/title.ts"
+    },
     "./session/pi": {
       "types": "./src/session/pi.ts",
       "default": "./src/session/pi.ts"
@@ -64,6 +68,10 @@
     "./session/pg-storage": {
       "types": "./src/session/pg-storage.ts",
       "default": "./src/session/pg-storage.ts"
+    },
+    "./system/DO_NOT_USE_OR_YOU_WILL_BE_FIRED": {
+      "types": "./src/system/DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ts",
+      "default": "./src/system/DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ts"
     }
   },
   "scripts": {

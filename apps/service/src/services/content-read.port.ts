@@ -27,8 +27,8 @@ import type { ContentType, Locale } from "@chia/db/types";
  *
  * **Visibility is fixed at construction.** `author` sees the configured author's drafts as well;
  * `public` sees only published posts, and its `listPosts` cannot be talked into drafts — asking for
- * them returns nothing rather than widening the view. Search needs no branch: the chunk index is
- * published-only for every caller.
+ * them returns nothing rather than widening the view. Search follows the same scope: draft
+ * chunks are indexed alongside published ones, and only the author view asks for them.
  */
 
 export type ContentVisibility = "author" | "public";
@@ -72,6 +72,7 @@ export const createContentReadPort = (
         // (package names, CLI flags, error messages)
         model: input.mode === "keyword" ? "bm25" : "hybrid",
         locale: input.locale,
+        includeUnpublished: publishedScope === undefined,
         limit: input.limit,
       });
 

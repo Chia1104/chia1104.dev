@@ -56,7 +56,6 @@ export const ModelPicker = ({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [rail, setRail] = useState<string | null>(null);
-  // Slider position while dragging; the session value takes over once the drag commits.
   const [draftLevel, setDraftLevel] = useState<AgentThinkingLevel | null>(null);
 
   const nameOf = (id: string) =>
@@ -150,7 +149,9 @@ export const ModelPicker = ({
         </Button>
       </Popover.Trigger>
 
-      <Popover.Content className="w-[26rem] p-0" placement="top start">
+      <Popover.Content
+        className="bg-surface/70 max-w-104 min-w-80 p-0 backdrop-blur-sm"
+        placement="top start">
         <Popover.Dialog className="flex flex-col p-0">
           <div className="flex min-h-0">
             <div className="border-border flex w-12 shrink-0 flex-col items-center gap-1 border-r py-2">
@@ -268,10 +269,15 @@ export const ModelPicker = ({
                 isDisabled={saving}
                 onChange={setDraftLevel}
                 onCommit={(next) => {
-                  setDraftLevel(null);
-                  if (next !== settings?.thinkingLevel) {
-                    save({ thinkingLevel: next });
+                  if (next === settings?.thinkingLevel) {
+                    setDraftLevel(null);
+                    return;
                   }
+                  setDraftLevel(next);
+                  updateSettings.mutate(
+                    { thinkingLevel: next },
+                    { onSettled: () => setDraftLevel(null) }
+                  );
                 }}
                 value={level}
               />

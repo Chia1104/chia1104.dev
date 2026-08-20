@@ -1,8 +1,6 @@
 # Packages
 
-Read the root [`AGENTS.md`](../AGENTS.md) first for the engineering rules, commands and conventions. This file describes the shared packages and the architecture they implement. The deployables are described in [`apps/AGENTS.md`](../apps/AGENTS.md).
-
-Every package is `@chia/<name>`, depends on siblings with `workspace:*`, and **exports source, not build output** — `exports` maps point at `./src/...ts` and the consumer transpiles. Adding an entry point means adding it to that package's `exports` map. There are no root (`.`) entries and no barrel modules: each key maps one module at the path it lives at under `src/`, so `@chia/service-kit/policies/caller.policy` rather than a `policies` index. The single aggregate left is `@chia/db/schema`, which Drizzle and Better Auth need as one namespace. Env is validated per package with `@t3-oss/env-core` in an `env.ts` the apps compose via `extends`.
+Every package is `@chia/<name>` and depends on siblings with `workspace:*`. Its `exports` map is the authoritative module list — read it rather than expecting this file to enumerate modules.
 
 ## API architecture
 
@@ -10,7 +8,7 @@ Three packages carry it: `api` (contracts, handlers, guards, ports), `service-ki
 
 **Contract-first oRPC.** The wire contract lives in `packages/api/orpc/contracts/*.contract.ts` and is composed in `router.contract.ts`. Handlers live in `packages/api/orpc/routes/*.route.ts` and are composed in `router.ts` via `contractOS` (`implement(routerContract)`). The two trees must stay key-for-key identical. Consumers import the contract type only.
 
-**Guards and policies.** Authorization logic lives once as a _policy_ in `packages/service-kit/src/policies` (`sessionPolicy`, `apiKeyPolicy`, `adminPolicy`, `callerPolicy`, `rateLimitPolicy`, `captchaPolicy`, `aiKeyPolicy`) and is bound to each transport by a thin adapter: `runPolicy` for oRPC middleware (`packages/api/orpc/guards/`), `toHonoMiddleware` for Hono middleware (`apps/service/src/guards/`). Write new authorization as a policy, not as a guard.
+**Guards and policies.** Authorization logic lives once as a _policy_ in `packages/service-kit/src/policies` (`sessionPolicy`, `apiKeyPolicy`, `adminPolicy`, `callerPolicy`, `rateLimitPolicy`, `captchaPolicy`, `aiKeyPolicy`) and is bound to each transport by a thin adapter: `runPolicy` for oRPC middleware (`packages/api/orpc/guards/`), `toHonoMiddleware` for Hono middleware (`apps/service/src/guards/`). Write new authorization as a policy, and let the guard stay a binding.
 
 **Context injection.** `packages/api` parses no env and holds no module-level state. Everything the guards and routes need from the host travels on the oRPC context, `BaseOSContext` in `packages/api/orpc/utils.ts`:
 
@@ -23,21 +21,21 @@ The port interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `
 
 **Data access.** oRPC handlers never write raw Drizzle; they call repositories exported as `@chia/db/repos/*`. Write logic shared with workflow steps lives in `packages/api/<domain>/write` (today `feeds/write.ts`) and takes its `FeedHooks` as an explicit argument, so a durable turn can call it with no request to authorize against.
 
-**Errors.** Throw `AppError` from `@chia/service-kit/errors` in domain code; convert at the edge with `toORPCError` / `isAppError`. The `AppError` codes mirror oRPC's common codes so a policy failure maps onto `errors[code]()` without translation.
+**Errors.** `AppError` codes mirror oRPC's common codes, so a policy failure maps onto `errors[code]()` without translation.
 
 ## Package guide
 
 ### `api`
 
-`orpc/` — `contracts/`, `routes/`, `guards/`, `services/` (the ports), `router.contract.ts`, `router.ts`, `utils.ts` (`BaseOSContext`, `contractOS`, `baseOS`). Domain modules beside it: `feeds/` (search, access, write), `resources/` (the RAG resource registry and adapters — see `docs/rag-architecture.md`), and external clients each with their own env: `github`, `spotify`, `s3`, `email` (Resend), `betterstack`, `captcha`. `services/env.ts` holds the service-endpoint env the frontends compose.
+`orpc/` — `contracts/`, `routes/`, `guards/`, `services/` (the ports), `router.contract.ts`, `router.ts`, `utils.ts` (`BaseOSContext`, `contractOS`, `baseOS`). Domain modules beside it: `feeds/` (search, access, write), `resources/` (the RAG resource registry and adapters — see [`docs/rag-architecture.md`](../docs/rag-architecture.md)), and external clients each with their own env: `github`, `spotify`, `s3`, `email` (Resend), `betterstack`, `captcha`. `services/env.ts` holds the service-endpoint env the frontends compose.
 
 ### `service-kit`
 
-What every service app boots with. `bootstrap.ts` — `createServiceFactory()` (populates `ServiceContext` on each request: headers, client IP, `db`, `kv`, `auth`) and `bootstrap(app)` (logger, Sentry, error handler, body-size cap, CORS, maintenance). `context.ts` — `ServiceContext`, the per-request shape shared by Hono (`c.var`) and oRPC. `policies/`, `adapters/{hono,orpc}.ts`, `errors.ts` (`AppError`, `APP_ERROR_STATUS`), `middlewares/` (`body-limit`, `maintenance`).
+What every service app boots with. `bootstrap.ts` — `createServiceFactory()` (populates `ServiceContext` on each request: headers, client IP, `db`, `kv`, `auth`) and `bootstrap(app)` (logger, Sentry, error handler, body-size cap, CORS, maintenance). `context.ts` — `ServiceContext`, the per-request shape shared by Hono (`c.var`) and oRPC. Plus `policies/`, `adapters/{hono,orpc}.ts`, `errors.ts` (`AppError`, `APP_ERROR_STATUS`), `middlewares/`.
 
 ### `db`
 
-Drizzle 1.0 on Postgres. `src/schemas/` — tables and relations, aggregated by `schema.ts` (`./schema`) for Drizzle and Better Auth; `src/libs/` — repositories, exported as `./repos/<domain>` (`feeds`, `resources/*`, `users`, `organization`, `apikey`, `spotify`, `agent`). `src/client.ts` — `connectDatabase(env, { withCache })`, memoized per URL **and** cache setting; the request path uses the `DrizzleCache` (Redis, explicit `$withCache` only), workflow steps ask for `withCache: false`. `src/types.ts` — pure enums (`Locale`, `FeedType`, `Role`, …) safe to import anywhere. Migrations in `.drizzle/`.
+Drizzle 1.0 on Postgres. `src/schemas/` — tables and relations, aggregated by `schema.ts` (`./schema`) for Drizzle and Better Auth; `src/libs/` — repositories, exported as `./repos/<domain>`. `src/client.ts` — `connectDatabase(env, { withCache })`, memoized per URL **and** cache setting; the request path uses the `DrizzleCache` (Redis, explicit `$withCache` only), workflow steps ask for `withCache: false`. `src/types.ts` — pure enums (`Locale`, `FeedType`, `Role`, …) safe to import anywhere. Migrations in `.drizzle/`.
 
 ### `auth`
 
@@ -49,20 +47,29 @@ Keyv over Redis (also Valkey, Postgres, Upstash adapters). `adapters/redis.ts` e
 
 ### `ai`
 
-Embeddings (`embeddings/`: provider resolution, OpenAI + Ollama, chunking, markdown, `EMBEDDING_INDEX_VERSION`), the Vercel AI SDK content tools (`tools/content`), `utils/model` (`createModel` over the provider SDKs — imported lazily by its callers), and the API-key crypto used by the AI cookie flow (`utils`). Constants name the provider-key cookies.
+Embeddings (`embeddings/`: provider resolution, OpenAI + Ollama, chunking, markdown, `EMBEDDING_INDEX_VERSION`), the Vercel AI SDK content tools (`tools/content`), `utils/model` (`createModel` over the provider SDKs — imported lazily by its callers), and the API-key crypto used by the AI cookie flow (`utils`).
 
-### `agent-runtime`, `agent-content`, `agent-writing` and `agent-elements`
+### The agent packages
 
-`agent-runtime` — the kind-agnostic agent runtime on top of Pi: session model and Postgres storage (`session/`), the turn loop, tool gate, compaction and event mapping (`pi/`), wire events and replay (`wire/`), model construction with BYOK credentials (`models.ts`) and tool-authoring helpers (`tools.ts`, exported as `./tools`). `./pi/*`, `./session/*` and `./models` are server-only (they load Pi and the provider SDKs); browsers and SSR bundles import `./wire/schema` and `./wire/fold`, which have no Pi dependency. `./wire/replay` is the exception — it classifies provider errors and so needs pi-ai. `agent-elements` — the client side, shared by both frontends: `./store` (`createAgentSessionStore`, a zustand vanilla store per session that owns only the live side — the folded transcript, connection and the `agent.sessions.chat` stream loop, prompt/approve), `./queries` (TanStack Query options and keys for the server side — session detail, models — which the store reads and refreshes through the host's `QueryClient` so cache and store never disagree), `./provider` (`AgentSessionProvider`, `useAgentSession`, `useSessionDetail`, `useAgentModels`, `useUpdateSettings`, `useAbortSession`, derived `useAgentStatus`/`useCanPrompt`, `useAgentLabels`), `./labels` (`AgentLabels` is the shape of `@chia/i18n/agent-elements/en-US.json`; the host passes its locale's catalog — or a partial override — as `labels`, the store holds it, `setLabels` swaps it on a locale change, `fill` resolves `{tool}`/`{tier}` templates), and one HeroUI element per module — `./thread`, `./message`, `./markdown` (Streamdown with the code and CJK plugins; `markdownComponents` restates inline code, tables, quotes and rules in HeroUI tokens because Streamdown's defaults use shadcn's `muted`, and the link-safety confirmation is a HeroUI `AlertDialog` reading the catalog — hosts layer more through `components`), `./tool-call`, `./approval-card` (decision, note, "always allow this tier"), `./notice`, `./composer` (auto-growing input over a toolbar; the toolbar slot defaults to the model picker), `./model-picker` (provider rail with brand marks, searchable models, thinking slider), `./thinking-slider`, `./provider-icons` (inlined marks keyed by provider or gateway vendor prefix; hosts may add their own), `./session-tabs`, `./empty-state`, `./chat`. `./renderers/content` and `./renderers/web` are per-tool views over the clipped `details` of the content read tools and the writing agent's web tools, keyed by the tool registries' names; a host merges the sets it needs into `Thread`'s `renderers`. It depends on `@chia/agent-runtime/wire/*`, the contract types, the tool registries and HeroUI; the host passes its own `client.agent` and keeps kind-specific panels (the writing draft preview) on its side. A host's Tailwind must `@source` this package's `src/**` and its `node_modules/{streamdown,@streamdown/*}/dist/*.js` (see `apps/dash/src/app/globals.css`). `agent-content` — the read-only content tools every kind that reads the blog shares (`search_posts`, `get_post`, `list_posts`, `list_tags`), the `ContentReadPort` they need and their names/labels/summaries; visibility (drafts or published only) is fixed by whichever port the host builds. `agent-writing` — the writing agent: `web_search`, `fetch_url` and the draft/commit tools on top of the content tools, prompts, skills, policy (tool tiers), draft store, model allowlist and its ports — `ContentPort` (the read port plus writes) and `WebPort` (search and page fetch). A second agent kind is a sibling package of `agent-writing` that composes `agent-content`. Read `docs/agent-architecture.md` first.
+Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before touching any of them.
 
-### `contents`
+- **`agent-runtime`** — the kind-agnostic runtime on top of Pi: session model and Postgres storage (`session/`), turn loop, tool gate, compaction and event mapping (`pi/`), wire events and replay (`wire/`), model construction with BYOK credentials (`models`), tool-authoring helpers (`tools`). `./pi/*`, `./session/*` and `./models` are **server-only** — they load Pi and the provider SDKs. Browsers and SSR bundles may import `./wire/schema` and `./wire/fold`, which have no Pi dependency; `./wire/replay` is the exception, since classifying provider errors needs pi-ai.
+- **`agent-content`** — the read-only content tools every kind that reads the blog shares (`search_posts`, `get_post`, `list_posts`, `list_tags`), the `ContentReadPort` they need, and their names/labels/summaries. Visibility (drafts or published only) is fixed by whichever port the host builds.
+- **`agent-writing`** — the writing agent: `web_search`, `fetch_url` and the draft/commit tools on top of the content tools, plus prompts, skills, policy (tool tiers), draft store, model allowlist and its ports — `ContentPort` (the read port plus writes) and `WebPort`. A second agent kind is a sibling package of this one composing `agent-content`.
+- **`agent-elements`** — the client side, shared by both frontends. It depends on `@chia/agent-runtime/wire/*`, the contract types, the tool registries and HeroUI; the host passes its own `client.agent` and keeps kind-specific panels (the writing draft preview) on its side.
+  - `./store` — `createAgentSessionStore`, a zustand vanilla store per session owning only the live side: folded transcript, connection, the `agent.sessions.chat` stream loop, prompt and approve.
+  - `./queries` — TanStack Query options and keys for the server side (session detail, models). The store reads and refreshes them through the host's `QueryClient`, so cache and store never disagree.
+  - `./provider` — `AgentSessionProvider` and the hooks over it.
+  - `./labels` — `AgentLabels` is the shape of `@chia/i18n/agent-elements/en-US.json`. The host passes its locale's catalog (or a partial override) as `labels`, `setLabels` swaps it on a locale change, and `fill` resolves `{tool}`/`{tier}` templates.
+  - `./markdown` — Streamdown with the code and CJK plugins. `markdownComponents` restates inline code, tables, quotes and rules in HeroUI tokens because Streamdown's defaults use shadcn's `muted`; hosts layer more through `components`.
+  - `./renderers/content` and `./renderers/web` — per-tool views over the clipped `details` of the content read tools and the writing agent's web tools, keyed by the tool registries' names. A host merges the sets it needs into `Thread`'s `renderers`.
+  - One HeroUI element per remaining export (`./thread`, `./message`, `./tool-call`, `./approval-card`, `./composer`, `./model-picker`, …) — see the `exports` map.
+  - A host's Tailwind must `@source` this package's `src/**` **and** its `node_modules/{streamdown,@streamdown/*}/dist/*.js` (see `apps/dash/src/app/globals.css`).
 
-MDX rendering with Fumadocs: `content.tsx` / `content.rsc.tsx`, `mdx-components.tsx`, the content context and services.
+### `contents`, `ui`, `editor`, `themes`, `tailwind`, `shaders`
 
-### `ui`, `editor`, `themes`, `tailwind`, `shaders`
-
-`ui` — shared React components (`./*`), feature blocks (`./features/*`: email templates, error/not-found pages), HOCs and utils. `editor` — the editor components. `themes` — CSS theme files. `tailwind` — the Tailwind v4 preset and layer CSS. `shaders` — Three.js/WebGL effects.
+`contents` — MDX rendering with Fumadocs (`content.tsx` / `content.rsc.tsx`, `mdx-components.tsx`, the content context and services). `ui` — shared React components, feature blocks (`./features/*`: email templates, error/not-found pages), HOCs and utils. `editor` — the editor components. `themes` — CSS theme files. `tailwind` — the Tailwind v4 preset and layer CSS. `shaders` — Three.js/WebGL effects.
 
 ### `i18n`, `meta`, `utils`
 
-`i18n` — message catalogs: `www/<locale>.json` for `next-intl` in the public site, and `agent-elements/<locale>.json` for `@chia/agent-elements` (both apps import the JSON for their locale directly; `dash` is English-only and imports `en-US`). Every locale must carry the same keys — `packages/agent-elements/__tests__/labels.test.ts` checks the agent catalogs. `meta` — site metadata authored in Pkl (`meta.pkl` → `meta.json`, `pkl` ≥ 0.25.2 to regenerate). `utils` — `config` (service endpoints, `withServiceEndpoint`, base URLs), `request` (ky wrapper), `server` (`errorGenerator`, `getClientIP`), `schema`, `day`, `format`, `is`, `error-helper`.
+`i18n` — message catalogs: `www/<locale>.json` for `next-intl` in the public site, `agent-elements/<locale>.json` for `@chia/agent-elements` (both apps import their locale's JSON directly; `dash` is English-only and imports `en-US`). Every locale must carry the same keys — `packages/agent-elements/__tests__/labels.test.ts` checks the agent catalogs. `meta` — site metadata authored in Pkl (`meta.pkl` → `meta.json`, needs `pkl` ≥ 0.25.2 to regenerate). `utils` — `config` (service endpoints, `withServiceEndpoint`, base URLs), `request` (ky wrapper), `server` (`errorGenerator`, `getClientIP`), `schema`, `day`, `format`, `is`, `error-helper`.

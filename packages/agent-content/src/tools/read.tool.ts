@@ -35,7 +35,7 @@ export const searchPostsTool = defineTool({
   name: CONTENT_TOOL_NAMES.searchPosts,
   label: CONTENT_TOOL_LABEL_BY_NAME[CONTENT_TOOL_NAMES.searchPosts],
   description:
-    "Search published posts. `semantic` matches on meaning (best for topics); `keyword` matches " +
+    "Search posts. `semantic` matches on meaning (best for topics); `keyword` matches " +
     "on literal terms (best for names, APIs, error messages). Each hit's `headingPath` names the " +
     "section that matched — pass it to `get_post`'s `focusHeadings` to read that section first.",
   parameters: Type.Object({

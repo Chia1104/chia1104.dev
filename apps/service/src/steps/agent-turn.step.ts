@@ -19,6 +19,7 @@ import {
   getWritingAgentSession,
   patchAgentRunMetadata,
   recordAgentApprovalRequests,
+  setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import { getAdminId } from "@chia/utils/config";
 
@@ -127,8 +128,69 @@ type AgentTurnHandler = (
   db: DB,
   row: AgentSessionRow,
   request: AgentTurnRequest,
-  signal: AbortSignal
+  signal: AbortSignal,
+  writer: EventWriter
 ) => Promise<AgentTurnOutcome>;
+
+// ============================================
+// Title
+// ============================================
+
+/**
+ * The house gateway's cheap model, for condensing the first prompt into a title. Pinned rather than
+ * read from the session: the session's own model may be BYOK or expensive, and a title is worth
+ * neither.
+ */
+const SESSION_TITLE_MODEL_ID = "anthropic/claude-haiku-4.5";
+
+/** Bounds both the model call and how long `run:end` is held back for the title to land. */
+const SESSION_TITLE_TIMEOUT_MS = 8_000;
+
+/** The turn that names a session: the first operator prompt of one that has no title yet. */
+const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
+  row.title === null && request.decision === undefined;
+
+/**
+ * Names the session from its first prompt, alongside the turn.
+ *
+ * Started before the turn and awaited before its `run:end` is written, so the client's turn-end
+ * refresh already sees the title. The write is conditional on the title still being unset, so an
+ * operator who renames the session mid-turn keeps their name. Never throws: a title is cosmetic,
+ * and a provider failure falls back to the prompt's first line rather than leaving the session
+ * untitled.
+ */
+const titleSession = async (
+  db: DB,
+  sessionId: string,
+  text: string
+): Promise<void> => {
+  try {
+    const [
+      { AGENT_PROVIDERS, createAgentModels },
+      { fallbackSessionTitle, generateSessionTitle },
+    ] = await Promise.all([
+      import("@chia/agent-runtime/models"),
+      import("@chia/agent-runtime/pi/title"),
+    ]);
+    const models = createAgentModels();
+    const model = models.getModel(
+      AGENT_PROVIDERS.gateway,
+      SESSION_TITLE_MODEL_ID
+    );
+    const generated = model
+      ? await generateSessionTitle({
+          models,
+          model,
+          text,
+          signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS),
+        })
+      : null;
+    const title = generated ?? fallbackSessionTitle(text);
+    if (title) await setAgentSessionTitleIfUnset(db, sessionId, title);
+  } catch {
+    // Cosmetic; the turn must not fail for it.
+  }
+};
 
 // ============================================
 // Step
@@ -173,8 +235,13 @@ export const runAgentTurnStep = async (
       [AGENT_TURN_KEY]: { ...marker, running: false },
     });
   const abort = subscribeAgentAbort(request.abortController.runId);
+  const writer = createEventWriter(
+    needsTitle(row, request)
+      ? titleSession(db, request.sessionId, request.text)
+      : undefined
+  );
   try {
-    const outcome = await handler(db, row, request, abort.signal);
+    const outcome = await handler(db, row, request, abort.signal, writer);
     abort.dispose();
     await clearMarker();
     return outcome;
@@ -204,7 +271,8 @@ async function runWritingAgentTurn(
   db: DB,
   row: AgentSessionRow,
   request: AgentTurnRequest,
-  signal: AbortSignal
+  signal: AbortSignal,
+  writer: EventWriter
 ): Promise<AgentTurnOutcome> {
   const [
     { createAgentModels },
@@ -258,8 +326,6 @@ async function runWritingAgentTurn(
   const approvedToolCallIds = new Set(
     await getApprovedAgentToolCallIds(db, request.sessionId)
   );
-
-  const writer = createEventWriter();
 
   /**
    * Built here, per turn, because it closes over the operator's own keys.
@@ -353,8 +419,11 @@ interface EventWriter {
  * Coarse events go to the default stream one at a time (they are few and each one matters for
  * replay). Deltas are batched into arrays on a separate namespace — thousands of individual durable
  * writes per turn would dominate the turn's cost.
+ *
+ * `holdEnd` delays the write of `run:end` — the turn's last coarse event, and the client's cue to
+ * refresh — until it settles, so work that must be visible at turn end (the session title) is.
  */
-const createEventWriter = (): EventWriter => {
+const createEventWriter = (holdEnd?: Promise<unknown>): EventWriter => {
   const coarse = getWritable<AgentWireEvent>().getWriter();
   const deltas = getWritable<AgentWireEvent[]>({
     namespace: AGENT_DELTA_NAMESPACE,
@@ -382,7 +451,11 @@ const createEventWriter = (): EventWriter => {
       // A coarse event marks a boundary, so anything buffered before it must land first to keep
       // the two streams consistent with each other.
       flushDeltas();
-      inFlight.push(coarse.write(event));
+      inFlight.push(
+        event.type === "run:end" && holdEnd
+          ? holdEnd.then(() => coarse.write(event))
+          : coarse.write(event)
+      );
     },
     async flush() {
       flushDeltas();

@@ -38,6 +38,8 @@ interface SearchFeedsServiceParams {
   keyword: string | undefined;
   model: SearchFeedsProvider;
   locale: Locale | undefined;
+  /** Only a caller that already passed an author check may set this. */
+  includeUnpublished?: boolean;
   limit?: number;
 }
 
@@ -47,6 +49,7 @@ export async function searchFeedsService({
   keyword,
   model,
   locale,
+  includeUnpublished = false,
   limit = 5,
 }: SearchFeedsServiceParams): Promise<SearchFeedsServiceResult> {
   // resource hits are per translation; without a locale two translations of one
@@ -57,6 +60,7 @@ export async function searchFeedsService({
     mode: model,
     locale,
     sourceTypes: [FEED_TRANSLATION_SOURCE_TYPE],
+    includeUnpublished,
     limit: locale ? limit : limit * 2,
   });
 
