@@ -27,7 +27,7 @@ catalog:
   "@types/lodash": ^4.17.25
   "@types/node": 26.2.0
   better-all: 0.0.8
-  bun-types: ^1.3.14
+  bun-types: ^1.4.0
   client-only: ^0.0.1
   dayjs: ^1.11.21
   graphql-request: ^7.4.0
@@ -196,6 +196,7 @@ minimumReleaseAgeExclude:
   - '@oxlint/binding-win32-x64-msvc@1.79.0'
   - '@oxlint/plugins@1.79.0'
   - oxlint@1.79.0
+  - bun-types@1.4.0
 
 strictPeerDependencies: false
 

@@ -14,7 +14,7 @@
       "Dockerfile.service",
       "turbo.json"
     ],
-    "dockerfilePath": "Dockerfile.node-service"
+    "dockerfilePath": "Dockerfile.service"
   },
   "deploy": {
     "numReplicas": 1,

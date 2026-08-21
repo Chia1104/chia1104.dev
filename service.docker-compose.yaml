@@ -25,7 +25,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      postgres:
+      paradedb:
         condition: service_healthy
       redis:
         condition: service_healthy
