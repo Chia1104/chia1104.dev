@@ -20,7 +20,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
 
 import { resolveWritingModel } from "./models.ts";
-import { writingPolicy } from "./policy.ts";
+import { writingPolicy, writingTurnBudget } from "./policy.ts";
 import type { ContentPort, DraftStore, WebPort } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
@@ -86,6 +86,7 @@ export const runWritingTurn = <TApproval>(
     skills: writingSkills,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,
+    budget: writingTurnBudget,
     approvedToolCallIds: options.approvedToolCallIds,
     preAuthorizedToolNames: options.preAuthorizedToolNames,
     message: options.message,

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { JsonObject } from "@chia/db/json";
 
-import type { AgentPolicy } from "../src/types.ts";
+import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
 interface HarnessEvent extends JsonObject {
@@ -53,6 +53,13 @@ const policy: AgentPolicy = {
   summarize: () => "",
 };
 
+const budget: AgentTurnBudget = {
+  maxToolCalls: 3,
+  hardMaxToolCalls: 5,
+  maxRepeats: 2,
+  maxDurationMs: 60_000,
+};
+
 const createOptions = () => {
   const faux = fauxProvider({
     provider: "faux",
@@ -82,6 +89,7 @@ const createOptions = () => {
     toolContext: {},
     systemPrompt: "",
     policy,
+    budget,
     message: { text: "Hello" },
     onEvent: (event: AgentWireEvent) => events.push(event),
     toApproval: (approval: { toolCallId: string }) => approval.toolCallId,
@@ -402,6 +410,128 @@ describe("runPiTurn", () => {
       type: "run:end",
       reason: "aborted",
     });
+  });
+
+  it("refuses tool calls past the soft budget and the gate never sees them", async () => {
+    const options = createOptions();
+    const results: unknown[] = [];
+    pi.harness.prompt.mockImplementation(async () => {
+      for (let index = 0; index < 4; index += 1) {
+        results.push(
+          await pi.handlers.get("tool_call")?.({
+            type: "tool_call",
+            toolCallId: `call-${index}`,
+            toolName: index === 3 ? "publish" : "search",
+            input: { q: String(index) },
+          })
+        );
+      }
+      return reply("stop");
+    });
+
+    const result = await runPiTurn(options);
+
+    expect(results.slice(0, 3)).toEqual([undefined, undefined, undefined]);
+    expect(results[3]).toMatchObject({ block: true });
+    expect(results[3]).toMatchObject({
+      reason: expect.stringMatching(/budget/i),
+    });
+    // The fourth call was a gated `publish`; the budget refused it first, so no approval exists.
+    expect(options.persistApprovals).not.toHaveBeenCalled();
+    expect(result.status).toBe("done");
+  });
+
+  it("ends the turn as budget_exhausted once the model calls through the hard limit", async () => {
+    const options = createOptions();
+    pi.harness.prompt.mockImplementation(async () => {
+      for (let index = 0; index < 6; index += 1) {
+        await pi.handlers.get("tool_call")?.({
+          type: "tool_call",
+          toolCallId: `call-${index}`,
+          toolName: "search",
+          input: { q: String(index) },
+        });
+      }
+      return reply("aborted");
+    });
+
+    const result = await runPiTurn(options);
+
+    expect(pi.harness.abort).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({
+      status: "error",
+      error: { kind: "budget_exhausted" },
+    });
+    expect(options.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
+  });
+
+  it("ends the turn as budget_exhausted when the wall-clock runs out mid-generation", async () => {
+    vi.useFakeTimers();
+    try {
+      const options = createOptions();
+      pi.harness.prompt.mockImplementation(async () => {
+        await vi.advanceTimersByTimeAsync(budget.maxDurationMs + 1);
+        return reply(
+          pi.harness.abort.mock.calls.length > 0 ? "aborted" : "stop"
+        );
+      });
+
+      const result = await runPiTurn(options);
+
+      expect(pi.harness.abort).toHaveBeenCalledOnce();
+      expect(result).toMatchObject({
+        status: "error",
+        error: {
+          kind: "budget_exhausted",
+          message: expect.stringMatching(/60s/),
+        },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not fail a turn whose deadline passes while approvals are being persisted", async () => {
+    vi.useFakeTimers();
+    try {
+      const options = createOptions();
+      pi.harness.prompt.mockImplementation(async () => {
+        await pi.handlers.get("tool_call")?.({
+          type: "tool_call",
+          toolCallId: "call-1",
+          toolName: "publish",
+          input: {},
+        });
+        return reply("stop");
+      });
+      options.persistApprovals.mockImplementation(async () => {
+        // The model already stopped; only host work is left when the deadline would fire.
+        await vi.advanceTimersByTimeAsync(budget.maxDurationMs + 1);
+      });
+
+      const result = await runPiTurn(options);
+
+      expect(pi.harness.abort).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        status: "awaiting_approval",
+        approvals: ["call-1"],
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("clears the deadline when the turn finishes first", async () => {
+    vi.useFakeTimers();
+    try {
+      const options = createOptions();
+      await runPiTurn(options);
+      await vi.advanceTimersByTimeAsync(budget.maxDurationMs + 1);
+
+      expect(pi.harness.abort).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("stops listening once the turn is over", async () => {

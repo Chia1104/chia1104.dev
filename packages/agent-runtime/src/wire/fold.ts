@@ -47,6 +47,7 @@ export const AGENT_ERROR_HEADLINE = {
   rate_limited: "The provider is rate limiting requests",
   context_overflow:
     "The conversation no longer fits the model's context — compact it",
+  budget_exhausted: "The turn ran past its budget and was stopped",
   provider: "The provider failed",
   internal: "The agent failed",
 } satisfies Record<AgentErrorKind, string>;
