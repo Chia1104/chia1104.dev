@@ -179,8 +179,10 @@ turn context and the writing policy.
 `runPiTurn` owns the complete lifecycle:
 
 1. clamp thinking level to the resolved model and construct one harness for the turn;
-2. install the Pi tool-call approval hook, the `context` hook that appends the volatile block, the
-   host abort signal, and Pi-to-wire event mapping;
+2. install one `tool_call` hook composing the turn budget and the approval hook (budget first —
+   Pi keeps the last defined hook result, so they cannot be two handlers), the `context` hook
+   that appends the volatile block, the host abort signal, the turn deadline, and Pi-to-wire
+   event mapping;
 3. emit `run:start` and the user event, then invoke prompt or prompt template;
 4. read the resolved assistant message: `stopReason: "error"` is a classified provider failure,
    `"aborted"` ends the turn as aborted; a thrown harness or hook error is `internal`;
@@ -188,6 +190,27 @@ turn context and the writing policy.
    `approval:request` events;
 6. auto-compact only after a successful turn with no pending approvals;
 7. emit the terminal error/end events, unsubscribe, then flush the durable writer.
+
+### Turn budget
+
+Pi's loop has no step limit: it runs while the assistant message carries tool calls, so a model
+that re-issues the same call would run until the operator aborts. Every kind therefore passes an
+`AgentTurnBudget` (`writingTurnBudget` in `@chia/agent-writing/policy`) and `createPiTurnBudget`
+(`packages/agent-runtime/src/pi/turn-budget.ts`) enforces it on the `tool_call` hook, ahead of the
+approval gate:
+
+| Limit              | Crossing it                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `maxRepeats`       | the same tool with identical arguments that many times in a row — refused with a tool error telling the model the result will not change |
+| `maxToolCalls`     | every further call refused with a tool error asking the model to answer from what it has                                                 |
+| `hardMaxToolCalls` | the model called through the refusals — the harness is aborted and the turn ends `error{budget_exhausted}`                               |
+| `maxDurationMs`    | wall-clock for the whole turn, provider time included — same abort and error                                                             |
+
+Refusals speak to the model through the tool result, the channel the approval gate already uses,
+so a model that complies finishes the turn normally. The two aborts go through the same host-failure
+path as a failed volatile-context read: the failure is recorded, the harness aborted, and the turn
+ends as that error rather than as `aborted`. Per-user and per-session quotas are not here — they
+belong at enqueue time, in the kind service.
 
 ### Prompt layering
 
@@ -289,8 +312,8 @@ session:compacted · state:changed · error · run:end
 - `entriesToWireEvents` rebuilds history from persisted Pi entries and uses each entry id as the
   stable assistant identity. A persisted assistant message with `stopReason: "error"` replays as
   the same `error` event the live turn emitted.
-- `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · provider ·
-internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
+- `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
+provider · internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
 - `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
   wide objects and deep nesting are shortened in place, shape preserved — because every coarse
   event is a durable write that is replayed to every reconnecting client. The model reads the
@@ -435,6 +458,7 @@ until a concrete second execution foundation requires a different seam.
 | ---------------------------- | ---------------------------------------------------------------------------------------------- |
 | Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
 | Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
+| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                 |
 | Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
 | Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
 | Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |

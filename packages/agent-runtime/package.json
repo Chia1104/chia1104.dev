@@ -41,6 +41,10 @@
       "types": "./src/pi/events.ts",
       "default": "./src/pi/events.ts"
     },
+    "./pi/turn-budget": {
+      "types": "./src/pi/turn-budget.ts",
+      "default": "./src/pi/turn-budget.ts"
+    },
     "./pi/tool-gate": {
       "types": "./src/pi/tool-gate.ts",
       "default": "./src/pi/tool-gate.ts"

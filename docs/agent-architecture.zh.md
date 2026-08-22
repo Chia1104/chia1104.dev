@@ -174,8 +174,9 @@ context 與 writing policy。
 `runPiTurn` 負責完整生命週期：
 
 1. 依 resolved model clamp thinking level，每個 turn 建立一個 harness；
-2. 安裝 Pi tool-call approval hook、附加 volatile block 的 `context` hook、host 的 abort
-   signal，以及 Pi-to-wire event mapper；
+2. 安裝一個組合了 turn budget 與 approval hook 的 `tool_call` hook（budget 先——Pi 只保留最後
+   一個有回傳值的 hook 結果，所以不能拆成兩個 handler）、附加 volatile block 的 `context`
+   hook、host 的 abort signal、turn deadline，以及 Pi-to-wire event mapper；
 3. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
 4. 檢查回傳的 assistant message：`stopReason: "error"` 是分類過的 provider 失敗，
    `"aborted"` 讓 turn 以 aborted 結束；harness 或 hook 拋出的例外歸為 `internal`；
@@ -183,6 +184,26 @@ context 與 writing policy。
    `approval:request`；
 6. 只在成功且沒有 pending approval 時 auto-compact；
 7. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
+
+### Turn budget
+
+Pi 的 loop 沒有 step 上限：只要 assistant message 還帶 tool call 就繼續跑，所以一個不斷重發
+同一個呼叫的模型會一直跑到 operator abort 為止。因此每個 kind 都要傳入 `AgentTurnBudget`
+（writing 的是 `@chia/agent-writing/policy` 的 `writingTurnBudget`），由 `createPiTurnBudget`
+（`packages/agent-runtime/src/pi/turn-budget.ts`）在 `tool_call` hook 上、approval gate 之前
+執行：
+
+| 上限               | 越過時                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `maxRepeats`       | 同一個 tool 以完全相同的參數連續呼叫這麼多次——以 tool error 拒絕，告訴模型結果不會改變 |
+| `maxToolCalls`     | 之後每個呼叫都以 tool error 拒絕，要模型用現有結果作答                                 |
+| `hardMaxToolCalls` | 模型無視拒絕繼續呼叫——abort harness，turn 以 `error{budget_exhausted}` 結束            |
+| `maxDurationMs`    | 整個 turn 的 wall-clock（含 provider 時間）——同樣 abort 與 error                       |
+
+拒絕是透過 tool result 跟模型對話，與 approval gate 用的是同一條通道，所以會聽話的模型會正常
+結束這一輪。兩種 abort 走的是與 volatile-context 讀取失敗相同的 host-failure 路徑：記下失敗、
+abort harness，turn 以該 error 結束而非 `aborted`。per-user 與 per-session 的配額不在這裡——
+那屬於 enqueue 時的 kind service。
 
 ### Prompt 分層
 
@@ -267,7 +288,8 @@ session:compacted · state:changed · error · run:end
 - `entriesToWireEvents`：persisted Pi entries → replay history，使用 entry id 作為穩定的
   assistant identity。`stopReason: "error"` 的持久化 assistant message 會 replay 成與 live
   turn 相同的 `error` event。
-- `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · provider · internal`），
+- `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · budget_exhausted · provider ·
+internal`），
   讓 client 能提示下一步；`describeAgentError` 是共用的 headline。
 - `tool:end.details` 上 wire 前會經過 `clipDetails`——長字串、陣列、寬物件與深巢狀就地縮短、
   保留形狀——因為每個 coarse event 都是 durable write，且會 replay 給每個重連的 client。模型
@@ -393,6 +415,7 @@ factory、capability plugin system 或 provider-neutral handle。
 | ---------------------------- | ---------------------------------------------------------------------------------------------- |
 | Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
 | Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
+| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                 |
 | Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
 | Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
 | Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |

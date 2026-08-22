@@ -88,12 +88,38 @@ export type AgentErrorKind =
   | "quota"
   | "rate_limited"
   | "context_overflow"
+  | "budget_exhausted"
   | "provider"
   | "internal";
 
 export interface AgentTurnError {
   kind: AgentErrorKind;
   message: string;
+}
+
+/**
+ * What one turn may consume before the runtime stops it. A turn ends on its own only when the
+ * model stops emitting tool calls, so every limit here bounds tool calls or wall-clock; nothing
+ * else can keep a turn alive.
+ */
+export interface AgentTurnBudget {
+  /**
+   * Tool calls after which every further call is refused with a tool error asking the model to
+   * finish from what it has. A model that complies ends the turn normally.
+   */
+  maxToolCalls: number;
+  /**
+   * Tool calls after which the turn is aborted as `budget_exhausted`. The refusal above is only a
+   * message; a model that keeps calling through it would otherwise loop on the refusal itself.
+   */
+  hardMaxToolCalls: number;
+  /**
+   * Consecutive calls of one tool with identical arguments after which the call is refused. The
+   * result cannot differ, so the refusal tells the model as much.
+   */
+  maxRepeats: number;
+  /** Wall-clock for the whole turn, provider time included. */
+  maxDurationMs: number;
 }
 
 export interface AgentTurnExecution<TApproval> {
