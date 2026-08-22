@@ -199,12 +199,12 @@ that re-issues the same call would run until the operator aborts. Every kind the
 (`packages/agent-runtime/src/pi/turn-budget.ts`) enforces it on the `tool_call` hook, ahead of the
 approval gate:
 
-| Limit              | Crossing it                                                                                                                              |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `maxRepeats`       | the same tool with identical arguments that many times in a row — refused with a tool error telling the model the result will not change |
-| `maxToolCalls`     | every further call refused with a tool error asking the model to answer from what it has                                                 |
-| `hardMaxToolCalls` | the model called through the refusals — the harness is aborted and the turn ends `error{budget_exhausted}`                               |
-| `maxDurationMs`    | wall-clock for the whole turn, provider time included — same abort and error                                                             |
+| Limit              | Crossing it                                                                                                                                                                       |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maxRepeats`       | the same tool with identical arguments that many times in a row — refused with a tool error telling the model the result will not change                                          |
+| `maxToolCalls`     | every further call refused with a tool error asking the model to answer from what it has                                                                                          |
+| `hardMaxToolCalls` | the model called through the refusals — the harness is aborted and the turn ends `error{budget_exhausted}`                                                                        |
+| `maxDurationMs`    | wall-clock for the model's generation — same abort and error; cleared once the reply resolves, so the host work after it (approval persistence, compaction) is never failed by it |
 
 Refusals speak to the model through the tool result, the channel the approval gate already uses,
 so a model that complies finishes the turn normally. The two aborts go through the same host-failure

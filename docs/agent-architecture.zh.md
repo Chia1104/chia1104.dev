@@ -193,12 +193,12 @@ Pi 的 loop 沒有 step 上限：只要 assistant message 還帶 tool call 就�
 （`packages/agent-runtime/src/pi/turn-budget.ts`）在 `tool_call` hook 上、approval gate 之前
 執行：
 
-| 上限               | 越過時                                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------- |
-| `maxRepeats`       | 同一個 tool 以完全相同的參數連續呼叫這麼多次——以 tool error 拒絕，告訴模型結果不會改變 |
-| `maxToolCalls`     | 之後每個呼叫都以 tool error 拒絕，要模型用現有結果作答                                 |
-| `hardMaxToolCalls` | 模型無視拒絕繼續呼叫——abort harness，turn 以 `error{budget_exhausted}` 結束            |
-| `maxDurationMs`    | 整個 turn 的 wall-clock（含 provider 時間）——同樣 abort 與 error                       |
+| 上限               | 越過時                                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `maxRepeats`       | 同一個 tool 以完全相同的參數連續呼叫這麼多次——以 tool error 拒絕，告訴模型結果不會改變                                            |
+| `maxToolCalls`     | 之後每個呼叫都以 tool error 拒絕，要模型用現有結果作答                                                                            |
+| `hardMaxToolCalls` | 模型無視拒絕繼續呼叫——abort harness，turn 以 `error{budget_exhausted}` 結束                                                       |
+| `maxDurationMs`    | 模型生成階段的 wall-clock——同樣 abort 與 error；reply 一回來就清掉，之後的 host 工作（approval 持久化、compaction）不會被它判失敗 |
 
 拒絕是透過 tool result 跟模型對話，與 approval gate 用的是同一條通道，所以會聽話的模型會正常
 結束這一輪。兩種 abort 走的是與 volatile-context 讀取失敗相同的 host-failure 路徑：記下失敗、
