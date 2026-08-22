@@ -491,6 +491,36 @@ describe("runPiTurn", () => {
     }
   });
 
+  it("does not fail a turn whose deadline passes while approvals are being persisted", async () => {
+    vi.useFakeTimers();
+    try {
+      const options = createOptions();
+      pi.harness.prompt.mockImplementation(async () => {
+        await pi.handlers.get("tool_call")?.({
+          type: "tool_call",
+          toolCallId: "call-1",
+          toolName: "publish",
+          input: {},
+        });
+        return reply("stop");
+      });
+      options.persistApprovals.mockImplementation(async () => {
+        // The model already stopped; only host work is left when the deadline would fire.
+        await vi.advanceTimersByTimeAsync(budget.maxDurationMs + 1);
+      });
+
+      const result = await runPiTurn(options);
+
+      expect(pi.harness.abort).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        status: "awaiting_approval",
+        approvals: ["call-1"],
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("clears the deadline when the turn finishes first", async () => {
     vi.useFakeTimers();
     try {

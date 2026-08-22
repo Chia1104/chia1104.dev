@@ -118,7 +118,7 @@ export interface AgentTurnBudget {
    * result cannot differ, so the refusal tells the model as much.
    */
   maxRepeats: number;
-  /** Wall-clock for the whole turn, provider time included. */
+  /** Wall-clock for the model's generation; host work after the reply is not counted. */
   maxDurationMs: number;
 }
 

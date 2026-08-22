@@ -91,6 +91,22 @@ describe("createPiTurnBudget", () => {
     expect(turnBudget.handle(call({ q: "same" }))).toBeUndefined();
   });
 
+  it.each([
+    ["NaN count", { maxToolCalls: Number.NaN }],
+    ["infinite count", { hardMaxToolCalls: Number.POSITIVE_INFINITY }],
+    ["fractional count", { maxRepeats: 1.5 }],
+    ["NaN duration", { maxDurationMs: Number.NaN }],
+    ["infinite duration", { maxDurationMs: Number.POSITIVE_INFINITY }],
+    ["duration past the timer range", { maxDurationMs: 2 ** 31 }],
+  ])("rejects a budget with a %s", (_label, override) => {
+    expect(() =>
+      createPiTurnBudget({
+        budget: { ...budget, ...override },
+        onExhausted: vi.fn(),
+      })
+    ).toThrow();
+  });
+
   it("rejects a budget whose hard limit is below its soft limit", () => {
     expect(() =>
       createPiTurnBudget({

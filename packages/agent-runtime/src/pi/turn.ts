@@ -173,6 +173,11 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       )
     );
 
+    /**
+     * Bounds the model's generation only. It is cleared as soon as the reply resolves, so it can
+     * never fail a turn whose model has already stopped — approval persistence and compaction
+     * that follow are host work, and a turn that reaches them is not running away.
+     */
     const deadline = setTimeout(
       () =>
         failTurn({
@@ -291,6 +296,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         failure = hostFailure ?? errorOfThrown(error);
       }
     }
+    clearTimeout(deadline);
     // An abort that lands after the reply resolved must still keep the turn from persisting
     // approvals or compacting: the run is being cancelled, and rows written now would outlive it.
     if (!failure && signal?.aborted) aborted = true;

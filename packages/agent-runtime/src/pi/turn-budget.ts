@@ -61,18 +61,35 @@ const callIdentity = (event: ToolCallEvent): string => {
   return `${event.toolName} ${input === undefined ? event.toolCallId : canonical(input)}`;
 };
 
+/** Node clamps longer timer delays to 1ms, which would fire the deadline at once. */
+const MAX_TIMER_DELAY_MS = 2_147_483_647;
+
+const isCount = (value: number): boolean =>
+  Number.isSafeInteger(value) && value >= 1;
+
 export const assertTurnBudget = (budget: AgentTurnBudget): void => {
-  if (budget.maxToolCalls < 1) {
-    throw new Error("maxToolCalls must be at least 1.");
+  if (!isCount(budget.maxToolCalls)) {
+    throw new Error("maxToolCalls must be a positive integer.");
   }
-  if (budget.hardMaxToolCalls < budget.maxToolCalls) {
-    throw new Error("hardMaxToolCalls must be at least maxToolCalls.");
+  if (
+    !isCount(budget.hardMaxToolCalls) ||
+    budget.hardMaxToolCalls < budget.maxToolCalls
+  ) {
+    throw new Error(
+      "hardMaxToolCalls must be a positive integer of at least maxToolCalls."
+    );
   }
-  if (budget.maxRepeats < 1) {
-    throw new Error("maxRepeats must be at least 1.");
+  if (!isCount(budget.maxRepeats)) {
+    throw new Error("maxRepeats must be a positive integer.");
   }
-  if (budget.maxDurationMs < 1) {
-    throw new Error("maxDurationMs must be positive.");
+  if (
+    !Number.isFinite(budget.maxDurationMs) ||
+    budget.maxDurationMs < 1 ||
+    budget.maxDurationMs > MAX_TIMER_DELAY_MS
+  ) {
+    throw new Error(
+      `maxDurationMs must be between 1 and ${MAX_TIMER_DELAY_MS}.`
+    );
   }
 };
 
