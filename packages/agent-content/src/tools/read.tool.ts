@@ -89,12 +89,15 @@ export const getPostTool = defineTool({
   name: CONTENT_TOOL_NAMES.getPost,
   label: CONTENT_TOOL_LABEL_BY_NAME[CONTENT_TOOL_NAMES.getPost],
   description:
-    "Read one post in full, including every locale's metadata and MDX body. Provide either " +
-    "`slug` or `feedId`. Long bodies degrade to their matched sections and then to an outline; " +
-    "each returned heading carries the anchor the site renders, so cite `slug#anchor`.",
+    "Read one post in full, including every locale's metadata and MDX body. Pass the `slug` " +
+    "returned by `search_posts` or `list_posts`. Long bodies degrade to their matched sections " +
+    "and then to an outline; each returned heading carries the anchor the site renders, so cite " +
+    "`slug#anchor`.",
   parameters: Type.Object({
-    slug: Type.Optional(Type.String({ description: "Post slug." })),
-    feedId: Type.Optional(Type.Integer({ description: "Numeric feed id." })),
+    slug: Type.String({
+      description: "Post slug returned by `search_posts` or `list_posts`.",
+      minLength: 1,
+    }),
     locale: Type.Optional(
       LocaleSchema("Return only this locale. Omit for all locales.")
     ),
@@ -109,20 +112,13 @@ export const getPostTool = defineTool({
   }),
   executionMode: "parallel",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
-    if (!params.slug && params.feedId === undefined) {
-      throw new Error("Provide either `slug` or `feedId`.");
-    }
-
     const post = await context.content.getPost({
       slug: params.slug,
-      feedId: params.feedId,
       locale: params.locale,
     });
 
     if (!post) {
-      throw new Error(
-        `No post found for ${params.slug ? `slug "${params.slug}"` : `feedId ${params.feedId}`}.`
-      );
+      throw new Error(`No post found for slug "${params.slug}".`);
     }
 
     /**

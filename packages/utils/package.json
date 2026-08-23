@@ -52,6 +52,10 @@
     "./schema": {
       "types": "./src/schema/index.ts",
       "default": "./src/schema/index.ts"
+    },
+    "./slug": {
+      "types": "./src/slug/index.ts",
+      "default": "./src/slug/index.ts"
     }
   },
   "scripts": {

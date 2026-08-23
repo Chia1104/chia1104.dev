@@ -41,8 +41,8 @@ const dateFields = {
 
 export const createFeedSchema = insertFeedSchema
   .omit({ userId: true, createdAt: true, updatedAt: true })
-  .partial({ slug: true })
   .extend({
+    slug: z.string().min(1),
     translations: z.record(
       z.enum(locale.enumValues),
       z.object({

@@ -40,10 +40,10 @@ export const createFakeContentPort = (
     searchPosts: () => Promise.resolve(options.searchHits ?? []),
     getPost: (input) =>
       Promise.resolve(
-        (options.posts ?? []).find(
-          (post) =>
-            (input.slug !== undefined && post.slug === input.slug) ||
-            (input.feedId !== undefined && post.feedId === input.feedId)
+        (options.posts ?? []).find((post) =>
+          input.slug !== undefined
+            ? post.slug === input.slug
+            : post.feedId === input.feedId
         ) ?? null
       ),
     listPosts: () => Promise.resolve(options.list ?? []),

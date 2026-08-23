@@ -1,8 +1,8 @@
 import { StringEnum } from "@earendil-works/pi-ai";
-import GithubSlugger from "github-slugger";
 
 import { ContentType, FeedType } from "@chia/db/types";
 import type { Locale } from "@chia/db/types";
+import { normalizeAsciiSlug } from "@chia/utils/slug";
 
 import { applyEdit, withLineNumbers } from "../draft/operations.ts";
 import type { DraftFeedMeta, DraftTranslation, WritingTool } from "../types.ts";
@@ -25,15 +25,6 @@ import {
  *
  * None of them touch published data, so none require approval.
  */
-
-/**
- * A fresh slugger per call, never a shared instance.
- *
- * `GithubSlugger` remembers what it has emitted and disambiguates repeats by appending `-1`,
- * `-2`, … A module-level instance would therefore turn the same title into a *different* slug on
- * every call, which is exactly wrong for an idempotent normalisation.
- */
-const slugify = (text: string): string => new GithubSlugger().slug(text);
 
 /** SEO description cap enforced by the site's metadata layer. */
 const MAX_DESCRIPTION_CHARS = 160;
@@ -131,8 +122,8 @@ export const patchDraftMetaTool = defineTool({
     slug: Type.Optional(
       Type.String({
         description:
-          "URL slug for the whole post. Normalised on write; the result echoes the final form. " +
-          "Use `slugify` only to compare candidates beforehand.",
+          "English/ASCII URL slug for the whole post. It is lowercased and hyphenated on write; " +
+          "the result echoes the final form. This field does not translate a localized title.",
       })
     ),
     type: Type.Optional(
@@ -184,8 +175,15 @@ export const patchDraftMetaTool = defineTool({
     let draft = await context.draft.get(context.agentSessionId);
 
     const feedMetaPatch = { ...feedMeta };
-    if (feedMeta.slug !== undefined)
-      feedMetaPatch.slug = slugify(feedMeta.slug);
+    if (feedMeta.slug !== undefined) {
+      const slug = normalizeAsciiSlug(feedMeta.slug);
+      if (!slug) {
+        throw new Error(
+          "`slug` must be an English/ASCII phrase. Slug normalization does not translate or transliterate localized titles."
+        );
+      }
+      feedMetaPatch.slug = slug;
+    }
 
     if (Object.values(feedMetaPatch).some((value) => value !== undefined)) {
       draft = await context.draft.patchFeedMeta(
@@ -319,30 +317,11 @@ export const editDraftContentTool = defineTool({
   },
 });
 
-export const slugifyTool = defineTool({
-  name: TOOL_NAMES.slugify,
-  label: labelOf(TOOL_NAMES.slugify),
-  description:
-    "Normalise a string into a URL slug using the exact same slugger the server uses, so you can " +
-    "see the final slug before setting it. Deterministic — no model call.",
-  parameters: Type.Object({
-    text: Type.String({ description: "Text to slugify, usually the title." }),
-  }),
-  executionMode: "parallel",
-  execute(_toolCallId, params) {
-    const slug = slugify(params.text);
-    return Promise.resolve(
-      textResult(`Slug: \`${slug}\``, { slug, input: params.text })
-    );
-  },
-});
-
 export const draftTools: WritingTool[] = [
   readDraftTool,
   patchDraftMetaTool,
   writeDraftContentTool,
   editDraftContentTool,
-  slugifyTool,
 ];
 
 /** Re-exported so `commit.tool.ts` can reuse the same default. */

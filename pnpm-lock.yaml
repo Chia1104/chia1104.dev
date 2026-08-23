@@ -1235,15 +1235,15 @@ importers:
       '@chia/db':
         specifier: workspace:*
         version: link:../db
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@earendil-works/pi-agent-core':
         specifier: catalog:agent
         version: 0.83.0(supports-color@10.2.2)(ws@8.21.3)(zod@4.4.3)
       '@earendil-works/pi-ai':
         specifier: catalog:agent
         version: 0.83.0(supports-color@10.2.2)(ws@8.21.3)(zod@4.4.3)
-      github-slugger:
-        specifier: ^2.0.0
-        version: 2.0.0
       typebox:
         specifier: catalog:agent
         version: 1.3.11
@@ -1251,9 +1251,6 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@chia/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2

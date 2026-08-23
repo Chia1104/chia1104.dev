@@ -73,11 +73,13 @@ export interface SearchPostsInput {
   limit: number;
 }
 
-export interface GetPostInput {
-  slug?: string;
-  feedId?: number;
+interface GetPostInputBase {
   locale?: Locale;
 }
+
+export type GetPostInput =
+  | (GetPostInputBase & { slug: string; feedId?: never })
+  | (GetPostInputBase & { slug?: never; feedId: number });
 
 export interface ListPostsInput {
   limit: number;
