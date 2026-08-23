@@ -246,6 +246,12 @@ export const chatAgentContract = oc
           text: z.string().min(1),
         }),
         z.object({
+          type: z.literal("command"),
+          name: z.string().min(1).max(100),
+          args: z.array(z.string()).max(32),
+          text: z.string().min(1),
+        }),
+        z.object({
           type: z.literal("approve"),
           toolCallId: z.string(),
           approved: z.boolean(),
@@ -383,10 +389,11 @@ export const listAgentCapabilitiesContract = oc
           description: z.string(),
         })
       ),
-      promptTemplates: z.array(
+      commands: z.array(
         z.object({
           name: z.string(),
-          description: z.string().optional(),
+          description: z.string(),
+          argumentHint: z.string().optional(),
         })
       ),
       skills: z.array(z.object({ name: z.string(), description: z.string() })),

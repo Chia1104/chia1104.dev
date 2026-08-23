@@ -7,7 +7,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "zustand";
 
 import type { AgentLabels } from "./labels.ts";
-import { agentModelsQuery, sessionDetailQuery } from "./queries.ts";
+import {
+  agentCapabilitiesQuery,
+  agentModelsQuery,
+  sessionDetailQuery,
+} from "./queries.ts";
 import type {
   AgentSessionCallbacks,
   AgentSessionStore,
@@ -132,6 +136,16 @@ export const useAgentModels = () => {
   const sessionKind = kind ?? detail.data?.session.kind;
   return useQuery({
     ...agentModelsQuery(client, sessionKind ?? ""),
+    enabled: sessionKind !== undefined,
+  });
+};
+
+export const useAgentCapabilities = () => {
+  const { client, kind } = useContextValue();
+  const detail = useSessionDetail();
+  const sessionKind = kind ?? detail.data?.session.kind;
+  return useQuery({
+    ...agentCapabilitiesQuery(client, sessionKind ?? ""),
     enabled: sessionKind !== undefined,
   });
 };

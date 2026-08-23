@@ -1146,6 +1146,9 @@ importers:
       '@streamdown/code':
         specifier: catalog:streamdown
         version: 1.1.1(react@19.2.8)
+      '@tanstack/react-pacer':
+        specifier: catalog:tanstack
+        version: 0.23.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@tanstack/react-query':
         specifier: catalog:tanstack
         version: 5.101.4(react@19.2.8)

@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 import { agentQueryKeys } from "../src/queries.ts";
-import { createAgentSessionStore, foldDetail } from "../src/store.ts";
+import {
+  VIEW_FLUSH_MS,
+  createAgentSessionStore,
+  foldDetail,
+} from "../src/store.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "../src/types.ts";
 
 // ============================================
@@ -101,11 +105,17 @@ const fakeClient = (overrides: {
   const abort = vi.fn(overrides.abort ?? (async () => ({ aborted: true })));
   const update = vi.fn(async () => detailOf());
   const models = vi.fn(async () => []);
+  const capabilities = vi.fn(async () => ({
+    tools: [],
+    commands: [],
+    skills: [],
+  }));
   const client: AgentSessionClient = {
     sessions: { get, chat, abort, "settings:update": update },
     models: { list: models },
+    capabilities: { list: capabilities },
   };
-  return { client, get, chat, abort, update, models };
+  return { client, get, chat, abort, update, models, capabilities };
 };
 
 const makeStore = (
@@ -393,6 +403,85 @@ describe("createAgentSessionStore", () => {
     expect(store.getState().pendingPrompt).toBeNull();
     expect(store.getState().failure).toBe("offline");
     expect(store.getState().connection).toBe("idle");
+  });
+
+  it("runs a structured slash command and keeps its canonical text optimistic", async () => {
+    const stream = channel();
+    const { client, chat } = fakeClient({ chat: async () => stream.iterable });
+    const { store } = makeStore({ client });
+    await store.getState().hydrate();
+
+    const commanded = store
+      .getState()
+      .command(
+        "rewrite-section",
+        ["API design", "tighten"],
+        'Please /rewrite-section "API design" tighten'
+      );
+    await flush();
+
+    expect(store.getState().pendingPrompt).toBe(
+      'Please /rewrite-section "API design" tighten'
+    );
+    expect(chat).toHaveBeenCalledWith(
+      {
+        sessionId: "s1",
+        kind: undefined,
+        action: {
+          type: "command",
+          name: "rewrite-section",
+          args: ["API design", "tighten"],
+          text: 'Please /rewrite-section "API design" tighten',
+        },
+      },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+
+    stream.push({ type: "run:end", reason: "done" });
+    stream.close();
+    await commanded;
+  });
+
+  it("throttles a burst of deltas into few view commits, boundaries at once", async () => {
+    const stream = channel();
+    const { client } = fakeClient({ chat: async () => stream.iterable });
+    const { store } = makeStore({ client });
+    await store.getState().hydrate();
+    const commits: string[] = [];
+    store.subscribe((state, previous) => {
+      if (state.view === previous.view) return;
+      const last = state.view.items.at(-1);
+      commits.push(last?.kind === "assistant" ? last.text : (last?.kind ?? ""));
+    });
+
+    const prompted = store.getState().prompt("hello");
+    await flush();
+    const events = turn("hello");
+    stream.push(events[0]!);
+    stream.push(events[1]!);
+    stream.push(events[2]!);
+    for (const delta of ["H", "e", "y"]) {
+      stream.push({
+        type: "assistant:delta",
+        messageId: "a1",
+        channel: "text",
+        delta,
+      });
+    }
+    await flush();
+    // Boundaries and the first delta commit on arrival; the rest of the burst waits for the interval.
+    expect(commits).toEqual(["", "user", "", "H"]);
+    await new Promise((resolve) => setTimeout(resolve, VIEW_FLUSH_MS + 5));
+    expect(commits).toEqual(["", "user", "", "H", "Hey"]);
+
+    stream.push({ type: "assistant:end", messageId: "a1", text: "Hey" });
+    stream.push({ type: "run:end", reason: "done" });
+    stream.close();
+    await prompted;
+    expect(store.getState().view.items.at(-1)).toMatchObject({
+      kind: "assistant",
+      text: "Hey",
+    });
   });
 
   it("forwards state:changed to the host while streaming", async () => {

@@ -39,6 +39,7 @@ import { agentSessionWorkflow } from "../src/workflows/agent-session.workflow";
 
 interface Message {
   text: string;
+  template?: { name: string; args?: string[] };
   credentials?: { openai?: string; anthropic?: string };
 }
 
@@ -69,7 +70,11 @@ describe("agentSessionWorkflow", () => {
   it("registers its durable inbox before the first turn and drains queued turns in order", async () => {
     mocks.createMessageHook.mockReturnValue(
       messageHook([
-        { text: "second", credentials: { openai: "rotated" } },
+        {
+          text: "/translate zh-TW",
+          template: { name: "translate", args: ["zh-TW"] },
+          credentials: { openai: "rotated" },
+        },
         { text: "/end" },
       ])
     );
@@ -105,8 +110,8 @@ describe("agentSessionWorkflow", () => {
       sessionId: "session-1",
       userId: "user-1",
       abortController: { id: "abort-1", runId: "abort-run-1" },
-      text: "second",
-      template: undefined,
+      text: "/translate zh-TW",
+      template: { name: "translate", args: ["zh-TW"] },
       preAuthorizeToolNames: undefined,
       credentials: { openai: "rotated" },
     });

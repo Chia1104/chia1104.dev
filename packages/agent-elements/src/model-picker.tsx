@@ -33,6 +33,9 @@ export interface ModelPickerProps {
   providerIcons?: Readonly<Record<string, ProviderIcon>>;
   /** Providers in the order offered; the rest follow alphabetically. */
   providerOrder?: readonly string[];
+  /** Controlled popover state, used by composer commands such as `/model`. */
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
   className?: string;
 }
 
@@ -43,6 +46,8 @@ export interface ModelPickerProps {
  */
 export const ModelPicker = ({
   className,
+  isOpen,
+  onOpenChange,
   providerIcons,
   providerLabels,
   providerOrder = [],
@@ -53,10 +58,17 @@ export const ModelPicker = ({
   const updateSettings = useUpdateSettings();
   const busy = useAgentSession((state) => state.connection !== "idle");
   const saving = updateSettings.isPending;
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [rail, setRail] = useState<string | null>(null);
   const [draftLevel, setDraftLevel] = useState<AgentThinkingLevel | null>(null);
+  const open = isOpen ?? internalOpen;
+
+  const setOpen = (next: boolean) => {
+    if (isOpen === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+    if (!next) setQuery("");
+  };
 
   const nameOf = (id: string) =>
     providerLabels?.[id] ?? providerLabelOf(id) ?? id;
@@ -110,12 +122,7 @@ export const ModelPicker = ({
   const triggerModel = current?.name ?? settings?.modelId ?? labels.modelPicker;
 
   return (
-    <Popover
-      isOpen={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) setQuery("");
-      }}>
+    <Popover isOpen={open} onOpenChange={setOpen}>
       <Popover.Trigger>
         <Button
           aria-label={labels.modelPicker}

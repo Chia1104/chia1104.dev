@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useMemo, useState } from "react";
 
 import { Composer } from "@chia/agent-elements/composer";
 import { EmptyState } from "@chia/agent-elements/empty-state";
@@ -29,6 +30,17 @@ const SUGGESTIONS = [
 /** The writing agent's session view: the shared chat elements with the draft riding on the composer. */
 export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
   const draft = useSessionDetail().data?.draft;
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
+  const localCommands = useMemo(
+    () => [
+      {
+        name: "model",
+        description: "Switch the response model for this conversation.",
+        onSelect: () => setModelPickerOpen(true),
+      },
+    ],
+    []
+  );
 
   return (
     <>
@@ -48,8 +60,15 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
       />
       <Composer
         attachments={draft ? <DraftAttachments draft={draft} /> : undefined}
+        localCommands={localCommands}
         placeholder="Ask the writing agent…"
-        toolbar={<ModelPicker providerOrder={PROVIDER_ORDER} />}
+        toolbar={
+          <ModelPicker
+            isOpen={modelPickerOpen}
+            onOpenChange={setModelPickerOpen}
+            providerOrder={PROVIDER_ORDER}
+          />
+        }
       />
     </>
   );
