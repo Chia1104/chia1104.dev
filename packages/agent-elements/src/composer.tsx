@@ -9,6 +9,7 @@ import { ArrowUp, Square, X } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { ContextUsage } from "./context-usage.tsx";
 import { ModelPicker } from "./model-picker.tsx";
 import {
   useAbortSession,
@@ -208,6 +209,7 @@ export const Composer = ({
               <div className="flex min-w-0 flex-1 items-center gap-1">
                 {toolbar}
               </div>
+              <ContextUsage />
               {busy ? (
                 <Button
                   aria-label={labels.stop}

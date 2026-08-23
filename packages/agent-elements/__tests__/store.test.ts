@@ -31,7 +31,7 @@ const detailOf = (
   run: null,
   events: [],
   approvals: [],
-  stats: { messageCount: 0, totalTokens: 0, costTotal: 0 },
+  stats: { messageCount: 0, contextTokens: 0, totalTokens: 0, costTotal: 0 },
   ...overrides,
 });
 
@@ -329,7 +329,12 @@ describe("createAgentSessionStore", () => {
         { type: "user", messageId: "u1", text: "hello" },
         { type: "assistant:end", messageId: "a1", text: "Hi" },
       ],
-      stats: { messageCount: 2, totalTokens: 10, costTotal: 0 },
+      stats: {
+        messageCount: 2,
+        contextTokens: 8,
+        totalTokens: 10,
+        costTotal: 0,
+      },
     });
     stream.close();
     await prompted;

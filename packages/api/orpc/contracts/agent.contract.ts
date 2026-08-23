@@ -133,6 +133,9 @@ export const agentSessionDetailSchema = z.object({
   ),
   stats: z.object({
     messageCount: z.number(),
+    /** Estimated tokens the next provider request will carry on the active branch. */
+    contextTokens: z.number().int().nonnegative(),
+    /** Every token processed by provider and compaction calls across the session. */
     totalTokens: z.number(),
     costTotal: z.number(),
   }),

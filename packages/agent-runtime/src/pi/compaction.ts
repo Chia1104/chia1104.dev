@@ -1,6 +1,5 @@
 import {
   DEFAULT_COMPACTION_SETTINGS,
-  estimateContextTokens,
   shouldCompact,
 } from "@earendil-works/pi-agent-core";
 import type {
@@ -9,6 +8,7 @@ import type {
   SessionTreeEntry,
 } from "@earendil-works/pi-agent-core";
 
+import { estimateBranchContextTokens } from "../session/usage.ts";
 import type { AgentCompactionResult } from "../types.ts";
 
 /** Whether the active branch has crossed Pi's own compaction threshold. */
@@ -16,11 +16,8 @@ export const shouldCompactBranch = (
   entries: SessionTreeEntry[],
   contextWindow: number
 ): boolean => {
-  const messages = entries
-    .filter((entry) => entry.type === "message")
-    .map((entry) => entry.message);
-  if (messages.length === 0) return false;
-  const { tokens } = estimateContextTokens(messages);
+  const tokens = estimateBranchContextTokens(entries);
+  if (tokens === 0) return false;
   return shouldCompact(tokens, contextWindow, DEFAULT_COMPACTION_SETTINGS);
 };
 

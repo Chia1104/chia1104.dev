@@ -1,4 +1,5 @@
 import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
+import type { Usage } from "@earendil-works/pi-ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
@@ -24,6 +25,33 @@ const appendEntryMock = vi.mocked(appendAgentSessionEntry);
 const getSessionMock = vi.mocked(getAgentSession);
 const getEntriesMock = vi.mocked(getAgentSessionEntries);
 const updateSessionMock = vi.mocked(updateAgentSession);
+
+const usage = ({
+  cacheRead = 0,
+  cacheWrite = 0,
+  costTotal = 0,
+  input,
+  output,
+}: {
+  cacheRead?: number;
+  cacheWrite?: number;
+  costTotal?: number;
+  input: number;
+  output: number;
+}): Usage => ({
+  input,
+  output,
+  cacheRead,
+  cacheWrite,
+  totalTokens: input + output + cacheRead + cacheWrite,
+  cost: {
+    input: 0,
+    output: 0,
+    cacheRead: 0,
+    cacheWrite: 0,
+    total: costTotal,
+  },
+});
 
 const legacyEntries = [
   {
@@ -151,5 +179,75 @@ describe("PgSessionStorage", () => {
     const branch = await storage.getPathToRootOrCompaction("entry-3");
 
     expect(branch.map((entry) => entry.id)).toEqual(["entry-3"]);
+  });
+
+  it("counts cached, written and compaction tokens as total processed", async () => {
+    getEntriesMock.mockResolvedValue(
+      /* SAFETY: These rows implement the repository shape exercised by this case. */ [
+        {
+          seq: 1,
+          id: "entry-1",
+          sessionId: "session-1",
+          parentId: null,
+          type: "message",
+          payload: { message: { role: "user", content: "Hello" } },
+          timestamp: new Date("2026-07-27T00:00:01.000Z"),
+        },
+        {
+          seq: 2,
+          id: "entry-2",
+          sessionId: "session-1",
+          parentId: "entry-1",
+          type: "message",
+          payload: {
+            message: {
+              role: "assistant",
+              content: [{ type: "text", text: "Hi" }],
+              usage: usage({
+                input: 100,
+                output: 20,
+                cacheRead: 300,
+                cacheWrite: 40,
+                costTotal: 0.5,
+              }),
+            },
+          },
+          timestamp: new Date("2026-07-27T00:00:02.000Z"),
+        },
+        {
+          seq: 3,
+          id: "entry-3",
+          sessionId: "session-1",
+          parentId: "entry-2",
+          type: "compaction",
+          payload: {
+            summary: "Summary",
+            tokensBefore: 460,
+            usage: usage({ input: 10, output: 5, costTotal: 0.1 }),
+          },
+          timestamp: new Date("2026-07-27T00:00:03.000Z"),
+        },
+      ] as never
+    );
+    const storage = new PgSessionStorage(
+      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
+      "session-1",
+      {
+        id: "session-1",
+        createdAt: "2026-07-27T00:00:00.000Z",
+        userId: "user-1",
+        kind: "writing",
+      }
+    );
+
+    const stats = await storage.getSessionStats();
+
+    expect(stats).toMatchObject({
+      messageCount: 2,
+      cachedTokens: 300,
+      uncachedTokens: 150,
+      totalTokens: 475,
+    });
+    expect(stats.costTotal).toBeCloseTo(0.6);
   });
 });
