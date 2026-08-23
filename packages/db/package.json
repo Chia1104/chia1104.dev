@@ -110,13 +110,13 @@
     "@paradedb/drizzle-paradedb": "catalog:drizzle",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:drizzle",
-    "pg": "^8.22.0",
+    "pg": "^8.23.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
-    "@types/pg": "^8.20.4",
+    "@types/pg": "^8.23.1",
     "drizzle-kit": "catalog:drizzle",
     "typescript": "catalog:"
   }

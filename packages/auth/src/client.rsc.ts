@@ -3,8 +3,9 @@ import { createAuthClient } from "better-auth/client";
 
 import { X_CF_BYPASS_TOKEN } from "@chia/utils/request";
 
+import { baseAuthClient } from "./base-auth-client";
 import { env } from "./env";
-import { baseAuthClient, X_CH_API_KEY } from "./utils";
+import { X_CH_API_KEY } from "./utils";
 
 export const authClient = createAuthClient(
   baseAuthClient({

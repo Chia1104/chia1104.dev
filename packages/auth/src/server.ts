@@ -38,6 +38,22 @@ const buildAuth = (db: DB, kv: Keyv) =>
       delete: async (key) => {
         await kv.delete(key);
       },
+      getAndDelete: async (key) => {
+        const value = await kv.get<string>(key);
+        if (value) {
+          await kv.delete(key);
+        }
+        return value ? value : null;
+      },
+      increment: async (key, ttl) => {
+        const value = await kv.get<number>(key);
+        if (value) {
+          await kv.set(key, value + 1, ttl * 1000);
+        } else {
+          await kv.set(key, 1, ttl * 1000);
+        }
+        return value ? value + 1 : 1;
+      },
     },
   });
 
