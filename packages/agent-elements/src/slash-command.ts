@@ -35,7 +35,7 @@ export interface SlashMenuItem {
 }
 
 const quoteArgument = (value: string): string =>
-  value.length === 0 || /[\s"\\]/.test(value) ? JSON.stringify(value) : value;
+  value.length === 0 || /[\s"'\\]/.test(value) ? JSON.stringify(value) : value;
 
 const isSlashBoundary = (text: string, index: number): boolean =>
   index === 0 || !/[A-Za-z0-9_./:-]/.test(text[index - 1]!);

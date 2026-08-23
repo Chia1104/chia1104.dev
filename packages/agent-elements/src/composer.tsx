@@ -149,6 +149,7 @@ export const Composer = ({
   const status = useAgentStatus();
   const [text, setText] = useState("");
   const [cursor, setCursor] = useState(0);
+  const [activeDescendantId, setActiveDescendantId] = useState<string>();
   const [highlightedId, setHighlightedId] = useState<string>();
   const [dismissedSlashKey, setDismissedSlashKey] = useState<string>();
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
@@ -351,6 +352,7 @@ export const Composer = ({
             labels={labels}
             onAction={selectMenuItem}
             onActiveChange={setHighlightedId}
+            onActiveDescendantChange={setActiveDescendantId}
           />
         ) : null}
         {failure ? (
@@ -379,7 +381,7 @@ export const Composer = ({
           <div className="bg-surface border-border focus-within:border-field-border-focus flex flex-col gap-1 rounded-2xl border px-3 pt-3 pb-2 shadow-xs transition-colors">
             <TextArea
               ref={inputRef}
-              aria-activedescendant={menuOpen ? activeItem?.id : undefined}
+              aria-activedescendant={menuOpen ? activeDescendantId : undefined}
               aria-controls={menuOpen ? menuId : undefined}
               aria-expanded={menuOpen}
               aria-haspopup="listbox"
@@ -388,6 +390,7 @@ export const Composer = ({
               disabled={!canPrompt}
               onChange={(event) => {
                 setCursor(event.target.selectionStart);
+                setActiveDescendantId(undefined);
                 setDismissedSlashKey(undefined);
                 setHighlightedId(undefined);
                 setText(event.target.value);

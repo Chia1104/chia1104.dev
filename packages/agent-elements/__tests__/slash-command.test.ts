@@ -105,6 +105,15 @@ describe("formatSlashCommand", () => {
       formatSlashCommand("rewrite-section", ["API design", "tighten"])
     ).toBe('/rewrite-section "API design" tighten');
   });
+
+  it("round-trips arguments containing an apostrophe", () => {
+    const formatted = formatSlashCommand("new-post", ["it's"]);
+    expect(formatted).toBe('/new-post "it\'s"');
+    expect(parseSlashCommand(formatted)).toEqual({
+      type: "command",
+      command: { name: "new-post", args: ["it's"] },
+    });
+  });
 });
 
 describe("findSlashCommand", () => {
