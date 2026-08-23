@@ -21,7 +21,7 @@ const skill = (name: string, description: string, content: string): Skill => ({
 
 export const mdxAuthoringSkill = skill(
   "mdx-authoring",
-  "The MDX dialect, components and math/admonition syntax available in a post body. Read before writing or editing any body.",
+  "The MDX dialect and math/admonition syntax available in a post body. Read before writing or editing any body.",
   `
 # MDX authoring
 
@@ -84,8 +84,209 @@ ones. **Relative paths (\`./x\`, \`../x\`) do not resolve** and are a validation
 ## JSX
 
 Every JSX tag must be closed, including void elements (\`<br />\`, not \`<br>\`). An unclosed tag
-is a compile error. Stick to Markdown unless you specifically need a component — if you are
-unsure a component exists, remove it rather than guessing at a replacement.
+is a compile error. Stick to Markdown unless you specifically need a component. Before adding or
+editing one, load \`mdx-components\`; never import a component inside the post body.
+`
+);
+
+export const mdxComponentsSkill = skill(
+  "mdx-components",
+  "The supported JSX components and exact authoring syntax for post MDX. Read before adding or editing any component markup; not needed for Markdown-only bodies.",
+  `
+# MDX components
+
+Components are injected by the renderer. Use them directly — **never add \`import\` or \`export\`
+statements to a post**. Component names are case-sensitive. Use only the catalog below; do not
+invent a component from the wider Fumadocs library.
+
+Ordinary headings, links, images, blockquotes, fenced code, tables and bold text already have site
+renderers. Prefer their Markdown syntax unless a component below provides behavior Markdown cannot.
+
+## Tabs
+
+Use one \`Tab\` per item. Keep every \`value\` identical to its item label; explicit values are
+more stable than index-based inference.
+
+\`\`\`mdx
+<Tabs items={["TypeScript", "JavaScript"]} defaultIndex={0}>
+  <Tab value="TypeScript">
+
+\`\`\`ts
+const typed: string = "yes";
+\`\`\`
+
+  </Tab>
+  <Tab value="JavaScript">
+
+\`\`\`js
+const typed = "no";
+\`\`\`
+
+  </Tab>
+</Tabs>
+\`\`\`
+
+Use \`groupId="..."\` to synchronize related tab groups and add \`persist\` only when the selected
+value should survive a reload.
+
+## Callouts
+
+For ordinary notes and warnings, prefer the directive syntax in \`mdx-authoring\`. Use \`Callout\`
+when its explicit title or visual type is useful. Supported types are \`info\`, \`warn\`/
+\`warning\`, \`error\`, \`success\` and \`idea\`.
+
+\`\`\`mdx
+<Callout type="idea" title="Why this works">
+  The cache key includes both the input and the selected model.
+</Callout>
+\`\`\`
+
+For custom multi-part content, the lower-level components are also available:
+
+\`\`\`mdx
+<CalloutContainer type="success">
+  <CalloutTitle>Migration complete</CalloutTitle>
+  <CalloutDescription>The new index is serving all reads.</CalloutDescription>
+</CalloutContainer>
+\`\`\`
+
+## Accordions
+
+Every \`Accordion\` must be inside \`Accordions\` and must have a \`title\`. Add a stable, unique
+\`id\` when the section should be directly linkable. Use \`type="multiple"\` only when readers
+need several items open at once; the default is a collapsible single item.
+
+\`\`\`mdx
+<Accordions>
+  <Accordion title="Where is the cache stored?" id="cache-location">
+    It is stored in Redis.
+  </Accordion>
+  <Accordion title="How is it invalidated?" id="cache-invalidation">
+    Writes invalidate the matching key.
+  </Accordion>
+</Accordions>
+\`\`\`
+
+## Cards
+
+Use \`Cards\` to group related destinations. \`Card\` requires \`title\`; \`href\` and
+\`description\` are optional. Internal links must remain site-absolute.
+
+\`\`\`mdx
+<Cards>
+  <Card title="Agent architecture" href="/feed/agent-architecture">
+    How durable turns, tools and approvals fit together.
+  </Card>
+  <Card title="Source repository" href="https://github.com/chia1104" external>
+    Browse the implementation.
+  </Card>
+</Cards>
+\`\`\`
+
+Do not add icon components: no icon library is injected into post MDX.
+
+## File trees
+
+Wrap every tree in \`Files\`. \`File\` and \`Folder\` require \`name\`; folders may be nested and
+\`defaultOpen\` expands a folder initially.
+
+\`\`\`mdx
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="components">
+      <File name="button.tsx" />
+    </Folder>
+    <File name="index.ts" />
+  </Folder>
+  <File name="package.json" />
+</Files>
+\`\`\`
+
+## Type tables
+
+\`TypeTable\` takes a \`type\` object keyed by field name. Every field requires \`type\` and may
+include \`description\`, \`typeDescription\`, \`typeDescriptionLink\`, \`default\`, \`required\`,
+\`deprecated\`, \`parameters\` or \`returns\`.
+
+\`\`\`mdx
+<TypeTable
+  type={{
+    enabled: {
+      type: "boolean",
+      description: "Enables the cache.",
+      default: false,
+    },
+    key: {
+      type: "string",
+      description: "Stable cache key.",
+      required: true,
+    },
+  }}
+/>
+\`\`\`
+
+This is the hand-authored \`TypeTable\`, not \`AutoTypeTable\`; it cannot read a TypeScript file.
+
+## Mermaid
+
+Pass a complete Mermaid definition through the required \`chart\` string. Encode line breaks as
+\`\\n\` inside the attribute. Keep node labels short and quote labels that contain punctuation.
+
+\`\`\`mdx
+<Mermaid chart="flowchart LR\\n  draft[Draft] --> review[Review]\\n  review --> publish[Publish]" />
+\`\`\`
+
+## Images and layout helpers
+
+Markdown images and \`Image\` both render with the site's zoom behavior. Use \`Image\` when explicit
+dimensions or a wrapper are needed. A string \`src\` must have numeric \`width\` and \`height\`, and
+\`alt\` must describe the image (or be \`alt=""\` when purely decorative).
+
+\`\`\`mdx
+<Image
+  src="/images/agent-turn.png"
+  alt="Sequence diagram of a durable agent turn"
+  width={1600}
+  height={900}
+/>
+\`\`\`
+
+The local helpers only control layout:
+
+- \`ImageWrapper\`: full-width, positioned, rounded and clipped container.
+- \`ImageWrapperWithMaxWidth\`: the same, capped at 250 px.
+- \`FlexCenter\`: horizontally centers its child.
+
+They may be composed when a small image needs centering:
+
+\`\`\`mdx
+<FlexCenter>
+  <ImageWrapperWithMaxWidth>
+    <Image src="/images/logo.png" alt="Project logo" width={250} height={250} />
+  </ImageWrapperWithMaxWidth>
+</FlexCenter>
+\`\`\`
+
+## Banner
+
+\`Banner\` is a site-announcement component and should be rare inside an article. Always set
+\`changeLayout={false}\` in post MDX so it does not modify the page layout. Add a stable \`id\` only
+when readers should be able to dismiss it; their dismissal is persisted. \`variant="rainbow"\` is
+the only alternative to the normal style.
+
+\`\`\`mdx
+<Banner id="outdated-api-notice" changeLayout={false}>
+  This article covers the v1 API.
+</Banner>
+\`\`\`
+
+## Compiler-facing components
+
+\`CodeBlockTab\`, \`CodeBlockTabs\`, \`CodeBlockTabsList\` and \`CodeBlockTabsTrigger\` exist for
+Fumadocs code-tab output. Do not author them manually; use \`Tabs\`/\`Tab\` around fenced code.
+
+No other named JSX components are available. In particular, do not use \`Steps\`, \`Step\`,
+\`AutoTypeTable\` or arbitrary icon components unless the renderer is changed first.
 `
 );
 
@@ -220,6 +421,7 @@ locales are hard to compare.
 
 export const writingSkills: Skill[] = [
   mdxAuthoringSkill,
+  mdxComponentsSkill,
   zhTwToneSkill,
   enToneSkill,
   seoMetadataSkill,
