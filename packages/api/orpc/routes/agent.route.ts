@@ -132,20 +132,38 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
     const { caller, service } = opts.context.agent;
 
     const { action } = opts.input;
-    const cursor =
-      action.type === "prompt"
-        ? await service.prompt(caller, {
-            sessionId: opts.input.sessionId,
-            text: action.text,
-          })
-        : action.type === "approve"
-          ? await service.approve(caller, {
-              sessionId: opts.input.sessionId,
-              toolCallId: action.toolCallId,
-              approved: action.approved,
-              comment: action.comment,
-            })
-          : await service.attach(caller, { sessionId: opts.input.sessionId });
+    let cursor;
+    if (action.type === "prompt") {
+      cursor = await service.prompt(caller, {
+        sessionId: opts.input.sessionId,
+        text: action.text,
+      });
+    } else if (action.type === "command") {
+      const capabilities = await service.listCapabilities();
+      if (
+        !capabilities.commands.some((command) => command.name === action.name)
+      ) {
+        throw opts.errors.BAD_REQUEST({
+          message: `Unknown agent command: /${action.name}`,
+        });
+      }
+      cursor = await service.prompt(caller, {
+        sessionId: opts.input.sessionId,
+        text: action.text,
+        template: { name: action.name, args: action.args },
+      });
+    } else if (action.type === "approve") {
+      cursor = await service.approve(caller, {
+        sessionId: opts.input.sessionId,
+        toolCallId: action.toolCallId,
+        approved: action.approved,
+        comment: action.comment,
+      });
+    } else {
+      cursor = await service.attach(caller, {
+        sessionId: opts.input.sessionId,
+      });
+    }
     if (!cursor) throw opts.errors.NOT_FOUND();
 
     return oneTurn(

@@ -26,10 +26,10 @@ catalog:
   "@t3-oss/env-nextjs": ^0.13.11
   "@types/lodash": ^4.17.25
   "@types/node": 26.2.0
-  better-all: 0.0.8
+  better-all: 0.0.9
   bun-types: ^1.4.0
   client-only: ^0.0.1
-  dayjs: ^1.11.21
+  dayjs: ^1.11.23
   graphql-request: ^7.4.0
   ky: ^2.0.2
   lodash: ^4.18.1
@@ -54,36 +54,36 @@ catalogs:
   agent:
     "@earendil-works/pi-agent-core": 0.83.0
     "@earendil-works/pi-ai": 0.83.0
-    typebox: 1.3.11
+    typebox: 1.3.16
   ai:
-    "@ai-sdk/anthropic": 4.0.35
-    "@ai-sdk/gateway": 4.0.45
-    "@ai-sdk/google": 4.0.38
-    "@ai-sdk/openai": 4.0.35
-    "@ai-sdk/react": 4.0.60
-    "@anthropic-ai/sdk": 0.116.0
-    "@google/genai": 2.16.0
-    ai: 7.0.57
-    firecrawl: 4.32.2
+    "@ai-sdk/anthropic": 4.0.41
+    "@ai-sdk/gateway": 4.0.62
+    "@ai-sdk/google": 4.0.50
+    "@ai-sdk/openai": 4.0.46
+    "@ai-sdk/react": 4.0.80
+    "@anthropic-ai/sdk": 0.120.0
+    "@google/genai": 2.18.0
+    ai: 7.0.77
+    firecrawl: 4.35.0
     ollama: 0.6.3
-    openai: 7.4.0
+    openai: 7.5.0
   better-auth:
-    "@better-auth/api-key": 1.6.26
-    "@better-auth/passkey": 1.6.26
-    better-auth: 1.6.26
+    "@better-auth/api-key": 1.7.1
+    "@better-auth/passkey": 1.7.1
+    better-auth: 1.7.1
   chiastack:
     "@chiastack/oxlint": 1.1.0
     "@chiastack/tsconfig": 2.1.2
     "@chiastack/ui": 1.2.2
   drizzle:
-    "@paradedb/drizzle-paradedb": 0.4.0
+    "@paradedb/drizzle-paradedb": 0.5.0
     drizzle-kit: 1.0.0-rc.4
     drizzle-orm: 1.0.0-rc.4
   fumadocs:
     "@fumadocs/mdx-remote": 1.5.1
-    fumadocs-core: 16.14.2
-    fumadocs-mdx: 15.2.2
-    fumadocs-ui: 16.14.2
+    fumadocs-core: 16.15.0
+    fumadocs-mdx: 15.3.1
+    fumadocs-ui: 16.15.0
   heroui-v3:
     "@heroui/react": 3.2.4
     "@heroui/styles": 3.2.4
@@ -91,24 +91,24 @@ catalogs:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2
     "@hono/zod-validator": 0.9.0
-    hono: 4.13.1
-    srvx: 0.11.22
+    hono: 4.13.3
+    srvx: 0.12.7
     hono-rate-limiter: 0.5.3
   next:
-    "@next/third-parties": 16.3.0
-    next: 16.3.0
+    "@next/third-parties": 16.3.2
+    next: 16.3.2
   orpc:
-    "@orpc/client": 1.14.15
-    "@orpc/contract": 1.14.15
-    "@orpc/server": 1.14.15
-    "@orpc/tanstack-query": 1.14.15
+    "@orpc/client": 1.15.0
+    "@orpc/contract": 1.15.0
+    "@orpc/server": 1.15.0
+    "@orpc/tanstack-query": 1.15.0
   oxc:
     "@oxlint/plugins": 1.79.0
-    oxfmt: 0.62.0
+    oxfmt: 0.64.0
     oxlint: 1.79.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
-    platejs: ^53.3.3
+    platejs: ^53.3.7
   radix-ui:
     "@radix-ui/react-accordion": 1.2.20
     "@radix-ui/react-avatar": ^1.2.6
@@ -140,35 +140,35 @@ catalogs:
     "@tanstack/react-query": 5.101.4
     "@tanstack/react-query-devtools": 5.101.4
   testing-library:
-    "@testing-library/jest-dom": 7.0.0
+    "@testing-library/jest-dom": 7.0.1
     "@testing-library/react": 16.3.2
-    "@testing-library/user-event": 14.6.3
+    "@testing-library/user-event": 14.6.6
     "@vitejs/plugin-react-swc": 4.3.3
-    "@vitest/coverage-v8": 4.1.10
-    "@vitest/ui": 4.1.10
+    "@vitest/coverage-v8": 4.1.11
+    "@vitest/ui": 4.1.11
     jest-extended: 7.0.0
-    vitest: 4.1.10
+    vitest: 4.1.11
   ui:
     border-beam: 1.3.0
     class-variance-authority: ^0.7.1
     clsx: ^2.1.1
     cmdk: 1.1.1
     cobe: ^2.0.1
-    immer: ^11.1.16
-    katex: ^0.18.1
-    lucide-react: ^1.30.0
-    motion: ^13.0.0
+    immer: ^11.1.18
+    katex: ^0.18.4
+    lucide-react: ^1.33.0
+    motion: ^13.1.1
     next-themes: ^0.4.6
-    nuqs: ^2.9.5
-    react-medium-image-zoom: ^5.4.8
+    nuqs: ^2.10.0
+    react-medium-image-zoom: ^5.4.9
     schema-dts: 2.0.0
-    shiki: ^4.4.2
-    sonner: 2.0.7
+    shiki: ^4.4.3
+    sonner: 2.0.8
     tailwind-merge: ^3.6.0
     thinking-orbs: 0.3.1
     usehooks-ts: ^3.1.1
     vaul: ^1.1.2
-    zustand: 5.0.14
+    zustand: 5.0.15
 
 linkWorkspacePackages: true
 

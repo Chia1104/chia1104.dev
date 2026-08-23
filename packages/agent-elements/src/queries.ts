@@ -18,6 +18,8 @@ export const agentQueryKeys = {
   session: (scope: AgentSessionScope) =>
     [...agentQueryKeys.all, "session", scope.sessionId, scope.kind] as const,
   models: (kind: string) => [...agentQueryKeys.all, "models", kind] as const,
+  capabilities: (kind: string) =>
+    [...agentQueryKeys.all, "capabilities", kind] as const,
 };
 
 /**
@@ -41,5 +43,15 @@ export const agentModelsQuery = (client: AgentSessionClient, kind: string) =>
   queryOptions({
     queryKey: agentQueryKeys.models(kind),
     queryFn: () => client.models.list({ kind }),
+    staleTime: 5 * 60_000,
+  });
+
+export const agentCapabilitiesQuery = (
+  client: AgentSessionClient,
+  kind: string
+) =>
+  queryOptions({
+    queryKey: agentQueryKeys.capabilities(kind),
+    queryFn: () => client.capabilities.list({ kind }),
     staleTime: 5 * 60_000,
   });
