@@ -10,6 +10,7 @@ import {
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
 import type { SessionTreeEntry } from "@chia/agent-runtime/session/pi";
+import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
 import type {
   AgentSessionSettings,
   ThinkingLevel,
@@ -424,6 +425,7 @@ const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     approvals: approvalRows,
     stats: {
       messageCount: stats.messageCount,
+      contextTokens: estimateBranchContextTokens(transcriptEntries),
       totalTokens: stats.totalTokens,
       costTotal: stats.costTotal,
     },

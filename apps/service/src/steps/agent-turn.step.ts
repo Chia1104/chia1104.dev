@@ -11,7 +11,6 @@ import type { OperatorDecision } from "@chia/agent-runtime/wire/operator-decisio
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
-import type { JsonObject } from "@chia/db/json";
 import {
   completeActiveAgentRuns,
   getAgentSession,
@@ -22,6 +21,7 @@ import {
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
 import { getAdminId } from "@chia/utils/config";
+import type { JsonObject } from "@chia/utils/json";
 
 import {
   signalAgentAbort,

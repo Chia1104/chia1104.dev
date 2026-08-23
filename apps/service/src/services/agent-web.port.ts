@@ -63,6 +63,7 @@ const search = async (input: WebSearchInput): Promise<WebSearchResult[]> => {
     data = await firecrawl.search(input.query, {
       limit: input.limit,
       tbs: input.recency ? TBS_BY_RECENCY[input.recency] : undefined,
+      includeDomains: input.includeDomains,
       sources: ["web"],
       timeout: REQUEST_TIMEOUT_MS,
     });

@@ -19,7 +19,7 @@ import { feedHooks } from "./feed-indexing.service";
  * writing agent performs.
  *
  * Writes go through `createFeedService`/`updateFeedService` rather than their own queries, so
- * the agent is subject to the same slug generation as a human using the dashboard. Post-write
+ * the agent is subject to the same slug normalization as a human using the dashboard. Post-write
  * indexing is passed in explicitly: this runs in a workflow step with no request context to
  * carry it.
  *
@@ -80,11 +80,17 @@ export const createAgentContentPort = (
       }
 
       if (input.feedId === undefined) {
+        const slug = input.feedMeta.slug;
+        if (!slug) {
+          throw new Error(
+            "A new feed requires an explicit English/ASCII slug."
+          );
+        }
         const created = await createFeedService(
           db,
           {
             adminId,
-            slug: input.feedMeta.slug,
+            slug,
             type: input.feedMeta.type ?? FeedTypeEnum.Post,
             contentType: input.feedMeta.contentType ?? ContentTypeEnum.Mdx,
             defaultLocale: input.feedMeta.defaultLocale,

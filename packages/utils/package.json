@@ -33,6 +33,14 @@
       "types": "./src/is/index.ts",
       "default": "./src/is/index.ts"
     },
+    "./json": {
+      "types": "./src/json/index.ts",
+      "default": "./src/json/index.ts"
+    },
+    "./query-client": {
+      "types": "./src/query-client/index.ts",
+      "default": "./src/query-client/index.ts"
+    },
     "./request": {
       "types": "./src/request/index.ts",
       "default": "./src/request/index.ts"
@@ -41,13 +49,13 @@
       "types": "./src/server/index.ts",
       "default": "./src/server/index.ts"
     },
-    "./string": {
-      "types": "./src/string/index.ts",
-      "default": "./src/string/index.ts"
-    },
     "./schema": {
       "types": "./src/schema/index.ts",
       "default": "./src/schema/index.ts"
+    },
+    "./slug": {
+      "types": "./src/slug/index.ts",
+      "default": "./src/slug/index.ts"
     }
   },
   "scripts": {
@@ -58,9 +66,11 @@
   },
   "dependencies": {
     "@t3-oss/env-core": "catalog:",
+    "@tanstack/react-query": "catalog:tanstack",
     "dayjs": "catalog:",
     "ky": "catalog:",
     "lodash": "catalog:",
+    "superjson": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

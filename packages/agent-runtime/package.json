@@ -41,6 +41,10 @@
       "types": "./src/pi/events.ts",
       "default": "./src/pi/events.ts"
     },
+    "./pi/turn-budget": {
+      "types": "./src/pi/turn-budget.ts",
+      "default": "./src/pi/turn-budget.ts"
+    },
     "./pi/tool-gate": {
       "types": "./src/pi/tool-gate.ts",
       "default": "./src/pi/tool-gate.ts"
@@ -69,6 +73,10 @@
       "types": "./src/session/pg-storage.ts",
       "default": "./src/session/pg-storage.ts"
     },
+    "./session/usage": {
+      "types": "./src/session/usage.ts",
+      "default": "./src/session/usage.ts"
+    },
     "./system/DO_NOT_USE_OR_YOU_WILL_BE_FIRED": {
       "types": "./src/system/DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ts",
       "default": "./src/system/DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ts"
@@ -83,6 +91,7 @@
   },
   "dependencies": {
     "@chia/db": "workspace:*",
+    "@chia/utils": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
     "typebox": "catalog:agent",

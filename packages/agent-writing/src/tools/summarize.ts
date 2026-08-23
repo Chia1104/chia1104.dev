@@ -74,10 +74,6 @@ export const summarizeToolResult = <TResult>(
       const locale = asString(details.locale);
       return `${replacements} replacement(s) in ${locale ?? "draft"}.`;
     }
-    case TOOL_NAMES.slugify: {
-      const slug = asString(details.slug);
-      return slug ? `\`${slug}\`` : "Slugified.";
-    }
     case TOOL_NAMES.commitDraft: {
       const feedId = asNumber(details.feedId);
       const created = details.created === true;

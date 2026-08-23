@@ -14,6 +14,7 @@ import type {
 
 import type { AgentPolicy, AgentSessionSettings, AgentTool } from "../types.ts";
 import type {
+  AgentTurnBudget,
   AgentTurnError,
   AgentTurnExecution,
   AgentTurnMessage,
@@ -26,6 +27,7 @@ import { createPiWireEventMapper } from "./events.ts";
 import { clampSessionThinkingLevel } from "./settings.ts";
 import { createPiToolCallGate } from "./tool-gate.ts";
 import type { ApprovalRequest } from "./tool-gate.ts";
+import { createPiTurnBudget } from "./turn-budget.ts";
 
 export interface RunPiTurnOptions<TContext extends object, TApproval> {
   agentSessionId: string;
@@ -57,6 +59,8 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   skills?: Skill[];
   promptTemplates?: PromptTemplate[];
   policy: AgentPolicy;
+  /** See {@link AgentTurnBudget}; crossing it ends the turn as `budget_exhausted`. */
+  budget: AgentTurnBudget;
   approvedToolCallIds?: ReadonlySet<string>;
   preAuthorizedToolNames?: ReadonlySet<string>;
   message: AgentTurnMessage;
@@ -88,6 +92,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   skills,
   promptTemplates,
   policy,
+  budget,
   approvedToolCallIds,
   preAuthorizedToolNames,
   message,
@@ -119,6 +124,22 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           systemPrompt,
         } as never
       ) as AgentHarness<TContext>;
+    /**
+     * A failure raised by the host inside a Pi hook. Pi turns a throwing hook into an assistant
+     * message with `stopReason: "error"`, indistinguishable from a provider failure, so hooks catch
+     * their own errors here and the turn is failed as `internal` once the harness has unwound.
+     */
+    let hostFailure: AgentTurnError | undefined;
+
+    /**
+     * Ends the turn on a host decision. Not awaited: `abort()` waits for the run to settle, and
+     * the callers are on the run's own path (a hook, or a timer racing the provider).
+     */
+    const failTurn = (error: AgentTurnError) => {
+      hostFailure ??= error;
+      void turnHarness.abort().catch(() => undefined);
+    };
+
     const gate = createPiToolCallGate({
       policy,
       autoApprove: settings.autoApprove,
@@ -135,16 +156,37 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           args: request.args,
         }),
     });
+    const turnBudget = createPiTurnBudget({
+      budget,
+      onExhausted: () =>
+        failTurn({
+          kind: "budget_exhausted",
+          message: `The model issued more than ${budget.hardMaxToolCalls} tool calls in one turn.`,
+        }),
+    });
+    // One handler, budget first: Pi keeps the last defined hook result, so two handlers would
+    // let the gate overrule a refused call (or the reverse) depending on registration order.
     unsubscribers.push(
-      turnHarness.on("tool_call", (event) => gate.handle(event))
+      turnHarness.on(
+        "tool_call",
+        (event) => turnBudget.handle(event) ?? gate.handle(event)
+      )
     );
 
     /**
-     * A failure raised by the host inside a Pi hook. Pi turns a throwing hook into an assistant
-     * message with `stopReason: "error"`, indistinguishable from a provider failure, so hooks catch
-     * their own errors here and the turn is failed as `internal` once the harness has unwound.
+     * Bounds the model's generation only. It is cleared as soon as the reply resolves, so it can
+     * never fail a turn whose model has already stopped — approval persistence and compaction
+     * that follow are host work, and a turn that reaches them is not running away.
      */
-    let hostFailure: AgentTurnError | undefined;
+    const deadline = setTimeout(
+      () =>
+        failTurn({
+          kind: "budget_exhausted",
+          message: `The turn ran longer than ${Math.round(budget.maxDurationMs / 1000)}s.`,
+        }),
+      budget.maxDurationMs
+    );
+    unsubscribers.push(() => clearTimeout(deadline));
 
     if (volatileContext) {
       unsubscribers.push(
@@ -154,10 +196,8 @@ export const runPiTurn = async <TContext extends object, TApproval>({
             if (!text) return undefined;
             return { messages: [...event.messages, volatileMessage(text)] };
           } catch (error) {
-            // Fail closed: a model that cannot see the current state must not act on it. Not awaited
-            // — `abort()` waits for the run to settle, and this hook is on the run's own path.
-            hostFailure = errorOfThrown(error);
-            void turnHarness.abort().catch(() => undefined);
+            // Fail closed: a model that cannot see the current state must not act on it.
+            failTurn(errorOfThrown(error));
             return undefined;
           }
         })
@@ -256,6 +296,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         failure = hostFailure ?? errorOfThrown(error);
       }
     }
+    clearTimeout(deadline);
     // An abort that lands after the reply resolved must still keep the turn from persisting
     // approvals or compacting: the run is being cancelled, and rows written now would outlive it.
     if (!failure && signal?.aborted) aborted = true;

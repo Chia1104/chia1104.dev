@@ -1,7 +1,3 @@
-import crypto from "node:crypto";
-
-import GithubSlugger from "github-slugger";
-
 import type { DB } from "@chia/db/client";
 import {
   createFeed,
@@ -12,6 +8,7 @@ import {
 import { ContentType, Locale } from "@chia/db/types";
 import type { FeedType, Locale as LocaleType } from "@chia/db/types";
 import { AppError } from "@chia/service-kit/errors";
+import { normalizeAsciiSlug } from "@chia/utils/slug";
 
 import type { FeedHooks } from "../orpc/utils";
 
@@ -58,7 +55,7 @@ export type StorableFeedType = Exclude<FeedType, "all">;
 export interface CreateFeedServiceInput {
   /** Owner of the feed. The caller must already have verified this. */
   adminId: string;
-  slug?: string;
+  slug: string;
   type: StorableFeedType;
   contentType?: ContentType;
   defaultLocale?: LocaleType;
@@ -68,14 +65,6 @@ export interface CreateFeedServiceInput {
   updatedAt?: number;
   translations: Partial<Record<LocaleType, CreateFeedTranslationInput>>;
 }
-
-/**
- * A fresh slugger per call.
- *
- * `GithubSlugger` remembers what it has emitted and disambiguates repeats with a `-1` suffix, so
- * a shared instance would turn the same title into a different slug on every call.
- */
-const slugify = (text: string): string => new GithubSlugger().slug(text);
 
 export const createFeedService = async (
   db: DB,
@@ -91,16 +80,16 @@ export const createFeedService = async (
     });
   }
 
+  const slug = normalizeAsciiSlug(input.slug);
+  if (!slug) {
+    throw new AppError("BAD_REQUEST", {
+      message:
+        "Feed slug must be an English/ASCII phrase. Slug normalization does not translate or transliterate titles.",
+    });
+  }
+
   const data = await createFeed(db, {
-    slug: input.slug
-      ? slugify(input.slug)
-      : // No slug given: derive one from the title plus a random suffix, because titles
-        // collide and `feed.slug` is unique.
-        slugify(
-          `${defaultTranslation.title}-${crypto
-            .getRandomValues(new Uint32Array(1))[0]
-            ?.toString(16)}`
-        ),
+    slug,
     type: input.type,
     userId: input.adminId,
     published: input.published ?? false,

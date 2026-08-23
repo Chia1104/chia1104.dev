@@ -9,7 +9,7 @@ import type { Locale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
 
-import { getQueryClient } from "@/libs/utils/query-client";
+import { getQueryClient } from "@chia/utils/query-client";
 
 const RootProvider = ({
   children,

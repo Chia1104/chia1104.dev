@@ -97,23 +97,21 @@ export const createContentReadPort = (
 
     async getPost(input: GetPostInput): Promise<PostSnapshot | null> {
       const feed =
-        input.feedId !== undefined
-          ? await getFeedById(db, {
-              feedId: input.feedId,
+        input.slug !== undefined
+          ? await getFeedBySlug(db, {
+              slug: input.slug,
               locale: input.locale,
               enableDeleted: false,
               userId: authorId,
               published: publishedScope,
             })
-          : input.slug
-            ? await getFeedBySlug(db, {
-                slug: input.slug,
-                locale: input.locale,
-                enableDeleted: false,
-                userId: authorId,
-                published: publishedScope,
-              })
-            : null;
+          : await getFeedById(db, {
+              feedId: input.feedId,
+              locale: input.locale,
+              enableDeleted: false,
+              userId: authorId,
+              published: publishedScope,
+            });
 
       if (!feed) return null;
       return toPostSnapshot(feed);

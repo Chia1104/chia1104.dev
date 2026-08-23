@@ -24,7 +24,6 @@ export const TOOL_NAMES = {
   patchDraftMeta: "patch_draft_meta",
   writeDraftContent: "write_draft_content",
   editDraftContent: "edit_draft_content",
-  slugify: "slugify",
   // commit
   commitDraft: "commit_draft",
   setPublished: "set_published",
@@ -45,7 +44,6 @@ export const TOOL_TIER_BY_NAME = {
   [TOOL_NAMES.patchDraftMeta]: "draft",
   [TOOL_NAMES.writeDraftContent]: "draft",
   [TOOL_NAMES.editDraftContent]: "draft",
-  [TOOL_NAMES.slugify]: "draft",
 
   [TOOL_NAMES.commitDraft]: "commit",
   [TOOL_NAMES.setPublished]: "commit",
@@ -61,7 +59,6 @@ export const TOOL_LABEL_BY_NAME = {
   [TOOL_NAMES.patchDraftMeta]: "Update draft metadata",
   [TOOL_NAMES.writeDraftContent]: "Write draft body",
   [TOOL_NAMES.editDraftContent]: "Edit draft body",
-  [TOOL_NAMES.slugify]: "Slugify",
 
   [TOOL_NAMES.commitDraft]: "Commit draft",
   [TOOL_NAMES.setPublished]: "Change published state",

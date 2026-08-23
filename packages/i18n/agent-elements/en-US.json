@@ -5,6 +5,9 @@
   "composerPlaceholderRunning": "The agent is working…",
   "composerPlaceholderApproval": "Approve or reject the pending tool first.",
   "composerHint": "Enter to send · Shift+Enter for a new line",
+  "contextWindow": "Context window",
+  "totalProcessed": "Total processed",
+  "contextCompactsAutomatically": "Context for {model} compacts automatically when needed.",
   "statusReady": "Ready",
   "statusStreaming": "Streaming",
   "statusAwaitingApproval": "Needs approval",
@@ -71,6 +74,7 @@
     "quota": "The provider account is out of quota or credit",
     "rate_limited": "The provider is rate limiting requests",
     "context_overflow": "The conversation no longer fits the model's context — compact it",
+    "budget_exhausted": "The turn ran past its budget and was stopped",
     "provider": "The provider failed",
     "internal": "The agent failed"
   },

@@ -90,9 +90,9 @@
     "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/db": "workspace:*",
+    "@chia/utils": "workspace:*",
     "@earendil-works/pi-agent-core": "catalog:agent",
     "@earendil-works/pi-ai": "catalog:agent",
-    "github-slugger": "^2.0.0",
     "typebox": "catalog:agent",
     "zod": "catalog:"
   },

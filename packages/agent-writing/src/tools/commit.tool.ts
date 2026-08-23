@@ -60,8 +60,15 @@ export const commitDraftTool = defineTool({
       );
     }
 
+    const feedId = draft.committedFeedId ?? context.targetFeedId;
+    if (feedId === undefined && !draft.feedMeta.slug) {
+      throw new Error(
+        "A new post needs an English/ASCII slug. Set one with patch_draft_meta before committing."
+      );
+    }
+
     const result = await context.content.commitDraft({
-      feedId: draft.committedFeedId ?? context.targetFeedId,
+      feedId,
       feedMeta: { ...draft.feedMeta, defaultLocale },
       translations: draft.translations,
     });

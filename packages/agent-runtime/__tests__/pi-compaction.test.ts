@@ -3,6 +3,7 @@ import type { Usage } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
 
 import { shouldCompactBranch } from "../src/pi/compaction.ts";
+import { estimateBranchContextTokens } from "../src/session/usage.ts";
 
 /**
  * The threshold is pi's: compact once context exceeds `contextWindow - reserveTokens`, where the
@@ -41,7 +42,7 @@ const assistantEntry = (text: string, totalTokens?: number) =>
     usage: totalTokens === undefined ? undefined : usage(totalTokens),
   });
 
-const compactionEntry = (): SessionTreeEntry => {
+const compactionEntry = (retainedUsage?: number): SessionTreeEntry => {
   seq += 1;
   return /* SAFETY: This fixture implements the SessionTreeEntry members exercised by this case. */ {
     type: "compaction",
@@ -50,8 +51,43 @@ const compactionEntry = (): SessionTreeEntry => {
     timestamp: "2026-01-01T00:00:00.000Z",
     summary: "Everything so far, condensed.",
     tokensBefore: 95_000,
+    retainedTail:
+      retainedUsage === undefined
+        ? undefined
+        : [
+            {
+              role: "assistant",
+              content: [{ type: "text", text: "Recent answer" }],
+              stopReason: "stop",
+              usage: usage(retainedUsage),
+            },
+          ],
   } as SessionTreeEntry;
 };
+
+describe("estimateBranchContextTokens", () => {
+  it("uses provider usage on an uncompacted branch", () => {
+    const branch = [userEntry("Write a post"), assistantEntry("Sure", 12_000)];
+    expect(estimateBranchContextTokens(branch)).toBe(12_000);
+  });
+
+  it("does not reuse stale retained usage immediately after compaction", () => {
+    const branch = [compactionEntry(95_000)];
+    const tokens = estimateBranchContextTokens(branch);
+
+    expect(tokens).toBeGreaterThan(0);
+    expect(tokens).toBeLessThan(1_000);
+  });
+
+  it("uses fresh provider usage after the compacted branch advances", () => {
+    const branch = [
+      compactionEntry(95_000),
+      userEntry("Carry on"),
+      assistantEntry("Carrying on", 9_000),
+    ];
+    expect(estimateBranchContextTokens(branch)).toBe(9_000);
+  });
+});
 
 describe("shouldCompactBranch", () => {
   it("declines on an empty branch", () => {

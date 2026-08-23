@@ -39,11 +39,17 @@ describe("createAgentWebPort.search", () => {
   it("sends the query with limit, recency as tbs, web source only and no scrape", async () => {
     search.mockResolvedValue({ web: [] });
 
-    await port.search({ query: "hono v5 release", limit: 3, recency: "week" });
+    await port.search({
+      query: "hono v5 release",
+      limit: 3,
+      recency: "week",
+      includeDomains: ["hono.dev"],
+    });
 
     expect(search).toHaveBeenCalledWith("hono v5 release", {
       limit: 3,
       tbs: "qdr:w",
+      includeDomains: ["hono.dev"],
       sources: ["web"],
       timeout: 30_000,
     });
@@ -55,7 +61,10 @@ describe("createAgentWebPort.search", () => {
 
     await port.search({ query: "q", limit: 5 });
 
-    expect(search.mock.calls[0]?.[1]).toMatchObject({ tbs: undefined });
+    expect(search.mock.calls[0]?.[1]).toMatchObject({
+      tbs: undefined,
+      includeDomains: undefined,
+    });
   });
 
   it("maps web hits and scraped documents to url, title and description", async () => {

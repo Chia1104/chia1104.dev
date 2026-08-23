@@ -18,6 +18,29 @@ import { Type, defineTool, textResult, truncate } from "./schema.ts";
 const MAX_PAGE_CHARS = 16_000;
 const MAX_SEARCH_RESULTS = 10;
 const DEFAULT_SEARCH_RESULTS = 5;
+const MAX_SEARCH_DOMAINS = 5;
+
+const normalizeSearchDomain = (input: string): string => {
+  const domain = input.trim().toLowerCase().replace(/\.$/, "");
+  let parsed: URL;
+  try {
+    parsed = new URL(`https://${domain}`);
+  } catch {
+    throw new Error(`"${input}" is not a valid hostname.`);
+  }
+  if (
+    domain.length === 0 ||
+    parsed.hostname !== domain ||
+    parsed.port !== "" ||
+    parsed.pathname !== "/" ||
+    !domain.includes(".")
+  ) {
+    throw new Error(
+      `"${input}" is not a bare hostname. Pass a domain such as "docs.example.com", without protocol or path.`
+    );
+  }
+  return domain;
+};
 
 export const webSearchTool = defineTool({
   name: TOOL_NAMES.webSearch,
@@ -29,7 +52,7 @@ export const webSearchTool = defineTool({
   parameters: Type.Object({
     query: Type.String({
       description:
-        "Search query. Search-engine operators such as `site:` are supported.",
+        "Topic or phrase to search for. Use `includeDomains` instead of embedding `site:` when restricting domains.",
       minLength: 1,
     }),
     limit: Type.Optional(
@@ -46,20 +69,40 @@ export const webSearchTool = defineTool({
           "Only results published within this window. Omit for no time filter.",
       })
     ),
+    includeDomains: Type.Optional(
+      Type.Array(Type.String(), {
+        description:
+          "Restrict results to these bare hostnames, without protocol or path. Prefer this over writing `site:` in the query.",
+        minItems: 1,
+        maxItems: MAX_SEARCH_DOMAINS,
+      })
+    ),
   }),
   executionMode: "parallel",
   async execute(_toolCallId, params, _signal, _onUpdate, context) {
+    const includeDomains = params.includeDomains?.map(normalizeSearchDomain);
     const results = await context.web.search({
       query: params.query,
       limit: params.limit ?? DEFAULT_SEARCH_RESULTS,
       recency: params.recency,
+      includeDomains,
     });
 
     return textResult(
       results.length === 0
-        ? `No results for "${params.query}".`
+        ? `No results for "${params.query}"${
+            includeDomains ? ` within ${includeDomains.join(", ")}` : ""
+          }. If you know the official URL, call \`fetch_url\` directly. Otherwise retry once with a broader query${
+            includeDomains ? " without the domain restriction" : ""
+          }; do not repeat the same search.`
         : `${results.length} result(s) for "${params.query}":\n\n${results.map(formatResult).join("\n\n")}`,
-      { query: params.query, count: results.length, results }
+      {
+        query: params.query,
+        count: results.length,
+        results,
+        includeDomains,
+        recency: params.recency,
+      }
     );
   },
 });

@@ -111,6 +111,8 @@ export interface WebSearchInput {
   query: string;
   limit: number;
   recency?: WebSearchRecency;
+  /** Bare hostnames to restrict results to, without protocol or path. */
+  includeDomains?: string[];
 }
 
 /** One search hit: discovery only, no page body — `fetch_url` reads what is worth reading. */

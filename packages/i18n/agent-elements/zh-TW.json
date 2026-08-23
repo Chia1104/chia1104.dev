@@ -5,6 +5,9 @@
   "composerPlaceholderRunning": "agent 正在處理…",
   "composerPlaceholderApproval": "請先允許或拒絕待處理的工具。",
   "composerHint": "Enter 送出 · Shift+Enter 換行",
+  "contextWindow": "Context 用量",
+  "totalProcessed": "累計處理",
+  "contextCompactsAutomatically": "{model} 的 context 會在需要時自動壓縮。",
   "statusReady": "已就緒",
   "statusStreaming": "串流中",
   "statusAwaitingApproval": "需要授權",
@@ -71,6 +74,7 @@
     "quota": "供應商帳戶的額度或餘額已用盡",
     "rate_limited": "供應商正在限制請求速率",
     "context_overflow": "對話已超出模型的 context，請壓縮對話",
+    "budget_exhausted": "這一輪超出預算已被停止",
     "provider": "供應商發生錯誤",
     "internal": "agent 發生錯誤"
   },

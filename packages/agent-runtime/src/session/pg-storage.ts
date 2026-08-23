@@ -8,7 +8,6 @@ import type {
 } from "@earendil-works/pi-agent-core";
 
 import type { DB } from "@chia/db/client";
-import type { JsonObject } from "@chia/db/json";
 import {
   appendAgentSessionEntry,
   getAgentSession,
@@ -17,6 +16,7 @@ import {
   getAgentSessionEntry,
   updateAgentSession,
 } from "@chia/db/repos/agent";
+import type { JsonObject } from "@chia/utils/json";
 
 /**
  * Pi's {@link SessionStorage} over `agent_session_entry`.
@@ -131,9 +131,9 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
   }
 
   /**
-   * Aggregated from the assistant messages' own `usage`, which the provider reports and is
-   * therefore authoritative. Summed as per-call figures rather than reading the last message,
-   * so a compacted session still reports what it actually cost.
+   * Aggregated from provider-reported assistant, compaction and branch-summary usage. Summed as
+   * per-call figures rather than reading the last message, so a compacted session still reports
+   * everything it actually processed and cost.
    */
   async getSessionStats(): Promise<SessionStats> {
     const entries = await this.getEntries();
@@ -146,15 +146,21 @@ export class PgSessionStorage implements SessionStorage<PgSessionMetadata> {
     };
 
     for (const entry of entries) {
-      if (entry.type !== "message") continue;
-      stats.messageCount += 1;
-      if (entry.message.role !== "assistant") continue;
-      const usage = entry.message.usage;
+      if (entry.type === "message") stats.messageCount += 1;
+      const usage =
+        entry.type === "message"
+          ? entry.message.role === "assistant"
+            ? entry.message.usage
+            : undefined
+          : entry.type === "compaction" || entry.type === "branch_summary"
+            ? entry.usage
+            : undefined;
       if (!usage) continue;
-      stats.cachedTokens += usage.cacheRead ?? 0;
-      stats.uncachedTokens += usage.input ?? 0;
-      stats.totalTokens += (usage.input ?? 0) + (usage.output ?? 0);
-      stats.costTotal += usage.cost?.total ?? 0;
+      stats.cachedTokens += usage.cacheRead;
+      stats.uncachedTokens += usage.input + usage.cacheWrite;
+      stats.totalTokens +=
+        usage.input + usage.output + usage.cacheRead + usage.cacheWrite;
+      stats.costTotal += usage.cost.total;
     }
 
     return stats;

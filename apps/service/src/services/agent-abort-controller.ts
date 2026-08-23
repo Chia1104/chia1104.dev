@@ -1,6 +1,6 @@
 import { getRun, start } from "workflow/api";
 
-import type { JsonObject } from "@chia/db/json";
+import type { JsonObject } from "@chia/utils/json";
 
 import type { AgentAbortMessage } from "../steps/agent-abort.step";
 import { agentAbortWorkflow } from "../workflows/agent-abort.workflow";

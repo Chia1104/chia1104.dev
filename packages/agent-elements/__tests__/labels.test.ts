@@ -20,6 +20,7 @@ describe("agent-elements catalogs", () => {
     for (const catalog of [enUS, zhTW]) {
       expect(catalog.approvalTitle).toContain("{tool}");
       expect(catalog.alwaysAllow).toContain("{tier}");
+      expect(catalog.contextCompactsAutomatically).toContain("{model}");
     }
   });
 });

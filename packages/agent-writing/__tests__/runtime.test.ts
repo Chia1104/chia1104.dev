@@ -82,6 +82,24 @@ const build = async (
         snippet: "…",
       },
     ],
+    posts: [
+      {
+        feedId: 1,
+        slug: "existing-post",
+        type: "post",
+        contentType: "mdx",
+        published: true,
+        defaultLocale: "en",
+        translations: [
+          {
+            locale: "en",
+            title: "An existing post",
+            content: "## Existing section\n\nExisting body.",
+          },
+        ],
+        tagSlugs: ["typescript"],
+      },
+    ],
     tags: [{ slug: "typescript", names: { en: "TypeScript" } }],
   });
   const web = createFakeWebPort();
@@ -164,6 +182,32 @@ describe("runWritingTurn", () => {
     });
   });
 
+  it("reads by slug even when the provider adds an obsolete feedId argument", async () => {
+    fixture.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall(TOOL_NAMES.getPost, {
+            slug: "existing-post",
+            feedId: 999,
+          }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("I read the existing post."),
+    ]);
+
+    await fixture.run("Read the existing post.");
+
+    const toolEnd = fixture.events.find(
+      (event) =>
+        event.type === "tool:end" && event.toolName === TOOL_NAMES.getPost
+    );
+    expect(toolEnd).toMatchObject({
+      isError: false,
+      summary: "Read `existing-post`.",
+    });
+  });
+
   it("searches the web through the port and hands the model titles, URLs and snippets", async () => {
     fixture.web.results.push(
       {
@@ -179,6 +223,7 @@ describe("runWritingTurn", () => {
           fauxToolCall(TOOL_NAMES.webSearch, {
             query: "example 2.0 release notes",
             recency: "month",
+            includeDomains: ["docs.example.com"],
           }),
         ],
         { stopReason: "toolUse" }
@@ -189,7 +234,12 @@ describe("runWritingTurn", () => {
     await fixture.run("What changed in example 2.0?");
 
     expect(fixture.web.searches).toEqual([
-      { query: "example 2.0 release notes", limit: 5, recency: "month" },
+      {
+        query: "example 2.0 release notes",
+        limit: 5,
+        recency: "month",
+        includeDomains: ["docs.example.com"],
+      },
     ]);
 
     const toolEnd = fixture.events.find(
@@ -201,6 +251,8 @@ describe("runWritingTurn", () => {
       details: {
         query: "example 2.0 release notes",
         count: 2,
+        includeDomains: ["docs.example.com"],
+        recency: "month",
         results: [
           expect.objectContaining({
             url: "https://docs.example.com/release-notes",

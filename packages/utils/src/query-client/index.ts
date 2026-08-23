@@ -27,10 +27,8 @@ let clientQueryClientSingleton: QueryClient | undefined;
 
 export const getQueryClient = () => {
   if (!("window" in globalThis)) {
-    // Server: always make a new query client
     return createQueryClient();
-  } else {
-    // Browser: use singleton pattern to keep the same query client
-    return (clientQueryClientSingleton ??= createQueryClient());
   }
+
+  return (clientQueryClientSingleton ??= createQueryClient());
 };

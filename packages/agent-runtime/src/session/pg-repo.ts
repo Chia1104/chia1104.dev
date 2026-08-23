@@ -13,7 +13,6 @@ import type {
 } from "@earendil-works/pi-agent-core";
 
 import type { DB } from "@chia/db/client";
-import type { JsonObject } from "@chia/db/json";
 import {
   createAgentSession,
   getAgentSession,
@@ -21,6 +20,7 @@ import {
   softDeleteAgentSession,
   updateAgentSession,
 } from "@chia/db/repos/agent";
+import type { JsonObject } from "@chia/utils/json";
 
 import type {
   AgentSessionDefaults,
