@@ -62,7 +62,7 @@ export const isAppError = (cause: unknown): cause is AppError =>
 
 /**
  * Canonical HTTP body for an `AppError`. Delegates to `errorGenerator` so the shape
- * stays the one `libs/service/error.ts` in the frontends already parses.
+ * stays compatible with the frontend HTTP error contract.
  */
 export const toErrorResponse = (error: AppError): ErrorResponse =>
   errorGenerator(error.status, error.issues);

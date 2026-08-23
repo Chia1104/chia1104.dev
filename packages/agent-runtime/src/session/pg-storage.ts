@@ -8,7 +8,6 @@ import type {
 } from "@earendil-works/pi-agent-core";
 
 import type { DB } from "@chia/db/client";
-import type { JsonObject } from "@chia/db/json";
 import {
   appendAgentSessionEntry,
   getAgentSession,
@@ -17,6 +16,7 @@ import {
   getAgentSessionEntry,
   updateAgentSession,
 } from "@chia/db/repos/agent";
+import type { JsonObject } from "@chia/utils/json";
 
 /**
  * Pi's {@link SessionStorage} over `agent_session_entry`.

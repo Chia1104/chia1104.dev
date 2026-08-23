@@ -6,11 +6,12 @@ import { ErrorBoundary } from "@sentry/nextjs";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getTranslations } from "next-intl/server";
 
+import { getQueryClient } from "@chia/utils/query-client";
+
 import FeedList from "@/components/blog/feed-list";
 import AppLoading from "@/components/commons/app-loading";
 import { orpc } from "@/libs/orpc/client.rsc";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
-import { getQueryClient } from "@/libs/utils/query-client";
 
 export const generateStaticParams = () => {
   return [{ type: "posts" }, { type: "notes" }];

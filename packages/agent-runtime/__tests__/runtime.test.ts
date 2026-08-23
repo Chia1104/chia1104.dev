@@ -3,7 +3,7 @@ import { createModels } from "@earendil-works/pi-ai";
 import { fauxProvider } from "@earendil-works/pi-ai/providers/faux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { JsonObject } from "@chia/db/json";
+import type { JsonObject } from "@chia/utils/json";
 
 import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";

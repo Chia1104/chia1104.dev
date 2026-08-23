@@ -4,7 +4,7 @@ import type {
 } from "@earendil-works/pi-agent-core";
 import * as z from "zod";
 
-import type { JsonValue } from "@chia/db/json";
+import type { JsonValue } from "@chia/utils/json";
 
 import type { AgentTurnBudget } from "../types.ts";
 

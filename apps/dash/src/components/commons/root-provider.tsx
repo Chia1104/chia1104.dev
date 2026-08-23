@@ -9,8 +9,7 @@ import { Toaster as ST } from "sonner";
 
 import type { Theme } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
-
-import { getQueryClient } from "@/libs/utils/query-client";
+import { getQueryClient } from "@chia/utils/query-client";
 
 interface Props {
   children: React.ReactNode;

@@ -1192,6 +1192,9 @@ importers:
       '@chia/db':
         specifier: workspace:*
         version: link:../db
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@earendil-works/pi-agent-core':
         specifier: catalog:agent
         version: 0.83.0(supports-color@10.2.2)(ws@8.21.3)(zod@4.4.3)
@@ -1248,6 +1251,9 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
@@ -1558,6 +1564,9 @@ importers:
       '@chia/kv':
         specifier: workspace:*
         version: link:../kv
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@paradedb/drizzle-paradedb':
         specifier: catalog:drizzle
         version: 0.4.0(@opentelemetry/api@1.9.1)(@sinclair/typebox@0.34.52)(@types/pg@8.21.0)(@upstash/redis@1.38.2)(bun-types@1.4.0)(pg@8.22.0)(sqlite3@5.1.7(supports-color@7.2.0))(typebox@1.3.11)(zod@4.4.3)
@@ -1574,9 +1583,6 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@chia/utils':
-        specifier: workspace:*
-        version: link:../utils
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2
@@ -1944,6 +1950,9 @@ importers:
       '@t3-oss/env-core':
         specifier: 'catalog:'
         version: 0.13.11(typescript@7.0.2)(zod@4.4.3)
+      '@tanstack/react-query':
+        specifier: catalog:tanstack
+        version: 5.101.4(react@19.2.8)
       dayjs:
         specifier: 'catalog:'
         version: 1.11.21
@@ -1953,6 +1962,9 @@ importers:
       lodash:
         specifier: 'catalog:'
         version: 4.18.1
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.6
       zod:
         specifier: 'catalog:'
         version: 4.4.3

@@ -11,7 +11,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-import type { JsonObject } from "../json.ts";
+import type { JsonObject } from "@chia/utils/json";
+
 import { timestamps, softDelete } from "../libs/common.schema.ts";
 
 import { feeds } from "./contents.schema.ts";

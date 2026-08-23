@@ -13,10 +13,6 @@
       "types": "./src/types.ts",
       "default": "./src/types.ts"
     },
-    "./json": {
-      "types": "./src/json.ts",
-      "default": "./src/json.ts"
-    },
     "./schema": {
       "types": "./src/schemas/schema.ts",
       "default": "./src/schemas/schema.ts"
@@ -110,6 +106,7 @@
   "dependencies": {
     "@chia/ai": "workspace:*",
     "@chia/kv": "workspace:*",
+    "@chia/utils": "workspace:*",
     "@paradedb/drizzle-paradedb": "catalog:drizzle",
     "@t3-oss/env-core": "catalog:",
     "drizzle-orm": "catalog:drizzle",
@@ -117,7 +114,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@chia/utils": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
     "@types/pg": "^8.20.4",

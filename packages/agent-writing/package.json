@@ -97,6 +97,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@chia/utils": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
     "@types/node": "catalog:",
     "typescript": "catalog:",

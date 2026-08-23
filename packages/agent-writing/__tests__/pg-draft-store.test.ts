@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
-import type { JsonObject } from "@chia/db/json";
 import type { Locale } from "@chia/db/types";
+import type { JsonObject } from "@chia/utils/json";
 
 /**
  * Fakes the repo layer with the same persistence semantics as the real tables: `meta` jsonb is

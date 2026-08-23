@@ -1,7 +1,7 @@
 import type { ToolCallEvent } from "@earendil-works/pi-agent-core";
 import { describe, expect, it, vi } from "vitest";
 
-import type { JsonObject } from "@chia/db/json";
+import type { JsonObject } from "@chia/utils/json";
 
 import { createPiTurnBudget } from "../src/pi/turn-budget.ts";
 import type { AgentTurnBudget } from "../src/types.ts";

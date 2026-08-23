@@ -1,7 +1,8 @@
 import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 
+import type { JsonObject } from "@chia/utils/json";
+
 import type { DB } from "../../client.ts";
-import type { JsonObject } from "../../json.ts";
 import {
   agentRuns,
   agentSessionEntries,

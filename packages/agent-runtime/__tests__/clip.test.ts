@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as z from "zod";
 
-import type { JsonValue } from "@chia/db/json";
+import type { JsonValue } from "@chia/utils/json";
 
 import {
   DETAILS_MAX_ARRAY_ITEMS,
