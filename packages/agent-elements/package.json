@@ -117,6 +117,7 @@
     "@orpc/contract": "catalog:orpc",
     "@streamdown/cjk": "catalog:streamdown",
     "@streamdown/code": "catalog:streamdown",
+    "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
     "border-beam": "catalog:ui",
     "lucide-react": "catalog:ui",

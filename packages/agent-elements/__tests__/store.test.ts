@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 import { agentQueryKeys } from "../src/queries.ts";
-import { createAgentSessionStore, foldDetail } from "../src/store.ts";
+import {
+  VIEW_FLUSH_MS,
+  createAgentSessionStore,
+  foldDetail,
+} from "../src/store.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "../src/types.ts";
 
 // ============================================
@@ -436,6 +440,48 @@ describe("createAgentSessionStore", () => {
     stream.push({ type: "run:end", reason: "done" });
     stream.close();
     await commanded;
+  });
+
+  it("throttles a burst of deltas into few view commits, boundaries at once", async () => {
+    const stream = channel();
+    const { client } = fakeClient({ chat: async () => stream.iterable });
+    const { store } = makeStore({ client });
+    await store.getState().hydrate();
+    const commits: string[] = [];
+    store.subscribe((state, previous) => {
+      if (state.view === previous.view) return;
+      const last = state.view.items.at(-1);
+      commits.push(last?.kind === "assistant" ? last.text : (last?.kind ?? ""));
+    });
+
+    const prompted = store.getState().prompt("hello");
+    await flush();
+    const events = turn("hello");
+    stream.push(events[0]!);
+    stream.push(events[1]!);
+    stream.push(events[2]!);
+    for (const delta of ["H", "e", "y"]) {
+      stream.push({
+        type: "assistant:delta",
+        messageId: "a1",
+        channel: "text",
+        delta,
+      });
+    }
+    await flush();
+    // Boundaries and the first delta commit on arrival; the rest of the burst waits for the interval.
+    expect(commits).toEqual(["", "user", "", "H"]);
+    await new Promise((resolve) => setTimeout(resolve, VIEW_FLUSH_MS + 5));
+    expect(commits).toEqual(["", "user", "", "H", "Hey"]);
+
+    stream.push({ type: "assistant:end", messageId: "a1", text: "Hey" });
+    stream.push({ type: "run:end", reason: "done" });
+    stream.close();
+    await prompted;
+    expect(store.getState().view.items.at(-1)).toMatchObject({
+      kind: "assistant",
+      text: "Hey",
+    });
   });
 
   it("forwards state:changed to the host while streaming", async () => {

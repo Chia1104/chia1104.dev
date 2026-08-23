@@ -1,3 +1,4 @@
+import { Throttler } from "@tanstack/react-pacer";
 import type { QueryClient } from "@tanstack/react-query";
 import { createStore } from "zustand/vanilla";
 
@@ -78,6 +79,9 @@ export interface AgentSessionStoreOptions extends AgentSessionCallbacks {
   kind?: string;
   labels?: Partial<AgentLabels>;
 }
+
+/** Shortest gap between two view commits while deltas stream — roughly two frames. */
+export const VIEW_FLUSH_MS = 32;
 
 const messageOf = (cause: unknown): string =>
   cause instanceof Error ? cause.message : String(cause);
@@ -206,17 +210,48 @@ export const createAgentSessionStore = ({
         throw cause;
       }
 
+      // Events fold into a local view first and reach the store at most once per interval: one
+      // network chunk decodes into a burst of deltas delivered back-to-back, and every `set` is a
+      // synchronous React render, which at that rate trips React's update-depth guard. Only the
+      // high-frequency events are throttled; boundaries (user echo, tool/run ends) commit at once.
+      let pending: AgentViewState | null = null;
+      let echoedUser = false;
+      const commitView = () => {
+        if (!pending || mine !== generation) return;
+        const view = pending;
+        const clearPrompt = echoedUser;
+        pending = null;
+        echoedUser = false;
+        set((state) => ({
+          view,
+          pendingPrompt: clearPrompt ? null : state.pendingPrompt,
+        }));
+      };
+      const throttledCommit = new Throttler(commitView, {
+        wait: VIEW_FLUSH_MS,
+      });
+      const flushView = () => {
+        throttledCommit.cancel();
+        commitView();
+      };
+
       let ended = false;
       try {
         await consumeStream(
           iterable,
           (event) => {
             if (mine !== generation) return;
+            pending = applyEvent(pending ?? get().view, event);
+            if (event.type === "user") echoedUser = true;
             if (event.type === "run:end") ended = true;
-            set((state) => ({
-              view: applyEvent(state.view, event),
-              pendingPrompt: event.type === "user" ? null : state.pendingPrompt,
-            }));
+            if (
+              event.type === "assistant:delta" ||
+              event.type === "tool:update"
+            ) {
+              throttledCommit.maybeExecute();
+              return;
+            }
+            flushView();
             if (event.type === "state:changed") {
               // Kind state (a draft, …) rides on the detail; refresh it while the turn is going.
               void queryClient.invalidateQueries({ queryKey: detailKey });
@@ -230,6 +265,7 @@ export const createAgentSessionStore = ({
           set({ failure: messageOf(cause) });
         }
       } finally {
+        flushView();
         if (controller === own) controller = null;
       }
       if (own.signal.aborted || mine !== generation) return;
