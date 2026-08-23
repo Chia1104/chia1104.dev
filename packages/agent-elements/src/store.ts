@@ -12,6 +12,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { AgentLabels } from "./labels.ts";
 import { mergeLabels } from "./labels.ts";
 import { agentQueryKeys, sessionDetailQuery } from "./queries.ts";
+import { formatSlashCommand } from "./slash-command.ts";
 import { consumeStream } from "./stream.ts";
 import type { AgentSessionClient, AgentSessionDetail } from "./types.ts";
 
@@ -45,6 +46,8 @@ export interface AgentSessionActions {
   hydrate: () => Promise<void>;
   /** Rejects when the request itself fails; stream failures land in `failure`. */
   prompt: (text: string) => Promise<void>;
+  /** Runs a server-advertised slash command through its prompt template. */
+  command: (name: string, args: string[], text?: string) => Promise<void>;
   approve: (
     toolCallId: string,
     approved: boolean,
@@ -303,6 +306,22 @@ export const createAgentSessionStore = ({
           await run((signal) =>
             client.sessions.chat(
               { ...scoped, action: { type: "prompt", text } },
+              { signal }
+            )
+          );
+        } catch (cause) {
+          set({ pendingPrompt: null, failure: messageOf(cause) });
+          throw cause;
+        }
+      },
+
+      command: async (name, args, displayText) => {
+        const text = displayText ?? formatSlashCommand(name, args);
+        set({ pendingPrompt: text, failure: null });
+        try {
+          await run((signal) =>
+            client.sessions.chat(
+              { ...scoped, action: { type: "command", name, args, text } },
               { signal }
             )
           );

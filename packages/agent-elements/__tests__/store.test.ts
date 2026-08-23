@@ -101,11 +101,17 @@ const fakeClient = (overrides: {
   const abort = vi.fn(overrides.abort ?? (async () => ({ aborted: true })));
   const update = vi.fn(async () => detailOf());
   const models = vi.fn(async () => []);
+  const capabilities = vi.fn(async () => ({
+    tools: [],
+    commands: [],
+    skills: [],
+  }));
   const client: AgentSessionClient = {
     sessions: { get, chat, abort, "settings:update": update },
     models: { list: models },
+    capabilities: { list: capabilities },
   };
-  return { client, get, chat, abort, update, models };
+  return { client, get, chat, abort, update, models, capabilities };
 };
 
 const makeStore = (
@@ -393,6 +399,43 @@ describe("createAgentSessionStore", () => {
     expect(store.getState().pendingPrompt).toBeNull();
     expect(store.getState().failure).toBe("offline");
     expect(store.getState().connection).toBe("idle");
+  });
+
+  it("runs a structured slash command and keeps its canonical text optimistic", async () => {
+    const stream = channel();
+    const { client, chat } = fakeClient({ chat: async () => stream.iterable });
+    const { store } = makeStore({ client });
+    await store.getState().hydrate();
+
+    const commanded = store
+      .getState()
+      .command(
+        "rewrite-section",
+        ["API design", "tighten"],
+        'Please /rewrite-section "API design" tighten'
+      );
+    await flush();
+
+    expect(store.getState().pendingPrompt).toBe(
+      'Please /rewrite-section "API design" tighten'
+    );
+    expect(chat).toHaveBeenCalledWith(
+      {
+        sessionId: "s1",
+        kind: undefined,
+        action: {
+          type: "command",
+          name: "rewrite-section",
+          args: ["API design", "tighten"],
+          text: 'Please /rewrite-section "API design" tighten',
+        },
+      },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+
+    stream.push({ type: "run:end", reason: "done" });
+    stream.close();
+    await commanded;
   });
 
   it("forwards state:changed to the host while streaming", async () => {

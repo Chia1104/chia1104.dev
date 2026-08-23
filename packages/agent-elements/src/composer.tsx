@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Alert, Button, CloseButton, TextArea } from "@heroui/react";
 import { BorderBeam } from "border-beam";
@@ -10,15 +10,27 @@ import { ArrowUp, Square, X } from "lucide-react";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { ContextUsage } from "./context-usage.tsx";
+import { fill } from "./labels.ts";
 import { ModelPicker } from "./model-picker.tsx";
 import {
   useAbortSession,
+  useAgentCapabilities,
   useAgentBusy,
   useAgentLabels,
   useAgentSession,
   useAgentStatus,
   useCanPrompt,
 } from "./provider.tsx";
+import {
+  filterSlashMenuItems,
+  findSlashCommand,
+  parseSlashCommand,
+  removeSlashToken,
+  replaceSlashToken,
+  slashTokenAt,
+} from "./slash-command.ts";
+import type { SlashMenuItem } from "./slash-command.ts";
+import { SlashMenu } from "./slash-menu.tsx";
 
 /** Tallest the input grows before it scrolls, in px — about eight lines. */
 const MAX_INPUT_HEIGHT = 200;
@@ -37,6 +49,14 @@ export interface ComposerProps {
    * (drafts, attachments, pending items). Compose from `ComposerAttachment` rows.
    */
   attachments?: ReactNode;
+  /** Client-only commands that act on the composer UI instead of starting an agent turn. */
+  localCommands?: readonly ComposerLocalCommand[];
+}
+
+export interface ComposerLocalCommand {
+  name: string;
+  description: string;
+  onSelect: () => void;
 }
 
 export interface ComposerAttachmentProps {
@@ -112,19 +132,133 @@ export const ComposerAttachment = ({
 export const Composer = ({
   attachments,
   className,
+  localCommands,
   placeholder,
-  toolbar = <ModelPicker />,
+  toolbar,
 }: ComposerProps) => {
   const labels = useAgentLabels();
   const prompt = useAgentSession((state) => state.prompt);
+  const command = useAgentSession((state) => state.command);
+  const reportFailure = useAgentSession((state) => state.reportFailure);
   const dismissFailure = useAgentSession((state) => state.dismissFailure);
   const failure = useAgentSession((state) => state.failure);
+  const capabilities = useAgentCapabilities();
   const abort = useAbortSession();
   const canPrompt = useCanPrompt();
   const busy = useAgentBusy();
   const status = useAgentStatus();
   const [text, setText] = useState("");
+  const [cursor, setCursor] = useState(0);
+  const [highlightedId, setHighlightedId] = useState<string>();
+  const [dismissedSlashKey, setDismissedSlashKey] = useState<string>();
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const menuId = useId();
+  const usesDefaultToolbar = toolbar === undefined;
+
+  const resolvedLocalCommands = useMemo<readonly ComposerLocalCommand[]>(
+    () => [
+      ...(usesDefaultToolbar
+        ? [
+            {
+              name: "model",
+              description: labels.switchModel,
+              onSelect: () => setModelPickerOpen(true),
+            },
+          ]
+        : []),
+      ...(localCommands ?? []),
+    ],
+    [labels.switchModel, localCommands, usesDefaultToolbar]
+  );
+
+  const menuItems = useMemo<SlashMenuItem[]>(() => {
+    const items: SlashMenuItem[] = resolvedLocalCommands.map((item) => ({
+      id: `local:${item.name}`,
+      kind: "command",
+      name: item.name,
+      label: `/${item.name}`,
+      description: item.description,
+      local: true,
+    }));
+    const localNames = new Set(resolvedLocalCommands.map((item) => item.name));
+    for (const item of capabilities.data?.commands ?? []) {
+      if (localNames.has(item.name)) continue;
+      items.push({
+        id: `command:${item.name}`,
+        kind: "command",
+        name: item.name,
+        label: `/${item.name}`,
+        description: item.description,
+        argumentHint: item.argumentHint,
+      });
+    }
+    for (const item of capabilities.data?.skills ?? []) {
+      items.push({
+        id: `skill:${item.name}`,
+        kind: "skill",
+        name: item.name,
+        label: `skill:${item.name}`,
+        description: item.description,
+      });
+    }
+    return items;
+  }, [capabilities.data, resolvedLocalCommands]);
+
+  const slashToken = slashTokenAt(text, cursor);
+  const slashKey = slashToken
+    ? `${text}\u0000${slashToken.start}\u0000${slashToken.query}`
+    : undefined;
+  const visibleMenuItems = useMemo(
+    () => filterSlashMenuItems(menuItems, slashToken?.query ?? ""),
+    [menuItems, slashToken?.query]
+  );
+  const activeItem =
+    visibleMenuItems.find((item) => item.id === highlightedId) ??
+    visibleMenuItems[0];
+  const menuOpen =
+    canPrompt && slashToken !== null && dismissedSlashKey !== slashKey;
+
+  const commandNames = useMemo(
+    () =>
+      new Set([
+        ...resolvedLocalCommands.map((item) => item.name),
+        ...(capabilities.data?.commands.map((item) => item.name) ?? []),
+      ]),
+    [capabilities.data?.commands, resolvedLocalCommands]
+  );
+
+  const applyTextEdit = (
+    edit: { text: string; cursor: number },
+    focus = true
+  ) => {
+    setText(edit.text);
+    setCursor(edit.cursor);
+    if (!focus) return;
+    requestAnimationFrame(() => {
+      const input = inputRef.current;
+      input?.focus();
+      input?.setSelectionRange(edit.cursor, edit.cursor);
+    });
+  };
+
+  const selectMenuItem = (item: SlashMenuItem) => {
+    if (!slashToken) return;
+    setHighlightedId(undefined);
+    setDismissedSlashKey(undefined);
+    if (item.kind === "skill") {
+      applyTextEdit(replaceSlashToken(text, slashToken, `skill:${item.name} `));
+      return;
+    }
+    if (item.local) {
+      applyTextEdit(removeSlashToken(text, slashToken), false);
+      resolvedLocalCommands
+        .find((commandItem) => commandItem.name === item.name)
+        ?.onSelect();
+      return;
+    }
+    applyTextEdit(replaceSlashToken(text, slashToken, `/${item.name} `));
+  };
 
   // Grow with the content: measure the natural height, cap it, and let the rest scroll.
   useLayoutEffect(() => {
@@ -140,12 +274,57 @@ export const Composer = ({
   const send = async () => {
     const value = text.trim();
     if (!value || !canPrompt) return;
+
+    const parsed = findSlashCommand(value, commandNames);
+    if (parsed.type === "invalid") {
+      reportFailure(labels.invalidCommandSyntax);
+      return;
+    }
+    if (parsed.type === "command") {
+      const { args, name } = parsed.command;
+      const local = resolvedLocalCommands.find((item) => item.name === name);
+      if (local) {
+        if (parsed.token.start === 0 && args.length > 0) {
+          reportFailure(
+            fill(labels.commandTakesNoArguments, { command: `/${name}` })
+          );
+          return;
+        }
+        applyTextEdit(removeSlashToken(value, parsed.token), false);
+        local.onSelect();
+        return;
+      }
+      setText("");
+      setCursor(0);
+      try {
+        await command(name, args, value);
+      } catch {
+        setText(value);
+        setCursor(value.length);
+      }
+      return;
+    }
+
+    const leading = parseSlashCommand(value);
+    if (leading.type === "invalid") {
+      reportFailure(labels.invalidCommandSyntax);
+      return;
+    }
+    if (leading.type === "command") {
+      reportFailure(
+        fill(labels.unknownCommand, { command: `/${leading.command.name}` })
+      );
+      return;
+    }
+
     setText("");
+    setCursor(0);
     try {
       await prompt(value);
     } catch {
       // The request never left: give the operator their text back to retry.
       setText(value);
+      setCursor(value.length);
     }
   };
 
@@ -158,7 +337,22 @@ export const Composer = ({
 
   return (
     <div className={cn("shrink-0 px-4 pt-2 pb-4", className)}>
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-2">
+      <div className="relative mx-auto flex w-full max-w-3xl flex-col gap-2">
+        {menuOpen ? (
+          <SlashMenu
+            activeId={activeItem?.id}
+            emptyText={
+              capabilities.isLoading
+                ? labels.loadingCommands
+                : labels.noMatchingCommands
+            }
+            id={menuId}
+            items={visibleMenuItems}
+            labels={labels}
+            onAction={selectMenuItem}
+            onActiveChange={setHighlightedId}
+          />
+        ) : null}
         {failure ? (
           <Alert status="danger">
             <Alert.Content>
@@ -185,20 +379,60 @@ export const Composer = ({
           <div className="bg-surface border-border focus-within:border-field-border-focus flex flex-col gap-1 rounded-2xl border px-3 pt-3 pb-2 shadow-xs transition-colors">
             <TextArea
               ref={inputRef}
+              aria-activedescendant={menuOpen ? activeItem?.id : undefined}
+              aria-controls={menuOpen ? menuId : undefined}
+              aria-expanded={menuOpen}
+              aria-haspopup="listbox"
               aria-label={labels.send}
               className="min-h-10 w-full resize-none rounded-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus:ring-0"
               disabled={!canPrompt}
-              onChange={(event) => setText(event.target.value)}
+              onChange={(event) => {
+                setCursor(event.target.selectionStart);
+                setDismissedSlashKey(undefined);
+                setHighlightedId(undefined);
+                setText(event.target.value);
+              }}
               onKeyDown={(event) => {
+                if (event.nativeEvent.isComposing) return;
+                if (menuOpen && event.key === "Escape") {
+                  event.preventDefault();
+                  setDismissedSlashKey(slashKey);
+                  return;
+                }
                 if (
-                  event.key !== "Enter" ||
-                  event.shiftKey ||
-                  event.nativeEvent.isComposing
+                  menuOpen &&
+                  (event.key === "ArrowDown" || event.key === "ArrowUp")
                 ) {
+                  event.preventDefault();
+                  if (visibleMenuItems.length === 0) return;
+                  const current = activeItem
+                    ? visibleMenuItems.indexOf(activeItem)
+                    : 0;
+                  const offset = event.key === "ArrowDown" ? 1 : -1;
+                  const next =
+                    (current + offset + visibleMenuItems.length) %
+                    visibleMenuItems.length;
+                  setHighlightedId(visibleMenuItems[next]?.id);
+                  return;
+                }
+                if (
+                  menuOpen &&
+                  activeItem &&
+                  (event.key === "Enter" || event.key === "Tab")
+                ) {
+                  event.preventDefault();
+                  selectMenuItem(activeItem);
+                  return;
+                }
+                if (event.key !== "Enter" || event.shiftKey || event.altKey) {
                   return;
                 }
                 event.preventDefault();
                 void send();
+              }}
+              onSelect={(event) => {
+                setCursor(event.currentTarget.selectionStart);
+                setHighlightedId(undefined);
               }}
               placeholder={composerPlaceholder}
               rows={1}
@@ -207,7 +441,14 @@ export const Composer = ({
             />
             <div className="z-20 flex items-center gap-2">
               <div className="flex min-w-0 flex-1 items-center gap-1">
-                {toolbar}
+                {usesDefaultToolbar ? (
+                  <ModelPicker
+                    isOpen={modelPickerOpen}
+                    onOpenChange={setModelPickerOpen}
+                  />
+                ) : (
+                  toolbar
+                )}
               </div>
               <ContextUsage />
               {busy ? (

@@ -928,14 +928,17 @@ export const writingAgentService: AgentKindService = {
         tier: writingPolicy.tierOf(tool.name),
         description: tool.description,
       })),
-      promptTemplates: writingPromptTemplates.map((template) => ({
+      commands: writingPromptTemplates.map((template) => ({
         name: template.name,
-        description: template.description,
+        description: template.description ?? template.name,
+        argumentHint: template.argumentHint,
       })),
-      skills: writingSkills.map((skill) => ({
-        name: skill.name,
-        description: skill.description,
-      })),
+      skills: writingSkills
+        .filter((skill) => !skill.disableModelInvocation)
+        .map((skill) => ({
+          name: skill.name,
+          description: skill.description,
+        })),
     });
   },
 };

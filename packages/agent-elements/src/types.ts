@@ -10,6 +10,7 @@ import type { agentContracts, routerContract } from "@chia/api/orpc/contracts";
 export type AgentClient = ContractRouterClient<typeof routerContract>["agent"];
 
 type SessionProcedures = AgentClient["sessions"];
+type CapabilityProcedures = AgentClient["capabilities"];
 
 /**
  * The procedures the session store and elements call, as plain signatures so a host passes
@@ -37,6 +38,11 @@ export interface AgentSessionClient {
       input: Parameters<AgentClient["models"]["list"]>[0]
     ) => Promise<AgentModel[]>;
   };
+  capabilities: {
+    list: (
+      input: Parameters<CapabilityProcedures["list"]>[0]
+    ) => Promise<AgentCapabilities>;
+  };
 }
 
 export type AgentSessionDetail = agentContracts.AgentSessionDetail;
@@ -44,6 +50,9 @@ export type AgentSessionSummary = agentContracts.AgentSessionSummary;
 export type AgentModel = Awaited<
   ReturnType<AgentClient["models"]["list"]>
 >[number];
+export type AgentCapabilities = Awaited<
+  ReturnType<CapabilityProcedures["list"]>
+>;
 export type AgentThinkingLevel = NonNullable<
   AgentSessionDetail["settings"]
 >["thinkingLevel"];

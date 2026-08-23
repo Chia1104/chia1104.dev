@@ -10,12 +10,22 @@ import type { PromptTemplate } from "@earendil-works/pi-agent-core";
 const template = (
   name: string,
   description: string,
-  content: string
-): PromptTemplate => ({ name, description, content: content.trim() });
+  content: string,
+  argumentHint?: string
+): WritingPromptCommand => ({
+  name,
+  description,
+  content: content.trim(),
+  argumentHint,
+});
+
+export interface WritingPromptCommand extends PromptTemplate {
+  argumentHint?: string;
+}
 
 export const newPostTemplate = template(
   "new-post",
-  "Draft a new post from a topic. Usage: /new-post <topic>",
+  "Draft a new post from a topic.",
   `
 Write a new post about: $ARGUMENTS
 
@@ -28,12 +38,13 @@ Work in this order:
    feed metadata: \`type\`, \`slug\`, \`defaultLocale\`.
 4. Write the body for the default locale, then set its title, excerpt, description and summary.
 5. Stop and show me a summary. Do NOT commit — I will tell you when.
-`
+`,
+  "<topic>"
 );
 
 export const translateTemplate = template(
   "translate",
-  "Add or refresh another locale for the current draft. Usage: /translate <locale>",
+  "Add or refresh another locale for the current draft.",
   `
 Produce the $1 version of the current draft.
 
@@ -41,7 +52,8 @@ Produce the $1 version of the current draft.
 translation: same structure, same code, prose that reads as though written in $1 originally.
 
 Write real per-locale metadata — do not copy the other locale's.
-`
+`,
+  "<locale>"
 );
 
 export const seoPassTemplate = template(
@@ -60,7 +72,7 @@ Report what you changed and why, per locale. Do not touch the body.
 
 export const rewriteSectionTemplate = template(
   "rewrite-section",
-  "Rewrite one section of the draft. Usage: /rewrite-section <heading> [instruction]",
+  "Rewrite one section of the draft.",
   `
 Rewrite the section under the heading "$1" in the current draft.
 
@@ -68,7 +80,8 @@ Additional instruction: $2
 
 Read the draft first so your \`edit_draft_content\` call matches exactly. Change only that
 section — leave every other line byte-identical.
-`
+`,
+  "<heading> [instruction]"
 );
 
 export const factCheckTemplate = template(
@@ -87,7 +100,7 @@ exact correction but do NOT edit the draft until I confirm.
 `
 );
 
-export const writingPromptTemplates: PromptTemplate[] = [
+export const writingPromptTemplates: WritingPromptCommand[] = [
   newPostTemplate,
   translateTemplate,
   seoPassTemplate,

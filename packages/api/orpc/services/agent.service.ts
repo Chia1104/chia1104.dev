@@ -213,7 +213,11 @@ export interface AgentKindService {
       tier: string;
       description: string;
     }[];
-    promptTemplates: { name: string; description?: string }[];
+    commands: {
+      name: string;
+      description: string;
+      argumentHint?: string;
+    }[];
     skills: { name: string; description: string }[];
   }>;
 }
