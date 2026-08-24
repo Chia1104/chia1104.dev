@@ -60,6 +60,7 @@ import {
 } from "../workflows/hooks/agent.hooks";
 
 import type { AgentKindDefinition } from "./kind";
+import { screenPrompt } from "./screen";
 
 /**
  * The `AgentKindService` for one registered kind.
@@ -558,6 +559,16 @@ export const createAgentKindService = <TState>(
           `Waiting on your decision for \`${outstanding.join("`, `")}\`. Approve or reject it before sending another message.`
         );
       }
+
+      // After the free refusals above, before anything durable: a blocked prompt starts no run.
+      await screenPrompt({
+        screen: definition.screen,
+        db: caller.context.db,
+        userId: caller.userId,
+        sessionId: input.sessionId,
+        kind: definition.kind,
+        text: input.text,
+      });
 
       if (row.workflowRunId && (await isRunLive(row.workflowRunId))) {
         const token = agentMessageToken(input.sessionId);

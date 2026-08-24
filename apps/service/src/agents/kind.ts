@@ -21,6 +21,7 @@ import type {
   AgentKindService,
   AgentServiceCaller,
 } from "@chia/api/orpc/services/agent.service";
+import type { PromptScreenPort } from "@chia/api/orpc/services/prompt-screen";
 import type { DB } from "@chia/db/client";
 import type { AgentSession } from "@chia/db/schema";
 import type { CallerTier } from "@chia/service-kit/policies/caller.policy";
@@ -45,6 +46,12 @@ export interface AgentKindDefinition<TState> {
    */
   readonly minTier: CallerTier;
   readonly defaults: AgentSessionDefaults;
+  /**
+   * Screens operator text before it is enqueued. Absent on a kind whose only operator is the
+   * author; a kind that admits strangers supplies one. The generic `prompt()` records every
+   * verdict and refuses the message on `block` — see `agents/screen.ts`.
+   */
+  readonly screen?: PromptScreenPort;
   /** Presentation of persisted tool entries on replay. */
   readonly policy: AgentPolicy;
   readonly models: {

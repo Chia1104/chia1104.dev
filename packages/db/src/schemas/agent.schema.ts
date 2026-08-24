@@ -251,3 +251,46 @@ export const agentToolApprovals = agentSchema.table(
 );
 
 export type AgentToolApproval = InferSelectModel<typeof agentToolApprovals>;
+
+// ============================================
+// Prompt screening log
+// ============================================
+
+export type AgentPromptScreenVerdict = "allow" | "block";
+export type AgentPromptScreenReason = "injection" | "harmful";
+
+/**
+ * One row per screened prompt, `allow` included — without the allow baseline the block rate and
+ * the false-positive rate on ordinary operators are both invisible. Stores a hash and length,
+ * never the text: the hash is enough to correlate resends and the same text across users, and
+ * a blocked prompt must not be warehoused here. `signals` keeps each classifier's raw label and
+ * score for the audit trail.
+ */
+export const agentPromptScreens = agentSchema.table(
+  "prompt_screen",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => agentSessions.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    verdict: text("verdict").$type<AgentPromptScreenVerdict>().notNull(),
+    reason: text("reason").$type<AgentPromptScreenReason>(),
+    signals: jsonb("signals").$type<JsonObject[]>().notNull(),
+    textHash: text("text_hash").notNull(),
+    textLength: integer("text_length").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("prompt_screen_user_created_idx").on(table.userId, table.createdAt),
+    index("prompt_screen_verdict_created_idx").on(
+      table.verdict,
+      table.createdAt
+    ),
+  ]
+);
+
+export type AgentPromptScreen = InferSelectModel<typeof agentPromptScreens>;

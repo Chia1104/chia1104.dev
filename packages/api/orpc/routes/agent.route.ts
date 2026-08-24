@@ -12,6 +12,7 @@ import {
   requireAgentKind,
 } from "../services/agent.service";
 import type { AgentKindService } from "../services/agent.service";
+import { PromptRejectedError } from "../services/prompt-screen";
 import { contractOS } from "../utils";
 
 /**
@@ -132,9 +133,24 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
     const { caller, service } = opts.context.agent;
 
     const { action } = opts.input;
+
+    /** A screened refusal is a contract error, not a 500; everything else keeps its shape. */
+    const prompt = async (input: Parameters<typeof service.prompt>[1]) => {
+      try {
+        return await service.prompt(caller, input);
+      } catch (error) {
+        if (error instanceof PromptRejectedError) {
+          throw opts.errors.PROMPT_REJECTED({
+            data: { reason: error.reason },
+          });
+        }
+        throw error;
+      }
+    };
+
     let cursor;
     if (action.type === "prompt") {
-      cursor = await service.prompt(caller, {
+      cursor = await prompt({
         sessionId: opts.input.sessionId,
         text: action.text,
       });
@@ -147,7 +163,7 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
           message: `Unknown agent command: /${action.name}`,
         });
       }
-      cursor = await service.prompt(caller, {
+      cursor = await prompt({
         sessionId: opts.input.sessionId,
         text: action.text,
         template: { name: action.name, args: action.args },

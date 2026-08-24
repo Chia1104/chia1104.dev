@@ -63,6 +63,17 @@ capabilities, its 1:1 `state` row (`create`/`load`/`summary`/`detail`), `runTurn
 `maintenance`. The registry entry restates `minTier` eagerly for the guards and loads the
 definition with a dynamic import, so the domain package and provider SDKs stay off the boot path.
 
+A kind that admits strangers also supplies `screen` — a `PromptScreenPort`
+(`packages/api/orpc/services/prompt-screen.ts`) the generic `prompt()` consults after its free
+local refusals and before anything durable: the verdict is recorded in `agent.prompt_screen`
+(allow included, hash and length only, never the text), and a `block` throws
+`PromptRejectedError`, which the chat route maps onto the contract's `PROMPT_REJECTED` with only
+the coarse reason. No run starts and no quota is spent. Screening is not a security boundary —
+the kind's ports are; the shipped implementation
+(`apps/service/src/services/prompt-screen.port.ts`, Llama Prompt Guard 2 via Hugging Face
+Inference for injection plus OpenAI Moderation for harmful content) fails open per classifier,
+with the failure kept as a recorded signal. The writing kind has no `screen`.
+
 `AgentKindService` is the shape every kind shares and never grows for one kind. A procedure only
 one kind has gets its own contract namespace (`agent.<kind>.*`), its own port interface in
 `packages/api`, and its implementation beside that kind's definition — it does not go on the
@@ -487,6 +498,7 @@ until a concrete second execution foundation requires a different seam.
 | Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                           |
+| Prompt screening             | `apps/service/src/agents/screen.ts`, `src/services/prompt-screen.port.ts`                      |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
 | Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                   |
 | Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |

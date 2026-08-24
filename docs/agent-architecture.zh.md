@@ -68,6 +68,15 @@ interface，實作放在該 kind 的 definition 旁邊——不掛在共用 port
 目前還沒有這種 procedure：writing 的 draft 跟著 session detail（`state.detail`）走，dashboard
 讀的也只有它。
 
+接納陌生訪客的 kind 另外提供 `screen` —— 一個 `PromptScreenPort`
+（`packages/api/orpc/services/prompt-screen.ts`），由泛型 `prompt()` 在免費的本地拒絕之後、
+任何 durable 動作之前諮詢：判定寫進 `agent.prompt_screen`（allow 也寫；只存 hash 與長度，
+不存原文），`block` 則丟出 `PromptRejectedError`，chat route 映射成 contract 的
+`PROMPT_REJECTED`，只帶粗粒度的 reason。不會啟動 run、不扣配額。screening 不是安全邊界——
+kind 的 ports 才是；現行實作（`apps/service/src/services/prompt-screen.port.ts`，injection 用
+Hugging Face Inference 上的 Llama Prompt Guard 2、有害內容用 OpenAI Moderation）對單一分類器
+失敗採 fail-open，失敗本身保留為紀錄裡的 signal。writing kind 沒有 `screen`。
+
 ### 誰可以使用某個 kind
 
 存取權是 kind 的屬性，不是 route 的屬性。每條 agent route 都先跑 `callerGuard()`，它只解析呼叫者的
@@ -444,6 +453,7 @@ factory、capability plugin system 或 provider-neutral handle。
 | Content read tools / port    | `packages/agent-content/src/`、`apps/service/src/services/content-read.port.ts`                |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                           |
+| Prompt screening             | `apps/service/src/agents/screen.ts`、`src/services/prompt-screen.port.ts`                      |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
 | Kind registry / generic host | `apps/service/src/agents/registry.ts`、`agents/kind.ts`、`agents/service.ts`                   |
 | Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |

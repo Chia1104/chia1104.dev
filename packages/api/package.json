@@ -161,6 +161,10 @@
       "types": "./orpc/services/agent.service.ts",
       "default": "./orpc/services/agent.service.ts"
     },
+    "./orpc/services/prompt-screen": {
+      "types": "./orpc/services/prompt-screen.ts",
+      "default": "./orpc/services/prompt-screen.ts"
+    },
     "./orpc/services/indexing.service": {
       "types": "./orpc/services/indexing.service.ts",
       "default": "./orpc/services/indexing.service.ts"

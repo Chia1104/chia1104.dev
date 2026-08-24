@@ -4,6 +4,7 @@ import type { JsonObject } from "@chia/utils/json";
 
 import type { DB } from "../../client.ts";
 import {
+  agentPromptScreens,
   agentRuns,
   agentSessionEntries,
   agentSessions,
@@ -11,7 +12,12 @@ import {
   writingAgentDrafts,
   writingAgentSessions,
 } from "../../schemas/schema.ts";
-import type { AgentRunStatus, Locale } from "../../schemas/schema.ts";
+import type {
+  AgentPromptScreenReason,
+  AgentPromptScreenVerdict,
+  AgentRunStatus,
+  Locale,
+} from "../../schemas/schema.ts";
 
 /**
  * Repository for shared agent persistence and kind-owned extensions.
@@ -489,3 +495,34 @@ export const getAgentApprovals = async (db: DB, sessionId: string) =>
     .from(agentToolApprovals)
     .where(eq(agentToolApprovals.sessionId, sessionId))
     .orderBy(asc(agentToolApprovals.createdAt));
+
+// ============================================
+// Prompt screening log
+// ============================================
+
+export interface RecordAgentPromptScreenDTO {
+  userId: string;
+  sessionId: string;
+  kind: string;
+  verdict: AgentPromptScreenVerdict;
+  reason?: AgentPromptScreenReason;
+  signals: JsonObject[];
+  textHash: string;
+  textLength: number;
+}
+
+export const recordAgentPromptScreen = async (
+  db: DB,
+  dto: RecordAgentPromptScreenDTO
+) => {
+  await db.insert(agentPromptScreens).values({
+    userId: dto.userId,
+    sessionId: dto.sessionId,
+    kind: dto.kind,
+    verdict: dto.verdict,
+    reason: dto.reason ?? null,
+    signals: dto.signals,
+    textHash: dto.textHash,
+    textLength: dto.textLength,
+  });
+};

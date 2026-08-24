@@ -234,6 +234,14 @@ export const chatAgentContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     BAD_REQUEST: {},
+    /**
+     * The kind screened the prompt and refused it before anything was enqueued. Carries only the
+     * coarse reason — enough for the client to word the notice, nothing a probing caller can
+     * calibrate against.
+     */
+    PROMPT_REJECTED: {
+      data: z.object({ reason: z.enum(["injection", "harmful"]) }),
+    },
   })
   .input(
     z.object({
@@ -243,13 +251,13 @@ export const chatAgentContract = oc
       action: z.discriminatedUnion("type", [
         z.object({
           type: z.literal("prompt"),
-          text: z.string().min(1),
+          text: z.string().min(1).max(4000),
         }),
         z.object({
           type: z.literal("command"),
           name: z.string().min(1).max(100),
           args: z.array(z.string()).max(32),
-          text: z.string().min(1),
+          text: z.string().min(1).max(4000),
         }),
         z.object({
           type: z.literal("approve"),

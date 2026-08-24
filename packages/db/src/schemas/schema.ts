@@ -107,6 +107,10 @@ export {
   type WritingAgentDraft,
   type AgentToolApproval,
   type AgentApprovalStatus,
+  agentPromptScreens,
+  type AgentPromptScreen,
+  type AgentPromptScreenVerdict,
+  type AgentPromptScreenReason,
 } from "./agent.schema.ts";
 
 // Relations

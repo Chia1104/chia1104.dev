@@ -27,6 +27,7 @@ export const env = createEnv({
       .default(15 * 60000),
     RATELIMIT_MAX: z.number().optional().default(87),
     OPENAI_API_KEY: z.string().optional(),
+    HF_TOKEN: z.string().optional(),
     AI_AUTH_PUBLIC_KEY: z.string().optional(),
     AI_AUTH_PRIVATE_KEY: z.string().optional(),
     IP_DENY_LIST: z.string().optional(),
@@ -56,6 +57,7 @@ export const env = createEnv({
       ? Number(process.env.RATELIMIT_MAX)
       : undefined,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    HF_TOKEN: process.env.HF_TOKEN,
     AI_AUTH_PUBLIC_KEY: process.env.AI_AUTH_PUBLIC_KEY,
     AI_AUTH_PRIVATE_KEY: process.env.AI_AUTH_PRIVATE_KEY,
     IP_DENY_LIST: process.env.IP_DENY_LIST,
