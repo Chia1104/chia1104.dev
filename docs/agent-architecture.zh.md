@@ -1,13 +1,14 @@
 # Agent 架構與 Turn 流程
 
 > 狀態：as-built
-> 最後更新：2026-08-20
+> 最後更新：2026-08-24
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 > 相關文件：[docs/rag-architecture.md](./rag-architecture.md)
 
-目前 agent stack 採 Pi-first：Pi 的 `AgentHarness`、session tree、tool hook、model API 與
-compaction 語意就是具體的 execution foundation，不再以 harness-neutral engine contract 或
-adapter 包裝。現在唯一上線的 agent kind 是 dashboard 裡的部落格寫作助理 `writing`。
+目前 agent stack 採 Pi-first：Pi 的 `Agent` 是執行引擎——provider loop、tool 執行、hook 與
+model API——而 `@chia/agent-runtime` 擁有它周圍所有 durable 的東西：session tree、投影成
+model context、compaction、navigation 與 fork。沒有 engine-neutral contract 或 adapter。
+現在唯一上線的 agent kind 是 dashboard 裡的部落格寫作助理 `writing`。
 
 ## 1. 分層
 
@@ -27,13 +28,13 @@ flowchart TB
     writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
     content --> runtime
-    runtime --> pi["Pi AgentHarness"]
+    runtime --> pi["Pi Agent"]
     runtime --> pg[("Postgres agent schema")]
 ```
 
 `@chia/agent-runtime` 內部仍按關注點拆模組，但這些模組不是 provider-neutral facade。
 `runPiTurn`、`createPiWireEventMapper`、`createPiToolCallGate` 的命名直接承認 Pi 依賴。真正
-需要穩定的是送到 client 的受限 `AgentWireEvent`，不是可替換 harness 的假介面。
+需要穩定的是送到 client 的受限 `AgentWireEvent`，不是可替換 engine 的假介面。
 
 ## 2. Agent kind 與 host service
 
@@ -100,12 +101,13 @@ Service 收到的是 `AgentServiceCaller`：解析後的 `Caller`（tier、sessi
 ### Session tree 與資料表
 
 Transcript 是樹而不是 flat log。`agent.session_entry.parentId` 指向 branch 上一個 entry，
-`agent.session.leafEntryId` 選定 active leaf。`PgSessionStorage` 把 Pi 的 `SessionStorage`
-實作在這些表上，因此可以 rewind 並建立 alternate branch。
+`agent.session.leafEntryId` 選定 active leaf。`PgSessionStorage` 把 runtime 自己的
+`SessionTree` 合約（`packages/agent-runtime/src/session/tree.ts`）實作在這些表上，因此可以
+rewind 並建立 alternate branch；`InMemorySessionTree` 是同一合約的測試用實作。
 
 ```text
 agent.session                  共用 settings、kind、active leaf
-agent.session_entry            Pi session-tree nodes；seq 是插入順序
+agent.session_entry            session-tree nodes（`SessionEntry`）；seq 是插入順序
 agent.run                      durable execution metadata；每個 session 最多一個 active run
 agent.tool_approval            durable approval 與 audit trail
 agent.writing_session          writing-specific 1:1 state
@@ -137,7 +139,7 @@ sequenceDiagram
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
     participant WR as runWritingTurn
-    participant PI as runPiTurn / AgentHarness
+    participant PI as runPiTurn / Agent
     participant PG as Postgres
 
     UI->>RPC: agent.sessions.chat (prompt)
@@ -153,7 +155,7 @@ sequenceDiagram
     WF->>STEP: execute turn step
     STEP->>WR: runWritingTurn(options)
     WR->>PI: runPiTurn(concrete Pi inputs)
-    PI->>PI: new AgentHarness(...).prompt(...)
+    PI->>PI: new Agent(...).prompt(...)
     PI-->>UI: bounded durable AgentWireEvent stream
     PI->>PG: session entries 與 domain writes
     STEP-->>WF: done / aborted / error / awaiting_approval
@@ -180,26 +182,31 @@ partial transcript，等待 operator 重新 prompt。
 Production 只有一條執行路徑：
 
 ```text
-runAgentTurnStep → runWritingTurn → runPiTurn → new AgentHarness
+runAgentTurnStep → runWritingTurn → runPiTurn → new Agent
 ```
 
 `runWritingTurn` 建立 writing tool context，從 caller credential 所屬的 `Models` resolve
-model，並組合 tools、skills、templates、穩定的 system prompt、每次請求都重算的 volatile
-context 與 writing policy。
+model，並組合 tools、templates、穩定的 system prompt、每次請求都重算的 volatile context 與
+writing policy。
 
 `runPiTurn` 負責完整生命週期：
 
-1. 依 resolved model clamp thinking level，每個 turn 建立一個 harness；
-2. 安裝一個組合了 turn budget 與 approval hook 的 `tool_call` hook（budget 先——Pi 只保留最後
-   一個有回傳值的 hook 結果，所以不能拆成兩個 handler）、附加 volatile block 的 `context`
-   hook、host 的 abort signal、turn deadline，以及 Pi-to-wire event mapper；
-3. emit `run:start`、user event，再呼叫 prompt 或 prompt template；
-4. 檢查回傳的 assistant message：`stopReason: "error"` 是分類過的 provider 失敗，
-   `"aborted"` 讓 turn 以 aborted 結束；harness 或 hook 拋出的例外歸為 `internal`；
-5. provider turn 成功後，原子批次持久化所有 approval snapshots，再 emit 對應的
+1. 讀 leaf 與它的 branch，用 `buildBranchContext` 投影成 messages，依 resolved model clamp
+   thinking level，綁定 tool context，為這個 turn 建立一個 `Agent`——它的 stream function 綁在
+   caller 自己的 `Models` 上，絕不是 process-wide 的 default；
+2. 安裝組合了 turn budget 與 approval gate 的 `beforeToolCall`（budget 先——被 budget 拒絕的
+   呼叫絕不能產生 approval）、附加 volatile block 的 `transformContext`、發 state-change 通知的
+   `afterToolCall`、host 的 abort signal、turn deadline，以及 Pi-to-wire event mapper；
+3. 訂閱一次：每個 `message_end`——user prompt、assistant 回覆、tool result——都在 wire event
+   送出**之前**以 turn 的 cursor 為 parent append 進 tree，client 不會看到 tree 沒存的訊息；
+4. emit `run:start`、user event，再以 operator 的文字或展開後的 template 呼叫 `prompt`；
+5. 檢查最後一則 assistant message：`stopReason: "error"` 是分類過的 provider 失敗，
+   `"aborted"` 讓 turn 以 aborted 結束；拋出的例外或 hook 記下的 host failure 歸為 `internal`；
+6. provider turn 成功後，原子批次持久化所有 approval snapshots，再 emit 對應的
    `approval:request`；
-6. 只在成功且沒有 pending approval 時 auto-compact；
-7. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
+7. 只在成功且沒有 pending approval 時 auto-compact（`compactSessionIfNeeded`），並發
+   `session:compacted`；
+8. emit terminal error/end，解除 subscriptions，最後 flush durable writer。
 
 ### Turn budget
 
@@ -213,12 +220,12 @@ Pi 的 loop 沒有 step 上限：只要 assistant message 還帶 tool call 就�
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `maxRepeats`       | 同一個 tool 以完全相同的參數連續呼叫這麼多次——以 tool error 拒絕，告訴模型結果不會改變                                            |
 | `maxToolCalls`     | 之後每個呼叫都以 tool error 拒絕，要模型用現有結果作答                                                                            |
-| `hardMaxToolCalls` | 模型無視拒絕繼續呼叫——abort harness，turn 以 `error{budget_exhausted}` 結束                                                       |
+| `hardMaxToolCalls` | 模型無視拒絕繼續呼叫——abort run，turn 以 `error{budget_exhausted}` 結束                                                           |
 | `maxDurationMs`    | 模型生成階段的 wall-clock——同樣 abort 與 error；reply 一回來就清掉，之後的 host 工作（approval 持久化、compaction）不會被它判失敗 |
 
 拒絕是透過 tool result 跟模型對話，與 approval gate 用的是同一條通道，所以會聽話的模型會正常
 結束這一輪。兩種 abort 走的是與 volatile-context 讀取失敗相同的 host-failure 路徑：記下失敗、
-abort harness，turn 以該 error 結束而非 `aborted`。per-user 與 per-session 的配額不在這裡——
+abort run，turn 以該 error 結束而非 `aborted`。per-user 與 per-session 的配額不在這裡——
 那屬於 enqueue 時的 kind service。
 
 ### Prompt 分層
@@ -240,7 +247,7 @@ Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 
 `runPiTurn`，turn 結束時釋放訂閱。
 `abort` 先 resume 這個 hook，再取消 session run、把 `agent.run` 列標成 `cancelled`；
 `completeAgentRunStep` 也會 resume 它，讓跑完的 run 不會留下一個停到 TTL 的 controller。Signal 一
-觸發 harness 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`
+觸發 run 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`
 持久化，turn 以 `run:end{aborted}` 結束；不持久化 approval，也不 compaction。送達走的是 SDK 自
 己的 durable stream，所以跨 process 也成立——沒有 registry、沒有 timer、沒有第二條 channel。下一
 次 prompt 會在持久化的 transcript 上開新 session run。過期（TTL）的 controller 不會中止任何 turn；
@@ -248,8 +255,9 @@ reader 忽略 `expired`，下一個 turn 會建新的。
 
 ### Pi hook 裡的 host 失敗
 
-Hook 拋錯時 Pi 會把它包成 `stopReason: "error"` 的 assistant message，跟 provider 失敗長得一樣。
-因此 `runPiTurn` 安裝的 hook 都自己攔錯、記成 host failure 並中止 harness，turn 以 `internal`
+Hook 拋錯時 Pi 會把它收進自己的錯誤表面——`beforeToolCall` 變成 error tool result、
+`transformContext` 變成 `stopReason: "error"` 的 assistant message——跟 provider 失敗長得一樣。
+因此 `runPiTurn` 安裝的 hook 都自己攔錯、記成 host failure 並中止 run，turn 以 `internal`
 收尾。Volatile context 讀失敗就是這樣結束，而不是讓模型在看不到目前狀態的情況下繼續動作。
 
 ## 5. Approval handshake
@@ -350,23 +358,27 @@ Active run 收到 prompt 時，service 直接 resume 這個 hook。每筆 payloa
 `hook_received` event，因此不需要 Postgres pending table、Redis Pub/Sub、process-local queue
 或 timer polling。Workflow 依 event-log 順序一次讀取一筆，再呼叫 `runAgentTurnStep`。
 
-Pi harness 仍完整位於單一 step 裡，所以 queued message 不會中斷目前正在生成的 turn；它會
+Pi agent 仍完整位於單一 step 裡，所以 queued message 不會中斷目前正在生成的 turn；它會
 在目前 turn 與任何 approval handshake 結束後成為新的正常 turn。這是刻意選擇的產品語意，
 也讓 workflow event log 成為唯一 message queue。
 
 ## 8. Compaction 與 navigation
 
-Maintenance 使用 concrete operations，不再建立假裝能執行 turn 的 handle：
+Maintenance 直接操作 session tree，不建立 `Agent`：
 
-- `compactPiSession` 建立最小 Pi harness 後呼叫 `compact()`；
-- `navigatePiSession` 建立最小 Pi harness 後呼叫 `navigateTree()`；
+- `compactPiSession` 對 branch 跑 Pi 的 `prepareCompaction` 與 `compact`，把 compaction entry
+  （summary、retained tail、usage）append 成新的 leaf；
+- `navigatePiSession` 搬 leaf（目標是 user message 時搬到它的 parent，讓它可以重問），需要時
+  用 Pi 的 `generateBranchSummary` 把被丟下的 entries 總結成新 leaf 底下的 `branch_summary`，
+  label 則記錄下來但不讓 leaf 停在 label 上；
+- fork（`PgSessionRepo.fork`）把目標以下的 branch 複製到新的 session row；
 - writing wrappers 只透過 writing allowlist resolve model，再呼叫上述 operation。
 
 Maintenance 不建立 tools、prompts、approval 或 subscriptions。Manual compact
 與 navigate 在 turn running 時仍會被拒絕。Navigation 會回傳完整 rebuilt transcript，因為
 active branch 改變後舊 view 已全部失效。
 
-Turn 成功結束時，`compactPiHarnessIfNeeded` 使用 Pi 的 context token estimate 與 threshold。
+Turn 成功結束時，`compactSessionIfNeeded` 使用 Pi 的 context token estimate 與 threshold。
 Failed turn 或 awaiting approval 的 turn 不會 auto-compact；compaction failure 也不會讓成功的
 turn 變成失敗。
 
@@ -374,7 +386,8 @@ turn 變成失敗。
 
 `Models` 依 caller/turn 建立。BYOK provider 只有 caller 提供 key 時才註冊，避免 Pi fallback
 到 service 中為其他用途存在的 ambient provider key。Selected model 必須從同一個帶
-credentials 的 collection resolve，並把該 collection 一起傳入 `AgentHarness`。
+credentials 的 collection resolve；turn 把 `Agent` 的 stream function 綁在同一個 collection
+上，絕不用 process-wide 的 `setDefaultStreamFn`。
 
 Writing package 擁有自己的 model allowlist。Gateway、OpenAI、Anthropic catalogues 由 Pi
 提供；domain 決定允許哪些 `(providerId, modelId)` pair。
@@ -422,7 +435,7 @@ state 都是 durable：
 4. 註冊呼叫新 domain `run<Kind>Turn` 的 durable turn handler；
 5. 共用 `runPiTurn`、wire events、approval semantics 與 durable stream plumbing。
 
-在真正出現第二種 execution foundation 且差異已知以前，不新增 harness adapter、engine
+在真正出現第二種 execution foundation 且差異已知以前，不新增 engine adapter、engine
 factory、capability plugin system 或 provider-neutral handle。
 
 ## 12. 參考位置
@@ -439,7 +452,9 @@ factory、capability plugin system 或 provider-neutral handle。
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
-| Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
+| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                             |
+| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                |
+| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                       |
 | Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
 | Content read tools / port    | `packages/agent-content/src/`、`apps/service/src/services/content-read.port.ts`                |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |

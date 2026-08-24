@@ -1,14 +1,15 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-20
+> Last updated: 2026-08-24
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
-The agent stack is Pi-first. Pi's `AgentHarness`, session tree, tool hooks, model APIs and
-compaction semantics are the concrete execution foundation; there is no harness-neutral engine
-contract or adapter layer. The only shipped agent kind is `writing`, the dashboard's blog authoring
-assistant.
+The agent stack is Pi-first. Pi's `Agent` is the execution engine — the provider loop, tool
+execution, hooks and model APIs — and `@chia/agent-runtime` owns everything durable around it: the
+session tree, its projection into the model's context, compaction, navigation and forks. There is
+no engine-neutral contract or adapter layer. The only shipped agent kind is `writing`, the
+dashboard's blog authoring assistant.
 
 ## 1. Layers
 
@@ -27,14 +28,14 @@ flowchart TB
     writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
     content --> runtime
-    runtime --> pi["Pi AgentHarness"]
+    runtime --> pi["Pi Agent"]
     runtime --> pg[("Postgres agent schema")]
 ```
 
 `@chia/agent-runtime` is deliberately modular, but those modules are not provider-neutral
 facades. Names such as `runPiTurn`, `createPiWireEventMapper` and `createPiToolCallGate` state the
 real dependency directly. The stable boundary is the bounded `AgentWireEvent` contract sent to
-clients, not an interchangeable harness API.
+clients, not an interchangeable engine API.
 
 ## 2. Agent kind and host service
 
@@ -103,20 +104,25 @@ Unknown writing tools fall back to the most restrictive tier.
 ### Session tree and tables
 
 The transcript is a tree. `agent.session_entry.parentId` points to the previous entry on a branch,
-and `agent.session.leafEntryId` selects the active leaf. `PgSessionStorage` implements Pi's
-`SessionStorage` over these tables, enabling rewind and alternate branches.
+and `agent.session.leafEntryId` selects the active leaf. `PgSessionStorage` implements the
+runtime's `SessionTree` contract (`packages/agent-runtime/src/session/tree.ts`) over these tables,
+enabling rewind and alternate branches; `InMemorySessionTree` is the same contract for tests.
 
 ```text
 agent.session                  generic settings, kind and active leaf
-agent.session_entry            Pi session-tree nodes; seq is insertion order
+agent.session_entry            session-tree nodes (`SessionEntry`); seq is insertion order
 agent.run                      durable execution metadata; one active run per session
 agent.tool_approval            durable approval request and audit trail
 agent.writing_session          writing-specific 1:1 state
 agent.writing_draft            per-locale staging buffer
 ```
 
-Entry payloads are opaque JSON matching Pi's session-entry union. Kind-specific state uses
-extension tables instead of widening the shared session table.
+Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
+entry shapes, so Pi's own context projection reads them directly (`buildBranchContext` in
+`session/context.ts`) and rows of retired entry types are ignored rather than migrated. The
+projection is a pure function of the branch: a turn's provider request is the previous projection
+plus the entries it appended, which is what keeps the provider's cached prefix valid from turn to
+turn. Kind-specific state uses extension tables instead of widening the shared session table.
 
 ### Session title
 
@@ -141,7 +147,7 @@ sequenceDiagram
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
     participant WR as runWritingTurn
-    participant PI as runPiTurn / AgentHarness
+    participant PI as runPiTurn / Agent
     participant PG as Postgres
 
     UI->>RPC: agent.sessions.chat (prompt)
@@ -157,7 +163,7 @@ sequenceDiagram
     WF->>STEP: execute turn step
     STEP->>WR: runWritingTurn(options)
     WR->>PI: runPiTurn(concrete Pi inputs)
-    PI->>PI: new AgentHarness(...).prompt(...)
+    PI->>PI: new Agent(...).prompt(...)
     PI-->>UI: bounded durable AgentWireEvent stream
     PI->>PG: session entries and domain writes
     STEP-->>WF: done / aborted / error / awaiting_approval
@@ -185,46 +191,54 @@ an error, keeps its partial transcript, and is retried only by a new operator me
 There is one production path:
 
 ```text
-runAgentTurnStep → runWritingTurn → runPiTurn → new AgentHarness
+runAgentTurnStep → runWritingTurn → runPiTurn → new Agent
 ```
 
 `runWritingTurn` creates the writing tool context, resolves a model from the caller's credential-
-bearing `Models`, and supplies tools, skills, templates, the stable system prompt, the volatile
-turn context and the writing policy.
+bearing `Models`, and supplies tools, templates, the stable system prompt, the volatile turn
+context and the writing policy.
 
 `runPiTurn` owns the complete lifecycle:
 
-1. clamp thinking level to the resolved model and construct one harness for the turn;
-2. install one `tool_call` hook composing the turn budget and the approval hook (budget first —
-   Pi keeps the last defined hook result, so they cannot be two handlers), the `context` hook
-   that appends the volatile block, the host abort signal, the turn deadline, and Pi-to-wire
-   event mapping;
-3. emit `run:start` and the user event, then invoke prompt or prompt template;
-4. read the resolved assistant message: `stopReason: "error"` is a classified provider failure,
-   `"aborted"` ends the turn as aborted; a thrown harness or hook error is `internal`;
-5. after a successful provider turn, atomically persist all approval snapshots and then emit their
+1. read the leaf and its branch, project the branch into messages (`buildBranchContext`), clamp
+   the thinking level to the resolved model, bind the tool context, and construct one `Agent` for
+   the turn — its stream function is the caller's own `Models`, never a process-wide default;
+2. install `beforeToolCall` composing the turn budget and the approval gate (budget first — a call
+   the budget refuses must never raise an approval), `transformContext` appending the volatile
+   block, `afterToolCall` for state-change notices, the host abort signal, the turn deadline, and
+   Pi-to-wire event mapping;
+3. subscribe once: every `message_end` — user prompt, assistant reply, tool result — is appended to
+   the tree under the turn's cursor _before_ its wire event is emitted, so a client never sees a
+   message the tree lost;
+4. emit `run:start` and the user event, then `prompt` with the operator's text or the expanded
+   template;
+5. read the last assistant message: `stopReason: "error"` is a classified provider failure,
+   `"aborted"` ends the turn as aborted; a thrown error, or a host failure a hook recorded, is
+   `internal`;
+6. after a successful provider turn, atomically persist all approval snapshots and then emit their
    `approval:request` events;
-6. auto-compact only after a successful turn with no pending approvals;
-7. emit the terminal error/end events, unsubscribe, then flush the durable writer.
+7. auto-compact only after a successful turn with no pending approvals (`compactSessionIfNeeded`),
+   announcing `session:compacted`;
+8. emit the terminal error/end events, unsubscribe, then flush the durable writer.
 
 ### Turn budget
 
 Pi's loop has no step limit: it runs while the assistant message carries tool calls, so a model
 that re-issues the same call would run until the operator aborts. Every kind therefore passes an
 `AgentTurnBudget` (`writingTurnBudget` in `@chia/agent-writing/policy`) and `createPiTurnBudget`
-(`packages/agent-runtime/src/pi/turn-budget.ts`) enforces it on the `tool_call` hook, ahead of the
+(`packages/agent-runtime/src/pi/turn-budget.ts`) enforces it in `beforeToolCall`, ahead of the
 approval gate:
 
 | Limit              | Crossing it                                                                                                                                                                       |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `maxRepeats`       | the same tool with identical arguments that many times in a row — refused with a tool error telling the model the result will not change                                          |
 | `maxToolCalls`     | every further call refused with a tool error asking the model to answer from what it has                                                                                          |
-| `hardMaxToolCalls` | the model called through the refusals — the harness is aborted and the turn ends `error{budget_exhausted}`                                                                        |
+| `hardMaxToolCalls` | the model called through the refusals — the run is aborted and the turn ends `error{budget_exhausted}`                                                                            |
 | `maxDurationMs`    | wall-clock for the model's generation — same abort and error; cleared once the reply resolves, so the host work after it (approval persistence, compaction) is never failed by it |
 
 Refusals speak to the model through the tool result, the channel the approval gate already uses,
 so a model that complies finishes the turn normally. The two aborts go through the same host-failure
-path as a failed volatile-context read: the failure is recorded, the harness aborted, and the turn
+path as a failed volatile-context read: the failure is recorded, the run aborted, and the turn
 ends as that error rather than as `aborted`. Per-user and per-session quotas are not here — they
 belong at enqueue time, in the kind service.
 
@@ -248,7 +262,7 @@ own stream. Each turn step subscribes to that stream by run id — no lookup, so
 controller per session run — hands the resulting `AbortSignal` to `runPiTurn`, and releases the
 subscription when the turn ends. `abort` resumes the hook first, then cancels the session run and
 marks the `agent.run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
-not leave a controller parked until its TTL. Firing the signal aborts the harness at once, mid-generation included: Pi cancels the
+not leave a controller parked until its TTL. Firing the signal aborts the run at once, mid-generation included: Pi cancels the
 in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
 `run:end{aborted}`; no approvals are persisted and no compaction runs. Delivery is the SDK's own
 durable stream, so it works from any process — no registry, no timer, no second channel. The next
@@ -257,9 +271,10 @@ aborts a turn; readers ignore `expired` and the next turn starts a new one.
 
 ### Host failures inside Pi hooks
 
-Pi turns a hook that throws into an assistant message with `stopReason: "error"`, which would be
-classified like a provider failure. The hooks `runPiTurn` installs therefore catch their own
-errors, record them as a host failure and abort the harness; the turn then fails as `internal`. A
+Pi folds a hook that throws into its own error surface — an error tool result for
+`beforeToolCall`, an assistant message with `stopReason: "error"` for `transformContext` — which
+would be classified like a provider failure. The hooks `runPiTurn` installs therefore catch their
+own errors, record them as a host failure and abort the run; the turn then fails as `internal`. A
 volatile-context read that fails ends the turn this way rather than letting the model act without
 seeing the current state.
 
@@ -377,24 +392,29 @@ a durable `hook_received` event, so no Postgres pending table, Redis Pub/Sub, pr
 timer polling is needed. The workflow consumes one event at a time in event-log order and invokes
 `runAgentTurnStep` for it.
 
-The Pi harness still lives entirely inside one opaque step, so a queued message does not interrupt
+The Pi agent still lives entirely inside one opaque step, so a queued message does not interrupt
 the turn currently generating. It becomes a normal new turn after the current turn and any approval
 handshake finish. This is the deliberate product semantic that lets the workflow event log be the
 only message queue.
 
 ## 8. Compaction and navigation
 
-Maintenance uses concrete operations, not a fake turn-capable handle:
+Maintenance operates on the session tree directly; no `Agent` is built:
 
-- `compactPiSession` creates a minimal Pi harness and calls `compact()`;
-- `navigatePiSession` creates a minimal Pi harness and calls `navigateTree()`;
+- `compactPiSession` runs Pi's `prepareCompaction` and `compact` over the branch and appends the
+  compaction entry — summary, retained tail, usage — as the new leaf;
+- `navigatePiSession` moves the leaf (to a user message's parent when the target is a user
+  message, so it can be re-asked), summarises the entries left behind into a `branch_summary`
+  under the new leaf with Pi's `generateBranchSummary` when asked, and records a label without
+  moving the leaf onto it;
+- forks (`PgSessionRepo.fork`) copy the branch below the target into a new session row;
 - writing wrappers resolve the model through the writing allowlist, then call those operations.
 
 No tools, prompts, approvals or subscriptions are constructed for maintenance.
 Manual compact and navigate are refused while a turn is running. Navigation returns the entire
 rebuilt transcript because changing the active branch invalidates the current view.
 
-At a successful turn boundary, `compactPiHarnessIfNeeded` uses Pi's context-token estimation and
+At a successful turn boundary, `compactSessionIfNeeded` uses Pi's context-token estimation and
 threshold. Failed turns and turns awaiting approval are never auto-compacted. Compaction failure is
 non-fatal and can be retried at the next clean boundary.
 
@@ -402,7 +422,8 @@ non-fatal and can be retried at the next clean boundary.
 
 `Models` is created per caller/turn. BYOK providers are registered only when that caller supplied a
 key, preventing Pi from falling back to unrelated ambient provider keys. The selected model is
-resolved from the same credential-bearing collection passed into `AgentHarness`.
+resolved from the same credential-bearing collection the turn binds the `Agent`'s stream function
+to — never `setDefaultStreamFn`, which is process-wide.
 
 The writing package owns its model allowlist. The gateway, OpenAI and Anthropic catalogues come
 from Pi; the domain decides which `(providerId, modelId)` pairs it permits.
@@ -465,7 +486,7 @@ Another domain kind uses the same concrete Pi runtime:
 4. register a durable turn handler that calls the new domain's `run<Kind>Turn`;
 5. reuse `runPiTurn`, wire events, approval semantics and durable stream plumbing.
 
-Do not add a harness adapter, engine factory, capability plugin system or provider-neutral handle
+Do not add an engine adapter, engine factory, capability plugin system or provider-neutral handle
 until a concrete second execution foundation requires a different seam.
 
 ## 12. Reference
@@ -482,7 +503,9 @@ until a concrete second execution foundation requires a different seam.
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
 | Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
-| Session over Postgres        | `packages/agent-runtime/src/session/`                                                          |
+| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                             |
+| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                |
+| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                       |
 | Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
 | Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
