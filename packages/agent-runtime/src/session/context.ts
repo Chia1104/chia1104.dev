@@ -16,7 +16,7 @@ export const buildBranchContext = (
   entries: readonly SessionEntry[]
 ): SessionContext =>
   buildSessionContext(
-    /* SAFETY: Context entries carry Pi's entry fields; only the timestamp representation differs and the projection never reads it. */ contextEntries(
+    /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`, which the projection never reads. */ contextEntries(
       entries
     ) as never
   );

@@ -71,6 +71,8 @@ export interface ToolCallRequest {
 export interface ToolCallRefusal {
   block: true;
   reason: string;
+  /** Asks Pi to end the run after this tool batch instead of letting the model continue. */
+  terminate?: true;
 }
 
 export interface AgentSessionSettings {

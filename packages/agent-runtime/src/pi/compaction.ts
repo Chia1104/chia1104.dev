@@ -44,7 +44,7 @@ const compactBranch = async (
   }: CompactSessionOptions
 ): Promise<AgentCompactionResult | null> => {
   const prepared = prepareCompaction(
-    /* SAFETY: Context entries carry Pi's entry fields; preparation reads only messages. */ contextEntries(
+    /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; preparation reads only messages. */ contextEntries(
       branch
     ) as never,
     DEFAULT_COMPACTION_SETTINGS

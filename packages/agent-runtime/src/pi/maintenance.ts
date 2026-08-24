@@ -62,7 +62,7 @@ export const navigatePiSession = async (
     const entries = await entriesLeftBehind(session, oldLeafId, entryId);
     if (entries.length > 0) {
       const generated = await generateBranchSummary(
-        /* SAFETY: Context entries carry Pi's entry fields; summarisation reads only messages. */ contextEntries(
+        /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; summarisation reads only messages. */ contextEntries(
           entries
         ) as never,
         { models, model, signal: new AbortController().signal }

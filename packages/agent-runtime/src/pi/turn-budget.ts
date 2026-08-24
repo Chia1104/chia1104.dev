@@ -117,6 +117,7 @@ export const createPiTurnBudget = (
         return {
           block: true,
           reason: "This turn has been stopped: its tool budget is exhausted.",
+          terminate: true,
         };
       }
 

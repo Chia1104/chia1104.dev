@@ -35,7 +35,7 @@ export const estimateBranchContextTokens = (
   );
   if (
     getLastAssistantUsage(
-      /* SAFETY: Context entries carry Pi's entry fields; the usage lookup reads only messages. */ entriesAfterCompaction as never
+      /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; the usage lookup reads only messages. */ entriesAfterCompaction as never
     )
   ) {
     return estimateContextTokens(messages).tokens;
