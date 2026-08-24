@@ -49,7 +49,7 @@ export interface BaseOSContext extends ServiceContext {
   };
   /** Starts and reconciles resource index runs. Needs the workflow runtime. */
   indexing?: IndexingService;
-  /** Agent kind services, keyed by `agent_session.kind`. */
+  /** Agent kind services, keyed by `agent.session.kind`. */
   agentKinds?: Readonly<Record<string, AgentKindService>>;
 }
 

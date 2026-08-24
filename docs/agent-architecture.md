@@ -28,7 +28,7 @@ flowchart TB
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
     content --> runtime
     runtime --> pi["Pi AgentHarness"]
-    runtime --> pg[("Postgres agent_* tables")]
+    runtime --> pg[("Postgres agent schema")]
 ```
 
 `@chia/agent-runtime` is deliberately modular, but those modules are not provider-neutral
@@ -38,20 +38,36 @@ clients, not an interchangeable harness API.
 
 ## 2. Agent kind and host service
 
-`agent_session.kind` is a domain discriminator (`writing` today), not a harness discriminator. It
+`agent.session.kind` is a domain discriminator (`writing` today), not a harness discriminator. It
 selects:
 
-- the host implementation the request context carries in `agentKinds[kind]`;
-- the durable step handler in `AGENT_TURN_HANDLERS`;
-- the kind-specific extension row, such as `writing_agent_session`.
+- the `AgentKindDefinition` in `apps/service/src/agents/registry.ts` (`AGENT_KINDS`), which both
+  the request context's `agentKinds[kind]` service and the durable turn step resolve;
+- the kind-specific extension row, such as `agent.writing_session`, behind `definition.state`.
 
 Session-scoped requests resolve kind from the persisted session. Client input can only cross-check
 it, so a caller cannot drive a writing session through another kind's tools.
 
 `packages/api/orpc/services/agent.service.ts` defines `AgentKindService`. This is a valid host dependency
 inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
-puts `{ writing: writingAgentService }` on every request context (`createORPCContext`). It is
+puts one service per registered kind on every request context (`createORPCContext`). It is
 unrelated to the removed harness abstraction.
+
+The service itself is generic. `apps/service/src/agents/service.ts` (`createAgentKindService`)
+implements the whole port — session rows, durable runs, prompt/attach/stream, abort, approvals,
+compaction and rewind — over an `AgentKindDefinition` (`agents/kind.ts`), and the turn step
+(`runKindTurn`) resolves the same definition for the Pi side. A kind is one file in
+`apps/service/src/agents/` (`writing.ts`) that binds its domain package to the host's ports and
+supplies only what differs: `minTier`, defaults, replay policy, the model allowlist,
+capabilities, its 1:1 `state` row (`create`/`load`/`summary`/`detail`), `runTurn` and
+`maintenance`. The registry entry restates `minTier` eagerly for the guards and loads the
+definition with a dynamic import, so the domain package and provider SDKs stay off the boot path.
+
+`AgentKindService` is the shape every kind shares and never grows for one kind. A procedure only
+one kind has gets its own contract namespace (`agent.<kind>.*`), its own port interface in
+`packages/api`, and its implementation beside that kind's definition — it does not go on the
+shared port or through the generic delegate. Today there is none: the writing draft rides on the
+session detail (`state.detail`), which is all the dashboard reads.
 
 ### Who may use a kind
 
@@ -86,17 +102,17 @@ Unknown writing tools fall back to the most restrictive tier.
 
 ### Session tree and tables
 
-The transcript is a tree. `agent_session_entry.parentId` points to the previous entry on a branch,
-and `agent_session.leafEntryId` selects the active leaf. `PgSessionStorage` implements Pi's
+The transcript is a tree. `agent.session_entry.parentId` points to the previous entry on a branch,
+and `agent.session.leafEntryId` selects the active leaf. `PgSessionStorage` implements Pi's
 `SessionStorage` over these tables, enabling rewind and alternate branches.
 
 ```text
-agent_session                  generic settings, kind and active leaf
-agent_session_entry            Pi session-tree nodes; seq is insertion order
-agent_run                      durable execution metadata; one active run per session
-agent_tool_approval            durable approval request and audit trail
-writing_agent_session          writing-specific 1:1 state
-writing_agent_draft            per-locale staging buffer
+agent.session                  generic settings, kind and active leaf
+agent.session_entry            Pi session-tree nodes; seq is insertion order
+agent.run                      durable execution metadata; one active run per session
+agent.tool_approval            durable approval request and audit trail
+agent.writing_session          writing-specific 1:1 state
+agent.writing_draft            per-locale staging buffer
 ```
 
 Entry payloads are opaque JSON matching Pi's session-entry union. Kind-specific state uses
@@ -104,7 +120,7 @@ extension tables instead of widening the shared session table.
 
 ### Session title
 
-`agent_session.title` is the operator's handle for a session: `null` until named, then either
+`agent.session.title` is the operator's handle for a session: `null` until named, then either
 the operator's own name (`settings:update`) or one condensed from their first prompt. The turn
 step names an untitled session alongside its first operator turn (`titleSession` in
 `apps/service/src/steps/agent-turn.step.ts`): `generateSessionTitle` in
@@ -121,7 +137,7 @@ turn-end refresh of the session list already sees it. Operator-decision relay tu
 sequenceDiagram
     participant UI as apps/dash
     participant RPC as oRPC
-    participant SVC as writingAgentService
+    participant SVC as createAgentKindService(writing)
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
     participant WR as runWritingTurn
@@ -134,7 +150,7 @@ sequenceDiagram
         SVC->>WF: resume message hook
     else no active run
         SVC->>WF: start workflow
-        SVC->>PG: create agent_run
+        SVC->>PG: create agent.run
     end
     SVC-->>RPC: runId + stream cursor
     RPC->>SVC: stream(caller, cursor)
@@ -227,11 +243,11 @@ Nothing in the workflow SDK reaches a step already executing — cancelling the 
 from being scheduled again — so a stop travels through a second, tiny durable run: the session
 run's **abort controller** (`apps/service/src/workflows/agent-abort.workflow.ts`). `prompt` starts
 it before the session run and passes its `{ id, runId }` in the session run's request (and into
-`agent_run.metadata`); it parks on `agentAbortHook` and, when resumed, writes one message to its
+`agent.run.metadata`); it parks on `agentAbortHook` and, when resumed, writes one message to its
 own stream. Each turn step subscribes to that stream by run id — no lookup, so there is exactly one
 controller per session run — hands the resulting `AbortSignal` to `runPiTurn`, and releases the
 subscription when the turn ends. `abort` resumes the hook first, then cancels the session run and
-marks the `agent_run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
+marks the `agent.run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
 not leave a controller parked until its TTL. Firing the signal aborts the harness at once, mid-generation included: Pi cancels the
 in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
 `run:end{aborted}`; no approvals are persisted and no compaction runs. Delivery is the SDK's own
@@ -259,7 +275,7 @@ sequenceDiagram
     participant R as runPiTurn
     participant WF as Workflow
     participant OP as Operator
-    participant DB as agent_tool_approval
+    participant DB as agent.tool_approval
 
     M->>G: commit tool call
     G-->>R: emit approval:request at once
@@ -340,7 +356,7 @@ The chat is server-authoritative: on mount the session store hydrates from `agen
 and, when `run.status` is `running`, rejoins the turn through `agent.sessions.chat` with
 `{ type: "attach" }`. A stream that ends with `run:end` only refreshes the session detail (the
 view it built is kept, and the marker below may lag the terminal event by a moment, so that read
-is retried briefly); a stream that breaks earlier rebuilds from `get` and re-attaches with backoff. The turn step maintains `agent_run.metadata.turn`
+is retried briefly); a stream that breaks earlier rebuilds from `get` and re-attaches with backoff. The turn step maintains `agent.run.metadata.turn`
 — the session leaf before the turn, the first coarse stream index it writes, and `running`, set
 before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
 run parked on its message hook is `running` to the SDK just like one executing a step, so
@@ -430,10 +446,10 @@ implementations; all mutable state is durable:
 
 | State                                   | Home                                           |
 | --------------------------------------- | ---------------------------------------------- |
-| Transcript                              | `agent_session_entry`                          |
-| Draft                                   | `writing_agent_session`, `writing_agent_draft` |
-| Approval decisions                      | `agent_tool_approval`                          |
-| Run metadata                            | `agent_run`                                    |
+| Transcript                              | `agent.session_entry`                          |
+| Draft                                   | `agent.writing_session`, `agent.writing_draft` |
+| Approval decisions                      | `agent.tool_approval`                          |
+| Run metadata                            | `agent.run`                                    |
 | Message inbox, pauses and event streams | workflow backend                               |
 
 ## 11. Adding another agent kind
@@ -472,7 +488,8 @@ until a concrete second execution foundation requires a different seam.
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                           |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                   |
+| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`         |
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |

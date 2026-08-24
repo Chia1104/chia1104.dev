@@ -9,7 +9,7 @@ import { withMetaSchema } from "./shared";
 /**
  * Shared agent transport contract.
  *
- * Kind-specific fields stay optional; the runtime selected by `agent_session.kind` owns
+ * Kind-specific fields stay optional; the runtime selected by `agent.session.kind` owns
  * their validation.
  */
 
@@ -337,17 +337,6 @@ export const navigateAgentSessionContract = oc
       events: z.array(agentWireEventSchema),
     })
   );
-
-export const getAgentDraftContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(
-    z.object({
-      /** Agent kind. Optional while only one is registered. */
-      kind: z.string().optional(),
-      sessionId: z.string(),
-    })
-  )
-  .output(agentDraftSchema);
 
 // ============================================
 // Capabilities

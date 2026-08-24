@@ -19,7 +19,7 @@ import {
 import type { JsonObject } from "@chia/utils/json";
 
 /**
- * Pi's {@link SessionStorage} over `agent_session_entry`.
+ * Pi's {@link SessionStorage} over `agent.session_entry`.
  *
  * The port is only 12 methods, so this is far less work than pulling in
  * `@earendil-works/pi-storage-sqlite-node` and running a second datastore next to the one the

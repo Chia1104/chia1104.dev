@@ -1,5 +1,9 @@
 import * as dotenv from "dotenv";
 import type { Config } from "drizzle-kit";
+import { getTableName, is } from "drizzle-orm";
+import { PgTable } from "drizzle-orm/pg-core";
+
+import * as agent from "./src/schemas/agent.schema.ts";
 
 dotenv.config({
   path: "../../.env.global",
@@ -39,6 +43,14 @@ const dbEnv = (
   }
 };
 
+/**
+ * `tablesFilter` matches bare table names in every schema, so the unprefixed `agent` tables must be
+ * listed alongside the `chia_*` glob that keeps drizzle-kit off extension-owned tables.
+ */
+const agentTables = Object.values(agent)
+  .filter((value) => is(value, PgTable))
+  .map((table) => getTableName(table));
+
 export default {
   schema: "./src/schemas/schema.ts",
   dialect: "postgresql",
@@ -46,5 +58,6 @@ export default {
     url: dbEnv(),
   },
   out: "./.drizzle/migrations",
-  tablesFilter: ["chia_*"],
+  schemaFilter: ["public", "agent"],
+  tablesFilter: ["chia_*", ...agentTables],
 } satisfies Config;
