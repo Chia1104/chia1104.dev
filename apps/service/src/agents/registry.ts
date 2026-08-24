@@ -67,7 +67,7 @@ const createLazyAgentKindService = (
   kind: string,
   entry: AgentKindEntry
 ): AgentKindService => {
-  let service: Promise<AgentKindService> | undefined;
+  let service: Promise<Required<AgentKindService>> | undefined;
   const impl = () => {
     service ??= Promise.all([import("./service"), loadAgentKind(kind)]).then(
       ([{ createAgentKindService }, definition]) => {
@@ -104,8 +104,7 @@ const createLazyAgentKindService = (
     approve: async (caller, input) => (await impl()).approve(caller, input),
     compact: async (caller, input) => (await impl()).compact(caller, input),
     navigate: async (caller, input) => (await impl()).navigate(caller, input),
-    getDraft: async (caller, input) =>
-      (await (await impl()).getDraft?.(caller, input)) ?? null,
+    getDraft: async (caller, input) => (await impl()).getDraft(caller, input),
     validateModel: async (ref) => (await impl()).validateModel(ref),
     listModels: async (caller) => (await impl()).listModels(caller),
     listCapabilities: async () => (await impl()).listCapabilities(),
