@@ -1,9 +1,12 @@
 import type {
-  AgentHarnessTool,
+  AgentTool as PiAgentTool,
+  AgentToolResult,
+  AgentToolUpdateCallback,
   PromptTemplate,
   Skill,
   ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
+import type { Static, TSchema } from "typebox";
 
 import type { OperatorDecision } from "./wire/operator-decision.ts";
 
@@ -38,7 +41,37 @@ export interface AgentEventPresentation {
   ) => string;
 }
 
-export type AgentTool<TContext extends object> = AgentHarnessTool<TContext>;
+/**
+ * A Pi tool whose `execute` also receives the turn's context — the ports and ids a kind resolves
+ * once per turn. Bound to Pi's four-argument shape by `bindToolContext` before a turn runs.
+ */
+export type AgentTool<
+  TContext extends object,
+  TParameters extends TSchema = TSchema,
+  TDetails = unknown,
+> = Omit<PiAgentTool<TParameters, TDetails>, "execute"> & {
+  execute(
+    toolCallId: string,
+    params: Static<TParameters>,
+    signal: AbortSignal | undefined,
+    onUpdate: AgentToolUpdateCallback<TDetails> | undefined,
+    context: TContext
+  ): Promise<AgentToolResult<TDetails>>;
+};
+
+/** A tool call the model issued, as the turn's hooks see it before execution. */
+export interface ToolCallRequest {
+  toolCallId: string;
+  toolName: string;
+  /** Validated arguments. */
+  input: unknown;
+}
+
+/** Refuses a call. The reason returns to the model as the tool's error result. */
+export interface ToolCallRefusal {
+  block: true;
+  reason: string;
+}
 
 export interface AgentSessionSettings {
   providerId: string;

@@ -1,7 +1,7 @@
-import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
+import type { SessionEntry } from "../src/session/entries.ts";
 import { DETAILS_MAX_STRING_CHARS } from "../src/wire/clip.ts";
 import { foldEvents } from "../src/wire/fold.ts";
 import { entriesToWireEvents } from "../src/wire/replay.ts";
@@ -121,19 +121,19 @@ describe("foldEvents", () => {
   });
 
   it("uses persisted entry ids when replaying assistant messages", () => {
-    const entries: SessionTreeEntry[] = [
+    const entries: SessionEntry[] = [
       {
         type: "message",
         id: "entry-1",
         parentId: null,
-        timestamp: "2026-01-01T00:00:00.000Z",
+        timestamp: 1_767_225_600_000,
         message: fauxAssistantMessage("First", { timestamp: 1 }),
       },
       {
         type: "message",
         id: "entry-2",
         parentId: "entry-1",
-        timestamp: "2026-01-01T00:00:01.000Z",
+        timestamp: 1_767_225_601_000,
         message: fauxAssistantMessage("Second", { timestamp: 2 }),
       },
     ];
@@ -162,12 +162,12 @@ describe("foldEvents", () => {
     const failed = fauxAssistantMessage("", { timestamp: 1 });
     failed.stopReason = "error";
     failed.errorMessage = "429 Too Many Requests";
-    const entries: SessionTreeEntry[] = [
+    const entries: SessionEntry[] = [
       {
         type: "message",
         id: "entry-1",
         parentId: null,
-        timestamp: "2026-01-01T00:00:00.000Z",
+        timestamp: 1_767_225_600_000,
         message: failed,
       },
     ];
@@ -197,12 +197,12 @@ describe("foldEvents", () => {
 
   it("clips oversized tool details on replay while keeping their shape", () => {
     const body = "x".repeat(DETAILS_MAX_STRING_CHARS + 100);
-    const entries: SessionTreeEntry[] = [
+    const entries: SessionEntry[] = [
       {
         type: "message",
         id: "entry-1",
         parentId: null,
-        timestamp: "2026-01-01T00:00:00.000Z",
+        timestamp: 1_767_225_600_000,
         message: {
           role: "toolResult",
           toolCallId: "call-1",

@@ -61,9 +61,17 @@
       "types": "./src/pi/title.ts",
       "default": "./src/pi/title.ts"
     },
-    "./session/pi": {
-      "types": "./src/session/pi.ts",
-      "default": "./src/session/pi.ts"
+    "./session/entries": {
+      "types": "./src/session/entries.ts",
+      "default": "./src/session/entries.ts"
+    },
+    "./session/tree": {
+      "types": "./src/session/tree.ts",
+      "default": "./src/session/tree.ts"
+    },
+    "./session/context": {
+      "types": "./src/session/context.ts",
+      "default": "./src/session/context.ts"
     },
     "./session/pg-repo": {
       "types": "./src/session/pg-repo.ts",

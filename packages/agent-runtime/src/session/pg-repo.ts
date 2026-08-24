@@ -1,16 +1,4 @@
-import {
-  createTimestamp,
-  getEntriesToFork,
-  SessionError,
-  toSession,
-  uuidv7,
-} from "@earendil-works/pi-agent-core";
-import type {
-  Session,
-  SessionCreateOptions,
-  SessionForkOptions,
-  SessionRepo,
-} from "@earendil-works/pi-agent-core";
+import { uuidv7 } from "@earendil-works/pi-ai";
 
 import type { DB } from "@chia/db/client";
 import {
@@ -32,7 +20,8 @@ import type {
 import { PgSessionStorage } from "./pg-storage.ts";
 import type { PgSessionMetadata } from "./pg-storage.ts";
 
-export interface PgSessionCreateOptions extends SessionCreateOptions {
+export interface PgSessionCreateOptions {
+  id?: string;
   userId: string;
   title?: string;
   settings?: Partial<AgentSessionSettings>;
@@ -46,23 +35,32 @@ export interface PgSessionListOptions {
   includeDeleted?: boolean;
 }
 
+export interface PgSessionForkOptions extends Partial<PgSessionCreateOptions> {
+  /** Entry to fork from; the whole tree when omitted. */
+  entryId?: string;
+  /** `before` forks the branch up to the user message's parent, so the message can be re-asked. */
+  position?: "before" | "at";
+}
+
 export interface PgSessionRepoOptions {
   kind: string;
   defaults: AgentSessionDefaults;
 }
 
+export class SessionNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SessionNotFoundError";
+  }
+}
+
 /**
- * Pi's {@link SessionRepo} over `agent.session`.
+ * Session lifecycle over `agent.session`.
  *
- * `fork` is the interesting one — it powers "rewind three steps and try another angle". pi's
- * `getEntriesToFork` picks the prefix to copy, and the copy lands in a *new* session row so the
- * original branch stays readable in the dashboard.
+ * `fork` is the interesting one — it powers "rewind three steps and try another angle". The copied
+ * prefix lands in a *new* session row so the original branch stays readable in the dashboard.
  */
-export class PgSessionRepo implements SessionRepo<
-  PgSessionMetadata,
-  PgSessionCreateOptions,
-  PgSessionListOptions
-> {
+export class PgSessionRepo {
   /**
    * The repository is scoped to one kind. That makes list/open safe by construction and keeps
    * defaults owned by the kind rather than by core.
@@ -72,9 +70,7 @@ export class PgSessionRepo implements SessionRepo<
     private readonly options: PgSessionRepoOptions
   ) {}
 
-  async create(
-    options: PgSessionCreateOptions
-  ): Promise<Session<PgSessionMetadata>> {
+  async create(options: PgSessionCreateOptions): Promise<PgSessionStorage> {
     const id = options.id ?? uuidv7();
     const { kind, defaults } = this.options;
     const settings = options.settings ?? {};
@@ -93,41 +89,36 @@ export class PgSessionRepo implements SessionRepo<
       configVersion: options.configVersion,
     });
 
-    return toSession(
-      new PgSessionStorage(this.db, id, {
-        id,
-        createdAt: createTimestamp(),
-        userId: options.userId,
-        kind,
-      })
-    );
+    return new PgSessionStorage(this.db, {
+      id,
+      createdAt: new Date().toISOString(),
+      userId: options.userId,
+      kind,
+    });
   }
 
   async open(
     metadata: Pick<PgSessionMetadata, "id">
-  ): Promise<Session<PgSessionMetadata>> {
+  ): Promise<PgSessionStorage> {
     const row = await getAgentSession(this.db, metadata.id);
     if (!row) {
-      throw new SessionError("not_found", `Session not found: ${metadata.id}`);
+      throw new SessionNotFoundError(`Session not found: ${metadata.id}`);
     }
     if (row.kind !== this.options.kind) {
-      throw new SessionError(
-        "not_found",
+      throw new SessionNotFoundError(
         `Session ${metadata.id} belongs to agent kind "${row.kind}", not "${this.options.kind}"`
       );
     }
-    return toSession(
-      new PgSessionStorage(this.db, row.id, {
-        id: row.id,
-        createdAt: row.createdAt.toISOString(),
-        userId: row.userId,
-        kind: row.kind,
-      })
-    );
+    return new PgSessionStorage(this.db, {
+      id: row.id,
+      createdAt: row.createdAt.toISOString(),
+      userId: row.userId,
+      kind: row.kind,
+    });
   }
 
   /** Opens by id — what the transport actually holds, without a metadata round-trip. */
-  openById(sessionId: string): Promise<Session<PgSessionMetadata>> {
+  openById(sessionId: string): Promise<PgSessionStorage> {
     return this.open({ id: sessionId });
   }
 
@@ -155,17 +146,14 @@ export class PgSessionRepo implements SessionRepo<
 
   async fork(
     source: Pick<PgSessionMetadata, "id">,
-    options: SessionForkOptions & Partial<PgSessionCreateOptions>
-  ): Promise<Session<PgSessionMetadata>> {
+    options: PgSessionForkOptions
+  ): Promise<PgSessionStorage> {
     const original = await this.open(source);
-    const entries = await getEntriesToFork(original.getStorage(), {
-      entryId: options.entryId,
-      position: options.position,
-    });
+    const entries = await entriesToFork(original, options);
 
     const sourceRow = await getAgentSession(this.db, source.id);
     if (!sourceRow) {
-      throw new SessionError("not_found", `Session not found: ${source.id}`);
+      throw new SessionNotFoundError(`Session not found: ${source.id}`);
     }
 
     const forked = await this.create({
@@ -175,26 +163,44 @@ export class PgSessionRepo implements SessionRepo<
       settings: options.settings ?? settingsFromRow(sourceRow),
     });
 
-    const storage = forked.getStorage();
+    // appendEntry advances the leaf, so the last copied entry is the fork's leaf.
     for (const entry of entries) {
-      await storage.appendEntry(entry);
+      await forked.appendEntry(entry);
     }
-    const leaf = entries.at(-1);
-    if (leaf) await storage.setLeafId(leaf.id);
 
     return forked;
   }
 }
 
+/**
+ * The prefix a fork copies: the branch below `entryId`, from the newest compaction down. `before`
+ * only makes sense on a user message, whose parent becomes the effective leaf.
+ */
+const entriesToFork = async (
+  session: PgSessionStorage,
+  options: Pick<PgSessionForkOptions, "entryId" | "position">
+) => {
+  if (!options.entryId) return session.getEntries();
+  const target = await session.getEntry(options.entryId);
+  if (!target) {
+    throw new SessionNotFoundError(`Entry ${options.entryId} not found`);
+  }
+  if ((options.position ?? "before") === "at") {
+    return session.getBranch(target.id);
+  }
+  if (target.type !== "message" || target.message.role !== "user") {
+    throw new Error(`Entry ${options.entryId} is not a user message`);
+  }
+  return session.getBranch(target.parentId);
+};
+
 // ============================================
-// Session settings (outside pi's port)
+// Session settings (outside the tree)
 // ============================================
 
 /**
- * Runtime settings are read and written directly rather than through `SessionStorage`.
- *
- * pi models model/thinking changes as session *entries* for replay fidelity, but the transport
- * needs the current values *before* a harness exists in order to build one.
+ * Runtime settings are read and written directly rather than as tree entries: the transport
+ * needs the current values *before* a turn exists in order to build one.
  */
 export const readSessionSettings = async (
   db: DB,
@@ -233,7 +239,7 @@ const settingsFromRow = (row: {
   autoApprove: string[];
 }): AgentSessionSettings => {
   if (!row.providerId || !row.modelId || !row.thinkingLevel) {
-    throw new Error(`Session ${row.id} has no LLM settings for this harness`);
+    throw new Error(`Session ${row.id} has no LLM settings for this runtime`);
   }
   return {
     providerId: row.providerId,

@@ -1,5 +1,3 @@
-import { InMemorySessionRepo } from "@earendil-works/pi-agent-core";
-import type { Session } from "@earendil-works/pi-agent-core";
 import { createModels } from "@earendil-works/pi-ai";
 import type { Context } from "@earendil-works/pi-ai";
 import {
@@ -11,6 +9,8 @@ import {
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
+import { InMemorySessionTree } from "@chia/agent-runtime/session/tree";
+import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
   AgentSessionSettings,
   AgentTurnExecution,
@@ -29,7 +29,7 @@ import type { FakeContentPort, FakeWebPort } from "./fixtures.ts";
 /**
  * End-to-end runtime tests against pi-ai's `faux` provider.
  *
- * These exercise the real `AgentHarness`, the real tools and the real permission gate with
+ * These exercise the real `Agent`, the real tools and the real permission gate with
  * scripted assistant messages, so the tool loop, the tier-3 refusal handshake and the event
  * mapping are all covered offline — no network, no database.
  */
@@ -41,7 +41,7 @@ interface Fixture {
   content: FakeContentPort;
   web: FakeWebPort;
   draft: InMemoryDraftStore;
-  session: Session;
+  session: SessionTree;
   setResponses: (
     responses: Parameters<ReturnType<typeof fauxProvider>["setResponses"]>[0]
   ) => void;
@@ -72,7 +72,7 @@ const build = async (
   const models = createModels();
   models.setProvider(faux.provider);
 
-  const session = await new InMemorySessionRepo().create({ id: SESSION_ID });
+  const session = new InMemorySessionTree(SESSION_ID);
   const content = createFakeContentPort({
     searchHits: [
       {

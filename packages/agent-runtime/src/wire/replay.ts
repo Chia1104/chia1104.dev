@@ -1,7 +1,7 @@
-import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
 import * as z from "zod";
 
 import { errorOfAssistantMessage } from "../pi/errors.ts";
+import type { SessionEntry } from "../session/entries.ts";
 import type { AgentEventPresentation } from "../types.ts";
 
 import { clipDetails } from "./clip.ts";
@@ -18,7 +18,7 @@ import type { AgentWireEvent } from "./schema.ts";
  * arrives as a single `assistant:end`.
  */
 export const entriesToWireEvents = (
-  entries: readonly SessionTreeEntry[],
+  entries: readonly SessionEntry[],
   options: AgentEventPresentation
 ): AgentWireEvent[] => {
   const events: AgentWireEvent[] = [];

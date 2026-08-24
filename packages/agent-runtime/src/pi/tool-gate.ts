@@ -1,14 +1,14 @@
 import type {
-  ToolCallEvent,
-  ToolCallResult,
-} from "@earendil-works/pi-agent-core";
-
-import type { AgentPolicy, ToolTier } from "../types.ts";
+  AgentPolicy,
+  ToolCallRefusal,
+  ToolCallRequest,
+  ToolTier,
+} from "../types.ts";
 
 /**
- * Tier-based permission gate, installed as pi's `tool_call` hook.
+ * Tier-based permission gate, composed into Pi's `beforeToolCall` hook.
  *
- * pi's hook contract is "return `{ block: true, reason }` to refuse", and the refusal comes back to
+ * Pi's hook contract is "return `{ block: true, reason }` to refuse", and the refusal comes back to
  * the model as an error tool result. That is deliberately used as the approval handshake rather than
  * blocking the harness on a promise: a turn parked on an in-memory deferred cannot survive a
  * deploy, whereas a *refused* tool call leaves the session tree consistent and resumable — the
@@ -49,7 +49,7 @@ export interface PiToolCallGateOptions {
 }
 
 export interface PiToolCallGate {
-  handle: (event: ToolCallEvent) => ToolCallResult | undefined;
+  handle: (event: ToolCallRequest) => ToolCallRefusal | undefined;
   /** Requests raised during the turn, in order. Drives `run:end{awaiting_approval}`. */
   readonly requests: readonly ApprovalRequest[];
 }

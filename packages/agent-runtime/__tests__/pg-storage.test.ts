@@ -1,4 +1,3 @@
-import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,6 +9,7 @@ import {
   updateAgentSession,
 } from "@chia/db/repos/agent";
 
+import type { SessionEntry } from "../src/session/entries.ts";
 import { PgSessionStorage } from "../src/session/pg-storage.ts";
 
 vi.mock("@chia/db/repos/agent", () => ({
@@ -82,19 +82,20 @@ describe("PgSessionStorage", () => {
   it("advances the active leaf after appending an entry", async () => {
     const db =
       /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
-    const storage = new PgSessionStorage(db, "session-1", {
+    const storage = new PgSessionStorage(db, {
       id: "session-1",
       createdAt: "2026-07-27T00:00:00.000Z",
       userId: "user-1",
       kind: "writing",
     });
     const entry = {
-      type: "session_info",
+      type: "label",
       id: "entry-1",
       parentId: null,
-      timestamp: "2026-07-27T00:00:01.000Z",
-      name: "Test session",
-    } satisfies SessionTreeEntry;
+      timestamp: Date.parse("2026-07-27T00:00:01.000Z"),
+      targetId: "entry-0",
+      label: "Start",
+    } satisfies SessionEntry;
 
     await storage.appendEntry(entry);
 
@@ -102,8 +103,8 @@ describe("PgSessionStorage", () => {
       id: "entry-1",
       sessionId: "session-1",
       parentId: null,
-      type: "session_info",
-      payload: { name: "Test session" },
+      type: "label",
+      payload: { targetId: "entry-0", label: "Start" },
       timestamp: new Date("2026-07-27T00:00:01.000Z"),
     });
     expect(updateSessionMock).toHaveBeenCalledWith(db, "session-1", {
@@ -123,7 +124,6 @@ describe("PgSessionStorage", () => {
     getEntriesMock.mockResolvedValue([...legacyEntries]);
     const storage = new PgSessionStorage(
       /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      "session-1",
       {
         id: "session-1",
         createdAt: "2026-07-27T00:00:00.000Z",
@@ -135,11 +135,22 @@ describe("PgSessionStorage", () => {
     await expect(storage.getLeafId()).resolves.toBe("entry-2");
   });
 
-  it("reconstructs the legacy root prefix when reading a branch", async () => {
-    getEntriesMock.mockResolvedValue([...legacyEntries]);
+  it("projects rows back into entries with a numeric timestamp and a tail on compactions", async () => {
+    getEntriesMock.mockResolvedValue(
+      /* SAFETY: These rows implement the repository shape exercised by this case. */ [
+        {
+          seq: 1,
+          id: "entry-1",
+          sessionId: "session-1",
+          parentId: null,
+          type: "compaction",
+          payload: { summary: "Summary", tokensBefore: 10 },
+          timestamp: new Date("2026-07-27T00:00:01.000Z"),
+        },
+      ] as never
+    );
     const storage = new PgSessionStorage(
       /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      "session-1",
       {
         id: "session-1",
         createdAt: "2026-07-27T00:00:00.000Z",
@@ -148,7 +159,32 @@ describe("PgSessionStorage", () => {
       }
     );
 
-    const branch = await storage.getPathToRootOrCompaction("entry-2");
+    const [entry] = await storage.getEntries();
+
+    expect(entry).toEqual({
+      type: "compaction",
+      id: "entry-1",
+      parentId: null,
+      timestamp: Date.parse("2026-07-27T00:00:01.000Z"),
+      summary: "Summary",
+      tokensBefore: 10,
+      retainedTail: [],
+    });
+  });
+
+  it("reconstructs the legacy root prefix when reading a branch", async () => {
+    getEntriesMock.mockResolvedValue([...legacyEntries]);
+    const storage = new PgSessionStorage(
+      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
+      {
+        id: "session-1",
+        createdAt: "2026-07-27T00:00:00.000Z",
+        userId: "user-1",
+        kind: "writing",
+      }
+    );
+
+    const branch = await storage.getBranch("entry-2");
 
     expect(branch.map((entry) => entry.id)).toEqual(["entry-1", "entry-2"]);
     expect(branch[1]?.parentId).toBe("entry-1");
@@ -167,7 +203,6 @@ describe("PgSessionStorage", () => {
     ]);
     const storage = new PgSessionStorage(
       /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      "session-1",
       {
         id: "session-1",
         createdAt: "2026-07-27T00:00:00.000Z",
@@ -176,7 +211,7 @@ describe("PgSessionStorage", () => {
       }
     );
 
-    const branch = await storage.getPathToRootOrCompaction("entry-3");
+    const branch = await storage.getBranch("entry-3");
 
     expect(branch.map((entry) => entry.id)).toEqual(["entry-3"]);
   });
@@ -231,7 +266,6 @@ describe("PgSessionStorage", () => {
     );
     const storage = new PgSessionStorage(
       /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      "session-1",
       {
         id: "session-1",
         createdAt: "2026-07-27T00:00:00.000Z",

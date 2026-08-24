@@ -1,18 +1,18 @@
-import type {
-  ToolCallEvent,
-  ToolCallResult,
-} from "@earendil-works/pi-agent-core";
 import * as z from "zod";
 
 import type { JsonValue } from "@chia/utils/json";
 
-import type { AgentTurnBudget } from "../types.ts";
+import type {
+  AgentTurnBudget,
+  ToolCallRefusal,
+  ToolCallRequest,
+} from "../types.ts";
 
 const jsonValueSchema: z.ZodType<JsonValue> = z.json();
 const jsonObjectSchema = z.record(z.string(), jsonValueSchema);
 
 /**
- * Per-turn tool-call budget, composed into the same Pi `tool_call` hook as the approval gate.
+ * Per-turn tool-call budget, composed into the same Pi `beforeToolCall` hook as the approval gate.
  *
  * Pi's loop is `while (true)` over "the assistant message still carries tool calls"; it has no
  * step limit of its own, so a model that keeps re-issuing a call would run until the operator
@@ -21,9 +21,7 @@ const jsonObjectSchema = z.record(z.string(), jsonValueSchema);
  * to talk to it) and, when the model keeps going through the refusals, an *exhaustion* the host
  * turns into an abort.
  *
- * The hook must run before the gate and their results must be composed by the caller: Pi's
- * `emitHook` keeps the last defined result, so two independent `tool_call` handlers would let
- * whichever registered later override the other.
+ * The budget must run before the gate: a call the budget refuses must never raise an approval.
  */
 
 export interface PiTurnBudgetOptions {
@@ -36,7 +34,7 @@ export interface PiTurnBudgetOptions {
 }
 
 export interface PiTurnBudget {
-  handle: (event: ToolCallEvent) => ToolCallResult | undefined;
+  handle: (event: ToolCallRequest) => ToolCallRefusal | undefined;
   /** Tool calls the model has emitted this turn, refused ones included. */
   readonly toolCalls: number;
 }
@@ -56,7 +54,7 @@ const canonical = (value: JsonValue): string => {
 };
 
 /** Tool arguments arrived from the provider as JSON; anything else has no stable identity. */
-const callIdentity = (event: ToolCallEvent): string => {
+const callIdentity = (event: ToolCallRequest): string => {
   const input = jsonValueSchema.safeParse(event.input).data;
   return `${event.toolName} ${input === undefined ? event.toolCallId : canonical(input)}`;
 };

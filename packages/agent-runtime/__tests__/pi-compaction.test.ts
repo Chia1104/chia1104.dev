@@ -1,8 +1,8 @@
-import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
 import type { Usage } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
 
 import { shouldCompactBranch } from "../src/pi/compaction.ts";
+import type { SessionEntry } from "../src/session/entries.ts";
 import { estimateBranchContextTokens } from "../src/session/usage.ts";
 
 /**
@@ -21,15 +21,15 @@ const usage = (totalTokens: number): Usage => ({
 });
 
 let seq = 0;
-const entry = <TMessage>(message: TMessage): SessionTreeEntry => {
+const entry = <TMessage>(message: TMessage): SessionEntry => {
   seq += 1;
-  return /* SAFETY: This fixture implements the SessionTreeEntry members exercised by this case. */ {
+  return /* SAFETY: This fixture implements the SessionEntry members exercised by this case. */ {
     type: "message",
     id: `e${seq}`,
     parentId: seq === 1 ? null : `e${seq - 1}`,
-    timestamp: "2026-01-01T00:00:00.000Z",
+    timestamp: 1_767_225_600_000,
     message,
-  } as SessionTreeEntry;
+  } as SessionEntry;
 };
 
 const userEntry = (text: string) => entry({ role: "user", content: text });
@@ -42,18 +42,18 @@ const assistantEntry = (text: string, totalTokens?: number) =>
     usage: totalTokens === undefined ? undefined : usage(totalTokens),
   });
 
-const compactionEntry = (retainedUsage?: number): SessionTreeEntry => {
+const compactionEntry = (retainedUsage?: number): SessionEntry => {
   seq += 1;
-  return /* SAFETY: This fixture implements the SessionTreeEntry members exercised by this case. */ {
+  return /* SAFETY: This fixture implements the SessionEntry members exercised by this case. */ {
     type: "compaction",
     id: `e${seq}`,
     parentId: `e${seq - 1}`,
-    timestamp: "2026-01-01T00:00:00.000Z",
+    timestamp: 1_767_225_600_000,
     summary: "Everything so far, condensed.",
     tokensBefore: 95_000,
     retainedTail:
       retainedUsage === undefined
-        ? undefined
+        ? []
         : [
             {
               role: "assistant",
@@ -62,7 +62,7 @@ const compactionEntry = (retainedUsage?: number): SessionTreeEntry => {
               usage: usage(retainedUsage),
             },
           ],
-  } as SessionTreeEntry;
+  } as SessionEntry;
 };
 
 describe("estimateBranchContextTokens", () => {
