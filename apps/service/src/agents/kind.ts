@@ -74,9 +74,11 @@ export type AgentSessionSummary = Awaited<
   ReturnType<AgentKindService["listSessions"]>
 >["items"][number];
 
-export type AgentDraftPayload = NonNullable<
-  Awaited<ReturnType<NonNullable<AgentKindService["getDraft"]>>>
+export type AgentSessionDetail = NonNullable<
+  Awaited<ReturnType<AgentKindService["getSession"]>>
 >;
+
+export type AgentDraftPayload = NonNullable<AgentSessionDetail["draft"]>;
 
 /**
  * The kind's 1:1 extension row. `create` runs inside the generic `createSession` after the
@@ -97,14 +99,14 @@ export interface AgentKindState<TState> {
    */
   summary(state: TState): Partial<Pick<AgentSessionSummary, "targetFeedId">>;
   /**
-   * Kind-owned fields of the session detail, read fresh per request. `draft` also answers the
-   * `getDraft` route, until the writing draft moves to its own contract namespace.
+   * Kind-owned fields of the session detail, read fresh per request. The contract still carries
+   * the writing agent's `draft` as an optional field; a kind with nothing to add returns `{}`.
    */
   detail(
     db: DB,
     sessionId: string,
     state: TState
-  ): Promise<{ draft?: AgentDraftPayload; state?: unknown }>;
+  ): Promise<Partial<Pick<AgentSessionDetail, "draft" | "state">>>;
 }
 
 export type AgentCreateSessionInput = Parameters<

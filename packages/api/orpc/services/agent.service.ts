@@ -174,12 +174,6 @@ export interface AgentKindService {
     }
   ): Promise<{ cancelled: boolean; events: AgentWireEvent[] } | null>;
 
-  /** Optional writing-domain extension retained for the current dashboard. */
-  getDraft?(
-    caller: AgentServiceCaller,
-    input: { sessionId: string }
-  ): Promise<agentContracts.AgentDraftPayload | null>;
-
   /**
    * Checks a model selection before anything persists it.
    *

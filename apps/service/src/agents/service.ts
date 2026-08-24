@@ -83,7 +83,7 @@ import type { AgentKindDefinition } from "./kind";
  */
 export const createAgentKindService = <TState>(
   definition: AgentKindDefinition<TState>
-): Required<AgentKindService> => {
+): AgentKindService => {
   // ============================================
   // Helpers
   // ============================================
@@ -412,9 +412,7 @@ export const createAgentKindService = <TState>(
   // Service
   // ============================================
 
-  // `Required`: the port leaves `getDraft` optional per kind, but this service answers it for
-  // every kind from `state.detail`, so the delegate need not guard it.
-  const service: Required<AgentKindService> = {
+  const service: AgentKindService = {
     minTier: definition.minTier,
 
     async listSessions(caller, input) {
@@ -832,17 +830,6 @@ export const createAgentKindService = <TState>(
 
     listCapabilities() {
       return Promise.resolve(definition.capabilities());
-    },
-
-    async getDraft(caller, input) {
-      const row = await loadOwnedRow(caller, input.sessionId);
-      if (!row) return null;
-      const { draft } = await definition.state.detail(
-        caller.context.db,
-        input.sessionId,
-        row.state
-      );
-      return draft ?? null;
     },
   };
 

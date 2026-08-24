@@ -62,6 +62,12 @@ defaults、replay policy、model allowlist、capabilities、1:1 的 `state` row
 重述 `minTier` 給 guard 用，definition 則用 dynamic import 載入，讓 domain package 和 provider
 SDK 留在 boot path 之外。
 
+`AgentKindService` 是所有 kind 共有的形狀，不會為了某一個 kind 而長大。只有單一 kind 才有的
+procedure 要開自己的 contract namespace（`agent.<kind>.*`）、在 `packages/api` 宣告自己的 port
+interface，實作放在該 kind 的 definition 旁邊——不掛在共用 port 上，也不經過 generic delegate。
+目前還沒有這種 procedure：writing 的 draft 跟著 session detail（`state.detail`）走，dashboard
+讀的也只有它。
+
 ### 誰可以使用某個 kind
 
 存取權是 kind 的屬性，不是 route 的屬性。每條 agent route 都先跑 `callerGuard()`，它只解析呼叫者的

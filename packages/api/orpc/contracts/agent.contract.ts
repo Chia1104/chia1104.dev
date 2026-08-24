@@ -338,17 +338,6 @@ export const navigateAgentSessionContract = oc
     })
   );
 
-export const getAgentDraftContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
-  .input(
-    z.object({
-      /** Agent kind. Optional while only one is registered. */
-      kind: z.string().optional(),
-      sessionId: z.string(),
-    })
-  )
-  .output(agentDraftSchema);
-
 // ============================================
 // Capabilities
 // ============================================

@@ -23,7 +23,6 @@ export const routerContract = {
       approve: agentContracts.approveAgentToolContract,
       compact: agentContracts.compactAgentSessionContract,
       navigate: agentContracts.navigateAgentSessionContract,
-      draft: agentContracts.getAgentDraftContract,
     },
     models: {
       list: agentContracts.listAgentModelsContract,

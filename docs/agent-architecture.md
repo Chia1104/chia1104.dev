@@ -63,6 +63,12 @@ capabilities, its 1:1 `state` row (`create`/`load`/`summary`/`detail`), `runTurn
 `maintenance`. The registry entry restates `minTier` eagerly for the guards and loads the
 definition with a dynamic import, so the domain package and provider SDKs stay off the boot path.
 
+`AgentKindService` is the shape every kind shares and never grows for one kind. A procedure only
+one kind has gets its own contract namespace (`agent.<kind>.*`), its own port interface in
+`packages/api`, and its implementation beside that kind's definition — it does not go on the
+shared port or through the generic delegate. Today there is none: the writing draft rides on the
+session detail (`state.detail`), which is all the dashboard reads.
+
 ### Who may use a kind
 
 Access is a property of the kind, not of the routes. Every agent route runs `callerGuard()`, which
