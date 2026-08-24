@@ -221,16 +221,6 @@ export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
     return result;
   });
 
-export const getAgentDraftRoute = contractOS.agent.sessions.draft
-  .use(resolveCaller)
-  .use(agentSessionGuard())
-  .handler(async (opts) => {
-    const { caller, service } = opts.context.agent;
-    const draft = await service.getDraft?.(caller, opts.input);
-    if (!draft) throw opts.errors.NOT_FOUND();
-    return draft;
-  });
-
 // ============================================
 // Capabilities
 // ============================================

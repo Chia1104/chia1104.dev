@@ -16,7 +16,7 @@ import type { BaseOSContext } from "../utils";
  *
  * The oRPC routes live here in `packages/api`, but *running* an agent needs a long-lived process
  * that owns harness construction, live-run bookkeeping and provider credentials — all of which
- * belong to the host app. The host supplies one implementation per `agent_session.kind` on the
+ * belong to the host app. The host supplies one implementation per `agent.session.kind` on the
  * request context (`BaseOSContext.agentKinds`); keying by kind is what lets a second agent
  * package be additive rather than replace the first.
  */
@@ -173,12 +173,6 @@ export interface AgentKindService {
       label?: string;
     }
   ): Promise<{ cancelled: boolean; events: AgentWireEvent[] } | null>;
-
-  /** Optional writing-domain extension retained for the current dashboard. */
-  getDraft?(
-    caller: AgentServiceCaller,
-    input: { sessionId: string }
-  ): Promise<agentContracts.AgentDraftPayload | null>;
 
   /**
    * Checks a model selection before anything persists it.

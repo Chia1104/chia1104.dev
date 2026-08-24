@@ -17,23 +17,23 @@ import { timestamps, softDelete } from "../libs/common.schema.ts";
 
 import { feeds } from "./contents.schema.ts";
 import { locale } from "./enums.ts";
-import { pgTable } from "./table.ts";
+import { agentSchema } from "./table.ts";
 import { user } from "./user.schema.ts";
 
 /**
  * Persistence for agent sessions.
  *
- * `agent_session` / `agent_session_entry` / `agent_run` / `agent_tool_approval` are **generic** —
- * every agent kind shares them, discriminated by `agent_session.kind`. Writing-specific state
- * lives in `writing_agent_session` and `writing_agent_draft`.
+ * Every table lives in the `agent` Postgres schema, unprefixed. `session` / `session_entry` /
+ * `run` / `tool_approval` are **generic** — every agent kind shares them, discriminated by
+ * `session.kind`. Writing-specific state lives in `writing_session` and `writing_draft`.
  *
- * The transcript is a **tree**, not a flat log: `agent_session_entry.parentId` points at
- * the previous entry on the branch and `agent_session.leafEntryId` marks the active leaf.
+ * The transcript is a **tree**, not a flat log: `session_entry.parentId` points at
+ * the previous entry on the branch and `session.leafEntryId` marks the active leaf.
  * That is what lets the agent rewind ("退回三步用另一個角度重寫") and what pi's
  * `SessionStorage` port expects. `@chia/agent-runtime` implements that port over these
- * tables; the writing-specific `writing_agent_draft` belongs to `@chia/agent-writing`.
+ * tables; the writing-specific `writing_draft` belongs to `@chia/agent-writing`.
  *
- * `writing_agent_draft` is the staging buffer: the agent only ever writes here, and a human
+ * `writing_draft` is the staging buffer: the agent only ever writes here, and a human
  * promotes it into `feed`/`feed_translation`/`content` through the existing
  * `feeds.create`/`feeds.update` procedures.
  */
@@ -47,8 +47,8 @@ import { user } from "./user.schema.ts";
  * serial: entry ids and session ids travel through the model's context and the event
  * stream, so they must be opaque and non-enumerable.
  */
-export const agentSessions = pgTable(
-  "agent_session",
+export const agentSessions = agentSchema.table(
+  "session",
   {
     id: text("id").primaryKey(),
     userId: text("user_id")
@@ -100,8 +100,8 @@ export type AgentRunStatus = "active" | "completed" | "cancelled" | "failed";
  * One execution owned by a harness. Keeping runs separate from sessions avoids assuming that every
  * kind uses one long-lived workflow and leaves room for retries, alternate harnesses and sub-runs.
  */
-export const agentRuns = pgTable(
-  "agent_run",
+export const agentRuns = agentSchema.table(
+  "run",
   {
     id: text("id").primaryKey(),
     sessionId: text("session_id")
@@ -140,8 +140,8 @@ export type AgentRun = InferSelectModel<typeof agentRuns>;
  * `seq` exists so the storage adapter can page entries in insertion order and so the
  * event stream has a stable cursor; the tree order comes from `parentId`.
  */
-export const agentSessionEntries = pgTable(
-  "agent_session_entry",
+export const agentSessionEntries = agentSchema.table(
+  "session_entry",
   {
     seq: bigserial("seq", { mode: "number" }).notNull(),
     id: text("id").notNull(),
@@ -169,10 +169,10 @@ export type AgentSessionEntry = InferSelectModel<typeof agentSessionEntries>;
 
 /**
  * One-to-one extension for the writing agent. Other kinds add sibling extension tables instead of
- * nullable columns to `agent_session`.
+ * nullable columns to `session`.
  */
-export const writingAgentSessions = pgTable(
-  "writing_agent_session",
+export const writingAgentSessions = agentSchema.table(
+  "writing_session",
   {
     sessionId: text("session_id")
       .primaryKey()
@@ -194,8 +194,8 @@ export type WritingAgentSession = InferSelectModel<typeof writingAgentSessions>;
  * Per-locale writing staging buffer. Mirrors `feed_translation` + `content` so `commit_draft` is
  * a near-direct mapping onto `createFeedSchema.translations`.
  */
-export const writingAgentDrafts = pgTable(
-  "writing_agent_draft",
+export const writingAgentDrafts = agentSchema.table(
+  "writing_draft",
   {
     sessionId: text("session_id")
       .notNull()
@@ -227,8 +227,8 @@ export type AgentApprovalStatus = "pending" | "approved" | "rejected";
  * the process. Persisting the decision means (a) a reconnecting client sees the resolved
  * state, and (b) the audit trail of "who approved writing to the blog" survives.
  */
-export const agentToolApprovals = pgTable(
-  "agent_tool_approval",
+export const agentToolApprovals = agentSchema.table(
+  "tool_approval",
   {
     sessionId: text("session_id")
       .notNull()

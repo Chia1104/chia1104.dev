@@ -26,7 +26,7 @@ import type { EncryptedAgentCredentials } from "./hooks/agent.hooks";
  *
  * Shape: **multi-turn**, but the conversation state lives in Postgres rather than in the run. The
  * run is a durable *driver* — it waits for the next message, executes a turn, and parks on an
- * approval hook when a tier-3 tool is gated. The transcript stays in `agent_session_entry` because
+ * approval hook when a tier-3 tool is gated. The transcript stays in `agent.session_entry` because
  * the dashboard queries it directly and pi needs it for branch navigation and compaction; a
  * workflow event log is an execution journal, not a queryable domain store.
  *

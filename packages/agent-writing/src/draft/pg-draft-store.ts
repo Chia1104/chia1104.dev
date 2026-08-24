@@ -19,8 +19,8 @@ import {
 } from "./operations.ts";
 
 /**
- * {@link DraftStore} over `writing_agent_draft` (per-locale) +
- * `writing_agent_session.feedMeta` (feed-level).
+ * {@link DraftStore} over `agent.writing_draft` (per-locale) +
+ * `agent.writing_session.feedMeta` (feed-level).
  *
  * The split mirrors the real schema — `feed` vs `feed_translation` — so committing maps onto
  * `createFeedSchema` without reshaping. Both halves are jsonb rather than columns because the

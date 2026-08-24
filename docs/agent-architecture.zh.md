@@ -28,7 +28,7 @@ flowchart TB
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
     content --> runtime
     runtime --> pi["Pi AgentHarness"]
-    runtime --> pg[("Postgres agent_* tables")]
+    runtime --> pg[("Postgres agent schema")]
 ```
 
 `@chia/agent-runtime` 內部仍按關注點拆模組，但這些模組不是 provider-neutral facade。
@@ -37,20 +37,36 @@ flowchart TB
 
 ## 2. Agent kind 與 host service
 
-`agent_session.kind` 是 domain discriminator（目前只有 `writing`），不是 harness
+`agent.session.kind` 是 domain discriminator（目前只有 `writing`），不是 harness
 discriminator。它選擇：
 
-- request context 上 `agentKinds[kind]` 帶的 host implementation；
-- `AGENT_TURN_HANDLERS` 中的 durable step handler；
-- `writing_agent_session` 這類 kind-specific extension row。
+- `apps/service/src/agents/registry.ts`（`AGENT_KINDS`）中的 `AgentKindDefinition`——request
+  context 上的 `agentKinds[kind]` service 和 durable turn step 都從這裡解析；
+- `agent.writing_session` 這類 kind-specific extension row，藏在 `definition.state` 後面。
 
 所有 session-scoped request 都從已持久化的 session 取得 kind；client 傳入的值只能交叉
 驗證，不能拿另一個 kind 的 tools 去驅動既有 writing session。
 
 `packages/api/orpc/services/agent.service.ts` 宣告 `AgentKindService`。這個 host port 應保留：
 `packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在
-`createORPCContext` 把 `{ writing: writingAgentService }` 放到每個 request context 上。它和已刪除的
+`createORPCContext` 把每個已註冊 kind 的 service 放到 request context 上。它和已刪除的
 harness abstraction 是不同層次的概念。
+
+Service 本身是 generic 的。`apps/service/src/agents/service.ts`（`createAgentKindService`）
+在一個 `AgentKindDefinition`（`agents/kind.ts`）之上實作整個 port——session rows、durable runs、
+prompt/attach/stream、abort、approvals、compaction 與 rewind——turn step（`runKindTurn`）在 Pi
+那一側解析同一個 definition。一個 kind 就是 `apps/service/src/agents/` 下的一個檔案
+（`writing.ts`），把 domain package 綁到 host 的 ports 上，只提供會不同的部分：`minTier`、
+defaults、replay policy、model allowlist、capabilities、1:1 的 `state` row
+（`create`/`load`/`summary`/`detail`）、`runTurn` 與 `maintenance`。registry entry 會 eager 地
+重述 `minTier` 給 guard 用，definition 則用 dynamic import 載入，讓 domain package 和 provider
+SDK 留在 boot path 之外。
+
+`AgentKindService` 是所有 kind 共有的形狀，不會為了某一個 kind 而長大。只有單一 kind 才有的
+procedure 要開自己的 contract namespace（`agent.<kind>.*`）、在 `packages/api` 宣告自己的 port
+interface，實作放在該 kind 的 definition 旁邊——不掛在共用 port 上，也不經過 generic delegate。
+目前還沒有這種 procedure：writing 的 draft 跟著 session detail（`state.detail`）走，dashboard
+讀的也只有它。
 
 ### 誰可以使用某個 kind
 
@@ -83,17 +99,17 @@ Service 收到的是 `AgentServiceCaller`：解析後的 `Caller`（tier、sessi
 
 ### Session tree 與資料表
 
-Transcript 是樹而不是 flat log。`agent_session_entry.parentId` 指向 branch 上一個 entry，
-`agent_session.leafEntryId` 選定 active leaf。`PgSessionStorage` 把 Pi 的 `SessionStorage`
+Transcript 是樹而不是 flat log。`agent.session_entry.parentId` 指向 branch 上一個 entry，
+`agent.session.leafEntryId` 選定 active leaf。`PgSessionStorage` 把 Pi 的 `SessionStorage`
 實作在這些表上，因此可以 rewind 並建立 alternate branch。
 
 ```text
-agent_session                  共用 settings、kind、active leaf
-agent_session_entry            Pi session-tree nodes；seq 是插入順序
-agent_run                      durable execution metadata；每個 session 最多一個 active run
-agent_tool_approval            durable approval 與 audit trail
-writing_agent_session          writing-specific 1:1 state
-writing_agent_draft            每個 locale 的 staging buffer
+agent.session                  共用 settings、kind、active leaf
+agent.session_entry            Pi session-tree nodes；seq 是插入順序
+agent.run                      durable execution metadata；每個 session 最多一個 active run
+agent.tool_approval            durable approval 與 audit trail
+agent.writing_session          writing-specific 1:1 state
+agent.writing_draft            每個 locale 的 staging buffer
 ```
 
 Entry payload 是符合 Pi session-entry union 的 opaque JSON。Kind-specific state 以 extension
@@ -101,7 +117,7 @@ table 表達，不把共用 session table 擴成大量 nullable columns。
 
 ### Session title
 
-`agent_session.title` 是 operator 辨識 session 用的名稱：尚未命名時為 `null`，之後不是 operator
+`agent.session.title` 是 operator 辨識 session 用的名稱：尚未命名時為 `null`，之後不是 operator
 自己取的（`settings:update`），就是從第一則 prompt 精簡而來。Turn step 會在未命名 session 的第一個
 operator turn 旁邊同時命名（`apps/service/src/steps/agent-turn.step.ts` 的 `titleSession`）：
 `@chia/agent-runtime/pi/title` 的 `generateSessionTitle` 固定問 house gateway 的便宜模型——
@@ -117,7 +133,7 @@ decision 的 relay turn 不命名。
 sequenceDiagram
     participant UI as apps/dash
     participant RPC as oRPC
-    participant SVC as writingAgentService
+    participant SVC as createAgentKindService(writing)
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
     participant WR as runWritingTurn
@@ -130,7 +146,7 @@ sequenceDiagram
         SVC->>WF: resume message hook
     else 沒有 active run
         SVC->>WF: start workflow
-        SVC->>PG: create agent_run
+        SVC->>PG: create agent.run
     end
     SVC-->>RPC: runId + stream cursor
     RPC->>SVC: stream(caller, cursor)
@@ -218,11 +234,11 @@ Pi 的 `context` hook 附加為每個 provider request 的最後一則 user mess
 Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 只是讓它不再被排程——所以 stop
 是透過第二個很小的 durable run 送達：session run 的 **abort controller**
 （`apps/service/src/workflows/agent-abort.workflow.ts`）。`prompt` 在開 session run 之前先開它，
-並把 `{ id, runId }` 放進 session run 的 request（與 `agent_run.metadata`）；它停在
+並把 `{ id, runId }` 放進 session run 的 request（與 `agent.run.metadata`）；它停在
 `agentAbortHook` 上，被 resume 時往自己的 stream 寫一則訊息。每個 turn step 直接以 run id 訂閱
 那條 stream——不查詢，所以一個 session run 恰好一個 controller——把得到的 `AbortSignal` 交給
 `runPiTurn`，turn 結束時釋放訂閱。
-`abort` 先 resume 這個 hook，再取消 session run、把 `agent_run` 列標成 `cancelled`；
+`abort` 先 resume 這個 hook，再取消 session run、把 `agent.run` 列標成 `cancelled`；
 `completeAgentRunStep` 也會 resume 它，讓跑完的 run 不會留下一個停到 TTL 的 controller。Signal 一
 觸發 harness 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`
 持久化，turn 以 `run:end{aborted}` 結束；不持久化 approval，也不 compaction。送達走的是 SDK 自
@@ -248,7 +264,7 @@ sequenceDiagram
     participant R as runPiTurn
     participant WF as Workflow
     participant OP as Operator
-    participant DB as agent_tool_approval
+    participant DB as agent.tool_approval
 
     M->>G: commit tool call
     G-->>M: blocked；停止並等待核准
@@ -316,7 +332,7 @@ Chat 是 server-authoritative：session store 在 mount 時從 `agent.sessions.g
 `run.status` 是 `running`，就用 `agent.sessions.chat` 的 `{ type: "attach" }` 接回那個 turn。
 以 `run:end` 結束的 stream 只重新抓 session detail（保留它自己 fold 出來的 view；下面的
 marker 可能比 terminal event 晚一點清掉，所以那次讀取會短暫重試）；更早斷掉的 stream 則從
-`get` 重建並帶 backoff 重新 attach。Turn step 維護 `agent_run.metadata.turn`——turn 開始前的
+`get` 重建並帶 backoff 重新 attach。Turn step 維護 `agent.run.metadata.turn`——turn 開始前的
 session leaf、它要寫的第一個 coarse stream index，以及 `running`（進 handler 前設、`finally`
 清）。最後這個 workflow SDK 給不了：對 SDK 來說停在 message hook 上的 run 和正在跑 step 的 run
 都是 `running`，所以 `run.status`、`attach` 與 compact/rewind 的檢查都改讀這個 marker。Turn 執行
@@ -388,10 +404,10 @@ state 都是 durable：
 
 | State                                | 儲存位置                                       |
 | ------------------------------------ | ---------------------------------------------- |
-| Transcript                           | `agent_session_entry`                          |
-| Draft                                | `writing_agent_session`、`writing_agent_draft` |
-| Approval decisions                   | `agent_tool_approval`                          |
-| Run metadata                         | `agent_run`                                    |
+| Transcript                           | `agent.session_entry`                          |
+| Draft                                | `agent.writing_session`、`agent.writing_draft` |
+| Approval decisions                   | `agent.tool_approval`                          |
+| Run metadata                         | `agent.run`                                    |
 | Message inbox、pauses、event streams | workflow backend                               |
 
 ## 11. 新增另一個 agent kind
@@ -429,7 +445,8 @@ factory、capability plugin system 或 provider-neutral handle。
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                           |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`、`agents/kind.ts`、`agents/service.ts`                   |
+| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts`         |
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                       |

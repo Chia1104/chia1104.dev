@@ -73,7 +73,7 @@ export const agentAbortHook = defineHook({
 
 /**
  * How a session run refers to its abort controller: the hook token's id and the controller run
- * whose stream turns subscribe to. Carried in the session run's request and `agent_run.metadata`.
+ * whose stream turns subscribe to. Carried in the session run's request and `agent.run.metadata`.
  * Lives here, not with the host helper, because the workflow sandbox imports it.
  */
 export const agentAbortControllerRefSchema = z.object({

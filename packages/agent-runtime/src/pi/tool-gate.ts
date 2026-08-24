@@ -31,7 +31,7 @@ export interface PiToolCallGateOptions {
   /** Tiers the operator pre-approved for the whole session. */
   autoApprove: readonly ToolTier[];
   /**
-   * Tool call ids already approved. Populated from `agent_tool_approval` when a turn is resumed
+   * Tool call ids already approved. Populated from `agent.tool_approval` when a turn is resumed
    * after a decision, so the re-issued call goes through.
    */
   approvedToolCallIds?: ReadonlySet<string>;

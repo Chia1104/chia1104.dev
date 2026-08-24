@@ -91,5 +91,5 @@ export const WRITING_SESSION_DEFAULTS: AgentSessionDefaults = {
   thinkingLevel: "off",
 };
 
-/** `agent_session.kind` for this agent. */
+/** `agent.session.kind` for this agent. */
 export const WRITING_AGENT_KIND = "writing";
