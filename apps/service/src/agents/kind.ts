@@ -54,8 +54,6 @@ export interface AgentKindDefinition<TState> {
   };
   capabilities(): AgentKindCapabilities;
   readonly state: AgentKindState<TState>;
-  /** Optional draft read, until the writing draft moves to its own contract namespace. */
-  getDraft?(db: DB, sessionId: string): Promise<AgentDraftPayload | null>;
   runTurn<TApproval>(
     context: AgentTurnContext<TState, TApproval>
   ): Promise<AgentTurnExecution<TApproval>>;
@@ -98,7 +96,10 @@ export interface AgentKindState<TState> {
    * `targetFeedId` as an optional field; a kind with nothing to add returns `{}`.
    */
   summary(state: TState): Partial<Pick<AgentSessionSummary, "targetFeedId">>;
-  /** Kind-owned fields of the session detail, read fresh per request. */
+  /**
+   * Kind-owned fields of the session detail, read fresh per request. `draft` also answers the
+   * `getDraft` route, until the writing draft moves to its own contract namespace.
+   */
   detail(
     db: DB,
     sessionId: string,

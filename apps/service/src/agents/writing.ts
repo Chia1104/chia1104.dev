@@ -14,7 +14,6 @@ import {
   runWritingTurn,
 } from "@chia/agent-writing/runtime";
 import { createWritingTools } from "@chia/agent-writing/tools/tool-set";
-import type { DB } from "@chia/db/client";
 import {
   createWritingAgentSession,
   getWritingAgentSession,
@@ -35,12 +34,6 @@ import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
  * This binds it to the host: the author-visibility content port, the Firecrawl web port and the
  * Postgres draft store, plus the `agent.writing_session` row that pins a session to a target post.
  */
-
-/** The draft store's `FeedDraft` is the contract's `AgentDraftPayload` by construction. */
-const readDraft = (db: DB, sessionId: string): Promise<AgentDraftPayload> =>
-  /* SAFETY: The producer contract guarantees this value satisfies AgentDraftPayload. */ new PgDraftStore(
-    db
-  ).get(sessionId) as Promise<AgentDraftPayload>;
 
 export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
   kind: WRITING_AGENT_KIND,
@@ -106,11 +99,14 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
     },
 
     async detail(db, sessionId) {
-      return { draft: await readDraft(db, sessionId) };
+      // The draft store's `FeedDraft` is the contract's `AgentDraftPayload` by construction.
+      const draft =
+        /* SAFETY: The producer contract guarantees this value satisfies AgentDraftPayload. */ (await new PgDraftStore(
+          db
+        ).get(sessionId)) as AgentDraftPayload;
+      return { draft };
     },
   },
-
-  getDraft: readDraft,
 
   runTurn(context) {
     /**

@@ -87,11 +87,6 @@ export const createAgentKindService = <TState>(
   // ============================================
   // Helpers
   // ============================================
-
-  const dbOf = (caller: AgentServiceCaller) =>
-    /* SAFETY: The producer contract guarantees this value satisfies DB. */ caller
-      .context.db as DB;
-
   const repoFor = (db: DB) =>
     new PgSessionRepo(db, {
       kind: definition.kind,
@@ -108,7 +103,7 @@ export const createAgentKindService = <TState>(
     caller: AgentServiceCaller,
     sessionId: string
   ) => {
-    const db = dbOf(caller);
+    const db = caller.context.db;
     const row = await getAgentSession(db, sessionId);
     if (!row || row.deletedAt !== null) return null;
     if (row.userId !== caller.userId) return null;
@@ -130,7 +125,7 @@ export const createAgentKindService = <TState>(
     const row = await loadOwnedRow(caller, sessionId);
     if (!row) return null;
 
-    const activeRun = await getActiveAgentRun(dbOf(caller), sessionId);
+    const activeRun = await getActiveAgentRun(caller.context.db, sessionId);
     return {
       ...row,
       activeRunId: activeRun?.id ?? null,
@@ -196,7 +191,7 @@ export const createAgentKindService = <TState>(
    * through the workflow.
    */
   const maintenanceFor = async (caller: AgentServiceCaller, row: OwnedRow) => {
-    const session = await repoFor(dbOf(caller)).openById(row.id);
+    const session = await repoFor(caller.context.db).openById(row.id);
     return {
       session,
       ...definition.maintenance({
@@ -322,7 +317,7 @@ export const createAgentKindService = <TState>(
     const row = await loadOwnedSession(caller, sessionId);
     if (!row) return null;
 
-    const db = dbOf(caller);
+    const db = caller.context.db;
     const session = await repoFor(db).openById(sessionId);
 
     const [branch, kindDetail, stats, approvals] = await Promise.all([
@@ -421,7 +416,7 @@ export const createAgentKindService = <TState>(
     minTier: definition.minTier,
 
     async listSessions(caller, input) {
-      const db = dbOf(caller);
+      const db = caller.context.db;
       const metadata = await repoFor(db).list({
         userId: caller.userId,
         limit: input?.limit,
@@ -440,7 +435,7 @@ export const createAgentKindService = <TState>(
     },
 
     async createSession(caller, input) {
-      const db = dbOf(caller);
+      const db = caller.context.db;
       const session = await repoFor(db).create({
         userId: caller.userId,
         title: input.title,
@@ -490,17 +485,17 @@ export const createAgentKindService = <TState>(
         await cancelLiveRun(row.workflowRunId);
       }
       if (row.activeRunId) {
-        await completeAgentRun(dbOf(caller), row.activeRunId, "cancelled");
+        await completeAgentRun(caller.context.db, row.activeRunId, "cancelled");
       }
 
-      await softDeleteAgentSession(dbOf(caller), input.sessionId);
+      await softDeleteAgentSession(caller.context.db, input.sessionId);
       return true;
     },
 
     async updateSettings(caller, input) {
       const row = await loadOwnedSession(caller, input.sessionId);
       if (!row) return null;
-      await writeSessionSettings(dbOf(caller), input.sessionId, {
+      await writeSessionSettings(caller.context.db, input.sessionId, {
         title: input.title,
         providerId: input.model?.providerId,
         modelId: input.model?.modelId,
@@ -555,7 +550,7 @@ export const createAgentKindService = <TState>(
        * message would simply appear to do nothing. Better to say why.
        */
       const outstanding = await undecidedApprovals(
-        dbOf(caller),
+        caller.context.db,
         input.sessionId
       );
       if (outstanding.length > 0) {
@@ -602,7 +597,7 @@ export const createAgentKindService = <TState>(
         streamIndex: 0,
         running: true,
       };
-      await createAgentRun(dbOf(caller), {
+      await createAgentRun(caller.context.db, {
         id: run.runId,
         sessionId: input.sessionId,
         harnessKind: "workflow",
@@ -734,7 +729,7 @@ export const createAgentKindService = <TState>(
       }
       await cancelLiveRun(row.workflowRunId);
       if (row.activeRunId) {
-        await completeAgentRun(dbOf(caller), row.activeRunId, "cancelled");
+        await completeAgentRun(caller.context.db, row.activeRunId, "cancelled");
       }
       return true;
     },
@@ -745,7 +740,7 @@ export const createAgentKindService = <TState>(
 
       // Persist first: the decision must outlive the run, and the permission gate reads it back from
       // here when the tool call is re-issued.
-      const decided = await decideAgentApproval(dbOf(caller), {
+      const decided = await decideAgentApproval(caller.context.db, {
         sessionId: input.sessionId,
         toolCallId: input.toolCallId,
         approved: input.approved,
@@ -836,16 +831,18 @@ export const createAgentKindService = <TState>(
     listCapabilities() {
       return Promise.resolve(definition.capabilities());
     },
-  };
 
-  const getDraft = definition.getDraft;
-  if (getDraft) {
-    service.getDraft = async (caller, input) => {
-      const row = await loadOwnedSession(caller, input.sessionId);
+    async getDraft(caller, input) {
+      const row = await loadOwnedRow(caller, input.sessionId);
       if (!row) return null;
-      return await getDraft(dbOf(caller), input.sessionId);
-    };
-  }
+      const { draft } = await definition.state.detail(
+        caller.context.db,
+        input.sessionId,
+        row.state
+      );
+      return draft ?? null;
+    },
+  };
 
   return service;
 };
