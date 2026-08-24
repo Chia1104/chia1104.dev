@@ -51,10 +51,10 @@ The only backend. Hono mounted on Nitro; `src/server.ts` composes the app, `src/
 
 - `routes/*.route.ts` — one Hono sub-app per surface above. `rpc.route.ts` mounts the oRPC router with the request timeout, coarse rate limit and the context below.
 - `factories/orpc.factory.ts` — `createORPCContext(c)`, **the one place the oRPC context is built**. Spreads the Hono `c.var` (`ServiceContext`) and adds what this process supplies: `config` (rate-limit budget, project id, AI key material — from env), `hooks` (feed indexing + Sentry error sink), `indexing`, `agentKinds`. See "Context injection" in [`packages/AGENTS.md`](../packages/AGENTS.md).
+- `agents/` — the agent kinds this process serves. `registry.ts` (`AGENT_KINDS`, `agentKinds`, `loadAgentKind`) is the one place a kind is registered and is boot-safe: it restates each kind's `minTier` for the guards and loads the definition with a dynamic import. `kind.ts` is the `AgentKindDefinition` contract, `service.ts` the generic `AgentKindService` over a definition, and `writing.ts` the writing kind — its domain package bound to the host's ports. A new kind is a sibling of `writing.ts` plus one registry entry; see [`docs/agent-architecture.md`](../docs/agent-architecture.md) §2.
 - `guards/` — Hono middleware bound from the shared policies via `toHonoMiddleware` (`verifyAuth`, `rateLimiterGuard`, `ai`).
 - `services/` — host-side implementations of the ports `packages/api` declares:
   - `feed-indexing.service.ts` (`feedHooks`), `rag-indexing.service.ts` (`ragIndexingService`)
-  - `agent.service.ts` (`agentKinds`) — a lazy delegate, so `@chia/agent-writing` and the provider SDKs stay out of the boot path; `writing-agent.service.ts` is the real thing
   - `content-read.port.ts` — the `ContentReadPort`, built per visibility (`author` or `public`)
   - `agent-content.port.ts` (the writing agent's content port: author-visibility reads plus writes), `agent-web.port.ts` (its `WebPort`: Firecrawl search and scrape), `agent-credentials.ts`
 - `workflows/` and `steps/` — durable workflows (Vercel Workflow SDK, `"use workflow"` / `"use step"`): feed indexing, feed removal, resource index/reindex, and the agent session driver. Workflow functions run in a sandbox with no Node built-ins; anything real happens in a step.

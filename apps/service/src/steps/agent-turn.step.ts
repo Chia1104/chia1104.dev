@@ -15,19 +15,18 @@ import {
   completeActiveAgentRuns,
   getAgentSession,
   getApprovedAgentToolCallIds,
-  getWritingAgentSession,
   patchAgentRunMetadata,
   recordAgentApprovalRequests,
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
-import { getAdminId } from "@chia/utils/config";
 import type { JsonObject } from "@chia/utils/json";
 
+import type { AgentKindDefinition } from "../agents/kind";
+import { loadAgentKind } from "../agents/registry";
 import {
   signalAgentAbort,
   subscribeAgentAbort,
 } from "../services/agent-abort-controller";
-import { createAgentContentPort } from "../services/agent-content.port";
 import { decryptAgentCredentials } from "../services/agent-credentials";
 import type { AgentAbortControllerRef } from "../workflows/hooks/agent.hooks";
 import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
@@ -124,14 +123,6 @@ export interface AgentTurnOutcome {
 
 type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 
-type AgentTurnHandler = (
-  db: DB,
-  row: AgentSessionRow,
-  request: AgentTurnRequest,
-  signal: AbortSignal,
-  writer: EventWriter
-) => Promise<AgentTurnOutcome>;
-
 // ============================================
 // Title
 // ============================================
@@ -213,11 +204,9 @@ export const runAgentTurnStep = async (
     );
   }
 
-  const handler = AGENT_TURN_HANDLERS.get(row.kind);
-  if (!handler) {
-    throw new FatalError(
-      `No turn handler registered for agent kind "${row.kind}".`
-    );
+  const definition = await loadAgentKind(row.kind);
+  if (!definition) {
+    throw new FatalError(`No agent kind registered as "${row.kind}".`);
   }
 
   // Recorded before the first event of this turn is written. The previous turn flushed its writer
@@ -241,7 +230,14 @@ export const runAgentTurnStep = async (
       : undefined
   );
   try {
-    const outcome = await handler(db, row, request, abort.signal, writer);
+    const outcome = await runKindTurn(
+      definition,
+      db,
+      row,
+      request,
+      abort.signal,
+      writer
+    );
     abort.dispose();
     await clearMarker();
     return outcome;
@@ -254,74 +250,42 @@ export const runAgentTurnStep = async (
 };
 
 /**
- * Static registration is intentional: workflow steps are deployment-versioned bundles. A new kind
- * adds a handler here and a sibling HTTP runtime, while the workflow stays free of domain imports.
+ * Resolves what every kind's turn needs — the kind state, the opened Pi session, the caller's
+ * credential-bearing models and the approved call ids — then hands the turn to the kind.
  *
- * Keyed by the literal rather than `WRITING_AGENT_KIND`, because importing that constant pulls
- * `@chia/agent-writing` and the whole provider stack behind it. This module is registered at boot
- * for every process that hosts the workflow, so a domain import here is an eager one. The key is
- * matched against `agent.session.kind`, which is a database string either way; the handler asserts
- * the constant once its domain module is loaded.
+ * The runtime is imported here rather than at module scope: this step is registered at boot for
+ * every process that hosts the workflow, and the runtime carries the provider stack.
  */
-const AGENT_TURN_HANDLERS = new Map<string, AgentTurnHandler>([
-  ["writing", runWritingAgentTurn],
-]);
-
-async function runWritingAgentTurn(
+async function runKindTurn(
+  definition: AgentKindDefinition<unknown>,
   db: DB,
   row: AgentSessionRow,
   request: AgentTurnRequest,
   signal: AbortSignal,
   writer: EventWriter
 ): Promise<AgentTurnOutcome> {
-  const [
-    { createAgentModels },
-    { PgSessionRepo },
-    { PgDraftStore },
-    { runWritingTurn },
-    { WRITING_AGENT_KIND, WRITING_SESSION_DEFAULTS },
-    // Constructs the Firecrawl client at module scope, so it must stay off the boot path.
-    { createAgentWebPort },
-  ] = await Promise.all([
+  const [{ createAgentModels }, { PgSessionRepo }] = await Promise.all([
     import("@chia/agent-runtime/models"),
     import("@chia/agent-runtime/session/pg-repo"),
-    import("@chia/agent-writing/draft/pg-draft-store"),
-    import("@chia/agent-writing/runtime"),
-    import("@chia/agent-writing/models"),
-    import("../services/agent-web.port"),
   ]);
 
-  if (row.kind !== WRITING_AGENT_KIND) {
+  const state = await definition.state.load(db, request.sessionId);
+  if (state === null) {
     throw new FatalError(
-      `Agent session ${request.sessionId} dispatched to the writing turn as kind "${row.kind}".`
-    );
-  }
-
-  const writingState = await getWritingAgentSession(db, request.sessionId);
-  if (!writingState) {
-    throw new FatalError(
-      `Writing state is missing for agent session ${request.sessionId}.`
+      `Kind state is missing for agent session ${request.sessionId}.`
     );
   }
   if (!row.providerId || !row.modelId || !row.thinkingLevel) {
     throw new FatalError(
-      `Writing session ${request.sessionId} has incomplete LLM settings.`
+      `Agent session ${request.sessionId} has incomplete LLM settings.`
     );
   }
 
   const repo = new PgSessionRepo(db, {
-    kind: WRITING_AGENT_KIND,
-    defaults: WRITING_SESSION_DEFAULTS,
+    kind: definition.kind,
+    defaults: definition.defaults,
   });
   const session = await repo.openById(request.sessionId);
-  const draft = new PgDraftStore(db);
-  /**
-   * The writing agent acts as the configured author. The kind's `minTier` is `Root`, which pins
-   * session ownership to that same id, so this states whose posts the port touches rather than
-   * performing a second authorization check.
-   */
-  const content = createAgentContentPort({ db, adminId: getAdminId() });
-  const web = createAgentWebPort();
 
   const approvedToolCallIds = new Set(
     await getApprovedAgentToolCallIds(db, request.sessionId)
@@ -339,9 +303,10 @@ async function runWritingAgentTurn(
     decryptAgentCredentials(request.credentials)
   );
 
-  return await runWritingTurn({
-    session,
-    models,
+  return await definition.runTurn({
+    db,
+    row,
+    state,
     settings: {
       providerId: row.providerId,
       modelId: row.modelId,
@@ -351,20 +316,18 @@ async function runWritingAgentTurn(
       autoApprove:
         /* SAFETY: The producer contract guarantees this value satisfies ToolTier[]. */ row.autoApprove as ToolTier[],
     },
-    agentSessionId: request.sessionId,
-    targetFeedId: writingState.targetFeedId ?? undefined,
-    content,
-    web,
-    draft,
-    onEvent: writer.push,
-    approvedToolCallIds,
-    preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
-    signal,
+    session,
+    models,
     message: {
       text: request.text,
       template: request.template,
       decision: request.decision,
     },
+    signal,
+    approvedToolCallIds,
+    preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
+    onEvent: writer.push,
+    flushEvents: writer.flush,
     toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
@@ -382,7 +345,6 @@ async function runWritingAgentTurn(
         }))
       );
     },
-    flushEvents: writer.flush,
   });
 }
 

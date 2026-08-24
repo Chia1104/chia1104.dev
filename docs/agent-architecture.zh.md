@@ -40,17 +40,27 @@ flowchart TB
 `agent.session.kind` 是 domain discriminator（目前只有 `writing`），不是 harness
 discriminator。它選擇：
 
-- request context 上 `agentKinds[kind]` 帶的 host implementation；
-- `AGENT_TURN_HANDLERS` 中的 durable step handler；
-- `agent.writing_session` 這類 kind-specific extension row。
+- `apps/service/src/agents/registry.ts`（`AGENT_KINDS`）中的 `AgentKindDefinition`——request
+  context 上的 `agentKinds[kind]` service 和 durable turn step 都從這裡解析；
+- `agent.writing_session` 這類 kind-specific extension row，藏在 `definition.state` 後面。
 
 所有 session-scoped request 都從已持久化的 session 取得 kind；client 傳入的值只能交叉
 驗證，不能拿另一個 kind 的 tools 去驅動既有 writing session。
 
 `packages/api/orpc/services/agent.service.ts` 宣告 `AgentKindService`。這個 host port 應保留：
 `packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在
-`createORPCContext` 把 `{ writing: writingAgentService }` 放到每個 request context 上。它和已刪除的
+`createORPCContext` 把每個已註冊 kind 的 service 放到 request context 上。它和已刪除的
 harness abstraction 是不同層次的概念。
+
+Service 本身是 generic 的。`apps/service/src/agents/service.ts`（`createAgentKindService`）
+在一個 `AgentKindDefinition`（`agents/kind.ts`）之上實作整個 port——session rows、durable runs、
+prompt/attach/stream、abort、approvals、compaction 與 rewind——turn step（`runKindTurn`）在 Pi
+那一側解析同一個 definition。一個 kind 就是 `apps/service/src/agents/` 下的一個檔案
+（`writing.ts`），把 domain package 綁到 host 的 ports 上，只提供會不同的部分：`minTier`、
+defaults、replay policy、model allowlist、capabilities、1:1 的 `state` row
+（`create`/`load`/`summary`/`detail`）、`runTurn` 與 `maintenance`。registry entry 會 eager 地
+重述 `minTier` 給 guard 用，definition 則用 dynamic import 載入，讓 domain package 和 provider
+SDK 留在 boot path 之外。
 
 ### 誰可以使用某個 kind
 
@@ -117,7 +127,7 @@ decision 的 relay turn 不命名。
 sequenceDiagram
     participant UI as apps/dash
     participant RPC as oRPC
-    participant SVC as writingAgentService
+    participant SVC as createAgentKindService(writing)
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
     participant WR as runWritingTurn
@@ -429,7 +439,8 @@ factory、capability plugin system 或 provider-neutral handle。
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                           |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`、`agents/kind.ts`、`agents/service.ts`                   |
+| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts`         |
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                       |

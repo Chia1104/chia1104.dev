@@ -2,8 +2,8 @@ import type { Context } from "hono";
 
 import type { BaseOSContext, ORPCConfig } from "@chia/api/orpc/utils";
 
+import { agentKinds } from "../agents/registry";
 import { env } from "../env";
-import { agentKinds } from "../services/agent.service";
 import { feedHooks } from "../services/feed-indexing.service";
 import { ragIndexingService } from "../services/rag-indexing.service";
 

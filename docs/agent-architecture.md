@@ -41,17 +41,27 @@ clients, not an interchangeable harness API.
 `agent.session.kind` is a domain discriminator (`writing` today), not a harness discriminator. It
 selects:
 
-- the host implementation the request context carries in `agentKinds[kind]`;
-- the durable step handler in `AGENT_TURN_HANDLERS`;
-- the kind-specific extension row, such as `agent.writing_session`.
+- the `AgentKindDefinition` in `apps/service/src/agents/registry.ts` (`AGENT_KINDS`), which both
+  the request context's `agentKinds[kind]` service and the durable turn step resolve;
+- the kind-specific extension row, such as `agent.writing_session`, behind `definition.state`.
 
 Session-scoped requests resolve kind from the persisted session. Client input can only cross-check
 it, so a caller cannot drive a writing session through another kind's tools.
 
 `packages/api/orpc/services/agent.service.ts` defines `AgentKindService`. This is a valid host dependency
 inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
-puts `{ writing: writingAgentService }` on every request context (`createORPCContext`). It is
+puts one service per registered kind on every request context (`createORPCContext`). It is
 unrelated to the removed harness abstraction.
+
+The service itself is generic. `apps/service/src/agents/service.ts` (`createAgentKindService`)
+implements the whole port — session rows, durable runs, prompt/attach/stream, abort, approvals,
+compaction and rewind — over an `AgentKindDefinition` (`agents/kind.ts`), and the turn step
+(`runKindTurn`) resolves the same definition for the Pi side. A kind is one file in
+`apps/service/src/agents/` (`writing.ts`) that binds its domain package to the host's ports and
+supplies only what differs: `minTier`, defaults, replay policy, the model allowlist,
+capabilities, its 1:1 `state` row (`create`/`load`/`summary`/`detail`), `runTurn` and
+`maintenance`. The registry entry restates `minTier` eagerly for the guards and loads the
+definition with a dynamic import, so the domain package and provider SDKs stay off the boot path.
 
 ### Who may use a kind
 
@@ -121,7 +131,7 @@ turn-end refresh of the session list already sees it. Operator-decision relay tu
 sequenceDiagram
     participant UI as apps/dash
     participant RPC as oRPC
-    participant SVC as writingAgentService
+    participant SVC as createAgentKindService(writing)
     participant WF as agentSessionWorkflow
     participant STEP as runAgentTurnStep
     participant WR as runWritingTurn
@@ -472,7 +482,8 @@ until a concrete second execution foundation requires a different seam.
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                           |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
-| Host implementation          | `apps/service/src/services/agent.service.ts`                                                   |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                   |
+| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |
 | Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`         |
 | Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |
