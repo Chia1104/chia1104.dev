@@ -9,7 +9,7 @@ import { withMetaSchema } from "./shared";
 /**
  * Shared agent transport contract.
  *
- * Kind-specific fields stay optional; the runtime selected by `agent_session.kind` owns
+ * Kind-specific fields stay optional; the runtime selected by `agent.session.kind` owns
  * their validation.
  */
 

@@ -80,7 +80,7 @@ import {
 } from "./agent-credentials";
 
 /**
- * The **writing** agent service, registered under `agent_session.kind = "writing"`.
+ * The **writing** agent service, registered under `agent.session.kind = "writing"`.
  *
  * Pi execution, session persistence, approval and wire primitives are `@chia/agent-runtime`;
  * the writing domain is `@chia/agent-writing`. This module is the
@@ -90,11 +90,11 @@ import {
  * **Stateless.** There is no in-process registry: each session is driven by a durable workflow run,
  * and every piece of state lives somewhere durable —
  *
- * - transcript → `agent_session_entry` (queried directly by the dashboard, and the source pi
+ * - transcript → `agent.session_entry` (queried directly by the dashboard, and the source pi
  *   rebuilds context from)
- * - draft buffer → `writing_agent_session` + `writing_agent_draft`
- * - approval decisions → `agent_tool_approval`
- * - turn execution metadata → `agent_run`; pauses and event stream → the workflow backend
+ * - draft buffer → `agent.writing_session` + `agent.writing_draft`
+ * - approval decisions → `agent.tool_approval`
+ * - turn execution metadata → `agent.run`; pauses and event stream → the workflow backend
  *
  * That split is why a deploy mid-turn is survivable and why an approval can be granted a day later.
  * It is also why this module can be replicated across instances without a coordination layer.

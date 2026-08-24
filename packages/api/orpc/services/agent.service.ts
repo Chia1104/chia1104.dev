@@ -16,7 +16,7 @@ import type { BaseOSContext } from "../utils";
  *
  * The oRPC routes live here in `packages/api`, but *running* an agent needs a long-lived process
  * that owns harness construction, live-run bookkeeping and provider credentials — all of which
- * belong to the host app. The host supplies one implementation per `agent_session.kind` on the
+ * belong to the host app. The host supplies one implementation per `agent.session.kind` on the
  * request context (`BaseOSContext.agentKinds`); keying by kind is what lets a second agent
  * package be additive rather than replace the first.
  */

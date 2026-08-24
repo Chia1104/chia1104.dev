@@ -62,7 +62,7 @@ const DELTA_FLUSH_MS = 80;
 // ============================================
 
 /**
- * The turn the run is on, kept in `agent_run.metadata` because the workflow SDK cannot say it: a
+ * The turn the run is on, kept in `agent.run.metadata` because the workflow SDK cannot say it: a
  * run parked on its message hook is `running` just like one executing a step. `running` here is
  * true only while the turn step is inside its handler. `leafEntryId`/`streamIndex` say where the
  * turn began, so a client can rejoin it: `get` cuts the replayed transcript after that leaf and
@@ -260,7 +260,7 @@ export const runAgentTurnStep = async (
  * Keyed by the literal rather than `WRITING_AGENT_KIND`, because importing that constant pulls
  * `@chia/agent-writing` and the whole provider stack behind it. This module is registered at boot
  * for every process that hosts the workflow, so a domain import here is an eager one. The key is
- * matched against `agent_session.kind`, which is a database string either way; the handler asserts
+ * matched against `agent.session.kind`, which is a database string either way; the handler asserts
  * the constant once its domain module is loaded.
  */
 const AGENT_TURN_HANDLERS = new Map<string, AgentTurnHandler>([

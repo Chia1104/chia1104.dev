@@ -21,7 +21,7 @@ const AGENT_ABORT_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type { AgentAbortControllerRef };
 
-/** Key under which `agent_run.metadata` carries the ref, for `abort` to find it. */
+/** Key under which `agent.run.metadata` carries the ref, for `abort` to find it. */
 export const AGENT_ABORT_CONTROLLER_KEY = "abortController";
 
 export const readAgentAbortControllerRef = (

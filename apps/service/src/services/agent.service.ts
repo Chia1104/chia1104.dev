@@ -10,7 +10,7 @@ import { CallerTier } from "@chia/service-kit/policies/caller.policy";
  * routes never touch an agent. The delegate below defers it to the first agent call.
  *
  * The key is the literal rather than `WRITING_AGENT_KIND` for the same reason: importing that
- * constant pulls the domain package. It is matched against `agent_session.kind`, a database
+ * constant pulls the domain package. It is matched against `agent.session.kind`, a database
  * string, and `writingAgentService` asserts the constant once its module is loaded.
  */
 const impl = async (): Promise<AgentKindService> =>
