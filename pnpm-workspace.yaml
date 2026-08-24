@@ -53,7 +53,7 @@ catalogs:
     streamdown: 2.5.0
   agent:
     "@earendil-works/pi-agent-core": 0.83.0
-    "@earendil-works/pi-ai": 0.83.0
+    "@earendil-works/pi-ai": 0.84.3
     typebox: 1.3.16
   ai:
     "@ai-sdk/anthropic": 4.0.41
@@ -173,8 +173,7 @@ catalogs:
 linkWorkspacePackages: true
 
 minimumReleaseAgeExclude:
-  - '@earendil-works/pi-agent-core@0.82.1'
-  - '@earendil-works/pi-ai@0.82.1'
+  - '@earendil-works/pi-ai@0.84.3'
   - '@oxlint/binding-android-arm-eabi@1.79.0'
   - '@oxlint/binding-android-arm64@1.79.0'
   - '@oxlint/binding-darwin-arm64@1.79.0'
@@ -197,11 +196,14 @@ minimumReleaseAgeExclude:
   - '@oxlint/plugins@1.79.0'
   - oxlint@1.79.0
   - bun-types@1.4.0
+  - '@earendil-works/pi-telemetry@0.84.3'
 
 strictPeerDependencies: false
 
 overrides:
   "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4
+  # pi-agent-core 0.83 declares pi-ai ^0.83.0; one copy of pi-ai must serve both it and this repo.
+  "@earendil-works/pi-ai": 0.84.3
 
 # streamdown's types import shiki but it only lists shiki as a devDependency; without this the
 # import resolves to whatever shiki is hoisted (v4 here) and no longer matches @streamdown/code's v3.
