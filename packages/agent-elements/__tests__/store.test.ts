@@ -594,9 +594,10 @@ describe("createAgentSessionStore", () => {
       { kind: "notice", variant: "rewound", text: "Asked twice about titles." },
     ]);
     expect(store.getState().view.runStatus).toBe("idle");
-    expect(store.getState().composerSeed).toBe("second");
-    store.getState().clearComposerSeed();
-    expect(store.getState().composerSeed).toBeNull();
+    expect(store.getState().composerSeed).toEqual({ id: 1, text: "second" });
+    // The same text handed over again is a new event, so the composer applies it again.
+    store.getState().seedComposer("second");
+    expect(store.getState().composerSeed).toEqual({ id: 2, text: "second" });
   });
 
   it("dispose closes the stream and drops late events", async () => {

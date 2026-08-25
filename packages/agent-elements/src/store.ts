@@ -35,8 +35,12 @@ export interface AgentSessionState {
   connection: AgentConnection;
   /** Prompt already sent, shown until the stream echoes it back as a `user` event. */
   pendingPrompt: string | null;
-  /** Text handed to the composer to take over — a rewound prompt given back for editing. */
-  composerSeed: string | null;
+  /**
+   * Text handed to the composer to take over — a rewound prompt given back for editing. An
+   * event, not state: `id` grows with every hand-off, so the same text handed over twice is
+   * applied twice, and the composer keeps track of which id it has already taken.
+   */
+  composerSeed: { id: number; text: string } | null;
   /**
    * A transport or request failure. Agent-side failures arrive as `error` wire events and live in
    * the transcript instead.
@@ -53,7 +57,6 @@ export interface AgentSessionActions {
    */
   replaceDetail: (detail: AgentSessionDetail) => void;
   seedComposer: (text: string) => void;
-  clearComposerSeed: () => void;
   /** Rejects when the request itself fails; stream failures land in `failure`. */
   prompt: (text: string) => Promise<void>;
   /** Runs a server-advertised slash command through its prompt template. */
@@ -328,9 +331,10 @@ export const createAgentSessionStore = ({
         });
       },
 
-      seedComposer: (text) => set({ composerSeed: text }),
-
-      clearComposerSeed: () => set({ composerSeed: null }),
+      seedComposer: (text) =>
+        set((state) => ({
+          composerSeed: { id: (state.composerSeed?.id ?? 0) + 1, text },
+        })),
 
       hydrate: async () => {
         const mine = ++generation;

@@ -10,8 +10,7 @@ import {
   upsertContent,
   upsertFeedTranslation,
 } from "@chia/db/repos/feeds";
-import { toORPCError } from "@chia/service-kit/adapters/orpc";
-import { isAppError } from "@chia/service-kit/errors";
+import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import {
@@ -175,33 +174,25 @@ const rootWriteGuard = callerGuard({ minTier: CallerTier.Root });
 
 export const createFeedRoute = contractOS.feeds.create
   .use(rootWriteGuard)
-  .handler(async (opts) => {
+  .handler((opts) =>
     // The write logic lives in `feeds/write` because the writing agent's durable turn calls
     // it too, from a workflow step that has no request to authorise against.
-    try {
-      return await createFeedService(
+    withORPCErrors(() =>
+      createFeedService(
         opts.context.db,
         { ...opts.input, adminId: opts.context.caller.adminId },
         opts.context.hooks ?? {}
-      );
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+      )
+    )
+  );
 
 export const updateFeedRoute = contractOS.feeds.update
   .use(contentWriteGuard)
-  .handler(async (opts) => {
-    try {
-      return await updateFeedService(
-        opts.context.db,
-        opts.input,
-        opts.context.hooks ?? {}
-      );
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+  .handler((opts) =>
+    withORPCErrors(() =>
+      updateFeedService(opts.context.db, opts.input, opts.context.hooks ?? {})
+    )
+  );
 
 export const deleteFeedRoute = contractOS.feeds.delete
   .use(rootWriteGuard)

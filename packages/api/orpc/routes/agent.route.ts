@@ -1,6 +1,5 @@
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import { toORPCError } from "@chia/service-kit/adapters/orpc";
-import { isAppError } from "@chia/service-kit/errors";
+import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 
 import {
   agentCallerOf,
@@ -205,22 +204,16 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
 
 /**
  * Maintenance mutates the tree, so the service refuses it with an `AppError` while a turn runs or
- * an approval is undecided; that is the `CONFLICT` these contracts declare.
+ * an approval is undecided; `withORPCErrors` turns that into the `CONFLICT` these contracts declare.
  */
-const maintenance = async <T>(run: () => Promise<T>): Promise<T> => {
-  try {
-    return await run();
-  } catch (error) {
-    throw isAppError(error) ? toORPCError(error) : error;
-  }
-};
-
 export const compactAgentSessionRoute = contractOS.agent.sessions.compact
   .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
-    const result = await maintenance(() => service.compact(caller, opts.input));
+    const result = await withORPCErrors(() =>
+      service.compact(caller, opts.input)
+    );
     if (!result) throw opts.errors.NOT_FOUND();
     return result;
   });
@@ -230,7 +223,7 @@ export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
-    const detail = await maintenance(() =>
+    const detail = await withORPCErrors(() =>
       service.navigate(caller, opts.input)
     );
     if (!detail) throw opts.errors.NOT_FOUND();
@@ -242,7 +235,7 @@ export const forkAgentSessionRoute = contractOS.agent.sessions.fork
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
-    const detail = await maintenance(() => service.fork(caller, opts.input));
+    const detail = await withORPCErrors(() => service.fork(caller, opts.input));
     if (!detail) throw opts.errors.NOT_FOUND();
     return detail;
   });

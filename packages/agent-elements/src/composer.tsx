@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import {
   memo,
   useCallback,
-  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -297,7 +296,6 @@ export const Composer = ({
   const command = useAgentSession((state) => state.command);
   const reportFailure = useAgentSession((state) => state.reportFailure);
   const composerSeed = useAgentSession((state) => state.composerSeed);
-  const clearComposerSeed = useAgentSession((state) => state.clearComposerSeed);
   const capabilities = useAgentCapabilities();
   const canPrompt = useCanPrompt();
   const busy = useAgentBusy();
@@ -375,17 +373,19 @@ export const Composer = ({
     dispatch({ type: "replace", ...edit });
   };
 
-  // A rewound prompt is handed back here to be edited and sent again; it takes over the input.
-  useEffect(() => {
-    if (composerSeed === null) return;
-    pendingSelection.current = composerSeed.length;
+  // A rewound prompt handed back to be edited and sent again takes over the input. Applied during
+  // render, keyed by the seed's id, so it lands in the same commit as the store change (no
+  // post-paint flash) and the store is never written back to from here.
+  const [appliedSeedId, setAppliedSeedId] = useState<number | null>(null);
+  if (composerSeed !== null && composerSeed.id !== appliedSeedId) {
+    setAppliedSeedId(composerSeed.id);
+    pendingSelection.current = composerSeed.text.length;
     dispatch({
       type: "replace",
-      text: composerSeed,
-      cursor: composerSeed.length,
+      text: composerSeed.text,
+      cursor: composerSeed.text.length,
     });
-    clearComposerSeed();
-  }, [clearComposerSeed, composerSeed]);
+  }
 
   const selectMenuItem = (item: SlashMenuItem, token: SlashToken) => {
     if (item.kind === "skill") {
