@@ -94,6 +94,13 @@ export interface AgentKindState<TState> {
   ): Promise<void>;
   load(db: DB, sessionId: string): Promise<TState | null>;
   /**
+   * Copies the kind's state of `sourceSessionId` onto the freshly forked `sessionId`, whose
+   * `agent.session` row and transcript already exist. State is copied as it stands now — it is
+   * not versioned against the transcript, so a fork taken from an earlier entry still carries
+   * the current draft. Compensated like `create` when it throws.
+   */
+  fork(db: DB, sourceSessionId: string, sessionId: string): Promise<void>;
+  /**
    * Kind-owned fields of the session summary. The contract still carries the writing agent's
    * `targetFeedId` as an optional field; a kind with nothing to add returns `{}`.
    */

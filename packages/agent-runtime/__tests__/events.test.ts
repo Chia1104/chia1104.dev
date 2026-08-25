@@ -151,11 +151,44 @@ describe("foldEvents", () => {
       presentation
     ).filter((event) => event.type === "assistant:end");
 
-    expect(all.map((event) => event.messageId)).toEqual([
-      "a:entry-1",
-      "a:entry-2",
+    expect(all.map((event) => event.messageId)).toEqual(["entry-1", "entry-2"]);
+    expect(secondOnly[0]?.messageId).toBe("entry-2");
+  });
+
+  it("replays a branch summary as the rewind notice", () => {
+    const entries: SessionEntry[] = [
+      {
+        type: "message",
+        id: "entry-1",
+        parentId: null,
+        timestamp: 1_767_225_600_000,
+        message: fauxAssistantMessage("Kept", { timestamp: 1 }),
+      },
+      {
+        type: "branch_summary",
+        id: "entry-2",
+        parentId: "entry-1",
+        timestamp: 1_767_225_601_000,
+        fromId: "entry-1",
+        summary: "A tangent about titles, abandoned.",
+      },
+    ];
+
+    const events = entriesToWireEvents(entries, {
+      tierOf: () => "read",
+      labelOf: (name: string) => name,
+      summarize: () => "",
+    });
+
+    expect(events.map((event) => event.type)).toEqual([
+      "assistant:end",
+      "session:rewound",
     ]);
-    expect(secondOnly[0]?.messageId).toBe("a:entry-2");
+    expect(foldEvents(events).items.at(-1)).toEqual({
+      kind: "notice",
+      variant: "rewound",
+      text: "A tangent about titles, abandoned.",
+    });
   });
 
   it("replays a failed assistant message as the same error notice the live turn emits", () => {

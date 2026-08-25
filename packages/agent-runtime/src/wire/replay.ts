@@ -16,6 +16,9 @@ import type { AgentWireEvent } from "./schema.ts";
  * Rebuilds wire events from a persisted branch so a reconnecting client renders through
  * exactly the same fold as the live stream. Deltas are not replayed — a completed message
  * arrives as a single `assistant:end`.
+ *
+ * A message's wire id is its entry id, live and replayed alike, so a client can name the entry
+ * behind any message it shows — which is what rewind and fork targets are.
  */
 export const entriesToWireEvents = (
   entries: readonly SessionEntry[],
@@ -30,6 +33,10 @@ export const entriesToWireEvents = (
         summary: entry.summary,
         tokensBefore: entry.tokensBefore,
       });
+      continue;
+    }
+    if (entry.type === "branch_summary") {
+      events.push({ type: "session:rewound", summary: entry.summary });
       continue;
     }
     if (entry.type !== "message") continue;
@@ -48,7 +55,7 @@ export const entriesToWireEvents = (
     }
 
     if (message.role === "assistant") {
-      const messageId = `a:${entry.id}`;
+      const messageId = entry.id;
       const text = message.content
         .filter((part) => part.type === "text")
         .map((part) => part.text)

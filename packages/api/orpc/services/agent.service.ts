@@ -164,6 +164,11 @@ export interface AgentKindService {
     input: { sessionId: string; customInstructions?: string }
   ): Promise<{ summary: string; tokensBefore: number } | null>;
 
+  /**
+   * Rewinds the session in place: the leaf moves to `entryId` (a user message's parent, so it
+   * can be re-asked) and the detail is returned rebuilt, because a changed branch invalidates
+   * every view the client held. Refused (`CONFLICT`) while a turn runs or an approval is undecided.
+   */
   navigate(
     caller: AgentServiceCaller,
     input: {
@@ -172,7 +177,22 @@ export interface AgentKindService {
       summarize?: boolean;
       label?: string;
     }
-  ): Promise<{ cancelled: boolean; events: AgentWireEvent[] } | null>;
+  ): Promise<agentContracts.AgentSessionDetail | null>;
+
+  /**
+   * Copies the session into a new one — the branch below `entryId` (`before` a user message so
+   * it can be re-asked, or `at` any entry) or the whole tree — along with the kind's state as it
+   * stands now. Returns the new session's detail. Same refusals as {@link navigate}.
+   */
+  fork(
+    caller: AgentServiceCaller,
+    input: {
+      sessionId: string;
+      entryId?: string;
+      position?: "before" | "at";
+      title?: string;
+    }
+  ): Promise<agentContracts.AgentSessionDetail | null>;
 
   /**
    * Checks a model selection before anything persists it.

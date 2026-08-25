@@ -336,13 +336,18 @@ objects, repeated partial snapshots and unbounded details; clients receive only:
 run:start · user · assistant:start · assistant:delta · assistant:end
 tool:start · tool:update · tool:end
 approval:request · approval:resolved
-session:compacted · state:changed · error · run:end
+session:compacted · session:rewound · state:changed · error · run:end
 ```
 
-- `createPiWireEventMapper` maps live Pi events and prefixes assistant ids with a unique turn id.
-- `entriesToWireEvents` rebuilds history from persisted Pi entries and uses each entry id as the
-  stable assistant identity. A persisted assistant message with `stopReason: "error"` replays as
-  the same `error` event the live turn emitted.
+- A message's `messageId` is its session-entry id, live and replayed alike. `runPiTurn`
+  reserves the id when a message starts (the operator's prompt up front, before Pi has started
+  it) and appends the entry under that id, and `createPiWireEventMapper` asks the turn for it
+  — so the client can hand any message id back as a rewind or fork target, and a transcript
+  rebuilt after a reload names the same messages identically.
+- `entriesToWireEvents` rebuilds history from persisted Pi entries. A persisted assistant
+  message with `stopReason: "error"` replays as the same `error` event the live turn emitted;
+  a `branch_summary` entry replays as `session:rewound`, so a rewind that kept a summary stays
+  visible where it happened.
 - `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
 provider · internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
 - `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
@@ -358,8 +363,8 @@ provider · internal`) so a client can say what to do next; `describeAgentError`
   that folds live turns with `applyEvent` and owns prompt/approval streaming, over the host's
   TanStack `QueryClient` for everything request/response (session detail, models, settings,
   abort — `./queries`), plus the HeroUI elements (thread, composer, approval card, model picker,
-  session tabs) both frontends compose. It takes the contract-typed `client.agent` and nothing
-  app-specific.
+  session tabs, message actions) both frontends compose. It takes the contract-typed
+  `client.agent` and nothing app-specific.
 
 Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
@@ -409,12 +414,32 @@ Maintenance operates on the session tree directly; no `Agent` is built:
   moving the leaf onto it;
 - forks (`PgSessionRepo.fork`) copy into a new session row: the whole tree with the source's leaf when
   no target is given; otherwise the branch below the target, from the newest compaction down —
-  `at` includes the target, `before` (a user message only) stops at its parent so it can be re-asked;
+  `at` includes the target, `before` (a user message only) stops at its parent so it can be re-asked.
+  The row records its lineage (`forkedFromSessionId`, `forkedFromEntryId`), which the session
+  list carries so the tabs can show where a branch came from;
 - writing wrappers resolve the model through the writing allowlist, then call those operations.
 
 No tools, prompts, approvals or subscriptions are constructed for maintenance.
-Manual compact and navigate are refused while a turn is running. Navigation returns the entire
-rebuilt transcript because changing the active branch invalidates the current view.
+
+The two operations answer two different questions. **Navigate** (`agent.sessions.navigate`) is a
+rewind in place: one session, the leaf moves, and the branch left behind stays in the tree but
+out of view — the client shows one active branch and nothing else. **Fork**
+(`agent.sessions.fork`) keeps both: the copy lands in a new session, the source is untouched,
+and the operator moves between them through the session tabs. The generic service implements
+both over the kind: navigation through `definition.maintenance`, forking through `repo.fork` plus
+`definition.state.fork`, which copies the kind's state row and — for writing — the draft, with
+the same compensation as `createSession` when it fails.
+
+Both are refused (`CONFLICT`) while a turn is running and while an approval is undecided: the
+run is parked on the approval hook, and the relay turn its decision would start lands on
+whatever branch is active then, answering a call that is no longer on it. Manual compaction
+shares the guard. Navigation returns the whole session detail, not just events, because
+changing the active branch invalidates every view the client held and the client folds a
+detail the same way it folds `get`.
+
+Kind state is not versioned against the transcript. A rewind leaves the writing draft as the
+abandoned branch last left it, and a fork copies the draft as it stands now, not as it was at
+the target; the dialogs say so, and the seam for a per-entry snapshot is `AgentKindState`.
 
 At a successful turn boundary, `compactSessionIfNeeded` uses Pi's context-token estimation and
 threshold. Failed turns and turns awaiting approval are never auto-compacted. Compaction failure is

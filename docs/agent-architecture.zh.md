@@ -304,14 +304,16 @@ model、每個 delta 的 partial snapshot 與不受控 details；client 只收�
 run:start · user · assistant:start · assistant:delta · assistant:end
 tool:start · tool:update · tool:end
 approval:request · approval:resolved
-session:compacted · state:changed · error · run:end
+session:compacted · session:rewound · state:changed · error · run:end
 ```
 
-- `createPiWireEventMapper`：live Pi event → wire event，並用唯一 turn id 作為 assistant id
-  前綴。
-- `entriesToWireEvents`：persisted Pi entries → replay history，使用 entry id 作為穩定的
-  assistant identity。`stopReason: "error"` 的持久化 assistant message 會 replay 成與 live
-  turn 相同的 `error` event。
+- 訊息的 `messageId` 就是它的 session entry id，live 與 replay 一致。`runPiTurn` 在訊息開始時
+  預留 id（operator 的 prompt 在 Pi 開始之前就先預留），append entry 時用同一個 id；
+  `createPiWireEventMapper` 向 turn 要這個 id——所以 client 可以把任何一則訊息的 id 交回去當
+  rewind 或 fork 的目標，重整後 rebuild 的 transcript 也用同樣的 id 稱呼同樣的訊息。
+- `entriesToWireEvents`：persisted Pi entries → replay history。`stopReason: "error"` 的持久化
+  assistant message 會 replay 成與 live turn 相同的 `error` event；`branch_summary` entry 會
+  replay 成 `session:rewound`，所以帶摘要的 rewind 會留在它發生的位置。
 - `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · budget_exhausted · provider ·
 internal`），
   讓 client 能提示下一步；`describeAgentError` 是共用的 headline。
@@ -327,8 +329,8 @@ internal`），
   （`createAgentSessionStore`）只管 live 這一段——用 `applyEvent` fold live turn、prompt/approval
   的 stream loop——request/response 的部分（session detail、models、settings、abort）走 host 的
   TanStack `QueryClient`（`./queries`），store 也是透過同一個 cache 讀寫 detail；再加上兩個前端
-  共用的 HeroUI elements（thread、composer、approval card、model picker、session tabs）。它只吃
-  contract-typed 的 `client.agent`，不依賴任何 app。
+  共用的 HeroUI elements（thread、composer、approval card、model picker、session tabs、message
+  actions）。它只吃 contract-typed 的 `client.agent`，不依賴任何 app。
 
 每個 run 有 coarse durable stream 與獨立 batch 的 delta namespace。Coarse event 會先 flush
 pending deltas；reader 以 race 讀取兩邊以維持交錯順序。Stream 只在整個 durable run 結束時
@@ -373,12 +375,28 @@ Maintenance 直接操作 session tree，不建立 `Agent`：
   label 則記錄下來但不讓 leaf 停在 label 上；
 - fork（`PgSessionRepo.fork`）複製到新的 session row：沒指定目標時複製整棵樹並沿用來源的 leaf；
   指定目標時複製目標以下、從最近一次 compaction 起的 branch——`at` 包含目標，`before`（僅限
-  user message）停在它的 parent，讓那句話可以重問；
+  user message）停在它的 parent，讓那句話可以重問。Row 上記錄血緣（`forkedFromSessionId`、
+  `forkedFromEntryId`），session list 帶出來讓 tabs 能顯示分支來自哪裡；
 - writing wrappers 只透過 writing allowlist resolve model，再呼叫上述 operation。
 
-Maintenance 不建立 tools、prompts、approval 或 subscriptions。Manual compact
-與 navigate 在 turn running 時仍會被拒絕。Navigation 會回傳完整 rebuilt transcript，因為
-active branch 改變後舊 view 已全部失效。
+Maintenance 不建立 tools、prompts、approval 或 subscriptions。
+
+兩個操作回答的是兩個不同的問題。**Navigate**（`agent.sessions.navigate`）是原地 rewind：同一個
+session，leaf 往回搬，被丟下的 branch 留在樹裡但看不到——client 只顯示一條 active branch。
+**Fork**（`agent.sessions.fork`）兩邊都留：複製落在新的 session，來源不動，operator 透過 session
+tabs 在兩者之間切換。Generic service 在 kind 之上實作這兩者：navigation 走
+`definition.maintenance`，fork 走 `repo.fork` 加 `definition.state.fork`——後者複製 kind 的 state
+row，writing 的話連 draft 一起，失敗時的 compensation 與 `createSession` 相同。
+
+兩者在 turn running 與 approval 未決時都會被拒絕（`CONFLICT`）：run 停在 approval hook 上，
+決定之後啟動的 relay turn 會落在當時的 active branch，回覆一個已經不在 branch 上的 call。手動
+compaction 共用同一個 guard。Navigation 回傳的是整份 session detail 而不只是 events，因為
+active branch 改變後 client 手上的 view 全部失效，而 client fold 一份 detail 的方式跟 fold `get`
+一模一樣。
+
+Kind state 沒有隨 transcript 版本化：rewind 之後 writing draft 停在被丟下的 branch 最後的狀態，
+fork 複製的是「現在」的 draft 而不是目標當時的；dialog 會講清楚，per-entry snapshot 的 seam 在
+`AgentKindState`。
 
 Turn 成功結束時，`compactSessionIfNeeded` 使用 Pi 的 context token estimate 與 threshold。
 Failed turn 或 awaiting approval 的 turn 不會 auto-compact；compaction failure 也不會讓成功的

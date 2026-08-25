@@ -104,6 +104,8 @@ const fakeClient = (overrides: {
   );
   const abort = vi.fn(overrides.abort ?? (async () => ({ aborted: true })));
   const update = vi.fn(async () => detailOf());
+  const navigate = vi.fn(async () => detailOf());
+  const fork = vi.fn(async () => detailOf());
   const models = vi.fn(async () => []);
   const capabilities = vi.fn(async () => ({
     tools: [],
@@ -111,7 +113,7 @@ const fakeClient = (overrides: {
     skills: [],
   }));
   const client: AgentSessionClient = {
-    sessions: { get, chat, abort, "settings:update": update },
+    sessions: { get, chat, abort, "settings:update": update, navigate, fork },
     models: { list: models },
     capabilities: { list: capabilities },
   };
@@ -556,6 +558,45 @@ describe("createAgentSessionStore", () => {
     expect(store.getState().connection).toBe("idle");
     expect(cachedDetail()?.run).toBeNull();
     expect(get).toHaveBeenCalledTimes(2);
+  });
+
+  it("replaceDetail swaps the view for the rebuilt branch and hands the prompt to the composer", async () => {
+    const { client } = fakeClient({
+      get: async () =>
+        detailOf({
+          events: [
+            { type: "user", messageId: "u1", text: "first" },
+            { type: "assistant:end", messageId: "a1", text: "one" },
+            { type: "user", messageId: "u2", text: "second" },
+            { type: "assistant:end", messageId: "a2", text: "two" },
+          ],
+        }),
+    });
+    const { store } = makeStore({ client });
+    await store.getState().hydrate();
+    expect(store.getState().view.items).toHaveLength(4);
+
+    // What `useNavigateSession` does with the detail the rewind returned.
+    store.getState().replaceDetail(
+      detailOf({
+        events: [
+          { type: "user", messageId: "u1", text: "first" },
+          { type: "assistant:end", messageId: "a1", text: "one" },
+          { type: "session:rewound", summary: "Asked twice about titles." },
+        ],
+      })
+    );
+    store.getState().seedComposer("second");
+
+    expect(store.getState().view.items).toMatchObject([
+      { kind: "user", messageId: "u1" },
+      { kind: "assistant", messageId: "a1" },
+      { kind: "notice", variant: "rewound", text: "Asked twice about titles." },
+    ]);
+    expect(store.getState().view.runStatus).toBe("idle");
+    expect(store.getState().composerSeed).toBe("second");
+    store.getState().clearComposerSeed();
+    expect(store.getState().composerSeed).toBeNull();
   });
 
   it("dispose closes the stream and drops late events", async () => {

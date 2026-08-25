@@ -35,6 +35,8 @@ export interface AgentSessionState {
   connection: AgentConnection;
   /** Prompt already sent, shown until the stream echoes it back as a `user` event. */
   pendingPrompt: string | null;
+  /** Text handed to the composer to take over — a rewound prompt given back for editing. */
+  composerSeed: string | null;
   /**
    * A transport or request failure. Agent-side failures arrive as `error` wire events and live in
    * the transcript instead.
@@ -45,6 +47,13 @@ export interface AgentSessionState {
 export interface AgentSessionActions {
   /** Loads the server-owned transcript and rejoins a turn that is still running. */
   hydrate: () => Promise<void>;
+  /**
+   * Replaces the view with a detail the server rebuilt — after a rewind, when the active branch
+   * changed and nothing the view held is still true.
+   */
+  replaceDetail: (detail: AgentSessionDetail) => void;
+  seedComposer: (text: string) => void;
+  clearComposerSeed: () => void;
   /** Rejects when the request itself fails; stream failures land in `failure`. */
   prompt: (text: string) => Promise<void>;
   /** Runs a server-advertised slash command through its prompt template. */
@@ -304,7 +313,24 @@ export const createAgentSessionStore = ({
       view: emptyViewState(),
       connection: "idle",
       pendingPrompt: null,
+      composerSeed: null,
       failure: null,
+
+      replaceDetail: (detail) => {
+        // Supersedes any stream or re-sync in flight: their view is of a branch that is gone.
+        generation++;
+        stopStream();
+        set({
+          view: foldDetail(detail),
+          connection: "idle",
+          pendingPrompt: null,
+          failure: null,
+        });
+      },
+
+      seedComposer: (text) => set({ composerSeed: text }),
+
+      clearComposerSeed: () => set({ composerSeed: null }),
 
       hydrate: async () => {
         const mine = ++generation;

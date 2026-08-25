@@ -11,6 +11,7 @@ import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { ApprovalCard, isApprovalItem } from "./approval-card.tsx";
+import { MessageActions } from "./message-actions.tsx";
 import { AgentBadge, AssistantMessage, UserMessage } from "./message.tsx";
 import { Notice } from "./notice.tsx";
 import { orbStateOf } from "./orb-state.ts";
@@ -19,7 +20,13 @@ import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
 type Group =
-  | { kind: "user"; key: string; text: string; at?: number }
+  | {
+      kind: "user";
+      key: string;
+      messageId: string;
+      text: string;
+      at?: number;
+    }
   | { kind: "agent"; key: string; items: AgentViewItem[] };
 
 /** Consecutive agent-side items (text, tools, notices) share one badge, like one reply. */
@@ -30,6 +37,7 @@ const groupItems = (items: readonly AgentViewItem[]): Group[] => {
       groups.push({
         kind: "user",
         key: `u:${item.messageId}`,
+        messageId: item.messageId,
         text: item.text,
         at: item.at,
       });
@@ -64,7 +72,18 @@ const AgentItem = ({
     );
   }
   if (item.kind === "notice") return <Notice notice={item} />;
-  return <AssistantMessage message={item} />;
+  return (
+    <AssistantMessage
+      actions={
+        <MessageActions
+          messageId={item.messageId}
+          role="assistant"
+          text={item.text}
+        />
+      }
+      message={item}
+    />
+  );
 };
 
 /** Changes whenever the tail of the transcript grows, which is when the view should follow it. */
@@ -209,6 +228,13 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
                 return (
                   <UserMessage
                     key={group.key}
+                    actions={
+                      <MessageActions
+                        messageId={group.messageId}
+                        role="user"
+                        text={group.text}
+                      />
+                    }
                     at={group.at}
                     text={group.text}
                   />

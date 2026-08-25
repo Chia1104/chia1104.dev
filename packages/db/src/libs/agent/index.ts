@@ -39,6 +39,8 @@ export interface InsertAgentSessionDTO {
   runtimeConfig?: JsonObject;
   configVersion?: number;
   leafEntryId?: string | null;
+  forkedFromSessionId?: string | null;
+  forkedFromEntryId?: string | null;
 }
 
 export const createAgentSession = async (
@@ -60,6 +62,8 @@ export const createAgentSession = async (
       runtimeConfig: input.runtimeConfig ?? {},
       configVersion: input.configVersion ?? 1,
       leafEntryId: input.leafEntryId ?? null,
+      forkedFromSessionId: input.forkedFromSessionId ?? null,
+      forkedFromEntryId: input.forkedFromEntryId ?? null,
     })
     .returning();
   return row;
@@ -415,6 +419,24 @@ export const upsertWritingAgentDraft = async (
       target: [writingAgentDrafts.sessionId, writingAgentDrafts.locale],
       set: update,
     });
+};
+
+/** Copies every per-locale draft of `fromSessionId` onto `toSessionId`, which must have none yet. */
+export const copyWritingAgentDrafts = async (
+  db: DB,
+  fromSessionId: string,
+  toSessionId: string
+) => {
+  const rows = await getWritingAgentDrafts(db, fromSessionId);
+  if (rows.length === 0) return;
+  await db.insert(writingAgentDrafts).values(
+    rows.map((row) => ({
+      sessionId: toSessionId,
+      locale: row.locale,
+      meta: row.meta,
+      content: row.content,
+    }))
+  );
 };
 
 export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {

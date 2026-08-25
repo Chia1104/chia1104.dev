@@ -99,6 +99,8 @@ describe("PgSessionRepo.fork", () => {
         id: "fork-1",
         userId: "user-1",
         title: "Original",
+        forkedFromSessionId: "session-1",
+        forkedFromEntryId: "u2",
       })
     );
     expect(
@@ -144,6 +146,14 @@ describe("PgSessionRepo.fork", () => {
 
     await repo().fork({ id: "session-1" }, { id: "fork-1" });
 
+    // The lineage names the source's leaf, the point the copy is effectively taken from.
+    expect(vi.mocked(createAgentSession)).toHaveBeenCalledWith(
+      db,
+      expect.objectContaining({
+        forkedFromSessionId: "session-1",
+        forkedFromEntryId: "a1",
+      })
+    );
     expect(
       vi
         .mocked(appendAgentSessionEntryAsLeaf)

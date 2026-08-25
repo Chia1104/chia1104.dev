@@ -9,28 +9,23 @@ import type { AgentWireEvent } from "../wire/schema.ts";
 // ============================================
 
 /**
- * pi's assistant messages carry no id, so the mapper combines a caller-owned turn id with a
- * per-turn sequence and accumulates text/thinking to emit a single terminal `assistant:end`.
+ * pi's assistant messages carry no id, so the mapper asks the turn for the entry id it will
+ * persist the message under and accumulates text/thinking to emit a single terminal
+ * `assistant:end` with that same id — the replayed transcript then names the message identically.
  */
 export interface PiWireEventMapperOptions extends AgentEventPresentation {
-  /** Stable, unique identifier for the turn that owns these live events. */
-  messageIdPrefix: string;
+  /** The entry id the turn has reserved for the message that just started. */
+  messageIdOf: () => string;
 }
 
 export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
-  let assistantSeq = 0;
   let current: { id: string; text: string; thinking: string } | undefined;
 
   return (event: AgentEvent): AgentWireEvent[] => {
     switch (event.type) {
       case "message_start": {
         if (event.message.role !== "assistant") return [];
-        assistantSeq += 1;
-        current = {
-          id: `a:${options.messageIdPrefix}:${assistantSeq}`,
-          text: "",
-          thinking: "",
-        };
+        current = { id: options.messageIdOf(), text: "", thinking: "" };
         return [{ type: "assistant:start", messageId: current.id }];
       }
 

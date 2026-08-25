@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import {
   memo,
   useCallback,
+  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -295,6 +296,8 @@ export const Composer = ({
   const prompt = useAgentSession((state) => state.prompt);
   const command = useAgentSession((state) => state.command);
   const reportFailure = useAgentSession((state) => state.reportFailure);
+  const composerSeed = useAgentSession((state) => state.composerSeed);
+  const clearComposerSeed = useAgentSession((state) => state.clearComposerSeed);
   const capabilities = useAgentCapabilities();
   const canPrompt = useCanPrompt();
   const busy = useAgentBusy();
@@ -371,6 +374,18 @@ export const Composer = ({
     if (focus) pendingSelection.current = edit.cursor;
     dispatch({ type: "replace", ...edit });
   };
+
+  // A rewound prompt is handed back here to be edited and sent again; it takes over the input.
+  useEffect(() => {
+    if (composerSeed === null) return;
+    pendingSelection.current = composerSeed.length;
+    dispatch({
+      type: "replace",
+      text: composerSeed,
+      cursor: composerSeed.length,
+    });
+    clearComposerSeed();
+  }, [clearComposerSeed, composerSeed]);
 
   const selectMenuItem = (item: SlashMenuItem, token: SlashToken) => {
     if (item.kind === "skill") {

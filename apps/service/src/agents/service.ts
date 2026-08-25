@@ -10,6 +10,7 @@ import {
   PgSessionRepo,
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
+import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
 import type {
   AgentSessionSettings,
@@ -33,6 +34,7 @@ import {
   getAgentSession,
   softDeleteAgentSession,
 } from "@chia/db/repos/agent";
+import { AppError } from "@chia/service-kit/errors";
 
 import {
   AGENT_ABORT_CONTROLLER_KEY,
@@ -168,6 +170,7 @@ export const createAgentKindService = <TState>(
       modelId: settings.modelId,
       thinkingLevel: settings.thinkingLevel,
       ...definition.state.summary(row.state),
+      forkedFromSessionId: row.forkedFromSessionId,
       createdAt: row.createdAt.getTime(),
       updatedAt: row.updatedAt.getTime(),
     };
@@ -393,19 +396,49 @@ export const createAgentKindService = <TState>(
   };
 
   /**
-   * Compaction and rewinding both mutate the session tree, so they cannot run while a turn is
-   * appending to it. A live run is not enough to refuse on — parked on the message hook is its
-   * normal idle state — so this reads the turn marker, like everything else that needs to know.
+   * Maintenance (compact, rewind, fork) mutates or copies the session tree, so it cannot run
+   * while a turn is appending to it. A live run is not enough to refuse on — parked on the
+   * message hook is its normal idle state — so this reads the turn marker, like everything else
+   * that needs to know.
+   *
+   * An undecided approval refuses too: the run is parked on the approval hook, and the relay
+   * turn its decision starts would land on whatever branch is active then — answering a call
+   * that is no longer on it. `CONFLICT`, converted at the route.
    */
-  const assertNoTurnRunning = async (
-    row: { workflowRunId: string | null; turn: AgentTurnMarker | undefined },
+  const assertMaintainable = async (
+    row: {
+      id: string;
+      workflowRunId: string | null;
+      turn: AgentTurnMarker | undefined;
+    },
+    db: DB,
     action: string
   ): Promise<void> => {
     if ((await runStateOf(row))?.status === "running") {
-      throw new Error(
-        `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
-      );
+      throw new AppError("CONFLICT", {
+        message: `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`,
+      });
     }
+    const outstanding = await undecidedApprovals(db, row.id);
+    if (outstanding.length > 0) {
+      throw new AppError("CONFLICT", {
+        message: `Cannot ${action} while \`${outstanding.join("`, `")}\` awaits your decision. Approve or reject it first.`,
+      });
+    }
+  };
+
+  /** The entry a rewind or fork targets, or `NOT_FOUND`; the client only ever holds ids it was shown. */
+  const requireEntry = async (
+    session: SessionTree,
+    entryId: string
+  ): Promise<SessionEntry> => {
+    const entry = await session.getEntry(entryId);
+    if (!entry) {
+      throw new AppError("NOT_FOUND", {
+        message: `Entry ${entryId} is not in this session.`,
+      });
+    }
+    return entry;
   };
 
   // ============================================
@@ -771,7 +804,7 @@ export const createAgentKindService = <TState>(
     async compact(caller, input) {
       const row = await loadOwnedSession(caller, input.sessionId);
       if (!row) return null;
-      await assertNoTurnRunning(row, "compact");
+      await assertMaintainable(row, caller.context.db, "compact");
 
       const maintenance = await maintenanceFor(caller, row);
       return await maintenance.compact(input.customInstructions);
@@ -780,18 +813,56 @@ export const createAgentKindService = <TState>(
     async navigate(caller, input) {
       const row = await loadOwnedSession(caller, input.sessionId);
       if (!row) return null;
-      await assertNoTurnRunning(row, "rewind");
+      await assertMaintainable(row, caller.context.db, "rewind");
 
       const maintenance = await maintenanceFor(caller, row);
-      const result = await maintenance.navigate(input.entryId, {
+      await requireEntry(maintenance.session, input.entryId);
+      // No signal is passed, so the summary cannot be cancelled and the result is never `cancelled`.
+      await maintenance.navigate(input.entryId, {
         summarize: input.summarize,
         label: input.label,
       });
-      const branch = await maintenance.session.getBranch();
-      return {
-        cancelled: result.cancelled,
-        events: entriesToWireEvents(branch, replayOptions),
-      };
+      return detailFor(caller, input.sessionId);
+    },
+
+    async fork(caller, input) {
+      const row = await loadOwnedSession(caller, input.sessionId);
+      if (!row) return null;
+      const db = caller.context.db;
+      await assertMaintainable(row, db, "fork");
+
+      const repo = repoFor(db);
+      const position = input.position ?? "before";
+      if (input.entryId) {
+        const target = await requireEntry(
+          await repo.openById(row.id),
+          input.entryId
+        );
+        if (
+          position === "before" &&
+          (target.type !== "message" || target.message.role !== "user")
+        ) {
+          throw new AppError("BAD_REQUEST", {
+            message:
+              "Only a user message can be forked before; fork at this entry instead.",
+          });
+        }
+      }
+
+      const forked = await repo.fork(
+        { id: row.id },
+        { entryId: input.entryId, position, title: input.title }
+      );
+      try {
+        await definition.state.fork(db, row.id, forked.id);
+        const detail = await detailFor(caller, forked.id);
+        if (!detail) throw new Error("Session vanished immediately after fork");
+        return detail;
+      } catch (error) {
+        // Same compensation as `createSession`: a fork without its kind state can never be opened.
+        await deleteAgentSession(db, forked.id);
+        throw error;
+      }
     },
 
     /**

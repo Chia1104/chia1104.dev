@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert } from "@heroui/react";
-import { Archive, CircleAlert, ShieldCheck } from "lucide-react";
+import { Archive, CircleAlert, ShieldCheck, Undo2 } from "lucide-react";
 
 import type { NoticeView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
@@ -14,29 +14,23 @@ export interface NoticeProps {
 }
 
 /**
- * Compaction, relayed approval decisions and agent-side errors, inline where they happened in the
- * transcript.
+ * Compaction, rewinds, relayed approval decisions and agent-side errors, inline where they
+ * happened in the transcript.
  */
 export const Notice = ({ className, notice }: NoticeProps) => {
   const labels = useAgentLabels();
 
-  if (notice.variant === "decision") {
+  if (notice.variant !== "error") {
+    const meta = {
+      decision: { icon: ShieldCheck, label: labels.decisionRelayed },
+      compacted: { icon: Archive, label: labels.compacted },
+      rewound: { icon: Undo2, label: labels.rewound },
+    }[notice.variant];
     return (
       <div
         className={cn("text-muted flex items-center gap-2 text-xs", className)}>
-        <ShieldCheck className="size-3.5" />
-        <span className="font-medium">{labels.decisionRelayed}</span>
-        <span className="truncate">{notice.text}</span>
-      </div>
-    );
-  }
-
-  if (notice.variant === "compacted") {
-    return (
-      <div
-        className={cn("text-muted flex items-center gap-2 text-xs", className)}>
-        <Archive className="size-3.5" />
-        <span className="font-medium">{labels.compacted}</span>
+        <meta.icon className="size-3.5" />
+        <span className="font-medium">{meta.label}</span>
         <span className="truncate">{notice.text}</span>
       </div>
     );
