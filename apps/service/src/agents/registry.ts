@@ -104,6 +104,7 @@ const createLazyAgentKindService = (
     approve: async (caller, input) => (await impl()).approve(caller, input),
     compact: async (caller, input) => (await impl()).compact(caller, input),
     navigate: async (caller, input) => (await impl()).navigate(caller, input),
+    fork: async (caller, input) => (await impl()).fork(caller, input),
     validateModel: async (ref) => (await impl()).validateModel(ref),
     listModels: async (caller) => (await impl()).listModels(caller),
     listCapabilities: async () => (await impl()).listCapabilities(),

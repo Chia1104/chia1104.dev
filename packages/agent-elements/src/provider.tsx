@@ -26,21 +26,32 @@ import {
 import type {
   AgentModelRef,
   AgentSessionClient,
+  AgentSessionDetail,
   AgentThinkingLevel,
 } from "./types.ts";
+
+/** Host callbacks the provider owns; the store's are passed through, `onForked` is answered here. */
+interface AgentProviderCallbacks extends AgentSessionCallbacks {
+  /**
+   * A fork of this session was created. The host owns which session is mounted, so it decides
+   * whether to switch to the new one; its detail is already in the query cache.
+   */
+  onForked?: (detail: AgentSessionDetail) => void;
+}
 
 interface AgentSessionContextValue {
   store: AgentSessionStoreApi;
   client: AgentSessionClient;
   sessionId: string;
   kind: string | undefined;
+  callbacks: { current: AgentProviderCallbacks };
 }
 
 const AgentSessionContext = createContext<AgentSessionContextValue | undefined>(
   undefined
 );
 
-export interface AgentSessionProviderProps extends AgentSessionCallbacks {
+export interface AgentSessionProviderProps extends AgentProviderCallbacks {
   client: AgentSessionClient;
   sessionId: string;
   kind?: string;
@@ -58,14 +69,15 @@ export const AgentSessionProvider = ({
   client,
   kind,
   labels,
+  onForked,
   onStateChanged,
   onTurnEnd,
   sessionId,
 }: AgentSessionProviderProps) => {
   const queryClient = useQueryClient();
   // Callbacks are read through a ref so a new closure from the host never recreates the store.
-  const callbacks = useRef<AgentSessionCallbacks>({});
-  callbacks.current = { onStateChanged, onTurnEnd };
+  const callbacks = useRef<AgentProviderCallbacks>({});
+  callbacks.current = { onForked, onStateChanged, onTurnEnd };
 
   const storeRef = useRef<AgentSessionStoreApi>(null);
   if (!storeRef.current) {
@@ -92,7 +104,7 @@ export const AgentSessionProvider = ({
   }, [labels, store]);
 
   const value = useMemo(
-    () => ({ store, client, sessionId, kind }),
+    () => ({ store, client, sessionId, kind, callbacks }),
     [client, kind, sessionId, store]
   );
 
@@ -168,6 +180,64 @@ export const useUpdateSettings = () => {
         sessionDetailQuery(client, { sessionId, kind }).queryKey,
         detail
       );
+    },
+    onError: (error) => store.getState().reportFailure(error.message),
+  });
+};
+
+export interface NavigateSessionInput {
+  /** A message id from the transcript — wire ids are entry ids. */
+  entryId: string;
+  /** Keep a summary of the branch left behind, so the model still knows it happened. */
+  summarize?: boolean;
+}
+
+/**
+ * Rewinds the session in place. The server answers with the rebuilt detail, which replaces both
+ * the cached detail and the store's view: the old branch is gone, so nothing of the old view holds.
+ */
+export const useNavigateSession = () => {
+  const { client, kind, sessionId, store } = useContextValue();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: NavigateSessionInput) =>
+      client.sessions.navigate({ sessionId, kind, ...input }),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(
+        sessionDetailQuery(client, { sessionId, kind }).queryKey,
+        detail
+      );
+      store.getState().replaceDetail(detail);
+    },
+    onError: (error) => store.getState().reportFailure(error.message),
+  });
+};
+
+export interface ForkSessionInput {
+  /** Fork the whole tree when omitted. */
+  entryId?: string;
+  /** `before` a user message so it can be re-asked (the default), `at` any entry. */
+  position?: "before" | "at";
+  title?: string;
+}
+
+/**
+ * Branches the session into a new one; this session is untouched. The new detail is cached under
+ * its own id and handed to the host's `onForked`, which decides whether to switch to it.
+ */
+export const useForkSession = () => {
+  const { callbacks, client, kind, sessionId, store } = useContextValue();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ForkSessionInput) =>
+      client.sessions.fork({ sessionId, kind, ...input }),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(
+        sessionDetailQuery(client, { sessionId: detail.session.id, kind })
+          .queryKey,
+        detail
+      );
+      callbacks.current.onForked?.(detail);
     },
     onError: (error) => store.getState().reportFailure(error.message),
   });

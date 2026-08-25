@@ -19,9 +19,11 @@ import { ArrowUp, Square, X } from "lucide-react";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import {
+  composerDraftOf,
   composerDraftReducer,
   initialComposerDraft,
 } from "./composer-draft.ts";
+import type { ComposerDraft } from "./composer-draft.ts";
 import { ContextUsage } from "./context-usage.tsx";
 import { fill } from "./labels.ts";
 import { ModelPicker } from "./model-picker.tsx";
@@ -44,6 +46,7 @@ import {
 } from "./slash-command.ts";
 import type { SlashMenuItem, SlashToken } from "./slash-command.ts";
 import { SlashMenu } from "./slash-menu.tsx";
+import type { ComposerSeed } from "./store.ts";
 import type { AgentCapabilities } from "./types.ts";
 
 /** Tallest the input grows before it scrolls, in px — about eight lines. */
@@ -193,7 +196,7 @@ const ComposerFailure = () => {
   const dismissFailure = useAgentSession((state) => state.dismissFailure);
   if (!failure) return null;
   return (
-    <Alert status="danger">
+    <Alert status="danger" className="bg-surface-secondary gap-2 px-2.5 py-2">
       <Alert.Content>
         <Alert.Description className="break-words">{failure}</Alert.Description>
       </Alert.Content>
@@ -283,14 +286,27 @@ ComposerToolbar.displayName = "ComposerToolbar";
 /**
  * The input on top, a toolbar below: model picker (or whatever the host puts there) on the left,
  * send/stop on the right. The input grows with its content up to a cap, then scrolls.
+ *
+ * A rewound prompt handed back through the store (`composerSeed`) is not fed into a running
+ * editor: the editor is keyed on the seed's id, so each hand-off mounts a fresh one whose initial
+ * draft is that text. Nothing has to notice a change, and the draft stays the editor's own state.
  */
-export const Composer = ({
+export const Composer = (props: ComposerProps) => {
+  const seed = useAgentSession((state) => state.composerSeed);
+  return <ComposerEditor key={seed?.id ?? 0} seed={seed} {...props} />;
+};
+
+const initialDraftOf = (seed: ComposerSeed | null): ComposerDraft =>
+  seed ? composerDraftOf(seed.text) : initialComposerDraft;
+
+const ComposerEditor = ({
   attachments,
   className,
   localCommands,
   placeholder,
+  seed,
   toolbar,
-}: ComposerProps) => {
+}: ComposerProps & { seed: ComposerSeed | null }) => {
   const labels = useAgentLabels();
   const prompt = useAgentSession((state) => state.prompt);
   const command = useAgentSession((state) => state.command);
@@ -301,12 +317,16 @@ export const Composer = ({
   const status = useAgentStatus();
   const [draft, dispatch] = useReducer(
     composerDraftReducer,
-    initialComposerDraft
+    seed,
+    initialDraftOf
   );
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  /** Cursor to restore once the next text commit lands; `null` leaves focus where it is. */
-  const pendingSelection = useRef<number | null>(null);
+  /**
+   * Cursor to restore once the next text commit lands; `null` leaves focus where it is. A seeded
+   * editor starts with the caret at the end of the seed, so the first layout pass focuses it.
+   */
+  const pendingSelection = useRef<number | null>(seed?.text.length ?? null);
   const menuId = useId();
   const { text, cursor, highlightedId, activeDescendantId, dismissedSlashKey } =
     draft;

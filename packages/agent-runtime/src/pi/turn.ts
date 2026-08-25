@@ -1,7 +1,6 @@
 import {
   Agent,
   formatPromptTemplateInvocation,
-  uuidv7,
 } from "@earendil-works/pi-agent-core";
 import type {
   AgentMessage,
@@ -258,9 +257,19 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         : undefined,
     });
 
-    const turnId = uuidv7();
+    /**
+     * Entry ids are reserved when a message starts and spent when it ends, so the wire names a
+     * message by the id the tree persists it under — live and replayed transcripts then agree,
+     * and a client can hand any message id back as a rewind or fork target. The operator's
+     * prompt is reserved up front: its `user` event goes out before Pi has started the message.
+     */
+    const userEntryId = session.newEntryId();
+    let reservedEntryId: string | undefined = userEntryId;
     const mapEvent = createPiWireEventMapper({
-      messageIdPrefix: turnId,
+      messageIdOf: () => {
+        reservedEntryId ??= session.newEntryId();
+        return reservedEntryId;
+      },
       tierOf: policy.tierOf,
       labelOf: policy.labelOf,
       summarize: policy.summarize,
@@ -273,11 +282,12 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           // Persisted before it reaches the wire, so a client never sees a message the tree lost.
           const entry: MessageEntry = {
             type: "message",
-            id: session.newEntryId(),
+            id: reservedEntryId ?? session.newEntryId(),
             parentId: cursor,
             timestamp: Date.now(),
             message: event.message,
           };
+          reservedEntryId = undefined;
           await session.appendEntry(entry);
           cursor = entry.id;
           if (event.message.role === "assistant") reply = event.message;
@@ -305,7 +315,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     }
     onEvent({
       type: "user",
-      messageId: `u:${turnId}`,
+      messageId: userEntryId,
       text: message.text,
       at: Date.now(),
       origin: message.decision ? "operator-decision" : undefined,

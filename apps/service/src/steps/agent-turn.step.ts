@@ -12,7 +12,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { DB } from "@chia/db/client";
 import { connectDatabase } from "@chia/db/client";
 import {
-  completeActiveAgentRuns,
+  completeAgentRun,
   getAgentSession,
   getApprovedAgentToolCallIds,
   patchAgentRunMetadata,
@@ -93,6 +93,12 @@ export const readAgentTurnMarker = (metadata: JsonObject) =>
 
 export interface AgentTurnRequest {
   sessionId: string;
+  /**
+   * The `agent.run` row this run owns, written by `prompt` before the workflow was started. Every
+   * marker write goes to this row and no other, so a step of a run that was cancelled and
+   * replaced cannot reach the run that replaced it.
+   */
+  runId: string;
   /** Verified at the transport boundary before the run was started. */
   userId: string;
   /** The run's abort controller; the turn subscribes to it for the harness's `AbortSignal`. */
@@ -217,10 +223,10 @@ export const runAgentTurnStep = async (
     streamIndex: (await getRun(workflowRunId).getReadable().getTailIndex()) + 1,
     running: true,
   };
-  await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
+  await patchAgentRunMetadata(db, request.runId, { [AGENT_TURN_KEY]: marker });
 
   const clearMarker = () =>
-    patchAgentRunMetadata(db, workflowRunId, {
+    patchAgentRunMetadata(db, request.runId, {
       [AGENT_TURN_KEY]: { ...marker, running: false },
     });
   const abort = subscribeAgentAbort(request.abortController.runId);
@@ -448,12 +454,13 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
  * so it does not sit parked until its TTL.
  */
 export const completeAgentRunStep = async (
-  sessionId: string,
+  runId: string,
   abortController: AgentAbortControllerRef
 ): Promise<void> => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
-  await completeActiveAgentRuns(db, sessionId, "completed");
+  // This run's row only: a run cancelled and replaced must not close its successor.
+  await completeAgentRun(db, runId, "completed");
   await signalAgentAbort(abortController.id, "run finished");
 };

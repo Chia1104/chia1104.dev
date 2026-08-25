@@ -1,8 +1,9 @@
 "use client";
 
-import { AlertDialog, Button } from "@heroui/react";
+import { Children, isValidElement } from "react";
+
+import { Alert, AlertDialog, Button, Card } from "@heroui/react";
 import { cjk } from "@streamdown/cjk";
-import { code } from "@streamdown/code";
 import { ExternalLink } from "lucide-react";
 import { Streamdown } from "streamdown";
 import type { Components, LinkSafetyModalProps } from "streamdown";
@@ -11,18 +12,57 @@ import { markdownElements } from "@chia/contents/markdown-elements";
 import { CopyButton } from "@chia/ui/copy-button";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { HighlightedCode } from "./code-block.tsx";
 import { useAgentLabels } from "./provider.tsx";
+
+/** Streamdown hands the fence body as a string, or as a `<code>` element wrapping one. */
+const codeText = (children: React.ReactNode): string =>
+  Children.toArray(children)
+    .map((child) =>
+      isValidElement<{ children?: React.ReactNode }>(child)
+        ? child.props.children
+        : child
+    )
+    .join("");
+
+/**
+ * Fenced code as streamed by the model. Highlighting is incremental (see {@link HighlightedCode});
+ * the frame is a plain Card so a host can restyle it without touching the tokenizer.
+ */
+const CodeBlock: Components["code"] = ({ children, className }) => {
+  const labels = useAgentLabels();
+  const language = /language-(\S+)/.exec(className ?? "")?.[1] ?? "text";
+  const code = codeText(children).replace(/\n$/, "");
+  return (
+    <Card className="my-4 gap-0 overflow-hidden p-0" variant="secondary">
+      <div className="border-border flex h-9 items-center justify-between border-b px-3">
+        <span className="text-muted font-mono text-xs lowercase">
+          {language}
+        </span>
+        <CopyButton
+          aria-label={labels.copy}
+          className="size-7 min-w-7"
+          content={code}
+          translations={{ copy: labels.copy, copied: labels.copied }}
+          variant="ghost"
+        />
+      </div>
+      <HighlightedCode className="p-3" code={code} language={language} />
+    </Card>
+  );
+};
 
 /**
  * Streamdown's defaults are styled with shadcn tokens (`bg-muted`, `text-muted-foreground`…).
  * HeroUI defines `muted` as a text colour, so those defaults come out as mid-grey slabs in both
  * schemes. Tables and emphasis come from the blog's shared elements so assistant prose reads like
  * an article; the rest restates the affected elements in HeroUI tokens. Everything not listed
- * (headings, lists, code blocks) keeps Streamdown's rendering. A host can layer its own on top
- * through `components`.
+ * (headings, lists) keeps Streamdown's rendering. A host can layer its own on top through
+ * `components`.
  */
 export const markdownComponents: Components = {
   ...markdownElements,
+  code: CodeBlock,
   inlineCode: ({ className, node: _node, ...props }) => (
     <code
       className={cn(
@@ -32,14 +72,13 @@ export const markdownComponents: Components = {
       {...props}
     />
   ),
-  blockquote: ({ className, node: _node, ...props }) => (
-    <blockquote
-      className={cn(
-        "border-border text-muted my-4 border-l-2 pl-4 italic",
-        className
-      )}
-      {...props}
-    />
+  blockquote: ({ node: _node, ...props }) => (
+    <Alert className="bg-surface-secondary gap-2 px-2.5 py-2">
+      <Alert.Indicator />
+      <Alert.Content>
+        <Alert.Description>{props.children}</Alert.Description>
+      </Alert.Content>
+    </Alert>
   ),
   hr: ({ className, node: _node, ...props }) => (
     <hr className={cn("border-border my-6", className)} {...props} />
@@ -137,21 +176,22 @@ export const Markdown = ({
   text,
 }: MarkdownProps) => (
   <Streamdown
-    caret="block"
-    className={cn("text-foreground text-[15px] leading-7", className)}
+    className={cn(
+      "text-foreground text-sm leading-6",
+      "[&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h4]:text-sm",
+      "**:data-[streamdown=link]:text-foreground/70 **:data-[streamdown=link]:decoration-muted/70 **:data-[streamdown=link]:underline-offset-[5px]",
+      "**:data-[streamdown=link]:transition-colors **:data-[streamdown=link]:duration-300 **:data-[streamdown=link]:ease-in-out",
+      "**:data-[streamdown=link]:hover:decoration-foreground/70",
+      className
+    )}
     components={
       components ? { ...markdownComponents, ...components } : markdownComponents
     }
-    controls={{
-      code: { copy: true, download: false },
-      table: false,
-      mermaid: false,
-    }}
+    controls={{ table: false, mermaid: false }}
     isAnimating={streaming}
     linkSafety={{ enabled: true, renderModal: renderLinkSafety }}
     mode={streaming ? "streaming" : "static"}
-    plugins={{ cjk, code }}
-    shikiTheme={["github-light", "github-dark"]}>
+    plugins={{ cjk }}>
     {text}
   </Streamdown>
 );

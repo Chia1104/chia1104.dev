@@ -96,6 +96,14 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     summary: z.string(),
     tokensBefore: z.number(),
   }),
+  /**
+   * A rewind that summarised the branch it left behind. Replayed from the `branch_summary`
+   * entry, so a rewind without a summary leaves no notice — there is nothing durable to show.
+   */
+  z.object({
+    type: z.literal("session:rewound"),
+    summary: z.string(),
+  }),
   z.object({
     type: z.literal("state:changed"),
     /**

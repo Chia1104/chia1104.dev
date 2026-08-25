@@ -41,6 +41,8 @@ import type { EncryptedAgentCredentials } from "./hooks/agent.hooks";
 
 export const requestSchema = z.object({
   sessionId: z.string(),
+  /** The `agent.run` row this run owns; its turn steps write their markers there and nowhere else. */
+  runId: z.string(),
   /** Session owner; every turn step re-checks it against the stored row. */
   userId: z.string(),
   /** This run's abort controller, started by `prompt` before the run; every turn subscribes to it. */
@@ -63,7 +65,7 @@ const MAX_TURNS_PER_RUN = 200;
 export const agentSessionWorkflow = async (request: Request) => {
   "use workflow";
 
-  const { sessionId, userId, abortController, firstMessage } =
+  const { sessionId, runId, userId, abortController, firstMessage } =
     requestSchema.parse(request);
 
   const messages = agentMessageHook.create({
@@ -107,6 +109,7 @@ export const agentSessionWorkflow = async (request: Request) => {
 
     let outcome: AgentTurnOutcome = await runAgentTurnStep({
       sessionId,
+      runId,
       userId,
       abortController,
       text: currentMessage.text,
@@ -150,6 +153,7 @@ export const agentSessionWorkflow = async (request: Request) => {
         // the message hook while the persisted approval has no hook to resume.
         outcome = await runAgentTurnStep({
           sessionId,
+          runId,
           userId,
           abortController,
           text: formatOperatorDecision(relayed),
@@ -162,6 +166,7 @@ export const agentSessionWorkflow = async (request: Request) => {
       turns += 1;
       outcome = await runAgentTurnStep({
         sessionId,
+        runId,
         userId,
         abortController,
         text: formatOperatorDecision(relayed),
@@ -173,7 +178,7 @@ export const agentSessionWorkflow = async (request: Request) => {
     }
   }
 
-  await completeAgentRunStep(sessionId, abortController);
+  await completeAgentRunStep(runId, abortController);
   await closeAgentStreamsStep();
 
   return { sessionId, turns };

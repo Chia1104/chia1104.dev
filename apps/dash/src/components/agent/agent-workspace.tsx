@@ -164,8 +164,8 @@ export const AgentWorkspace = () => {
   );
 
   return (
-    <main className="flex h-[calc(100svh-4rem)] flex-col overflow-hidden p-4">
-      <Card className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
+    <main className="flex h-[calc(100svh-4rem)] min-w-0 flex-col overflow-hidden p-4">
+      <Card className="flex min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden p-0">
         {sessionsQuery.isLoading ? (
           <div className="flex flex-1 items-center justify-center">
             <Spinner aria-label="Loading writing sessions" size="sm" />
@@ -187,13 +187,18 @@ export const AgentWorkspace = () => {
             client={client.agent}
             kind={WRITING_AGENT_KIND}
             labels={agentLabels}
+            onForked={(detail) => {
+              // The fork is where the operator wants to continue; its detail is already cached.
+              selectSession(detail.session.id);
+              invalidateSessions();
+            }}
             onTurnEnd={invalidateSessions}
             sessionId={selectedSessionId}>
             <WritingSession tabs={tabs} />
           </AgentSessionProvider>
         ) : (
           <>
-            <div className="border-border flex items-center gap-3 border-b px-4 py-3">
+            <div className="border-border flex min-w-0 items-center gap-3 border-b px-4 py-3">
               {tabs}
             </div>
             <Card.Content className="flex flex-1 flex-col items-center justify-center gap-3 text-center">

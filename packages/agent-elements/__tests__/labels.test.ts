@@ -21,6 +21,7 @@ describe("agent-elements catalogs", () => {
       expect(catalog.approvalTitle).toContain("{tool}");
       expect(catalog.alwaysAllow).toContain("{tier}");
       expect(catalog.contextCompactsAutomatically).toContain("{model}");
+      expect(catalog.forkedFrom).toContain("{title}");
     }
   });
 });

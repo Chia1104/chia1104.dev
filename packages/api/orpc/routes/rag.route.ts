@@ -12,8 +12,7 @@ import {
 } from "@chia/db/repos/resources/stats";
 import type { ResourceIndexKey } from "@chia/db/repos/resources/stats";
 import { RESOURCE_INDEX_RUN_SCOPE } from "@chia/db/schema";
-import { toORPCError } from "@chia/service-kit/adapters/orpc";
-import { isAppError } from "@chia/service-kit/errors";
+import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 
 import { adminGuard } from "../guards/admin.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
@@ -129,33 +128,29 @@ export const getResourceIndexStatusRoute = contractOS.rag["resource:status"]
 /** Goes through the port rather than the repository: the rows need reconciling first. */
 export const listIndexRunsRoute = contractOS.rag["runs:list"]
   .use(adminGuard())
-  .handler(async (opts) => {
-    try {
+  .handler((opts) =>
+    withORPCErrors(async () => {
       const page = await requireIndexing(opts.context).listRuns({
         limit: opts.input.limit,
         cursor: opts.input.cursor ?? null,
       });
 
       return { ...currentIndexKey(), ...page };
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+    })
+  );
 
 export const getIndexRunRoute = contractOS.rag["run:get"]
   .use(adminGuard())
-  .handler(async (opts) => {
-    try {
+  .handler((opts) =>
+    withORPCErrors(async () => {
       const run = await requireIndexing(opts.context).getRun(opts.input);
       if (!run) {
         throw opts.errors.NOT_FOUND();
       }
 
       return { ...currentIndexKey(), run };
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+    })
+  );
 
 /** Read directly here: the numbers are queries, not something a run has to report. */
 export const previewReindexAllRoute = contractOS.rag["reindex:all:preview"]
@@ -187,34 +182,30 @@ export const previewReindexAllRoute = contractOS.rag["reindex:all:preview"]
 export const indexResourceRoute = contractOS.rag["resource:index"]
   .use(adminGuard())
   .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
-  .handler(async (opts) => {
-    try {
+  .handler((opts) =>
+    withORPCErrors(async () => {
       const handle = await requireIndexing(opts.context).indexResource(
         callerOf(opts),
         opts.input
       );
 
       return { ...currentIndexKey(), ...handle };
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+    })
+  );
 
 export const indexFeedRoute = contractOS.rag["feed:index"]
   .use(adminGuard())
   .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
-  .handler(async (opts) => {
-    try {
+  .handler((opts) =>
+    withORPCErrors(async () => {
       const handle = await requireIndexing(opts.context).indexFeed(
         callerOf(opts),
         opts.input
       );
 
       return { ...currentIndexKey(), ...handle };
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+    })
+  );
 
 /** Two per hour: a full reindex is the one action here with an unbounded bill. */
 export const reindexAllRoute = contractOS.rag["reindex:all"]
@@ -226,18 +217,16 @@ export const reindexAllRoute = contractOS.rag["reindex:all"]
       windowMs: 3_600_000,
     })
   )
-  .handler(async (opts) => {
-    try {
+  .handler((opts) =>
+    withORPCErrors(async () => {
       const handle = await requireIndexing(opts.context).reindexAll(
         callerOf(opts),
         opts.input
       );
 
       return { ...currentIndexKey(), ...handle };
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+    })
+  );
 
 export const pruneEmbeddingsRoute = contractOS.rag["embeddings:prune"]
   .use(adminGuard())
@@ -248,14 +237,12 @@ export const pruneEmbeddingsRoute = contractOS.rag["embeddings:prune"]
       windowMs: 3_600_000,
     })
   )
-  .handler(async (opts) => {
-    try {
+  .handler((opts) =>
+    withORPCErrors(async () => {
       const result = await requireIndexing(opts.context).pruneEmbeddings(
         callerOf(opts)
       );
 
       return { ...currentIndexKey(), ...result };
-    } catch (error) {
-      throw isAppError(error) ? toORPCError(error) : error;
-    }
-  });
+    })
+  );

@@ -39,6 +39,8 @@ export interface InsertAgentSessionDTO {
   runtimeConfig?: JsonObject;
   configVersion?: number;
   leafEntryId?: string | null;
+  forkedFromSessionId?: string | null;
+  forkedFromEntryId?: string | null;
 }
 
 export const createAgentSession = async (
@@ -60,6 +62,8 @@ export const createAgentSession = async (
       runtimeConfig: input.runtimeConfig ?? {},
       configVersion: input.configVersion ?? 1,
       leafEntryId: input.leafEntryId ?? null,
+      forkedFromSessionId: input.forkedFromSessionId ?? null,
+      forkedFromEntryId: input.forkedFromEntryId ?? null,
     })
     .returning();
   return row;
@@ -209,10 +213,15 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
     orderBy: { startedAt: "desc" },
   });
 
-/** Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten. */
+/**
+ * Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten.
+ * Addressed by the row's own id, which is fixed from creation, rather than by workflow run id
+ * (bound later, see `bindAgentRunExternalId`) or by session (a late writer from a cancelled run
+ * must never touch the run that replaced it).
+ */
 export const patchAgentRunMetadata = async (
   db: DB,
-  externalRunId: string,
+  runId: string,
   patch: JsonObject
 ) => {
   await db
@@ -220,8 +229,40 @@ export const patchAgentRunMetadata = async (
     .set({
       metadata: sql`${agentRuns.metadata} || ${JSON.stringify(patch)}::jsonb`,
     })
-    .where(eq(agentRuns.externalRunId, externalRunId));
+    .where(eq(agentRuns.id, runId));
 };
+
+/** Points a run row written ahead of its workflow at the run the workflow backend then created. */
+export const bindAgentRunExternalId = async (
+  db: DB,
+  runId: string,
+  externalRunId: string
+) => {
+  await db
+    .update(agentRuns)
+    .set({ externalRunId })
+    .where(eq(agentRuns.id, runId));
+};
+
+/**
+ * Runs `fn` while holding the session's advisory lock, so enqueueing a turn and maintenance on
+ * the tree (compact, rewind, fork) never interleave. The lock lives on the transaction's
+ * connection, and `fn` must do all of its database work through the `tx` it is handed: an
+ * operation then holds exactly one pool connection for its whole duration, so under load the
+ * pool queues rather than deadlocks — lock holders waiting for a second connection that other
+ * lock holders are keeping.
+ */
+export const withAgentSessionLock = <T>(
+  db: DB,
+  sessionId: string,
+  fn: (tx: DB) => Promise<T>
+): Promise<T> =>
+  db.transaction(async (tx) => {
+    await tx.execute(
+      sql`select pg_advisory_xact_lock(hashtext(${`agent.session:${sessionId}`}))`
+    );
+    return await fn(tx);
+  });
 
 export const completeAgentRun = async (
   db: DB,
@@ -232,19 +273,6 @@ export const completeAgentRun = async (
     .update(agentRuns)
     .set({ status, endedAt: new Date() })
     .where(eq(agentRuns.id, runId));
-};
-
-export const completeActiveAgentRuns = async (
-  db: DB,
-  sessionId: string,
-  status: Exclude<AgentRunStatus, "active">
-) => {
-  await db
-    .update(agentRuns)
-    .set({ status, endedAt: new Date() })
-    .where(
-      and(eq(agentRuns.sessionId, sessionId), eq(agentRuns.status, "active"))
-    );
 };
 
 // ============================================
@@ -415,6 +443,24 @@ export const upsertWritingAgentDraft = async (
       target: [writingAgentDrafts.sessionId, writingAgentDrafts.locale],
       set: update,
     });
+};
+
+/** Copies every per-locale draft of `fromSessionId` onto `toSessionId`, which must have none yet. */
+export const copyWritingAgentDrafts = async (
+  db: DB,
+  fromSessionId: string,
+  toSessionId: string
+) => {
+  const rows = await getWritingAgentDrafts(db, fromSessionId);
+  if (rows.length === 0) return;
+  await db.insert(writingAgentDrafts).values(
+    rows.map((row) => ({
+      sessionId: toSessionId,
+      locale: row.locale,
+      meta: row.meta,
+      content: row.content,
+    }))
+  );
 };
 
 export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {

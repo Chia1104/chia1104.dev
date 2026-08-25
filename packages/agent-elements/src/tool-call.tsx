@@ -46,7 +46,6 @@ const statusMeta = {
 export const ToolStatusChip = ({ tool }: { tool: ToolCallView }) => {
   const labels = useAgentLabels();
   const meta = statusMeta[tool.status];
-  const Icon = meta.icon;
   const label = {
     running: labels.toolRunning,
     ok: labels.toolDone,
@@ -55,8 +54,7 @@ export const ToolStatusChip = ({ tool }: { tool: ToolCallView }) => {
   }[tool.status];
   return (
     <Chip color={meta.color} size="sm" variant="soft">
-      <Icon className={cn("size-3", meta.spin && "animate-spin")} />
-      <Chip.Label>{label}</Chip.Label>
+      <Chip.Label className="text-xs">{label}</Chip.Label>
     </Chip>
   );
 };
@@ -100,18 +98,25 @@ export const ToolCall = ({ className, renderers, tool }: ToolCallProps) => {
     <Disclosure
       className={cn("bg-surface border-border rounded-xl border", className)}>
       <Disclosure.Heading>
-        <Disclosure.Trigger className="flex h-10 w-full items-center justify-start gap-2.5 px-3 text-left text-sm">
-          <ThinkingOrb
-            aria-hidden
-            state={orbStateOfTool(tool)}
-            size={20}
-            className="size-4 shrink-0"
-            paused={!live}
-          />
+        <Disclosure.Trigger className="text-muted flex h-8 w-full items-center justify-start gap-2.5 px-3 text-left text-sm">
+          <span className="grid size-4 shrink-0 place-items-center">
+            {live ? (
+              <ThinkingOrb
+                aria-hidden
+                state={orbStateOfTool(tool)}
+                size={20}
+                className="size-4"
+              />
+            ) : tool.status === "ok" ? (
+              <Check className="text-success size-3.5" />
+            ) : (
+              <CircleX className="text-danger size-3.5" />
+            )}
+          </span>
           <TextShimmer
             as="span"
             active={live}
-            className="text-foreground truncate"
+            className="text-foreground truncate text-xs"
             duration={2.5}>
             {tool.label}
           </TextShimmer>
@@ -120,7 +125,7 @@ export const ToolCall = ({ className, renderers, tool }: ToolCallProps) => {
           </span>
           <span className="ml-auto flex shrink-0 items-center gap-2">
             <ToolStatusChip tool={tool} />
-            <Disclosure.Indicator />
+            <Disclosure.Indicator className="size-3.5" />
           </span>
         </Disclosure.Trigger>
       </Disclosure.Heading>

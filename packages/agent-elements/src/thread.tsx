@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ReactNode, UIEvent, WheelEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button, ScrollShadow, Spinner, Tooltip } from "@heroui/react";
@@ -11,15 +11,23 @@ import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { ApprovalCard, isApprovalItem } from "./approval-card.tsx";
+import { MessageActions } from "./message-actions.tsx";
 import { AgentBadge, AssistantMessage, UserMessage } from "./message.tsx";
 import { Notice } from "./notice.tsx";
 import { orbStateOf } from "./orb-state.ts";
 import { useAgentBusy, useAgentLabels, useAgentSession } from "./provider.tsx";
+import type { AgentConnection } from "./store.ts";
 import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
 type Group =
-  | { kind: "user"; key: string; text: string; at?: number }
+  | {
+      kind: "user";
+      key: string;
+      messageId: string;
+      text: string;
+      at?: number;
+    }
   | { kind: "agent"; key: string; items: AgentViewItem[] };
 
 /** Consecutive agent-side items (text, tools, notices) share one badge, like one reply. */
@@ -30,6 +38,7 @@ const groupItems = (items: readonly AgentViewItem[]): Group[] => {
       groups.push({
         kind: "user",
         key: `u:${item.messageId}`,
+        messageId: item.messageId,
         text: item.text,
         at: item.at,
       });
@@ -64,16 +73,18 @@ const AgentItem = ({
     );
   }
   if (item.kind === "notice") return <Notice notice={item} />;
-  return <AssistantMessage message={item} />;
-};
-
-/** Changes whenever the tail of the transcript grows, which is when the view should follow it. */
-const tailKey = (items: readonly AgentViewItem[], pending: string | null) => {
-  const last = items.at(-1);
-  if (!last) return pending ? "pending" : "empty";
-  if (last.kind === "tool") return `${last.toolCallId}:${last.status}`;
-  if (last.kind === "notice") return `notice:${items.length}`;
-  return `${last.messageId}:${last.text.length}:${last.thinking?.length ?? 0}`;
+  return (
+    <AssistantMessage
+      actions={
+        <MessageActions
+          messageId={item.messageId}
+          role="assistant"
+          text={item.text}
+        />
+      }
+      message={item}
+    />
+  );
 };
 
 /** How close to the bottom still counts as "following the conversation". */
@@ -105,89 +116,98 @@ const scrollToLatest = (element: HTMLElement, busy: boolean) => {
     : element.scrollHeight;
 };
 
-export interface ThreadProps {
-  renderers?: ToolRenderers;
-  /** Shown instead of the transcript while it is empty. */
-  empty?: ReactNode;
+interface ThreadViewportProps {
+  busy: boolean;
+  children: ReactNode;
   className?: string;
+  connection: AgentConnection;
+  hasContent: boolean;
+  jumpLabel: string;
+  pendingPrompt: string | null;
 }
 
-export const Thread = ({ className, empty, renderers }: ThreadProps) => {
-  const items = useAgentSession((state) => state.view.items);
-  const pendingPrompt = useAgentSession((state) => state.pendingPrompt);
-  const connection = useAgentSession((state) => state.connection);
-  const labels = useAgentLabels();
-  const busy = useAgentBusy();
+/** Owns transient scroll state so scrolling never rerenders the transcript. */
+const ThreadViewport = ({
+  busy,
+  children,
+  className,
+  connection,
+  hasContent,
+  jumpLabel,
+  pendingPrompt,
+}: ThreadViewportProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  // Whether the operator is at (or near) the bottom; only then does the view follow new content,
-  // so scrolling up to read during a stream is not undone by every chunk.
-  const [pinned, setPinned] = useState(true);
-  // Scrolls this component performs must not be mistaken for the operator leaving the bottom.
-  const programmaticRef = useRef(false);
-  const previousConnection = useRef(connection);
-  const previousPending = useRef(pendingPrompt);
-  // Read through a ref so `scroll` stays stable and the effects below depend only on their triggers.
-  const busyRef = useRef(busy);
-  busyRef.current = busy;
+  const contentRef = useRef<HTMLDivElement>(null);
+  const followingRef = useRef(true);
+  const lastScrollTopRef = useRef(0);
+  const previousTransitionRef = useRef({ connection, pendingPrompt });
+  const [following, setFollowing] = useState(true);
 
-  const groups = useMemo(() => groupItems(items), [items]);
-  const key = tailKey(items, pendingPrompt);
-
-  const scroll = useCallback((target: "bottom" | "latest") => {
-    const element = scrollRef.current;
-    if (!element) return;
-    programmaticRef.current = true;
-    if (target === "bottom") element.scrollTop = element.scrollHeight;
-    else scrollToLatest(element, busyRef.current);
-    requestAnimationFrame(() => {
-      programmaticRef.current = false;
-      setPinned(isAtBottom(element));
-    });
+  const syncFollowing = useCallback((next: boolean) => {
+    if (followingRef.current === next) return;
+    followingRef.current = next;
+    setFollowing(next);
   }, []);
 
-  // Follow the tail only while something is being produced and the operator is at the bottom.
-  useEffect(() => {
-    if (!pinned || !busy) return;
-    const frame = requestAnimationFrame(() => scroll("bottom"));
-    return () => cancelAnimationFrame(frame);
-  }, [key, pinned, busy, scroll]);
+  const scroll = useCallback(
+    (target: "bottom" | "latest") => {
+      const element = scrollRef.current;
+      if (!element) return;
+      if (target === "bottom") element.scrollTop = element.scrollHeight;
+      else scrollToLatest(element, busy);
+      lastScrollTopRef.current = element.scrollTop;
+      syncFollowing(isAtBottom(element));
+    },
+    [busy, syncFollowing]
+  );
 
-  // Sending a prompt always brings it into view, wherever the operator was reading.
+  // Follow actual layout growth rather than scheduling a scroll for every streamed text chunk.
   useEffect(() => {
-    const sent = pendingPrompt !== null && previousPending.current === null;
-    previousPending.current = pendingPrompt;
-    if (!sent) return;
-    setPinned(true);
-    const frame = requestAnimationFrame(() => scroll("bottom"));
-    return () => cancelAnimationFrame(frame);
-  }, [pendingPrompt, scroll]);
-
-  // On (re)load, land where the operator left off: the tail of a running turn, or their last prompt.
-  useEffect(() => {
-    const hydrated =
-      previousConnection.current === "hydrating" && connection !== "hydrating";
-    previousConnection.current = connection;
-    if (!hydrated) return;
-    const frame = requestAnimationFrame(() => scroll("latest"));
-    return () => cancelAnimationFrame(frame);
-  }, [connection, scroll]);
-
-  const onScroll = () => {
     const element = scrollRef.current;
-    if (!element || programmaticRef.current) return;
-    setPinned(isAtBottom(element));
-  };
+    const content = contentRef.current;
+    if (!element || !content) return;
+    const observer = new ResizeObserver(() => {
+      if (!followingRef.current) return;
+      element.scrollTop = element.scrollHeight;
+      lastScrollTopRef.current = element.scrollTop;
+    });
+    observer.observe(element);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
 
-  const showEmpty = items.length === 0 && !pendingPrompt;
-  const last = items.at(-1);
-  const tailActive =
-    last?.kind === "assistant"
-      ? last.streaming
-      : last?.kind === "tool" && last.status === "running";
-  // Something is happening server-side that no item shows yet (before the first event, between tools).
-  const working = connection === "streaming" && !tailActive;
+  // Prompt submission and hydration are the only transitions that deliberately reposition the view.
+  useEffect(() => {
+    const previous = previousTransitionRef.current;
+    const sent = pendingPrompt !== null && previous.pendingPrompt === null;
+    const hydrated =
+      previous.connection === "hydrating" && connection !== "hydrating";
+    previousTransitionRef.current = { connection, pendingPrompt };
+    if (sent) scroll("bottom");
+    else if (hydrated) scroll("latest");
+  }, [connection, pendingPrompt, scroll]);
 
-  const jumpLabel = busy ? labels.scrollToBottom : labels.scrollToLatestPrompt;
+  const onScroll = useCallback(
+    (event: UIEvent<HTMLDivElement>) => {
+      const element = event.currentTarget;
+      const scrollingUp = element.scrollTop < lastScrollTopRef.current;
+      lastScrollTopRef.current = element.scrollTop;
+      syncFollowing(!scrollingUp && isAtBottom(element));
+    },
+    [syncFollowing]
+  );
+
+  const onWheelCapture = useCallback(
+    (event: WheelEvent<HTMLDivElement>) => {
+      if (event.deltaY < 0) syncFollowing(false);
+    },
+    [syncFollowing]
+  );
+
+  const stopFollowing = useCallback(
+    () => syncFollowing(false),
+    [syncFollowing]
+  );
 
   return (
     <div className={cn("relative flex min-h-0 flex-1 flex-col", className)}>
@@ -195,62 +215,12 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
         ref={scrollRef}
         className="min-h-0 flex-1 px-4 py-6"
         onScroll={onScroll}
+        onTouchMoveCapture={stopFollowing}
+        onWheelCapture={onWheelCapture}
         size={48}>
-        {connection === "hydrating" && items.length === 0 ? (
-          <div className="flex min-h-40 items-center justify-center">
-            <Spinner size="sm" />
-          </div>
-        ) : showEmpty ? (
-          empty
-        ) : (
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-            {groups.map((group) => {
-              if (group.kind === "user") {
-                return (
-                  <UserMessage
-                    key={group.key}
-                    at={group.at}
-                    text={group.text}
-                  />
-                );
-              }
-              const live = orbStateOf(group.items);
-              return (
-                <div key={group.key} className="flex gap-3">
-                  <AgentBadge
-                    className="mt-0.5"
-                    state={live ?? "composing"}
-                    paused={live === null}
-                  />
-                  <div className="flex min-w-0 flex-1 flex-col gap-3">
-                    {group.items.map((item, index) => (
-                      <AgentItem
-                        key={itemKey(item, index)}
-                        item={item}
-                        renderers={renderers}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-            {pendingPrompt ? <UserMessage text={pendingPrompt} /> : null}
-            {working ? (
-              <div className="flex gap-3">
-                <AgentBadge className="mt-0.5" state="composing" />
-                <TextShimmer
-                  as="span"
-                  active
-                  className="text-xs leading-6"
-                  duration={2.5}>
-                  {labels.thinking}
-                </TextShimmer>
-              </div>
-            ) : null}
-          </div>
-        )}
+        <div ref={contentRef}>{children}</div>
       </ScrollShadow>
-      {!pinned && !showEmpty ? (
+      {!following && hasContent ? (
         // Positioned by a wrapper so the tooltip anchors to the button's real box.
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
           <Tooltip delay={300}>
@@ -270,5 +240,100 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
         </div>
       ) : null}
     </div>
+  );
+};
+
+export interface ThreadProps {
+  renderers?: ToolRenderers;
+  /** Shown instead of the transcript while it is empty. */
+  empty?: ReactNode;
+  className?: string;
+}
+
+export const Thread = ({ className, empty, renderers }: ThreadProps) => {
+  const items = useAgentSession((state) => state.view.items);
+  const pendingPrompt = useAgentSession((state) => state.pendingPrompt);
+  const connection = useAgentSession((state) => state.connection);
+  const labels = useAgentLabels();
+  const busy = useAgentBusy();
+
+  const groups = useMemo(() => groupItems(items), [items]);
+
+  const showEmpty = items.length === 0 && !pendingPrompt;
+  const last = items.at(-1);
+  const tailActive =
+    last?.kind === "assistant"
+      ? last.streaming
+      : last?.kind === "tool" && last.status === "running";
+  // Something is happening server-side that no item shows yet (before the first event, between tools).
+  const working = connection === "streaming" && !tailActive;
+
+  const jumpLabel = busy ? labels.scrollToBottom : labels.scrollToLatestPrompt;
+
+  return (
+    <ThreadViewport
+      busy={busy}
+      className={className}
+      connection={connection}
+      hasContent={!showEmpty}
+      jumpLabel={jumpLabel}
+      pendingPrompt={pendingPrompt}>
+      {connection === "hydrating" && items.length === 0 ? (
+        <div className="flex min-h-40 items-center justify-center">
+          <Spinner size="sm" />
+        </div>
+      ) : showEmpty ? (
+        empty
+      ) : (
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+          {groups.map((group) => {
+            if (group.kind === "user") {
+              return (
+                <UserMessage
+                  key={group.key}
+                  actions={
+                    <MessageActions
+                      messageId={group.messageId}
+                      role="user"
+                      text={group.text}
+                    />
+                  }
+                  at={group.at}
+                  text={group.text}
+                />
+              );
+            }
+            const live = orbStateOf(group.items);
+            return (
+              <div key={group.key} className="-ml-7.5 flex gap-3 ">
+                <AgentBadge className="mt-0.5" state={live} />
+                <div className="flex min-w-0 flex-1 flex-col gap-3">
+                  {group.items.map((item, index) => (
+                    <AgentItem
+                      key={itemKey(item, index)}
+                      item={item}
+                      renderers={renderers}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          {pendingPrompt ? <UserMessage text={pendingPrompt} /> : null}
+          {working ? (
+            <div className="-ml-7.5 flex gap-3">
+              <AgentBadge className="mt-0.5" state="composing" />
+              <TextShimmer
+                as="span"
+                active
+                className="text-xs leading-6"
+                duration={2.5}>
+                {labels.thinking}
+              </TextShimmer>
+            </div>
+          ) : null}
+        </div>
+      )}
+    </ThreadViewport>
   );
 };

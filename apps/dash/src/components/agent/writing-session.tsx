@@ -44,7 +44,7 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
 
   return (
     <>
-      <header className="border-border flex items-center gap-3 border-b px-4 py-3">
+      <header className="border-border flex min-w-0 items-center gap-3 border-b px-4 py-3">
         {tabs}
       </header>
 

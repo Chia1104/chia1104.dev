@@ -2,6 +2,7 @@ import { ORPCError } from "@orpc/server";
 
 import type { ServiceContext } from "../context";
 import type { AppError } from "../errors";
+import { isAppError } from "../errors";
 import type { Policy } from "../policies/types";
 
 /**
@@ -17,6 +18,22 @@ export const toORPCError = (error: AppError): ORPCError<string, unknown> =>
     message: error.message,
     data: error.issues ? { errors: error.issues } : undefined,
   });
+
+/**
+ * Runs a handler body and re-throws any {@link AppError} it raises as the `ORPCError` the
+ * contract declares; every other error passes through untouched. For handlers that call domain
+ * code — services, ports, shared write logic — which throws `AppError` and knows nothing of oRPC.
+ *
+ * @example
+ * .handler((opts) => withORPCErrors(() => service.compact(caller, opts.input)))
+ */
+export const withORPCErrors = async <T>(run: () => Promise<T>): Promise<T> => {
+  try {
+    return await run();
+  } catch (error) {
+    throw isAppError(error) ? toORPCError(error) : error;
+  }
+};
 
 /**
  * Runs a {@link Policy} inside an oRPC middleware and returns its patch, throwing an

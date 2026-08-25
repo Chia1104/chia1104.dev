@@ -27,6 +27,8 @@ export interface PgSessionCreateOptions {
   settings?: Partial<AgentSessionSettings>;
   runtimeConfig?: JsonObject;
   configVersion?: number;
+  /** Lineage recorded on the row; set by `fork`. */
+  forkedFrom?: { sessionId: string; entryId: string | null };
 }
 
 export interface PgSessionListOptions {
@@ -87,6 +89,8 @@ export class PgSessionRepo {
       autoApprove: settings.autoApprove ?? [],
       runtimeConfig: options.runtimeConfig,
       configVersion: options.configVersion,
+      forkedFromSessionId: options.forkedFrom?.sessionId ?? null,
+      forkedFromEntryId: options.forkedFrom?.entryId ?? null,
     });
 
     return new PgSessionStorage(this.db, {
@@ -163,6 +167,10 @@ export class PgSessionRepo {
       userId: options.userId ?? sourceRow.userId,
       title: options.title ?? sourceRow.title ?? undefined,
       settings: options.settings ?? settingsFromRow(sourceRow),
+      forkedFrom: {
+        sessionId: sourceRow.id,
+        entryId: options.entryId ?? sourceRow.leafEntryId,
+      },
     });
 
     // appendEntry advances the leaf, so a branch fork ends on its last copied entry.

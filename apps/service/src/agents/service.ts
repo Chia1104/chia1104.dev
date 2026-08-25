@@ -10,6 +10,7 @@ import {
   PgSessionRepo,
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
+import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
 import type {
   AgentSessionSettings,
@@ -24,6 +25,7 @@ import type {
 } from "@chia/api/orpc/services/agent.service";
 import type { DB } from "@chia/db/client";
 import {
+  bindAgentRunExternalId,
   completeAgentRun,
   createAgentRun,
   decideAgentApproval,
@@ -31,8 +33,11 @@ import {
   getActiveAgentRun,
   getAgentApprovals,
   getAgentSession,
+  patchAgentRunMetadata,
   softDeleteAgentSession,
+  withAgentSessionLock,
 } from "@chia/db/repos/agent";
+import { AppError } from "@chia/service-kit/errors";
 
 import {
   AGENT_ABORT_CONTROLLER_KEY,
@@ -130,12 +135,24 @@ export const createAgentKindService = <TState>(
       ...row,
       activeRunId: activeRun?.id ?? null,
       workflowRunId: activeRun?.externalRunId ?? null,
+      startedAt: activeRun?.startedAt ?? null,
       turn: activeRun ? readAgentTurnMarker(activeRun.metadata) : undefined,
       abortController: activeRun
         ? readAgentAbortControllerRef(activeRun.metadata)
         : undefined,
     };
   };
+
+  type OwnedSession = NonNullable<Awaited<ReturnType<typeof loadOwnedSession>>>;
+
+  /**
+   * The caller with its database handle swapped for the lock's transaction, so everything an
+   * operation does under `withAgentSessionLock` runs on the lock's own connection.
+   */
+  const withDb = (caller: AgentServiceCaller, db: DB): AgentServiceCaller => ({
+    ...caller,
+    context: { ...caller.context, db },
+  });
 
   const settingsOf = (row: {
     id: string;
@@ -168,6 +185,7 @@ export const createAgentKindService = <TState>(
       modelId: settings.modelId,
       thinkingLevel: settings.thinkingLevel,
       ...definition.state.summary(row.state),
+      forkedFromSessionId: row.forkedFromSessionId,
       createdAt: row.createdAt.getTime(),
       updatedAt: row.updatedAt.getTime(),
     };
@@ -227,22 +245,71 @@ export const createAgentKindService = <TState>(
     }
   };
 
+  /** The active `agent.run` row as every state question reads it. */
+  interface RunRef {
+    activeRunId: string | null;
+    workflowRunId: string | null;
+    startedAt: Date | null;
+    turn: AgentTurnMarker | undefined;
+  }
+
+  /**
+   * A run row `prompt` wrote ahead of the workflow it is about to start: its `externalRunId` is
+   * still its own id. It is the session's turn lease until the started run is bound to it.
+   */
+  const isRunLease = (row: RunRef): boolean =>
+    row.activeRunId !== null && row.workflowRunId === row.activeRunId;
+
+  /**
+   * How long an unbound lease counts as running. `prompt` binds within milliseconds or marks the
+   * row failed; only a process that died in between leaves a lease this old, and the next prompt
+   * replaces it.
+   */
+  const RUN_LEASE_TTL_MS = 60_000;
+
   /**
    * What the durable run is doing right now. `running` is a turn step executing; `waiting` is the
    * run parked on its message or approval hook; `null` means no live run. The SDK's own status
    * cannot tell the first two apart — a parked run is `running` too — so the turn marker the step
    * maintains decides.
    */
-  const runStateOf = async (row: {
-    workflowRunId: string | null;
-    turn: AgentTurnMarker | undefined;
-  }): Promise<{ id: string; status: "running" | "waiting" } | null> => {
-    if (!row.workflowRunId || !(await isRunLive(row.workflowRunId)))
-      return null;
+  const runStateOf = async (
+    row: RunRef
+  ): Promise<{ id: string; status: "running" | "waiting" } | null> => {
+    if (!row.workflowRunId) return null;
+    if (isRunLease(row)) {
+      const age = Date.now() - (row.startedAt?.getTime() ?? 0);
+      return age < RUN_LEASE_TTL_MS
+        ? { id: row.workflowRunId, status: "running" }
+        : null;
+    }
+    if (!(await isRunLive(row.workflowRunId))) return null;
     return {
       id: row.workflowRunId,
       status: row.turn?.running ? "running" : "waiting",
     };
+  };
+
+  /**
+   * Marks the run's next turn as running before the workflow is woken to run it, so maintenance
+   * refuses from the moment a turn is accepted rather than from the moment its step starts. The
+   * step rewrites the marker with the same leaf and index when it begins. A turn already running
+   * keeps its marker: this one queues behind it, and the step marks it when its own turn comes.
+   */
+  const claimTurn = async (
+    db: DB,
+    row: OwnedSession,
+    startIndex: number
+  ): Promise<void> => {
+    if (!row.activeRunId || row.turn?.running) return;
+    const turn: AgentTurnMarker = {
+      leafEntryId: row.leafEntryId,
+      streamIndex: startIndex,
+      running: true,
+    };
+    await patchAgentRunMetadata(db, row.activeRunId, {
+      [AGENT_TURN_KEY]: turn,
+    });
   };
 
   /**
@@ -337,7 +404,9 @@ export const createAgentKindService = <TState>(
       ? readAgentTurnMarker(activeRun.metadata)
       : undefined;
     const run = await runStateOf({
+      activeRunId: activeRun?.id ?? null,
       workflowRunId: activeRun?.externalRunId ?? null,
+      startedAt: activeRun?.startedAt ?? null,
       turn,
     });
 
@@ -393,19 +462,46 @@ export const createAgentKindService = <TState>(
   };
 
   /**
-   * Compaction and rewinding both mutate the session tree, so they cannot run while a turn is
-   * appending to it. A live run is not enough to refuse on — parked on the message hook is its
-   * normal idle state — so this reads the turn marker, like everything else that needs to know.
+   * Maintenance (compact, rewind, fork) mutates or copies the session tree, so it cannot run
+   * while a turn is appending to it. A live run is not enough to refuse on — parked on the
+   * message hook is its normal idle state — so this reads the turn marker, like everything else
+   * that needs to know. Called under the session lock, after the row was read under it: a turn
+   * accepted before the lock was taken is already marked, and one accepted after waits.
+   *
+   * An undecided approval refuses too: the run is parked on the approval hook, and the relay
+   * turn its decision starts would land on whatever branch is active then — answering a call
+   * that is no longer on it. `CONFLICT`, converted at the route.
    */
-  const assertNoTurnRunning = async (
-    row: { workflowRunId: string | null; turn: AgentTurnMarker | undefined },
+  const assertMaintainable = async (
+    row: OwnedSession,
+    db: DB,
     action: string
   ): Promise<void> => {
     if ((await runStateOf(row))?.status === "running") {
-      throw new Error(
-        `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`
-      );
+      throw new AppError("CONFLICT", {
+        message: `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`,
+      });
     }
+    const outstanding = await undecidedApprovals(db, row.id);
+    if (outstanding.length > 0) {
+      throw new AppError("CONFLICT", {
+        message: `Cannot ${action} while \`${outstanding.join("`, `")}\` awaits your decision. Approve or reject it first.`,
+      });
+    }
+  };
+
+  /** The entry a rewind or fork targets, or `NOT_FOUND`; the client only ever holds ids it was shown. */
+  const requireEntry = async (
+    session: SessionTree,
+    entryId: string
+  ): Promise<SessionEntry> => {
+    const entry = await session.getEntry(entryId);
+    if (!entry) {
+      throw new AppError("NOT_FOUND", {
+        message: `Entry ${entryId} is not in this session.`,
+      });
+    }
+    return entry;
   };
 
   // ============================================
@@ -522,102 +618,120 @@ export const createAgentKindService = <TState>(
      * run is started and its id recorded.
      *
      * Either way this returns as soon as the message is accepted; the turn itself runs in the run.
+     * The whole step holds the session lock, so maintenance can neither slip in between the turn
+     * being accepted and its marker being visible, nor be mid-mutation when the turn starts.
      */
-    async prompt(caller, input) {
-      const row = await loadOwnedSession(caller, input.sessionId);
-      if (!row) throw new Error(`Unknown agent session: ${input.sessionId}`);
+    prompt: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const db = tx;
+        const row = await loadOwnedSession(caller, input.sessionId);
+        if (!row) throw new Error(`Unknown agent session: ${input.sessionId}`);
 
-      if (input.text === AGENT_END_SENTINEL) {
-        throw new Error(
-          `"${AGENT_END_SENTINEL}" is reserved; it ends the session's run.`
-        );
-      }
-
-      const message = {
-        text: input.text,
-        template: input.template,
-        preAuthorizeToolNames: input.preAuthorizeToolNames,
-        // Refreshed on every prompt: the run outlives any one request, and the operator may have
-        // registered or rotated a key since the last turn.
-        credentials: readEncryptedAgentCredentials(caller.context.headers),
-      };
-
-      /**
-       * Refuse while an approval is outstanding.
-       *
-       * The run is parked on the *approval* hook, not the message hook. A resumed message would be
-       * persisted and then sit unread until the approval resolved — from the operator's side their
-       * message would simply appear to do nothing. Better to say why.
-       */
-      const outstanding = await undecidedApprovals(
-        caller.context.db,
-        input.sessionId
-      );
-      if (outstanding.length > 0) {
-        throw new Error(
-          `Waiting on your decision for \`${outstanding.join("`, `")}\`. Approve or reject it before sending another message.`
-        );
-      }
-
-      if (row.workflowRunId && (await isRunLive(row.workflowRunId))) {
-        const token = agentMessageToken(input.sessionId);
-
-        if (!(await isHookReady(token))) {
+        if (input.text === AGENT_END_SENTINEL) {
           throw new Error(
-            "The session's run is still starting up. Retry in a moment."
+            `"${AGENT_END_SENTINEL}" is reserved; it ends the session's run.`
           );
         }
 
-        const run = getRun(row.workflowRunId);
-        // Capture the tail before enqueuing. If another turn is active, its remaining events and the
-        // queued turn share this continuation stream in durable emission order.
-        const startIndex = (await run.getReadable().getTailIndex()) + 1;
-        await agentMessageHook.resume(token, message);
-        return { runId: row.workflowRunId, startIndex, startedRun: false };
-      }
+        const message = {
+          text: input.text,
+          template: input.template,
+          preAuthorizeToolNames: input.preAuthorizeToolNames,
+          // Refreshed on every prompt: the run outlives any one request, and the operator may have
+          // registered or rotated a key since the last turn.
+          credentials: readEncryptedAgentCredentials(caller.context.headers),
+        };
 
-      // Started before the session run so its ref can travel in the run's request: every turn then
-      // subscribes to this one controller by run id, and `abort` resumes it by id.
-      const abortController = await startAgentAbortController();
-      const run = await start(agentSessionWorkflow, [
-        {
+        /**
+         * Refuse while an approval is outstanding.
+         *
+         * The run is parked on the *approval* hook, not the message hook. A resumed message would be
+         * persisted and then sit unread until the approval resolved — from the operator's side their
+         * message would simply appear to do nothing. Better to say why.
+         */
+        const outstanding = await undecidedApprovals(
+          caller.context.db,
+          input.sessionId
+        );
+        if (outstanding.length > 0) {
+          throw new Error(
+            `Waiting on your decision for \`${outstanding.join("`, `")}\`. Approve or reject it before sending another message.`
+          );
+        }
+
+        if (row.workflowRunId && (await isRunLive(row.workflowRunId))) {
+          const token = agentMessageToken(input.sessionId);
+
+          if (!(await isHookReady(token))) {
+            throw new Error(
+              "The session's run is still starting up. Retry in a moment."
+            );
+          }
+
+          const run = getRun(row.workflowRunId);
+          // Capture the tail before enqueuing. If another turn is active, its remaining events and the
+          // queued turn share this continuation stream in durable emission order.
+          const startIndex = (await run.getReadable().getTailIndex()) + 1;
+          await claimTurn(db, row, startIndex);
+          await agentMessageHook.resume(token, message);
+          return { runId: row.workflowRunId, startIndex, startedRun: false };
+        }
+
+        // Started before the session run so its ref can travel in the run's request: every turn then
+        // subscribes to this one controller by run id, and `abort` resumes it by id.
+        const abortController = await startAgentAbortController();
+
+        // The row is written before the workflow exists and is the session's turn lease from then on:
+        // maintenance that takes the lock after this already sees a running turn, and the step's marker
+        // writes (addressed by session) always find their row. The workflow backend mints the run id,
+        // so the row's own id stands in as `externalRunId` until the started run is bound to it; a
+        // start that fails closes the row so the lease does not outlive the attempt.
+        const runId = crypto.randomUUID();
+        const turn: AgentTurnMarker = {
+          leafEntryId: row.leafEntryId,
+          streamIndex: 0,
+          running: true,
+        };
+        await createAgentRun(db, {
+          id: runId,
           sessionId: input.sessionId,
-          userId: caller.userId,
-          abortController,
-          firstMessage: message,
-        },
-      ]);
-
-      // The first turn may reach its step before this row exists, in which case its own marker write
-      // finds nothing to update; a fresh run always starts its first turn at index 0 from the leaf as
-      // it stands now, so the same marker is seeded here. The step's end-of-turn write lands either
-      // way, so `running` cannot stick.
-      const turn: AgentTurnMarker = {
-        leafEntryId: row.leafEntryId,
-        streamIndex: 0,
-        running: true,
-      };
-      await createAgentRun(caller.context.db, {
-        id: run.runId,
-        sessionId: input.sessionId,
-        harnessKind: "workflow",
-        externalRunId: run.runId,
-        metadata: {
-          agentKind: definition.kind,
-          [AGENT_TURN_KEY]: turn,
-          [AGENT_ABORT_CONTROLLER_KEY]: {
-            id: abortController.id,
-            runId: abortController.runId,
+          harnessKind: "workflow",
+          externalRunId: runId,
+          metadata: {
+            agentKind: definition.kind,
+            [AGENT_TURN_KEY]: turn,
+            [AGENT_ABORT_CONTROLLER_KEY]: {
+              id: abortController.id,
+              runId: abortController.runId,
+            },
           },
-        },
-      });
+        });
+        let run;
+        try {
+          run = await start(agentSessionWorkflow, [
+            {
+              sessionId: input.sessionId,
+              runId,
+              userId: caller.userId,
+              abortController,
+              firstMessage: message,
+            },
+          ]);
+        } catch (error) {
+          await completeAgentRun(db, runId, "failed");
+          throw error;
+        }
+        await bindAgentRunExternalId(db, runId, run.runId);
 
-      return { runId: run.runId, startIndex: 0, startedRun: true };
-    },
+        return { runId: run.runId, startIndex: 0, startedRun: true };
+      }),
 
     async attach(caller, input) {
       const row = await loadOwnedSession(caller, input.sessionId);
       if (!row?.workflowRunId || !row.turn) return null;
+      // A lease has no stream to tail yet; the client's next `get` finds the bound run.
+      if (isRunLease(row)) return null;
       const run = await runStateOf(row);
       if (run?.status !== "running") return null;
       return { runId: row.workflowRunId, startIndex: row.turn.streamIndex };
@@ -734,65 +848,115 @@ export const createAgentKindService = <TState>(
       return true;
     },
 
-    async approve(caller, input) {
-      const row = await loadOwnedSession(caller, input.sessionId);
-      if (!row?.workflowRunId) return null;
+    /** The decision starts a relay turn, so it is accepted under the session lock like a prompt. */
+    approve: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const db = tx;
+        const row = await loadOwnedSession(caller, input.sessionId);
+        if (!row?.workflowRunId) return null;
 
-      // Persist first: the decision must outlive the run, and the permission gate reads it back from
-      // here when the tool call is re-issued.
-      const decided = await decideAgentApproval(caller.context.db, {
-        sessionId: input.sessionId,
-        toolCallId: input.toolCallId,
-        approved: input.approved,
-        comment: input.comment,
-        decidedBy: caller.userId,
-      });
-      if (!decided) return null;
-
-      // Capture the cursor before waking the workflow. The chat transport opens a fresh request for
-      // an approval continuation, so it needs the same exact replay boundary as a normal prompt.
-      const run = getRun(row.workflowRunId);
-      const startIndex = (await run.getReadable().getTailIndex()) + 1;
-
-      // Then wake the run, which has been parked on this hook with no compute consumed.
-      await agentApprovalHook.resume(
-        agentApprovalToken(input.sessionId, input.toolCallId),
-        {
+        // Persist first: the decision must outlive the run, and the permission gate reads it back from
+        // here when the tool call is re-issued.
+        const decided = await decideAgentApproval(db, {
+          sessionId: input.sessionId,
+          toolCallId: input.toolCallId,
           approved: input.approved,
           comment: input.comment,
-          // The turns the workflow synthesises after this decision have no request of their own.
-          credentials: readEncryptedAgentCredentials(caller.context.headers),
+          decidedBy: caller.userId,
+        });
+        if (!decided) return null;
+
+        // Capture the cursor before waking the workflow. The chat transport opens a fresh request for
+        // an approval continuation, so it needs the same exact replay boundary as a normal prompt.
+        const run = getRun(row.workflowRunId);
+        const startIndex = (await run.getReadable().getTailIndex()) + 1;
+        await claimTurn(db, row, startIndex);
+
+        // Then wake the run, which has been parked on this hook with no compute consumed.
+        await agentApprovalHook.resume(
+          agentApprovalToken(input.sessionId, input.toolCallId),
+          {
+            approved: input.approved,
+            comment: input.comment,
+            // The turns the workflow synthesises after this decision have no request of their own.
+            credentials: readEncryptedAgentCredentials(caller.context.headers),
+          }
+        );
+
+        return { runId: row.workflowRunId, startIndex };
+      }),
+
+    compact: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const row = await loadOwnedSession(caller, input.sessionId);
+        if (!row) return null;
+        await assertMaintainable(row, tx, "compact");
+
+        const maintenance = await maintenanceFor(caller, row);
+        return await maintenance.compact(input.customInstructions);
+      }),
+
+    navigate: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const row = await loadOwnedSession(caller, input.sessionId);
+        if (!row) return null;
+        await assertMaintainable(row, tx, "rewind");
+
+        const maintenance = await maintenanceFor(caller, row);
+        await requireEntry(maintenance.session, input.entryId);
+        // No signal is passed, so the summary cannot be cancelled and the result is never `cancelled`.
+        await maintenance.navigate(input.entryId, {
+          summarize: input.summarize,
+          label: input.label,
+        });
+        return detailFor(caller, input.sessionId);
+      }),
+
+    fork: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const db = tx;
+        const row = await loadOwnedSession(caller, input.sessionId);
+        if (!row) return null;
+        await assertMaintainable(row, db, "fork");
+
+        const repo = repoFor(db);
+        const position = input.position ?? "before";
+        if (input.entryId) {
+          const target = await requireEntry(
+            await repo.openById(row.id),
+            input.entryId
+          );
+          if (
+            position === "before" &&
+            (target.type !== "message" || target.message.role !== "user")
+          ) {
+            throw new AppError("BAD_REQUEST", {
+              message:
+                "Only a user message can be forked before; fork at this entry instead.",
+            });
+          }
         }
-      );
 
-      return { runId: row.workflowRunId, startIndex };
-    },
-
-    async compact(caller, input) {
-      const row = await loadOwnedSession(caller, input.sessionId);
-      if (!row) return null;
-      await assertNoTurnRunning(row, "compact");
-
-      const maintenance = await maintenanceFor(caller, row);
-      return await maintenance.compact(input.customInstructions);
-    },
-
-    async navigate(caller, input) {
-      const row = await loadOwnedSession(caller, input.sessionId);
-      if (!row) return null;
-      await assertNoTurnRunning(row, "rewind");
-
-      const maintenance = await maintenanceFor(caller, row);
-      const result = await maintenance.navigate(input.entryId, {
-        summarize: input.summarize,
-        label: input.label,
-      });
-      const branch = await maintenance.session.getBranch();
-      return {
-        cancelled: result.cancelled,
-        events: entriesToWireEvents(branch, replayOptions),
-      };
-    },
+        const forked = await repo.fork(
+          { id: row.id },
+          { entryId: input.entryId, position, title: input.title }
+        );
+        try {
+          await definition.state.fork(db, row.id, forked.id);
+          const detail = await detailFor(caller, forked.id);
+          if (!detail)
+            throw new Error("Session vanished immediately after fork");
+          return detail;
+        } catch (error) {
+          // Same compensation as `createSession`: a fork without its kind state can never be opened.
+          await deleteAgentSession(db, forked.id);
+          throw error;
+        }
+      }),
 
     /**
      * The pre-persistence check the transport calls.

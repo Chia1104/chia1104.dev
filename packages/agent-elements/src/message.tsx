@@ -1,8 +1,10 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useSyncExternalStore } from "react";
 
 import { Disclosure } from "@heroui/react";
+import { Check } from "lucide-react";
 import { ThinkingOrb } from "thinking-orbs";
 
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
@@ -30,10 +32,11 @@ const useMounted = () =>
   );
 
 /**
- * Time and copy under a message. Revealed on hover or keyboard focus so the thread stays quiet;
- * the time alone is always legible.
+ * Time, copy and the host's actions under a message. Revealed on hover or keyboard focus so the
+ * thread stays quiet; the time alone is always legible.
  */
 const MessageMeta = ({
+  actions,
   align,
   at,
   text,
@@ -41,6 +44,7 @@ const MessageMeta = ({
   at?: number;
   text: string;
   align: "start" | "end";
+  actions?: ReactNode;
 }) => {
   const labels = useAgentLabels();
   const mounted = useMounted();
@@ -58,35 +62,43 @@ const MessageMeta = ({
           {formatMessageTime(at)}
         </time>
       ) : null}
-      {text ? (
-        <CopyButton
-          aria-label={labels.copy}
-          className="size-6 min-w-6 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-          content={text}
-          translations={{ copy: labels.copy, copied: labels.copied }}
-          variant="ghost"
-        />
+      {text || actions ? (
+        <span className="flex items-center gap-0.5 transition-opacity group-hover:opacity-100 focus-within:opacity-100 md:opacity-0">
+          {text ? (
+            <CopyButton
+              aria-label={labels.copy}
+              className="size-6 min-w-6"
+              content={text}
+              translations={{ copy: labels.copy, copied: labels.copied }}
+              variant="ghost"
+            />
+          ) : null}
+          {actions}
+        </span>
       ) : null}
     </div>
   );
 };
 
 export const UserMessage = ({
+  actions,
   at,
   className,
   text,
 }: {
   text: string;
   at?: number;
+  /** Rendered beside copy, e.g. `MessageActions`. */
+  actions?: ReactNode;
   className?: string;
 }) => (
   <div
     className={cn("group flex flex-col items-end gap-1", className)}
     data-role="user">
-    <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-6 whitespace-pre-wrap">
+    <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-3 py-2.5 text-sm leading-6 whitespace-pre-wrap">
       {text}
     </div>
-    <MessageMeta align="end" at={at} text={text} />
+    <MessageMeta actions={actions} align="end" at={at} text={text} />
   </div>
 );
 
@@ -94,20 +106,29 @@ export const UserMessage = ({
 export const AgentBadge = ({
   className,
   state,
-  paused,
 }: {
   className?: string;
   state: OrbState | null;
-  paused?: boolean;
-}) => (
-  <ThinkingOrb
-    aria-hidden
-    state={state ?? "breathing"}
-    size={20}
-    className={cn("size-5 shrink-0", className)}
-    paused={paused}
-  />
-);
+}) => {
+  if (state) {
+    return (
+      <ThinkingOrb
+        aria-hidden
+        state={state}
+        size={20}
+        className={cn("size-5 shrink-0", className)}
+      />
+    );
+  }
+  return (
+    <span
+      className={cn(
+        "text-muted grid size-5 shrink-0 place-items-center",
+        className
+      )}
+    />
+  );
+};
 
 const ThinkingBlock = ({
   streaming,
@@ -122,18 +143,23 @@ const ThinkingBlock = ({
       className="bg-surface border-border rounded-xl border"
       defaultExpanded={streaming}>
       <Disclosure.Heading>
-        <Disclosure.Trigger className="text-muted flex h-9 w-full items-center justify-start gap-2 px-3 text-xs">
-          <ThinkingOrb
-            aria-hidden
-            state="solving"
-            size={20}
-            className="size-4 shrink-0"
-            paused={!streaming}
-          />
+        <Disclosure.Trigger className="text-muted flex h-8 w-full items-center justify-start gap-2 px-3 text-xs">
+          <span className="grid size-4 shrink-0 place-items-center">
+            {streaming ? (
+              <ThinkingOrb
+                aria-hidden
+                state="solving"
+                size={20}
+                className="size-4"
+              />
+            ) : (
+              <Check aria-hidden className="text-success size-3.5" />
+            )}
+          </span>
           <TextShimmer as="span" active={streaming} duration={2.5}>
             {streaming ? labels.thinking : labels.thought}
           </TextShimmer>
-          <Disclosure.Indicator className="ml-auto" />
+          <Disclosure.Indicator className="ml-auto size-3.5 " />
         </Disclosure.Trigger>
       </Disclosure.Heading>
       <Disclosure.Content>
@@ -150,10 +176,13 @@ const ThinkingBlock = ({
  * is the answer, the thinking is context. Time and copy appear once the message is complete.
  */
 export const AssistantMessage = ({
+  actions,
   className,
   message,
 }: {
   message: TextMessageView;
+  /** Rendered beside copy once the message is complete, e.g. `MessageActions`. */
+  actions?: ReactNode;
   className?: string;
 }) => {
   const thinkingStreaming = message.streaming && !message.text;
@@ -170,7 +199,12 @@ export const AssistantMessage = ({
         <Markdown streaming={message.streaming} text={message.text} />
       ) : null}
       {!message.streaming && message.text ? (
-        <MessageMeta align="start" at={message.at} text={message.text} />
+        <MessageMeta
+          actions={actions}
+          align="start"
+          at={message.at}
+          text={message.text}
+        />
       ) : null}
     </div>
   );

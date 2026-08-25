@@ -15,6 +15,7 @@ import {
 } from "@chia/agent-writing/runtime";
 import { createWritingTools } from "@chia/agent-writing/tools/tool-set";
 import {
+  copyWritingAgentDrafts,
   createWritingAgentSession,
   getWritingAgentSession,
 } from "@chia/db/repos/agent";
@@ -92,6 +93,19 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
 
     async load(db, sessionId) {
       return (await getWritingAgentSession(db, sessionId)) ?? null;
+    },
+
+    async fork(db, sourceSessionId, sessionId) {
+      const source = await getWritingAgentSession(db, sourceSessionId);
+      if (!source) {
+        throw new Error(`Writing session ${sourceSessionId} has no state`);
+      }
+      await createWritingAgentSession(db, {
+        sessionId,
+        targetFeedId: source.targetFeedId,
+        feedMeta: source.feedMeta,
+      });
+      await copyWritingAgentDrafts(db, sourceSessionId, sessionId);
     },
 
     summary(state) {
