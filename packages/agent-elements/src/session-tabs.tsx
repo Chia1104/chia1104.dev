@@ -14,15 +14,9 @@ import {
   SearchField,
   ScrollShadow,
   TextField,
+  Tooltip,
 } from "@heroui/react";
-import {
-  ChevronDown,
-  Ellipsis,
-  GitFork,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Clock, Ellipsis, GitFork, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
@@ -100,7 +94,7 @@ export const SessionTabs = ({
   onRename,
   onSelect,
   sessions,
-  visible = 5,
+  visible = 8,
 }: SessionTabsProps) => {
   const labels = { ...defaultAgentLabels, ...overrides };
   const [open, setOpen] = useState(false);
@@ -161,136 +155,151 @@ export const SessionTabs = ({
     ) : null;
 
   return (
-    <div className={cn("flex min-w-0 items-center gap-2", className)}>
-      <Button
-        className="shrink-0"
-        isPending={isCreating}
-        onPress={onCreate}
-        size="sm"
-        variant="secondary">
-        <Plus className="size-4" />
-        {labels.newSession}
-      </Button>
+    <div className={cn("flex w-full min-w-0 items-center gap-2", className)}>
+      <div className="shrink-0">
+        <Tooltip>
+          <Button
+            aria-label={labels.newSession}
+            isIconOnly
+            className="shrink-0"
+            isPending={isCreating}
+            onPress={onCreate}
+            size="sm"
+            variant="secondary">
+            <Plus className="size-4" />
+          </Button>
+          <Tooltip.Content>{labels.newSession}</Tooltip.Content>
+        </Tooltip>
+      </div>
 
-      <div className="flex min-w-0 flex-1 [scrollbar-width:none] items-center gap-0.5 overflow-x-auto">
-        {shown.map((session) => {
-          const isActive = session.id === activeId;
-          const lineage = lineageOf(session);
-          return (
-            <Button
-              render={(props) => <span {...props} />}
-              key={session.id}
-              className={cn(
-                "group/tab h-8 max-w-40 min-w-40 flex-1 shrink-0 items-center justify-between rounded-lg pr-0 pl-2 text-xs font-normal"
-              )}
-              onPress={() => onSelect(session.id)}
-              size="sm"
-              variant={isActive ? "tertiary" : "ghost"}>
-              {lineage ? (
-                <GitFork
-                  aria-label={lineage}
-                  className="text-muted size-3 shrink-0"
-                  role="img"
-                />
-              ) : null}
-              <span className="truncate">
-                {session.title ?? labels.untitledSession}
-              </span>
-              {actions(
-                session,
-                cn(
-                  "mr-1 opacity-0 transition-opacity group-hover/tab:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 data-[pressed]:opacity-100",
-                  isActive && "opacity-100"
-                )
-              )}
-            </Button>
-          );
-        })}
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <ScrollShadow
+          className="w-full"
+          hideScrollBar
+          orientation="horizontal"
+          size={16}>
+          <div className="flex w-max items-center gap-0.5">
+            {shown.map((session) => {
+              const isActive = session.id === activeId;
+              const lineage = lineageOf(session);
+              return (
+                <Button
+                  render={(props) => <span {...props} />}
+                  key={session.id}
+                  className="group/tab h-8 w-40 shrink-0 items-center justify-between rounded-lg pr-0 pl-2 text-xs font-normal"
+                  onPress={() => onSelect(session.id)}
+                  size="sm"
+                  variant={isActive ? "tertiary" : "ghost"}>
+                  {lineage ? (
+                    <GitFork
+                      aria-label={lineage}
+                      className="text-muted size-3 shrink-0"
+                      role="img"
+                    />
+                  ) : null}
+                  <span className="min-w-0 truncate">
+                    {session.title ?? labels.untitledSession}
+                  </span>
+                  {actions(
+                    session,
+                    cn(
+                      "mr-1 opacity-0 transition-opacity group-hover/tab:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 data-[pressed]:opacity-100",
+                      isActive && "opacity-100"
+                    )
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </ScrollShadow>
       </div>
 
       {sessions.length > shown.length ? (
-        <Popover isOpen={open} onOpenChange={setOpen}>
-          <Popover.Trigger>
-            <Button
-              className="text-muted h-8 shrink-0 gap-1 px-2.5 text-xs"
-              size="sm"
-              variant="ghost">
-              {labels.moreSessions}
-              <ChevronDown
-                className={cn(
-                  "size-3.5 transition-transform",
-                  open && "rotate-180"
-                )}
-              />
-            </Button>
-          </Popover.Trigger>
-          <Popover.Content
-            className="bg-surface/70 w-80 p-0 backdrop-blur-sm"
-            placement="bottom end">
-            <Popover.Dialog className="flex flex-col p-0">
-              <div className="border-border border-b p-2">
-                <SearchField
-                  aria-label={labels.searchSessions}
-                  autoFocus
-                  fullWidth
-                  onChange={setQuery}
-                  value={query}>
-                  <SearchField.Group>
-                    <SearchField.SearchIcon />
-                    <SearchField.Input placeholder={labels.searchSessions} />
-                    <SearchField.ClearButton />
-                  </SearchField.Group>
-                </SearchField>
-              </div>
-              <ScrollShadow className="max-h-80 p-1.5">
-                {matches.length === 0 ? (
-                  <p className="text-muted px-3 py-6 text-center text-xs">
-                    {labels.noSessions}
-                  </p>
-                ) : (
-                  <div className="flex flex-col">
-                    {matches.map((session) => {
-                      const lineage = lineageOf(session);
-                      return (
-                        <div
-                          key={session.id}
-                          className="group/row flex items-center gap-1">
-                          <Button
-                            className="h-auto min-w-0 flex-1 justify-start px-2.5 py-2 text-left"
-                            onPress={() => pick(session.id)}
-                            size="sm"
-                            variant={
-                              session.id === activeId ? "tertiary" : "ghost"
-                            }>
-                            <span className="flex min-w-0 flex-col gap-0.5">
-                              <span className="text-foreground truncate text-sm font-normal">
-                                {session.title ?? labels.untitledSession}
+        <div className="shrink-0">
+          <Popover isOpen={open} onOpenChange={setOpen}>
+            <Popover.Trigger>
+              <Tooltip>
+                <Button
+                  aria-label={labels.moreSessions}
+                  isIconOnly
+                  className="text-muted h-8 shrink-0 gap-1 px-2.5 text-xs"
+                  size="sm"
+                  variant="ghost">
+                  <Clock className="size-3.5" />
+                </Button>
+                <Tooltip.Content>{labels.moreSessions}</Tooltip.Content>
+              </Tooltip>
+            </Popover.Trigger>
+            <Popover.Content
+              className="bg-surface/70 w-80 p-0 backdrop-blur-sm"
+              placement="bottom end">
+              <Popover.Dialog className="flex flex-col p-0">
+                <div className="border-border border-b p-2">
+                  <SearchField
+                    aria-label={labels.searchSessions}
+                    autoFocus
+                    fullWidth
+                    onChange={setQuery}
+                    value={query}>
+                    <SearchField.Group>
+                      <SearchField.SearchIcon />
+                      <SearchField.Input placeholder={labels.searchSessions} />
+                      <SearchField.ClearButton />
+                    </SearchField.Group>
+                  </SearchField>
+                </div>
+                <ScrollShadow className="max-h-80 p-1.5">
+                  {matches.length === 0 ? (
+                    <p className="text-muted px-3 py-6 text-center text-xs">
+                      {labels.noSessions}
+                    </p>
+                  ) : (
+                    <div className="flex flex-col">
+                      {matches.map((session) => {
+                        const lineage = lineageOf(session);
+                        return (
+                          <div
+                            key={session.id}
+                            className="group/row flex items-center gap-1">
+                            <Button
+                              className="h-auto min-w-0 flex-1 justify-start px-2.5 py-2 text-left"
+                              onPress={() => pick(session.id)}
+                              size="sm"
+                              variant={
+                                session.id === activeId ? "tertiary" : "ghost"
+                              }>
+                              <span className="flex min-w-0 flex-col gap-0.5">
+                                <span className="text-foreground truncate text-sm font-normal">
+                                  {session.title ?? labels.untitledSession}
+                                </span>
+                                <span className="text-muted flex items-center gap-1 text-[11px]">
+                                  {formatTime(session.updatedAt)}
+                                  {lineage ? (
+                                    <>
+                                      <span aria-hidden>·</span>
+                                      <GitFork
+                                        aria-hidden
+                                        className="size-3 shrink-0"
+                                      />
+                                      <span className="truncate">
+                                        {lineage}
+                                      </span>
+                                    </>
+                                  ) : null}
+                                </span>
                               </span>
-                              <span className="text-muted flex items-center gap-1 text-[11px]">
-                                {formatTime(session.updatedAt)}
-                                {lineage ? (
-                                  <>
-                                    <span aria-hidden>·</span>
-                                    <GitFork
-                                      aria-hidden
-                                      className="size-3 shrink-0"
-                                    />
-                                    <span className="truncate">{lineage}</span>
-                                  </>
-                                ) : null}
-                              </span>
-                            </span>
-                          </Button>
-                          {actions(session, "shrink-0")}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </ScrollShadow>
-            </Popover.Dialog>
-          </Popover.Content>
-        </Popover>
+                            </Button>
+                            {actions(session, "shrink-0")}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </ScrollShadow>
+              </Popover.Dialog>
+            </Popover.Content>
+          </Popover>
+        </div>
       ) : null}
 
       {onRename ? (
