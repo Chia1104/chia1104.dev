@@ -196,7 +196,7 @@ const ComposerFailure = () => {
   const dismissFailure = useAgentSession((state) => state.dismissFailure);
   if (!failure) return null;
   return (
-    <Alert status="danger">
+    <Alert status="danger" className="bg-surface-secondary gap-2 px-2.5 py-2">
       <Alert.Content>
         <Alert.Description className="break-words">{failure}</Alert.Description>
       </Alert.Content>

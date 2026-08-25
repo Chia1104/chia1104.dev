@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   AlertDialog,
   Button,
+  Card,
   Checkbox,
   Form,
   Input,
@@ -170,11 +171,18 @@ const RewindDialog = ({
             <AlertDialog.Heading>{labels.rewindTitle}</AlertDialog.Heading>
           </AlertDialog.Header>
           <AlertDialog.Body className="gap-3">
-            <p className="text-foreground line-clamp-3 text-sm font-medium whitespace-pre-wrap">
-              {text}
+            <Card
+              variant="tertiary"
+              className="mb-3 max-h-40 overflow-y-auto p-3">
+              <Card.Content>
+                <p className="text-foreground text-sm font-medium">{text}</p>
+              </Card.Content>
+            </Card>
+            <p className="text-muted mb-3 text-sm">
+              {labels.rewindDescription}
             </p>
-            <p className="text-muted text-sm">{labels.rewindDescription}</p>
             <Checkbox
+              variant="secondary"
               isDisabled={navigate.isPending}
               isSelected={summarize}
               onChange={setSummarize}>

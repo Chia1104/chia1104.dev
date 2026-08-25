@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useSyncExternalStore } from "react";
 
 import { Disclosure } from "@heroui/react";
+import { Check } from "lucide-react";
 import { ThinkingOrb } from "thinking-orbs";
 
 import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
@@ -94,7 +95,7 @@ export const UserMessage = ({
   <div
     className={cn("group flex flex-col items-end gap-1", className)}
     data-role="user">
-    <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-6 whitespace-pre-wrap">
+    <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-3 py-2.5 text-sm leading-6 whitespace-pre-wrap">
       {text}
     </div>
     <MessageMeta actions={actions} align="end" at={at} text={text} />
@@ -105,20 +106,29 @@ export const UserMessage = ({
 export const AgentBadge = ({
   className,
   state,
-  paused,
 }: {
   className?: string;
   state: OrbState | null;
-  paused?: boolean;
-}) => (
-  <ThinkingOrb
-    aria-hidden
-    state={state ?? "breathing"}
-    size={20}
-    className={cn("size-5 shrink-0", className)}
-    paused={paused}
-  />
-);
+}) => {
+  if (state) {
+    return (
+      <ThinkingOrb
+        aria-hidden
+        state={state}
+        size={20}
+        className={cn("size-5 shrink-0", className)}
+      />
+    );
+  }
+  return (
+    <span
+      className={cn(
+        "text-muted grid size-5 shrink-0 place-items-center",
+        className
+      )}
+    />
+  );
+};
 
 const ThinkingBlock = ({
   streaming,
@@ -133,18 +143,23 @@ const ThinkingBlock = ({
       className="bg-surface border-border rounded-xl border"
       defaultExpanded={streaming}>
       <Disclosure.Heading>
-        <Disclosure.Trigger className="text-muted flex h-9 w-full items-center justify-start gap-2 px-3 text-xs">
-          <ThinkingOrb
-            aria-hidden
-            state="solving"
-            size={20}
-            className="size-4 shrink-0"
-            paused={!streaming}
-          />
+        <Disclosure.Trigger className="text-muted flex h-8 w-full items-center justify-start gap-2 px-3 text-xs">
+          <span className="grid size-4 shrink-0 place-items-center">
+            {streaming ? (
+              <ThinkingOrb
+                aria-hidden
+                state="solving"
+                size={20}
+                className="size-4"
+              />
+            ) : (
+              <Check aria-hidden className="text-success size-3.5" />
+            )}
+          </span>
           <TextShimmer as="span" active={streaming} duration={2.5}>
             {streaming ? labels.thinking : labels.thought}
           </TextShimmer>
-          <Disclosure.Indicator className="ml-auto" />
+          <Disclosure.Indicator className="ml-auto size-3.5 " />
         </Disclosure.Trigger>
       </Disclosure.Heading>
       <Disclosure.Content>

@@ -305,12 +305,8 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
             }
             const live = orbStateOf(group.items);
             return (
-              <div key={group.key} className="flex gap-3">
-                <AgentBadge
-                  className="mt-0.5"
-                  state={live ?? "composing"}
-                  paused={live === null}
-                />
+              <div key={group.key} className="-ml-7.5 flex gap-3 ">
+                <AgentBadge className="mt-0.5" state={live} />
                 <div className="flex min-w-0 flex-1 flex-col gap-3">
                   {group.items.map((item, index) => (
                     <AgentItem
@@ -325,7 +321,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
           })}
           {pendingPrompt ? <UserMessage text={pendingPrompt} /> : null}
           {working ? (
-            <div className="flex gap-3">
+            <div className="-ml-7.5 flex gap-3">
               <AgentBadge className="mt-0.5" state="composing" />
               <TextShimmer
                 as="span"

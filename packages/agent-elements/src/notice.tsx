@@ -37,7 +37,9 @@ export const Notice = ({ className, notice }: NoticeProps) => {
   }
 
   return (
-    <Alert className={className} status="danger">
+    <Alert
+      className={cn("bg-surface-secondary gap-2 px-2.5 py-2", className)}
+      status="danger">
       <Alert.Indicator>
         <CircleAlert className="size-4" />
       </Alert.Indicator>

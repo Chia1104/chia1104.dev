@@ -139,6 +139,9 @@ export const Markdown = ({
     className={cn(
       "text-foreground text-sm leading-6",
       "[&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h4]:text-sm",
+      "**:data-[streamdown=link]:text-foreground/70 **:data-[streamdown=link]:decoration-muted/70 **:data-[streamdown=link]:underline-offset-[5px]",
+      "**:data-[streamdown=link]:transition-colors **:data-[streamdown=link]:duration-300 **:data-[streamdown=link]:ease-in-out",
+      "**:data-[streamdown=link]:hover:decoration-foreground/70",
       className
     )}
     components={
