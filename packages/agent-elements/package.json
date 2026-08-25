@@ -41,6 +41,14 @@
       "types": "./src/thread.tsx",
       "default": "./src/thread.tsx"
     },
+    "./code-block": {
+      "types": "./src/code-block.tsx",
+      "default": "./src/code-block.tsx"
+    },
+    "./highlighter": {
+      "types": "./src/highlighter.ts",
+      "default": "./src/highlighter.ts"
+    },
     "./markdown": {
       "types": "./src/markdown.tsx",
       "default": "./src/markdown.tsx"
@@ -119,13 +127,14 @@
     "@chia/ui": "workspace:*",
     "@heroui/react": "catalog:heroui-v3",
     "@orpc/contract": "catalog:orpc",
+    "@shikijs/stream": "catalog:ui",
     "@streamdown/cjk": "catalog:streamdown",
-    "@streamdown/code": "catalog:streamdown",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
     "border-beam": "catalog:ui",
     "lucide-react": "catalog:ui",
     "react": "catalog:react-is",
+    "shiki": "catalog:ui",
     "streamdown": "catalog:streamdown",
     "thinking-orbs": "catalog:ui",
     "zod": "catalog:",
