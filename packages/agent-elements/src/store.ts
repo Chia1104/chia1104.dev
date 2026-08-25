@@ -21,6 +21,11 @@ export type AgentConnection = "hydrating" | "idle" | "streaming";
 
 export type AgentRunStatus = AgentViewState["runStatus"];
 
+export interface ComposerSeed {
+  id: number;
+  text: string;
+}
+
 /**
  * The live side of a session: the folded transcript and the turn stream feeding it. Everything
  * the server owns and answers on request (detail, models, settings) lives in the query cache
@@ -37,10 +42,11 @@ export interface AgentSessionState {
   pendingPrompt: string | null;
   /**
    * Text handed to the composer to take over — a rewound prompt given back for editing. An
-   * event, not state: `id` grows with every hand-off, so the same text handed over twice is
-   * applied twice, and the composer keeps track of which id it has already taken.
+   * event, not state: `id` grows with every hand-off, and the composer keys its editor on it, so
+   * each hand-off is a fresh editor whose initial draft is this text — the same text handed over
+   * twice starts twice.
    */
-  composerSeed: { id: number; text: string } | null;
+  composerSeed: ComposerSeed | null;
   /**
    * A transport or request failure. Agent-side failures arrive as `error` wire events and live in
    * the transcript instead.
