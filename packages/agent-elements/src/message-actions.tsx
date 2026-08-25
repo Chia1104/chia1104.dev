@@ -71,7 +71,7 @@ export const MessageActions = ({
       {/* Remounted per opening (via `key`) so each dialog starts from its defaults. */}
       {role === "user" ? (
         <RewindDialog
-          key={pending === "rewind" ? "open" : "closed"}
+          key={pending === "rewind" ? "open-rewind" : "closed-rewind"}
           isOpen={pending === "rewind"}
           messageId={messageId}
           onClose={close}
@@ -79,7 +79,7 @@ export const MessageActions = ({
         />
       ) : null}
       <ForkDialog
-        key={pending === "fork" ? "open" : "closed"}
+        key={pending === "fork" ? "open-fork" : "closed-fork"}
         isOpen={pending === "fork"}
         messageId={messageId}
         onClose={close}
@@ -94,7 +94,11 @@ const ActionButton = ({
   label,
   onPress,
 }: {
-  icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  icon: ComponentType<{
+    className?: string;
+    "aria-hidden"?: boolean;
+    strokeWidth?: number;
+  }>;
   label: string;
   onPress: () => void;
 }) => (
@@ -102,12 +106,16 @@ const ActionButton = ({
     <Tooltip.Trigger>
       <Button
         aria-label={label}
-        className="size-6 min-w-6"
+        className="text-default-600 size-6 min-w-6"
         isIconOnly
         onPress={onPress}
         size="sm"
         variant="ghost">
-        <Icon aria-hidden className="size-3.5" />
+        <Icon
+          aria-hidden
+          className="text-default-600 stroke-default-600 size-3.5"
+          strokeWidth={1}
+        />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content placement="top">{label}</Tooltip.Content>

@@ -62,7 +62,7 @@ const MessageMeta = ({
         </time>
       ) : null}
       {text || actions ? (
-        <span className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <span className="flex items-center gap-0.5 transition-opacity group-hover:opacity-100 focus-within:opacity-100 md:opacity-0">
           {text ? (
             <CopyButton
               aria-label={labels.copy}
