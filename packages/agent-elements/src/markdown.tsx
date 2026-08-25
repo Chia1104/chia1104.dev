@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertDialog, Button } from "@heroui/react";
+import { AlertDialog, Button, Alert } from "@heroui/react";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { ExternalLink } from "lucide-react";
@@ -32,14 +32,13 @@ export const markdownComponents: Components = {
       {...props}
     />
   ),
-  blockquote: ({ className, node: _node, ...props }) => (
-    <blockquote
-      className={cn(
-        "border-border text-muted my-4 border-l-2 pl-4 italic",
-        className
-      )}
-      {...props}
-    />
+  blockquote: ({ node: _node, ...props }) => (
+    <Alert className="bg-surface-secondary gap-2 px-2.5 py-2">
+      <Alert.Indicator />
+      <Alert.Content>
+        <Alert.Description>{props.children}</Alert.Description>
+      </Alert.Content>
+    </Alert>
   ),
   hr: ({ className, node: _node, ...props }) => (
     <hr className={cn("border-border my-6", className)} {...props} />
