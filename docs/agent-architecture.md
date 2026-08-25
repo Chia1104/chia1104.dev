@@ -442,7 +442,11 @@ shares the guard. The guard is only as good as its ordering, so accepting a turn
 is started — the row's own id stands in for the workflow run id until `start` returns and the
 two are bound (`bindAgentRunExternalId`), and an unbound row older than a minute is treated as
 dead. Maintenance that takes the lock after a prompt therefore already sees a running turn, and a
-prompt that arrives during maintenance waits for its writes to land. Navigation returns the whole
+prompt that arrives during maintenance waits for its writes to land. Everything under the lock
+runs on the lock's own connection (the transaction's `tx`), so an operation never waits for a
+second pool connection while holding one. Marker writes and run completion address the row by
+its own id, carried into the workflow as `runId`: a step of a run that was cancelled and
+replaced can never reach the run that replaced it. Navigation returns the whole
 session detail, not just events, because
 changing the active branch invalidates every view the client held and the client folds a
 detail the same way it folds `get`.

@@ -82,6 +82,7 @@ describe("agentSessionWorkflow", () => {
     await expect(
       agentSessionWorkflow({
         sessionId: "session-1",
+        runId: "run-1",
         userId: "user-1",
         abortController: { id: "abort-1", runId: "abort-run-1" },
         firstMessage: {
@@ -99,6 +100,7 @@ describe("agentSessionWorkflow", () => {
     );
     expect(mocks.runTurn).toHaveBeenNthCalledWith(1, {
       sessionId: "session-1",
+      runId: "run-1",
       userId: "user-1",
       abortController: { id: "abort-1", runId: "abort-run-1" },
       text: "first",
@@ -108,6 +110,7 @@ describe("agentSessionWorkflow", () => {
     });
     expect(mocks.runTurn).toHaveBeenNthCalledWith(2, {
       sessionId: "session-1",
+      runId: "run-1",
       userId: "user-1",
       abortController: { id: "abort-1", runId: "abort-run-1" },
       text: "/translate zh-TW",
@@ -115,7 +118,7 @@ describe("agentSessionWorkflow", () => {
       preAuthorizeToolNames: undefined,
       credentials: { openai: "rotated" },
     });
-    expect(mocks.completeRun).toHaveBeenCalledWith("session-1", {
+    expect(mocks.completeRun).toHaveBeenCalledWith("run-1", {
       id: "abort-1",
       runId: "abort-run-1",
     });
@@ -129,6 +132,7 @@ describe("agentSessionWorkflow", () => {
     await expect(
       agentSessionWorkflow({
         sessionId: "session-1",
+        runId: "run-1",
         userId: "user-1",
         abortController: { id: "abort-1", runId: "abort-run-1" },
         firstMessage: { text: "first" },

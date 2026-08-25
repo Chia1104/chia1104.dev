@@ -33,7 +33,7 @@ import {
   getActiveAgentRun,
   getAgentApprovals,
   getAgentSession,
-  patchActiveAgentRunMetadata,
+  patchAgentRunMetadata,
   softDeleteAgentSession,
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
@@ -144,6 +144,15 @@ export const createAgentKindService = <TState>(
   };
 
   type OwnedSession = NonNullable<Awaited<ReturnType<typeof loadOwnedSession>>>;
+
+  /**
+   * The caller with its database handle swapped for the lock's transaction, so everything an
+   * operation does under `withAgentSessionLock` runs on the lock's own connection.
+   */
+  const withDb = (caller: AgentServiceCaller, db: DB): AgentServiceCaller => ({
+    ...caller,
+    context: { ...caller.context, db },
+  });
 
   const settingsOf = (row: {
     id: string;
@@ -292,13 +301,15 @@ export const createAgentKindService = <TState>(
     row: OwnedSession,
     startIndex: number
   ): Promise<void> => {
-    if (row.turn?.running) return;
+    if (!row.activeRunId || row.turn?.running) return;
     const turn: AgentTurnMarker = {
       leafEntryId: row.leafEntryId,
       streamIndex: startIndex,
       running: true,
     };
-    await patchActiveAgentRunMetadata(db, row.id, { [AGENT_TURN_KEY]: turn });
+    await patchAgentRunMetadata(db, row.activeRunId, {
+      [AGENT_TURN_KEY]: turn,
+    });
   };
 
   /**
@@ -610,9 +621,10 @@ export const createAgentKindService = <TState>(
      * The whole step holds the session lock, so maintenance can neither slip in between the turn
      * being accepted and its marker being visible, nor be mid-mutation when the turn starts.
      */
-    prompt: (caller, input) =>
-      withAgentSessionLock(caller.context.db, input.sessionId, async () => {
-        const db = caller.context.db;
+    prompt: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const db = tx;
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) throw new Error(`Unknown agent session: ${input.sessionId}`);
 
@@ -700,6 +712,7 @@ export const createAgentKindService = <TState>(
           run = await start(agentSessionWorkflow, [
             {
               sessionId: input.sessionId,
+              runId,
               userId: caller.userId,
               abortController,
               firstMessage: message,
@@ -836,9 +849,10 @@ export const createAgentKindService = <TState>(
     },
 
     /** The decision starts a relay turn, so it is accepted under the session lock like a prompt. */
-    approve: (caller, input) =>
-      withAgentSessionLock(caller.context.db, input.sessionId, async () => {
-        const db = caller.context.db;
+    approve: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const db = tx;
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row?.workflowRunId) return null;
 
@@ -873,21 +887,23 @@ export const createAgentKindService = <TState>(
         return { runId: row.workflowRunId, startIndex };
       }),
 
-    compact: (caller, input) =>
-      withAgentSessionLock(caller.context.db, input.sessionId, async () => {
+    compact: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) return null;
-        await assertMaintainable(row, caller.context.db, "compact");
+        await assertMaintainable(row, tx, "compact");
 
         const maintenance = await maintenanceFor(caller, row);
         return await maintenance.compact(input.customInstructions);
       }),
 
-    navigate: (caller, input) =>
-      withAgentSessionLock(caller.context.db, input.sessionId, async () => {
+    navigate: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) return null;
-        await assertMaintainable(row, caller.context.db, "rewind");
+        await assertMaintainable(row, tx, "rewind");
 
         const maintenance = await maintenanceFor(caller, row);
         await requireEntry(maintenance.session, input.entryId);
@@ -899,11 +915,12 @@ export const createAgentKindService = <TState>(
         return detailFor(caller, input.sessionId);
       }),
 
-    fork: (caller, input) =>
-      withAgentSessionLock(caller.context.db, input.sessionId, async () => {
+    fork: (outer, input) =>
+      withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
+        const caller = withDb(outer, tx);
+        const db = tx;
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) return null;
-        const db = caller.context.db;
         await assertMaintainable(row, db, "fork");
 
         const repo = repoFor(db);

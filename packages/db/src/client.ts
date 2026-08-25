@@ -1,5 +1,6 @@
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import type { NodePgQueryResultHKT } from "drizzle-orm/node-postgres";
 import { drizzle } from "drizzle-orm/node-postgres";
+import type { PgAsyncDatabase } from "drizzle-orm/pg-core";
 import { withReplicas } from "drizzle-orm/pg-core";
 
 import { switchEnv } from "@chia/utils/config";
@@ -7,7 +8,12 @@ import { switchEnv } from "@chia/utils/config";
 import { env as internalEnv } from "./env.ts";
 import { relations } from "./schemas/relations.ts";
 
-export type DB = NodePgDatabase<typeof relations>;
+/**
+ * The query surface repositories take. The driver's database *and* its transactions satisfy it,
+ * so work that must run inside a transaction (see `withAgentSessionLock`) reuses the same
+ * repositories on `tx`; nothing here reaches for the driver client.
+ */
+export type DB = PgAsyncDatabase<NodePgQueryResultHKT, typeof relations>;
 
 const connections = new Map<string, Promise<DB>>();
 

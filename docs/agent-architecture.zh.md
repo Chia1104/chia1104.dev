@@ -397,7 +397,10 @@ compaction 共用同一個 guard。Guard 的可靠度取決於順序，所以接
 而新 run 的 `agent.run` row 會在 workflow 啟動**之前**就寫下——在 `start` 回來並綁定
 （`bindAgentRunExternalId`）之前，row 自己的 id 先代替 workflow run id；超過一分鐘還沒綁定的
 row 視為死掉。因此在 prompt 之後拿到鎖的 maintenance 一定已經看到 running 的 turn，而在
-maintenance 期間到達的 prompt 會等它的寫入完成。Navigation 回傳的是整份 session detail 而不只是
+maintenance 期間到達的 prompt 會等它的寫入完成。鎖裡的所有工作都走鎖所在的那條連線
+（transaction 的 `tx`），所以一個操作不會在持鎖時又去等第二條 pool 連線。Marker 寫入與 run 的
+完成都以 row 自己的 id 定址，這個 id 以 `runId` 帶進 workflow：被取消又被取代的 run，它的 step
+永遠碰不到取代它的那個 run。Navigation 回傳的是整份 session detail 而不只是
 events，因為
 active branch 改變後 client 手上的 view 全部失效，而 client fold 一份 detail 的方式跟 fold `get`
 一模一樣。

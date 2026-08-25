@@ -214,13 +214,14 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
   });
 
 /**
- * Shallow-merges `patch` into the session's active run's `metadata`; keys already present are
- * overwritten. Addressed by session rather than by workflow run id because the row exists before
- * the workflow does (see `bindAgentRunExternalId`), and there is one active run per session.
+ * Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten.
+ * Addressed by the row's own id, which is fixed from creation, rather than by workflow run id
+ * (bound later, see `bindAgentRunExternalId`) or by session (a late writer from a cancelled run
+ * must never touch the run that replaced it).
  */
-export const patchActiveAgentRunMetadata = async (
+export const patchAgentRunMetadata = async (
   db: DB,
-  sessionId: string,
+  runId: string,
   patch: JsonObject
 ) => {
   await db
@@ -228,9 +229,7 @@ export const patchActiveAgentRunMetadata = async (
     .set({
       metadata: sql`${agentRuns.metadata} || ${JSON.stringify(patch)}::jsonb`,
     })
-    .where(
-      and(eq(agentRuns.sessionId, sessionId), eq(agentRuns.status, "active"))
-    );
+    .where(eq(agentRuns.id, runId));
 };
 
 /** Points a run row written ahead of its workflow at the run the workflow backend then created. */
@@ -247,20 +246,22 @@ export const bindAgentRunExternalId = async (
 
 /**
  * Runs `fn` while holding the session's advisory lock, so enqueueing a turn and maintenance on
- * the tree (compact, rewind, fork) never interleave. The lock lives on the transaction's own
- * connection; `fn` keeps using `db` for its work, so nothing it does has to be inside the
- * transaction — the transaction exists only to scope the lock.
+ * the tree (compact, rewind, fork) never interleave. The lock lives on the transaction's
+ * connection, and `fn` must do all of its database work through the `tx` it is handed: an
+ * operation then holds exactly one pool connection for its whole duration, so under load the
+ * pool queues rather than deadlocks — lock holders waiting for a second connection that other
+ * lock holders are keeping.
  */
 export const withAgentSessionLock = <T>(
   db: DB,
   sessionId: string,
-  fn: () => Promise<T>
+  fn: (tx: DB) => Promise<T>
 ): Promise<T> =>
   db.transaction(async (tx) => {
     await tx.execute(
       sql`select pg_advisory_xact_lock(hashtext(${`agent.session:${sessionId}`}))`
     );
-    return await fn();
+    return await fn(tx);
   });
 
 export const completeAgentRun = async (
@@ -272,19 +273,6 @@ export const completeAgentRun = async (
     .update(agentRuns)
     .set({ status, endedAt: new Date() })
     .where(eq(agentRuns.id, runId));
-};
-
-export const completeActiveAgentRuns = async (
-  db: DB,
-  sessionId: string,
-  status: Exclude<AgentRunStatus, "active">
-) => {
-  await db
-    .update(agentRuns)
-    .set({ status, endedAt: new Date() })
-    .where(
-      and(eq(agentRuns.sessionId, sessionId), eq(agentRuns.status, "active"))
-    );
 };
 
 // ============================================
