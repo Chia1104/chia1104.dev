@@ -131,7 +131,6 @@ export const truncate = (text: string, maxChars: number) => {
 
 /** Tool results are parsed before a transcript summarizer reads their structured fields. */
 const jsonRecordSchema = z.record(z.string(), z.json());
-const jsonArraySchema = z.array(z.json());
 const textContentSchema = z.object({ text: z.string().optional() }).loose();
 const summarizedToolResultSchema = z
   .object({
@@ -139,18 +138,6 @@ const summarizedToolResultSchema = z
     details: jsonRecordSchema.optional(),
   })
   .loose();
-
-export const asRecord = <TValue>(value: TValue) =>
-  jsonRecordSchema.safeParse(value).data;
-
-export const asArray = <TValue>(value: TValue) =>
-  jsonArraySchema.safeParse(value).data;
-
-export const asString = <TValue>(value: TValue) =>
-  z.string().safeParse(value).data;
-
-export const asNumber = <TValue>(value: TValue) =>
-  z.number().safeParse(value).data;
 
 /** The `details` a tool returned, from either the live or the persisted result shape. */
 export const toolResultDetails = <TResult>(result: TResult) =>

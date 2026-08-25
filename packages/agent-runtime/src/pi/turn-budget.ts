@@ -1,15 +1,10 @@
-import * as z from "zod";
-
-import type { JsonValue } from "@chia/utils/json";
+import { asJsonValue, stableStringify } from "@chia/utils/json";
 
 import type {
   AgentTurnBudget,
   ToolCallRefusal,
   ToolCallRequest,
 } from "../types.ts";
-
-const jsonValueSchema: z.ZodType<JsonValue> = z.json();
-const jsonObjectSchema = z.record(z.string(), jsonValueSchema);
 
 /**
  * Per-turn tool-call budget, composed into the same Pi `beforeToolCall` hook as the approval gate.
@@ -39,24 +34,10 @@ export interface PiTurnBudget {
   readonly toolCalls: number;
 }
 
-/**
- * Canonical form of a call for repeat detection: key order must not matter, because the model
- * does not emit arguments in a stable order.
- */
-const canonical = (value: JsonValue): string => {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-  const record = jsonObjectSchema.safeParse(value).data;
-  if (record === undefined) return JSON.stringify(value);
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(record[key] ?? null)}`)
-    .join(",")}}`;
-};
-
 /** Tool arguments arrived from the provider as JSON; anything else has no stable identity. */
 const callIdentity = (event: ToolCallRequest): string => {
-  const input = jsonValueSchema.safeParse(event.input).data;
-  return `${event.toolName} ${input === undefined ? event.toolCallId : canonical(input)}`;
+  const input = asJsonValue(event.input);
+  return `${event.toolName} ${input === undefined ? event.toolCallId : stableStringify(input)}`;
 };
 
 /** Node clamps longer timer delays to 1ms, which would fire the deadline at once. */

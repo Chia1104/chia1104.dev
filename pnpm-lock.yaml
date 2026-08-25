@@ -1088,6 +1088,9 @@ importers:
       '@chia/db':
         specifier: workspace:*
         version: link:../db
+      '@chia/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@earendil-works/pi-agent-core':
         specifier: catalog:agent
         version: 0.84.3(supports-color@10.2.2)(ws@8.21.3)(zod@4.4.3)

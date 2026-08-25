@@ -460,9 +460,10 @@ That tool is the only read path — Pi's own convention of reading `SKILL.md` fr
 tool behind it here — and it leaves a tool call in the thread, so the operator can see which rules
 were consulted.
 
-The draft store's merge semantics (`undefined` leaves a field alone, `null` clears it) live once in
-`draft/operations.ts`; both `PgDraftStore` and `InMemoryDraftStore` go through it, so the store the
-tests run against cannot diverge from the one production uses.
+The draft store's merge policy (`undefined` leaves a field alone, `null` clears it) is applied once
+in `draft/operations.ts` through `@chia/utils/object`'s `mergeDefined`; both `PgDraftStore` and
+`InMemoryDraftStore` go through it, so the store the tests run against cannot diverge from the one
+production uses.
 
 There is no in-process conversational state. The process-level kind-to-service map contains only
 implementations; all mutable state is durable:

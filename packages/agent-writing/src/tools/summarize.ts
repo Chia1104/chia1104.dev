@@ -1,11 +1,6 @@
 import { summarizeContentToolResult } from "@chia/agent-content/tools/summarize";
-import {
-  asArray,
-  asNumber,
-  asString,
-  toolErrorText,
-  toolResultDetails,
-} from "@chia/agent-runtime/tools";
+import { toolErrorText, toolResultDetails } from "@chia/agent-runtime/tools";
+import { asJsonArray, asNumber, asString } from "@chia/utils/json";
 
 import { TOOL_NAMES } from "./registry.ts";
 
@@ -57,7 +52,7 @@ export const summarizeToolResult = <TResult>(
       return "Read draft metadata.";
     }
     case TOOL_NAMES.patchDraftMeta: {
-      const warnings = asArray(details.warnings);
+      const warnings = asJsonArray(details.warnings);
       const locale = asString(details.locale);
       const scope = locale ? `${locale} metadata` : "Metadata";
       return warnings && warnings.length > 0
