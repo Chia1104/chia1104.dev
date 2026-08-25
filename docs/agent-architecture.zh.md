@@ -371,7 +371,9 @@ Maintenance 直接操作 session tree，不建立 `Agent`：
 - `navigatePiSession` 搬 leaf（目標是 user message 時搬到它的 parent，讓它可以重問），需要時
   用 Pi 的 `generateBranchSummary` 把被丟下的 entries 總結成新 leaf 底下的 `branch_summary`，
   label 則記錄下來但不讓 leaf 停在 label 上；
-- fork（`PgSessionRepo.fork`）把目標以下的 branch 複製到新的 session row；
+- fork（`PgSessionRepo.fork`）複製到新的 session row：沒指定目標時複製整棵樹並沿用來源的 leaf；
+  指定目標時複製目標以下、從最近一次 compaction 起的 branch——`at` 包含目標，`before`（僅限
+  user message）停在它的 parent，讓那句話可以重問；
 - writing wrappers 只透過 writing allowlist resolve model，再呼叫上述 operation。
 
 Maintenance 不建立 tools、prompts、approval 或 subscriptions。Manual compact

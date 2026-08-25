@@ -267,6 +267,23 @@ export const appendAgentSessionEntry = async (
   await db.insert(agentSessionEntries).values(input);
 };
 
+/**
+ * Appends an entry and makes it the session's active leaf in one transaction, so a failure
+ * between the two writes can never leave an entry outside every branch.
+ */
+export const appendAgentSessionEntryAsLeaf = async (
+  db: DB,
+  input: InsertAgentSessionEntryDTO
+) => {
+  await db.transaction(async (tx) => {
+    await tx.insert(agentSessionEntries).values(input);
+    await tx
+      .update(agentSessions)
+      .set({ leafEntryId: input.id })
+      .where(eq(agentSessions.id, input.sessionId));
+  });
+};
+
 export const getAgentSessionEntry = async (
   db: DB,
   sessionId: string,

@@ -63,10 +63,12 @@ const compactBranch = async (
   if (!compacted.ok) throw compacted.error;
   const result = compacted.value;
 
+  // Parented under the leaf of the branch that was summarised, not the leaf re-read afterwards:
+  // the compaction's ancestors must be exactly what its summary covers.
   const entry: CompactionEntry = {
     type: "compaction",
     id: session.newEntryId(),
-    parentId: await session.getLeafId(),
+    parentId: branch.at(-1)?.id ?? null,
     timestamp: Date.now(),
     summary: result.summary,
     tokensBefore: result.tokensBefore,

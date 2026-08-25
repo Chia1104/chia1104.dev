@@ -2,17 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import {
-  appendAgentSessionEntry,
+  appendAgentSessionEntryAsLeaf,
   createAgentSession,
   getAgentSession,
   getAgentSessionEntries,
   getAgentSessionEntry,
+  updateAgentSession,
 } from "@chia/db/repos/agent";
 
 import { PgSessionRepo } from "../src/session/pg-repo.ts";
 
 vi.mock("@chia/db/repos/agent", () => ({
-  appendAgentSessionEntry: vi.fn(),
+  appendAgentSessionEntryAsLeaf: vi.fn(),
   createAgentSession: vi.fn(),
   getAgentSession: vi.fn(),
   getAgentSessions: vi.fn(),
@@ -102,12 +103,15 @@ describe("PgSessionRepo.fork", () => {
     );
     expect(
       vi
-        .mocked(appendAgentSessionEntry)
+        .mocked(appendAgentSessionEntryAsLeaf)
         .mock.calls.map(([, input]) => [input.id, input.sessionId])
     ).toEqual([
       ["u1", "fork-1"],
       ["a1", "fork-1"],
     ]);
+    // A branch fork ends on its last copied entry; nothing moves the leaf afterwards.
+    expect(vi.mocked(updateAgentSession)).not.toHaveBeenCalled();
+    expect(vi.mocked(getAgentSession)).toHaveBeenCalledOnce();
   });
 
   it("copies through the target when forking at it", async () => {
@@ -117,7 +121,9 @@ describe("PgSessionRepo.fork", () => {
     );
 
     expect(
-      vi.mocked(appendAgentSessionEntry).mock.calls.map(([, input]) => input.id)
+      vi
+        .mocked(appendAgentSessionEntryAsLeaf)
+        .mock.calls.map(([, input]) => input.id)
     ).toEqual(["u1", "a1"]);
   });
 
@@ -127,11 +133,26 @@ describe("PgSessionRepo.fork", () => {
     ).rejects.toThrow("is not a user message");
   });
 
-  it("copies every entry when no target is given", async () => {
+  it("copies every entry and the source's leaf when no target is given", async () => {
+    // The source was rewound: its leaf is not its newest entry.
+    vi.mocked(getAgentSession).mockResolvedValue(
+      /* SAFETY: This fixture implements the session row members exercised by this case. */ {
+        ...sessionRow,
+        leafEntryId: "a1",
+      } as never
+    );
+
     await repo().fork({ id: "session-1" }, { id: "fork-1" });
 
     expect(
-      vi.mocked(appendAgentSessionEntry).mock.calls.map(([, input]) => input.id)
+      vi
+        .mocked(appendAgentSessionEntryAsLeaf)
+        .mock.calls.map(([, input]) => input.id)
     ).toEqual(["u1", "a1", "u2", "a2"]);
+    expect(vi.mocked(updateAgentSession)).toHaveBeenLastCalledWith(
+      db,
+      "fork-1",
+      { leafEntryId: "a1" }
+    );
   });
 });

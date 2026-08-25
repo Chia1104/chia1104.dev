@@ -2,7 +2,7 @@ import { uuidv7 } from "@earendil-works/pi-ai";
 
 import type { DB } from "@chia/db/client";
 import {
-  appendAgentSessionEntry,
+  appendAgentSessionEntryAsLeaf,
   getAgentSession,
   getAgentSessionEntries,
   getAgentSessionEntriesByType,
@@ -72,9 +72,10 @@ export class PgSessionStorage implements SessionTree {
     return uuidv7();
   }
 
+  /** The insert and the leaf advance are one transaction: an entry is never left outside every branch. */
   async appendEntry(entry: SessionEntry): Promise<void> {
     const { id, parentId, timestamp, type, ...payload } = entry;
-    await appendAgentSessionEntry(this.db, {
+    await appendAgentSessionEntryAsLeaf(this.db, {
       id,
       sessionId: this.id,
       parentId: parentId ?? null,
@@ -83,10 +84,6 @@ export class PgSessionStorage implements SessionTree {
       payload: payload as JsonObject,
       timestamp: new Date(timestamp),
     });
-
-    // getBranch() starts from this cursor, so leaving it behind makes a persisted transcript look
-    // empty after the process is recreated.
-    await this.setLeafId(id);
   }
 
   async getEntry(id: string): Promise<SessionEntry | undefined> {
@@ -140,11 +137,8 @@ export class PgSessionStorage implements SessionTree {
     return walkBranch(entries, leafId);
   }
 
-  async getEntries(options?: {
-    afterSeq?: number;
-    limit?: number;
-  }): Promise<SessionEntry[]> {
-    const rows = await getAgentSessionEntries(this.db, this.id, options);
+  async getEntries(): Promise<SessionEntry[]> {
+    const rows = await getAgentSessionEntries(this.db, this.id);
     return rows.map(toEntry);
   }
 }

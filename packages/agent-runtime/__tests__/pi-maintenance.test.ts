@@ -1,4 +1,5 @@
 import { createModels } from "@earendil-works/pi-ai";
+import type { Context } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxProvider,
@@ -121,6 +122,44 @@ describe("navigatePiSession", () => {
     });
     await expect(session.getLeafId()).resolves.toBe(summary?.id);
     expect(faux.getPendingResponseCount()).toBe(0);
+  });
+
+  it("finds the common ancestor across a compaction so shared history is not summarised", async () => {
+    const { faux, session, options } = await build();
+    // u1 → a1 → c1 (compaction) → u3 → a3, then rewind to u1 with a summary.
+    await navigatePiSession(options, "a1", {});
+    await session.appendEntry({
+      type: "compaction",
+      id: "c1",
+      parentId: "a1",
+      timestamp: 3,
+      summary: "The first exchange, condensed.",
+      tokensBefore: 10,
+      retainedTail: [],
+    });
+    await session.appendEntry(user("u3", "c1", "Third question"));
+    await session.appendEntry(assistant("a3", "u3", "Third answer"));
+    const seen: Context[] = [];
+    faux.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("They went past the compaction.");
+      },
+    ]);
+
+    await navigatePiSession(options, "u1", { summarize: true });
+
+    const summarised = JSON.stringify(seen[0]?.messages);
+    expect(summarised).toContain("Third answer");
+    expect(summarised).toContain("The first exchange, condensed.");
+    // u1 is the target's own entry — an ancestor of both paths — and must not be summarised.
+    expect(summarised).not.toContain("First question");
+    const leaf = (await session.getBranch()).at(-1);
+    expect(leaf).toMatchObject({
+      type: "branch_summary",
+      parentId: null,
+      fromId: "root",
+    });
   });
 
   it("rejects an unknown target", async () => {

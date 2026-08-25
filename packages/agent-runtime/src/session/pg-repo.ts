@@ -100,21 +100,28 @@ export class PgSessionRepo {
   async open(
     metadata: Pick<PgSessionMetadata, "id">
   ): Promise<PgSessionStorage> {
-    const row = await getAgentSession(this.db, metadata.id);
+    const { session } = await this.load(metadata.id);
+    return session;
+  }
+
+  /** The row and its tree together; `fork` needs both and must not read the row twice. */
+  private async load(sessionId: string) {
+    const row = await getAgentSession(this.db, sessionId);
     if (!row) {
-      throw new SessionNotFoundError(`Session not found: ${metadata.id}`);
+      throw new SessionNotFoundError(`Session not found: ${sessionId}`);
     }
     if (row.kind !== this.options.kind) {
       throw new SessionNotFoundError(
-        `Session ${metadata.id} belongs to agent kind "${row.kind}", not "${this.options.kind}"`
+        `Session ${sessionId} belongs to agent kind "${row.kind}", not "${this.options.kind}"`
       );
     }
-    return new PgSessionStorage(this.db, {
+    const session = new PgSessionStorage(this.db, {
       id: row.id,
       createdAt: row.createdAt.toISOString(),
       userId: row.userId,
       kind: row.kind,
     });
+    return { row, session };
   }
 
   /** Opens by id — what the transport actually holds, without a metadata round-trip. */
@@ -148,13 +155,8 @@ export class PgSessionRepo {
     source: Pick<PgSessionMetadata, "id">,
     options: PgSessionForkOptions
   ): Promise<PgSessionStorage> {
-    const original = await this.open(source);
+    const { row: sourceRow, session: original } = await this.load(source.id);
     const entries = await entriesToFork(original, options);
-
-    const sourceRow = await getAgentSession(this.db, source.id);
-    if (!sourceRow) {
-      throw new SessionNotFoundError(`Session not found: ${source.id}`);
-    }
 
     const forked = await this.create({
       id: options.id,
@@ -163,18 +165,22 @@ export class PgSessionRepo {
       settings: options.settings ?? settingsFromRow(sourceRow),
     });
 
-    // appendEntry advances the leaf, so the last copied entry is the fork's leaf.
+    // appendEntry advances the leaf, so a branch fork ends on its last copied entry.
     for (const entry of entries) {
       await forked.appendEntry(entry);
     }
+    // A whole-tree fork copies every branch in insertion order; the newest entry is not the
+    // active one when the source was rewound, so the fork takes the source's leaf explicitly.
+    if (!options.entryId) await forked.setLeafId(sourceRow.leafEntryId);
 
     return forked;
   }
 }
 
 /**
- * The prefix a fork copies: the branch below `entryId`, from the newest compaction down. `before`
- * only makes sense on a user message, whose parent becomes the effective leaf.
+ * What a fork copies: the whole tree when no target is given, otherwise the branch below
+ * `entryId` from the newest compaction down. `before` only makes sense on a user message, whose
+ * parent becomes the effective leaf.
  */
 const entriesToFork = async (
   session: PgSessionStorage,

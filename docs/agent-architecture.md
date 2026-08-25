@@ -407,7 +407,9 @@ Maintenance operates on the session tree directly; no `Agent` is built:
   message, so it can be re-asked), summarises the entries left behind into a `branch_summary`
   under the new leaf with Pi's `generateBranchSummary` when asked, and records a label without
   moving the leaf onto it;
-- forks (`PgSessionRepo.fork`) copy the branch below the target into a new session row;
+- forks (`PgSessionRepo.fork`) copy into a new session row: the whole tree with the source's leaf when
+  no target is given; otherwise the branch below the target, from the newest compaction down —
+  `at` includes the target, `before` (a user message only) stops at its parent so it can be re-asked;
 - writing wrappers resolve the model through the writing allowlist, then call those operations.
 
 No tools, prompts, approvals or subscriptions are constructed for maintenance.

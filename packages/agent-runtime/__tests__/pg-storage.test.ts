@@ -3,17 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DB } from "@chia/db/client";
 import {
-  appendAgentSessionEntry,
+  appendAgentSessionEntryAsLeaf,
   getAgentSession,
   getAgentSessionEntries,
-  updateAgentSession,
 } from "@chia/db/repos/agent";
 
 import type { SessionEntry } from "../src/session/entries.ts";
 import { PgSessionStorage } from "../src/session/pg-storage.ts";
 
 vi.mock("@chia/db/repos/agent", () => ({
-  appendAgentSessionEntry: vi.fn(),
+  appendAgentSessionEntryAsLeaf: vi.fn(),
   getAgentSession: vi.fn(),
   getAgentSessionEntries: vi.fn(),
   getAgentSessionEntriesByType: vi.fn(),
@@ -21,10 +20,9 @@ vi.mock("@chia/db/repos/agent", () => ({
   updateAgentSession: vi.fn(),
 }));
 
-const appendEntryMock = vi.mocked(appendAgentSessionEntry);
+const appendEntryMock = vi.mocked(appendAgentSessionEntryAsLeaf);
 const getSessionMock = vi.mocked(getAgentSession);
 const getEntriesMock = vi.mocked(getAgentSessionEntries);
-const updateSessionMock = vi.mocked(updateAgentSession);
 
 const usage = ({
   cacheRead = 0,
@@ -79,7 +77,7 @@ describe("PgSessionStorage", () => {
     vi.clearAllMocks();
   });
 
-  it("advances the active leaf after appending an entry", async () => {
+  it("appends an entry and advances the leaf in one write", async () => {
     const db =
       /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
     const storage = new PgSessionStorage(db, {
@@ -99,6 +97,7 @@ describe("PgSessionStorage", () => {
 
     await storage.appendEntry(entry);
 
+    expect(appendEntryMock).toHaveBeenCalledOnce();
     expect(appendEntryMock).toHaveBeenCalledWith(db, {
       id: "entry-1",
       sessionId: "session-1",
@@ -107,12 +106,6 @@ describe("PgSessionStorage", () => {
       payload: { targetId: "entry-0", label: "Start" },
       timestamp: new Date("2026-07-27T00:00:01.000Z"),
     });
-    expect(updateSessionMock).toHaveBeenCalledWith(db, "session-1", {
-      leafEntryId: "entry-1",
-    });
-    expect(appendEntryMock.mock.invocationCallOrder[0]).toBeLessThan(
-      updateSessionMock.mock.invocationCallOrder[0] ?? 0
-    );
   });
 
   it("recovers the leaf from a legacy flat entry sequence", async () => {

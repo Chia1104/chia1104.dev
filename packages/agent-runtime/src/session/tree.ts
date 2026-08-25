@@ -19,10 +19,7 @@ export interface SessionTree {
   appendEntry(entry: SessionEntry): Promise<void>;
   getEntry(id: string): Promise<SessionEntry | undefined>;
   /** Every entry in insertion order, all branches. */
-  getEntries(options?: {
-    afterSeq?: number;
-    limit?: number;
-  }): Promise<SessionEntry[]>;
+  getEntries(): Promise<SessionEntry[]>;
   findEntries<TType extends SessionEntry["type"]>(
     type: TType
   ): Promise<Extract<SessionEntry, { type: TType }>[]>;
@@ -112,15 +109,8 @@ export class InMemorySessionTree implements SessionTree {
     return Promise.resolve(this.entries.find((entry) => entry.id === id));
   }
 
-  getEntries(options?: {
-    afterSeq?: number;
-    limit?: number;
-  }): Promise<SessionEntry[]> {
-    const from = options?.afterSeq ?? 0;
-    const slice = this.entries.slice(from);
-    return Promise.resolve(
-      options?.limit ? slice.slice(0, options.limit) : slice
-    );
+  getEntries(): Promise<SessionEntry[]> {
+    return Promise.resolve([...this.entries]);
   }
 
   findEntries<TType extends SessionEntry["type"]>(

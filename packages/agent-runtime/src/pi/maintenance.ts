@@ -23,11 +23,13 @@ export interface PiSessionOperationOptions {
   settings: AgentSessionSettings;
   model: Model<Api>;
   models: Models;
+  /** Cancels the summary request; the tree is untouched when it fires. */
+  signal?: AbortSignal;
 }
 
 /** Runs Pi's compaction over the session tree; no tools, prompts or subscriptions are built. */
 export const compactPiSession = async (
-  { session, settings, model, models }: PiSessionOperationOptions,
+  { session, settings, model, models, signal }: PiSessionOperationOptions,
   customInstructions?: string
 ): Promise<AgentCompactionResult> => {
   const result = await compactSession({
@@ -36,6 +38,7 @@ export const compactPiSession = async (
     model,
     thinkingLevel: clampSessionThinkingLevel(model, settings),
     customInstructions,
+    signal,
   });
   if (!result) throw new Error("Nothing to compact");
   return result;
@@ -46,7 +49,7 @@ export const compactPiSession = async (
  * `branch_summary` entry under the new leaf and labelling the target.
  */
 export const navigatePiSession = async (
-  { session, model, models }: PiSessionOperationOptions,
+  { session, model, models, signal }: PiSessionOperationOptions,
   entryId: string,
   options: AgentNavigationOptions
 ): Promise<AgentNavigationResult> => {
@@ -65,7 +68,7 @@ export const navigatePiSession = async (
         /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; summarisation reads only messages. */ contextEntries(
           entries
         ) as never,
-        { models, model, signal: new AbortController().signal }
+        { models, model, signal: signal ?? new AbortController().signal }
       );
       if (!generated.ok) {
         if (generated.error.code === "aborted") return { cancelled: true };
@@ -119,33 +122,37 @@ export const navigatePiSession = async (
   return { cancelled: false };
 };
 
-/** The entries from the old leaf back to its common ancestor with the target, root-first. */
+/**
+ * The entries from the old leaf back to its common ancestor with the target, root-first.
+ *
+ * Walks full parent chains rather than branches: a branch stops at a compaction, and a rewind
+ * across one must still find the ancestor the two paths share instead of summarising it too.
+ */
 const entriesLeftBehind = async (
   session: SessionTree,
   oldLeafId: string | null,
   targetId: string
 ): Promise<SessionEntry[]> => {
   if (!oldLeafId) return [];
-  const oldPath = new Set(
-    (await session.getBranch(oldLeafId)).map((entry) => entry.id)
+  const byId = new Map(
+    (await session.getEntries()).map((entry) => [entry.id, entry])
   );
-  const targetPath = await session.getBranch(targetId);
-  let commonAncestorId: string | null = null;
-  for (let index = targetPath.length - 1; index >= 0; index -= 1) {
-    const id = targetPath[index]?.id;
-    if (id && oldPath.has(id)) {
-      commonAncestorId = id;
-      break;
-    }
+  const targetAncestors = new Set<string>();
+  for (let cursor: string | null = targetId; cursor;) {
+    if (targetAncestors.has(cursor)) break;
+    targetAncestors.add(cursor);
+    cursor = byId.get(cursor)?.parentId ?? null;
   }
 
   const entries: SessionEntry[] = [];
-  let current: string | null = oldLeafId;
-  while (current && current !== commonAncestorId) {
-    const entry = await session.getEntry(current);
-    if (!entry) throw new Error(`Entry ${current} not found`);
+  for (
+    let cursor: string | null = oldLeafId;
+    cursor && !targetAncestors.has(cursor);
+  ) {
+    const entry = byId.get(cursor);
+    if (!entry) throw new Error(`Entry ${cursor} not found`);
     entries.push(entry);
-    current = entry.parentId;
+    cursor = entry.parentId;
   }
   return entries.reverse();
 };
