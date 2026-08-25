@@ -225,6 +225,30 @@ describe("runPiTurn", () => {
     ]);
   });
 
+  it("names wire messages by the entry ids the tree persists them under", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("search", { q: "typescript" }, "call-1"),
+      fauxAssistantMessage("Found it."),
+    ]);
+
+    await fixture.run();
+
+    const branch = await fixture.branch();
+    const wireIds = fixture.events.flatMap((event) =>
+      event.type === "user" || event.type === "assistant:end"
+        ? [event.messageId]
+        : []
+    );
+    // user, assistant, (toolResult has no wire id), assistant — live ids are entry ids, so the
+    // replayed transcript names the same messages identically and any of them can be a target.
+    expect(wireIds).toEqual([branch[0]?.id, branch[1]?.id, branch[3]?.id]);
+    const startIds = fixture.events.flatMap((event) =>
+      event.type === "assistant:start" ? [event.messageId] : []
+    );
+    expect(startIds).toEqual([branch[1]?.id, branch[3]?.id]);
+  });
+
   it("announces approval requests as they are refused and persists them atomically at the end", async () => {
     const fixture = build();
     fixture.persistApprovals.mockImplementation(async () => {

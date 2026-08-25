@@ -1,4 +1,5 @@
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
+import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 
 import {
   agentCallerOf,
@@ -201,12 +202,18 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
 // Session maintenance
 // ============================================
 
+/**
+ * Maintenance mutates the tree, so the service refuses it with an `AppError` while a turn runs or
+ * an approval is undecided; `withORPCErrors` turns that into the `CONFLICT` these contracts declare.
+ */
 export const compactAgentSessionRoute = contractOS.agent.sessions.compact
   .use(resolveCaller)
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
-    const result = await service.compact(caller, opts.input);
+    const result = await withORPCErrors(() =>
+      service.compact(caller, opts.input)
+    );
     if (!result) throw opts.errors.NOT_FOUND();
     return result;
   });
@@ -216,9 +223,21 @@ export const navigateAgentSessionRoute = contractOS.agent.sessions.navigate
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
-    const result = await service.navigate(caller, opts.input);
-    if (!result) throw opts.errors.NOT_FOUND();
-    return result;
+    const detail = await withORPCErrors(() =>
+      service.navigate(caller, opts.input)
+    );
+    if (!detail) throw opts.errors.NOT_FOUND();
+    return detail;
+  });
+
+export const forkAgentSessionRoute = contractOS.agent.sessions.fork
+  .use(resolveCaller)
+  .use(agentSessionGuard())
+  .handler(async (opts) => {
+    const { caller, service } = opts.context.agent;
+    const detail = await withORPCErrors(() => service.fork(caller, opts.input));
+    if (!detail) throw opts.errors.NOT_FOUND();
+    return detail;
   });
 
 // ============================================

@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   bigserial,
   index,
@@ -77,6 +78,15 @@ export const agentSessions = agentSchema.table(
     configVersion: integer("config_version").notNull().default(1),
     /** Active leaf of the session tree. `null` for a fresh session with no entries. */
     leafEntryId: text("leaf_entry_id"),
+    /**
+     * Lineage of a forked session: the source and the entry the copy started from (`null` for a
+     * whole-tree copy). Kept when the source is deleted — the fork stands on its own.
+     */
+    forkedFromSessionId: text("forked_from_session_id").references(
+      (): AnyPgColumn => agentSessions.id,
+      { onDelete: "set null" }
+    ),
+    forkedFromEntryId: text("forked_from_entry_id"),
     ...timestamps,
     ...softDelete,
   },

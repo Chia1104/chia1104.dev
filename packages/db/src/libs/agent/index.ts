@@ -39,6 +39,8 @@ export interface InsertAgentSessionDTO {
   runtimeConfig?: JsonObject;
   configVersion?: number;
   leafEntryId?: string | null;
+  forkedFromSessionId?: string | null;
+  forkedFromEntryId?: string | null;
 }
 
 export const createAgentSession = async (
@@ -60,6 +62,8 @@ export const createAgentSession = async (
       runtimeConfig: input.runtimeConfig ?? {},
       configVersion: input.configVersion ?? 1,
       leafEntryId: input.leafEntryId ?? null,
+      forkedFromSessionId: input.forkedFromSessionId ?? null,
+      forkedFromEntryId: input.forkedFromEntryId ?? null,
     })
     .returning();
   return row;
@@ -209,10 +213,14 @@ export const getActiveAgentRun = async (db: DB, sessionId: string) =>
     orderBy: { startedAt: "desc" },
   });
 
-/** Shallow-merges `patch` into the run's `metadata`; keys already present are overwritten. */
-export const patchAgentRunMetadata = async (
+/**
+ * Shallow-merges `patch` into the session's active run's `metadata`; keys already present are
+ * overwritten. Addressed by session rather than by workflow run id because the row exists before
+ * the workflow does (see `bindAgentRunExternalId`), and there is one active run per session.
+ */
+export const patchActiveAgentRunMetadata = async (
   db: DB,
-  externalRunId: string,
+  sessionId: string,
   patch: JsonObject
 ) => {
   await db
@@ -220,8 +228,40 @@ export const patchAgentRunMetadata = async (
     .set({
       metadata: sql`${agentRuns.metadata} || ${JSON.stringify(patch)}::jsonb`,
     })
-    .where(eq(agentRuns.externalRunId, externalRunId));
+    .where(
+      and(eq(agentRuns.sessionId, sessionId), eq(agentRuns.status, "active"))
+    );
 };
+
+/** Points a run row written ahead of its workflow at the run the workflow backend then created. */
+export const bindAgentRunExternalId = async (
+  db: DB,
+  runId: string,
+  externalRunId: string
+) => {
+  await db
+    .update(agentRuns)
+    .set({ externalRunId })
+    .where(eq(agentRuns.id, runId));
+};
+
+/**
+ * Runs `fn` while holding the session's advisory lock, so enqueueing a turn and maintenance on
+ * the tree (compact, rewind, fork) never interleave. The lock lives on the transaction's own
+ * connection; `fn` keeps using `db` for its work, so nothing it does has to be inside the
+ * transaction — the transaction exists only to scope the lock.
+ */
+export const withAgentSessionLock = <T>(
+  db: DB,
+  sessionId: string,
+  fn: () => Promise<T>
+): Promise<T> =>
+  db.transaction(async (tx) => {
+    await tx.execute(
+      sql`select pg_advisory_xact_lock(hashtext(${`agent.session:${sessionId}`}))`
+    );
+    return await fn();
+  });
 
 export const completeAgentRun = async (
   db: DB,
@@ -415,6 +455,24 @@ export const upsertWritingAgentDraft = async (
       target: [writingAgentDrafts.sessionId, writingAgentDrafts.locale],
       set: update,
     });
+};
+
+/** Copies every per-locale draft of `fromSessionId` onto `toSessionId`, which must have none yet. */
+export const copyWritingAgentDrafts = async (
+  db: DB,
+  fromSessionId: string,
+  toSessionId: string
+) => {
+  const rows = await getWritingAgentDrafts(db, fromSessionId);
+  if (rows.length === 0) return;
+  await db.insert(writingAgentDrafts).values(
+    rows.map((row) => ({
+      sessionId: toSessionId,
+      locale: row.locale,
+      meta: row.meta,
+      content: row.content,
+    }))
+  );
 };
 
 export const deleteWritingAgentDrafts = async (db: DB, sessionId: string) => {

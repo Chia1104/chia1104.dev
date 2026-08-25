@@ -55,6 +55,8 @@ export const agentSessionSummarySchema = z.object({
   thinkingLevel: thinkingLevelSchema.nullable().optional(),
   /** Writing-agent extension retained for the current dashboard. Other kinds omit it. */
   targetFeedId: z.number().nullable().optional(),
+  /** The session this one was forked from, when it was. */
+  forkedFromSessionId: z.string().nullable().optional(),
   createdAt: z.number(),
   updatedAt: z.number(),
 });
@@ -318,7 +320,15 @@ export const compactAgentSessionContract = oc
     })
   );
 
-/** Rewinds the session tree to an earlier entry so the agent can take another run at it. */
+/**
+ * Rewinds the session in place to an earlier message so the agent can take another run at it.
+ *
+ * `entryId` is a message id from the transcript (wire ids are entry ids). Returns the whole
+ * detail rebuilt: changing the active branch invalidates every view the client held, and the
+ * client folds a detail the same way it folds `get`. `CONFLICT` while a turn is running or an
+ * approval is undecided — a decision relayed onto a different branch would answer a call that
+ * is no longer there.
+ */
 export const navigateAgentSessionContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
   .input(
@@ -327,16 +337,40 @@ export const navigateAgentSessionContract = oc
       kind: z.string().optional(),
       sessionId: z.string(),
       entryId: z.string(),
+      /** Summarise the branch left behind under the new leaf, so the model keeps the gist. */
       summarize: z.boolean().optional(),
       label: z.string().max(200).optional(),
     })
   )
-  .output(
+  .output(agentSessionDetailSchema);
+
+/**
+ * Branches the session into a new one, leaving this one as it is.
+ *
+ * With `entryId`, the copy is the branch below it — `before` a user message (the default) stops
+ * at its parent so that message can be re-asked, `at` includes the target; without it, the whole
+ * tree. The kind's state (the writing draft) is copied as it stands now, not as it was at the
+ * target. Returns the new session's detail; the list carries `forkedFromSessionId`.
+ */
+export const forkAgentSessionContract = oc
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    BAD_REQUEST: {},
+    CONFLICT: {},
+  })
+  .input(
     z.object({
-      cancelled: z.boolean(),
-      events: z.array(agentWireEventSchema),
+      /** Agent kind. Optional while only one is registered. */
+      kind: z.string().optional(),
+      sessionId: z.string(),
+      entryId: z.string().optional(),
+      position: z.enum(["before", "at"]).optional(),
+      title: z.string().max(200).optional(),
     })
-  );
+  )
+  .output(agentSessionDetailSchema);
 
 // ============================================
 // Capabilities

@@ -21,7 +21,13 @@ export type ComposerDraftAction =
   | { type: "reportActiveDescendant"; id: string | undefined }
   | { type: "dismissMenu"; key: string };
 
-export const initialComposerDraft: ComposerDraft = { text: "", cursor: 0 };
+/** A draft holding `text` with the caret at its end — what a seeded editor starts from. */
+export const composerDraftOf = (text: string): ComposerDraft => ({
+  text,
+  cursor: text.length,
+});
+
+export const initialComposerDraft: ComposerDraft = composerDraftOf("");
 
 export const composerDraftReducer = (
   draft: ComposerDraft,

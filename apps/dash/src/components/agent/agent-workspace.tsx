@@ -187,6 +187,11 @@ export const AgentWorkspace = () => {
             client={client.agent}
             kind={WRITING_AGENT_KIND}
             labels={agentLabels}
+            onForked={(detail) => {
+              // The fork is where the operator wants to continue; its detail is already cached.
+              selectSession(detail.session.id);
+              invalidateSessions();
+            }}
             onTurnEnd={invalidateSessions}
             sessionId={selectedSessionId}>
             <WritingSession tabs={tabs} />

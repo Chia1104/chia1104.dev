@@ -32,7 +32,7 @@ export interface TextMessageView {
 
 export interface NoticeView {
   kind: "notice";
-  variant: "compacted" | "error" | "decision";
+  variant: "compacted" | "rewound" | "error" | "decision";
   text: string;
   /** Set on `error` notices. */
   code?: AgentErrorKind;
@@ -283,6 +283,14 @@ export const applyEvent = (
       items.push({
         kind: "notice",
         variant: "compacted",
+        text: event.summary,
+      });
+      return { ...state, items };
+
+    case "session:rewound":
+      items.push({
+        kind: "notice",
+        variant: "rewound",
         text: event.summary,
       });
       return { ...state, items };

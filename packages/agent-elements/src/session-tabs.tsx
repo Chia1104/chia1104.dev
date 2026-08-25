@@ -15,16 +15,23 @@ import {
   ScrollShadow,
   TextField,
 } from "@heroui/react";
-import { ChevronDown, Ellipsis, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  Ellipsis,
+  GitFork,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { defaultAgentLabels } from "./labels.ts";
+import { defaultAgentLabels, fill } from "./labels.ts";
 import type { AgentLabels } from "./labels.ts";
 import type { AgentSessionSummary } from "./types.ts";
 
 /** Mirrors the contract's `title: z.string().max(200)`. */
-const SESSION_TITLE_MAX_LENGTH = 200;
+export const SESSION_TITLE_MAX_LENGTH = 200;
 
 type SessionTabsLabels = Pick<
   AgentLabels,
@@ -32,6 +39,8 @@ type SessionTabsLabels = Pick<
   | "deleteSession"
   | "deleteSessionDescription"
   | "deleteSessionTitle"
+  | "forked"
+  | "forkedFrom"
   | "moreSessions"
   | "newSession"
   | "noSessions"
@@ -122,6 +131,19 @@ export const SessionTabs = ({
     onSelect(sessionId);
   };
 
+  /** Where a fork came from, when the source is still listed; a bare marker otherwise. */
+  const lineageOf = (session: AgentSessionSummary): string | null => {
+    if (!session.forkedFromSessionId) return null;
+    const source = sessions.find(
+      (candidate) => candidate.id === session.forkedFromSessionId
+    );
+    return source
+      ? fill(labels.forkedFrom, {
+          title: source.title ?? labels.untitledSession,
+        })
+      : labels.forked;
+  };
+
   const hasActions = Boolean(onRename || onDelete);
 
   const actions = (session: AgentSessionSummary, className?: string) =>
@@ -153,6 +175,7 @@ export const SessionTabs = ({
       <div className="flex min-w-0 flex-1 [scrollbar-width:none] items-center gap-0.5 overflow-x-auto">
         {shown.map((session) => {
           const isActive = session.id === activeId;
+          const lineage = lineageOf(session);
           return (
             <Button
               render={(props) => <span {...props} />}
@@ -163,6 +186,13 @@ export const SessionTabs = ({
               onPress={() => onSelect(session.id)}
               size="sm"
               variant={isActive ? "tertiary" : "ghost"}>
+              {lineage ? (
+                <GitFork
+                  aria-label={lineage}
+                  className="text-muted size-3 shrink-0"
+                  role="img"
+                />
+              ) : null}
               <span className="truncate">
                 {session.title ?? labels.untitledSession}
               </span>
@@ -219,29 +249,42 @@ export const SessionTabs = ({
                   </p>
                 ) : (
                   <div className="flex flex-col">
-                    {matches.map((session) => (
-                      <div
-                        key={session.id}
-                        className="group/row flex items-center gap-1">
-                        <Button
-                          className="h-auto min-w-0 flex-1 justify-start px-2.5 py-2 text-left"
-                          onPress={() => pick(session.id)}
-                          size="sm"
-                          variant={
-                            session.id === activeId ? "tertiary" : "ghost"
-                          }>
-                          <span className="flex min-w-0 flex-col gap-0.5">
-                            <span className="text-foreground truncate text-sm font-normal">
-                              {session.title ?? labels.untitledSession}
+                    {matches.map((session) => {
+                      const lineage = lineageOf(session);
+                      return (
+                        <div
+                          key={session.id}
+                          className="group/row flex items-center gap-1">
+                          <Button
+                            className="h-auto min-w-0 flex-1 justify-start px-2.5 py-2 text-left"
+                            onPress={() => pick(session.id)}
+                            size="sm"
+                            variant={
+                              session.id === activeId ? "tertiary" : "ghost"
+                            }>
+                            <span className="flex min-w-0 flex-col gap-0.5">
+                              <span className="text-foreground truncate text-sm font-normal">
+                                {session.title ?? labels.untitledSession}
+                              </span>
+                              <span className="text-muted flex items-center gap-1 text-[11px]">
+                                {formatTime(session.updatedAt)}
+                                {lineage ? (
+                                  <>
+                                    <span aria-hidden>·</span>
+                                    <GitFork
+                                      aria-hidden
+                                      className="size-3 shrink-0"
+                                    />
+                                    <span className="truncate">{lineage}</span>
+                                  </>
+                                ) : null}
+                              </span>
                             </span>
-                            <span className="text-muted text-[11px]">
-                              {formatTime(session.updatedAt)}
-                            </span>
-                          </span>
-                        </Button>
-                        {actions(session, "shrink-0")}
-                      </div>
-                    ))}
+                          </Button>
+                          {actions(session, "shrink-0")}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </ScrollShadow>

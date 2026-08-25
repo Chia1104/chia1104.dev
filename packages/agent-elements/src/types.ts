@@ -32,6 +32,12 @@ export interface AgentSessionClient {
     "settings:update": (
       input: Parameters<SessionProcedures["settings:update"]>[0]
     ) => Promise<AgentSessionDetail>;
+    navigate: (
+      input: Parameters<SessionProcedures["navigate"]>[0]
+    ) => Promise<AgentSessionDetail>;
+    fork: (
+      input: Parameters<SessionProcedures["fork"]>[0]
+    ) => Promise<AgentSessionDetail>;
   };
   models: {
     list: (

@@ -24,6 +24,7 @@ export const router = contractOS.router({
       approve: agentRoutes.approveAgentToolRoute,
       compact: agentRoutes.compactAgentSessionRoute,
       navigate: agentRoutes.navigateAgentSessionRoute,
+      fork: agentRoutes.forkAgentSessionRoute,
     },
     models: {
       list: agentRoutes.listAgentModelsRoute,

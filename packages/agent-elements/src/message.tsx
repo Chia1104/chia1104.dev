@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useSyncExternalStore } from "react";
 
 import { Disclosure } from "@heroui/react";
@@ -30,10 +31,11 @@ const useMounted = () =>
   );
 
 /**
- * Time and copy under a message. Revealed on hover or keyboard focus so the thread stays quiet;
- * the time alone is always legible.
+ * Time, copy and the host's actions under a message. Revealed on hover or keyboard focus so the
+ * thread stays quiet; the time alone is always legible.
  */
 const MessageMeta = ({
+  actions,
   align,
   at,
   text,
@@ -41,6 +43,7 @@ const MessageMeta = ({
   at?: number;
   text: string;
   align: "start" | "end";
+  actions?: ReactNode;
 }) => {
   const labels = useAgentLabels();
   const mounted = useMounted();
@@ -58,26 +61,34 @@ const MessageMeta = ({
           {formatMessageTime(at)}
         </time>
       ) : null}
-      {text ? (
-        <CopyButton
-          aria-label={labels.copy}
-          className="size-6 min-w-6 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-          content={text}
-          translations={{ copy: labels.copy, copied: labels.copied }}
-          variant="ghost"
-        />
+      {text || actions ? (
+        <span className="flex items-center gap-0.5 transition-opacity group-hover:opacity-100 focus-within:opacity-100 md:opacity-0">
+          {text ? (
+            <CopyButton
+              aria-label={labels.copy}
+              className="size-6 min-w-6"
+              content={text}
+              translations={{ copy: labels.copy, copied: labels.copied }}
+              variant="ghost"
+            />
+          ) : null}
+          {actions}
+        </span>
       ) : null}
     </div>
   );
 };
 
 export const UserMessage = ({
+  actions,
   at,
   className,
   text,
 }: {
   text: string;
   at?: number;
+  /** Rendered beside copy, e.g. `MessageActions`. */
+  actions?: ReactNode;
   className?: string;
 }) => (
   <div
@@ -86,7 +97,7 @@ export const UserMessage = ({
     <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-6 whitespace-pre-wrap">
       {text}
     </div>
-    <MessageMeta align="end" at={at} text={text} />
+    <MessageMeta actions={actions} align="end" at={at} text={text} />
   </div>
 );
 
@@ -150,10 +161,13 @@ const ThinkingBlock = ({
  * is the answer, the thinking is context. Time and copy appear once the message is complete.
  */
 export const AssistantMessage = ({
+  actions,
   className,
   message,
 }: {
   message: TextMessageView;
+  /** Rendered beside copy once the message is complete, e.g. `MessageActions`. */
+  actions?: ReactNode;
   className?: string;
 }) => {
   const thinkingStreaming = message.streaming && !message.text;
@@ -170,7 +184,12 @@ export const AssistantMessage = ({
         <Markdown streaming={message.streaming} text={message.text} />
       ) : null}
       {!message.streaming && message.text ? (
-        <MessageMeta align="start" at={message.at} text={message.text} />
+        <MessageMeta
+          actions={actions}
+          align="start"
+          at={message.at}
+          text={message.text}
+        />
       ) : null}
     </div>
   );
