@@ -85,6 +85,10 @@ export const navigatePiSession = async (
     }
   }
 
+  // The commit point: a cancellation that landed while the summary was generating must not move
+  // the leaf or write the summary it was cancelling.
+  if (signal?.aborted) return { cancelled: true };
+
   // Rewinding to a user message re-opens it: the leaf becomes its parent so it can be re-asked.
   const newLeafId =
     target.type === "message" && target.message.role === "user"

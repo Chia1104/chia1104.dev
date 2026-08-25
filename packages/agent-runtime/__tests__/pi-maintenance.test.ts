@@ -124,6 +124,28 @@ describe("navigatePiSession", () => {
     expect(faux.getPendingResponseCount()).toBe(0);
   });
 
+  it("persists nothing when cancelled after the summary was generated", async () => {
+    const { faux, session, options } = await build();
+    const controller = new AbortController();
+    faux.setResponses([
+      () => {
+        // The caller cancels while the summary request is in flight.
+        controller.abort();
+        return fauxAssistantMessage("Too late.");
+      },
+    ]);
+
+    const result = await navigatePiSession(
+      { ...options, signal: controller.signal },
+      "u2",
+      { summarize: true, label: "never written" }
+    );
+
+    expect(result).toEqual({ cancelled: true });
+    await expect(session.getLeafId()).resolves.toBe("a2");
+    expect(await session.getEntries()).toHaveLength(4);
+  });
+
   it("finds the common ancestor across a compaction so shared history is not summarised", async () => {
     const { faux, session, options } = await build();
     // u1 → a1 → c1 (compaction) → u3 → a3, then rewind to u1 with a summary.
