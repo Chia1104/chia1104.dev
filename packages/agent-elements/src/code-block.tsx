@@ -100,10 +100,7 @@ export const HighlightedCode = ({
   const tokens = useStreamingTokens(code, language);
   return (
     <pre
-      className={cn(
-        "overflow-x-auto font-mono text-[13px] leading-6",
-        className
-      )}>
+      className={cn("overflow-x-auto font-mono text-xs leading-5", className)}>
       <code>
         {tokens
           ? tokens.map((token, index) => (

@@ -34,7 +34,7 @@ const CodeBlock: Components["code"] = ({ children, className }) => {
   const language = /language-(\S+)/.exec(className ?? "")?.[1] ?? "text";
   const code = codeText(children).replace(/\n$/, "");
   return (
-    <Card className="my-4 gap-0 overflow-hidden p-0">
+    <Card className="my-4 gap-0 overflow-hidden p-0" variant="secondary">
       <div className="border-border flex h-9 items-center justify-between border-b px-3">
         <span className="text-muted font-mono text-xs lowercase">
           {language}
