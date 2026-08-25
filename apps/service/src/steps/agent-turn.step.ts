@@ -15,7 +15,7 @@ import {
   completeActiveAgentRuns,
   getAgentSession,
   getApprovedAgentToolCallIds,
-  patchAgentRunMetadata,
+  patchActiveAgentRunMetadata,
   recordAgentApprovalRequests,
   setAgentSessionTitleIfUnset,
 } from "@chia/db/repos/agent";
@@ -217,10 +217,12 @@ export const runAgentTurnStep = async (
     streamIndex: (await getRun(workflowRunId).getReadable().getTailIndex()) + 1,
     running: true,
   };
-  await patchAgentRunMetadata(db, workflowRunId, { [AGENT_TURN_KEY]: marker });
+  await patchActiveAgentRunMetadata(db, request.sessionId, {
+    [AGENT_TURN_KEY]: marker,
+  });
 
   const clearMarker = () =>
-    patchAgentRunMetadata(db, workflowRunId, {
+    patchActiveAgentRunMetadata(db, request.sessionId, {
       [AGENT_TURN_KEY]: { ...marker, running: false },
     });
   const abort = subscribeAgentAbort(request.abortController.runId);

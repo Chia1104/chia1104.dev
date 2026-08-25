@@ -348,7 +348,9 @@ session leaf、它要寫的第一個 coarse stream index，以及 `running`（�
 都是 `running`，所以 `run.status`、`attach` 與 compact/rewind 的檢查都改讀這個 marker。Turn 執行
 中時 `get` 把 replay 的 transcript 截在那個 leaf 之後，`attach` 則從那個 index tail stream；兩邊
 用同一個 marker，所以在 turn 進行中重整頁面，每則訊息只會出現一次，turn 也會原地跑完。`prompt`
-在開新 run 時會先種下 marker，因為第一個 turn 可能在 run row 建立前就到達 step。
+與 `approve` 在接受一個 turn 時就自己寫 marker——新 run 是 lease 的一部分（§8），parked 的 run
+則在叫醒 hook 之前——所以 turn 從被接受那一刻起就算 running；step 開始時會重寫同樣的值。
+唯一例外是排在一個正在跑的 turn 後面的訊息，它要等自己的 step 開始才會被標記。
 
 ## 7. Durable message inbox
 
@@ -390,7 +392,13 @@ row，writing 的話連 draft 一起，失敗時的 compensation 與 `createSess
 
 兩者在 turn running 與 approval 未決時都會被拒絕（`CONFLICT`）：run 停在 approval hook 上，
 決定之後啟動的 relay turn 會落在當時的 active branch，回覆一個已經不在 branch 上的 call。手動
-compaction 共用同一個 guard。Navigation 回傳的是整份 session detail 而不只是 events，因為
+compaction 共用同一個 guard。Guard 的可靠度取決於順序，所以接受 turn（`prompt`、`approve`）
+與 maintenance 用同一把 per-session 的 Postgres advisory lock（`withAgentSessionLock`）序列化，
+而新 run 的 `agent.run` row 會在 workflow 啟動**之前**就寫下——在 `start` 回來並綁定
+（`bindAgentRunExternalId`）之前，row 自己的 id 先代替 workflow run id；超過一分鐘還沒綁定的
+row 視為死掉。因此在 prompt 之後拿到鎖的 maintenance 一定已經看到 running 的 turn，而在
+maintenance 期間到達的 prompt 會等它的寫入完成。Navigation 回傳的是整份 session detail 而不只是
+events，因為
 active branch 改變後 client 手上的 view 全部失效，而 client fold 一份 detail 的方式跟 fold `get`
 一模一樣。
 

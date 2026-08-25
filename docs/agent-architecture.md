@@ -383,8 +383,11 @@ run parked on its message hook is `running` to the SDK just like one executing a
 `run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` cuts the
 replayed transcript after that leaf while a turn is running, and `attach` tails the stream from
 that index; both key off the same marker, so a reload mid-turn shows every message exactly once
-and finishes the turn in place. `prompt` seeds the marker on a fresh run, because its first turn
-can reach the step before the run row exists.
+and finishes the turn in place. `prompt` and `approve` write the marker themselves when they
+accept a turn — on a fresh run as part of its lease (§8), on a parked run before waking the hook —
+so a turn counts as running from the moment it is accepted; the step rewrites the same values
+when it starts. A message queued behind a turn that is already running is the one case marked
+only when its own step begins.
 
 ## 7. Durable message inbox
 
@@ -433,7 +436,14 @@ the same compensation as `createSession` when it fails.
 Both are refused (`CONFLICT`) while a turn is running and while an approval is undecided: the
 run is parked on the approval hook, and the relay turn its decision would start lands on
 whatever branch is active then, answering a call that is no longer on it. Manual compaction
-shares the guard. Navigation returns the whole session detail, not just events, because
+shares the guard. The guard is only as good as its ordering, so accepting a turn (`prompt`,
+`approve`) and maintenance serialize on a per-session Postgres advisory lock
+(`withAgentSessionLock`), and a fresh run's `agent.run` row is written **before** its workflow
+is started — the row's own id stands in for the workflow run id until `start` returns and the
+two are bound (`bindAgentRunExternalId`), and an unbound row older than a minute is treated as
+dead. Maintenance that takes the lock after a prompt therefore already sees a running turn, and a
+prompt that arrives during maintenance waits for its writes to land. Navigation returns the whole
+session detail, not just events, because
 changing the active branch invalidates every view the client held and the client folds a
 detail the same way it folds `get`.
 
