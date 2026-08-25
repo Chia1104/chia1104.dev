@@ -1,50 +1,69 @@
-import type * as PiAgentCore from "@earendil-works/pi-agent-core";
+import type { AgentToolResult } from "@earendil-works/pi-agent-core";
 import { createModels } from "@earendil-works/pi-ai";
-import { fauxProvider } from "@earendil-works/pi-ai/providers/faux";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import type { JsonObject } from "@chia/utils/json";
-
-import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
-import type { AgentWireEvent } from "../src/wire/schema.ts";
-
-interface HarnessEvent extends JsonObject {
-  type: string;
-}
-
-const pi = vi.hoisted(() => {
-  const handlers = new Map<
-    string,
-    (event: HarnessEvent) => void | Promise<void>
-  >();
-  const unsubscribers: ReturnType<typeof vi.fn>[] = [];
-  const harness = {
-    prompt: vi.fn(),
-    promptFromTemplate: vi.fn(),
-    compact: vi.fn(),
-    abort: vi.fn(),
-    on: vi.fn(),
-    subscribe: vi.fn(),
-  };
-  const AgentHarness = vi.fn(function MockAgentHarness() {
-    return harness;
-  });
-  return { AgentHarness, handlers, harness, unsubscribers };
-});
-
-vi.mock("@earendil-works/pi-agent-core", async (importOriginal) => {
-  const actual = await importOriginal<typeof PiAgentCore>();
-  return { ...actual, AgentHarness: pi.AgentHarness };
-});
+import type { Context } from "@earendil-works/pi-ai";
+import {
+  fauxAssistantMessage,
+  fauxProvider,
+  fauxToolCall,
+} from "@earendil-works/pi-ai/providers/faux";
+import { describe, expect, it, vi } from "vitest";
 
 import { runPiTurn } from "../src/pi/turn.ts";
+import type { RunPiTurnOptions } from "../src/pi/turn.ts";
+import type { SessionEntry } from "../src/session/entries.ts";
+import { InMemorySessionTree } from "../src/session/tree.ts";
+import { textResult, toolDefiner, Type } from "../src/tools.ts";
+import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
 import { formatOperatorDecision } from "../src/wire/operator-decision.ts";
+import type { AgentWireEvent } from "../src/wire/schema.ts";
 
-/** Pi resolves a turn with the final assistant message; these are the shapes runPiTurn reads. */
-const reply = (
-  stopReason: "stop" | "error" | "aborted",
-  errorMessage?: string
-) => ({ role: "assistant", stopReason, errorMessage, content: [] });
+/**
+ * `runPiTurn` against the real `Agent`, scripted through pi-ai's faux provider, over an in-memory
+ * session tree. What these pin is the host's side of the turn: hook composition, persistence
+ * order, abort semantics, approval and compaction gating, and the wire lifecycle.
+ */
+
+interface TestContext {
+  calls: string[];
+}
+
+const define = toolDefiner<TestContext>();
+
+const searchTool = define({
+  name: "search",
+  label: "Search",
+  description: "Search posts.",
+  parameters: Type.Object({ q: Type.String() }),
+  execute: async (_toolCallId, params, _signal, _onUpdate, context) => {
+    context.calls.push(params.q);
+    return textResult(`results for ${params.q}`, { q: params.q });
+  },
+});
+
+const publishTool = define({
+  name: "publish",
+  label: "Publish",
+  description: "Publish a post.",
+  parameters: Type.Object({ slug: Type.Optional(Type.String()) }),
+  execute: async (_toolCallId, _params, _signal, _onUpdate, context) => {
+    context.calls.push("publish");
+    return textResult("published", {});
+  },
+});
+
+/** Blocks until the run is aborted, so a deadline can fire mid-tool. */
+const waitTool = define({
+  name: "wait",
+  label: "Wait",
+  description: "Wait forever.",
+  parameters: Type.Object({}),
+  execute: (_toolCallId, _params, signal) =>
+    new Promise<AgentToolResult<unknown>>((_resolve, reject) => {
+      const fail = () => reject(new Error("aborted"));
+      if (signal?.aborted) fail();
+      signal?.addEventListener("abort", fail, { once: true });
+    }),
+});
 
 const policy: AgentPolicy = {
   tierOf: (toolName) => (toolName === "publish" ? "commit" : "read"),
@@ -60,146 +79,205 @@ const budget: AgentTurnBudget = {
   maxDurationMs: 60_000,
 };
 
-const createOptions = () => {
+const toolCallTurn = (
+  name: string,
+  args: Parameters<typeof fauxToolCall>[1],
+  id: string
+) =>
+  fauxAssistantMessage([fauxToolCall(name, args, { id })], {
+    stopReason: "toolUse",
+  });
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** A branch already at the compaction threshold: ~100k tokens on a 100k window. */
+const seedOversizedBranch = (session: InMemorySessionTree) =>
+  session.appendEntry({
+    type: "message",
+    id: "entry-1",
+    parentId: null,
+    timestamp: 1,
+    message: { role: "user", content: "x".repeat(400_000), timestamp: 1 },
+  });
+
+const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
   const faux = fauxProvider({
     provider: "faux",
     models: [{ id: "test-model", contextWindow: 100_000 }],
+    ...fauxOptions,
   });
   const models = createModels();
   models.setProvider(faux.provider);
+  const session = new InMemorySessionTree("session-1");
   const events: AgentWireEvent[] = [];
-  // @ts-expect-error The fixture intentionally implements only getBranch, the method under test.
-  const session: PiAgentCore.Session = {
-    getBranch: vi.fn(async () => []),
-  };
+  const context: TestContext = { calls: [] };
+  const persistApprovals = vi.fn(
+    async (_approvals: readonly string[]): Promise<void> => undefined
+  );
 
-  return {
+  const options: RunPiTurnOptions<TestContext, string> = {
     agentSessionId: "session-1",
     session,
     settings: {
       providerId: "faux",
       modelId: "test-model",
-      thinkingLevel: "off" as const,
+      thinkingLevel: "off",
       activeToolNames: null,
       autoApprove: [],
     },
     model: faux.getModel(),
     models,
-    tools: [],
-    toolContext: {},
-    systemPrompt: "",
+    tools: [searchTool, publishTool, waitTool],
+    toolContext: context,
+    systemPrompt: "You are a test.",
     policy,
     budget,
     message: { text: "Hello" },
-    onEvent: (event: AgentWireEvent) => events.push(event),
-    toApproval: (approval: { toolCallId: string }) => approval.toolCallId,
-    persistApprovals: vi.fn(async () => undefined),
+    onEvent: (event) => events.push(event),
+    toApproval: (approval) => approval.toolCallId,
+    persistApprovals,
+  };
+
+  return {
+    faux,
+    session,
     events,
+    context,
+    persistApprovals,
+    options,
+    types: () =>
+      events
+        .map((event) => event.type)
+        .filter((type) => type !== "assistant:delta"),
+    branch: () => session.getBranch(),
+    run: (overrides: Partial<RunPiTurnOptions<TestContext, string>> = {}) =>
+      runPiTurn({ ...options, ...overrides }),
   };
 };
 
-beforeEach(() => {
-  pi.handlers.clear();
-  pi.unsubscribers.splice(0);
-  pi.AgentHarness.mockReset();
-  pi.AgentHarness.mockImplementation(function MockAgentHarness() {
-    return pi.harness;
-  });
-  pi.harness.prompt.mockReset().mockResolvedValue(reply("stop"));
-  pi.harness.promptFromTemplate.mockReset().mockResolvedValue(reply("stop"));
-  pi.harness.abort.mockReset().mockResolvedValue(undefined);
-  pi.harness.compact.mockReset().mockResolvedValue({
-    summary: "summary",
-    tokensBefore: 90_000,
-  });
-  pi.harness.on.mockReset().mockImplementation((type, handler) => {
-    pi.handlers.set(type, handler);
-    const unsubscribe = vi.fn();
-    pi.unsubscribers.push(unsubscribe);
-    return unsubscribe;
-  });
-  pi.harness.subscribe.mockReset().mockImplementation(() => {
-    const unsubscribe = vi.fn();
-    pi.unsubscribers.push(unsubscribe);
-    return unsubscribe;
-  });
-});
+const messageOf = (entry: SessionEntry | undefined) =>
+  entry?.type === "message" ? entry.message : undefined;
 
 describe("runPiTurn", () => {
-  it("runs a prompt and owns the wire event lifecycle", async () => {
-    const options = createOptions();
+  it("runs a prompt, persists both messages and owns the wire event lifecycle", async () => {
+    const fixture = build();
     const flushEvents = vi.fn(async () => undefined);
+    fixture.faux.setResponses([fauxAssistantMessage("Hi there")]);
 
-    const result = await runPiTurn({ ...options, flushEvents });
+    const result = await fixture.run({ flushEvents });
 
-    expect(pi.harness.prompt).toHaveBeenCalledWith("Hello");
-    expect(pi.harness.promptFromTemplate).not.toHaveBeenCalled();
     expect(result).toEqual({ status: "done", approvals: [], error: undefined });
-    expect(options.events.map((event) => event.type)).toEqual([
+    expect(fixture.types()).toEqual([
       "run:start",
       "user",
+      "assistant:start",
+      "assistant:end",
       "run:end",
     ]);
-    expect(
-      pi.unsubscribers.every(
-        (unsubscribe) => unsubscribe.mock.calls.length === 1
-      )
-    ).toBe(true);
+    const branch = await fixture.branch();
+    expect(branch.map((entry) => messageOf(entry)?.role)).toEqual([
+      "user",
+      "assistant",
+    ]);
+    expect(branch[1]?.parentId).toBe(branch[0]?.id);
+    await expect(fixture.session.getLeafId()).resolves.toBe(branch[1]?.id);
     expect(flushEvents).toHaveBeenCalledOnce();
   });
 
+  it("persists each message before its wire event and threads tool results into the tree", async () => {
+    const fixture = build();
+    const seenAtEvent: number[] = [];
+    fixture.faux.setResponses([
+      toolCallTurn("search", { q: "typescript" }, "call-1"),
+      fauxAssistantMessage("Found it."),
+    ]);
+
+    await fixture.run({
+      onEvent: async (event) => {
+        fixture.events.push(event);
+        if (event.type === "assistant:end" || event.type === "tool:end") {
+          seenAtEvent.push((await fixture.session.getBranch()).length);
+        }
+      },
+    });
+
+    expect(fixture.context.calls).toEqual(["typescript"]);
+    const branch = await fixture.branch();
+    expect(branch.map((entry) => messageOf(entry)?.role)).toEqual([
+      "user",
+      "assistant",
+      "toolResult",
+      "assistant",
+    ]);
+    // Each assistant:end saw its own entry already in the tree; Pi announces a tool's end before
+    // it emits the tool-result message, so that one lands with the next assistant message.
+    expect(seenAtEvent).toEqual([2, 2, 4]);
+    expect(fixture.types()).toEqual([
+      "run:start",
+      "user",
+      "assistant:start",
+      "assistant:end",
+      "tool:start",
+      "tool:end",
+      "assistant:start",
+      "assistant:end",
+      "run:end",
+    ]);
+  });
+
   it("announces approval requests as they are refused and persists them atomically at the end", async () => {
-    const options = createOptions();
-    options.persistApprovals.mockImplementation(async () => {
+    const fixture = build();
+    fixture.persistApprovals.mockImplementation(async () => {
       // The client has already been told, so the card can replace the tool while the model is
       // still writing; the durable request is the one thing that waits for the turn to succeed.
       expect(
-        options.events.filter((event) => event.type === "approval:request")
+        fixture.events.filter((event) => event.type === "approval:request")
       ).toHaveLength(2);
     });
-    pi.harness.prompt.mockImplementation(async () => {
-      const handler = pi.handlers.get("tool_call");
-      await handler?.({
-        type: "tool_call",
-        toolCallId: "call-1",
-        toolName: "publish",
-        input: { slug: "hello" },
-      });
-      await handler?.({
-        type: "tool_call",
-        toolCallId: "call-2",
-        toolName: "publish",
-        input: { slug: "second" },
-      });
-      return reply("stop");
-    });
+    fixture.faux.setResponses([
+      fauxAssistantMessage(
+        [
+          fauxToolCall("publish", { slug: "hello" }, { id: "call-1" }),
+          fauxToolCall("publish", { slug: "second" }, { id: "call-2" }),
+        ],
+        { stopReason: "toolUse" }
+      ),
+      fauxAssistantMessage("Waiting for approval."),
+    ]);
 
-    const result = await runPiTurn(options);
+    const result = await fixture.run();
 
-    expect(options.persistApprovals).toHaveBeenCalledOnce();
-    expect(options.persistApprovals).toHaveBeenCalledWith(["call-1", "call-2"]);
+    expect(fixture.context.calls).toEqual([]);
+    expect(fixture.persistApprovals).toHaveBeenCalledOnce();
+    expect(fixture.persistApprovals).toHaveBeenCalledWith(["call-1", "call-2"]);
     expect(result).toEqual({
       status: "awaiting_approval",
       approvals: ["call-1", "call-2"],
       error: undefined,
     });
     expect(
-      options.events
+      fixture.events
         .filter((event) => event.type === "approval:request")
         .map((event) => event.toolCallId)
     ).toEqual(["call-1", "call-2"]);
+    // The refusal reaches the model as an error tool result that tells it to stop.
+    const refusals = (await fixture.branch())
+      .map(messageOf)
+      .filter((message) => message?.role === "toolResult");
+    expect(refusals).toHaveLength(2);
+    expect(refusals.every((message) => message?.isError)).toBe(true);
   });
 
   it("relays an operator decision before the model runs and marks its own message as synthesised", async () => {
-    const options = createOptions();
+    const fixture = build();
     const text = formatOperatorDecision({
       toolName: "publish",
       approved: true,
       comment: "go",
     });
+    fixture.faux.setResponses([fauxAssistantMessage("Publishing.")]);
 
-    await runPiTurn({
-      ...options,
+    await fixture.run({
       message: {
         text,
         decision: {
@@ -211,8 +289,7 @@ describe("runPiTurn", () => {
       },
     });
 
-    expect(pi.harness.prompt).toHaveBeenCalledWith(text);
-    expect(options.events.slice(0, 3)).toEqual([
+    expect(fixture.events.slice(0, 3)).toEqual([
       { type: "run:start", sessionId: "session-1" },
       {
         type: "approval:resolved",
@@ -226,48 +303,79 @@ describe("runPiTurn", () => {
         origin: "operator-decision",
       }),
     ]);
+    const first = messageOf((await fixture.branch())[0]);
+    expect(first?.role === "user" ? first.content : undefined).toEqual([
+      { type: "text", text },
+    ]);
   });
 
-  it("dispatches templates and turns provider failures into terminal events", async () => {
-    const options = createOptions();
-    pi.harness.promptFromTemplate.mockRejectedValue(
-      new Error("provider failed")
-    );
+  it("expands a prompt template into the persisted user message", async () => {
+    const fixture = build();
+    const seen: Context[] = [];
+    fixture.faux.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("Drafting.");
+      },
+    ]);
 
-    const result = await runPiTurn({
-      ...options,
+    await fixture.run({
+      promptTemplates: [{ name: "draft", content: "Draft a post in $1." }],
       message: {
         text: "Ignored when a template is selected",
         template: { name: "draft", args: ["zh-TW"] },
       },
     });
 
-    expect(pi.harness.promptFromTemplate).toHaveBeenCalledWith("draft", [
-      "zh-TW",
+    expect(seen[0]?.messages.at(-1)?.content).toEqual([
+      { type: "text", text: "Draft a post in zh-TW." },
     ]);
+    const first = messageOf((await fixture.branch())[0]);
+    expect(first?.role === "user" ? first.content : undefined).toEqual([
+      { type: "text", text: "Draft a post in zh-TW." },
+    ]);
+  });
+
+  it("fails as internal when the template is unknown, before any provider call", async () => {
+    const fixture = build();
+
+    const result = await fixture.run({
+      promptTemplates: [],
+      message: { text: "", template: { name: "nope" } },
+    });
+
     expect(result).toEqual({
       status: "error",
       approvals: [],
-      error: { kind: "internal", message: "provider failed" },
+      error: { kind: "internal", message: "Unknown prompt template: nope" },
     });
-    expect(options.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal", message: "provider failed" },
+    expect(fixture.faux.state.callCount).toBe(0);
+    expect(fixture.events.slice(-2)).toEqual([
+      {
+        type: "error",
+        kind: "internal",
+        message: "Unknown prompt template: nope",
+      },
       { type: "run:end", reason: "error" },
     ]);
   });
 
   it("classifies a provider failure that Pi resolves as an error message", async () => {
-    const options = createOptions();
-    pi.harness.prompt.mockResolvedValue(
-      reply("error", "401 Unauthorized: invalid x-api-key")
-    );
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
+    fixture.faux.setResponses([
+      fauxAssistantMessage("", {
+        stopReason: "error",
+        errorMessage: "401 Unauthorized: invalid x-api-key",
+      }),
+    ]);
 
-    await expect(runPiTurn(options)).resolves.toEqual({
+    await expect(fixture.run()).resolves.toEqual({
       status: "error",
       approvals: [],
       error: { kind: "auth", message: "401 Unauthorized: invalid x-api-key" },
     });
-    expect(options.events.slice(-2)).toEqual([
+    expect(fixture.events.slice(-2)).toEqual([
       {
         type: "error",
         kind: "auth",
@@ -275,327 +383,311 @@ describe("runPiTurn", () => {
       },
       { type: "run:end", reason: "error" },
     ]);
-    expect(pi.harness.compact).not.toHaveBeenCalled();
+    // A failed turn is never compacted.
+    expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
+      false
+    );
+  });
+
+  it("reports a provider that throws instead of streaming", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([
+      () => {
+        throw new Error("provider failed");
+      },
+    ]);
+
+    const result = await fixture.run();
+
+    expect(result.status).toBe("error");
+    expect(result.error?.message).toBe("provider failed");
+    expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
   it("ends an aborted turn without approvals, compaction or an error", async () => {
-    const options = createOptions();
-    Object.assign(options.session, {
-      getBranch: vi.fn(async () => [
-        {
-          type: "message",
-          id: "entry-1",
-          parentId: null,
-          timestamp: "2026-01-01T00:00:00.000Z",
-          message: { role: "user", content: "x".repeat(400_000) },
-        },
-      ]),
-    });
-    pi.harness.prompt.mockImplementation(async () => {
-      await pi.handlers.get("tool_call")?.({
-        type: "tool_call",
-        toolCallId: "call-1",
-        toolName: "publish",
-        input: {},
-      });
-      return reply("aborted");
-    });
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
+    const controller = new AbortController();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", {}, "call-1"),
+      () => {
+        controller.abort();
+        return fauxAssistantMessage("", { stopReason: "aborted" });
+      },
+    ]);
 
-    await expect(runPiTurn(options)).resolves.toEqual({
+    await expect(fixture.run({ signal: controller.signal })).resolves.toEqual({
       status: "aborted",
       approvals: [],
       error: undefined,
     });
-    expect(options.persistApprovals).not.toHaveBeenCalled();
-    expect(pi.harness.compact).not.toHaveBeenCalled();
-    expect(options.events.at(-1)).toEqual({
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
+      false
+    );
+    expect(fixture.events.at(-1)).toEqual({
       type: "run:end",
       reason: "aborted",
     });
   });
 
-  it("aborts the harness the moment the host signal fires", async () => {
-    const options = createOptions();
+  it("stops mid-generation the moment the host signal fires and persists the partial reply", async () => {
+    // ~50 tokens at 25 tokens/s: a couple of seconds of streaming, aborted after the first delta.
+    const fixture = build({ tokensPerSecond: 25 });
+    const text = Array.from(
+      { length: 40 },
+      (_, i) => `sentence number ${i} of a deliberately long answer.`
+    ).join(" ");
+    fixture.faux.setResponses([fauxAssistantMessage(text)]);
     const controller = new AbortController();
-    pi.harness.prompt.mockImplementation(async () => {
-      // No hook boundary at all: a single generation that "takes a while".
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      return reply(pi.harness.abort.mock.calls.length > 0 ? "aborted" : "stop");
-    });
 
-    const pending = runPiTurn({ ...options, signal: controller.signal });
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    let firstDelta: () => void = () => undefined;
+    const streamedSomething = new Promise<void>((resolve) => {
+      firstDelta = resolve;
+    });
+    const pending = fixture.run({
+      signal: controller.signal,
+      onEvent: (event) => {
+        fixture.events.push(event);
+        if (event.type === "assistant:delta") firstDelta();
+      },
+    });
+    await streamedSomething;
     controller.abort();
     const result = await pending;
 
-    expect(pi.harness.abort).toHaveBeenCalledOnce();
     expect(result.status).toBe("aborted");
-    expect(options.events.at(-1)).toEqual({
+    expect(fixture.events.at(-1)).toEqual({
       type: "run:end",
       reason: "aborted",
     });
+    const last = messageOf((await fixture.branch()).at(-1));
+    expect(last?.role).toBe("assistant");
+    expect(last?.role === "assistant" ? last.stopReason : undefined).toBe(
+      "aborted"
+    );
   });
 
-  it("re-issues the abort at the provider boundary if it fired before the run was armed", async () => {
-    const options = createOptions();
+  it("skips the provider when the signal fires before the run is armed", async () => {
+    const fixture = build();
     const controller = new AbortController();
-    pi.harness.prompt.mockImplementation(async () => {
+    const getBranch = fixture.session.getBranch.bind(fixture.session);
+    // The abort lands while the turn is still reading the tree, before any run exists to cancel.
+    fixture.session.getBranch = async (fromId) => {
       controller.abort();
-      // The event listener already ran once; the boundary hook must call again.
-      await pi.handlers.get("before_provider_request")?.({
-        type: "before_provider_request",
-      });
-      return reply("aborted");
-    });
+      return getBranch(fromId);
+    };
+    fixture.faux.setResponses([fauxAssistantMessage("Never sent.")]);
 
-    await runPiTurn({ ...options, signal: controller.signal });
+    const result = await fixture.run({ signal: controller.signal });
 
-    expect(pi.harness.abort).toHaveBeenCalledTimes(2);
+    expect(result.status).toBe("aborted");
+    expect(fixture.faux.state.callCount).toBe(0);
+    expect(await fixture.branch()).toEqual([]);
   });
 
   it("skips the provider entirely when the signal is already aborted", async () => {
-    const options = createOptions();
+    const fixture = build();
     const controller = new AbortController();
     controller.abort();
+    fixture.faux.setResponses([fauxAssistantMessage("Never sent.")]);
 
-    const result = await runPiTurn({ ...options, signal: controller.signal });
+    const result = await fixture.run({ signal: controller.signal });
 
-    expect(pi.harness.prompt).not.toHaveBeenCalled();
+    expect(fixture.faux.state.callCount).toBe(0);
     expect(result.status).toBe("aborted");
   });
 
   it("does not persist approvals or compact when the abort lands after the reply", async () => {
-    const options = createOptions();
-    Object.assign(options.session, {
-      getBranch: vi.fn(async () => [
-        {
-          type: "message",
-          id: "entry-1",
-          parentId: null,
-          timestamp: "2026-01-01T00:00:00.000Z",
-          message: { role: "user", content: "x".repeat(400_000) },
-        },
-      ]),
-    });
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
     const controller = new AbortController();
-    pi.harness.prompt.mockImplementation(async () => {
-      await pi.handlers.get("tool_call")?.({
-        type: "tool_call",
-        toolCallId: "call-1",
-        toolName: "publish",
-        input: {},
-      });
-      // The provider turn completes normally; the operator stops in the same instant.
-      controller.abort();
-      return reply("stop");
-    });
+    fixture.faux.setResponses([
+      toolCallTurn("publish", {}, "call-1"),
+      fauxAssistantMessage("Waiting."),
+    ]);
 
-    const result = await runPiTurn({ ...options, signal: controller.signal });
+    const result = await fixture.run({
+      signal: controller.signal,
+      onEvent: (event) => {
+        fixture.events.push(event);
+        // The provider turn completes normally; the operator stops in the same instant.
+        if (event.type === "assistant:end" && event.text === "Waiting.") {
+          controller.abort();
+        }
+      },
+    });
 
     expect(result).toEqual({
       status: "aborted",
       approvals: [],
       error: undefined,
     });
-    expect(options.persistApprovals).not.toHaveBeenCalled();
-    expect(pi.harness.compact).not.toHaveBeenCalled();
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
+      false
+    );
     // Announced live when refused; the client retracts it on `run:end{aborted}`.
-    expect(options.events).toContainEqual(
+    expect(fixture.events).toContainEqual(
       expect.objectContaining({
         type: "approval:request",
         toolCallId: "call-1",
       })
     );
-    expect(options.events.at(-1)).toEqual({
+    expect(fixture.events.at(-1)).toEqual({
       type: "run:end",
       reason: "aborted",
     });
   });
 
   it("refuses tool calls past the soft budget and the gate never sees them", async () => {
-    const options = createOptions();
-    const results: unknown[] = [];
-    pi.harness.prompt.mockImplementation(async () => {
-      for (let index = 0; index < 4; index += 1) {
-        results.push(
-          await pi.handlers.get("tool_call")?.({
-            type: "tool_call",
-            toolCallId: `call-${index}`,
-            toolName: index === 3 ? "publish" : "search",
-            input: { q: String(index) },
-          })
-        );
-      }
-      return reply("stop");
-    });
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("search", { q: "0" }, "call-0"),
+      toolCallTurn("search", { q: "1" }, "call-1"),
+      toolCallTurn("search", { q: "2" }, "call-2"),
+      toolCallTurn("publish", { slug: "late" }, "call-3"),
+      fauxAssistantMessage("Answering from what I have."),
+    ]);
 
-    const result = await runPiTurn(options);
+    const result = await fixture.run();
 
-    expect(results.slice(0, 3)).toEqual([undefined, undefined, undefined]);
-    expect(results[3]).toMatchObject({ block: true });
-    expect(results[3]).toMatchObject({
-      reason: expect.stringMatching(/budget/i),
-    });
+    expect(fixture.context.calls).toEqual(["0", "1", "2"]);
+    const toolResults = (await fixture.branch())
+      .map(messageOf)
+      .filter((message) => message?.role === "toolResult");
+    expect(toolResults.map((message) => message?.isError)).toEqual([
+      false,
+      false,
+      false,
+      true,
+    ]);
+    expect(JSON.stringify(toolResults[3]?.content)).toMatch(/budget/i);
     // The fourth call was a gated `publish`; the budget refused it first, so no approval exists.
-    expect(options.persistApprovals).not.toHaveBeenCalled();
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
     expect(result.status).toBe("done");
   });
 
   it("ends the turn as budget_exhausted once the model calls through the hard limit", async () => {
-    const options = createOptions();
-    pi.harness.prompt.mockImplementation(async () => {
-      for (let index = 0; index < 6; index += 1) {
-        await pi.handlers.get("tool_call")?.({
-          type: "tool_call",
-          toolCallId: `call-${index}`,
-          toolName: "search",
-          input: { q: String(index) },
-        });
-      }
-      return reply("aborted");
-    });
+    const fixture = build();
+    fixture.faux.setResponses([
+      ...Array.from({ length: 6 }, (_, index) =>
+        toolCallTurn("search", { q: String(index) }, `call-${index}`)
+      ),
+      fauxAssistantMessage("Still going."),
+    ]);
 
-    const result = await runPiTurn(options);
+    const result = await fixture.run();
 
-    expect(pi.harness.abort).toHaveBeenCalledOnce();
     expect(result).toMatchObject({
       status: "error",
       error: { kind: "budget_exhausted" },
     });
-    expect(options.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
+    expect(fixture.context.calls).toEqual(["0", "1", "2"]);
+    expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
   it("ends the turn as budget_exhausted when the wall-clock runs out mid-generation", async () => {
-    vi.useFakeTimers();
-    try {
-      const options = createOptions();
-      pi.harness.prompt.mockImplementation(async () => {
-        await vi.advanceTimersByTimeAsync(budget.maxDurationMs + 1);
-        return reply(
-          pi.harness.abort.mock.calls.length > 0 ? "aborted" : "stop"
-        );
-      });
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("wait", {}, "call-1"),
+      fauxAssistantMessage("Done waiting."),
+    ]);
 
-      const result = await runPiTurn(options);
+    const result = await fixture.run({
+      budget: { ...budget, maxDurationMs: 40 },
+    });
 
-      expect(pi.harness.abort).toHaveBeenCalledOnce();
-      expect(result).toMatchObject({
-        status: "error",
-        error: {
-          kind: "budget_exhausted",
-          message: expect.stringMatching(/60s/),
-        },
-      });
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(result).toMatchObject({
+      status: "error",
+      error: {
+        kind: "budget_exhausted",
+        message: expect.stringMatching(/ran longer than/),
+      },
+    });
+    expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
   it("does not fail a turn whose deadline passes while approvals are being persisted", async () => {
-    vi.useFakeTimers();
-    try {
-      const options = createOptions();
-      pi.harness.prompt.mockImplementation(async () => {
-        await pi.handlers.get("tool_call")?.({
-          type: "tool_call",
-          toolCallId: "call-1",
-          toolName: "publish",
-          input: {},
-        });
-        return reply("stop");
-      });
-      options.persistApprovals.mockImplementation(async () => {
-        // The model already stopped; only host work is left when the deadline would fire.
-        await vi.advanceTimersByTimeAsync(budget.maxDurationMs + 1);
-      });
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", {}, "call-1"),
+      fauxAssistantMessage("Waiting."),
+    ]);
+    fixture.persistApprovals.mockImplementation(async () => {
+      // The model already stopped; only host work is left when the deadline would fire.
+      await sleep(80);
+    });
 
-      const result = await runPiTurn(options);
+    const result = await fixture.run({
+      budget: { ...budget, maxDurationMs: 40 },
+    });
 
-      expect(pi.harness.abort).not.toHaveBeenCalled();
-      expect(result).toMatchObject({
-        status: "awaiting_approval",
-        approvals: ["call-1"],
-      });
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("clears the deadline when the turn finishes first", async () => {
-    vi.useFakeTimers();
-    try {
-      const options = createOptions();
-      await runPiTurn(options);
-      await vi.advanceTimersByTimeAsync(budget.maxDurationMs + 1);
-
-      expect(pi.harness.abort).not.toHaveBeenCalled();
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(result).toMatchObject({
+      status: "awaiting_approval",
+      approvals: ["call-1"],
+    });
   });
 
   it("stops listening once the turn is over", async () => {
-    const options = createOptions();
+    const fixture = build();
     const controller = new AbortController();
+    fixture.faux.setResponses([fauxAssistantMessage("Done.")]);
 
-    await runPiTurn({ ...options, signal: controller.signal });
+    const result = await fixture.run({
+      signal: controller.signal,
+      budget: { ...budget, maxDurationMs: 40 },
+    });
+    const count = fixture.events.length;
     controller.abort();
+    await sleep(60);
 
-    expect(pi.harness.abort).not.toHaveBeenCalled();
+    expect(result.status).toBe("done");
+    expect(fixture.events).toHaveLength(count);
   });
 
   it("appends the volatile context as an ephemeral last message", async () => {
-    const options = createOptions();
+    const fixture = build();
     const volatileContext = vi.fn(
       async () => "# Current session\n- draft: empty"
     );
-    let transformed: unknown;
-    pi.harness.prompt.mockImplementation(async () => {
-      transformed = await pi.handlers.get("context")?.({
-        type: "context",
-        messages: [{ role: "user", content: "Hello", timestamp: 1 }],
-      });
-      return reply("stop");
-    });
+    const seen: Context[] = [];
+    fixture.faux.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("Noted.");
+      },
+    ]);
 
-    await runPiTurn({ ...options, volatileContext });
+    await fixture.run({ volatileContext });
 
     expect(volatileContext).toHaveBeenCalledOnce();
-    expect(transformed).toEqual({
-      messages: [
-        { role: "user", content: "Hello", timestamp: 1 },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "# Current session\n- draft: empty" },
-          ],
-          timestamp: expect.any(Number),
-        },
-      ],
-    });
-    // Nothing about the ephemeral block reaches the wire.
-    expect(options.events.map((event) => event.type)).toEqual([
+    expect(seen[0]?.messages.map((message) => message.role)).toEqual([
+      "user",
+      "user",
+    ]);
+    expect(JSON.stringify(seen[0]?.messages.at(-1)?.content)).toContain(
+      "# Current session"
+    );
+    // Nothing about the ephemeral block reaches the wire or the tree.
+    expect(fixture.types()).toEqual([
       "run:start",
       "user",
+      "assistant:start",
+      "assistant:end",
       "run:end",
     ]);
+    expect(JSON.stringify(await fixture.branch())).not.toContain(
+      "# Current session"
+    );
   });
 
   it("fails the turn as internal when the volatile context cannot be read", async () => {
-    const options = createOptions();
-    pi.harness.prompt.mockImplementation(async () => {
-      const transformed = await pi.handlers.get("context")?.({
-        type: "context",
-        messages: [],
-      });
-      // The hook must not throw into Pi; it hands the loop back untouched and aborts instead.
-      expect(transformed).toBeUndefined();
-      return reply("aborted");
-    });
+    const fixture = build();
+    fixture.faux.setResponses([fauxAssistantMessage("Should not matter.")]);
 
     await expect(
-      runPiTurn({
-        ...options,
+      fixture.run({
         volatileContext: async () => {
           throw new Error("draft store down");
         },
@@ -605,168 +697,168 @@ describe("runPiTurn", () => {
       approvals: [],
       error: { kind: "internal", message: "draft store down" },
     });
-    expect(pi.harness.abort).toHaveBeenCalled();
-    expect(options.events.slice(-2)).toEqual([
+    expect(fixture.events.slice(-2)).toEqual([
       { type: "error", kind: "internal", message: "draft store down" },
       { type: "run:end", reason: "error" },
     ]);
   });
 
   it("terminalizes and flushes when approval persistence fails", async () => {
-    const options = createOptions();
+    const fixture = build();
     const flushEvents = vi.fn(async () => undefined);
-    options.persistApprovals.mockRejectedValue(
+    fixture.persistApprovals.mockRejectedValue(
       new Error("database unavailable")
     );
-    pi.harness.prompt.mockImplementation(async () => {
-      await pi.handlers.get("tool_call")?.({
-        type: "tool_call",
-        toolCallId: "call-1",
-        toolName: "publish",
-        input: {},
-      });
-      return reply("stop");
-    });
+    fixture.faux.setResponses([
+      toolCallTurn("publish", {}, "call-1"),
+      fauxAssistantMessage("Waiting."),
+    ]);
 
-    await expect(runPiTurn({ ...options, flushEvents })).resolves.toEqual({
+    await expect(fixture.run({ flushEvents })).resolves.toEqual({
       status: "error",
       approvals: [],
       error: { kind: "internal", message: "database unavailable" },
     });
-    expect(options.events).toContainEqual(
+    expect(fixture.events).toContainEqual(
       expect.objectContaining({
         type: "approval:request",
         toolCallId: "call-1",
       })
     );
-    expect(options.events.slice(-2)).toEqual([
+    expect(fixture.events.slice(-2)).toEqual([
       { type: "error", kind: "internal", message: "database unavailable" },
       { type: "run:end", reason: "error" },
     ]);
-    expect(
-      pi.unsubscribers.every(
-        (unsubscribe) => unsubscribe.mock.calls.length === 1
-      )
-    ).toBe(true);
     expect(flushEvents).toHaveBeenCalledOnce();
   });
 
   it("does not persist approvals raised by a failed provider turn", async () => {
-    const options = createOptions();
-    pi.harness.prompt.mockImplementation(async () => {
-      await pi.handlers.get("tool_call")?.({
-        type: "tool_call",
-        toolCallId: "call-1",
-        toolName: "publish",
-        input: {},
-      });
-      throw new Error("provider failed");
-    });
+    const fixture = build();
+    fixture.faux.setResponses([
+      toolCallTurn("publish", {}, "call-1"),
+      fauxAssistantMessage("", {
+        stopReason: "error",
+        errorMessage: "503 overloaded",
+      }),
+    ]);
 
-    await expect(runPiTurn(options)).resolves.toEqual({
+    await expect(fixture.run()).resolves.toEqual({
       status: "error",
       approvals: [],
-      error: { kind: "internal", message: "provider failed" },
+      error: { kind: "rate_limited", message: "503 overloaded" },
     });
-    expect(options.persistApprovals).not.toHaveBeenCalled();
-    // Announced live when refused; `run:end{error}` is what retracts it on the client.
-    expect(options.events).toContainEqual(
+    expect(fixture.persistApprovals).not.toHaveBeenCalled();
+    expect(fixture.events).toContainEqual(
       expect.objectContaining({
         type: "approval:request",
         toolCallId: "call-1",
       })
     );
-    expect(options.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
+    expect(fixture.events.at(-1)).toEqual({ type: "run:end", reason: "error" });
   });
 
   it("does not compact a successful turn that requests approval", async () => {
-    const options = createOptions();
-    Object.assign(options.session, {
-      getBranch: vi.fn(async () => [
-        {
-          type: "message",
-          id: "entry-1",
-          parentId: null,
-          timestamp: "2026-01-01T00:00:00.000Z",
-          message: { role: "user", content: "x".repeat(400_000) },
-        },
-      ]),
-    });
-    pi.harness.prompt.mockImplementation(async () => {
-      await pi.handlers.get("tool_call")?.({
-        type: "tool_call",
-        toolCallId: "call-1",
-        toolName: "publish",
-        input: {},
-      });
-      return reply("stop");
-    });
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
+    fixture.faux.setResponses([
+      toolCallTurn("publish", {}, "call-1"),
+      fauxAssistantMessage("Waiting."),
+    ]);
 
-    await expect(runPiTurn(options)).resolves.toMatchObject({
+    await expect(fixture.run()).resolves.toMatchObject({
       status: "awaiting_approval",
     });
-    expect(pi.harness.compact).not.toHaveBeenCalled();
+    expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
+      false
+    );
   });
 
-  it("only compacts successful turns without approvals", async () => {
-    const clean = createOptions();
-    Object.assign(clean.session, {
-      getBranch: vi.fn(async () => [
-        {
-          type: "message",
-          id: "entry-1",
-          parentId: null,
-          timestamp: "2026-01-01T00:00:00.000Z",
-          message: { role: "user", content: "x".repeat(400_000) },
-        },
-      ]),
+  it("compacts a successful, approval-free turn under context pressure and announces it", async () => {
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
+    fixture.faux.setResponses([
+      fauxAssistantMessage("Sure."),
+      // Consumed by compaction's summary request.
+      fauxAssistantMessage("Everything so far, condensed."),
+    ]);
+
+    const result = await fixture.run();
+
+    expect(result.status).toBe("done");
+    const branch = await fixture.branch();
+    const compaction = branch.find((entry) => entry.type === "compaction");
+    expect(compaction).toMatchObject({
+      summary: "Everything so far, condensed.",
+      retainedTail: expect.any(Array),
     });
+    // The compaction is the new leaf, so the next turn starts from the summary.
+    await expect(fixture.session.getLeafId()).resolves.toBe(compaction?.id);
+    expect(fixture.events.slice(-2)).toEqual([
+      expect.objectContaining({
+        type: "session:compacted",
+        summary: "Everything so far, condensed.",
+      }),
+      { type: "run:end", reason: "done" },
+    ]);
+  });
 
-    await runPiTurn(clean);
-    expect(pi.harness.compact).toHaveBeenCalledOnce();
+  it("leaves a branch inside the window alone", async () => {
+    const fixture = build();
+    fixture.faux.setResponses([fauxAssistantMessage("Small talk.")]);
 
-    pi.harness.compact.mockClear();
-    const failed = createOptions();
-    Object.assign(failed.session, { getBranch: clean.session.getBranch });
-    pi.harness.prompt.mockRejectedValueOnce(new Error("provider failed"));
-    await runPiTurn(failed);
-    expect(pi.harness.compact).not.toHaveBeenCalled();
+    await fixture.run();
+
+    expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
+      false
+    );
+    expect(fixture.faux.getPendingResponseCount()).toBe(0);
   });
 
   it("keeps a successful turn successful when compaction fails", async () => {
-    const options = createOptions();
-    Object.assign(options.session, {
-      getBranch: vi.fn(async () => [
-        {
-          type: "message",
-          id: "entry-1",
-          parentId: null,
-          timestamp: "2026-01-01T00:00:00.000Z",
-          message: { role: "user", content: "x".repeat(400_000) },
-        },
-      ]),
-    });
-    pi.harness.compact.mockRejectedValue(
-      new Error("summarisation unavailable")
-    );
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
+    // No response scripted for the summary request: compaction fails, the turn does not.
+    fixture.faux.setResponses([fauxAssistantMessage("Sure.")]);
 
-    await expect(runPiTurn(options)).resolves.toEqual({
+    await expect(fixture.run()).resolves.toEqual({
       status: "done",
       approvals: [],
       error: undefined,
     });
+    expect((await fixture.branch()).some((e) => e.type === "compaction")).toBe(
+      false
+    );
   });
 
-  it("flushes the event sink when Pi construction fails", async () => {
-    const options = createOptions();
+  it("flushes the event sink when the turn cannot be set up", async () => {
+    const fixture = build();
     const flushEvents = vi.fn(async () => undefined);
-    pi.AgentHarness.mockImplementationOnce(() => {
-      throw new Error("harness unavailable");
+
+    await expect(
+      fixture.run({
+        flushEvents,
+        toolContext: () => {
+          throw new Error("ports unavailable");
+        },
+      })
+    ).rejects.toThrow("ports unavailable");
+    expect(flushEvents).toHaveBeenCalledOnce();
+  });
+
+  it("only exposes the session's active tools to the model", async () => {
+    const fixture = build();
+    const seen: Context[] = [];
+    fixture.faux.setResponses([
+      (context) => {
+        seen.push(context);
+        return fauxAssistantMessage("ok");
+      },
+    ]);
+
+    await fixture.run({
+      settings: { ...fixture.options.settings, activeToolNames: ["search"] },
     });
 
-    await expect(runPiTurn({ ...options, flushEvents })).rejects.toThrow(
-      "harness unavailable"
-    );
-    expect(flushEvents).toHaveBeenCalledOnce();
+    expect(seen[0]?.tools?.map((tool) => tool.name)).toEqual(["search"]);
   });
 });

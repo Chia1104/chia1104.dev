@@ -1,4 +1,5 @@
 import type { Locale } from "@chia/db/types";
+import { mergeDefined } from "@chia/utils/object";
 
 import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
 
@@ -11,21 +12,6 @@ export const emptyDraft = (): FeedDraft => ({
   feedMeta: {},
   translations: {},
 });
-
-/**
- * Merges a partial patch, treating `undefined` as "leave alone" and `null` as "clear".
- *
- * The distinction matters: the model routinely omits fields it is not changing, and
- * dropping that difference would silently wipe an excerpt on every metadata patch.
- */
-const mergeDefined = <T extends object>(base: T, patch: Partial<T>): T => {
-  const next = { ...base };
-  for (const [key, value] of Object.entries(patch)) {
-    if (value === undefined) continue;
-    Object.assign(next, { [key]: value });
-  }
-  return next;
-};
 
 export const patchFeedMeta = (
   draft: FeedDraft,

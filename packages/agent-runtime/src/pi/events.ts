@@ -1,4 +1,4 @@
-import type { AgentHarnessEvent } from "@earendil-works/pi-agent-core";
+import type { AgentEvent } from "@earendil-works/pi-agent-core";
 
 import type { AgentEventPresentation } from "../types.ts";
 import { clipDetails } from "../wire/clip.ts";
@@ -21,7 +21,7 @@ export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
   let assistantSeq = 0;
   let current: { id: string; text: string; thinking: string } | undefined;
 
-  return (event: AgentHarnessEvent): AgentWireEvent[] => {
+  return (event: AgentEvent): AgentWireEvent[] => {
     switch (event.type) {
       case "message_start": {
         if (event.message.role !== "assistant") return [];
@@ -100,6 +100,19 @@ export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
           },
         ];
 
+      case "tool_execution_update":
+        return [
+          {
+            type: "tool:update",
+            toolCallId: event.toolCallId,
+            summary: options.summarize(
+              event.toolName,
+              event.partialResult,
+              false
+            ),
+          },
+        ];
+
       case "tool_execution_end":
         return [
           {
@@ -117,15 +130,6 @@ export const createPiWireEventMapper = (options: PiWireEventMapperOptions) => {
                 event.result as { details?: unknown } | undefined
               )?.details
             ),
-          },
-        ];
-
-      case "session_compact":
-        return [
-          {
-            type: "session:compacted",
-            summary: event.compactionEntry.summary,
-            tokensBefore: event.compactionEntry.tokensBefore,
           },
         ];
 

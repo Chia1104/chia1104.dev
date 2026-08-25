@@ -1,9 +1,11 @@
-import { AgentHarness, uuidv7 } from "@earendil-works/pi-agent-core";
+import {
+  Agent,
+  formatPromptTemplateInvocation,
+  uuidv7,
+} from "@earendil-works/pi-agent-core";
 import type {
   AgentMessage,
   PromptTemplate,
-  Session,
-  Skill,
 } from "@earendil-works/pi-agent-core";
 import type {
   Api,
@@ -12,7 +14,17 @@ import type {
   Models,
 } from "@earendil-works/pi-ai";
 
-import type { AgentPolicy, AgentSessionSettings, AgentTool } from "../types.ts";
+import { buildBranchContext } from "../session/context.ts";
+import type { MessageEntry } from "../session/entries.ts";
+import type { SessionTree } from "../session/tree.ts";
+import { bindToolContext, resolveToolContext } from "../tools.ts";
+import type { ToolContextSource } from "../tools.ts";
+import type {
+  AgentPolicy,
+  AgentSessionSettings,
+  AgentTool,
+  ToolCallRequest,
+} from "../types.ts";
 import type {
   AgentTurnBudget,
   AgentTurnError,
@@ -21,7 +33,7 @@ import type {
 } from "../types.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
-import { compactPiHarnessIfNeeded } from "./compaction.ts";
+import { compactSessionIfNeeded } from "./compaction.ts";
 import { errorOfAssistantMessage, errorOfThrown } from "./errors.ts";
 import { createPiWireEventMapper } from "./events.ts";
 import { clampSessionThinkingLevel } from "./settings.ts";
@@ -31,13 +43,13 @@ import { createPiTurnBudget } from "./turn-budget.ts";
 
 export interface RunPiTurnOptions<TContext extends object, TApproval> {
   agentSessionId: string;
-  session: Session;
+  session: SessionTree;
   settings: AgentSessionSettings;
   model: Model<Api>;
   /** Must be the same credential-bearing collection that resolved `model`. */
   models: Models;
   tools: AgentTool<TContext>[];
-  toolContext: TContext | (() => TContext | Promise<TContext>);
+  toolContext: ToolContextSource<TContext>;
   /**
    * Stable for the life of a session. It heads every provider request, so anything that changes
    * turn to turn belongs in `volatileContext` instead — a changed system prompt invalidates the
@@ -51,13 +63,12 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
    */
   volatileContext?: () => string | undefined | Promise<string | undefined>;
   /**
-   * Host-owned abort. Firing it aborts the harness at once, mid-generation included: Pi cancels
-   * the in-flight provider stream and the turn ends as `aborted`. Already-aborted on entry skips
-   * the provider entirely.
+   * Host-owned abort. Firing it aborts the run at once, mid-generation included: Pi cancels the
+   * in-flight provider stream and the turn ends as `aborted`. Already-aborted on entry skips the
+   * provider entirely.
    */
   signal?: AbortSignal;
-  skills?: Skill[];
-  promptTemplates?: PromptTemplate[];
+  promptTemplates?: readonly PromptTemplate[];
   policy: AgentPolicy;
   /** See {@link AgentTurnBudget}; crossing it ends the turn as `budget_exhausted`. */
   budget: AgentTurnBudget;
@@ -77,7 +88,28 @@ const volatileMessage = (text: string): AgentMessage => ({
   timestamp: Date.now(),
 });
 
-/** Executes one complete turn against Pi's concrete `AgentHarness`. */
+/** The text the model receives: the operator's message, or its slash command expanded. */
+const promptText = (
+  message: AgentTurnMessage,
+  templates: readonly PromptTemplate[]
+): string => {
+  if (!message.template) return message.text;
+  const template = templates.find(
+    (candidate) => candidate.name === message.template?.name
+  );
+  if (!template) {
+    throw new Error(`Unknown prompt template: ${message.template.name}`);
+  }
+  return formatPromptTemplateInvocation(template, message.template.args ?? []);
+};
+
+/**
+ * Executes one complete turn on Pi's `Agent`.
+ *
+ * The agent is built for this turn only: it receives the branch projected into messages and hands
+ * back events, and every message it finishes is appended to the session tree here, in order,
+ * before the event reaches the wire. Nothing about the run outlives the call.
+ */
 export const runPiTurn = async <TContext extends object, TApproval>({
   agentSessionId,
   session,
@@ -85,12 +117,11 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   model,
   models,
   tools,
-  toolContext,
+  toolContext: toolContextSource,
   systemPrompt: prompt,
   volatileContext,
   signal,
-  skills,
-  promptTemplates,
+  promptTemplates = [],
   policy,
   budget,
   approvedToolCallIds,
@@ -106,38 +137,28 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   const unsubscribers: (() => void)[] = [];
 
   try {
-    const systemPrompt =
-      prompt instanceof Function ? async () => await prompt() : prompt;
+    const systemPrompt = prompt instanceof Function ? await prompt() : prompt;
+    const toolContext = await resolveToolContext(toolContextSource);
+    const leafId = await session.getLeafId();
+    const branch = await session.getBranch(leafId);
+    const thinkingLevel = clampSessionThinkingLevel(model, settings);
+    const activeTools = settings.activeToolNames
+      ? tools.filter((tool) => settings.activeToolNames?.includes(tool.name))
+      : tools;
 
-    /** Pi cannot reduce its conditional `toolContext` type while `TContext` is unresolved. */
-    const turnHarness =
-      /* SAFETY: The producer contract guarantees this value satisfies the asserted interface. */ new AgentHarness(
-        /* SAFETY: The producer contract guarantees this value satisfies never. */ {
-          session,
-          models,
-          model,
-          tools,
-          toolContext,
-          thinkingLevel: clampSessionThinkingLevel(model, settings),
-          activeToolNames: settings.activeToolNames ?? undefined,
-          resources: { skills, promptTemplates },
-          systemPrompt,
-        } as never
-      ) as AgentHarness<TContext>;
     /**
-     * A failure raised by the host inside a Pi hook. Pi turns a throwing hook into an assistant
-     * message with `stopReason: "error"`, indistinguishable from a provider failure, so hooks catch
-     * their own errors here and the turn is failed as `internal` once the harness has unwound.
+     * A failure raised by the host inside a Pi hook. Pi turns a throwing hook into a tool error or
+     * an assistant message with `stopReason: "error"`, indistinguishable from a provider failure,
+     * so hooks catch their own errors here and the turn is failed as `internal` once the run has
+     * unwound.
      */
     let hostFailure: AgentTurnError | undefined;
+    let agent: Agent | undefined;
 
-    /**
-     * Ends the turn on a host decision. Not awaited: `abort()` waits for the run to settle, and
-     * the callers are on the run's own path (a hook, or a timer racing the provider).
-     */
+    /** Ends the turn on a host decision. The run observes its aborted controller and unwinds. */
     const failTurn = (error: AgentTurnError) => {
       hostFailure ??= error;
-      void turnHarness.abort().catch(() => undefined);
+      agent?.abort();
     };
 
     const gate = createPiToolCallGate({
@@ -164,14 +185,6 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           message: `The model issued more than ${budget.hardMaxToolCalls} tool calls in one turn.`,
         }),
     });
-    // One handler, budget first: Pi keeps the last defined hook result, so two handlers would
-    // let the gate overrule a refused call (or the reverse) depending on registration order.
-    unsubscribers.push(
-      turnHarness.on(
-        "tool_call",
-        (event) => turnBudget.handle(event) ?? gate.handle(event)
-      )
-    );
 
     /**
      * Bounds the model's generation only. It is cleared as soon as the reply resolves, so it can
@@ -188,40 +201,62 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     );
     unsubscribers.push(() => clearTimeout(deadline));
 
-    if (volatileContext) {
-      unsubscribers.push(
-        turnHarness.on("context", async (event) => {
-          try {
-            const text = await volatileContext();
-            if (!text) return undefined;
-            return { messages: [...event.messages, volatileMessage(text)] };
-          } catch (error) {
-            // Fail closed: a model that cannot see the current state must not act on it.
-            failTurn(errorOfThrown(error));
+    let revision = 0;
+    agent = new Agent({
+      initialState: {
+        systemPrompt,
+        model,
+        thinkingLevel,
+        tools: bindToolContext(activeTools, toolContext),
+        messages: buildBranchContext(branch).messages,
+      },
+      // Bound to this turn's collection rather than a process-wide default: the collection carries
+      // the operator's own credentials, and a default would let a BYOK turn fall back to ambient keys.
+      streamFn: (requestModel, context, options) =>
+        models.streamSimple(requestModel, context, options),
+      transformContext: volatileContext
+        ? async (messages) => {
+            try {
+              const text = await volatileContext();
+              return text ? [...messages, volatileMessage(text)] : messages;
+            } catch (error) {
+              // Fail closed: a model that cannot see the current state must not act on it.
+              failTurn(errorOfThrown(error));
+              return messages;
+            }
+          }
+        : undefined,
+      // One hook, budget first: a call the budget refuses must never raise an approval.
+      beforeToolCall: async ({ toolCall, args }) => {
+        const request: ToolCallRequest = {
+          toolCallId: toolCall.id,
+          toolName: toolCall.name,
+          input: args,
+        };
+        try {
+          return turnBudget.handle(request) ?? gate.handle(request);
+        } catch (error) {
+          failTurn(errorOfThrown(error));
+          return { block: true, reason: "This turn is being stopped." };
+        }
+      },
+      afterToolCall: policy.changesState
+        ? async ({ toolCall, isError }) => {
+            if (
+              !isError &&
+              policy.changesState?.(policy.tierOf(toolCall.name))
+            ) {
+              revision += 1;
+              onEvent({
+                type: "state:changed",
+                scope: policy.stateScope,
+                revision,
+              });
+            }
             return undefined;
           }
-        })
-      );
-    }
-
-    if (signal) {
-      // Not awaited: `abort()` waits for the run to settle, and the hook below is on the run's own
-      // path. Signalling is enough — the loop observes the aborted controller and unwinds.
-      const abortHarness = () =>
-        void turnHarness.abort().catch(() => undefined);
-      signal.addEventListener("abort", abortHarness, { once: true });
-      unsubscribers.push(() =>
-        signal.removeEventListener("abort", abortHarness)
-      );
-      // An abort that fires before the run has armed its controller is a no-op for the harness;
-      // re-checking at the next provider boundary closes that window without any I/O.
-      unsubscribers.push(
-        turnHarness.on("before_provider_request", () => {
-          if (signal.aborted) abortHarness();
-          return undefined;
-        })
-      );
-    }
+        : undefined,
+    });
 
     const turnId = uuidv7();
     const mapEvent = createPiWireEventMapper({
@@ -230,30 +265,31 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       labelOf: policy.labelOf,
       summarize: policy.summarize,
     });
+    let cursor = leafId;
+    let reply: AssistantMessage | undefined;
     unsubscribers.push(
-      turnHarness.subscribe((event) => {
+      agent.subscribe(async (event) => {
+        if (event.type === "message_end") {
+          // Persisted before it reaches the wire, so a client never sees a message the tree lost.
+          const entry: MessageEntry = {
+            type: "message",
+            id: session.newEntryId(),
+            parentId: cursor,
+            timestamp: Date.now(),
+            message: event.message,
+          };
+          await session.appendEntry(entry);
+          cursor = entry.id;
+          if (event.message.role === "assistant") reply = event.message;
+        }
         for (const wireEvent of mapEvent(event)) onEvent(wireEvent);
       })
     );
 
-    if (policy.changesState) {
-      let revision = 0;
-      unsubscribers.push(
-        turnHarness.on("tool_result", (event) => {
-          if (
-            !event.isError &&
-            policy.changesState?.(policy.tierOf(event.toolName))
-          ) {
-            revision += 1;
-            onEvent({
-              type: "state:changed",
-              scope: policy.stateScope,
-              revision,
-            });
-          }
-          return undefined;
-        })
-      );
+    if (signal) {
+      const abortRun = () => agent?.abort();
+      signal.addEventListener("abort", abortRun, { once: true });
+      unsubscribers.push(() => signal.removeEventListener("abort", abortRun));
     }
 
     onEvent({ type: "run:start", sessionId: agentSessionId });
@@ -276,19 +312,21 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     });
 
     let failure: AgentTurnError | undefined;
+    // Checked right before the run arms its controller: an abort that fired earlier would find no
+    // run to cancel, and one that fires later is delivered by the listener above.
     let aborted = signal?.aborted ?? false;
     if (!aborted) {
       try {
+        await agent.prompt(promptText(message, promptTemplates));
         // Pi resolves provider failures as an assistant message rather than throwing: `error`
         // carries the provider's text (post-retry), `aborted` means the run's controller fired.
-        const reply: AssistantMessage = message.template
-          ? await turnHarness.promptFromTemplate(
-              message.template.name,
-              message.template.args
-            )
-          : await turnHarness.prompt(message.text);
         if (hostFailure) failure = hostFailure;
-        else if (reply.stopReason === "aborted") aborted = true;
+        else if (!reply) {
+          failure = {
+            kind: "internal",
+            message: "The turn completed without an assistant message.",
+          };
+        } else if (reply.stopReason === "aborted") aborted = true;
         else if (reply.stopReason === "error") {
           failure = errorOfAssistantMessage(reply, model.contextWindow);
         }
@@ -314,11 +352,11 @@ export const runPiTurn = async <TContext extends object, TApproval>({
 
     if (!failure && !aborted && approvals.length === 0) {
       try {
-        await compactPiHarnessIfNeeded(
-          turnHarness,
-          session,
+        const compacted = await compactSessionIfNeeded(
+          { session, models, model, thinkingLevel },
           model.contextWindow
         );
+        if (compacted) onEvent({ type: "session:compacted", ...compacted });
       } catch {
         // The next clean turn boundary retries compaction.
       }

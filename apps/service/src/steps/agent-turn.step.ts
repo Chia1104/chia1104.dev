@@ -250,7 +250,7 @@ export const runAgentTurnStep = async (
 };
 
 /**
- * Resolves what every kind's turn needs — the kind state, the opened Pi session, the caller's
+ * Resolves what every kind's turn needs — the kind state, the opened session tree, the caller's
  * credential-bearing models and the approved call ids — then hands the turn to the kind.
  *
  * The runtime is imported here rather than at module scope: this step is registered at boot for

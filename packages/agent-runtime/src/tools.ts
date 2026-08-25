@@ -1,5 +1,5 @@
 import type {
-  AgentHarnessTool,
+  AgentTool as PiAgentTool,
   AgentToolResult,
 } from "@earendil-works/pi-agent-core";
 import { StringEnum } from "@earendil-works/pi-ai";
@@ -8,6 +8,8 @@ import { Type } from "typebox";
 import * as z from "zod";
 
 import { locale } from "@chia/db/schema/enums";
+
+import type { AgentTool } from "./types.ts";
 
 /**
  * Kind-agnostic helpers for authoring Pi tools.
@@ -52,17 +54,42 @@ export const zodToTypebox = (schema: z.ZodType): TSchema =>
 /**
  * Builds a `defineTool` for one context type.
  *
- * Annotating a tool as `AgentHarnessTool<TContext>` would default `TParameters` to `TSchema`,
- * which makes `Static<TParameters>` resolve to `unknown` and throws away every argument type
- * inside `execute`. Curried because TypeScript cannot pin `TContext` explicitly while still
- * inferring `TParameters` from the literal; each kind calls this once and exports the result.
+ * Annotating a tool as `AgentTool<TContext>` would default `TParameters` to `TSchema`, which
+ * makes `Static<TParameters>` resolve to `unknown` and throws away every argument type inside
+ * `execute`. Curried because TypeScript cannot pin `TContext` explicitly while still inferring
+ * `TParameters` from the literal; each kind calls this once and exports the result.
  */
 export const toolDefiner =
   <TContext extends object>() =>
   <TParameters extends TSchema, TDetails>(
-    tool: AgentHarnessTool<TContext, TParameters, TDetails>
-  ): AgentHarnessTool<TContext, TParameters, TDetails> =>
+    tool: AgentTool<TContext, TParameters, TDetails>
+  ): AgentTool<TContext, TParameters, TDetails> =>
     tool;
+
+/** A context value, or a provider resolved once per turn. */
+export type ToolContextSource<TContext extends object> =
+  | TContext
+  | (() => TContext | Promise<TContext>);
+
+export const resolveToolContext = async <TContext extends object>(
+  source: ToolContextSource<TContext>
+): Promise<TContext> =>
+  source instanceof Function
+    ? await /* SAFETY: A function-typed source is the provider form; contexts themselves are plain objects. */ (
+        source as () => TContext | Promise<TContext>
+      )()
+    : source;
+
+/** Closes each tool over the turn's context, producing the four-argument tools Pi executes. */
+export const bindToolContext = <TContext extends object>(
+  tools: readonly AgentTool<TContext>[],
+  context: TContext
+): PiAgentTool[] =>
+  tools.map((tool) => ({
+    ...tool,
+    execute: (toolCallId, params, signal, onUpdate) =>
+      tool.execute(toolCallId, params, signal, onUpdate, context),
+  }));
 
 // ============================================
 // Tool result helpers
@@ -104,7 +131,6 @@ export const truncate = (text: string, maxChars: number) => {
 
 /** Tool results are parsed before a transcript summarizer reads their structured fields. */
 const jsonRecordSchema = z.record(z.string(), z.json());
-const jsonArraySchema = z.array(z.json());
 const textContentSchema = z.object({ text: z.string().optional() }).loose();
 const summarizedToolResultSchema = z
   .object({
@@ -112,18 +138,6 @@ const summarizedToolResultSchema = z
     details: jsonRecordSchema.optional(),
   })
   .loose();
-
-export const asRecord = <TValue>(value: TValue) =>
-  jsonRecordSchema.safeParse(value).data;
-
-export const asArray = <TValue>(value: TValue) =>
-  jsonArraySchema.safeParse(value).data;
-
-export const asString = <TValue>(value: TValue) =>
-  z.string().safeParse(value).data;
-
-export const asNumber = <TValue>(value: TValue) =>
-  z.number().safeParse(value).data;
 
 /** The `details` a tool returned, from either the live or the persisted result shape. */
 export const toolResultDetails = <TResult>(result: TResult) =>

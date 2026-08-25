@@ -8,6 +8,7 @@ import {
   upsertWritingAgentDraft,
 } from "@chia/db/repos/agent";
 import type { Locale } from "@chia/db/types";
+import { omitUndefined } from "@chia/utils/object";
 
 import type { DraftStore } from "../ports.ts";
 import type { DraftFeedMeta, DraftTranslation, FeedDraft } from "../types.ts";
@@ -57,11 +58,11 @@ export class PgDraftStore implements DraftStore {
     sessionId: string,
     patch: DraftFeedMeta
   ): Promise<FeedDraft> {
-    // Merge semantics live in `operations.ts` so this store and the in-memory one cannot drift:
-    // an omitted field arrives as an explicit `undefined` key and a plain spread would wipe it.
+    // Both stores patch through `operations.ts`, which uses `mergeDefined`: an omitted field
+    // arrives as an explicit `undefined` key and a plain spread would wipe it.
     const next = mergeFeedMeta(await this.get(sessionId), patch);
     await updateWritingAgentSession(this.db, sessionId, {
-      feedMeta: stripUndefined(next.feedMeta),
+      feedMeta: omitUndefined(next.feedMeta),
     });
     return next;
   }
@@ -78,7 +79,7 @@ export class PgDraftStore implements DraftStore {
     await upsertWritingAgentDraft(this.db, {
       sessionId,
       locale,
-      meta: stripUndefined(meta),
+      meta: omitUndefined(meta),
       content,
     });
 
@@ -107,7 +108,7 @@ export class PgDraftStore implements DraftStore {
   ): Promise<FeedDraft> {
     await updateWritingAgentSession(this.db, sessionId, {
       targetFeedId: post.feedId,
-      feedMeta: stripUndefined({
+      feedMeta: omitUndefined({
         slug: post.slug,
         type: post.type,
         contentType: post.contentType,
@@ -122,7 +123,7 @@ export class PgDraftStore implements DraftStore {
       await upsertWritingAgentDraft(this.db, {
         sessionId,
         locale,
-        meta: stripUndefined(meta),
+        meta: omitUndefined(meta),
         content: content ?? null,
       });
     }
@@ -136,15 +137,3 @@ export class PgDraftStore implements DraftStore {
     await updateWritingAgentSession(this.db, sessionId, { feedMeta: {} });
   }
 }
-
-/**
- * jsonb round-trips `undefined` as `null`, which would turn "field not set" into "field
- * explicitly cleared". Drop undefined keys before persisting.
- */
-const stripUndefined = <T extends object>(value: T): Partial<T> => {
-  const entries = Object.entries(value).filter(
-    ([, entry]) => entry !== undefined
-  );
-  // SAFETY: filtering entries removes values but never changes a surviving key or value.
-  return Object.fromEntries(entries) as Partial<T>;
-};

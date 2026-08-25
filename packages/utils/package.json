@@ -37,6 +37,10 @@
       "types": "./src/json/index.ts",
       "default": "./src/json/index.ts"
     },
+    "./object": {
+      "types": "./src/object/index.ts",
+      "default": "./src/object/index.ts"
+    },
     "./query-client": {
       "types": "./src/query-client/index.ts",
       "default": "./src/query-client/index.ts"

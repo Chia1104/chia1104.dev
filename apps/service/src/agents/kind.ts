@@ -5,7 +5,7 @@ import type {
   ListModelsOptions,
 } from "@chia/agent-runtime/models";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
-import type { Session } from "@chia/agent-runtime/session/pi";
+import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
   AgentCompactionResult,
   AgentNavigationOptions,
@@ -116,14 +116,14 @@ export type AgentCreateSessionInput = Parameters<
 export type AgentModels = ReturnType<typeof createAgentModels>;
 
 export interface AgentSessionOperationOptions {
-  session: Session;
+  session: SessionTree;
   settings: AgentSessionSettings;
   models: AgentModels;
 }
 
 /**
  * Everything the turn step has resolved before handing the turn to the kind: the owned session
- * row and its state, the opened Pi session, the caller's credential-bearing models, and the
+ * row and its state, the opened session tree, the caller's credential-bearing models, and the
  * host-side approval plumbing. The kind adds its tools, ports and prompts and runs Pi.
  */
 export interface AgentTurnContext<TState, TApproval> {
@@ -131,7 +131,7 @@ export interface AgentTurnContext<TState, TApproval> {
   row: AgentSession;
   state: TState;
   settings: AgentSessionSettings;
-  session: Session;
+  session: SessionTree;
   models: AgentModels;
   message: AgentTurnMessage;
   signal: AbortSignal;
