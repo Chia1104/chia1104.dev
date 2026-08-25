@@ -5,11 +5,11 @@ import {
   createAgentModels,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
+import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import {
   PgSessionRepo,
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
-import type { SessionTreeEntry } from "@chia/agent-runtime/session/pi";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
 import type {
   AgentSessionSettings,
@@ -301,9 +301,9 @@ export const createAgentKindService = <TState>(
    * sources showed it twice to a client that rejoined mid-turn.
    */
   const entriesBeforeTurn = (
-    entries: SessionTreeEntry[],
+    entries: SessionEntry[],
     turn: AgentTurnMarker
-  ): SessionTreeEntry[] => {
+  ): SessionEntry[] => {
     if (turn.leafEntryId === null) return [];
     const leafIndex = entries.findIndex(
       (entry) => entry.id === turn.leafEntryId
@@ -350,7 +350,7 @@ export const createAgentKindService = <TState>(
       row.leafEntryId === null &&
       stats.messageCount > 0
     ) {
-      const storedEntries = await session.getStorage().getEntries();
+      const storedEntries = await session.getEntries();
       if (storedEntries.every((entry) => entry.parentId === null)) {
         transcriptEntries = storedEntries;
       }
@@ -453,7 +453,7 @@ export const createAgentKindService = <TState>(
         },
         runtimeConfig: input.runtimeConfig,
       });
-      const { id } = await session.getMetadata();
+      const { id } = session;
       try {
         await definition.state.create(caller, db, id, input);
 

@@ -7,7 +7,7 @@ import {
 } from "@chia/agent-runtime/pi/maintenance";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { runPiTurn } from "@chia/agent-runtime/pi/turn";
-import type { Session } from "@chia/agent-runtime/session/pi";
+import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
   AgentCompactionResult,
   AgentNavigationOptions,
@@ -29,7 +29,7 @@ import { createWritingTools } from "./tools/tool-set.ts";
 import type { WritingToolContext } from "./types.ts";
 
 export interface RunWritingTurnOptions<TApproval> {
-  session: Session;
+  session: SessionTree;
   settings: AgentSessionSettings;
   agentSessionId: string;
   targetFeedId?: number;
@@ -49,7 +49,7 @@ export interface RunWritingTurnOptions<TApproval> {
   flushEvents?: () => Promise<void>;
 }
 
-/** Composes the writing domain and executes one turn on Pi's concrete runtime. */
+/** Composes the writing domain and executes one turn on Pi's `Agent`. */
 export const runWritingTurn = <TApproval>(
   options: RunWritingTurnOptions<TApproval>
 ): Promise<AgentTurnExecution<TApproval>> => {
@@ -83,7 +83,6 @@ export const runWritingTurn = <TApproval>(
         now: new Date(),
       }),
     signal: options.signal,
-    skills: writingSkills,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,
     budget: writingTurnBudget,
@@ -98,7 +97,7 @@ export const runWritingTurn = <TApproval>(
 };
 
 export interface WritingSessionOperationOptions {
-  session: Session;
+  session: SessionTree;
   settings: AgentSessionSettings;
   models?: Models;
 }

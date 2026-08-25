@@ -1,8 +1,7 @@
-import type { ToolCallEvent } from "@earendil-works/pi-agent-core";
 import { describe, expect, it } from "vitest";
 
 import { createPiToolCallGate } from "../src/pi/tool-gate.ts";
-import type { AgentPolicy } from "../src/types.ts";
+import type { AgentPolicy, ToolCallRequest } from "../src/types.ts";
 
 /**
  * The gate is the seam that used to be a module-level table of the writing agent's tool names.
@@ -18,8 +17,7 @@ const policy = (overrides: Partial<AgentPolicy> = {}): AgentPolicy => ({
   ...overrides,
 });
 
-const call = (toolName: string, id = "call-1"): ToolCallEvent => ({
-  type: "tool_call",
+const call = (toolName: string, id = "call-1"): ToolCallRequest => ({
   toolCallId: id,
   toolName,
   input: { some: "arg" },

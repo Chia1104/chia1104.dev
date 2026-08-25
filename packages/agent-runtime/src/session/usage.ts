@@ -1,10 +1,12 @@
 import {
-  buildSessionContext,
   estimateContextTokens,
   estimateTokens,
   getLastAssistantUsage,
 } from "@earendil-works/pi-agent-core";
-import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
+
+import { buildBranchContext } from "./context.ts";
+import type { SessionEntry } from "./entries.ts";
+import { contextEntries } from "./entries.ts";
 
 /**
  * Estimates the tokens the next provider request will carry for an active session branch.
@@ -15,21 +17,27 @@ import type { SessionTreeEntry } from "@earendil-works/pi-agent-core";
  * from their content instead.
  */
 export const estimateBranchContextTokens = (
-  entries: SessionTreeEntry[]
+  entries: readonly SessionEntry[]
 ): number => {
   if (entries.length === 0) return 0;
 
   const lastCompactionIndex = entries.findLastIndex(
     (entry) => entry.type === "compaction"
   );
-  const messages = buildSessionContext(entries).messages;
+  const messages = buildBranchContext(entries).messages;
 
   if (lastCompactionIndex === -1) {
     return estimateContextTokens(messages).tokens;
   }
 
-  const entriesAfterCompaction = entries.slice(lastCompactionIndex + 1);
-  if (getLastAssistantUsage(entriesAfterCompaction)) {
+  const entriesAfterCompaction = contextEntries(
+    entries.slice(lastCompactionIndex + 1)
+  );
+  if (
+    getLastAssistantUsage(
+      /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; the usage lookup reads only messages. */ entriesAfterCompaction as never
+    )
+  ) {
     return estimateContextTokens(messages).tokens;
   }
 

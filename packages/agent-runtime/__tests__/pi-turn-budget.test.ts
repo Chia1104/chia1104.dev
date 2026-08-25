@@ -1,10 +1,9 @@
-import type { ToolCallEvent } from "@earendil-works/pi-agent-core";
 import { describe, expect, it, vi } from "vitest";
 
 import type { JsonObject } from "@chia/utils/json";
 
 import { createPiTurnBudget } from "../src/pi/turn-budget.ts";
-import type { AgentTurnBudget } from "../src/types.ts";
+import type { AgentTurnBudget, ToolCallRequest } from "../src/types.ts";
 
 /**
  * The budget is the only thing that can end a tool-call loop from inside a turn, so each limit
@@ -22,7 +21,7 @@ const call = (
   input: JsonObject,
   toolName = "search",
   id = "call"
-): ToolCallEvent => ({ type: "tool_call", toolCallId: id, toolName, input });
+): ToolCallRequest => ({ toolCallId: id, toolName, input });
 
 describe("createPiTurnBudget", () => {
   it("lets distinct calls through until the soft limit, then refuses with a finish-now reason", () => {
