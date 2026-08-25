@@ -136,7 +136,6 @@ export const Markdown = ({
   text,
 }: MarkdownProps) => (
   <Streamdown
-    caret="block"
     className={cn("text-foreground text-[15px] leading-7", className)}
     components={
       components ? { ...markdownComponents, ...components } : markdownComponents
