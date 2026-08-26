@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, max, sql } from "drizzle-orm";
 
 import type { JsonObject } from "@chia/utils/json";
 
@@ -310,15 +310,16 @@ export const appendAgentSessionEntryAsLeaf = async (
     return row;
   });
 
-/** The newest `seq` persisted for the session on any branch; `0` for a session with no entries. */
+/**
+ * The newest `seq` persisted for the session on any branch; `0` for a session with no entries.
+ * `max()` decodes through the column, so the value keeps the column's full `bigserial` range.
+ */
 export const getAgentSessionLastSeq = async (
   db: DB,
   sessionId: string
 ): Promise<number> => {
   const [row] = await db
-    .select({
-      seq: sql<number>`coalesce(max(${agentSessionEntries.seq}), 0)::int`,
-    })
+    .select({ seq: max(agentSessionEntries.seq) })
     .from(agentSessionEntries)
     .where(eq(agentSessionEntries.sessionId, sessionId));
   return row?.seq ?? 0;
