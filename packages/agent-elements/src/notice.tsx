@@ -27,12 +27,16 @@ export const Notice = ({ className, notice }: NoticeProps) => {
       rewound: { icon: Undo2, label: labels.rewound },
     }[notice.variant];
     return (
-      <div
-        className={cn("text-muted flex items-center gap-2 text-xs", className)}>
-        <meta.icon className="size-3.5" />
-        <span className="font-medium">{meta.label}</span>
-        <span className="truncate">{notice.text}</span>
-      </div>
+      <Alert
+        className={cn("bg-surface-secondary gap-2 px-2.5 py-2", className)}>
+        <Alert.Indicator>
+          <CircleAlert className="size-4" />
+        </Alert.Indicator>
+        <Alert.Content>
+          <Alert.Title>{meta.label}</Alert.Title>
+          <Alert.Description>{notice.text}</Alert.Description>
+        </Alert.Content>
+      </Alert>
     );
   }
 
@@ -49,9 +53,7 @@ export const Notice = ({ className, notice }: NoticeProps) => {
             ? labels.errorHeadlines[notice.code]
             : labels.errorFallback}
         </Alert.Title>
-        <Alert.Description className="break-words">
-          {notice.text}
-        </Alert.Description>
+        <Alert.Description>{notice.text}</Alert.Description>
       </Alert.Content>
     </Alert>
   );

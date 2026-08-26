@@ -45,7 +45,7 @@
   "notePlaceholder": "Tell the agent why, or what to do instead…",
   "alwaysAllow": "Allow all {tier} tools for the rest of this session",
   "compacted": "Conversation compacted",
-  "rewound": "Went back — what was left behind",
+  "rewound": "Went back, what was left behind",
   "decisionRelayed": "Decision relayed to the agent",
   "editAndResend": "Edit & resend",
   "forkFromHere": "Branch from here",
