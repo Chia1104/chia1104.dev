@@ -33,6 +33,7 @@ import {
   deleteAgentSession,
   getActiveAgentRun,
   getAgentApprovals,
+  getAgentRun,
   getAgentSession,
   getAgentSessionLastSeq,
   patchAgentRunMetadata,
@@ -312,6 +313,33 @@ export const createAgentKindService = <TState>(
     await patchAgentRunMetadata(db, row.activeRunId, {
       [AGENT_TURN_KEY]: turn,
     });
+  };
+
+  /**
+   * How long `abort` waits for the stopped turn to land before cancelling the run regardless. A
+   * tool that ignores its signal keeps Pi waiting on it; the cancel then proceeds and the tool's
+   * result, if it ever comes, is closed on replay as aborted.
+   */
+  const ABORT_SETTLE_TIMEOUT_MS = 10_000;
+  const ABORT_SETTLE_POLL_MS = 150;
+
+  /**
+   * Waits for the turn step to clear its running marker after the abort signal reached it.
+   *
+   * The signal stops Pi, but the step still has the partial reply and any in-flight tool result
+   * to persist and its stream to flush before it clears the marker; the client rebuilds the
+   * transcript the moment `abort` returns, so returning earlier would show it a turn that is
+   * still missing its last entries.
+   */
+  const waitForTurnEnd = async (db: DB, activeRunId: string): Promise<void> => {
+    const deadline = Date.now() + ABORT_SETTLE_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+      const run = await getAgentRun(db, activeRunId);
+      if (!run || !readAgentTurnMarker(run.metadata)?.running) return;
+      await new Promise<void>((resolve) =>
+        setTimeout(resolve, ABORT_SETTLE_POLL_MS)
+      );
+    }
   };
 
   /**
@@ -817,10 +845,13 @@ export const createAgentKindService = <TState>(
       // leaves a live run behind a non-active row (the next prompt would start a second workflow and
       // hit the hook conflict).
       if (row.abortController) {
-        await signalAgentAbort(
+        const signalled = await signalAgentAbort(
           row.abortController.id,
           "stopped by the operator"
         );
+        if (signalled && row.activeRunId && row.turn?.running) {
+          await waitForTurnEnd(caller.context.db, row.activeRunId);
+        }
       }
       await cancelLiveRun(row.workflowRunId);
       if (row.activeRunId) {

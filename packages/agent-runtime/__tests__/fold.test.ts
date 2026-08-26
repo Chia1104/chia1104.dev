@@ -103,3 +103,30 @@ describe("approval fold", () => {
     expect(view.runStatus).toBe("error");
   });
 });
+
+describe("stopped turns", () => {
+  it("closes a call still running when the turn ends without its result", () => {
+    const { view, tool } = toolOf([
+      { type: "run:start", sessionId: "s" },
+      toolStart,
+      { type: "run:end", reason: "aborted" },
+    ]);
+    expect(tool.status).toBe("aborted");
+    expect(view.runStatus).toBe("idle");
+  });
+
+  it("renders a replayed aborted result as stopped, not failed", () => {
+    const { tool } = toolOf([
+      toolStart,
+      {
+        type: "tool:end",
+        toolCallId: "call-1",
+        toolName: "commit_draft",
+        isError: true,
+        aborted: true,
+        summary: "",
+      },
+    ]);
+    expect(tool.status).toBe("aborted");
+  });
+});

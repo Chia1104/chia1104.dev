@@ -19,14 +19,37 @@ import type { AgentWireEvent } from "./schema.ts";
  *
  * A message's wire id is its entry id, live and replayed alike, so a client can name the entry
  * behind any message it shows — which is what rewind and fork targets are.
+ *
+ * Pi appends a call's result right after the assistant message that issued it, so a call whose
+ * result is not the next thing on the branch never got one — the turn was stopped mid-execution,
+ * the process died, or a fork cut the branch at the assistant message. Those are closed as
+ * `aborted` here, because a `tool:start` with no end would read as still running forever.
  */
 export const entriesToWireEvents = (
   entries: readonly SessionEntry[],
   options: AgentEventPresentation
 ): AgentWireEvent[] => {
   const events: AgentWireEvent[] = [];
+  /** Calls from the last assistant message whose results have not arrived yet. */
+  let open = new Map<string, string>();
+  const closeOpen = () => {
+    for (const [toolCallId, toolName] of open) {
+      events.push({
+        type: "tool:end",
+        toolCallId,
+        toolName,
+        isError: true,
+        aborted: true,
+        summary: "",
+      });
+    }
+    open = new Map();
+  };
 
   for (const entry of entries) {
+    if (entry.type !== "message" || entry.message.role !== "toolResult") {
+      closeOpen();
+    }
     if (entry.type === "compaction") {
       events.push({
         type: "session:compacted",
@@ -87,9 +110,15 @@ export const entriesToWireEvents = (
       if (message.stopReason === "error") {
         events.push({ type: "error", ...errorOfAssistantMessage(message) });
       }
+      // Pi never executes the calls of a message that ended in `error` or `aborted`, and the live
+      // turn showed no card for them; replay matches, or a stop mid-generation grows cards on reload.
+      if (message.stopReason === "error" || message.stopReason === "aborted") {
+        continue;
+      }
 
       for (const part of message.content) {
         if (part.type !== "toolCall") continue;
+        open.set(part.id, part.name);
         events.push({
           type: "tool:start",
           toolCallId: part.id,
@@ -103,6 +132,7 @@ export const entriesToWireEvents = (
     }
 
     if (message.role === "toolResult") {
+      open.delete(message.toolCallId);
       events.push({
         type: "tool:end",
         toolCallId: message.toolCallId,
@@ -113,6 +143,7 @@ export const entriesToWireEvents = (
       });
     }
   }
+  closeOpen();
 
   return events;
 };

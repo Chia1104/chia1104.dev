@@ -3,7 +3,7 @@
 import type { ComponentType } from "react";
 
 import { Chip, Disclosure } from "@heroui/react";
-import { Check, CircleX, LoaderCircle, ShieldAlert } from "lucide-react";
+import { Ban, Check, CircleX, LoaderCircle, ShieldAlert } from "lucide-react";
 import { ThinkingOrb } from "thinking-orbs";
 
 import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
@@ -33,11 +33,12 @@ const statusMeta = {
   running: { color: "accent", icon: LoaderCircle, spin: true },
   ok: { color: "success", icon: Check, spin: false },
   error: { color: "danger", icon: CircleX, spin: false },
+  aborted: { color: "default", icon: Ban, spin: false },
   awaiting_approval: { color: "warning", icon: ShieldAlert, spin: false },
 } as const satisfies Record<
   ToolCallView["status"],
   {
-    color: "accent" | "danger" | "success" | "warning";
+    color: "accent" | "danger" | "default" | "success" | "warning";
     icon: ComponentType<{ className?: string }>;
     spin: boolean;
   }
@@ -50,6 +51,7 @@ export const ToolStatusChip = ({ tool }: { tool: ToolCallView }) => {
     running: labels.toolRunning,
     ok: labels.toolDone,
     error: labels.toolFailed,
+    aborted: labels.toolAborted,
     awaiting_approval: labels.toolAwaitingApproval,
   }[tool.status];
   return (
@@ -109,6 +111,8 @@ export const ToolCall = ({ className, renderers, tool }: ToolCallProps) => {
               />
             ) : tool.status === "ok" ? (
               <Check className="text-success size-3.5" />
+            ) : tool.status === "aborted" ? (
+              <Ban className="text-muted size-3.5" />
             ) : (
               <CircleX className="text-danger size-3.5" />
             )}

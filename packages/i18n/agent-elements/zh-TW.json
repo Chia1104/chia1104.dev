@@ -29,6 +29,7 @@
   "toolRunning": "執行中…",
   "toolDone": "完成",
   "toolFailed": "失敗",
+  "toolAborted": "已中止",
   "toolAwaitingApproval": "等待授權",
   "arguments": "參數",
   "result": "結果",

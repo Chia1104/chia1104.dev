@@ -29,6 +29,7 @@
   "toolRunning": "Running…",
   "toolDone": "Done",
   "toolFailed": "Failed",
+  "toolAborted": "Stopped",
   "toolAwaitingApproval": "Waiting for approval",
   "arguments": "Arguments",
   "result": "Result",
