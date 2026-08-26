@@ -77,13 +77,19 @@ export const runWritingTurn = <TApproval>(
       skills: writingSkills,
       autoApprove: options.settings.autoApprove,
     }),
-    volatileContext: async () =>
-      buildTurnContext({
-        draft: await options.draft.get(options.agentSessionId),
+    volatileContext: async () => {
+      const [draft, sessionMemories] = await Promise.all([
+        options.draft.get(options.agentSessionId),
+        options.memory.listBySession(options.agentSessionId),
+      ]);
+      return buildTurnContext({
+        draft,
+        sessionMemories,
         targetFeedId: options.targetFeedId,
         defaultLocale,
         now: new Date(),
-      }),
+      });
+    },
     signal: options.signal,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,

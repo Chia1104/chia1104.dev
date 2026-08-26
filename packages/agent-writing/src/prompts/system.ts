@@ -3,16 +3,16 @@ import type { Skill } from "@earendil-works/pi-agent-core";
 import type { ToolTier } from "@chia/agent-runtime/types";
 import type { Locale } from "@chia/db/types";
 
-import type { FeedDraft } from "../types.ts";
+import type { FeedDraft, MemorySummary } from "../types.ts";
 
 /**
  * Prompt assembly, split by how often the text changes.
  *
  * `buildSystemPrompt` is stable for a session — rules, skills index and approval posture — so the
  * provider's cached prefix (system prompt, tool schemas, transcript) survives from turn to turn.
- * `buildTurnContext` is the volatile block: draft state and the clock, refreshed on every provider
- * request through Pi's `context` hook and never persisted, so it is always current and never
- * accumulates in the transcript.
+ * `buildTurnContext` is the volatile block: draft state, the clock and what the session has saved
+ * to memory, refreshed on every provider request through Pi's `context` hook and never persisted,
+ * so it is always current and never accumulates in the transcript.
  */
 
 export interface SystemPromptInput {
@@ -27,7 +27,21 @@ export interface TurnContextInput {
   targetFeedId?: number;
   defaultLocale: Locale;
   now: Date;
+  /** What this session has already saved, so the model neither repeats itself nor forgets the ids. */
+  sessionMemories?: readonly MemorySummary[];
 }
+
+/**
+ * A memory title is one line in the volatile block, and a `source` title is a fetched page's
+ * own `<title>` — attacker-controlled text. The model saw it in the tool result already, so
+ * this is not a new exposure, but the block is a state summary, not a carrier for content.
+ */
+const MEMORY_TITLE_MAX_CHARS = 120;
+
+const oneLine = (text: string, max: number): string => {
+  const line = text.replace(/\s+/g, " ").trim();
+  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+};
 
 const CORE = `
 You are the writing assistant for a personal technical blog, working inside its admin
@@ -136,6 +150,15 @@ export const buildTurnContext = (input: TurnContextInput): string => {
           (missing.length > 0
             ? `, missing ${missing.join("/")}`
             : ", metadata complete")
+      );
+    }
+  }
+
+  if (input.sessionMemories && input.sessionMemories.length > 0) {
+    lines.push("- Memories saved this session (read one with `get_memory`):");
+    for (const memory of input.sessionMemories) {
+      lines.push(
+        `  - [${memory.kind}] ${oneLine(memory.title, MEMORY_TITLE_MAX_CHARS)} (#${memory.id})`
       );
     }
   }

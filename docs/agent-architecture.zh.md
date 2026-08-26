@@ -233,7 +233,8 @@ abort run，turn 以該 error 結束而非 `aborted`。per-user 與 per-session 
 
 System prompt 在一個 session 內是穩定的——規則、skills 索引、approval posture——因為它位於
 每個 provider request 的最前面，一變就會讓 system prompt、tool schema 與其後整段 transcript
-的 cached prefix 失效。每個 turn 會變的東西（draft 狀態、時鐘）是 **volatile context**：透過
+的 cached prefix 失效。每個 turn 會變的東西（draft 狀態、時鐘、本 session 已存的記憶）是
+**volatile context**：透過
 Pi 的 `context` hook 附加為每個 provider request 的最後一則 user message，不持久化，因此永遠
 是最新的，也不會累積在 transcript 裡。模型必須看到最新狀態的東西放這裡，不放 system prompt。
 
@@ -460,6 +461,11 @@ system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatil
 `packages/api/memories/write.ts`，索引 hook 是必填參數（同 `feeds/write.ts`），每次寫入都對
 `agent_memory` 這個 resource type 排一次 `indexResourceWorkflow`（`docs/rag-architecture.md`
 §2.4）。`save_memory` 歸 `draft` tier——可逆、部落格看不到——而且只寫 `fact`。
+
+`fetch_url` 讀過的每一頁都經同一個 port 留下一筆 `source`——URL、標題、500 字摘錄——以 URL 為
+key，重訪是更新不是重複。留痕在 fetch 之後寫、永遠不會讓 fetch 失敗：模型拿到的結果有沒有留痕
+都一樣。Volatile context（§4）列出本 session 已存的記憶，一筆一行、有上限、附 id，模型才不會
+重複存，也知道可以 `get_memory` 拿回已經有的東西。
 
 記憶只透過 tool 進到模型眼前，不進 system prompt：`search_memory` 是限定
 `sourceTypes: ["agent_memory"]` 加 `includeUnpublished: true` 的 resource search——兩個旗標

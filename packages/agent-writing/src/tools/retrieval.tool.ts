@@ -2,7 +2,12 @@ import { StringEnum } from "@earendil-works/pi-ai";
 
 import { contentReadTools } from "@chia/agent-content/tools/read";
 
-import type { WebSearchResult, WritingTool } from "../types.ts";
+import type {
+  FetchedPage,
+  WebSearchResult,
+  WritingTool,
+  WritingToolContext,
+} from "../types.ts";
 import { WEB_SEARCH_RECENCIES } from "../types.ts";
 
 import { TOOL_NAMES, labelOf } from "./registry.ts";
@@ -16,6 +21,11 @@ import { Type, defineTool, textResult, truncate } from "./schema.ts";
  */
 
 const MAX_PAGE_CHARS = 16_000;
+/**
+ * What a `source` memory keeps of a page. The full text is the fetch's job, not memory's —
+ * Firecrawl re-reads a page cheaply; memory answers "did I read this, what was it, where".
+ */
+const SOURCE_EXCERPT_CHARS = 500;
 const MAX_SEARCH_RESULTS = 10;
 const DEFAULT_SEARCH_RESULTS = 5;
 const MAX_SEARCH_DOMAINS = 5;
@@ -142,6 +152,8 @@ export const fetchUrlTool = defineTool({
     const page = await context.web.fetchPage(parsed.toString(), signal);
     const body = truncate(page.text, MAX_PAGE_CHARS);
 
+    await recordSource(context, page, signal);
+
     return textResult(
       `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}`,
       { url: page.url, title: page.title, truncated: body.truncated }
@@ -154,6 +166,45 @@ export const fetchUrlTool = defineTool({
  * satisfies it, so they slot into the writing tool set unchanged. Search precedes fetch so the
  * listing order matches the discover-then-read workflow.
  */
+/**
+ * Leaves a trail of every page read, keyed on its URL, so a later session can find it with
+ * `search_memory`. Deterministic and model-free. Never fails the fetch: the model's result
+ * is the same whether or not the trail was written, and a memory outage must not cost a
+ * turn its research.
+ */
+const recordSource = async (
+  context: WritingToolContext,
+  page: FetchedPage,
+  signal: AbortSignal | undefined
+): Promise<void> => {
+  const excerpt = page.text.trim().slice(0, SOURCE_EXCERPT_CHARS);
+  if (excerpt.length === 0) return;
+  try {
+    await context.memory.save(
+      {
+        kind: "source",
+        title: page.title?.trim() || hostnameOf(page.url),
+        content: excerpt,
+        sourceUrl: page.url,
+      },
+      signal
+    );
+  } catch (error) {
+    console.error("Could not record a fetched page as a source memory", {
+      url: page.url,
+      error: String(error),
+    });
+  }
+};
+
+const hostnameOf = (url: string): string => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+};
+
 export const retrievalTools: WritingTool[] = [
   ...contentReadTools,
   webSearchTool,

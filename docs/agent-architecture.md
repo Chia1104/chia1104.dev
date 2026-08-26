@@ -253,8 +253,8 @@ belong at enqueue time, in the kind service.
 
 The system prompt is stable for a session — rules, skills index, approval posture — because it
 heads every provider request and a changed prefix invalidates the cached system prompt, tool
-schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock)
-is the **volatile context**: appended as the last user message of each provider request through
+schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock,
+the memories this session has saved) is the **volatile context**: appended as the last user message of each provider request through
 Pi's `context` hook, never persisted, so it is always current and never accumulates in the
 transcript. Anything the model must see fresh belongs there, not in the system prompt.
 
@@ -518,6 +518,13 @@ through `packages/api/memories/write.ts`, which takes the index hook as a requir
 way `feeds/write.ts` does, and every write schedules `indexResourceWorkflow` for the
 `agent_memory` resource type (`docs/rag-architecture.md` §2.4). `save_memory` sits in the
 `draft` tier — reversible, invisible to the blog — and only ever writes a `fact`.
+
+`fetch_url` records every page it reads as a `source` — URL, title, a 500-character excerpt —
+through the same port, keyed on the URL so a revisit refreshes rather than duplicates. The
+trail is written after the fetch and can never fail it: the model's result is identical with
+or without it. The volatile context (§4) lists what the current session has saved, one
+bounded line per memory with its id, so the model neither saves twice nor forgets it can
+`get_memory` what it already has.
 
 Memory reaches the model through tools, never through the system prompt: `search_memory` is
 resource search scoped to `sourceTypes: ["agent_memory"]` with `includeUnpublished: true`, the

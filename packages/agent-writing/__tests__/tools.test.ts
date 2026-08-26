@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
@@ -16,6 +16,7 @@ const SESSION_ID = "session-1";
 type TestContext = WritingToolContext & {
   content: FakeContentPort;
   web: FakeWebPort;
+  memory: InMemoryMemoryPort;
 };
 
 const createContext = (): TestContext => ({
@@ -96,6 +97,95 @@ describe("webSearchTool", () => {
       )
     ).rejects.toThrow("is not a bare hostname");
     expect(context.web.searches).toHaveLength(0);
+  });
+});
+
+describe("fetchUrlTool source trail", () => {
+  it("records the fetched page as a source memory keyed on its URL", async () => {
+    const context = createContext();
+    context.web = createFakeWebPort({
+      pages: {
+        "https://example.com/docs": {
+          url: "https://example.com/docs#intro",
+          title: "  Example docs  ",
+          text: `${"body ".repeat(200)}tail`,
+        },
+      },
+    });
+
+    await fetchUrlTool.execute(
+      "call-1",
+      { url: "https://example.com/docs" },
+      undefined,
+      undefined,
+      context
+    );
+
+    const [source] = context.memory.all;
+    expect(source).toMatchObject({
+      kind: "source",
+      title: "Example docs",
+      sourceUrl: "https://example.com/docs#intro",
+    });
+    expect(source?.content).toHaveLength(500);
+  });
+
+  it("falls back to the hostname for an untitled page and skips an empty one", async () => {
+    const context = createContext();
+    context.web = createFakeWebPort({
+      pages: {
+        "https://example.com/a": {
+          url: "https://example.com/a",
+          text: "some text",
+        },
+        "https://example.com/empty": {
+          url: "https://example.com/empty",
+          text: "  ",
+        },
+      },
+    });
+
+    await fetchUrlTool.execute(
+      "c1",
+      { url: "https://example.com/a" },
+      undefined,
+      undefined,
+      context
+    );
+    await fetchUrlTool.execute(
+      "c2",
+      { url: "https://example.com/empty" },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(context.memory.all.map((row) => row.title)).toEqual(["example.com"]);
+  });
+
+  it("never lets the trail fail the fetch", async () => {
+    const context = createContext();
+    context.web = createFakeWebPort({
+      pages: {
+        "https://example.com/": { url: "https://example.com/", text: "body" },
+      },
+    });
+    context.memory.save = () => Promise.reject(new Error("memory is down"));
+    const errors = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    const result = await fetchUrlTool.execute(
+      "call-1",
+      { url: "https://example.com/" },
+      undefined,
+      undefined,
+      context
+    );
+
+    expect(result.details).toMatchObject({ url: "https://example.com/" });
+    expect(errors).toHaveBeenCalledOnce();
+    errors.mockRestore();
   });
 });
 
