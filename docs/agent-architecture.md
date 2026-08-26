@@ -500,7 +500,10 @@ Destructive deletion and image upload are not available agent tools.
 `WebPort` is host-implemented on Firecrawl (`apps/service/src/services/agent-web.port.ts`,
 `FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
 fixed cost; `fetch_url` is one scrape per page, main content as markdown, and is how the model
-reads a source it chose. There is no direct outbound fetch in the agent path.
+reads a source it chose. There is no direct outbound fetch in the agent path. Both tools hand
+the turn's abort signal to the port; the Firecrawl SDK cannot cancel a request, so the port
+settles with the signal's reason at once and lets the request run out its timeout in the
+background — a stopped turn ends as soon as the signal fires instead of when the page arrives.
 
 ### Content visibility
 

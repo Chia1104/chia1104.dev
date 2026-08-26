@@ -443,7 +443,9 @@ buffer；只有 commit-tier tool 會把 staged data 提升到正式 feed/content
 開放給 agent。`WebPort` 由 host 用 Firecrawl 實作（`apps/service/src/services/agent-web.port.ts`、
 `FIRECRAWL_API_KEY`）：search 只回 snippet、不逐筆 scrape，所以每次呼叫成本固定；`fetch_url`
 是一頁一次 scrape、回主要內容的 markdown，模型要讀哪一頁自己決定。Agent 路徑上沒有直接對外的
-fetch。`buildSystemPrompt` 是穩定的
+fetch。兩個 tool 都把 turn 的 abort signal 交給 port；Firecrawl SDK 無法取消 request，所以 port
+在 signal 一觸發就以它的 reason settle、讓 request 在背景跑到 timeout——被中止的 turn 在 signal
+觸發時就結束，而不是等頁面回來。`buildSystemPrompt` 是穩定的
 system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatile block（見 §4）；skills
 與 templates 位於 `packages/agent-writing/src/prompts/`。
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
 import { commitDraftTool } from "../src/tools/commit.tool.ts";
 import { patchDraftMetaTool } from "../src/tools/draft.tool.ts";
-import { webSearchTool } from "../src/tools/retrieval.tool.ts";
+import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
 import { createWritingTools } from "../src/tools/tool-set.ts";
 import type { WritingToolContext } from "../src/types.ts";
 
@@ -25,6 +25,28 @@ const createContext = (): TestContext => ({
 });
 
 describe("webSearchTool", () => {
+  it("hands the turn's abort signal to the port, so a stop reaches the request", async () => {
+    const context = createContext();
+    const controller = new AbortController();
+
+    await webSearchTool.execute(
+      "call-1",
+      { query: "embeddings guide" },
+      controller.signal,
+      undefined,
+      context
+    );
+    await fetchUrlTool.execute(
+      "call-2",
+      { url: "https://example.com/" },
+      controller.signal,
+      undefined,
+      context
+    );
+
+    expect(context.web.signals).toEqual([controller.signal, controller.signal]);
+  });
+
   it("normalizes and forwards bare include domains", async () => {
     const context = createContext();
 

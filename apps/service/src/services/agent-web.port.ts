@@ -31,6 +31,26 @@ const TBS_BY_RECENCY = {
 
 const firecrawl = new Firecrawl({ apiKey: env.FIRECRAWL_API_KEY });
 
+/**
+ * Rejects with the signal's reason the moment it fires. The SDK has no cancellation of its own,
+ * so the request runs on to `REQUEST_TIMEOUT_MS` in the background; what matters is that the
+ * tool returns to Pi at once, so a stopped turn can end instead of waiting on the page.
+ */
+const untilAborted = <TValue>(
+  request: Promise<TValue>,
+  signal: AbortSignal | undefined
+): Promise<TValue> => {
+  if (!signal) return request;
+  if (signal.aborted) return Promise.reject(signal.reason);
+  return new Promise<TValue>((resolve, reject) => {
+    const onAbort = () => reject(signal.reason);
+    signal.addEventListener("abort", onAbort, { once: true });
+    void request.then(resolve, reject).finally(() => {
+      signal.removeEventListener("abort", onAbort);
+    });
+  });
+};
+
 /** The SDK message carries the provider's response body; the model needs the status only. */
 const toModelError = (operation: string, error: SdkError): Error =>
   new Error(
@@ -57,16 +77,22 @@ const toSearchResult = (
     : undefined;
 };
 
-const search = async (input: WebSearchInput): Promise<WebSearchResult[]> => {
+const search = async (
+  input: WebSearchInput,
+  signal?: AbortSignal
+): Promise<WebSearchResult[]> => {
   let data;
   try {
-    data = await firecrawl.search(input.query, {
-      limit: input.limit,
-      tbs: input.recency ? TBS_BY_RECENCY[input.recency] : undefined,
-      includeDomains: input.includeDomains,
-      sources: ["web"],
-      timeout: REQUEST_TIMEOUT_MS,
-    });
+    data = await untilAborted(
+      firecrawl.search(input.query, {
+        limit: input.limit,
+        tbs: input.recency ? TBS_BY_RECENCY[input.recency] : undefined,
+        includeDomains: input.includeDomains,
+        sources: ["web"],
+        timeout: REQUEST_TIMEOUT_MS,
+      }),
+      signal
+    );
   } catch (error) {
     throw error instanceof SdkError ? toModelError("Web search", error) : error;
   }
@@ -77,14 +103,20 @@ const search = async (input: WebSearchInput): Promise<WebSearchResult[]> => {
   });
 };
 
-const fetchPage = async (url: string): Promise<FetchedPage> => {
+const fetchPage = async (
+  url: string,
+  signal?: AbortSignal
+): Promise<FetchedPage> => {
   let document;
   try {
-    document = await firecrawl.scrape(url, {
-      formats: ["markdown"],
-      onlyMainContent: true,
-      timeout: REQUEST_TIMEOUT_MS,
-    });
+    document = await untilAborted(
+      firecrawl.scrape(url, {
+        formats: ["markdown"],
+        onlyMainContent: true,
+        timeout: REQUEST_TIMEOUT_MS,
+      }),
+      signal
+    );
   } catch (error) {
     throw error instanceof SdkError
       ? toModelError("Fetching the page", error)
