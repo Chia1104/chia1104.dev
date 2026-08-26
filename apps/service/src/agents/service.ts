@@ -5,6 +5,7 @@ import {
   createAgentModels,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
+import { entriesUpToSeq } from "@chia/agent-runtime/session/entries";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import {
   PgSessionRepo,
@@ -33,6 +34,7 @@ import {
   getActiveAgentRun,
   getAgentApprovals,
   getAgentSession,
+  getAgentSessionLastSeq,
   patchAgentRunMetadata,
   softDeleteAgentSession,
   withAgentSessionLock,
@@ -303,7 +305,7 @@ export const createAgentKindService = <TState>(
   ): Promise<void> => {
     if (!row.activeRunId || row.turn?.running) return;
     const turn: AgentTurnMarker = {
-      leafEntryId: row.leafEntryId,
+      seqBefore: await getAgentSessionLastSeq(db, row.id),
       streamIndex: startIndex,
       running: true,
     };
@@ -362,23 +364,15 @@ export const createAgentKindService = <TState>(
   };
 
   /**
-   * The branch up to the leaf the running turn started from. Everything after it — the turn's own
-   * user message included — is replayed by `attach` from the run's stream, which starts at the
-   * marker's `streamIndex`, before the turn announces `user`. Taking the user message from both
-   * sources showed it twice to a client that rejoined mid-turn.
+   * The branch as it was persisted before the running turn started. Everything the turn appends
+   * — its own user message included — is replayed by `attach` from the run's stream, which starts
+   * at the marker's `streamIndex`, before the turn announces `user`. Taking the user message from
+   * both sources showed it twice to a client that rejoined mid-turn.
    */
   const entriesBeforeTurn = (
     entries: SessionEntry[],
     turn: AgentTurnMarker
-  ): SessionEntry[] => {
-    if (turn.leafEntryId === null) return [];
-    const leafIndex = entries.findIndex(
-      (entry) => entry.id === turn.leafEntryId
-    );
-    // A marker that is not on this branch cannot cut it; show everything rather than guess.
-    if (leafIndex === -1) return entries;
-    return entries.slice(0, leafIndex + 1);
-  };
+  ): SessionEntry[] => entriesUpToSeq(entries, turn.seqBefore);
 
   const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     const row = await loadOwnedSession(caller, sessionId);
@@ -410,27 +404,14 @@ export const createAgentKindService = <TState>(
       turn,
     });
 
-    // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
-    // an empty active branch. Replay those entries in insertion order so existing development
-    // sessions remain visible after a refresh. Correctly linked sessions always use their branch.
-    let transcriptEntries = branch;
-    if (
-      branch.length === 0 &&
-      row.leafEntryId === null &&
-      stats.messageCount > 0
-    ) {
-      const storedEntries = await session.getEntries();
-      if (storedEntries.every((entry) => entry.parentId === null)) {
-        transcriptEntries = storedEntries;
-      }
-    }
     /**
      * A running turn is not replayed from the transcript: `attach` replays it from the run's stream
      * instead, and both cut at the same recorded marker so the client sees each message once.
      */
-    if (run?.status === "running" && turn) {
-      transcriptEntries = entriesBeforeTurn(transcriptEntries, turn);
-    }
+    const transcriptEntries =
+      run?.status === "running" && turn
+        ? entriesBeforeTurn(branch, turn)
+        : branch;
     const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
     // Approval events are never replayed from the transcript; the rows are. A pending row restores
@@ -689,7 +670,7 @@ export const createAgentKindService = <TState>(
         // start that fails closes the row so the lease does not outlive the attempt.
         const runId = crypto.randomUUID();
         const turn: AgentTurnMarker = {
-          leafEntryId: row.leafEntryId,
+          seqBefore: await getAgentSessionLastSeq(db, row.id),
           streamIndex: 0,
           running: true,
         };

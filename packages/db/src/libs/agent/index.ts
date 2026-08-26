@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
 import type { JsonObject } from "@chia/utils/json";
 
@@ -288,28 +288,40 @@ export interface InsertAgentSessionEntryDTO {
   timestamp: Date;
 }
 
-export const appendAgentSessionEntry = async (
-  db: DB,
-  input: InsertAgentSessionEntryDTO
-) => {
-  await db.insert(agentSessionEntries).values(input);
-};
-
 /**
  * Appends an entry and makes it the session's active leaf in one transaction, so a failure
- * between the two writes can never leave an entry outside every branch.
+ * between the two writes can never leave an entry outside every branch. Returns the `seq` the
+ * row landed on.
  */
 export const appendAgentSessionEntryAsLeaf = async (
   db: DB,
   input: InsertAgentSessionEntryDTO
-) => {
+): Promise<{ seq: number }> =>
   await db.transaction(async (tx) => {
-    await tx.insert(agentSessionEntries).values(input);
+    const [row] = await tx
+      .insert(agentSessionEntries)
+      .values(input)
+      .returning({ seq: agentSessionEntries.seq });
+    if (!row) throw new Error(`Entry ${input.id} was not inserted.`);
     await tx
       .update(agentSessions)
       .set({ leafEntryId: input.id })
       .where(eq(agentSessions.id, input.sessionId));
+    return row;
   });
+
+/** The newest `seq` persisted for the session on any branch; `0` for a session with no entries. */
+export const getAgentSessionLastSeq = async (
+  db: DB,
+  sessionId: string
+): Promise<number> => {
+  const [row] = await db
+    .select({
+      seq: sql<number>`coalesce(max(${agentSessionEntries.seq}), 0)::int`,
+    })
+    .from(agentSessionEntries)
+    .where(eq(agentSessionEntries.sessionId, sessionId));
+  return row?.seq ?? 0;
 };
 
 export const getAgentSessionEntry = async (
@@ -346,22 +358,13 @@ export const getAgentSessionEntriesByType = async (
     )
     .orderBy(asc(agentSessionEntries.seq));
 
-export const getAgentSessionEntries = async (
-  db: DB,
-  sessionId: string,
-  options?: { afterSeq?: number; limit?: number }
-) => {
-  const conditions = [eq(agentSessionEntries.sessionId, sessionId)];
-  if (options?.afterSeq !== undefined) {
-    conditions.push(gt(agentSessionEntries.seq, options.afterSeq));
-  }
-  const query = db
+/** Every entry of the session, all branches, in `seq` order. */
+export const getAgentSessionEntries = async (db: DB, sessionId: string) =>
+  await db
     .select()
     .from(agentSessionEntries)
-    .where(and(...conditions))
+    .where(eq(agentSessionEntries.sessionId, sessionId))
     .orderBy(asc(agentSessionEntries.seq));
-  return options?.limit ? await query.limit(options.limit) : await query;
-};
 
 // ============================================
 // Writing agent state

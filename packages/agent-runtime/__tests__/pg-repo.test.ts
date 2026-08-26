@@ -66,6 +66,7 @@ const rows = [
 describe("PgSessionRepo.fork", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(appendAgentSessionEntryAsLeaf).mockResolvedValue({ seq: 1 });
     vi.mocked(getAgentSession).mockResolvedValue(
       /* SAFETY: This fixture implements the session row members exercised by this case. */ sessionRow as never
     );
@@ -111,6 +112,11 @@ describe("PgSessionRepo.fork", () => {
       ["u1", "fork-1"],
       ["a1", "fork-1"],
     ]);
+    // The source's seq is storage-assigned there; the copy takes its own and never stores the old one.
+    for (const [, input] of vi.mocked(appendAgentSessionEntryAsLeaf).mock
+      .calls) {
+      expect(input.payload).not.toHaveProperty("seq");
+    }
     // A branch fork ends on its last copied entry; nothing moves the leaf afterwards.
     expect(vi.mocked(updateAgentSession)).not.toHaveBeenCalled();
     expect(vi.mocked(getAgentSession)).toHaveBeenCalledOnce();

@@ -13,6 +13,12 @@ import type { Usage } from "@earendil-works/pi-ai";
 export interface SessionEntryBase {
   id: string;
   parentId: string | null;
+  /**
+   * Storage-assigned on append, strictly increasing within a session: the order entries were
+   * persisted in, across every branch. The tree order is `parentId`; `seq` is the cursor —
+   * "everything persisted before this point" is `seq <= n`, whichever branch is active.
+   */
+  seq: number;
   /** Unix ms. */
   timestamp: number;
 }
@@ -80,6 +86,13 @@ export type ContextEntry =
 
 export type SessionEntry = ContextEntry | LabelEntry;
 
+/**
+ * An entry as a caller builds it: everything but the `seq` storage assigns when it lands.
+ * Distributes over the union so `NewSessionEntry<MessageEntry>` keeps its discriminant.
+ */
+export type NewSessionEntry<TEntry extends SessionEntry = SessionEntry> =
+  TEntry extends SessionEntry ? Omit<TEntry, "seq"> : never;
+
 const CONTEXT_ENTRY_TYPES: ReadonlySet<string> = new Set<ContextEntry["type"]>([
   "message",
   "compaction",
@@ -100,6 +113,12 @@ export const isContextEntry = (entry: SessionEntry): entry is ContextEntry =>
 export const contextEntries = (
   entries: readonly SessionEntry[]
 ): ContextEntry[] => entries.filter(isContextEntry);
+
+/** The entries persisted up to and including `seq`, on whichever branch they sit. */
+export const entriesUpToSeq = <TEntry extends SessionEntry>(
+  entries: readonly TEntry[],
+  seq: number
+): TEntry[] => entries.filter((entry) => entry.seq <= seq);
 
 export interface SessionStats {
   messageCount: number;

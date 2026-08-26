@@ -147,8 +147,12 @@ export type AgentRun = InferSelectModel<typeof agentRuns>;
  * columns. Storing the payload opaquely lets each harness evolve its entry types without
  * changing the shared table.
  *
- * `seq` exists so the storage adapter can page entries in insertion order and so the
- * event stream has a stable cursor; the tree order comes from `parentId`.
+ * `seq` is the order entries were persisted in, across every branch; the tree order comes from
+ * `parentId`. It is a table-wide `bigserial` taken at insert, not a per-session counter taken
+ * at commit, which is only sound because a session has one writer at a time — one active run,
+ * and turn acceptance and tree maintenance serialised on the session's advisory lock. Under
+ * that invariant "everything persisted before this point" is `seq <= n`, which is how a turn
+ * marker cuts the transcript. Gaps are meaningless.
  */
 export const agentSessionEntries = agentSchema.table(
   "session_entry",

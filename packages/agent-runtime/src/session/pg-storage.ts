@@ -11,7 +11,7 @@ import {
 } from "@chia/db/repos/agent";
 import type { JsonObject } from "@chia/utils/json";
 
-import type { SessionEntry, SessionStats } from "./entries.ts";
+import type { NewSessionEntry, SessionEntry, SessionStats } from "./entries.ts";
 import { computeSessionStats } from "./entries.ts";
 import type { SessionTree } from "./tree.ts";
 import { labelOf, walkBranch } from "./tree.ts";
@@ -30,6 +30,7 @@ export interface PgSessionMetadata {
 }
 
 interface EntryRow {
+  seq: number;
   id: string;
   parentId: string | null;
   type: string;
@@ -49,19 +50,7 @@ export class PgSessionStorage implements SessionTree {
 
   async getLeafId(): Promise<string | null> {
     const row = await getAgentSession(this.db, this.id);
-    if (row?.leafEntryId) return row.leafEntryId;
-
-    // Compatibility for entries written before appendEntry advanced the leaf. That bug produced a
-    // flat sequence where every entry was a root. A normal branch can have a null leaf after an
-    // explicit move-to-root, but its existing entries still contain parent links.
-    const entries = await getAgentSessionEntries(this.db, this.id);
-    if (
-      entries.length > 1 &&
-      entries.every((entry) => entry.parentId === null)
-    ) {
-      return entries.at(-1)?.id ?? null;
-    }
-    return null;
+    return row?.leafEntryId ?? null;
   }
 
   async setLeafId(leafId: string | null): Promise<void> {
@@ -73,9 +62,9 @@ export class PgSessionStorage implements SessionTree {
   }
 
   /** The insert and the leaf advance are one transaction: an entry is never left outside every branch. */
-  async appendEntry(entry: SessionEntry): Promise<void> {
+  async appendEntry(entry: NewSessionEntry): Promise<SessionEntry> {
     const { id, parentId, timestamp, type, ...payload } = entry;
-    await appendAgentSessionEntryAsLeaf(this.db, {
+    const { seq } = await appendAgentSessionEntryAsLeaf(this.db, {
       id,
       sessionId: this.id,
       parentId: parentId ?? null,
@@ -84,6 +73,7 @@ export class PgSessionStorage implements SessionTree {
       payload: payload as JsonObject,
       timestamp: new Date(timestamp),
     });
+    return { ...entry, seq };
   }
 
   async getEntry(id: string): Promise<SessionEntry | undefined> {
@@ -120,21 +110,7 @@ export class PgSessionStorage implements SessionTree {
   async getBranch(fromId?: string | null): Promise<SessionEntry[]> {
     const leafId = fromId === undefined ? await this.getLeafId() : fromId;
     if (!leafId) return [];
-
-    const rows = await getAgentSessionEntries(this.db, this.id);
-    const entries = rows.map(toEntry);
-
-    // The old PostgreSQL adapter persisted every entry with a null parent because its leaf never
-    // advanced. Reconstruct only that contiguous root prefix in memory. A legitimate branch made
-    // after move-to-root occurs after linked entries, so it is intentionally left untouched.
-    for (let index = 1; index < entries.length; index += 1) {
-      const entry = entries[index];
-      const previous = entries[index - 1];
-      if (!entry || !previous || entry.parentId !== null) break;
-      entries[index] = { ...entry, parentId: previous.id };
-    }
-
-    return walkBranch(entries, leafId);
+    return walkBranch(await this.getEntries(), leafId);
   }
 
   async getEntries(): Promise<SessionEntry[]> {
@@ -144,8 +120,8 @@ export class PgSessionStorage implements SessionTree {
 }
 
 /**
- * `payload` holds the entry minus the four base fields, so rehydrating is a spread. Base fields
- * are assigned after the spread so the projected shape never depends on column order.
+ * `payload` holds the entry minus the base fields, so rehydrating is a spread. Base fields are
+ * assigned after the spread so the projected shape never depends on column order.
  *
  * The cast is deliberate: the payload is stored opaquely so an entry type this runtime has not
  * modelled still round-trips. A compaction persisted before `retainedTail` was mandatory reads
@@ -157,6 +133,7 @@ const toEntry = (row: EntryRow): SessionEntry => {
       ...row.payload,
       id: row.id,
       parentId: row.parentId,
+      seq: row.seq,
       type: row.type,
       timestamp: row.timestamp.getTime(),
     } as SessionEntry;

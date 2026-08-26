@@ -14,7 +14,7 @@ import type {
 } from "@earendil-works/pi-ai";
 
 import { buildBranchContext } from "../session/context.ts";
-import type { MessageEntry } from "../session/entries.ts";
+import type { MessageEntry, NewSessionEntry } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
 import { bindToolContext, resolveToolContext } from "../tools.ts";
 import type { ToolContextSource } from "../tools.ts";
@@ -280,7 +280,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       agent.subscribe(async (event) => {
         if (event.type === "message_end") {
           // Persisted before it reaches the wire, so a client never sees a message the tree lost.
-          const entry: MessageEntry = {
+          const entry: NewSessionEntry<MessageEntry> = {
             type: "message",
             id: reservedEntryId ?? session.newEntryId(),
             parentId: cursor,

@@ -110,7 +110,7 @@ enabling rewind and alternate branches; `InMemorySessionTree` is the same contra
 
 ```text
 agent.session                  generic settings, kind and active leaf
-agent.session_entry            session-tree nodes (`SessionEntry`); seq is insertion order
+agent.session_entry            session-tree nodes (`SessionEntry`); `seq` is persistence order, all branches
 agent.run                      durable execution metadata; one active run per session
 agent.tool_approval            durable approval request and audit trail
 agent.writing_session          writing-specific 1:1 state
@@ -119,7 +119,13 @@ agent.writing_draft            per-locale staging buffer
 
 Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
 entry shapes, so Pi's own context projection reads them directly (`buildBranchContext` in
-`session/context.ts`) and rows of retired entry types are ignored rather than migrated. The
+`session/context.ts`) and rows of retired entry types are ignored rather than migrated. Two orders
+live on the tree: `parentId` is the conversation, `seq` is the order entries were persisted in
+across every branch. `appendEntry` returns the entry with the `seq` it landed on, and "everything
+persisted before this point" is `seq <= n` whichever branch is active — which is what the turn
+marker (§6) records. `seq` is a table-wide serial taken at insert, sound only because a session
+has one writer at a time: one active run, and acceptance and maintenance serialised on the
+session lock (§8). The
 projection is a pure function of the branch: a turn's provider request is the previous projection
 plus the entries it appended, which is what keeps the provider's cached prefix valid from turn to
 turn. Kind-specific state uses extension tables instead of widening the shared session table.
@@ -377,13 +383,14 @@ and, when `run.status` is `running`, rejoins the turn through `agent.sessions.ch
 `{ type: "attach" }`. A stream that ends with `run:end` only refreshes the session detail (the
 view it built is kept, and the marker below may lag the terminal event by a moment, so that read
 is retried briefly); a stream that breaks earlier rebuilds from `get` and re-attaches with backoff. The turn step maintains `agent.run.metadata.turn`
-— the session leaf before the turn, the first coarse stream index it writes, and `running`, set
-before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
+— the newest entry `seq` before the turn (`seqBefore`), the first coarse stream index it writes,
+and `running`, set before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
 run parked on its message hook is `running` to the SDK just like one executing a step, so
-`run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` cuts the
-replayed transcript after that leaf while a turn is running, and `attach` tails the stream from
-that index; both key off the same marker, so a reload mid-turn shows every message exactly once
-and finishes the turn in place. `prompt` and `approve` write the marker themselves when they
+`run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` replays only
+entries with `seq <= seqBefore` while a turn is running, and `attach` tails the stream from that
+index; both key off the same marker, so a reload mid-turn shows every message exactly once and
+finishes the turn in place. A seq rather than the pre-turn leaf id: after a rewind the leaf is
+not the newest entry, and a cut by seq needs no guess about which branch the marker sits on. `prompt` and `approve` write the marker themselves when they
 accept a turn — on a fresh run as part of its lease (§8), on a parked run before waking the hook —
 so a turn counts as running from the moment it is accepted; the step rewrites the same values
 when it starts. A message queued behind a turn that is already running is the one case marked

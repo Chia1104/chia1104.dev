@@ -1,6 +1,6 @@
 import { uuidv7 } from "@earendil-works/pi-ai";
 
-import type { SessionEntry, SessionStats } from "./entries.ts";
+import type { NewSessionEntry, SessionEntry, SessionStats } from "./entries.ts";
 import { computeSessionStats } from "./entries.ts";
 
 /**
@@ -15,10 +15,10 @@ export interface SessionTree {
   readonly id: string;
   getLeafId(): Promise<string | null>;
   setLeafId(leafId: string | null): Promise<void>;
-  /** Persists the entry as given and makes it the new leaf. */
-  appendEntry(entry: SessionEntry): Promise<void>;
+  /** Persists the entry, makes it the new leaf and returns it with the `seq` it landed on. */
+  appendEntry(entry: NewSessionEntry): Promise<SessionEntry>;
   getEntry(id: string): Promise<SessionEntry | undefined>;
-  /** Every entry in insertion order, all branches. */
+  /** Every entry in `seq` order, all branches. */
   getEntries(): Promise<SessionEntry[]>;
   findEntries<TType extends SessionEntry["type"]>(
     type: TType
@@ -99,10 +99,11 @@ export class InMemorySessionTree implements SessionTree {
     return Promise.resolve();
   }
 
-  appendEntry(entry: SessionEntry): Promise<void> {
-    this.entries.push(entry);
-    this.leafId = entry.id;
-    return Promise.resolve();
+  appendEntry(entry: NewSessionEntry): Promise<SessionEntry> {
+    const stored: SessionEntry = { ...entry, seq: this.entries.length + 1 };
+    this.entries.push(stored);
+    this.leafId = stored.id;
+    return Promise.resolve(stored);
   }
 
   getEntry(id: string): Promise<SessionEntry | undefined> {
