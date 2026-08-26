@@ -1,5 +1,5 @@
 import { Firecrawl, SdkError } from "firecrawl";
-import type { Document, SearchResultWeb } from "firecrawl";
+import type { Document, SearchData, SearchResultWeb } from "firecrawl";
 
 import type {
   FetchedPage,
@@ -8,6 +8,7 @@ import type {
   WebSearchRecency,
   WebSearchResult,
 } from "@chia/agent-writing/ports";
+import { untilAborted } from "@chia/utils/request/abort";
 
 import { env } from "../env";
 
@@ -30,26 +31,6 @@ const TBS_BY_RECENCY = {
 } satisfies Record<WebSearchRecency, string>;
 
 const firecrawl = new Firecrawl({ apiKey: env.FIRECRAWL_API_KEY });
-
-/**
- * Rejects with the signal's reason the moment it fires. The SDK has no cancellation of its own,
- * so the request runs on to `REQUEST_TIMEOUT_MS` in the background; what matters is that the
- * tool returns to Pi at once, so a stopped turn can end instead of waiting on the page.
- */
-const untilAborted = <TValue>(
-  request: Promise<TValue>,
-  signal: AbortSignal | undefined
-): Promise<TValue> => {
-  if (!signal) return request;
-  if (signal.aborted) return Promise.reject(signal.reason);
-  return new Promise<TValue>((resolve, reject) => {
-    const onAbort = () => reject(signal.reason);
-    signal.addEventListener("abort", onAbort, { once: true });
-    void request.then(resolve, reject).finally(() => {
-      signal.removeEventListener("abort", onAbort);
-    });
-  });
-};
 
 /** The SDK message carries the provider's response body; the model needs the status only. */
 const toModelError = (operation: string, error: SdkError): Error =>
@@ -81,7 +62,7 @@ const search = async (
   input: WebSearchInput,
   signal?: AbortSignal
 ): Promise<WebSearchResult[]> => {
-  let data;
+  let data: SearchData;
   try {
     data = await untilAborted(
       firecrawl.search(input.query, {
@@ -107,7 +88,7 @@ const fetchPage = async (
   url: string,
   signal?: AbortSignal
 ): Promise<FetchedPage> => {
-  let document;
+  let document: Omit<Document, "json">;
   try {
     document = await untilAborted(
       firecrawl.scrape(url, {
