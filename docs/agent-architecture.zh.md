@@ -249,9 +249,10 @@ Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 
 `completeAgentRunStep` 也會 resume 它，讓跑完的 run 不會留下一個停到 TTL 的 controller。Signal 一
 觸發 run 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`
 持久化，turn 以 `run:end{aborted}` 結束；不持久化 approval，也不 compaction。已經在執行的 tool
-只會收到 signal——Pi 會等它返回——所以 `abort` 會先等（上限 `ABORT_SETTLE_TIMEOUT_MS`）step 清掉
-running marker 才取消 run：client 在 `abort` 回來的瞬間就重建 transcript，而 marker 是在被中止的
-turn 的 stream 與每一筆 entry 都落地之後才清的。送達走的是 SDK 自
+只會收到 signal——Pi 會等它返回——所以 `abort` 會先從 marker 的 `streamIndex` tail 這個 turn 自己
+的 durable stream 直到 `run:end`（上限 `ABORT_SETTLE_TIMEOUT_MS`）才取消 run：client 在 `abort` 回
+來的瞬間就重建 transcript，而每一筆 entry 都是先 append 再發 wire event，所以讀到 `run:end` 就代表
+被中止的 turn 已完整落地。送達走的是 SDK 自
 己的 durable stream，所以跨 process 也成立——沒有 registry、沒有 timer、沒有第二條 channel。下一
 次 prompt 會在持久化的 transcript 上開新 session run。過期（TTL）的 controller 不會中止任何 turn；
 reader 忽略 `expired`，下一個 turn 會建新的。

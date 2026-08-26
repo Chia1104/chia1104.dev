@@ -271,10 +271,11 @@ marks the `agent.run` row `cancelled`; `completeAgentRunStep` resumes it too, so
 not leave a controller parked until its TTL. Firing the signal aborts the run at once, mid-generation included: Pi cancels the
 in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
 `run:end{aborted}`; no approvals are persisted and no compaction runs. A tool already executing
-only receives the signal — Pi waits for it to return — so `abort` waits (bounded by
-`ABORT_SETTLE_TIMEOUT_MS`) for the step to clear its running marker before cancelling the run:
-the client rebuilds the transcript the moment `abort` returns, and the marker is cleared only
-after the stream and every entry of the stopped turn have landed. Delivery is the SDK's own
+only receives the signal — Pi waits for it to return — so `abort` tails the turn's own durable
+stream from the marker's `streamIndex` until `run:end` (bounded by `ABORT_SETTLE_TIMEOUT_MS`)
+before cancelling the run: the client rebuilds the transcript the moment `abort` returns, and
+every entry is appended before its wire event, so `run:end` means the stopped turn has landed
+whole. Delivery is the SDK's own
 durable stream, so it works from any process — no registry, no timer, no second channel. The next
 prompt starts a fresh session run over the persisted transcript. An expired controller (TTL) never
 aborts a turn; readers ignore `expired` and the next turn starts a new one.

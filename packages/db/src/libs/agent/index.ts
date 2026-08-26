@@ -207,10 +207,6 @@ export const createAgentRun = async (
     return row;
   });
 
-/** By the row's own id — the one the turn step's marker writes are addressed to. */
-export const getAgentRun = async (db: DB, runId: string) =>
-  await db.query.agentRuns.findFirst({ where: { id: runId } });
-
 export const getActiveAgentRun = async (db: DB, sessionId: string) =>
   await db.query.agentRuns.findFirst({
     where: { sessionId, status: "active" },
