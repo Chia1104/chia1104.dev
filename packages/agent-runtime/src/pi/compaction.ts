@@ -7,7 +7,11 @@ import {
 import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
-import type { CompactionEntry, SessionEntry } from "../session/entries.ts";
+import type {
+  CompactionEntry,
+  NewSessionEntry,
+  SessionEntry,
+} from "../session/entries.ts";
 import { contextEntries } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
 import { estimateBranchContextTokens } from "../session/usage.ts";
@@ -44,9 +48,7 @@ const compactBranch = async (
   }: CompactSessionOptions
 ): Promise<AgentCompactionResult | null> => {
   const prepared = prepareCompaction(
-    /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; preparation reads only messages. */ contextEntries(
-      branch
-    ) as never,
+    contextEntries(branch),
     DEFAULT_COMPACTION_SETTINGS
   );
   if (!prepared.ok) throw prepared.error;
@@ -65,7 +67,7 @@ const compactBranch = async (
 
   // Parented under the leaf of the branch that was summarised, not the leaf re-read afterwards:
   // the compaction's ancestors must be exactly what its summary covers.
-  const entry: CompactionEntry = {
+  const entry: NewSessionEntry<CompactionEntry> = {
     type: "compaction",
     id: session.newEntryId(),
     parentId: branch.at(-1)?.id ?? null,

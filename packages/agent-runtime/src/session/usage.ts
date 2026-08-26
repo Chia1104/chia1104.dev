@@ -33,11 +33,7 @@ export const estimateBranchContextTokens = (
   const entriesAfterCompaction = contextEntries(
     entries.slice(lastCompactionIndex + 1)
   );
-  if (
-    getLastAssistantUsage(
-      /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; the usage lookup reads only messages. */ entriesAfterCompaction as never
-    )
-  ) {
+  if (getLastAssistantUsage(entriesAfterCompaction)) {
     return estimateContextTokens(messages).tokens;
   }
 

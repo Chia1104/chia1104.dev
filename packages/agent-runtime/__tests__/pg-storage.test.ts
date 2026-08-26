@@ -7,8 +7,9 @@ import {
   getAgentSession,
   getAgentSessionEntries,
 } from "@chia/db/repos/agent";
+import type { JsonObject } from "@chia/utils/json";
 
-import type { SessionEntry } from "../src/session/entries.ts";
+import type { NewSessionEntry } from "../src/session/entries.ts";
 import { PgSessionStorage } from "../src/session/pg-storage.ts";
 
 vi.mock("@chia/db/repos/agent", () => ({
@@ -51,41 +52,40 @@ const usage = ({
   },
 });
 
-const legacyEntries = [
-  {
-    seq: 1,
-    id: "entry-1",
-    sessionId: "session-1",
-    parentId: null,
-    type: "session_info",
-    payload: { name: "First" },
-    timestamp: new Date("2026-07-27T00:00:01.000Z"),
-  },
-  {
-    seq: 2,
-    id: "entry-2",
-    sessionId: "session-1",
-    parentId: null,
-    type: "session_info",
-    payload: { name: "Second" },
-    timestamp: new Date("2026-07-27T00:00:02.000Z"),
-  },
-] as const;
+const db =
+  /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
+
+const storage = () =>
+  new PgSessionStorage(db, {
+    id: "session-1",
+    createdAt: "2026-07-27T00:00:00.000Z",
+    userId: "user-1",
+    kind: "writing",
+  });
+
+const row = (
+  seq: number,
+  id: string,
+  parentId: string | null,
+  type: string,
+  payload: JsonObject
+) => ({
+  seq,
+  id,
+  sessionId: "session-1",
+  parentId,
+  type,
+  payload,
+  timestamp: new Date(`2026-07-27T00:00:0${seq}.000Z`),
+});
 
 describe("PgSessionStorage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("appends an entry and advances the leaf in one write", async () => {
-    const db =
-      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
-    const storage = new PgSessionStorage(db, {
-      id: "session-1",
-      createdAt: "2026-07-27T00:00:00.000Z",
-      userId: "user-1",
-      kind: "writing",
-    });
+  it("appends an entry, advances the leaf in one write and returns the seq it landed on", async () => {
+    appendEntryMock.mockResolvedValue({ seq: 7 });
     const entry = {
       type: "label",
       id: "entry-1",
@@ -93,9 +93,9 @@ describe("PgSessionStorage", () => {
       timestamp: Date.parse("2026-07-27T00:00:01.000Z"),
       targetId: "entry-0",
       label: "Start",
-    } satisfies SessionEntry;
+    } satisfies NewSessionEntry;
 
-    await storage.appendEntry(entry);
+    const stored = await storage().appendEntry(entry);
 
     expect(appendEntryMock).toHaveBeenCalledOnce();
     expect(appendEntryMock).toHaveBeenCalledWith(db, {
@@ -106,58 +106,36 @@ describe("PgSessionStorage", () => {
       payload: { targetId: "entry-0", label: "Start" },
       timestamp: new Date("2026-07-27T00:00:01.000Z"),
     });
+    expect(stored).toEqual({ ...entry, seq: 7 });
   });
 
-  it("recovers the leaf from a legacy flat entry sequence", async () => {
+  it("reads the leaf from the session row", async () => {
     getSessionMock.mockResolvedValue(
-      /* SAFETY: This fixture implements the never members exercised by this case. */ {
-        leafEntryId: null,
+      /* SAFETY: This fixture implements the session row members exercised by this case. */ {
+        leafEntryId: "entry-2",
       } as never
     );
-    getEntriesMock.mockResolvedValue([...legacyEntries]);
-    const storage = new PgSessionStorage(
-      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      {
-        id: "session-1",
-        createdAt: "2026-07-27T00:00:00.000Z",
-        userId: "user-1",
-        kind: "writing",
-      }
-    );
 
-    await expect(storage.getLeafId()).resolves.toBe("entry-2");
+    await expect(storage().getLeafId()).resolves.toBe("entry-2");
   });
 
-  it("projects rows back into entries with a numeric timestamp and a tail on compactions", async () => {
+  it("projects rows back into entries with their seq, a numeric timestamp and a tail on compactions", async () => {
     getEntriesMock.mockResolvedValue(
       /* SAFETY: These rows implement the repository shape exercised by this case. */ [
-        {
-          seq: 1,
-          id: "entry-1",
-          sessionId: "session-1",
-          parentId: null,
-          type: "compaction",
-          payload: { summary: "Summary", tokensBefore: 10 },
-          timestamp: new Date("2026-07-27T00:00:01.000Z"),
-        },
+        row(1, "entry-1", null, "compaction", {
+          summary: "Summary",
+          tokensBefore: 10,
+        }),
       ] as never
     );
-    const storage = new PgSessionStorage(
-      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      {
-        id: "session-1",
-        createdAt: "2026-07-27T00:00:00.000Z",
-        userId: "user-1",
-        kind: "writing",
-      }
-    );
 
-    const [entry] = await storage.getEntries();
+    const [entry] = await storage().getEntries();
 
     expect(entry).toEqual({
       type: "compaction",
       id: "entry-1",
       parentId: null,
+      seq: 1,
       timestamp: Date.parse("2026-07-27T00:00:01.000Z"),
       summary: "Summary",
       tokensBefore: 10,
@@ -165,109 +143,52 @@ describe("PgSessionStorage", () => {
     });
   });
 
-  it("reconstructs the legacy root prefix when reading a branch", async () => {
-    getEntriesMock.mockResolvedValue([...legacyEntries]);
-    const storage = new PgSessionStorage(
-      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      {
-        id: "session-1",
-        createdAt: "2026-07-27T00:00:00.000Z",
-        userId: "user-1",
-        kind: "writing",
-      }
+  it("walks a branch by parent links, not by seq", async () => {
+    // entry-3 was appended after a rewind to entry-1: newer by seq, on a different branch.
+    getEntriesMock.mockResolvedValue(
+      /* SAFETY: These rows implement the repository shape exercised by this case. */ [
+        row(1, "entry-1", null, "message", { message: { role: "user" } }),
+        row(2, "entry-2", "entry-1", "message", { message: { role: "user" } }),
+        row(3, "entry-3", "entry-1", "message", { message: { role: "user" } }),
+      ] as never
     );
 
-    const branch = await storage.getBranch("entry-2");
+    const branch = await storage().getBranch("entry-3");
 
-    expect(branch.map((entry) => entry.id)).toEqual(["entry-1", "entry-2"]);
-    expect(branch[1]?.parentId).toBe("entry-1");
-  });
-
-  it("does not join a legitimate root created after linked entries", async () => {
-    getEntriesMock.mockResolvedValue([
-      legacyEntries[0],
-      { ...legacyEntries[1], parentId: "entry-1" },
-      {
-        ...legacyEntries[1],
-        seq: 3,
-        id: "entry-3",
-        payload: { name: "New root" },
-      },
+    expect(branch.map((entry) => [entry.id, entry.seq])).toEqual([
+      ["entry-1", 1],
+      ["entry-3", 3],
     ]);
-    const storage = new PgSessionStorage(
-      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      {
-        id: "session-1",
-        createdAt: "2026-07-27T00:00:00.000Z",
-        userId: "user-1",
-        kind: "writing",
-      }
-    );
-
-    const branch = await storage.getBranch("entry-3");
-
-    expect(branch.map((entry) => entry.id)).toEqual(["entry-3"]);
   });
 
   it("counts cached, written and compaction tokens as total processed", async () => {
     getEntriesMock.mockResolvedValue(
       /* SAFETY: These rows implement the repository shape exercised by this case. */ [
-        {
-          seq: 1,
-          id: "entry-1",
-          sessionId: "session-1",
-          parentId: null,
-          type: "message",
-          payload: { message: { role: "user", content: "Hello" } },
-          timestamp: new Date("2026-07-27T00:00:01.000Z"),
-        },
-        {
-          seq: 2,
-          id: "entry-2",
-          sessionId: "session-1",
-          parentId: "entry-1",
-          type: "message",
-          payload: {
-            message: {
-              role: "assistant",
-              content: [{ type: "text", text: "Hi" }],
-              usage: usage({
-                input: 100,
-                output: 20,
-                cacheRead: 300,
-                cacheWrite: 40,
-                costTotal: 0.5,
-              }),
-            },
+        row(1, "entry-1", null, "message", {
+          message: { role: "user", content: "Hello" },
+        }),
+        row(2, "entry-2", "entry-1", "message", {
+          message: {
+            role: "assistant",
+            content: [{ type: "text", text: "Hi" }],
+            usage: usage({
+              input: 100,
+              output: 20,
+              cacheRead: 300,
+              cacheWrite: 40,
+              costTotal: 0.5,
+            }),
           },
-          timestamp: new Date("2026-07-27T00:00:02.000Z"),
-        },
-        {
-          seq: 3,
-          id: "entry-3",
-          sessionId: "session-1",
-          parentId: "entry-2",
-          type: "compaction",
-          payload: {
-            summary: "Summary",
-            tokensBefore: 460,
-            usage: usage({ input: 10, output: 5, costTotal: 0.1 }),
-          },
-          timestamp: new Date("2026-07-27T00:00:03.000Z"),
-        },
+        }),
+        row(3, "entry-3", "entry-2", "compaction", {
+          summary: "Summary",
+          tokensBefore: 460,
+          usage: usage({ input: 10, output: 5, costTotal: 0.1 }),
+        }),
       ] as never
     );
-    const storage = new PgSessionStorage(
-      /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB,
-      {
-        id: "session-1",
-        createdAt: "2026-07-27T00:00:00.000Z",
-        userId: "user-1",
-        kind: "writing",
-      }
-    );
 
-    const stats = await storage.getSessionStats();
+    const stats = await storage().getSessionStats();
 
     expect(stats).toMatchObject({
       messageCount: 2,

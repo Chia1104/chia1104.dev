@@ -8,14 +8,14 @@ import { describe, expect, it } from "vitest";
 
 import { compactPiSession, navigatePiSession } from "../src/pi/maintenance.ts";
 import type { PiSessionOperationOptions } from "../src/pi/maintenance.ts";
-import type { SessionEntry } from "../src/session/entries.ts";
+import type { NewSessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
 
 const user = (
   id: string,
   parentId: string | null,
   text: string
-): SessionEntry => ({
+): NewSessionEntry => ({
   type: "message",
   id,
   parentId,
@@ -27,7 +27,7 @@ const assistant = (
   id: string,
   parentId: string,
   text: string
-): SessionEntry => ({
+): NewSessionEntry => ({
   type: "message",
   id,
   parentId,

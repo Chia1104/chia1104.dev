@@ -107,7 +107,7 @@ rewind 並建立 alternate branch；`InMemorySessionTree` 是同一合約的測�
 
 ```text
 agent.session                  共用 settings、kind、active leaf
-agent.session_entry            session-tree nodes（`SessionEntry`）；seq 是插入順序
+agent.session_entry            session-tree nodes（`SessionEntry`）；`seq` 是跨所有 branch 的落地順序
 agent.run                      durable execution metadata；每個 session 最多一個 active run
 agent.tool_approval            durable approval 與 audit trail
 agent.writing_session          writing-specific 1:1 state
@@ -342,12 +342,14 @@ Chat 是 server-authoritative：session store 在 mount 時從 `agent.sessions.g
 `run.status` 是 `running`，就用 `agent.sessions.chat` 的 `{ type: "attach" }` 接回那個 turn。
 以 `run:end` 結束的 stream 只重新抓 session detail（保留它自己 fold 出來的 view；下面的
 marker 可能比 terminal event 晚一點清掉，所以那次讀取會短暫重試）；更早斷掉的 stream 則從
-`get` 重建並帶 backoff 重新 attach。Turn step 維護 `agent.run.metadata.turn`——turn 開始前的
-session leaf、它要寫的第一個 coarse stream index，以及 `running`（進 handler 前設、`finally`
-清）。最後這個 workflow SDK 給不了：對 SDK 來說停在 message hook 上的 run 和正在跑 step 的 run
+`get` 重建並帶 backoff 重新 attach。Turn step 維護 `agent.run.metadata.turn`——turn 開始前
+最新的 entry `seq`（`seqBefore`）、它要寫的第一個 coarse stream index，以及 `running`（進
+handler 前設、`finally` 清）。最後這個 workflow SDK 給不了：對 SDK 來說停在 message hook 上的 run 和正在跑 step 的 run
 都是 `running`，所以 `run.status`、`attach` 與 compact/rewind 的檢查都改讀這個 marker。Turn 執行
-中時 `get` 把 replay 的 transcript 截在那個 leaf 之後，`attach` 則從那個 index tail stream；兩邊
-用同一個 marker，所以在 turn 進行中重整頁面，每則訊息只會出現一次，turn 也會原地跑完。`prompt`
+中時 `get` 只 replay `seq <= seqBefore` 的 entries，`attach` 則從那個 index tail stream；兩邊
+用同一個 marker，所以在 turn 進行中重整頁面，每則訊息只會出現一次，turn 也會原地跑完。用
+seq 而不是 turn 前的 leaf id：rewind 之後 leaf 不是最新的 entry，用 seq 切也不必猜 marker
+落在哪條 branch 上。`prompt`
 與 `approve` 在接受一個 turn 時就自己寫 marker——新 run 是 lease 的一部分（§8），parked 的 run
 則在叫醒 hook 之前——所以 turn 從被接受那一刻起就算 running；step 開始時會重寫同樣的值。
 唯一例外是排在一個正在跑的 turn 後面的訊息，它要等自己的 step 開始才會被標記。

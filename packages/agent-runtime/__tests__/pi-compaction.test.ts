@@ -27,6 +27,7 @@ const entry = <TMessage>(message: TMessage): SessionEntry => {
     type: "message",
     id: `e${seq}`,
     parentId: seq === 1 ? null : `e${seq - 1}`,
+    seq,
     timestamp: 1_767_225_600_000,
     message,
   } as SessionEntry;
@@ -48,6 +49,7 @@ const compactionEntry = (retainedUsage?: number): SessionEntry => {
     type: "compaction",
     id: `e${seq}`,
     parentId: `e${seq - 1}`,
+    seq,
     timestamp: 1_767_225_600_000,
     summary: "Everything so far, condensed.",
     tokensBefore: 95_000,

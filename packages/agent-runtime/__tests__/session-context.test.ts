@@ -11,6 +11,9 @@ import { InMemorySessionTree } from "../src/session/tree.ts";
  * projection is a pure function of the branch, so persistence never drifts from what was sent.
  */
 
+// Fixtures carry a seq so they can stand in a branch literal; the in-memory tree assigns its own.
+let seq = 0;
+
 const user = (
   id: string,
   parentId: string | null,
@@ -19,6 +22,7 @@ const user = (
   type: "message",
   id,
   parentId,
+  seq: ++seq,
   timestamp: 1,
   message: { role: "user", content: [{ type: "text", text }], timestamp: 1 },
 });
@@ -31,6 +35,7 @@ const assistant = (
   type: "message",
   id,
   parentId,
+  seq: ++seq,
   timestamp: 2,
   message: fauxAssistantMessage(text, { timestamp: 2 }),
 });
@@ -67,6 +72,7 @@ describe("buildBranchContext", () => {
         type: "label",
         id: "l1",
         parentId: "u1",
+        seq: ++seq,
         timestamp: 3,
         targetId: "u1",
         label: "start",
@@ -75,6 +81,7 @@ describe("buildBranchContext", () => {
         type: "session_info",
         id: "s1",
         parentId: "l1",
+        seq: ++seq,
         timestamp: 4,
         name: "old",
       } as never,
@@ -96,6 +103,7 @@ describe("buildBranchContext", () => {
         type: "compaction",
         id: "c1",
         parentId: "a1",
+        seq: ++seq,
         timestamp: 6,
         summary: "Everything so far.",
         tokensBefore: 90_000,

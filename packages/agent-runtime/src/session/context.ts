@@ -14,9 +14,4 @@ import { contextEntries } from "./entries.ts";
  */
 export const buildBranchContext = (
   entries: readonly SessionEntry[]
-): SessionContext =>
-  buildSessionContext(
-    /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`, which the projection never reads. */ contextEntries(
-      entries
-    ) as never
-  );
+): SessionContext => buildSessionContext(contextEntries(entries));
