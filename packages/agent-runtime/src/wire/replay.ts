@@ -38,7 +38,7 @@ export const entriesToWireEvents = (
         type: "tool:end",
         toolCallId,
         toolName,
-        isError: true,
+        isError: false,
         aborted: true,
         summary: "",
       });

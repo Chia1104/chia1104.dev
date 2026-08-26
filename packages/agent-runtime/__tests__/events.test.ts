@@ -272,7 +272,7 @@ describe("foldEvents", () => {
     ]);
     expect(events[2]).toMatchObject({
       toolCallId: "call-1",
-      isError: true,
+      isError: false,
       aborted: true,
     });
     const tool = foldEvents(events).items.find((item) => item.kind === "tool");

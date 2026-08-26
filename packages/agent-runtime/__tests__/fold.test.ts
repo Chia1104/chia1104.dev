@@ -122,7 +122,7 @@ describe("stopped turns", () => {
         type: "tool:end",
         toolCallId: "call-1",
         toolName: "commit_draft",
-        isError: true,
+        isError: false,
         aborted: true,
         summary: "",
       },
