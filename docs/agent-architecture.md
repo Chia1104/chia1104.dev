@@ -526,11 +526,32 @@ or without it. The volatile context (§4) lists what the current session has sav
 bounded line per memory with its id, so the model neither saves twice nor forgets it can
 `get_memory` what it already has.
 
-Memory reaches the model through tools, never through the system prompt: `search_memory` is
-resource search scoped to `sourceTypes: ["agent_memory"]` with `includeUnpublished: true`, the
-two flags that must be set together because every memory chunk is indexed `published: false`,
-and `get_memory` reads one row. A retrieval is therefore a visible tool call with a visible cost.
-The port's two list methods exist for the volatile context, which holds nothing but ports.
+A `fact` or `source` reaches the model through tools, never through the system prompt:
+`search_memory` is resource search scoped to `sourceTypes: ["agent_memory"]` with
+`includeUnpublished: true`, the two flags that must be set together because every memory chunk
+is indexed `published: false`, and `get_memory` reads one row. A retrieval is therefore a
+visible tool call with a visible cost. The port's two list methods exist for the volatile
+context, which holds nothing but ports.
+
+A `lesson` is the one kind that is always on: the volatile context carries the titles of the
+twenty most recently touched **active** lessons under `# Learned preferences`, because a
+preference the model has to remember to look up is not a preference it follows. Lessons are
+written by `memoryConsolidationWorkflow` (`apps/service/src/workflows/memory-consolidation.workflow.ts`),
+started by the writing kind's `runTurn` after a turn that executed `commit_draft` ended `done`
+— only then does the transcript hold the whole revision history — or by hand from the
+dashboard (`memory.consolidate`). Its one step reads the session's raw entries through
+`parentId`, past any compaction, keeps only the operator's messages and the assistant's prose
+(never a tool result, so nothing a fetched page said can become a lesson), and asks the house
+gateway's cheap model for at most three new lessons as JSON. Every lesson lands `pending` and
+is injected nowhere until the operator approves it in the dashboard: no text that no human has
+read can sit in every future prompt. The extraction helpers are pure and live in
+`@chia/agent-writing/memory/lessons`; the step is `maxRetries = 0`, since a model failure is
+already "no lessons" and a retry after a partial write would duplicate them.
+
+The dashboard's memory page (`apps/dash/src/app/(workspace)/memory/`) is client-only oRPC
+behind `adminGuard()` on every `memory.*` procedure, reads included: a memory is unpublished
+research, and an active lesson is a standing instruction. Every write goes through
+`memories/write.ts`, so editing, archiving or deleting re-indexes.
 
 ### Content visibility
 

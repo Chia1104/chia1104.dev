@@ -467,11 +467,26 @@ key，重訪是更新不是重複。留痕在 fetch 之後寫、永遠不會讓 
 都一樣。Volatile context（§4）列出本 session 已存的記憶，一筆一行、有上限、附 id，模型才不會
 重複存，也知道可以 `get_memory` 拿回已經有的東西。
 
-記憶只透過 tool 進到模型眼前，不進 system prompt：`search_memory` 是限定
+`fact` 與 `source` 只透過 tool 進到模型眼前，不進 system prompt：`search_memory` 是限定
 `sourceTypes: ["agent_memory"]` 加 `includeUnpublished: true` 的 resource search——兩個旗標
 必須同時設，因為每個記憶 chunk 都以 `published: false` 索引；`get_memory` 讀單筆。一次檢索
 就是一次看得見的 tool call、一次看得見的成本。Port 上的兩個 list 方法是給 volatile context
 用的，那裡只拿得到 port。
+
+`lesson` 是唯一 always-on 的一種：volatile context 在 `# Learned preferences` 底下列出最近
+更新的 20 條 **active** lesson 的標題——要模型記得去查的偏好，不是它會遵守的偏好。Lesson 由
+`memoryConsolidationWorkflow`（`apps/service/src/workflows/memory-consolidation.workflow.ts`）
+產生：writing kind 的 `runTurn` 在一個執行過 `commit_draft` 且以 `done` 結束的 turn 之後啟動它
+——只有這時 transcript 才含完整的修改往返——或從 dash 手動啟動（`memory.consolidate`）。它唯一的
+step 沿 `parentId` 讀 session 的原始 entries、穿過 compaction，只保留 operator 的訊息與 assistant
+的文字（永遠不含 tool result，所以網頁說的話成不了 lesson），請 house gateway 的便宜模型以 JSON
+回最多三條新 lesson。每條 lesson 落地即 `pending`，operator 在 dash 核准前不注入任何地方：
+沒有任何未經人眼的文字能常駐 prompt。抽取的純函式在 `@chia/agent-writing/memory/lessons`；step
+是 `maxRetries = 0`——模型失敗本來就是「沒有 lesson」，寫到一半重試只會重複。
+
+Dash 的記憶頁（`apps/dash/src/app/(workspace)/memory/`）是 client-only oRPC，每條 `memory.*`
+procedure 含唯讀都在 `adminGuard()` 後面：記憶是未發布的研究，active lesson 是常駐指令。所有
+寫入走 `memories/write.ts`，所以編輯、封存、刪除都會重新索引。
 
 ### 內容可見性
 

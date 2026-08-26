@@ -26,6 +26,7 @@ import { getAdminId } from "@chia/utils/config";
 import { createAgentContentPort } from "../services/agent-content.port";
 import { createAgentMemoryPort } from "../services/agent-memory.port";
 import { createAgentWebPort } from "../services/agent-web.port";
+import { startMemoryConsolidation } from "../services/memory-consolidation.service";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
 
@@ -124,18 +125,22 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
     },
   },
 
-  runTurn(context) {
+  async runTurn(context) {
     /**
      * The writing agent acts as the configured author. The kind's `minTier` is `Root`, which pins
      * session ownership to that same id, so this states whose posts the port touches rather than
      * performing a second authorization check.
      */
+    let committed = false;
     const content = createAgentContentPort({
       db: context.db,
       adminId: getAdminId(),
+      onCommitted: () => {
+        committed = true;
+      },
     });
 
-    return runWritingTurn({
+    const execution = await runWritingTurn({
       session: context.session,
       models: context.models,
       settings: context.settings,
@@ -157,6 +162,25 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
       persistApprovals: context.persistApprovals,
       flushEvents: context.flushEvents,
     });
+
+    /**
+     * A committed post is the natural end of a writing task, and the moment the transcript
+     * holds the whole revision history — but only once the turn has ended: `runPiTurn` appends
+     * every entry before it resolves, whereas inside `commitDraft` the commit's own result and
+     * the closing summary are still to come. Fire-and-forget; the run reports for itself.
+     */
+    if (execution.status === "done" && committed) {
+      try {
+        await startMemoryConsolidation(context.row.id);
+      } catch (cause) {
+        console.error("Could not start memory consolidation", {
+          sessionId: context.row.id,
+          error: String(cause),
+        });
+      }
+    }
+
+    return execution;
   },
 
   maintenance(options) {

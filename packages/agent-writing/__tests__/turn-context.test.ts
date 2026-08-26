@@ -37,4 +37,24 @@ describe("buildTurnContext memories", () => {
     // 2 spaces, "- [fact] ", 119 chars + ellipsis, " (#42)"
     expect(factLine?.length).toBe("  - [fact] ".length + 120 + " (#42)".length);
   });
+
+  it("puts active lessons in their own always-on section", () => {
+    const context = buildTurnContext({
+      ...base,
+      lessons: [
+        {
+          id: 7,
+          kind: "lesson",
+          title: "Open with the problem, not the tool",
+          sourceUrl: null,
+        },
+      ],
+    });
+
+    expect(context).toContain("# Learned preferences");
+    expect(context).toContain("- Open with the problem, not the tool (#7)");
+    expect(buildTurnContext({ ...base, lessons: [] })).not.toContain(
+      "Learned preferences"
+    );
+  });
 });

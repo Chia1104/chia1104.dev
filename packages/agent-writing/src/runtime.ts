@@ -50,6 +50,12 @@ export interface RunWritingTurnOptions<TApproval> {
   flushEvents?: () => Promise<void>;
 }
 
+/**
+ * Active lessons shown on every request. Twenty one-line titles is ~600 tokens; the operator
+ * archives to make room rather than the agent forgetting on its own.
+ */
+const LESSONS_DIGEST_LIMIT = 20;
+
 /** Composes the writing domain and executes one turn on Pi's `Agent`. */
 export const runWritingTurn = <TApproval>(
   options: RunWritingTurnOptions<TApproval>
@@ -78,13 +84,15 @@ export const runWritingTurn = <TApproval>(
       autoApprove: options.settings.autoApprove,
     }),
     volatileContext: async () => {
-      const [draft, sessionMemories] = await Promise.all([
+      const [draft, sessionMemories, lessons] = await Promise.all([
         options.draft.get(options.agentSessionId),
         options.memory.listBySession(options.agentSessionId),
+        options.memory.listActiveLessons(LESSONS_DIGEST_LIMIT),
       ]);
       return buildTurnContext({
         draft,
         sessionMemories,
+        lessons,
         targetFeedId: options.targetFeedId,
         defaultLocale,
         now: new Date(),

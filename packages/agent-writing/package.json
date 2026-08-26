@@ -41,6 +41,10 @@
       "types": "./src/memory/memory-port.ts",
       "default": "./src/memory/memory-port.ts"
     },
+    "./memory/lessons": {
+      "types": "./src/memory/lessons.ts",
+      "default": "./src/memory/lessons.ts"
+    },
     "./prompts/system": {
       "types": "./src/prompts/system.ts",
       "default": "./src/prompts/system.ts"

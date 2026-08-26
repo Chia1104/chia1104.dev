@@ -29,6 +29,11 @@ export interface TurnContextInput {
   now: Date;
   /** What this session has already saved, so the model neither repeats itself nor forgets the ids. */
   sessionMemories?: readonly MemorySummary[];
+  /**
+   * Active lessons, title only. Always on rather than searched for: a preference the model has
+   * to remember to look up is not a preference it follows.
+   */
+  lessons?: readonly MemorySummary[];
 }
 
 /**
@@ -159,6 +164,21 @@ export const buildTurnContext = (input: TurnContextInput): string => {
     for (const memory of input.sessionMemories) {
       lines.push(
         `  - [${memory.kind}] ${oneLine(memory.title, MEMORY_TITLE_MAX_CHARS)} (#${memory.id})`
+      );
+    }
+  }
+
+  if (input.lessons && input.lessons.length > 0) {
+    lines.push("");
+    lines.push("# Learned preferences");
+    lines.push("");
+    lines.push(
+      "The operator's standing preferences, distilled from their feedback in earlier sessions" +
+        " and reviewed by them. Follow them without being asked; `get_memory` reads the detail."
+    );
+    for (const lesson of input.lessons) {
+      lines.push(
+        `- ${oneLine(lesson.title, MEMORY_TITLE_MAX_CHARS)} (#${lesson.id})`
       );
     }
   }

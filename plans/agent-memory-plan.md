@@ -1,6 +1,6 @@
 # Writing Agent 長期記憶與自主學習規劃
 
-> 狀態：規劃中，尚未實作
+> 狀態：已實作（四個 phase 皆完成，見 §0）
 > 建立日期：2026-08-26
 > 最後更新：2026-08-27（對照現行程式碼校正：Phase 4 觸發點、reindex 列舉、`MemoryPort` 介面、host hooks/port、路徑與慣例）
 > 範圍：`agent.memory` 資料模型、記憶工具（save / search / get）、RAG 索引整合、`fetch_url` 來源自動記錄、session 反思沉澱 workflow、dash 記憶管理頁

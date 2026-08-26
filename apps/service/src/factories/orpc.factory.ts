@@ -6,6 +6,7 @@ import { agentKinds } from "../agents/registry";
 import { env } from "../env";
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 import { feedHooks } from "../services/feed-indexing.service";
+import { memoryService } from "../services/memory-consolidation.service";
 import { ragIndexingService } from "../services/rag-indexing.service";
 
 /** The values the guards read from this app's env. Built once; the same on every request. */
@@ -55,5 +56,6 @@ export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
     },
   },
   indexing: ragIndexingService,
+  memory: memoryService,
   agentKinds,
 });
