@@ -66,8 +66,11 @@ export interface ContentPort extends ContentReadPort {
  * builds one.
  */
 export interface WebPort {
-  search(input: WebSearchInput): Promise<WebSearchResult[]>;
-  fetchPage(url: string): Promise<FetchedPage>;
+  search(
+    input: WebSearchInput,
+    signal?: AbortSignal
+  ): Promise<WebSearchResult[]>;
+  fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
 }
 
 // ============================================

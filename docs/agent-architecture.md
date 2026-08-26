@@ -1,7 +1,7 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-24
+> Last updated: 2026-08-26
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -270,7 +270,12 @@ subscription when the turn ends. `abort` resumes the hook first, then cancels th
 marks the `agent.run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
 not leave a controller parked until its TTL. Firing the signal aborts the run at once, mid-generation included: Pi cancels the
 in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
-`run:end{aborted}`; no approvals are persisted and no compaction runs. Delivery is the SDK's own
+`run:end{aborted}`; no approvals are persisted and no compaction runs. A tool already executing
+only receives the signal — Pi waits for it to return — so `abort` tails the turn's own durable
+stream from the marker's `streamIndex` until `run:end` (bounded by `ABORT_SETTLE_TIMEOUT_MS`)
+before cancelling the run: the client rebuilds the transcript the moment `abort` returns, and
+every entry is appended before its wire event, so `run:end` means the stopped turn has landed
+whole. Delivery is the SDK's own
 durable stream, so it works from any process — no registry, no timer, no second channel. The next
 prompt starts a fresh session run over the persisted transcript. An expired controller (TTL) never
 aborts a turn; readers ignore `expired` and the next turn starts a new one.
@@ -354,6 +359,14 @@ session:compacted · session:rewound · state:changed · error · run:end
   message with `stopReason: "error"` replays as the same `error` event the live turn emitted;
   a `branch_summary` entry replays as `session:rewound`, so a rewind that kept a summary stays
   visible where it happened.
+- A tool call is only ever `running` between its `tool:start` and `tool:end`, and both sides
+  guarantee the end arrives. Pi persists a call's result right after the assistant message that
+  issued it, so replay closes any call whose result is not the next thing on the branch — a turn
+  stopped mid-execution, a process that died, a fork cut at the assistant message — with
+  `tool:end{aborted}`, and skips the calls of a message that ended `error` or `aborted`, which
+  Pi never executed and the live turn never showed. `run:end` closes whatever the live turn left
+  running the same way. `aborted` is its own status, not `isError`: the tool did not fail, it
+  never finished.
 - `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
 provider · internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
 - `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
@@ -487,7 +500,10 @@ Destructive deletion and image upload are not available agent tools.
 `WebPort` is host-implemented on Firecrawl (`apps/service/src/services/agent-web.port.ts`,
 `FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
 fixed cost; `fetch_url` is one scrape per page, main content as markdown, and is how the model
-reads a source it chose. There is no direct outbound fetch in the agent path.
+reads a source it chose. There is no direct outbound fetch in the agent path. Both tools hand
+the turn's abort signal to the port; the Firecrawl SDK cannot cancel a request, so the port
+settles with the signal's reason at once and lets the request run out its timeout in the
+background — a stopped turn ends as soon as the signal fires instead of when the page arrives.
 
 ### Content visibility
 

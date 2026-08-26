@@ -1,5 +1,5 @@
 import { Firecrawl, SdkError } from "firecrawl";
-import type { Document, SearchResultWeb } from "firecrawl";
+import type { Document, SearchData, SearchResultWeb } from "firecrawl";
 
 import type {
   FetchedPage,
@@ -8,6 +8,7 @@ import type {
   WebSearchRecency,
   WebSearchResult,
 } from "@chia/agent-writing/ports";
+import { untilAborted } from "@chia/utils/request/abort";
 
 import { env } from "../env";
 
@@ -57,16 +58,22 @@ const toSearchResult = (
     : undefined;
 };
 
-const search = async (input: WebSearchInput): Promise<WebSearchResult[]> => {
-  let data;
+const search = async (
+  input: WebSearchInput,
+  signal?: AbortSignal
+): Promise<WebSearchResult[]> => {
+  let data: SearchData;
   try {
-    data = await firecrawl.search(input.query, {
-      limit: input.limit,
-      tbs: input.recency ? TBS_BY_RECENCY[input.recency] : undefined,
-      includeDomains: input.includeDomains,
-      sources: ["web"],
-      timeout: REQUEST_TIMEOUT_MS,
-    });
+    data = await untilAborted(
+      firecrawl.search(input.query, {
+        limit: input.limit,
+        tbs: input.recency ? TBS_BY_RECENCY[input.recency] : undefined,
+        includeDomains: input.includeDomains,
+        sources: ["web"],
+        timeout: REQUEST_TIMEOUT_MS,
+      }),
+      signal
+    );
   } catch (error) {
     throw error instanceof SdkError ? toModelError("Web search", error) : error;
   }
@@ -77,14 +84,20 @@ const search = async (input: WebSearchInput): Promise<WebSearchResult[]> => {
   });
 };
 
-const fetchPage = async (url: string): Promise<FetchedPage> => {
-  let document;
+const fetchPage = async (
+  url: string,
+  signal?: AbortSignal
+): Promise<FetchedPage> => {
+  let document: Omit<Document, "json">;
   try {
-    document = await firecrawl.scrape(url, {
-      formats: ["markdown"],
-      onlyMainContent: true,
-      timeout: REQUEST_TIMEOUT_MS,
-    });
+    document = await untilAborted(
+      firecrawl.scrape(url, {
+        formats: ["markdown"],
+        onlyMainContent: true,
+        timeout: REQUEST_TIMEOUT_MS,
+      }),
+      signal
+    );
   } catch (error) {
     throw error instanceof SdkError
       ? toModelError("Fetching the page", error)

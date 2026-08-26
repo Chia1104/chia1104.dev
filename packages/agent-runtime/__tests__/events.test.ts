@@ -12,6 +12,28 @@ import type { AgentWireEvent } from "../src/wire/schema.ts";
  * than usual: any divergence shows up as a UI that renders differently after a refresh.
  */
 
+const presentation = {
+  tierOf: () => "read",
+  labelOf: (name: string) => name,
+  summarize: () => "",
+};
+
+const assistantWithCall = (
+  id: string,
+  parentId: string | null,
+  stopReason: "toolUse" | "aborted"
+): SessionEntry => ({
+  type: "message",
+  id,
+  parentId,
+  seq: 1,
+  timestamp: 1,
+  message: fauxAssistantMessage(
+    [{ type: "toolCall", id: "call-1", name: "get_post", arguments: {} }],
+    { stopReason, timestamp: 1 }
+  ),
+});
+
 describe("foldEvents", () => {
   it("carries an arbitrary tier through, not just the writing agent's three", () => {
     const state = foldEvents([
@@ -139,12 +161,6 @@ describe("foldEvents", () => {
         message: fauxAssistantMessage("Second", { timestamp: 2 }),
       },
     ];
-    const presentation = {
-      tierOf: () => "read",
-      labelOf: (name: string) => name,
-      summarize: () => "",
-    };
-
     const all = entriesToWireEvents(entries, presentation).filter(
       (event) => event.type === "assistant:end"
     );
@@ -231,6 +247,56 @@ describe("foldEvents", () => {
       code: "rate_limited",
       text: "429 Too Many Requests",
     });
+  });
+
+  it("closes a call whose result never landed as aborted on replay", () => {
+    const events = entriesToWireEvents(
+      [
+        assistantWithCall("a1", null, "toolUse"),
+        {
+          type: "message",
+          id: "u2",
+          parentId: "a1",
+          seq: 2,
+          timestamp: 2,
+          message: { role: "user", content: "again", timestamp: 2 },
+        },
+      ],
+      presentation
+    );
+    expect(events.map((event) => event.type)).toEqual([
+      "assistant:end",
+      "tool:start",
+      "tool:end",
+      "user",
+    ]);
+    expect(events[2]).toMatchObject({
+      toolCallId: "call-1",
+      isError: false,
+      aborted: true,
+    });
+    const tool = foldEvents(events).items.find((item) => item.kind === "tool");
+    expect(tool).toMatchObject({ status: "aborted" });
+  });
+
+  it("closes a call cut off at the end of the branch, as a fork at the message leaves it", () => {
+    const events = entriesToWireEvents(
+      [assistantWithCall("a1", null, "toolUse")],
+      presentation
+    );
+    expect(events.map((event) => event.type)).toEqual([
+      "assistant:end",
+      "tool:start",
+      "tool:end",
+    ]);
+  });
+
+  it("shows no card for calls in a message the stop cut short, as the live turn did not", () => {
+    const events = entriesToWireEvents(
+      [assistantWithCall("a1", null, "aborted")],
+      presentation
+    );
+    expect(events.map((event) => event.type)).toEqual(["assistant:end"]);
   });
 
   it("clips oversized tool details on replay while keeping their shape", () => {

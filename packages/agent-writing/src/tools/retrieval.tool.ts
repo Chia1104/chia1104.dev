@@ -79,14 +79,17 @@ export const webSearchTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+  async execute(_toolCallId, params, signal, _onUpdate, context) {
     const includeDomains = params.includeDomains?.map(normalizeSearchDomain);
-    const results = await context.web.search({
-      query: params.query,
-      limit: params.limit ?? DEFAULT_SEARCH_RESULTS,
-      recency: params.recency,
-      includeDomains,
-    });
+    const results = await context.web.search(
+      {
+        query: params.query,
+        limit: params.limit ?? DEFAULT_SEARCH_RESULTS,
+        recency: params.recency,
+        includeDomains,
+      },
+      signal
+    );
 
     return textResult(
       results.length === 0
@@ -125,7 +128,7 @@ export const fetchUrlTool = defineTool({
     }),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+  async execute(_toolCallId, params, signal, _onUpdate, context) {
     let parsed: URL;
     try {
       parsed = new URL(params.url);
@@ -136,7 +139,7 @@ export const fetchUrlTool = defineTool({
       throw new Error("Only http and https URLs can be fetched.");
     }
 
-    const page = await context.web.fetchPage(parsed.toString());
+    const page = await context.web.fetchPage(parsed.toString(), signal);
     const body = truncate(page.text, MAX_PAGE_CHARS);
 
     return textResult(

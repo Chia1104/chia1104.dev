@@ -315,6 +315,47 @@ export const createAgentKindService = <TState>(
   };
 
   /**
+   * How long `abort` waits for the stopped turn's `run:end` before cancelling the run regardless.
+   * A tool that ignores its signal keeps Pi waiting on it; the cancel then proceeds and the
+   * tool's result, if it ever comes, is closed on replay as aborted.
+   */
+  const ABORT_SETTLE_TIMEOUT_MS = 10_000;
+
+  /**
+   * Waits for the turn step to write the stopped turn's `run:end`.
+   *
+   * The signal stops Pi, but the step still has the partial reply and any in-flight tool result
+   * to persist before the terminal event; the client rebuilds the transcript the moment `abort`
+   * returns, so returning earlier would show it a turn still missing its last entries. The turn's
+   * own durable stream is the wait: `runPiTurn` appends every entry before emitting its wire
+   * event, so `run:end` arriving means the transcript is complete.
+   */
+  const waitForTurnEnd = async (
+    runId: string,
+    startIndex: number
+  ): Promise<void> => {
+    const reader = getRun(runId)
+      .getReadable<AgentWireEvent>({ startIndex })
+      .getReader();
+    // Cancelling settles the pending read as done; the loop then falls through.
+    const deadline = setTimeout(
+      () => void reader.cancel().catch(() => undefined),
+      ABORT_SETTLE_TIMEOUT_MS
+    );
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done || value?.type === "run:end") return;
+      }
+    } catch {
+      // A dropped stream has nothing more to tell; the cancel below proceeds as before.
+    } finally {
+      clearTimeout(deadline);
+      await reader.cancel().catch(() => undefined);
+    }
+  };
+
+  /**
    * Cancels a run that was live a moment ago.
    *
    * `cancel()` refuses a run that has since reached a terminal state — the storage layer
@@ -817,10 +858,13 @@ export const createAgentKindService = <TState>(
       // leaves a live run behind a non-active row (the next prompt would start a second workflow and
       // hit the hook conflict).
       if (row.abortController) {
-        await signalAgentAbort(
+        const signalled = await signalAgentAbort(
           row.abortController.id,
           "stopped by the operator"
         );
+        if (signalled && row.turn?.running) {
+          await waitForTurnEnd(row.workflowRunId, row.turn.streamIndex);
+        }
       }
       await cancelLiveRun(row.workflowRunId);
       if (row.activeRunId) {

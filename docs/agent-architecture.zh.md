@@ -1,7 +1,7 @@
 # Agent 架構與 Turn 流程
 
 > 狀態：as-built
-> 最後更新：2026-08-24
+> 最後更新：2026-08-26
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 > 相關文件：[docs/rag-architecture.md](./rag-architecture.md)
 
@@ -248,7 +248,11 @@ Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 
 `abort` 先 resume 這個 hook，再取消 session run、把 `agent.run` 列標成 `cancelled`；
 `completeAgentRunStep` 也會 resume 它，讓跑完的 run 不會留下一個停到 TTL 的 controller。Signal 一
 觸發 run 立刻中止，生成到一半也一樣：Pi 取消進行中的 provider stream，部分回覆以 `aborted`
-持久化，turn 以 `run:end{aborted}` 結束；不持久化 approval，也不 compaction。送達走的是 SDK 自
+持久化，turn 以 `run:end{aborted}` 結束；不持久化 approval，也不 compaction。已經在執行的 tool
+只會收到 signal——Pi 會等它返回——所以 `abort` 會先從 marker 的 `streamIndex` tail 這個 turn 自己
+的 durable stream 直到 `run:end`（上限 `ABORT_SETTLE_TIMEOUT_MS`）才取消 run：client 在 `abort` 回
+來的瞬間就重建 transcript，而每一筆 entry 都是先 append 再發 wire event，所以讀到 `run:end` 就代表
+被中止的 turn 已完整落地。送達走的是 SDK 自
 己的 durable stream，所以跨 process 也成立——沒有 registry、沒有 timer、沒有第二條 channel。下一
 次 prompt 會在持久化的 transcript 上開新 session run。過期（TTL）的 controller 不會中止任何 turn；
 reader 忽略 `expired`，下一個 turn 會建新的。
@@ -314,6 +318,12 @@ session:compacted · session:rewound · state:changed · error · run:end
 - `entriesToWireEvents`：persisted Pi entries → replay history。`stopReason: "error"` 的持久化
   assistant message 會 replay 成與 live turn 相同的 `error` event；`branch_summary` entry 會
   replay 成 `session:rewound`，所以帶摘要的 rewind 會留在它發生的位置。
+- Tool call 只在 `tool:start` 與 `tool:end` 之間是 `running`，而兩邊都保證 end 一定會到。Pi 把
+  call 的結果緊接在發出它的 assistant message 之後持久化，所以 replay 遇到結果不是 branch 上下一
+  筆的 call——turn 在執行中被中止、process 死掉、fork 切在 assistant message 上——就以
+  `tool:end{aborted}` 收掉；`error` 或 `aborted` 收尾的 message 裡的 call 則直接略過，Pi 從沒執行
+  它們，live turn 也沒顯示過。`run:end` 對 live turn 留下的 running call 做同樣的事。`aborted` 是
+  獨立的狀態而不是 `isError`：tool 沒有失敗，它只是沒跑完。
 - `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · budget_exhausted · provider ·
 internal`），
   讓 client 能提示下一步；`describeAgentError` 是共用的 headline。
@@ -433,7 +443,9 @@ buffer；只有 commit-tier tool 會把 staged data 提升到正式 feed/content
 開放給 agent。`WebPort` 由 host 用 Firecrawl 實作（`apps/service/src/services/agent-web.port.ts`、
 `FIRECRAWL_API_KEY`）：search 只回 snippet、不逐筆 scrape，所以每次呼叫成本固定；`fetch_url`
 是一頁一次 scrape、回主要內容的 markdown，模型要讀哪一頁自己決定。Agent 路徑上沒有直接對外的
-fetch。`buildSystemPrompt` 是穩定的
+fetch。兩個 tool 都把 turn 的 abort signal 交給 port；Firecrawl SDK 無法取消 request，所以 port
+在 signal 一觸發就以它的 reason settle、讓 request 在背景跑到 timeout——被中止的 turn 在 signal
+觸發時就結束，而不是等頁面回來。`buildSystemPrompt` 是穩定的
 system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatile block（見 §4）；skills
 與 templates 位於 `packages/agent-writing/src/prompts/`。
 
