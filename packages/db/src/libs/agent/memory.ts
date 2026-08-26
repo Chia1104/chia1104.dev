@@ -1,4 +1,15 @@
-import { and, asc, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNull,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import type { DB } from "../../client.ts";
 import { agentMemories } from "../../schemas/schema.ts";
@@ -237,4 +248,68 @@ export const countAgentMemories = async (db: DB): Promise<number> => {
     .from(agentMemories)
     .where(indexable());
   return row?.count ?? 0;
+};
+
+export interface AgentMemoryListItem extends AgentMemorySummary {
+  sessionId: string | null;
+  /** Truncated `content`; the full text is a `getAgentMemory` away. */
+  preview: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PREVIEW_LENGTH = 160;
+const LIST_LIMIT_MAX = 100;
+
+/**
+ * The dashboard's list: newest first, cursor on the id. `query` is a substring match, a
+ * list filter rather than retrieval — the ranked search is the agent's `search_memory`.
+ */
+export const listAgentMemories = async (
+  db: DB,
+  dto: {
+    kind?: AgentMemoryKind;
+    status?: AgentMemoryStatus;
+    query?: string;
+    /** Inclusive id the page starts at. */
+    cursor?: number | null;
+    limit?: number;
+  }
+): Promise<{ items: AgentMemoryListItem[]; nextCursor: number | null }> => {
+  const limit = Math.min(Math.max(dto.limit ?? 50, 1), LIST_LIMIT_MAX);
+  const query = dto.query?.trim();
+
+  const rows = await db
+    .select({
+      ...summaryColumns,
+      sessionId: agentMemories.sessionId,
+      preview: sql<string>`left(${agentMemories.content}, ${PREVIEW_LENGTH})`,
+      createdAt: agentMemories.createdAt,
+      updatedAt: agentMemories.updatedAt,
+    })
+    .from(agentMemories)
+    .where(
+      and(
+        live(),
+        dto.kind ? eq(agentMemories.kind, dto.kind) : undefined,
+        dto.status ? eq(agentMemories.status, dto.status) : undefined,
+        query
+          ? or(
+              ilike(agentMemories.title, `%${query}%`),
+              ilike(agentMemories.content, `%${query}%`)
+            )
+          : undefined,
+        dto.cursor == null
+          ? undefined
+          : sql`${agentMemories.id} <= ${dto.cursor}`
+      )
+    )
+    .orderBy(desc(agentMemories.id))
+    .limit(limit + 1);
+
+  // the cursor is inclusive, so the extra row is where the next page starts
+  return {
+    items: rows.slice(0, limit),
+    nextCursor: rows.length > limit ? (rows[limit]?.id ?? null) : null,
+  };
 };

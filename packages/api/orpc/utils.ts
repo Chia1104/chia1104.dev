@@ -7,6 +7,7 @@ import type { ServiceContext } from "@chia/service-kit/context";
 import { routerContract } from "./router.contract";
 import type { AgentKindService } from "./services/agent.service";
 import type { IndexingService } from "./services/indexing.service";
+import type { MemoryService } from "./services/memory.service";
 
 /**
  * Values the guards need that only the hosting app knows (env-driven budgets, project
@@ -59,6 +60,8 @@ export interface BaseOSContext extends ServiceContext {
     };
   /** Starts and reconciles resource index runs. Needs the workflow runtime. */
   indexing?: IndexingService;
+  /** Starts memory consolidation runs. Needs the workflow runtime. */
+  memory?: MemoryService;
   /** Agent kind services, keyed by `agent.session.kind`. */
   agentKinds?: Readonly<Record<string, AgentKindService>>;
 }

@@ -4,6 +4,7 @@ import * as emailContracts from "./contracts/email.contract";
 import * as feedsContracts from "./contracts/feeds.contract";
 import * as fileContracts from "./contracts/file.contract";
 import * as healthContracts from "./contracts/health.contract";
+import * as memoryContracts from "./contracts/memory.contract";
 import * as organizationContracts from "./contracts/organization.contract";
 import * as ragContracts from "./contracts/rag.contract";
 import * as spotifyContracts from "./contracts/spotify.contract";
@@ -96,6 +97,14 @@ export const routerContract = {
     "reindex:all": ragContracts.reindexAllContract,
     "embeddings:prune": ragContracts.pruneEmbeddingsContract,
   },
+  memory: {
+    list: memoryContracts.listMemoriesContract,
+    get: memoryContracts.getMemoryContract,
+    update: memoryContracts.updateMemoryContract,
+    remove: memoryContracts.removeMemoryContract,
+    "lesson:approve": memoryContracts.approveLessonContract,
+    consolidate: memoryContracts.consolidateMemoryContract,
+  },
   spotify: {
     playlist: spotifyContracts.getSpotifyPlaylistContract,
     playing: spotifyContracts.getSpotifyNowPlayingContract,
@@ -112,6 +121,7 @@ export {
   emailContracts,
   feedsContracts,
   healthContracts,
+  memoryContracts,
   organizationContracts,
   ragContracts,
   spotifyContracts,

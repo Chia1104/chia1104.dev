@@ -169,6 +169,10 @@
       "types": "./orpc/services/indexing.service.ts",
       "default": "./orpc/services/indexing.service.ts"
     },
+    "./orpc/services/memory.service": {
+      "types": "./orpc/services/memory.service.ts",
+      "default": "./orpc/services/memory.service.ts"
+    },
     "./orpc/routes/feeds.route": {
       "types": "./orpc/routes/feeds.route.ts",
       "default": "./orpc/routes/feeds.route.ts"

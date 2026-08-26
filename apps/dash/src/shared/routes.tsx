@@ -18,11 +18,18 @@ import {
   Boxes,
   Activity,
   Wrench,
+  Brain,
 } from "lucide-react";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
 
-type RouteGroup = "overview" | "project" | "content" | "rag" | "settings";
+type RouteGroup =
+  | "overview"
+  | "project"
+  | "content"
+  | "rag"
+  | "memory"
+  | "settings";
 
 export const useRouteItems = () => {
   const segments = useSelectedLayoutSegments();
@@ -124,6 +131,14 @@ export const useRouteItems = () => {
               isActive: segments[0] === "rag" && segments[1] === "maintenance",
             },
           ],
+        },
+      ],
+      memory: [
+        {
+          url: "/memory",
+          isActive: segments[0] === "memory",
+          icon: <Brain />,
+          title: "Agent Memory",
         },
       ],
       settings: [
