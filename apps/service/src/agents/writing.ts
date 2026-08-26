@@ -24,6 +24,7 @@ import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentContentPort } from "../services/agent-content.port";
+import { createAgentMemoryPort } from "../services/agent-memory.port";
 import { createAgentWebPort } from "../services/agent-web.port";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
@@ -32,8 +33,9 @@ import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
  * The **writing** agent: the dashboard's blog authoring assistant.
  *
  * The domain — tools, prompts, policy, model allowlist, draft staging — is `@chia/agent-writing`.
- * This binds it to the host: the author-visibility content port, the Firecrawl web port and the
- * Postgres draft store, plus the `agent.writing_session` row that pins a session to a target post.
+ * This binds it to the host: the author-visibility content port, the Firecrawl web port, the
+ * Postgres draft store and the memory port, plus the `agent.writing_session` row that pins a
+ * session to a target post.
  */
 
 export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
@@ -142,6 +144,10 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
       content,
       web: createAgentWebPort(),
       draft: new PgDraftStore(context.db),
+      memory: createAgentMemoryPort({
+        db: context.db,
+        sessionId: context.row.id,
+      }),
       onEvent: context.onEvent,
       approvedToolCallIds: context.approvedToolCallIds,
       preAuthorizedToolNames: context.preAuthorizedToolNames,

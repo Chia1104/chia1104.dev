@@ -7,6 +7,7 @@ import {
   integer,
   jsonb,
   primaryKey,
+  serial,
   text,
   timestamp,
   uniqueIndex,
@@ -37,6 +38,10 @@ import { user } from "./user.schema.ts";
  * `writing_draft` is the staging buffer: the agent only ever writes here, and a human
  * promotes it into `feed`/`feed_translation`/`content` through the existing
  * `feeds.create`/`feeds.update` procedures.
+ *
+ * `memory` is the writing agent's long-term memory, the one table here that outlives a
+ * session: sources it read, facts it verified and lessons distilled from the operator's
+ * feedback. It is indexed into `resource_chunk` like any other resource.
  */
 
 // ============================================
@@ -227,6 +232,78 @@ export const writingAgentDrafts = agentSchema.table(
 );
 
 export type WritingAgentDraft = InferSelectModel<typeof writingAgentDrafts>;
+
+// ============================================
+// Agent Memory
+// ============================================
+
+export const AGENT_MEMORY_KIND = {
+  /** A page the agent read: URL, title, excerpt. Written automatically by `fetch_url`. */
+  Source: "source",
+  /** A distilled, cited fact the model chose to keep. */
+  Fact: "fact",
+  /** A writing preference or lesson extracted from the operator's feedback. */
+  Lesson: "lesson",
+} as const;
+
+export type AgentMemoryKind =
+  (typeof AGENT_MEMORY_KIND)[keyof typeof AGENT_MEMORY_KIND];
+
+export const AGENT_MEMORY_STATUS = {
+  Active: "active",
+  /** A lesson awaiting the operator's review; never injected into a prompt. */
+  Pending: "pending",
+  /** Retired by the operator; dropped from the index but kept for provenance. */
+  Archived: "archived",
+} as const;
+
+export type AgentMemoryStatus =
+  (typeof AGENT_MEMORY_STATUS)[keyof typeof AGENT_MEMORY_STATUS];
+
+/**
+ * Long-term memory, shared across sessions.
+ *
+ * `id` is a serial rather than the uuidv7 the other tables use: the RAG pipeline keys
+ * `resource_chunk.source_id` as an integer, and only the Root-tier writing agent and the
+ * admin dashboard can read a memory, so enumerability buys an attacker nothing.
+ *
+ * `session_id` is provenance only — it is set to null when the session goes, because the
+ * memory is the point and the session is where it happened to come from.
+ */
+export const agentMemories = agentSchema.table(
+  "memory",
+  {
+    id: serial("id").primaryKey(),
+    kind: text("kind").$type<AgentMemoryKind>().notNull(),
+    status: text("status")
+      .$type<AgentMemoryStatus>()
+      .notNull()
+      .default(AGENT_MEMORY_STATUS.Active),
+    /** One line; what the volatile context and the dashboard list show. */
+    title: text("title").notNull(),
+    /** Markdown. Chunked and embedded like a post body. */
+    content: text("content").notNull(),
+    /** Required for a `source`, expected on a `fact`, null on a `lesson`. */
+    sourceUrl: text("source_url"),
+    sessionId: text("session_id").references(() => agentSessions.id, {
+      onDelete: "set null",
+    }),
+    ...timestamps,
+    ...softDelete,
+  },
+  (table) => [
+    /** `fetch_url` upserts on the page URL; the predicate is what `ON CONFLICT` must repeat. */
+    uniqueIndex("agent_memory_source_url_idx")
+      .on(table.sourceUrl)
+      .where(
+        sql`${table.kind} = '${sql.raw(AGENT_MEMORY_KIND.Source)}' and ${table.deletedAt} is null`
+      ),
+    index("agent_memory_session_id_idx").on(table.sessionId),
+    index("agent_memory_kind_status_idx").on(table.kind, table.status),
+  ]
+);
+
+export type AgentMemory = InferSelectModel<typeof agentMemories>;
 
 // ============================================
 // Agent Tool Approval

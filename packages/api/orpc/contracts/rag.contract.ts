@@ -283,7 +283,7 @@ export const previewReindexAllContract = oc
   .output(
     z.object({
       ...indexKeyFields,
-      /** Resources the run iterates, one per feed translation. */
+      /** Resources the run iterates: every feed translation plus every live memory. */
       targets: z.number(),
       counts: indexCountsSchema,
       needingEmbedding: z.number(),

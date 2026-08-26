@@ -133,6 +133,10 @@
       "types": "./feeds/write.ts",
       "default": "./feeds/write.ts"
     },
+    "./memories/write": {
+      "types": "./memories/write.ts",
+      "default": "./memories/write.ts"
+    },
     "./orpc/guards/rate-limit.guard": {
       "types": "./orpc/guards/rate-limit.guard.ts",
       "default": "./orpc/guards/rate-limit.guard.ts"

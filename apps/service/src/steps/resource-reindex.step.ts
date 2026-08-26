@@ -1,7 +1,11 @@
 import { getWorkflowMetadata, RetryableError } from "workflow";
 
-import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/api/resources/registry";
+import {
+  AGENT_MEMORY_SOURCE_TYPE,
+  FEED_TRANSLATION_SOURCE_TYPE,
+} from "@chia/api/resources/registry";
 import { connectDatabase } from "@chia/db/client";
+import { listAgentMemoryIds } from "@chia/db/repos/agent/memory";
 import { listFeedTranslationIds } from "@chia/db/repos/feeds";
 import {
   finalizeResourceIndexRun,
@@ -21,10 +25,11 @@ import type { ResourceIndexRequest } from "./resource-index.step";
  */
 
 /**
- * Every resource a full reindex walks.
+ * Every resource a full reindex walks: feed translations, then agent memories.
  *
- * One adapter is registered, so this is the feed translations; a second resource type
- * enumerates itself here alongside them.
+ * Every registered type must enumerate itself here. A type left out survives the index
+ * version bump that follows only until `pruneEmbeddings` runs, and its search then degrades
+ * to lexical-only without an error anywhere.
  */
 export const listReindexTargetsStep = async (): Promise<
   ResourceIndexRequest[]
@@ -32,12 +37,21 @@ export const listReindexTargetsStep = async (): Promise<
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
-  const ids = await listFeedTranslationIds(db, {});
+  const [translationIds, memoryIds] = await Promise.all([
+    listFeedTranslationIds(db, {}),
+    listAgentMemoryIds(db),
+  ]);
 
-  return ids.map((sourceId) => ({
-    sourceType: FEED_TRANSLATION_SOURCE_TYPE,
-    sourceId,
-  }));
+  return [
+    ...translationIds.map((sourceId) => ({
+      sourceType: FEED_TRANSLATION_SOURCE_TYPE,
+      sourceId,
+    })),
+    ...memoryIds.map((sourceId) => ({
+      sourceType: AGENT_MEMORY_SOURCE_TYPE,
+      sourceId,
+    })),
+  ];
 };
 
 /**

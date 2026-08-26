@@ -35,6 +35,15 @@ export interface FeedHooks {
 }
 
 /**
+ * Agent memory lifecycle hook, fired by `memories/write.ts` after every write. One hook
+ * covers create, update and removal: the index run reads the row and clears the chunks of
+ * a memory that is gone or archived, so the writer never has to say which it was.
+ */
+export interface MemoryHooks {
+  onMemoryChanged?: (memoryId: number) => Promise<void>;
+}
+
+/**
  * oRPC handler context: {@link ServiceContext} plus what the hosting process supplies.
  *
  * `config` is required — every process that runs the router has a rate-limit budget to
@@ -44,9 +53,10 @@ export interface FeedHooks {
  */
 export interface BaseOSContext extends ServiceContext {
   config: ORPCConfig;
-  hooks?: FeedHooks & {
-    onError?: (cause: unknown) => void;
-  };
+  hooks?: FeedHooks &
+    MemoryHooks & {
+      onError?: (cause: unknown) => void;
+    };
   /** Starts and reconciles resource index runs. Needs the workflow runtime. */
   indexing?: IndexingService;
   /** Agent kind services, keyed by `agent.session.kind`. */

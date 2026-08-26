@@ -21,7 +21,7 @@ import { Locale } from "@chia/db/types";
 
 import { resolveWritingModel } from "./models.ts";
 import { writingPolicy, writingTurnBudget } from "./policy.ts";
-import type { ContentPort, DraftStore, WebPort } from "./ports.ts";
+import type { ContentPort, DraftStore, MemoryPort, WebPort } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
@@ -36,6 +36,7 @@ export interface RunWritingTurnOptions<TApproval> {
   content: ContentPort;
   web: WebPort;
   draft: DraftStore;
+  memory: MemoryPort;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
@@ -61,6 +62,7 @@ export const runWritingTurn = <TApproval>(
     content: options.content,
     web: options.web,
     draft: options.draft,
+    memory: options.memory,
   };
 
   return runPiTurn({

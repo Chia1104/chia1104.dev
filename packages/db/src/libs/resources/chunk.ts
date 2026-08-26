@@ -38,6 +38,8 @@ const sourceColumns = (ref: ResourceRef) => {
   switch (ref.sourceType) {
     case "feed_translation":
       return { feedTranslationId: ref.sourceId };
+    case "agent_memory":
+      return { agentMemoryId: ref.sourceId };
     default:
       throw new Error(`Unknown resource source type "${ref.sourceType}"`);
   }

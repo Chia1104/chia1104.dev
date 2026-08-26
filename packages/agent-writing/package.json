@@ -37,6 +37,10 @@
       "types": "./src/draft/memory-draft-store.ts",
       "default": "./src/draft/memory-draft-store.ts"
     },
+    "./memory/memory-port": {
+      "types": "./src/memory/memory-port.ts",
+      "default": "./src/memory/memory-port.ts"
+    },
     "./prompts/system": {
       "types": "./src/prompts/system.ts",
       "default": "./src/prompts/system.ts"
@@ -68,6 +72,10 @@
     "./tools/retrieval.tool": {
       "types": "./src/tools/retrieval.tool.ts",
       "default": "./src/tools/retrieval.tool.ts"
+    },
+    "./tools/memory.tool": {
+      "types": "./src/tools/memory.tool.ts",
+      "default": "./src/tools/memory.tool.ts"
     },
     "./tools/draft.tool": {
       "types": "./src/tools/draft.tool.ts",

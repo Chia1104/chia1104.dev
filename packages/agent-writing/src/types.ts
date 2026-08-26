@@ -13,9 +13,10 @@ import type {
   PostFeedType,
 } from "@chia/agent-content/types";
 import type { AgentTool } from "@chia/agent-runtime/types";
+import type { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import type { ContentType, Locale } from "@chia/db/types";
 
-import type { ContentPort, DraftStore, WebPort } from "./ports.ts";
+import type { ContentPort, DraftStore, MemoryPort, WebPort } from "./ports.ts";
 
 /**
  * The writing agent's domain vocabulary.
@@ -28,7 +29,7 @@ import type { ContentPort, DraftStore, WebPort } from "./ports.ts";
  * Tool tiers, in increasing order of blast radius.
  *
  * - `read`   — pure reads and outbound fetches. Nothing observable changes.
- * - `draft`  — writes to the staging buffer only. Reversible, invisible to the blog.
+ * - `draft`  — reversible writes the blog never sees: the staging buffer, the agent's memory.
  * - `commit` — writes to `feed`/`feed_translation`/`content`. Requires approval.
  */
 export type WritingToolTier = (typeof WRITING_TOOL_TIERS)[number];
@@ -51,6 +52,8 @@ export interface WritingToolContext extends ContentToolContext {
   /** Outbound web: search and page fetch. Only the writing agent gets this. */
   web: WebPort;
   draft: DraftStore;
+  /** Long-term memory across sessions: sources read, facts verified, lessons learned. */
+  memory: MemoryPort;
 }
 
 export type WritingTool = AgentTool<WritingToolContext>;
@@ -120,6 +123,52 @@ export interface WebSearchResult {
   url: string;
   title?: string;
   description?: string;
+}
+
+// ============================================
+// Memory shapes
+// ============================================
+
+export type MemoryKind = AgentMemoryKind;
+export type MemoryStatus = AgentMemoryStatus;
+
+export interface SaveMemoryInput {
+  kind: MemoryKind;
+  title: string;
+  /** Markdown. */
+  content: string;
+  sourceUrl?: string;
+}
+
+/** The identity of a memory: enough for a list, a citation or a `get_memory` call. */
+export interface MemorySummary {
+  id: number;
+  kind: MemoryKind;
+  title: string;
+  sourceUrl: string | null;
+}
+
+export interface SavedMemory extends MemorySummary {
+  /** False when a `source` revisit found the stored page unchanged. */
+  changed: boolean;
+}
+
+export interface MemorySearchInput {
+  query: string;
+  limit: number;
+}
+
+export interface MemoryHit extends MemorySummary {
+  /** The best-matching chunk's text, so the model sees why it matched. */
+  snippet: string;
+}
+
+export interface MemoryDetail extends MemorySummary {
+  status: MemoryStatus;
+  content: string;
+  /** ISO timestamps. */
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CommitDraftInput {

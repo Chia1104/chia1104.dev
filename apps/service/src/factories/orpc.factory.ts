@@ -4,6 +4,7 @@ import type { BaseOSContext, ORPCConfig } from "@chia/api/orpc/utils";
 
 import { agentKinds } from "../agents/registry";
 import { env } from "../env";
+import { memoryHooks } from "../services/agent-memory-indexing.service";
 import { feedHooks } from "../services/feed-indexing.service";
 import { ragIndexingService } from "../services/rag-indexing.service";
 
@@ -40,14 +41,15 @@ export const withErrorReporting = async <T>(
  * `BaseOSContext` extends `ServiceContext`, which is exactly the Hono `Variables` —
  * hence the spread rather than a field-by-field mapping. Everything after the spread is
  * what this process supplies on top: its env-derived config, and — because it is the only
- * process with a workflow runtime — the ports that index feeds, start index runs and run
- * agent turns.
+ * process with a workflow runtime — the ports that index feeds and memories, start index
+ * runs and run agent turns.
  */
 export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   ...c.var,
   config,
   hooks: {
     ...feedHooks,
+    ...memoryHooks,
     onError(error) {
       c.get("sentry").captureException(error);
     },

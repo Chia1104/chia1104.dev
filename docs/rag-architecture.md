@@ -1,7 +1,7 @@
 # RAG 架構：Chunk、Embedding 與檢索
 
 > 狀態：現行架構（as-built）
-> 最後更新：2026-08-16
+> 最後更新：2026-08-27
 
 本文件說明部落格的檢索系統：內容如何被切成可檢索的單位、向量如何產生與儲存、查詢端如何檢索與排序，以及維護時該從哪裡改。
 
@@ -28,11 +28,11 @@ flowchart LR
 
 三個要記住的名詞：
 
-| 名詞         | 意思                                                                                                   |
-| ------------ | ------------------------------------------------------------------------------------------------------ |
-| **resource** | 一個可被索引的東西。目前只有一種：`feed_translation`（一篇文章的一個語系）                             |
-| **chunk**    | resource 的一個可檢索片段。分 `card`（整篇的主題摘要）和 `section`（正文段落）                         |
-| **adapter**  | 一個 resource type 要提供的兩個函式：`buildChunks`（怎麼切）和 `hydrate`（命中後怎麼變成可渲染的摘要） |
+| 名詞         | 意思                                                                                                                   |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| **resource** | 一個可被索引的東西。兩種：`feed_translation`（一篇文章的一個語系）與 `agent_memory`（寫作 agent 的一筆長期記憶，§2.4） |
+| **chunk**    | resource 的一個可檢索片段。分 `card`（整篇的主題摘要）和 `section`（正文段落）                                         |
+| **adapter**  | 一個 resource type 要提供的兩個函式：`buildChunks`（怎麼切）和 `hydrate`（命中後怎麼變成可渲染的摘要）                 |
 
 搜尋和索引的程式碼完全不知道「feed」的存在，只透過 adapter 介面對話。新增一種可搜尋的內容 = 寫一個 adapter + 註冊，不用動索引或檢索邏輯。
 
@@ -46,8 +46,9 @@ flowchart LR
 chia_resource_chunk
 ├── id                   bigserial PK
 ├── feed_translation_id  FK → chia_feed_translation（ON DELETE CASCADE，可為 null）
-├── source_type          text  GENERATED  -- 'feed_translation'
-├── source_id            integer GENERATED
+├── agent_memory_id      FK → agent.memory（ON DELETE CASCADE，可為 null）
+├── source_type          text  GENERATED  -- 'feed_translation' | 'agent_memory'
+├── source_id            integer GENERATED -- coalesce(feed_translation_id, agent_memory_id)
 ├── kind                 text        -- 'card' | 'section'
 ├── chunk_index          integer     -- 在同一個 kind 內從 0 遞增；card 固定 0
 ├── content              text        -- 送去嵌入、也用於 BM25 和 snippet 的文字
@@ -111,6 +112,14 @@ Outline:
 ```
 
 Outline 只取到 H3、最多 40 個 heading。所以一篇 2k token 和一篇 20k token 的文章，只要 outline 一樣，card 的大小就一樣——永遠不會逼近模型的 token 上限。只有在完全沒有 summary 也沒有任何 heading 時，才退而放一段 400 token 的正文摘錄（`buildEmbeddingInput`）。
+
+### 2.4 第二種 resource：`agent_memory`
+
+寫作 agent 的長期記憶（`agent.memory`，見 `docs/agent-architecture.md` §10）走同一條管線：adapter 在 `packages/api/resources/agent-memory.resource.ts`，card 是 `Kind / Title / Source` 三行（與內容長度無關），section 對 `content` 跑既有 chunking。三個與 feed 不同的規則：
+
+- **可見性固定 `{ locale: null, published: false, deleted: false }`。** `scopeFilter` 預設只看 `published = true`，所以公開搜尋、`search_posts`、相關文章推薦都天然看不到記憶；要讀到記憶必須**同時**傳 `includeUnpublished: true` 與 `sourceTypes: ['agent_memory']`，目前只有 agent 的 `search_memory` port 這麼做。`locale` 留 null 因為記憶是跨語系的，查資料常是英文、寫文常是中文。
+- **archived 與軟刪除都算「沒有內容」。** `buildChunks` 回 null，`syncResourceChunksStep` 把 chunk 清掉；`hydrate` 用同一個判定，符合 §6.2 的一致性要求。寫入端（`packages/api/memories/write.ts`）每次寫入都觸發一次 `indexResourceWorkflow`，所以 archive 與刪除不需要獨立的移除 workflow。
+- **全量 reindex 要自己列舉。** `listReindexTargetsStep` 同時列 feed translation 與記憶（§7）。
 
 ## 3. 寫入路徑
 
@@ -301,8 +310,10 @@ full（原文全文）
 ### 全量 reindex
 
 1. bump `EMBEDDING_INDEX_VERSION`
-2. 對每個 feed 呼叫 `syncFeedSearchIndex(feedID)`
+2. dash 的 `rag.reindex:all`（`resourceReindexWorkflow`）：`listReindexTargetsStep` 列出每個 feed translation 與每筆記憶，逐一 `indexResource`
 3. 每個 resource 各自判定 → 重寫 chunk → 補嵌入缺向量的部分
+
+`listReindexTargetsStep` 是每種 resource type 的列舉義務：漏掉的 type 在 bump 之後、`embeddings:prune` 之前都還能用舊向量，prune 一跑它的語意檢索就靜默退化成純 BM25，沒有任何錯誤。
 
 過程中舊向量照常服務查詢（查詢端不 filter index version），無停機。Rollback 就是把常數改回去重跑。
 
@@ -319,30 +330,35 @@ full（原文全文）
 2. `packages/db/src/libs/resources/chunk.ts` 的 `sourceColumns()` 加一個 branch
 3. 實作 `ChunkableResource`（`buildChunks` + `hydrate`）
 4. 註冊到 `packages/api/resources/registry.ts`
+5. `apps/service/src/steps/resource-reindex.step.ts` 的 `listReindexTargetsStep` 列舉新 type，`rag.route.ts` 的 `reindex:all:preview` 把數量加進 `targets`
 
 索引 workflow 和檢索路徑不用動。`indexResourceWorkflow` 已經接受任意已註冊的 `sourceType`。
 
+**Migration 要手寫。** Postgres 不能原地改 generated expression，`source_type` / `source_id` 必須 drop 再 re-add，掛在它們身上的三個索引（unique、btree、BM25）隨之重建；drizzle-kit 產出的 SQL 會漏掉 `NOT NULL`、重複建索引，所以拿它的 snapshot、SQL 自己寫（`20260826191254_agent_memory` 是範本），寫完跑 `db:generate` 確認 diff 為空。
+
 ## 8. 檔案地圖
 
-| 職責                                        | 位置                                                                                       |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| 常數、index version、document card、hash    | `packages/ai/src/embeddings/utils.ts`                                                      |
-| Provider seam 與維度守門                    | `packages/ai/src/embeddings/provider.ts`                                                   |
-| OpenAI / Ollama 呼叫                        | `packages/ai/src/embeddings/openai.ts`、`ollama.ts`                                        |
-| Token 計數、截斷、guard                     | `packages/ai/src/embeddings/tokenizer.ts`                                                  |
-| Markdown 結構工具（heading、outline、清理） | `packages/ai/src/embeddings/markdown.ts`                                                   |
-| Chunking                                    | `packages/ai/src/embeddings/chunking.ts`                                                   |
-| LLM context 組裝與 anchor                   | `packages/ai/src/embeddings/context.ts`                                                    |
-| Schema                                      | `packages/db/src/schemas/resources.schema.ts`                                              |
-| Chunk / 向量的讀寫                          | `packages/db/src/libs/resources/chunk.ts`                                                  |
-| 檢索 SQL（BM25、dense、hybrid、聚合、相似） | `packages/db/src/libs/resources/search.ts`                                                 |
-| Adapter 介面與 registry                     | `packages/api/resources/types.ts`、`registry.ts`                                           |
-| Feed translation adapter                    | `packages/api/resources/feed-translation.resource.ts`                                      |
-| Resource 層搜尋 service                     | `packages/api/resources/search.ts`                                                         |
-| Feed 層搜尋 service（去重、快取）           | `packages/api/feeds/search.ts`                                                             |
-| Indexing workflow / steps                   | `apps/service/src/workflows/feed-indexing.workflow.ts`、`src/steps/resource-index.step.ts` |
-| 軟刪除移除 workflow                         | `apps/service/src/workflows/feed-removal.workflow.ts`                                      |
-| Feed hooks / indexing port（context 注入）  | `packages/api/orpc/utils.ts`、`apps/service/src/factories/orpc.factory.ts`                 |
+| 職責                                        | 位置                                                                                           |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 常數、index version、document card、hash    | `packages/ai/src/embeddings/utils.ts`                                                          |
+| Provider seam 與維度守門                    | `packages/ai/src/embeddings/provider.ts`                                                       |
+| OpenAI / Ollama 呼叫                        | `packages/ai/src/embeddings/openai.ts`、`ollama.ts`                                            |
+| Token 計數、截斷、guard                     | `packages/ai/src/embeddings/tokenizer.ts`                                                      |
+| Markdown 結構工具（heading、outline、清理） | `packages/ai/src/embeddings/markdown.ts`                                                       |
+| Chunking                                    | `packages/ai/src/embeddings/chunking.ts`                                                       |
+| LLM context 組裝與 anchor                   | `packages/ai/src/embeddings/context.ts`                                                        |
+| Schema                                      | `packages/db/src/schemas/resources.schema.ts`                                                  |
+| Chunk / 向量的讀寫                          | `packages/db/src/libs/resources/chunk.ts`                                                      |
+| 檢索 SQL（BM25、dense、hybrid、聚合、相似） | `packages/db/src/libs/resources/search.ts`                                                     |
+| Adapter 介面與 registry                     | `packages/api/resources/types.ts`、`registry.ts`                                               |
+| Feed translation adapter                    | `packages/api/resources/feed-translation.resource.ts`                                          |
+| Agent memory adapter                        | `packages/api/resources/agent-memory.resource.ts`                                              |
+| Agent memory 寫入（寫入 + 觸發索引）        | `packages/api/memories/write.ts`、`apps/service/src/services/agent-memory-indexing.service.ts` |
+| Resource 層搜尋 service                     | `packages/api/resources/search.ts`                                                             |
+| Feed 層搜尋 service（去重、快取）           | `packages/api/feeds/search.ts`                                                                 |
+| Indexing workflow / steps                   | `apps/service/src/workflows/feed-indexing.workflow.ts`、`src/steps/resource-index.step.ts`     |
+| 軟刪除移除 workflow                         | `apps/service/src/workflows/feed-removal.workflow.ts`                                          |
+| Feed hooks / indexing port（context 注入）  | `packages/api/orpc/utils.ts`、`apps/service/src/factories/orpc.factory.ts`                     |
 
 ## 9. 已知限制
 

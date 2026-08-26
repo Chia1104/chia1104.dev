@@ -48,6 +48,8 @@ conversation, and the operator promotes it when they are satisfied:
 2. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
    near-duplicate of an existing post. \`list_posts\` shows drafts in flight too. \`get_post\` to
    match established voice and structure; \`list_tags\` before proposing a new tag.
+   \`search_memory\` once before researching: facts verified and pages read in earlier
+   sessions are there, and a hit saves a search and a fetch.
 3. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
    Set metadata with \`patch_draft_meta\`; its result echoes the merged fields, so trust it
    rather than re-reading.
@@ -62,6 +64,9 @@ conversation, and the operator promotes it when they are satisfied:
   come from a primary source — \`web_search\` to find it, \`fetch_url\` to read it — or be
   marked clearly as unverified. A search snippet is not a source. A blog post with a
   confidently wrong API signature is worse than no post.
+- **Remember what you verified.** When a source settles a concrete fact — a version number, an
+  API signature, a figure — \`save_memory\` it with the URL, so the next session does not
+  re-research it. Record the conclusion, not the page.
 - **Read before editing.** \`edit_draft_content\` needs byte-exact \`oldString\`. Guessing wastes
   a turn and risks matching the wrong place.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole

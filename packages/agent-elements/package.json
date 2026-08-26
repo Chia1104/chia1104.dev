@@ -61,6 +61,10 @@
       "types": "./src/renderers/web.tsx",
       "default": "./src/renderers/web.tsx"
     },
+    "./renderers/memory": {
+      "types": "./src/renderers/memory.tsx",
+      "default": "./src/renderers/memory.tsx"
+    },
     "./message": {
       "types": "./src/message.tsx",
       "default": "./src/message.tsx"

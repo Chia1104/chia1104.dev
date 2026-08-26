@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
+import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
 import { commitDraftTool } from "../src/tools/commit.tool.ts";
 import { patchDraftMetaTool } from "../src/tools/draft.tool.ts";
 import { fetchUrlTool, webSearchTool } from "../src/tools/retrieval.tool.ts";
@@ -22,6 +23,7 @@ const createContext = (): TestContext => ({
   content: createFakeContentPort(),
   web: createFakeWebPort(),
   draft: new InMemoryDraftStore(),
+  memory: new InMemoryMemoryPort(SESSION_ID),
 });
 
 describe("webSearchTool", () => {

@@ -1,6 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 
 import {
+  agentMemories,
   agentRuns,
   agentSessionEntries,
   agentSessions,
@@ -55,6 +56,7 @@ const schema = {
   writingAgentSessions,
   writingAgentDrafts,
   agentToolApprovals,
+  agentMemories,
 };
 
 export const relations = defineRelations(schema, (r) => ({
@@ -222,6 +224,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.agentSessions.id,
       to: r.agentToolApprovals.sessionId,
     }),
+    memories: r.many.agentMemories({
+      from: r.agentSessions.id,
+      to: r.agentMemories.sessionId,
+    }),
   },
   agentRuns: {
     session: r.one.agentSessions({
@@ -269,6 +275,12 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.user.id,
     }),
   },
+  agentMemories: {
+    session: r.one.agentSessions({
+      from: r.agentMemories.sessionId,
+      to: r.agentSessions.id,
+    }),
+  },
 }));
 
 export const userRelations = relations.user;
@@ -294,3 +306,4 @@ export const agentSessionEntriesRelations = relations.agentSessionEntries;
 export const writingAgentSessionsRelations = relations.writingAgentSessions;
 export const writingAgentDraftsRelations = relations.writingAgentDrafts;
 export const agentToolApprovalsRelations = relations.agentToolApprovals;
+export const agentMemoriesRelations = relations.agentMemories;

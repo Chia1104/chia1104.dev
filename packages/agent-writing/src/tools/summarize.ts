@@ -43,6 +43,21 @@ export const summarizeToolResult = <TResult>(
       const url = asString(details.url);
       return url ? `Fetched ${hostOf(url)}.` : "Fetched page.";
     }
+    case TOOL_NAMES.searchMemory: {
+      const query = asString(details.query);
+      const hits = asJsonArray(details.hits);
+      return query
+        ? `Searched memory for "${query}"${hits ? ` (${hits.length} hits)` : ""}.`
+        : "Searched memory.";
+    }
+    case TOOL_NAMES.getMemory: {
+      const id = asNumber(details.id);
+      return id === undefined ? "Read memory." : `Read memory #${id}.`;
+    }
+    case TOOL_NAMES.saveMemory: {
+      const id = asNumber(details.id);
+      return id === undefined ? "Saved memory." : `Saved memory #${id}.`;
+    }
     case TOOL_NAMES.readDraft: {
       const locale = asString(details.locale);
       const lineCount = asNumber(details.lineCount);
