@@ -1,0 +1,293 @@
+import * as z from "zod";
+
+import { UnknownAgentModelError } from "@chia/agent-runtime/models";
+import type { AgentModelRef } from "@chia/agent-runtime/models";
+import type { ThinkingLevel } from "@chia/agent-runtime/types";
+import type {
+  AgentKindAdmin,
+  AgentTaskAdmin,
+} from "@chia/api/orpc/contracts/agent-admin.contract";
+import type {
+  AgentAdminCaller,
+  AgentAdminService,
+} from "@chia/api/orpc/services/agent-admin.service";
+import {
+  listAgentKindConfigs,
+  listAgentTaskConfigs,
+  upsertAgentKindConfig,
+  upsertAgentTaskConfig,
+} from "@chia/db/repos/agent/config";
+import type { AgentKindConfig, AgentTaskConfig } from "@chia/db/schema";
+import { AppError } from "@chia/service-kit/errors";
+import type { JsonObject } from "@chia/utils/json";
+
+import {
+  effectiveKindConfig,
+  effectiveKindDefaults,
+  kindRowModel,
+} from "./config";
+import type { AgentKindDefinition } from "./kind";
+import { AGENT_KINDS, loadAgentKind } from "./registry";
+import {
+  assertAgentTaskModel,
+  definedTaskParams,
+  getAgentTaskDefinition,
+  listAgentTaskDefinitions,
+  listAgentTaskModels,
+  taskRowModel,
+} from "./tasks";
+import type { AgentTaskDefinition } from "./tasks";
+
+/**
+ * The operator's view over every registered kind and task, and the writes behind the
+ * dashboard's agent workspace.
+ *
+ * Every write is checked against the definition it overrides before it lands: a kind's model
+ * through the kind's own allowlist, a task's model against the house catalogue, a kind's config
+ * through its schema, a prompt or parameters only where the task exposes them. A row can
+ * therefore only ever re-point what the code already allows.
+ */
+
+type LoadedKind = AgentKindDefinition<unknown, object>;
+
+const kindOrNotFound = async (kind: string): Promise<LoadedKind> => {
+  const definition = await loadAgentKind(kind);
+  if (!definition) {
+    throw new AppError("NOT_FOUND", {
+      message: `Agent kind "${kind}" is not registered.`,
+    });
+  }
+  /* SAFETY: every registered kind's config is an object schema; `AgentKindConfigDefinition` says so. */
+  return definition as LoadedKind;
+};
+
+const taskOrNotFound = (taskId: string): AgentTaskDefinition => {
+  const definition = getAgentTaskDefinition(taskId);
+  if (!definition) {
+    throw new AppError("NOT_FOUND", {
+      message: `Agent task "${taskId}" is not registered.`,
+    });
+  }
+  return definition;
+};
+
+const badRequest = (message: string) =>
+  new AppError("BAD_REQUEST", { message });
+
+// ============================================
+// Views
+// ============================================
+
+const kindView = (
+  definition: LoadedKind,
+  row: AgentKindConfig | undefined
+): AgentKindAdmin => {
+  const code = {
+    providerId: definition.defaults.providerId,
+    modelId: definition.defaults.modelId,
+    thinkingLevel: definition.defaults.thinkingLevel ?? "off",
+    autoApprove: definition.defaults.autoApprove ?? [],
+  };
+  const effective = effectiveKindDefaults(definition, row);
+  return {
+    kind: definition.kind,
+    label: definition.label,
+    description: definition.description,
+    minTier: definition.minTier,
+    defaults: {
+      code,
+      override: {
+        model: kindRowModel(row),
+        thinkingLevel:
+          /* SAFETY: The admin write validated the column against the contract's enum. */ (row?.thinkingLevel as
+            | ThinkingLevel
+            | null
+            | undefined) ?? null,
+        autoApprove: row?.autoApprove ?? null,
+      },
+      effective: {
+        providerId: effective.providerId,
+        modelId: effective.modelId,
+        thinkingLevel: effective.thinkingLevel ?? "off",
+        autoApprove: effective.autoApprove ?? [],
+      },
+    },
+    config: {
+      /* SAFETY: JSON Schema is a JSON object. */
+      schema: z.toJSONSchema(definition.config.schema) as JsonObject,
+      /* SAFETY: a kind's config is validated by a JSON-compatible zod object schema. */
+      defaults: definition.config.defaults as JsonObject,
+      override: row?.config ?? {},
+      /* SAFETY: as above. */
+      effective: effectiveKindConfig(definition, row) as JsonObject,
+    },
+    updatedAt: row?.updatedAt.getTime() ?? null,
+  };
+};
+
+const taskView = (
+  definition: AgentTaskDefinition,
+  row: AgentTaskConfig | undefined
+): AgentTaskAdmin => {
+  const override = taskRowModel(row);
+  return {
+    id: definition.id,
+    label: definition.label,
+    description: definition.description,
+    kind: definition.kind ?? null,
+    model: {
+      default: definition.defaultModel,
+      override,
+      effective: override ?? definition.defaultModel,
+    },
+    prompt: definition.prompt
+      ? {
+          default: definition.prompt.default,
+          override: row?.systemPrompt ?? null,
+        }
+      : null,
+    params: definition.params
+      ? {
+          default: definition.params,
+          override: definedTaskParams(row?.params),
+          effective: {
+            ...definition.params,
+            ...definedTaskParams(row?.params),
+          },
+        }
+      : null,
+    updatedAt: row?.updatedAt.getTime() ?? null,
+  };
+};
+
+// ============================================
+// Validation
+// ============================================
+
+/** A model the operator chose is checked by the kind: policy and catalogue membership at once. */
+const assertKindModel = (definition: LoadedKind, ref: AgentModelRef): void => {
+  try {
+    definition.models.assert(ref);
+  } catch (error) {
+    throw error instanceof UnknownAgentModelError
+      ? badRequest(error.message)
+      : error;
+  }
+};
+
+/** The tiers a kind's tools actually use are the only ones pre-approving means anything for. */
+const assertKindTiers = (definition: LoadedKind, tiers: string[]): void => {
+  const known = new Set(definition.capabilities().tools.map((t) => t.tier));
+  const unknown = tiers.filter((tier) => !known.has(tier));
+  if (unknown.length > 0) {
+    throw badRequest(
+      `Unknown tool tier${unknown.length > 1 ? "s" : ""} for "${definition.kind}": ${unknown.join(", ")}.`
+    );
+  }
+};
+
+const parseKindConfig = (
+  definition: LoadedKind,
+  config: JsonObject
+): JsonObject => {
+  const parsed = definition.config.schema.safeParse(config);
+  if (!parsed.success) {
+    throw badRequest(
+      `Invalid configuration for "${definition.kind}": ${z.prettifyError(parsed.error)}`
+    );
+  }
+  /* SAFETY: the schema is a JSON-compatible object schema; its output is a JSON object. */
+  return parsed.data as JsonObject;
+};
+
+const assertTaskModel = (ref: AgentModelRef): void => {
+  try {
+    assertAgentTaskModel(ref);
+  } catch (error) {
+    throw error instanceof UnknownAgentModelError
+      ? badRequest(
+          `${error.message} A task runs on the house gateway; pick a model from its catalogue.`
+        )
+      : error;
+  }
+};
+
+// ============================================
+// Service
+// ============================================
+
+export const createAgentAdminService = (): AgentAdminService => {
+  const listKinds = async ({ db }: AgentAdminCaller) => {
+    const rows = new Map(
+      (await listAgentKindConfigs(db)).map((row) => [row.kind, row])
+    );
+    return Promise.all(
+      Object.keys(AGENT_KINDS).map(async (kind) =>
+        kindView(await kindOrNotFound(kind), rows.get(kind))
+      )
+    );
+  };
+
+  const listTasks = async ({ db }: AgentAdminCaller) => {
+    const rows = new Map(
+      (await listAgentTaskConfigs(db)).map((row) => [row.taskId, row])
+    );
+    return listAgentTaskDefinitions().map((definition) =>
+      taskView(definition, rows.get(definition.id))
+    );
+  };
+
+  return {
+    listKinds,
+
+    async updateKind({ db }, input) {
+      const definition = await kindOrNotFound(input.kind);
+      if (input.model) assertKindModel(definition, input.model);
+      if (input.autoApprove) assertKindTiers(definition, input.autoApprove);
+      const config =
+        input.config === undefined
+          ? undefined
+          : parseKindConfig(definition, input.config);
+
+      const row = await upsertAgentKindConfig(db, input.kind, {
+        // A pair, set or cleared together; `undefined` leaves both alone.
+        providerId: pairField(input.model, "providerId"),
+        modelId: pairField(input.model, "modelId"),
+        thinkingLevel: input.thinkingLevel,
+        autoApprove: input.autoApprove,
+        config,
+      });
+      return kindView(definition, row);
+    },
+
+    listTasks,
+
+    async updateTask({ db }, input) {
+      const definition = taskOrNotFound(input.id);
+      if (input.model) assertTaskModel(input.model);
+      if (input.systemPrompt !== undefined && !definition.prompt) {
+        throw badRequest(`Task "${input.id}" has no prompt to override.`);
+      }
+      if (input.params !== undefined && !definition.params) {
+        throw badRequest(`Task "${input.id}" has no parameters to override.`);
+      }
+
+      const row = await upsertAgentTaskConfig(db, input.id, {
+        providerId: pairField(input.model, "providerId"),
+        modelId: pairField(input.model, "modelId"),
+        systemPrompt: input.systemPrompt,
+        params: input.params,
+      });
+      return taskView(definition, row);
+    },
+
+    listTaskModels: () => Promise.resolve(listAgentTaskModels()),
+  };
+};
+
+/** One half of a model pair patch: `undefined` leaves it, `null` clears it, a ref sets it. */
+const pairField = (
+  model: AgentModelRef | null | undefined,
+  key: keyof AgentModelRef
+): string | null | undefined =>
+  model === undefined ? undefined : (model?.[key] ?? null);

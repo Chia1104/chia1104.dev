@@ -10,8 +10,8 @@ import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
 import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useAgentLabels } from "./labels-context.tsx";
 import { orbStateOfTool } from "./orb-state.ts";
-import { useAgentLabels } from "./provider.tsx";
 
 /**
  * A kind-specific view of one tool's result. Keyed by tool name; receives the folded call.

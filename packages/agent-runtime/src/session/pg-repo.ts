@@ -86,7 +86,7 @@ export class PgSessionRepo {
       modelId: settings.modelId ?? defaults.modelId,
       thinkingLevel: settings.thinkingLevel ?? defaults.thinkingLevel ?? "off",
       activeToolNames: settings.activeToolNames ?? null,
-      autoApprove: settings.autoApprove ?? [],
+      autoApprove: settings.autoApprove ?? defaults.autoApprove ?? [],
       runtimeConfig: options.runtimeConfig,
       configVersion: options.configVersion,
       forkedFromSessionId: options.forkedFrom?.sessionId ?? null,

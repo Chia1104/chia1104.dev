@@ -19,6 +19,7 @@ import {
   Activity,
   Wrench,
   Brain,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import type { NavMainItem } from "@/components/commons/nav-main";
@@ -28,7 +29,7 @@ type RouteGroup =
   | "project"
   | "content"
   | "rag"
-  | "memory"
+  | "agents"
   | "settings";
 
 export const useRouteItems = () => {
@@ -133,7 +134,13 @@ export const useRouteItems = () => {
           ],
         },
       ],
-      memory: [
+      agents: [
+        {
+          url: "/agents",
+          isActive: segments[0] === "agents",
+          icon: <SlidersHorizontal />,
+          title: "Agents",
+        },
         {
           url: "/memory",
           isActive: segments[0] === "memory",

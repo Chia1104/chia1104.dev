@@ -165,6 +165,14 @@
       "types": "./orpc/services/agent.service.ts",
       "default": "./orpc/services/agent.service.ts"
     },
+    "./orpc/contracts/agent-admin.contract": {
+      "types": "./orpc/contracts/agent-admin.contract.ts",
+      "default": "./orpc/contracts/agent-admin.contract.ts"
+    },
+    "./orpc/services/agent-admin.service": {
+      "types": "./orpc/services/agent-admin.service.ts",
+      "default": "./orpc/services/agent-admin.service.ts"
+    },
     "./orpc/services/indexing.service": {
       "types": "./orpc/services/indexing.service.ts",
       "default": "./orpc/services/indexing.service.ts"

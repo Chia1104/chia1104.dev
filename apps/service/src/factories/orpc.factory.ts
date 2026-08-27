@@ -4,6 +4,7 @@ import type { BaseOSContext, ORPCConfig } from "@chia/api/orpc/utils";
 
 import { agentKinds } from "../agents/registry";
 import { env } from "../env";
+import { agentAdminService } from "../services/agent-admin.service";
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 import { feedHooks } from "../services/feed-indexing.service";
 import { memoryService } from "../services/memory-consolidation.service";
@@ -58,4 +59,5 @@ export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   indexing: ragIndexingService,
   memory: memoryService,
   agentKinds,
+  agentAdmin: agentAdminService,
 });

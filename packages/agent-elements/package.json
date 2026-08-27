@@ -21,6 +21,10 @@
       "types": "./src/labels.ts",
       "default": "./src/labels.ts"
     },
+    "./labels-context": {
+      "types": "./src/labels-context.tsx",
+      "default": "./src/labels-context.tsx"
+    },
     "./queries": {
       "types": "./src/queries.ts",
       "default": "./src/queries.ts"
@@ -104,6 +108,10 @@
     "./model-picker": {
       "types": "./src/model-picker.tsx",
       "default": "./src/model-picker.tsx"
+    },
+    "./session-model-picker": {
+      "types": "./src/session-model-picker.tsx",
+      "default": "./src/session-model-picker.tsx"
     },
     "./session-tabs": {
       "types": "./src/session-tabs.tsx",

@@ -7,26 +7,47 @@ import { ChevronDown } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useAgentLabels } from "./labels-context.tsx";
 import { ProviderMark, providerLabelOf, vendorOf } from "./provider-icons.tsx";
 import type { ProviderIcon } from "./provider-icons.tsx";
-import {
-  useAgentLabels,
-  useAgentModels,
-  useAgentSession,
-  useSessionDetail,
-  useUpdateSettings,
-} from "./provider.tsx";
 import { ThinkingSlider } from "./thinking-slider.tsx";
-import type { AgentModel, AgentThinkingLevel } from "./types.ts";
+import type { AgentModel, AgentModelRef, AgentThinkingLevel } from "./types.ts";
 
 /**
  * A model is identified by its `(providerId, modelId)` pair — the same model carries different
  * ids under different providers, so neither half alone is a key.
  */
-const keyOf = (model: { providerId: string; modelId: string }) =>
-  `${model.providerId} ${model.modelId}`;
+const keyOf = (model: AgentModelRef) => `${model.providerId} ${model.modelId}`;
+
+/** The list row that stands for "no choice"; never a provider id, so it cannot collide. */
+const FALLBACK_KEY = "";
 
 export interface ModelPickerProps {
+  /** The catalogue offered, grouped by provider in the popover. */
+  models: readonly AgentModel[] | undefined;
+  /** The selected pair, or `null` when {@link ModelPickerProps.fallback} is what applies. */
+  value: AgentModelRef | null;
+  /** `null` only when the fallback row was chosen. */
+  onChange: (model: AgentModelRef | null) => void;
+  /**
+   * A row above the catalogue standing for "no choice" — a code default, an inherited
+   * setting. Choosing it yields `null`; its label is what the trigger shows for `null`.
+   */
+  fallback?: { label: string };
+  /**
+   * The thinking level to show under the catalogue; the slider is omitted when this is not
+   * given, or when the selected model has no reasoning to configure.
+   */
+  thinkingLevel?: AgentThinkingLevel;
+  /** The thumb moved; the value to show while it is being dragged. */
+  onThinkingLevelChange?: (level: AgentThinkingLevel) => void;
+  /** The thumb settled; the value to persist. */
+  onThinkingLevelCommit?: (level: AgentThinkingLevel) => void;
+  isDisabled?: boolean;
+  /** A choice is being persisted; the trigger shows it and refuses another until it lands. */
+  isPending?: boolean;
+  /** The trigger fills its container and shows the whole model name, as a form field would. */
+  fullWidth?: boolean;
   /** Display names per provider or vendor id, on top of the built-in ones. */
   providerLabels?: Readonly<Record<string, string>>;
   /** Marks per provider or vendor id, on top of the built-in ones. */
@@ -41,27 +62,32 @@ export interface ModelPickerProps {
 
 /**
  * One popover: a rail of provider marks, a searchable model list for the active provider, and
- * the thinking slider. Choosing anything persists it on the session straight away; the trigger
- * reflects the session's current settings with the model vendor's mark.
+ * the thinking slider. Controlled throughout — it shows `value` and reports a choice — so the
+ * same element serves a session's own settings (`SessionModelPicker`) and a form that decides
+ * what to do with the choice itself. Needs only the labels context.
  */
 export const ModelPicker = ({
   className,
+  fallback,
+  fullWidth,
+  isDisabled,
   isOpen,
+  isPending,
+  models,
+  onChange,
   onOpenChange,
+  onThinkingLevelChange,
+  onThinkingLevelCommit,
   providerIcons,
   providerLabels,
   providerOrder = [],
+  thinkingLevel,
+  value,
 }: ModelPickerProps) => {
   const labels = useAgentLabels();
-  const settings = useSessionDetail().data?.settings;
-  const models = useAgentModels().data;
-  const updateSettings = useUpdateSettings();
-  const busy = useAgentSession((state) => state.connection !== "idle");
-  const saving = updateSettings.isPending;
   const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [rail, setRail] = useState<string | null>(null);
-  const [draftLevel, setDraftLevel] = useState<AgentThinkingLevel | null>(null);
   const open = isOpen ?? internalOpen;
 
   const setOpen = (next: boolean) => {
@@ -93,9 +119,8 @@ export const ModelPicker = ({
   }, [models, providerOrder]);
 
   const activeProvider =
-    providers.find(
-      (provider) => provider.id === (rail ?? settings?.providerId)
-    ) ?? providers[0];
+    providers.find((provider) => provider.id === (rail ?? value?.providerId)) ??
+    providers[0];
 
   const visibleModels = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -109,26 +134,29 @@ export const ModelPicker = ({
       : list;
   }, [activeProvider, query]);
 
-  const current = settings
-    ? (models ?? []).find((model) => keyOf(model) === keyOf(settings))
+  const current = value
+    ? (models ?? []).find((model) => keyOf(model) === keyOf(value))
     : undefined;
   const supportsReasoning = current?.supportsReasoning ?? true;
-  const level = draftLevel ?? settings?.thinkingLevel ?? "off";
+  const showSlider = thinkingLevel !== undefined && supportsReasoning;
 
-  const save = (input: Parameters<typeof updateSettings.mutate>[0]) =>
-    updateSettings.mutate(input);
-
-  const triggerVendor = settings ? vendorOf(settings) : null;
-  const triggerModel = current?.name ?? settings?.modelId ?? labels.modelPicker;
+  const triggerVendor = value ? vendorOf(value) : null;
+  const triggerModel =
+    current?.name ?? value?.modelId ?? fallback?.label ?? labels.modelPicker;
+  const selectedKey = value ? keyOf(value) : fallback ? FALLBACK_KEY : null;
 
   return (
     <Popover isOpen={open} onOpenChange={setOpen}>
       <Popover.Trigger>
         <Button
           aria-label={labels.modelPicker}
-          className={cn("h-8 gap-1.5 px-2 text-xs", className)}
-          isDisabled={!settings || busy || saving}
-          isPending={saving}
+          className={cn(
+            "h-8 gap-1.5 px-2 text-xs",
+            fullWidth && "w-full justify-start",
+            className
+          )}
+          isDisabled={isDisabled || isPending}
+          isPending={isPending}
           size="sm"
           variant="ghost">
           {triggerVendor ? (
@@ -138,12 +166,18 @@ export const ModelPicker = ({
               id={triggerVendor}
             />
           ) : null}
-          <span className="max-w-40 truncate font-medium">{triggerModel}</span>
-          {settings && supportsReasoning ? (
+          <span
+            className={cn(
+              "truncate font-medium",
+              fullWidth ? "min-w-0 flex-1 text-left" : "max-w-40"
+            )}>
+            {triggerModel}
+          </span>
+          {showSlider ? (
             <>
               <span className="bg-separator mx-0.5 h-3 w-px" />
               <span className="text-muted">
-                {labels.thinkingLevelNames[level]}
+                {labels.thinkingLevelNames[thinkingLevel]}
               </span>
             </>
           ) : null}
@@ -217,18 +251,20 @@ export const ModelPicker = ({
                 disallowEmptySelection
                 onSelectionChange={(keys) => {
                   const key = [...keys][0];
+                  if (key === selectedKey) return;
+                  if (key === FALLBACK_KEY) {
+                    onChange(null);
+                    return;
+                  }
                   const next = (models ?? []).find(
                     (model) => keyOf(model) === key
                   );
-                  if (!next || (settings && keyOf(next) === keyOf(settings))) {
-                    return;
-                  }
-                  save({
-                    model: {
+                  if (next) {
+                    onChange({
                       providerId: next.providerId,
                       modelId: next.modelId,
-                    },
-                  });
+                    });
+                  }
                 }}
                 renderEmptyState={() => (
                   <p className="text-muted px-3 py-6 text-center text-xs">
@@ -236,9 +272,22 @@ export const ModelPicker = ({
                   </p>
                 )}
                 selectedKeys={
-                  settings ? new Set([keyOf(settings)]) : new Set<string>()
+                  selectedKey === null
+                    ? new Set<string>()
+                    : new Set([selectedKey])
                 }
                 selectionMode="single">
+                {fallback && query.trim() === "" ? (
+                  <ListBox.Item
+                    className="py-2"
+                    id={FALLBACK_KEY}
+                    textValue={fallback.label}>
+                    <span className="text-muted truncate">
+                      {fallback.label}
+                    </span>
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ) : null}
                 {visibleModels.map((model) => {
                   const vendor = vendorOf(model);
                   return (
@@ -270,23 +319,13 @@ export const ModelPicker = ({
             </div>
           </div>
 
-          {supportsReasoning ? (
+          {showSlider ? (
             <div className="border-border border-t px-4 py-3">
               <ThinkingSlider
-                isDisabled={saving}
-                onChange={setDraftLevel}
-                onCommit={(next) => {
-                  if (next === settings?.thinkingLevel) {
-                    setDraftLevel(null);
-                    return;
-                  }
-                  setDraftLevel(next);
-                  updateSettings.mutate(
-                    { thinkingLevel: next },
-                    { onSettled: () => setDraftLevel(null) }
-                  );
-                }}
-                value={level}
+                isDisabled={isPending}
+                onChange={(next) => onThinkingLevelChange?.(next)}
+                onCommit={onThinkingLevelCommit}
+                value={thinkingLevel}
               />
             </div>
           ) : null}

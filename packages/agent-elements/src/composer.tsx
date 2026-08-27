@@ -25,17 +25,17 @@ import {
 } from "./composer-draft.ts";
 import type { ComposerDraft } from "./composer-draft.ts";
 import { ContextUsage } from "./context-usage.tsx";
+import { useAgentLabels } from "./labels-context.tsx";
 import { fill } from "./labels.ts";
-import { ModelPicker } from "./model-picker.tsx";
 import {
   useAbortSession,
   useAgentCapabilities,
   useAgentBusy,
-  useAgentLabels,
   useAgentSession,
   useAgentStatus,
   useCanPrompt,
 } from "./provider.tsx";
+import { SessionModelPicker } from "./session-model-picker.tsx";
 import {
   filterSlashMenuItems,
   findSlashCommand,
@@ -247,7 +247,7 @@ const ComposerToolbar = memo(
       <div className="z-20 flex items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-1">
           {toolbar === undefined ? (
-            <ModelPicker
+            <SessionModelPicker
               isOpen={modelPickerOpen}
               onOpenChange={onModelPickerOpenChange}
             />

@@ -4,12 +4,9 @@ import { Button, Popover, ProgressBar } from "@heroui/react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useAgentLabels } from "./labels-context.tsx";
 import { fill } from "./labels.ts";
-import {
-  useAgentLabels,
-  useAgentModels,
-  useSessionDetail,
-} from "./provider.tsx";
+import { useAgentModels, useSessionDetail } from "./provider.tsx";
 
 const RING_RADIUS = 7;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;

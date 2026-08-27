@@ -1,8 +1,10 @@
 import { defineRelations } from "drizzle-orm";
 
 import {
+  agentKindConfigs,
   agentMemories,
   agentRuns,
+  agentTaskConfigs,
   agentSessionEntries,
   agentSessions,
   agentToolApprovals,
@@ -57,6 +59,8 @@ const schema = {
   writingAgentDrafts,
   agentToolApprovals,
   agentMemories,
+  agentKindConfigs,
+  agentTaskConfigs,
 };
 
 export const relations = defineRelations(schema, (r) => ({

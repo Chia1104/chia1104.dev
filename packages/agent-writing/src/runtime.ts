@@ -1,17 +1,10 @@
-import type { Models } from "@earendil-works/pi-ai";
+import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import { createAgentModels } from "@chia/agent-runtime/models";
-import {
-  compactPiSession,
-  navigatePiSession,
-} from "@chia/agent-runtime/pi/maintenance";
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import { runPiTurn } from "@chia/agent-runtime/pi/turn";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
-  AgentCompactionResult,
-  AgentNavigationOptions,
-  AgentNavigationResult,
   AgentSessionSettings,
   AgentTurnExecution,
   AgentTurnMessage,
@@ -37,6 +30,8 @@ export interface RunWritingTurnOptions<TApproval> {
   web: WebPort;
   draft: DraftStore;
   memory: MemoryPort;
+  /** The operator's standing instructions; see `SystemPromptInput.instructions`. */
+  instructions?: string;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
@@ -44,6 +39,8 @@ export interface RunWritingTurnOptions<TApproval> {
   /** Host-owned abort; see `RunPiTurnOptions.signal`. */
   signal?: AbortSignal;
   models?: Models;
+  /** See `RunPiTurnOptions.compactionModel`; the session's own model when omitted. */
+  compactionModel?: Model<Api>;
   defaultLocale?: Locale;
   toApproval: (request: ApprovalRequest) => TApproval;
   persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
@@ -77,11 +74,13 @@ export const runWritingTurn = <TApproval>(
     settings: options.settings,
     model: resolveWritingModel(options.settings, models),
     models,
+    compactionModel: options.compactionModel,
     tools: createWritingTools(),
     toolContext,
     systemPrompt: buildSystemPrompt({
       skills: writingSkills,
       autoApprove: options.settings.autoApprove,
+      instructions: options.instructions,
     }),
     volatileContext: async () => {
       const [draft, sessionMemories, lessons] = await Promise.all([
@@ -110,46 +109,4 @@ export const runWritingTurn = <TApproval>(
     persistApprovals: options.persistApprovals,
     flushEvents: options.flushEvents,
   });
-};
-
-export interface WritingSessionOperationOptions {
-  session: SessionTree;
-  settings: AgentSessionSettings;
-  models?: Models;
-}
-
-/** Compacts a writing session with its model allowlist and caller-owned credentials. */
-export const compactWritingSession = (
-  options: WritingSessionOperationOptions,
-  customInstructions?: string
-): Promise<AgentCompactionResult> => {
-  const models = options.models ?? createAgentModels();
-  return compactPiSession(
-    {
-      session: options.session,
-      settings: options.settings,
-      model: resolveWritingModel(options.settings, models),
-      models,
-    },
-    customInstructions
-  );
-};
-
-/** Navigates a writing session with its model allowlist and caller-owned credentials. */
-export const navigateWritingSession = (
-  options: WritingSessionOperationOptions,
-  entryId: string,
-  navigationOptions: AgentNavigationOptions
-): Promise<AgentNavigationResult> => {
-  const models = options.models ?? createAgentModels();
-  return navigatePiSession(
-    {
-      session: options.session,
-      settings: options.settings,
-      model: resolveWritingModel(options.settings, models),
-      models,
-    },
-    entryId,
-    navigationOptions
-  );
 };

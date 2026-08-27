@@ -5,7 +5,8 @@ import { ArrowRight } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { useAgentLabels, useAgentSession, useCanPrompt } from "./provider.tsx";
+import { useAgentLabels } from "./labels-context.tsx";
+import { useAgentSession, useCanPrompt } from "./provider.tsx";
 
 export interface EmptyStateProps {
   title?: string;

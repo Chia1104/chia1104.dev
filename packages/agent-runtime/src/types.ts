@@ -83,10 +83,12 @@ export interface AgentSessionSettings {
   autoApprove: ToolTier[];
 }
 
+/** What a new session starts with when its creator chose nothing; the kind's code values, possibly overridden by the operator's kind configuration. */
 export interface AgentSessionDefaults {
   providerId: string;
   modelId: string;
   thinkingLevel?: ThinkingLevel;
+  autoApprove?: ToolTier[];
 }
 
 export interface AgentCompactionResult {

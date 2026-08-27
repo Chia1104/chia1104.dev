@@ -19,6 +19,12 @@ export interface SystemPromptInput {
   skills: readonly Skill[];
   /** Tiers the operator pre-approved. Changes what the model should expect to be blocked. */
   autoApprove: readonly ToolTier[];
+  /**
+   * The operator's standing instructions from the kind's configuration. Part of the stable
+   * prompt, not the volatile block: they change when the operator edits them, not per turn,
+   * and a change is meant to reach every session from its next turn on.
+   */
+  instructions?: string;
 }
 
 export interface TurnContextInput {
@@ -122,6 +128,11 @@ export const buildSystemPrompt = (input: SystemPromptInput): string => {
   }
 
   sections.push(formatApprovalPosture(input.autoApprove));
+
+  const instructions = input.instructions?.trim();
+  if (instructions) {
+    sections.push(`# Operator instructions\n\n${instructions}`);
+  }
 
   return sections.join("\n\n");
 };

@@ -19,8 +19,8 @@ import { GitFork, Undo2 } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useAgentLabels } from "./labels-context.tsx";
 import {
-  useAgentLabels,
   useAgentSession,
   useCanPrompt,
   useForkSession,
