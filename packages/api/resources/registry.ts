@@ -1,4 +1,8 @@
 import {
+  AGENT_MEMORY_SOURCE_TYPE,
+  agentMemoryResource,
+} from "./agent-memory.resource";
+import {
   FEED_TRANSLATION_SOURCE_TYPE,
   feedTranslationResource,
 } from "./feed-translation.resource";
@@ -10,6 +14,7 @@ import type { ChunkableResource } from "./types";
  */
 const registry = new Map<string, ChunkableResource>([
   [FEED_TRANSLATION_SOURCE_TYPE, feedTranslationResource],
+  [AGENT_MEMORY_SOURCE_TYPE, agentMemoryResource],
 ]);
 
 export const resourceTypes = [...registry.keys()];
@@ -29,5 +34,5 @@ export const getResourceAdapter = (sourceType: string): ChunkableResource => {
   return adapter;
 };
 
-export { FEED_TRANSLATION_SOURCE_TYPE };
+export { AGENT_MEMORY_SOURCE_TYPE, FEED_TRANSLATION_SOURCE_TYPE };
 export type { ChunkableResource, ResourceSummary } from "./types";

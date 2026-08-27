@@ -43,6 +43,7 @@ declare namespace __next_route_internal_types__ {
     | `/feed/drafts` // ../../../src/app/(workspace)/feed/(manage)/drafts/page.tsx
     | `/feed/notes` // ../../../src/app/(workspace)/feed/(manage)/notes/page.tsx
     | `/feed/posts` // ../../../src/app/(workspace)/feed/(manage)/posts/page.tsx
+    | `/memory` // ../../../src/app/(workspace)/memory/page.tsx
     | `/onboarding` // ../../../src/app/(onboarding)/onboarding/page.tsx
     | `/onboarding/create` // ../../../src/app/(onboarding)/onboarding/create/page.tsx
     | `/projects` // ../../../src/app/(workspace)/projects/page.tsx

@@ -2,6 +2,7 @@ import type { WritingTool } from "../types.ts";
 
 import { commitTools } from "./commit.tool.ts";
 import { draftTools } from "./draft.tool.ts";
+import { memoryTools } from "./memory.tool.ts";
 import { retrievalTools } from "./retrieval.tool.ts";
 import { skillTools } from "./skill.tool.ts";
 
@@ -9,11 +10,12 @@ import { skillTools } from "./skill.tool.ts";
  * The writing agent's full tool set.
  *
  * Ordering is intentional — it is the order pi lists tools to the model, which nudges the
- * natural workflow: load the rules, ground yourself, draft, then commit.
+ * natural workflow: load the rules, ground yourself (posts, web, memory), draft, then commit.
  */
 export const createWritingTools = (): WritingTool[] => [
   ...skillTools,
   ...retrievalTools,
+  ...memoryTools,
   ...draftTools,
   ...commitTools,
 ];
@@ -23,4 +25,6 @@ export const createWritingTools = (): WritingTool[] => [
  * (e.g. a read-only review session).
  */
 export const readOnlyToolNames = (): string[] =>
-  [...skillTools, ...retrievalTools, ...draftTools].map((tool) => tool.name);
+  [...skillTools, ...retrievalTools, ...memoryTools, ...draftTools].map(
+    (tool) => tool.name
+  );

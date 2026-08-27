@@ -1,7 +1,7 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-26
+> Last updated: 2026-08-27
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -115,6 +115,7 @@ agent.run                      durable execution metadata; one active run per se
 agent.tool_approval            durable approval request and audit trail
 agent.writing_session          writing-specific 1:1 state
 agent.writing_draft            per-locale staging buffer
+agent.memory                   long-term memory across sessions (§10); indexed into `resource_chunk`
 ```
 
 Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
@@ -252,8 +253,8 @@ belong at enqueue time, in the kind service.
 
 The system prompt is stable for a session — rules, skills index, approval posture — because it
 heads every provider request and a changed prefix invalidates the cached system prompt, tool
-schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock)
-is the **volatile context**: appended as the last user message of each provider request through
+schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock,
+the memories this session has saved) is the **volatile context**: appended as the last user message of each provider request through
 Pi's `context` hook, never persisted, so it is always current and never accumulates in the
 transcript. Anything the model must see fresh belongs there, not in the system prompt.
 
@@ -493,9 +494,10 @@ from Pi; the domain decides which `(providerId, modelId)` pairs it permits.
 
 The writing agent reads content through `ContentPort` — `@chia/agent-content`'s `ContentReadPort`
 plus the writes — reaches the web through `WebPort` (`web_search` for discovery, `fetch_url` to
-read a page), stages drafts through `DraftStore`, and only commit-tier tools promote staged data
-to live feed/content tables. Tool order encourages the model to read, draft and then commit.
-Destructive deletion and image upload are not available agent tools.
+read a page), remembers across sessions through `MemoryPort`, stages drafts through `DraftStore`,
+and only commit-tier tools promote staged data to live feed/content tables. Tool order encourages
+the model to read, draft and then commit. Destructive deletion and image upload are not available
+agent tools.
 
 `WebPort` is host-implemented on Firecrawl (`apps/service/src/services/agent-web.port.ts`,
 `FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
@@ -504,6 +506,62 @@ reads a source it chose. There is no direct outbound fetch in the agent path. Bo
 the turn's abort signal to the port; the Firecrawl SDK cannot cancel a request, so the port
 settles with the signal's reason at once and lets the request run out its timeout in the
 background — a stopped turn ends as soon as the signal fires instead of when the page arrives.
+
+### Memory
+
+`agent.memory` is the one table that outlives a session. Three kinds with three lifecycles:
+a `source` is a page `fetch_url` read (URL, title, the page text up to 64k characters), a
+`fact` is a distilled, cited
+claim the model chose to keep with `save_memory`, and a `lesson` is a writing preference
+extracted from the operator's feedback. `MemoryPort` (`@chia/agent-writing/ports`) is
+implemented entirely by the host (`apps/service/src/services/agent-memory.port.ts`): writes go
+through `packages/api/memories/write.ts`, which takes the index hook as a required argument the
+way `feeds/write.ts` does, and every write that changes a row schedules
+`indexResourceWorkflow` for the `agent_memory` resource type (`docs/rag-architecture.md`
+§2.4) — a `source` revisit whose text is unchanged schedules nothing unless the index is older
+than the row (`isResourceIndexedSince`), which is how a hook that once failed, on a first
+visit or after a change, gets a second chance. Only live, `active`
+memories are indexed: a pending lesson is unreviewed and the index is agent context.
+`save_memory` sits in the `draft` tier — reversible, invisible to the blog — and only ever
+writes a `fact`.
+
+`fetch_url` records every page it reads as a `source` — URL, title, and the whole page text
+(bounded at 64k characters) — through the same port, keyed on the URL so a revisit refreshes
+rather than duplicates. A whole page rather than an excerpt because the RAG pipeline is built
+for documents: sections with heading paths for search, an outline card for "what is this page
+about", and `get_memory` degrading a long page the way `get_post` does. The
+trail is written after the fetch and can never fail it: the model's result is identical with
+or without it. The volatile context (§4) lists what the current session has saved, one
+bounded line per memory with its id, so the model neither saves twice nor forgets it can
+`get_memory` what it already has — a `source` by its host and path, never by its title, which
+is the fetched page's own and would otherwise be restated on every request.
+
+A `fact` or `source` reaches the model through tools, never through the system prompt:
+`search_memory` is resource search scoped to `sourceTypes: ["agent_memory"]` with
+`includeUnpublished: true`, the two flags that must be set together because every memory chunk
+is indexed `published: false`, and `get_memory` reads one row. A retrieval is therefore a
+visible tool call with a visible cost. The port's two list methods exist for the volatile
+context, which holds nothing but ports.
+
+A `lesson` is the one kind that is always on: the volatile context carries the titles of the
+twenty most recently touched **active** lessons under `# Learned preferences`, because a
+preference the model has to remember to look up is not a preference it follows. Lessons are
+written by `memoryConsolidationWorkflow` (`apps/service/src/workflows/memory-consolidation.workflow.ts`),
+started by the writing kind's `runTurn` after a turn that executed `commit_draft` ended `done`
+— only then does the transcript hold the whole revision history — or by hand from the
+dashboard (`memory.consolidate`). Its one step reads the session's raw entries through
+`parentId`, past any compaction, keeps only the operator's messages and the assistant's prose
+(never a tool result, so nothing a fetched page said can become a lesson), and asks the house
+gateway's cheap model for at most three new lessons as JSON. Every lesson lands `pending` and
+is injected nowhere until the operator approves it in the dashboard: no text that no human has
+read can sit in every future prompt. The extraction helpers are pure and live in
+`@chia/agent-writing/memory/lessons`; the step is `maxRetries = 0`, since a model failure is
+already "no lessons" and a retry after a partial write would duplicate them.
+
+The dashboard's memory page (`apps/dash/src/app/(workspace)/memory/`) is client-only oRPC
+behind `adminGuard()` on every `memory.*` procedure, reads included: a memory is unpublished
+research, and an active lesson is a standing instruction. Every write goes through
+`memories/write.ts`, so editing, archiving or deleting re-indexes.
 
 ### Content visibility
 
@@ -534,6 +592,7 @@ implementations; all mutable state is durable:
 | --------------------------------------- | ---------------------------------------------- |
 | Transcript                              | `agent.session_entry`                          |
 | Draft                                   | `agent.writing_session`, `agent.writing_draft` |
+| Memory                                  | `agent.memory`, indexed into `resource_chunk`  |
 | Approval decisions                      | `agent.tool_approval`                          |
 | Run metadata                            | `agent.run`                                    |
 | Message inbox, pauses and event streams | workflow backend                               |
@@ -556,31 +615,33 @@ until a concrete second execution foundation requires a different seam.
 
 ## 12. Reference
 
-| Concern                      | File                                                                                           |
-| ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
-| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                 |
-| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
-| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
-| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                             |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
-| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                             |
-| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                |
-| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                       |
-| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
-| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                           |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
-| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                   |
-| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`         |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
-| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                            |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |
+| Concern                      | File                                                                                                |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                             |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                        |
+| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                      |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                           |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                           |
+| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts`      |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                                  |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                  |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                           |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                              |
+| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                                  |
+| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                     |
+| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                            |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                               |
+| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                     |
+| Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`, `apps/service/src/services/agent-memory.port.ts` |
+| Memory writes / indexing     | `packages/api/memories/write.ts`, `apps/service/src/services/agent-memory-indexing.service.ts`      |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                             |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                                |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                       |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                        |
+| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                                |
+| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`              |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                                   |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                            |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                           |
+| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                 |
+| Dashboard UI                 | `apps/dash/src/components/agent/`                                                                   |

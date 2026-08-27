@@ -99,6 +99,12 @@ export {
   writingAgentSessions,
   writingAgentDrafts,
   agentToolApprovals,
+  agentMemories,
+  AGENT_MEMORY_KIND,
+  AGENT_MEMORY_STATUS,
+  type AgentMemory,
+  type AgentMemoryKind,
+  type AgentMemoryStatus,
   type AgentSession,
   type AgentRun,
   type AgentRunStatus,
@@ -135,4 +141,5 @@ export {
   writingAgentSessionsRelations,
   writingAgentDraftsRelations,
   agentToolApprovalsRelations,
+  agentMemoriesRelations,
 } from "./relations.ts";

@@ -21,7 +21,7 @@ import { Locale } from "@chia/db/types";
 
 import { resolveWritingModel } from "./models.ts";
 import { writingPolicy, writingTurnBudget } from "./policy.ts";
-import type { ContentPort, DraftStore, WebPort } from "./ports.ts";
+import type { ContentPort, DraftStore, MemoryPort, WebPort } from "./ports.ts";
 import { writingSkills } from "./prompts/skills.ts";
 import { buildSystemPrompt, buildTurnContext } from "./prompts/system.ts";
 import { writingPromptTemplates } from "./prompts/templates.ts";
@@ -36,6 +36,7 @@ export interface RunWritingTurnOptions<TApproval> {
   content: ContentPort;
   web: WebPort;
   draft: DraftStore;
+  memory: MemoryPort;
   message: AgentTurnMessage;
   onEvent: (event: AgentWireEvent) => void;
   approvedToolCallIds?: ReadonlySet<string>;
@@ -49,6 +50,12 @@ export interface RunWritingTurnOptions<TApproval> {
   flushEvents?: () => Promise<void>;
 }
 
+/**
+ * Active lessons shown on every request. Twenty one-line titles is ~600 tokens; the operator
+ * archives to make room rather than the agent forgetting on its own.
+ */
+const LESSONS_DIGEST_LIMIT = 20;
+
 /** Composes the writing domain and executes one turn on Pi's `Agent`. */
 export const runWritingTurn = <TApproval>(
   options: RunWritingTurnOptions<TApproval>
@@ -61,6 +68,7 @@ export const runWritingTurn = <TApproval>(
     content: options.content,
     web: options.web,
     draft: options.draft,
+    memory: options.memory,
   };
 
   return runPiTurn({
@@ -75,13 +83,21 @@ export const runWritingTurn = <TApproval>(
       skills: writingSkills,
       autoApprove: options.settings.autoApprove,
     }),
-    volatileContext: async () =>
-      buildTurnContext({
-        draft: await options.draft.get(options.agentSessionId),
+    volatileContext: async () => {
+      const [draft, sessionMemories, lessons] = await Promise.all([
+        options.draft.get(options.agentSessionId),
+        options.memory.listBySession(options.agentSessionId),
+        options.memory.listActiveLessons(LESSONS_DIGEST_LIMIT),
+      ]);
+      return buildTurnContext({
+        draft,
+        sessionMemories,
+        lessons,
         targetFeedId: options.targetFeedId,
         defaultLocale,
         now: new Date(),
-      }),
+      });
+    },
     signal: options.signal,
     promptTemplates: writingPromptTemplates,
     policy: writingPolicy,

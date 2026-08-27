@@ -8,6 +8,7 @@ import { EmptyState } from "@chia/agent-elements/empty-state";
 import { ModelPicker } from "@chia/agent-elements/model-picker";
 import { useSessionDetail } from "@chia/agent-elements/provider";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
+import { memoryToolRenderers } from "@chia/agent-elements/renderers/memory";
 import { webToolRenderers } from "@chia/agent-elements/renderers/web";
 import { Thread } from "@chia/agent-elements/thread";
 
@@ -19,7 +20,11 @@ import { DraftAttachments } from "./draft-attachments";
  */
 const PROVIDER_ORDER = ["vercel-ai-gateway", "openai", "anthropic"];
 
-const TOOL_RENDERERS = { ...contentToolRenderers, ...webToolRenderers };
+const TOOL_RENDERERS = {
+  ...contentToolRenderers,
+  ...webToolRenderers,
+  ...memoryToolRenderers,
+};
 
 const SUGGESTIONS = [
   "Outline a post about what I've been building lately.",

@@ -185,6 +185,7 @@ export const AssistantMessage = ({
   actions?: ReactNode;
   className?: string;
 }) => {
+  const labels = useAgentLabels();
   const thinkingStreaming = message.streaming && !message.text;
   return (
     <div className={cn("group flex flex-col gap-3", className)}>
@@ -196,7 +197,11 @@ export const AssistantMessage = ({
         />
       ) : null}
       {message.text || !message.thinking ? (
-        <Markdown streaming={message.streaming} text={message.text} />
+        <Markdown
+          labels={labels}
+          streaming={message.streaming}
+          text={message.text}
+        />
       ) : null}
       {!message.streaming && message.text ? (
         <MessageMeta

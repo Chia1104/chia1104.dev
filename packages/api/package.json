@@ -133,6 +133,10 @@
       "types": "./feeds/write.ts",
       "default": "./feeds/write.ts"
     },
+    "./memories/write": {
+      "types": "./memories/write.ts",
+      "default": "./memories/write.ts"
+    },
     "./orpc/guards/rate-limit.guard": {
       "types": "./orpc/guards/rate-limit.guard.ts",
       "default": "./orpc/guards/rate-limit.guard.ts"
@@ -164,6 +168,10 @@
     "./orpc/services/indexing.service": {
       "types": "./orpc/services/indexing.service.ts",
       "default": "./orpc/services/indexing.service.ts"
+    },
+    "./orpc/services/memory.service": {
+      "types": "./orpc/services/memory.service.ts",
+      "default": "./orpc/services/memory.service.ts"
     },
     "./orpc/routes/feeds.route": {
       "types": "./orpc/routes/feeds.route.ts",

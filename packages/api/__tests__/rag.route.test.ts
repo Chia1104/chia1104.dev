@@ -16,11 +16,16 @@ const { repo } = vi.hoisted(() => ({
     listChunks: vi.fn(),
     getActiveResourceIndexRun: vi.fn(),
     countFeedTranslations: vi.fn(),
+    countAgentMemories: vi.fn(),
   },
 }));
 
 vi.mock("@chia/db/repos/feeds", () => ({
   countFeedTranslations: repo.countFeedTranslations,
+}));
+
+vi.mock("@chia/db/repos/agent/memory", () => ({
+  countAgentMemories: repo.countAgentMemories,
 }));
 
 vi.mock("@chia/db/repos/resources/stats", () => ({
@@ -102,7 +107,8 @@ describe("rag routes", () => {
       chunks: [],
     });
     repo.getActiveResourceIndexRun.mockResolvedValue(null);
-    repo.countFeedTranslations.mockResolvedValue(42);
+    repo.countFeedTranslations.mockResolvedValue(40);
+    repo.countAgentMemories.mockResolvedValue(2);
   });
 
   afterEach(() => {

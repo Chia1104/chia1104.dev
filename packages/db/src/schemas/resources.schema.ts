@@ -18,6 +18,7 @@ import {
 
 import { timestamps } from "../libs/common.schema.ts";
 
+import { agentMemories } from "./agent.schema.ts";
 import { feeds, feedTranslations } from "./contents.schema.ts";
 import { locale } from "./enums.ts";
 import { pgTable } from "./table.ts";
@@ -44,7 +45,10 @@ const pdbTokenized = <TColumn>(column: TColumn) =>
   column as Parameters<typeof paradedbField>[0];
 
 /** Every source column that can own a chunk. Add one per new resource type. */
-const CHUNK_SOURCE_COLUMNS = ["feed_translation_id"] as const;
+const CHUNK_SOURCE_COLUMNS = [
+  "feed_translation_id",
+  "agent_memory_id",
+] as const;
 
 export const RESOURCE_CHUNK_KIND = {
   /** One per resource: title + summary + tags + outline. Bounded in size. */
@@ -77,17 +81,23 @@ export const resourceChunks = pgTable(
       () => feedTranslations.id,
       { onDelete: "cascade" }
     ),
+    agentMemoryId: integer("agent_memory_id").references(
+      () => agentMemories.id,
+      { onDelete: "cascade" }
+    ),
 
     // NOT NULL is safe: the CHECK below guarantees exactly one key column is
     // set, so the expressions always produce a value.
     sourceType: text("source_type")
       .notNull()
       .generatedAlwaysAs(
-        sql`case when "feed_translation_id" is not null then 'feed_translation' end`
+        sql`case when "feed_translation_id" is not null then 'feed_translation' when "agent_memory_id" is not null then 'agent_memory' end`
       ),
     sourceId: integer("source_id")
       .notNull()
-      .generatedAlwaysAs(sql`coalesce("feed_translation_id")`),
+      .generatedAlwaysAs(
+        sql`coalesce("feed_translation_id", "agent_memory_id")`
+      ),
 
     kind: text("kind", {
       enum: [RESOURCE_CHUNK_KIND.Card, RESOURCE_CHUNK_KIND.Section],
@@ -121,6 +131,7 @@ export const resourceChunks = pgTable(
     ),
     index("resource_chunk_source_idx").on(table.sourceType, table.sourceId),
     index("resource_chunk_feed_translation_id_idx").on(table.feedTranslationId),
+    index("resource_chunk_agent_memory_id_idx").on(table.agentMemoryId),
     /**
      * `icu` segments Traditional Chinese and keeps identifiers such as
      * `ef_search` whole. It does not split on `.` between alphanumerics, so

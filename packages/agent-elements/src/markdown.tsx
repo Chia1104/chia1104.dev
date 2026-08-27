@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, isValidElement } from "react";
+import { Children, createContext, isValidElement, useContext } from "react";
 
 import { Alert, AlertDialog, Button, Card } from "@heroui/react";
 import { cjk } from "@streamdown/cjk";
@@ -13,7 +13,26 @@ import { CopyButton } from "@chia/ui/copy-button";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { HighlightedCode } from "./code-block.tsx";
-import { useAgentLabels } from "./provider.tsx";
+import { defaultAgentLabels } from "./labels.ts";
+import type { AgentLabels } from "./labels.ts";
+
+/** The strings this component renders. A host passes its catalog's; absent, the `en-US` ones. */
+export type MarkdownLabels = Pick<
+  AgentLabels,
+  | "copy"
+  | "copied"
+  | "linkSafetyTitle"
+  | "linkSafetyDescription"
+  | "openLink"
+  | "cancel"
+>;
+
+/**
+ * Reaches the parts Streamdown instantiates itself — the fenced-code element and the link
+ * confirmation — which receive Streamdown's props, not ours. Scoped to this file and provided
+ * by {@link Markdown}, so the component needs no session provider around it.
+ */
+const MarkdownLabelsContext = createContext<MarkdownLabels>(defaultAgentLabels);
 
 /** Streamdown hands the fence body as a string, or as a `<code>` element wrapping one. */
 const codeText = (children: React.ReactNode): string =>
@@ -30,7 +49,7 @@ const codeText = (children: React.ReactNode): string =>
  * the frame is a plain Card so a host can restyle it without touching the tokenizer.
  */
 const CodeBlock: Components["code"] = ({ children, className }) => {
-  const labels = useAgentLabels();
+  const labels = useContext(MarkdownLabelsContext);
   const language = /language-(\S+)/.exec(className ?? "")?.[1] ?? "text";
   const code = codeText(children).replace(/\n$/, "");
   return (
@@ -95,7 +114,7 @@ const LinkSafetyDialog = ({
   onConfirm,
   url,
 }: LinkSafetyModalProps) => {
-  const labels = useAgentLabels();
+  const labels = useContext(MarkdownLabelsContext);
   return (
     <AlertDialog
       isOpen={isOpen}
@@ -161,6 +180,8 @@ export interface MarkdownProps {
   streaming?: boolean;
   /** Element overrides layered over {@link markdownComponents}. */
   components?: Components;
+  /** Copy-button and link-confirmation strings. Defaults to the `en-US` catalog. */
+  labels?: MarkdownLabels;
   className?: string;
 }
 
@@ -168,30 +189,38 @@ export interface MarkdownProps {
  * Assistant text as markdown, tolerant of the half-finished syntax a stream produces. The CJK
  * plugin keeps emphasis and strikethrough working across Chinese punctuation. Links the model
  * wrote are confirmed before opening.
+ *
+ * Self-contained: every string it shows comes through `labels`, so it renders anywhere — a
+ * dashboard page with no agent session behind it included.
  */
 export const Markdown = ({
   className,
   components,
+  labels = defaultAgentLabels,
   streaming = false,
   text,
 }: MarkdownProps) => (
-  <Streamdown
-    className={cn(
-      "text-foreground text-sm leading-6",
-      "[&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h4]:text-sm",
-      "**:data-[streamdown=link]:text-foreground/70 **:data-[streamdown=link]:decoration-muted/70 **:data-[streamdown=link]:underline-offset-[5px]",
-      "**:data-[streamdown=link]:transition-colors **:data-[streamdown=link]:duration-300 **:data-[streamdown=link]:ease-in-out",
-      "**:data-[streamdown=link]:hover:decoration-foreground/70",
-      className
-    )}
-    components={
-      components ? { ...markdownComponents, ...components } : markdownComponents
-    }
-    controls={{ table: false, mermaid: false }}
-    isAnimating={streaming}
-    linkSafety={{ enabled: true, renderModal: renderLinkSafety }}
-    mode={streaming ? "streaming" : "static"}
-    plugins={{ cjk }}>
-    {text}
-  </Streamdown>
+  <MarkdownLabelsContext.Provider value={labels}>
+    <Streamdown
+      className={cn(
+        "text-foreground text-sm leading-6",
+        "[&_h1]:text-xl [&_h2]:text-lg [&_h3]:text-base [&_h4]:text-sm",
+        "**:data-[streamdown=link]:text-foreground/70 **:data-[streamdown=link]:decoration-muted/70 **:data-[streamdown=link]:underline-offset-[5px]",
+        "**:data-[streamdown=link]:transition-colors **:data-[streamdown=link]:duration-300 **:data-[streamdown=link]:ease-in-out",
+        "**:data-[streamdown=link]:hover:decoration-foreground/70",
+        className
+      )}
+      components={
+        components
+          ? { ...markdownComponents, ...components }
+          : markdownComponents
+      }
+      controls={{ table: false, mermaid: false }}
+      isAnimating={streaming}
+      linkSafety={{ enabled: true, renderModal: renderLinkSafety }}
+      mode={streaming ? "streaming" : "static"}
+      plugins={{ cjk }}>
+      {text}
+    </Streamdown>
+  </MarkdownLabelsContext.Provider>
 );

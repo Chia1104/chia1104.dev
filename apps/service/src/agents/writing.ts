@@ -24,7 +24,9 @@ import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentContentPort } from "../services/agent-content.port";
+import { createAgentMemoryPort } from "../services/agent-memory.port";
 import { createAgentWebPort } from "../services/agent-web.port";
+import { startMemoryConsolidation } from "../services/memory-consolidation.service";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
 
@@ -32,8 +34,9 @@ import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
  * The **writing** agent: the dashboard's blog authoring assistant.
  *
  * The domain — tools, prompts, policy, model allowlist, draft staging — is `@chia/agent-writing`.
- * This binds it to the host: the author-visibility content port, the Firecrawl web port and the
- * Postgres draft store, plus the `agent.writing_session` row that pins a session to a target post.
+ * This binds it to the host: the author-visibility content port, the Firecrawl web port, the
+ * Postgres draft store and the memory port, plus the `agent.writing_session` row that pins a
+ * session to a target post.
  */
 
 export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
@@ -122,18 +125,22 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
     },
   },
 
-  runTurn(context) {
+  async runTurn(context) {
     /**
      * The writing agent acts as the configured author. The kind's `minTier` is `Root`, which pins
      * session ownership to that same id, so this states whose posts the port touches rather than
      * performing a second authorization check.
      */
+    let committed = false;
     const content = createAgentContentPort({
       db: context.db,
       adminId: getAdminId(),
+      onCommitted: () => {
+        committed = true;
+      },
     });
 
-    return runWritingTurn({
+    const execution = await runWritingTurn({
       session: context.session,
       models: context.models,
       settings: context.settings,
@@ -142,6 +149,10 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
       content,
       web: createAgentWebPort(),
       draft: new PgDraftStore(context.db),
+      memory: createAgentMemoryPort({
+        db: context.db,
+        sessionId: context.row.id,
+      }),
       onEvent: context.onEvent,
       approvedToolCallIds: context.approvedToolCallIds,
       preAuthorizedToolNames: context.preAuthorizedToolNames,
@@ -151,6 +162,25 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
       persistApprovals: context.persistApprovals,
       flushEvents: context.flushEvents,
     });
+
+    /**
+     * A committed post is the natural end of a writing task, and the moment the transcript
+     * holds the whole revision history — but only once the turn has ended: `runPiTurn` appends
+     * every entry before it resolves, whereas inside `commitDraft` the commit's own result and
+     * the closing summary are still to come. Fire-and-forget; the run reports for itself.
+     */
+    if (execution.status === "done" && committed) {
+      try {
+        await startMemoryConsolidation(context.row.id);
+      } catch (cause) {
+        console.error("Could not start memory consolidation", {
+          sessionId: context.row.id,
+          error: String(cause),
+        });
+      }
+    }
+
+    return execution;
   },
 
   maintenance(options) {
