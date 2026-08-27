@@ -11,8 +11,6 @@ import {
   Description,
   Form,
   Label,
-  ListBox,
-  Select,
   Switch,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +18,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+
+import { ThinkingSlider } from "@chia/agent-elements/thinking-slider";
 
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
@@ -83,11 +83,6 @@ const audienceOf = (minTier: number): string => {
       return `tier ${minTier}`;
   }
 };
-
-const DEFAULT_LEVEL = "__default__";
-
-const levelOf = (key: string) =>
-  THINKING_LEVELS.find((level) => level === key) ?? null;
 
 /**
  * One agent kind: what a new session starts with, and the kind's own configuration. The
@@ -200,36 +195,25 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
               name="thinkingLevel"
               render={({ field }) => (
                 <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Thinking level</Label>
-                  <Select
-                    aria-label="Default thinking level"
-                    className="w-full"
+                  <ThinkingSlider
                     isDisabled={busy}
-                    onBlur={field.onBlur}
-                    onChange={(key) => field.onChange(levelOf(String(key)))}
-                    value={field.value ?? DEFAULT_LEVEL}>
-                    <Select.Trigger>
-                      <Select.Value />
-                      <Select.Indicator />
-                    </Select.Trigger>
-                    <Select.Popover>
-                      <ListBox
-                        items={[
-                          {
-                            id: DEFAULT_LEVEL,
-                            label: `Default — ${code.thinkingLevel}`,
-                          },
-                          ...THINKING_LEVELS.map((level) => ({
-                            id: level,
-                            label: level,
-                          })),
-                        ]}>
-                        {(item) => (
-                          <ListBox.Item id={item.id}>{item.label}</ListBox.Item>
-                        )}
-                      </ListBox>
-                    </Select.Popover>
-                  </Select>
+                    onChange={field.onChange}
+                    value={field.value ?? code.thinkingLevel}
+                  />
+                  <div className="flex h-7 items-center justify-between">
+                    <span className="text-muted-foreground text-xs">
+                      Default: {code.thinkingLevel}
+                    </span>
+                    {field.value !== null ? (
+                      <Button
+                        isDisabled={busy}
+                        size="sm"
+                        variant="ghost"
+                        onPress={() => field.onChange(null)}>
+                        Use default
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               )}
             />
