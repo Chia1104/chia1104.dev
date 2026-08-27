@@ -25,7 +25,7 @@ catalog:
   "@t3-oss/env-core": ^0.13.11
   "@t3-oss/env-nextjs": ^0.13.11
   "@types/lodash": ^4.17.25
-  "@types/node": 26.2.0
+  "@types/node": 26.3.0
   better-all: 0.0.9
   bun-types: ^1.4.0
   client-only: ^0.0.1
@@ -49,20 +49,20 @@ catalog:
 catalogs:
   streamdown:
     "@streamdown/cjk": 1.0.3
-    streamdown: 2.5.0
+    streamdown: 2.6.0
   agent:
     "@earendil-works/pi-agent-core": 0.84.3
     "@earendil-works/pi-ai": 0.84.3
-    typebox: 1.3.16
+    typebox: 1.3.19
   ai:
-    "@ai-sdk/anthropic": 4.0.41
-    "@ai-sdk/gateway": 4.0.62
-    "@ai-sdk/google": 4.0.50
-    "@ai-sdk/openai": 4.0.46
-    "@ai-sdk/react": 4.0.80
+    "@ai-sdk/anthropic": 4.0.42
+    "@ai-sdk/gateway": 4.0.64
+    "@ai-sdk/google": 4.0.51
+    "@ai-sdk/openai": 4.0.47
+    "@ai-sdk/react": 4.0.82
     "@anthropic-ai/sdk": 0.120.0
-    "@google/genai": 2.18.0
-    ai: 7.0.77
+    "@google/genai": 2.19.0
+    ai: 7.0.79
     firecrawl: 4.35.0
     ollama: 0.6.3
     openai: 7.5.0
@@ -80,9 +80,9 @@ catalogs:
     drizzle-orm: 1.0.0-rc.4
   fumadocs:
     "@fumadocs/mdx-remote": 1.5.1
-    fumadocs-core: 16.15.0
+    fumadocs-core: 16.15.1
     fumadocs-mdx: 15.3.1
-    fumadocs-ui: 16.15.0
+    fumadocs-ui: 16.15.1
   heroui-v3:
     "@heroui/react": 3.2.4
     "@heroui/styles": 3.2.4
@@ -90,24 +90,24 @@ catalogs:
     "@hono/react-renderer": 1.0.1
     "@hono/sentry": 1.2.2
     "@hono/zod-validator": 0.9.0
-    hono: 4.13.3
+    hono: 4.13.5
     srvx: 0.12.7
     hono-rate-limiter: 0.5.3
   next:
-    "@next/third-parties": 16.3.2
-    next: 16.3.2
+    "@next/third-parties": 16.3.3
+    next: 16.3.3
   orpc:
     "@orpc/client": 1.15.0
     "@orpc/contract": 1.15.0
     "@orpc/server": 1.15.0
     "@orpc/tanstack-query": 1.15.0
   oxc:
-    "@oxlint/plugins": 1.79.0
-    oxfmt: 0.64.0
-    oxlint: 1.79.0
+    "@oxlint/plugins": 1.80.0
+    oxfmt: 0.65.0
+    oxlint: 1.80.0
   platejs:
     "@platejs/basic-nodes": ^53.0.0
-    platejs: ^53.3.7
+    platejs: ^53.3.9
   radix-ui:
     "@radix-ui/react-accordion": 1.2.20
     "@radix-ui/react-avatar": ^1.2.6
@@ -125,7 +125,7 @@ catalogs:
     "@radix-ui/react-tooltip": ^1.2.16
   react-is:
     "@types/react": ^19.2.18
-    "@types/react-dom": ^19.2.4
+    "@types/react-dom": ^19.2.5
     babel-plugin-react-compiler: 1.0.0
     react: ^19.2.8
     react-dom: ^19.2.8
@@ -136,8 +136,8 @@ catalogs:
     tailwindcss: 4.3.3
   tanstack:
     "@tanstack/react-pacer": 0.23.0
-    "@tanstack/react-query": 5.101.4
-    "@tanstack/react-query-devtools": 5.101.4
+    "@tanstack/react-query": 5.102.4
+    "@tanstack/react-query-devtools": 5.102.4
   testing-library:
     "@testing-library/jest-dom": 7.0.1
     "@testing-library/react": 16.3.2
@@ -155,10 +155,10 @@ catalogs:
     cobe: ^2.0.1
     immer: ^11.1.18
     katex: ^0.18.4
-    lucide-react: ^1.33.0
+    lucide-react: ^1.34.0
     motion: ^13.1.1
     next-themes: ^0.4.6
-    nuqs: ^2.10.0
+    nuqs: ^2.10.1
     react-medium-image-zoom: ^5.4.9
     schema-dts: 2.0.0
     shiki: ^4.4.3

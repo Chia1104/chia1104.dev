@@ -35,7 +35,7 @@
     "@orpc/server": "catalog:orpc",
     "@t3-oss/env-core": "catalog:",
     "@workflow-worlds/redis": "^0.2.2",
-    "@workflow/world-postgres": "4.3.4",
+    "@workflow/world-postgres": "4.3.5",
     "ai": "catalog:ai",
     "better-all": "catalog:",
     "better-auth": "catalog:better-auth",
@@ -49,8 +49,8 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "reading-time-estimator": "^2.13.0",
-    "resend": "^6.22.0",
-    "workflow": "4.8.4",
+    "resend": "^6.22.1",
+    "workflow": "4.8.5",
     "zod": "catalog:"
   },
   "devDependencies": {

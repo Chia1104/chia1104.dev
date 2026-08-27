@@ -48,7 +48,7 @@
     "@orpc/contract": "catalog:orpc",
     "@orpc/server": "^1.15.0",
     "@orpc/tanstack-query": "catalog:orpc",
-    "@sentry/nextjs": "^10.70.0",
+    "@sentry/nextjs": "^10.71.0",
     "@t3-oss/env-nextjs": "catalog:",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
@@ -80,7 +80,7 @@
     "shiki": "catalog:ui",
     "sonner": "catalog:ui",
     "superjson": "catalog:",
-    "takumi-js": "^2.10.0",
+    "takumi-js": "^2.12.0",
     "usehooks-ts": "catalog:ui",
     "zod": "catalog:",
     "zustand": "catalog:ui"
