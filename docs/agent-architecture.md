@@ -657,7 +657,7 @@ until a concrete second execution foundation requires a different seam.
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                            |
 | Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                           |
 | Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                 |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                                   |
+| Dashboard UI                 | `apps/dash/src/components/agent/`, `components/agents/` (kind and task configuration)               |
 
 ## 13. Kinds, tasks and operator configuration
 

@@ -572,7 +572,7 @@ factory、capability plugin system 或 provider-neutral handle。
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                            |
 | Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                           |
 | Client store 與 elements     | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                 |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                                   |
+| Dashboard UI                 | `apps/dash/src/components/agent/`, `components/agents/` (kind and task configuration)               |
 
 ## 13. Kind、task 與 operator 設定
 

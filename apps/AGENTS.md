@@ -29,7 +29,7 @@ Content is MDX rendered through `@chia/contents` (Fumadocs); i18n through `next-
 
 Admin dashboard, on one oRPC client: `src/libs/orpc/client.ts`, an `RPCLink` with `credentials: "include"`. **Every procedure call is made from the browser** with the session cookie. Pages are thin server shells (`server-only` + `force-dynamic`) or `"use client"` pages, and data fetching lives in client components via `orpc.*.queryOptions` / `mutationOptions`. There is no server-side or in-process oRPC path, so `dash` holds no DB, KV or auth-server context of its own and needs no `DATABASE_URL`.
 
-Under `src/`: `components` (feature UI — feed, rag, agent composed from `@chia/agent-elements` plus the writing draft preview, projects, assets, settings), `containers` (client containers that fetch and mount a view), `store` (zustand — draft/edit state, organization), `resources` (typed wrappers over the non-oRPC `/ai` routes), `server` (`next-safe-action` actions — today only the `currentOrg` cookie; no oRPC there).
+Under `src/`: `components` (feature UI — feed, rag, agent composed from `@chia/agent-elements` plus the writing draft preview, agents — the `/agents` workspace of kind and task overrides, react-hook-form over the `agent.admin.*` contract — memory, projects, assets, settings), `containers` (client containers that fetch and mount a view), `store` (zustand — draft/edit state, organization), `resources` (typed wrappers over the non-oRPC `/ai` routes), `server` (`next-safe-action` actions — today only the `currentOrg` cookie; no oRPC there).
 
 Auth is a Better Auth session; the client comes from `@chia/auth/client`.
 
