@@ -61,6 +61,10 @@
       "types": "./src/pi/title.ts",
       "default": "./src/pi/title.ts"
     },
+    "./pi/complete": {
+      "types": "./src/pi/complete.ts",
+      "default": "./src/pi/complete.ts"
+    },
     "./session/entries": {
       "types": "./src/session/entries.ts",
       "default": "./src/session/entries.ts"

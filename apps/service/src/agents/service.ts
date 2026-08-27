@@ -5,6 +5,7 @@ import {
   createAgentModels,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
+import { entriesUpToSeq } from "@chia/agent-runtime/session/entries";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import {
   PgSessionRepo,
@@ -33,6 +34,7 @@ import {
   getActiveAgentRun,
   getAgentApprovals,
   getAgentSession,
+  getAgentSessionLastSeq,
   patchAgentRunMetadata,
   softDeleteAgentSession,
   withAgentSessionLock,
@@ -303,13 +305,54 @@ export const createAgentKindService = <TState>(
   ): Promise<void> => {
     if (!row.activeRunId || row.turn?.running) return;
     const turn: AgentTurnMarker = {
-      leafEntryId: row.leafEntryId,
+      seqBefore: await getAgentSessionLastSeq(db, row.id),
       streamIndex: startIndex,
       running: true,
     };
     await patchAgentRunMetadata(db, row.activeRunId, {
       [AGENT_TURN_KEY]: turn,
     });
+  };
+
+  /**
+   * How long `abort` waits for the stopped turn's `run:end` before cancelling the run regardless.
+   * A tool that ignores its signal keeps Pi waiting on it; the cancel then proceeds and the
+   * tool's result, if it ever comes, is closed on replay as aborted.
+   */
+  const ABORT_SETTLE_TIMEOUT_MS = 10_000;
+
+  /**
+   * Waits for the turn step to write the stopped turn's `run:end`.
+   *
+   * The signal stops Pi, but the step still has the partial reply and any in-flight tool result
+   * to persist before the terminal event; the client rebuilds the transcript the moment `abort`
+   * returns, so returning earlier would show it a turn still missing its last entries. The turn's
+   * own durable stream is the wait: `runPiTurn` appends every entry before emitting its wire
+   * event, so `run:end` arriving means the transcript is complete.
+   */
+  const waitForTurnEnd = async (
+    runId: string,
+    startIndex: number
+  ): Promise<void> => {
+    const reader = getRun(runId)
+      .getReadable<AgentWireEvent>({ startIndex })
+      .getReader();
+    // Cancelling settles the pending read as done; the loop then falls through.
+    const deadline = setTimeout(
+      () => void reader.cancel().catch(() => undefined),
+      ABORT_SETTLE_TIMEOUT_MS
+    );
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done || value?.type === "run:end") return;
+      }
+    } catch {
+      // A dropped stream has nothing more to tell; the cancel below proceeds as before.
+    } finally {
+      clearTimeout(deadline);
+      await reader.cancel().catch(() => undefined);
+    }
   };
 
   /**
@@ -362,23 +405,15 @@ export const createAgentKindService = <TState>(
   };
 
   /**
-   * The branch up to the leaf the running turn started from. Everything after it — the turn's own
-   * user message included — is replayed by `attach` from the run's stream, which starts at the
-   * marker's `streamIndex`, before the turn announces `user`. Taking the user message from both
-   * sources showed it twice to a client that rejoined mid-turn.
+   * The branch as it was persisted before the running turn started. Everything the turn appends
+   * — its own user message included — is replayed by `attach` from the run's stream, which starts
+   * at the marker's `streamIndex`, before the turn announces `user`. Taking the user message from
+   * both sources showed it twice to a client that rejoined mid-turn.
    */
   const entriesBeforeTurn = (
     entries: SessionEntry[],
     turn: AgentTurnMarker
-  ): SessionEntry[] => {
-    if (turn.leafEntryId === null) return [];
-    const leafIndex = entries.findIndex(
-      (entry) => entry.id === turn.leafEntryId
-    );
-    // A marker that is not on this branch cannot cut it; show everything rather than guess.
-    if (leafIndex === -1) return entries;
-    return entries.slice(0, leafIndex + 1);
-  };
+  ): SessionEntry[] => entriesUpToSeq(entries, turn.seqBefore);
 
   const detailFor = async (caller: AgentServiceCaller, sessionId: string) => {
     const row = await loadOwnedSession(caller, sessionId);
@@ -410,27 +445,14 @@ export const createAgentKindService = <TState>(
       turn,
     });
 
-    // Older rows written before PgSessionStorage advanced `leafEntryId` have persisted entries but
-    // an empty active branch. Replay those entries in insertion order so existing development
-    // sessions remain visible after a refresh. Correctly linked sessions always use their branch.
-    let transcriptEntries = branch;
-    if (
-      branch.length === 0 &&
-      row.leafEntryId === null &&
-      stats.messageCount > 0
-    ) {
-      const storedEntries = await session.getEntries();
-      if (storedEntries.every((entry) => entry.parentId === null)) {
-        transcriptEntries = storedEntries;
-      }
-    }
     /**
      * A running turn is not replayed from the transcript: `attach` replays it from the run's stream
      * instead, and both cut at the same recorded marker so the client sees each message once.
      */
-    if (run?.status === "running" && turn) {
-      transcriptEntries = entriesBeforeTurn(transcriptEntries, turn);
-    }
+    const transcriptEntries =
+      run?.status === "running" && turn
+        ? entriesBeforeTurn(branch, turn)
+        : branch;
     const events = entriesToWireEvents(transcriptEntries, replayOptions);
 
     // Approval events are never replayed from the transcript; the rows are. A pending row restores
@@ -689,7 +711,7 @@ export const createAgentKindService = <TState>(
         // start that fails closes the row so the lease does not outlive the attempt.
         const runId = crypto.randomUUID();
         const turn: AgentTurnMarker = {
-          leafEntryId: row.leafEntryId,
+          seqBefore: await getAgentSessionLastSeq(db, row.id),
           streamIndex: 0,
           running: true,
         };
@@ -836,10 +858,13 @@ export const createAgentKindService = <TState>(
       // leaves a live run behind a non-active row (the next prompt would start a second workflow and
       // hit the hook conflict).
       if (row.abortController) {
-        await signalAgentAbort(
+        const signalled = await signalAgentAbort(
           row.abortController.id,
           "stopped by the operator"
         );
+        if (signalled && row.turn?.running) {
+          await waitForTurnEnd(row.workflowRunId, row.turn.streamIndex);
+        }
       }
       await cancelLiveRun(row.workflowRunId);
       if (row.activeRunId) {

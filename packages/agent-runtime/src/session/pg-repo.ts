@@ -173,8 +173,9 @@ export class PgSessionRepo {
       },
     });
 
-    // appendEntry advances the leaf, so a branch fork ends on its last copied entry.
-    for (const entry of entries) {
+    // appendEntry advances the leaf, so a branch fork ends on its last copied entry. Copies are
+    // appended in the source's `seq` order and take fresh seqs in the new session.
+    for (const { seq: _seq, ...entry } of entries) {
       await forked.appendEntry(entry);
     }
     // A whole-tree fork copies every branch in insertion order; the newest entry is not the

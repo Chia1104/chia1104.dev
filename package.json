@@ -72,12 +72,12 @@
     "@oxlint/plugins": "catalog:oxc",
     "@playwright/test": "^1.62.1",
     "@total-typescript/ts-reset": "0.6.1",
-    "@turbo/gen": "^2.10.11",
+    "@turbo/gen": "^2.10.12",
     "@vitest/coverage-v8": "catalog:testing-library",
     "@vitest/ui": "catalog:testing-library",
     "cross-env": "10.1.0",
     "dotenv": "^17.4.2",
-    "eslint-plugin-turbo": "^2.10.11",
+    "eslint-plugin-turbo": "^2.10.12",
     "happy-dom": "^20.11.6",
     "husky": "^9.1.7",
     "jest-extended": "catalog:testing-library",
@@ -87,7 +87,7 @@
     "oxfmt": "catalog:oxc",
     "oxlint": "catalog:oxc",
     "tsx": "^4.23.12",
-    "turbo": "2.10.11",
+    "turbo": "2.10.12",
     "typescript": "catalog:",
     "vitest": "catalog:testing-library"
   },
@@ -103,7 +103,7 @@
     "node": ">=22",
     "pkl": ">=0.25.2"
   },
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@12.0.0",
   "manypkg": {
     "ignoredRules": [
       "ROOT_HAS_PROD_DEPENDENCIES"

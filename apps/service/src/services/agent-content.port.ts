@@ -42,12 +42,17 @@ export interface CreateContentPortOptions {
   db: DB;
   /** The configured author the writing agent acts as; its kind admits no one else. */
   adminId: string;
+  /**
+   * Called after every successful `commitDraft`. The turn reads it once the turn has ended —
+   * the transcript is only complete then — to decide whether to start a reflection run.
+   */
+  onCommitted?: () => void;
 }
 
 export const createAgentContentPort = (
   options: CreateContentPortOptions
 ): ContentPort => {
-  const { db, adminId } = options;
+  const { db, adminId, onCommitted } = options;
 
   const read = createContentReadPort({
     db,
@@ -104,6 +109,7 @@ export const createAgentContentPort = (
         if (!created) {
           throw new Error("Creating the feed returned no row.");
         }
+        onCommitted?.();
         return { feedId: created.id, slug: created.slug, created: true };
       }
 
@@ -119,6 +125,7 @@ export const createAgentContentPort = (
         },
         feedHooks
       );
+      onCommitted?.();
       return { feedId: updated.id, slug: updated.slug, created: false };
     },
 

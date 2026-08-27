@@ -3,16 +3,16 @@ import type { Skill } from "@earendil-works/pi-agent-core";
 import type { ToolTier } from "@chia/agent-runtime/types";
 import type { Locale } from "@chia/db/types";
 
-import type { FeedDraft } from "../types.ts";
+import type { FeedDraft, MemorySummary } from "../types.ts";
 
 /**
  * Prompt assembly, split by how often the text changes.
  *
  * `buildSystemPrompt` is stable for a session — rules, skills index and approval posture — so the
  * provider's cached prefix (system prompt, tool schemas, transcript) survives from turn to turn.
- * `buildTurnContext` is the volatile block: draft state and the clock, refreshed on every provider
- * request through Pi's `context` hook and never persisted, so it is always current and never
- * accumulates in the transcript.
+ * `buildTurnContext` is the volatile block: draft state, the clock and what the session has saved
+ * to memory, refreshed on every provider request through Pi's `context` hook and never persisted,
+ * so it is always current and never accumulates in the transcript.
  */
 
 export interface SystemPromptInput {
@@ -27,7 +27,39 @@ export interface TurnContextInput {
   targetFeedId?: number;
   defaultLocale: Locale;
   now: Date;
+  /** What this session has already saved, so the model neither repeats itself nor forgets the ids. */
+  sessionMemories?: readonly MemorySummary[];
+  /**
+   * Active lessons, title only. Always on rather than searched for: a preference the model has
+   * to remember to look up is not a preference it follows.
+   */
+  lessons?: readonly MemorySummary[];
 }
+
+/**
+ * A memory is one line in the volatile block. A `source` is shown by where it is, never by
+ * its title: the title is the fetched page's own `<title>`, attacker-controlled text that
+ * would otherwise be restated on every provider request. The URL is structural — validated
+ * http(s), fragment stripped — so its host and path identify the page safely.
+ */
+const MEMORY_TITLE_MAX_CHARS = 120;
+
+const oneLine = (text: string, max: number): string => {
+  const line = text.replace(/\s+/g, " ").trim();
+  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+};
+
+const memoryLabel = (memory: MemorySummary): string => {
+  if (memory.kind === "source" && memory.sourceUrl) {
+    try {
+      const url = new URL(memory.sourceUrl);
+      return oneLine(`${url.hostname}${url.pathname}`, MEMORY_TITLE_MAX_CHARS);
+    } catch {
+      return "(page)";
+    }
+  }
+  return oneLine(memory.title, MEMORY_TITLE_MAX_CHARS);
+};
 
 const CORE = `
 You are the writing assistant for a personal technical blog, working inside its admin
@@ -48,6 +80,8 @@ conversation, and the operator promotes it when they are satisfied:
 2. **Ground yourself.** \`search_posts\` before writing anything new — the worst outcome is a
    near-duplicate of an existing post. \`list_posts\` shows drafts in flight too. \`get_post\` to
    match established voice and structure; \`list_tags\` before proposing a new tag.
+   \`search_memory\` once before researching: facts verified and pages read in earlier
+   sessions are there, and a hit saves a search and a fetch.
 3. **Draft.** \`write_draft_content\` for a first version, \`edit_draft_content\` for revisions.
    Set metadata with \`patch_draft_meta\`; its result echoes the merged fields, so trust it
    rather than re-reading.
@@ -62,6 +96,9 @@ conversation, and the operator promotes it when they are satisfied:
   come from a primary source — \`web_search\` to find it, \`fetch_url\` to read it — or be
   marked clearly as unverified. A search snippet is not a source. A blog post with a
   confidently wrong API signature is worse than no post.
+- **Remember what you verified.** When a source settles a concrete fact — a version number, an
+  API signature, a figure — \`save_memory\` it with the URL, so the next session does not
+  re-research it. Record the conclusion, not the page.
 - **Read before editing.** \`edit_draft_content\` needs byte-exact \`oldString\`. Guessing wastes
   a turn and risks matching the wrong place.
 - **Prefer editing to rewriting.** Once the operator has reviewed prose, replacing the whole
@@ -131,6 +168,28 @@ export const buildTurnContext = (input: TurnContextInput): string => {
           (missing.length > 0
             ? `, missing ${missing.join("/")}`
             : ", metadata complete")
+      );
+    }
+  }
+
+  if (input.sessionMemories && input.sessionMemories.length > 0) {
+    lines.push("- Memories saved this session (read one with `get_memory`):");
+    for (const memory of input.sessionMemories) {
+      lines.push(`  - [${memory.kind}] ${memoryLabel(memory)} (#${memory.id})`);
+    }
+  }
+
+  if (input.lessons && input.lessons.length > 0) {
+    lines.push("");
+    lines.push("# Learned preferences");
+    lines.push("");
+    lines.push(
+      "The operator's standing preferences, distilled from their feedback in earlier sessions" +
+        " and reviewed by them. Follow them without being asked; `get_memory` reads the detail."
+    );
+    for (const lesson of input.lessons) {
+      lines.push(
+        `- ${oneLine(lesson.title, MEMORY_TITLE_MAX_CHARS)} (#${lesson.id})`
       );
     }
   }

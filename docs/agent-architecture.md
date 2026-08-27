@@ -1,7 +1,7 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-24
+> Last updated: 2026-08-27
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
@@ -110,16 +110,23 @@ enabling rewind and alternate branches; `InMemorySessionTree` is the same contra
 
 ```text
 agent.session                  generic settings, kind and active leaf
-agent.session_entry            session-tree nodes (`SessionEntry`); seq is insertion order
+agent.session_entry            session-tree nodes (`SessionEntry`); `seq` is persistence order, all branches
 agent.run                      durable execution metadata; one active run per session
 agent.tool_approval            durable approval request and audit trail
 agent.writing_session          writing-specific 1:1 state
 agent.writing_draft            per-locale staging buffer
+agent.memory                   long-term memory across sessions (§10); indexed into `resource_chunk`
 ```
 
 Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
 entry shapes, so Pi's own context projection reads them directly (`buildBranchContext` in
-`session/context.ts`) and rows of retired entry types are ignored rather than migrated. The
+`session/context.ts`) and rows of retired entry types are ignored rather than migrated. Two orders
+live on the tree: `parentId` is the conversation, `seq` is the order entries were persisted in
+across every branch. `appendEntry` returns the entry with the `seq` it landed on, and "everything
+persisted before this point" is `seq <= n` whichever branch is active — which is what the turn
+marker (§6) records. `seq` is a table-wide serial taken at insert, sound only because a session
+has one writer at a time: one active run, and acceptance and maintenance serialised on the
+session lock (§8). The
 projection is a pure function of the branch: a turn's provider request is the previous projection
 plus the entries it appended, which is what keeps the provider's cached prefix valid from turn to
 turn. Kind-specific state uses extension tables instead of widening the shared session table.
@@ -246,8 +253,8 @@ belong at enqueue time, in the kind service.
 
 The system prompt is stable for a session — rules, skills index, approval posture — because it
 heads every provider request and a changed prefix invalidates the cached system prompt, tool
-schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock)
-is the **volatile context**: appended as the last user message of each provider request through
+schemas and transcript behind it. Everything that changes turn to turn (draft state, the clock,
+the memories this session has saved) is the **volatile context**: appended as the last user message of each provider request through
 Pi's `context` hook, never persisted, so it is always current and never accumulates in the
 transcript. Anything the model must see fresh belongs there, not in the system prompt.
 
@@ -264,7 +271,12 @@ subscription when the turn ends. `abort` resumes the hook first, then cancels th
 marks the `agent.run` row `cancelled`; `completeAgentRunStep` resumes it too, so a finished run does
 not leave a controller parked until its TTL. Firing the signal aborts the run at once, mid-generation included: Pi cancels the
 in-flight provider stream, the partial reply is persisted as `aborted`, and the turn ends with
-`run:end{aborted}`; no approvals are persisted and no compaction runs. Delivery is the SDK's own
+`run:end{aborted}`; no approvals are persisted and no compaction runs. A tool already executing
+only receives the signal — Pi waits for it to return — so `abort` tails the turn's own durable
+stream from the marker's `streamIndex` until `run:end` (bounded by `ABORT_SETTLE_TIMEOUT_MS`)
+before cancelling the run: the client rebuilds the transcript the moment `abort` returns, and
+every entry is appended before its wire event, so `run:end` means the stopped turn has landed
+whole. Delivery is the SDK's own
 durable stream, so it works from any process — no registry, no timer, no second channel. The next
 prompt starts a fresh session run over the persisted transcript. An expired controller (TTL) never
 aborts a turn; readers ignore `expired` and the next turn starts a new one.
@@ -348,6 +360,14 @@ session:compacted · session:rewound · state:changed · error · run:end
   message with `stopReason: "error"` replays as the same `error` event the live turn emitted;
   a `branch_summary` entry replays as `session:rewound`, so a rewind that kept a summary stays
   visible where it happened.
+- A tool call is only ever `running` between its `tool:start` and `tool:end`, and both sides
+  guarantee the end arrives. Pi persists a call's result right after the assistant message that
+  issued it, so replay closes any call whose result is not the next thing on the branch — a turn
+  stopped mid-execution, a process that died, a fork cut at the assistant message — with
+  `tool:end{aborted}`, and skips the calls of a message that ended `error` or `aborted`, which
+  Pi never executed and the live turn never showed. `run:end` closes whatever the live turn left
+  running the same way. `aborted` is its own status, not `isError`: the tool did not fail, it
+  never finished.
 - `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
 provider · internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
 - `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
@@ -377,13 +397,14 @@ and, when `run.status` is `running`, rejoins the turn through `agent.sessions.ch
 `{ type: "attach" }`. A stream that ends with `run:end` only refreshes the session detail (the
 view it built is kept, and the marker below may lag the terminal event by a moment, so that read
 is retried briefly); a stream that breaks earlier rebuilds from `get` and re-attaches with backoff. The turn step maintains `agent.run.metadata.turn`
-— the session leaf before the turn, the first coarse stream index it writes, and `running`, set
-before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
+— the newest entry `seq` before the turn (`seqBefore`), the first coarse stream index it writes,
+and `running`, set before the handler and cleared in its `finally`. The workflow SDK cannot supply that last bit: a
 run parked on its message hook is `running` to the SDK just like one executing a step, so
-`run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` cuts the
-replayed transcript after that leaf while a turn is running, and `attach` tails the stream from
-that index; both key off the same marker, so a reload mid-turn shows every message exactly once
-and finishes the turn in place. `prompt` and `approve` write the marker themselves when they
+`run.status`, `attach` and the compact/rewind guard all read the marker instead. `get` replays only
+entries with `seq <= seqBefore` while a turn is running, and `attach` tails the stream from that
+index; both key off the same marker, so a reload mid-turn shows every message exactly once and
+finishes the turn in place. A seq rather than the pre-turn leaf id: after a rewind the leaf is
+not the newest entry, and a cut by seq needs no guess about which branch the marker sits on. `prompt` and `approve` write the marker themselves when they
 accept a turn — on a fresh run as part of its lease (§8), on a parked run before waking the hook —
 so a turn counts as running from the moment it is accepted; the step rewrites the same values
 when it starts. A message queued behind a turn that is already running is the one case marked
@@ -473,14 +494,74 @@ from Pi; the domain decides which `(providerId, modelId)` pairs it permits.
 
 The writing agent reads content through `ContentPort` — `@chia/agent-content`'s `ContentReadPort`
 plus the writes — reaches the web through `WebPort` (`web_search` for discovery, `fetch_url` to
-read a page), stages drafts through `DraftStore`, and only commit-tier tools promote staged data
-to live feed/content tables. Tool order encourages the model to read, draft and then commit.
-Destructive deletion and image upload are not available agent tools.
+read a page), remembers across sessions through `MemoryPort`, stages drafts through `DraftStore`,
+and only commit-tier tools promote staged data to live feed/content tables. Tool order encourages
+the model to read, draft and then commit. Destructive deletion and image upload are not available
+agent tools.
 
 `WebPort` is host-implemented on Firecrawl (`apps/service/src/services/agent-web.port.ts`,
 `FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
 fixed cost; `fetch_url` is one scrape per page, main content as markdown, and is how the model
-reads a source it chose. There is no direct outbound fetch in the agent path.
+reads a source it chose. There is no direct outbound fetch in the agent path. Both tools hand
+the turn's abort signal to the port; the Firecrawl SDK cannot cancel a request, so the port
+settles with the signal's reason at once and lets the request run out its timeout in the
+background — a stopped turn ends as soon as the signal fires instead of when the page arrives.
+
+### Memory
+
+`agent.memory` is the one table that outlives a session. Three kinds with three lifecycles:
+a `source` is a page `fetch_url` read (URL, title, the page text up to 64k characters), a
+`fact` is a distilled, cited
+claim the model chose to keep with `save_memory`, and a `lesson` is a writing preference
+extracted from the operator's feedback. `MemoryPort` (`@chia/agent-writing/ports`) is
+implemented entirely by the host (`apps/service/src/services/agent-memory.port.ts`): writes go
+through `packages/api/memories/write.ts`, which takes the index hook as a required argument the
+way `feeds/write.ts` does, and every write that changes a row schedules
+`indexResourceWorkflow` for the `agent_memory` resource type (`docs/rag-architecture.md`
+§2.4) — a `source` revisit whose text is unchanged schedules nothing unless the index is older
+than the row (`isResourceIndexedSince`), which is how a hook that once failed, on a first
+visit or after a change, gets a second chance. Only live, `active`
+memories are indexed: a pending lesson is unreviewed and the index is agent context.
+`save_memory` sits in the `draft` tier — reversible, invisible to the blog — and only ever
+writes a `fact`.
+
+`fetch_url` records every page it reads as a `source` — URL, title, and the whole page text
+(bounded at 64k characters) — through the same port, keyed on the URL so a revisit refreshes
+rather than duplicates. A whole page rather than an excerpt because the RAG pipeline is built
+for documents: sections with heading paths for search, an outline card for "what is this page
+about", and `get_memory` degrading a long page the way `get_post` does. The
+trail is written after the fetch and can never fail it: the model's result is identical with
+or without it. The volatile context (§4) lists what the current session has saved, one
+bounded line per memory with its id, so the model neither saves twice nor forgets it can
+`get_memory` what it already has — a `source` by its host and path, never by its title, which
+is the fetched page's own and would otherwise be restated on every request.
+
+A `fact` or `source` reaches the model through tools, never through the system prompt:
+`search_memory` is resource search scoped to `sourceTypes: ["agent_memory"]` with
+`includeUnpublished: true`, the two flags that must be set together because every memory chunk
+is indexed `published: false`, and `get_memory` reads one row. A retrieval is therefore a
+visible tool call with a visible cost. The port's two list methods exist for the volatile
+context, which holds nothing but ports.
+
+A `lesson` is the one kind that is always on: the volatile context carries the titles of the
+twenty most recently touched **active** lessons under `# Learned preferences`, because a
+preference the model has to remember to look up is not a preference it follows. Lessons are
+written by `memoryConsolidationWorkflow` (`apps/service/src/workflows/memory-consolidation.workflow.ts`),
+started by the writing kind's `runTurn` after a turn that executed `commit_draft` ended `done`
+— only then does the transcript hold the whole revision history — or by hand from the
+dashboard (`memory.consolidate`). Its one step reads the session's raw entries through
+`parentId`, past any compaction, keeps only the operator's messages and the assistant's prose
+(never a tool result, so nothing a fetched page said can become a lesson), and asks the house
+gateway's cheap model for at most three new lessons as JSON. Every lesson lands `pending` and
+is injected nowhere until the operator approves it in the dashboard: no text that no human has
+read can sit in every future prompt. The extraction helpers are pure and live in
+`@chia/agent-writing/memory/lessons`; the step is `maxRetries = 0`, since a model failure is
+already "no lessons" and a retry after a partial write would duplicate them.
+
+The dashboard's memory page (`apps/dash/src/app/(workspace)/memory/`) is client-only oRPC
+behind `adminGuard()` on every `memory.*` procedure, reads included: a memory is unpublished
+research, and an active lesson is a standing instruction. Every write goes through
+`memories/write.ts`, so editing, archiving or deleting re-indexes.
 
 ### Content visibility
 
@@ -511,6 +592,7 @@ implementations; all mutable state is durable:
 | --------------------------------------- | ---------------------------------------------- |
 | Transcript                              | `agent.session_entry`                          |
 | Draft                                   | `agent.writing_session`, `agent.writing_draft` |
+| Memory                                  | `agent.memory`, indexed into `resource_chunk`  |
 | Approval decisions                      | `agent.tool_approval`                          |
 | Run metadata                            | `agent.run`                                    |
 | Message inbox, pauses and event streams | workflow backend                               |
@@ -533,31 +615,33 @@ until a concrete second execution foundation requires a different seam.
 
 ## 12. Reference
 
-| Concern                      | File                                                                                           |
-| ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                        |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                   |
-| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                 |
-| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                      |
-| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                      |
-| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts` |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                             |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                             |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                      |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                         |
-| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                             |
-| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                |
-| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                       |
-| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                          |
-| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                        |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                           |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                  |
-| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                   |
-| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                           |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`         |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                              |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                       |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                      |
-| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                            |
-| Dashboard UI                 | `apps/dash/src/components/agent/`                                                              |
+| Concern                      | File                                                                                                |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                             |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                        |
+| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                      |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                           |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                           |
+| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts`      |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                                  |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                  |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                           |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                              |
+| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                                  |
+| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                     |
+| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                            |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                               |
+| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                     |
+| Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`, `apps/service/src/services/agent-memory.port.ts` |
+| Memory writes / indexing     | `packages/api/memories/write.ts`, `apps/service/src/services/agent-memory-indexing.service.ts`      |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                             |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                                |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                       |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                        |
+| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                                |
+| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`              |
+| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                                   |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                            |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                           |
+| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                 |
+| Dashboard UI                 | `apps/dash/src/components/agent/`                                                                   |

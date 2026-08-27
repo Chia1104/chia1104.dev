@@ -85,6 +85,10 @@
       "types": "./src/libs/agent/index.ts",
       "default": "./src/libs/agent/index.ts"
     },
+    "./repos/agent/memory": {
+      "types": "./src/libs/agent/memory.ts",
+      "default": "./src/libs/agent/memory.ts"
+    },
     "./schema/enums": {
       "types": "./src/schemas/enums.ts",
       "default": "./src/schemas/enums.ts"

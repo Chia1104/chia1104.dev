@@ -4,6 +4,7 @@ import type { Api, Model, Models } from "@earendil-works/pi-ai";
 import type {
   BranchSummaryEntry,
   LabelEntry,
+  NewSessionEntry,
   SessionEntry,
 } from "../session/entries.ts";
 import { contextEntries } from "../session/entries.ts";
@@ -64,12 +65,11 @@ export const navigatePiSession = async (
   if (options.summarize) {
     const entries = await entriesLeftBehind(session, oldLeafId, entryId);
     if (entries.length > 0) {
-      const generated = await generateBranchSummary(
-        /* SAFETY: Context entries carry Pi's entry fields except the storage-assigned `seq`; summarisation reads only messages. */ contextEntries(
-          entries
-        ) as never,
-        { models, model, signal: signal ?? new AbortController().signal }
-      );
+      const generated = await generateBranchSummary(contextEntries(entries), {
+        models,
+        model,
+        signal: signal ?? new AbortController().signal,
+      });
       if (!generated.ok) {
         if (generated.error.code === "aborted") return { cancelled: true };
         throw generated.error;
@@ -97,7 +97,7 @@ export const navigatePiSession = async (
   await session.setLeafId(newLeafId);
 
   if (summary) {
-    const entry: BranchSummaryEntry = {
+    const entry: NewSessionEntry<BranchSummaryEntry> = {
       type: "branch_summary",
       id: session.newEntryId(),
       parentId: newLeafId,
@@ -111,7 +111,7 @@ export const navigatePiSession = async (
   if (options.label) {
     // A label annotates the target; it must not become the leaf the next turn builds on.
     const leafId = await session.getLeafId();
-    const entry: LabelEntry = {
+    const entry: NewSessionEntry<LabelEntry> = {
       type: "label",
       id: session.newEntryId(),
       parentId: leafId,

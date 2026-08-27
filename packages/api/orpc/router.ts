@@ -4,6 +4,7 @@ import * as emailRoutes from "./routes/email.route";
 import * as feedsRoutes from "./routes/feeds.route";
 import * as fileRoutes from "./routes/file.route";
 import * as healthRoutes from "./routes/health.route";
+import * as memoryRoutes from "./routes/memory.route";
 import * as organizationRoutes from "./routes/organization.route";
 import * as ragRoutes from "./routes/rag.route";
 import * as spotifyRoutes from "./routes/spotify.route";
@@ -96,6 +97,14 @@ export const router = contractOS.router({
     "feed:index": ragRoutes.indexFeedRoute,
     "reindex:all": ragRoutes.reindexAllRoute,
     "embeddings:prune": ragRoutes.pruneEmbeddingsRoute,
+  },
+  memory: {
+    list: memoryRoutes.listMemoriesRoute,
+    get: memoryRoutes.getMemoryRoute,
+    update: memoryRoutes.updateMemoryRoute,
+    remove: memoryRoutes.removeMemoryRoute,
+    "lesson:approve": memoryRoutes.approveLessonRoute,
+    consolidate: memoryRoutes.consolidateMemoryRoute,
   },
   spotify: {
     playlist: spotifyRoutes.getSpotifyPlaylistRoute,

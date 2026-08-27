@@ -2,7 +2,12 @@ import { StringEnum } from "@earendil-works/pi-ai";
 
 import { contentReadTools } from "@chia/agent-content/tools/read";
 
-import type { WebSearchResult, WritingTool } from "../types.ts";
+import type {
+  FetchedPage,
+  WebSearchResult,
+  WritingTool,
+  WritingToolContext,
+} from "../types.ts";
 import { WEB_SEARCH_RECENCIES } from "../types.ts";
 
 import { TOOL_NAMES, labelOf } from "./registry.ts";
@@ -16,6 +21,12 @@ import { Type, defineTool, textResult, truncate } from "./schema.ts";
  */
 
 const MAX_PAGE_CHARS = 16_000;
+/**
+ * How much of a page a `source` memory keeps. Far more than the model reads in one call: the
+ * index chunks the whole thing, so a later `search_memory` can land on a section this turn
+ * never looked at. Bounded only so a pathological page cannot become a megabyte row.
+ */
+const SOURCE_MAX_CHARS = 64_000;
 const MAX_SEARCH_RESULTS = 10;
 const DEFAULT_SEARCH_RESULTS = 5;
 const MAX_SEARCH_DOMAINS = 5;
@@ -79,14 +90,17 @@ export const webSearchTool = defineTool({
     ),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+  async execute(_toolCallId, params, signal, _onUpdate, context) {
     const includeDomains = params.includeDomains?.map(normalizeSearchDomain);
-    const results = await context.web.search({
-      query: params.query,
-      limit: params.limit ?? DEFAULT_SEARCH_RESULTS,
-      recency: params.recency,
-      includeDomains,
-    });
+    const results = await context.web.search(
+      {
+        query: params.query,
+        limit: params.limit ?? DEFAULT_SEARCH_RESULTS,
+        recency: params.recency,
+        includeDomains,
+      },
+      signal
+    );
 
     return textResult(
       results.length === 0
@@ -125,7 +139,7 @@ export const fetchUrlTool = defineTool({
     }),
   }),
   executionMode: "parallel",
-  async execute(_toolCallId, params, _signal, _onUpdate, context) {
+  async execute(_toolCallId, params, signal, _onUpdate, context) {
     let parsed: URL;
     try {
       parsed = new URL(params.url);
@@ -136,8 +150,10 @@ export const fetchUrlTool = defineTool({
       throw new Error("Only http and https URLs can be fetched.");
     }
 
-    const page = await context.web.fetchPage(parsed.toString());
+    const page = await context.web.fetchPage(parsed.toString(), signal);
     const body = truncate(page.text, MAX_PAGE_CHARS);
+
+    await recordSource(context, page, signal);
 
     return textResult(
       `# ${page.title ?? parsed.hostname}\n<${page.url}>\n\n${body.text}`,
@@ -151,6 +167,59 @@ export const fetchUrlTool = defineTool({
  * satisfies it, so they slot into the writing tool set unchanged. Search precedes fetch so the
  * listing order matches the discover-then-read workflow.
  */
+/**
+ * Leaves a trail of every page read, keyed on its URL, so a later session can find it with
+ * `search_memory`. Deterministic and model-free. Never fails the fetch: the model's result
+ * is the same whether or not the trail was written, and a memory outage must not cost a
+ * turn its research.
+ *
+ * The whole page, not an excerpt: the RAG pipeline is built for documents — sections with
+ * heading paths, a card from the outline — and an excerpt only ever bought recall on the
+ * page's first paragraph.
+ */
+const recordSource = async (
+  context: WritingToolContext,
+  page: FetchedPage,
+  signal: AbortSignal | undefined
+): Promise<void> => {
+  const text = page.text.trim().slice(0, SOURCE_MAX_CHARS);
+  if (text.length === 0) return;
+  try {
+    await context.memory.save(
+      {
+        kind: "source",
+        title: page.title?.trim() || hostnameOf(page.url),
+        content: text,
+        sourceUrl: page.url,
+      },
+      signal
+    );
+  } catch (error) {
+    // origin and path only: a query string may carry a signed token or a personal id
+    console.error("Could not record a fetched page as a source memory", {
+      page: pageLocationOf(page.url),
+      error: String(error),
+    });
+  }
+};
+
+const hostnameOf = (url: string): string => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+};
+
+const pageLocationOf = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return "(unparseable url)";
+  }
+};
+
 export const retrievalTools: WritingTool[] = [
   ...contentReadTools,
   webSearchTool,

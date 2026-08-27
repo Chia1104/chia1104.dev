@@ -2,7 +2,7 @@
 
 > 狀態：已實作（Phase A、B、C 皆完成）
 > 建立日期：2026-08-24
-> 最後更新：2026-08-24
+> 最後更新：2026-08-26
 > 範圍：`pnpm-workspace.yaml` catalog、`@chia/agent-runtime`（`pi/*`、`session/*`、`tools`、`types`）、`@chia/agent-writing` 的 `runtime.ts` 與測試、`apps/service` 的 `agents/kind.ts`、`agents/service.ts`、`steps/agent-turn.step.ts`、`docs/agent-architecture*.md`
 > 前置：`docs/agent-architecture.md` §3「Session tree and tables」、§4「Concrete execution path」、§5、§8；`plans/pi-first-agent-architecture-plan.md`（現行 Pi-first 決策）
 
@@ -51,9 +51,16 @@
 
 - Phase A：`pi-ai` 0.84.3 先以 pnpm `overrides` 壓平巢狀依賴進場，三個 agent package 與 service 的 type:check 與測試不動即過。
 - Phase B：`runPiTurn` 改建 `Agent`；`session/entries.ts`（`SessionEntry`）、`session/tree.ts`（`SessionTree`、`InMemorySessionTree`）、`session/context.ts`（`buildBranchContext`）新增；`PgSessionStorage` / `PgSessionRepo` 不再實作 Pi 介面；`session/pi.ts` 刪除；compaction / navigation / fork 由 `pi/compaction.ts`、`pi/maintenance.ts`、`pg-repo.ts` 自己驅動。`runtime.test.ts` 改用真的 `Agent` + faux provider；新增 `session-context`（投影 byte-equality）、`pi-maintenance`、`pg-repo` 測試。
-- Phase C：`pi-agent-core` 升 0.84.3，移除 override。`SessionEntry` 沒有 0.84.3 `Entry` 的 storage-assigned `seq`，所以投影、compaction、branch summary 三處的 `as never` cast 保留，SAFETY 註解標明理由；`hardMaxToolCalls` 的拒絕加上 `terminate: true`。
+- Phase C：`pi-agent-core` 升 0.84.3，移除 override。`SessionEntry` 當時沒有 0.84.3 `Entry` 的 storage-assigned `seq`，所以投影、compaction、branch summary 三處先以 `as never` cast 帶過（已於 08-26 收回，見 0.2）；`hardMaxToolCalls` 的拒絕加上 `terminate: true`。
 - Review 後調整：`appendEntry` 的 insert 與 leaf 推進改為單一交易（`appendAgentSessionEntryAsLeaf`）；compaction entry 的 parent 是被總結那條 branch 的 leaf，不是事後重讀的 leaf；navigation 的共同祖先改走完整 parent chain（branch 會停在 compaction，跨 compaction rewind 時會把共享歷史也拿去總結）；整棵樹 fork 明確沿用來源 leaf；`getEntries` 拿掉沒有人用的 `afterSeq`/`limit`；maintenance 可接 `signal`。
 - 與計劃的差異：`pg-repo.ts` 的 not-found 用自己的 `SessionNotFoundError` 而非 `AppError`——`agent-runtime` 不依賴 `service-kit`，為一個錯誤類別加依賴不值得；fork 沿用 0.83 `getEntriesToFork` 的語意（複製到最近一次 compaction 為止），因此 `SessionTree` 沒有 `getPathToRoot`，而是 `getBranch(fromId?)`；label 在 navigate 時會落盤但不成為 leaf。
+
+## 0.2 後續（2026-08-26）
+
+- `SessionEntry` 補上 storage-assigned `seq`：`appendEntry` 改吃 `NewSessionEntry`（無 `seq`）並回傳落地後的 entry，`PgSessionStorage` 透過 `appendAgentSessionEntryAsLeaf` 的 `returning` 取得，`InMemorySessionTree` 自己計數。Entry 因此與 0.84.3 的 `EntryBase` 結構一致，Phase C 留下的四個 `as never` cast（投影、compaction、branch summary、usage）全部移除。
+- Turn marker 的 `leafEntryId` 改為 `seqBefore`（turn 開始前 session 最新的 `seq`，`getAgentSessionLastSeq`），`get` 在 turn 進行中只 replay `seq <= seqBefore`，不再需要「marker 不在 branch 上就整份秀出來」的分支。
+- 刪除：`PgSessionStorage.getLeafId` / `getBranch` 與 `detailFor` 為早期 null-parent rows 寫的修補、DB repo 沒有呼叫者的 `getAgentSessionEntries` `afterSeq` / `limit` 與 `appendAgentSessionEntry`。`agent.schema.ts` 的 `seq` 註解改寫為實際 invariant（table-wide bigserial、insert 時取號，靠每 session 單一 writer 保證順序）。
+- 仍不做：lanes / records / registers 的 Postgres 後端，理由同 §1；`seq` 是 0.83→0.84 已定案、harness.md 也未更動的部分，才單獨收回。
 
 ## 2. 決策摘要
 

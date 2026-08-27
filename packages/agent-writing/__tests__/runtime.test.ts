@@ -20,6 +20,7 @@ import type { TextMessageView } from "@chia/agent-runtime/wire/fold";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 import { InMemoryDraftStore } from "../src/draft/memory-draft-store.ts";
+import { InMemoryMemoryPort } from "../src/memory/memory-port.ts";
 import { runWritingTurn } from "../src/runtime.ts";
 import { TOOL_NAMES } from "../src/tools/registry.ts";
 
@@ -104,6 +105,7 @@ const build = async (
   });
   const web = createFakeWebPort();
   const draft = new InMemoryDraftStore();
+  const memory = new InMemoryMemoryPort(SESSION_ID);
   const events: AgentWireEvent[] = [];
 
   const sessionSettings: AgentSessionSettings = {
@@ -130,6 +132,7 @@ const build = async (
         content,
         web,
         draft,
+        memory,
         message: { text },
         onEvent: (event) => {
           events.push(event);

@@ -74,6 +74,12 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
     toolCallId: z.string(),
     toolName: z.string(),
     isError: z.boolean(),
+    /**
+     * The call never produced a result: the turn was stopped, the process died, or a fork cut
+     * the branch between the call and its result. Distinct from `isError`, which is the tool
+     * itself failing — the model sees an empty result for these, so the client says "stopped".
+     */
+    aborted: z.literal(true).optional(),
     summary: z.string(),
     /** Per-tool view model. Shape is the tool's `details`, narrowed by the tool itself. */
     details: z.unknown().optional(),

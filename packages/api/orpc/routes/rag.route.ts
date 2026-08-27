@@ -1,5 +1,6 @@
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
+import { countAgentMemories } from "@chia/db/repos/agent/memory";
 import { countFeedTranslations } from "@chia/db/repos/feeds";
 import { getActiveResourceIndexRun } from "@chia/db/repos/resources/index-run";
 import {
@@ -157,18 +158,19 @@ export const previewReindexAllRoute = contractOS.rag["reindex:all:preview"]
   .use(adminGuard())
   .handler(async (opts) => {
     const key = currentIndexKey();
-    const [overview, byIndexKey, needingEmbedding, targets] = await Promise.all(
-      [
+    const [overview, byIndexKey, needingEmbedding, translations, memories] =
+      await Promise.all([
         getRagOverview(opts.context.db, key),
         getEmbeddingKeyDistribution(opts.context.db, {}),
         countChunksNeedingEmbedding(opts.context.db, key),
         countFeedTranslations(opts.context.db, {}),
-      ]
-    );
+        countAgentMemories(opts.context.db),
+      ]);
 
     return {
       ...key,
-      targets,
+      // the same population `listReindexTargetsStep` walks
+      targets: translations + memories,
       counts: overview.counts,
       needingEmbedding,
       byIndexKey,

@@ -14,6 +14,7 @@ import { connectDatabase } from "@chia/db/client";
 import {
   completeAgentRun,
   getAgentSession,
+  getAgentSessionLastSeq,
   getApprovedAgentToolCallIds,
   patchAgentRunMetadata,
   recordAgentApprovalRequests,
@@ -63,23 +64,25 @@ const DELTA_FLUSH_MS = 80;
 /**
  * The turn the run is on, kept in `agent.run.metadata` because the workflow SDK cannot say it: a
  * run parked on its message hook is `running` just like one executing a step. `running` here is
- * true only while the turn step is inside its handler. `leafEntryId`/`streamIndex` say where the
- * turn began, so a client can rejoin it: `get` cuts the replayed transcript after that leaf and
+ * true only while the turn step is inside its handler. `seqBefore`/`streamIndex` say where the
+ * turn began, so a client can rejoin it: `get` replays only entries with `seq <= seqBefore` and
  * `attach` tails the run's stream from that index — both off one marker, so the join never
- * duplicates or drops a message.
+ * duplicates or drops a message. A seq rather than the leaf id, because a leaf moved by a rewind
+ * is not the newest entry and need not be on the branch the client is shown; "persisted before
+ * the turn" is exactly what the cut means.
  */
 export const AGENT_TURN_KEY = "turn";
 
 export interface AgentTurnMarker extends JsonObject {
-  /** Active leaf before this turn appended anything; `null` for an empty session. */
-  leafEntryId: string | null;
+  /** Newest entry `seq` on any branch before this turn appended anything; `0` for an empty session. */
+  seqBefore: number;
   /** First coarse stream index this turn writes to. */
   streamIndex: number;
   running: boolean;
 }
 
 const agentTurnMarkerSchema = z.object({
-  leafEntryId: z.string().nullable(),
+  seqBefore: z.number(),
   streamIndex: z.number(),
   running: z.boolean(),
 });
@@ -219,7 +222,7 @@ export const runAgentTurnStep = async (
   // before returning, so the tail is the last index it wrote.
   const { workflowRunId } = getWorkflowMetadata();
   const marker: AgentTurnMarker = {
-    leafEntryId: row.leafEntryId,
+    seqBefore: await getAgentSessionLastSeq(db, request.sessionId),
     streamIndex: (await getRun(workflowRunId).getReadable().getTailIndex()) + 1,
     running: true,
   };

@@ -49,6 +49,10 @@
       "types": "./src/request/index.ts",
       "default": "./src/request/index.ts"
     },
+    "./request/abort": {
+      "types": "./src/request/abort.ts",
+      "default": "./src/request/abort.ts"
+    },
     "./server": {
       "types": "./src/server/index.ts",
       "default": "./src/server/index.ts"

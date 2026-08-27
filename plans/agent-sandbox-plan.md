@@ -22,15 +22,15 @@
 
 出發點與 `docs/agent-architecture.md` §10 的 content visibility 一致：**權限在 host 建 port 時固定，模型只拿到 capability**。prompt injection 防不住，所以設計目標是讓「模型被說服去跑惡意程式碼」這件事的後果被結構性地限制住。
 
-| 不變量                                                                   | 由誰保證                                                              |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| 程式碼只在 `service` 之外的一次性 microVM 執行                            | host port 實作只呼叫遠端 Sandbox API，package 內沒有任何本機執行路徑  |
-| sandbox 內沒有任何 `service` 的憑證、env、內網位址                        | `Sandbox.create` 不傳 `env`；port 型別上沒有 env 參數，模型無法塞      |
-| egress 預設 `deny-all`                                                   | `networkPolicy` 在 port 建構時固定，不是 tool 參數                    |
-| 每個 command 有硬 timeout、每個 sandbox 有硬 TTL、輸出有大小上限          | port 實作的常數，不可由模型覆蓋                                       |
-| 每個 session 的執行次數有上限                                             | port 在 turn context 裡計數，超額回 tool error                         |
-| sandbox 的 stdout/stderr 回到模型時只是資料，不是指令                     | tool result 只經 `textResult` 包裝；這點與 `fetch_url` 的處境相同     |
-| 只有 writing kind 掛這組 tools                                           | tool set 是 kind 自己 compose；public kind 的 `run<Kind>Turn` 不建 port |
+| 不變量                                                           | 由誰保證                                                                |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| 程式碼只在 `service` 之外的一次性 microVM 執行                   | host port 實作只呼叫遠端 Sandbox API，package 內沒有任何本機執行路徑    |
+| sandbox 內沒有任何 `service` 的憑證、env、內網位址               | `Sandbox.create` 不傳 `env`；port 型別上沒有 env 參數，模型無法塞       |
+| egress 預設 `deny-all`                                           | `networkPolicy` 在 port 建構時固定，不是 tool 參數                      |
+| 每個 command 有硬 timeout、每個 sandbox 有硬 TTL、輸出有大小上限 | port 實作的常數，不可由模型覆蓋                                         |
+| 每個 session 的執行次數有上限                                    | port 在 turn context 裡計數，超額回 tool error                          |
+| sandbox 的 stdout/stderr 回到模型時只是資料，不是指令            | tool result 只經 `textResult` 包裝；這點與 `fetch_url` 的處境相同       |
+| 只有 writing kind 掛這組 tools                                   | tool set 是 kind 自己 compose；public kind 的 `run<Kind>Turn` 不建 port |
 
 為什麼不在 process 內跑：`node:vm` 不是安全邊界（Node 官方文件明寫），`isolated-vm` 擋得住 JS 逃逸但擋不住 CPU/記憶體耗盡與同 process 的 side channel，而任何 in-process 方案都跟 `DATABASE_URL`、`AI_GATEWAY_API_KEY`、Redis 共用同一張網卡——一個 SSRF 就全拿走。在 Railway 的 service 旁邊起 Docker container 也一樣，它共享 Docker socket 與內網。
 
@@ -76,21 +76,24 @@ export interface SandboxPort {
 }
 
 export interface SandboxHandle {
-  runCommand(input: {
-    cmd: string;
-    args?: string[];
-    cwd?: string;
-    /** 硬上限由 port 夾住，這裡只能往下調 */
-    timeoutMs?: number;
-  }, signal: AbortSignal): Promise<CommandResult>;
+  runCommand(
+    input: {
+      cmd: string;
+      args?: string[];
+      cwd?: string;
+      /** 硬上限由 port 夾住，這裡只能往下調 */
+      timeoutMs?: number;
+    },
+    signal: AbortSignal
+  ): Promise<CommandResult>;
   writeFiles(files: { path: string; content: string }[]): Promise<void>;
   readFile(path: string): Promise<string | null>;
 }
 
 export interface CommandResult {
   exitCode: number;
-  stdout: string;   // 已截斷
-  stderr: string;   // 已截斷
+  stdout: string; // 已截斷
+  stderr: string; // 已截斷
   truncated: boolean;
   durationMs: number;
 }
@@ -117,11 +120,11 @@ runWritingAgentTurn
 
 ### 3.4 Tools
 
-| Tool          | 參數                                   | 說明                                                             |
-| ------------- | -------------------------------------- | ---------------------------------------------------------------- |
-| `write_file`  | `path`, `content`                      | 寫進 sandbox 的工作目錄；path 被 port 正規化並限制在 `/vercel/sandbox` 下 |
-| `run_command` | `cmd`, `args?`, `cwd?`, `timeoutMs?`   | 執行一個指令；stdout 透過 `onUpdate` 串流成 `tool:update`          |
-| `read_file`   | `path`                                 | 讀回結果檔（模型寫檔、跑腳本、讀輸出這條最小閉環）               |
+| Tool          | 參數                                 | 說明                                                                      |
+| ------------- | ------------------------------------ | ------------------------------------------------------------------------- |
+| `write_file`  | `path`, `content`                    | 寫進 sandbox 的工作目錄；path 被 port 正規化並限制在 `/vercel/sandbox` 下 |
+| `run_command` | `cmd`, `args?`, `cwd?`, `timeoutMs?` | 執行一個指令；stdout 透過 `onUpdate` 串流成 `tool:update`                 |
+| `read_file`   | `path`                               | 讀回結果檔（模型寫檔、跑腳本、讀輸出這條最小閉環）                        |
 
 三個都 `executionMode: "sequential"`——它們共享一個 sandbox 且有順序依賴，與 content read tools 的 `parallel` 不同。
 
@@ -131,8 +134,8 @@ runWritingAgentTurn
 
 writing 現有三個 tier：`read` / `draft` / `commit`。程式碼執行不屬於任何一個：它不讀內容、不改 draft、不寫 live data。新增 tier `execute`：
 
-| Tier      | Approval | `state:changed` | 理由                                                               |
-| --------- | -------- | --------------- | ------------------------------------------------------------------ |
+| Tier      | Approval | `state:changed` | 理由                                                                             |
+| --------- | -------- | --------------- | -------------------------------------------------------------------------------- |
 | `execute` | **no**   | no              | 安全邊界是 sandbox 本身（§1），不是 operator；逐次 approval 只會讓這個能力沒人用 |
 
 這是計畫裡最需要被你確認的決定。另一個選項是 `requiresApproval: true` 觀察一陣子再放開——但「先嚴後鬆」在這裡沒有資訊價值：approval 防的是不可逆的副作用，而 `deny-all` + 無憑證 + TTL 的 sandbox 沒有不可逆副作用，剩下的只有成本，成本用配額管（§3.6）。
@@ -143,15 +146,15 @@ writing 現有三個 tier：`read` / `draft` / `commit`。程式碼執行不屬�
 
 全部是 host port 的常數，之後要調再改：
 
-| 項目                      | 值       | 由誰 enforce                              |
-| ------------------------- | -------- | ----------------------------------------- |
-| sandbox TTL               | 10 min   | `Sandbox.create({ timeout })`             |
-| 單一 command timeout      | 60 s     | port 夾住 `timeoutMs`，超時 `kill`        |
-| vCPU                      | 1        | `resources.vcpus`                         |
-| stdout + stderr 上限      | 16 KB    | port 截斷，`truncated: true`              |
-| 每 turn command 次數      | 20       | port 計數，超額 tool error                |
-| 每 session command 次數   | 100      | `writing_agent_session.sandboxCommandCount`（唯一需要的 schema 改動） |
-| egress                    | deny-all | `networkPolicy`                           |
+| 項目                    | 值       | 由誰 enforce                                                          |
+| ----------------------- | -------- | --------------------------------------------------------------------- |
+| sandbox TTL             | 10 min   | `Sandbox.create({ timeout })`                                         |
+| 單一 command timeout    | 60 s     | port 夾住 `timeoutMs`，超時 `kill`                                    |
+| vCPU                    | 1        | `resources.vcpus`                                                     |
+| stdout + stderr 上限    | 16 KB    | port 截斷，`truncated: true`                                          |
+| 每 turn command 次數    | 20       | port 計數，超額 tool error                                            |
+| 每 session command 次數 | 100      | `writing_agent_session.sandboxCommandCount`（唯一需要的 schema 改動） |
+| egress                  | deny-all | `networkPolicy`                                                       |
 
 `allowedDomains: ["registry.npmjs.org"]` 這類放寬是預期中的第一個需求（模型想 `npm install`），但要等真的需要再開，而且只開 registry，不開 `allow-all`。
 
@@ -174,12 +177,12 @@ system prompt 是 session 穩定的（§4 prompt layering），加一段 `execut
 
 ## 6. Phases
 
-| Phase                                  | 內容                                                                                      | 可獨立交付 |
-| -------------------------------------- | ----------------------------------------------------------------------------------------- | ---------- |
-| Phase 1：package 與 port               | `@chia/agent-sandbox` 的 types、registry、tools、fake port；不接任何 kind                  | 是（純 lib） |
-| Phase 2：host 實作                     | `agent-sandbox.port.ts` on `@vercel/sandbox`、env、catalog、port 測試                       | 是         |
-| Phase 3：接進 writing kind             | tier `execute`、tool set、policy、prompt posture、turn step 的 lazy port 與 dispose、session 計數欄位與 migration | 是——這一步完成才算 end to end |
-| Phase 4：文件                          | `docs/agent-architecture.md` §3 tier 表、§10 port 清單、§12 reference 更新                  | 是         |
+| Phase                      | 內容                                                                                                              | 可獨立交付                    |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Phase 1：package 與 port   | `@chia/agent-sandbox` 的 types、registry、tools、fake port；不接任何 kind                                         | 是（純 lib）                  |
+| Phase 2：host 實作         | `agent-sandbox.port.ts` on `@vercel/sandbox`、env、catalog、port 測試                                             | 是                            |
+| Phase 3：接進 writing kind | tier `execute`、tool set、policy、prompt posture、turn step 的 lazy port 與 dispose、session 計數欄位與 migration | 是——這一步完成才算 end to end |
+| Phase 4：文件              | `docs/agent-architecture.md` §3 tier 表、§10 port 清單、§12 reference 更新                                        | 是                            |
 
 Phase 1–3 可以在同一個 PR，但 Phase 3 之前 `service` 不會有任何新行為，所以拆開 review 也不會留下半成品。
 

@@ -76,6 +76,8 @@ export interface FakeWebPortOptions {
 
 export interface FakeWebPort extends WebPort {
   readonly searches: WebSearchInput[];
+  /** The signal each call received, search and fetch alike, in call order. */
+  readonly signals: (AbortSignal | undefined)[];
   /** What every `search` returns; mutable so a test can script it after construction. */
   readonly results: WebSearchResult[];
 }
@@ -84,18 +86,23 @@ export const createFakeWebPort = (
   options: FakeWebPortOptions = {}
 ): FakeWebPort => {
   const searches: WebSearchInput[] = [];
+  const signals: (AbortSignal | undefined)[] = [];
   const results: WebSearchResult[] = options.results ?? [];
 
   return {
     searches,
+    signals,
     results,
-    search: (input) => {
+    search: (input, signal) => {
       searches.push(input);
+      signals.push(signal);
       return Promise.resolve([...results]);
     },
-    fetchPage: (url) =>
-      Promise.resolve(
+    fetchPage: (url, signal) => {
+      signals.push(signal);
+      return Promise.resolve(
         options.pages?.[url] ?? { url, title: "Untitled", text: "" }
-      ),
+      );
+    },
   };
 };

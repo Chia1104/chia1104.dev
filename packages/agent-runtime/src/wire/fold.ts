@@ -13,7 +13,7 @@ export interface ToolCallView {
   label: string;
   tier: ToolTier;
   args: unknown;
-  status: "running" | "ok" | "error" | "awaiting_approval";
+  status: "running" | "ok" | "error" | "aborted" | "awaiting_approval";
   summary?: string;
   details?: unknown;
   approval?: { approved: boolean; comment?: string };
@@ -201,9 +201,11 @@ export const applyEvent = (
         }),
         status: blockedPendingApproval
           ? "awaiting_approval"
-          : event.isError
-            ? "error"
-            : "ok",
+          : event.aborted
+            ? "aborted"
+            : event.isError
+              ? "error"
+              : "ok",
         summary: blockedPendingApproval ? existing.summary : event.summary,
         details: blockedPendingApproval ? existing.details : event.details,
       };
@@ -313,13 +315,18 @@ export const applyEvent = (
       }
       // `approval:request` is announced as soon as the gate refuses, before the turn has proven it
       // can persist the request. A turn that then ends any other way has nothing for the operator
-      // to decide — drop the prompts rather than leave cards nobody can act on.
+      // to decide — drop the prompts rather than leave cards nobody can act on. A call still
+      // running has no `tool:end` coming either: the turn is over, so it was stopped.
       return {
         ...state,
         items: items.map((item) =>
-          item.kind === "tool" && item.status === "awaiting_approval"
-            ? { ...item, status: "error" }
-            : item
+          item.kind !== "tool"
+            ? item
+            : item.status === "awaiting_approval"
+              ? { ...item, status: "error" }
+              : item.status === "running"
+                ? { ...item, status: "aborted" }
+                : item
         ),
         pendingApprovals: [],
         runStatus: event.reason === "error" ? "error" : "idle",

@@ -19,7 +19,10 @@ export const TOOL_NAMES = {
   ...CONTENT_TOOL_NAMES,
   webSearch: "web_search",
   fetchUrl: "fetch_url",
+  searchMemory: "search_memory",
+  getMemory: "get_memory",
   // draft
+  saveMemory: "save_memory",
   readDraft: "read_draft",
   patchDraftMeta: "patch_draft_meta",
   writeDraftContent: "write_draft_content",
@@ -39,7 +42,10 @@ export const TOOL_TIER_BY_NAME = {
   [TOOL_NAMES.listTags]: "read",
   [TOOL_NAMES.webSearch]: "read",
   [TOOL_NAMES.fetchUrl]: "read",
+  [TOOL_NAMES.searchMemory]: "read",
+  [TOOL_NAMES.getMemory]: "read",
 
+  [TOOL_NAMES.saveMemory]: "draft",
   [TOOL_NAMES.readDraft]: "draft",
   [TOOL_NAMES.patchDraftMeta]: "draft",
   [TOOL_NAMES.writeDraftContent]: "draft",
@@ -54,7 +60,10 @@ export const TOOL_LABEL_BY_NAME = {
   ...CONTENT_TOOL_LABEL_BY_NAME,
   [TOOL_NAMES.webSearch]: "Search web",
   [TOOL_NAMES.fetchUrl]: "Fetch page",
+  [TOOL_NAMES.searchMemory]: "Search memory",
+  [TOOL_NAMES.getMemory]: "Read memory",
 
+  [TOOL_NAMES.saveMemory]: "Save memory",
   [TOOL_NAMES.readDraft]: "Read draft",
   [TOOL_NAMES.patchDraftMeta]: "Update draft metadata",
   [TOOL_NAMES.writeDraftContent]: "Write draft body",

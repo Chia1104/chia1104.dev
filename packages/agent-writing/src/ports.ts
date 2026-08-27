@@ -8,6 +8,12 @@ import type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
+  MemoryDetail,
+  MemoryHit,
+  MemorySearchInput,
+  MemorySummary,
+  SavedMemory,
+  SaveMemoryInput,
   WebSearchInput,
   WebSearchResult,
 } from "./types.ts";
@@ -22,6 +28,14 @@ export type {
   DraftTranslation,
   FeedDraft,
   FetchedPage,
+  MemoryDetail,
+  MemoryHit,
+  MemoryKind,
+  MemorySearchInput,
+  MemoryStatus,
+  MemorySummary,
+  SavedMemory,
+  SaveMemoryInput,
   WebSearchInput,
   WebSearchRecency,
   WebSearchResult,
@@ -66,8 +80,11 @@ export interface ContentPort extends ContentReadPort {
  * builds one.
  */
 export interface WebPort {
-  search(input: WebSearchInput): Promise<WebSearchResult[]>;
-  fetchPage(url: string): Promise<FetchedPage>;
+  search(
+    input: WebSearchInput,
+    signal?: AbortSignal
+  ): Promise<WebSearchResult[]>;
+  fetchPage(url: string, signal?: AbortSignal): Promise<FetchedPage>;
 }
 
 // ============================================
@@ -94,4 +111,26 @@ export interface DraftStore {
   markCommitted(sessionId: string, feedId: number): Promise<FeedDraft>;
   /** Seeds the buffer from an existing post when a session is opened to edit one. */
   seedFromPost(sessionId: string, post: PostSnapshot): Promise<FeedDraft>;
+}
+
+// ============================================
+// Memory port
+// ============================================
+
+/**
+ * Long-term memory, shared across sessions and indexed into the site's RAG pipeline.
+ *
+ * Implemented entirely by the host: `save` schedules an index run and `search` goes through
+ * the resource search service, neither of which this package depends on. The two list
+ * methods exist for the volatile context, which only ever holds a port — what the model must
+ * see on every request has to be reachable from here.
+ */
+export interface MemoryPort {
+  save(input: SaveMemoryInput, signal?: AbortSignal): Promise<SavedMemory>;
+  search(input: MemorySearchInput, signal?: AbortSignal): Promise<MemoryHit[]>;
+  get(id: number, signal?: AbortSignal): Promise<MemoryDetail | null>;
+  /** What this session has written so far, oldest first. */
+  listBySession(sessionId: string): Promise<MemorySummary[]>;
+  /** Active lessons, most recently touched first. */
+  listActiveLessons(limit: number): Promise<MemorySummary[]>;
 }
