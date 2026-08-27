@@ -127,7 +127,9 @@ describe("fetchUrlTool source trail", () => {
       title: "Example docs",
       sourceUrl: "https://example.com/docs#intro",
     });
-    expect(source?.content).toHaveLength(500);
+    // the whole page as the model saw it, not an excerpt
+    expect(source?.content).toHaveLength("body ".repeat(200).length + 4);
+    expect(source?.content?.endsWith("tail")).toBe(true);
   });
 
   it("falls back to the hostname for an untitled page and skips an empty one", async () => {

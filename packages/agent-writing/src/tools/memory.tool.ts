@@ -1,3 +1,5 @@
+import { buildDocumentContext } from "@chia/ai/embeddings/context";
+
 import type { MemoryHit } from "../types.ts";
 import type { WritingTool } from "../types.ts";
 
@@ -20,6 +22,12 @@ const MAX_FACT_CHARS = 4_000;
 const MAX_TITLE_CHARS = 200;
 const DEFAULT_SEARCH_LIMIT = 5;
 const MAX_SEARCH_LIMIT = 10;
+/**
+ * Token budget for one `get_memory`. A `source` is a whole page; `buildDocumentContext`
+ * lets one document take 60% of this, so a 16k-character English page returns in full and a
+ * Chinese one degrades to its matched sections, then to an outline — as `get_post` does.
+ */
+const MEMORY_BODY_TOKEN_BUDGET = 8_000;
 
 export const saveMemoryTool = defineTool({
   name: TOOL_NAMES.saveMemory,
@@ -79,9 +87,9 @@ export const searchMemoryTool = defineTool({
   name: TOOL_NAMES.searchMemory,
   label: labelOf(TOOL_NAMES.searchMemory),
   description:
-    "Search what earlier sessions verified and read: saved facts and the pages fetched " +
-    "before. Distinct from `search_posts`, which searches the blog itself. Each hit carries a " +
-    "memory id; `get_memory` reads it in full.",
+    "Search what earlier sessions verified and read: saved facts and the full text of pages " +
+    "fetched before. Distinct from `search_posts`, which searches the blog itself. Each hit " +
+    "carries a memory id and the heading that matched; pass both to `get_memory`.",
   parameters: Type.Object({
     query: Type.String({
       description: "Topic, name, API or claim to look for.",
@@ -120,19 +128,29 @@ export const searchMemoryTool = defineTool({
 const formatHit = (hit: MemoryHit, index: number): string => {
   const heading = `${index + 1}. [${hit.kind}] **${hit.title}** (#${hit.id})`;
   const source = hit.sourceUrl ? `\n   <${hit.sourceUrl}>` : "";
-  return `${heading}${source}\n   ${hit.snippet}`;
+  const path = hit.headingPath ? `\n   at: ${hit.headingPath}` : "";
+  return `${heading}${source}${path}\n   ${hit.snippet}`;
 };
 
 export const getMemoryTool = defineTool({
   name: TOOL_NAMES.getMemory,
   label: labelOf(TOOL_NAMES.getMemory),
   description:
-    "Read one memory in full by the id a `search_memory` hit carries.",
+    "Read one memory by the id a `search_memory` hit carries. A long page degrades to its " +
+    "matched sections and then to an outline; pass the hit's `headingPath` as `focusHeadings` " +
+    "so the section that matched is what survives.",
   parameters: Type.Object({
     id: Type.Integer({
       description: "Memory id from `search_memory`.",
       minimum: 1,
     }),
+    focusHeadings: Type.Optional(
+      Type.Array(Type.String(), {
+        description:
+          "Heading paths to keep first when the memory is too long to return in full. Pass " +
+          "each hit's `headingPath` unchanged.",
+      })
+    ),
   }),
   executionMode: "parallel",
   async execute(_toolCallId, params, signal, _onUpdate, context) {
@@ -144,9 +162,26 @@ export const getMemoryTool = defineTool({
     }
 
     const { content, ...meta } = memory;
+    const { documents, totalTokens } = await buildDocumentContext(
+      [
+        {
+          slug: String(memory.id),
+          locale: "",
+          title: memory.title,
+          content,
+          matchedHeadingPaths: params.focusHeadings,
+        },
+      ],
+      { budget: MEMORY_BODY_TOKEN_BUDGET }
+    );
+    const document = documents[0];
+    const body = document?.text ?? content;
+    const detail = document?.detail ?? "full";
+
     return textResult(
-      `# [${memory.kind}] ${memory.title}\n${memory.sourceUrl ? `<${memory.sourceUrl}>\n` : ""}\n${content}\n\n${jsonBlock(meta)}`,
-      { ...meta, contentLength: content.length }
+      `# [${memory.kind}] ${memory.title}\n${memory.sourceUrl ? `<${memory.sourceUrl}>\n` : ""}` +
+        `(${detail}, ${totalTokens} tokens)\n\n${body}\n\n${jsonBlock(meta)}`,
+      { ...meta, detail, contentTokens: totalTokens }
     );
   },
 });

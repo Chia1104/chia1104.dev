@@ -66,7 +66,7 @@ describe("agentMemoryResource", () => {
       kind: "card",
       chunkIndex: 0,
       content:
-        "Kind: fact\nTitle: pgvector 0.8 adds iterative index scans\nSource: https://github.com/pgvector/pgvector",
+        "Kind: fact\nSource: https://github.com/pgvector/pgvector\nTitle: pgvector 0.8 adds iterative index scans",
     });
     expect(sections.length).toBeGreaterThan(0);
     for (const section of sections) {
@@ -76,6 +76,25 @@ describe("agentMemoryResource", () => {
     expect(sections.some((s) => s.content.includes("relaxed_order"))).toBe(
       true
     );
+  });
+
+  it("gives a source page the outline card a post gets", async () => {
+    repo.getAgentMemory.mockResolvedValue(
+      memory({
+        kind: "source",
+        title: "pgvector README",
+        content:
+          "## Installation\n\nRun make.\n\n## Indexing\n\n### HNSW\n\nBuild an index.",
+      })
+    );
+
+    const set = await agentMemoryResource.buildChunks(db, 7);
+    const [card] = set?.chunks ?? [];
+
+    expect(card?.content).toContain("Kind: source");
+    expect(card?.content).toContain("Title: pgvector README");
+    expect(card?.content).toContain("Outline:");
+    expect(card?.content).toContain("HNSW");
   });
 
   it("retires archived and deleted memories from the index and from hydration alike", async () => {

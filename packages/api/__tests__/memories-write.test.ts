@@ -77,10 +77,10 @@ describe("memory write services", () => {
     await expect(
       createMemoryService(
         db,
-        { kind: "fact", title: "t", content: "x".repeat(16_001) },
+        { kind: "fact", title: "t", content: "x".repeat(32_001) },
         {}
       )
-    ).rejects.toThrow("at most 16000");
+    ).rejects.toThrow("at most 32000");
     expect(repo.createAgentMemory).not.toHaveBeenCalled();
   });
 

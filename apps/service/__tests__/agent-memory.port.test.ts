@@ -71,7 +71,10 @@ describe("createAgentMemoryPort", () => {
           sourceId: 2,
           score: 1,
           matchedChunks: 1,
-          bestChunk: { content: "x".repeat(600) },
+          bestChunk: {
+            content: "x".repeat(600),
+            headingPath: "Setup > Install",
+          },
           summary: {},
         },
         {
@@ -79,7 +82,7 @@ describe("createAgentMemoryPort", () => {
           sourceId: 1,
           score: 0.5,
           matchedChunks: 1,
-          bestChunk: { content: "short" },
+          bestChunk: { content: "short", headingPath: null },
           summary: {},
         },
       ],
@@ -101,6 +104,7 @@ describe("createAgentMemoryPort", () => {
     // result order is the search order, and the snippet is bounded
     expect(hits.map((hit) => hit.id)).toEqual([2, 1]);
     expect(hits[0]?.snippet).toHaveLength(501);
+    expect(hits[0]?.headingPath).toBe("Setup > Install");
     expect(hits[1]).toMatchObject({ kind: "fact", snippet: "short" });
   });
 

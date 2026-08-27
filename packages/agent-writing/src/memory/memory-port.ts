@@ -78,7 +78,11 @@ export class InMemoryMemoryPort implements MemoryPort {
           row.content.toLowerCase().includes(query)
       )
       .slice(0, input.limit)
-      .map((row) => ({ ...summaryOf(row), snippet: row.content }));
+      .map((row) => ({
+        ...summaryOf(row),
+        snippet: row.content,
+        headingPath: null,
+      }));
     return Promise.resolve(hits);
   }
 

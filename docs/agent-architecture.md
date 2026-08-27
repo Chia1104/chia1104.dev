@@ -519,8 +519,11 @@ way `feeds/write.ts` does, and every write schedules `indexResourceWorkflow` for
 `agent_memory` resource type (`docs/rag-architecture.md` §2.4). `save_memory` sits in the
 `draft` tier — reversible, invisible to the blog — and only ever writes a `fact`.
 
-`fetch_url` records every page it reads as a `source` — URL, title, a 500-character excerpt —
-through the same port, keyed on the URL so a revisit refreshes rather than duplicates. The
+`fetch_url` records every page it reads as a `source` — URL, title, and the page as the model
+saw it (16k characters) — through the same port, keyed on the URL so a revisit refreshes rather
+than duplicates. A whole page rather than an excerpt because the RAG pipeline is built for
+documents: sections with heading paths for search, an outline card for "what is this page
+about", and `get_memory` degrading a long page the way `get_post` does. The
 trail is written after the fetch and can never fail it: the model's result is identical with
 or without it. The volatile context (§4) lists what the current session has saved, one
 bounded line per memory with its id, so the model neither saves twice nor forgets it can

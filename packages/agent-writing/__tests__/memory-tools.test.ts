@@ -79,7 +79,11 @@ describe("memory tools", () => {
     expect(read.content[0]).toMatchObject({
       text: expect.stringContaining("relaxed_order"),
     });
-    expect(read.details).toMatchObject({ id: 1, status: "active" });
+    expect(read.details).toMatchObject({
+      id: 1,
+      status: "active",
+      detail: "full",
+    });
   });
 
   it("tells the model to research when nothing matches, and rejects an unknown id", async () => {
@@ -159,5 +163,32 @@ describe("InMemoryMemoryPort", () => {
     expect(edited).toMatchObject({ id: 1, changed: true });
     expect(port.all).toHaveLength(1);
     await expect(port.listBySession(SESSION_ID)).resolves.toHaveLength(1);
+  });
+
+  it("degrades a long source to its focused sections instead of dumping the page", async () => {
+    const port = new InMemoryMemoryPort(SESSION_ID);
+    const sections = Array.from(
+      { length: 40 },
+      (_, i) => `## Section ${i}\n\n${"word ".repeat(400)}`
+    ).join("\n\n");
+    await port.save({
+      kind: "source",
+      title: "Long page",
+      content: sections,
+      sourceUrl: "https://example.com/long",
+    });
+
+    const read = await getMemoryTool.execute(
+      "call-1",
+      { id: 1, focusHeadings: ["Section 37"] },
+      undefined,
+      undefined,
+      { ...createContext(), memory: port }
+    );
+
+    expect(read.details).toMatchObject({ id: 1, detail: "sections" });
+    expect(read.content[0]).toMatchObject({
+      text: expect.stringContaining("Section 37"),
+    });
   });
 });

@@ -161,6 +161,8 @@ export interface MemorySearchInput {
 export interface MemoryHit extends MemorySummary {
   /** The best-matching chunk's text, so the model sees why it matched. */
   snippet: string;
+  /** Heading trail of the matched chunk, e.g. `"Setup > Install"`; null for a card hit. */
+  headingPath: string | null;
 }
 
 export interface MemoryDetail extends MemorySummary {

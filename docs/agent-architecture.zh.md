@@ -462,8 +462,10 @@ system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatil
 `agent_memory` 這個 resource type 排一次 `indexResourceWorkflow`（`docs/rag-architecture.md`
 §2.4）。`save_memory` 歸 `draft` tier——可逆、部落格看不到——而且只寫 `fact`。
 
-`fetch_url` 讀過的每一頁都經同一個 port 留下一筆 `source`——URL、標題、500 字摘錄——以 URL 為
-key，重訪是更新不是重複。留痕在 fetch 之後寫、永遠不會讓 fetch 失敗：模型拿到的結果有沒有留痕
+`fetch_url` 讀過的每一頁都經同一個 port 留下一筆 `source`——URL、標題、模型看到的整頁（16k
+字元）——以 URL 為 key，重訪是更新不是重複。存整頁而不是摘錄，因為 RAG 管線本來就是為文件設計
+的：帶 heading path 的 section 給檢索、outline card 回答「這頁在講什麼」、`get_memory` 像
+`get_post` 一樣把長頁面降階。留痕在 fetch 之後寫、永遠不會讓 fetch 失敗：模型拿到的結果有沒有留痕
 都一樣。Volatile context（§4）列出本 session 已存的記憶，一筆一行、有上限、附 id，模型才不會
 重複存，也知道可以 `get_memory` 拿回已經有的東西。
 

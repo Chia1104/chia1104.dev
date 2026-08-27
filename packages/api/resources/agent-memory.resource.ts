@@ -1,7 +1,14 @@
 import { chunkMarkdown } from "@chia/ai/embeddings/chunking";
-import { hashEmbeddingInput } from "@chia/ai/embeddings/utils";
+import {
+  buildEmbeddingInput,
+  hashEmbeddingInput,
+} from "@chia/ai/embeddings/utils";
 import { getAgentMemories, getAgentMemory } from "@chia/db/repos/agent/memory";
-import { AGENT_MEMORY_STATUS, RESOURCE_CHUNK_KIND } from "@chia/db/schema";
+import {
+  AGENT_MEMORY_KIND,
+  AGENT_MEMORY_STATUS,
+  RESOURCE_CHUNK_KIND,
+} from "@chia/db/schema";
 import type { AgentMemory } from "@chia/db/schema";
 
 import type {
@@ -22,20 +29,25 @@ const isRetired = (row: AgentMemory): boolean =>
   row.deletedAt !== null || row.status === AGENT_MEMORY_STATUS.Archived;
 
 /**
- * The card is what the memory *is*, not what it says: kind, title and where it came from.
- * Bounded like a post's card, so a long fact and a short one weigh the same at topic level.
+ * The card is what the memory *is*: kind, where it came from, and — for a page — the
+ * document card a post gets, title plus heading outline, whose size follows the page's
+ * structure rather than its length. A fact or lesson is a few sentences with no structure
+ * to outline, so its card is just its identity and the sections carry the text.
  */
-const buildCard = (row: AgentMemory): string =>
-  [
+const buildCard = async (row: AgentMemory): Promise<string> => {
+  const identity = [
     `Kind: ${row.kind}`,
-    `Title: ${row.title}`,
     row.sourceUrl ? `Source: ${row.sourceUrl}` : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join("\n");
+  ].filter((part): part is string => part !== null);
+  const body =
+    row.kind === AGENT_MEMORY_KIND.Source
+      ? await buildEmbeddingInput({ title: row.title, content: row.content })
+      : `Title: ${row.title}`;
+  return [...identity, body].join("\n");
+};
 
 const buildChunkSet = async (row: AgentMemory): Promise<ResourceChunkSet> => {
-  const card = buildCard(row);
+  const card = await buildCard(row);
   const chunks: ResourceChunkInput[] = [
     {
       kind: RESOURCE_CHUNK_KIND.Card,

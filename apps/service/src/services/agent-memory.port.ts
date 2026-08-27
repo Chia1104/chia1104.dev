@@ -125,6 +125,7 @@ export const createAgentMemoryPort = (
               {
                 ...summaryOf(row),
                 snippet: truncateSnippet(item.bestChunk.content),
+                headingPath: item.bestChunk.headingPath,
               },
             ]
           : [];

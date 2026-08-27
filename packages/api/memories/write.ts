@@ -21,8 +21,11 @@ import type { MemoryHooks } from "../orpc/utils";
  * and that is the main hazard of reaching for the repository directly.
  */
 
-/** Generous: the agent's own tool caps at a quarter of this; the dashboard may hold more. */
-export const MEMORY_CONTENT_MAX_CHARS = 16_000;
+/**
+ * A `source` holds the page as `fetch_url` showed it to the model (16k characters); a
+ * fact written by the tool is capped at 4k. Room above both for the dashboard's edits.
+ */
+export const MEMORY_CONTENT_MAX_CHARS = 32_000;
 export const MEMORY_TITLE_MAX_CHARS = 200;
 
 const assertTitle = (title: string): string => {

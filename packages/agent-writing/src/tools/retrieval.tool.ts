@@ -21,11 +21,6 @@ import { Type, defineTool, textResult, truncate } from "./schema.ts";
  */
 
 const MAX_PAGE_CHARS = 16_000;
-/**
- * What a `source` memory keeps of a page. The full text is the fetch's job, not memory's —
- * Firecrawl re-reads a page cheaply; memory answers "did I read this, what was it, where".
- */
-const SOURCE_EXCERPT_CHARS = 500;
 const MAX_SEARCH_RESULTS = 10;
 const DEFAULT_SEARCH_RESULTS = 5;
 const MAX_SEARCH_DOMAINS = 5;
@@ -171,13 +166,17 @@ export const fetchUrlTool = defineTool({
  * `search_memory`. Deterministic and model-free. Never fails the fetch: the model's result
  * is the same whether or not the trail was written, and a memory outage must not cost a
  * turn its research.
+ *
+ * The whole page as the model saw it, not an excerpt: the RAG pipeline is built for
+ * documents — sections with heading paths, a card from the outline — and an excerpt only
+ * ever bought recall on the page's first paragraph.
  */
 const recordSource = async (
   context: WritingToolContext,
   page: FetchedPage,
   signal: AbortSignal | undefined
 ): Promise<void> => {
-  const excerpt = page.text.trim().slice(0, SOURCE_EXCERPT_CHARS);
+  const excerpt = page.text.trim().slice(0, MAX_PAGE_CHARS);
   if (excerpt.length === 0) return;
   try {
     await context.memory.save(
