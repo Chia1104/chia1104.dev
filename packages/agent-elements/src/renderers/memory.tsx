@@ -15,7 +15,8 @@ const memorySummary = z.object({
   id: z.number(),
   kind: z.string(),
   title: z.string(),
-  sourceUrl: httpUrl.nullable().optional(),
+  // one bad link drops the link, not the whole list
+  sourceUrl: httpUrl.nullable().optional().catch(null),
 });
 
 const searchDetails = z.object({

@@ -21,6 +21,12 @@ import { Type, defineTool, textResult, truncate } from "./schema.ts";
  */
 
 const MAX_PAGE_CHARS = 16_000;
+/**
+ * How much of a page a `source` memory keeps. Far more than the model reads in one call: the
+ * index chunks the whole thing, so a later `search_memory` can land on a section this turn
+ * never looked at. Bounded only so a pathological page cannot become a megabyte row.
+ */
+const SOURCE_MAX_CHARS = 64_000;
 const MAX_SEARCH_RESULTS = 10;
 const DEFAULT_SEARCH_RESULTS = 5;
 const MAX_SEARCH_DOMAINS = 5;
@@ -167,30 +173,31 @@ export const fetchUrlTool = defineTool({
  * is the same whether or not the trail was written, and a memory outage must not cost a
  * turn its research.
  *
- * The whole page as the model saw it, not an excerpt: the RAG pipeline is built for
- * documents — sections with heading paths, a card from the outline — and an excerpt only
- * ever bought recall on the page's first paragraph.
+ * The whole page, not an excerpt: the RAG pipeline is built for documents — sections with
+ * heading paths, a card from the outline — and an excerpt only ever bought recall on the
+ * page's first paragraph.
  */
 const recordSource = async (
   context: WritingToolContext,
   page: FetchedPage,
   signal: AbortSignal | undefined
 ): Promise<void> => {
-  const excerpt = page.text.trim().slice(0, MAX_PAGE_CHARS);
-  if (excerpt.length === 0) return;
+  const text = page.text.trim().slice(0, SOURCE_MAX_CHARS);
+  if (text.length === 0) return;
   try {
     await context.memory.save(
       {
         kind: "source",
         title: page.title?.trim() || hostnameOf(page.url),
-        content: excerpt,
+        content: text,
         sourceUrl: page.url,
       },
       signal
     );
   } catch (error) {
+    // origin and path only: a query string may carry a signed token or a personal id
     console.error("Could not record a fetched page as a source memory", {
-      url: page.url,
+      page: pageLocationOf(page.url),
       error: String(error),
     });
   }
@@ -201,6 +208,15 @@ const hostnameOf = (url: string): string => {
     return new URL(url).hostname;
   } catch {
     return url;
+  }
+};
+
+const pageLocationOf = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return "(unparseable url)";
   }
 };
 

@@ -253,6 +253,18 @@ export const replaceResourceChunks = withDTO(
   }
 );
 
+/** Whether a resource has been indexed at all — the cheapest "did the index run ever land" check. */
+export const hasResourceChunks = withDTO(
+  async (db, dto: { ref: ResourceRef }): Promise<boolean> => {
+    const [row] = await db
+      .select({ id: chunks.id })
+      .from(chunks)
+      .where(sourceFilter(dto.ref))
+      .limit(1);
+    return row !== undefined;
+  }
+);
+
 export const deleteResourceChunks = withDTO(
   async (db, dto: { ref: ResourceRef }) => {
     const deleted = await db

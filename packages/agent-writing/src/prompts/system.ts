@@ -37,15 +37,28 @@ export interface TurnContextInput {
 }
 
 /**
- * A memory title is one line in the volatile block, and a `source` title is a fetched page's
- * own `<title>` — attacker-controlled text. The model saw it in the tool result already, so
- * this is not a new exposure, but the block is a state summary, not a carrier for content.
+ * A memory is one line in the volatile block. A `source` is shown by where it is, never by
+ * its title: the title is the fetched page's own `<title>`, attacker-controlled text that
+ * would otherwise be restated on every provider request. The URL is structural — validated
+ * http(s), fragment stripped — so its host and path identify the page safely.
  */
 const MEMORY_TITLE_MAX_CHARS = 120;
 
 const oneLine = (text: string, max: number): string => {
   const line = text.replace(/\s+/g, " ").trim();
   return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+};
+
+const memoryLabel = (memory: MemorySummary): string => {
+  if (memory.kind === "source" && memory.sourceUrl) {
+    try {
+      const url = new URL(memory.sourceUrl);
+      return oneLine(`${url.hostname}${url.pathname}`, MEMORY_TITLE_MAX_CHARS);
+    } catch {
+      return "(page)";
+    }
+  }
+  return oneLine(memory.title, MEMORY_TITLE_MAX_CHARS);
 };
 
 const CORE = `
@@ -162,9 +175,7 @@ export const buildTurnContext = (input: TurnContextInput): string => {
   if (input.sessionMemories && input.sessionMemories.length > 0) {
     lines.push("- Memories saved this session (read one with `get_memory`):");
     for (const memory of input.sessionMemories) {
-      lines.push(
-        `  - [${memory.kind}] ${oneLine(memory.title, MEMORY_TITLE_MAX_CHARS)} (#${memory.id})`
-      );
+      lines.push(`  - [${memory.kind}] ${memoryLabel(memory)} (#${memory.id})`);
     }
   }
 

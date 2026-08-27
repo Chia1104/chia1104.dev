@@ -20,6 +20,7 @@ import {
 } from "@chia/db/repos/agent/memory";
 import type { AgentMemory } from "@chia/db/schema";
 import { AGENT_MEMORY_KIND } from "@chia/db/schema";
+import { AppError } from "@chia/service-kit/errors";
 
 import { memoryHooks } from "./agent-memory-indexing.service";
 
@@ -65,7 +66,9 @@ export const createAgentMemoryPort = (
     async save(input): Promise<SavedMemory> {
       if (input.kind === AGENT_MEMORY_KIND.Source) {
         if (!input.sourceUrl) {
-          throw new Error("A source memory needs its URL.");
+          throw new AppError("BAD_REQUEST", {
+            message: "A source memory needs its URL.",
+          });
         }
         const { id, changed } = await recordSourceMemoryService(
           db,

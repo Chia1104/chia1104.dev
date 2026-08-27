@@ -13,6 +13,11 @@ const { repo } = vi.hoisted(() => ({
 
 vi.mock("@chia/db/repos/agent/memory", () => repo);
 
+const { hasResourceChunks } = vi.hoisted(() => ({
+  hasResourceChunks: vi.fn(async () => true),
+}));
+vi.mock("@chia/db/repos/resources/chunk", () => ({ hasResourceChunks }));
+
 const {
   createMemoryService,
   normalizeSourceUrl,
@@ -77,10 +82,10 @@ describe("memory write services", () => {
     await expect(
       createMemoryService(
         db,
-        { kind: "fact", title: "t", content: "x".repeat(32_001) },
+        { kind: "fact", title: "t", content: "x".repeat(64_001) },
         {}
       )
-    ).rejects.toThrow("at most 32000");
+    ).rejects.toThrow("at most 64000");
     expect(repo.createAgentMemory).not.toHaveBeenCalled();
   });
 
@@ -94,9 +99,12 @@ describe("memory write services", () => {
     expect(() => normalizeSourceUrl("not a url")).toThrow("absolute URL");
   });
 
-  it("re-indexes a source only when the page text changed", async () => {
+  it("re-indexes a source when the page text changed, or when it was never indexed", async () => {
     repo.upsertSourceMemory.mockResolvedValueOnce({ id: 9, changed: true });
     repo.upsertSourceMemory.mockResolvedValueOnce({ id: 9, changed: false });
+    repo.upsertSourceMemory.mockResolvedValueOnce({ id: 9, changed: false });
+    hasResourceChunks.mockResolvedValueOnce(true);
+    hasResourceChunks.mockResolvedValueOnce(false);
     const input = {
       sourceUrl: "https://example.com/#top",
       title: "Example",
@@ -106,12 +114,14 @@ describe("memory write services", () => {
 
     await recordSourceMemoryService(db, input, { onMemoryChanged });
     await recordSourceMemoryService(db, input, { onMemoryChanged });
+    // a hook that failed after the row landed leaves no chunks; the next visit retries
+    await recordSourceMemoryService(db, input, { onMemoryChanged });
 
     expect(repo.upsertSourceMemory).toHaveBeenCalledWith(
       db,
       expect.objectContaining({ sourceUrl: "https://example.com/" })
     );
-    expect(onMemoryChanged).toHaveBeenCalledTimes(1);
+    expect(onMemoryChanged).toHaveBeenCalledTimes(2);
   });
 
   it("reports a missing memory as not found", async () => {

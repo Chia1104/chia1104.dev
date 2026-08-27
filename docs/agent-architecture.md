@@ -510,24 +510,30 @@ background — a stopped turn ends as soon as the signal fires instead of when t
 ### Memory
 
 `agent.memory` is the one table that outlives a session. Three kinds with three lifecycles:
-a `source` is a page `fetch_url` read (URL, title, excerpt), a `fact` is a distilled, cited
+a `source` is a page `fetch_url` read (URL, title, the page text up to 64k characters), a
+`fact` is a distilled, cited
 claim the model chose to keep with `save_memory`, and a `lesson` is a writing preference
 extracted from the operator's feedback. `MemoryPort` (`@chia/agent-writing/ports`) is
 implemented entirely by the host (`apps/service/src/services/agent-memory.port.ts`): writes go
 through `packages/api/memories/write.ts`, which takes the index hook as a required argument the
-way `feeds/write.ts` does, and every write schedules `indexResourceWorkflow` for the
-`agent_memory` resource type (`docs/rag-architecture.md` §2.4). `save_memory` sits in the
-`draft` tier — reversible, invisible to the blog — and only ever writes a `fact`.
+way `feeds/write.ts` does, and every write that changes a row schedules
+`indexResourceWorkflow` for the `agent_memory` resource type (`docs/rag-architecture.md`
+§2.4) — a `source` revisit whose text is unchanged schedules nothing unless the page has no
+chunks yet, which is how a hook that once failed gets a second chance. Only live, `active`
+memories are indexed: a pending lesson is unreviewed and the index is agent context.
+`save_memory` sits in the `draft` tier — reversible, invisible to the blog — and only ever
+writes a `fact`.
 
-`fetch_url` records every page it reads as a `source` — URL, title, and the page as the model
-saw it (16k characters) — through the same port, keyed on the URL so a revisit refreshes rather
-than duplicates. A whole page rather than an excerpt because the RAG pipeline is built for
-documents: sections with heading paths for search, an outline card for "what is this page
+`fetch_url` records every page it reads as a `source` — URL, title, and the whole page text
+(bounded at 64k characters) — through the same port, keyed on the URL so a revisit refreshes
+rather than duplicates. A whole page rather than an excerpt because the RAG pipeline is built
+for documents: sections with heading paths for search, an outline card for "what is this page
 about", and `get_memory` degrading a long page the way `get_post` does. The
 trail is written after the fetch and can never fail it: the model's result is identical with
 or without it. The volatile context (§4) lists what the current session has saved, one
 bounded line per memory with its id, so the model neither saves twice nor forgets it can
-`get_memory` what it already has.
+`get_memory` what it already has — a `source` by its host and path, never by its title, which
+is the fetched page's own and would otherwise be restated on every request.
 
 A `fact` or `source` reaches the model through tools, never through the system prompt:
 `search_memory` is resource search scoped to `sourceTypes: ["agent_memory"]` with

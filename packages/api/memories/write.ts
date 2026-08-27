@@ -5,11 +5,13 @@ import {
   updateAgentMemory,
   upsertSourceMemory,
 } from "@chia/db/repos/agent/memory";
+import { hasResourceChunks } from "@chia/db/repos/resources/chunk";
 import type { AgentMemory } from "@chia/db/schema";
 import type { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 
 import type { MemoryHooks } from "../orpc/utils";
+import { AGENT_MEMORY_SOURCE_TYPE } from "../resources/agent-memory.resource";
 
 /**
  * Memory writes, shared by the oRPC procedures (a request, behind `adminGuard`) and the
@@ -22,10 +24,10 @@ import type { MemoryHooks } from "../orpc/utils";
  */
 
 /**
- * A `source` holds the page as `fetch_url` showed it to the model (16k characters); a
- * fact written by the tool is capped at 4k. Room above both for the dashboard's edits.
+ * A `source` holds the whole fetched page, bounded (`SOURCE_MAX_CHARS` in the fetch tool); a
+ * fact written by the tool is capped at 4k. The dashboard edits within the same bound.
  */
-export const MEMORY_CONTENT_MAX_CHARS = 32_000;
+export const MEMORY_CONTENT_MAX_CHARS = 64_000;
 export const MEMORY_TITLE_MAX_CHARS = 200;
 
 const assertTitle = (title: string): string => {
@@ -109,8 +111,10 @@ export interface RecordSourceMemoryServiceInput {
 }
 
 /**
- * The `fetch_url` trail: one row per page, refreshed on every visit. The index run is only
- * scheduled when the stored text changed — an unchanged revisit would rewrite nothing.
+ * The `fetch_url` trail: one row per page, refreshed on every visit. The index run is
+ * scheduled when the stored text changed, and also when the page has no chunks at all: the
+ * row lands before the hook runs, so a hook that failed once would otherwise leave the page
+ * unindexed until its text happened to change.
  */
 export const recordSourceMemoryService = async (
   db: DB,
@@ -124,7 +128,12 @@ export const recordSourceMemoryService = async (
     sessionId: input.sessionId ?? null,
   });
 
-  if (result.changed) {
+  if (
+    result.changed ||
+    !(await hasResourceChunks(db, {
+      ref: { sourceType: AGENT_MEMORY_SOURCE_TYPE, sourceId: result.id },
+    }))
+  ) {
     await hooks.onMemoryChanged?.(result.id);
   }
 

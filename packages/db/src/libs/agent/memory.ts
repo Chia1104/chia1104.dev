@@ -6,7 +6,6 @@ import {
   ilike,
   inArray,
   isNull,
-  ne,
   or,
   sql,
 } from "drizzle-orm";
@@ -32,9 +31,9 @@ import {
 
 const live = () => isNull(agentMemories.deletedAt);
 
-/** The population the index carries: live rows that are not archived. */
+/** The population the index carries: live, `active` rows — a pending lesson is not yet agent context. */
 const indexable = () =>
-  and(live(), ne(agentMemories.status, AGENT_MEMORY_STATUS.Archived));
+  and(live(), eq(agentMemories.status, AGENT_MEMORY_STATUS.Active));
 
 export interface InsertAgentMemoryDTO {
   kind: AgentMemoryKind;

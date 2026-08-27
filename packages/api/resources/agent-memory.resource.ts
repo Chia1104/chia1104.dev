@@ -21,12 +21,14 @@ import type {
 export const AGENT_MEMORY_SOURCE_TYPE = "agent_memory";
 
 /**
- * Whether a memory still owns chunks. Shared by `buildChunks` and `hydrate`: the two must
+ * Whether a memory owns chunks: live and `active`. A pending lesson is unreviewed, and the
+ * index is agent context — `search_memory` would surface it — so it stays out until the
+ * operator approves it, which re-indexes. Shared by `buildChunks` and `hydrate`: the two must
  * agree, or a hit indexed under one rule is dropped by the other and the caller silently
  * sees one result fewer.
  */
-const isRetired = (row: AgentMemory): boolean =>
-  row.deletedAt !== null || row.status === AGENT_MEMORY_STATUS.Archived;
+const isIndexable = (row: AgentMemory): boolean =>
+  row.deletedAt === null && row.status === AGENT_MEMORY_STATUS.Active;
 
 /**
  * The card is what the memory *is*: kind, where it came from, and — for a page — the
@@ -86,7 +88,7 @@ export const agentMemoryResource: ChunkableResource = {
 
   async buildChunks(db, sourceId) {
     const row = await getAgentMemory(db, sourceId);
-    return row && !isRetired(row) ? await buildChunkSet(row) : null;
+    return row && isIndexable(row) ? await buildChunkSet(row) : null;
   },
 
   async hydrate(db, sourceIds) {
@@ -97,20 +99,18 @@ export const agentMemoryResource: ChunkableResource = {
     const rows = await getAgentMemories(db, sourceIds);
 
     return new Map<number, ResourceSummary>(
-      rows
-        .filter((row) => !isRetired(row))
-        .map((row) => [
-          row.id,
-          {
-            sourceType: AGENT_MEMORY_SOURCE_TYPE,
-            sourceId: row.id,
-            title: row.title,
-            description: row.sourceUrl,
-            // nothing on the site to deep-link to
-            href: null,
-            locale: null,
-          },
-        ])
+      rows.filter(isIndexable).map((row) => [
+        row.id,
+        {
+          sourceType: AGENT_MEMORY_SOURCE_TYPE,
+          sourceId: row.id,
+          title: row.title,
+          description: row.sourceUrl,
+          // nothing on the site to deep-link to
+          href: null,
+          locale: null,
+        },
+      ])
     );
   },
 };

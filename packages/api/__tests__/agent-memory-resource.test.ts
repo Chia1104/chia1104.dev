@@ -97,8 +97,14 @@ describe("agentMemoryResource", () => {
     expect(card?.content).toContain("HNSW");
   });
 
-  it("retires archived and deleted memories from the index and from hydration alike", async () => {
+  it("indexes only live, active memories: archived, deleted and pending stay out, in hydration too", async () => {
     repo.getAgentMemory.mockResolvedValueOnce(memory({ status: "archived" }));
+    await expect(agentMemoryResource.buildChunks(db, 7)).resolves.toBeNull();
+
+    // an unreviewed lesson is not agent context yet
+    repo.getAgentMemory.mockResolvedValueOnce(
+      memory({ kind: "lesson", status: "pending" })
+    );
     await expect(agentMemoryResource.buildChunks(db, 7)).resolves.toBeNull();
 
     repo.getAgentMemory.mockResolvedValueOnce(
@@ -112,6 +118,7 @@ describe("agentMemoryResource", () => {
     repo.getAgentMemories.mockResolvedValue([
       memory({ id: 1 }),
       memory({ id: 2, status: "archived" }),
+      memory({ id: 3, kind: "lesson", status: "pending" }),
     ]);
     const summaries = await agentMemoryResource.hydrate(db, [1, 2, 3]);
     expect([...summaries.keys()]).toEqual([1]);

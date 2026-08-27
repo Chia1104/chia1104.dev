@@ -1,18 +1,6 @@
 import { FatalError } from "workflow";
 
-import { AGENT_PROVIDERS, createAgentModels } from "@chia/agent-runtime/models";
-import { completeText } from "@chia/agent-runtime/pi/complete";
-import { PgSessionRepo } from "@chia/agent-runtime/session/pg-repo";
-import {
-  buildLessonExtractionPrompt,
-  collectOperatorExchange,
-  parseExtractedLessons,
-  wholeBranch,
-} from "@chia/agent-writing/memory/lessons";
-import {
-  WRITING_AGENT_KIND,
-  WRITING_SESSION_DEFAULTS,
-} from "@chia/agent-writing/models";
+import { WRITING_AGENT_KIND } from "@chia/agent-writing/models";
 import { createMemoryService } from "@chia/api/memories/write";
 import { connectDatabase } from "@chia/db/client";
 import { getAgentSession } from "@chia/db/repos/agent";
@@ -46,6 +34,10 @@ export interface MemoryConsolidationResult {
  *
  * A model failure is "nothing", not an error: a lesson is a gain, and a step that retried
  * until it produced one would eventually insert the same lessons twice.
+ *
+ * The runtime is imported at first use rather than at module scope, as in `agent-turn.step.ts`:
+ * this step is registered at boot for every process that hosts the workflow, and the runtime
+ * carries the provider stack.
  */
 export const consolidateSessionMemoryStep = async (request: {
   sessionId: string;
@@ -63,6 +55,25 @@ export const consolidateSessionMemoryStep = async (request: {
       `Session ${request.sessionId} is a ${row.kind} session; only writing sessions are consolidated.`
     );
   }
+
+  const [
+    { AGENT_PROVIDERS, createAgentModels },
+    { completeText },
+    { PgSessionRepo },
+    {
+      buildLessonExtractionPrompt,
+      collectOperatorExchange,
+      parseExtractedLessons,
+      wholeBranch,
+    },
+    { WRITING_SESSION_DEFAULTS },
+  ] = await Promise.all([
+    import("@chia/agent-runtime/models"),
+    import("@chia/agent-runtime/pi/complete"),
+    import("@chia/agent-runtime/session/pg-repo"),
+    import("@chia/agent-writing/memory/lessons"),
+    import("@chia/agent-writing/models"),
+  ]);
 
   const repo = new PgSessionRepo(db, {
     kind: WRITING_AGENT_KIND,

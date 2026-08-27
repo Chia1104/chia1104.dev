@@ -77,7 +77,7 @@
 
 | kind     | 內容                                                         | 產生方式                                    | 進入模型視野的路徑                      |
 | -------- | ------------------------------------------------------------ | ------------------------------------------- | --------------------------------------- |
-| `source` | 讀過的網頁：URL、標題、模型看到的全文（16k 字元）            | `fetch_url` 成功後**自動** upsert，不經模型 | `search_memory` 命中                    |
+| `source` | 讀過的網頁：URL、標題、整頁文字（上限 64k 字元）             | `fetch_url` 成功後**自動** upsert，不經模型 | `search_memory` 命中                    |
 | `fact`   | 蒸餾過的事實：版本號、API 簽名、基準數據，**必附出處**       | 模型主動呼叫 `save_memory`                  | `search_memory` 命中                    |
 | `lesson` | 寫作偏好與教訓：「operator 偏好 X 結構」「這種開頭被退過稿」 | 反思 workflow 抽取，operator 審核後生效     | volatile context 的 digest（always-on） |
 
@@ -181,7 +181,7 @@ drop BM25 index → drop 兩個 btree index → drop source_type / source_id
 `packages/api/resources/agent-memory.resource.ts`：
 
 - `AGENT_MEMORY_SOURCE_TYPE = "agent_memory"`。
-- `buildChunks(db, sourceId)`：讀 memory row，deleted / archived 回 null（chunk 隨之清掉——`syncResourceChunksStep` 對「沒有內容」的語意就是 `deleteResourceChunks`）。card = `kind + title + sourceUrl`（穩定、與長度無關，同 feed card 的設計理由）；sections = 對 `content` 跑既有 chunking。visibility 固定 `{ locale: null, published: false, deleted: false }`。
+- `buildChunks(db, sourceId)`：讀 memory row，只有 live 且 `active` 才有內容——deleted / archived / pending 都回 null（pending lesson 未經審核，而索引就是 agent context；核准時 `onMemoryChanged` 會把它索引進來）（chunk 隨之清掉——`syncResourceChunksStep` 對「沒有內容」的語意就是 `deleteResourceChunks`）。card = `kind + title + sourceUrl`（穩定、與長度無關，同 feed card 的設計理由）；sections = 對 `content` 跑既有 chunking。visibility 固定 `{ locale: null, published: false, deleted: false }`。
 - `hydrate(db, sourceIds)`：批次讀 title / kind；`href: null`（站上沒有可深連的頁面）。刪除判定與 `buildChunks` 用同一條（deleted 或 archived），守住 rag-architecture.md §6.2 的一致性要求。
 - 註冊進 `packages/api/resources/registry.ts`。
 
@@ -260,15 +260,15 @@ AGENTS.md 明定 `docs/agent-architecture.md` 與 `docs/rag-architecture.md` 承
 
 ### 5.1 `fetch_url` 自動 source log
 
-`fetchUrlTool.execute` 成功取得頁面後，呼叫 `context.memory.save({ kind: 'source', title: page.title, sourceUrl: page.url, content: 模型看到的那份 body（截到 16k 字元）})`。Port 實作走 repo 的 `upsertSourceMemory`，以 `source_url` upsert（§4.1 的 partial unique index），重訪同一頁更新 title / content / `updated_at`（頁面會變，只更新時間戳會留下過期的內容）。
+`fetchUrlTool.execute` 成功取得頁面後，呼叫 `context.memory.save({ kind: 'source', title: page.title, sourceUrl: page.url, content: 整頁 body（截到 64k 字元）})`。Port 實作走 repo 的 `upsertSourceMemory`，以 `source_url` upsert（§4.1 的 partial unique index），重訪同一頁更新 title / content / `updated_at`（頁面會變，只更新時間戳會留下過期的內容）。
 
-**存全文，不存摘錄。** 早期版本只存前 500 字，理由是「全文是 fetch 的職責」——但那是在優化一個不存在的約束：16k 字元對這個系統毫無壓力，而 RAG 管線本來就是為文件設計的。全文進 `chunkMarkdown` 切成帶 heading path 的 section，BM25 打得到頁面任何位置的 identifier，語意逐段比對；card 走 `buildEmbeddingInput`（title + heading outline），「這頁在講什麼」由結構回答，零模型成本。曾考慮用便宜模型做摘要——輸在字面召回、非同步的複雜度、多一條注入路徑，而 outline card 已涵蓋摘要唯一的優點。`get_memory` 用 `get_post` 同一套 `buildDocumentContext` 降階（8k token 預算，單一文件最多 60%），`search_memory` 的命中帶 `headingPath`，模型以 `focusHeadings` 把命中的段落留下。
+**存全文，不存摘錄。** 存整頁而不只是模型在該 turn 讀到的 16k：索引切的是整份文件，之後的 `search_memory` 才能命中這個 turn 沒讀到的段落；64k 只是防病態頁面。早期版本只存前 500 字，理由是「全文是 fetch 的職責」——但那是在優化一個不存在的約束：16k 字元對這個系統毫無壓力，而 RAG 管線本來就是為文件設計的。全文進 `chunkMarkdown` 切成帶 heading path 的 section，BM25 打得到頁面任何位置的 identifier，語意逐段比對；card 走 `buildEmbeddingInput`（title + heading outline），「這頁在講什麼」由結構回答，零模型成本。曾考慮用便宜模型做摘要——輸在字面召回、非同步的複雜度、多一條注入路徑，而 outline card 已涵蓋摘要唯一的優點。`get_memory` 用 `get_post` 同一套 `buildDocumentContext` 降階（8k token 預算，單一文件最多 60%），`search_memory` 的命中帶 `headingPath`，模型以 `focusHeadings` 把命中的段落留下。
 
 三個實作細節：
 
 - `fetch_url` 是 `executionMode: "parallel"`，同一 URL 兩次平行抓取會在 partial unique index 上撞車。upsert 要用 `onConflictDoUpdate({ target: [sourceUrl], targetWhere: sql\`kind = 'source' and deleted_at is null\` })`——`ON CONFLICT` 的 predicate 必須對得上 partial index，否則 Postgres 找不到可用的 arbiter index。
 - key 用去掉 fragment 的 URL（`#section` 不改變頁面），其餘不動——query string 常是內容的一部分，不做更多正規化。
-- 重訪不重複觸發索引：`upsertSourceMemory` 回傳 content 是否變動，沒變就不叫 `onMemoryChanged`；變了也只有變動的 chunk 重嵌（`content_hash`）。
+- 重訪不重複觸發索引：`upsertSourceMemory` 回傳 content 是否變動，沒變就不叫 `onMemoryChanged`——除非這頁還沒有任何 chunk（`hasResourceChunks`）：row 先落地、hook 才跑，hook 失敗過一次的頁面否則要等到文字剛好改變才會被索引。變了也只有變動的 chunk 重嵌（`content_hash`）。
 
 ### 5.2 Volatile context：本 session 已存記憶
 

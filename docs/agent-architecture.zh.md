@@ -455,19 +455,21 @@ system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatil
 ### 記憶
 
 `agent.memory` 是唯一活得比 session 久的表。三種 kind、三種生命週期：`source` 是 `fetch_url`
-讀過的頁面（URL、標題、摘錄），`fact` 是模型用 `save_memory` 留下的蒸餾過、附出處的結論，
+讀過的頁面（URL、標題、整頁文字，上限 64k 字元），`fact` 是模型用 `save_memory` 留下的蒸餾過、附出處的結論，
 `lesson` 是從 operator 的回饋抽出的寫作偏好。`MemoryPort`（`@chia/agent-writing/ports`）
 整個由 host 實作（`apps/service/src/services/agent-memory.port.ts`）：寫入走
-`packages/api/memories/write.ts`，索引 hook 是必填參數（同 `feeds/write.ts`），每次寫入都對
-`agent_memory` 這個 resource type 排一次 `indexResourceWorkflow`（`docs/rag-architecture.md`
-§2.4）。`save_memory` 歸 `draft` tier——可逆、部落格看不到——而且只寫 `fact`。
+`packages/api/memories/write.ts`，索引 hook 是必填參數（同 `feeds/write.ts`），每次改到 row 的
+寫入都對 `agent_memory` 這個 resource type 排一次 `indexResourceWorkflow`（`docs/rag-architecture.md`
+§2.4）——文字沒變的 `source` 重訪不排，除非這頁還沒有任何 chunk，那是 hook 曾經失敗時的補救。只有
+live 且 `active` 的記憶會被索引：pending 的 lesson 未經審核，而索引就是 agent context。`save_memory` 歸 `draft` tier——可逆、部落格看不到——而且只寫 `fact`。
 
-`fetch_url` 讀過的每一頁都經同一個 port 留下一筆 `source`——URL、標題、模型看到的整頁（16k
+`fetch_url` 讀過的每一頁都經同一個 port 留下一筆 `source`——URL、標題、整頁文字（上限 64k
 字元）——以 URL 為 key，重訪是更新不是重複。存整頁而不是摘錄，因為 RAG 管線本來就是為文件設計
 的：帶 heading path 的 section 給檢索、outline card 回答「這頁在講什麼」、`get_memory` 像
 `get_post` 一樣把長頁面降階。留痕在 fetch 之後寫、永遠不會讓 fetch 失敗：模型拿到的結果有沒有留痕
 都一樣。Volatile context（§4）列出本 session 已存的記憶，一筆一行、有上限、附 id，模型才不會
-重複存，也知道可以 `get_memory` 拿回已經有的東西。
+重複存，也知道可以 `get_memory` 拿回已經有的東西——`source` 以 host + path 顯示而不是標題：標題
+是網頁自己的，否則每個 request 都會被重述一次。
 
 `fact` 與 `source` 只透過 tool 進到模型眼前，不進 system prompt：`search_memory` 是限定
 `sourceTypes: ["agent_memory"]` 加 `includeUnpublished: true` 的 resource search——兩個旗標

@@ -159,10 +159,12 @@ export type ExtractedLesson = z.infer<typeof lessonSchema>;
  * correctness requirement.
  */
 export const parseExtractedLessons = (raw: string): ExtractedLesson[] => {
+  // trimmed before the fence strip, so neither pattern backtracks over whitespace
   const body = raw
     .trim()
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "");
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/, "")
+    .trim();
   let parsed: unknown;
   try {
     parsed = JSON.parse(body);

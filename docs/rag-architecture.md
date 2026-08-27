@@ -115,10 +115,10 @@ Outline 只取到 H3、最多 40 個 heading。所以一篇 2k token 和一篇 2
 
 ### 2.4 第二種 resource：`agent_memory`
 
-寫作 agent 的長期記憶（`agent.memory`，見 `docs/agent-architecture.md` §10）走同一條管線：adapter 在 `packages/api/resources/agent-memory.resource.ts`。`source` 是 `fetch_url` 讀過的整頁（模型看到的那 16k 字元），card 與文章一樣走 `buildEmbeddingInput`（title + heading outline）；`fact` / `lesson` 是幾句話，card 只有 `Kind / Source / Title`。section 一律對 `content` 跑既有 chunking。三個與 feed 不同的規則：
+寫作 agent 的長期記憶（`agent.memory`，見 `docs/agent-architecture.md` §10）走同一條管線：adapter 在 `packages/api/resources/agent-memory.resource.ts`。`source` 是 `fetch_url` 讀過的整頁（上限 64k 字元），card 與文章一樣走 `buildEmbeddingInput`（title + heading outline）；`fact` / `lesson` 是幾句話，card 只有 `Kind / Source / Title`。section 一律對 `content` 跑既有 chunking。三個與 feed 不同的規則：
 
 - **可見性固定 `{ locale: null, published: false, deleted: false }`。** `scopeFilter` 預設只看 `published = true`，所以公開搜尋、`search_posts`、相關文章推薦都天然看不到記憶；要讀到記憶必須**同時**傳 `includeUnpublished: true` 與 `sourceTypes: ['agent_memory']`，目前只有 agent 的 `search_memory` port 這麼做。`locale` 留 null 因為記憶是跨語系的，查資料常是英文、寫文常是中文。
-- **archived 與軟刪除都算「沒有內容」。** `buildChunks` 回 null，`syncResourceChunksStep` 把 chunk 清掉；`hydrate` 用同一個判定，符合 §6.2 的一致性要求。寫入端（`packages/api/memories/write.ts`）每次寫入都觸發一次 `indexResourceWorkflow`，所以 archive 與刪除不需要獨立的移除 workflow。
+- **只有 live 且 `active` 的記憶有內容。** archived、軟刪除、pending 的 lesson 都讓 `buildChunks` 回 null，`syncResourceChunksStep` 把 chunk 清掉；`hydrate` 用同一個判定，符合 §6.2 的一致性要求。寫入端（`packages/api/memories/write.ts`）每次寫入都觸發一次 `indexResourceWorkflow`，所以 archive 與刪除不需要獨立的移除 workflow。
 - **全量 reindex 要自己列舉。** `listReindexTargetsStep` 同時列 feed translation 與記憶（§7）。
 
 ## 3. 寫入路徑
