@@ -1,18 +1,20 @@
+import {
+  WRITING_CONFIG_DEFAULTS,
+  writingConfigSchema,
+} from "@chia/agent-writing/config";
+import type { WritingConfig } from "@chia/agent-writing/config";
 import { PgDraftStore } from "@chia/agent-writing/draft/pg-draft-store";
 import {
   assertWritingModel,
   listWritingModels,
+  resolveWritingModel,
   WRITING_AGENT_KIND,
   WRITING_SESSION_DEFAULTS,
 } from "@chia/agent-writing/models";
 import { writingPolicy } from "@chia/agent-writing/policy";
 import { writingSkills } from "@chia/agent-writing/prompts/skills";
 import { writingPromptTemplates } from "@chia/agent-writing/prompts/templates";
-import {
-  compactWritingSession,
-  navigateWritingSession,
-  runWritingTurn,
-} from "@chia/agent-writing/runtime";
+import { runWritingTurn } from "@chia/agent-writing/runtime";
 import { createWritingTools } from "@chia/agent-writing/tools/tool-set";
 import {
   copyWritingAgentDrafts,
@@ -29,6 +31,7 @@ import { createAgentWebPort } from "../services/agent-web.port";
 import { startMemoryConsolidation } from "../services/memory-consolidation.service";
 
 import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
+import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
 
 /**
  * The **writing** agent: the dashboard's blog authoring assistant.
@@ -39,8 +42,14 @@ import type { AgentDraftPayload, AgentKindDefinition } from "./kind";
  * session to a target post.
  */
 
-export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
+export const writingAgentKind: AgentKindDefinition<
+  WritingAgentSession,
+  WritingConfig
+> = {
   kind: WRITING_AGENT_KIND,
+  label: "Writing",
+  description:
+    "Researches, drafts and revises blog posts with the author inside the dashboard.",
 
   /**
    * The configured admin only. These tools write to and publish the blog, so a logged-in visitor
@@ -54,6 +63,12 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
   models: {
     assert: assertWritingModel,
     list: listWritingModels,
+    resolve: resolveWritingModel,
+  },
+
+  config: {
+    schema: writingConfigSchema,
+    defaults: WRITING_CONFIG_DEFAULTS,
   },
 
   capabilities() {
@@ -140,10 +155,25 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
       },
     });
 
+    // The compaction task may be pinned to a house model; the session's own is only resolved
+    // when the task follows it.
+    const compaction = await resolveAgentTask(
+      context.db,
+      AGENT_TASK_IDS.sessionCompaction,
+      {
+        session: () => ({
+          model: resolveWritingModel(context.settings, context.models),
+          models: context.models,
+        }),
+      }
+    );
+
     const execution = await runWritingTurn({
       session: context.session,
       models: context.models,
       settings: context.settings,
+      compactionModel: compaction.model,
+      instructions: context.config.instructions,
       agentSessionId: context.row.id,
       targetFeedId: context.state.targetFeedId ?? undefined,
       content,
@@ -181,14 +211,5 @@ export const writingAgentKind: AgentKindDefinition<WritingAgentSession> = {
     }
 
     return execution;
-  },
-
-  maintenance(options) {
-    return {
-      compact: (customInstructions) =>
-        compactWritingSession(options, customInstructions),
-      navigate: (entryId, navigationOptions) =>
-        navigateWritingSession(options, entryId, navigationOptions),
-    };
   },
 };

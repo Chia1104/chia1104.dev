@@ -22,6 +22,7 @@ import {
 } from "@chia/db/repos/agent";
 import type { JsonObject } from "@chia/utils/json";
 
+import { loadKindConfig } from "../agents/config";
 import type { AgentKindDefinition } from "../agents/kind";
 import { loadAgentKind } from "../agents/registry";
 import {
@@ -136,13 +137,6 @@ type AgentSessionRow = NonNullable<Awaited<ReturnType<typeof getAgentSession>>>;
 // Title
 // ============================================
 
-/**
- * The house gateway's cheap model, for condensing the first prompt into a title. Pinned rather than
- * read from the session: the session's own model may be BYOK or expensive, and a title is worth
- * neither.
- */
-const SESSION_TITLE_MODEL_ID = "anthropic/claude-haiku-4.5";
-
 /** Bounds both the model call and how long `run:end` is held back for the title to land. */
 const SESSION_TITLE_TIMEOUT_MS = 8_000;
 
@@ -158,6 +152,10 @@ const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
  * operator who renames the session mid-turn keeps their name. Never throws: a title is cosmetic,
  * and a provider failure falls back to the prompt's first line rather than leaving the session
  * untitled.
+ *
+ * The model and prompt are the `session.title` task's — the house gateway's cheap model unless
+ * the operator pinned another. Never the session's own, which may be BYOK or expensive; a title
+ * is worth neither.
  */
 const titleSession = async (
   db: DB,
@@ -166,25 +164,21 @@ const titleSession = async (
 ): Promise<void> => {
   try {
     const [
-      { AGENT_PROVIDERS, createAgentModels },
+      { AGENT_TASK_IDS, resolveAgentTask },
       { fallbackSessionTitle, generateSessionTitle },
     ] = await Promise.all([
-      import("@chia/agent-runtime/models"),
+      import("../agents/tasks"),
       import("@chia/agent-runtime/pi/title"),
     ]);
-    const models = createAgentModels();
-    const model = models.getModel(
-      AGENT_PROVIDERS.gateway,
-      SESSION_TITLE_MODEL_ID
-    );
-    const generated = model
-      ? await generateSessionTitle({
-          models,
-          model,
-          text,
-          signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS),
-        })
-      : null;
+    const task = await resolveAgentTask(db, AGENT_TASK_IDS.sessionTitle);
+    const generated = await generateSessionTitle({
+      models: task.models,
+      model: task.model,
+      text,
+      systemPrompt: task.systemPrompt,
+      ...task.params,
+      signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS),
+    });
     const title = generated ?? fallbackSessionTitle(text);
     if (title) await setAgentSessionTitleIfUnset(db, sessionId, title);
   } catch {
@@ -266,7 +260,7 @@ export const runAgentTurnStep = async (
  * every process that hosts the workflow, and the runtime carries the provider stack.
  */
 async function runKindTurn(
-  definition: AgentKindDefinition<unknown>,
+  definition: AgentKindDefinition<unknown, object>,
   db: DB,
   row: AgentSessionRow,
   request: AgentTurnRequest,
@@ -284,6 +278,8 @@ async function runKindTurn(
       `Kind state is missing for agent session ${request.sessionId}.`
     );
   }
+  // Read per turn, not per session: an edit in the dashboard reaches the next turn.
+  const { config } = await loadKindConfig(db, definition);
   if (!row.providerId || !row.modelId || !row.thinkingLevel) {
     throw new FatalError(
       `Agent session ${request.sessionId} has incomplete LLM settings.`
@@ -316,6 +312,7 @@ async function runKindTurn(
     db,
     row,
     state,
+    config,
     settings: {
       providerId: row.providerId,
       modelId: row.modelId,

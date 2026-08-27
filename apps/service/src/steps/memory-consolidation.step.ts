@@ -9,11 +9,6 @@ import { AGENT_MEMORY_KIND, AGENT_MEMORY_STATUS } from "@chia/db/schema";
 
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 
-/**
- * The house gateway's cheap model, as for session titles. Pinned rather than read from the
- * session: the session's own model may be BYOK, and a reflection is not the operator's bill.
- */
-const LESSON_MODEL_ID = "anthropic/claude-haiku-4.5";
 const LESSON_TIMEOUT_MS = 60_000;
 /** Titles the model is told not to repeat; the digest itself is capped far lower. */
 const EXISTING_LESSONS_MAX = 100;
@@ -57,7 +52,7 @@ export const consolidateSessionMemoryStep = async (request: {
   }
 
   const [
-    { AGENT_PROVIDERS, createAgentModels },
+    { AGENT_TASK_IDS, resolveAgentTask },
     { completeText },
     { PgSessionRepo },
     {
@@ -68,12 +63,25 @@ export const consolidateSessionMemoryStep = async (request: {
     },
     { WRITING_SESSION_DEFAULTS },
   ] = await Promise.all([
-    import("@chia/agent-runtime/models"),
+    import("../agents/tasks"),
     import("@chia/agent-runtime/pi/complete"),
     import("@chia/agent-runtime/session/pg-repo"),
     import("@chia/agent-writing/memory/lessons"),
     import("@chia/agent-writing/models"),
   ]);
+
+  /**
+   * The `writing.lessons` task: the house gateway's cheap model unless the operator pinned
+   * another — never the session's own, which may be BYOK, and a reflection is not the
+   * operator's bill. Resolved before the transcript is read so an unavailable model costs
+   * nothing.
+   */
+  let task: Awaited<ReturnType<typeof resolveAgentTask>>;
+  try {
+    task = await resolveAgentTask(db, AGENT_TASK_IDS.writingLessons);
+  } catch {
+    return { status: "unavailable", created: [] };
+  }
 
   const repo = new PgSessionRepo(db, {
     kind: WRITING_AGENT_KIND,
@@ -94,22 +102,18 @@ export const consolidateSessionMemoryStep = async (request: {
     existingLessons: lessons.filter(
       (lesson) => lesson.status !== AGENT_MEMORY_STATUS.Archived
     ),
+    systemPrompt: task.systemPrompt,
   });
   if (!prompt) {
     return { status: "nothing", created: [] };
   }
 
-  const models = createAgentModels();
-  const model = models.getModel(AGENT_PROVIDERS.gateway, LESSON_MODEL_ID);
-  if (!model) {
-    return { status: "unavailable", created: [] };
-  }
-
   const reply = await completeText({
-    models,
-    model,
+    models: task.models,
+    model: task.model,
     systemPrompt: prompt.systemPrompt,
     text: prompt.text,
+    ...task.params,
     signal: AbortSignal.timeout(LESSON_TIMEOUT_MS),
   });
   const extracted = reply ? parseExtractedLessons(reply) : [];

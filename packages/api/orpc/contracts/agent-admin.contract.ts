@@ -1,0 +1,159 @@
+import { oc } from "@orpc/contract";
+import * as z from "zod";
+
+import {
+  agentModelInfoSchema,
+  agentModelRefSchema,
+  thinkingLevelSchema,
+} from "./agent.contract";
+
+/**
+ * Operator configuration of agent kinds and tasks — the dashboard's agent workspace.
+ *
+ * RPC-only and admin-only, like the memory contract: what is configured here changes what
+ * every future session and side job does. Every view carries three layers — what the code
+ * registers (`default`/`code`), what the operator wrote (`override`) and the result
+ * (`effective`) — so the dashboard can show a value, say whether it is overridden and offer
+ * to reset it, without restating the resolution rule client-side.
+ */
+
+const errors = { UNAUTHORIZED: {}, FORBIDDEN: {}, SERVICE_UNAVAILABLE: {} };
+const writeErrors = { ...errors, NOT_FOUND: {}, BAD_REQUEST: {} } as const;
+
+const jsonObjectSchema = z.record(z.string(), z.json());
+
+// ============================================
+// Kinds
+// ============================================
+
+const sessionDefaultsSchema = z.object({
+  providerId: z.string(),
+  modelId: z.string(),
+  thinkingLevel: thinkingLevelSchema,
+  autoApprove: z.array(z.string()),
+});
+
+/** Each field `null` when the operator has not overridden it. */
+const sessionDefaultsOverrideSchema = z.object({
+  model: agentModelRefSchema.nullable(),
+  thinkingLevel: thinkingLevelSchema.nullable(),
+  autoApprove: z.array(z.string()).nullable(),
+});
+
+export const agentKindAdminSchema = z.object({
+  kind: z.string(),
+  label: z.string(),
+  description: z.string(),
+  /** `CallerTier` the kind admits; a number because the tier enum lives in service-kit. */
+  minTier: z.number().int(),
+  /** What a new session starts with when its creator chooses nothing. */
+  defaults: z.object({
+    code: sessionDefaultsSchema,
+    override: sessionDefaultsOverrideSchema,
+    effective: sessionDefaultsSchema,
+  }),
+  /** The kind's own configuration, shaped by `schema` (JSON Schema) for the form to render. */
+  config: z.object({
+    schema: jsonObjectSchema,
+    defaults: jsonObjectSchema,
+    override: jsonObjectSchema,
+    effective: jsonObjectSchema,
+  }),
+  updatedAt: z.number().nullable(),
+});
+
+export const listAgentKindsAdminContract = oc
+  .errors(errors)
+  .output(z.array(agentKindAdminSchema));
+
+/** `null` clears an override back to the code default; an absent key leaves it alone. */
+export const updateAgentKindAdminContract = oc
+  .errors(writeErrors)
+  .input(
+    z.object({
+      kind: z.string().min(1),
+      model: agentModelRefSchema.nullable().optional(),
+      thinkingLevel: thinkingLevelSchema.nullable().optional(),
+      autoApprove: z.array(z.string()).nullable().optional(),
+      /** Replaces the whole override; validated by the kind's schema. `{}` clears it. */
+      config: jsonObjectSchema.optional(),
+    })
+  )
+  .output(agentKindAdminSchema);
+
+// ============================================
+// Tasks
+// ============================================
+
+/** `"session"`: the task runs on the model of the session it serves. */
+const taskModelDefaultSchema = z.union([
+  agentModelRefSchema,
+  z.literal("session"),
+]);
+
+export const agentTaskParamsSchema = z.object({
+  maxTokens: z.number().int().min(1).max(32_768),
+  temperature: z.number().min(0).max(2),
+});
+
+export const TASK_PROMPT_MAX_CHARS = 20_000;
+
+export const agentTaskAdminSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  description: z.string(),
+  /** The kind the task belongs to, or `null` for one every kind shares. */
+  kind: z.string().nullable(),
+  model: z.object({
+    default: taskModelDefaultSchema,
+    override: agentModelRefSchema.nullable(),
+    effective: taskModelDefaultSchema,
+  }),
+  /** `null` for a task whose prompt is not the operator's to write (compaction uses Pi's own). */
+  prompt: z
+    .object({
+      default: z.string(),
+      override: z.string().nullable(),
+    })
+    .nullable(),
+  /** `null` for a task whose call Pi shapes itself (compaction, branch summary). */
+  params: z
+    .object({
+      default: agentTaskParamsSchema,
+      override: agentTaskParamsSchema.partial(),
+      effective: agentTaskParamsSchema,
+    })
+    .nullable(),
+  updatedAt: z.number().nullable(),
+});
+
+export const listAgentTasksAdminContract = oc
+  .errors(errors)
+  .output(z.array(agentTaskAdminSchema));
+
+/** `null` clears an override; an absent key leaves it alone; `params` replaces the whole override. */
+export const updateAgentTaskAdminContract = oc
+  .errors(writeErrors)
+  .input(
+    z.object({
+      id: z.string().min(1),
+      model: agentModelRefSchema.nullable().optional(),
+      systemPrompt: z
+        .string()
+        .min(1)
+        .max(TASK_PROMPT_MAX_CHARS)
+        .nullable()
+        .optional(),
+      params: agentTaskParamsSchema.partial().optional(),
+    })
+  )
+  .output(agentTaskAdminSchema);
+
+/** The models a task may be pinned to: the house gateway's catalogue, no caller key involved. */
+export const listAgentTaskModelsAdminContract = oc
+  .errors(errors)
+  .output(z.array(agentModelInfoSchema));
+
+export type AgentKindAdmin = z.infer<typeof agentKindAdminSchema>;
+export type AgentTaskAdmin = z.infer<typeof agentTaskAdminSchema>;
+export type AgentTaskParamsInput = z.infer<typeof agentTaskParamsSchema>;

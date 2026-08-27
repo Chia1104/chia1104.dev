@@ -26,12 +26,15 @@ export const AGENT_KINDS = {
 /** `AGENT_KINDS` keyed by the database string; a `Map` keeps prototype names from matching. */
 const entries = new Map<string, AgentKindEntry>(Object.entries(AGENT_KINDS));
 
-const definitions = new Map<string, Promise<AgentKindDefinition<unknown>>>();
+const definitions = new Map<
+  string,
+  Promise<AgentKindDefinition<unknown, object>>
+>();
 
 /** The loaded definition for `kind`, or `undefined` when this process has none. */
 export const loadAgentKind = (
   kind: string
-): Promise<AgentKindDefinition<unknown>> | undefined => {
+): Promise<AgentKindDefinition<unknown, object>> | undefined => {
   const entry = entries.get(kind);
   if (!entry) return undefined;
   let loading = definitions.get(kind);

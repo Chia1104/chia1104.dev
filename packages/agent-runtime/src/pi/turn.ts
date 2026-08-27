@@ -47,6 +47,11 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   model: Model<Api>;
   /** Must be the same credential-bearing collection that resolved `model`. */
   models: Models;
+  /**
+   * The model the end-of-turn compaction summarises with; `model` when omitted. A house gateway
+   * model is always resolvable on `models`, which is what lets the host pin compaction there.
+   */
+  compactionModel?: Model<Api>;
   tools: AgentTool<TContext>[];
   toolContext: ToolContextSource<TContext>;
   /**
@@ -115,6 +120,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   settings,
   model,
   models,
+  compactionModel,
   tools,
   toolContext: toolContextSource,
   systemPrompt: prompt,
@@ -362,8 +368,14 @@ export const runPiTurn = async <TContext extends object, TApproval>({
 
     if (!failure && !aborted && approvals.length === 0) {
       try {
+        const summariser = compactionModel ?? model;
         const compacted = await compactSessionIfNeeded(
-          { session, models, model, thinkingLevel },
+          {
+            session,
+            models,
+            model: summariser,
+            thinkingLevel: clampSessionThinkingLevel(summariser, settings),
+          },
           model.contextWindow
         );
         if (compacted) onEvent({ type: "session:compacted", ...compacted });

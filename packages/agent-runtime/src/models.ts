@@ -60,6 +60,9 @@ export const isByokProviderId = (
  */
 export type AgentCredentials = Partial<Record<ByokProviderId, string>>;
 
+/** A resolved Pi model, as hosts that do not depend on pi-ai directly name it. */
+export type AgentModel = Model<Api>;
+
 /** Identifies a model. Both halves are required — see {@link resolveModel}. */
 export interface AgentModelRef {
   providerId: string;

@@ -42,6 +42,11 @@ import { user } from "./user.schema.ts";
  * `memory` is the writing agent's long-term memory, the one table here that outlives a
  * session: sources it read, facts it verified and lessons distilled from the operator's
  * feedback. It is indexed into `resource_chunk` like any other resource.
+ *
+ * `kind_config` and `task_config` hold the operator's overrides of what the code registers:
+ * a kind's defaults for new sessions and a task's model, prompt and sampling parameters. Kinds
+ * and tasks themselves stay code; a row only ever narrows or re-points what a definition
+ * already allows, and no row means the definition's own values apply.
  */
 
 // ============================================
@@ -304,6 +309,63 @@ export const agentMemories = agentSchema.table(
 );
 
 export type AgentMemory = InferSelectModel<typeof agentMemories>;
+
+// ============================================
+// Operator configuration
+// ============================================
+
+/**
+ * The operator's overrides of one agent kind's defaults for *new* sessions. A session copies
+ * the effective defaults onto its own row when it is created, so a change here never touches a
+ * session that already exists.
+ *
+ * `kind` matches the host's registry key; there is no row for a kind the process does not
+ * serve, and a row for an unregistered kind is inert. The LLM columns are nullable so the
+ * definition's own value applies wherever the operator has not chosen; `config` is the kind's
+ * own shape, validated by the kind's schema at write time.
+ */
+export const agentKindConfigs = agentSchema.table("kind_config", {
+  kind: text("kind").primaryKey(),
+  providerId: text("provider_id"),
+  modelId: text("model_id"),
+  thinkingLevel: text("thinking_level"),
+  /** `null` defers to the definition; a session created with an explicit list still wins. */
+  autoApprove: jsonb("auto_approve").$type<string[] | null>(),
+  config: jsonb("config").$type<JsonObject>().notNull().default({}),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type AgentKindConfig = InferSelectModel<typeof agentKindConfigs>;
+
+/** Sampling parameters an operator may override on a task; every field optional. */
+export interface AgentTaskParams {
+  maxTokens?: number;
+  temperature?: number;
+}
+
+/**
+ * The operator's overrides of one task — a named, one-shot model call such as the session
+ * title or lesson extraction. `task_id` is the host's registry key. `provider_id` and
+ * `model_id` are set together or not at all: a task is resolved on the house gateway, never on
+ * a caller's own key, so the pair is validated against that catalogue when written.
+ */
+export const agentTaskConfigs = agentSchema.table("task_config", {
+  taskId: text("task_id").primaryKey(),
+  providerId: text("provider_id"),
+  modelId: text("model_id"),
+  /** Replaces the task's default system prompt; `null` restores it. */
+  systemPrompt: text("system_prompt"),
+  params: jsonb("params").$type<AgentTaskParams>().notNull().default({}),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type AgentTaskConfig = InferSelectModel<typeof agentTaskConfigs>;
 
 // ============================================
 // Agent Tool Approval

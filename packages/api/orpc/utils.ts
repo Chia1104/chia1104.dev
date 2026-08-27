@@ -5,6 +5,7 @@ import GithubSlugger from "github-slugger";
 import type { ServiceContext } from "@chia/service-kit/context";
 
 import { routerContract } from "./router.contract";
+import type { AgentAdminService } from "./services/agent-admin.service";
 import type { AgentKindService } from "./services/agent.service";
 import type { IndexingService } from "./services/indexing.service";
 import type { MemoryService } from "./services/memory.service";
@@ -64,6 +65,8 @@ export interface BaseOSContext extends ServiceContext {
   memory?: MemoryService;
   /** Agent kind services, keyed by `agent.session.kind`. */
   agentKinds?: Readonly<Record<string, AgentKindService>>;
+  /** Operator configuration of kinds and tasks. Needs the host's registries. */
+  agentAdmin?: AgentAdminService;
 }
 
 export const baseOS = os.$context<BaseOSContext>();

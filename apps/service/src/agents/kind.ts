@@ -1,5 +1,8 @@
+import type * as z from "zod";
+
 import type { createAgentModels } from "@chia/agent-runtime/models";
 import type {
+  AgentModel,
   AgentModelInfo,
   AgentModelRef,
   ListModelsOptions,
@@ -7,9 +10,6 @@ import type {
 import type { ApprovalRequest } from "@chia/agent-runtime/pi/tool-gate";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import type {
-  AgentCompactionResult,
-  AgentNavigationOptions,
-  AgentNavigationResult,
   AgentPolicy,
   AgentSessionDefaults,
   AgentSessionSettings,
@@ -29,15 +29,22 @@ import type { CallerTier } from "@chia/service-kit/policies/caller.policy";
  * What one agent kind contributes to the host.
  *
  * Everything an `AgentKindService` does that is not about *this* kind — session rows, durable
- * runs, streaming, abort, approvals, the turn step's bookkeeping — is generic and lives in
- * `./service.ts` and `steps/agent-turn.step.ts`. A kind supplies only the parts that differ:
- * its defaults and policy, which models it admits, the 1:1 state row it keeps beside
- * `agent.session`, and the Pi turn it runs. The definition composes the domain package with the
- * host's ports, which is why it lives in the app and not in the domain package.
+ * runs, streaming, abort, approvals, compaction and rewind, the turn step's bookkeeping — is
+ * generic and lives in `./service.ts` and `steps/agent-turn.step.ts`. A kind supplies only the
+ * parts that differ: its defaults and policy, which models it admits, its operator
+ * configuration, the 1:1 state row it keeps beside `agent.session`, and the Pi turn it runs.
+ * The definition composes the domain package with the host's ports, which is why it lives in
+ * the app and not in the domain package.
+ *
+ * `defaults` and `config` are the code's values. The operator overrides them per kind in
+ * `agent.kind_config`; `./config.ts` resolves the effective ones.
  */
-export interface AgentKindDefinition<TState> {
+export interface AgentKindDefinition<TState, TConfig extends object> {
   /** `agent.session.kind`. */
   readonly kind: string;
+  /** Operator-facing name and one-line purpose, for the dashboard's agent workspace. */
+  readonly label: string;
+  readonly description: string;
   /**
    * Lowest {@link CallerTier} allowed to touch this kind at all. Never below `Session`: sessions
    * are owned by a user, so an anonymous or API-key caller has no owner to be. Restated on the
@@ -51,19 +58,26 @@ export interface AgentKindDefinition<TState> {
     /** Throws `UnknownAgentModelError` when the kind does not admit the pair or it does not exist. */
     assert(ref: AgentModelRef): void;
     list(options: ListModelsOptions): AgentModelInfo[];
+    /** Resolves an admitted pair on the caller's credential-bearing collection; throws like `assert`. */
+    resolve(ref: AgentModelRef, models: AgentModels): AgentModel;
   };
+  readonly config: AgentKindConfigDefinition<TConfig>;
   capabilities(): AgentKindCapabilities;
   readonly state: AgentKindState<TState>;
   runTurn<TApproval>(
-    context: AgentTurnContext<TState, TApproval>
+    context: AgentTurnContext<TState, TConfig, TApproval>
   ): Promise<AgentTurnExecution<TApproval>>;
-  maintenance(options: AgentSessionOperationOptions): {
-    compact(customInstructions?: string): Promise<AgentCompactionResult>;
-    navigate(
-      entryId: string,
-      options: AgentNavigationOptions
-    ): Promise<AgentNavigationResult>;
-  };
+}
+
+/**
+ * The kind's operator configuration: what the dashboard may change about this kind without a
+ * deploy. Preferences only — tool tiers, the approval policy, the turn budget and the model
+ * allowlist are safety boundaries and stay in code. `schema` validates the operator's write
+ * and is sent to the dashboard as JSON Schema, so a new field needs no contract change.
+ */
+export interface AgentKindConfigDefinition<TConfig extends object> {
+  readonly schema: z.ZodType<TConfig>;
+  readonly defaults: TConfig;
 }
 
 export type AgentKindCapabilities = Awaited<
@@ -122,21 +136,18 @@ export type AgentCreateSessionInput = Parameters<
 
 export type AgentModels = ReturnType<typeof createAgentModels>;
 
-export interface AgentSessionOperationOptions {
-  session: SessionTree;
-  settings: AgentSessionSettings;
-  models: AgentModels;
-}
-
 /**
  * Everything the turn step has resolved before handing the turn to the kind: the owned session
- * row and its state, the opened session tree, the caller's credential-bearing models, and the
- * host-side approval plumbing. The kind adds its tools, ports and prompts and runs Pi.
+ * row and its state, the kind's effective configuration, the opened session tree, the caller's
+ * credential-bearing models, and the host-side approval plumbing. The kind adds its tools, ports
+ * and prompts and runs Pi.
  */
-export interface AgentTurnContext<TState, TApproval> {
+export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
   db: DB;
   row: AgentSession;
   state: TState;
+  /** The operator's kind configuration as of this turn; see `./config.ts`. */
+  config: TConfig;
   settings: AgentSessionSettings;
   session: SessionTree;
   models: AgentModels;
@@ -157,5 +168,5 @@ export interface AgentTurnContext<TState, TApproval> {
  */
 export interface AgentKindEntry {
   readonly minTier: CallerTier;
-  load(): Promise<AgentKindDefinition<unknown>>;
+  load(): Promise<AgentKindDefinition<unknown, object>>;
 }

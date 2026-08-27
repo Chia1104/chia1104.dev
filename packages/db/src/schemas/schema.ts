@@ -100,6 +100,8 @@ export {
   writingAgentDrafts,
   agentToolApprovals,
   agentMemories,
+  agentKindConfigs,
+  agentTaskConfigs,
   AGENT_MEMORY_KIND,
   AGENT_MEMORY_STATUS,
   type AgentMemory,
@@ -113,6 +115,9 @@ export {
   type WritingAgentDraft,
   type AgentToolApproval,
   type AgentApprovalStatus,
+  type AgentKindConfig,
+  type AgentTaskConfig,
+  type AgentTaskParams,
 } from "./agent.schema.ts";
 
 // Relations
