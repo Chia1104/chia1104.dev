@@ -37,20 +37,21 @@ const usage = ({
   costTotal?: number;
   input: number;
   output: number;
-}): Usage => ({
-  input,
-  output,
-  cacheRead,
-  cacheWrite,
-  totalTokens: input + output + cacheRead + cacheWrite,
-  cost: {
-    input: 0,
-    output: 0,
-    cacheRead: 0,
-    cacheWrite: 0,
-    total: costTotal,
-  },
-});
+}) =>
+  ({
+    input,
+    output,
+    cacheRead,
+    cacheWrite,
+    totalTokens: input + output + cacheRead + cacheWrite,
+    cost: {
+      input: 0,
+      output: 0,
+      cacheRead: 0,
+      cacheWrite: 0,
+      total: costTotal,
+    },
+  }) satisfies Usage;
 
 const db =
   /* SAFETY: This fixture implements the DB members exercised by this case. */ {} as DB;
@@ -162,31 +163,29 @@ describe("PgSessionStorage", () => {
   });
 
   it("counts cached, written and compaction tokens as total processed", async () => {
-    getEntriesMock.mockResolvedValue(
-      /* SAFETY: These rows implement the repository shape exercised by this case. */ [
-        row(1, "entry-1", null, "message", {
-          message: { role: "user", content: "Hello" },
-        }),
-        row(2, "entry-2", "entry-1", "message", {
-          message: {
-            role: "assistant",
-            content: [{ type: "text", text: "Hi" }],
-            usage: usage({
-              input: 100,
-              output: 20,
-              cacheRead: 300,
-              cacheWrite: 40,
-              costTotal: 0.5,
-            }),
-          },
-        }),
-        row(3, "entry-3", "entry-2", "compaction", {
-          summary: "Summary",
-          tokensBefore: 460,
-          usage: usage({ input: 10, output: 5, costTotal: 0.1 }),
-        }),
-      ] as never
-    );
+    getEntriesMock.mockResolvedValue([
+      row(1, "entry-1", null, "message", {
+        message: { role: "user", content: "Hello" },
+      }),
+      row(2, "entry-2", "entry-1", "message", {
+        message: {
+          role: "assistant",
+          content: [{ type: "text", text: "Hi" }],
+          usage: usage({
+            input: 100,
+            output: 20,
+            cacheRead: 300,
+            cacheWrite: 40,
+            costTotal: 0.5,
+          }),
+        },
+      }),
+      row(3, "entry-3", "entry-2", "compaction", {
+        summary: "Summary",
+        tokensBefore: 460,
+        usage: usage({ input: 10, output: 5, costTotal: 0.1 }),
+      }),
+    ]);
 
     const stats = await storage().getSessionStats();
 
