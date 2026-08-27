@@ -73,7 +73,7 @@ const COLUMNS = [
   { uid: "title", name: "Title", minWidth: 288 },
   { uid: "preview", name: "Preview", minWidth: 320 },
   { uid: "source", name: "Source", minWidth: 160 },
-  { uid: "updatedAt", name: "Updated", minWidth: 128 },
+  { uid: "updatedAt", name: "Updated", minWidth: 180 },
 ];
 
 const STATUS_COLOR = {
