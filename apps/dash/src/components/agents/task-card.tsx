@@ -122,8 +122,8 @@ export const TaskCard = ({
   const prompt = watch("prompt");
 
   return (
-    <Card className="w-full">
-      <Form onSubmit={onSubmit}>
+    <Card className="w-full" variant="secondary">
+      <Form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Card.Header>
           <div className="flex flex-wrap items-center gap-2">
             <Card.Title className="text-base">{task.label}</Card.Title>

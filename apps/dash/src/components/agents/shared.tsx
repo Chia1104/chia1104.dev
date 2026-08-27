@@ -63,9 +63,7 @@ export const ModelSelect = ({
   value,
 }: ModelSelectProps) => (
   <ModelPicker
-    className="border-border h-9 rounded-lg border px-3"
     fallback={{ label: `Default — ${defaultLabel}` }}
-    fullWidth
     isDisabled={isDisabled}
     models={models}
     onChange={onChange}

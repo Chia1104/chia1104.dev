@@ -143,8 +143,8 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
   const autoApprove = watch("autoApprove");
 
   return (
-    <Card className="w-full">
-      <Form onSubmit={onSubmit}>
+    <Card className="w-full" variant="secondary">
+      <Form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Card.Header>
           <div className="flex flex-wrap items-center gap-2">
             <Card.Title className="text-base">{kind.label}</Card.Title>
@@ -194,7 +194,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
               control={control}
               name="thinkingLevel"
               render={({ field }) => (
-                <div className="flex flex-col gap-1">
+                <div className="flex w-full max-w-md flex-col gap-1">
                   <ThinkingSlider
                     isDisabled={busy}
                     onChange={field.onChange}
@@ -206,6 +206,7 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
                     </span>
                     {field.value !== null ? (
                       <Button
+                        className="h-6 text-xs"
                         isDisabled={busy}
                         size="sm"
                         variant="ghost"
