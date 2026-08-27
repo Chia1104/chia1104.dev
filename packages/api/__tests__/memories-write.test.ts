@@ -13,10 +13,10 @@ const { repo } = vi.hoisted(() => ({
 
 vi.mock("@chia/db/repos/agent/memory", () => repo);
 
-const { hasResourceChunks } = vi.hoisted(() => ({
-  hasResourceChunks: vi.fn(async () => true),
+const { isResourceIndexedSince } = vi.hoisted(() => ({
+  isResourceIndexedSince: vi.fn(async () => true),
 }));
-vi.mock("@chia/db/repos/resources/chunk", () => ({ hasResourceChunks }));
+vi.mock("@chia/db/repos/resources/chunk", () => ({ isResourceIndexedSince }));
 
 const {
   createMemoryService,
@@ -99,12 +99,25 @@ describe("memory write services", () => {
     expect(() => normalizeSourceUrl("not a url")).toThrow("absolute URL");
   });
 
-  it("re-indexes a source when the page text changed, or when it was never indexed", async () => {
-    repo.upsertSourceMemory.mockResolvedValueOnce({ id: 9, changed: true });
-    repo.upsertSourceMemory.mockResolvedValueOnce({ id: 9, changed: false });
-    repo.upsertSourceMemory.mockResolvedValueOnce({ id: 9, changed: false });
-    hasResourceChunks.mockResolvedValueOnce(true);
-    hasResourceChunks.mockResolvedValueOnce(false);
+  it("re-indexes a source when the page text changed, or when the index is older than the row", async () => {
+    const updatedAt = new Date("2026-08-27T00:00:00Z");
+    repo.upsertSourceMemory.mockResolvedValueOnce({
+      id: 9,
+      changed: true,
+      updatedAt,
+    });
+    repo.upsertSourceMemory.mockResolvedValueOnce({
+      id: 9,
+      changed: false,
+      updatedAt,
+    });
+    repo.upsertSourceMemory.mockResolvedValueOnce({
+      id: 9,
+      changed: false,
+      updatedAt,
+    });
+    isResourceIndexedSince.mockResolvedValueOnce(true);
+    isResourceIndexedSince.mockResolvedValueOnce(false);
     const input = {
       sourceUrl: "https://example.com/#top",
       title: "Example",
@@ -114,12 +127,17 @@ describe("memory write services", () => {
 
     await recordSourceMemoryService(db, input, { onMemoryChanged });
     await recordSourceMemoryService(db, input, { onMemoryChanged });
-    // a hook that failed after the row landed leaves no chunks; the next visit retries
+    // a hook that failed after the row landed leaves the index behind the row, whether
+    // there are no chunks or stale ones; the next visit retries
     await recordSourceMemoryService(db, input, { onMemoryChanged });
 
     expect(repo.upsertSourceMemory).toHaveBeenCalledWith(
       db,
       expect.objectContaining({ sourceUrl: "https://example.com/" })
+    );
+    expect(isResourceIndexedSince).toHaveBeenCalledWith(
+      db,
+      expect.objectContaining({ since: updatedAt })
     );
     expect(onMemoryChanged).toHaveBeenCalledTimes(2);
   });

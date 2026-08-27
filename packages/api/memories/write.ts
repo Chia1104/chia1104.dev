@@ -5,7 +5,7 @@ import {
   updateAgentMemory,
   upsertSourceMemory,
 } from "@chia/db/repos/agent/memory";
-import { hasResourceChunks } from "@chia/db/repos/resources/chunk";
+import { isResourceIndexedSince } from "@chia/db/repos/resources/chunk";
 import type { AgentMemory } from "@chia/db/schema";
 import type { AgentMemoryKind, AgentMemoryStatus } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
@@ -111,10 +111,11 @@ export interface RecordSourceMemoryServiceInput {
 }
 
 /**
- * The `fetch_url` trail: one row per page, refreshed on every visit. The index run is
- * scheduled when the stored text changed, and also when the page has no chunks at all: the
- * row lands before the hook runs, so a hook that failed once would otherwise leave the page
- * unindexed until its text happened to change.
+ * The `fetch_url` trail: one row per page, rewritten when the page changed. The index run is
+ * scheduled when the text changed, and also whenever the index is older than the row: the
+ * row lands before the hook runs, so a hook that failed once — on a first visit or after a
+ * change — would otherwise leave stale or missing chunks until the text happened to change
+ * again.
  */
 export const recordSourceMemoryService = async (
   db: DB,
@@ -130,14 +131,15 @@ export const recordSourceMemoryService = async (
 
   if (
     result.changed ||
-    !(await hasResourceChunks(db, {
+    !(await isResourceIndexedSince(db, {
       ref: { sourceType: AGENT_MEMORY_SOURCE_TYPE, sourceId: result.id },
+      since: result.updatedAt,
     }))
   ) {
     await hooks.onMemoryChanged?.(result.id);
   }
 
-  return result;
+  return { id: result.id, changed: result.changed };
 };
 
 export interface UpdateMemoryServiceInput {

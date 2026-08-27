@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 
 import type { Locale } from "../../schemas/enums.ts";
 import type { ResourceChunkKind } from "../../schemas/resources.schema.ts";
@@ -253,13 +253,20 @@ export const replaceResourceChunks = withDTO(
   }
 );
 
-/** Whether a resource has been indexed at all — the cheapest "did the index run ever land" check. */
-export const hasResourceChunks = withDTO(
-  async (db, dto: { ref: ResourceRef }): Promise<boolean> => {
+/**
+ * Whether the index reflects a source row last written at `since`.
+ *
+ * `replaceResourceChunks` touches every surviving chunk's `updated_at` on each run, moved
+ * and unchanged ones included, so one chunk written after the row is proof the run landed
+ * — and no such chunk, whether the resource was never indexed or its run failed after a
+ * content change, means the index is behind.
+ */
+export const isResourceIndexedSince = withDTO(
+  async (db, dto: { ref: ResourceRef; since: Date }): Promise<boolean> => {
     const [row] = await db
       .select({ id: chunks.id })
       .from(chunks)
-      .where(sourceFilter(dto.ref))
+      .where(and(sourceFilter(dto.ref), gte(chunks.updatedAt, dto.since)))
       .limit(1);
     return row !== undefined;
   }

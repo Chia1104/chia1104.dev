@@ -133,29 +133,18 @@ export interface UpsertSourceMemoryDTO {
  *
  * `ON CONFLICT` names the same predicate as the partial unique index
  * (`agent_memory_source_url_idx`), which is what lets Postgres pick it as the arbiter. A
- * revisit refreshes title and content but keeps the first session as provenance.
+ * revisit writes only when title or content differ (`setWhere`), so `updated_at` means "last
+ * content change" — which is what the index freshness check compares against — and the
+ * first session stays as provenance.
  *
- * `changed` is read before the write rather than inside it: two parallel fetches of one URL
- * can both see no row and both report `changed`, which costs one redundant index run and
- * nothing else — the alternative is a data-modifying CTE for a race that indexes idempotently.
+ * `changed` is whether a row was written. Two parallel fetches of one URL can both see no
+ * row and both insert-or-update; the loser's `setWhere` finds identical content and skips.
  */
 export const upsertSourceMemory = async (
   db: DB,
   input: UpsertSourceMemoryDTO
-): Promise<{ id: number; changed: boolean }> => {
-  const [existing] = await db
-    .select({ title: agentMemories.title, content: agentMemories.content })
-    .from(agentMemories)
-    .where(
-      and(
-        eq(agentMemories.sourceUrl, input.sourceUrl),
-        eq(agentMemories.kind, AGENT_MEMORY_KIND.Source),
-        live()
-      )
-    )
-    .limit(1);
-
-  const [row] = await db
+): Promise<{ id: number; changed: boolean; updatedAt: Date }> => {
+  const [written] = await db
     .insert(agentMemories)
     .values({
       kind: AGENT_MEMORY_KIND.Source,
@@ -172,17 +161,27 @@ export const upsertSourceMemory = async (
         content: input.content,
         updatedAt: new Date(),
       },
+      setWhere: sql`${agentMemories.title} is distinct from excluded.title or ${agentMemories.content} is distinct from excluded.content`,
     })
-    .returning({ id: agentMemories.id });
-  if (!row) throw new Error("Source memory was not upserted.");
+    .returning({ id: agentMemories.id, updatedAt: agentMemories.updatedAt });
+  if (written) {
+    return { id: written.id, updatedAt: written.updatedAt, changed: true };
+  }
 
-  return {
-    id: row.id,
-    changed:
-      !existing ||
-      existing.title !== input.title ||
-      existing.content !== input.content,
-  };
+  // the conflict target skipped the update: the stored page is identical
+  const [existing] = await db
+    .select({ id: agentMemories.id, updatedAt: agentMemories.updatedAt })
+    .from(agentMemories)
+    .where(
+      and(
+        eq(agentMemories.sourceUrl, input.sourceUrl),
+        eq(agentMemories.kind, AGENT_MEMORY_KIND.Source),
+        live()
+      )
+    )
+    .limit(1);
+  if (!existing) throw new Error("Source memory was not upserted.");
+  return { id: existing.id, updatedAt: existing.updatedAt, changed: false };
 };
 
 export interface AgentMemorySummary {

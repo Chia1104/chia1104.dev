@@ -460,7 +460,7 @@ system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatil
 整個由 host 實作（`apps/service/src/services/agent-memory.port.ts`）：寫入走
 `packages/api/memories/write.ts`，索引 hook 是必填參數（同 `feeds/write.ts`），每次改到 row 的
 寫入都對 `agent_memory` 這個 resource type 排一次 `indexResourceWorkflow`（`docs/rag-architecture.md`
-§2.4）——文字沒變的 `source` 重訪不排，除非這頁還沒有任何 chunk，那是 hook 曾經失敗時的補救。只有
+§2.4）——文字沒變的 `source` 重訪不排，除非索引比 row 舊（`isResourceIndexedSince`），那是 hook 曾經失敗——首次或改動之後——時的補救。只有
 live 且 `active` 的記憶會被索引：pending 的 lesson 未經審核，而索引就是 agent context。`save_memory` 歸 `draft` tier——可逆、部落格看不到——而且只寫 `fact`。
 
 `fetch_url` 讀過的每一頁都經同一個 port 留下一筆 `source`——URL、標題、整頁文字（上限 64k

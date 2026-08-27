@@ -518,8 +518,9 @@ implemented entirely by the host (`apps/service/src/services/agent-memory.port.t
 through `packages/api/memories/write.ts`, which takes the index hook as a required argument the
 way `feeds/write.ts` does, and every write that changes a row schedules
 `indexResourceWorkflow` for the `agent_memory` resource type (`docs/rag-architecture.md`
-§2.4) — a `source` revisit whose text is unchanged schedules nothing unless the page has no
-chunks yet, which is how a hook that once failed gets a second chance. Only live, `active`
+§2.4) — a `source` revisit whose text is unchanged schedules nothing unless the index is older
+than the row (`isResourceIndexedSince`), which is how a hook that once failed, on a first
+visit or after a change, gets a second chance. Only live, `active`
 memories are indexed: a pending lesson is unreviewed and the index is agent context.
 `save_memory` sits in the `draft` tier — reversible, invisible to the blog — and only ever
 writes a `fact`.
