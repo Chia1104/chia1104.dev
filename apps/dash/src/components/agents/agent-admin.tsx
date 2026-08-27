@@ -38,14 +38,14 @@ export const AgentAdmin = () => {
       ? "Every agent"
       : (kinds.data?.find((k) => k.kind === kind)?.label ?? kind);
 
-  if (kinds.isLoading || tasks.isLoading) {
+  if (kinds.isLoading || tasks.isLoading || taskModels.isLoading) {
     return (
       <div className="flex justify-center py-12">
         <Spinner size="sm" />
       </div>
     );
   }
-  const error = kinds.error ?? tasks.error;
+  const error = kinds.error ?? tasks.error ?? taskModels.error;
   if (error) {
     return <p className="text-danger py-8 text-sm">{error.message}</p>;
   }

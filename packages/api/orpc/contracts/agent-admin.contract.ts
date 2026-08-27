@@ -10,11 +10,8 @@ import {
 /**
  * Operator configuration of agent kinds and tasks — the dashboard's agent workspace.
  *
- * RPC-only and admin-only, like the memory contract: what is configured here changes what
- * every future session and side job does. Every view carries three layers — what the code
- * registers (`default`/`code`), what the operator wrote (`override`) and the result
- * (`effective`) — so the dashboard can show a value, say whether it is overridden and offer
- * to reset it, without restating the resolution rule client-side.
+ * RPC-only and admin-only, like the memory contract. Every view carries `code`/`default`,
+ * `override` and `effective`, so the client never restates the resolution rule.
  */
 
 const errors = { UNAUTHORIZED: {}, FORBIDDEN: {}, SERVICE_UNAVAILABLE: {} };

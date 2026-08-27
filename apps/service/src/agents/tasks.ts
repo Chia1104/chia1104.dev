@@ -29,18 +29,14 @@ import type { AgentModels } from "./kind";
 /**
  * The agent tasks this process runs — the one place a task is registered.
  *
- * A task is a named, one-shot model call that rides alongside a session rather than being one:
- * naming a session, extracting lessons, compacting a transcript. What they share is not how
- * they run — one is `completeSimple`, another is Pi's `compact()` — but what the operator
- * wants to choose about them: the model, the prompt where there is one, and the sampling
- * parameters. A definition states the code's choice for each; `agent.task_config` holds the
- * operator's override; {@link resolveAgentTask} is the one place the two meet.
+ * A task is a one-shot model call beside a session (title, lesson extraction, compaction): a
+ * model slot plus, where the call exposes them, a prompt and sampling parameters. The
+ * definition is the code's choice, `agent.task_config` the operator's override, and
+ * {@link resolveAgentTask} the only place the two meet.
  *
- * Like `AGENT_KINDS`, a task is code and a row only re-points it: the step that runs the task
- * ships with the deployment, so nothing here can be created from the dashboard.
- *
- * This module imports prompt text from the domain packages, so it is loaded on first use — by
- * the steps that run tasks and by the admin service — and never at boot.
+ * Like `AGENT_KINDS`, a task is code and a row only re-points it: the step that runs it ships
+ * with the deployment. This module imports prompt text from the domain packages, so it is
+ * loaded on first use — by the steps and the admin service — never at boot.
  */
 
 export interface AgentTaskParamsResolved {

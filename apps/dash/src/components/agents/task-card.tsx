@@ -17,6 +17,8 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { TASK_PROMPT_MAX_CHARS } from "@chia/api/orpc/contracts/agent-admin.contract";
+
 import { orpc } from "@/libs/orpc/client";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
@@ -42,7 +44,7 @@ const SESSION_MODEL_LABEL = "the session's own model";
  */
 const taskFormSchema = z.object({
   model: modelRefSchema.nullable(),
-  prompt: z.string(),
+  prompt: z.string().max(TASK_PROMPT_MAX_CHARS),
   maxTokens: z.number().int().min(1).max(32_768).nullable(),
   temperature: z.number().min(0).max(2).nullable(),
 });
@@ -171,7 +173,7 @@ export const TaskCard = ({
             <Controller
               control={control}
               name="prompt"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs">System prompt</Label>
@@ -193,11 +195,13 @@ export const TaskCard = ({
                     aria-label={`${task.label} system prompt`}
                     className="font-mono text-xs"
                     disabled={busy}
+                    maxLength={TASK_PROMPT_MAX_CHARS}
                     onBlur={field.onBlur}
                     onChange={(event) => field.onChange(event.target.value)}
                     rows={10}
                     value={field.value}
                   />
+                  <FieldError>{fieldState.error?.message}</FieldError>
                 </div>
               )}
             />

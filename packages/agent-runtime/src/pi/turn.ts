@@ -32,7 +32,10 @@ import type {
 } from "../types.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
-import { compactSessionIfNeeded } from "./compaction.ts";
+import {
+  compactionContextWindow,
+  compactSessionIfNeeded,
+} from "./compaction.ts";
 import { errorOfAssistantMessage, errorOfThrown } from "./errors.ts";
 import { createPiWireEventMapper } from "./events.ts";
 import { clampSessionThinkingLevel } from "./settings.ts";
@@ -376,7 +379,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
             model: summariser,
             thinkingLevel: clampSessionThinkingLevel(summariser, settings),
           },
-          model.contextWindow
+          compactionContextWindow(model, summariser)
         );
         if (compacted) onEvent({ type: "session:compacted", ...compacted });
       } catch {

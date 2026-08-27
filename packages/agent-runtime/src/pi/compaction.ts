@@ -17,6 +17,17 @@ import type { SessionTree } from "../session/tree.ts";
 import { estimateBranchContextTokens } from "../session/usage.ts";
 import type { AgentCompactionResult } from "../types.ts";
 
+/**
+ * The window the compaction threshold is measured against when the summariser is not the
+ * session's model: the smaller of the two. The session model's window is what the branch
+ * fills; the summariser must still be able to read the whole branch it condenses, so a
+ * smaller summariser brings compaction forward rather than being handed more than it can take.
+ */
+export const compactionContextWindow = (
+  model: Pick<Model<Api>, "contextWindow">,
+  summariser: Pick<Model<Api>, "contextWindow">
+): number => Math.min(model.contextWindow, summariser.contextWindow);
+
 /** Whether the active branch has crossed Pi's own compaction threshold. */
 export const shouldCompactBranch = (
   entries: readonly SessionEntry[],
