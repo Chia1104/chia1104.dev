@@ -59,11 +59,13 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before touchi
 - **`agent-elements`** — the client side, shared by both frontends. It depends on `@chia/agent-runtime/wire/*`, the contract types, the tool registries and HeroUI; the host passes its own `client.agent` and keeps kind-specific panels (the writing draft preview) on its side.
   - `./store` — `createAgentSessionStore`, a zustand vanilla store per session owning only the live side: folded transcript, connection, the `agent.sessions.chat` stream loop, prompt and approve.
   - `./queries` — TanStack Query options and keys for the server side (session detail, models). The store reads and refreshes them through the host's `QueryClient`, so cache and store never disagree.
-  - `./provider` — `AgentSessionProvider` and the hooks over it.
+  - `./provider` — `AgentSessionProvider` and the hooks over it. It mounts an `AgentLabelsProvider` for its subtree.
   - `./labels` — `AgentLabels` is the shape of `@chia/i18n/agent-elements/en-US.json`. The host passes its locale's catalog (or a partial override) as `labels`, `setLabels` swaps it on a locale change, and `fill` resolves `{tool}`/`{tier}` templates.
+  - `./labels-context` — `AgentLabelsProvider` / `useAgentLabels`, the catalog as context on its own, so an element that only needs strings can be mounted without a session; with no provider the `en-US` catalog applies.
+  - `./model-picker` is controlled (`models`, `value`, `onChange`, an optional `fallback` row for "no choice") and needs only the labels context — `apps/dash`'s agent workspace uses it as a form field; `./session-model-picker` binds it to the mounted session and persists every choice.
   - `./markdown` — Streamdown with the code and CJK plugins. `markdownComponents` restates inline code, tables, quotes and rules in HeroUI tokens because Streamdown's defaults use shadcn's `muted`; hosts layer more through `components`.
   - `./renderers/content` and `./renderers/web` — per-tool views over the clipped `details` of the content read tools and the writing agent's web tools, keyed by the tool registries' names. A host merges the sets it needs into `Thread`'s `renderers`.
-  - One HeroUI element per remaining export (`./thread`, `./message`, `./tool-call`, `./approval-card`, `./composer`, `./model-picker`, …) — see the `exports` map.
+  - One HeroUI element per remaining export (`./thread`, `./message`, `./tool-call`, `./approval-card`, `./composer`, `./session-model-picker`, …) — see the `exports` map.
   - A host's Tailwind must `@source` this package's `src/**` **and** its `node_modules/{streamdown,@streamdown/*}/dist/*.js` (see `apps/dash/src/app/globals.css`).
 
 ### `contents`, `ui`, `editor`, `themes`, `tailwind`, `shaders`

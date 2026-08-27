@@ -2,10 +2,11 @@
 
 import { useCallback } from "react";
 
-import { Chip, ListBox, Select } from "@heroui/react";
+import { Chip } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import * as z from "zod";
 
+import { ModelPicker } from "@chia/agent-elements/model-picker";
 import { providerLabelOf } from "@chia/agent-elements/provider-icons";
 
 import { orpc } from "@/libs/orpc/client";
@@ -26,18 +27,6 @@ export const modelRefSchema = z.object({
 
 export type ModelRef = z.infer<typeof modelRefSchema>;
 
-/** The select's id for "no override"; a real pair always has a space in the middle. */
-export const DEFAULT_OPTION = "__default__";
-
-export const keyOf = (ref: ModelRef) => `${ref.providerId} ${ref.modelId}`;
-
-export const refOf = (key: string): ModelRef | null => {
-  if (key === DEFAULT_OPTION) return null;
-  const index = key.indexOf(" ");
-  if (index < 0) return null;
-  return { providerId: key.slice(0, index), modelId: key.slice(index + 1) };
-};
-
 export const modelLabel = (
   ref: ModelRef,
   models?: readonly AgentModelInfo[]
@@ -50,7 +39,6 @@ export const modelLabel = (
 };
 
 export interface ModelSelectProps {
-  label: string;
   /** What "Default" resolves to; shown in the row so the choice is never blind. */
   defaultLabel: string;
   models: readonly AgentModelInfo[] | undefined;
@@ -59,50 +47,32 @@ export interface ModelSelectProps {
   isDisabled?: boolean;
 }
 
+/** Providers the house account serves first; the rest follow alphabetically. */
+const PROVIDER_ORDER = ["vercel-ai-gateway", "anthropic", "openai"];
+
 /**
- * A model pair or the code default. Models a caller-supplied key would be needed for are
- * listed but disabled: the operator can see the option exists and why it is not available.
+ * The agent elements' model picker with a "Default" row on top: a pair, or `null` for the
+ * code default. Models a caller-supplied key would be needed for are listed but disabled, so
+ * the operator sees the option exists and why it is not available.
  */
 export const ModelSelect = ({
   defaultLabel,
   isDisabled,
-  label,
   models,
   onChange,
   value,
-}: ModelSelectProps) => {
-  const items = [
-    { id: DEFAULT_OPTION, label: `Default — ${defaultLabel}`, disabled: false },
-    ...(models ?? []).map((model) => ({
-      id: keyOf(model),
-      label: modelLabel(model, models),
-      disabled: model.requiresApiKey,
-    })),
-  ];
-  const disabledKeys = items.filter((i) => i.disabled).map((i) => i.id);
-  return (
-    <Select
-      aria-label={label}
-      className="w-full"
-      isDisabled={isDisabled}
-      onChange={(key) => onChange(refOf(String(key)))}
-      value={value ? keyOf(value) : DEFAULT_OPTION}>
-      <Select.Trigger>
-        <Select.Value />
-        <Select.Indicator />
-      </Select.Trigger>
-      <Select.Popover>
-        <ListBox disabledKeys={disabledKeys} items={items}>
-          {(item) => (
-            <ListBox.Item id={item.id} textValue={item.label}>
-              {item.label}
-            </ListBox.Item>
-          )}
-        </ListBox>
-      </Select.Popover>
-    </Select>
-  );
-};
+}: ModelSelectProps) => (
+  <ModelPicker
+    className="border-border h-9 rounded-lg border px-3"
+    fallback={{ label: `Default — ${defaultLabel}` }}
+    fullWidth
+    isDisabled={isDisabled}
+    models={models}
+    onChange={onChange}
+    providerOrder={PROVIDER_ORDER}
+    value={value}
+  />
+);
 
 export const OverriddenChip = ({ isOverridden }: { isOverridden: boolean }) =>
   isOverridden ? (

@@ -6,6 +6,7 @@ import { createContext, use, useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useStore } from "zustand";
 
+import { AgentLabelsProvider } from "./labels-context.tsx";
 import type { AgentLabels } from "./labels.ts";
 import {
   agentCapabilitiesQuery,
@@ -108,7 +109,13 @@ export const AgentSessionProvider = ({
     [client, kind, sessionId, store]
   );
 
-  return <AgentSessionContext value={value}>{children}</AgentSessionContext>;
+  // The store keeps its own copy for the messages it writes outside render (`connectionLost`);
+  // everything rendered reads the same catalog through the labels context.
+  return (
+    <AgentSessionContext value={value}>
+      <AgentLabelsProvider labels={labels}>{children}</AgentLabelsProvider>
+    </AgentSessionContext>
+  );
 };
 
 const useContextValue = (): AgentSessionContextValue => {
@@ -128,9 +135,6 @@ export const useAgentSessionStore = (): AgentSessionStoreApi =>
 export const useAgentSession = <T,>(
   selector: (state: AgentSessionStore) => T
 ): T => useStore(useAgentSessionStore(), selector);
-
-export const useAgentLabels = (): AgentLabels =>
-  useAgentSession((state) => state.labels);
 
 // ============================================
 // Server state (TanStack Query)

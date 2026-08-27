@@ -12,9 +12,9 @@ import { CopyButton } from "@chia/ui/copy-button";
 import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useAgentLabels } from "./labels-context.tsx";
 import { Markdown } from "./markdown.tsx";
 import type { OrbState } from "./orb-state.ts";
-import { useAgentLabels } from "./provider.tsx";
 import { formatMessageTime, formatMessageTimeFull } from "./time.ts";
 
 // Nothing to subscribe to: mounted-ness never changes after the first client render.

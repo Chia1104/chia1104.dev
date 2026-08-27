@@ -152,7 +152,6 @@ export const TaskCard = ({
                 <ModelSelect
                   defaultLabel={defaultModelLabel(task.model.default, models)}
                   isDisabled={busy}
-                  label={`${task.label} model`}
                   models={models}
                   onChange={field.onChange}
                   value={field.value}

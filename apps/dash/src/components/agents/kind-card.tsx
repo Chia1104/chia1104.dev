@@ -187,7 +187,6 @@ export const KindCard = ({ kind }: { kind: KindAdmin }) => {
                   <ModelSelect
                     defaultLabel={modelLabel(code, models.data)}
                     isDisabled={busy}
-                    label="Default model"
                     models={models.data}
                     onChange={field.onChange}
                     value={field.value}

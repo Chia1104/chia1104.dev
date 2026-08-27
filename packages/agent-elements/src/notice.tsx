@@ -6,7 +6,7 @@ import { Archive, CircleAlert, ShieldCheck, Undo2 } from "lucide-react";
 import type { NoticeView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { useAgentLabels } from "./provider.tsx";
+import { useAgentLabels } from "./labels-context.tsx";
 
 export interface NoticeProps {
   notice: NoticeView;

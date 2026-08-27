@@ -5,6 +5,9 @@ import { useMemo } from "react";
 import { Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
+import { AgentLabelsProvider } from "@chia/agent-elements/labels-context";
+import agentLabels from "@chia/i18n/agent-elements/en-US.json";
+
 import { orpc } from "@/libs/orpc/client";
 
 import { KindCard } from "./kind-card";
@@ -48,42 +51,44 @@ export const AgentAdmin = () => {
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <section className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-lg font-semibold">Agents</h2>
-          <p className="text-muted-foreground text-xs">
-            One card per registered agent kind.
-          </p>
-        </div>
-        {kinds.data?.map((kind) => (
-          <KindCard key={`${kind.kind}:${kind.updatedAt}`} kind={kind} />
-        ))}
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-lg font-semibold">Tasks</h2>
-          <p className="text-muted-foreground text-xs">
-            The one-shot model calls that run beside a session — naming it,
-            compacting it, learning from it.
-          </p>
-        </div>
-        {[...groups.entries()].map(([kind, list]) => (
-          <div key={kind ?? "shared"} className="flex flex-col gap-3">
-            <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-              {labelOfKind(kind)}
-            </h3>
-            {list.map((task) => (
-              <TaskCard
-                key={`${task.id}:${task.updatedAt}`}
-                models={taskModels.data}
-                task={task}
-              />
-            ))}
+    <AgentLabelsProvider labels={agentLabels}>
+      <div className="flex flex-col gap-10">
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Agents</h2>
+            <p className="text-muted-foreground text-xs">
+              One card per registered agent kind.
+            </p>
           </div>
-        ))}
-      </section>
-    </div>
+          {kinds.data?.map((kind) => (
+            <KindCard key={`${kind.kind}:${kind.updatedAt}`} kind={kind} />
+          ))}
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Tasks</h2>
+            <p className="text-muted-foreground text-xs">
+              The one-shot model calls that run beside a session — naming it,
+              compacting it, learning from it.
+            </p>
+          </div>
+          {[...groups.entries()].map(([kind, list]) => (
+            <div key={kind ?? "shared"} className="flex flex-col gap-3">
+              <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                {labelOfKind(kind)}
+              </h3>
+              {list.map((task) => (
+                <TaskCard
+                  key={`${task.id}:${task.updatedAt}`}
+                  models={taskModels.data}
+                  task={task}
+                />
+              ))}
+            </div>
+          ))}
+        </section>
+      </div>
+    </AgentLabelsProvider>
   );
 };

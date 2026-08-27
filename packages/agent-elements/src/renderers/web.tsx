@@ -5,7 +5,7 @@ import * as z from "zod";
 
 import { TOOL_NAMES } from "@chia/agent-writing/tools/registry";
 
-import { useAgentLabels } from "../provider.tsx";
+import { useAgentLabels } from "../labels-context.tsx";
 import { DefaultToolBody } from "../tool-call.tsx";
 import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
 
