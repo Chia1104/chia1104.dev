@@ -15,9 +15,11 @@ Three packages carry it: `api` (contracts, handlers, guards, ports), `service-ki
 - `config` — required: rate-limit budget, project id, AI key material.
 - `hooks.onFeedChanged` / `hooks.onFeedRemoved` — optional feed lifecycle hooks (`FeedHooks`), fired by the content write paths.
 - `indexing` — optional `IndexingService` port; starts and reconciles resource index runs.
+- `memory` — optional `MemoryService` port; starts memory consolidation runs.
 - `agentKinds` — optional map of `AgentKindService` keyed by `agent.session.kind`.
+- `agentAdmin` — optional `AgentAdminService` port; the operator's configuration of agent kinds and tasks (`agent.admin.*`).
 
-The port interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `indexing.service.ts`) next to `requireIndexing(context)` / `requireAgentKind(context, kind)`, which answer `SERVICE_UNAVAILABLE` when the context lacks the port. `apps/service` is the only process that runs the router and supplies all of these in `createORPCContext`. Anything that needs a long-lived process, a DB handle or gateway credentials belongs in the app, not here.
+The port interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `agent-admin.service.ts`, `indexing.service.ts`, `memory.service.ts`) next to `requireIndexing(context)` / `requireAgentKind(context, kind)` / `requireAgentAdminService(context)` / `requireMemoryService(context)`, which answer `SERVICE_UNAVAILABLE` when the context lacks the port. `apps/service` is the only process that runs the router and supplies all of these in `createORPCContext`. Anything that needs a long-lived process, a DB handle or gateway credentials belongs in the app, not here.
 
 **Data access.** oRPC handlers never write raw Drizzle; they call repositories exported as `@chia/db/repos/*`. Write logic shared with workflow steps lives in `packages/api/<domain>/write` (today `feeds/write.ts`) and takes its `FeedHooks` as an explicit argument, so a durable turn can call it with no request to authorize against.
 
