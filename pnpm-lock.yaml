@@ -1012,6 +1012,9 @@ importers:
       '@workflow/world-postgres':
         specifier: 'catalog:'
         version: 4.3.5(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(@upstash/redis@1.38.2)(bun-types@1.4.0)(kysely@0.29.5)(sqlite3@5.1.7(supports-color@10.2.2))(supports-color@10.2.2)(typescript@7.0.2)
+      ai:
+        specifier: catalog:ai
+        version: 7.0.79(zod@4.4.3)
       firecrawl:
         specifier: catalog:ai
         version: 4.35.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
@@ -2253,7 +2256,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: catalog:testing-library
-        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.3.0)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.11.6)(msw@2.15.0(@types/node@26.2.0)(typescript@7.0.2))(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.3.0)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.11.6)(msw@2.15.0(@types/node@26.3.0)(typescript@7.0.2))(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))
 
   tests/www-e2e:
     devDependencies:
@@ -19047,6 +19050,7 @@ snapshots:
     optionalDependencies:
       msw: 2.15.0(@types/node@26.2.0)(typescript@7.0.2)
       vite: 8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0)
+    optional: true
 
   '@vitest/mocker@4.1.11(msw@2.15.0(@types/node@26.3.0)(typescript@7.0.2))(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))':
     dependencies:
@@ -27191,6 +27195,7 @@ snapshots:
       happy-dom: 20.11.6
     transitivePeerDependencies:
       - msw
+    optional: true
 
   vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.3.0)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.11.6)(msw@2.15.0(@types/node@26.3.0)(typescript@7.0.2))(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0)):
     dependencies:

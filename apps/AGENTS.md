@@ -81,4 +81,6 @@ The workflow runner, and the only process that executes durable workflows. Hono 
 
 Shared pieces live in packages, never imported across apps: `@chia/agent-host` (kind contract, tasks, config, `ContentReadPort`, the writing kind factory) and `@chia/workflow-control` (command contract and the agent hook schemas/tokens both processes need).
 
+**The step bundle and third-party packages.** `workflow/nitro` bundles `src/steps` with esbuild into one ESM file. A bare import it can resolve from `apps/workflow` itself stays a bare import and Node loads the package; one it cannot — a package reached only through a `@chia/*` dependency — is inlined, and the relative `require()` calls inside an inlined CommonJS package are rewritten to paths that ESM cannot `require` (`Dynamic require of "…" is not supported`). The production build survives because Nitro's rolldown pass re-bundles the file; `nitro dev` loads it from disk and does not. So a CommonJS package that step code reaches (today `ai`, whose `@ai-sdk/gateway` loads `@vercel/oidc`) is declared here as a direct dependency as well, the way `apps/service` declares it.
+
 Deployed via `Dockerfile.workflow` (Node 26 alpine, `turbo prune --scope=workflow-service`); `infra/railway/workflow.json` holds the Railway config with `numReplicas: 1`.

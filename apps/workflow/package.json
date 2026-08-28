@@ -28,6 +28,7 @@
     "@t3-oss/env-core": "catalog:",
     "@workflow-worlds/redis": "catalog:",
     "@workflow/world-postgres": "catalog:",
+    "ai": "catalog:ai",
     "firecrawl": "catalog:ai",
     "hono": "catalog:hono",
     "reading-time-estimator": "^2.13.0",
