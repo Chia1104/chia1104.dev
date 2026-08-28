@@ -7,6 +7,11 @@ import {
 } from "@chia/agent-host/config";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import {
+  AGENT_QUOTA_DEFAULTS,
+  effectiveAgentQuota,
+  isTimeZone,
+} from "@chia/agent-host/quota";
+import {
   assertAgentTaskModel,
   definedTaskParams,
   getAgentTaskDefinition,
@@ -15,11 +20,13 @@ import {
   taskRowModel,
 } from "@chia/agent-host/tasks";
 import type { AgentTaskDefinition } from "@chia/agent-host/tasks";
+import { costToMicros, microsToUsd } from "@chia/agent-host/usage";
 import { UnknownAgentModelError } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
 import type { ThinkingLevel } from "@chia/agent-runtime/types";
 import type {
   AgentKindAdmin,
+  AgentQuotaAdmin,
   AgentTaskAdmin,
 } from "@chia/api/orpc/contracts/agent-admin.contract";
 import type {
@@ -27,12 +34,18 @@ import type {
   AgentAdminService,
 } from "@chia/api/orpc/services/agent-admin.service";
 import {
+  getAgentQuotaConfig,
   listAgentKindConfigs,
   listAgentTaskConfigs,
   upsertAgentKindConfig,
+  upsertAgentQuotaConfig,
   upsertAgentTaskConfig,
 } from "@chia/db/repos/agent/config";
-import type { AgentKindConfig, AgentTaskConfig } from "@chia/db/schema";
+import type {
+  AgentKindConfig,
+  AgentQuotaConfig,
+  AgentTaskConfig,
+} from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
 
@@ -160,6 +173,26 @@ const taskView = (
   };
 };
 
+const quotaView = (row: AgentQuotaConfig | undefined): AgentQuotaAdmin => {
+  const effective = effectiveAgentQuota(row);
+  return {
+    weeklyLimitUsd: {
+      default: microsToUsd(AGENT_QUOTA_DEFAULTS.weeklyLimitMicros),
+      override:
+        row?.weeklyLimitMicros === null || row?.weeklyLimitMicros === undefined
+          ? null
+          : microsToUsd(row.weeklyLimitMicros),
+      effective: microsToUsd(effective.weeklyLimitMicros),
+    },
+    resetTimeZone: {
+      default: AGENT_QUOTA_DEFAULTS.resetTimeZone,
+      override: row?.resetTimeZone ?? null,
+      effective: effective.resetTimeZone,
+    },
+    updatedAt: row?.updatedAt.getTime() ?? null,
+  };
+};
+
 // ============================================
 // Validation
 // ============================================
@@ -282,6 +315,28 @@ export const createAgentAdminService = (): AgentAdminService => {
     },
 
     listTaskModels: () => Promise.resolve(listAgentTaskModels()),
+
+    async getQuota({ db }) {
+      return quotaView(await getAgentQuotaConfig(db));
+    },
+
+    async updateQuota({ db }, input) {
+      if (input.resetTimeZone && !isTimeZone(input.resetTimeZone)) {
+        throw badRequest(
+          `"${input.resetTimeZone}" is not a time zone this runtime knows; use an IANA name such as Asia/Taipei.`
+        );
+      }
+      const row = await upsertAgentQuotaConfig(db, {
+        weeklyLimitMicros:
+          input.weeklyLimitUsd === undefined
+            ? undefined
+            : input.weeklyLimitUsd === null
+              ? null
+              : costToMicros(input.weeklyLimitUsd),
+        resetTimeZone: input.resetTimeZone,
+      });
+      return quotaView(row);
+    },
   };
 };
 

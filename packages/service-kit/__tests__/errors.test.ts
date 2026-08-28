@@ -10,6 +10,7 @@ import {
 describe("AppError", () => {
   it("derives the HTTP status from the code", () => {
     expect(new AppError("UNAUTHORIZED").status).toBe(401);
+    expect(new AppError("QUOTA_EXCEEDED").status).toBe(402);
     expect(new AppError("TOO_MANY_REQUESTS").status).toBe(429);
     expect(new AppError("SERVICE_UNAVAILABLE").status).toBe(503);
   });

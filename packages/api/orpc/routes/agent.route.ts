@@ -132,13 +132,17 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
 
+    // The service refuses a turn with an `AppError` — quota spent, approval outstanding — which
+    // `withORPCErrors` turns into the code the contract declares.
     const { action } = opts.input;
     let cursor;
     if (action.type === "prompt") {
-      cursor = await service.prompt(caller, {
-        sessionId: opts.input.sessionId,
-        text: action.text,
-      });
+      cursor = await withORPCErrors(() =>
+        service.prompt(caller, {
+          sessionId: opts.input.sessionId,
+          text: action.text,
+        })
+      );
     } else if (action.type === "command") {
       const capabilities = await service.listCapabilities();
       if (
@@ -148,18 +152,22 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
           message: `Unknown agent command: /${action.name}`,
         });
       }
-      cursor = await service.prompt(caller, {
-        sessionId: opts.input.sessionId,
-        text: action.text,
-        template: { name: action.name, args: action.args },
-      });
+      cursor = await withORPCErrors(() =>
+        service.prompt(caller, {
+          sessionId: opts.input.sessionId,
+          text: action.text,
+          template: { name: action.name, args: action.args },
+        })
+      );
     } else if (action.type === "approve") {
-      cursor = await service.approve(caller, {
-        sessionId: opts.input.sessionId,
-        toolCallId: action.toolCallId,
-        approved: action.approved,
-        comment: action.comment,
-      });
+      cursor = await withORPCErrors(() =>
+        service.approve(caller, {
+          sessionId: opts.input.sessionId,
+          toolCallId: action.toolCallId,
+          approved: action.approved,
+          comment: action.comment,
+        })
+      );
     } else {
       cursor = await service.attach(caller, {
         sessionId: opts.input.sessionId,
@@ -190,7 +198,9 @@ export const approveAgentToolRoute = contractOS.agent.sessions.approve
   .use(agentSessionGuard())
   .handler(async (opts) => {
     const { caller, service } = opts.context.agent;
-    const cursor = await service.approve(caller, opts.input);
+    const cursor = await withORPCErrors(() =>
+      service.approve(caller, opts.input)
+    );
     if (!cursor) throw opts.errors.NOT_FOUND();
     return {
       toolCallId: opts.input.toolCallId,

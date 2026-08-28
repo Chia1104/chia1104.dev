@@ -17,6 +17,22 @@ import { withMetaSchema } from "./shared";
 // Shared shapes
 // ============================================
 
+/**
+ * Refuses a turn, decision or summary for a caller whose weekly quota is spent. Not an oRPC
+ * common code, so the status travels with the declaration; `resetAt` is when the week turns
+ * over, so a client can say when to come back rather than just that it cannot continue.
+ */
+export const agentQuotaExceededSchema = z.object({
+  limitMicros: z.number(),
+  usedMicros: z.number(),
+  resetAt: z.string(),
+  timeZone: z.string(),
+});
+
+export const quotaExceededError = {
+  QUOTA_EXCEEDED: { status: 402, data: agentQuotaExceededSchema },
+} as const;
+
 export const thinkingLevelSchema = z.enum([
   "off",
   "minimal",
@@ -236,6 +252,7 @@ export const chatAgentContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     BAD_REQUEST: {},
+    ...quotaExceededError,
   })
   .input(
     z.object({
@@ -281,7 +298,12 @@ export const abortAgentContract = oc
   .output(z.object({ aborted: z.boolean() }));
 
 export const approveAgentToolContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    ...quotaExceededError,
+  })
   .input(
     z.object({
       /** Agent kind. Optional while only one is registered. */
@@ -304,7 +326,13 @@ export const approveAgentToolContract = oc
 // ============================================
 
 export const compactAgentSessionContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    CONFLICT: {},
+    ...quotaExceededError,
+  })
   .input(
     z.object({
       /** Agent kind. Optional while only one is registered. */
@@ -330,7 +358,13 @@ export const compactAgentSessionContract = oc
  * is no longer there.
  */
 export const navigateAgentSessionContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    CONFLICT: {},
+    ...quotaExceededError,
+  })
   .input(
     z.object({
       /** Agent kind. Optional while only one is registered. */

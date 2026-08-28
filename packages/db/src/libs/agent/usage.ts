@@ -1,3 +1,5 @@
+import { and, eq, gte, inArray, lt, sum } from "drizzle-orm";
+
 import type { DB } from "../../client.ts";
 import { agentUsageLedger } from "../../schemas/schema.ts";
 import type { AgentUsageSource } from "../../schemas/schema.ts";
@@ -45,4 +47,35 @@ export const insertAgentUsage = async (db: DB, input: InsertAgentUsageDTO) => {
     })
     .returning();
   return row;
+};
+
+/**
+ * One user's spend over `[from, to)`, in micro-dollars. `providerIds` narrows it to the bills
+ * that count — a quota on house spend passes the gateway alone, so a call the user's own key
+ * paid for is recorded but not charged against them.
+ */
+export const sumAgentUsageCost = async (
+  db: DB,
+  options: {
+    userId: string;
+    from: Date;
+    to: Date;
+    providerIds?: readonly string[];
+  }
+): Promise<number> => {
+  const conditions = [
+    eq(agentUsageLedger.userId, options.userId),
+    gte(agentUsageLedger.createdAt, options.from),
+    lt(agentUsageLedger.createdAt, options.to),
+  ];
+  if (options.providerIds) {
+    conditions.push(
+      inArray(agentUsageLedger.providerId, [...options.providerIds])
+    );
+  }
+  const [row] = await db
+    .select({ total: sum(agentUsageLedger.costMicros) })
+    .from(agentUsageLedger)
+    .where(and(...conditions));
+  return Number(row?.total ?? 0);
 };

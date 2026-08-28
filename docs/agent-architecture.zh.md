@@ -117,6 +117,7 @@ agent.memory                   跨 session 的長期記憶（§10）；索引進
 agent.kind_config              operator 對 kind 的 defaults 與 config 的覆寫（§13）
 agent.task_config              operator 對 task 的 model、prompt 與參數的覆寫（§13）
 agent.usage_ledger             替使用者做的每一次 provider call 一列；session 刪了它還在
+agent.quota_config             operator 對每週額度與其時區的覆寫（§3、§13）
 ```
 
 Entry payload 是符合 Pi session-entry union 的 opaque JSON。Kind-specific state 以 extension
@@ -145,8 +146,22 @@ generic service 的 maintenance 操作（手動 compaction、branch summary—�
 transaction 上）以及 lesson step。寫入永遠不在 critical path 上：provider 沒計費的 call 不成
 列，insert 失敗只記 log 然後丟掉，損失最多一次 call，且對使用者有利。
 
-配額不在這裡。Ledger 是配額讀的東西；拒絕一個 turn 屬於接受它的地方——kind service 的
-`prompt`、`approve`、`compact`、`navigate`——由以 `CallerTier` 為 key 的 policy 決定。
+### Usage quota
+
+配額是 caller tier 的屬性，從 ledger 讀出來。`Root`——付帳的 operator——永不受限；其他每個
+tier 共用一份每週的 **house** 花費額度：`sumAgentUsageCost` 取這一週、過濾到 gateway
+provider，所以 BYOK 的 call 會被記錄但算使用者自己的帳。`@chia/agent-host/quota` 擁有它：
+`AGENT_QUOTA_DEFAULTS` 是每週 $0.30、以 server 自己的時區計；operator 的 `agent.quota_config`
+row 從 dashboard 覆寫任一項（`agent.admin.quota.*`，§13）；`weekPeriod` 是該時區的週一 00:00
+到下週一 00:00，用 `Intl` 算，所以碰上 DST 的那週是 167 或 169 小時而不是算錯一天；
+`assertWithinAgentQuota` 在這週的花費達到上限時丟 `QUOTA_EXCEEDED`（402，
+`{ limitMicros, usedMicros, resetAt, timeZone }`）。
+
+只在接受 model call 的地方檢查，別處不檢查：`prompt` 與 `approve`（一個決定會起一個 relay
+turn）、`compact`、帶 `summarize` 的 `navigate`——都在 session lock 之下、在任何東西被排入或
+落地之前，所以被拒絕的 approval 會維持 pending，等下週再決定。上限是 soft 的：只要還有剩就
+接受，所以最後一次最多超出一個 turn，由 kind 的 turn budget 兜住。上限設 `0` 就對所有受限
+tier 關閉 agent。
 
 ### Session title
 
@@ -610,6 +625,10 @@ admin-only）：
 | ------------- | ------------------------------------- | ------------------------------------------------------------------------------------- | ------------------- |
 | `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | 一個對話型 agent——tools、ports、policy、state row、`runTurn`                          | `agent.kind_config` |
 | `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | 一個在 session 旁邊跑的一次性模型呼叫——title、compaction、branch summary、lesson 抽取 | `agent.task_config` |
+
+第三個 row 不是 registry：`agent.quota_config` 放 operator 對每週額度與其時區的覆寫
+（`agent.admin.quota.*`，workspace 的「Usage quota」卡片）；程式預設是
+`packages/agent-host/src/quota.ts` 的 `AGENT_QUOTA_DEFAULTS`（§3）。
 
 **Task** 是一個 model slot，加上呼叫有暴露時的 system prompt 與 sampling 參數。它們怎麼跑各不相同
 （`completeSimple`、Pi 的 `compact()`、`generateBranchSummary`），這部分留在呼叫端；operator 要選的

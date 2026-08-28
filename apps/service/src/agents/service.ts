@@ -11,6 +11,7 @@ import type {
   AgentTurnMarker,
 } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import { assertWithinAgentQuota } from "@chia/agent-host/quota";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage } from "@chia/agent-host/usage";
 import {
@@ -728,6 +729,10 @@ export const createAgentKindService = <TState, TConfig extends object>(
           );
         }
 
+        // Before anything is queued: a turn accepted here is one the house pays for. Checked under
+        // the lock so two prompts on one session cannot both pass on the same reading.
+        await assertWithinAgentQuota(db, caller);
+
         const message = {
           text: input.text,
           template: input.template,
@@ -956,6 +961,10 @@ export const createAgentKindService = <TState, TConfig extends object>(
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row?.workflowRunId) return null;
 
+        // The decision starts a relay turn the model answers, so it is metered like a prompt; refused
+        // before it is persisted, so the approval stays pending for when the week turns over.
+        await assertWithinAgentQuota(db, caller);
+
         // Persist first: the decision must outlive the run, and the permission gate reads it back from
         // here when the tool call is re-issued.
         const decided = await decideAgentApproval(db, {
@@ -993,6 +1002,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) return null;
         await assertMaintainable(row, tx, "compact");
+        await assertWithinAgentQuota(tx, caller);
 
         const maintenance = await maintenanceFor(caller, row);
         return await maintenance.compact(input.customInstructions);
@@ -1004,6 +1014,8 @@ export const createAgentKindService = <TState, TConfig extends object>(
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) return null;
         await assertMaintainable(row, tx, "rewind");
+        // Only a summary calls the model; moving the leaf is free.
+        if (input.summarize) await assertWithinAgentQuota(tx, caller);
 
         const maintenance = await maintenanceFor(caller, row);
         await requireEntry(maintenance.session, input.entryId);

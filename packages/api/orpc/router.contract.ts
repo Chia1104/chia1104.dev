@@ -43,6 +43,10 @@ export const routerContract = {
         update: agentAdminContracts.updateAgentTaskAdminContract,
         models: agentAdminContracts.listAgentTaskModelsAdminContract,
       },
+      quota: {
+        get: agentAdminContracts.getAgentQuotaAdminContract,
+        update: agentAdminContracts.updateAgentQuotaAdminContract,
+      },
     },
   },
   health: {

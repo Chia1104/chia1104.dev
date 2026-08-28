@@ -3,6 +3,7 @@ import { defineRelations } from "drizzle-orm";
 import {
   agentKindConfigs,
   agentMemories,
+  agentQuotaConfigs,
   agentRuns,
   agentTaskConfigs,
   agentSessionEntries,
@@ -62,6 +63,7 @@ const schema = {
   agentMemories,
   agentKindConfigs,
   agentTaskConfigs,
+  agentQuotaConfigs,
   agentUsageLedger,
 };
 

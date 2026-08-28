@@ -44,6 +44,10 @@ export const router = contractOS.router({
         update: agentAdminRoutes.updateAgentTaskAdminRoute,
         models: agentAdminRoutes.listAgentTaskModelsAdminRoute,
       },
+      quota: {
+        get: agentAdminRoutes.getAgentQuotaAdminRoute,
+        update: agentAdminRoutes.updateAgentQuotaAdminRoute,
+      },
     },
   },
   health: {

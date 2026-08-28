@@ -372,6 +372,27 @@ export const agentTaskConfigs = agentSchema.table("task_config", {
 
 export type AgentTaskConfig = InferSelectModel<typeof agentTaskConfigs>;
 
+/** The one `quota_config` row; the table is keyed so a per-tier split is a second row, not a schema change. */
+export const AGENT_QUOTA_CONFIG_ID = "default";
+
+/**
+ * The operator's usage quota for every caller below `Root`: how much house spend a user may
+ * run up per week, and the zone the week is counted in. Both nullable — `null` defers to the
+ * code default, like the task and kind rows. The limit is micro-dollars, the ledger's unit.
+ */
+export const agentQuotaConfigs = agentSchema.table("quota_config", {
+  id: text("id").primaryKey(),
+  weeklyLimitMicros: bigint("weekly_limit_micros", { mode: "number" }),
+  /** An IANA zone; the week resets on its Monday 00:00. */
+  resetTimeZone: text("reset_time_zone"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type AgentQuotaConfig = InferSelectModel<typeof agentQuotaConfigs>;
+
 // ============================================
 // Agent Tool Approval
 // ============================================

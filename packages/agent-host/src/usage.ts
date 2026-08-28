@@ -13,6 +13,8 @@ import type { AgentUsageSource } from "@chia/db/schema";
 export const costToMicros = (usd: number): number =>
   Math.round(usd * 1_000_000);
 
+export const microsToUsd = (micros: number): number => micros / 1_000_000;
+
 export interface RecordAgentUsageInput extends AgentModelUsage {
   /** The user the call was made for — the session's owner, not who paid. */
   userId: string;

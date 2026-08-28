@@ -151,6 +151,45 @@ export const listAgentTaskModelsAdminContract = oc
   .errors(errors)
   .output(z.array(agentModelInfoSchema));
 
+// ============================================
+// Quota
+// ============================================
+
+/**
+ * The weekly house-spend limit for every caller below `Root`, and the zone its week is counted
+ * in. Dollars on the wire; the row and the ledger keep micro-dollars.
+ */
+export const agentQuotaAdminSchema = z.object({
+  weeklyLimitUsd: z.object({
+    default: z.number(),
+    override: z.number().nullable(),
+    effective: z.number(),
+  }),
+  resetTimeZone: z.object({
+    default: z.string(),
+    override: z.string().nullable(),
+    effective: z.string(),
+  }),
+  updatedAt: z.number().nullable(),
+});
+
+export const getAgentQuotaAdminContract = oc
+  .errors(errors)
+  .output(agentQuotaAdminSchema);
+
+/** `null` clears an override back to the code default; an absent key leaves it alone. */
+export const updateAgentQuotaAdminContract = oc
+  .errors(writeErrors)
+  .input(
+    z.object({
+      weeklyLimitUsd: z.number().min(0).max(10_000).nullable().optional(),
+      /** An IANA zone name; the service validates it against the runtime's zone data. */
+      resetTimeZone: z.string().min(1).max(100).nullable().optional(),
+    })
+  )
+  .output(agentQuotaAdminSchema);
+
 export type AgentKindAdmin = z.infer<typeof agentKindAdminSchema>;
+export type AgentQuotaAdmin = z.infer<typeof agentQuotaAdminSchema>;
 export type AgentTaskAdmin = z.infer<typeof agentTaskAdminSchema>;
 export type AgentTaskParamsInput = z.infer<typeof agentTaskParamsSchema>;

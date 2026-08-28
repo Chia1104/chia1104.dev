@@ -121,6 +121,7 @@ agent.memory                   long-term memory across sessions (§10); indexed 
 agent.kind_config              operator overrides of a kind's defaults and config (§13)
 agent.task_config              operator overrides of a task's model, prompt and parameters (§13)
 agent.usage_ledger             one row per provider call made for a user; survives the session
+agent.quota_config             operator override of the weekly allowance and its zone (§3, §13)
 ```
 
 Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
@@ -163,9 +164,25 @@ branch summary — on the session lock's transaction) and the lesson step. The w
 the critical path: a call the provider did not bill is not a row, and a failed insert is logged
 and dropped, bounding the loss to one call in the user's favour.
 
-Quotas are not here. The ledger is what a quota reads; refusing a turn belongs where it is
-accepted — `prompt`, `approve`, `compact`, `navigate` in the kind service — under a policy keyed
-by `CallerTier`.
+### Usage quota
+
+The quota is a property of the caller's tier, read from the ledger. `Root` — the operator, who
+pays the bill — is never limited; every other tier draws on one shared weekly allowance of
+**house** spend: `sumAgentUsageCost` over the week, filtered to the gateway provider, so a
+BYOK call is recorded but is the user's own bill. `@chia/agent-host/quota` owns it:
+`AGENT_QUOTA_DEFAULTS` is $0.30 a week in the server's own zone; the operator's
+`agent.quota_config` row overrides either from the dashboard (`agent.admin.quota.*`, §13);
+`weekPeriod` is Monday 00:00 to Monday 00:00 in that zone, computed from `Intl` so a DST week
+is 167 or 169 hours rather than a wrong day; and `assertWithinAgentQuota` throws
+`QUOTA_EXCEEDED` (402, `{ limitMicros, usedMicros, resetAt, timeZone }`) once the week's spend
+has reached the limit.
+
+It is checked where a model call is accepted and nowhere else: `prompt` and `approve` (a
+decision starts a relay turn), `compact`, and `navigate` with `summarize` — each under the
+session lock, before anything is queued or persisted, so a refused approval stays pending for
+when the week turns over. The limit is soft: a call is accepted while anything remains, so the
+last one may overrun by at most one turn, which the kind's turn budget bounds. A limit of `0`
+closes the agent to every limited tier.
 
 ### Session title
 
@@ -710,6 +727,10 @@ workspace (`agent.admin.*`, admin-only):
 | ------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
 | `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | a conversational agent — tools, ports, policy, state row, `runTurn`                           | `agent.kind_config` |
 | `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
+
+A third row, not a registry: `agent.quota_config` holds the operator's override of the weekly
+allowance and its zone (`agent.admin.quota.*`, the workspace's "Usage quota" card); the code
+default is `AGENT_QUOTA_DEFAULTS` in `packages/agent-host/src/quota.ts` (§3).
 
 A **task** is a model slot plus, where the call exposes them, a system prompt and sampling
 parameters. How a task runs differs (`completeSimple`, Pi's `compact()`, `generateBranchSummary`)
