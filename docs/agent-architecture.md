@@ -56,7 +56,7 @@ unrelated to the removed harness abstraction.
 
 The service itself is generic. `apps/service/src/agents/service.ts` (`createAgentKindService`)
 implements the whole port — session rows, durable runs, prompt/attach/stream, abort, approvals,
-compaction and rewind — over an `AgentKindDefinition` (`agents/kind.ts`), and the turn step
+compaction and rewind — over an `AgentKindDefinition` (`@chia/agent-host/kind`), and the turn step
 (`runKindTurn`) resolves the same definition for the Pi side. A kind is one file in
 `apps/service/src/agents/` (`writing.ts`) that binds its domain package to the host's ports and
 supplies only what differs: `minTier`, `label`/`description`, defaults, replay policy, the model
@@ -140,7 +140,7 @@ turn. Kind-specific state uses extension tables instead of widening the shared s
 `agent.session.title` is the operator's handle for a session: `null` until named, then either
 the operator's own name (`settings:update`) or one condensed from their first prompt. The turn
 step names an untitled session alongside its first operator turn (`titleSession` in
-`apps/service/src/steps/agent-turn.step.ts`): `generateSessionTitle` in
+`apps/workflow/src/steps/agent-turn.step.ts`): `generateSessionTitle` in
 `@chia/agent-runtime/pi/title` asks the `session.title` task's model (§13) — the house
 gateway's cheap model unless the operator pinned another, never the session's own, which may be
 BYOK — and falls back to the prompt's first line when the model fails, so a title always lands. Two invariants: the write is `setAgentSessionTitleIfUnset` (`WHERE title IS NULL`),
@@ -272,7 +272,7 @@ transcript. Anything the model must see fresh belongs there, not in the system p
 
 Nothing in the workflow SDK reaches a step already executing — cancelling the run only stops it
 from being scheduled again — so a stop travels through a second, tiny durable run: the session
-run's **abort controller** (`apps/service/src/workflows/agent-abort.workflow.ts`). `prompt` starts
+run's **abort controller** (`apps/workflow/src/workflows/agent-abort.workflow.ts`). `prompt` starts
 it before the session run and passes its `{ id, runId }` in the session run's request (and into
 `agent.run.metadata`); it parks on `agentAbortHook` and, when resumed, writes one message to its
 own stream. Each turn step subscribes to that stream by run id — no lookup, so there is exactly one
@@ -514,7 +514,7 @@ and only commit-tier tools promote staged data to live feed/content tables. Tool
 the model to read, draft and then commit. Destructive deletion and image upload are not available
 agent tools.
 
-`WebPort` is host-implemented on Firecrawl (`apps/service/src/services/agent-web.port.ts`,
+`WebPort` is host-implemented on Firecrawl (`apps/workflow/src/services/agent-web.port.ts`,
 `FIRECRAWL_API_KEY`). Search returns snippets only — no per-result scrape — so a call has a
 fixed cost; `fetch_url` is one scrape per page, main content as markdown, and is how the model
 reads a source it chose. There is no direct outbound fetch in the agent path. Both tools hand
@@ -529,7 +529,7 @@ a `source` is a page `fetch_url` read (URL, title, the page text up to 64k chara
 `fact` is a distilled, cited
 claim the model chose to keep with `save_memory`, and a `lesson` is a writing preference
 extracted from the operator's feedback. `MemoryPort` (`@chia/agent-writing/ports`) is
-implemented entirely by the host (`apps/service/src/services/agent-memory.port.ts`): writes go
+implemented entirely by the host (`apps/workflow/src/services/agent-memory.port.ts`): writes go
 through `packages/api/memories/write.ts`, which takes the index hook as a required argument the
 way `feeds/write.ts` does, and every write that changes a row schedules
 `indexResourceWorkflow` for the `agent_memory` resource type (`docs/rag-architecture.md`
@@ -561,7 +561,7 @@ context, which holds nothing but ports.
 A `lesson` is the one kind that is always on: the volatile context carries the titles of the
 twenty most recently touched **active** lessons under `# Learned preferences`, because a
 preference the model has to remember to look up is not a preference it follows. Lessons are
-written by `memoryConsolidationWorkflow` (`apps/service/src/workflows/memory-consolidation.workflow.ts`),
+written by `memoryConsolidationWorkflow` (`apps/workflow/src/workflows/memory-consolidation.workflow.ts`),
 started by the writing kind's `runTurn` after a turn that executed `commit_draft` ended `done`
 — only then does the transcript hold the whole revision history — or by hand from the
 dashboard (`memory.consolidate`). Its one step reads the session's raw entries through
@@ -580,7 +580,7 @@ research, and an active lesson is a standing instruction. Every write goes throu
 ### Content visibility
 
 The read tools cannot widen what they see: visibility is fixed when the host builds the port
-(`apps/service/src/services/content-read.port.ts`). An `author` port sees the configured author's
+(`packages/agent-host/src/content-read.port.ts`). An `author` port sees the configured author's
 drafts; a `public` port scopes every detail read to `published: true` and answers a request for
 drafts with nothing rather than overriding the filter. Search needs no branch — the chunk index is
 published-only for every caller. The writing agent's port is `author`; a public kind builds
@@ -631,39 +631,39 @@ until a concrete second execution foundation requires a different seam.
 
 ## 12. Reference
 
-| Concern                      | File                                                                                                |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                             |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                        |
-| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                      |
-| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                           |
-| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                           |
-| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts`      |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                                  |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                  |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                           |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                              |
-| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                                  |
-| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                     |
-| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                            |
-| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                               |
-| Content read tools / port    | `packages/agent-content/src/`, `apps/service/src/services/content-read.port.ts`                     |
-| Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`, `apps/service/src/services/agent-memory.port.ts` |
-| Memory writes / indexing     | `packages/api/memories/write.ts`, `apps/service/src/services/agent-memory-indexing.service.ts`      |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                             |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                                |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                       |
-| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/kind.ts`, `agents/service.ts`                        |
-| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                                |
-| Task registry / resolution   | `apps/service/src/agents/tasks.ts`                                                                  |
-| Operator configuration       | `apps/service/src/agents/config.ts`, `agents/admin.ts`, `packages/db/src/libs/agent/config.ts`      |
-| Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`, `services/agent-admin.service.ts`            |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`              |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                                   |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                            |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                           |
-| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                 |
-| Dashboard UI                 | `apps/dash/src/components/agent/`, `components/agents/` (kind and task configuration)               |
+| Concern                      | File                                                                                                                 |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                                              |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                                         |
+| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                                       |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                                            |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                                            |
+| Abort controller             | `apps/workflow/src/workflows/agent-abort.workflow.ts`, `apps/service/src/services/agent-abort-controller.service.ts` |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                                                   |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                                   |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                                            |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                                               |
+| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                                                   |
+| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                                      |
+| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                                             |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                                                |
+| Content read tools / port    | `packages/agent-content/src/`, `packages/agent-host/src/content-read.port.ts`                                        |
+| Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`, `apps/workflow/src/services/agent-memory.port.ts`                 |
+| Memory writes / indexing     | `packages/api/memories/write.ts`, `apps/service/src/services/agent-memory-indexing.service.ts`                       |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                                              |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                                                 |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                                        |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/service.ts`, `packages/agent-host/src/kind.ts`                        |
+| Writing kind binding         | `packages/agent-host/src/writing.ts`, `apps/service/src/agents/writing.ts`, `apps/workflow/src/agents/writing.ts`    |
+| Task registry / resolution   | `packages/agent-host/src/tasks.ts`                                                                                   |
+| Operator configuration       | `packages/agent-host/src/config.ts`, `apps/service/src/agents/admin.ts`, `packages/db/src/libs/agent/config.ts`      |
+| Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`, `apps/service/src/factories/agent-admin.factory.ts`           |
+| Durable workflow / step      | `apps/workflow/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`                              |
+| Durable message inbox        | `packages/workflow-control/src/agent.hooks.ts`                                                                       |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                                             |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                                            |
+| Client store and elements    | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                                  |
+| Dashboard UI                 | `apps/dash/src/components/agent/`, `components/agents/` (kind and task configuration)                                |
 
 ## 13. Kinds, tasks and operator configuration
 
@@ -673,7 +673,7 @@ workspace (`agent.admin.*`, admin-only):
 | Registry      | Where                                 | One entry is                                                                                  | Row                 |
 | ------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
 | `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | a conversational agent — tools, ports, policy, state row, `runTurn`                           | `agent.kind_config` |
-| `AGENT_TASKS` | `apps/service/src/agents/tasks.ts`    | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
+| `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
 
 A **task** is a model slot plus, where the call exposes them, a system prompt and sampling
 parameters. How a task runs differs (`completeSimple`, Pi's `compact()`, `generateBranchSummary`)

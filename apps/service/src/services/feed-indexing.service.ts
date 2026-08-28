@@ -1,6 +1,6 @@
 import type { FeedHooks } from "@chia/api/orpc/utils";
 
-import { workflowControl } from "./workflow-control";
+import { workflowControl } from "../repos/workflow-control.repo";
 
 /**
  * The feed hooks this process supplies: fire-and-forget indexing runs. Nobody waits on

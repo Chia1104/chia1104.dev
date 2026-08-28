@@ -7,8 +7,6 @@ import { AppError } from "@chia/service-kit/errors";
 import { removeMemoryService, updateMemoryService } from "../../memories/write";
 import { adminGuard } from "../guards/admin.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
-import { requireMemoryService } from "../services/memory.service";
-import type { MemoryConsolidationCaller } from "../services/memory.service";
 import { contractOS } from "../utils";
 
 /**
@@ -21,13 +19,6 @@ import { contractOS } from "../utils";
  * Writes go through `memories/write.ts` so the index run is never skipped; the hook comes
  * from the context, which only the process with a workflow runtime supplies.
  */
-
-const callerOf = (opts: {
-  context: { adminId: string; session: { user: { id: string } } };
-}): MemoryConsolidationCaller => ({
-  adminId: opts.context.adminId,
-  userId: opts.context.session.user.id,
-});
 
 const detailOf = (row: AgentMemory) => ({
   id: row.id,
@@ -119,15 +110,17 @@ export const approveLessonRoute = contractOS.memory["lesson:approve"]
     })
   );
 
+/**
+ * Starts a reflection run over one session. Fire-and-forget from the writing turn, awaited
+ * for its run id from the dashboard; the run reports its own outcome.
+ */
 export const consolidateMemoryRoute = contractOS.memory.consolidate
   .use(adminGuard())
   .use(rateLimitGuard({ prefix: "rate-limiter:memory-consolidate" }))
   .handler((opts) =>
-    withORPCErrors(
-      async () =>
-        await requireMemoryService(opts.context).consolidate(
-          callerOf(opts),
-          opts.input
-        )
-    )
+    withORPCErrors(async () => ({
+      runId: await opts.context.workflow.startMemoryConsolidation(
+        opts.input.sessionId
+      ),
+    }))
   );

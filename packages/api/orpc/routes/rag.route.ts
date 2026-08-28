@@ -1,32 +1,39 @@
-import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
-import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
 import { countAgentMemories } from "@chia/db/repos/agent/memory";
 import { countFeedTranslations } from "@chia/db/repos/feeds";
-import { getActiveResourceIndexRun } from "@chia/db/repos/resources/index-run";
+import {
+  getActiveResourceIndexRun,
+  getResourceIndexRunByExternalId,
+  listResourceIndexRuns,
+} from "@chia/db/repos/resources/index-run";
 import {
   countChunksNeedingEmbedding,
+  deleteStaleEmbeddings,
   getChunkDetail,
   getEmbeddingKeyDistribution,
   getRagOverview,
   getResourceIndexStatus,
   listChunks,
 } from "@chia/db/repos/resources/stats";
-import type { ResourceIndexKey } from "@chia/db/repos/resources/stats";
 import { RESOURCE_INDEX_RUN_SCOPE } from "@chia/db/schema";
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 
+import {
+  currentIndexKey,
+  indexRunCursor,
+  reconcileIndexRun,
+  snapshotOfIndexRun,
+  triggerIndexRun,
+} from "../../resources/index-run";
+import type { IndexRunCaller } from "../../resources/index-run";
 import { adminGuard } from "../guards/admin.guard";
 import { rateLimitGuard } from "../guards/rate-limit.guard";
-import { requireIndexing } from "../services/indexing.service";
-import type { IndexingCaller } from "../services/indexing.service";
 import { contractOS } from "../utils";
 
 /**
  * RAG management routes.
  *
- * Reads go straight to the stats repository; triggers go through the indexing port on
- * the context, which only the process that owns the workflow runtime supplies — calling
- * one anywhere else fails with `SERVICE_UNAVAILABLE` instead of pretending to have started.
+ * Reads go straight to the stats repository; runs are started, cancelled and reconciled
+ * through `context.workflow`, the `apps/workflow` client every router process carries.
  *
  * **Every route is `adminGuard()`, reads included.** A session alone is not enough:
  * `resource_chunk` holds the body text of every indexed resource with no ownership column
@@ -38,15 +45,9 @@ import { contractOS } from "../utils";
  * feeds, so the corpus is theirs.
  */
 
-/** The key everything is measured against: provider id plus strategy version. */
-const currentIndexKey = (): ResourceIndexKey => ({
-  model: resolveEmbeddingProvider().id,
-  indexVersion: EMBEDDING_INDEX_VERSION,
-});
-
 const callerOf = (opts: {
   context: { adminId: string; session: { user: { id: string } } };
-}): IndexingCaller => ({
+}): IndexRunCaller => ({
   adminId: opts.context.adminId,
   userId: opts.context.session.user.id,
 });
@@ -126,17 +127,25 @@ export const getResourceIndexStatusRoute = contractOS.rag["resource:status"]
     };
   });
 
-/** Goes through the port rather than the repository: the rows need reconciling first. */
+/** Every active row is reconciled against its run before it is returned. */
 export const listIndexRunsRoute = contractOS.rag["runs:list"]
   .use(adminGuard())
   .handler((opts) =>
     withORPCErrors(async () => {
-      const page = await requireIndexing(opts.context).listRuns({
+      const { db, workflow } = opts.context;
+      const page = await listResourceIndexRuns(db, {
         limit: opts.input.limit,
-        cursor: opts.input.cursor ?? null,
+        cursor: indexRunCursor(opts.input.cursor),
       });
+      const items = await Promise.all(
+        page.items.map((row) => reconcileIndexRun(db, workflow, row))
+      );
 
-      return { ...currentIndexKey(), ...page };
+      return {
+        ...currentIndexKey(),
+        items: items.map(snapshotOfIndexRun),
+        nextCursor: page.nextCursor,
+      };
     })
   );
 
@@ -144,12 +153,18 @@ export const getIndexRunRoute = contractOS.rag["run:get"]
   .use(adminGuard())
   .handler((opts) =>
     withORPCErrors(async () => {
-      const run = await requireIndexing(opts.context).getRun(opts.input);
-      if (!run) {
+      const { db, workflow } = opts.context;
+      const row = await getResourceIndexRunByExternalId(db, {
+        externalRunId: opts.input.runId,
+      });
+      if (!row) {
         throw opts.errors.NOT_FOUND();
       }
 
-      return { ...currentIndexKey(), run };
+      return {
+        ...currentIndexKey(),
+        run: snapshotOfIndexRun(await reconcileIndexRun(db, workflow, row)),
+      };
     })
   );
 
@@ -186,9 +201,17 @@ export const indexResourceRoute = contractOS.rag["resource:index"]
   .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
   .handler((opts) =>
     withORPCErrors(async () => {
-      const handle = await requireIndexing(opts.context).indexResource(
+      const { db, workflow } = opts.context;
+      const handle = await triggerIndexRun(
+        db,
+        workflow,
         callerOf(opts),
-        opts.input
+        {
+          scope: RESOURCE_INDEX_RUN_SCOPE.Resource,
+          sourceType: opts.input.sourceType,
+          sourceId: opts.input.sourceId,
+        },
+        () => workflow.startResourceIndex(opts.input)
       );
 
       return { ...currentIndexKey(), ...handle };
@@ -200,9 +223,13 @@ export const indexFeedRoute = contractOS.rag["feed:index"]
   .use(rateLimitGuard({ prefix: "rate-limiter:rag-index" }))
   .handler((opts) =>
     withORPCErrors(async () => {
-      const handle = await requireIndexing(opts.context).indexFeed(
+      const { db, workflow } = opts.context;
+      const handle = await triggerIndexRun(
+        db,
+        workflow,
         callerOf(opts),
-        opts.input
+        { scope: RESOURCE_INDEX_RUN_SCOPE.Feed, feedId: opts.input.feedId },
+        () => workflow.startFeedIndex(opts.input.feedId)
       );
 
       return { ...currentIndexKey(), ...handle };
@@ -221,9 +248,14 @@ export const reindexAllRoute = contractOS.rag["reindex:all"]
   )
   .handler((opts) =>
     withORPCErrors(async () => {
-      const handle = await requireIndexing(opts.context).reindexAll(
+      const { db, workflow } = opts.context;
+      const handle = await triggerIndexRun(
+        db,
+        workflow,
         callerOf(opts),
-        opts.input
+        { scope: RESOURCE_INDEX_RUN_SCOPE.All },
+        () =>
+          workflow.startResourceReindex({ onlyMissing: opts.input.onlyMissing })
       );
 
       return { ...currentIndexKey(), ...handle };
@@ -241,10 +273,9 @@ export const pruneEmbeddingsRoute = contractOS.rag["embeddings:prune"]
   )
   .handler((opts) =>
     withORPCErrors(async () => {
-      const result = await requireIndexing(opts.context).pruneEmbeddings(
-        callerOf(opts)
-      );
+      const key = currentIndexKey();
+      const result = await deleteStaleEmbeddings(opts.context.db, key);
 
-      return { ...currentIndexKey(), ...result };
+      return { ...key, ...result };
     })
   );

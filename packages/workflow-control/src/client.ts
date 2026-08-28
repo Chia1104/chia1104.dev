@@ -1,70 +1,58 @@
 import { AppError, appErrorCodeFromStatus } from "@chia/service-kit/errors";
-import { withServiceEndpoint } from "@chia/utils/config";
-import { Service } from "@chia/utils/schema";
+
 import type {
   AgentAbortControllerRef,
   EncryptedAgentCredentials,
-} from "@chia/workflow-control/agent-hooks";
+} from "./agent.hooks";
 import {
   workflowControlErrorSchema,
   workflowControlResultSchema,
-} from "@chia/workflow-control/contract";
+} from "./control.contract";
 import type {
   WorkflowControlCommand,
   WorkflowControlResult,
-} from "@chia/workflow-control/contract";
+  WorkflowRunState,
+} from "./control.contract";
 
-import { env } from "../env";
+/**
+ * The API process's view of `apps/workflow`: one authenticated POST per command. The host
+ * resolves the URL and holds the token; this module knows nothing about env.
+ */
 
 type WorkflowControlFetch = (
   input: string,
   init: RequestInit
 ) => Promise<Response>;
 
-interface CreateWorkflowControlOptions {
-  /** Absolute URL of the control route; resolved from `INTERNAL_WORKFLOW_SERVICE_ENDPOINT` by default. */
-  url?: string;
+export interface CreateWorkflowControlClientOptions {
+  /** Absolute URL of the control route (`/` on the workflow service). */
+  url: string;
   token: string;
   fetch?: WorkflowControlFetch;
 }
 
-interface AgentSessionStartRequest {
+export interface AgentSessionStartRequest {
   sessionId: string;
   runId: string;
   userId: string;
   abortController: AgentAbortControllerRef;
-  firstMessage: {
-    text: string;
-    template?: { name: string; args?: string[] };
-    preAuthorizeToolNames?: string[];
-    credentials?: EncryptedAgentCredentials;
-  };
+  firstMessage: AgentMessagePayload;
 }
 
-interface AgentApprovalPayload {
+export interface AgentMessagePayload {
+  text: string;
+  template?: { name: string; args?: string[] };
+  preAuthorizeToolNames?: string[];
+  credentials?: EncryptedAgentCredentials;
+}
+
+export interface AgentApprovalPayload {
   approved: boolean;
   comment?: string;
   credentials?: EncryptedAgentCredentials;
 }
 
 const CONTROL_TIMEOUT_MS = 30_000;
-
-/**
- * `apps/workflow` has one control route at its root and is only reachable over the private
- * network, so there is a single internal endpoint and no version prefix.
- */
-const resolveControlUrl = (): string => {
-  const url = withServiceEndpoint("/", Service.Workflow, {
-    isInternal: true,
-    version: "NO_PREFIX",
-  });
-  if (!/^https?:\/\//.test(url)) {
-    throw new Error(
-      "INTERNAL_WORKFLOW_SERVICE_ENDPOINT is required to reach apps/workflow."
-    );
-  }
-  return url;
-};
 
 const startedRunId = (result: WorkflowControlResult): string => {
   if (result.type !== "started") {
@@ -73,11 +61,11 @@ const startedRunId = (result: WorkflowControlResult): string => {
   return result.runId;
 };
 
-export const createWorkflowControl = ({
-  url = resolveControlUrl(),
+export const createWorkflowControlClient = ({
+  url,
   token,
   fetch: fetcher = globalThis.fetch,
-}: CreateWorkflowControlOptions) => {
+}: CreateWorkflowControlClientOptions) => {
   const execute = async (
     command: WorkflowControlCommand
   ): Promise<WorkflowControlResult> => {
@@ -114,10 +102,7 @@ export const createWorkflowControl = ({
         await execute({ type: "agent-session:start", request })
       );
     },
-    async resumeAgentMessage(
-      sessionId: string,
-      payload: AgentSessionStartRequest["firstMessage"]
-    ) {
+    async resumeAgentMessage(sessionId: string, payload: AgentMessagePayload) {
       await execute({ type: "agent-message:resume", sessionId, payload });
     },
     async resumeAgentApproval(
@@ -176,9 +161,17 @@ export const createWorkflowControl = ({
     async cancelRun(runId: string) {
       await execute({ type: "run:cancel", runId });
     },
+    /** Where a run stands in the World; `exists: false` when the World has no such run. */
+    async getRun(runId: string): Promise<WorkflowRunState> {
+      const result = await execute({ type: "run:status", runId });
+      if (result.type !== "run") {
+        throw new Error("Workflow control returned no run state.");
+      }
+      return result;
+    },
   };
 };
 
-export const workflowControl = createWorkflowControl({
-  token: env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
-});
+export type WorkflowControlClient = ReturnType<
+  typeof createWorkflowControlClient
+>;

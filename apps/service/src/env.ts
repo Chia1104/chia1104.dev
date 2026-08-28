@@ -52,7 +52,7 @@ export const env = createEnv({
     WORKFLOW_REDIS_URI: z.url().optional(),
     /**
      * Authenticates every queue mutation sent to `apps/workflow`; the endpoint itself is
-     * `INTERNAL_WORKFLOW_SERVICE_ENDPOINT` from `serviceEnv`, resolved by `withServiceEndpoint`.
+     * `INTERNAL_WORKFLOW_SERVICE_ENDPOINT` from `serviceEnv`, resolved by `withServiceEndpoint` in `repos/workflow-control.repo.ts`.
      */
     INTERNAL_WORKFLOW_SERVICE_TOKEN: z.string().min(32),
   },

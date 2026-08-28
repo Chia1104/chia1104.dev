@@ -39,7 +39,7 @@ Auth is a Better Auth session; the client comes from `@chia/auth/client`.
 The API backend. Hono mounted on Nitro; `src/server.ts` composes the app, `src/bootstrap.ts` applies the shared middleware from `@chia/service-kit/bootstrap`.
 
 It runs no workflows. Every workflow start, hook resume and cancel is a command sent to
-`apps/workflow` through `services/workflow-control.ts` (`@chia/workflow-control/contract`); run
+`apps/workflow` through `repos/workflow-control.repo.ts` (`@chia/workflow-control/contract`); run
 state and durable streams are read straight from the shared World storage. See
 [`docs/workflow-deployment.md`](../docs/workflow-deployment.md).
 
@@ -56,13 +56,13 @@ state and durable streams are read straight from the shared World storage. See
 **Layout** (`src/`):
 
 - `routes/*.route.ts` — one Hono sub-app per surface above. `rpc.route.ts` mounts the oRPC router with the request timeout, coarse rate limit and the context below.
-- `factories/orpc.factory.ts` — `createORPCContext(c)`, **the one place the oRPC context is built**. Spreads the Hono `c.var` (`ServiceContext`) and adds what this process supplies: `config` (rate-limit budget, project id, AI key material — from env), `hooks` (feed indexing + Sentry error sink), `indexing`, `memory`, `agentKinds`, `agentAdmin`. See "Context injection" in [`packages/AGENTS.md`](../packages/AGENTS.md).
+- `factories/` — what this process registers globally, built once at boot. `orpc.factory.ts` is `createORPCContext(c)`, **the one place the oRPC context is built**: it spreads the Hono `c.var` (`ServiceContext`) and adds what this process supplies — `config` (rate-limit budget, project id, AI key material — from env), `hooks` (feed + memory indexing, Sentry error sink), `indexing`, `memory`, `agentKinds`, `agentAdmin`. `agent-admin.factory.ts` is the lazy `AgentAdminService` delegate over `agents/admin.ts`, deferred because the implementation loads every kind and the provider stack. See "Context injection" in [`packages/AGENTS.md`](../packages/AGENTS.md).
 - `agents/` — the agent kinds this process serves. `registry.ts` (`AGENT_KINDS`, `agentKinds`, `loadAgentKind`) is the one place a kind is registered and is boot-safe: it restates each kind's `minTier` for the guards and loads the definition with a dynamic import. `service.ts` is the generic `AgentKindService` over a definition, `writing.ts` binds the writing kind without an execution host (this process seeds drafts and serves the session API, it never runs a turn), and `admin.ts` is the `AgentAdminService` behind the dashboard's agent workspace. The kind contract, task registry and config resolution live in `@chia/agent-host` so `apps/workflow` shares them. A new kind is a sibling of `writing.ts` here and in `apps/workflow/src/agents/`, plus one registry entry; see [`docs/agent-architecture.md`](../docs/agent-architecture.md) §2 and §13.
 - `guards/` — Hono middleware bound from the shared policies via `toHonoMiddleware` (`verifyAuth`, `rateLimiterGuard`, `ai`).
-- `services/` — host-side implementations of the ports `packages/api` declares:
-  - `workflow-control.ts` — the `WorkflowControl` client: every queue mutation, typed by `@chia/workflow-control/contract`, sent to `apps/workflow` with the shared bearer token
-  - `feed-indexing.service.ts` (`feedHooks`), `rag-indexing.service.ts` (`ragIndexingService`), `memory-consolidation.service.ts`, `agent-memory-indexing.service.ts` — start runs through `WorkflowControl`, read run state through `workflow/api`
-  - `agent-abort-controller.ts`, `agent-credentials.ts`, `agent-admin.service.ts` (lazy `AgentAdminService` delegate over `agents/admin.ts`)
+- `services/` — `*.service.ts`, the host-side implementations of the ports `packages/api` declares and the orchestration behind them; they decide _when_ something happens and delegate storage and remote access to `repos/`:
+  - `feed-indexing.service.ts` (`feedHooks`), `agent-memory-indexing.service.ts` (`memoryHooks`) — the lifecycle hooks, which start runs through `workflowControl`
+  - `agent-abort-controller.service.ts`, `agent-credentials.service.ts` (cookie → encrypted BYOK credentials at the HTTP boundary, decryption at the last moment), `spotify.service.ts`
+- `repos/` — `*.repo.ts`, this app's remote access, one file per thing accessed. `workflow-control.repo.ts` is the env-bound `@chia/workflow-control/client` instance: the private endpoint resolved by `withServiceEndpoint` plus the shared bearer token. It goes on the oRPC context as `workflow`, so the routes in `packages/api` start, cancel and reconcile runs themselves with `context.db` and `context.workflow`. Pure table access stays in `@chia/db/repos`.
 
 **Boot path is a memory budget.** The process loads what the router reaches at module scope. Heavy dependencies (`@ai-sdk/*`, `resend`, `@aws-sdk/client-s3`, the agent runtime) are reached through dynamic imports at first use; keep it that way when adding a route.
 

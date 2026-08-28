@@ -54,7 +54,7 @@ discriminator。它選擇：
 harness abstraction 是不同層次的概念。
 
 Service 本身是 generic 的。`apps/service/src/agents/service.ts`（`createAgentKindService`）
-在一個 `AgentKindDefinition`（`agents/kind.ts`）之上實作整個 port——session rows、durable runs、
+在一個 `AgentKindDefinition`（`@chia/agent-host/kind`）之上實作整個 port——session rows、durable runs、
 prompt/attach/stream、abort、approvals、compaction 與 rewind——turn step（`runKindTurn`）在 Pi
 那一側解析同一個 definition。一個 kind 就是 `apps/service/src/agents/` 下的一個檔案
 （`writing.ts`），把 domain package 綁到 host 的 ports 上，只提供會不同的部分：`minTier`、
@@ -125,7 +125,7 @@ table 表達，不把共用 session table 擴成大量 nullable columns。
 
 `agent.session.title` 是 operator 辨識 session 用的名稱：尚未命名時為 `null`，之後不是 operator
 自己取的（`settings:update`），就是從第一則 prompt 精簡而來。Turn step 會在未命名 session 的第一個
-operator turn 旁邊同時命名（`apps/service/src/steps/agent-turn.step.ts` 的 `titleSession`）：
+operator turn 旁邊同時命名（`apps/workflow/src/steps/agent-turn.step.ts` 的 `titleSession`）：
 `@chia/agent-runtime/pi/title` 的 `generateSessionTitle` 問 `session.title` task 的模型（§13）——
 預設是 house gateway 的便宜模型，operator 可以改釘別的；不用 session 自己選的模型，那可能是
 BYOK——模型失敗時退回 prompt 第一行，所以一定會有標題。
@@ -246,7 +246,7 @@ Pi 的 `context` hook 附加為每個 provider request 的最後一則 user mess
 
 Workflow SDK 沒有任何東西能碰到已經在執行的 step——取消 run 只是讓它不再被排程——所以 stop
 是透過第二個很小的 durable run 送達：session run 的 **abort controller**
-（`apps/service/src/workflows/agent-abort.workflow.ts`）。`prompt` 在開 session run 之前先開它，
+（`apps/workflow/src/workflows/agent-abort.workflow.ts`）。`prompt` 在開 session run 之前先開它，
 並把 `{ id, runId }` 放進 session run 的 request（與 `agent.run.metadata`）；它停在
 `agentAbortHook` 上，被 resume 時往自己的 stream 寫一則訊息。每個 turn step 直接以 run id 訂閱
 那條 stream——不查詢，所以一個 session run 恰好一個 controller——把得到的 `AbortSignal` 交給
@@ -451,7 +451,7 @@ Writing agent 透過 `ContentPort`（`@chia/agent-content` 的 `ContentReadPort`
 透過 `WebPort`（`web_search` 找來源、`fetch_url` 讀頁面）連外、透過 `MemoryPort` 跨 session
 記憶、透過 `DraftStore` 寫 staging buffer；只有 commit-tier tool 會把 staged data 提升到正式
 feed/content。刪除內容與圖片上傳不
-開放給 agent。`WebPort` 由 host 用 Firecrawl 實作（`apps/service/src/services/agent-web.port.ts`、
+開放給 agent。`WebPort` 由 host 用 Firecrawl 實作（`apps/workflow/src/services/agent-web.port.ts`、
 `FIRECRAWL_API_KEY`）：search 只回 snippet、不逐筆 scrape，所以每次呼叫成本固定；`fetch_url`
 是一頁一次 scrape、回主要內容的 markdown，模型要讀哪一頁自己決定。Agent 路徑上沒有直接對外的
 fetch。兩個 tool 都把 turn 的 abort signal 交給 port；Firecrawl SDK 無法取消 request，所以 port
@@ -465,7 +465,7 @@ system prompt，`buildTurnContext` 是帶 draft 狀態與目前時間的 volatil
 `agent.memory` 是唯一活得比 session 久的表。三種 kind、三種生命週期：`source` 是 `fetch_url`
 讀過的頁面（URL、標題、整頁文字，上限 64k 字元），`fact` 是模型用 `save_memory` 留下的蒸餾過、附出處的結論，
 `lesson` 是從 operator 的回饋抽出的寫作偏好。`MemoryPort`（`@chia/agent-writing/ports`）
-整個由 host 實作（`apps/service/src/services/agent-memory.port.ts`）：寫入走
+整個由 host 實作（`apps/workflow/src/services/agent-memory.port.ts`）：寫入走
 `packages/api/memories/write.ts`，索引 hook 是必填參數（同 `feeds/write.ts`），每次改到 row 的
 寫入都對 `agent_memory` 這個 resource type 排一次 `indexResourceWorkflow`（`docs/rag-architecture.md`
 §2.4）——文字沒變的 `source` 重訪不排，除非索引比 row 舊（`isResourceIndexedSince`），那是 hook 曾經失敗——首次或改動之後——時的補救。只有
@@ -487,7 +487,7 @@ live 且 `active` 的記憶會被索引：pending 的 lesson 未經審核，而�
 
 `lesson` 是唯一 always-on 的一種：volatile context 在 `# Learned preferences` 底下列出最近
 更新的 20 條 **active** lesson 的標題——要模型記得去查的偏好，不是它會遵守的偏好。Lesson 由
-`memoryConsolidationWorkflow`（`apps/service/src/workflows/memory-consolidation.workflow.ts`）
+`memoryConsolidationWorkflow`（`apps/workflow/src/workflows/memory-consolidation.workflow.ts`）
 產生：writing kind 的 `runTurn` 在一個執行過 `commit_draft` 且以 `done` 結束的 turn 之後啟動它
 ——只有這時 transcript 才含完整的修改往返——或從 dash 手動啟動（`memory.consolidate`）。它唯一的
 step 沿 `parentId` 讀 session 的原始 entries、穿過 compaction，只保留 operator 的訊息與 assistant
@@ -504,7 +504,7 @@ procedure 含唯讀都在 `adminGuard()` 後面：記憶是未發布的研究，
 ### 內容可見性
 
 Read tools 無法擴大自己能看到的範圍：可見性在 host 建 port 時就固定
-（`apps/service/src/services/content-read.port.ts`）。`author` port 看得到設定作者的草稿；
+（`packages/agent-host/src/content-read.port.ts`）。`author` port 看得到設定作者的草稿；
 `public` port 把每次 detail read 都限定在 `published: true`，被要求列草稿時回空而不是覆寫
 filter。搜尋不需要分支——chunk index 對所有呼叫者都只含已發佈內容。Writing agent 的 port 是
 `author`；公開 kind 建 `public`，而且永遠拿不到 `WebPort`。
@@ -540,39 +540,39 @@ factory、capability plugin system 或 provider-neutral handle。
 
 ## 12. 參考位置
 
-| Concern                      | File                                                                                                |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                             |
-| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                        |
-| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                      |
-| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                           |
-| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                           |
-| Abort controller             | `apps/service/src/workflows/agent-abort.workflow.ts`, `src/services/agent-abort-controller.ts`      |
-| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                                  |
-| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                  |
-| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                           |
-| Models/providers             | `packages/agent-runtime/src/models.ts`                                                              |
-| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                                  |
-| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                     |
-| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                            |
-| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                               |
-| Content read tools / port    | `packages/agent-content/src/`、`apps/service/src/services/content-read.port.ts`                     |
-| Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`、`apps/service/src/services/agent-memory.port.ts` |
-| Memory 寫入 / 索引           | `packages/api/memories/write.ts`、`apps/service/src/services/agent-memory-indexing.service.ts`      |
-| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                             |
-| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                                |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                       |
-| Kind registry / generic host | `apps/service/src/agents/registry.ts`、`agents/kind.ts`、`agents/service.ts`                        |
-| Writing kind binding         | `apps/service/src/agents/writing.ts`                                                                |
-| Task registry / resolution   | `apps/service/src/agents/tasks.ts`                                                                  |
-| Operator configuration       | `apps/service/src/agents/config.ts`、`agents/admin.ts`、`packages/db/src/libs/agent/config.ts`      |
-| Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`、`services/agent-admin.service.ts`            |
-| Durable workflow / step      | `apps/service/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts`              |
-| Durable message inbox        | `apps/service/src/workflows/hooks/agent.hooks.ts`                                                   |
-| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                            |
-| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                           |
-| Client store 與 elements     | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                 |
-| Dashboard UI                 | `apps/dash/src/components/agent/`, `components/agents/` (kind and task configuration)               |
+| Concern                      | File                                                                                                                 |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Pi turn lifecycle            | `packages/agent-runtime/src/pi/turn.ts`                                                                              |
+| Pi approval hook             | `packages/agent-runtime/src/pi/tool-gate.ts`                                                                         |
+| Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                                       |
+| Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                                            |
+| Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                                            |
+| Abort controller             | `apps/workflow/src/workflows/agent-abort.workflow.ts`, `apps/service/src/services/agent-abort-controller.service.ts` |
+| Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                                                   |
+| Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                                   |
+| Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                                            |
+| Models/providers             | `packages/agent-runtime/src/models.ts`                                                                               |
+| Session tree contract        | `packages/agent-runtime/src/session/tree.ts`, `session/entries.ts`                                                   |
+| Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                                      |
+| Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                                             |
+| Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                                                |
+| Content read tools / port    | `packages/agent-content/src/`、`packages/agent-host/src/content-read.port.ts`                                        |
+| Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`、`apps/workflow/src/services/agent-memory.port.ts`                 |
+| Memory 寫入 / 索引           | `packages/api/memories/write.ts`、`apps/service/src/services/agent-memory-indexing.service.ts`                       |
+| Writing composition          | `packages/agent-writing/src/runtime.ts`                                                                              |
+| Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                                                 |
+| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                                        |
+| Kind registry / generic host | `apps/service/src/agents/registry.ts`、`agents/service.ts`、`packages/agent-host/src/kind.ts`                        |
+| Writing kind binding         | `packages/agent-host/src/writing.ts`, `apps/service/src/agents/writing.ts`, `apps/workflow/src/agents/writing.ts`    |
+| Task registry / resolution   | `packages/agent-host/src/tasks.ts`                                                                                   |
+| Operator configuration       | `packages/agent-host/src/config.ts`、`apps/service/src/agents/admin.ts`、`packages/db/src/libs/agent/config.ts`      |
+| Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`、`apps/service/src/factories/agent-admin.factory.ts`           |
+| Durable workflow / step      | `apps/workflow/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts`                              |
+| Durable message inbox        | `packages/workflow-control/src/agent.hooks.ts`                                                                       |
+| oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                                             |
+| Database schema              | `packages/db/src/schemas/agent.schema.ts`                                                                            |
+| Client store 與 elements     | `packages/agent-elements/src/store.ts`, `src/*.tsx`                                                                  |
+| Dashboard UI                 | `apps/dash/src/components/agent/`, `components/agents/` (kind and task configuration)                                |
 
 ## 13. Kind、task 與 operator 設定
 
@@ -582,7 +582,7 @@ admin-only）：
 | Registry      | 位置                                  | 一個 entry 是                                                                         | Row                 |
 | ------------- | ------------------------------------- | ------------------------------------------------------------------------------------- | ------------------- |
 | `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | 一個對話型 agent——tools、ports、policy、state row、`runTurn`                          | `agent.kind_config` |
-| `AGENT_TASKS` | `apps/service/src/agents/tasks.ts`    | 一個在 session 旁邊跑的一次性模型呼叫——title、compaction、branch summary、lesson 抽取 | `agent.task_config` |
+| `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | 一個在 session 旁邊跑的一次性模型呼叫——title、compaction、branch summary、lesson 抽取 | `agent.task_config` |
 
 **Task** 是一個 model slot，加上呼叫有暴露時的 system prompt 與 sampling 參數。它們怎麼跑各不相同
 （`completeSimple`、Pi 的 `compact()`、`generateBranchSummary`），這部分留在呼叫端；operator 要選的

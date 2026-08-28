@@ -60,17 +60,17 @@ import {
   agentMessageToken,
 } from "@chia/workflow-control/agent-hooks";
 
+import { workflowControl } from "../repos/workflow-control.repo";
 import {
   AGENT_ABORT_CONTROLLER_KEY,
   readAgentAbortControllerRef,
   signalAgentAbort,
   startAgentAbortController,
-} from "../services/agent-abort-controller";
+} from "../services/agent-abort-controller.service";
 import {
   decryptAgentCredentials,
   readEncryptedAgentCredentials,
-} from "../services/agent-credentials";
-import { workflowControl } from "../services/workflow-control";
+} from "../services/agent-credentials.service";
 
 /**
  * The `AgentKindService` for one registered kind.

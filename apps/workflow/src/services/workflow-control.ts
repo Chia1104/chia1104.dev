@@ -84,6 +84,19 @@ export const executeLocalWorkflowCommand = async (
       await getRun(command.runId).cancel();
       return { type: "completed" };
     }
+    case "run:status": {
+      const run = getRun(command.runId);
+      if (!(await run.exists)) {
+        return { type: "run", exists: false };
+      }
+      const status = await run.status;
+      // `returnValue` settles only on completion; asking earlier would wait for the run.
+      const output =
+        status === "completed"
+          ? await run.returnValue.catch(() => undefined)
+          : undefined;
+      return { type: "run", exists: true, status, output };
+    }
   }
 };
 

@@ -63,15 +63,40 @@ export const workflowControlCommandSchema = z.discriminatedUnion("type", [
     request: z.object({ sessionId: z.string().min(1) }),
   }),
   z.object({ type: z.literal("run:cancel"), runId: z.string() }),
+  z.object({ type: z.literal("run:status"), runId: z.string() }),
 ]);
 
 export type WorkflowControlCommand = z.infer<
   typeof workflowControlCommandSchema
 >;
 
+export const workflowRunStatusSchema = z.enum([
+  "pending",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
+]);
+
+export type WorkflowRunStatus = z.infer<typeof workflowRunStatusSchema>;
+
+/**
+ * A run as the API process needs to see it to reconcile its own records: whether the
+ * World still has it, where it is, and — only once completed — what it returned.
+ */
+export const workflowRunStateSchema = z.object({
+  type: z.literal("run"),
+  exists: z.boolean(),
+  status: workflowRunStatusSchema.optional(),
+  output: z.unknown().optional(),
+});
+
+export type WorkflowRunState = z.infer<typeof workflowRunStateSchema>;
+
 export const workflowControlResultSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("started"), runId: z.string() }),
   z.object({ type: z.literal("completed") }),
+  workflowRunStateSchema,
 ]);
 
 export type WorkflowControlResult = z.infer<typeof workflowControlResultSchema>;

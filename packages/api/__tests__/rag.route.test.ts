@@ -2,11 +2,12 @@ import { call } from "@orpc/server";
 import { vi } from "vitest";
 
 import type { Session } from "@chia/auth/types";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type * as ragRouteModule from "../orpc/routes/rag.route";
 import type { BaseOSContext } from "../orpc/utils";
 
-const { repo } = vi.hoisted(() => ({
+const { repo, workflow } = vi.hoisted(() => ({
   repo: {
     getRagOverview: vi.fn(),
     getEmbeddingKeyDistribution: vi.fn(),
@@ -15,8 +16,22 @@ const { repo } = vi.hoisted(() => ({
     getChunkDetail: vi.fn(),
     listChunks: vi.fn(),
     getActiveResourceIndexRun: vi.fn(),
+    claimResourceIndexRun: vi.fn(),
+    markResourceIndexRunStarted: vi.fn(),
+    listResourceIndexRuns: vi.fn(),
+    getResourceIndexRunByExternalId: vi.fn(),
+    finalizeResourceIndexRun: vi.fn(),
     countFeedTranslations: vi.fn(),
     countAgentMemories: vi.fn(),
+  },
+  // Typed per member so the fixture below stays assignable to the client it stands in for.
+  workflow: {
+    startResourceIndex: vi.fn<WorkflowControlClient["startResourceIndex"]>(),
+    startFeedIndex: vi.fn<WorkflowControlClient["startFeedIndex"]>(),
+    startResourceReindex:
+      vi.fn<WorkflowControlClient["startResourceReindex"]>(),
+    cancelRun: vi.fn<WorkflowControlClient["cancelRun"]>(),
+    getRun: vi.fn<WorkflowControlClient["getRun"]>(),
   },
 }));
 
@@ -39,9 +54,17 @@ vi.mock("@chia/db/repos/resources/stats", () => ({
 
 vi.mock("@chia/db/repos/resources/index-run", () => ({
   getActiveResourceIndexRun: repo.getActiveResourceIndexRun,
+  claimResourceIndexRun: repo.claimResourceIndexRun,
+  markResourceIndexRunStarted: repo.markResourceIndexRunStarted,
+  listResourceIndexRuns: repo.listResourceIndexRuns,
+  getResourceIndexRunByExternalId: repo.getResourceIndexRunByExternalId,
+  finalizeResourceIndexRun: repo.finalizeResourceIndexRun,
 }));
 
 const ADMIN_ID = "admin-user";
+
+/** The mocks seen as the client they stand in for, which is what the context carries. */
+const workflowClient: Partial<WorkflowControlClient> = workflow;
 
 /** Minimal session, shaped as `adminPolicy` reads it. */
 const sessionOf = (id: string, role: string): Session =>
@@ -53,7 +76,8 @@ const sessionOf = (id: string, role: string): Session =>
 /**
  * Context with a pre-resolved session, the form an in-process caller supplies, so the
  * guards run their real policies without a better-auth round trip. `kv` is absent, which
- * makes `rateLimitGuard` fail open — the budget is not what these tests are about.
+ * makes `rateLimitGuard` fail open — the budget is not what these tests are about. The
+ * workflow client is the stub above, so a trigger is observable without a runner.
  */
 const contextOf = (session: Session | null): BaseOSContext =>
   /* SAFETY: This fixture implements the BaseOSContext members exercised by this case. */ ({
@@ -62,8 +86,28 @@ const contextOf = (session: Session | null): BaseOSContext =>
     clientIP: "127.0.0.1",
     config: { rateLimit: { windowMs: 60_000, limit: 100 } },
     db: {},
+    workflow: workflowClient,
     session,
   }) as BaseOSContext;
+
+const RUN_ROW = {
+  id: 11,
+  externalRunId: "wrun_1",
+  scope: "resource",
+  sourceType: "feed_translation",
+  sourceId: 1,
+  feedId: null,
+  status: "running",
+  model: "text-embedding-3-small",
+  indexVersion: "v1",
+  progress: null,
+  result: null,
+  error: null,
+  triggeredBy: ADMIN_ID,
+  startedAt: new Date("2026-08-01T00:00:00Z"),
+  endedAt: null,
+  createdAt: new Date("2026-08-01T00:00:00Z"),
+};
 
 const admin = () => contextOf(sessionOf(ADMIN_ID, "admin"));
 const member = () => contextOf(sessionOf("someone-else", "user"));
@@ -115,24 +159,95 @@ describe("rag routes", () => {
     vi.clearAllMocks();
   });
 
-  describe("context without an indexing port", () => {
-    it("fails the trigger with SERVICE_UNAVAILABLE rather than a silent no-op", async () => {
-      await expect(
-        call(
-          routes.indexResourceRoute,
-          { sourceType: "feed_translation", sourceId: 1 },
-          { context: admin() }
-        )
-      ).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
+  describe("runs go through the workflow client", () => {
+    it("starts the run, then records it as the operator's", async () => {
+      workflow.startResourceIndex.mockResolvedValue("wrun_1");
+      repo.claimResourceIndexRun.mockResolvedValue({
+        run: RUN_ROW,
+        reused: false,
+      });
+      repo.markResourceIndexRunStarted.mockResolvedValue(RUN_ROW);
+
+      const handle = await call(
+        routes.indexResourceRoute,
+        { sourceType: "feed_translation", sourceId: 1 },
+        { context: admin() }
+      );
+
+      expect(handle).toMatchObject({
+        runId: "wrun_1",
+        recordId: 11,
+        reused: false,
+      });
+      expect(workflow.startResourceIndex).toHaveBeenCalledWith({
+        sourceType: "feed_translation",
+        sourceId: 1,
+      });
+      expect(repo.claimResourceIndexRun).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          externalRunId: "wrun_1",
+          triggeredBy: ADMIN_ID,
+        })
+      );
     });
 
-    it("fails runs:list too, since reconciling needs the workflow runtime", async () => {
-      await expect(
-        call(routes.listIndexRunsRoute, {}, { context: admin() })
-      ).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
+    it("hands back an in-flight run instead of starting a second one", async () => {
+      repo.getActiveResourceIndexRun.mockResolvedValue(RUN_ROW);
+      workflow.getRun.mockResolvedValue({
+        type: "run",
+        exists: true,
+        status: "running",
+      });
+
+      const handle = await call(
+        routes.indexResourceRoute,
+        { sourceType: "feed_translation", sourceId: 1 },
+        { context: admin() }
+      );
+
+      expect(handle).toMatchObject({ runId: "wrun_1", reused: true });
+      expect(workflow.startResourceIndex).not.toHaveBeenCalled();
     });
 
-    it("still serves the reads, which never touch the port", async () => {
+    it("finalizes a listed row whose run has completed", async () => {
+      repo.listResourceIndexRuns.mockResolvedValue({
+        items: [RUN_ROW],
+        nextCursor: null,
+      });
+      workflow.getRun.mockResolvedValue({
+        type: "run",
+        exists: true,
+        status: "completed",
+        output: { chunks: 3 },
+      });
+      repo.finalizeResourceIndexRun.mockResolvedValue({
+        ...RUN_ROW,
+        status: "completed",
+        result: { chunks: 3 },
+      });
+
+      const page = await call(
+        routes.listIndexRunsRoute,
+        {},
+        { context: admin() }
+      );
+
+      expect(repo.finalizeResourceIndexRun).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          id: 11,
+          status: "completed",
+          result: { chunks: 3 },
+        })
+      );
+      expect(page.items[0]).toMatchObject({
+        runId: "wrun_1",
+        status: "completed",
+      });
+    });
+
+    it("still serves the reads, which never touch the client", async () => {
       const overview = await call(routes.getRagOverviewRoute, undefined, {
         context: admin(),
       });

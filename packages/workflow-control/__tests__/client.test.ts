@@ -1,10 +1,10 @@
-import { createWorkflowControl } from "../src/services/workflow-control";
-describe("workflow control", () => {
+import { createWorkflowControlClient } from "../src/client";
+describe("workflow control client", () => {
   it("sends authenticated commands to the workflow service", async () => {
     const fetcher = vi.fn(async () =>
       Response.json({ type: "started", runId: "wrun_remote" })
     );
-    const control = createWorkflowControl({
+    const control = createWorkflowControlClient({
       url: "http://workflow.internal/",
       token: "a".repeat(32),
       fetch: fetcher,
@@ -35,7 +35,7 @@ describe("workflow control", () => {
     const fetcher = vi.fn(async () =>
       Response.json({ error: "Run not found." }, { status: 404 })
     );
-    const control = createWorkflowControl({
+    const control = createWorkflowControlClient({
       url: "http://workflow.internal/",
       token: "a".repeat(32),
       fetch: fetcher,
@@ -51,7 +51,7 @@ describe("workflow control", () => {
     const fetcher = vi.fn(async () =>
       Response.json({ error: "Workflow command failed." }, { status: 503 })
     );
-    const control = createWorkflowControl({
+    const control = createWorkflowControlClient({
       url: "http://workflow.internal/",
       token: "a".repeat(32),
       fetch: fetcher,

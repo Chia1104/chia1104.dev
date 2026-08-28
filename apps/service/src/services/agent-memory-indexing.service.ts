@@ -1,7 +1,7 @@
 import type { MemoryHooks } from "@chia/api/orpc/utils";
 import { AGENT_MEMORY_SOURCE_TYPE } from "@chia/api/resources/registry";
 
-import { workflowControl } from "./workflow-control";
+import { workflowControl } from "../repos/workflow-control.repo";
 
 export const memoryHooks: MemoryHooks = {
   async onMemoryChanged(memoryId) {

@@ -2,7 +2,7 @@ import type { JsonObject } from "@chia/utils/json";
 import { agentAbortControllerRefSchema } from "@chia/workflow-control/agent-hooks";
 import type { AgentAbortControllerRef } from "@chia/workflow-control/agent-hooks";
 
-import { workflowControl } from "./workflow-control";
+import { workflowControl } from "../repos/workflow-control.repo";
 
 /**
  * Host side of `agent-abort.workflow.ts`: start the controller for a session run, subscribe a
