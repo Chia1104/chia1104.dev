@@ -4,7 +4,7 @@ import { Slider } from "@heroui/react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
-import { useAgentLabels } from "./provider.tsx";
+import { useAgentLabels } from "./labels-context.tsx";
 import type { AgentThinkingLevel } from "./types.ts";
 
 export const THINKING_LEVELS: readonly AgentThinkingLevel[] = [

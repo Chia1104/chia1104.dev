@@ -1,10 +1,10 @@
-.PHONY: help init init-www init-dash init-service \
+.PHONY: help init init-www init-dash init-service init-workflow \
         dev dev-www dev-dash dev-service \
-        build build-www build-dash build-service \
+        build build-www build-dash build-service build-workflow \
         test test-watch test-e2e \
         lint lint-fix format type-check \
         db-up db-migrate db-seed db-studio db-generate \
-        docker-build docker-build-www docker-build-dash docker-build-service \
+        docker-build docker-build-www docker-build-dash docker-build-service docker-build-workflow \
         clean
 
 ## help: Show available targets
@@ -16,6 +16,7 @@ help:
 	@echo "  init-www          Create .env for apps/www"
 	@echo "  init-dash         Create .env for apps/dash"
 	@echo "  init-service      Create .env for apps/service"
+	@echo "  init-workflow     Create .env for apps/workflow"
 	@echo ""
 	@echo "Development:"
 	@echo "  dev               Run all applications"
@@ -28,6 +29,7 @@ help:
 	@echo "  build-www         Build apps/www"
 	@echo "  build-dash        Build apps/dash"
 	@echo "  build-service     Build apps/service"
+	@echo "  build-workflow    Build apps/workflow"
 	@echo ""
 	@echo "Testing:"
 	@echo "  test              Run unit tests"
@@ -52,6 +54,7 @@ help:
 	@echo "  docker-build-www  Build www Docker image"
 	@echo "  docker-build-dash Build dash Docker image"
 	@echo "  docker-build-service Build service Docker image"
+	@echo "  docker-build-workflow Build workflow Docker image"
 	@echo ""
 	@echo "  clean             Clean all caches and build artifacts"
 
@@ -70,6 +73,9 @@ init:
 	@echo "Creating service .env file..."
 	@cp ./apps/service/.env.example ./apps/service/.env
 	@echo "Creating service .env file... Done"
+	@echo "Creating workflow .env file..."
+	@cp ./apps/workflow/.env.example ./apps/workflow/.env
+	@echo "Creating workflow .env file... Done"
 
 init-www:
 	@echo "Creating www .env file..."
@@ -85,6 +91,11 @@ init-service:
 	@echo "Creating service .env file..."
 	@cp ./apps/service/.env.example ./apps/service/.env
 	@echo "Creating service .env file... Done"
+
+init-workflow:
+	@echo "Creating workflow .env file..."
+	@cp ./apps/workflow/.env.example ./apps/workflow/.env
+	@echo "Creating workflow .env file... Done"
 
 # ── Development ───────────────────────────────────────────────────────────────
 
@@ -113,6 +124,9 @@ build-dash:
 
 build-service:
 	@pnpm build:service
+
+build-workflow:
+	@pnpm build:workflow
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 
@@ -167,7 +181,10 @@ docker-build-dash:
 docker-build-service:
 	@docker build -f Dockerfile.service -t chia1104-service .
 
-docker-build: docker-build-www docker-build-dash docker-build-service
+docker-build-workflow:
+	@docker build -f Dockerfile.workflow -t chia1104-workflow .
+
+docker-build: docker-build-www docker-build-dash docker-build-service docker-build-workflow
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 

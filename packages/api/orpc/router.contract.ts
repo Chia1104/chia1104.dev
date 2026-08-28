@@ -1,3 +1,4 @@
+import * as agentAdminContracts from "./contracts/agent-admin.contract";
 import * as agentContracts from "./contracts/agent.contract";
 import * as apikeyContracts from "./contracts/apikey.contract";
 import * as emailContracts from "./contracts/email.contract";
@@ -31,6 +32,17 @@ export const routerContract = {
     },
     capabilities: {
       list: agentContracts.listAgentCapabilitiesContract,
+    },
+    admin: {
+      kinds: {
+        list: agentAdminContracts.listAgentKindsAdminContract,
+        update: agentAdminContracts.updateAgentKindAdminContract,
+      },
+      tasks: {
+        list: agentAdminContracts.listAgentTasksAdminContract,
+        update: agentAdminContracts.updateAgentTaskAdminContract,
+        models: agentAdminContracts.listAgentTaskModelsAdminContract,
+      },
     },
   },
   health: {
@@ -116,6 +128,7 @@ export const routerContract = {
 };
 
 export {
+  agentAdminContracts,
   agentContracts,
   apikeyContracts,
   emailContracts,

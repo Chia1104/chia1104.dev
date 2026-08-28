@@ -92,7 +92,7 @@ const hasOperatorInput = (exchange: readonly OperatorExchangeTurn[]) =>
     (turn) => turn.role === "operator" && !isOperatorDecisionText(turn.text)
   );
 
-const SYSTEM_PROMPT = [
+export const LESSON_EXTRACTION_SYSTEM_PROMPT = [
   "You review a conversation between a blog author (the operator) and their writing",
   "assistant, and extract durable lessons the assistant should apply in every future",
   "session: preferences about structure, tone, length, sourcing, what to avoid.",
@@ -108,9 +108,17 @@ const SYSTEM_PROMPT = [
   'Reply with a JSON array only, no prose: [{"title": "one line", "content": "two or three sentences"}].',
 ].join("\n");
 
+/** Three lessons of a few sentences each fit well inside this; the reply is JSON, not prose. */
+export const LESSON_EXTRACTION_PARAMS = {
+  maxTokens: 1024,
+  temperature: 0.2,
+} as const;
+
 export interface LessonExtractionInput {
   exchange: readonly OperatorExchangeTurn[];
   existingLessons: readonly Pick<MemorySummary, "title">[];
+  /** Replaces {@link LESSON_EXTRACTION_SYSTEM_PROMPT}; the operator's override, when they made one. */
+  systemPrompt?: string;
 }
 
 export interface LessonExtractionPrompt {
@@ -141,7 +149,7 @@ export const buildLessonExtractionPrompt = (
       : rendered;
 
   return {
-    systemPrompt: SYSTEM_PROMPT,
+    systemPrompt: input.systemPrompt ?? LESSON_EXTRACTION_SYSTEM_PROMPT,
     text: `<existing_lessons>\n${existing}\n</existing_lessons>\n\n<conversation>\n${conversation}\n</conversation>`,
   };
 };

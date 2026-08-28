@@ -13,11 +13,12 @@ Three packages carry it: `api` (contracts, handlers, guards, ports), `service-ki
 **Context injection.** `packages/api` parses no env and holds no module-level state. Everything the guards and routes need from the host travels on the oRPC context, `BaseOSContext` in `packages/api/orpc/utils.ts`:
 
 - `config` — required: rate-limit budget, project id, AI key material.
-- `hooks.onFeedChanged` / `hooks.onFeedRemoved` — optional feed lifecycle hooks (`FeedHooks`), fired by the content write paths.
-- `indexing` — optional `IndexingService` port; starts and reconciles resource index runs.
+- `workflow` — required: the `@chia/workflow-control/client` for `apps/workflow`. Routes start runs, cancel them and read their state with it directly (`rag.route.ts` through `resources/index-run.ts`, `memory.route.ts` for consolidation); the World never lives in this package.
+- `hooks.onFeedChanged` / `hooks.onFeedRemoved` / `hooks.onMemoryChanged` — optional lifecycle hooks (`FeedHooks`, `MemoryHooks`), fired by the write paths.
 - `agentKinds` — optional map of `AgentKindService` keyed by `agent.session.kind`.
+- `agentAdmin` — optional `AgentAdminService` port; the operator's configuration of agent kinds and tasks (`agent.admin.*`).
 
-The port interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `indexing.service.ts`) next to `requireIndexing(context)` / `requireAgentKind(context, kind)`, which answer `SERVICE_UNAVAILABLE` when the context lacks the port. `apps/service` is the only process that runs the router and supplies all of these in `createORPCContext`. Anything that needs a long-lived process, a DB handle or gateway credentials belongs in the app, not here.
+The two agent ports stay injected because they read the host's kind and task registries and, for a session, the World's durable streams — both host code. Their interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `agent-admin.service.ts`) next to `requireAgentKind(context, kind)` / `requireAgentAdminService(context)`, which answer `SERVICE_UNAVAILABLE` when the context lacks the port. `apps/service` is the only process that runs the router and supplies all of these in `createORPCContext`. Anything that needs a long-lived process or gateway credentials belongs in the app, not here.
 
 **Data access.** oRPC handlers never write raw Drizzle; they call repositories exported as `@chia/db/repos/*`. Write logic shared with workflow steps lives in `packages/api/<domain>/write` (today `feeds/write.ts`) and takes its `FeedHooks` as an explicit argument, so a durable turn can call it with no request to authorize against.
 
@@ -27,7 +28,7 @@ The port interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `
 
 ### `api`
 
-`orpc/` — `contracts/`, `routes/`, `guards/`, `services/` (the ports), `router.contract.ts`, `router.ts`, `utils.ts` (`BaseOSContext`, `contractOS`, `baseOS`). Domain modules beside it: `feeds/` (search, access, write), `resources/` (the RAG resource registry and adapters — see [`docs/rag-architecture.md`](../docs/rag-architecture.md)), and external clients each with their own env: `github`, `spotify`, `s3`, `email` (Resend), `betterstack`, `captcha`. `services/env.ts` holds the service-endpoint env the frontends compose.
+`orpc/` — `contracts/`, `routes/`, `guards/`, `services/` (the agent ports), `router.contract.ts`, `router.ts`, `utils.ts` (`BaseOSContext`, `contractOS`, `baseOS`). Domain modules beside it: `feeds/` (search, access, write), `memories/` (write), `resources/` (the RAG resource registry and adapters, and `index-run.ts` — operator-triggered index runs recorded, joined and reconciled through the workflow client — see [`docs/rag-architecture.md`](../docs/rag-architecture.md)), and external clients each with their own env: `github`, `spotify`, `s3`, `email` (Resend), `betterstack`, `captcha`. `services/env.ts` holds the service-endpoint env the frontends compose.
 
 ### `service-kit`
 
@@ -59,11 +60,13 @@ Read [`docs/agent-architecture.md`](../docs/agent-architecture.md) before touchi
 - **`agent-elements`** — the client side, shared by both frontends. It depends on `@chia/agent-runtime/wire/*`, the contract types, the tool registries and HeroUI; the host passes its own `client.agent` and keeps kind-specific panels (the writing draft preview) on its side.
   - `./store` — `createAgentSessionStore`, a zustand vanilla store per session owning only the live side: folded transcript, connection, the `agent.sessions.chat` stream loop, prompt and approve.
   - `./queries` — TanStack Query options and keys for the server side (session detail, models). The store reads and refreshes them through the host's `QueryClient`, so cache and store never disagree.
-  - `./provider` — `AgentSessionProvider` and the hooks over it.
+  - `./provider` — `AgentSessionProvider` and the hooks over it. It mounts an `AgentLabelsProvider` for its subtree.
   - `./labels` — `AgentLabels` is the shape of `@chia/i18n/agent-elements/en-US.json`. The host passes its locale's catalog (or a partial override) as `labels`, `setLabels` swaps it on a locale change, and `fill` resolves `{tool}`/`{tier}` templates.
-  - `./markdown` — Streamdown with the code and CJK plugins. `markdownComponents` restates inline code, tables, quotes and rules in HeroUI tokens because Streamdown's defaults use shadcn's `muted`; hosts layer more through `components`.
+  - `./labels-context` — `AgentLabelsProvider` / `useAgentLabels`, the catalog as context on its own, so an element that only needs strings can be mounted without a session; with no provider the `en-US` catalog applies.
+  - `./model-picker` is controlled (`models`, `value`, `onChange`, an optional `fallback` row for "no choice") and needs only the labels context — `apps/dash`'s agent workspace uses it as a form field; `./session-model-picker` binds it to the mounted session and persists every choice.
+  - `./markdown` — Streamdown with the code and CJK plugins; its copy-button and link-confirmation strings come from the labels context, so it renders with or without a session. `markdownComponents` restates inline code, tables, quotes and rules in HeroUI tokens because Streamdown's defaults use shadcn's `muted`; hosts layer more through `components`.
   - `./renderers/content` and `./renderers/web` — per-tool views over the clipped `details` of the content read tools and the writing agent's web tools, keyed by the tool registries' names. A host merges the sets it needs into `Thread`'s `renderers`.
-  - One HeroUI element per remaining export (`./thread`, `./message`, `./tool-call`, `./approval-card`, `./composer`, `./model-picker`, …) — see the `exports` map.
+  - One HeroUI element per remaining export (`./thread`, `./message`, `./tool-call`, `./approval-card`, `./composer`, `./session-model-picker`, …) — see the `exports` map.
   - A host's Tailwind must `@source` this package's `src/**` **and** its `node_modules/{streamdown,@streamdown/*}/dist/*.js` (see `apps/dash/src/app/globals.css`).
 
 ### `contents`, `ui`, `editor`, `themes`, `tailwind`, `shaders`

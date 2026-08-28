@@ -6,6 +6,7 @@ import type { DB } from "@chia/db/client";
 import type { UpdateAgentMemoryDTO } from "@chia/db/repos/agent/memory";
 import type { AgentMemory } from "@chia/db/schema";
 import { omitUndefined } from "@chia/utils/object";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type * as memoryRouteModule from "../orpc/routes/memory.route";
 import type { BaseOSContext } from "../orpc/utils";
@@ -149,25 +150,24 @@ describe("memory routes", () => {
     expect(repo.updateAgentMemory).not.toHaveBeenCalled();
   });
 
-  it("starts consolidation through the port, and says so when there is none", async () => {
-    await expect(
-      call(
-        routes.consolidateMemoryRoute,
-        { sessionId: "session-1" },
-        { context: admin() }
-      )
-    ).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
-
-    const consolidate = vi.fn(async () => ({ runId: "run-1" }));
+  it("starts consolidation through the workflow client", async () => {
+    const startMemoryConsolidation = vi
+      .fn<WorkflowControlClient["startMemoryConsolidation"]>()
+      .mockResolvedValue("run-1");
+    const workflow: Partial<WorkflowControlClient> = {
+      startMemoryConsolidation,
+    };
     const started = await call(
       routes.consolidateMemoryRoute,
       { sessionId: "session-1" },
-      { context: admin({ memory: { consolidate } }) }
+      {
+        context: admin({
+          /* SAFETY: This fixture implements the client member this route exercises. */
+          workflow: workflow as WorkflowControlClient,
+        }),
+      }
     );
     expect(started).toEqual({ runId: "run-1" });
-    expect(consolidate).toHaveBeenCalledWith(
-      { adminId: ADMIN_ID, userId: ADMIN_ID },
-      { sessionId: "session-1" }
-    );
+    expect(startMemoryConsolidation).toHaveBeenCalledWith("session-1");
   });
 });

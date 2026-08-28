@@ -17,7 +17,7 @@ import { withMetaSchema } from "./shared";
 // Shared shapes
 // ============================================
 
-const thinkingLevelSchema = z.enum([
+export const thinkingLevelSchema = z.enum([
   "off",
   "minimal",
   "low",
@@ -376,27 +376,25 @@ export const forkAgentSessionContract = oc
 // Capabilities
 // ============================================
 
+export const agentModelInfoSchema = z.object({
+  providerId: z.string(),
+  modelId: z.string(),
+  name: z.string(),
+  contextWindow: z.number(),
+  supportsReasoning: z.boolean(),
+  supportsImageInput: z.boolean(),
+  /**
+   * True when the provider runs on a caller-supplied key the caller has not registered yet.
+   * Such models are still listed — the picker offers them and prompts for a key, rather than
+   * hiding an option the operator could have had.
+   */
+  requiresApiKey: z.boolean(),
+});
+
 export const listAgentModelsContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
   .input(z.object({ kind: z.string().min(1) }))
-  .output(
-    z.array(
-      z.object({
-        providerId: z.string(),
-        modelId: z.string(),
-        name: z.string(),
-        contextWindow: z.number(),
-        supportsReasoning: z.boolean(),
-        supportsImageInput: z.boolean(),
-        /**
-         * True when the provider runs on a caller-supplied key the caller has not registered yet.
-         * Such models are still listed — the picker offers them and prompts for a key, rather than
-         * hiding an option the operator could have had.
-         */
-        requiresApiKey: z.boolean(),
-      })
-    )
-  );
+  .output(z.array(agentModelInfoSchema));
 
 /** Tools and slash commands, so the dashboard need not hard-code either list. */
 export const listAgentCapabilitiesContract = oc
@@ -423,6 +421,7 @@ export const listAgentCapabilitiesContract = oc
     })
   );
 
+export type AgentModelInfo = z.infer<typeof agentModelInfoSchema>;
 export type AgentSessionDetail = z.infer<typeof agentSessionDetailSchema>;
 export type AgentSessionSummary = z.infer<typeof agentSessionSummarySchema>;
 export type AgentDraftPayload = z.infer<typeof agentDraftSchema>;

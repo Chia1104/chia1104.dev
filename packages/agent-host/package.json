@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/agent-host",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./config": {
+      "types": "./src/config.ts",
+      "default": "./src/config.ts"
+    },
+    "./content-read.port": {
+      "types": "./src/content-read.port.ts",
+      "default": "./src/content-read.port.ts"
+    },
+    "./credentials": {
+      "types": "./src/credentials.ts",
+      "default": "./src/credentials.ts"
+    },
+    "./execution": {
+      "types": "./src/execution.ts",
+      "default": "./src/execution.ts"
+    },
+    "./kind": {
+      "types": "./src/kind.ts",
+      "default": "./src/kind.ts"
+    },
+    "./tasks": {
+      "types": "./src/tasks.ts",
+      "default": "./src/tasks.ts"
+    },
+    "./writing": {
+      "types": "./src/writing.ts",
+      "default": "./src/writing.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "vitest --run",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chia/agent-content": "workspace:*",
+    "@chia/agent-runtime": "workspace:*",
+    "@chia/agent-writing": "workspace:*",
+    "@chia/ai": "workspace:*",
+    "@chia/api": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chia/service-kit": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@chia/workflow-control": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}

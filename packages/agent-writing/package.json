@@ -17,6 +17,10 @@
       "types": "./src/models.ts",
       "default": "./src/models.ts"
     },
+    "./config": {
+      "types": "./src/config.ts",
+      "default": "./src/config.ts"
+    },
     "./policy": {
       "types": "./src/policy.ts",
       "default": "./src/policy.ts"

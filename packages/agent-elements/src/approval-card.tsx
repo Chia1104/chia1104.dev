@@ -9,9 +9,9 @@ import { Check, MessageSquareText, ShieldAlert, X } from "lucide-react";
 import type { ToolCallView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { useAgentLabels } from "./labels-context.tsx";
 import { fill } from "./labels.ts";
 import {
-  useAgentLabels,
   useAgentSession,
   useSessionDetail,
   useUpdateSettings,

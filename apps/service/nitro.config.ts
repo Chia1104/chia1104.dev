@@ -15,8 +15,6 @@ export default defineConfig({
    */
   routesDir: "nitro/routes",
   apiDir: "nitro/api",
-  modules: ["workflow/nitro"],
-  plugins: ["plugins/start-pg-world.ts", "plugins/start-redis-world.ts"],
   typescript: {
     tsconfigPath: "./tsconfig.build.json",
   },

@@ -1,7 +1,10 @@
 import type { Usage } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
 
-import { shouldCompactBranch } from "../src/pi/compaction.ts";
+import {
+  compactionContextWindow,
+  shouldCompactBranch,
+} from "../src/pi/compaction.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { estimateBranchContextTokens } from "../src/session/usage.ts";
 
@@ -149,5 +152,31 @@ describe("shouldCompactBranch", () => {
 
     const huge = [userEntry("x".repeat(400_000))];
     expect(shouldCompactBranch(huge, CONTEXT_WINDOW)).toBe(true);
+  });
+});
+
+describe("compactionContextWindow", () => {
+  it("measures against the session model when the summariser is at least as large", () => {
+    expect(
+      compactionContextWindow(
+        { contextWindow: 200_000 },
+        { contextWindow: 200_000 }
+      )
+    ).toBe(200_000);
+    expect(
+      compactionContextWindow(
+        { contextWindow: 200_000 },
+        { contextWindow: 1_000_000 }
+      )
+    ).toBe(200_000);
+  });
+
+  it("brings compaction forward to what a smaller summariser can read", () => {
+    expect(
+      compactionContextWindow(
+        { contextWindow: 1_000_000 },
+        { contextWindow: 200_000 }
+      )
+    ).toBe(200_000);
   });
 });

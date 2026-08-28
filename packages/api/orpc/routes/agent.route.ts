@@ -172,7 +172,7 @@ export const chatAgentRoute = contractOS.agent.sessions.chat
         sessionId: opts.input.sessionId,
         runId: cursor.runId,
         startIndex: cursor.startIndex,
-        deltas: true,
+        deltaStartIndex: cursor.deltaStartIndex,
       })
     );
   });

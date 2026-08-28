@@ -11,11 +11,12 @@ import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { ApprovalCard, isApprovalItem } from "./approval-card.tsx";
+import { useAgentLabels } from "./labels-context.tsx";
 import { MessageActions } from "./message-actions.tsx";
 import { AgentBadge, AssistantMessage, UserMessage } from "./message.tsx";
 import { Notice } from "./notice.tsx";
 import { orbStateOf } from "./orb-state.ts";
-import { useAgentBusy, useAgentLabels, useAgentSession } from "./provider.tsx";
+import { useAgentBusy, useAgentSession } from "./provider.tsx";
 import type { AgentConnection } from "./store.ts";
 import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";

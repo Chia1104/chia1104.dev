@@ -5,11 +5,11 @@ import { useMemo, useState } from "react";
 
 import { Composer } from "@chia/agent-elements/composer";
 import { EmptyState } from "@chia/agent-elements/empty-state";
-import { ModelPicker } from "@chia/agent-elements/model-picker";
 import { useSessionDetail } from "@chia/agent-elements/provider";
 import { contentToolRenderers } from "@chia/agent-elements/renderers/content";
 import { memoryToolRenderers } from "@chia/agent-elements/renderers/memory";
 import { webToolRenderers } from "@chia/agent-elements/renderers/web";
+import { SessionModelPicker } from "@chia/agent-elements/session-model-picker";
 import { Thread } from "@chia/agent-elements/thread";
 
 import { DraftAttachments } from "./draft-attachments";
@@ -68,7 +68,7 @@ export const WritingSession = ({ tabs }: { tabs: ReactNode }) => {
         localCommands={localCommands}
         placeholder="Ask the writing agent…"
         toolbar={
-          <ModelPicker
+          <SessionModelPicker
             isOpen={modelPickerOpen}
             onOpenChange={setModelPickerOpen}
             providerOrder={PROVIDER_ORDER}

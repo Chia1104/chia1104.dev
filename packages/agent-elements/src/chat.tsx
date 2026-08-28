@@ -9,7 +9,8 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { Composer } from "./composer.tsx";
 import { EmptyState } from "./empty-state.tsx";
 import type { EmptyStateProps } from "./empty-state.tsx";
-import { useAgentLabels, useAgentStatus } from "./provider.tsx";
+import { useAgentLabels } from "./labels-context.tsx";
+import { useAgentStatus } from "./provider.tsx";
 import { Thread } from "./thread.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 

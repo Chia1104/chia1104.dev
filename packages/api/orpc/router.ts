@@ -1,3 +1,4 @@
+import * as agentAdminRoutes from "./routes/agent-admin.route";
 import * as agentRoutes from "./routes/agent.route";
 import * as apikeyRoutes from "./routes/apikey.route";
 import * as emailRoutes from "./routes/email.route";
@@ -32,6 +33,17 @@ export const router = contractOS.router({
     },
     capabilities: {
       list: agentRoutes.listAgentCapabilitiesRoute,
+    },
+    admin: {
+      kinds: {
+        list: agentAdminRoutes.listAgentKindsAdminRoute,
+        update: agentAdminRoutes.updateAgentKindAdminRoute,
+      },
+      tasks: {
+        list: agentAdminRoutes.listAgentTasksAdminRoute,
+        update: agentAdminRoutes.updateAgentTaskAdminRoute,
+        models: agentAdminRoutes.listAgentTaskModelsAdminRoute,
+      },
     },
   },
   health: {

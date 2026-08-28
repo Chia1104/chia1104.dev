@@ -3,11 +3,11 @@ import { os } from "@orpc/server";
 import GithubSlugger from "github-slugger";
 
 import type { ServiceContext } from "@chia/service-kit/context";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import { routerContract } from "./router.contract";
+import type { AgentAdminService } from "./services/agent-admin.service";
 import type { AgentKindService } from "./services/agent.service";
-import type { IndexingService } from "./services/indexing.service";
-import type { MemoryService } from "./services/memory.service";
 
 /**
  * Values the guards need that only the hosting app knows (env-driven budgets, project
@@ -47,23 +47,27 @@ export interface MemoryHooks {
 /**
  * oRPC handler context: {@link ServiceContext} plus what the hosting process supplies.
  *
- * `config` is required — every process that runs the router has a rate-limit budget to
- * name. The ports are optional because a context need not have them: `apps/service` owns
- * the workflow runtime and wires all of these in `createORPCContext`; a context that
- * leaves one out (tests do) gets `SERVICE_UNAVAILABLE` from a route that needs it.
+ * `config` and `workflow` are required — every process that runs the router has a
+ * rate-limit budget to name and a workflow service to send runs to. The agent ports are
+ * optional because a context need not have them: `apps/service` owns the kind and task
+ * registries and wires them in `createORPCContext`; a context that leaves one out (tests
+ * do) gets `SERVICE_UNAVAILABLE` from a route that needs it.
  */
 export interface BaseOSContext extends ServiceContext {
   config: ORPCConfig;
+  /**
+   * The `apps/workflow` client. Routes start runs, cancel them and read their state with it
+   * directly — the World itself lives behind that service, never in this package.
+   */
+  workflow: WorkflowControlClient;
   hooks?: FeedHooks &
     MemoryHooks & {
       onError?: (cause: unknown) => void;
     };
-  /** Starts and reconciles resource index runs. Needs the workflow runtime. */
-  indexing?: IndexingService;
-  /** Starts memory consolidation runs. Needs the workflow runtime. */
-  memory?: MemoryService;
   /** Agent kind services, keyed by `agent.session.kind`. */
   agentKinds?: Readonly<Record<string, AgentKindService>>;
+  /** Operator configuration of kinds and tasks. Needs the host's registries. */
+  agentAdmin?: AgentAdminService;
 }
 
 export const baseOS = os.$context<BaseOSContext>();
