@@ -1,5 +1,4 @@
-import { getRun as getWorkflowRun, start } from "workflow/api";
-import type { Run } from "workflow/api";
+import { getRun as getWorkflowRun } from "workflow/api";
 
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";
 import { EMBEDDING_INDEX_VERSION } from "@chia/ai/embeddings/utils";
@@ -31,13 +30,11 @@ import {
 } from "@chia/db/schema";
 import type { ResourceIndexRun, ResourceIndexRunStatus } from "@chia/db/schema";
 
-import { feedIndexingWorkflow } from "../workflows/feed-indexing.workflow";
-import { indexResourceWorkflow } from "../workflows/resource-index.workflow";
-import { resourceReindexWorkflow } from "../workflows/resource-reindex.workflow";
+import { workflowControl } from "./workflow-control";
 
 /**
- * `IndexingService` for this app, which is the only process with a workflow runtime.
- * `orpc.factory.ts` puts it on every request context.
+ * `IndexingService` for this app. `orpc.factory.ts` puts it on every API request context;
+ * `WorkflowControl` sends queue mutations to the workflow role in a split deployment.
  *
  * What it adds over `start()`: every operator-triggered run gets a `resource_index_run`
  * row, so the dashboard can poll it, attribute it, and be handed the in-flight run instead
@@ -209,7 +206,7 @@ const reconcile = async (
 const trigger = async (
   caller: IndexingCaller,
   target: ResourceIndexRunTarget,
-  startRun: () => Promise<Run<unknown>>
+  startRun: () => Promise<string>
 ): Promise<IndexRunHandle> => {
   const db = await openDatabase();
 
@@ -221,18 +218,18 @@ const trigger = async (
     }
   }
 
-  const run = await startRun();
+  const runId = await startRun();
   const { run: row, reused } = await claimResourceIndexRun(db, {
     ...target,
     ...currentIndexKey(),
-    externalRunId: run.runId,
+    externalRunId: runId,
     triggeredBy: caller.userId,
   });
 
   if (reused) {
-    await run.cancel().catch((cause: unknown) => {
+    await workflowControl.cancelRun(runId).catch((cause: unknown) => {
       console.error("Could not cancel a superseded index run", {
-        runId: run.runId,
+        runId,
         error: String(cause),
       });
     });
@@ -265,7 +262,7 @@ export const ragIndexingService: IndexingService = {
         sourceType: input.sourceType,
         sourceId: input.sourceId,
       },
-      () => start(indexResourceWorkflow, [input])
+      () => workflowControl.startResourceIndex(input)
     );
   },
 
@@ -273,13 +270,15 @@ export const ragIndexingService: IndexingService = {
     return trigger(
       caller,
       { scope: RESOURCE_INDEX_RUN_SCOPE.Feed, feedId: input.feedId },
-      () => start(feedIndexingWorkflow, [{ feedID: input.feedId }])
+      () => workflowControl.startFeedIndex(input.feedId)
     );
   },
 
   reindexAll(caller, input) {
     return trigger(caller, { scope: RESOURCE_INDEX_RUN_SCOPE.All }, () =>
-      start(resourceReindexWorkflow, [{ onlyMissing: input.onlyMissing }])
+      workflowControl.startResourceReindex({
+        onlyMissing: input.onlyMissing,
+      })
     );
   },
 

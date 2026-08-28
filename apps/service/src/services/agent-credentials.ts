@@ -1,11 +1,11 @@
 import { parse } from "hono/utils/cookie";
 
-import type { AgentCredentials } from "@chia/agent-runtime/models";
+import { decryptAgentCredentials as decryptCredentials } from "@chia/agent-host/credentials";
+export { AgentCredentialError } from "@chia/agent-host/credentials";
 import { ANTHROPIC_API_KEY, OPENAI_API_KEY } from "@chia/ai/constants";
-import { verifyApiKey } from "@chia/ai/utils";
+import type { EncryptedAgentCredentials } from "@chia/workflow-control/agent-hooks";
 
 import { env } from "../env";
-import type { EncryptedAgentCredentials } from "../workflows/hooks/agent.hooks";
 
 /**
  * Bring-your-own-key plumbing for agent turns.
@@ -51,19 +51,6 @@ export const readEncryptedAgentCredentials = (
   return Object.keys(credentials).length > 0 ? credentials : undefined;
 };
 
-export class AgentCredentialError extends Error {
-  constructor(
-    readonly providerId: string,
-    options?: { cause?: unknown }
-  ) {
-    super(
-      `Your ${providerId} API key could not be read. Register it again, then retry.`,
-      options
-    );
-    this.name = "AgentCredentialError";
-  }
-}
-
 /**
  * Decrypts the ciphertext carried across the workflow boundary.
  *
@@ -74,21 +61,4 @@ export class AgentCredentialError extends Error {
  */
 export const decryptAgentCredentials = (
   encrypted: EncryptedAgentCredentials | undefined
-): AgentCredentials => {
-  if (!encrypted) return {};
-  const privateKey = env.AI_AUTH_PRIVATE_KEY;
-  if (!privateKey) return {};
-
-  const credentials: AgentCredentials = {};
-  for (const [providerId, encoded] of Object.entries(encrypted)) {
-    if (!encoded) continue;
-    try {
-      credentials[
-        /* SAFETY: The producer contract guarantees this value satisfies keyof AgentCredentials. */ providerId as keyof AgentCredentials
-      ] = verifyApiKey(encoded, privateKey).apiKey;
-    } catch (error) {
-      throw new AgentCredentialError(providerId, { cause: error });
-    }
-  }
-  return credentials;
-};
+) => decryptCredentials(encrypted, env.AI_AUTH_PRIVATE_KEY);

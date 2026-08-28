@@ -1,5 +1,14 @@
-import { getHookByToken, getRun, start } from "workflow/api";
+import { getHookByToken, getRun } from "workflow/api";
 
+import { loadKindConfig } from "@chia/agent-host/config";
+import {
+  AGENT_DELTA_NAMESPACE,
+  AGENT_TURN_KEY,
+  readAgentTurnMarker,
+} from "@chia/agent-host/execution";
+import type { AgentTurnMarker } from "@chia/agent-host/execution";
+import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import {
   BYOK_PROVIDER_IDS,
   createAgentModels,
@@ -46,6 +55,10 @@ import {
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
 import { AppError } from "@chia/service-kit/errors";
+import {
+  AGENT_END_SENTINEL,
+  agentMessageToken,
+} from "@chia/workflow-control/agent-hooks";
 
 import {
   AGENT_ABORT_CONTROLLER_KEY,
@@ -57,24 +70,7 @@ import {
   decryptAgentCredentials,
   readEncryptedAgentCredentials,
 } from "../services/agent-credentials";
-import {
-  AGENT_DELTA_NAMESPACE,
-  AGENT_TURN_KEY,
-  readAgentTurnMarker,
-} from "../steps/agent-turn.step";
-import type { AgentTurnMarker } from "../steps/agent-turn.step";
-import { agentSessionWorkflow } from "../workflows/agent-session.workflow";
-import {
-  AGENT_END_SENTINEL,
-  agentApprovalHook,
-  agentApprovalToken,
-  agentMessageHook,
-  agentMessageToken,
-} from "../workflows/hooks/agent.hooks";
-
-import { loadKindConfig } from "./config";
-import type { AgentKindDefinition } from "./kind";
-import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
+import { workflowControl } from "../services/workflow-control";
 
 /**
  * The `AgentKindService` for one registered kind.
@@ -94,7 +90,8 @@ import { AGENT_TASK_IDS, resolveAgentTask } from "./tasks";
  * - turn execution metadata → `agent.run`; pauses and event stream → the workflow backend
  *
  * That split is why a deploy mid-turn is survivable and why an approval can be granted a day later.
- * It is also why this module can be replicated across instances without a coordination layer.
+ * API instances can replicate because queue mutations cross `WorkflowControl` to the single
+ * workflow process; no mutable conversation state lives in this process.
  */
 export const createAgentKindService = <TState, TConfig extends object>(
   definition: AgentKindDefinition<TState, TConfig>
@@ -393,7 +390,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
    */
   const cancelLiveRun = async (runId: string): Promise<void> => {
     try {
-      await getRun(runId).cancel();
+      await workflowControl.cancelRun(runId);
     } catch (error) {
       if (await isRunLive(runId)) throw error;
     }
@@ -726,7 +723,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
           // queued turn share this continuation stream in durable emission order.
           const startIndex = (await run.getReadable().getTailIndex()) + 1;
           await claimTurn(db, row, startIndex);
-          await agentMessageHook.resume(token, message);
+          await workflowControl.resumeAgentMessage(input.sessionId, message);
           return { runId: row.workflowRunId, startIndex, startedRun: false };
         }
 
@@ -759,24 +756,22 @@ export const createAgentKindService = <TState, TConfig extends object>(
             },
           },
         });
-        let run;
+        let workflowRunId;
         try {
-          run = await start(agentSessionWorkflow, [
-            {
-              sessionId: input.sessionId,
-              runId,
-              userId: caller.userId,
-              abortController,
-              firstMessage: message,
-            },
-          ]);
+          workflowRunId = await workflowControl.startAgentSession({
+            sessionId: input.sessionId,
+            runId,
+            userId: caller.userId,
+            abortController,
+            firstMessage: message,
+          });
         } catch (error) {
           await completeAgentRun(db, runId, "failed");
           throw error;
         }
-        await bindAgentRunExternalId(db, runId, run.runId);
+        await bindAgentRunExternalId(db, runId, workflowRunId);
 
-        return { runId: run.runId, startIndex: 0, startedRun: true };
+        return { runId: workflowRunId, startIndex: 0, startedRun: true };
       }),
 
     async attach(caller, input) {
@@ -929,8 +924,9 @@ export const createAgentKindService = <TState, TConfig extends object>(
         await claimTurn(db, row, startIndex);
 
         // Then wake the run, which has been parked on this hook with no compute consumed.
-        await agentApprovalHook.resume(
-          agentApprovalToken(input.sessionId, input.toolCallId),
+        await workflowControl.resumeAgentApproval(
+          input.sessionId,
+          input.toolCallId,
           {
             approved: input.approved,
             comment: input.comment,

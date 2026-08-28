@@ -8,6 +8,8 @@
       "/packages/utils",
       "/packages/auth",
       "/packages/api",
+      "/packages/workflow-control",
+      "/packages/agent-host",
       "/infra/railway/service.json",
       "package.json",
       "Dockerfile.node-service",

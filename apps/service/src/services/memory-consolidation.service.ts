@@ -1,8 +1,6 @@
-import { start } from "workflow/api";
-
 import type { MemoryService } from "@chia/api/orpc/services/memory.service";
 
-import { memoryConsolidationWorkflow } from "../workflows/memory-consolidation.workflow";
+import { workflowControl } from "./workflow-control";
 
 /**
  * Starts a reflection run over one session. Fire-and-forget from the writing turn, awaited
@@ -11,11 +9,11 @@ import { memoryConsolidationWorkflow } from "../workflows/memory-consolidation.w
 export const startMemoryConsolidation = async (
   sessionId: string
 ): Promise<{ runId: string }> => {
-  const run = await start(memoryConsolidationWorkflow, [{ sessionId }]);
-  return { runId: run.runId };
+  const runId = await workflowControl.startMemoryConsolidation(sessionId);
+  return { runId };
 };
 
-/** `MemoryService` for this app, the only process with a workflow runtime. */
+/** `MemoryService` for this app; `WorkflowControl` owns where the run starts. */
 export const memoryService: MemoryService = {
   consolidate: (_caller, input) => startMemoryConsolidation(input.sessionId),
 };

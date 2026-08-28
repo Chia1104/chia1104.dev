@@ -26,6 +26,9 @@ catalog:
   "@t3-oss/env-nextjs": ^0.13.11
   "@types/lodash": ^4.17.25
   "@types/node": 26.3.0
+  "@workflow-worlds/redis": ^0.2.2
+  "@workflow/world-postgres": 4.3.5
+  nitro: 3.0.260610-beta
   better-all: 0.0.9
   bun-types: ^1.4.0
   client-only: ^0.0.1
@@ -44,6 +47,7 @@ catalog:
   superjson: 2.2.6
   tsdown: 0.22.14
   typescript: 7.0.2
+  workflow: 4.8.5
   zod: 4.4.3
 
 catalogs:
@@ -203,4 +207,3 @@ strictPeerDependencies: false
 
 overrides:
   "@paradedb/drizzle-paradedb>drizzle-orm": 1.0.0-rc.4
-

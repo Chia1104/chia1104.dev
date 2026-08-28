@@ -1,9 +1,6 @@
-import { start } from "workflow/api";
-
 import type { FeedHooks } from "@chia/api/orpc/utils";
 
-import { feedIndexingWorkflow } from "../workflows/feed-indexing.workflow";
-import { removeFeedFromSearchIndexWorkflow } from "../workflows/feed-removal.workflow";
+import { workflowControl } from "./workflow-control";
 
 /**
  * The feed hooks this process supplies: fire-and-forget indexing runs. Nobody waits on
@@ -11,7 +8,7 @@ import { removeFeedFromSearchIndexWorkflow } from "../workflows/feed-removal.wor
  */
 export const feedHooks: FeedHooks = {
   async onFeedChanged(feedID) {
-    await start(feedIndexingWorkflow, [{ feedID }]);
+    await workflowControl.startFeedIndex(feedID);
   },
 
   /**
@@ -27,8 +24,6 @@ export const feedHooks: FeedHooks = {
     if (translationIDs.length === 0) {
       return;
     }
-    await start(removeFeedFromSearchIndexWorkflow, [
-      { translationIDs: [...translationIDs] },
-    ]);
+    await workflowControl.startFeedRemoval([...translationIDs]);
   },
 };

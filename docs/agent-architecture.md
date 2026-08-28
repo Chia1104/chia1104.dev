@@ -197,6 +197,12 @@ allows turns, approval waits and stream replay to survive process restarts.
 session entries or performed approved writes. Provider retry belongs inside Pi. A failed turn emits
 an error, keeps its partial transcript, and is retried only by a new operator message.
 
+The session API lives in `apps/service`; the workflow, its steps and the turn executor live in
+`apps/workflow`. Starts, hook resumes and cancellations cross the authenticated `WorkflowControl`
+contract to the single workflow process; run-state and durable-stream reads use the shared World
+storage directly. `apps/workflow` stays single-replica because the installed Postgres World adapter
+only deduplicates delivery in process. See `docs/workflow-deployment.md`.
+
 ### Concrete execution path
 
 There is one production path:
