@@ -5,7 +5,7 @@ export default defineConfig({
   routesDir: "nitro/routes",
   apiDir: "nitro/api",
   modules: ["workflow/nitro"],
-  plugins: ["plugins/start-workflow-world.ts"],
+  plugins: ["plugins/start-pg-world.ts"],
   typescript: { tsconfigPath: "./tsconfig.build.json" },
   preset: "node-server",
   traceDeps: ["@workflow-worlds/redis", "@workflow/world-postgres", "workflow"],
