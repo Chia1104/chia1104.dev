@@ -1,4 +1,6 @@
 import { AppError, appErrorCodeFromStatus } from "@chia/service-kit/errors";
+import { withServiceEndpoint } from "@chia/utils/config";
+import { Service } from "@chia/utils/schema";
 import type {
   AgentAbortControllerRef,
   EncryptedAgentCredentials,
@@ -20,7 +22,8 @@ type WorkflowControlFetch = (
 ) => Promise<Response>;
 
 interface CreateWorkflowControlOptions {
-  endpoint: string;
+  /** Absolute URL of the control route; resolved from `INTERNAL_WORKFLOW_SERVICE_ENDPOINT` by default. */
+  url?: string;
   token: string;
   fetch?: WorkflowControlFetch;
 }
@@ -44,8 +47,24 @@ interface AgentApprovalPayload {
   credentials?: EncryptedAgentCredentials;
 }
 
-const CONTROL_PATH = "/api/v1/internal/workflow";
 const CONTROL_TIMEOUT_MS = 30_000;
+
+/**
+ * `apps/workflow` has one control route at its root and is only reachable over the private
+ * network, so there is a single internal endpoint and no version prefix.
+ */
+const resolveControlUrl = (): string => {
+  const url = withServiceEndpoint("/", Service.Workflow, {
+    isInternal: true,
+    version: "NO_PREFIX",
+  });
+  if (!/^https?:\/\//.test(url)) {
+    throw new Error(
+      "INTERNAL_WORKFLOW_SERVICE_ENDPOINT is required to reach apps/workflow."
+    );
+  }
+  return url;
+};
 
 const startedRunId = (result: WorkflowControlResult): string => {
   if (result.type !== "started") {
@@ -55,25 +74,22 @@ const startedRunId = (result: WorkflowControlResult): string => {
 };
 
 export const createWorkflowControl = ({
-  endpoint,
+  url = resolveControlUrl(),
   token,
   fetch: fetcher = globalThis.fetch,
 }: CreateWorkflowControlOptions) => {
   const execute = async (
     command: WorkflowControlCommand
   ): Promise<WorkflowControlResult> => {
-    const response = await fetcher(
-      `${endpoint.replace(/\/$/, "")}${CONTROL_PATH}`,
-      {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${token}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(command),
-        signal: AbortSignal.timeout(CONTROL_TIMEOUT_MS),
-      }
-    );
+    const response = await fetcher(url, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(command),
+      signal: AbortSignal.timeout(CONTROL_TIMEOUT_MS),
+    });
     const payload: unknown = await response.json();
     if (!response.ok) {
       // The workflow service answers with the `AppError` status it hit, so the code round-trips.
@@ -164,6 +180,5 @@ export const createWorkflowControl = ({
 };
 
 export const workflowControl = createWorkflowControl({
-  endpoint: env.INTERNAL_WORKFLOW_SERVICE_ENDPOINT,
   token: env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
 });

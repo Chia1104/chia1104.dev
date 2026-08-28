@@ -50,8 +50,10 @@ export const env = createEnv({
     WORKFLOW_POSTGRES_JOB_PREFIX: z.string().min(1).optional(),
     WORKFLOW_POSTGRES_MAX_POOL_SIZE: NumericStringSchema.optional(),
     WORKFLOW_REDIS_URI: z.url().optional(),
-    /** Every queue mutation goes to `apps/workflow`; see `services/workflow-control.ts`. */
-    INTERNAL_WORKFLOW_SERVICE_ENDPOINT: z.url(),
+    /**
+     * Authenticates every queue mutation sent to `apps/workflow`; the endpoint itself is
+     * `INTERNAL_WORKFLOW_SERVICE_ENDPOINT` from `serviceEnv`, resolved by `withServiceEndpoint`.
+     */
     INTERNAL_WORKFLOW_SERVICE_TOKEN: z.string().min(32),
   },
   runtimeEnv: {
@@ -92,8 +94,6 @@ export const env = createEnv({
     WORKFLOW_POSTGRES_MAX_POOL_SIZE:
       process.env.WORKFLOW_POSTGRES_MAX_POOL_SIZE,
     WORKFLOW_REDIS_URI: process.env.WORKFLOW_REDIS_URI,
-    INTERNAL_WORKFLOW_SERVICE_ENDPOINT:
-      process.env.INTERNAL_WORKFLOW_SERVICE_ENDPOINT,
     INTERNAL_WORKFLOW_SERVICE_TOKEN:
       process.env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
   },

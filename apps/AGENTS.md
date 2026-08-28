@@ -70,7 +70,7 @@ Deployed via `Dockerfile.service` / `Dockerfile.node-service` (`turbo prune --sc
 
 ## `apps/workflow`
 
-The workflow runner, and the only process that executes durable workflows. Hono on Nitro with the `workflow/nitro` module; `src/server.ts` exposes only `/api/v1/health` and the authenticated `/api/v1/internal/workflow` control route. Single replica by design — [`docs/workflow-deployment.md`](../docs/workflow-deployment.md) explains why and what it would take to change.
+The workflow runner, and the only process that executes durable workflows. Hono on Nitro with the `workflow/nitro` module; `src/server.ts` exposes only `/health` and the authenticated control route at `/`; `service` resolves it with `withServiceEndpoint("/", Service.Workflow, { isInternal: true })` over the private network. Single replica by design — [`docs/workflow-deployment.md`](../docs/workflow-deployment.md) explains why and what it would take to change.
 
 **Layout** (`src/`):
 

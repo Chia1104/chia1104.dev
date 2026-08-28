@@ -33,6 +33,7 @@ export const Service = {
   Auth: "auth",
   Content: "content",
   AI: "ai",
+  Workflow: "workflow",
 } as const;
 
 export type Service = (typeof Service)[keyof typeof Service];

@@ -5,7 +5,7 @@ describe("workflow control", () => {
       Response.json({ type: "started", runId: "wrun_remote" })
     );
     const control = createWorkflowControl({
-      endpoint: "http://workflow.internal/",
+      url: "http://workflow.internal/",
       token: "a".repeat(32),
       fetch: fetcher,
     });
@@ -16,7 +16,7 @@ describe("workflow control", () => {
 
     expect(fetcher).toHaveBeenCalledOnce();
     expect(fetcher).toHaveBeenCalledWith(
-      "http://workflow.internal/api/v1/internal/workflow",
+      "http://workflow.internal/",
       expect.objectContaining({
         method: "POST",
         headers: {
@@ -36,7 +36,7 @@ describe("workflow control", () => {
       Response.json({ error: "Run not found." }, { status: 404 })
     );
     const control = createWorkflowControl({
-      endpoint: "http://workflow.internal",
+      url: "http://workflow.internal/",
       token: "a".repeat(32),
       fetch: fetcher,
     });
@@ -52,7 +52,7 @@ describe("workflow control", () => {
       Response.json({ error: "Workflow command failed." }, { status: 503 })
     );
     const control = createWorkflowControl({
-      endpoint: "http://workflow.internal",
+      url: "http://workflow.internal/",
       token: "a".repeat(32),
       fetch: fetcher,
     });

@@ -8,11 +8,11 @@ dash / www
     │
     ▼
 apps/service (N replicas)
-    │  POST /api/v1/internal/workflow  (bearer INTERNAL_WORKFLOW_SERVICE_TOKEN)
+    │  POST /  (bearer INTERNAL_WORKFLOW_SERVICE_TOKEN)
     ▼
 apps/workflow (1 replica)
     ├─ /.well-known/workflow/*       Workflow SDK executor routes
-    ├─ /api/v1/internal/workflow     WorkflowControl commands
+    ├─ /                             WorkflowControl commands (`/health` beside it)
     ├─ workflows / steps             agent session, indexing, memory consolidation
     └─ Postgres World + Graphile runner
              │
@@ -43,7 +43,7 @@ Both apps read the same World storage and must agree on `WORKFLOW_TARGET_WORLD`,
 ```dotenv
 WORKFLOW_TARGET_WORLD=@workflow/world-postgres
 WORKFLOW_POSTGRES_URL=...
-INTERNAL_WORKFLOW_SERVICE_ENDPOINT=http://<workflow private host>:8080
+INTERNAL_WORKFLOW_SERVICE_ENDPOINT=http://workflow.railway.internal:8080
 INTERNAL_WORKFLOW_SERVICE_TOKEN=<at least 32 random characters>
 ```
 
@@ -58,7 +58,11 @@ INTERNAL_WORKFLOW_SERVICE_TOKEN=<same token>
 ```
 
 plus the database, admin id, provider keys and `FIRECRAWL_API_KEY` the steps need (`.env.example`).
-The control endpoint is private; never route public ingress to `apps/workflow`.
+
+`service` resolves the runner with `withServiceEndpoint("/", Service.Workflow, { isInternal: true })`
+from `@chia/utils/config`, i.e. `INTERNAL_WORKFLOW_SERVICE_ENDPOINT` owned by `serviceEnv`. On
+Railway that is the private-network hostname; there is deliberately no public or
+`NEXT_PUBLIC_*` counterpart, so never route public ingress to `apps/workflow`.
 
 ## Why one replica
 
