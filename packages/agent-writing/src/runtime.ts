@@ -8,6 +8,7 @@ import type {
   AgentSessionSettings,
   AgentTurnExecution,
   AgentTurnMessage,
+  AgentUsageListener,
 } from "@chia/agent-runtime/types";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { Locale } from "@chia/db/types";
@@ -45,6 +46,7 @@ export interface RunWritingTurnOptions<TApproval> {
   toApproval: (request: ApprovalRequest) => TApproval;
   persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
   flushEvents?: () => Promise<void>;
+  onUsage?: AgentUsageListener;
 }
 
 /**
@@ -108,5 +110,6 @@ export const runWritingTurn = <TApproval>(
     toApproval: options.toApproval,
     persistApprovals: options.persistApprovals,
     flushEvents: options.flushEvents,
+    onUsage: options.onUsage,
   });
 };

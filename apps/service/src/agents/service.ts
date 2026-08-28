@@ -12,6 +12,7 @@ import type {
 } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { recordAgentUsage } from "@chia/agent-host/usage";
 import {
   BYOK_PROVIDER_IDS,
   createAgentModels,
@@ -33,6 +34,7 @@ import type {
   AgentNavigationOptions,
   AgentSessionDefaults,
   AgentSessionSettings,
+  AgentUsageListener,
   ThinkingLevel,
   ToolTier,
 } from "@chia/agent-runtime/types";
@@ -226,6 +228,14 @@ export const createAgentKindService = <TState, TConfig extends object>(
     const session = await repoFor(db).openById(row.id);
     const settings = settingsOf(row);
     const models = modelsFor(caller);
+    // Written on the lock's transaction, so the row lands with the entry it accounts for.
+    const onUsage: AgentUsageListener = (report) =>
+      recordAgentUsage(db, {
+        userId: caller.userId,
+        sessionId: row.id,
+        kind: definition.kind,
+        ...report,
+      });
     const operationFor = async (taskId: string) => {
       const task = await resolveAgentTask(db, taskId, {
         session: () => ({
@@ -233,7 +243,13 @@ export const createAgentKindService = <TState, TConfig extends object>(
           models,
         }),
       });
-      return { session, settings, model: task.model, models: task.models };
+      return {
+        session,
+        settings,
+        model: task.model,
+        models: task.models,
+        onUsage,
+      };
     };
     return {
       session,

@@ -29,6 +29,10 @@
       "types": "./src/tasks.ts",
       "default": "./src/tasks.ts"
     },
+    "./usage": {
+      "types": "./src/usage.ts",
+      "default": "./src/usage.ts"
+    },
     "./writing": {
       "types": "./src/writing.ts",
       "default": "./src/writing.ts"

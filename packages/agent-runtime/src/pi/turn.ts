@@ -29,6 +29,7 @@ import type {
   AgentTurnError,
   AgentTurnExecution,
   AgentTurnMessage,
+  AgentUsageListener,
 } from "../types.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
@@ -87,6 +88,8 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   /** Persists the whole batch atomically, or rejects without leaving partial rows. */
   persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
   flushEvents?: () => Promise<void>;
+  /** Every provider call of the turn, its auto-compaction included; see {@link AgentUsageListener}. */
+  onUsage?: AgentUsageListener;
 }
 
 const volatileMessage = (text: string): AgentMessage => ({
@@ -139,6 +142,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   toApproval,
   persistApprovals,
   flushEvents,
+  onUsage,
 }: RunPiTurnOptions<TContext, TApproval>): Promise<
   AgentTurnExecution<TApproval>
 > => {
@@ -299,7 +303,18 @@ export const runPiTurn = async <TContext extends object, TApproval>({
           reservedEntryId = undefined;
           await session.appendEntry(entry);
           cursor = entry.id;
-          if (event.message.role === "assistant") reply = event.message;
+          if (event.message.role === "assistant") {
+            reply = event.message;
+            // Reported by what the provider says answered, not what was asked for: the two differ
+            // when a gateway routes a request, and the bill follows the provider.
+            await onUsage?.({
+              source: "turn",
+              providerId: event.message.provider,
+              modelId: event.message.model,
+              usage: event.message.usage,
+              entryId: entry.id,
+            });
+          }
         }
         for (const wireEvent of mapEvent(event)) onEvent(wireEvent);
       })
@@ -378,6 +393,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
             models,
             model: summariser,
             thinkingLevel: clampSessionThinkingLevel(summariser, settings),
+            onUsage,
           },
           compactionContextWindow(model, summariser)
         );

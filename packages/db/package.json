@@ -93,6 +93,10 @@
       "types": "./src/libs/agent/config.ts",
       "default": "./src/libs/agent/config.ts"
     },
+    "./repos/agent/usage": {
+      "types": "./src/libs/agent/usage.ts",
+      "default": "./src/libs/agent/usage.ts"
+    },
     "./schema/enums": {
       "types": "./src/schemas/enums.ts",
       "default": "./src/schemas/enums.ts"

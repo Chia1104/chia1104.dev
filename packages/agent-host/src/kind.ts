@@ -15,6 +15,7 @@ import type {
   AgentSessionSettings,
   AgentTurnExecution,
   AgentTurnMessage,
+  AgentUsageListener,
 } from "@chia/agent-runtime/types";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type {
@@ -157,6 +158,8 @@ export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
   preAuthorizedToolNames: ReadonlySet<string>;
   onEvent: (event: AgentWireEvent) => void;
   flushEvents: () => Promise<void>;
+  /** Lands every provider call of the turn in the usage ledger; the kind hands it to `runPiTurn`. */
+  onUsage: AgentUsageListener;
   toApproval: (request: ApprovalRequest) => TApproval;
   persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
 }

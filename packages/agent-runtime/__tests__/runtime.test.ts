@@ -13,7 +13,11 @@ import type { RunPiTurnOptions } from "../src/pi/turn.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
 import { textResult, toolDefiner, Type } from "../src/tools.ts";
-import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
+import type {
+  AgentPolicy,
+  AgentTurnBudget,
+  AgentUsageReport,
+} from "../src/types.ts";
 import { formatOperatorDecision } from "../src/wire/operator-decision.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
@@ -157,6 +161,11 @@ const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
 
 const messageOf = (entry: SessionEntry | undefined) =>
   entry?.type === "message" ? entry.message : undefined;
+
+const assistantUsageOf = (entry: SessionEntry | undefined) => {
+  const message = messageOf(entry);
+  return message?.role === "assistant" ? message.usage : undefined;
+};
 
 describe("runPiTurn", () => {
   it("runs a prompt, persists both messages and owns the wire event lifecycle", async () => {
@@ -824,6 +833,73 @@ describe("runPiTurn", () => {
       }),
       { type: "run:end", reason: "done" },
     ]);
+  });
+
+  it("reports every assistant reply's usage once its entry has landed", async () => {
+    const fixture = build();
+    const reports: AgentUsageReport[] = [];
+    const branchLengthAtReport: number[] = [];
+    fixture.faux.setResponses([
+      toolCallTurn("search", { q: "usage" }, "call-1"),
+      fauxAssistantMessage("Found it."),
+    ]);
+
+    await fixture.run({
+      onUsage: async (report) => {
+        reports.push(report);
+        branchLengthAtReport.push((await fixture.session.getBranch()).length);
+      },
+    });
+
+    // The faux provider estimates usage from the text it streams, so the figures are whatever the
+    // tree persisted for that reply — the report must be exactly those, under that entry's id.
+    const branch = await fixture.branch();
+    expect(reports).toEqual([
+      {
+        source: "turn",
+        providerId: "faux",
+        modelId: "test-model",
+        entryId: branch[1]?.id,
+        usage: assistantUsageOf(branch[1]),
+      },
+      {
+        source: "turn",
+        providerId: "faux",
+        modelId: "test-model",
+        entryId: branch[3]?.id,
+        usage: assistantUsageOf(branch[3]),
+      },
+    ]);
+    expect(reports.every((report) => report.usage.totalTokens > 0)).toBe(true);
+    expect(branchLengthAtReport).toEqual([2, 4]);
+  });
+
+  it("reports the auto-compaction's usage under the compaction entry", async () => {
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
+    const reports: AgentUsageReport[] = [];
+    fixture.faux.setResponses([
+      fauxAssistantMessage("Sure."),
+      fauxAssistantMessage("Everything so far, condensed."),
+    ]);
+
+    await fixture.run({ onUsage: (report) => void reports.push(report) });
+
+    const compaction = (await fixture.branch()).find(
+      (entry) => entry.type === "compaction"
+    );
+    expect(reports.map((report) => report.source)).toEqual([
+      "turn",
+      "compaction",
+    ]);
+    expect(reports[1]).toEqual({
+      source: "compaction",
+      providerId: "faux",
+      modelId: "test-model",
+      entryId: compaction?.id,
+      usage: compaction?.type === "compaction" ? compaction.usage : undefined,
+    });
+    expect(reports[1]?.usage.totalTokens).toBeGreaterThan(0);
   });
 
   it("leaves a branch inside the window alone", async () => {

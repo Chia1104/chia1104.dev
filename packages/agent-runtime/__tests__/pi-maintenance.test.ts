@@ -10,6 +10,7 @@ import { compactPiSession, navigatePiSession } from "../src/pi/maintenance.ts";
 import type { PiSessionOperationOptions } from "../src/pi/maintenance.ts";
 import type { NewSessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
+import type { AgentUsageReport } from "../src/types.ts";
 
 const user = (
   id: string,
@@ -65,6 +66,61 @@ const build = async () => {
   };
   return { faux, session, options };
 };
+
+/**
+ * The faux provider estimates usage from the text it streams, so what is pinned is that the
+ * report carries exactly the usage the tree persisted, under that entry's id.
+ */
+describe("usage reporting", () => {
+  it("reports the branch summary's usage under its entry", async () => {
+    const { faux, session, options } = await build();
+    const reports: AgentUsageReport[] = [];
+    faux.setResponses([fauxAssistantMessage("They asked twice.")]);
+
+    await navigatePiSession(
+      { ...options, onUsage: (report) => void reports.push(report) },
+      "u2",
+      { summarize: true }
+    );
+
+    const summary = (await session.getBranch()).at(-1);
+    expect(summary?.type).toBe("branch_summary");
+    expect(reports).toEqual([
+      {
+        source: "branch_summary",
+        providerId: "faux",
+        modelId: "test-model",
+        entryId: summary?.id,
+        usage: summary?.type === "branch_summary" ? summary.usage : undefined,
+      },
+    ]);
+    expect(reports[0]?.usage.totalTokens).toBeGreaterThan(0);
+  });
+
+  it("reports a manual compaction's usage under its entry", async () => {
+    const { faux, session, options } = await build();
+    const reports: AgentUsageReport[] = [];
+    faux.setResponses([fauxAssistantMessage("Condensed.")]);
+
+    await compactPiSession({
+      ...options,
+      onUsage: (report) => void reports.push(report),
+    });
+
+    const compaction = (await session.getBranch()).at(-1);
+    expect(compaction?.type).toBe("compaction");
+    expect(reports).toEqual([
+      {
+        source: "compaction",
+        providerId: "faux",
+        modelId: "test-model",
+        entryId: compaction?.id,
+        usage: compaction?.type === "compaction" ? compaction.usage : undefined,
+      },
+    ]);
+    expect(reports[0]?.usage.totalTokens).toBeGreaterThan(0);
+  });
+});
 
 describe("navigatePiSession", () => {
   it("rewinds to a user message by making its parent the leaf", async () => {

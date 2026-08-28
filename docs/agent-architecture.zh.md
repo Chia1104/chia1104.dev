@@ -116,10 +116,37 @@ agent.writing_draft            每個 locale 的 staging buffer
 agent.memory                   跨 session 的長期記憶（§10）；索引進 `resource_chunk`
 agent.kind_config              operator 對 kind 的 defaults 與 config 的覆寫（§13）
 agent.task_config              operator 對 task 的 model、prompt 與參數的覆寫（§13）
+agent.usage_ledger             替使用者做的每一次 provider call 一列；session 刪了它還在
 ```
 
 Entry payload 是符合 Pi session-entry union 的 opaque JSON。Kind-specific state 以 extension
 table 表達，不把共用 session table 擴成大量 nullable columns。
+
+### Usage ledger
+
+替使用者做的每一次 provider call 都在 `agent.usage_ledger` 落一列：turn 的回覆、自動與手動
+compaction、branch summary、session title、lesson 抽取——不論誰付錢。`provider_id` 說明這筆
+是誰的帳（house gateway 或 BYOK key），所以「只算 house 花費」的配額是一個 filter，不是第二
+本帳。每列帶 pi 自己的 `usage`（input、output、cache read/write、reasoning）和它的
+`cost.total`，以整數 micro-dollar 存：計量一律用 cost，不用 raw tokens——cache read 只有
+uncached 的十分之一價錢，而長對話每一回合都重送整份 transcript。
+
+數字不從 `session_entry` 反查，雖然每則 assistant message 都帶著它們：entry 隨 session
+cascade，使用者刪掉 session 就等於抹掉自己花掉的；payload 是 opaque 的、索引按 session 而不
+是按 user 與期間；side job 根本沒有 entry。Ledger 的 `session_id` 是 `set null`，歸屬於 session
+的擁有者——匿名訪客一旦有了 user row 也是同一個人。
+
+Runtime 回報，host 寫入。`runPiTurn`、`compactSession`、`navigatePiSession` 接一個
+`AgentUsageListener`（`@chia/agent-runtime/types`），在 entry 落地**之後**用回答的模型、usage
+與 entry id 呼叫它，所以不會有一列先於它所記的東西；`completeText` 與 `generateSessionTitle`
+不論回了什麼都回報被計費的量，因為中斷的 stream 一樣要付錢。每條 host 路徑都把 listener 綁到
+`recordAgentUsage`（`@chia/agent-host/usage`）：turn step（turn、它的自動 compaction、title）、
+generic service 的 maintenance 操作（手動 compaction、branch summary——在 session lock 的
+transaction 上）以及 lesson step。寫入永遠不在 critical path 上：provider 沒計費的 call 不成
+列，insert 失敗只記 log 然後丟掉，損失最多一次 call，且對使用者有利。
+
+配額不在這裡。Ledger 是配額讀的東西；拒絕一個 turn 屬於接受它的地方——kind service 的
+`prompt`、`approve`、`compact`、`navigate`——由以 `CallerTier` 為 key 的 policy 決定。
 
 ### Session title
 
@@ -231,7 +258,7 @@ Pi 的 loop 沒有 step 上限：只要 assistant message 還帶 tool call 就�
 拒絕是透過 tool result 跟模型對話，與 approval gate 用的是同一條通道，所以會聽話的模型會正常
 結束這一輪。兩種 abort 走的是與 volatile-context 讀取失敗相同的 host-failure 路徑：記下失敗、
 abort run，turn 以該 error 結束而非 `aborted`。per-user 與 per-session 的配額不在這裡——
-那屬於 enqueue 時的 kind service。
+那屬於 enqueue 時的 kind service，讀的是 usage ledger（§3）。
 
 ### Prompt 分層
 

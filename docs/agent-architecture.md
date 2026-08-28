@@ -120,6 +120,7 @@ agent.writing_draft            per-locale staging buffer
 agent.memory                   long-term memory across sessions (§10); indexed into `resource_chunk`
 agent.kind_config              operator overrides of a kind's defaults and config (§13)
 agent.task_config              operator overrides of a task's model, prompt and parameters (§13)
+agent.usage_ledger             one row per provider call made for a user; survives the session
 ```
 
 Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
@@ -134,6 +135,37 @@ session lock (§8). The
 projection is a pure function of the branch: a turn's provider request is the previous projection
 plus the entries it appended, which is what keeps the provider's cached prefix valid from turn to
 turn. Kind-specific state uses extension tables instead of widening the shared session table.
+
+### Usage ledger
+
+Every provider call made on a user's behalf lands one row in `agent.usage_ledger`: the turn's
+replies, auto and manual compaction, branch summaries, the session title and lesson extraction —
+whoever paid for it. `provider_id` says whose bill it was (the house gateway, or a BYOK key), so a
+quota that only counts house spend is a filter, not a second ledger. The row carries pi's own
+`usage` (input, output, cache read/write, reasoning) and its `cost.total` as integer
+micro-dollars: metering is by cost, never by raw tokens, because a cached read costs a tenth of
+an uncached one and a long conversation re-sends its whole transcript every turn.
+
+The numbers are not read back from `session_entry`, although every assistant message carries
+them there: entries cascade with their session, so a user who deleted a session would erase what
+they spent; the payload is opaque and indexed per session, not per user and period; and a side
+job has no entry at all. The ledger row keeps `session_id` as `set null` and is attributed to
+the session's owner, which is also who an anonymous visitor becomes once they have a user row.
+
+The runtime reports, the host writes. `runPiTurn`, `compactSession` and `navigatePiSession`
+take an `AgentUsageListener` (`@chia/agent-runtime/types`) and call it with the model that
+answered, its usage and the entry id — after that entry has landed, so a row never precedes
+what it accounts for; `completeText` and `generateSessionTitle` report what they were billed
+whatever they replied, since an aborted stream is still charged. Every host path binds the
+listener to `recordAgentUsage` (`@chia/agent-host/usage`): the turn step (turn, its
+auto-compaction, the title), the generic service's maintenance operations (manual compaction,
+branch summary — on the session lock's transaction) and the lesson step. The write is never on
+the critical path: a call the provider did not bill is not a row, and a failed insert is logged
+and dropped, bounding the loss to one call in the user's favour.
+
+Quotas are not here. The ledger is what a quota reads; refusing a turn belongs where it is
+accepted — `prompt`, `approve`, `compact`, `navigate` in the kind service — under a policy keyed
+by `CallerTier`.
 
 ### Session title
 
@@ -257,7 +289,7 @@ Refusals speak to the model through the tool result, the channel the approval ga
 so a model that complies finishes the turn normally. The two aborts go through the same host-failure
 path as a failed volatile-context read: the failure is recorded, the run aborted, and the turn
 ends as that error rather than as `aborted`. Per-user and per-session quotas are not here — they
-belong at enqueue time, in the kind service.
+belong at enqueue time, in the kind service, reading the usage ledger (§3).
 
 ### Prompt layering
 

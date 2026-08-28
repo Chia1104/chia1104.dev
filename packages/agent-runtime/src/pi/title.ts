@@ -1,6 +1,8 @@
 import { contentText } from "@earendil-works/pi-ai";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
+import type { AgentModelUsage } from "../types.ts";
+
 /**
  * Session titles.
  *
@@ -81,6 +83,8 @@ export interface GenerateSessionTitleOptions {
   maxTokens?: number;
   temperature?: number;
   signal?: AbortSignal;
+  /** What the call was billed, whatever it replied; an aborted stream is still charged for. */
+  onUsage?: (usage: AgentModelUsage) => void | Promise<void>;
 }
 
 /**
@@ -96,6 +100,7 @@ export const generateSessionTitle = async ({
   maxTokens = SESSION_TITLE_PARAMS.maxTokens,
   temperature = SESSION_TITLE_PARAMS.temperature,
   signal,
+  onUsage,
 }: GenerateSessionTitleOptions): Promise<string | null> => {
   const excerpt = text.trim().slice(0, PROMPT_EXCERPT_LENGTH);
   if (excerpt.length === 0) return null;
@@ -114,6 +119,11 @@ export const generateSessionTitle = async ({
       },
       { maxTokens, temperature, signal }
     );
+    await onUsage?.({
+      providerId: reply.provider,
+      modelId: reply.model,
+      usage: reply.usage,
+    });
     if (reply.stopReason === "error" || reply.stopReason === "aborted") {
       return null;
     }

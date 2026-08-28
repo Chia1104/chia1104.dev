@@ -9,6 +9,7 @@ import {
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { recordAgentUsage } from "@chia/agent-host/usage";
 import type {
   AgentTurnError,
   ThinkingLevel,
@@ -131,8 +132,8 @@ const needsTitle = (row: AgentSessionRow, request: AgentTurnRequest) =>
  */
 const titleSession = async (
   db: DB,
-  sessionId: string,
-  text: string
+  row: AgentSessionRow,
+  request: AgentTurnRequest
 ): Promise<void> => {
   try {
     const [{ fallbackSessionTitle, generateSessionTitle }] = await Promise.all([
@@ -142,13 +143,22 @@ const titleSession = async (
     const generated = await generateSessionTitle({
       models: task.models,
       model: task.model,
-      text,
+      text: request.text,
       systemPrompt: task.systemPrompt,
       ...task.params,
       signal: AbortSignal.timeout(SESSION_TITLE_TIMEOUT_MS),
+      onUsage: (usage) =>
+        recordAgentUsage(db, {
+          userId: row.userId,
+          sessionId: row.id,
+          runId: request.runId,
+          kind: row.kind,
+          source: "title",
+          ...usage,
+        }),
     });
-    const title = generated ?? fallbackSessionTitle(text);
-    if (title) await setAgentSessionTitleIfUnset(db, sessionId, title);
+    const title = generated ?? fallbackSessionTitle(request.text);
+    if (title) await setAgentSessionTitleIfUnset(db, row.id, title);
   } catch {
     // Cosmetic; the turn must not fail for it.
   }
@@ -203,9 +213,7 @@ export const runAgentTurnStep = async (
     });
   const abort = subscribeAgentAbort(request.abortController.runId);
   const writer = createEventWriter(
-    needsTitle(row, request)
-      ? titleSession(db, request.sessionId, request.text)
-      : undefined
+    needsTitle(row, request) ? titleSession(db, row, request) : undefined
   );
   try {
     const outcome = await runKindTurn(
@@ -314,6 +322,14 @@ async function runKindTurn(
     preAuthorizedToolNames: new Set(request.preAuthorizeToolNames ?? []),
     onEvent: writer.push,
     flushEvents: writer.flush,
+    onUsage: (report) =>
+      recordAgentUsage(db, {
+        userId: row.userId,
+        sessionId: row.id,
+        runId: request.runId,
+        kind: row.kind,
+        ...report,
+      }),
     toApproval: (approval): AgentApprovalRequestSnapshot => ({
       toolCallId: approval.toolCallId,
       toolName: approval.toolName,
