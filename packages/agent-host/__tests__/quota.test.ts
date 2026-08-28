@@ -12,7 +12,12 @@ import { CallerTier } from "@chia/service-kit/policies/caller.policy";
  */
 
 const { repo } = vi.hoisted(() => ({
-  repo: { getAgentQuotaConfig: vi.fn(), sumAgentUsageCost: vi.fn() },
+  repo: {
+    getAgentQuotaConfig: vi.fn(),
+    sumAgentUsageCost: vi.fn(),
+    lockAgentUser: vi.fn(),
+    countRunningAgentTurns: vi.fn(),
+  },
 }));
 
 vi.mock("@chia/db/repos/agent/config", () => ({
@@ -20,6 +25,10 @@ vi.mock("@chia/db/repos/agent/config", () => ({
 }));
 vi.mock("@chia/db/repos/agent/usage", () => ({
   sumAgentUsageCost: repo.sumAgentUsageCost,
+}));
+vi.mock("@chia/db/repos/agent", () => ({
+  lockAgentUser: repo.lockAgentUser,
+  countRunningAgentTurns: repo.countRunningAgentTurns,
 }));
 
 const db =
@@ -29,6 +38,7 @@ const row = (overrides: Partial<AgentQuotaConfig> = {}): AgentQuotaConfig => ({
   id: "default",
   weeklyLimitMicros: null,
   resetTimeZone: null,
+  maxRunningTurns: null,
   updatedAt: new Date("2026-08-27T00:00:00Z"),
   ...overrides,
 });
@@ -93,6 +103,7 @@ describe("effectiveAgentQuota", () => {
     expect(effectiveAgentQuota(undefined)).toEqual(AGENT_QUOTA_DEFAULTS);
     expect(AGENT_QUOTA_DEFAULTS.weeklyLimitMicros).toBe(300_000);
     expect(AGENT_QUOTA_DEFAULTS.resetTimeZone).toBe(systemTimeZone());
+    expect(AGENT_QUOTA_DEFAULTS.maxRunningTurns).toBe(3);
   });
 
   it("takes each override on its own", async () => {
@@ -101,11 +112,13 @@ describe("effectiveAgentQuota", () => {
     expect(effectiveAgentQuota(row({ weeklyLimitMicros: 1_000_000 }))).toEqual({
       weeklyLimitMicros: 1_000_000,
       resetTimeZone: AGENT_QUOTA_DEFAULTS.resetTimeZone,
+      maxRunningTurns: AGENT_QUOTA_DEFAULTS.maxRunningTurns,
     });
     expect(effectiveAgentQuota(row({ resetTimeZone: "Europe/Paris" }))).toEqual(
       {
         weeklyLimitMicros: AGENT_QUOTA_DEFAULTS.weeklyLimitMicros,
         resetTimeZone: "Europe/Paris",
+        maxRunningTurns: AGENT_QUOTA_DEFAULTS.maxRunningTurns,
       }
     );
   });
@@ -182,6 +195,76 @@ describe("assertWithinAgentQuota", () => {
 
     await expect(assertWithinAgentQuota(db, session, now)).rejects.toThrow(
       "Weekly usage limit"
+    );
+  });
+});
+
+describe("assertBelowRunningTurnCap", () => {
+  const session = { tier: CallerTier.Session, userId: "user-1" };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    repo.getAgentQuotaConfig.mockResolvedValue(undefined);
+    repo.lockAgentUser.mockResolvedValue(undefined);
+    repo.countRunningAgentTurns.mockResolvedValue(0);
+  });
+
+  it("never counts Root", async () => {
+    const { assertBelowRunningTurnCap } = await import("../src/quota");
+    await assertBelowRunningTurnCap(db, {
+      tier: CallerTier.Root,
+      userId: "admin",
+    });
+    expect(repo.lockAgentUser).not.toHaveBeenCalled();
+    expect(repo.countRunningAgentTurns).not.toHaveBeenCalled();
+  });
+
+  it("locks the user before counting their running turns", async () => {
+    const { assertBelowRunningTurnCap } = await import("../src/quota");
+    const order: string[] = [];
+    repo.lockAgentUser.mockImplementation(async () => {
+      order.push("lock");
+    });
+    repo.countRunningAgentTurns.mockImplementation(async () => {
+      order.push("count");
+      return 2;
+    });
+
+    await assertBelowRunningTurnCap(db, session);
+
+    expect(order).toEqual(["lock", "count"]);
+    expect(repo.lockAgentUser).toHaveBeenCalledWith(db, "user-1");
+    expect(repo.countRunningAgentTurns).toHaveBeenCalledWith(db, {
+      userId: "user-1",
+      turnKey: "turn",
+    });
+  });
+
+  it("refuses at the cap, saying how many are running", async () => {
+    const { assertBelowRunningTurnCap } = await import("../src/quota");
+    repo.countRunningAgentTurns.mockResolvedValue(3);
+
+    const error = await assertBelowRunningTurnCap(db, session).catch(
+      (cause: unknown) => cause
+    );
+
+    expect(isAppError(error) && error.code).toBe("TOO_MANY_REQUESTS");
+    expect(isAppError(error) && error.data).toEqual({
+      runningTurns: 3,
+      maxRunningTurns: 3,
+    });
+  });
+
+  it("follows the operator's cap, and zero closes new turns", async () => {
+    const { assertBelowRunningTurnCap } = await import("../src/quota");
+    repo.getAgentQuotaConfig.mockResolvedValue(row({ maxRunningTurns: 5 }));
+    repo.countRunningAgentTurns.mockResolvedValue(4);
+    await assertBelowRunningTurnCap(db, session);
+
+    repo.getAgentQuotaConfig.mockResolvedValue(row({ maxRunningTurns: 0 }));
+    repo.countRunningAgentTurns.mockResolvedValue(0);
+    await expect(assertBelowRunningTurnCap(db, session)).rejects.toThrow(
+      "closed"
     );
   });
 });

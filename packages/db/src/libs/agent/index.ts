@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, max, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, max, sql } from "drizzle-orm";
 
 import type { JsonObject } from "@chia/utils/json";
 
@@ -263,6 +263,41 @@ export const withAgentSessionLock = <T>(
     );
     return await fn(tx);
   });
+
+/**
+ * Takes the user's advisory lock on the current transaction, so two turns accepted for one user
+ * on two sessions cannot both pass a per-user check on the same reading. Always taken *after*
+ * the session lock, and only inside `withAgentSessionLock`'s `tx`, so the order is fixed and
+ * the lock ends with the transaction.
+ */
+export const lockAgentUser = async (tx: DB, userId: string): Promise<void> => {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${`agent.user:${userId}`}))`
+  );
+};
+
+/**
+ * Turns executing right now across every session the user owns: active runs whose turn marker
+ * (`metadata[turnKey].running`, written by the host) is set. A run parked on its message hook
+ * is active but not running, and does not count.
+ */
+export const countRunningAgentTurns = async (
+  db: DB,
+  options: { userId: string; turnKey: string }
+): Promise<number> => {
+  const [row] = await db
+    .select({ running: count() })
+    .from(agentRuns)
+    .innerJoin(agentSessions, eq(agentSessions.id, agentRuns.sessionId))
+    .where(
+      and(
+        eq(agentSessions.userId, options.userId),
+        eq(agentRuns.status, "active"),
+        sql`${agentRuns.metadata} -> ${options.turnKey} ->> 'running' = 'true'`
+      )
+    );
+  return row?.running ?? 0;
+};
 
 export const completeAgentRun = async (
   db: DB,

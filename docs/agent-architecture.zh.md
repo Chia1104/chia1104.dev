@@ -163,6 +163,14 @@ turn）、`compact`、帶 `summarize` 的 `navigate`——都在 session lock �
 接受，所以最後一次最多超出一個 turn，由 kind 的 turn budget 兜住。上限設 `0` 就對所有受限
 tier 關閉 agent。
 
+額度之外還有 **執行中 turn 上限**（`maxRunningTurns`，預設 3，同一個 row）：限制一個受限
+caller 同時能壓在 single-replica runner 上的量。`prompt` 與 `approve` 數這個使用者 turn
+marker 為 `running` 的 active run（`countRunningAgentTurns`），到上限就以
+`TOO_MANY_REQUESTS`（`{ runningTurns, maxRunningTurns }`）拒絕。計數在使用者自己的 advisory
+lock 之下（`lockAgentUser`，永遠在 session lock 之後、同一個 transaction），所以兩個 session
+上的兩個 prompt 不會用同一次讀數都通過。排在該 session 執行中 turn 後面的訊息不增加執行中
+的 turn。
+
 ### Session title
 
 `agent.session.title` 是 operator 辨識 session 用的名稱：尚未命名時為 `null`，之後不是 operator
@@ -626,8 +634,8 @@ admin-only）：
 | `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | 一個對話型 agent——tools、ports、policy、state row、`runTurn`                          | `agent.kind_config` |
 | `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | 一個在 session 旁邊跑的一次性模型呼叫——title、compaction、branch summary、lesson 抽取 | `agent.task_config` |
 
-第三個 row 不是 registry：`agent.quota_config` 放 operator 對每週額度與其時區的覆寫
-（`agent.admin.quota.*`，workspace 的「Usage quota」卡片）；程式預設是
+第三個 row 不是 registry：`agent.quota_config` 放 operator 對每週額度、其時區與執行中 turn
+上限的覆寫（`agent.admin.quota.*`，workspace 的「Usage quota」卡片）；程式預設是
 `packages/agent-host/src/quota.ts` 的 `AGENT_QUOTA_DEFAULTS`（§3）。
 
 **Task** 是一個 model slot，加上呼叫有暴露時的 system prompt 與 sampling 參數。它們怎麼跑各不相同

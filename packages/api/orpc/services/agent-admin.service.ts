@@ -55,7 +55,11 @@ export interface AgentAdminService {
   /** `BAD_REQUEST` for a zone the runtime does not know. */
   updateQuota(
     caller: AgentAdminCaller,
-    input: { weeklyLimitUsd?: number | null; resetTimeZone?: string | null }
+    input: {
+      weeklyLimitUsd?: number | null;
+      resetTimeZone?: string | null;
+      maxRunningTurns?: number | null;
+    }
   ): Promise<contracts.AgentQuotaAdmin>;
 }
 

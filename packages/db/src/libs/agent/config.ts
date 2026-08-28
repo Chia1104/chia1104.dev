@@ -118,6 +118,7 @@ export const deleteAgentTaskConfig = async (
 export interface UpsertAgentQuotaConfigDTO {
   weeklyLimitMicros?: number | null;
   resetTimeZone?: string | null;
+  maxRunningTurns?: number | null;
 }
 
 export const getAgentQuotaConfig = async (

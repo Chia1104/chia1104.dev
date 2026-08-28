@@ -184,6 +184,14 @@ when the week turns over. The limit is soft: a call is accepted while anything r
 last one may overrun by at most one turn, which the kind's turn budget bounds. A limit of `0`
 closes the agent to every limited tier.
 
+Beside the allowance, a **running-turn cap** (`maxRunningTurns`, default 3, same row) bounds
+what one limited caller can put on the single-replica runner at once: `prompt` and `approve`
+count the user's active runs whose turn marker is `running` (`countRunningAgentTurns`) and
+refuse with `TOO_MANY_REQUESTS` (`{ runningTurns, maxRunningTurns }`) at the cap. The count
+is taken under the user's own advisory lock (`lockAgentUser`, always after the session lock,
+on the same transaction), so two prompts on two sessions cannot both pass on the same reading.
+A message queued behind a turn already running on its session adds no running turn.
+
 ### Session title
 
 `agent.session.title` is the operator's handle for a session: `null` until named, then either
@@ -729,8 +737,9 @@ workspace (`agent.admin.*`, admin-only):
 | `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
 
 A third row, not a registry: `agent.quota_config` holds the operator's override of the weekly
-allowance and its zone (`agent.admin.quota.*`, the workspace's "Usage quota" card); the code
-default is `AGENT_QUOTA_DEFAULTS` in `packages/agent-host/src/quota.ts` (§3).
+allowance, its zone and the running-turn cap (`agent.admin.quota.*`, the workspace's "Usage
+quota" card); the code default is `AGENT_QUOTA_DEFAULTS` in `packages/agent-host/src/quota.ts`
+(§3).
 
 A **task** is a model slot plus, where the call exposes them, a system prompt and sampling
 parameters. How a task runs differs (`completeSimple`, Pi's `compact()`, `generateBranchSummary`)

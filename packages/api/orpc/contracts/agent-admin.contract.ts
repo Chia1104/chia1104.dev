@@ -170,6 +170,12 @@ export const agentQuotaAdminSchema = z.object({
     override: z.string().nullable(),
     effective: z.string(),
   }),
+  /** Turns one caller may have executing at once, across all their sessions. */
+  maxRunningTurns: z.object({
+    default: z.number().int(),
+    override: z.number().int().nullable(),
+    effective: z.number().int(),
+  }),
   updatedAt: z.number().nullable(),
 });
 
@@ -185,6 +191,7 @@ export const updateAgentQuotaAdminContract = oc
       weeklyLimitUsd: z.number().min(0).max(10_000).nullable().optional(),
       /** An IANA zone name; the service validates it against the runtime's zone data. */
       resetTimeZone: z.string().min(1).max(100).nullable().optional(),
+      maxRunningTurns: z.number().int().min(0).max(100).nullable().optional(),
     })
   )
   .output(agentQuotaAdminSchema);

@@ -32,6 +32,7 @@ type QuotaAdmin = RouterOutputs["agent"]["admin"]["quota"]["get"];
 const quotaFormSchema = z.object({
   weeklyLimitUsd: z.number().min(0).max(10_000),
   resetTimeZone: z.string().min(1).max(100),
+  maxRunningTurns: z.number().int().min(0).max(100),
 });
 
 type QuotaFormValues = z.infer<typeof quotaFormSchema>;
@@ -39,6 +40,7 @@ type QuotaFormValues = z.infer<typeof quotaFormSchema>;
 const formValuesOf = (quota: QuotaAdmin): QuotaFormValues => ({
   weeklyLimitUsd: quota.weeklyLimitUsd.effective,
   resetTimeZone: quota.resetTimeZone.effective,
+  maxRunningTurns: quota.maxRunningTurns.effective,
 });
 
 export const QuotaCard = ({ quota }: { quota: QuotaAdmin }) => {
@@ -70,12 +72,17 @@ export const QuotaCard = ({ quota }: { quota: QuotaAdmin }) => {
           ? null
           : values.weeklyLimitUsd,
       resetTimeZone: timeZone === quota.resetTimeZone.default ? null : timeZone,
+      maxRunningTurns:
+        values.maxRunningTurns === quota.maxRunningTurns.default
+          ? null
+          : values.maxRunningTurns,
     });
   });
 
   const overridden =
     quota.weeklyLimitUsd.override !== null ||
-    quota.resetTimeZone.override !== null;
+    quota.resetTimeZone.override !== null ||
+    quota.maxRunningTurns.override !== null;
   const busy = update.isPending;
 
   return (
@@ -156,6 +163,37 @@ export const QuotaCard = ({ quota }: { quota: QuotaAdmin }) => {
                 </Description>
                 <FieldError>{fieldState.error?.message}</FieldError>
               </TextField>
+            )}
+          />
+          <Controller
+            control={control}
+            name="maxRunningTurns"
+            render={({ field, fieldState }) => (
+              <NumberField
+                aria-label="Running turns per visitor"
+                isDisabled={busy}
+                isInvalid={fieldState.invalid}
+                maxValue={100}
+                minValue={0}
+                onBlur={field.onBlur}
+                onChange={(next) =>
+                  field.onChange(Number.isNaN(next) ? 0 : next)
+                }
+                step={1}
+                value={field.value}>
+                <Label className="text-xs">Running turns per visitor</Label>
+                <NumberField.Group>
+                  <NumberField.DecrementButton />
+                  <NumberField.Input className="w-28" />
+                  <NumberField.IncrementButton />
+                </NumberField.Group>
+                <Description className="text-xs">
+                  Turns one visitor may have executing at once, across all their
+                  sessions. Default: {quota.maxRunningTurns.default}. Zero
+                  closes new turns.
+                </Description>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </NumberField>
             )}
           />
         </Card.Content>

@@ -189,6 +189,11 @@ const quotaView = (row: AgentQuotaConfig | undefined): AgentQuotaAdmin => {
       override: row?.resetTimeZone ?? null,
       effective: effective.resetTimeZone,
     },
+    maxRunningTurns: {
+      default: AGENT_QUOTA_DEFAULTS.maxRunningTurns,
+      override: row?.maxRunningTurns ?? null,
+      effective: effective.maxRunningTurns,
+    },
     updatedAt: row?.updatedAt.getTime() ?? null,
   };
 };
@@ -334,6 +339,7 @@ export const createAgentAdminService = (): AgentAdminService => {
               ? null
               : costToMicros(input.weeklyLimitUsd),
         resetTimeZone: input.resetTimeZone,
+        maxRunningTurns: input.maxRunningTurns,
       });
       return quotaView(row);
     },

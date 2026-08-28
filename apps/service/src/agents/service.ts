@@ -11,7 +11,10 @@ import type {
   AgentTurnMarker,
 } from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
-import { assertWithinAgentQuota } from "@chia/agent-host/quota";
+import {
+  assertBelowRunningTurnCap,
+  assertWithinAgentQuota,
+} from "@chia/agent-host/quota";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import { recordAgentUsage } from "@chia/agent-host/usage";
 import {
@@ -730,8 +733,10 @@ export const createAgentKindService = <TState, TConfig extends object>(
         }
 
         // Before anything is queued: a turn accepted here is one the house pays for. Checked under
-        // the lock so two prompts on one session cannot both pass on the same reading.
+        // the lock so two prompts on one session cannot both pass on the same reading; the cap takes
+        // the user's lock too, against two prompts on two sessions.
         await assertWithinAgentQuota(db, caller);
+        await assertBelowRunningTurnCap(db, caller);
 
         const message = {
           text: input.text,
@@ -961,9 +966,10 @@ export const createAgentKindService = <TState, TConfig extends object>(
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row?.workflowRunId) return null;
 
-        // The decision starts a relay turn the model answers, so it is metered like a prompt; refused
-        // before it is persisted, so the approval stays pending for when the week turns over.
+        // The decision starts a relay turn the model answers, so it is metered and capped like a
+        // prompt; refused before it is persisted, so the approval stays pending until it may run.
         await assertWithinAgentQuota(db, caller);
+        await assertBelowRunningTurnCap(db, caller);
 
         // Persist first: the decision must outlive the run, and the permission gate reads it back from
         // here when the tool call is re-issued.

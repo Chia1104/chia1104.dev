@@ -33,6 +33,16 @@ export const quotaExceededError = {
   QUOTA_EXCEEDED: { status: 402, data: agentQuotaExceededSchema },
 } as const;
 
+/** Refuses a new turn while the caller already has their cap of turns executing. */
+export const agentTurnCapSchema = z.object({
+  runningTurns: z.number().int(),
+  maxRunningTurns: z.number().int(),
+});
+
+export const turnCapError = {
+  TOO_MANY_REQUESTS: { data: agentTurnCapSchema },
+} as const;
+
 export const thinkingLevelSchema = z.enum([
   "off",
   "minimal",
@@ -253,6 +263,7 @@ export const chatAgentContract = oc
     NOT_FOUND: {},
     BAD_REQUEST: {},
     ...quotaExceededError,
+    ...turnCapError,
   })
   .input(
     z.object({
@@ -303,6 +314,7 @@ export const approveAgentToolContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     ...quotaExceededError,
+    ...turnCapError,
   })
   .input(
     z.object({

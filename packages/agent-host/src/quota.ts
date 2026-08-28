@@ -1,11 +1,13 @@
 import { AGENT_PROVIDERS } from "@chia/agent-runtime/models";
 import type { DB } from "@chia/db/client";
+import { countRunningAgentTurns, lockAgentUser } from "@chia/db/repos/agent";
 import { getAgentQuotaConfig } from "@chia/db/repos/agent/config";
 import { sumAgentUsageCost } from "@chia/db/repos/agent/usage";
 import type { AgentQuotaConfig } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
+import { AGENT_TURN_KEY } from "./execution";
 import { costToMicros, microsToUsd } from "./usage";
 
 /**
@@ -23,6 +25,12 @@ export interface AgentQuota {
   weeklyLimitMicros: number;
   /** IANA zone the week is counted in; it turns over on Monday 00:00 there. */
   resetTimeZone: string;
+  /**
+   * Turns one user may have executing at once, across all their sessions. Bounds what one
+   * visitor can put on the single-replica runner regardless of how much allowance remains.
+   * `0` closes new turns to every limited tier.
+   */
+  maxRunningTurns: number;
 }
 
 export const systemTimeZone = (): string =>
@@ -41,6 +49,7 @@ export const isTimeZone = (timeZone: string): boolean => {
 export const AGENT_QUOTA_DEFAULTS: AgentQuota = {
   weeklyLimitMicros: costToMicros(0.3),
   resetTimeZone: systemTimeZone(),
+  maxRunningTurns: 3,
 };
 
 /** The bills a quota counts: the house gateway's only. */
@@ -55,7 +64,12 @@ export const isQuotaExempt = (tier: CallerTier): boolean =>
  * rather than failing every turn on a stale row.
  */
 export const effectiveAgentQuota = (
-  row: Pick<AgentQuotaConfig, "weeklyLimitMicros" | "resetTimeZone"> | undefined
+  row:
+    | Pick<
+        AgentQuotaConfig,
+        "weeklyLimitMicros" | "resetTimeZone" | "maxRunningTurns"
+      >
+    | undefined
 ): AgentQuota => ({
   weeklyLimitMicros:
     row?.weeklyLimitMicros ?? AGENT_QUOTA_DEFAULTS.weeklyLimitMicros,
@@ -63,6 +77,7 @@ export const effectiveAgentQuota = (
     row?.resetTimeZone && isTimeZone(row.resetTimeZone)
       ? row.resetTimeZone
       : AGENT_QUOTA_DEFAULTS.resetTimeZone,
+  maxRunningTurns: row?.maxRunningTurns ?? AGENT_QUOTA_DEFAULTS.maxRunningTurns,
 });
 
 export const loadAgentQuota = async (db: DB): Promise<AgentQuota> =>
@@ -232,5 +247,35 @@ export const assertWithinAgentQuota = async (
       resetAt: standing.period.end.toISOString(),
       timeZone,
     },
+  });
+};
+
+/**
+ * Refuses a new turn for a caller who already has `maxRunningTurns` executing.
+ *
+ * Counted under the caller's own advisory lock, taken on the transaction the turn is accepted
+ * in — the session lock's — so two prompts on two sessions cannot both pass on the same count:
+ * the second waits, and reads the marker the first wrote when its transaction committed. A
+ * message queued behind a turn already running on its session adds no running turn and is not
+ * refused. Must run inside `withAgentSessionLock`.
+ */
+export const assertBelowRunningTurnCap = async (
+  tx: DB,
+  caller: { tier: CallerTier; userId: string }
+): Promise<void> => {
+  if (isQuotaExempt(caller.tier)) return;
+  const quota = await loadAgentQuota(tx);
+  await lockAgentUser(tx, caller.userId);
+  const running = await countRunningAgentTurns(tx, {
+    userId: caller.userId,
+    turnKey: AGENT_TURN_KEY,
+  });
+  if (running < quota.maxRunningTurns) return;
+  throw new AppError("TOO_MANY_REQUESTS", {
+    message:
+      quota.maxRunningTurns === 0
+        ? "New turns are closed right now."
+        : `You already have ${running} turn${running === 1 ? "" : "s"} running. Wait for one to finish before starting another.`,
+    data: { runningTurns: running, maxRunningTurns: quota.maxRunningTurns },
   });
 };
