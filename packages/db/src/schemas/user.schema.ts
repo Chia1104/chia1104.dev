@@ -18,6 +18,8 @@ export const user = pgTable(
     emailVerified: boolean("email_verified").default(false).notNull(),
     image: text("image"),
     role: roles("role").default(Role.User).notNull(),
+    /** A guest better-auth minted for a visitor who never signed in; see `anonymous()` in `@chia/auth`. */
+    isAnonymous: boolean("is_anonymous").default(false),
     ...timestamps,
     banned: boolean("banned").default(false).notNull(),
     banReason: text("ban_reason"),

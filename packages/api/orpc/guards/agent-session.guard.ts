@@ -135,15 +135,17 @@ export const agentKindGuard = () =>
  * The caller every agent route needs: a resolved tier plus a session user to own things.
  *
  * `callerGuard()` alone admits anonymous and API-key callers, and both are legitimate on other
- * routes; here they have no user to own a session, so they are refused before any lookup.
- * Exported for the one route (`list`) that has no kind to resolve through a guard.
+ * routes; here they have no user to own a session, so they are refused before any lookup. A
+ * guest does have one — that is what the guest row is for — so `Guest` is the floor; which
+ * kinds a guest may then use is each kind's `minTier`. Exported for the routes (`list`,
+ * `usage.me`) that have no kind to resolve through a guard.
  */
 export const agentCallerOf = (
   context: CallerContext,
   errors: { UNAUTHORIZED: () => Error }
 ): AgentServiceCaller => {
   const { caller } = context;
-  if (!caller.session || caller.tier < CallerTier.Session) {
+  if (!caller.session || caller.tier < CallerTier.Guest) {
     throw errors.UNAUTHORIZED();
   }
   return { ...caller, userId: caller.session.user.id, context };

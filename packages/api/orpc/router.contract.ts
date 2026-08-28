@@ -33,6 +33,9 @@ export const routerContract = {
     capabilities: {
       list: agentContracts.listAgentCapabilitiesContract,
     },
+    usage: {
+      me: agentContracts.getAgentUsageContract,
+    },
     admin: {
       kinds: {
         list: agentAdminContracts.listAgentKindsAdminContract,

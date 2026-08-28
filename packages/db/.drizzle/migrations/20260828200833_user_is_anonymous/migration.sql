@@ -1,0 +1,1 @@
+ALTER TABLE "chia_user" ADD COLUMN "is_anonymous" boolean DEFAULT false;

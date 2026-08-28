@@ -40,7 +40,7 @@ const kind: AgentKindAdmin = {
   kind: "writing",
   label: "Writing",
   description: "Drafts posts.",
-  minTier: 3,
+  minTier: 4,
   defaults: {
     code: {
       providerId: "vercel-ai-gateway",

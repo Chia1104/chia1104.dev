@@ -8,6 +8,7 @@ import {
   canUseAgentKind,
 } from "../guards/agent-session.guard";
 import { callerGuard } from "../guards/caller.guard";
+import { requireAgentUsageService } from "../services/agent-usage.service";
 import {
   availableAgentKinds,
   requireAgentKind,
@@ -248,6 +249,18 @@ export const forkAgentSessionRoute = contractOS.agent.sessions.fork
     const detail = await withORPCErrors(() => service.fork(caller, opts.input));
     if (!detail) throw opts.errors.NOT_FOUND();
     return detail;
+  });
+
+// ============================================
+// Usage
+// ============================================
+
+/** No kind to resolve: the standing is the caller's own, so only the caller floor applies. */
+export const getAgentUsageRoute = contractOS.agent.usage.me
+  .use(resolveCaller)
+  .handler(async (opts) => {
+    const caller = agentCallerOf(opts.context, opts.errors);
+    return await requireAgentUsageService(opts.context).standing(caller);
   });
 
 // ============================================

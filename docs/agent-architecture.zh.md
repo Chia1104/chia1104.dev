@@ -74,14 +74,29 @@ interface，實作放在該 kind 的 definition 旁邊——不掛在共用 port
 
 存取權是 kind 的屬性，不是 route 的屬性。每條 agent route 都先跑 `callerGuard()`，它只解析呼叫者的
 `CallerTier`；接著 agent guard（建立與能力列表用 `agentKindGuard`，session-scoped 請求用
-`agentSessionGuard`）把這個 tier 和 kind 的 `AgentKindService.minTier` 比對。低於 `Session` 的 tier
+`agentSessionGuard`）把這個 tier 和 kind 的 `AgentKindService.minTier` 比對。低於 `Guest` 的 tier
 一律先被拒絕——session row 有 owner，匿名或 API-key 呼叫者沒有可以「是」的人。沒帶 kind 的 `list`
 只回傳呼叫者可用的 kind。
 
 Service 收到的是 `AgentServiceCaller`：解析後的 `Caller`（tier、session、設定檔裡的 `adminId`）加上
 `userId`。agent 的 generic 層不帶任何 admin 身分——writing kind 設 `minTier: Root`，這使得它的呼叫者
 *就是*設定的作者，content port 需要時由 kind 自己讀 `getAdminId()`。公開 kind 設
-`minTier: Session`，從頭到尾看不到 admin id。
+`minTier: Guest`（或 `Session`，要求登入），從頭到尾看不到 admin id。
+
+### Guest
+
+沒登入的訪客也能擁有 session：better-auth 的 `anonymous()` plugin（`@chia/auth/server`）在
+client 呼叫 `signIn.anonymous()` 時鑄一個真正的 user row，標記 `user.isAnonymous`。
+`callerPolicy` 把這種 session 評為 `CallerTier.Guest`——高於 `Anonymous`，因為有人可以擁有東西、
+可以計量；低於 `ApiKey`，因為除此之外什麼都沒證明。單獨的 `sessionPolicy` 仍拒絕 guest，所以每條
+`authGuard` route 一如既往地代表「登入的人」；只有 `callerPolicy` 選擇接納（`allowAnonymous`）。
+guest 之後登入時，plugin 的 `onLinkAccount` 在 guest row 被刪除之前跑 `transferAgentOwnership`：
+他們的 session、approval 與 ledger row 都搬到那個帳號，所以登入永遠不會重置配額。
+
+`agent.usage.me`（`agentUsageStandingSchema`）是任何帶 session 的 tier 自己的處境：額度、花費、
+當週、執行中的 turn 與上限——operator 的上限是 `null`——經由 `agentUsage` port
+（`AgentUsageService`），`apps/service` 把它綁到 `@chia/agent-host/quota` 的
+`readAgentUsageStanding`。
 
 ## 3. Policy、session 與資料
 

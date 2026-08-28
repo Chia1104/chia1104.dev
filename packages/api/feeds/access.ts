@@ -33,6 +33,7 @@ export interface FeedVisibility {
  */
 const MAX_LIMIT = {
   [CallerTier.Anonymous]: 50,
+  [CallerTier.Guest]: 50,
   [CallerTier.ApiKey]: 1000,
   [CallerTier.Session]: 1000,
   [CallerTier.Root]: 1000,

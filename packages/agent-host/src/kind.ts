@@ -47,7 +47,7 @@ export interface AgentKindDefinition<TState, TConfig extends object> {
   readonly label: string;
   readonly description: string;
   /**
-   * Lowest {@link CallerTier} allowed to touch this kind at all. Never below `Session`: sessions
+   * Lowest {@link CallerTier} allowed to touch this kind at all. Never below `Guest`: sessions
    * are owned by a user, so an anonymous or API-key caller has no owner to be. Restated on the
    * registry entry, which the guards read before the definition is loaded.
    */

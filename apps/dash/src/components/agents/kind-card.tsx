@@ -74,10 +74,12 @@ const audienceOf = (minTier: number): string => {
     case 0:
       return "anyone";
     case 1:
-      return "API-key callers";
+      return "guests and signed-in users";
     case 2:
-      return "signed-in users";
+      return "API-key callers";
     case 3:
+      return "signed-in users";
+    case 4:
       return "the author only";
     default:
       return `tier ${minTier}`;

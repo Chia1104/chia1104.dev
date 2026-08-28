@@ -21,12 +21,18 @@ import { allow, deny } from "./types";
  */
 export const CallerTier = {
   Anonymous: 0,
+  /**
+   * Holds a session cookie for a guest user — the row `anonymous()` mints for a visitor who
+   * never signed in. An identity to own things with, and nothing more proven than that: below
+   * an API key, which a trusted deployment holds and which may read drafts.
+   */
+  Guest: 1,
   /** Holds a valid `X-CH-API-KEY` for the configured project — a trusted deployment. */
-  ApiKey: 1,
-  /** Holds a valid session cookie. */
-  Session: 2,
+  ApiKey: 2,
+  /** Holds a valid session cookie for a signed-in person. */
+  Session: 3,
   /** Session belonging to the single configured admin — what `adminPolicy()` required. */
-  Root: 3,
+  Root: 4,
 } as const;
 
 export type CallerTier = (typeof CallerTier)[keyof typeof CallerTier];
@@ -63,11 +69,13 @@ const hasSessionCredential = (headers: Headers, preset?: Session | null) =>
   preset !== undefined ||
   (headers.get("Cookie")?.includes(SESSION_COOKIE_MARKER) ?? false);
 
-const tierForSession = (session: Session, adminId: string): CallerTier =>
-  session.user.id === adminId &&
-  (session.user.role === Role.Root || session.user.role === Role.Admin)
+const tierForSession = (session: Session, adminId: string): CallerTier => {
+  if (session.user.isAnonymous === true) return CallerTier.Guest;
+  return session.user.id === adminId &&
+    (session.user.role === Role.Root || session.user.role === Role.Admin)
     ? CallerTier.Root
     : CallerTier.Session;
+};
 
 /**
  * Resolves the caller's tier without deciding what it may see — that is the caller's job,
@@ -105,7 +113,8 @@ export const callerPolicy = (
     }
 
     if (hasSessionCredential(context.headers, context.session)) {
-      const result = await sessionPolicy()(context);
+      // Guests are admitted here, as their own tier; `sessionPolicy` alone still refuses them.
+      const result = await sessionPolicy({ allowAnonymous: true })(context);
 
       // An expired or absent cookie is an ordinary visitor, not an error.
       if (result.ok && result.patch) {

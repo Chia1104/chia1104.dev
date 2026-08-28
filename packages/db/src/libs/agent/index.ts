@@ -8,6 +8,7 @@ import {
   agentSessionEntries,
   agentSessions,
   agentToolApprovals,
+  agentUsageLedger,
   writingAgentDrafts,
   writingAgentSessions,
 } from "../../schemas/schema.ts";
@@ -164,6 +165,32 @@ export const restoreAgentSession = async (db: DB, sessionId: string) => {
 /** Hard delete. Runs, entries, kind extensions and approvals cascade. */
 export const deleteAgentSession = async (db: DB, sessionId: string) => {
   await db.delete(agentSessions).where(eq(agentSessions.id, sessionId));
+};
+
+/**
+ * Re-keys everything `fromUserId` owns onto `toUserId`: a guest who signs in keeps their
+ * sessions, and their spend keeps counting against them — the ledger moves with the sessions,
+ * so signing in never resets a quota. One transaction, because a half-moved user would leave
+ * sessions the ledger no longer explains.
+ */
+export const transferAgentOwnership = async (
+  db: DB,
+  options: { fromUserId: string; toUserId: string }
+): Promise<void> => {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(agentSessions)
+      .set({ userId: options.toUserId })
+      .where(eq(agentSessions.userId, options.fromUserId));
+    await tx
+      .update(agentUsageLedger)
+      .set({ userId: options.toUserId })
+      .where(eq(agentUsageLedger.userId, options.fromUserId));
+    await tx
+      .update(agentToolApprovals)
+      .set({ decidedBy: options.toUserId })
+      .where(eq(agentToolApprovals.decidedBy, options.fromUserId));
+  });
 };
 
 // ============================================

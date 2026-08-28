@@ -77,15 +77,32 @@ session detail (`state.detail`), which is all the dashboard reads.
 Access is a property of the kind, not of the routes. Every agent route runs `callerGuard()`, which
 only resolves the caller's `CallerTier`; the agent guards (`agentKindGuard` for creation and
 capability listings, `agentSessionGuard` for session-scoped requests) then compare that tier with
-the kind's `AgentKindService.minTier`. Any tier below `Session` is refused first — a session row has
+the kind's `AgentKindService.minTier`. Any tier below `Guest` is refused first — a session row has
 an owner, so an anonymous or API-key caller has no one to be. `list` with no kind returns only the
 kinds the caller may use.
 
 The service receives an `AgentServiceCaller`: the resolved `Caller` (tier, session, configured
 `adminId`) plus `userId`. Nothing agent-generic carries an admin identity — the writing kind sets
 `minTier: Root`, which is what makes its caller _be_ the configured author, and reads
-`getAdminId()` itself where its content port needs it. A public kind sets `minTier: Session` and
-never sees an admin id.
+`getAdminId()` itself where its content port needs it. A public kind sets `minTier: Guest` (or
+`Session`, to ask for a sign-in) and never sees an admin id.
+
+### Guests
+
+A visitor who has not signed in can still own sessions: better-auth's `anonymous()` plugin
+(`@chia/auth/server`) mints a real user row, marked `user.isAnonymous`, when the client calls
+`signIn.anonymous()`. `callerPolicy` grades that session as `CallerTier.Guest` — above
+`Anonymous` because there is someone to own things and meter, below `ApiKey` because nothing
+else is proven. `sessionPolicy` alone still refuses a guest, so every `authGuard` route means a
+signed-in person as before; only `callerPolicy` opts in (`allowAnonymous`). When a guest later
+signs in, the plugin's `onLinkAccount` runs `transferAgentOwnership` before the guest row is
+deleted: their sessions, approvals and ledger rows move to the account, so signing in never
+resets a quota.
+
+`agent.usage.me` (`agentUsageStandingSchema`) is the caller's own standing for any
+session-bearing tier: allowance, spend, the current week, running turns and the cap — `null`
+limits for the operator — through the `agentUsage` port (`AgentUsageService`), which
+`apps/service` binds to `readAgentUsageStanding` in `@chia/agent-host/quota`.
 
 ## 3. Policy, sessions and data
 

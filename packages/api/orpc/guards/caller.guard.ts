@@ -56,6 +56,8 @@ export const callerGuard = (options: CallerPolicyOptions = {}) =>
  */
 const TIER_MULTIPLIER = {
   [CallerTier.Anonymous]: 1,
+  /** Counted per guest user rather than per address, so a little more than anonymous. */
+  [CallerTier.Guest]: 2,
   [CallerTier.ApiKey]: 10,
   [CallerTier.Session]: 10,
   [CallerTier.Root]: 100,

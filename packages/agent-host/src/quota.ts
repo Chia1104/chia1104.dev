@@ -216,6 +216,48 @@ export const readAgentQuotaStanding = async (
   return { quota, period, usedMicros };
 };
 
+/** What `agent.usage.me` returns; mirrors the contract's `agentUsageStandingSchema`. */
+export interface AgentUsageStanding {
+  exempt: boolean;
+  limitMicros: number | null;
+  usedMicros: number;
+  period: { start: string; end: string };
+  timeZone: string;
+  runningTurns: number;
+  maxRunningTurns: number | null;
+}
+
+/**
+ * The caller's standing as a client shows it. Read for everyone, exempt or not — the operator
+ * sees their own spend and running turns too, with no limits beside them.
+ */
+export const readAgentUsageStanding = async (
+  db: DB,
+  caller: { tier: CallerTier; userId: string },
+  now = new Date()
+): Promise<AgentUsageStanding> => {
+  const exempt = isQuotaExempt(caller.tier);
+  const [standing, runningTurns] = await Promise.all([
+    readAgentQuotaStanding(db, caller.userId, now),
+    countRunningAgentTurns(db, {
+      userId: caller.userId,
+      turnKey: AGENT_TURN_KEY,
+    }),
+  ]);
+  return {
+    exempt,
+    limitMicros: exempt ? null : standing.quota.weeklyLimitMicros,
+    usedMicros: standing.usedMicros,
+    period: {
+      start: standing.period.start.toISOString(),
+      end: standing.period.end.toISOString(),
+    },
+    timeZone: standing.quota.resetTimeZone,
+    runningTurns,
+    maxRunningTurns: exempt ? null : standing.quota.maxRunningTurns,
+  };
+};
+
 const formatReset = (period: UsagePeriod, timeZone: string): string =>
   new Intl.DateTimeFormat("en-US", {
     timeZone,

@@ -9,6 +9,7 @@ import { memoryHooks } from "../services/agent-memory-indexing.service";
 import { feedHooks } from "../services/feed-indexing.service";
 
 import { agentAdminService } from "./agent-admin.factory";
+import { agentUsageService } from "./agent-usage.factory";
 
 /** The values the guards read from this app's env. Built once; the same on every request. */
 const config: ORPCConfig = {
@@ -59,4 +60,5 @@ export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   workflow: workflowControl,
   agentKinds,
   agentAdmin: agentAdminService,
+  agentUsage: agentUsageService,
 });

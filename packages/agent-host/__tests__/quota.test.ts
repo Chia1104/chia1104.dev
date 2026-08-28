@@ -268,3 +268,56 @@ describe("assertBelowRunningTurnCap", () => {
     );
   });
 });
+
+describe("readAgentUsageStanding", () => {
+  const now = new Date("2026-08-29T10:00:00Z");
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    repo.getAgentQuotaConfig.mockResolvedValue(
+      row({ resetTimeZone: "Asia/Taipei" })
+    );
+    repo.sumAgentUsageCost.mockResolvedValue(120_000);
+    repo.countRunningAgentTurns.mockResolvedValue(1);
+  });
+
+  it("reports a limited caller's allowance, spend, week and running turns", async () => {
+    const { readAgentUsageStanding } = await import("../src/quota");
+    await expect(
+      readAgentUsageStanding(
+        db,
+        { tier: CallerTier.Guest, userId: "guest-1" },
+        now
+      )
+    ).resolves.toEqual({
+      exempt: false,
+      limitMicros: 300_000,
+      usedMicros: 120_000,
+      period: {
+        start: "2026-08-23T16:00:00.000Z",
+        end: "2026-08-30T16:00:00.000Z",
+      },
+      timeZone: "Asia/Taipei",
+      runningTurns: 1,
+      maxRunningTurns: 3,
+    });
+    expect(repo.lockAgentUser).not.toHaveBeenCalled();
+  });
+
+  it("reports the operator's spend with no limits beside it", async () => {
+    const { readAgentUsageStanding } = await import("../src/quota");
+    await expect(
+      readAgentUsageStanding(
+        db,
+        { tier: CallerTier.Root, userId: "admin" },
+        now
+      )
+    ).resolves.toMatchObject({
+      exempt: true,
+      limitMicros: null,
+      usedMicros: 120_000,
+      maxRunningTurns: null,
+      runningTurns: 1,
+    });
+  });
+});

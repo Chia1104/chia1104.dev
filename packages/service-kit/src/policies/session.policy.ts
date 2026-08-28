@@ -11,6 +11,13 @@ export interface SessionPolicyOptions {
    * Additionally require `Role.Root`. Replaces the old `verifyAuth(rootOnly)` flag.
    */
   rootOnly?: boolean;
+  /**
+   * Admit a guest — the user row better-auth's `anonymous()` plugin mints for a visitor who
+   * never signed in. Off by default: a guest holds a session cookie like anyone else, and
+   * every route that asks for "a signed-in user" means a person, not a browser tab.
+   * `callerPolicy` is the one caller that turns this on, to grade the guest as its own tier.
+   */
+  allowAnonymous?: boolean;
 }
 
 /**
@@ -26,6 +33,11 @@ export const sessionPolicy = (
       (await context.auth?.api.getSession({ headers: context.headers }));
 
     if (!session?.session || !session.user) {
+      return deny(new AppError("UNAUTHORIZED"));
+    }
+
+    // A guest is "not signed in" to everything that did not opt in.
+    if (session.user.isAnonymous === true && !options.allowAnonymous) {
       return deny(new AppError("UNAUTHORIZED"));
     }
 

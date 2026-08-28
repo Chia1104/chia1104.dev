@@ -34,6 +34,9 @@ export const router = contractOS.router({
     capabilities: {
       list: agentRoutes.listAgentCapabilitiesRoute,
     },
+    usage: {
+      me: agentRoutes.getAgentUsageRoute,
+    },
     admin: {
       kinds: {
         list: agentAdminRoutes.listAgentKindsAdminRoute,

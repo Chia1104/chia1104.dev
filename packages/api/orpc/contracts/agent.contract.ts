@@ -43,6 +43,25 @@ export const turnCapError = {
   TOO_MANY_REQUESTS: { data: agentTurnCapSchema },
 } as const;
 
+/**
+ * Where the caller stands against the usage quota: what a client shows as a meter before the
+ * wall, and what tells it when the wall moves. `exempt` is the operator, whose `limitMicros`
+ * and `maxRunningTurns` are `null`; spend and running turns are still reported for them.
+ */
+export const agentUsageStandingSchema = z.object({
+  exempt: z.boolean(),
+  /** Micro-dollars of house spend allowed per period; `null` when exempt. */
+  limitMicros: z.number().nullable(),
+  usedMicros: z.number(),
+  /** ISO instants; `end` is when the allowance is whole again. */
+  period: z.object({ start: z.string(), end: z.string() }),
+  timeZone: z.string(),
+  runningTurns: z.number().int(),
+  maxRunningTurns: z.number().int().nullable(),
+});
+
+export type AgentUsageStanding = z.infer<typeof agentUsageStandingSchema>;
+
 export const thinkingLevelSchema = z.enum([
   "off",
   "minimal",
@@ -168,6 +187,15 @@ export const agentSessionDetailSchema = z.object({
     costTotal: z.number(),
   }),
 });
+
+// ============================================
+// Usage
+// ============================================
+
+/** The caller's own standing. Any session-bearing tier, guests included; nothing kind-specific. */
+export const getAgentUsageContract = oc
+  .errors({ UNAUTHORIZED: {}, SERVICE_UNAVAILABLE: {} })
+  .output(agentUsageStandingSchema);
 
 // ============================================
 // Sessions
