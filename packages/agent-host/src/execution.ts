@@ -5,15 +5,25 @@ import type { JsonObject } from "@chia/utils/json";
 export const AGENT_DELTA_NAMESPACE = "agent:deltas";
 export const AGENT_TURN_KEY = "turn";
 
-export interface AgentTurnMarker extends JsonObject {
-  seqBefore: number;
+/**
+ * Where a turn begins on the run's durable streams. The coarse stream and the delta namespace
+ * are indexed independently, so a turn needs a cursor into each; replaying deltas from any
+ * earlier point re-appends text to messages the client already holds.
+ */
+export interface AgentStreamPosition extends JsonObject {
   streamIndex: number;
+  deltaStreamIndex: number;
+}
+
+export interface AgentTurnMarker extends AgentStreamPosition {
+  seqBefore: number;
   running: boolean;
 }
 
 const agentTurnMarkerSchema = z.object({
   seqBefore: z.number(),
   streamIndex: z.number(),
+  deltaStreamIndex: z.number(),
   running: z.boolean(),
 });
 

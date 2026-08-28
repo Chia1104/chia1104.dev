@@ -6,7 +6,10 @@ import {
   AGENT_TURN_KEY,
   readAgentTurnMarker,
 } from "@chia/agent-host/execution";
-import type { AgentTurnMarker } from "@chia/agent-host/execution";
+import type {
+  AgentStreamPosition,
+  AgentTurnMarker,
+} from "@chia/agent-host/execution";
 import type { AgentKindDefinition } from "@chia/agent-host/kind";
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
 import {
@@ -38,6 +41,7 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type {
   AgentKindService,
   AgentServiceCaller,
+  AgentStreamCursor,
 } from "@chia/api/orpc/services/agent.service";
 import type { DB } from "@chia/db/client";
 import {
@@ -326,18 +330,43 @@ export const createAgentKindService = <TState, TConfig extends object>(
   const claimTurn = async (
     db: DB,
     row: OwnedSession,
-    startIndex: number
+    position: AgentStreamPosition
   ): Promise<void> => {
     if (!row.activeRunId || row.turn?.running) return;
     const turn: AgentTurnMarker = {
       seqBefore: await getAgentSessionLastSeq(db, row.id),
-      streamIndex: startIndex,
+      ...position,
       running: true,
     };
     await patchAgentRunMetadata(db, row.activeRunId, {
       [AGENT_TURN_KEY]: turn,
     });
   };
+
+  /**
+   * Where the next turn on a live run will begin: one past the current tail of each durable
+   * stream. Captured before the run is woken, so a turn still active shares this continuation
+   * with the queued one in durable emission order.
+   */
+  const nextTurnPosition = async (
+    runId: string
+  ): Promise<AgentStreamPosition> => {
+    const run = getRun(runId);
+    const [coarseTail, deltaTail] = await Promise.all([
+      run.getReadable().getTailIndex(),
+      run.getReadable({ namespace: AGENT_DELTA_NAMESPACE }).getTailIndex(),
+    ]);
+    return { streamIndex: coarseTail + 1, deltaStreamIndex: deltaTail + 1 };
+  };
+
+  const cursorOf = (
+    runId: string,
+    position: AgentStreamPosition
+  ): AgentStreamCursor => ({
+    runId,
+    startIndex: position.streamIndex,
+    deltaStartIndex: position.deltaStreamIndex,
+  });
 
   /**
    * How long `abort` waits for the stopped turn's `run:end` before cancelling the run regardless.
@@ -718,13 +747,13 @@ export const createAgentKindService = <TState, TConfig extends object>(
             );
           }
 
-          const run = getRun(row.workflowRunId);
-          // Capture the tail before enqueuing. If another turn is active, its remaining events and the
-          // queued turn share this continuation stream in durable emission order.
-          const startIndex = (await run.getReadable().getTailIndex()) + 1;
-          await claimTurn(db, row, startIndex);
+          const position = await nextTurnPosition(row.workflowRunId);
+          await claimTurn(db, row, position);
           await workflowControl.resumeAgentMessage(input.sessionId, message);
-          return { runId: row.workflowRunId, startIndex, startedRun: false };
+          return {
+            ...cursorOf(row.workflowRunId, position),
+            startedRun: false,
+          };
         }
 
         // Started before the session run so its ref can travel in the run's request: every turn then
@@ -737,9 +766,13 @@ export const createAgentKindService = <TState, TConfig extends object>(
         // so the row's own id stands in as `externalRunId` until the started run is bound to it; a
         // start that fails closes the row so the lease does not outlive the attempt.
         const runId = crypto.randomUUID();
+        const position: AgentStreamPosition = {
+          streamIndex: 0,
+          deltaStreamIndex: 0,
+        };
         const turn: AgentTurnMarker = {
           seqBefore: await getAgentSessionLastSeq(db, row.id),
-          streamIndex: 0,
+          ...position,
           running: true,
         };
         await createAgentRun(db, {
@@ -771,7 +804,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
         }
         await bindAgentRunExternalId(db, runId, workflowRunId);
 
-        return { runId: workflowRunId, startIndex: 0, startedRun: true };
+        return { ...cursorOf(workflowRunId, position), startedRun: true };
       }),
 
     async attach(caller, input) {
@@ -781,7 +814,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
       if (isRunLease(row)) return null;
       const run = await runStateOf(row);
       if (run?.status !== "running") return null;
-      return { runId: row.workflowRunId, startIndex: row.turn.streamIndex };
+      return cursorOf(row.workflowRunId, row.turn);
     },
 
     /**
@@ -805,14 +838,15 @@ export const createAgentKindService = <TState, TConfig extends object>(
 
       // Deltas live on their own namespace and arrive batched; merging them here keeps the client's
       // reducer identical whether or not it asked for them.
-      const deltaReader = input.deltas
-        ? getRun(runId)
-            .getReadable<AgentWireEvent[]>({
-              namespace: AGENT_DELTA_NAMESPACE,
-              startIndex: 0,
-            })
-            .getReader()
-        : undefined;
+      const deltaReader =
+        input.deltaStartIndex === undefined
+          ? undefined
+          : getRun(runId)
+              .getReadable<AgentWireEvent[]>({
+                namespace: AGENT_DELTA_NAMESPACE,
+                startIndex: input.deltaStartIndex,
+              })
+              .getReader();
 
       try {
         if (!deltaReader) {
@@ -919,9 +953,8 @@ export const createAgentKindService = <TState, TConfig extends object>(
 
         // Capture the cursor before waking the workflow. The chat transport opens a fresh request for
         // an approval continuation, so it needs the same exact replay boundary as a normal prompt.
-        const run = getRun(row.workflowRunId);
-        const startIndex = (await run.getReadable().getTailIndex()) + 1;
-        await claimTurn(db, row, startIndex);
+        const position = await nextTurnPosition(row.workflowRunId);
+        await claimTurn(db, row, position);
 
         // Then wake the run, which has been parked on this hook with no compute consumed.
         await workflowControl.resumeAgentApproval(
@@ -935,7 +968,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
           }
         );
 
-        return { runId: row.workflowRunId, startIndex };
+        return cursorOf(row.workflowRunId, position);
       }),
 
     compact: (outer, input) =>

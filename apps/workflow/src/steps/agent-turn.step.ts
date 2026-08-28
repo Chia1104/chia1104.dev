@@ -183,9 +183,16 @@ export const runAgentTurnStep = async (
   // Recorded before the first event of this turn is written. The previous turn flushed its writer
   // before returning, so the tail is the last index it wrote.
   const { workflowRunId } = getWorkflowMetadata();
+  const run = getRun(workflowRunId);
+  const [seqBefore, coarseTail, deltaTail] = await Promise.all([
+    getAgentSessionLastSeq(db, request.sessionId),
+    run.getReadable().getTailIndex(),
+    run.getReadable({ namespace: AGENT_DELTA_NAMESPACE }).getTailIndex(),
+  ]);
   const marker: AgentTurnMarker = {
-    seqBefore: await getAgentSessionLastSeq(db, request.sessionId),
-    streamIndex: (await getRun(workflowRunId).getReadable().getTailIndex()) + 1,
+    seqBefore,
+    streamIndex: coarseTail + 1,
+    deltaStreamIndex: deltaTail + 1,
     running: true,
   };
   await patchAgentRunMetadata(db, request.runId, { [AGENT_TURN_KEY]: marker });

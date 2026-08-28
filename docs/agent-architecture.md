@@ -398,7 +398,11 @@ provider · internal`) so a client can say what to do next; `describeAgentError`
 
 Each run has a coarse durable event stream and a separately batched delta namespace. A coarse event
 flushes queued deltas first. Readers race both streams so deltas remain interleaved with their
-coarse events. Streams close only when the durable run ends, not after each turn.
+coarse events. Streams close only when the durable run ends, not after each turn — so the two
+streams keep growing across turns, and each is indexed on its own. A turn's cursor therefore holds
+an index into both (`streamIndex`, `deltaStreamIndex` on the turn marker), captured as one past
+each tail when the turn is accepted; tailing the deltas from anywhere earlier would re-append
+text to messages the client already holds from the transcript.
 
 ### Rejoining a running turn
 

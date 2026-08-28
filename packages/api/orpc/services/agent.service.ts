@@ -38,9 +38,11 @@ export interface AgentServiceCaller extends Caller {
   context: ServiceContext;
 }
 
+/** Where to start tailing a run: one index per durable stream, since each is numbered on its own. */
 export interface AgentStreamCursor {
   runId: string;
   startIndex: number;
+  deltaStartIndex: number;
 }
 
 /**
@@ -117,7 +119,7 @@ export interface AgentKindService {
       template?: { name: string; args?: string[] };
       preAuthorizeToolNames?: string[];
     }
-  ): Promise<{ runId: string; startIndex: number; startedRun: boolean }>;
+  ): Promise<AgentStreamCursor & { startedRun: boolean }>;
 
   /**
    * Cursor to the start of the turn currently executing, or `null` when no turn is running. Reads
@@ -140,7 +142,8 @@ export interface AgentKindService {
       sessionId: string;
       runId?: string;
       startIndex?: number;
-      deltas?: boolean;
+      /** Merge token deltas from this index on; omitted means the coarse transcript only. */
+      deltaStartIndex?: number;
     }
   ): AsyncGenerator<AgentWireEvent, void, void>;
 
