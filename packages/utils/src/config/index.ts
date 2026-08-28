@@ -274,6 +274,8 @@ function serviceNameResolver(service: Service) {
       return "CONTENT_SERVICE";
     case Service.AI:
       return "AI_SERVICE";
+    case Service.Workflow:
+      return "WORKFLOW_SERVICE";
   }
 }
 

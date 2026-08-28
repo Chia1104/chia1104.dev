@@ -13,13 +13,12 @@ Three packages carry it: `api` (contracts, handlers, guards, ports), `service-ki
 **Context injection.** `packages/api` parses no env and holds no module-level state. Everything the guards and routes need from the host travels on the oRPC context, `BaseOSContext` in `packages/api/orpc/utils.ts`:
 
 - `config` — required: rate-limit budget, project id, AI key material.
-- `hooks.onFeedChanged` / `hooks.onFeedRemoved` — optional feed lifecycle hooks (`FeedHooks`), fired by the content write paths.
-- `indexing` — optional `IndexingService` port; starts and reconciles resource index runs.
-- `memory` — optional `MemoryService` port; starts memory consolidation runs.
+- `workflow` — required: the `@chia/workflow-control/client` for `apps/workflow`. Routes start runs, cancel them and read their state with it directly (`rag.route.ts` through `resources/index-run.ts`, `memory.route.ts` for consolidation); the World never lives in this package.
+- `hooks.onFeedChanged` / `hooks.onFeedRemoved` / `hooks.onMemoryChanged` — optional lifecycle hooks (`FeedHooks`, `MemoryHooks`), fired by the write paths.
 - `agentKinds` — optional map of `AgentKindService` keyed by `agent.session.kind`.
 - `agentAdmin` — optional `AgentAdminService` port; the operator's configuration of agent kinds and tasks (`agent.admin.*`).
 
-The port interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `agent-admin.service.ts`, `indexing.service.ts`, `memory.service.ts`) next to `requireIndexing(context)` / `requireAgentKind(context, kind)` / `requireAgentAdminService(context)` / `requireMemoryService(context)`, which answer `SERVICE_UNAVAILABLE` when the context lacks the port. `apps/service` is the only process that runs the router and supplies all of these in `createORPCContext`. Anything that needs a long-lived process, a DB handle or gateway credentials belongs in the app, not here.
+The two agent ports stay injected because they read the host's kind and task registries and, for a session, the World's durable streams — both host code. Their interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `agent-admin.service.ts`) next to `requireAgentKind(context, kind)` / `requireAgentAdminService(context)`, which answer `SERVICE_UNAVAILABLE` when the context lacks the port. `apps/service` is the only process that runs the router and supplies all of these in `createORPCContext`. Anything that needs a long-lived process or gateway credentials belongs in the app, not here.
 
 **Data access.** oRPC handlers never write raw Drizzle; they call repositories exported as `@chia/db/repos/*`. Write logic shared with workflow steps lives in `packages/api/<domain>/write` (today `feeds/write.ts`) and takes its `FeedHooks` as an explicit argument, so a durable turn can call it with no request to authorize against.
 
@@ -29,7 +28,7 @@ The port interfaces live in `packages/api/orpc/services/` (`agent.service.ts`, `
 
 ### `api`
 
-`orpc/` — `contracts/`, `routes/`, `guards/`, `services/` (the ports), `router.contract.ts`, `router.ts`, `utils.ts` (`BaseOSContext`, `contractOS`, `baseOS`). Domain modules beside it: `feeds/` (search, access, write), `resources/` (the RAG resource registry and adapters — see [`docs/rag-architecture.md`](../docs/rag-architecture.md)), and external clients each with their own env: `github`, `spotify`, `s3`, `email` (Resend), `betterstack`, `captcha`. `services/env.ts` holds the service-endpoint env the frontends compose.
+`orpc/` — `contracts/`, `routes/`, `guards/`, `services/` (the agent ports), `router.contract.ts`, `router.ts`, `utils.ts` (`BaseOSContext`, `contractOS`, `baseOS`). Domain modules beside it: `feeds/` (search, access, write), `memories/` (write), `resources/` (the RAG resource registry and adapters, and `index-run.ts` — operator-triggered index runs recorded, joined and reconciled through the workflow client — see [`docs/rag-architecture.md`](../docs/rag-architecture.md)), and external clients each with their own env: `github`, `spotify`, `s3`, `email` (Resend), `betterstack`, `captcha`. `services/env.ts` holds the service-endpoint env the frontends compose.
 
 ### `service-kit`
 

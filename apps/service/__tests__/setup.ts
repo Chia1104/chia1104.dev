@@ -62,6 +62,12 @@ vi.mock("@chia/api/orpc/guards/ai-key.guard", async () => {
 });
 
 // The feed hooks start durable workflows, which have no runtime here.
+// `workflow/api` would build a real World; the agent service only reads runs and hooks through it.
+vi.mock("workflow/api", async () => {
+  const mocks = await import("./__mocks__/workflow.mock");
+  return { getRun: mocks.getRun, getHookByToken: mocks.getHookByToken };
+});
+
 vi.mock("../src/services/feed-indexing.service", () => ({
   feedHooks: {
     onFeedChanged: vi.fn().mockResolvedValue(undefined),
@@ -149,6 +155,11 @@ export const mockEnv = {
   // KV/Cache env
   CACHE_PROVIDER: "auto",
   CACHE_URI: "redis://localhost:6379",
+  // Workflow world (reads) and the apps/workflow control endpoint (writes)
+  WORKFLOW_TARGET_WORLD: "@workflow/world-postgres",
+  WORKFLOW_POSTGRES_URL: "postgres://postgres:password@localhost:5432/test",
+  INTERNAL_WORKFLOW_SERVICE_ENDPOINT: "http://workflow.test",
+  INTERNAL_WORKFLOW_SERVICE_TOKEN: "w".repeat(32),
 };
 
 vi.stubEnv("NODE_ENV", mockEnv.NODE_ENV);
@@ -202,3 +213,13 @@ vi.stubEnv(
 vi.stubEnv("CAPTCHA_SECRET_KEY", mockEnv.CAPTCHA_SECRET_KEY);
 vi.stubEnv("CACHE_PROVIDER", mockEnv.CACHE_PROVIDER);
 vi.stubEnv("CACHE_URI", mockEnv.CACHE_URI);
+vi.stubEnv("WORKFLOW_TARGET_WORLD", mockEnv.WORKFLOW_TARGET_WORLD);
+vi.stubEnv("WORKFLOW_POSTGRES_URL", mockEnv.WORKFLOW_POSTGRES_URL);
+vi.stubEnv(
+  "INTERNAL_WORKFLOW_SERVICE_ENDPOINT",
+  mockEnv.INTERNAL_WORKFLOW_SERVICE_ENDPOINT
+);
+vi.stubEnv(
+  "INTERNAL_WORKFLOW_SERVICE_TOKEN",
+  mockEnv.INTERNAL_WORKFLOW_SERVICE_TOKEN
+);

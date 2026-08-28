@@ -1,0 +1,10 @@
+{
+  "extends": "@chiastack/tsconfig/react.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "plugins": [{ "name": "workflow" }]
+  },
+  "include": ["src/**/*.ts", "__tests__", "plugins/**/*.ts"]
+}

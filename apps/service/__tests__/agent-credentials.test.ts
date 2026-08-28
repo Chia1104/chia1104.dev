@@ -20,9 +20,9 @@ vi.mock("../src/env", () => ({
   },
 }));
 
-let readEncryptedAgentCredentials: (typeof import("../src/services/agent-credentials"))["readEncryptedAgentCredentials"];
-let decryptAgentCredentials: (typeof import("../src/services/agent-credentials"))["decryptAgentCredentials"];
-let AgentCredentialError: (typeof import("../src/services/agent-credentials"))["AgentCredentialError"];
+let readEncryptedAgentCredentials: (typeof import("../src/services/agent-credentials.service"))["readEncryptedAgentCredentials"];
+let decryptAgentCredentials: (typeof import("../src/services/agent-credentials.service"))["decryptAgentCredentials"];
+let AgentCredentialError: (typeof import("../src/services/agent-credentials.service"))["AgentCredentialError"];
 
 beforeAll(async () => {
   const generated = generateKeys();
@@ -30,7 +30,7 @@ beforeAll(async () => {
   keys.public = Buffer.from(generated.publicKey, "utf-8").toString("base64");
   keys.private = Buffer.from(generated.privateKey, "utf-8").toString("base64");
 
-  const module = await import("../src/services/agent-credentials");
+  const module = await import("../src/services/agent-credentials.service");
   readEncryptedAgentCredentials = module.readEncryptedAgentCredentials;
   decryptAgentCredentials = module.decryptAgentCredentials;
   AgentCredentialError = module.AgentCredentialError;

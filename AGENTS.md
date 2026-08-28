@@ -15,7 +15,7 @@ Comments carry only what the code cannot: why a constraint exists, what invarian
 
 ## Deployables
 
-`apps/www` (public site, Next.js, Vercel), `apps/dash` (admin dashboard, Next.js, Railway) and `apps/service` (the only backend — Hono on Nitro, Railway; owns auth, DB, workflows, the AI/agent runtime). Both frontends reach `service` through a contract-first oRPC client.
+`apps/www` (public site, Next.js, Vercel), `apps/dash` (admin dashboard, Next.js, Railway), `apps/service` (the API backend — Hono on Nitro, Railway; owns auth, DB, the AI routes) and `apps/workflow` (the single-replica workflow runner — Hono on Nitro, Railway; owns the durable workflows and the agent turn executor). Both frontends reach `service` through a contract-first oRPC client; `service` reaches `workflow` through the `@chia/workflow-control` contract.
 
 - [`apps/AGENTS.md`](apps/AGENTS.md) — the deployment split, how each frontend reaches `service`, the service surface and its internal layout.
 - [`packages/AGENTS.md`](packages/AGENTS.md) — the API architecture (contracts, policies, context injection, data access, errors) and every `@chia/*` package.

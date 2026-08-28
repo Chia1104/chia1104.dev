@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "workflow-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build",
+    "start": "node .output/server/index.mjs",
+    "type:check": "tsc --noEmit",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "vitest --run",
+    "clean": "git clean -xdf .output node_modules .cache .turbo"
+  },
+  "dependencies": {
+    "@chia/agent-host": "workspace:*",
+    "@chia/agent-runtime": "workspace:*",
+    "@chia/agent-writing": "workspace:*",
+    "@chia/ai": "workspace:*",
+    "@chia/api": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@chia/service-kit": "workspace:*",
+    "@chia/utils": "workspace:*",
+    "@chia/workflow-control": "workspace:*",
+    "@hono/zod-validator": "catalog:hono",
+    "@t3-oss/env-core": "catalog:",
+    "@workflow-worlds/redis": "catalog:",
+    "@workflow/world-postgres": "catalog:",
+    "ai": "catalog:ai",
+    "firecrawl": "catalog:ai",
+    "hono": "catalog:hono",
+    "reading-time-estimator": "^2.13.0",
+    "workflow": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react-is",
+    "@types/react-dom": "catalog:react-is",
+    "nitro": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}

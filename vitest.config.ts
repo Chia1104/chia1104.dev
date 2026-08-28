@@ -10,6 +10,7 @@ export default defineConfig({
       "apps/dash",
       "packages/*/vitest.config.*",
       "apps/service",
+      "apps/workflow",
     ],
     coverage: {
       reporter: ["lcov", "html"],

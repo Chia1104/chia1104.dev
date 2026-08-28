@@ -41,6 +41,20 @@ export const env = createEnv({
     OLLAMA_BASE_URL: z.string().optional(),
     AI_GATEWAY_API_KEY: z.string().optional(),
     FIRECRAWL_API_KEY: z.string().min(1),
+    /**
+     * Run state and durable streams are read straight from the shared World storage; without an
+     * explicit target the SDK would silently fall back to the on-disk local world.
+     */
+    WORKFLOW_TARGET_WORLD: z.string().min(1),
+    WORKFLOW_POSTGRES_URL: z.url().optional(),
+    WORKFLOW_POSTGRES_JOB_PREFIX: z.string().min(1).optional(),
+    WORKFLOW_POSTGRES_MAX_POOL_SIZE: NumericStringSchema.optional(),
+    WORKFLOW_REDIS_URI: z.url().optional(),
+    /**
+     * Authenticates every queue mutation sent to `apps/workflow`; the endpoint itself is
+     * `INTERNAL_WORKFLOW_SERVICE_ENDPOINT` from `serviceEnv`, resolved by `withServiceEndpoint` in `repos/workflow-control.repo.ts`.
+     */
+    INTERNAL_WORKFLOW_SERVICE_TOKEN: z.string().min(32),
   },
   runtimeEnv: {
     PORT: process.env.PORT ? Number(process.env.PORT) : 3005,
@@ -74,6 +88,14 @@ export const env = createEnv({
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+    WORKFLOW_TARGET_WORLD: process.env.WORKFLOW_TARGET_WORLD,
+    WORKFLOW_POSTGRES_URL: process.env.WORKFLOW_POSTGRES_URL,
+    WORKFLOW_POSTGRES_JOB_PREFIX: process.env.WORKFLOW_POSTGRES_JOB_PREFIX,
+    WORKFLOW_POSTGRES_MAX_POOL_SIZE:
+      process.env.WORKFLOW_POSTGRES_MAX_POOL_SIZE,
+    WORKFLOW_REDIS_URI: process.env.WORKFLOW_REDIS_URI,
+    INTERNAL_WORKFLOW_SERVICE_TOKEN:
+      process.env.INTERNAL_WORKFLOW_SERVICE_TOKEN,
   },
   skipValidation:
     process.env.SKIP_ENV_VALIDATION === "true" ||

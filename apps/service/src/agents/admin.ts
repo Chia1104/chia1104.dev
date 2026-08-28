@@ -1,5 +1,20 @@
 import * as z from "zod";
 
+import {
+  effectiveKindConfig,
+  effectiveKindDefaults,
+  kindRowModel,
+} from "@chia/agent-host/config";
+import type { AgentKindDefinition } from "@chia/agent-host/kind";
+import {
+  assertAgentTaskModel,
+  definedTaskParams,
+  getAgentTaskDefinition,
+  listAgentTaskDefinitions,
+  listAgentTaskModels,
+  taskRowModel,
+} from "@chia/agent-host/tasks";
+import type { AgentTaskDefinition } from "@chia/agent-host/tasks";
 import { UnknownAgentModelError } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
 import type { ThinkingLevel } from "@chia/agent-runtime/types";
@@ -21,22 +36,7 @@ import type { AgentKindConfig, AgentTaskConfig } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
 
-import {
-  effectiveKindConfig,
-  effectiveKindDefaults,
-  kindRowModel,
-} from "./config";
-import type { AgentKindDefinition } from "./kind";
 import { AGENT_KINDS, loadAgentKind } from "./registry";
-import {
-  assertAgentTaskModel,
-  definedTaskParams,
-  getAgentTaskDefinition,
-  listAgentTaskDefinitions,
-  listAgentTaskModels,
-  taskRowModel,
-} from "./tasks";
-import type { AgentTaskDefinition } from "./tasks";
 
 /**
  * The operator's view over every registered kind and task, and the writes behind the
