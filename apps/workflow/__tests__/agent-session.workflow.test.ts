@@ -118,10 +118,33 @@ describe("agentSessionWorkflow", () => {
       preAuthorizeToolNames: undefined,
       credentials: { openai: "rotated" },
     });
-    expect(mocks.completeRun).toHaveBeenCalledWith("run-1", {
-      id: "abort-1",
-      runId: "abort-run-1",
-    });
+    expect(mocks.completeRun).toHaveBeenCalledWith(
+      "run-1",
+      { id: "abort-1", runId: "abort-run-1" },
+      "completed"
+    );
+    expect(mocks.closeStreams).toHaveBeenCalledOnce();
+  });
+
+  it("marks the run failed and closes its streams when a turn step throws", async () => {
+    mocks.createMessageHook.mockReturnValue(messageHook([]));
+    mocks.runTurn.mockRejectedValue(new Error("process died mid-step"));
+
+    await expect(
+      agentSessionWorkflow({
+        sessionId: "session-1",
+        runId: "run-1",
+        userId: "user-1",
+        abortController: { id: "abort-1", runId: "abort-run-1" },
+        firstMessage: { text: "first" },
+      })
+    ).rejects.toThrow("process died mid-step");
+
+    expect(mocks.completeRun).toHaveBeenCalledExactlyOnceWith(
+      "run-1",
+      { id: "abort-1", runId: "abort-run-1" },
+      "failed"
+    );
     expect(mocks.closeStreams).toHaveBeenCalledOnce();
   });
 
@@ -141,5 +164,11 @@ describe("agentSessionWorkflow", () => {
       "Agent session session-1 is already driven by workflow run existing-run."
     );
     expect(mocks.runTurn).not.toHaveBeenCalled();
+    // Its own row was written ahead of it by `prompt`; it must not stay active.
+    expect(mocks.completeRun).toHaveBeenCalledWith(
+      "run-1",
+      { id: "abort-1", runId: "abort-run-1" },
+      "failed"
+    );
   });
 });

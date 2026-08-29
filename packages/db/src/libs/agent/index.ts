@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, max, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, max, sql } from "drizzle-orm";
 
 import type { JsonObject } from "@chia/utils/json";
 
@@ -8,6 +8,7 @@ import {
   agentSessionEntries,
   agentSessions,
   agentToolApprovals,
+  agentUsageLedger,
   writingAgentDrafts,
   writingAgentSessions,
 } from "../../schemas/schema.ts";
@@ -166,6 +167,32 @@ export const deleteAgentSession = async (db: DB, sessionId: string) => {
   await db.delete(agentSessions).where(eq(agentSessions.id, sessionId));
 };
 
+/**
+ * Re-keys everything `fromUserId` owns onto `toUserId`: a guest who signs in keeps their
+ * sessions, and their spend keeps counting against them — the ledger moves with the sessions,
+ * so signing in never resets a quota. One transaction, because a half-moved user would leave
+ * sessions the ledger no longer explains.
+ */
+export const transferAgentOwnership = async (
+  db: DB,
+  options: { fromUserId: string; toUserId: string }
+): Promise<void> => {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(agentSessions)
+      .set({ userId: options.toUserId })
+      .where(eq(agentSessions.userId, options.fromUserId));
+    await tx
+      .update(agentUsageLedger)
+      .set({ userId: options.toUserId })
+      .where(eq(agentUsageLedger.userId, options.fromUserId));
+    await tx
+      .update(agentToolApprovals)
+      .set({ decidedBy: options.toUserId })
+      .where(eq(agentToolApprovals.decidedBy, options.fromUserId));
+  });
+};
+
 // ============================================
 // Runs
 // ============================================
@@ -263,6 +290,57 @@ export const withAgentSessionLock = <T>(
     );
     return await fn(tx);
   });
+
+/**
+ * Takes the user's advisory lock on the current transaction, so two turns accepted for one user
+ * on two sessions cannot both pass a per-user check on the same reading. Always taken *after*
+ * the session lock, and only inside `withAgentSessionLock`'s `tx`, so the order is fixed and
+ * the lock ends with the transaction.
+ */
+export const lockAgentUser = async (tx: DB, userId: string): Promise<void> => {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtext(${`agent.user:${userId}`}))`
+  );
+};
+
+/** Active runs of the user's sessions whose turn marker (`metadata[turnKey].running`) is set. */
+const runningTurnsOf = (options: { userId: string; turnKey: string }) =>
+  and(
+    eq(agentSessions.userId, options.userId),
+    eq(agentRuns.status, "active"),
+    sql`${agentRuns.metadata} -> ${options.turnKey} ->> 'running' = 'true'`
+  );
+
+/**
+ * Turns executing right now across every session the user owns, as the rows say. A run parked
+ * on its message hook is active but not running, and does not count. The marker is written by
+ * the host and cleared by the step; a step the process died under leaves it set, so a reader
+ * that must not over-count reconciles the rows against the World first
+ * (`reconcileRunningAgentTurns` in `apps/service`).
+ */
+export const countRunningAgentTurns = async (
+  db: DB,
+  options: { userId: string; turnKey: string }
+): Promise<number> => {
+  const [row] = await db
+    .select({ running: count() })
+    .from(agentRuns)
+    .innerJoin(agentSessions, eq(agentSessions.id, agentRuns.sessionId))
+    .where(runningTurnsOf(options));
+  return row?.running ?? 0;
+};
+
+/** The rows `countRunningAgentTurns` counts, for a reader that checks each against the World. */
+export const listRunningAgentRuns = async (
+  db: DB,
+  options: { userId: string; turnKey: string }
+) =>
+  await db
+    .select({ run: agentRuns })
+    .from(agentRuns)
+    .innerJoin(agentSessions, eq(agentSessions.id, agentRuns.sessionId))
+    .where(runningTurnsOf(options))
+    .then((rows) => rows.map((row) => row.run));
 
 export const completeAgentRun = async (
   db: DB,

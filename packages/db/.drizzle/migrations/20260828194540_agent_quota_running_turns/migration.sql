@@ -1,0 +1,1 @@
+ALTER TABLE "agent"."quota_config" ADD COLUMN "max_running_turns" integer;

@@ -1,7 +1,9 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { anonymous } from "better-auth/plugins";
 
 import type { DB } from "@chia/db/client";
+import { transferAgentOwnership } from "@chia/db/repos/agent";
 import * as schemas from "@chia/db/schema";
 import type { Keyv } from "@chia/kv/types";
 import { IS_PRODUCTION } from "@chia/utils/config";
@@ -13,6 +15,24 @@ export const name = "auth-core";
 const buildAuth = (db: DB, kv: Keyv) =>
   betterAuth({
     ...baseAuthConfig,
+    plugins: [
+      ...baseAuthConfig.plugins,
+      /**
+       * Guests: a visitor who has not signed in gets a real user row so they can own agent
+       * sessions and be metered. Registered here rather than in `baseAuthConfig` because the
+       * link hook needs the database: when a guest later signs in, what they own moves to the
+       * account before better-auth deletes the guest row, so their sessions — and their
+       * spend — follow them.
+       */
+      anonymous({
+        onLinkAccount: async ({ anonymousUser, newUser }) => {
+          await transferAgentOwnership(db, {
+            fromUserId: anonymousUser.user.id,
+            toUserId: newUser.user.id,
+          });
+        },
+      }),
+    ],
     account: {
       skipStateCookieCheck: !IS_PRODUCTION,
     },

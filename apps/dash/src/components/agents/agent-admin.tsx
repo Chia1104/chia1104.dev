@@ -11,6 +11,7 @@ import agentLabels from "@chia/i18n/agent-elements/en-US.json";
 import { orpc } from "@/libs/orpc/client";
 
 import { KindCard } from "./kind-card";
+import { QuotaCard } from "./quota-card";
 import { TaskCard } from "./task-card";
 
 /**
@@ -22,6 +23,7 @@ export const AgentAdmin = () => {
   const kinds = useQuery(orpc.agent.admin.kinds.list.queryOptions());
   const tasks = useQuery(orpc.agent.admin.tasks.list.queryOptions());
   const taskModels = useQuery(orpc.agent.admin.tasks.models.queryOptions());
+  const quota = useQuery(orpc.agent.admin.quota.get.queryOptions());
 
   const groups = useMemo(() => {
     const byKind = new Map<string | null, NonNullable<typeof tasks.data>>();
@@ -38,14 +40,19 @@ export const AgentAdmin = () => {
       ? "Every agent"
       : (kinds.data?.find((k) => k.kind === kind)?.label ?? kind);
 
-  if (kinds.isLoading || tasks.isLoading || taskModels.isLoading) {
+  if (
+    kinds.isLoading ||
+    tasks.isLoading ||
+    taskModels.isLoading ||
+    quota.isLoading
+  ) {
     return (
       <div className="flex justify-center py-12">
         <Spinner size="sm" />
       </div>
     );
   }
-  const error = kinds.error ?? tasks.error ?? taskModels.error;
+  const error = kinds.error ?? tasks.error ?? taskModels.error ?? quota.error;
   if (error) {
     return <p className="text-danger py-8 text-sm">{error.message}</p>;
   }
@@ -87,6 +94,19 @@ export const AgentAdmin = () => {
               ))}
             </div>
           ))}
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Usage quota</h2>
+            <p className="text-muted-foreground text-xs">
+              How much house spend a signed-in visitor may run up per week. You
+              are never limited.
+            </p>
+          </div>
+          {quota.data ? (
+            <QuotaCard key={quota.data.updatedAt} quota={quota.data} />
+          ) : null}
         </section>
       </div>
     </AgentLabelsProvider>

@@ -1,6 +1,7 @@
 import { FatalError } from "workflow";
 
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";
+import { recordAgentUsage } from "@chia/agent-host/usage";
 import { WRITING_AGENT_KIND } from "@chia/agent-writing/models";
 import { createMemoryService } from "@chia/api/memories/write";
 import { connectDatabase } from "@chia/db/client";
@@ -114,6 +115,15 @@ export const consolidateSessionMemoryStep = async (request: {
     text: prompt.text,
     ...task.params,
     signal: AbortSignal.timeout(LESSON_TIMEOUT_MS),
+    // The house pays, the session's owner is who it was for.
+    onUsage: (usage) =>
+      recordAgentUsage(db, {
+        userId: row.userId,
+        sessionId: row.id,
+        kind: row.kind,
+        source: "lessons",
+        ...usage,
+      }),
   });
   const extracted = reply ? parseExtractedLessons(reply) : [];
 

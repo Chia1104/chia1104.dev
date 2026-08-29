@@ -1,5 +1,5 @@
 import type { AssistantMessage, Context, Models } from "@earendil-works/pi-ai";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { AGENT_PROVIDERS, createAgentModels } from "../src/models.ts";
 import {
@@ -93,6 +93,28 @@ describe("fallbackSessionTitle", () => {
 });
 
 describe("generateSessionTitle", () => {
+  it("reports what the call was billed even when the reply is unusable", async () => {
+    const onUsage = vi.fn();
+    const aborted = {
+      ...reply("x", "aborted"),
+      usage: { ...reply("x").usage, input: 40, output: 3, totalTokens: 43 },
+    };
+
+    const title = await generateSessionTitle({
+      models: modelsWith(() => Promise.resolve(aborted)),
+      model,
+      text: "hi",
+      onUsage,
+    });
+
+    expect(title).toBeNull();
+    expect(onUsage).toHaveBeenCalledExactlyOnceWith({
+      providerId: "vercel-ai-gateway",
+      modelId: "anthropic/claude-haiku-4.5",
+      usage: aborted.usage,
+    });
+  });
+
   it("returns the model's reply normalised", async () => {
     const title = await generateSessionTitle({
       models: modelsWith(() =>

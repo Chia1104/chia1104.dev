@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
+  bigint,
   bigserial,
   index,
   integer,
@@ -47,6 +48,10 @@ import { user } from "./user.schema.ts";
  * a kind's defaults for new sessions and a task's model, prompt and sampling parameters. Kinds
  * and tasks themselves stay code; a row only ever narrows or re-points what a definition
  * already allows, and no row means the definition's own values apply.
+ *
+ * `usage_ledger` is one row per provider call made on a user's behalf — turns and the side jobs
+ * beside them — and the second table that outlives a session: usage is what the user consumed,
+ * not what their session happened to hold.
  */
 
 // ============================================
@@ -367,6 +372,30 @@ export const agentTaskConfigs = agentSchema.table("task_config", {
 
 export type AgentTaskConfig = InferSelectModel<typeof agentTaskConfigs>;
 
+/** The one `quota_config` row; the table is keyed so a per-tier split is a second row, not a schema change. */
+export const AGENT_QUOTA_CONFIG_ID = "default";
+
+/**
+ * The operator's usage quota for every caller below `Root`: how much house spend a user may
+ * run up per week, the zone the week is counted in, and how many turns they may have executing
+ * at once. All nullable — `null` defers to the code default, like the task and kind rows. The
+ * limit is micro-dollars, the ledger's unit.
+ */
+export const agentQuotaConfigs = agentSchema.table("quota_config", {
+  id: text("id").primaryKey(),
+  weeklyLimitMicros: bigint("weekly_limit_micros", { mode: "number" }),
+  /** An IANA zone; the week resets on its Monday 00:00. */
+  resetTimeZone: text("reset_time_zone"),
+  /** Turns one user may have running across all their sessions; the single-replica runner's guard. */
+  maxRunningTurns: integer("max_running_turns"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export type AgentQuotaConfig = InferSelectModel<typeof agentQuotaConfigs>;
+
 // ============================================
 // Agent Tool Approval
 // ============================================
@@ -404,3 +433,75 @@ export const agentToolApprovals = agentSchema.table(
 );
 
 export type AgentToolApproval = InferSelectModel<typeof agentToolApprovals>;
+
+// ============================================
+// Usage ledger
+// ============================================
+
+/**
+ * What produced a ledger row: the turn's own provider calls, or a side job named by what it did.
+ * A kind that adds a task adds its name here.
+ */
+export type AgentUsageSource =
+  | "turn"
+  | "compaction"
+  | "branch_summary"
+  | "title"
+  | "lessons";
+
+/**
+ * One provider call, as billed, attributed to the user it was made for.
+ *
+ * Every assistant message already carries its usage inside `session_entry.payload`, but that is
+ * the wrong place to meter from: entries cascade with their session, so a user who deletes a
+ * session would erase what they spent; the payload is opaque and indexed per session, not per
+ * user and period; and a side job (title, lesson extraction) has no entry at all. This table
+ * holds the same numbers keyed the way a quota reads them, and only `session_id` is severed when
+ * the session goes.
+ *
+ * `cost_micros` is pi's own `usage.cost.total` in micro-dollars — an integer, because a quota
+ * is a running sum and floats drift. The token columns are kept for the breakdown, not for
+ * metering: a cached read costs a tenth of an uncached one, so raw tokens misprice a long
+ * conversation against many short ones.
+ *
+ * `provider_id` says whose bill it was: the house gateway or a key the caller brought.
+ */
+export const agentUsageLedger = agentSchema.table(
+  "usage_ledger",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    sessionId: text("session_id").references(() => agentSessions.id, {
+      onDelete: "set null",
+    }),
+    runId: text("run_id").references(() => agentRuns.id, {
+      onDelete: "set null",
+    }),
+    /** The tree entry that carries this usage — an assistant message, compaction or branch summary. `null` for a side job. */
+    entryId: text("entry_id"),
+    kind: text("kind").notNull(),
+    source: text("source").$type<AgentUsageSource>().notNull(),
+    providerId: text("provider_id").notNull(),
+    modelId: text("model_id").notNull(),
+    input: integer("input").notNull(),
+    output: integer("output").notNull(),
+    cacheRead: integer("cache_read").notNull(),
+    cacheWrite: integer("cache_write").notNull(),
+    /** Subset of `output`; only some providers report it. */
+    reasoning: integer("reasoning"),
+    costMicros: bigint("cost_micros", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    /** The quota read: one user's spend over a period. */
+    index("agent_usage_ledger_user_created_idx").on(
+      table.userId,
+      table.createdAt
+    ),
+    index("agent_usage_ledger_session_id_idx").on(table.sessionId),
+  ]
+);
+
+export type AgentUsageLedgerRow = InferSelectModel<typeof agentUsageLedger>;

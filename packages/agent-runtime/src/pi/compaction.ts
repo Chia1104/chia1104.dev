@@ -15,7 +15,7 @@ import type {
 import { contextEntries } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
 import { estimateBranchContextTokens } from "../session/usage.ts";
-import type { AgentCompactionResult } from "../types.ts";
+import type { AgentCompactionResult, AgentUsageListener } from "../types.ts";
 
 /**
  * The window the compaction threshold is measured against when the summariser is not the
@@ -45,6 +45,7 @@ export interface CompactSessionOptions {
   thinkingLevel: ThinkingLevel;
   customInstructions?: string;
   signal?: AbortSignal;
+  onUsage?: AgentUsageListener;
 }
 
 const compactBranch = async (
@@ -56,6 +57,7 @@ const compactBranch = async (
     thinkingLevel,
     customInstructions,
     signal,
+    onUsage,
   }: CompactSessionOptions
 ): Promise<AgentCompactionResult | null> => {
   const prepared = prepareCompaction(
@@ -90,6 +92,15 @@ const compactBranch = async (
     usage: result.usage,
   };
   await session.appendEntry(entry);
+  if (result.usage) {
+    await onUsage?.({
+      source: "compaction",
+      providerId: model.provider,
+      modelId: model.id,
+      usage: result.usage,
+      entryId: entry.id,
+    });
+  }
 
   return { summary: result.summary, tokensBefore: result.tokensBefore };
 };

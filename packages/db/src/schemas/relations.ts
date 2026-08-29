@@ -3,11 +3,13 @@ import { defineRelations } from "drizzle-orm";
 import {
   agentKindConfigs,
   agentMemories,
+  agentQuotaConfigs,
   agentRuns,
   agentTaskConfigs,
   agentSessionEntries,
   agentSessions,
   agentToolApprovals,
+  agentUsageLedger,
   writingAgentDrafts,
   writingAgentSessions,
 } from "./agent.schema.ts";
@@ -61,6 +63,8 @@ const schema = {
   agentMemories,
   agentKindConfigs,
   agentTaskConfigs,
+  agentQuotaConfigs,
+  agentUsageLedger,
 };
 
 export const relations = defineRelations(schema, (r) => ({
@@ -232,6 +236,17 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.agentSessions.id,
       to: r.agentMemories.sessionId,
     }),
+    usage: r.many.agentUsageLedger({
+      from: r.agentSessions.id,
+      to: r.agentUsageLedger.sessionId,
+    }),
+  },
+  agentUsageLedger: {
+    user: r.one.user({ from: r.agentUsageLedger.userId, to: r.user.id }),
+    session: r.one.agentSessions({
+      from: r.agentUsageLedger.sessionId,
+      to: r.agentSessions.id,
+    }),
   },
   agentRuns: {
     session: r.one.agentSessions({
@@ -311,3 +326,4 @@ export const writingAgentSessionsRelations = relations.writingAgentSessions;
 export const writingAgentDraftsRelations = relations.writingAgentDrafts;
 export const agentToolApprovalsRelations = relations.agentToolApprovals;
 export const agentMemoriesRelations = relations.agentMemories;
+export const agentUsageLedgerRelations = relations.agentUsageLedger;

@@ -7,6 +7,7 @@ import { switchEnv } from "@chia/utils/config";
 
 import { env as internalEnv } from "./env.ts";
 import { relations } from "./schemas/relations.ts";
+import { storableCodecs } from "./storable.ts";
 
 /**
  * The query surface repositories take. The driver's database *and* its transactions satisfy it,
@@ -57,6 +58,7 @@ export async function getConnection(
     drizzle(url, {
       relations,
       cache,
+      codecs: storableCodecs,
     }))();
   connections.set(connectionKey, connection);
 

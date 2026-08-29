@@ -95,7 +95,7 @@ describe("approval fold", () => {
       toolStart,
       request,
       refusal,
-      { type: "error", kind: "internal", message: "db down" },
+      { type: "error", kind: "internal" },
       { type: "run:end", reason: "error" },
     ]);
     expect(tool.status).toBe("error");

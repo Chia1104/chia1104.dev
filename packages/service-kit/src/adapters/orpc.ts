@@ -16,7 +16,10 @@ export const toORPCError = (error: AppError): ORPCError<string, unknown> =>
   new ORPCError(error.code, {
     status: error.status,
     message: error.message,
-    data: error.issues ? { errors: error.issues } : undefined,
+    data:
+      error.issues || error.data
+        ? { ...error.data, ...(error.issues && { errors: error.issues }) }
+        : undefined,
   });
 
 /**

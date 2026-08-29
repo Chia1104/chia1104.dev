@@ -58,6 +58,25 @@ export const updateAgentTaskAdminRoute = contractOS.agent.admin.tasks.update
     )
   );
 
+export const getAgentQuotaAdminRoute = contractOS.agent.admin.quota.get
+  .use(adminGuard())
+  .handler((opts) =>
+    withORPCErrors(() =>
+      requireAgentAdminService(opts.context).getQuota(callerOf(opts))
+    )
+  );
+
+export const updateAgentQuotaAdminRoute = contractOS.agent.admin.quota.update
+  .use(adminGuard())
+  .handler((opts) =>
+    withORPCErrors(() =>
+      requireAgentAdminService(opts.context).updateQuota(
+        callerOf(opts),
+        opts.input
+      )
+    )
+  );
+
 export const listAgentTaskModelsAdminRoute = contractOS.agent.admin.tasks.models
   .use(adminGuard())
   .handler((opts) =>

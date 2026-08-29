@@ -36,7 +36,7 @@ What every service app boots with. `bootstrap.ts` — `createServiceFactory()` (
 
 ### `db`
 
-Drizzle 1.0 on Postgres. `src/schemas/` — tables and relations, aggregated by `schema.ts` (`./schema`) for Drizzle and Better Auth; `src/libs/` — repositories, exported as `./repos/<domain>`. `src/client.ts` — `connectDatabase(env, { withCache })`, memoized per URL **and** cache setting; the request path uses the `DrizzleCache` (Redis, explicit `$withCache` only), workflow steps ask for `withCache: false`. `src/types.ts` — pure enums (`Locale`, `FeedType`, `Role`, …) safe to import anywhere. Migrations in `.drizzle/`.
+Drizzle 1.0 on Postgres. `src/schemas/` — tables and relations, aggregated by `schema.ts` (`./schema`) for Drizzle and Better Auth; `src/libs/` — repositories, exported as `./repos/<domain>`. `src/client.ts` — `connectDatabase(env, { withCache })`, memoized per URL **and** cache setting; the request path uses the `DrizzleCache` (Redis, explicit `$withCache` only), workflow steps ask for `withCache: false`; both constructions take the `storableCodecs` of `src/storable.ts`, which scrub NUL and lone surrogates — unstorable in Postgres `text` and `jsonb` — from every text- and JSON-typed parameter on its way out. `src/types.ts` — pure enums (`Locale`, `FeedType`, `Role`, …) safe to import anywhere. Migrations in `.drizzle/`.
 
 ### `auth`
 

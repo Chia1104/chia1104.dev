@@ -9,7 +9,7 @@ import type {
 } from "../session/entries.ts";
 import { contextEntries } from "../session/entries.ts";
 import type { SessionTree } from "../session/tree.ts";
-import type { AgentSessionSettings } from "../types.ts";
+import type { AgentSessionSettings, AgentUsageListener } from "../types.ts";
 import type {
   AgentCompactionResult,
   AgentNavigationOptions,
@@ -26,11 +26,19 @@ export interface PiSessionOperationOptions {
   models: Models;
   /** Cancels the summary request; the tree is untouched when it fires. */
   signal?: AbortSignal;
+  onUsage?: AgentUsageListener;
 }
 
 /** Runs Pi's compaction over the session tree; no tools, prompts or subscriptions are built. */
 export const compactPiSession = async (
-  { session, settings, model, models, signal }: PiSessionOperationOptions,
+  {
+    session,
+    settings,
+    model,
+    models,
+    signal,
+    onUsage,
+  }: PiSessionOperationOptions,
   customInstructions?: string
 ): Promise<AgentCompactionResult> => {
   const result = await compactSession({
@@ -40,6 +48,7 @@ export const compactPiSession = async (
     thinkingLevel: clampSessionThinkingLevel(model, settings),
     customInstructions,
     signal,
+    onUsage,
   });
   if (!result) throw new Error("Nothing to compact");
   return result;
@@ -50,7 +59,7 @@ export const compactPiSession = async (
  * `branch_summary` entry under the new leaf and labelling the target.
  */
 export const navigatePiSession = async (
-  { session, model, models, signal }: PiSessionOperationOptions,
+  { session, model, models, signal, onUsage }: PiSessionOperationOptions,
   entryId: string,
   options: AgentNavigationOptions
 ): Promise<AgentNavigationResult> => {
@@ -106,6 +115,15 @@ export const navigatePiSession = async (
       ...summary,
     };
     await session.appendEntry(entry);
+    if (summary.usage) {
+      await onUsage?.({
+        source: "branch_summary",
+        providerId: model.provider,
+        modelId: model.id,
+        usage: summary.usage,
+        entryId: entry.id,
+      });
+    }
   }
 
   if (options.label) {

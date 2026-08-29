@@ -1,3 +1,4 @@
+import type { JsonObject } from "@chia/utils/json";
 import type { ErrorResponse } from "@chia/utils/request";
 import { errorGenerator } from "@chia/utils/server";
 
@@ -8,6 +9,8 @@ import { errorGenerator } from "@chia/utils/server";
 export const APP_ERROR_STATUS = {
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
+  /** The caller's usage quota is spent; not an oRPC common code, so contracts declare its status. */
+  QUOTA_EXCEEDED: 402,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   TIMEOUT: 408,
@@ -33,6 +36,8 @@ export interface AppErrorOptions {
   issues?: AppErrorIssue[];
   /** Extra response headers, e.g. `Retry-After` on 429/503. */
   headers?: Record<string, string>;
+  /** Structured detail a client acts on, e.g. when a quota resets; travels beside `issues`. */
+  data?: JsonObject;
   cause?: unknown;
 }
 
@@ -46,6 +51,7 @@ export class AppError extends Error {
   readonly status: number;
   readonly issues?: AppErrorIssue[];
   readonly headers?: Record<string, string>;
+  readonly data?: JsonObject;
 
   constructor(code: AppErrorCode, options?: AppErrorOptions) {
     super(options?.message ?? code, { cause: options?.cause });
@@ -54,6 +60,7 @@ export class AppError extends Error {
     this.status = APP_ERROR_STATUS[code];
     this.issues = options?.issues;
     this.headers = options?.headers;
+    this.data = options?.data;
   }
 }
 

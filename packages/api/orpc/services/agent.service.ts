@@ -21,6 +21,9 @@ import type { BaseOSContext } from "../utils";
  * package be additive rather than replace the first.
  */
 
+/** Where the caller stands against the usage quota right now; see `agent.usage.me`. */
+export type AgentUsageStanding = agentContracts.AgentUsageStanding;
+
 /**
  * Per-call context the service needs from the request that triggered it.
  *
@@ -59,8 +62,8 @@ export interface AgentModelRef {
 export interface AgentKindService {
   /**
    * Lowest {@link CallerTier} allowed to touch this kind at all — creation, listing and every
-   * session-scoped route. Never below `Session`: sessions are owned by a user, so an anonymous or
-   * API-key caller has no owner to be.
+   * session-scoped route. Never below `Guest`: sessions are owned by a user, so an anonymous or
+   * API-key caller has no owner to be; a guest is the least a kind can admit.
    */
   readonly minTier: CallerTier;
 

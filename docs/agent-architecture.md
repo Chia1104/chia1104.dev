@@ -77,15 +77,32 @@ session detail (`state.detail`), which is all the dashboard reads.
 Access is a property of the kind, not of the routes. Every agent route runs `callerGuard()`, which
 only resolves the caller's `CallerTier`; the agent guards (`agentKindGuard` for creation and
 capability listings, `agentSessionGuard` for session-scoped requests) then compare that tier with
-the kind's `AgentKindService.minTier`. Any tier below `Session` is refused first — a session row has
+the kind's `AgentKindService.minTier`. Any tier below `Guest` is refused first — a session row has
 an owner, so an anonymous or API-key caller has no one to be. `list` with no kind returns only the
 kinds the caller may use.
 
 The service receives an `AgentServiceCaller`: the resolved `Caller` (tier, session, configured
 `adminId`) plus `userId`. Nothing agent-generic carries an admin identity — the writing kind sets
 `minTier: Root`, which is what makes its caller _be_ the configured author, and reads
-`getAdminId()` itself where its content port needs it. A public kind sets `minTier: Session` and
-never sees an admin id.
+`getAdminId()` itself where its content port needs it. A public kind sets `minTier: Guest` (or
+`Session`, to ask for a sign-in) and never sees an admin id.
+
+### Guests
+
+A visitor who has not signed in can still own sessions: better-auth's `anonymous()` plugin
+(`@chia/auth/server`) mints a real user row, marked `user.isAnonymous`, when the client calls
+`signIn.anonymous()`. `callerPolicy` grades that session as `CallerTier.Guest` — above
+`Anonymous` because there is someone to own things and meter, below `ApiKey` because nothing
+else is proven. `sessionPolicy` alone still refuses a guest, so every `authGuard` route means a
+signed-in person as before; only `callerPolicy` opts in (`allowAnonymous`). When a guest later
+signs in, the plugin's `onLinkAccount` runs `transferAgentOwnership` before the guest row is
+deleted: their sessions, approvals and ledger rows move to the account, so signing in never
+resets a quota.
+
+`agent.usage.me` (`agentUsageStandingSchema`) is the caller's own standing for any
+session-bearing tier: allowance, spend, the current week, running turns and the cap — `null`
+limits for the operator — through the `agentUsage` port (`AgentUsageService`), which
+`apps/service` binds to `readAgentUsageStanding` in `@chia/agent-host/quota`.
 
 ## 3. Policy, sessions and data
 
@@ -120,6 +137,8 @@ agent.writing_draft            per-locale staging buffer
 agent.memory                   long-term memory across sessions (§10); indexed into `resource_chunk`
 agent.kind_config              operator overrides of a kind's defaults and config (§13)
 agent.task_config              operator overrides of a task's model, prompt and parameters (§13)
+agent.usage_ledger             one row per provider call made for a user; survives the session
+agent.quota_config             operator override of the weekly allowance and its zone (§3, §13)
 ```
 
 Entry payloads are opaque JSON. The `SessionEntry` union in `session/entries.ts` mirrors Pi's
@@ -134,6 +153,69 @@ session lock (§8). The
 projection is a pure function of the branch: a turn's provider request is the previous projection
 plus the entries it appended, which is what keeps the provider's cached prefix valid from turn to
 turn. Kind-specific state uses extension tables instead of widening the shared session table.
+
+### Usage ledger
+
+Every provider call made on a user's behalf lands one row in `agent.usage_ledger`: the turn's
+replies, auto and manual compaction, branch summaries, the session title and lesson extraction —
+whoever paid for it. `provider_id` says whose bill it was (the house gateway, or a BYOK key), so a
+quota that only counts house spend is a filter, not a second ledger. The row carries pi's own
+`usage` (input, output, cache read/write, reasoning) and its `cost.total` as integer
+micro-dollars: metering is by cost, never by raw tokens, because a cached read costs a tenth of
+an uncached one and a long conversation re-sends its whole transcript every turn.
+
+The numbers are not read back from `session_entry`, although every assistant message carries
+them there: entries cascade with their session, so a user who deleted a session would erase what
+they spent; the payload is opaque and indexed per session, not per user and period; and a side
+job has no entry at all. The ledger row keeps `session_id` as `set null` and is attributed to
+the session's owner, which is also who an anonymous visitor becomes once they have a user row.
+
+The runtime reports, the host writes. `runPiTurn`, `compactSession` and `navigatePiSession`
+take an `AgentUsageListener` (`@chia/agent-runtime/types`) and call it with the model that
+answered, its usage and the entry id — after that entry has landed, so a row never precedes
+what it accounts for; `completeText` and `generateSessionTitle` report what they were billed
+whatever they replied, since an aborted stream is still charged. Every host path binds the
+listener to `recordAgentUsage` (`@chia/agent-host/usage`): the turn step (turn, its
+auto-compaction, the title), the generic service's maintenance operations (manual compaction,
+branch summary — on the session lock's transaction) and the lesson step. The write is never on
+the critical path: a call the provider did not bill is not a row, and a failed insert is logged
+and dropped, bounding the loss to one call in the user's favour.
+
+### Usage quota
+
+The quota is a property of the caller's tier, read from the ledger. `Root` — the operator, who
+pays the bill — is never limited; every other tier draws on one shared weekly allowance of
+**house** spend: `sumAgentUsageCost` over the week, filtered to the gateway provider, so a
+BYOK call is recorded but is the user's own bill. `@chia/agent-host/quota` owns it:
+`AGENT_QUOTA_DEFAULTS` is $0.30 a week in the server's own zone; the operator's
+`agent.quota_config` row overrides either from the dashboard (`agent.admin.quota.*`, §13);
+`weekPeriod` is Monday 00:00 to Monday 00:00 in that zone, using zoned calendar boundaries so a DST week
+is 167 or 169 hours rather than a wrong day; and `assertWithinAgentQuota` throws
+`QUOTA_EXCEEDED` (402, `{ limitMicros, usedMicros, resetAt, timeZone }`) once the week's spend
+has reached the limit.
+
+It is checked where a model call is accepted and nowhere else: `prompt` and `approve` (a
+decision starts a relay turn), `compact`, and `navigate` with `summarize` — each under the
+session lock, before anything is queued or persisted, so a refused approval stays pending for
+when the week turns over. The limit is soft: a call is accepted while anything remains, so the
+last one may overrun by at most one turn, which the kind's turn budget bounds. A limit of `0`
+closes the agent to every limited tier.
+
+Beside the allowance, a **running-turn cap** (`maxRunningTurns`, default 3, same row) bounds
+what one limited caller can put on the single-replica runner at once: `prompt` and `approve`
+count the user's active runs whose turn marker is `running` (`countRunningAgentTurns`) and
+refuse with `TOO_MANY_REQUESTS` (`{ runningTurns, maxRunningTurns }`) at the cap. The count
+is taken under the user's own advisory lock (`lockAgentUser`, always after the session lock,
+on the same transaction), so two prompts on two sessions cannot both pass on the same reading.
+A message queued behind a turn already running on its session adds no running turn.
+
+The marker alone is not truth: a process that dies under a step never clears it. Every reader
+therefore asks the World whether the run is alive (`runStateOf` in
+`apps/service/src/services/agent-run-liveness.service.ts`), and before the cap is counted —
+and before `usage.me` reports — `reconcileRunningAgentTurns` closes the user's marked rows
+whose run is gone (`failed`, controller released). The workflow itself closes its row in a
+`finally` (`completeAgentRunStep` with `failed` when a step threw), so a stale row can only
+be one the World has not yet given up on.
 
 ### Session title
 
@@ -257,7 +339,7 @@ Refusals speak to the model through the tool result, the channel the approval ga
 so a model that complies finishes the turn normally. The two aborts go through the same host-failure
 path as a failed volatile-context read: the failure is recorded, the run aborted, and the turn
 ends as that error rather than as `aborted`. Per-user and per-session quotas are not here — they
-belong at enqueue time, in the kind service.
+belong at enqueue time, in the kind service, reading the usage ledger (§3).
 
 ### Prompt layering
 
@@ -378,8 +460,9 @@ session:compacted · session:rewound · state:changed · error · run:end
   Pi never executed and the live turn never showed. `run:end` closes whatever the live turn left
   running the same way. `aborted` is its own status, not `isError`: the tool did not fail, it
   never finished.
-- `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
-provider · internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
+- `error` carries only a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
+provider · internal`): the client picks a headline from it, and the provider's or host's own text
+  — with whatever threw — goes to the server log (`Agent turn failed`), never to the wire.
 - `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
   wide objects and deep nesting are shortened in place, shape preserved — because every coarse
   event is a durable write that is replayed to every reconnecting client. The model reads the
@@ -678,6 +761,11 @@ workspace (`agent.admin.*`, admin-only):
 | ------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
 | `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | a conversational agent — tools, ports, policy, state row, `runTurn`                           | `agent.kind_config` |
 | `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
+
+A third row, not a registry: `agent.quota_config` holds the operator's override of the weekly
+allowance, its zone and the running-turn cap (`agent.admin.quota.*`, the workspace's "Usage
+quota" card); the code default is `AGENT_QUOTA_DEFAULTS` in `packages/agent-host/src/quota.ts`
+(§3).
 
 A **task** is a model slot plus, where the call exposes them, a system prompt and sampling
 parameters. How a task runs differs (`completeSimple`, Pi's `compact()`, `generateBranchSummary`)

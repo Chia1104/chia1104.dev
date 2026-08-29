@@ -67,16 +67,58 @@ export const agentSessionWorkflow = async (request: Request) => {
   const { sessionId, runId, userId, abortController, firstMessage } =
     requestSchema.parse(request);
 
-  const messages = agentMessageHook.create({
-    token: agentMessageToken(sessionId),
-  });
-  const conflict = await messages.getConflict();
-  if (conflict) {
-    throw new Error(
-      `Agent session ${sessionId} is already driven by workflow run ${conflict.runId}.`
-    );
+  let turns = 0;
+  /**
+   * The row is closed whichever way the loop ends. A turn step that throws — a process that died
+   * mid-step and was not retried, a session gone missing — fails this run, and without the
+   * `finally` its `agent.run` row would stay active with its turn marker set: invisible to the
+   * session's own reads, which ask the World, but counted by anything that trusts the row.
+   */
+  let status: "completed" | "failed" = "failed";
+  try {
+    const messages = agentMessageHook.create({
+      token: agentMessageToken(sessionId),
+    });
+    const conflict = await messages.getConflict();
+    if (conflict) {
+      throw new Error(
+        `Agent session ${sessionId} is already driven by workflow run ${conflict.runId}.`
+      );
+    }
+
+    turns = await driveSession({
+      messages,
+      sessionId,
+      runId,
+      userId,
+      abortController,
+      firstMessage,
+    });
+    status = "completed";
+  } finally {
+    await completeAgentRunStep(runId, abortController, status);
+    await closeAgentStreamsStep();
   }
 
+  return { sessionId, turns };
+};
+
+/** The turn loop; returns how many turns ran. Split out so the completion above reads whole. */
+const driveSession = async ({
+  messages,
+  sessionId,
+  runId,
+  userId,
+  abortController,
+  firstMessage,
+}: {
+  messages: ReturnType<typeof agentMessageHook.create>;
+  sessionId: string;
+  runId: string;
+  userId: string;
+  abortController: Request["abortController"];
+  firstMessage: Request["firstMessage"];
+}): Promise<number> => {
   let currentMessage: typeof firstMessage | null = firstMessage;
   let turns = 0;
 
@@ -177,8 +219,5 @@ export const agentSessionWorkflow = async (request: Request) => {
     }
   }
 
-  await completeAgentRunStep(runId, abortController);
-  await closeAgentStreamsStep();
-
-  return { sessionId, turns };
+  return turns;
 };

@@ -13,7 +13,11 @@ import type { RunPiTurnOptions } from "../src/pi/turn.ts";
 import type { SessionEntry } from "../src/session/entries.ts";
 import { InMemorySessionTree } from "../src/session/tree.ts";
 import { textResult, toolDefiner, Type } from "../src/tools.ts";
-import type { AgentPolicy, AgentTurnBudget } from "../src/types.ts";
+import type {
+  AgentPolicy,
+  AgentTurnBudget,
+  AgentUsageReport,
+} from "../src/types.ts";
 import { formatOperatorDecision } from "../src/wire/operator-decision.ts";
 import type { AgentWireEvent } from "../src/wire/schema.ts";
 
@@ -157,6 +161,11 @@ const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
 
 const messageOf = (entry: SessionEntry | undefined) =>
   entry?.type === "message" ? entry.message : undefined;
+
+const assistantUsageOf = (entry: SessionEntry | undefined) => {
+  const message = messageOf(entry);
+  return message?.role === "assistant" ? message.usage : undefined;
+};
 
 describe("runPiTurn", () => {
   it("runs a prompt, persists both messages and owns the wire event lifecycle", async () => {
@@ -375,11 +384,7 @@ describe("runPiTurn", () => {
     });
     expect(fixture.faux.state.callCount).toBe(0);
     expect(fixture.events.slice(-2)).toEqual([
-      {
-        type: "error",
-        kind: "internal",
-        message: "Unknown prompt template: nope",
-      },
+      { type: "error", kind: "internal" },
       { type: "run:end", reason: "error" },
     ]);
   });
@@ -400,11 +405,7 @@ describe("runPiTurn", () => {
       error: { kind: "auth", message: "401 Unauthorized: invalid x-api-key" },
     });
     expect(fixture.events.slice(-2)).toEqual([
-      {
-        type: "error",
-        kind: "auth",
-        message: "401 Unauthorized: invalid x-api-key",
-      },
+      { type: "error", kind: "auth" },
       { type: "run:end", reason: "error" },
     ]);
     // A failed turn is never compacted.
@@ -722,7 +723,7 @@ describe("runPiTurn", () => {
       error: { kind: "internal", message: "draft store down" },
     });
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal", message: "draft store down" },
+      { type: "error", kind: "internal" },
       { type: "run:end", reason: "error" },
     ]);
   });
@@ -750,10 +751,46 @@ describe("runPiTurn", () => {
       })
     );
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal", message: "database unavailable" },
+      { type: "error", kind: "internal" },
       { type: "run:end", reason: "error" },
     ]);
     expect(flushEvents).toHaveBeenCalledOnce();
+  });
+
+  it("fails the turn as internal and persists nothing more when the tree refuses a message", async () => {
+    const fixture = build();
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const appendEntry = fixture.session.appendEntry.bind(fixture.session);
+    const refused = new Error("unsupported Unicode escape sequence");
+    vi.spyOn(fixture.session, "appendEntry").mockImplementation((entry) =>
+      entry.type === "message" && entry.message.role === "assistant"
+        ? Promise.reject(refused)
+        : appendEntry(entry)
+    );
+    fixture.faux.setResponses([fauxAssistantMessage("Never persisted.")]);
+
+    const result = await fixture.run();
+
+    expect(result.status).toBe("error");
+    expect(result.error).toEqual({
+      kind: "internal",
+      message: expect.stringContaining("refused"),
+    });
+    expect(fixture.events.slice(-2)).toEqual([
+      { type: "error", kind: "internal" },
+      { type: "run:end", reason: "error" },
+    ]);
+    // The refused reply never reached the wire, and nothing was hung off its lost parent.
+    expect(fixture.types()).not.toContain("assistant:end");
+    const branch = await fixture.branch();
+    expect(branch.map((entry) => messageOf(entry)?.role)).toEqual(["user"]);
+    expect(consoleError).toHaveBeenCalledWith(
+      "Agent turn failed",
+      expect.objectContaining({ kind: "internal", cause: refused })
+    );
+    consoleError.mockRestore();
   });
 
   it("does not persist approvals raised by a failed provider turn", async () => {
@@ -824,6 +861,73 @@ describe("runPiTurn", () => {
       }),
       { type: "run:end", reason: "done" },
     ]);
+  });
+
+  it("reports every assistant reply's usage once its entry has landed", async () => {
+    const fixture = build();
+    const reports: AgentUsageReport[] = [];
+    const branchLengthAtReport: number[] = [];
+    fixture.faux.setResponses([
+      toolCallTurn("search", { q: "usage" }, "call-1"),
+      fauxAssistantMessage("Found it."),
+    ]);
+
+    await fixture.run({
+      onUsage: async (report) => {
+        reports.push(report);
+        branchLengthAtReport.push((await fixture.session.getBranch()).length);
+      },
+    });
+
+    // The faux provider estimates usage from the text it streams, so the figures are whatever the
+    // tree persisted for that reply — the report must be exactly those, under that entry's id.
+    const branch = await fixture.branch();
+    expect(reports).toEqual([
+      {
+        source: "turn",
+        providerId: "faux",
+        modelId: "test-model",
+        entryId: branch[1]?.id,
+        usage: assistantUsageOf(branch[1]),
+      },
+      {
+        source: "turn",
+        providerId: "faux",
+        modelId: "test-model",
+        entryId: branch[3]?.id,
+        usage: assistantUsageOf(branch[3]),
+      },
+    ]);
+    expect(reports.every((report) => report.usage.totalTokens > 0)).toBe(true);
+    expect(branchLengthAtReport).toEqual([2, 4]);
+  });
+
+  it("reports the auto-compaction's usage under the compaction entry", async () => {
+    const fixture = build();
+    await seedOversizedBranch(fixture.session);
+    const reports: AgentUsageReport[] = [];
+    fixture.faux.setResponses([
+      fauxAssistantMessage("Sure."),
+      fauxAssistantMessage("Everything so far, condensed."),
+    ]);
+
+    await fixture.run({ onUsage: (report) => void reports.push(report) });
+
+    const compaction = (await fixture.branch()).find(
+      (entry) => entry.type === "compaction"
+    );
+    expect(reports.map((report) => report.source)).toEqual([
+      "turn",
+      "compaction",
+    ]);
+    expect(reports[1]).toEqual({
+      source: "compaction",
+      providerId: "faux",
+      modelId: "test-model",
+      entryId: compaction?.id,
+      usage: compaction?.type === "compaction" ? compaction.usage : undefined,
+    });
+    expect(reports[1]?.usage.totalTokens).toBeGreaterThan(0);
   });
 
   it("leaves a branch inside the window alone", async () => {

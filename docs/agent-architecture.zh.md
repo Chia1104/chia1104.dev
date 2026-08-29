@@ -74,14 +74,29 @@ interface，實作放在該 kind 的 definition 旁邊——不掛在共用 port
 
 存取權是 kind 的屬性，不是 route 的屬性。每條 agent route 都先跑 `callerGuard()`，它只解析呼叫者的
 `CallerTier`；接著 agent guard（建立與能力列表用 `agentKindGuard`，session-scoped 請求用
-`agentSessionGuard`）把這個 tier 和 kind 的 `AgentKindService.minTier` 比對。低於 `Session` 的 tier
+`agentSessionGuard`）把這個 tier 和 kind 的 `AgentKindService.minTier` 比對。低於 `Guest` 的 tier
 一律先被拒絕——session row 有 owner，匿名或 API-key 呼叫者沒有可以「是」的人。沒帶 kind 的 `list`
 只回傳呼叫者可用的 kind。
 
 Service 收到的是 `AgentServiceCaller`：解析後的 `Caller`（tier、session、設定檔裡的 `adminId`）加上
 `userId`。agent 的 generic 層不帶任何 admin 身分——writing kind 設 `minTier: Root`，這使得它的呼叫者
 *就是*設定的作者，content port 需要時由 kind 自己讀 `getAdminId()`。公開 kind 設
-`minTier: Session`，從頭到尾看不到 admin id。
+`minTier: Guest`（或 `Session`，要求登入），從頭到尾看不到 admin id。
+
+### Guest
+
+沒登入的訪客也能擁有 session：better-auth 的 `anonymous()` plugin（`@chia/auth/server`）在
+client 呼叫 `signIn.anonymous()` 時鑄一個真正的 user row，標記 `user.isAnonymous`。
+`callerPolicy` 把這種 session 評為 `CallerTier.Guest`——高於 `Anonymous`，因為有人可以擁有東西、
+可以計量；低於 `ApiKey`，因為除此之外什麼都沒證明。單獨的 `sessionPolicy` 仍拒絕 guest，所以每條
+`authGuard` route 一如既往地代表「登入的人」；只有 `callerPolicy` 選擇接納（`allowAnonymous`）。
+guest 之後登入時，plugin 的 `onLinkAccount` 在 guest row 被刪除之前跑 `transferAgentOwnership`：
+他們的 session、approval 與 ledger row 都搬到那個帳號，所以登入永遠不會重置配額。
+
+`agent.usage.me`（`agentUsageStandingSchema`）是任何帶 session 的 tier 自己的處境：額度、花費、
+當週、執行中的 turn 與上限——operator 的上限是 `null`——經由 `agentUsage` port
+（`AgentUsageService`），`apps/service` 把它綁到 `@chia/agent-host/quota` 的
+`readAgentUsageStanding`。
 
 ## 3. Policy、session 與資料
 
@@ -116,10 +131,67 @@ agent.writing_draft            每個 locale 的 staging buffer
 agent.memory                   跨 session 的長期記憶（§10）；索引進 `resource_chunk`
 agent.kind_config              operator 對 kind 的 defaults 與 config 的覆寫（§13）
 agent.task_config              operator 對 task 的 model、prompt 與參數的覆寫（§13）
+agent.usage_ledger             替使用者做的每一次 provider call 一列；session 刪了它還在
+agent.quota_config             operator 對每週額度與其時區的覆寫（§3、§13）
 ```
 
 Entry payload 是符合 Pi session-entry union 的 opaque JSON。Kind-specific state 以 extension
 table 表達，不把共用 session table 擴成大量 nullable columns。
+
+### Usage ledger
+
+替使用者做的每一次 provider call 都在 `agent.usage_ledger` 落一列：turn 的回覆、自動與手動
+compaction、branch summary、session title、lesson 抽取——不論誰付錢。`provider_id` 說明這筆
+是誰的帳（house gateway 或 BYOK key），所以「只算 house 花費」的配額是一個 filter，不是第二
+本帳。每列帶 pi 自己的 `usage`（input、output、cache read/write、reasoning）和它的
+`cost.total`，以整數 micro-dollar 存：計量一律用 cost，不用 raw tokens——cache read 只有
+uncached 的十分之一價錢，而長對話每一回合都重送整份 transcript。
+
+數字不從 `session_entry` 反查，雖然每則 assistant message 都帶著它們：entry 隨 session
+cascade，使用者刪掉 session 就等於抹掉自己花掉的；payload 是 opaque 的、索引按 session 而不
+是按 user 與期間；side job 根本沒有 entry。Ledger 的 `session_id` 是 `set null`，歸屬於 session
+的擁有者——匿名訪客一旦有了 user row 也是同一個人。
+
+Runtime 回報，host 寫入。`runPiTurn`、`compactSession`、`navigatePiSession` 接一個
+`AgentUsageListener`（`@chia/agent-runtime/types`），在 entry 落地**之後**用回答的模型、usage
+與 entry id 呼叫它，所以不會有一列先於它所記的東西；`completeText` 與 `generateSessionTitle`
+不論回了什麼都回報被計費的量，因為中斷的 stream 一樣要付錢。每條 host 路徑都把 listener 綁到
+`recordAgentUsage`（`@chia/agent-host/usage`）：turn step（turn、它的自動 compaction、title）、
+generic service 的 maintenance 操作（手動 compaction、branch summary——在 session lock 的
+transaction 上）以及 lesson step。寫入永遠不在 critical path 上：provider 沒計費的 call 不成
+列，insert 失敗只記 log 然後丟掉，損失最多一次 call，且對使用者有利。
+
+### Usage quota
+
+配額是 caller tier 的屬性，從 ledger 讀出來。`Root`——付帳的 operator——永不受限；其他每個
+tier 共用一份每週的 **house** 花費額度：`sumAgentUsageCost` 取這一週、過濾到 gateway
+provider，所以 BYOK 的 call 會被記錄但算使用者自己的帳。`@chia/agent-host/quota` 擁有它：
+`AGENT_QUOTA_DEFAULTS` 是每週 $0.30、以 server 自己的時區計；operator 的 `agent.quota_config`
+row 從 dashboard 覆寫任一項（`agent.admin.quota.*`，§13）；`weekPeriod` 是該時區的週一 00:00
+到下週一 00:00，以該時區的日曆邊界計算，所以碰上 DST 的那週是 167 或 169 小時而不是算錯一天；
+`assertWithinAgentQuota` 在這週的花費達到上限時丟 `QUOTA_EXCEEDED`（402，
+`{ limitMicros, usedMicros, resetAt, timeZone }`）。
+
+只在接受 model call 的地方檢查，別處不檢查：`prompt` 與 `approve`（一個決定會起一個 relay
+turn）、`compact`、帶 `summarize` 的 `navigate`——都在 session lock 之下、在任何東西被排入或
+落地之前，所以被拒絕的 approval 會維持 pending，等下週再決定。上限是 soft 的：只要還有剩就
+接受，所以最後一次最多超出一個 turn，由 kind 的 turn budget 兜住。上限設 `0` 就對所有受限
+tier 關閉 agent。
+
+額度之外還有 **執行中 turn 上限**（`maxRunningTurns`，預設 3，同一個 row）：限制一個受限
+caller 同時能壓在 single-replica runner 上的量。`prompt` 與 `approve` 數這個使用者 turn
+marker 為 `running` 的 active run（`countRunningAgentTurns`），到上限就以
+`TOO_MANY_REQUESTS`（`{ runningTurns, maxRunningTurns }`）拒絕。計數在使用者自己的 advisory
+lock 之下（`lockAgentUser`，永遠在 session lock 之後、同一個 transaction），所以兩個 session
+上的兩個 prompt 不會用同一次讀數都通過。排在該 session 執行中 turn 後面的訊息不增加執行中
+的 turn。
+
+Marker 本身不是真相：process 在 step 底下死掉不會清掉它。所以每個讀取端都會問 World 那個 run
+是否還活著（`apps/service/src/services/agent-run-liveness.service.ts` 的 `runStateOf`），而在
+數上限之前——以及 `usage.me` 回報之前——`reconcileRunningAgentTurns` 會把這個使用者 marker
+還在、run 卻已經不在的 row 收掉（標 `failed`、釋放 controller）。Workflow 自己也在 `finally`
+裡收 row（`completeAgentRunStep`，step 丟錯就標 `failed`），所以 stale row 只可能是 World 還沒
+放棄的那種。
 
 ### Session title
 
@@ -231,7 +303,7 @@ Pi 的 loop 沒有 step 上限：只要 assistant message 還帶 tool call 就�
 拒絕是透過 tool result 跟模型對話，與 approval gate 用的是同一條通道，所以會聽話的模型會正常
 結束這一輪。兩種 abort 走的是與 volatile-context 讀取失敗相同的 host-failure 路徑：記下失敗、
 abort run，turn 以該 error 結束而非 `aborted`。per-user 與 per-session 的配額不在這裡——
-那屬於 enqueue 時的 kind service。
+那屬於 enqueue 時的 kind service，讀的是 usage ledger（§3）。
 
 ### Prompt 分層
 
@@ -330,9 +402,9 @@ session:compacted · session:rewound · state:changed · error · run:end
   `tool:end{aborted}` 收掉；`error` 或 `aborted` 收尾的 message 裡的 call 則直接略過，Pi 從沒執行
   它們，live turn 也沒顯示過。`run:end` 對 live turn 留下的 running call 做同樣的事。`aborted` 是
   獨立的狀態而不是 `isError`：tool 沒有失敗，它只是沒跑完。
-- `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · budget_exhausted · provider ·
-internal`），
-  讓 client 能提示下一步；`describeAgentError` 是共用的 headline。
+- `error` 只帶 `kind`（`auth · quota · rate_limited · context_overflow · budget_exhausted · provider ·
+internal`）：client 據此挑 headline；provider 或 host 自己的錯誤文字連同 throw 出來的東西只進
+  server log（`Agent turn failed`），不上 wire。
 - `tool:end.details` 上 wire 前會經過 `clipDetails`——長字串、陣列、寬物件與深巢狀就地縮短、
   保留形狀——因為每個 coarse event 都是 durable write，且會 replay 給每個重連的 client。模型
   讀的是 tool 的 `content`，不是這份副本。
@@ -583,6 +655,10 @@ admin-only）：
 | ------------- | ------------------------------------- | ------------------------------------------------------------------------------------- | ------------------- |
 | `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | 一個對話型 agent——tools、ports、policy、state row、`runTurn`                          | `agent.kind_config` |
 | `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | 一個在 session 旁邊跑的一次性模型呼叫——title、compaction、branch summary、lesson 抽取 | `agent.task_config` |
+
+第三個 row 不是 registry：`agent.quota_config` 放 operator 對每週額度、其時區與執行中 turn
+上限的覆寫（`agent.admin.quota.*`，workspace 的「Usage quota」卡片）；程式預設是
+`packages/agent-host/src/quota.ts` 的 `AGENT_QUOTA_DEFAULTS`（§3）。
 
 **Task** 是一個 model slot，加上呼叫有暴露時的 system prompt 與 sampling 參數。它們怎麼跑各不相同
 （`completeSimple`、Pi 的 `compact()`、`generateBranchSummary`），這部分留在呼叫端；operator 要選的

@@ -25,9 +25,17 @@
       "types": "./src/kind.ts",
       "default": "./src/kind.ts"
     },
+    "./quota": {
+      "types": "./src/quota.ts",
+      "default": "./src/quota.ts"
+    },
     "./tasks": {
       "types": "./src/tasks.ts",
       "default": "./src/tasks.ts"
+    },
+    "./usage": {
+      "types": "./src/usage.ts",
+      "default": "./src/usage.ts"
     },
     "./writing": {
       "types": "./src/writing.ts",

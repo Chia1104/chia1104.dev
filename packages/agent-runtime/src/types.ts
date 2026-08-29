@@ -6,6 +6,7 @@ import type {
   Skill,
   ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
+import type { Usage } from "@earendil-works/pi-ai";
 import type { Static, TSchema } from "typebox";
 
 import type { OperatorDecision } from "./wire/operator-decision.ts";
@@ -164,3 +165,29 @@ export interface AgentTurnExecution<TApproval> {
   approvals: TApproval[];
   error?: AgentTurnError;
 }
+
+/** What the runtime made a provider call for. */
+export type AgentUsageSource = "turn" | "compaction" | "branch_summary";
+
+/** A provider call as billed: the model that answered and what it charged. */
+export interface AgentModelUsage {
+  providerId: string;
+  modelId: string;
+  usage: Usage;
+}
+
+export interface AgentUsageReport extends AgentModelUsage {
+  source: AgentUsageSource;
+  /** The tree entry that carries this usage; appended before the report is made. */
+  entryId: string;
+}
+
+/**
+ * Receives every provider call the runtime makes on a session's tree — the turn's replies,
+ * compaction, branch summaries — once the entry carrying it has landed. The host meters from
+ * here; the runtime never reads usage back. Runs inside Pi's event subscription, so the host
+ * handles its own failures rather than letting one surface as a turn error.
+ */
+export type AgentUsageListener = (
+  report: AgentUsageReport
+) => void | Promise<void>;

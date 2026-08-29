@@ -33,6 +33,9 @@ export const routerContract = {
     capabilities: {
       list: agentContracts.listAgentCapabilitiesContract,
     },
+    usage: {
+      me: agentContracts.getAgentUsageContract,
+    },
     admin: {
       kinds: {
         list: agentAdminContracts.listAgentKindsAdminContract,
@@ -42,6 +45,10 @@ export const routerContract = {
         list: agentAdminContracts.listAgentTasksAdminContract,
         update: agentAdminContracts.updateAgentTaskAdminContract,
         models: agentAdminContracts.listAgentTaskModelsAdminContract,
+      },
+      quota: {
+        get: agentAdminContracts.getAgentQuotaAdminContract,
+        update: agentAdminContracts.updateAgentQuotaAdminContract,
       },
     },
   },

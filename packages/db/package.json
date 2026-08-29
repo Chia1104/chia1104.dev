@@ -81,6 +81,10 @@
       "types": "./src/mock-db.ts",
       "default": "./src/mock-db.ts"
     },
+    "./storable": {
+      "types": "./src/storable.ts",
+      "default": "./src/storable.ts"
+    },
     "./repos/agent": {
       "types": "./src/libs/agent/index.ts",
       "default": "./src/libs/agent/index.ts"
@@ -92,6 +96,10 @@
     "./repos/agent/config": {
       "types": "./src/libs/agent/config.ts",
       "default": "./src/libs/agent/config.ts"
+    },
+    "./repos/agent/usage": {
+      "types": "./src/libs/agent/usage.ts",
+      "default": "./src/libs/agent/usage.ts"
     },
     "./schema/enums": {
       "types": "./src/schemas/enums.ts",

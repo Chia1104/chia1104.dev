@@ -224,6 +224,7 @@ export const createWritingAgentKind = (
           toApproval: context.toApproval,
           persistApprovals: context.persistApprovals,
           flushEvents: context.flushEvents,
+          onUsage: context.onUsage,
         });
 
         /**

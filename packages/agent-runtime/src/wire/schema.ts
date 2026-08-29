@@ -121,9 +121,11 @@ export const agentWireEventSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("error"),
-    /** See `AgentErrorKind`; lets a client suggest the next step instead of echoing the provider. */
+    /**
+     * See `AgentErrorKind`. The kind is all a client gets — it picks a headline from it; the
+     * provider's or the host's own text stays in the server log.
+     */
     kind: agentErrorKindSchema,
-    message: z.string(),
   }),
   z.object({
     type: z.literal("run:end"),

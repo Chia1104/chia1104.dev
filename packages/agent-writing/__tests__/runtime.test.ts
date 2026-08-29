@@ -521,11 +521,7 @@ describe("runWritingTurn", () => {
       message: "401 Unauthorized: invalid x-api-key",
     });
     expect(fixture.events.slice(-2)).toEqual([
-      {
-        type: "error",
-        kind: "auth",
-        message: "401 Unauthorized: invalid x-api-key",
-      },
+      { type: "error", kind: "auth" },
       { type: "run:end", reason: "error" },
     ]);
   });
