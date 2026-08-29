@@ -9,11 +9,21 @@ import type { AgentUsageSource } from "@chia/db/schema";
  * spend is within a quota is decided where a turn is accepted, and by the tier's own policy.
  */
 
-/** pi reports cost in dollars as a float; the ledger keeps an integer so a running sum cannot drift. */
-export const costToMicros = (usd: number): number =>
-  Math.round(usd * 1_000_000);
+const MICROS_PER_USD = 1_000_000;
 
-export const microsToUsd = (micros: number): number => micros / 1_000_000;
+/** pi reports cost in dollars as a float; the ledger keeps an integer so a running sum cannot drift. */
+export const costToMicros = (usd: number): number => {
+  if (!Number.isFinite(usd) || usd < 0) {
+    throw new RangeError("USD cost must be finite and non-negative");
+  }
+  const micros = Math.round(usd * MICROS_PER_USD);
+  if (!Number.isSafeInteger(micros)) {
+    throw new RangeError("USD cost exceeds the safe micro-dollar range");
+  }
+  return micros;
+};
+
+export const microsToUsd = (micros: number): number => micros / MICROS_PER_USD;
 
 export interface RecordAgentUsageInput extends AgentModelUsage {
   /** The user the call was made for — the session's owner, not who paid. */

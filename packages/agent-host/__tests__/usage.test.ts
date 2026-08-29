@@ -54,6 +54,24 @@ describe("costToMicros", () => {
     expect(costToMicros(0.0000004)).toBe(0);
     expect(costToMicros(1.2345678)).toBe(1234568);
   });
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "rejects a non-finite cost",
+    async (usd) => {
+      const { costToMicros } = await import("../src/usage");
+      expect(() => costToMicros(usd)).toThrow(RangeError);
+    }
+  );
+
+  it("rejects a negative cost", async () => {
+    const { costToMicros } = await import("../src/usage");
+    expect(() => costToMicros(-0.01)).toThrow(RangeError);
+  });
+
+  it("rejects a cost outside the safe integer range", async () => {
+    const { costToMicros } = await import("../src/usage");
+    expect(() => costToMicros(Number.MAX_SAFE_INTEGER)).toThrow(RangeError);
+  });
 });
 
 describe("recordAgentUsage", () => {
@@ -102,6 +120,35 @@ describe("recordAgentUsage", () => {
     });
 
     expect(repo.insertAgentUsage).not.toHaveBeenCalled();
+  });
+
+  it("logs and drops an invalid provider cost", async () => {
+    const { recordAgentUsage } = await import("../src/usage");
+    const error = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    await expect(
+      recordAgentUsage(db, {
+        ...call,
+        usage: usage({
+          cost: {
+            input: 0,
+            output: 0,
+            cacheRead: 0,
+            cacheWrite: 0,
+            total: -0.01,
+          },
+        }),
+      })
+    ).resolves.toBeUndefined();
+
+    expect(repo.insertAgentUsage).not.toHaveBeenCalled();
+    expect(error).toHaveBeenCalledExactlyOnceWith(
+      "Could not record agent usage",
+      expect.objectContaining({ userId: "user-1", source: "turn" })
+    );
+    error.mockRestore();
   });
 
   it("logs and swallows a failed write", async () => {
