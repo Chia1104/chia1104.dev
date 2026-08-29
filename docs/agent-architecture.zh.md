@@ -1,14 +1,14 @@
 # Agent 架構與 Turn 流程
 
 > 狀態：as-built
-> 最後更新：2026-08-27
+> 最後更新：2026-08-30
 > English: [docs/agent-architecture.md](./agent-architecture.md)
 > 相關文件：[docs/rag-architecture.md](./rag-architecture.md)
 
 目前 agent stack 採 Pi-first：Pi 的 `Agent` 是執行引擎——provider loop、tool 執行、hook 與
 model API——而 `@chia/agent-runtime` 擁有它周圍所有 durable 的東西：session tree、投影成
 model context、compaction、navigation 與 fork。沒有 engine-neutral contract 或 adapter。
-現在唯一上線的 agent kind 是 dashboard 裡的部落格寫作助理 `writing`。
+上線的 agent kind 有兩個：dashboard 裡的部落格寫作助理 `writing`，以及公開站上訪客對話的閱讀助理 `public`。
 
 ## 1. 分層
 
@@ -17,6 +17,7 @@ model context、compaction、navigation 與 fork。沒有 engine-neutral contrac
 | Pi execution | `@chia/agent-runtime`                       | Pi turn 生命週期、session persistence、models/providers、approval hook、受限 wire events 與 client transport mapping |
 | Shared tools | `@chia/agent-content`                       | 所有會讀部落格的 kind 共用的唯讀 content tools、它們的 `ContentReadPort`、名稱、標籤與摘要                           |
 | Domain       | `@chia/agent-writing`                       | 寫作 tools、prompts、skills、model allowlist、policy、draft staging 與 domain ports                                  |
+| Domain       | `@chia/agent-public`                        | 公開閱讀助理：在共用 content tools 之上的 prompt、policy、turn budget 與便宜 model allowlist                         |
 | Host         | `apps/service`、`packages/api`、`apps/dash` | DB/KV/credentials、durable workflow 與 stream、oRPC service port、auth、UI                                           |
 | Client       | `@chia/agent-elements`                      | 每個 session 一個 zustand store（fold wire events），以及兩個前端共用的 HeroUI chat elements                         |
 
@@ -25,8 +26,11 @@ flowchart TB
     dash["apps/dash<br/>agent workspace"] --> api["packages/api<br/>oRPC contracts · AgentKindService"]
     api --> service["apps/service<br/>durable workflow · host wiring"]
     service --> writing["@chia/agent-writing<br/>runWritingTurn · tools · prompts · policy"]
+    service --> public["@chia/agent-public<br/>runPublicTurn · prompt · policy · budget"]
     writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
+    public --> content
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
+    public --> runtime
     content --> runtime
     runtime --> pi["Pi Agent"]
     runtime --> pg[("Postgres agent schema")]
@@ -38,7 +42,7 @@ flowchart TB
 
 ## 2. Agent kind 與 host service
 
-`agent.session.kind` 是 domain discriminator（目前只有 `writing`），不是 harness
+`agent.session.kind` 是 domain discriminator（`writing`、`public`），不是 harness
 discriminator。它選擇：
 
 - `apps/service/src/agents/registry.ts`（`AGENT_KINDS`）中的 `AgentKindDefinition`——request
@@ -81,7 +85,28 @@ interface，實作放在該 kind 的 definition 旁邊——不掛在共用 port
 Service 收到的是 `AgentServiceCaller`：解析後的 `Caller`（tier、session、設定檔裡的 `adminId`）加上
 `userId`。agent 的 generic 層不帶任何 admin 身分——writing kind 設 `minTier: Root`，這使得它的呼叫者
 *就是*設定的作者，content port 需要時由 kind 自己讀 `getAdminId()`。公開 kind 設
-`minTier: Guest`（或 `Session`，要求登入），從頭到尾看不到 admin id。
+`minTier: Guest`，從頭到尾看不到 admin id：它的 content port 是為設定檔裡那位作者的*已發佈*
+文章建的——那是「誰的部落格」，不是「誰在問」。
+
+### 公開 kind
+
+`@chia/agent-public` 是公開站上的閱讀助理，綁定在 `packages/agent-host/src/public.ts`。它就是把
+writing kind 裡所有會花錢或會改東西的部分拿掉：
+
+- **Tools** 恰好是 `@chia/agent-content` 的四個 read tools，跑在 `public` visibility 的 port 上
+  （§10）。只有一個 tier `read`；沒有東西需要 approval；沒有 `WebPort`、memory、draft。
+- **Models**：gateway 這邊是一份封閉的便宜 id 清單（`HOUSE_PUBLIC_MODEL_IDS`——
+  `claude-haiku-4.5`、`gpt-5-mini`、`gpt-5-nano`），不是 vendor prefix，因為目的就是不讓訪客選到
+  同一家的旗艦。原生 OpenAI / Anthropic 則開放：帶自己 key 的訪客自己付錢，quota 也不算它（§3）。
+- **Budget**（`publicTurnBudget`）：tool call 軟上限 6、硬上限 10、重複 2 次、兩分鐘。quota（§3）
+  管一週，這個管 quota 最多會超出的那一個 turn。
+- **State**：沒有。`state.load` 回 `{}` 讓 session 保持可見；公開 session 就是它的 transcript。fork
+  不複製任何東西。
+- **Config**：和 writing 一樣是 `instructions`——persona 與 house rules，接在穩定的 system prompt
+  後面。
+
+turn step 與 generic service 不需要任何 kind-specific 的東西：caller 低於 `Root` 所以 quota 與
+running-turn cap 自動生效，title task 跑在 house model 上，compaction 跟著 session 自己的便宜 model。
 
 ### Guest
 
@@ -579,7 +604,7 @@ Read tools 無法擴大自己能看到的範圍：可見性在 host 建 port 時
 （`packages/agent-host/src/content-read.port.ts`）。`author` port 看得到設定作者的草稿；
 `public` port 把每次 detail read 都限定在 `published: true`，被要求列草稿時回空而不是覆寫
 filter。搜尋不需要分支——chunk index 對所有呼叫者都只含已發佈內容。Writing agent 的 port 是
-`author`；公開 kind 建 `public`，而且永遠拿不到 `WebPort`。
+`author`；公開 kind 的是 `public`（`apps/workflow/src/agents/public.ts`），而且永遠拿不到 `WebPort`。
 
 Process 內沒有 conversational state。Kind-to-service map 只保存 implementation；所有 mutable
 state 都是 durable：
@@ -633,9 +658,11 @@ factory、capability plugin system 或 provider-neutral handle。
 | Memory 寫入 / 索引           | `packages/api/memories/write.ts`、`apps/service/src/services/agent-memory-indexing.service.ts`                       |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                                              |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                                                 |
+| Public composition           | `packages/agent-public/src/runtime.ts`、`src/models.ts`、`src/policy.ts`、`src/prompts/system.ts`                    |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                                        |
 | Kind registry / generic host | `apps/service/src/agents/registry.ts`、`agents/service.ts`、`packages/agent-host/src/kind.ts`                        |
 | Writing kind binding         | `packages/agent-host/src/writing.ts`, `apps/service/src/agents/writing.ts`, `apps/workflow/src/agents/writing.ts`    |
+| Public kind binding          | `packages/agent-host/src/public.ts`、`apps/service/src/agents/public.ts`、`apps/workflow/src/agents/public.ts`       |
 | Task registry / resolution   | `packages/agent-host/src/tasks.ts`                                                                                   |
 | Operator configuration       | `packages/agent-host/src/config.ts`、`apps/service/src/agents/admin.ts`、`packages/db/src/libs/agent/config.ts`      |
 | Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`、`apps/service/src/factories/agent-admin.factory.ts`           |

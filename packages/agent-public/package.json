@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@chia/agent-public",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    },
+    "./models": {
+      "types": "./src/models.ts",
+      "default": "./src/models.ts"
+    },
+    "./config": {
+      "types": "./src/config.ts",
+      "default": "./src/config.ts"
+    },
+    "./policy": {
+      "types": "./src/policy.ts",
+      "default": "./src/policy.ts"
+    },
+    "./runtime": {
+      "types": "./src/runtime.ts",
+      "default": "./src/runtime.ts"
+    },
+    "./prompts/system": {
+      "types": "./src/prompts/system.ts",
+      "default": "./src/prompts/system.ts"
+    },
+    "./tools/tool-set": {
+      "types": "./src/tools/tool-set.ts",
+      "default": "./src/tools/tool-set.ts"
+    },
+    "./tools/registry": {
+      "types": "./src/tools/registry.ts",
+      "default": "./src/tools/registry.ts"
+    },
+    "./tools/summarize": {
+      "types": "./src/tools/summarize.ts",
+      "default": "./src/tools/summarize.ts"
+    }
+  },
+  "scripts": {
+    "clean": "git clean -xdf .turbo node_modules dist .cache",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "vitest --run",
+    "type:check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chia/agent-content": "workspace:*",
+    "@chia/agent-runtime": "workspace:*",
+    "@chia/db": "workspace:*",
+    "@earendil-works/pi-ai": "catalog:agent",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@chia/agent-writing": "workspace:*",
+    "@chiastack/tsconfig": "catalog:chiastack",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:testing-library"
+  }
+}

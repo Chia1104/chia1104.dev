@@ -23,6 +23,10 @@ export const AGENT_KINDS = {
     minTier: CallerTier.Root,
     load: () => import("./writing").then((m) => m.writingAgentKind),
   },
+  public: {
+    minTier: CallerTier.Guest,
+    load: () => import("./public").then((m) => m.publicAgentKind),
+  },
 } satisfies Readonly<Record<string, AgentKindEntry>>;
 
 /** `AGENT_KINDS` keyed by the database string; a `Map` keeps prototype names from matching. */

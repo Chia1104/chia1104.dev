@@ -1,15 +1,15 @@
 # Agent Architecture & Turn Flow
 
 > Status: as-built
-> Last updated: 2026-08-27
+> Last updated: 2026-08-30
 > 中文版：[docs/agent-architecture.zh.md](./agent-architecture.zh.md)
 > Related: [docs/rag-architecture.md](./rag-architecture.md)
 
 The agent stack is Pi-first. Pi's `Agent` is the execution engine — the provider loop, tool
 execution, hooks and model APIs — and `@chia/agent-runtime` owns everything durable around it: the
 session tree, its projection into the model's context, compaction, navigation and forks. There is
-no engine-neutral contract or adapter layer. The only shipped agent kind is `writing`, the
-dashboard's blog authoring assistant.
+no engine-neutral contract or adapter layer. Two agent kinds ship: `writing`, the dashboard's
+blog authoring assistant, and `public`, the reading assistant visitors talk to on the site.
 
 ## 1. Layers
 
@@ -18,6 +18,7 @@ dashboard's blog authoring assistant.
 | Pi execution | `@chia/agent-runtime`                       | Pi turn lifecycle, session persistence, models/providers, approval hook, bounded wire events and client transport mapping |
 | Shared tools | `@chia/agent-content`                       | Read-only content tools every reading kind composes, their `ContentReadPort`, names, labels and summaries                 |
 | Domain       | `@chia/agent-writing`                       | Writing tools, prompts, skills, model allowlist, policy, draft staging and domain ports                                   |
+| Domain       | `@chia/agent-public`                        | The public reader: prompt, policy, turn budget and cheap model allowlist over the shared content tools                    |
 | Host         | `apps/service`, `packages/api`, `apps/dash` | DB/KV/credentials, durable workflow and streams, oRPC service port, auth and UI                                           |
 
 ```mermaid
@@ -25,8 +26,11 @@ flowchart TB
     dash["apps/dash<br/>agent workspace"] --> api["packages/api<br/>oRPC contracts · AgentKindService"]
     api --> service["apps/service<br/>durable workflow · host wiring"]
     service --> writing["@chia/agent-writing<br/>runWritingTurn · tools · prompts · policy"]
+    service --> public["@chia/agent-public<br/>runPublicTurn · prompt · policy · budget"]
     writing --> content["@chia/agent-content<br/>search_posts · get_post · list_posts · list_tags"]
+    public --> content
     writing --> runtime["@chia/agent-runtime<br/>runPiTurn · session · events · models"]
+    public --> runtime
     content --> runtime
     runtime --> pi["Pi Agent"]
     runtime --> pg[("Postgres agent schema")]
@@ -39,7 +43,7 @@ clients, not an interchangeable engine API.
 
 ## 2. Agent kind and host service
 
-`agent.session.kind` is a domain discriminator (`writing` today), not a harness discriminator. It
+`agent.session.kind` is a domain discriminator (`writing`, `public`), not a harness discriminator. It
 selects:
 
 - the `AgentKindDefinition` in `apps/service/src/agents/registry.ts` (`AGENT_KINDS`), which both
@@ -58,7 +62,7 @@ The service itself is generic. `apps/service/src/agents/service.ts` (`createAgen
 implements the whole port — session rows, durable runs, prompt/attach/stream, abort, approvals,
 compaction and rewind — over an `AgentKindDefinition` (`@chia/agent-host/kind`), and the turn step
 (`runKindTurn`) resolves the same definition for the Pi side. A kind is one file in
-`apps/service/src/agents/` (`writing.ts`) that binds its domain package to the host's ports and
+`apps/service/src/agents/` (`writing.ts`, `public.ts`) that binds its domain package to the host's ports and
 supplies only what differs: `minTier`, `label`/`description`, defaults, replay policy, the model
 allowlist (`assert`/`list`/`resolve`), its operator `config` schema, capabilities, its 1:1
 `state` row (`create`/`load`/`summary`/`detail`) and `runTurn`. Compaction and rewind are not
@@ -84,8 +88,32 @@ kinds the caller may use.
 The service receives an `AgentServiceCaller`: the resolved `Caller` (tier, session, configured
 `adminId`) plus `userId`. Nothing agent-generic carries an admin identity — the writing kind sets
 `minTier: Root`, which is what makes its caller _be_ the configured author, and reads
-`getAdminId()` itself where its content port needs it. A public kind sets `minTier: Guest` (or
-`Session`, to ask for a sign-in) and never sees an admin id.
+`getAdminId()` itself where its content port needs it. The public kind sets `minTier: Guest`
+and never sees an admin id: its content port is built for the configured author's _published_
+posts, which is whose blog it is, not who is asking.
+
+### The public kind
+
+`@chia/agent-public` is the reading assistant on the public site, bound in
+`packages/agent-host/src/public.ts`. It is the writing kind with everything that costs or
+changes anything taken away:
+
+- **Tools** are exactly `@chia/agent-content`'s four read tools over a `public`-visibility port
+  (§10). One tier, `read`; nothing needs approval; no `WebPort`, no memory, no draft.
+- **Models**: the gateway side is a closed list of cheap ids (`HOUSE_PUBLIC_MODEL_IDS` —
+  `claude-haiku-4.5`, `gpt-5-mini`, `gpt-5-nano`), not a vendor prefix, because the point is
+  to keep a visitor off the vendor's flagship. Native OpenAI and Anthropic are open: a visitor
+  who registered their own key pays for the call, and the quota does not count it (§3).
+- **Budget** (`publicTurnBudget`): 6 tool calls soft, 10 hard, 2 repeats, two minutes. The
+  quota (§3) bounds the week; this bounds the turn the quota may overrun by.
+- **State**: none. `state.load` answers `{}` so the session stays visible; a public session is
+  its transcript. Forks copy nothing.
+- **Config**: `instructions`, like writing — a persona and house rules, appended to the stable
+  system prompt.
+
+The turn step and the generic service need nothing kind-specific: the quota and running-turn
+cap apply because the caller is below `Root`, the title task runs on its house model, and
+compaction follows the session's own cheap model.
 
 ### Guests
 
@@ -670,8 +698,8 @@ The read tools cannot widen what they see: visibility is fixed when the host bui
 (`packages/agent-host/src/content-read.port.ts`). An `author` port sees the configured author's
 drafts; a `public` port scopes every detail read to `published: true` and answers a request for
 drafts with nothing rather than overriding the filter. Search needs no branch — the chunk index is
-published-only for every caller. The writing agent's port is `author`; a public kind builds
-`public` and never gets a `WebPort`.
+published-only for every caller. The writing agent's port is `author`; the public kind's is
+`public` (`apps/workflow/src/agents/public.ts`) and it never gets a `WebPort`.
 
 `buildSystemPrompt` is the stable system prompt; `buildTurnContext` is the volatile block with the
 draft state and current time (see §4). Skills and prompt templates live under
@@ -739,9 +767,11 @@ until a concrete second execution foundation requires a different seam.
 | Memory writes / indexing     | `packages/api/memories/write.ts`, `apps/service/src/services/agent-memory-indexing.service.ts`                       |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                                              |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                                                 |
+| Public composition           | `packages/agent-public/src/runtime.ts`, `src/models.ts`, `src/policy.ts`, `src/prompts/system.ts`                    |
 | Host service port            | `packages/api/orpc/services/agent.service.ts`                                                                        |
 | Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/service.ts`, `packages/agent-host/src/kind.ts`                        |
 | Writing kind binding         | `packages/agent-host/src/writing.ts`, `apps/service/src/agents/writing.ts`, `apps/workflow/src/agents/writing.ts`    |
+| Public kind binding          | `packages/agent-host/src/public.ts`, `apps/service/src/agents/public.ts`, `apps/workflow/src/agents/public.ts`       |
 | Task registry / resolution   | `packages/agent-host/src/tasks.ts`                                                                                   |
 | Operator configuration       | `packages/agent-host/src/config.ts`, `apps/service/src/agents/admin.ts`, `packages/db/src/libs/agent/config.ts`      |
 | Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`, `apps/service/src/factories/agent-admin.factory.ts`           |
@@ -787,7 +817,7 @@ change never touches an existing session; `config` is read by the turn step on e
 (`loadKindConfig`), so an edit reaches the next turn of every session. The schema is sent to the
 dashboard as JSON Schema, so a new field is a schema change, not a contract change. Preferences
 only: tool tiers, the approval policy, the turn budget and the model allowlist are safety
-boundaries and stay in code. Writing's config is `instructions` — appended to the system prompt
+boundaries and stay in code. Both kinds' config is `instructions` — appended to the system prompt
 under "Operator instructions", part of the stable prefix, so a change invalidates the provider's
 cached prefix once and is then cached again.
 

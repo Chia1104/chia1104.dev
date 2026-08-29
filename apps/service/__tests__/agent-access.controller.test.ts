@@ -1,3 +1,4 @@
+import { getAgentSessions } from "@chia/db/repos/agent";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
 import { app } from "../src/server";
@@ -10,6 +11,15 @@ import { setCallerTier } from "./__mocks__/guards.mock";
  * by a role pinned on the routes. The writing kind admits only the configured admin, so these
  * assert that a lower tier is refused at the guard — before any session lookup or model load.
  */
+
+/**
+ * The public kind is open to every session-bearing tier, so a kind-less `list` now reaches the
+ * repository for it; stub that one read so the test stays about access, not rows.
+ */
+vi.mock("@chia/db/repos/agent", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@chia/db/repos/agent")>()),
+  getAgentSessions: vi.fn().mockResolvedValue([]),
+}));
 
 const rpc = (procedure: string, input?: Record<string, unknown>) =>
   app.request(`/api/v1/rpc/agent/${procedure}`, {
@@ -60,6 +70,22 @@ describe("agent kind access", () => {
     expect(writing.status).toBe(403);
   });
 
+  it.each([
+    ["guest", CallerTier.Guest],
+    ["signed-in", CallerTier.Session],
+  ] as const)("admits a %s caller to the public kind", async (_label, tier) => {
+    setCallerTier(tier);
+
+    const res = await rpc("capabilities/list", { kind: "public" });
+
+    expect(res.status).toBe(200);
+    const { json } = await res.json();
+    expect(json.tools.length).toBeGreaterThan(0);
+    expect(
+      json.tools.every((tool: { tier: string }) => tool.tier === "read")
+    ).toBe(true);
+  });
+
   it("refuses the usage standing to a caller with no user to stand for", async () => {
     setCallerTier(CallerTier.ApiKey);
 
@@ -78,6 +104,7 @@ describe("agent kind access", () => {
 
   it("lists only the kinds the caller may use when no kind is given", async () => {
     setCallerTier(CallerTier.Session);
+    vi.mocked(getAgentSessions).mockClear();
 
     const res = await rpc("sessions/list");
 
@@ -85,6 +112,10 @@ describe("agent kind access", () => {
     await expect(res.json()).resolves.toEqual({
       json: { items: [], nextCursor: null },
     });
+    // A signed-in visitor may use the public kind and nothing else, so that is the only read.
+    expect(
+      vi.mocked(getAgentSessions).mock.calls.map(([, input]) => input)
+    ).toEqual([expect.objectContaining({ kind: "public" })]);
   });
 
   it("admits the configured admin", async () => {
