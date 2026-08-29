@@ -236,16 +236,11 @@ describe("foldEvents", () => {
       "assistant:end",
       "error",
     ]);
-    expect(events[1]).toEqual({
-      type: "error",
-      kind: "rate_limited",
-      message: "429 Too Many Requests",
-    });
+    expect(events[1]).toEqual({ type: "error", kind: "rate_limited" });
     expect(foldEvents(events).items.at(-1)).toEqual({
       kind: "notice",
       variant: "error",
       code: "rate_limited",
-      text: "429 Too Many Requests",
     });
   });
 

@@ -81,6 +81,10 @@
       "types": "./src/mock-db.ts",
       "default": "./src/mock-db.ts"
     },
+    "./storable": {
+      "types": "./src/storable.ts",
+      "default": "./src/storable.ts"
+    },
     "./repos/agent": {
       "types": "./src/libs/agent/index.ts",
       "default": "./src/libs/agent/index.ts"

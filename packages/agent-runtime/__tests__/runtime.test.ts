@@ -384,11 +384,7 @@ describe("runPiTurn", () => {
     });
     expect(fixture.faux.state.callCount).toBe(0);
     expect(fixture.events.slice(-2)).toEqual([
-      {
-        type: "error",
-        kind: "internal",
-        message: "Unknown prompt template: nope",
-      },
+      { type: "error", kind: "internal" },
       { type: "run:end", reason: "error" },
     ]);
   });
@@ -409,11 +405,7 @@ describe("runPiTurn", () => {
       error: { kind: "auth", message: "401 Unauthorized: invalid x-api-key" },
     });
     expect(fixture.events.slice(-2)).toEqual([
-      {
-        type: "error",
-        kind: "auth",
-        message: "401 Unauthorized: invalid x-api-key",
-      },
+      { type: "error", kind: "auth" },
       { type: "run:end", reason: "error" },
     ]);
     // A failed turn is never compacted.
@@ -731,7 +723,7 @@ describe("runPiTurn", () => {
       error: { kind: "internal", message: "draft store down" },
     });
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal", message: "draft store down" },
+      { type: "error", kind: "internal" },
       { type: "run:end", reason: "error" },
     ]);
   });
@@ -759,10 +751,46 @@ describe("runPiTurn", () => {
       })
     );
     expect(fixture.events.slice(-2)).toEqual([
-      { type: "error", kind: "internal", message: "database unavailable" },
+      { type: "error", kind: "internal" },
       { type: "run:end", reason: "error" },
     ]);
     expect(flushEvents).toHaveBeenCalledOnce();
+  });
+
+  it("fails the turn as internal and persists nothing more when the tree refuses a message", async () => {
+    const fixture = build();
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const appendEntry = fixture.session.appendEntry.bind(fixture.session);
+    const refused = new Error("unsupported Unicode escape sequence");
+    vi.spyOn(fixture.session, "appendEntry").mockImplementation((entry) =>
+      entry.type === "message" && entry.message.role === "assistant"
+        ? Promise.reject(refused)
+        : appendEntry(entry)
+    );
+    fixture.faux.setResponses([fauxAssistantMessage("Never persisted.")]);
+
+    const result = await fixture.run();
+
+    expect(result.status).toBe("error");
+    expect(result.error).toEqual({
+      kind: "internal",
+      message: expect.stringContaining("refused"),
+    });
+    expect(fixture.events.slice(-2)).toEqual([
+      { type: "error", kind: "internal" },
+      { type: "run:end", reason: "error" },
+    ]);
+    // The refused reply never reached the wire, and nothing was hung off its lost parent.
+    expect(fixture.types()).not.toContain("assistant:end");
+    const branch = await fixture.branch();
+    expect(branch.map((entry) => messageOf(entry)?.role)).toEqual(["user"]);
+    expect(consoleError).toHaveBeenCalledWith(
+      "Agent turn failed",
+      expect.objectContaining({ kind: "internal", cause: refused })
+    );
+    consoleError.mockRestore();
   });
 
   it("does not persist approvals raised by a failed provider turn", async () => {

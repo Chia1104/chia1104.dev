@@ -402,9 +402,9 @@ session:compacted · session:rewound · state:changed · error · run:end
   `tool:end{aborted}` 收掉；`error` 或 `aborted` 收尾的 message 裡的 call 則直接略過，Pi 從沒執行
   它們，live turn 也沒顯示過。`run:end` 對 live turn 留下的 running call 做同樣的事。`aborted` 是
   獨立的狀態而不是 `isError`：tool 沒有失敗，它只是沒跑完。
-- `error` 帶 `kind`（`auth · quota · rate_limited · context_overflow · budget_exhausted · provider ·
-internal`），
-  讓 client 能提示下一步；`describeAgentError` 是共用的 headline。
+- `error` 只帶 `kind`（`auth · quota · rate_limited · context_overflow · budget_exhausted · provider ·
+internal`）：client 據此挑 headline；provider 或 host 自己的錯誤文字連同 throw 出來的東西只進
+  server log（`Agent turn failed`），不上 wire。
 - `tool:end.details` 上 wire 前會經過 `clipDetails`——長字串、陣列、寬物件與深巢狀就地縮短、
   保留形狀——因為每個 coarse event 都是 durable write，且會 replay 給每個重連的 client。模型
   讀的是 tool 的 `content`，不是這份副本。

@@ -33,29 +33,13 @@ export interface TextMessageView {
 export interface NoticeView {
   kind: "notice";
   variant: "compacted" | "rewound" | "error" | "decision";
-  text: string;
+  /** Unset on `error` notices, which show only the headline their `code` selects. */
+  text?: string;
   /** Set on `error` notices. */
   code?: AgentErrorKind;
 }
 
 export type AgentViewItem = TextMessageView | ToolCallView | NoticeView;
-
-/** What the operator can do about an error kind; the provider's own text follows it. */
-export const AGENT_ERROR_HEADLINE = {
-  auth: "The provider rejected the API key",
-  quota: "The provider account is out of quota or credit",
-  rate_limited: "The provider is rate limiting requests",
-  context_overflow:
-    "The conversation no longer fits the model's context — compact it",
-  budget_exhausted: "The turn ran past its budget and was stopped",
-  provider: "The provider failed",
-  internal: "The agent failed",
-} satisfies Record<AgentErrorKind, string>;
-
-export const describeAgentError = (error: {
-  kind: AgentErrorKind;
-  message: string;
-}): string => `${AGENT_ERROR_HEADLINE[error.kind]}: ${error.message}`;
 
 export interface AgentViewState {
   items: AgentViewItem[];
@@ -304,7 +288,6 @@ export const applyEvent = (
       items.push({
         kind: "notice",
         variant: "error",
-        text: event.message,
         code: event.kind,
       });
       return { ...state, items, runStatus: "error" };

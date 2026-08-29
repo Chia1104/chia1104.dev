@@ -460,8 +460,9 @@ session:compacted · session:rewound · state:changed · error · run:end
   Pi never executed and the live turn never showed. `run:end` closes whatever the live turn left
   running the same way. `aborted` is its own status, not `isError`: the tool did not fail, it
   never finished.
-- `error` carries a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
-provider · internal`) so a client can say what to do next; `describeAgentError` is the shared headline.
+- `error` carries only a `kind` (`auth · quota · rate_limited · context_overflow · budget_exhausted ·
+provider · internal`): the client picks a headline from it, and the provider's or host's own text
+  — with whatever threw — goes to the server log (`Agent turn failed`), never to the wire.
 - `tool:end.details` is clipped by `clipDetails` before it reaches the wire — long strings, arrays,
   wide objects and deep nesting are shortened in place, shape preserved — because every coarse
   event is a durable write that is replayed to every reconnecting client. The model reads the

@@ -53,7 +53,9 @@ export const Notice = ({ className, notice }: NoticeProps) => {
             ? labels.errorHeadlines[notice.code]
             : labels.errorFallback}
         </Alert.Title>
-        <Alert.Description>{notice.text}</Alert.Description>
+        {notice.text ? (
+          <Alert.Description>{notice.text}</Alert.Description>
+        ) : null}
       </Alert.Content>
     </Alert>
   );
