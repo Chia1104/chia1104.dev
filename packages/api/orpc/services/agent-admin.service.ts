@@ -50,6 +50,17 @@ export interface AgentAdminService {
     }
   ): Promise<contracts.AgentTaskAdmin>;
   listTaskModels(): Promise<AgentModelInfo[]>;
+
+  getQuota(caller: AgentAdminCaller): Promise<contracts.AgentQuotaAdmin>;
+  /** `BAD_REQUEST` for a zone the runtime does not know. */
+  updateQuota(
+    caller: AgentAdminCaller,
+    input: {
+      weeklyLimitUsd?: number | null;
+      resetTimeZone?: string | null;
+      maxRunningTurns?: number | null;
+    }
+  ): Promise<contracts.AgentQuotaAdmin>;
 }
 
 /** The context's port, or `SERVICE_UNAVAILABLE` when this process has none. */

@@ -29,6 +29,7 @@ import type {
   AgentTurnError,
   AgentTurnExecution,
   AgentTurnMessage,
+  AgentUsageListener,
 } from "../types.ts";
 import type { AgentWireEvent } from "../wire/schema.ts";
 
@@ -87,6 +88,8 @@ export interface RunPiTurnOptions<TContext extends object, TApproval> {
   /** Persists the whole batch atomically, or rejects without leaving partial rows. */
   persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
   flushEvents?: () => Promise<void>;
+  /** Every provider call of the turn, its auto-compaction included; see {@link AgentUsageListener}. */
+  onUsage?: AgentUsageListener;
 }
 
 const volatileMessage = (text: string): AgentMessage => ({
@@ -139,6 +142,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
   toApproval,
   persistApprovals,
   flushEvents,
+  onUsage,
 }: RunPiTurnOptions<TContext, TApproval>): Promise<
   AgentTurnExecution<TApproval>
 > => {
@@ -161,11 +165,16 @@ export const runPiTurn = async <TContext extends object, TApproval>({
      * unwound.
      */
     let hostFailure: AgentTurnError | undefined;
+    /** What threw, when the failure came from a throw. Logged beside the failure, never sent. */
+    let failureCause: unknown;
     let agent: Agent | undefined;
 
     /** Ends the turn on a host decision. The run observes its aborted controller and unwinds. */
-    const failTurn = (error: AgentTurnError) => {
-      hostFailure ??= error;
+    const failTurn = (error: AgentTurnError, cause?: unknown) => {
+      if (!hostFailure) {
+        hostFailure = error;
+        failureCause = cause;
+      }
       agent?.abort();
     };
 
@@ -285,8 +294,14 @@ export const runPiTurn = async <TContext extends object, TApproval>({
     });
     let cursor = leafId;
     let reply: AssistantMessage | undefined;
+    /**
+     * Set once the tree refused a message. Nothing after that is persisted or shown: the run is
+     * being aborted, and what Pi still emits on its way out would hang off a lost parent.
+     */
+    let treeFailed = false;
     unsubscribers.push(
       agent.subscribe(async (event) => {
+        if (treeFailed) return;
         if (event.type === "message_end") {
           // Persisted before it reaches the wire, so a client never sees a message the tree lost.
           const entry: NewSessionEntry<MessageEntry> = {
@@ -297,9 +312,33 @@ export const runPiTurn = async <TContext extends object, TApproval>({
             message: event.message,
           };
           reservedEntryId = undefined;
-          await session.appendEntry(entry);
+          try {
+            await session.appendEntry(entry);
+          } catch (error) {
+            // Thrown out of here, Pi would resolve the run as a provider error and persist that.
+            treeFailed = true;
+            failTurn(
+              {
+                kind: "internal",
+                message: `The session tree refused entry ${entry.id}.`,
+              },
+              error
+            );
+            return;
+          }
           cursor = entry.id;
-          if (event.message.role === "assistant") reply = event.message;
+          if (event.message.role === "assistant") {
+            reply = event.message;
+            // Reported by what the provider says answered, not what was asked for: the two differ
+            // when a gateway routes a request, and the bill follows the provider.
+            await onUsage?.({
+              source: "turn",
+              providerId: event.message.provider,
+              modelId: event.message.model,
+              usage: event.message.usage,
+              entryId: entry.id,
+            });
+          }
         }
         for (const wireEvent of mapEvent(event)) onEvent(wireEvent);
       })
@@ -351,6 +390,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         }
       } catch (error) {
         failure = hostFailure ?? errorOfThrown(error);
+        failureCause ??= error;
       }
     }
     clearTimeout(deadline);
@@ -366,6 +406,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
         approvals = pending;
       } catch (error) {
         failure = errorOfThrown(error);
+        failureCause = error;
       }
     }
 
@@ -378,6 +419,7 @@ export const runPiTurn = async <TContext extends object, TApproval>({
             models,
             model: summariser,
             thinkingLevel: clampSessionThinkingLevel(summariser, settings),
+            onUsage,
           },
           compactionContextWindow(model, summariser)
         );
@@ -387,7 +429,16 @@ export const runPiTurn = async <TContext extends object, TApproval>({
       }
     }
 
-    if (failure) onEvent({ type: "error", ...failure });
+    if (failure) {
+      // The wire carries the kind alone; the detail — and what threw — stays in the log.
+      console.error("Agent turn failed", {
+        sessionId: agentSessionId,
+        kind: failure.kind,
+        message: failure.message,
+        cause: failureCause,
+      });
+      onEvent({ type: "error", kind: failure.kind });
+    }
 
     const status: AgentTurnExecution<TApproval>["status"] = failure
       ? "error"

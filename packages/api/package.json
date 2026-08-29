@@ -177,6 +177,10 @@
       "types": "./orpc/services/agent-admin.service.ts",
       "default": "./orpc/services/agent-admin.service.ts"
     },
+    "./orpc/services/agent-usage.service": {
+      "types": "./orpc/services/agent-usage.service.ts",
+      "default": "./orpc/services/agent-usage.service.ts"
+    },
     "./orpc/services/indexing.service": {
       "types": "./orpc/services/indexing.service.ts",
       "default": "./orpc/services/indexing.service.ts"

@@ -49,6 +49,25 @@ describe("agent kind access", () => {
     expect(res.status).toBe(403);
   });
 
+  it("admits a guest to the agent surface but not to the writing kind", async () => {
+    setCallerTier(CallerTier.Guest);
+
+    // A guest has a user to own sessions, so the floor lets them in: an empty list, not 401.
+    const list = await rpc("sessions/list");
+    expect(list.status).toBe(200);
+
+    const writing = await rpc("capabilities/list", { kind: "writing" });
+    expect(writing.status).toBe(403);
+  });
+
+  it("refuses the usage standing to a caller with no user to stand for", async () => {
+    setCallerTier(CallerTier.ApiKey);
+
+    const res = await rpc("usage/me");
+
+    expect(res.status).toBe(401);
+  });
+
   it("refuses an explicit kind the caller may not use when listing", async () => {
     setCallerTier(CallerTier.Session);
 

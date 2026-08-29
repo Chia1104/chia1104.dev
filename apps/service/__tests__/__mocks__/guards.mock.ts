@@ -34,6 +34,18 @@ const TEST_SESSION = {
     email: "test@example.com",
     name: "Test User",
     role: "root",
+    isAnonymous: false,
+  },
+};
+
+const GUEST_SESSION = {
+  session: { id: "test-guest-session-id" },
+  user: {
+    id: "test-guest-id",
+    email: "temp-guest@example.com",
+    name: "Anonymous",
+    role: "user",
+    isAnonymous: true,
   },
 };
 
@@ -72,7 +84,9 @@ export const orpcCallerGuard = vi.fn((options: { minTier?: CallerTier } = {}) =>
             session:
               callerTier >= CallerTier.Session
                 ? (TEST_SESSION as never)
-                : undefined,
+                : callerTier === CallerTier.Guest
+                  ? (GUEST_SESSION as never)
+                  : undefined,
             apiKey: callerTier === CallerTier.ApiKey ? FAKE_API_KEY : undefined,
           },
         },

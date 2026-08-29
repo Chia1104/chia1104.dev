@@ -15,6 +15,7 @@ import type {
   AgentSessionSettings,
   AgentTurnExecution,
   AgentTurnMessage,
+  AgentUsageListener,
 } from "@chia/agent-runtime/types";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type {
@@ -46,7 +47,7 @@ export interface AgentKindDefinition<TState, TConfig extends object> {
   readonly label: string;
   readonly description: string;
   /**
-   * Lowest {@link CallerTier} allowed to touch this kind at all. Never below `Session`: sessions
+   * Lowest {@link CallerTier} allowed to touch this kind at all. Never below `Guest`: sessions
    * are owned by a user, so an anonymous or API-key caller has no owner to be. Restated on the
    * registry entry, which the guards read before the definition is loaded.
    */
@@ -157,6 +158,8 @@ export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
   preAuthorizedToolNames: ReadonlySet<string>;
   onEvent: (event: AgentWireEvent) => void;
   flushEvents: () => Promise<void>;
+  /** Lands every provider call of the turn in the usage ledger; the kind hands it to `runPiTurn`. */
+  onUsage: AgentUsageListener;
   toApproval: (request: ApprovalRequest) => TApproval;
   persistApprovals: (approvals: readonly TApproval[]) => Promise<void>;
 }

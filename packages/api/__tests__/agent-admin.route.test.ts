@@ -40,7 +40,7 @@ const kind: AgentKindAdmin = {
   kind: "writing",
   label: "Writing",
   description: "Drafts posts.",
-  minTier: 3,
+  minTier: 4,
   defaults: {
     code: {
       providerId: "vercel-ai-gateway",
@@ -66,6 +66,8 @@ const service = {
   listTasks: vi.fn(),
   updateTask: vi.fn(),
   listTaskModels: vi.fn(),
+  getQuota: vi.fn(),
+  updateQuota: vi.fn(),
 } satisfies AgentAdminService;
 
 const admin = (extra?: Partial<BaseOSContext>) =>
@@ -122,8 +124,30 @@ describe("agent admin routes", () => {
         context: member(),
       })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(
+      call(routes.getAgentQuotaAdminRoute, undefined, { context: member() })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(
+      call(
+        routes.updateAgentQuotaAdminRoute,
+        { weeklyLimitUsd: 0 },
+        { context: member() }
+      )
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(service.listKinds).not.toHaveBeenCalled();
     expect(service.updateKind).not.toHaveBeenCalled();
+    expect(service.updateQuota).not.toHaveBeenCalled();
+  });
+
+  it("rejects a negative quota before the port sees it", async () => {
+    await expect(
+      call(
+        routes.updateAgentQuotaAdminRoute,
+        { weeklyLimitUsd: -1 },
+        { context: admin() }
+      )
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(service.updateQuota).not.toHaveBeenCalled();
   });
 
   it("answers SERVICE_UNAVAILABLE when the process has no admin port", async () => {

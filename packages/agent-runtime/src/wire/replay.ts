@@ -108,7 +108,10 @@ export const entriesToWireEvents = (
       // The live turn emits `error` beside a failed assistant message; replay must too, or the
       // notice vanishes on reload.
       if (message.stopReason === "error") {
-        events.push({ type: "error", ...errorOfAssistantMessage(message) });
+        events.push({
+          type: "error",
+          kind: errorOfAssistantMessage(message).kind,
+        });
       }
       // Pi never executes the calls of a message that ended in `error` or `aborted`, and the live
       // turn showed no card for them; replay matches, or a stop mid-generation grows cards on reload.

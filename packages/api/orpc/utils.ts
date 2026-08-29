@@ -7,6 +7,7 @@ import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import { routerContract } from "./router.contract";
 import type { AgentAdminService } from "./services/agent-admin.service";
+import type { AgentUsageService } from "./services/agent-usage.service";
 import type { AgentKindService } from "./services/agent.service";
 
 /**
@@ -68,6 +69,8 @@ export interface BaseOSContext extends ServiceContext {
   agentKinds?: Readonly<Record<string, AgentKindService>>;
   /** Operator configuration of kinds and tasks. Needs the host's registries. */
   agentAdmin?: AgentAdminService;
+  /** The caller's quota standing. The policy is the host's, next to its registries. */
+  agentUsage?: AgentUsageService;
 }
 
 export const baseOS = os.$context<BaseOSContext>();

@@ -24,4 +24,7 @@ export const agentAdminService: AgentAdminService = {
   listTasks: async (caller) => (await impl()).listTasks(caller),
   updateTask: async (caller, input) => (await impl()).updateTask(caller, input),
   listTaskModels: async () => (await impl()).listTaskModels(),
+  getQuota: async (caller) => (await impl()).getQuota(caller),
+  updateQuota: async (caller, input) =>
+    (await impl()).updateQuota(caller, input),
 };

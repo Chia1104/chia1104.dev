@@ -3,9 +3,15 @@ import { eq } from "drizzle-orm";
 import type { JsonObject } from "@chia/utils/json";
 
 import type { DB } from "../../client.ts";
-import { agentKindConfigs, agentTaskConfigs } from "../../schemas/schema.ts";
+import {
+  AGENT_QUOTA_CONFIG_ID,
+  agentKindConfigs,
+  agentQuotaConfigs,
+  agentTaskConfigs,
+} from "../../schemas/schema.ts";
 import type {
   AgentKindConfig,
+  AgentQuotaConfig,
   AgentTaskConfig,
   AgentTaskParams,
 } from "../../schemas/schema.ts";
@@ -103,6 +109,40 @@ export const deleteAgentTaskConfig = async (
   taskId: string
 ): Promise<void> => {
   await db.delete(agentTaskConfigs).where(eq(agentTaskConfigs.taskId, taskId));
+};
+
+// ============================================
+// Quota
+// ============================================
+
+export interface UpsertAgentQuotaConfigDTO {
+  weeklyLimitMicros?: number | null;
+  resetTimeZone?: string | null;
+  maxRunningTurns?: number | null;
+}
+
+export const getAgentQuotaConfig = async (
+  db: DB
+): Promise<AgentQuotaConfig | undefined> =>
+  await db.query.agentQuotaConfigs.findFirst({
+    where: { id: AGENT_QUOTA_CONFIG_ID },
+  });
+
+export const upsertAgentQuotaConfig = async (
+  db: DB,
+  patch: UpsertAgentQuotaConfigDTO
+): Promise<AgentQuotaConfig> => {
+  const set = definedEntries(patch);
+  const [row] = await db
+    .insert(agentQuotaConfigs)
+    .values({ id: AGENT_QUOTA_CONFIG_ID, ...set })
+    .onConflictDoUpdate({
+      target: agentQuotaConfigs.id,
+      set: Object.keys(set).length > 0 ? set : { id: AGENT_QUOTA_CONFIG_ID },
+    })
+    .returning();
+  if (!row) throw new Error("Quota config was not written.");
+  return row;
 };
 
 /** The keys the caller chose to write; `undefined` means "leave it", so it must not reach SQL. */

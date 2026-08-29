@@ -34,6 +34,9 @@ export const router = contractOS.router({
     capabilities: {
       list: agentRoutes.listAgentCapabilitiesRoute,
     },
+    usage: {
+      me: agentRoutes.getAgentUsageRoute,
+    },
     admin: {
       kinds: {
         list: agentAdminRoutes.listAgentKindsAdminRoute,
@@ -43,6 +46,10 @@ export const router = contractOS.router({
         list: agentAdminRoutes.listAgentTasksAdminRoute,
         update: agentAdminRoutes.updateAgentTaskAdminRoute,
         models: agentAdminRoutes.listAgentTaskModelsAdminRoute,
+      },
+      quota: {
+        get: agentAdminRoutes.getAgentQuotaAdminRoute,
+        update: agentAdminRoutes.updateAgentQuotaAdminRoute,
       },
     },
   },

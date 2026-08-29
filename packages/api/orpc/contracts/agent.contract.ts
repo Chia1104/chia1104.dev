@@ -17,6 +17,51 @@ import { withMetaSchema } from "./shared";
 // Shared shapes
 // ============================================
 
+/**
+ * Refuses a turn, decision or summary for a caller whose weekly quota is spent. Not an oRPC
+ * common code, so the status travels with the declaration; `resetAt` is when the week turns
+ * over, so a client can say when to come back rather than just that it cannot continue.
+ */
+export const agentQuotaExceededSchema = z.object({
+  limitMicros: z.number(),
+  usedMicros: z.number(),
+  resetAt: z.string(),
+  timeZone: z.string(),
+});
+
+export const quotaExceededError = {
+  QUOTA_EXCEEDED: { status: 402, data: agentQuotaExceededSchema },
+} as const;
+
+/** Refuses a new turn while the caller already has their cap of turns executing. */
+export const agentTurnCapSchema = z.object({
+  runningTurns: z.number().int(),
+  maxRunningTurns: z.number().int(),
+});
+
+export const turnCapError = {
+  TOO_MANY_REQUESTS: { data: agentTurnCapSchema },
+} as const;
+
+/**
+ * Where the caller stands against the usage quota: what a client shows as a meter before the
+ * wall, and what tells it when the wall moves. `exempt` is the operator, whose `limitMicros`
+ * and `maxRunningTurns` are `null`; spend and running turns are still reported for them.
+ */
+export const agentUsageStandingSchema = z.object({
+  exempt: z.boolean(),
+  /** Micro-dollars of house spend allowed per period; `null` when exempt. */
+  limitMicros: z.number().nullable(),
+  usedMicros: z.number(),
+  /** ISO instants; `end` is when the allowance is whole again. */
+  period: z.object({ start: z.string(), end: z.string() }),
+  timeZone: z.string(),
+  runningTurns: z.number().int(),
+  maxRunningTurns: z.number().int().nullable(),
+});
+
+export type AgentUsageStanding = z.infer<typeof agentUsageStandingSchema>;
+
 export const thinkingLevelSchema = z.enum([
   "off",
   "minimal",
@@ -144,6 +189,15 @@ export const agentSessionDetailSchema = z.object({
 });
 
 // ============================================
+// Usage
+// ============================================
+
+/** The caller's own standing. Any session-bearing tier, guests included; nothing kind-specific. */
+export const getAgentUsageContract = oc
+  .errors({ UNAUTHORIZED: {}, SERVICE_UNAVAILABLE: {} })
+  .output(agentUsageStandingSchema);
+
+// ============================================
 // Sessions
 // ============================================
 
@@ -236,6 +290,8 @@ export const chatAgentContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     BAD_REQUEST: {},
+    ...quotaExceededError,
+    ...turnCapError,
   })
   .input(
     z.object({
@@ -281,7 +337,13 @@ export const abortAgentContract = oc
   .output(z.object({ aborted: z.boolean() }));
 
 export const approveAgentToolContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    ...quotaExceededError,
+    ...turnCapError,
+  })
   .input(
     z.object({
       /** Agent kind. Optional while only one is registered. */
@@ -304,7 +366,13 @@ export const approveAgentToolContract = oc
 // ============================================
 
 export const compactAgentSessionContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    CONFLICT: {},
+    ...quotaExceededError,
+  })
   .input(
     z.object({
       /** Agent kind. Optional while only one is registered. */
@@ -330,7 +398,13 @@ export const compactAgentSessionContract = oc
  * is no longer there.
  */
 export const navigateAgentSessionContract = oc
-  .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
+  .errors({
+    UNAUTHORIZED: {},
+    FORBIDDEN: {},
+    NOT_FOUND: {},
+    CONFLICT: {},
+    ...quotaExceededError,
+  })
   .input(
     z.object({
       /** Agent kind. Optional while only one is registered. */

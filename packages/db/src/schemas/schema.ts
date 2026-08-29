@@ -102,7 +102,10 @@ export {
   agentMemories,
   agentKindConfigs,
   agentTaskConfigs,
+  agentQuotaConfigs,
+  agentUsageLedger,
   AGENT_MEMORY_KIND,
+  AGENT_QUOTA_CONFIG_ID,
   AGENT_MEMORY_STATUS,
   type AgentMemory,
   type AgentMemoryKind,
@@ -118,6 +121,9 @@ export {
   type AgentKindConfig,
   type AgentTaskConfig,
   type AgentTaskParams,
+  type AgentQuotaConfig,
+  type AgentUsageLedgerRow,
+  type AgentUsageSource,
 } from "./agent.schema.ts";
 
 // Relations
@@ -147,4 +153,5 @@ export {
   writingAgentDraftsRelations,
   agentToolApprovalsRelations,
   agentMemoriesRelations,
+  agentUsageLedgerRelations,
 } from "./relations.ts";

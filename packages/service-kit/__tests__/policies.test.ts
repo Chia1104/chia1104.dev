@@ -5,9 +5,9 @@ import { captchaPolicy } from "../src/policies/captcha.policy";
 import { rateLimitPolicy } from "../src/policies/rate-limit.policy";
 import { sessionPolicy } from "../src/policies/session.policy";
 
-const session = (role: string) => ({
+const session = (role: string, isAnonymous = false) => ({
   session: { id: "s1", userId: "u1" },
-  user: { id: "u1", role },
+  user: { id: "u1", role, isAnonymous },
 });
 
 const makeContext = (overrides: Partial<ServiceContext> = {}): ServiceContext =>
@@ -18,6 +18,13 @@ const makeContext = (overrides: Partial<ServiceContext> = {}): ServiceContext =>
     kv: undefined,
     ...overrides,
   }) as ServiceContext;
+
+/** A context carrying a resolved session, cast once so each case reads as the fixture it is. */
+const withSession = (value: ReturnType<typeof session>): ServiceContext =>
+  makeContext({
+    session:
+      /* SAFETY: This fixture implements the Session members the policies read. */ value as never,
+  });
 
 /** Minimal in-memory Keyv stand-in — only `get`/`set` are exercised. */
 const makeKv = () => {
@@ -56,6 +63,17 @@ describe("sessionPolicy", () => {
 
     expect(getSession).not.toHaveBeenCalled();
     expect(result.ok).toBe(true);
+  });
+
+  it("treats a guest as not signed in unless the caller admits guests", async () => {
+    const context = withSession(session("user", true));
+
+    const refused = await sessionPolicy()(context);
+    expect(refused.ok).toBe(false);
+    expect(!refused.ok && refused.error.code).toBe("UNAUTHORIZED");
+
+    const admitted = await sessionPolicy({ allowAnonymous: true })(context);
+    expect(admitted.ok).toBe(true);
   });
 
   it("denies with FORBIDDEN when rootOnly is set and the role is not root", async () => {
@@ -187,5 +205,54 @@ describe("captchaPolicy", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.issues?.[0]?.message).toBe("CAPTCHA_FAILED");
+  });
+});
+
+describe("callerPolicy", () => {
+  const ADMIN_ID = "admin-1";
+
+  beforeAll(() => {
+    vi.stubEnv("SKIP_ENV_VALIDATION", "true");
+    vi.stubEnv("ENV", "test");
+    vi.stubEnv("LOCAL_ADMIN_ID", ADMIN_ID);
+  });
+
+  afterAll(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("grades a guest session as Guest — above anonymous, below an API key", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const result = await callerPolicy()(withSession(session("user", true)));
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.patch?.caller.tier).toBe(CallerTier.Guest);
+    expect(CallerTier.Guest).toBeGreaterThan(CallerTier.Anonymous);
+    expect(CallerTier.Guest).toBeLessThan(CallerTier.ApiKey);
+  });
+
+  it("grades a signed-in person as Session and the configured admin as Root", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const person = await callerPolicy()(withSession(session("user")));
+    expect(person.ok && person.patch?.caller.tier).toBe(CallerTier.Session);
+
+    const admin = await callerPolicy()(
+      withSession({
+        session: { id: "s2", userId: ADMIN_ID },
+        user: { id: ADMIN_ID, role: "root", isAnonymous: false },
+      })
+    );
+    expect(admin.ok && admin.patch?.caller.tier).toBe(CallerTier.Root);
+  });
+
+  it("refuses a guest below a required Session tier as FORBIDDEN, not UNAUTHORIZED", async () => {
+    const { callerPolicy, CallerTier } =
+      await import("../src/policies/caller.policy");
+    const result = await callerPolicy({ minTier: CallerTier.Session })(
+      withSession(session("user", true))
+    );
+    expect(!result.ok && result.error.code).toBe("FORBIDDEN");
   });
 });
