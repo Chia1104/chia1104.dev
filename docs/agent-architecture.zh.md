@@ -168,7 +168,7 @@ tier 共用一份每週的 **house** 花費額度：`sumAgentUsageCost` 取這�
 provider，所以 BYOK 的 call 會被記錄但算使用者自己的帳。`@chia/agent-host/quota` 擁有它：
 `AGENT_QUOTA_DEFAULTS` 是每週 $0.30、以 server 自己的時區計；operator 的 `agent.quota_config`
 row 從 dashboard 覆寫任一項（`agent.admin.quota.*`，§13）；`weekPeriod` 是該時區的週一 00:00
-到下週一 00:00，用 `Intl` 算，所以碰上 DST 的那週是 167 或 169 小時而不是算錯一天；
+到下週一 00:00，以該時區的日曆邊界計算，所以碰上 DST 的那週是 167 或 169 小時而不是算錯一天；
 `assertWithinAgentQuota` 在這週的花費達到上限時丟 `QUOTA_EXCEEDED`（402，
 `{ limitMicros, usedMicros, resetAt, timeZone }`）。
 

@@ -189,7 +189,7 @@ pays the bill — is never limited; every other tier draws on one shared weekly 
 BYOK call is recorded but is the user's own bill. `@chia/agent-host/quota` owns it:
 `AGENT_QUOTA_DEFAULTS` is $0.30 a week in the server's own zone; the operator's
 `agent.quota_config` row overrides either from the dashboard (`agent.admin.quota.*`, §13);
-`weekPeriod` is Monday 00:00 to Monday 00:00 in that zone, computed from `Intl` so a DST week
+`weekPeriod` is Monday 00:00 to Monday 00:00 in that zone, using zoned calendar boundaries so a DST week
 is 167 or 169 hours rather than a wrong day; and `assertWithinAgentQuota` throws
 `QUOTA_EXCEEDED` (402, `{ limitMicros, usedMicros, resetAt, timeZone }`) once the week's spend
 has reached the limit.

@@ -6,6 +6,7 @@ import { sumAgentUsageCost } from "@chia/db/repos/agent/usage";
 import type { AgentQuotaConfig } from "@chia/db/schema";
 import { AppError } from "@chia/service-kit/errors";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import dayjs from "@chia/utils/day";
 
 import { AGENT_TURN_KEY } from "./execution";
 import { costToMicros, microsToUsd } from "./usage";
@@ -94,97 +95,15 @@ export interface UsagePeriod {
   end: Date;
 }
 
-interface WallClock {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-  second: number;
-  /** 0 = Sunday, as `Date#getDay`. */
-  weekday: number;
-}
-
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-/** The wall clock at `instant` in `timeZone`. */
-const wallClockOf = (instant: Date, timeZone: string): WallClock => {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    weekday: "short",
-  }).formatToParts(instant);
-  const value = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((part) => part.type === type)?.value ?? "";
-  return {
-    year: Number(value("year")),
-    month: Number(value("month")),
-    day: Number(value("day")),
-    hour: Number(value("hour")),
-    minute: Number(value("minute")),
-    second: Number(value("second")),
-    weekday: WEEKDAYS.indexOf(value("weekday")),
-  };
-};
-
-const asUtc = (clock: Omit<WallClock, "weekday">): number =>
-  Date.UTC(
-    clock.year,
-    clock.month - 1,
-    clock.day,
-    clock.hour,
-    clock.minute,
-    clock.second
-  );
-
-/**
- * The instant at which `timeZone` reads midnight on the given calendar day.
- *
- * Starts from that wall clock read as UTC and corrects by the offset observed there; a second
- * pass settles a guess that landed across a DST transition. A midnight that does not exist
- * (spring forward at 00:00) resolves to the instant the clock reaches on the far side.
- */
-const midnightAt = (
-  date: Pick<WallClock, "year" | "month" | "day">,
-  timeZone: string
-): Date => {
-  const wanted = asUtc({ ...date, hour: 0, minute: 0, second: 0 });
-  let guess = wanted;
-  for (let pass = 0; pass < 2; pass += 1) {
-    guess += wanted - asUtc(wallClockOf(new Date(guess), timeZone));
-  }
-  return new Date(guess);
-};
-
-/** `days` after a calendar day, in calendar terms. */
-const shiftDay = (
-  date: Pick<WallClock, "year" | "month" | "day">,
-  days: number
-): Pick<WallClock, "year" | "month" | "day"> => {
-  const shifted = new Date(
-    Date.UTC(date.year, date.month - 1, date.day + days)
-  );
-  return {
-    year: shifted.getUTCFullYear(),
-    month: shifted.getUTCMonth() + 1,
-    day: shifted.getUTCDate(),
-  };
-};
-
 /** The week `now` falls in: Monday 00:00 in `timeZone` to the next. */
 export const weekPeriod = (now: Date, timeZone: string): UsagePeriod => {
-  const clock = wallClockOf(now, timeZone);
-  const sinceMonday = (clock.weekday + 6) % 7;
-  const monday = shiftDay(clock, -sinceMonday);
+  const start = dayjs(now).tz(timeZone).startOf("isoWeek");
+  // Calendar addition keeps the old offset; reapplying the zone preserves local midnight
+  // while picking up the offset on the far side of a DST transition.
+  const end = start.add(1, "week").tz(timeZone, true);
   return {
-    start: midnightAt(monday, timeZone),
-    end: midnightAt(shiftDay(monday, 7), timeZone),
+    start: start.toDate(),
+    end: end.toDate(),
   };
 };
 
