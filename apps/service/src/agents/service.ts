@@ -81,6 +81,12 @@ import {
   decryptAgentCredentials,
   readEncryptedAgentCredentials,
 } from "../services/agent-credentials.service";
+import {
+  isRunLease,
+  isRunLive,
+  reconcileRunningAgentTurns,
+  runStateOf,
+} from "../services/agent-run-liveness.service";
 
 /**
  * The `AgentKindService` for one registered kind.
@@ -282,64 +288,6 @@ export const createAgentKindService = <TState, TConfig extends object>(
    * `stream` without it winning again.
    */
   const NEVER = new Promise<never>(() => undefined);
-
-  /** Run states in which the session's workflow run can still accept a message. */
-  const isRunLive = async (runId: string): Promise<boolean> => {
-    try {
-      const run = getRun(runId);
-      if (!(await run.exists)) return false;
-      const status = await run.status;
-      return status === "pending" || status === "running";
-    } catch {
-      // A run from a previous deployment may no longer resolve; treat it as gone.
-      return false;
-    }
-  };
-
-  /** The active `agent.run` row as every state question reads it. */
-  interface RunRef {
-    activeRunId: string | null;
-    workflowRunId: string | null;
-    startedAt: Date | null;
-    turn: AgentTurnMarker | undefined;
-  }
-
-  /**
-   * A run row `prompt` wrote ahead of the workflow it is about to start: its `externalRunId` is
-   * still its own id. It is the session's turn lease until the started run is bound to it.
-   */
-  const isRunLease = (row: RunRef): boolean =>
-    row.activeRunId !== null && row.workflowRunId === row.activeRunId;
-
-  /**
-   * How long an unbound lease counts as running. `prompt` binds within milliseconds or marks the
-   * row failed; only a process that died in between leaves a lease this old, and the next prompt
-   * replaces it.
-   */
-  const RUN_LEASE_TTL_MS = 60_000;
-
-  /**
-   * What the durable run is doing right now. `running` is a turn step executing; `waiting` is the
-   * run parked on its message or approval hook; `null` means no live run. The SDK's own status
-   * cannot tell the first two apart — a parked run is `running` too — so the turn marker the step
-   * maintains decides.
-   */
-  const runStateOf = async (
-    row: RunRef
-  ): Promise<{ id: string; status: "running" | "waiting" } | null> => {
-    if (!row.workflowRunId) return null;
-    if (isRunLease(row)) {
-      const age = Date.now() - (row.startedAt?.getTime() ?? 0);
-      return age < RUN_LEASE_TTL_MS
-        ? { id: row.workflowRunId, status: "running" }
-        : null;
-    }
-    if (!(await isRunLive(row.workflowRunId))) return null;
-    return {
-      id: row.workflowRunId,
-      status: row.turn?.running ? "running" : "waiting",
-    };
-  };
 
   /**
    * Marks the run's next turn as running before the workflow is woken to run it, so maintenance
@@ -734,8 +682,10 @@ export const createAgentKindService = <TState, TConfig extends object>(
 
         // Before anything is queued: a turn accepted here is one the house pays for. Checked under
         // the lock so two prompts on one session cannot both pass on the same reading; the cap takes
-        // the user's lock too, against two prompts on two sessions.
+        // the user's lock too, against two prompts on two sessions. Dead runs are closed first, so a
+        // step the process died under cannot hold a slot of the cap.
         await assertWithinAgentQuota(db, caller);
+        await reconcileRunningAgentTurns(db, caller.userId);
         await assertBelowRunningTurnCap(db, caller);
 
         const message = {
@@ -969,6 +919,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
         // The decision starts a relay turn the model answers, so it is metered and capped like a
         // prompt; refused before it is persisted, so the approval stays pending until it may run.
         await assertWithinAgentQuota(db, caller);
+        await reconcileRunningAgentTurns(db, caller.userId);
         await assertBelowRunningTurnCap(db, caller);
 
         // Persist first: the decision must outlive the run, and the permission gate reads it back from

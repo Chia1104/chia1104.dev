@@ -186,6 +186,13 @@ lock 之下（`lockAgentUser`，永遠在 session lock 之後、同一個 transa
 上的兩個 prompt 不會用同一次讀數都通過。排在該 session 執行中 turn 後面的訊息不增加執行中
 的 turn。
 
+Marker 本身不是真相：process 在 step 底下死掉不會清掉它。所以每個讀取端都會問 World 那個 run
+是否還活著（`apps/service/src/services/agent-run-liveness.service.ts` 的 `runStateOf`），而在
+數上限之前——以及 `usage.me` 回報之前——`reconcileRunningAgentTurns` 會把這個使用者 marker
+還在、run 卻已經不在的 row 收掉（標 `failed`、釋放 controller）。Workflow 自己也在 `finally`
+裡收 row（`completeAgentRunStep`，step 丟錯就標 `failed`），所以 stale row 只可能是 World 還沒
+放棄的那種。
+
 ### Session title
 
 `agent.session.title` 是 operator 辨識 session 用的名稱：尚未命名時為 `null`，之後不是 operator

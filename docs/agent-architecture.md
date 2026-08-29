@@ -209,6 +209,14 @@ is taken under the user's own advisory lock (`lockAgentUser`, always after the s
 on the same transaction), so two prompts on two sessions cannot both pass on the same reading.
 A message queued behind a turn already running on its session adds no running turn.
 
+The marker alone is not truth: a process that dies under a step never clears it. Every reader
+therefore asks the World whether the run is alive (`runStateOf` in
+`apps/service/src/services/agent-run-liveness.service.ts`), and before the cap is counted —
+and before `usage.me` reports — `reconcileRunningAgentTurns` closes the user's marked rows
+whose run is gone (`failed`, controller released). The workflow itself closes its row in a
+`finally` (`completeAgentRunStep` with `failed` when a step threw), so a stale row can only
+be one the World has not yet given up on.
+
 ### Session title
 
 `agent.session.title` is the operator's handle for a session: `null` until named, then either

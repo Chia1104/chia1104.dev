@@ -303,10 +303,20 @@ export const lockAgentUser = async (tx: DB, userId: string): Promise<void> => {
   );
 };
 
+/** Active runs of the user's sessions whose turn marker (`metadata[turnKey].running`) is set. */
+const runningTurnsOf = (options: { userId: string; turnKey: string }) =>
+  and(
+    eq(agentSessions.userId, options.userId),
+    eq(agentRuns.status, "active"),
+    sql`${agentRuns.metadata} -> ${options.turnKey} ->> 'running' = 'true'`
+  );
+
 /**
- * Turns executing right now across every session the user owns: active runs whose turn marker
- * (`metadata[turnKey].running`, written by the host) is set. A run parked on its message hook
- * is active but not running, and does not count.
+ * Turns executing right now across every session the user owns, as the rows say. A run parked
+ * on its message hook is active but not running, and does not count. The marker is written by
+ * the host and cleared by the step; a step the process died under leaves it set, so a reader
+ * that must not over-count reconciles the rows against the World first
+ * (`reconcileRunningAgentTurns` in `apps/service`).
  */
 export const countRunningAgentTurns = async (
   db: DB,
@@ -316,15 +326,21 @@ export const countRunningAgentTurns = async (
     .select({ running: count() })
     .from(agentRuns)
     .innerJoin(agentSessions, eq(agentSessions.id, agentRuns.sessionId))
-    .where(
-      and(
-        eq(agentSessions.userId, options.userId),
-        eq(agentRuns.status, "active"),
-        sql`${agentRuns.metadata} -> ${options.turnKey} ->> 'running' = 'true'`
-      )
-    );
+    .where(runningTurnsOf(options));
   return row?.running ?? 0;
 };
+
+/** The rows `countRunningAgentTurns` counts, for a reader that checks each against the World. */
+export const listRunningAgentRuns = async (
+  db: DB,
+  options: { userId: string; turnKey: string }
+) =>
+  await db
+    .select({ run: agentRuns })
+    .from(agentRuns)
+    .innerJoin(agentSessions, eq(agentSessions.id, agentRuns.sessionId))
+    .where(runningTurnsOf(options))
+    .then((rows) => rows.map((row) => row.run));
 
 export const completeAgentRun = async (
   db: DB,

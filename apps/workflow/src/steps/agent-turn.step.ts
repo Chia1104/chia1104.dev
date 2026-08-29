@@ -446,17 +446,18 @@ export const closeAgentStreamsStep = async (): Promise<void> => {
 };
 
 /**
- * Marks the durable run inactive once its orchestration loop ends, and closes its abort controller
- * so it does not sit parked until its TTL.
+ * Marks the durable run inactive once its orchestration loop ends — `failed` when a step threw
+ * out of it — and closes its abort controller so it does not sit parked until its TTL.
  */
 export const completeAgentRunStep = async (
   runId: string,
-  abortController: AgentAbortControllerRef
+  abortController: AgentAbortControllerRef,
+  status: "completed" | "failed"
 ): Promise<void> => {
   "use step";
 
   const db = await connectDatabase(undefined, { withCache: false });
   // This run's row only: a run cancelled and replaced must not close its successor.
-  await completeAgentRun(db, runId, "completed");
+  await completeAgentRun(db, runId, status);
   await signalAgentAbort(abortController.id, "run finished");
 };

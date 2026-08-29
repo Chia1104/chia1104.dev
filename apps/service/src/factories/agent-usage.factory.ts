@@ -6,9 +6,14 @@ import type { AgentUsageService } from "@chia/api/orpc/services/agent-usage.serv
  * this module sits on the boot path of every process that hosts the router.
  */
 export const agentUsageService: AgentUsageService = {
-  standing: async (caller) =>
-    (await import("@chia/agent-host/quota")).readAgentUsageStanding(
-      caller.context.db,
-      caller
-    ),
+  async standing(caller) {
+    const [{ readAgentUsageStanding }, { reconcileRunningAgentTurns }] =
+      await Promise.all([
+        import("@chia/agent-host/quota"),
+        import("../services/agent-run-liveness.service"),
+      ]);
+    // What the client shows as running must be what is running, not what a dead step left.
+    await reconcileRunningAgentTurns(caller.context.db, caller.userId);
+    return readAgentUsageStanding(caller.context.db, caller);
+  },
 };
