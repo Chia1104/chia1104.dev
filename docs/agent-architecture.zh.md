@@ -421,6 +421,10 @@ session:compacted · session:rewound · state:changed · error · run:end
 - `entriesToWireEvents`：persisted Pi entries → replay history。`stopReason: "error"` 的持久化
   assistant message 會 replay 成與 live turn 相同的 `error` event；`branch_summary` entry 會
   replay 成 `session:rewound`，所以帶摘要的 rewind 會留在它發生的位置。
+- Transcript 是 leaf 的完整祖先鏈（`walkTranscript`），穿過每一次 compaction：compaction 濃縮的
+  是送給模型的東西，不是說過的話，所以它背後的訊息留在畫面上，`session:compacted` 的提示落在
+  它發生的位置。只有模型的 context——`buildBranchContext`、`stats.contextTokens`、
+  `stats.compactable`——讀 branch（`walkBranch`），在最近一次 compaction 停下。
 - Tool call 只在 `tool:start` 與 `tool:end` 之間是 `running`，而兩邊都保證 end 一定會到。Pi 把
   call 的結果緊接在發出它的 assistant message 之後持久化，所以 replay 遇到結果不是 branch 上下一
   筆的 call——turn 在執行中被中止、process 死掉、fork 切在 assistant message 上——就以

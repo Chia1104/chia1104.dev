@@ -27,12 +27,16 @@ import {
   compactPiSession,
   navigatePiSession,
 } from "@chia/agent-runtime/pi/maintenance";
-import { entriesUpToSeq } from "@chia/agent-runtime/session/entries";
+import {
+  computeSessionStats,
+  entriesUpToSeq,
+} from "@chia/agent-runtime/session/entries";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import {
   PgSessionRepo,
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
+import { walkBranch, walkTranscript } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
 import type {
@@ -468,9 +472,18 @@ export const createAgentKindService = <TState, TConfig extends object>(
 
     // One query at a time: under the session lock `db` is a transaction on a single connection,
     // and pg queues — and deprecates — a second query issued on a client that is busy.
-    const branch = await session.getBranch();
+    const entries = await session.getEntries();
+    const leafId = await session.getLeafId();
+    /**
+     * Two walks of one load. The branch stops at the newest compaction and is what the model's
+     * next request carries — the context estimate and `compactable` read it. The transcript
+     * runs through every compaction: what was said stays on screen, with the compaction shown
+     * where it happened, because it condensed the model's context, not the conversation.
+     */
+    const branch = walkBranch(entries, leafId);
+    const transcript = walkTranscript(entries, leafId);
+    const stats = computeSessionStats(entries);
     const kindDetail = await definition.state.detail(db, sessionId, row.state);
-    const stats = await session.getSessionStats();
     const approvals = await getAgentApprovals(db, sessionId);
     /**
      * Read after the branch, on purpose: the cut below and the entries it cuts must come from the same
@@ -494,6 +507,10 @@ export const createAgentKindService = <TState, TConfig extends object>(
      * instead, and both cut at the same recorded marker so the client sees each message once.
      */
     const transcriptEntries =
+      run?.status === "running" && turn
+        ? entriesBeforeTurn(transcript, turn)
+        : transcript;
+    const contextEntries =
       run?.status === "running" && turn
         ? entriesBeforeTurn(branch, turn)
         : branch;
@@ -520,8 +537,8 @@ export const createAgentKindService = <TState, TConfig extends object>(
       approvals: approvalRows,
       stats: {
         messageCount: stats.messageCount,
-        contextTokens: estimateBranchContextTokens(transcriptEntries),
-        compactable: canCompactBranch(transcriptEntries),
+        contextTokens: estimateBranchContextTokens(contextEntries),
+        compactable: canCompactBranch(contextEntries),
         totalTokens: stats.totalTokens,
         costTotal: stats.costTotal,
       },

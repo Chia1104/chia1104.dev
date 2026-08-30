@@ -480,6 +480,11 @@ session:compacted · session:rewound · state:changed · error · run:end
   message with `stopReason: "error"` replays as the same `error` event the live turn emitted;
   a `branch_summary` entry replays as `session:rewound`, so a rewind that kept a summary stays
   visible where it happened.
+- The transcript is the leaf's whole ancestry (`walkTranscript`), through every compaction: a
+  compaction condensed what the model is sent, not what was said, so the messages behind it
+  stay on screen and the `session:compacted` notice sits where it happened. Only the model's
+  context — `buildBranchContext`, `stats.contextTokens`, `stats.compactable` — reads the
+  branch (`walkBranch`), which stops at the newest compaction.
 - A tool call is only ever `running` between its `tool:start` and `tool:end`, and both sides
   guarantee the end arrives. Pi persists a call's result right after the assistant message that
   issued it, so replay closes any call whose result is not the next thing on the branch — a turn
