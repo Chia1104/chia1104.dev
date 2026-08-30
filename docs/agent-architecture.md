@@ -606,6 +606,15 @@ session detail, not just events, because
 changing the active branch invalidates every view the client held and the client folds a
 detail the same way it folds `get`.
 
+Both carry one model call — the summary — inside the request, so the RPC route exempts them
+from the shared request timeout (`rpc.route.ts`, as it does the chat stream) and the service
+bounds them itself: `MAINTENANCE_DEADLINE_MS` goes to Pi as the summary's signal, and when it
+fires the summary is cancelled, nothing is appended, the transaction rolls back and the caller
+gets `TIMEOUT`. The shared timeout would only have dropped the response with a 504 while the
+work, and the session lock, ran on. Everything under the lock also queries one at a time: the
+transaction is a single connection, and pg queues — and deprecates — a second query on a busy
+client.
+
 Kind state is not versioned against the transcript. A rewind leaves the writing draft as the
 abandoned branch last left it, and a fork copies the draft as it stands now, not as it was at
 the target; the dialogs say so, and the seam for a per-entry snapshot is `AgentKindState`.

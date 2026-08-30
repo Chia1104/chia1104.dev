@@ -224,6 +224,19 @@ export const createAgentKindService = <TState, TConfig extends object>(
     );
 
   /**
+   * A maintenance operation carries one model call — the summary — inside the request, under
+   * the session lock and its transaction. The RPC route exempts it from the shared request
+   * timeout (a 504 there only drops the response while the work and the lock run on), so this
+   * deadline is what bounds the lock: the summary is cancelled, nothing is appended, and the
+   * transaction rolls back with the error.
+   */
+  const MAINTENANCE_DEADLINE_MS = 120_000;
+  const maintenanceTimedOut = (action: string) =>
+    new AppError("TIMEOUT", {
+      message: `Could not ${action} within ${MAINTENANCE_DEADLINE_MS / 1000}s. The conversation is unchanged.`,
+    });
+
+  /**
    * Maintenance operations over the session tree.
    *
    * These only walk the tree, so no tools, ports, approval gate or event subscriptions are
@@ -233,8 +246,15 @@ export const createAgentKindService = <TState, TConfig extends object>(
    * cookie is read and decrypted directly rather than travelling through the workflow); pinned
    * by the operator, a house model that needs no key at all. The session model is resolved
    * only when the task follows it.
+   *
+   * `signal` bounds the one model call — the summary — and nothing else: when it fires the
+   * summary is cancelled and the tree is untouched.
    */
-  const maintenanceFor = async (caller: AgentServiceCaller, row: OwnedRow) => {
+  const maintenanceFor = async (
+    caller: AgentServiceCaller,
+    row: OwnedRow,
+    signal: AbortSignal
+  ) => {
     const db = caller.context.db;
     const session = await repoFor(db).openById(row.id);
     const settings = settingsOf(row);
@@ -259,6 +279,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
         settings,
         model: task.model,
         models: task.models,
+        signal,
         onUsage,
       };
     };
@@ -445,12 +466,12 @@ export const createAgentKindService = <TState, TConfig extends object>(
     const db = caller.context.db;
     const session = await repoFor(db).openById(sessionId);
 
-    const [branch, kindDetail, stats, approvals] = await Promise.all([
-      session.getBranch(),
-      definition.state.detail(db, sessionId, row.state),
-      session.getSessionStats(),
-      getAgentApprovals(db, sessionId),
-    ]);
+    // One query at a time: under the session lock `db` is a transaction on a single connection,
+    // and pg queues — and deprecates — a second query issued on a client that is busy.
+    const branch = await session.getBranch();
+    const kindDetail = await definition.state.detail(db, sessionId, row.state);
+    const stats = await session.getSessionStats();
+    const approvals = await getAgentApprovals(db, sessionId);
     /**
      * Read after the branch, on purpose: the cut below and the entries it cuts must come from the same
      * observation. A turn that finished between the two reads has already persisted its reply; a
@@ -963,8 +984,15 @@ export const createAgentKindService = <TState, TConfig extends object>(
         await assertMaintainable(row, tx, "compact");
         await assertWithinAgentQuota(tx, caller);
 
-        const maintenance = await maintenanceFor(caller, row);
-        const compacted = await maintenance.compact(input.customInstructions);
+        const deadline = AbortSignal.timeout(MAINTENANCE_DEADLINE_MS);
+        const maintenance = await maintenanceFor(caller, row, deadline);
+        let compacted: Awaited<ReturnType<typeof maintenance.compact>>;
+        try {
+          compacted = await maintenance.compact(input.customInstructions);
+        } catch (error) {
+          if (deadline.aborted) throw maintenanceTimedOut("compact");
+          throw error;
+        }
         if (!compacted) {
           throw new AppError("CONFLICT", {
             message:
@@ -983,13 +1011,14 @@ export const createAgentKindService = <TState, TConfig extends object>(
         // Only a summary calls the model; moving the leaf is free.
         if (input.summarize) await assertWithinAgentQuota(tx, caller);
 
-        const maintenance = await maintenanceFor(caller, row);
+        const deadline = AbortSignal.timeout(MAINTENANCE_DEADLINE_MS);
+        const maintenance = await maintenanceFor(caller, row, deadline);
         await requireEntry(maintenance.session, input.entryId);
-        // No signal is passed, so the summary cannot be cancelled and the result is never `cancelled`.
-        await maintenance.navigate(input.entryId, {
+        const result = await maintenance.navigate(input.entryId, {
           summarize: input.summarize,
           label: input.label,
         });
+        if (result.cancelled) throw maintenanceTimedOut("rewind");
         return detailFor(caller, input.sessionId);
       }),
 

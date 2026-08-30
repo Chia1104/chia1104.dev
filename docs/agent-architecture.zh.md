@@ -528,6 +528,13 @@ events，因為
 active branch 改變後 client 手上的 view 全部失效，而 client fold 一份 detail 的方式跟 fold `get`
 一模一樣。
 
+兩者都在 request 裡帶著一次模型呼叫（summary），所以 RPC route 把它們跟 chat stream 一樣排除在
+共用的 request timeout 之外（`rpc.route.ts`），改由 service 自己設限：`MAINTENANCE_DEADLINE_MS`
+以 signal 交給 Pi 的 summary，時限一到 summary 被取消、什麼都不 append、transaction 回滾、caller
+拿到 `TIMEOUT`。共用的 timeout 只會在工作與 session lock 照跑的情況下把回應換成 504。鎖裡的
+查詢也一次一個：transaction 是單一連線，pg 對忙碌中的 client 再下一筆 query 會排隊——而且已列為
+deprecated。
+
 Kind state 沒有隨 transcript 版本化：rewind 之後 writing draft 停在被丟下的 branch 最後的狀態，
 fork 複製的是「現在」的 draft 而不是目標當時的；dialog 會講清楚，per-entry snapshot 的 seam 在
 `AgentKindState`。

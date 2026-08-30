@@ -287,6 +287,25 @@ describe("compactPiSession", () => {
     ).resolves.toBeNull();
   });
 
+  it("persists nothing when cancelled while the summary is generating", async () => {
+    const { faux, session, options } = await build();
+    await growPastRetainedTail(session);
+    const controller = new AbortController();
+    faux.setResponses([
+      () => {
+        controller.abort();
+        return fauxAssistantMessage("Too late.");
+      },
+    ]);
+
+    await expect(
+      compactPiSession({ ...options, signal: controller.signal })
+    ).rejects.toMatchObject({ code: "aborted" });
+
+    await expect(session.getLeafId()).resolves.toBe("a3");
+    expect(await session.getEntries()).toHaveLength(6);
+  });
+
   it("answers null without calling the model when the branch fits in the retained tail", async () => {
     const { faux, session, options } = await build();
     faux.setResponses([fauxAssistantMessage("Never asked for.")]);

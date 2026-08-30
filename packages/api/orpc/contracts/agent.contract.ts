@@ -375,7 +375,8 @@ export const approveAgentToolContract = oc
  * the whole detail rebuilt, as `navigate` does: the leaf, the context estimate and the transcript
  * (which now carries a `session:compacted` notice) all changed. `CONFLICT` while a turn is
  * running, while an approval is undecided, or when there is nothing to condense
- * (`stats.compactable` is `false`).
+ * (`stats.compactable` is `false`). `TIMEOUT` when the summary outran the service's own
+ * deadline — the conversation is then unchanged.
  */
 export const compactAgentSessionContract = oc
   .errors({
@@ -383,6 +384,7 @@ export const compactAgentSessionContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     CONFLICT: {},
+    TIMEOUT: {},
     ...quotaExceededError,
   })
   .input(
@@ -402,7 +404,8 @@ export const compactAgentSessionContract = oc
  * detail rebuilt: changing the active branch invalidates every view the client held, and the
  * client folds a detail the same way it folds `get`. `CONFLICT` while a turn is running or an
  * approval is undecided — a decision relayed onto a different branch would answer a call that
- * is no longer there.
+ * is no longer there. `TIMEOUT` when a requested summary outran the service's own deadline —
+ * the leaf has not moved.
  */
 export const navigateAgentSessionContract = oc
   .errors({
@@ -410,6 +413,7 @@ export const navigateAgentSessionContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     CONFLICT: {},
+    TIMEOUT: {},
     ...quotaExceededError,
   })
   .input(
