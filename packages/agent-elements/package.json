@@ -93,6 +93,10 @@
       "types": "./src/notice.tsx",
       "default": "./src/notice.tsx"
     },
+    "./expandable": {
+      "types": "./src/expandable.tsx",
+      "default": "./src/expandable.tsx"
+    },
     "./composer": {
       "types": "./src/composer.tsx",
       "default": "./src/composer.tsx"
