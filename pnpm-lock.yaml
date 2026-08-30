@@ -1400,6 +1400,9 @@ importers:
       '@chia/agent-content':
         specifier: workspace:*
         version: link:../agent-content
+      '@chia/agent-public':
+        specifier: workspace:*
+        version: link:../agent-public
       '@chia/agent-runtime':
         specifier: workspace:*
         version: link:../agent-runtime
@@ -1428,6 +1431,40 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@chiastack/tsconfig':
+        specifier: catalog:chiastack
+        version: 2.1.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.3.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: catalog:testing-library
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.3.0)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.11.6)(msw@2.15.0(@types/node@26.3.0)(typescript@7.0.2))(vite@8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))
+
+  packages/agent-public:
+    dependencies:
+      '@chia/agent-content':
+        specifier: workspace:*
+        version: link:../agent-content
+      '@chia/agent-runtime':
+        specifier: workspace:*
+        version: link:../agent-runtime
+      '@chia/db':
+        specifier: workspace:*
+        version: link:../db
+      '@earendil-works/pi-ai':
+        specifier: catalog:agent
+        version: 0.84.3(supports-color@10.2.2)(ws@8.21.3)(zod@4.4.3)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@chia/agent-writing':
+        specifier: workspace:*
+        version: link:../agent-writing
       '@chiastack/tsconfig':
         specifier: catalog:chiastack
         version: 2.1.2

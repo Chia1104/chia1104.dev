@@ -25,6 +25,10 @@
       "types": "./src/kind.ts",
       "default": "./src/kind.ts"
     },
+    "./public": {
+      "types": "./src/public.ts",
+      "default": "./src/public.ts"
+    },
     "./quota": {
       "types": "./src/quota.ts",
       "default": "./src/quota.ts"
@@ -51,6 +55,7 @@
   },
   "dependencies": {
     "@chia/agent-content": "workspace:*",
+    "@chia/agent-public": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
     "@chia/agent-writing": "workspace:*",
     "@chia/ai": "workspace:*",
