@@ -198,7 +198,8 @@ row 從 dashboard 覆寫任一項（`agent.admin.quota.*`，§13）；`weekPerio
 `{ limitMicros, usedMicros, resetAt, timeZone }`）。
 
 只在接受 model call 的地方檢查，別處不檢查：`prompt` 與 `approve`（一個決定會起一個 relay
-turn）、`compact`、帶 `summarize` 的 `navigate`——都在 session lock 之下、在任何東西被排入或
+turn）、branch 有東西可濃縮時的 `compact`（無事可做的 `compact` 直接回 `CONFLICT`，不需要
+quota）、帶 `summarize` 的 `navigate`——都在 session lock 之下、在任何東西被排入或
 落地之前，所以被拒絕的 approval 會維持 pending，等下週再決定。上限是 soft 的：只要還有剩就
 接受，所以最後一次最多超出一個 turn，由 kind 的 turn budget 兜住。上限設 `0` 就對所有受限
 tier 關閉 agent。

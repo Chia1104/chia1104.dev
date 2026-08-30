@@ -223,7 +223,8 @@ is 167 or 169 hours rather than a wrong day; and `assertWithinAgentQuota` throws
 has reached the limit.
 
 It is checked where a model call is accepted and nowhere else: `prompt` and `approve` (a
-decision starts a relay turn), `compact`, and `navigate` with `summarize` — each under the
+decision starts a relay turn), `compact` once the branch has something to condense (a no-op
+answers `CONFLICT` without needing quota), and `navigate` with `summarize` — each under the
 session lock, before anything is queued or persisted, so a refused approval stays pending for
 when the week turns over. The limit is soft: a call is accepted while anything remains, so the
 last one may overrun by at most one turn, which the kind's turn budget bounds. A limit of `0`

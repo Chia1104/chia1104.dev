@@ -239,6 +239,11 @@ export const createAgentKindService = <TState, TConfig extends object>(
     new AppError("TIMEOUT", {
       message: `Could not ${action} within ${MAINTENANCE_DEADLINE_MS / 1000}s. The conversation is unchanged.`,
     });
+  const nothingToCompact = () =>
+    new AppError("CONFLICT", {
+      message:
+        "Nothing to compact: the conversation still fits in what a compaction keeps.",
+    });
 
   /**
    * Maintenance operations over the session tree.
@@ -999,10 +1004,15 @@ export const createAgentKindService = <TState, TConfig extends object>(
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) return null;
         await assertMaintainable(row, tx, "compact");
-        await assertWithinAgentQuota(tx, caller);
 
         const deadline = AbortSignal.timeout(MAINTENANCE_DEADLINE_MS);
         const maintenance = await maintenanceFor(caller, row, deadline);
+        // Only a summary calls the model, so only a branch with something to condense needs quota.
+        if (!canCompactBranch(await maintenance.session.getBranch())) {
+          throw nothingToCompact();
+        }
+        await assertWithinAgentQuota(tx, caller);
+
         let compacted: Awaited<ReturnType<typeof maintenance.compact>>;
         try {
           compacted = await maintenance.compact(input.customInstructions);
@@ -1010,12 +1020,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
           if (deadline.aborted) throw maintenanceTimedOut("compact");
           throw error;
         }
-        if (!compacted) {
-          throw new AppError("CONFLICT", {
-            message:
-              "Nothing to compact: the conversation still fits in what a compaction keeps.",
-          });
-        }
+        if (!compacted) throw nothingToCompact();
         return detailFor(caller, input.sessionId);
       }),
 
