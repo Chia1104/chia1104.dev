@@ -60,7 +60,7 @@ export const Expandable = ({
         <div ref={contentRef}>{children}</div>
       </div>
       {overflows ? (
-        <div className={cn("flex", toggleClassName)}>
+        <div className={cn("flex justify-self-end", toggleClassName)}>
           <Button
             aria-expanded={expanded}
             className="text-muted h-6 gap-1 px-1.5 text-xs"
