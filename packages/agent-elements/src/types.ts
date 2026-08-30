@@ -32,6 +32,9 @@ export interface AgentSessionClient {
     "settings:update": (
       input: Parameters<SessionProcedures["settings:update"]>[0]
     ) => Promise<AgentSessionDetail>;
+    compact: (
+      input: Parameters<SessionProcedures["compact"]>[0]
+    ) => Promise<AgentSessionDetail>;
     navigate: (
       input: Parameters<SessionProcedures["navigate"]>[0]
     ) => Promise<AgentSessionDetail>;

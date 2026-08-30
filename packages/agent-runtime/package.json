@@ -49,6 +49,10 @@
       "types": "./src/pi/tool-gate.ts",
       "default": "./src/pi/tool-gate.ts"
     },
+    "./pi/compaction": {
+      "types": "./src/pi/compaction.ts",
+      "default": "./src/pi/compaction.ts"
+    },
     "./pi/maintenance": {
       "types": "./src/pi/maintenance.ts",
       "default": "./src/pi/maintenance.ts"

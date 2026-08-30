@@ -182,6 +182,11 @@ export const agentSessionDetailSchema = z.object({
     messageCount: z.number(),
     /** Estimated tokens the next provider request will carry on the active branch. */
     contextTokens: z.number().int().nonnegative(),
+    /**
+     * Whether `compact` would condense anything. A compaction keeps the newest part of the branch
+     * whole, so a short conversation has nothing to summarise and `compact` refuses it.
+     */
+    compactable: z.boolean(),
     /** Every token processed by provider and compaction calls across the session. */
     totalTokens: z.number(),
     costTotal: z.number(),
@@ -365,6 +370,13 @@ export const approveAgentToolContract = oc
 // Session maintenance
 // ============================================
 
+/**
+ * Summarises the older part of the active branch into a compaction entry, the new leaf. Returns
+ * the whole detail rebuilt, as `navigate` does: the leaf, the context estimate and the transcript
+ * (which now carries a `session:compacted` notice) all changed. `CONFLICT` while a turn is
+ * running, while an approval is undecided, or when there is nothing to condense
+ * (`stats.compactable` is `false`).
+ */
 export const compactAgentSessionContract = oc
   .errors({
     UNAUTHORIZED: {},
@@ -381,12 +393,7 @@ export const compactAgentSessionContract = oc
       customInstructions: z.string().max(2000).optional(),
     })
   )
-  .output(
-    z.object({
-      summary: z.string(),
-      tokensBefore: z.number(),
-    })
-  );
+  .output(agentSessionDetailSchema);
 
 /**
  * Rewinds the session in place to an earlier message so the agent can take another run at it.

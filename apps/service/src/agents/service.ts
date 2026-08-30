@@ -22,6 +22,7 @@ import {
   createAgentModels,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
+import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
   compactPiSession,
   navigatePiSession,
@@ -499,6 +500,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
       stats: {
         messageCount: stats.messageCount,
         contextTokens: estimateBranchContextTokens(transcriptEntries),
+        compactable: canCompactBranch(transcriptEntries),
         totalTokens: stats.totalTokens,
         costTotal: stats.costTotal,
       },
@@ -962,7 +964,14 @@ export const createAgentKindService = <TState, TConfig extends object>(
         await assertWithinAgentQuota(tx, caller);
 
         const maintenance = await maintenanceFor(caller, row);
-        return await maintenance.compact(input.customInstructions);
+        const compacted = await maintenance.compact(input.customInstructions);
+        if (!compacted) {
+          throw new AppError("CONFLICT", {
+            message:
+              "Nothing to compact: the conversation still fits in what a compaction keeps.",
+          });
+        }
+        return detailFor(caller, input.sessionId);
       }),
 
     navigate: (outer, input) =>

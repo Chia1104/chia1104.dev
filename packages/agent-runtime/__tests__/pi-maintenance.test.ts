@@ -68,6 +68,16 @@ const build = async () => {
 };
 
 /**
+ * Pi keeps the newest ~20k tokens whole and summarises what lies before them, so a compaction
+ * only has work once the tail alone crosses that: one oversized prompt after the seeded turns
+ * pushes those turns into the summarised part.
+ */
+const growPastRetainedTail = async (session: InMemorySessionTree) => {
+  await session.appendEntry(user("u3", "a2", "x".repeat(100_000)));
+  await session.appendEntry(assistant("a3", "u3", "Noted."));
+};
+
+/**
  * The faux provider estimates usage from the text it streams, so what is pinned is that the
  * report carries exactly the usage the tree persisted, under that entry's id.
  */
@@ -99,6 +109,7 @@ describe("usage reporting", () => {
 
   it("reports a manual compaction's usage under its entry", async () => {
     const { faux, session, options } = await build();
+    await growPastRetainedTail(session);
     const reports: AgentUsageReport[] = [];
     faux.setResponses([fauxAssistantMessage("Condensed.")]);
 
@@ -252,6 +263,7 @@ describe("navigatePiSession", () => {
 describe("compactPiSession", () => {
   it("appends a compaction entry as the new leaf", async () => {
     const { faux, session, options } = await build();
+    await growPastRetainedTail(session);
     faux.setResponses([fauxAssistantMessage("Two questions, two answers.")]);
 
     const result = await compactPiSession(options);
@@ -266,12 +278,23 @@ describe("compactPiSession", () => {
     await expect(session.getLeafId()).resolves.toBe(leaf?.id);
   });
 
-  it("refuses an empty session", async () => {
+  it("answers null for an empty session", async () => {
     const { options } = await build();
     const empty = new InMemorySessionTree("empty");
 
     await expect(
       compactPiSession({ ...options, session: empty })
-    ).rejects.toThrow("Nothing to compact");
+    ).resolves.toBeNull();
+  });
+
+  it("answers null without calling the model when the branch fits in the retained tail", async () => {
+    const { faux, session, options } = await build();
+    faux.setResponses([fauxAssistantMessage("Never asked for.")]);
+    const before = await session.getLeafId();
+
+    await expect(compactPiSession(options)).resolves.toBeNull();
+
+    await expect(session.getLeafId()).resolves.toBe(before);
+    expect(faux.getPendingResponseCount()).toBe(1);
   });
 });

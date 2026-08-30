@@ -486,7 +486,12 @@ Pi agent 仍完整位於單一 step 裡，所以 queued message 不會中斷目�
 Maintenance 直接操作 session tree，不建立 `Agent`：
 
 - `compactPiSession` 對 branch 跑 Pi 的 `prepareCompaction` 與 `compact`，把 compaction entry
-  （summary、retained tail、usage）append 成新的 leaf；
+  （summary、retained tail、usage）append 成新的 leaf。沒有東西可以濃縮時回 `null`、不呼叫
+  模型：Pi 會把最新的 `keepRecentTokens` 整段保留，所以塞得進這段尾巴的 branch 壓下去只會被收
+  一次 summary 的費用、context 反而變大。`canCompactBranch` 是同一個判斷的獨立版本；session
+  detail 以 `stats.compactable` 回報它，為 false 時 service 對手動 `compact` 回 `CONFLICT`。
+  手動 `compact` 跟 `navigate` 一樣回傳整份重建的 detail，因為 leaf、context 估算與 transcript
+  都變了；
 - `navigatePiSession` 搬 leaf（目標是 user message 時搬到它的 parent，讓它可以重問），需要時
   用 Pi 的 `generateBranchSummary` 把被丟下的 entries 總結成新 leaf 底下的 `branch_summary`，
   label 則記錄下來但不讓 leaf 停在 label 上；

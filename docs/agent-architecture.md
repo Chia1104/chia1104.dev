@@ -556,7 +556,13 @@ only message queue.
 Maintenance operates on the session tree directly; no `Agent` is built:
 
 - `compactPiSession` runs Pi's `prepareCompaction` and `compact` over the branch and appends the
-  compaction entry — summary, retained tail, usage — as the new leaf;
+  compaction entry — summary, retained tail, usage — as the new leaf. It answers `null` without
+  calling the model when there is nothing to condense: Pi keeps the newest `keepRecentTokens`
+  whole, so a branch that fits inside that tail would be billed a summary and come out larger.
+  `canCompactBranch` is the same test on its own; the session detail reports it as
+  `stats.compactable`, and the service refuses a manual `compact` with `CONFLICT` when it is
+  false. A manual `compact` returns the whole detail rebuilt, as `navigate` does, since the
+  leaf, the context estimate and the transcript all changed;
 - `navigatePiSession` moves the leaf (to a user message's parent when the target is a user
   message, so it can be re-asked), summarises the entries left behind into a `branch_summary`
   under the new leaf with Pi's `generateBranchSummary` when asked, and records a label without
