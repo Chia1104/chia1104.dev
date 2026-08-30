@@ -12,10 +12,14 @@ import { CopyButton } from "@chia/ui/copy-button";
 import TextShimmer from "@chia/ui/text-shimmer";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { Expandable } from "./expandable.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 import { Markdown } from "./markdown.tsx";
 import type { OrbState } from "./orb-state.ts";
 import { formatMessageTime, formatMessageTimeFull } from "./time.ts";
+
+/** Ten lines of the bubble's `leading-6`; a pasted document folds behind a toggle. */
+const USER_MESSAGE_MAX_HEIGHT = 240;
 
 // Nothing to subscribe to: mounted-ness never changes after the first client render.
 const subscribeNever = () => () => undefined;
@@ -95,9 +99,12 @@ export const UserMessage = ({
   <div
     className={cn("group flex flex-col items-end gap-1", className)}
     data-role="user">
-    <div className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-3 py-2.5 text-sm leading-6 whitespace-pre-wrap">
-      {text}
-    </div>
+    <Expandable
+      className="bg-surface-secondary text-foreground max-w-[85%] rounded-2xl rounded-br-md px-3 py-2.5 text-sm leading-6"
+      maxHeight={USER_MESSAGE_MAX_HEIGHT}
+      toggleClassName="-mb-1 justify-end pt-1">
+      <div className="whitespace-pre-wrap">{text}</div>
+    </Expandable>
     <MessageMeta actions={actions} align="end" at={at} text={text} />
   </div>
 );

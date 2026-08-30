@@ -165,10 +165,15 @@ export interface AgentKindService {
     }
   ): Promise<AgentStreamCursor | null>;
 
+  /**
+   * Compacts the active branch and returns the detail rebuilt, the way {@link navigate} does.
+   * Refused (`CONFLICT`) while a turn runs, while an approval is undecided, or when the branch
+   * has nothing to condense.
+   */
   compact(
     caller: AgentServiceCaller,
     input: { sessionId: string; customInstructions?: string }
-  ): Promise<{ summary: string; tokensBefore: number } | null>;
+  ): Promise<agentContracts.AgentSessionDetail | null>;
 
   /**
    * Rewinds the session in place: the leaf moves to `entryId` (a user message's parent, so it

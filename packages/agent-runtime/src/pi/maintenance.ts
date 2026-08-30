@@ -29,8 +29,11 @@ export interface PiSessionOperationOptions {
   onUsage?: AgentUsageListener;
 }
 
-/** Runs Pi's compaction over the session tree; no tools, prompts or subscriptions are built. */
-export const compactPiSession = async (
+/**
+ * Runs Pi's compaction over the session tree; no tools, prompts or subscriptions are built.
+ * `null` when the branch has nothing to condense (see `compactSession`).
+ */
+export const compactPiSession = (
   {
     session,
     settings,
@@ -40,8 +43,8 @@ export const compactPiSession = async (
     onUsage,
   }: PiSessionOperationOptions,
   customInstructions?: string
-): Promise<AgentCompactionResult> => {
-  const result = await compactSession({
+): Promise<AgentCompactionResult | null> =>
+  compactSession({
     session,
     models,
     model,
@@ -50,9 +53,6 @@ export const compactPiSession = async (
     signal,
     onUsage,
   });
-  if (!result) throw new Error("Nothing to compact");
-  return result;
-};
 
 /**
  * Moves the leaf to `entryId`, optionally summarising the branch left behind into a

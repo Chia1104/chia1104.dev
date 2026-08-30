@@ -35,7 +35,13 @@ const detailOf = (
   run: null,
   events: [],
   approvals: [],
-  stats: { messageCount: 0, contextTokens: 0, totalTokens: 0, costTotal: 0 },
+  stats: {
+    messageCount: 0,
+    contextTokens: 0,
+    compactable: false,
+    totalTokens: 0,
+    costTotal: 0,
+  },
   ...overrides,
 });
 
@@ -104,6 +110,7 @@ const fakeClient = (overrides: {
   );
   const abort = vi.fn(overrides.abort ?? (async () => ({ aborted: true })));
   const update = vi.fn(async () => detailOf());
+  const compact = vi.fn(async () => detailOf());
   const navigate = vi.fn(async () => detailOf());
   const fork = vi.fn(async () => detailOf());
   const models = vi.fn(async () => []);
@@ -113,7 +120,15 @@ const fakeClient = (overrides: {
     skills: [],
   }));
   const client: AgentSessionClient = {
-    sessions: { get, chat, abort, "settings:update": update, navigate, fork },
+    sessions: {
+      get,
+      chat,
+      abort,
+      "settings:update": update,
+      compact,
+      navigate,
+      fork,
+    },
     models: { list: models },
     capabilities: { list: capabilities },
   };
@@ -344,6 +359,7 @@ describe("createAgentSessionStore", () => {
       stats: {
         messageCount: 2,
         contextTokens: 8,
+        compactable: false,
         totalTokens: 10,
         costTotal: 0,
       },

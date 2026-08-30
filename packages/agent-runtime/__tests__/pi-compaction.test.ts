@@ -2,6 +2,7 @@ import type { Usage } from "@earendil-works/pi-ai";
 import { describe, expect, it } from "vitest";
 
 import {
+  canCompactBranch,
   compactionContextWindow,
   shouldCompactBranch,
 } from "../src/pi/compaction.ts";
@@ -91,6 +92,47 @@ describe("estimateBranchContextTokens", () => {
       assistantEntry("Carrying on", 9_000),
     ];
     expect(estimateBranchContextTokens(branch)).toBe(9_000);
+  });
+});
+
+/**
+ * Pi keeps the newest ~20k tokens (`keepRecentTokens`) whole; only what lies before them is
+ * summarised. An oversized message therefore lands in the kept tail and pushes everything
+ * before it into the summarised part.
+ */
+describe("canCompactBranch", () => {
+  it("declines an empty branch", () => {
+    expect(canCompactBranch([])).toBe(false);
+  });
+
+  it("declines a branch that fits in the retained tail", () => {
+    const branch = [userEntry("Write a post"), assistantEntry("Sure", 12_000)];
+    expect(canCompactBranch(branch)).toBe(false);
+  });
+
+  it("declines when the oversized message is the oldest — the tail is the whole branch", () => {
+    const branch = [userEntry("x".repeat(100_000)), assistantEntry("Sure")];
+    expect(canCompactBranch(branch)).toBe(false);
+  });
+
+  it("accepts once older turns lie before the retained tail", () => {
+    const branch = [
+      userEntry("Old question"),
+      assistantEntry("Old answer"),
+      userEntry("x".repeat(100_000)),
+      assistantEntry("Noted"),
+    ];
+    expect(canCompactBranch(branch)).toBe(true);
+  });
+
+  it("declines a branch that already ends in a compaction", () => {
+    const branch = [
+      userEntry("Old question"),
+      assistantEntry("Old answer"),
+      userEntry("x".repeat(100_000)),
+      compactionEntry(),
+    ];
+    expect(canCompactBranch(branch)).toBe(false);
   });
 });
 

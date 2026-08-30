@@ -22,16 +22,21 @@ import {
   createAgentModels,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
+import { canCompactBranch } from "@chia/agent-runtime/pi/compaction";
 import {
   compactPiSession,
   navigatePiSession,
 } from "@chia/agent-runtime/pi/maintenance";
-import { entriesUpToSeq } from "@chia/agent-runtime/session/entries";
+import {
+  computeSessionStats,
+  entriesUpToSeq,
+} from "@chia/agent-runtime/session/entries";
 import type { SessionEntry } from "@chia/agent-runtime/session/entries";
 import {
   PgSessionRepo,
   writeSessionSettings,
 } from "@chia/agent-runtime/session/pg-repo";
+import { walkBranch, walkTranscript } from "@chia/agent-runtime/session/tree";
 import type { SessionTree } from "@chia/agent-runtime/session/tree";
 import { estimateBranchContextTokens } from "@chia/agent-runtime/session/usage";
 import type {
@@ -223,6 +228,24 @@ export const createAgentKindService = <TState, TConfig extends object>(
     );
 
   /**
+   * A maintenance operation carries one model call — the summary — inside the request, under
+   * the session lock and its transaction. The RPC route exempts it from the shared request
+   * timeout (a 504 there only drops the response while the work and the lock run on), so this
+   * deadline is what bounds the lock: the summary is cancelled, nothing is appended, and the
+   * transaction rolls back with the error.
+   */
+  const MAINTENANCE_DEADLINE_MS = 120_000;
+  const maintenanceTimedOut = (action: string) =>
+    new AppError("TIMEOUT", {
+      message: `Could not ${action} within ${MAINTENANCE_DEADLINE_MS / 1000}s. The conversation is unchanged.`,
+    });
+  const nothingToCompact = () =>
+    new AppError("CONFLICT", {
+      message:
+        "Nothing to compact: the conversation still fits in what a compaction keeps.",
+    });
+
+  /**
    * Maintenance operations over the session tree.
    *
    * These only walk the tree, so no tools, ports, approval gate or event subscriptions are
@@ -232,8 +255,15 @@ export const createAgentKindService = <TState, TConfig extends object>(
    * cookie is read and decrypted directly rather than travelling through the workflow); pinned
    * by the operator, a house model that needs no key at all. The session model is resolved
    * only when the task follows it.
+   *
+   * `signal` bounds the one model call — the summary — and nothing else: when it fires the
+   * summary is cancelled and the tree is untouched.
    */
-  const maintenanceFor = async (caller: AgentServiceCaller, row: OwnedRow) => {
+  const maintenanceFor = async (
+    caller: AgentServiceCaller,
+    row: OwnedRow,
+    signal: AbortSignal
+  ) => {
     const db = caller.context.db;
     const session = await repoFor(db).openById(row.id);
     const settings = settingsOf(row);
@@ -258,6 +288,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
         settings,
         model: task.model,
         models: task.models,
+        signal,
         onUsage,
       };
     };
@@ -444,12 +475,21 @@ export const createAgentKindService = <TState, TConfig extends object>(
     const db = caller.context.db;
     const session = await repoFor(db).openById(sessionId);
 
-    const [branch, kindDetail, stats, approvals] = await Promise.all([
-      session.getBranch(),
-      definition.state.detail(db, sessionId, row.state),
-      session.getSessionStats(),
-      getAgentApprovals(db, sessionId),
-    ]);
+    // One query at a time: under the session lock `db` is a transaction on a single connection,
+    // and pg queues — and deprecates — a second query issued on a client that is busy.
+    const entries = await session.getEntries();
+    const leafId = await session.getLeafId();
+    /**
+     * Two walks of one load. The branch stops at the newest compaction and is what the model's
+     * next request carries — the context estimate and `compactable` read it. The transcript
+     * runs through every compaction: what was said stays on screen, with the compaction shown
+     * where it happened, because it condensed the model's context, not the conversation.
+     */
+    const branch = walkBranch(entries, leafId);
+    const transcript = walkTranscript(entries, leafId);
+    const stats = computeSessionStats(entries);
+    const kindDetail = await definition.state.detail(db, sessionId, row.state);
+    const approvals = await getAgentApprovals(db, sessionId);
     /**
      * Read after the branch, on purpose: the cut below and the entries it cuts must come from the same
      * observation. A turn that finished between the two reads has already persisted its reply; a
@@ -472,6 +512,10 @@ export const createAgentKindService = <TState, TConfig extends object>(
      * instead, and both cut at the same recorded marker so the client sees each message once.
      */
     const transcriptEntries =
+      run?.status === "running" && turn
+        ? entriesBeforeTurn(transcript, turn)
+        : transcript;
+    const contextEntries =
       run?.status === "running" && turn
         ? entriesBeforeTurn(branch, turn)
         : branch;
@@ -498,7 +542,8 @@ export const createAgentKindService = <TState, TConfig extends object>(
       approvals: approvalRows,
       stats: {
         messageCount: stats.messageCount,
-        contextTokens: estimateBranchContextTokens(transcriptEntries),
+        contextTokens: estimateBranchContextTokens(contextEntries),
+        compactable: canCompactBranch(contextEntries),
         totalTokens: stats.totalTokens,
         costTotal: stats.costTotal,
       },
@@ -959,10 +1004,24 @@ export const createAgentKindService = <TState, TConfig extends object>(
         const row = await loadOwnedSession(caller, input.sessionId);
         if (!row) return null;
         await assertMaintainable(row, tx, "compact");
+
+        const deadline = AbortSignal.timeout(MAINTENANCE_DEADLINE_MS);
+        const maintenance = await maintenanceFor(caller, row, deadline);
+        // Only a summary calls the model, so only a branch with something to condense needs quota.
+        if (!canCompactBranch(await maintenance.session.getBranch())) {
+          throw nothingToCompact();
+        }
         await assertWithinAgentQuota(tx, caller);
 
-        const maintenance = await maintenanceFor(caller, row);
-        return await maintenance.compact(input.customInstructions);
+        let compacted: Awaited<ReturnType<typeof maintenance.compact>>;
+        try {
+          compacted = await maintenance.compact(input.customInstructions);
+        } catch (error) {
+          if (deadline.aborted) throw maintenanceTimedOut("compact");
+          throw error;
+        }
+        if (!compacted) throw nothingToCompact();
+        return detailFor(caller, input.sessionId);
       }),
 
     navigate: (outer, input) =>
@@ -974,13 +1033,14 @@ export const createAgentKindService = <TState, TConfig extends object>(
         // Only a summary calls the model; moving the leaf is free.
         if (input.summarize) await assertWithinAgentQuota(tx, caller);
 
-        const maintenance = await maintenanceFor(caller, row);
+        const deadline = AbortSignal.timeout(MAINTENANCE_DEADLINE_MS);
+        const maintenance = await maintenanceFor(caller, row, deadline);
         await requireEntry(maintenance.session, input.entryId);
-        // No signal is passed, so the summary cannot be cancelled and the result is never `cancelled`.
-        await maintenance.navigate(input.entryId, {
+        const result = await maintenance.navigate(input.entryId, {
           summarize: input.summarize,
           label: input.label,
         });
+        if (result.cancelled) throw maintenanceTimedOut("rewind");
         return detailFor(caller, input.sessionId);
       }),
 

@@ -217,6 +217,32 @@ export const useNavigateSession = () => {
   });
 };
 
+export interface CompactSessionInput {
+  /** Extra focus for the summariser, appended to Pi's compaction prompt. */
+  customInstructions?: string;
+}
+
+/**
+ * Compacts the active branch. Like a rewind, the server answers with the rebuilt detail — the
+ * leaf, the context estimate and the transcript changed — which replaces the cache and the view.
+ */
+export const useCompactSession = () => {
+  const { client, kind, sessionId, store } = useContextValue();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CompactSessionInput) =>
+      client.sessions.compact({ sessionId, kind, ...input }),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(
+        sessionDetailQuery(client, { sessionId, kind }).queryKey,
+        detail
+      );
+      store.getState().replaceDetail(detail);
+    },
+    onError: (error) => store.getState().reportFailure(error.message),
+  });
+};
+
 export interface ForkSessionInput {
   /** Fork the whole tree when omitted. */
   entryId?: string;

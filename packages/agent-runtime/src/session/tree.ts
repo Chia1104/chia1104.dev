@@ -38,10 +38,10 @@ export interface SessionTree {
   newEntryId(): string;
 }
 
-/** Walks `parentId` from `leafId` and returns the branch root-first. Shared by every backend. */
-export const walkBranch = (
+const walkPath = (
   entries: readonly SessionEntry[],
-  leafId: string | null
+  leafId: string | null,
+  stopAt: (entry: SessionEntry) => boolean
 ): SessionEntry[] => {
   if (!leafId) return [];
   const byId = new Map(entries.map((entry) => [entry.id, entry]));
@@ -58,12 +58,33 @@ export const walkBranch = (
     const entry = byId.get(cursor);
     if (!entry) break;
     path.push(entry);
-    if (entry.type === "compaction") break;
+    if (stopAt(entry)) break;
     cursor = entry.parentId;
   }
 
   return path.reverse();
 };
+
+const isCompaction = (entry: SessionEntry) => entry.type === "compaction";
+
+/**
+ * Walks `parentId` from `leafId` and returns the branch root-first, stopping at the newest
+ * compaction: what the model's context is built from. Shared by every backend.
+ */
+export const walkBranch = (
+  entries: readonly SessionEntry[],
+  leafId: string | null
+): SessionEntry[] => walkPath(entries, leafId, isCompaction);
+
+/**
+ * The leaf's whole ancestry, root-first, through every compaction: what the operator sees. A
+ * compaction condenses what the model is sent, not what was said, so the transcript keeps the
+ * messages behind it and shows the compaction where it happened.
+ */
+export const walkTranscript = (
+  entries: readonly SessionEntry[],
+  leafId: string | null
+): SessionEntry[] => walkPath(entries, leafId, () => false);
 
 /** Last write wins, matching the label semantics Pi's JSONL sessions had. */
 export const labelOf = (
