@@ -223,7 +223,8 @@ is 167 or 169 hours rather than a wrong day; and `assertWithinAgentQuota` throws
 has reached the limit.
 
 It is checked where a model call is accepted and nowhere else: `prompt` and `approve` (a
-decision starts a relay turn), `compact`, and `navigate` with `summarize` — each under the
+decision starts a relay turn), `compact` once the branch has something to condense (a no-op
+answers `CONFLICT` without needing quota), and `navigate` with `summarize` — each under the
 session lock, before anything is queued or persisted, so a refused approval stays pending for
 when the week turns over. The limit is soft: a call is accepted while anything remains, so the
 last one may overrun by at most one turn, which the kind's turn budget bounds. A limit of `0`
@@ -480,6 +481,11 @@ session:compacted · session:rewound · state:changed · error · run:end
   message with `stopReason: "error"` replays as the same `error` event the live turn emitted;
   a `branch_summary` entry replays as `session:rewound`, so a rewind that kept a summary stays
   visible where it happened.
+- The transcript is the leaf's whole ancestry (`walkTranscript`), through every compaction: a
+  compaction condensed what the model is sent, not what was said, so the messages behind it
+  stay on screen and the `session:compacted` notice sits where it happened. Only the model's
+  context — `buildBranchContext`, `stats.contextTokens`, `stats.compactable` — reads the
+  branch (`walkBranch`), which stops at the newest compaction.
 - A tool call is only ever `running` between its `tool:start` and `tool:end`, and both sides
   guarantee the end arrives. Pi persists a call's result right after the assistant message that
   issued it, so replay closes any call whose result is not the next thing on the branch — a turn
@@ -556,7 +562,13 @@ only message queue.
 Maintenance operates on the session tree directly; no `Agent` is built:
 
 - `compactPiSession` runs Pi's `prepareCompaction` and `compact` over the branch and appends the
-  compaction entry — summary, retained tail, usage — as the new leaf;
+  compaction entry — summary, retained tail, usage — as the new leaf. It answers `null` without
+  calling the model when there is nothing to condense: Pi keeps the newest `keepRecentTokens`
+  whole, so a branch that fits inside that tail would be billed a summary and come out larger.
+  `canCompactBranch` is the same test on its own; the session detail reports it as
+  `stats.compactable`, and the service refuses a manual `compact` with `CONFLICT` when it is
+  false. A manual `compact` returns the whole detail rebuilt, as `navigate` does, since the
+  leaf, the context estimate and the transcript all changed;
 - `navigatePiSession` moves the leaf (to a user message's parent when the target is a user
   message, so it can be re-asked), summarises the entries left behind into a `branch_summary`
   under the new leaf with Pi's `generateBranchSummary` when asked, and records a label without
@@ -599,6 +611,15 @@ replaced can never reach the run that replaced it. Navigation returns the whole
 session detail, not just events, because
 changing the active branch invalidates every view the client held and the client folds a
 detail the same way it folds `get`.
+
+Both carry one model call — the summary — inside the request, so the RPC route exempts them
+from the shared request timeout (`rpc.route.ts`, as it does the chat stream) and the service
+bounds them itself: `MAINTENANCE_DEADLINE_MS` goes to Pi as the summary's signal, and when it
+fires the summary is cancelled, nothing is appended, the transaction rolls back and the caller
+gets `TIMEOUT`. The shared timeout would only have dropped the response with a 504 while the
+work, and the session lock, ran on. Everything under the lock also queries one at a time: the
+transaction is a single connection, and pg queues — and deprecates — a second query on a busy
+client.
 
 Kind state is not versioned against the transcript. A rewind leaves the writing draft as the
 abandoned branch last left it, and a fork copies the draft as it stands now, not as it was at

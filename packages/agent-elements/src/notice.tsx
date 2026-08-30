@@ -6,7 +6,11 @@ import { Archive, CircleAlert, ShieldCheck, Undo2 } from "lucide-react";
 import type { NoticeView } from "@chia/agent-runtime/wire/fold";
 import { cn } from "@chia/ui/utils/cn.util";
 
+import { Expandable } from "./expandable.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
+
+/** A compaction or branch summary runs to pages; the first few lines say what it is. */
+const SUMMARY_MAX_HEIGHT = 160;
 
 export interface NoticeProps {
   notice: NoticeView;
@@ -34,7 +38,13 @@ export const Notice = ({ className, notice }: NoticeProps) => {
         </Alert.Indicator>
         <Alert.Content>
           <Alert.Title>{meta.label}</Alert.Title>
-          <Alert.Description>{notice.text}</Alert.Description>
+          <Expandable
+            maxHeight={SUMMARY_MAX_HEIGHT}
+            toggleClassName="-ml-1.5 pt-1">
+            <Alert.Description className="whitespace-pre-wrap">
+              {notice.text}
+            </Alert.Description>
+          </Expandable>
         </Alert.Content>
       </Alert>
     );

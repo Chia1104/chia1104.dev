@@ -1,12 +1,18 @@
 "use client";
 
 import { Button, Popover, ProgressBar } from "@heroui/react";
+import { Archive } from "lucide-react";
 
 import { cn } from "@chia/ui/utils/cn.util";
 
 import { useAgentLabels } from "./labels-context.tsx";
 import { fill } from "./labels.ts";
-import { useAgentModels, useSessionDetail } from "./provider.tsx";
+import {
+  useAgentBusy,
+  useAgentModels,
+  useCompactSession,
+  useSessionDetail,
+} from "./provider.tsx";
 
 const RING_RADIUS = 7;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -25,11 +31,17 @@ const formatCompactTokens = (value: number) => {
   return `${Number(scaled.toFixed(digits))}${unit.suffix}`;
 };
 
-/** Current active-branch context pressure and lifetime provider throughput. */
+/**
+ * Current active-branch context pressure and lifetime provider throughput, with the manual
+ * compaction — the server refuses it mid-turn and when nothing would condense, so the button
+ * is disabled on the same two readings.
+ */
 export const ContextUsage = () => {
   const labels = useAgentLabels();
   const detail = useSessionDetail().data;
   const models = useAgentModels().data;
+  const busy = useAgentBusy();
+  const compact = useCompactSession();
   const settings = detail?.settings;
   const current = settings
     ? models?.find(
@@ -41,7 +53,7 @@ export const ContextUsage = () => {
 
   if (!detail || !current || current.contextWindow <= 0) return null;
 
-  const contextTokens = detail.stats.contextTokens;
+  const { compactable, contextTokens } = detail.stats;
   const percentage = Math.round((contextTokens / current.contextWindow) * 100);
   const visualPercentage = Math.min(100, Math.max(0, percentage));
   const tone =
@@ -129,8 +141,22 @@ export const ContextUsage = () => {
           <p className="text-muted mt-4 text-xs leading-5">
             {fill(labels.contextCompactsAutomatically, {
               model: current.name,
-            })}
+            })}{" "}
+            {compactable
+              ? labels.compactDescription
+              : labels.compactUnavailable}
           </p>
+
+          <Button
+            className="mt-3 w-full"
+            isDisabled={busy || !compactable}
+            isPending={compact.isPending}
+            onPress={() => compact.mutate({})}
+            size="sm"
+            variant="secondary">
+            <Archive className="size-3.5" />
+            {labels.compactNow}
+          </Button>
         </Popover.Dialog>
       </Popover.Content>
     </Popover>

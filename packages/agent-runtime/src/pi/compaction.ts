@@ -4,7 +4,10 @@ import {
   prepareCompaction,
   shouldCompact,
 } from "@earendil-works/pi-agent-core";
-import type { ThinkingLevel } from "@earendil-works/pi-agent-core";
+import type {
+  CompactionPreparation,
+  ThinkingLevel,
+} from "@earendil-works/pi-agent-core";
 import type { Api, Model, Models } from "@earendil-works/pi-ai";
 
 import type {
@@ -38,6 +41,28 @@ export const shouldCompactBranch = (
   return shouldCompact(tokens, contextWindow, DEFAULT_COMPACTION_SETTINGS);
 };
 
+/**
+ * Pi keeps the newest `keepRecentTokens` of the branch whole and summarises only what lies
+ * before them, so a branch that fits inside that tail has nothing to condense: compacting it
+ * would still bill a summary call and leave the context larger (summary plus tail), not smaller.
+ */
+const hasCompactionWork = (prepared: CompactionPreparation): boolean =>
+  prepared.messagesToSummarize.length > 0 ||
+  prepared.turnPrefixMessages.length > 0;
+
+/** Whether compacting the active branch would condense anything. */
+export const canCompactBranch = (entries: readonly SessionEntry[]): boolean => {
+  const prepared = prepareCompaction(
+    contextEntries(entries),
+    DEFAULT_COMPACTION_SETTINGS
+  );
+  return (
+    prepared.ok &&
+    prepared.value !== undefined &&
+    hasCompactionWork(prepared.value)
+  );
+};
+
 export interface CompactSessionOptions {
   session: SessionTree;
   models: Models;
@@ -65,7 +90,7 @@ const compactBranch = async (
     DEFAULT_COMPACTION_SETTINGS
   );
   if (!prepared.ok) throw prepared.error;
-  if (!prepared.value) return null;
+  if (!prepared.value || !hasCompactionWork(prepared.value)) return null;
 
   const compacted = await compact(
     prepared.value,
@@ -107,7 +132,8 @@ const compactBranch = async (
 
 /**
  * Summarises the active branch with Pi's compaction and appends the compaction entry as the new
- * leaf. `null` when the branch is empty or already ends in a compaction.
+ * leaf. `null` when there is nothing to condense: the branch is empty, already ends in a
+ * compaction, or fits inside the tail Pi keeps whole.
  */
 export const compactSession = async (
   options: CompactSessionOptions

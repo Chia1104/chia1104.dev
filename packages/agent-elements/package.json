@@ -93,6 +93,10 @@
       "types": "./src/notice.tsx",
       "default": "./src/notice.tsx"
     },
+    "./expandable": {
+      "types": "./src/expandable.tsx",
+      "default": "./src/expandable.tsx"
+    },
     "./composer": {
       "types": "./src/composer.tsx",
       "default": "./src/composer.tsx"
@@ -143,6 +147,7 @@
     "@streamdown/cjk": "catalog:streamdown",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
+    "@tanstack/react-virtual": "catalog:tanstack",
     "border-beam": "catalog:ui",
     "lucide-react": "catalog:ui",
     "react": "catalog:react-is",

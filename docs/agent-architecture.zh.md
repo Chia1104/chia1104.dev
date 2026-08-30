@@ -198,7 +198,8 @@ row 從 dashboard 覆寫任一項（`agent.admin.quota.*`，§13）；`weekPerio
 `{ limitMicros, usedMicros, resetAt, timeZone }`）。
 
 只在接受 model call 的地方檢查，別處不檢查：`prompt` 與 `approve`（一個決定會起一個 relay
-turn）、`compact`、帶 `summarize` 的 `navigate`——都在 session lock 之下、在任何東西被排入或
+turn）、branch 有東西可濃縮時的 `compact`（無事可做的 `compact` 直接回 `CONFLICT`，不需要
+quota）、帶 `summarize` 的 `navigate`——都在 session lock 之下、在任何東西被排入或
 落地之前，所以被拒絕的 approval 會維持 pending，等下週再決定。上限是 soft 的：只要還有剩就
 接受，所以最後一次最多超出一個 turn，由 kind 的 turn budget 兜住。上限設 `0` 就對所有受限
 tier 關閉 agent。
@@ -421,6 +422,10 @@ session:compacted · session:rewound · state:changed · error · run:end
 - `entriesToWireEvents`：persisted Pi entries → replay history。`stopReason: "error"` 的持久化
   assistant message 會 replay 成與 live turn 相同的 `error` event；`branch_summary` entry 會
   replay 成 `session:rewound`，所以帶摘要的 rewind 會留在它發生的位置。
+- Transcript 是 leaf 的完整祖先鏈（`walkTranscript`），穿過每一次 compaction：compaction 濃縮的
+  是送給模型的東西，不是說過的話，所以它背後的訊息留在畫面上，`session:compacted` 的提示落在
+  它發生的位置。只有模型的 context——`buildBranchContext`、`stats.contextTokens`、
+  `stats.compactable`——讀 branch（`walkBranch`），在最近一次 compaction 停下。
 - Tool call 只在 `tool:start` 與 `tool:end` 之間是 `running`，而兩邊都保證 end 一定會到。Pi 把
   call 的結果緊接在發出它的 assistant message 之後持久化，所以 replay 遇到結果不是 branch 上下一
   筆的 call——turn 在執行中被中止、process 死掉、fork 切在 assistant message 上——就以
@@ -486,7 +491,12 @@ Pi agent 仍完整位於單一 step 裡，所以 queued message 不會中斷目�
 Maintenance 直接操作 session tree，不建立 `Agent`：
 
 - `compactPiSession` 對 branch 跑 Pi 的 `prepareCompaction` 與 `compact`，把 compaction entry
-  （summary、retained tail、usage）append 成新的 leaf；
+  （summary、retained tail、usage）append 成新的 leaf。沒有東西可以濃縮時回 `null`、不呼叫
+  模型：Pi 會把最新的 `keepRecentTokens` 整段保留，所以塞得進這段尾巴的 branch 壓下去只會被收
+  一次 summary 的費用、context 反而變大。`canCompactBranch` 是同一個判斷的獨立版本；session
+  detail 以 `stats.compactable` 回報它，為 false 時 service 對手動 `compact` 回 `CONFLICT`。
+  手動 `compact` 跟 `navigate` 一樣回傳整份重建的 detail，因為 leaf、context 估算與 transcript
+  都變了；
 - `navigatePiSession` 搬 leaf（目標是 user message 時搬到它的 parent，讓它可以重問），需要時
   用 Pi 的 `generateBranchSummary` 把被丟下的 entries 總結成新 leaf 底下的 `branch_summary`，
   label 則記錄下來但不讓 leaf 停在 label 上；
@@ -522,6 +532,13 @@ maintenance 期間到達的 prompt 會等它的寫入完成。鎖裡的所有工
 events，因為
 active branch 改變後 client 手上的 view 全部失效，而 client fold 一份 detail 的方式跟 fold `get`
 一模一樣。
+
+兩者都在 request 裡帶著一次模型呼叫（summary），所以 RPC route 把它們跟 chat stream 一樣排除在
+共用的 request timeout 之外（`rpc.route.ts`），改由 service 自己設限：`MAINTENANCE_DEADLINE_MS`
+以 signal 交給 Pi 的 summary，時限一到 summary 被取消、什麼都不 append、transaction 回滾、caller
+拿到 `TIMEOUT`。共用的 timeout 只會在工作與 session lock 照跑的情況下把回應換成 504。鎖裡的
+查詢也一次一個：transaction 是單一連線，pg 對忙碌中的 client 再下一筆 query 會排隊——而且已列為
+deprecated。
 
 Kind state 沒有隨 transcript 版本化：rewind 之後 writing draft 停在被丟下的 branch 最後的狀態，
 fork 複製的是「現在」的 draft 而不是目標當時的；dialog 會講清楚，per-entry snapshot 的 seam 在

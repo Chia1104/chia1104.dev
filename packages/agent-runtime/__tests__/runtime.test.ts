@@ -94,15 +94,34 @@ const toolCallTurn = (
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** A branch already at the compaction threshold: ~100k tokens on a 100k window. */
-const seedOversizedBranch = (session: InMemorySessionTree) =>
-  session.appendEntry({
+/**
+ * A branch already at the compaction threshold: ~100k tokens on a 100k window. The oversized
+ * message sits behind one older turn: Pi keeps the newest ~20k tokens whole, so that turn is what
+ * a compaction has to summarise — an oversized message alone would be the whole retained tail.
+ */
+const seedOversizedBranch = async (session: InMemorySessionTree) => {
+  await session.appendEntry({
+    type: "message",
+    id: "entry-0",
+    parentId: null,
+    timestamp: 1,
+    message: { role: "user", content: "Old question", timestamp: 1 },
+  });
+  await session.appendEntry({
+    type: "message",
+    id: "entry-0-reply",
+    parentId: "entry-0",
+    timestamp: 1,
+    message: fauxAssistantMessage("Old answer", { timestamp: 1 }),
+  });
+  await session.appendEntry({
     type: "message",
     id: "entry-1",
-    parentId: null,
+    parentId: "entry-0-reply",
     timestamp: 1,
     message: { role: "user", content: "x".repeat(400_000), timestamp: 1 },
   });
+};
 
 const build = (fauxOptions: { tokensPerSecond?: number } = {}) => {
   const faux = fauxProvider({
