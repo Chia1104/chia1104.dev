@@ -143,6 +143,7 @@
     "@streamdown/cjk": "catalog:streamdown",
     "@tanstack/react-pacer": "catalog:tanstack",
     "@tanstack/react-query": "catalog:tanstack",
+    "@tanstack/react-virtual": "catalog:tanstack",
     "border-beam": "catalog:ui",
     "lucide-react": "catalog:ui",
     "react": "catalog:react-is",
