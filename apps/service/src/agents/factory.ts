@@ -16,7 +16,7 @@ export const agentFactory = createAgentFactory({
       load: () => import("./writing").then((module) => module.writingAgentKind),
     },
     public: {
-      minTier: CallerTier.Guest,
+      minTier: CallerTier.Root,
       load: () => import("./public").then((module) => module.publicAgentKind),
     },
   },
