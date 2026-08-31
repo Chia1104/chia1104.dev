@@ -1,5 +1,3 @@
-import { getHookByToken, getRun } from "workflow/api";
-
 import {
   AGENT_DELTA_NAMESPACE,
   AGENT_TURN_KEY,
@@ -9,16 +7,17 @@ import type {
   AgentTurnMarker,
 } from "@chia/agent-host/execution";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import type { AgentStreamCursor } from "@chia/api/orpc/services/agent.service";
 import type { DB } from "@chia/db/client";
 import {
   getAgentSessionLastSeq,
   patchAgentRunMetadata,
 } from "@chia/db/repos/agent";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
-import { workflowControl } from "../repos/workflow-control.repo";
+import type { AgentRunHost } from "../agent.factory";
+import type { AgentStreamCursor } from "../agent.service";
 
-import { isRunLive } from "./agent-run-liveness.service";
+import { isRunLive } from "./run-liveness";
 
 interface ClaimableAgentTurn {
   id: string;
@@ -46,11 +45,12 @@ export const agentStreamCursor = cursorOf;
  * it in durable stream order and the step replaces the marker when that turn begins.
  */
 export const claimNextAgentTurn = async (
+  runs: AgentRunHost,
   db: DB,
   row: ClaimableAgentTurn,
   runId: string
 ): Promise<AgentStreamCursor> => {
-  const run = getRun(runId);
+  const run = runs.get(runId);
   const [coarseTail, deltaTail] = await Promise.all([
     run.getReadable().getTailIndex(),
     run.getReadable({ namespace: AGENT_DELTA_NAMESPACE }).getTailIndex(),
@@ -77,9 +77,12 @@ export const claimNextAgentTurn = async (
  * `createHook()` registers after the workflow starts, so a just-started run may not be resumable
  * yet. This turns that startup race into a retryable response.
  */
-export const isAgentHookReady = async (token: string): Promise<boolean> => {
+export const isAgentHookReady = async (
+  runs: AgentRunHost,
+  token: string
+): Promise<boolean> => {
   try {
-    return Boolean(await getHookByToken(token));
+    return await runs.hasHook(token);
   } catch {
     return false;
   }
@@ -89,10 +92,12 @@ const ABORT_SETTLE_TIMEOUT_MS = 10_000;
 
 /** Waits for a stopped turn to persist its terminal event before the run is cancelled. */
 export const waitForAgentTurnEnd = async (
+  runs: AgentRunHost,
   runId: string,
   startIndex: number
 ): Promise<void> => {
-  const reader = getRun(runId)
+  const reader = runs
+    .get(runId)
     .getReadable<AgentWireEvent>({ startIndex })
     .getReader();
   const deadline = setTimeout(
@@ -113,11 +118,15 @@ export const waitForAgentTurnEnd = async (
 };
 
 /** Cancels a run unless it reached a terminal state during the request. */
-export const cancelLiveAgentRun = async (runId: string): Promise<void> => {
+export const cancelLiveAgentRun = async (
+  runs: AgentRunHost,
+  workflow: WorkflowControlClient,
+  runId: string
+): Promise<void> => {
   try {
-    await workflowControl.cancelRun(runId);
+    await workflow.cancelRun(runId);
   } catch (error) {
-    if (await isRunLive(runId)) throw error;
+    if (await isRunLive(runs, runId)) throw error;
   }
 };
 
@@ -132,17 +141,22 @@ interface AgentRunStreamOptions {
  * order. Both readers are cancelled when the consumer disconnects.
  */
 export async function* streamAgentRunEvents({
+  runs,
   runId,
   startIndex,
   deltaStartIndex,
-}: AgentRunStreamOptions): AsyncGenerator<AgentWireEvent, void, void> {
-  const reader = getRun(runId)
+}: AgentRunStreamOptions & {
+  runs: AgentRunHost;
+}): AsyncGenerator<AgentWireEvent, void, void> {
+  const reader = runs
+    .get(runId)
     .getReadable<AgentWireEvent>({ startIndex })
     .getReader();
   const deltaReader =
     deltaStartIndex === undefined
       ? undefined
-      : getRun(runId)
+      : runs
+          .get(runId)
           .getReadable<AgentWireEvent[]>({
             namespace: AGENT_DELTA_NAMESPACE,
             startIndex: deltaStartIndex,

@@ -46,29 +46,33 @@ clients, not an interchangeable engine API.
 `agent.session.kind` is a domain discriminator (`writing`, `public`), not a harness discriminator. It
 selects:
 
-- the `AgentKindDefinition` in `apps/service/src/agents/registry.ts` (`AGENT_KINDS`), which both
-  the request context's `agentKinds[kind]` service and the durable turn step resolve;
+- the `AgentKindDefinition` registered in each process's `agents/factory.ts` — a binding map in
+  service, an explicit switch in workflow; service uses it to create the oRPC kind service, and
+  workflow uses its execution-bound sibling;
 - the kind-specific extension row, such as `agent.writing_session`, behind `definition.state`.
 
 Session-scoped requests resolve kind from the persisted session. Client input can only cross-check
 it, so a caller cannot drive a writing session through another kind's tools.
 
-`packages/api/orpc/services/agent.service.ts` defines `AgentKindService`. This is a valid host dependency
-inversion: `packages/api` cannot own workflow handles, DB access or credentials, so `apps/service`
-puts one service per registered kind on every request context (`createORPCContext`). It is
-unrelated to the removed harness abstraction.
+`packages/api/orpc/services/agent.factory.ts` defines the typed construction environment, following
+Hono's factory shape: the host declares its per-kind bindings (`AgentKindEntry` — an eager `minTier`
+and a dynamic definition loader) and credential handling once; the factory creates stateless kind,
+admin and usage services from them. No service delegate or definition cache is kept — dynamic
+imports already cache the modules. `BaseOSContext` carries this single `agentFactory`, alongside DB
+and workflow control.
 
-The service itself is generic. `apps/service/src/agents/service.ts` (`createAgentKindService`)
-implements the whole port — session rows, durable runs, prompt/attach/stream, abort, approvals,
-compaction and rewind — over an `AgentKindDefinition` (`@chia/agent-host/kind`), and the turn step
-(`runKindTurn`) resolves the same definition for the Pi side. A kind is one file in
+The generic service and its business logic live in `packages/api/orpc/services/agent/`: session rows,
+durable runs, prompt/attach/stream, abort, approvals, compaction, rewind, usage and operator
+configuration. `apps/service` supplies only host bindings. The turn step resolves its execution-bound
+definition through `apps/workflow/src/agents/factory.ts`. A kind is one file in
 `apps/service/src/agents/` (`writing.ts`, `public.ts`) that binds its domain package to the host's ports and
 supplies only what differs: `minTier`, `label`/`description`, defaults, replay policy, the model
 allowlist (`assert`/`list`/`resolve`), its operator `config` schema, capabilities, its 1:1
 `state` row (`create`/`load`/`summary`/`detail`) and `runTurn`. Compaction and rewind are not
 the kind's: the generic service runs Pi's own operations with a model the compaction task
-resolves (§8). The registry entry restates `minTier` eagerly for the guards and loads the
-definition with a dynamic import, so the domain package and provider SDKs stay off the boot path.
+resolves (§8). The binding restates `minTier` eagerly (the loader asserts the two agree), so the
+guards refuse a caller below the floor before the definition — and the domain package and provider
+SDKs behind it — is ever loaded; dynamic imports keep all of that off the non-agent boot path.
 
 `AgentKindService` is the shape every kind shares and never grows for one kind. A procedure only
 one kind has gets its own contract namespace (`agent.<kind>.*`), its own port interface in
@@ -81,7 +85,7 @@ session detail (`state.detail`), which is all the dashboard reads.
 Access is a property of the kind, not of the routes. Every agent route runs `callerGuard()`, which
 only resolves the caller's `CallerTier`; the agent guards (`agentKindGuard` for creation and
 capability listings, `agentSessionGuard` for session-scoped requests) then compare that tier with
-the kind's `AgentKindService.minTier`. Any tier below `Guest` is refused first — a session row has
+the kind's registered `minTier`. Any tier below `Guest` is refused first — a session row has
 an owner, so an anonymous or API-key caller has no one to be. `list` with no kind returns only the
 kinds the caller may use.
 
@@ -129,8 +133,8 @@ resets a quota.
 
 `agent.usage.me` (`agentUsageStandingSchema`) is the caller's own standing for any
 session-bearing tier: allowance, spend, the current week, running turns and the cap — `null`
-limits for the operator — through the `agentUsage` port (`AgentUsageService`), which
-`apps/service` binds to `readAgentUsageStanding` in `@chia/agent-host/quota`.
+limits for the operator — through the usage service created by `agentFactory`, which delegates to
+`readAgentUsageStanding` in `@chia/agent-host/quota`.
 
 ## 3. Policy, sessions and data
 
@@ -240,7 +244,7 @@ A message queued behind a turn already running on its session adds no running tu
 
 The marker alone is not truth: a process that dies under a step never clears it. Every reader
 therefore asks the World whether the run is alive (`runStateOf` in
-`apps/service/src/services/agent-run-liveness.service.ts`), and before the cap is counted —
+`packages/api/orpc/services/agent/run-liveness.ts`), and before the cap is counted —
 and before `usage.me` reports — `reconcileRunningAgentTurns` closes the user's marked rows
 whose run is gone (`failed`, controller released). The workflow itself closes its row in a
 `finally` (`completeAgentRunStep` with `failed` when a step threw), so a stale row can only
@@ -716,7 +720,7 @@ research, and an active lesson is a standing instruction. Every write goes throu
 ### Content visibility
 
 The read tools cannot widen what they see: visibility is fixed when the host builds the port
-(`packages/agent-host/src/content-read.port.ts`). An `author` port sees the configured author's
+(`packages/api/agents/content-read.port.ts`). An `author` port sees the configured author's
 drafts; a `public` port scopes every detail read to `published: true` and answers a request for
 drafts with nothing rather than overriding the filter. Search needs no branch — the chunk index is
 published-only for every caller. The writing agent's port is `author`; the public kind's is
@@ -755,11 +759,12 @@ Another domain kind uses the same concrete Pi runtime:
    composing `contentReadTools` from `@chia/agent-content` when it reads the blog, with the tool
    context extending `ContentToolContext`;
 2. add its extension table when it needs kind-specific persisted state;
-3. add its `AgentKindDefinition` in `apps/service/src/agents/` — including the `minTier` it
-   admits, its `label`/`description` and its operator `config` schema — and register it in
-   `AGENT_KINDS`; the kind service, the turn step and the admin workspace pick it up from there;
-4. have its `runTurn` call the new domain's `run<Kind>Turn`, and register any task of its own in
-   `AGENT_TASKS` (§13);
+3. add its `AgentKindDefinition` in `apps/service/src/agents/` — including the `minTier` it admits,
+   its `label`/`description` and operator `config` schema — then add its binding (`minTier` +
+   loader) to the service factory; add the execution-bound sibling and switch branch to the
+   workflow factory;
+4. have its `runTurn` call the new domain's `run<Kind>Turn`, and add any task definition of its own
+   to `AGENT_TASKS` (§13);
 5. reuse `runPiTurn`, wire events, approval semantics and durable stream plumbing.
 
 Do not add an engine adapter, engine factory, capability plugin system or provider-neutral handle
@@ -774,7 +779,7 @@ until a concrete second execution foundation requires a different seam.
 | Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                                       |
 | Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                                            |
 | Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                                            |
-| Abort controller             | `apps/workflow/src/workflows/agent-abort.workflow.ts`, `apps/service/src/services/agent-abort-controller.service.ts` |
+| Abort controller             | `apps/workflow/src/workflows/agent-abort.workflow.ts`, `packages/api/orpc/services/agent/abort.ts`                  |
 | Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`, `pi/maintenance.ts`                                                   |
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                                   |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                                            |
@@ -783,19 +788,18 @@ until a concrete second execution foundation requires a different seam.
 | Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                                      |
 | Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                                             |
 | Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                                                |
-| Content read tools / port    | `packages/agent-content/src/`, `packages/agent-host/src/content-read.port.ts`                                        |
+| Content read tools / port    | `packages/agent-content/src/`, `packages/api/agents/content-read.port.ts`                               |
 | Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`, `apps/workflow/src/services/agent-memory.port.ts`                 |
 | Memory writes / indexing     | `packages/api/memories/write.ts`, `apps/service/src/services/agent-memory-indexing.service.ts`                       |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                                              |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`, `src/prompts/`, `src/policy.ts`                                                 |
 | Public composition           | `packages/agent-public/src/runtime.ts`, `src/models.ts`, `src/policy.ts`, `src/prompts/system.ts`                    |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                                        |
-| Kind registry / generic host | `apps/service/src/agents/registry.ts`, `agents/service.ts`, `packages/agent-host/src/kind.ts`                        |
+| Agent factory / service      | `packages/api/orpc/services/agent.factory.ts`, `services/agent/`, `packages/agent-host/src/kind.ts`                  |
 | Writing kind binding         | `packages/agent-host/src/writing.ts`, `apps/service/src/agents/writing.ts`, `apps/workflow/src/agents/writing.ts`    |
 | Public kind binding          | `packages/agent-host/src/public.ts`, `apps/service/src/agents/public.ts`, `apps/workflow/src/agents/public.ts`       |
-| Task registry / resolution   | `packages/agent-host/src/tasks.ts`                                                                                   |
-| Operator configuration       | `packages/agent-host/src/config.ts`, `apps/service/src/agents/admin.ts`, `packages/db/src/libs/agent/config.ts`      |
-| Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`, `apps/service/src/factories/agent-admin.factory.ts`           |
+| Task definitions / resolution | `packages/agent-host/src/tasks.ts`                                                                                  |
+| Operator configuration       | `packages/agent-host/src/config.ts`, `packages/api/orpc/services/agent/admin.ts`, `packages/db/src/libs/agent/config.ts` |
+| Admin contract / service     | `packages/api/orpc/contracts/agent-admin.contract.ts`, `packages/api/orpc/services/agent/admin.ts`                  |
 | Durable workflow / step      | `apps/workflow/src/workflows/agent-session.workflow.ts`, `src/steps/agent-turn.step.ts`                              |
 | Durable message inbox        | `packages/workflow-control/src/agent.hooks.ts`                                                                       |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`, `routes/agent.route.ts`                                             |
@@ -805,13 +809,13 @@ until a concrete second execution foundation requires a different seam.
 
 ## 13. Kinds, tasks and operator configuration
 
-Two registries, both code, both overridable by the operator from the dashboard's agent
-workspace (`agent.admin.*`, admin-only):
+Two code-defined sources are overridable by the operator from the dashboard's agent workspace
+(`agent.admin.*`, admin-only):
 
-| Registry      | Where                                 | One entry is                                                                                  | Row                 |
-| ------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
-| `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | a conversational agent — tools, ports, policy, state row, `runTurn`                           | `agent.kind_config` |
-| `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
+| Source        | Where                                      | One entry is                                                                                  | Row                 |
+| ------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------- |
+| agent factory | `apps/service/src/agents/factory.ts`       | a conversational agent — tools, ports, policy, state row, `runTurn`                           | `agent.kind_config` |
+| `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`         | a one-shot model call beside a session — title, compaction, branch summary, lesson extraction | `agent.task_config` |
 
 A third row, not a registry: `agent.quota_config` holds the operator's override of the weekly
 allowance, its zone and the running-turn cap (`agent.admin.quota.*`, the workspace's "Usage

@@ -1,24 +1,26 @@
+import type {
+  AgentKindCaller,
+  AgentKindCapabilities,
+} from "@chia/agent-host/kind";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import { toORPCError } from "@chia/service-kit/adapters/orpc";
 import type { ServiceContext } from "@chia/service-kit/context";
 import { AppError } from "@chia/service-kit/errors";
-import type {
-  Caller,
-  CallerTier,
-} from "@chia/service-kit/policies/caller.policy";
+import type { CallerTier } from "@chia/service-kit/policies/caller.policy";
 import type { JsonObject } from "@chia/utils/json";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import type * as agentContracts from "../contracts/agent.contract";
 import type { BaseOSContext } from "../utils";
 
+import type { AgentFactory } from "./agent.factory";
+
 /**
  * Port for host-owned agent services.
  *
- * The oRPC routes live here in `packages/api`, but *running* an agent needs a long-lived process
- * that owns harness construction, live-run bookkeeping and provider credentials — all of which
- * belong to the host app. The host supplies one implementation per `agent.session.kind` on the
- * request context (`BaseOSContext.agentKinds`); keying by kind is what lets a second agent
- * package be additive rather than replace the first.
+ * The oRPC package owns the session, durable-run and maintenance behavior. The host contributes a
+ * typed factory with kind definitions and credential handling; no service registry is kept on the
+ * request context.
  */
 
 /** Where the caller stands against the usage quota right now; see `agent.usage.me`. */
@@ -28,17 +30,21 @@ export type AgentUsageStanding = agentContracts.AgentUsageStanding;
  * Per-call context the service needs from the request that triggered it.
  *
  * Extends the resolved {@link Caller} rather than restating a role: which tier a kind admits is
- * the kind's own policy ({@link AgentKindService.minTier}), so the transport passes what it
+ * the kind's own policy (the factory's registered `minTier`), so the transport passes what it
  * learned and lets the kind read `tier`, `session` or `adminId` as it needs. By the time a service
  * sees this the guard has already enforced the kind's minimum tier.
  */
-export interface AgentServiceCaller extends Caller {
+export interface AgentServiceContext extends ServiceContext {
+  workflow: WorkflowControlClient;
+}
+
+export interface AgentServiceCaller extends AgentKindCaller {
   /**
    * Session user who owns every session this call may touch. Always present: a session row has
    * an owner, so every kind requires at least a session-bearing tier.
    */
   userId: string;
-  context: ServiceContext;
+  context: AgentServiceContext;
 }
 
 /** Where to start tailing a run: one index per durable stream, since each is numbered on its own. */
@@ -60,13 +66,6 @@ export interface AgentModelRef {
 }
 
 export interface AgentKindService {
-  /**
-   * Lowest {@link CallerTier} allowed to touch this kind at all — creation, listing and every
-   * session-scoped route. Never below `Guest`: sessions are owned by a user, so an anonymous or
-   * API-key caller has no owner to be; a guest is the least a kind can admit.
-   */
-  readonly minTier: CallerTier;
-
   listSessions(
     caller: AgentServiceCaller,
     input: { limit?: number; includeDeleted?: boolean } | undefined
@@ -231,28 +230,47 @@ export interface AgentKindService {
     }[]
   >;
 
-  listCapabilities(): Promise<{
-    tools: {
-      name: string;
-      label: string;
-      tier: string;
-      description: string;
-    }[];
-    commands: {
-      name: string;
-      description: string;
-      argumentHint?: string;
-    }[];
-    skills: { name: string; description: string }[];
-  }>;
+  listCapabilities(): Promise<AgentKindCapabilities>;
 }
 
-/** The context's service for `kind`, or `SERVICE_UNAVAILABLE` when this process has none. */
-export const requireAgentKind = (
+/** The request's factory, or `SERVICE_UNAVAILABLE` when this process has no agent host. */
+export const requireAgentFactory = (context: BaseOSContext): AgentFactory => {
+  if (!context.agentFactory) {
+    throw toORPCError(
+      new AppError("SERVICE_UNAVAILABLE", {
+        message: "Agents are not available in this process.",
+      })
+    );
+  }
+  return context.agentFactory;
+};
+
+/**
+ * The registered tier floor for `kind`, or `SERVICE_UNAVAILABLE` when the factory has none.
+ * Eager on purpose: the guards refuse a caller below the floor before the definition — and the
+ * domain package behind it — is ever loaded.
+ */
+export const requireAgentKindTier = (
   context: BaseOSContext,
   kind: string
-): AgentKindService => {
-  const service = context.agentKinds?.[kind];
+): CallerTier => {
+  const minTier = requireAgentFactory(context).minTierOf(kind);
+  if (minTier === undefined) {
+    throw toORPCError(
+      new AppError("SERVICE_UNAVAILABLE", {
+        message: `Agent kind "${kind}" is not available in this process.`,
+      })
+    );
+  }
+  return minTier;
+};
+
+/** A freshly composed service for `kind`, or `SERVICE_UNAVAILABLE` when the factory has none. */
+export const requireAgentKind = async (
+  context: BaseOSContext,
+  kind: string
+): Promise<AgentKindService> => {
+  const service = await requireAgentFactory(context).create(kind);
   if (!service) {
     throw toORPCError(
       new AppError("SERVICE_UNAVAILABLE", {
@@ -264,5 +282,6 @@ export const requireAgentKind = (
 };
 
 /** Kinds this process can serve. */
-export const availableAgentKinds = (context: BaseOSContext): string[] =>
-  Object.keys(context.agentKinds ?? {});
+export const availableAgentKinds = (context: BaseOSContext): string[] => [
+  ...(context.agentFactory?.kinds ?? []),
+];

@@ -19,10 +19,6 @@ import type {
   ToolTier,
 } from "@chia/agent-runtime/types";
 import { entriesToWireEvents } from "@chia/agent-runtime/wire/replay";
-import type {
-  AgentKindService,
-  AgentServiceCaller,
-} from "@chia/api/orpc/services/agent.service";
 import type { DB } from "@chia/db/client";
 import {
   completeAgentRun,
@@ -33,12 +29,12 @@ import {
   softDeleteAgentSession,
 } from "@chia/db/repos/agent";
 
-import { readAgentAbortControllerRef } from "../../services/agent-abort-controller.service";
-import { cancelLiveAgentRun } from "../../services/agent-run-control.service";
-import {
-  isRunLive,
-  runStateOf,
-} from "../../services/agent-run-liveness.service";
+import type { AgentServiceHost } from "../agent.factory";
+import type { AgentKindService, AgentServiceCaller } from "../agent.service";
+
+import { readAgentAbortControllerRef } from "./abort";
+import { cancelLiveAgentRun } from "./run-control";
+import { isRunLive, runStateOf } from "./run-liveness";
 
 type SessionService = Pick<
   AgentKindService,
@@ -51,7 +47,8 @@ type SessionService = Pick<
 
 /** Session persistence, ownership checks and transport projections for one agent kind. */
 export const createAgentSessionOperations = <TState, TConfig extends object>(
-  definition: AgentKindDefinition<TState, TConfig>
+  definition: AgentKindDefinition<TState, TConfig>,
+  host: AgentServiceHost
 ) => {
   /** `defaults` only matter to `create`; the code values serve every other operation. */
   const repoFor = (
@@ -177,7 +174,7 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
     const turn = activeRun
       ? readAgentTurnMarker(activeRun.metadata)
       : undefined;
-    const run = await runStateOf({
+    const run = await runStateOf(host.runs, {
       activeRunId: activeRun?.id ?? null,
       workflowRunId: activeRun?.externalRunId ?? null,
       startedAt: activeRun?.startedAt ?? null,
@@ -275,8 +272,15 @@ export const createAgentSessionOperations = <TState, TConfig extends object>(
       const row = await loadOwnedSession(caller, input.sessionId);
       if (!row) return false;
 
-      if (row.workflowRunId && (await isRunLive(row.workflowRunId))) {
-        await cancelLiveAgentRun(row.workflowRunId);
+      if (
+        row.workflowRunId &&
+        (await isRunLive(host.runs, row.workflowRunId))
+      ) {
+        await cancelLiveAgentRun(
+          host.runs,
+          caller.context.workflow,
+          row.workflowRunId
+        );
       }
       if (row.activeRunId) {
         await completeAgentRun(caller.context.db, row.activeRunId, "cancelled");

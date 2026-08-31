@@ -18,20 +18,22 @@ import type {
   AgentUsageListener,
 } from "@chia/agent-runtime/types";
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
-import type {
-  AgentKindService,
-  AgentServiceCaller,
-} from "@chia/api/orpc/services/agent.service";
+import type { FeedDraft } from "@chia/agent-writing/types";
 import type { DB } from "@chia/db/client";
 import type { AgentSession } from "@chia/db/schema";
-import type { CallerTier } from "@chia/service-kit/policies/caller.policy";
+import type { ServiceContext } from "@chia/service-kit/context";
+import type {
+  Caller,
+  CallerTier,
+} from "@chia/service-kit/policies/caller.policy";
+import type { JsonObject } from "@chia/utils/json";
 
 /**
  * What one agent kind contributes to the host.
  *
  * Everything an `AgentKindService` does that is not about *this* kind — session rows, durable
  * runs, streaming, abort, approvals, compaction and rewind, the turn step's bookkeeping — is
- * generic and lives in `./service.ts` and `steps/agent-turn.step.ts`. A kind supplies only the
+ * generic and lives in `packages/api/orpc/services/agent/` and `steps/agent-turn.step.ts`. A kind supplies only the
  * parts that differ: its defaults and policy, which models it admits, its operator
  * configuration, the 1:1 state row it keeps beside `agent.session`, and the Pi turn it runs.
  * The definition composes the domain package with the host's ports, which is why it lives in
@@ -48,8 +50,8 @@ export interface AgentKindDefinition<TState, TConfig extends object> {
   readonly description: string;
   /**
    * Lowest {@link CallerTier} allowed to touch this kind at all. Never below `Guest`: sessions
-   * are owned by a user, so an anonymous or API-key caller has no owner to be. Restated on the
-   * registry entry, which the guards read before the definition is loaded.
+   * are owned by a user, so an anonymous or API-key caller has no owner to be. Restated eagerly
+   * on the host's {@link AgentKindEntry}, which the guards read before the definition is loaded.
    */
   readonly minTier: CallerTier;
   readonly defaults: AgentSessionDefaults;
@@ -81,19 +83,33 @@ export interface AgentKindConfigDefinition<TConfig extends object> {
   readonly defaults: TConfig;
 }
 
-export type AgentKindCapabilities = Awaited<
-  ReturnType<AgentKindService["listCapabilities"]>
->;
+export interface AgentKindCapabilities {
+  tools: {
+    name: string;
+    label: string;
+    tier: string;
+    description: string;
+  }[];
+  commands: { name: string; description: string; argumentHint?: string }[];
+  skills: { name: string; description: string }[];
+}
 
-export type AgentSessionSummary = Awaited<
-  ReturnType<AgentKindService["listSessions"]>
->["items"][number];
+/** Caller facts a kind may use while creating its own state. */
+export interface AgentKindCaller extends Caller {
+  userId: string;
+  context: ServiceContext;
+}
 
-export type AgentSessionDetail = NonNullable<
-  Awaited<ReturnType<AgentKindService["getSession"]>>
->;
+export interface AgentCreateSessionInput {
+  title?: string;
+  targetFeedId?: number;
+  model?: AgentModelRef;
+  thinkingLevel?: string;
+  autoApprove?: string[];
+  runtimeConfig?: JsonObject;
+}
 
-export type AgentDraftPayload = NonNullable<AgentSessionDetail["draft"]>;
+export type AgentDraftPayload = FeedDraft;
 
 /**
  * The kind's 1:1 extension row. `create` runs inside the generic `createSession` after the
@@ -102,7 +118,7 @@ export type AgentDraftPayload = NonNullable<AgentSessionDetail["draft"]>;
  */
 export interface AgentKindState<TState> {
   create(
-    caller: AgentServiceCaller,
+    caller: AgentKindCaller,
     db: DB,
     sessionId: string,
     input: AgentCreateSessionInput
@@ -119,7 +135,7 @@ export interface AgentKindState<TState> {
    * Kind-owned fields of the session summary. The contract still carries the writing agent's
    * `targetFeedId` as an optional field; a kind with nothing to add returns `{}`.
    */
-  summary(state: TState): Partial<Pick<AgentSessionSummary, "targetFeedId">>;
+  summary(state: TState): { targetFeedId?: number | null };
   /**
    * Kind-owned fields of the session detail, read fresh per request. The contract still carries
    * the writing agent's `draft` as an optional field; a kind with nothing to add returns `{}`.
@@ -128,12 +144,8 @@ export interface AgentKindState<TState> {
     db: DB,
     sessionId: string,
     state: TState
-  ): Promise<Partial<Pick<AgentSessionDetail, "draft" | "state">>>;
+  ): Promise<{ draft?: AgentDraftPayload; state?: unknown }>;
 }
-
-export type AgentCreateSessionInput = Parameters<
-  AgentKindService["createSession"]
->[1];
 
 export type AgentModels = ReturnType<typeof createAgentModels>;
 
@@ -165,11 +177,25 @@ export interface AgentTurnContext<TState, TConfig extends object, TApproval> {
 }
 
 /**
- * A registry entry. `minTier` is eager because the guards read it before any agent call; `load`
- * is a dynamic import because the definition pulls the domain package and the provider stack,
- * which must stay out of the boot path of a process whose other routes never touch an agent.
+ * A host's binding for one kind. `minTier` is eager because the guards read it — and the
+ * session-list route filters by it — before any definition is loaded; `load` is a dynamic import
+ * because the definition pulls the domain package and the provider stack, which must stay out of
+ * the boot path of a process whose other routes never touch an agent.
  */
 export interface AgentKindEntry {
   readonly minTier: CallerTier;
   load(): Promise<AgentKindDefinition<unknown, object>>;
 }
+
+/** Refuses a definition whose discriminator drifted from the key it was registered under. */
+export const assertAgentKind = (
+  kind: string,
+  definition: AgentKindDefinition<unknown, object>
+): AgentKindDefinition<unknown, object> => {
+  if (definition.kind !== kind) {
+    throw new Error(
+      `Agent kind "${kind}" loaded a definition for "${definition.kind}".`
+    );
+  }
+  return definition;
+};

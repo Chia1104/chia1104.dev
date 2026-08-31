@@ -3,13 +3,13 @@ import {
   BYOK_PROVIDER_IDS,
   UnknownAgentModelError,
 } from "@chia/agent-runtime/models";
-import type { AgentKindService } from "@chia/api/orpc/services/agent.service";
 
-import { readEncryptedAgentCredentials } from "../services/agent-credentials.service";
+import type { AgentServiceHost } from "../agent.factory";
+import type { AgentKindService } from "../agent.service";
 
-import { createAgentMaintenanceOperations } from "./service/maintenance";
-import { createAgentSessionOperations } from "./service/session";
-import { createAgentTurnOperations } from "./service/turn";
+import { createAgentMaintenanceOperations } from "./maintenance";
+import { createAgentSessionOperations } from "./session";
+import { createAgentTurnOperations } from "./turn";
 
 /**
  * Builds the transport-facing service shared by every registered agent kind.
@@ -19,15 +19,15 @@ import { createAgentTurnOperations } from "./service/turn";
  * owns no mutable process state.
  */
 export const createAgentKindService = <TState, TConfig extends object>(
-  definition: AgentKindDefinition<TState, TConfig>
+  definition: AgentKindDefinition<TState, TConfig>,
+  host: AgentServiceHost
 ): AgentKindService => {
-  const sessions = createAgentSessionOperations(definition);
+  const sessions = createAgentSessionOperations(definition, host);
 
   return {
-    minTier: definition.minTier,
     ...sessions.service,
-    ...createAgentTurnOperations(definition, sessions),
-    ...createAgentMaintenanceOperations(definition, sessions),
+    ...createAgentTurnOperations(definition, sessions, host),
+    ...createAgentMaintenanceOperations(definition, sessions, host),
 
     /** Validates model policy and catalogue membership before settings are persisted. */
     validateModel(ref) {
@@ -45,7 +45,7 @@ export const createAgentKindService = <TState, TConfig extends object>(
 
     listModels(caller) {
       // Listing only needs key presence; plaintext credentials never enter this path.
-      const registered = readEncryptedAgentCredentials(caller.context.headers);
+      const registered = host.credentials.read(caller.context.headers);
       const configured = BYOK_PROVIDER_IDS.filter(
         (providerId) => registered?.[providerId]
       );

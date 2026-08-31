@@ -8,10 +8,6 @@ import {
   assertBelowRunningTurnCap,
   assertWithinAgentQuota,
 } from "@chia/agent-host/quota";
-import type {
-  AgentKindService,
-  AgentServiceCaller,
-} from "@chia/api/orpc/services/agent.service";
 import type { DB } from "@chia/db/client";
 import {
   bindAgentRunExternalId,
@@ -26,13 +22,14 @@ import {
   agentMessageToken,
 } from "@chia/workflow-control/agent-hooks";
 
-import { workflowControl } from "../../repos/workflow-control.repo";
+import type { AgentServiceHost } from "../agent.factory";
+import type { AgentKindService, AgentServiceCaller } from "../agent.service";
+
 import {
   AGENT_ABORT_CONTROLLER_KEY,
   signalAgentAbort,
   startAgentAbortController,
-} from "../../services/agent-abort-controller.service";
-import { readEncryptedAgentCredentials } from "../../services/agent-credentials.service";
+} from "./abort";
 import {
   agentStreamCursor,
   cancelLiveAgentRun,
@@ -40,14 +37,13 @@ import {
   isAgentHookReady,
   streamAgentRunEvents,
   waitForAgentTurnEnd,
-} from "../../services/agent-run-control.service";
+} from "./run-control";
 import {
   isRunLease,
   isRunLive,
   reconcileRunningAgentTurns,
   runStateOf,
-} from "../../services/agent-run-liveness.service";
-
+} from "./run-liveness";
 import type { AgentSessionOperations } from "./session";
 
 type TurnService = Pick<
@@ -58,7 +54,8 @@ type TurnService = Pick<
 /** Durable turn admission, workflow hooks and live transport for one agent kind. */
 export const createAgentTurnOperations = <TState, TConfig extends object>(
   definition: AgentKindDefinition<TState, TConfig>,
-  sessions: AgentSessionOperations<TState, TConfig>
+  sessions: AgentSessionOperations<TState, TConfig>,
+  host: AgentServiceHost
 ): TurnService => {
   /** Every model-producing continuation goes through the same admission policy in this order. */
   const assertCanStartTurn = async (
@@ -66,7 +63,12 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     caller: AgentServiceCaller
   ): Promise<void> => {
     await assertWithinAgentQuota(db, caller);
-    await reconcileRunningAgentTurns(db, caller.userId);
+    await reconcileRunningAgentTurns(
+      db,
+      host.runs,
+      caller.context.workflow,
+      caller.userId
+    );
     await assertBelowRunningTurnCap(db, caller);
   };
 
@@ -89,7 +91,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           text: input.text,
           template: input.template,
           preAuthorizeToolNames: input.preAuthorizeToolNames,
-          credentials: readEncryptedAgentCredentials(caller.context.headers),
+          credentials: host.credentials.read(caller.context.headers),
         };
 
         const outstanding = await sessions.undecidedApprovals(
@@ -102,19 +104,37 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           );
         }
 
-        if (row.workflowRunId && (await isRunLive(row.workflowRunId))) {
-          if (!(await isAgentHookReady(agentMessageToken(input.sessionId)))) {
+        if (
+          row.workflowRunId &&
+          (await isRunLive(host.runs, row.workflowRunId))
+        ) {
+          if (
+            !(await isAgentHookReady(
+              host.runs,
+              agentMessageToken(input.sessionId)
+            ))
+          ) {
             throw new Error(
               "The session's run is still starting up. Retry in a moment."
             );
           }
 
-          const cursor = await claimNextAgentTurn(tx, row, row.workflowRunId);
-          await workflowControl.resumeAgentMessage(input.sessionId, message);
+          const cursor = await claimNextAgentTurn(
+            host.runs,
+            tx,
+            row,
+            row.workflowRunId
+          );
+          await caller.context.workflow.resumeAgentMessage(
+            input.sessionId,
+            message
+          );
           return { ...cursor, startedRun: false };
         }
 
-        const abortController = await startAgentAbortController();
+        const abortController = await startAgentAbortController(
+          caller.context.workflow
+        );
         const runId = crypto.randomUUID();
         const position: AgentStreamPosition = {
           streamIndex: 0,
@@ -142,7 +162,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
 
         let workflowRunId;
         try {
-          workflowRunId = await workflowControl.startAgentSession({
+          workflowRunId = await caller.context.workflow.startAgentSession({
             sessionId: input.sessionId,
             runId,
             userId: caller.userId,
@@ -163,7 +183,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
     async attach(caller, input) {
       const row = await sessions.loadOwnedSession(caller, input.sessionId);
       if (!row?.workflowRunId || !row.turn || isRunLease(row)) return null;
-      const run = await runStateOf(row);
+      const run = await runStateOf(host.runs, row);
       return run?.status === "running"
         ? agentStreamCursor(row.workflowRunId, row.turn)
         : null;
@@ -176,6 +196,7 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
       const runId = input.runId ?? row.workflowRunId;
       if (!runId) return;
       yield* streamAgentRunEvents({
+        runs: host.runs,
         runId,
         startIndex: input.startIndex,
         deltaStartIndex: input.deltaStartIndex,
@@ -184,20 +205,32 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
 
     async abort(caller, input) {
       const row = await sessions.loadOwnedSession(caller, input.sessionId);
-      if (!row?.workflowRunId || !(await isRunLive(row.workflowRunId))) {
+      if (
+        !row?.workflowRunId ||
+        !(await isRunLive(host.runs, row.workflowRunId))
+      ) {
         return false;
       }
 
       if (row.abortController) {
         const signalled = await signalAgentAbort(
+          caller.context.workflow,
           row.abortController.id,
           "stopped by the operator"
         );
         if (signalled && row.turn?.running) {
-          await waitForAgentTurnEnd(row.workflowRunId, row.turn.streamIndex);
+          await waitForAgentTurnEnd(
+            host.runs,
+            row.workflowRunId,
+            row.turn.streamIndex
+          );
         }
       }
-      await cancelLiveAgentRun(row.workflowRunId);
+      await cancelLiveAgentRun(
+        host.runs,
+        caller.context.workflow,
+        row.workflowRunId
+      );
       if (row.activeRunId) {
         await completeAgentRun(caller.context.db, row.activeRunId, "cancelled");
       }
@@ -220,14 +253,19 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
         });
         if (!decided) return null;
 
-        const cursor = await claimNextAgentTurn(tx, row, row.workflowRunId);
-        await workflowControl.resumeAgentApproval(
+        const cursor = await claimNextAgentTurn(
+          host.runs,
+          tx,
+          row,
+          row.workflowRunId
+        );
+        await caller.context.workflow.resumeAgentApproval(
           input.sessionId,
           input.toolCallId,
           {
             approved: input.approved,
             comment: input.comment,
-            credentials: readEncryptedAgentCredentials(caller.context.headers),
+            credentials: host.credentials.read(caller.context.headers),
           }
         );
         return cursor;

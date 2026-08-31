@@ -4,6 +4,12 @@ import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 
 import * as workflowMocks from "./__mocks__/workflow.mock";
 
+const runs = {
+  get: workflowMocks.getRun,
+  hasHook: async (token: string) =>
+    Boolean(await workflowMocks.getHookByToken(token)),
+};
+
 const repo = vi.hoisted(() => ({
   completeAgentRun: vi.fn(),
   getAgentSessionLastSeq: vi.fn(),
@@ -43,8 +49,9 @@ describe("agent run control", () => {
     repo.patchAgentRunMetadata.mockResolvedValue(undefined);
 
     const { claimNextAgentTurn } =
-      await import("../src/services/agent-run-control.service");
+      await import("../orpc/services/agent/run-control");
     const cursor = await claimNextAgentTurn(
+      runs,
       db,
       {
         id: "session-1",
@@ -101,9 +108,10 @@ describe("agent run control", () => {
     workflowMocks.getRun.mockReturnValue({ getReadable });
 
     const { streamAgentRunEvents } =
-      await import("../src/services/agent-run-control.service");
+      await import("../orpc/services/agent/run-control");
     const output = collect(
       streamAgentRunEvents({
+        runs,
         runId: "workflow-1",
         startIndex: 2,
         deltaStartIndex: 5,
@@ -170,8 +178,8 @@ describe("agent run control", () => {
     });
 
     const { streamAgentRunEvents } =
-      await import("../src/services/agent-run-control.service");
-    const iterator = streamAgentRunEvents({ runId: "workflow-1" });
+      await import("../orpc/services/agent/run-control");
+    const iterator = streamAgentRunEvents({ runs, runId: "workflow-1" });
 
     await expect(iterator.next()).resolves.toEqual({
       done: false,

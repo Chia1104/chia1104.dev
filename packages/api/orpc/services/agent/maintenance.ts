@@ -14,20 +14,14 @@ import type {
   AgentNavigationOptions,
   AgentUsageListener,
 } from "@chia/agent-runtime/types";
-import type {
-  AgentKindService,
-  AgentServiceCaller,
-} from "@chia/api/orpc/services/agent.service";
 import type { DB } from "@chia/db/client";
 import { deleteAgentSession, withAgentSessionLock } from "@chia/db/repos/agent";
 import { AppError } from "@chia/service-kit/errors";
 
-import {
-  decryptAgentCredentials,
-  readEncryptedAgentCredentials,
-} from "../../services/agent-credentials.service";
-import { runStateOf } from "../../services/agent-run-liveness.service";
+import type { AgentServiceHost } from "../agent.factory";
+import type { AgentKindService, AgentServiceCaller } from "../agent.service";
 
+import { runStateOf } from "./run-liveness";
 import type { AgentSessionOperations } from "./session";
 
 type MaintenanceService = Pick<
@@ -60,14 +54,15 @@ export const createAgentMaintenanceOperations = <
   TConfig extends object,
 >(
   definition: AgentKindDefinition<TState, TConfig>,
-  sessions: AgentSessionOperations<TState, TConfig>
+  sessions: AgentSessionOperations<TState, TConfig>,
+  host: AgentServiceHost
 ): MaintenanceService => {
   const assertMaintainable = async (
     row: OwnedSession<TState, TConfig>,
     db: DB,
     action: string
   ): Promise<void> => {
-    if ((await runStateOf(row))?.status === "running") {
+    if ((await runStateOf(host.runs, row))?.status === "running") {
       throw new AppError("CONFLICT", {
         message: `Cannot ${action} while a turn is running. Wait for it to finish or abort it.`,
       });
@@ -122,9 +117,7 @@ export const createAgentMaintenanceOperations = <
     const session = await sessions.repoFor(db).openById(row.id);
     const settings = sessions.settingsOf(row);
     const models = createAgentModels(
-      decryptAgentCredentials(
-        readEncryptedAgentCredentials(caller.context.headers)
-      )
+      host.credentials.decrypt(host.credentials.read(caller.context.headers))
     );
     const onUsage: AgentUsageListener = (report) =>
       recordAgentUsage(db, {

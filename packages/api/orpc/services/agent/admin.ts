@@ -24,15 +24,7 @@ import { costToMicros, microsToUsd } from "@chia/agent-host/usage";
 import { UnknownAgentModelError } from "@chia/agent-runtime/models";
 import type { AgentModelRef } from "@chia/agent-runtime/models";
 import type { ThinkingLevel } from "@chia/agent-runtime/types";
-import type {
-  AgentKindAdmin,
-  AgentQuotaAdmin,
-  AgentTaskAdmin,
-} from "@chia/api/orpc/contracts/agent-admin.contract";
-import type {
-  AgentAdminCaller,
-  AgentAdminService,
-} from "@chia/api/orpc/services/agent-admin.service";
+import type { DB } from "@chia/db/client";
 import {
   getAgentQuotaConfig,
   listAgentKindConfigs,
@@ -49,7 +41,13 @@ import type {
 import { AppError } from "@chia/service-kit/errors";
 import type { JsonObject } from "@chia/utils/json";
 
-import { AGENT_KINDS, loadAgentKind } from "./registry";
+import type {
+  AgentKindAdmin,
+  AgentQuotaAdmin,
+  AgentTaskAdmin,
+  AgentTaskParamsInput,
+} from "../../contracts/agent-admin.contract";
+import type { AgentModelInfo } from "../../contracts/agent.contract";
 
 /**
  * The operator's view over every registered kind and task, and the writes behind the
@@ -61,10 +59,63 @@ import { AGENT_KINDS, loadAgentKind } from "./registry";
  * therefore only ever re-point what the code already allows.
  */
 
+/** Per-call context. Admin-only by the route, so the caller is always the configured admin. */
+export interface AgentAdminCaller {
+  adminId: string;
+  db: DB;
+}
+
+export interface AgentAdminService {
+  listKinds(caller: AgentAdminCaller): Promise<AgentKindAdmin[]>;
+  /** `NOT_FOUND` for an unregistered kind, `BAD_REQUEST` when a value fails the kind's policy. */
+  updateKind(
+    caller: AgentAdminCaller,
+    input: {
+      kind: string;
+      model?: AgentModelRef | null;
+      thinkingLevel?: string | null;
+      autoApprove?: string[] | null;
+      config?: JsonObject;
+    }
+  ): Promise<AgentKindAdmin>;
+
+  listTasks(caller: AgentAdminCaller): Promise<AgentTaskAdmin[]>;
+  /** `NOT_FOUND` for an unregistered task, `BAD_REQUEST` for a model off the house catalogue. */
+  updateTask(
+    caller: AgentAdminCaller,
+    input: {
+      id: string;
+      model?: AgentModelRef | null;
+      systemPrompt?: string | null;
+      params?: Partial<AgentTaskParamsInput>;
+    }
+  ): Promise<AgentTaskAdmin>;
+  listTaskModels(): Promise<AgentModelInfo[]>;
+
+  getQuota(caller: AgentAdminCaller): Promise<AgentQuotaAdmin>;
+  /** `BAD_REQUEST` for a zone the runtime does not know. */
+  updateQuota(
+    caller: AgentAdminCaller,
+    input: {
+      weeklyLimitUsd?: number | null;
+      resetTimeZone?: string | null;
+      maxRunningTurns?: number | null;
+    }
+  ): Promise<AgentQuotaAdmin>;
+}
+
 type LoadedKind = AgentKindDefinition<unknown, object>;
 
-const kindOrNotFound = async (kind: string): Promise<LoadedKind> => {
-  const definition = await loadAgentKind(kind);
+interface AgentDefinitionSource {
+  kinds: readonly string[];
+  load(kind: string): Promise<LoadedKind | undefined>;
+}
+
+const kindOrNotFound = async (
+  source: AgentDefinitionSource,
+  kind: string
+): Promise<LoadedKind> => {
+  const definition = await source.load(kind);
   if (!definition) {
     throw new AppError("NOT_FOUND", {
       message: `Agent kind "${kind}" is not registered.`,
@@ -254,24 +305,28 @@ const assertTaskModel = (ref: AgentModelRef): void => {
 // Service
 // ============================================
 
-export const createAgentAdminService = (): AgentAdminService => {
+export const createAgentAdminService = (
+  source: AgentDefinitionSource
+): AgentAdminService => {
   const listKinds = async ({ db }: AgentAdminCaller) => {
-    const rows = new Map(
-      (await listAgentKindConfigs(db)).map((row) => [row.kind, row])
-    );
+    const rows = await listAgentKindConfigs(db);
     return Promise.all(
-      Object.keys(AGENT_KINDS).map(async (kind) =>
-        kindView(await kindOrNotFound(kind), rows.get(kind))
+      source.kinds.map(async (kind) =>
+        kindView(
+          await kindOrNotFound(source, kind),
+          rows.find((row) => row.kind === kind)
+        )
       )
     );
   };
 
   const listTasks = async ({ db }: AgentAdminCaller) => {
-    const rows = new Map(
-      (await listAgentTaskConfigs(db)).map((row) => [row.taskId, row])
-    );
+    const rows = await listAgentTaskConfigs(db);
     return listAgentTaskDefinitions().map((definition) =>
-      taskView(definition, rows.get(definition.id))
+      taskView(
+        definition,
+        rows.find((row) => row.taskId === definition.id)
+      )
     );
   };
 
@@ -279,7 +334,7 @@ export const createAgentAdminService = (): AgentAdminService => {
     listKinds,
 
     async updateKind({ db }, input) {
-      const definition = await kindOrNotFound(input.kind);
+      const definition = await kindOrNotFound(source, input.kind);
       if (input.model) assertKindModel(definition, input.model);
       if (input.autoApprove) assertKindTiers(definition, input.autoApprove);
       const config =

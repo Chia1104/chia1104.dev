@@ -1,13 +1,21 @@
 import type { DB } from "@chia/db/client";
 
-import { createContentReadPort } from "../src/content-read.port";
+import { createContentReadPort } from "../agents/content-read.port";
 
-import * as dbMocks from "./__mocks__/db.mock";
+import * as dbMocks from "./__mocks__/agent-content-db.mock";
 
 const searchFeedsService = vi.hoisted(() =>
   vi.fn(async () => ({ mode: "hybrid", items: [] }))
 );
-vi.mock("@chia/api/feeds/search", () => ({ searchFeedsService }));
+vi.mock("../feeds/search", () => ({ searchFeedsService }));
+vi.mock("@chia/db/repos/feeds", async () => {
+  const mocks = await import("./__mocks__/agent-content-db.mock");
+  return {
+    getFeedById: mocks.getFeedById,
+    getFeedBySlug: mocks.getFeedBySlug,
+    getInfiniteFeeds: mocks.getInfiniteFeeds,
+  };
+});
 
 /**
  * Visibility is fixed when the port is built and cannot be widened by a tool call. These pin
@@ -21,7 +29,7 @@ const db = {} as DB;
 
 describe("createContentReadPort visibility", () => {
   beforeEach(() => {
-    dbMocks.resetAllDbMocks();
+    dbMocks.resetAgentContentDbMocks();
     searchFeedsService.mockClear();
   });
 

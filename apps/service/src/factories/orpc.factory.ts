@@ -2,14 +2,11 @@ import type { Context } from "hono";
 
 import type { BaseOSContext, ORPCConfig } from "@chia/api/orpc/utils";
 
-import { agentKinds } from "../agents/registry";
+import { agentFactory } from "../agents/factory";
 import { env } from "../env";
 import { workflowControl } from "../repos/workflow-control.repo";
 import { memoryHooks } from "../services/agent-memory-indexing.service";
 import { feedHooks } from "../services/feed-indexing.service";
-
-import { agentAdminService } from "./agent-admin.factory";
-import { agentUsageService } from "./agent-usage.factory";
 
 /** The values the guards read from this app's env. Built once; the same on every request. */
 const config: ORPCConfig = {
@@ -45,7 +42,7 @@ export const withErrorReporting = async <T>(
  * hence the spread rather than a field-by-field mapping. Everything after the spread is
  * what this process supplies on top: its env-derived config, the client for `apps/workflow`
  * (the routes start and reconcile runs with it directly), the indexing hooks the write
- * paths fire, and the agent registries only this host has.
+ * paths fire, and the host-bound agent factory.
  */
 export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
   ...c.var,
@@ -58,7 +55,5 @@ export const createORPCContext = (c: Context<HonoContext>): BaseOSContext => ({
     },
   },
   workflow: workflowControl,
-  agentKinds,
-  agentAdmin: agentAdminService,
-  agentUsage: agentUsageService,
+  agentFactory,
 });
