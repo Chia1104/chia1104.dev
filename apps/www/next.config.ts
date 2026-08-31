@@ -40,6 +40,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@chia/*", "@t3-oss/env-nextjs", "@t3-oss/env-core"],
   experimental: {
     authInterrupts: true,
+    globalNotFound: true,
     useTypeScriptCli: true,
   },
   serverExternalPackages: [

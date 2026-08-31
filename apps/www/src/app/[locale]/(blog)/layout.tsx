@@ -1,3 +1,5 @@
+import { getLocale } from "next-intl/server";
+
 import { FeedOrderBy, FeedType } from "@chia/db/types";
 import { NavigationMenu, NavigationMenuList } from "@chia/ui/navigation-menu";
 
@@ -44,16 +46,12 @@ const Navigation = ({ locale }: { locale: PropsWithLocale["locale"] }) => {
   );
 };
 
-const Layout = async ({ children, params }: LayoutProps<"/[locale]">) => {
-  const { locale } = await params;
+const Layout = async ({ children }: LayoutProps<"/[locale]">) => {
+  const locale = await getLocale();
   return (
     <section className="prose dark:prose-invert mt-10 flex min-h-[calc(100vh-140px)] w-full min-w-full flex-col items-start justify-start md:mt-20">
       <div className="z-30">
-        <Navigation
-          locale={
-            /* SAFETY: The producer contract guarantees this value satisfies PropsWithLocale["locale"]. */ locale as PropsWithLocale["locale"]
-          }
-        />
+        <Navigation locale={locale} />
       </div>
       {children}
     </section>

@@ -4,14 +4,13 @@
 type AppRoutes = "/[locale]" | "/[locale]/[type]" | "/[locale]/[type]/[slug]" | "/[locale]/contact" | "/[locale]/email" | "/[locale]/projects"
 type AppRouteHandlerRoutes = "/[locale]/[type]/[slug]/llm.md" | "/[locale]/[type]/[slug]/og" | "/api/v1/health"
 type PageRoutes = never
-type LayoutRoutes = "/" | "/[locale]" | "/[locale]/projects"
+type LayoutRoutes = "/[locale]" | "/[locale]/projects"
 type RedirectRoutes = "/[locale]/about" | "/[locale]/note/[slug]" | "/[locale]/post/[slug]" | "/about" | "/note/[slug]" | "/post/[slug]"
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
 
 
 interface ParamMap {
-  "/": {}
   "/[locale]": { "locale": string; }
   "/[locale]/[type]": { "locale": string; "type": string; }
   "/[locale]/[type]/[slug]": { "locale": string; "type": string; "slug": string; }
@@ -33,7 +32,6 @@ interface ParamMap {
 export type ParamsOf<Route extends Routes> = ParamMap[Route]
 
 interface LayoutSlotMap {
-  "/": never
   "/[locale]": "modal"
   "/[locale]/projects": never
 }

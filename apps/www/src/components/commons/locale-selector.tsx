@@ -5,7 +5,7 @@ import { Button, Dropdown } from "@heroui/react";
 import type { Locale as TLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 
-import { useRouter, usePathname } from "@/libs/i18n/routing";
+import { usePathname, useRouter } from "@/libs/i18n/navigation";
 import { Locale } from "@/libs/utils/i18n";
 
 const LocaleSelector = (props: ButtonProps) => {

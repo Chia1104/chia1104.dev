@@ -1,6 +1,6 @@
 import type { Locale } from "next-intl";
 
-import { useRouter, usePathname } from "@/libs/i18n/routing";
+import { usePathname, useRouter } from "@/libs/i18n/navigation";
 
 export const useChangeLocale = () => {
   const router = useRouter();

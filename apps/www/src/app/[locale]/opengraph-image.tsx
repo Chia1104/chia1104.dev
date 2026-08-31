@@ -12,8 +12,9 @@ export const size = {
 };
 export const contentType = "image/png";
 
-export default async function og() {
-  const t = await getTranslations("home");
+export default async function og({ params }: { params: PageParamsWithLocale }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "home" });
   const workDuration = getWorkDuration(meta.timeline);
   return new ImageResponse(
     <OpenGraph

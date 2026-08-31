@@ -4,7 +4,7 @@ import { Suspense, ViewTransition } from "react";
 
 import { ErrorBoundary } from "@sentry/nextjs";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { getQueryClient } from "@chia/utils/query-client";
 
@@ -79,7 +79,7 @@ const CacheFeeds = async ({
 const Page = async (
   props: PagePropsWithLocale<{ type: "posts" | "notes" }>
 ) => {
-  const { type, locale } = await props.params;
+  const [{ type }, locale] = await Promise.all([props.params, getLocale()]);
 
   if (!["posts", "notes"].includes(type)) {
     notFound();

@@ -1,7 +1,7 @@
 import { Card, Skeleton } from "@heroui/react";
 import { getTranslations } from "next-intl/server";
 
-import { Link } from "@/libs/i18n/routing";
+import { Link } from "@/libs/i18n/navigation";
 import { client } from "@/libs/orpc/client.rsc";
 import { createFeedImageToken } from "@/libs/utils/feed-image-token";
 import { dbLocaleResolver } from "@/libs/utils/i18n";

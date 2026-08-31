@@ -21,7 +21,7 @@ import { Theme, MotionThemeIcon, defaultThemeVariants } from "@chia/ui/theme";
 import useTheme from "@chia/ui/utils/use-theme";
 
 import { FeedSearch } from "@/components/commons/feed-search";
-import { useRouter } from "@/libs/i18n/routing";
+import { useRouter } from "@/libs/i18n/navigation";
 import { Locale } from "@/libs/utils/i18n";
 import contact from "@/shared/contact";
 import navItems from "@/shared/routes";

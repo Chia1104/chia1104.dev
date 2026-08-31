@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { CommandGroup, CommandItem, CommandLoading } from "@chia/ui/cmd";
 
 import { useSearchFeeds } from "@/hooks/use-search-feeds";
-import { useRouter } from "@/libs/i18n/routing";
+import { useRouter } from "@/libs/i18n/navigation";
 import { dbLocaleResolver } from "@/libs/utils/i18n";
 
 interface FeedSearchProps {

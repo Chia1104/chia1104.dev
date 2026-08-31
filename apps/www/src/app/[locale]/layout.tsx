@@ -1,10 +1,16 @@
+import "@total-typescript/ts-reset";
+import "katex/dist/katex.css";
+import "@/styles/globals.css";
+import "react-medium-image-zoom/dist/styles.css";
 import type { Metadata, Viewport } from "next";
-import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { getMessages, getTimeZone } from "next-intl/server";
-import { setRequestLocale } from "next-intl/server";
-import { getTranslations } from "next-intl/server";
+import {
+  getLocale,
+  getMessages,
+  getTimeZone,
+  getTranslations,
+} from "next-intl/server";
 
 import meta from "@chia/meta";
 import { WWW_BASE_URL } from "@chia/utils/config";
@@ -59,20 +65,15 @@ export function generateStaticParams() {
 const Layout = async ({
   children,
   modal,
-  params,
 }: {
   children: ReactNode;
   modal: ReactNode;
-  params: PageParamsWithLocale;
 }) => {
-  const locale = (await params).locale;
-  if (!routing.locales.includes(locale)) {
-    notFound();
-  }
-
-  setRequestLocale(locale);
-  const messages = await getMessages();
-  const timeZone = await getTimeZone();
+  const [locale, messages, timeZone] = await Promise.all([
+    getLocale(),
+    getMessages(),
+    getTimeZone(),
+  ]);
   initDayjs(locale, timeZone);
 
   return (
