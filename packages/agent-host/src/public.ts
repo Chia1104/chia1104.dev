@@ -57,7 +57,7 @@ export const createPublicAgentKind = (
      * Every lower tier is metered by the shared weekly allowance and the running-turn cap;
      * only `Root` is not.
      */
-    minTier: CallerTier.Guest,
+    minTier: CallerTier.Root,
     defaults: PUBLIC_SESSION_DEFAULTS,
     policy: publicPolicy,
 
