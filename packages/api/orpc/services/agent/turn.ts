@@ -17,6 +17,7 @@ import {
   getAgentSessionLastSeq,
   withAgentSessionLock,
 } from "@chia/db/repos/agent";
+import { AppError } from "@chia/service-kit/errors";
 import {
   AGENT_END_SENTINEL,
   agentMessageToken,
@@ -78,12 +79,17 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
       withAgentSessionLock(outer.context.db, input.sessionId, async (tx) => {
         const caller = sessions.withDb(outer, tx);
         const row = await sessions.loadOwnedSession(caller, input.sessionId);
-        if (!row) throw new Error(`Unknown agent session: ${input.sessionId}`);
+        // The guard resolved the session already; a miss under the lock means it was just deleted.
+        if (!row) {
+          throw new AppError("NOT_FOUND", {
+            message: `Unknown agent session: ${input.sessionId}`,
+          });
+        }
 
         if (input.text === AGENT_END_SENTINEL) {
-          throw new Error(
-            `"${AGENT_END_SENTINEL}" is reserved; it ends the session's run.`
-          );
+          throw new AppError("BAD_REQUEST", {
+            message: `"${AGENT_END_SENTINEL}" is reserved; it ends the session's run.`,
+          });
         }
         await assertCanStartTurn(tx, caller);
 
@@ -99,9 +105,9 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
           input.sessionId
         );
         if (outstanding.length > 0) {
-          throw new Error(
-            `Waiting on your decision for \`${outstanding.join("`, `")}\`. Approve or reject it before sending another message.`
-          );
+          throw new AppError("CONFLICT", {
+            message: `Waiting on your decision for \`${outstanding.join("`, `")}\`. Approve or reject it before sending another message.`,
+          });
         }
 
         if (
@@ -114,9 +120,10 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
               agentMessageToken(input.sessionId)
             ))
           ) {
-            throw new Error(
-              "The session's run is still starting up. Retry in a moment."
-            );
+            throw new AppError("CONFLICT", {
+              message:
+                "The session's run is still starting up. Retry in a moment.",
+            });
           }
 
           const cursor = await claimNextAgentTurn(
@@ -191,7 +198,11 @@ export const createAgentTurnOperations = <TState, TConfig extends object>(
 
     async *stream(caller, input) {
       const row = await sessions.loadOwnedSession(caller, input.sessionId);
-      if (!row) throw new Error(`Unknown agent session: ${input.sessionId}`);
+      if (!row) {
+        throw new AppError("NOT_FOUND", {
+          message: `Unknown agent session: ${input.sessionId}`,
+        });
+      }
 
       const runId = input.runId ?? row.workflowRunId;
       if (!runId) return;
