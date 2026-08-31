@@ -49,7 +49,7 @@ export const Expandable = ({
   const clipped = overflows && !expanded;
 
   return (
-    <div className={className}>
+    <div className={cn("min-w-0", className)}>
       <div
         className={cn(
           "overflow-hidden",

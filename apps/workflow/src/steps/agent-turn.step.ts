@@ -34,7 +34,7 @@ import type {
   EncryptedAgentCredentials,
 } from "@chia/workflow-control/agent-hooks";
 
-import { loadAgentKind } from "../agents/registry";
+import { agentFactory } from "../agents/factory";
 import {
   signalAgentAbort,
   subscribeAgentAbort,
@@ -185,7 +185,7 @@ export const runAgentTurnStep = async (
     );
   }
 
-  const definition = await loadAgentKind(row.kind);
+  const definition = await agentFactory.load(row.kind);
   if (!definition) {
     throw new FatalError(`No agent kind registered as "${row.kind}".`);
   }

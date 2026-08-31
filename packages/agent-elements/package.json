@@ -150,6 +150,7 @@
     "@tanstack/react-virtual": "catalog:tanstack",
     "border-beam": "catalog:ui",
     "lucide-react": "catalog:ui",
+    "motion": "catalog:ui",
     "react": "catalog:react-is",
     "shiki": "catalog:ui",
     "streamdown": "catalog:streamdown",

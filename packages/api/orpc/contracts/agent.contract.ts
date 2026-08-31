@@ -295,6 +295,8 @@ export const chatAgentContract = oc
     FORBIDDEN: {},
     NOT_FOUND: {},
     BAD_REQUEST: {},
+    /** An undecided approval blocks the next message, and a just-started run needs a retry. */
+    CONFLICT: {},
     ...quotaExceededError,
     ...turnCapError,
   })

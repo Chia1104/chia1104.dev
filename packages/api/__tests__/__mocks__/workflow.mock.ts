@@ -1,7 +1,7 @@
 import type { Mock } from "vitest";
 
 /**
- * Stand-ins for the `workflow/api` reads the service host adapter makes.
+ * Stand-ins for the durable-run host used by the agent service.
  *
  * The real module builds the SDK World on first use, and the Postgres World opens a
  * `LISTEN` connection the moment it is created — with no database behind the tests that

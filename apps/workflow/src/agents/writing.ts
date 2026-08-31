@@ -1,5 +1,5 @@
-import { createContentReadPort } from "@chia/agent-host/content-read.port";
 import { createWritingAgentKind } from "@chia/agent-host/writing";
+import { createContentReadPort } from "@chia/api/agents/content-read.port";
 import { getAdminId } from "@chia/utils/config";
 
 import { createAgentContentPort } from "../services/agent-content.port";

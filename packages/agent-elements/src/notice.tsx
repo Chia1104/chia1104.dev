@@ -36,12 +36,13 @@ export const Notice = ({ className, notice }: NoticeProps) => {
         <Alert.Indicator>
           <CircleAlert className="size-4" />
         </Alert.Indicator>
-        <Alert.Content>
+        <Alert.Content className="min-w-0">
           <Alert.Title>{meta.label}</Alert.Title>
           <Expandable
+            className="w-full min-w-0"
             maxHeight={SUMMARY_MAX_HEIGHT}
             toggleClassName="-ml-1.5 pt-1">
-            <Alert.Description className="whitespace-pre-wrap">
+            <Alert.Description className="wrap-break-word whitespace-pre-wrap">
               {notice.text}
             </Alert.Description>
           </Expandable>
@@ -57,14 +58,16 @@ export const Notice = ({ className, notice }: NoticeProps) => {
       <Alert.Indicator>
         <CircleAlert className="size-4" />
       </Alert.Indicator>
-      <Alert.Content>
+      <Alert.Content className="min-w-0">
         <Alert.Title>
           {notice.code
             ? labels.errorHeadlines[notice.code]
             : labels.errorFallback}
         </Alert.Title>
         {notice.text ? (
-          <Alert.Description>{notice.text}</Alert.Description>
+          <Alert.Description className="max-w-full wrap-break-word">
+            {notice.text}
+          </Alert.Description>
         ) : null}
       </Alert.Content>
     </Alert>

@@ -9,7 +9,6 @@ import type {
   SearchPostsInput,
   TagItem,
 } from "@chia/agent-content/types";
-import { searchFeedsService } from "@chia/api/feeds/search";
 import type { DB } from "@chia/db/client";
 import {
   getFeedById,
@@ -17,6 +16,8 @@ import {
   getInfiniteFeeds,
 } from "@chia/db/repos/feeds";
 import type { ContentType, Locale } from "@chia/db/types";
+
+import { searchFeedsService } from "../feeds/search";
 
 /**
  * {@link ContentReadPort} implementation.

@@ -4,7 +4,10 @@ import type { DB } from "@chia/db/client";
 import { getAgentSession } from "@chia/db/repos/agent";
 import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 
-import { requireAgentKind } from "../services/agent.service";
+import {
+  requireAgentKind,
+  requireAgentKindTier,
+} from "../services/agent.service";
 import type {
   AgentModelRef,
   AgentKindService,
@@ -17,9 +20,9 @@ import type { CallerContext } from "./caller.guard";
  * Agent guards. Both run after `callerGuard()`, whose resolved `caller` they consume, and both
  * hand the same `agent` context downstream so every handler reads one shape.
  *
- * Which tier may use a kind is the kind's own policy (`AgentKindService.minTier`), so neither guard
- * hard-codes a role: the writing kind pins to the configured admin, a public kind admits any
- * session-bearing visitor, and the routes are shared between them.
+ * Which tier may use a kind is the kind's own policy (the factory's registered `minTier`), so
+ * neither guard hard-codes a role: the writing kind pins to the configured admin, a public kind
+ * admits any session-bearing visitor, and the routes are shared between them.
  */
 
 /** What the guards hand downstream. */
@@ -34,13 +37,14 @@ export interface AgentSessionContext {
 const agentOS = os.$context<CallerContext>();
 
 /**
- * Whether `caller` may use `service` at all. Written once because the two guards and the
- * kind-less list route each need the same answer.
+ * Whether `caller` may use a kind with this registered floor. Written once because the two guards
+ * and the kind-less list route each need the same answer — and each asks it *before* the kind's
+ * definition (and the domain package behind it) is loaded.
  */
 export const canUseAgentKind = (
   caller: AgentServiceCaller,
-  service: AgentKindService
-): boolean => caller.tier >= service.minTier;
+  minTier: CallerTier
+): boolean => caller.tier >= minTier;
 
 /**
  * The subset of a route's input this guard reads.
@@ -91,8 +95,10 @@ export const agentSessionGuard = () =>
         throw errors.NOT_FOUND();
       }
 
-      const service = requireAgentKind(context, row.kind);
-      if (!canUseAgentKind(caller, service)) throw errors.FORBIDDEN();
+      if (!canUseAgentKind(caller, requireAgentKindTier(context, row.kind))) {
+        throw errors.FORBIDDEN();
+      }
+      const service = await requireAgentKind(context, row.kind);
 
       if (input.model) {
         const reason = await service.validateModel(input.model);
@@ -117,8 +123,12 @@ export const agentKindGuard = () =>
         input: { kind: string; model?: AgentModelRef }
       ) => {
         const caller = agentCallerOf(context, errors);
-        const service = requireAgentKind(context, input.kind);
-        if (!canUseAgentKind(caller, service)) throw errors.FORBIDDEN();
+        if (
+          !canUseAgentKind(caller, requireAgentKindTier(context, input.kind))
+        ) {
+          throw errors.FORBIDDEN();
+        }
+        const service = await requireAgentKind(context, input.kind);
 
         if (input.model) {
           const reason = await service.validateModel(input.model);

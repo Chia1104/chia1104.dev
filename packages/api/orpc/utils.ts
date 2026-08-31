@@ -6,9 +6,7 @@ import type { ServiceContext } from "@chia/service-kit/context";
 import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
 import { routerContract } from "./router.contract";
-import type { AgentAdminService } from "./services/agent-admin.service";
-import type { AgentUsageService } from "./services/agent-usage.service";
-import type { AgentKindService } from "./services/agent.service";
+import type { AgentFactory } from "./services/agent.factory";
 
 /**
  * Values the guards need that only the hosting app knows (env-driven budgets, project
@@ -49,10 +47,9 @@ export interface MemoryHooks {
  * oRPC handler context: {@link ServiceContext} plus what the hosting process supplies.
  *
  * `config` and `workflow` are required — every process that runs the router has a
- * rate-limit budget to name and a workflow service to send runs to. The agent ports are
- * optional because a context need not have them: `apps/service` owns the kind and task
- * registries and wires them in `createORPCContext`; a context that leaves one out (tests
- * do) gets `SERVICE_UNAVAILABLE` from a route that needs it.
+ * rate-limit budget to name and a workflow service to send runs to. The agent factory is optional
+ * because tests and non-agent hosts may omit it; an agent route then answers
+ * `SERVICE_UNAVAILABLE`.
  */
 export interface BaseOSContext extends ServiceContext {
   config: ORPCConfig;
@@ -65,12 +62,8 @@ export interface BaseOSContext extends ServiceContext {
     MemoryHooks & {
       onError?: (cause: unknown) => void;
     };
-  /** Agent kind services, keyed by `agent.session.kind`. */
-  agentKinds?: Readonly<Record<string, AgentKindService>>;
-  /** Operator configuration of kinds and tasks. Needs the host's registries. */
-  agentAdmin?: AgentAdminService;
-  /** The caller's quota standing. The policy is the host's, next to its registries. */
-  agentUsage?: AgentUsageService;
+  /** Typed constructor for kind services, admin views and quota standing. */
+  agentFactory?: AgentFactory;
 }
 
 export const baseOS = os.$context<BaseOSContext>();

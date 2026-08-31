@@ -1,5 +1,5 @@
-import { createContentReadPort } from "@chia/agent-host/content-read.port";
 import { createPublicAgentKind } from "@chia/agent-host/public";
+import { createContentReadPort } from "@chia/api/agents/content-read.port";
 import { getAdminId } from "@chia/utils/config";
 
 /**
