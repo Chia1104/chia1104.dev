@@ -201,8 +201,8 @@
     "clean": "git clean -xdf .turbo node_modules dist .cache"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1118.0",
-    "@aws-sdk/s3-request-presigner": "^3.1118.0",
+    "@aws-sdk/client-s3": "^3.1121.0",
+    "@aws-sdk/s3-request-presigner": "^3.1121.0",
     "@chia/agent-content": "workspace:*",
     "@chia/agent-host": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
@@ -224,8 +224,8 @@
     "github-slugger": "^2.0.0",
     "graphql-request": "catalog:",
     "ky": "catalog:",
-    "node-html-parser": "^9.0.1",
-    "resend": "^6.22.1",
+    "node-html-parser": "^9.0.2",
+    "resend": "^6.25.0",
     "server-only": "catalog:",
     "superjson": "catalog:",
     "zod": "catalog:"
