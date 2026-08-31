@@ -1,5 +1,3 @@
-import { getRun } from "workflow/api";
-
 import {
   AGENT_TURN_KEY,
   readAgentTurnMarker,
@@ -7,11 +5,11 @@ import {
 import type { AgentTurnMarker } from "@chia/agent-host/execution";
 import type { DB } from "@chia/db/client";
 import { completeAgentRun, listRunningAgentRuns } from "@chia/db/repos/agent";
+import type { WorkflowControlClient } from "@chia/workflow-control/client";
 
-import {
-  readAgentAbortControllerRef,
-  signalAgentAbort,
-} from "./agent-abort-controller.service";
+import type { AgentRunHost } from "../agent.factory";
+
+import { readAgentAbortControllerRef, signalAgentAbort } from "./abort";
 
 /**
  * What an `agent.run` row is doing right now, as every reader must ask it.
@@ -31,9 +29,12 @@ export interface AgentRunRef {
 }
 
 /** Run states in which the session's workflow run can still accept a message. */
-export const isRunLive = async (runId: string): Promise<boolean> => {
+export const isRunLive = async (
+  runs: AgentRunHost,
+  runId: string
+): Promise<boolean> => {
   try {
-    const run = getRun(runId);
+    const run = runs.get(runId);
     if (!(await run.exists)) return false;
     const status = await run.status;
     return status === "pending" || status === "running";
@@ -64,6 +65,7 @@ export const RUN_LEASE_TTL_MS = 60_000;
  * maintains decides.
  */
 export const runStateOf = async (
+  runs: AgentRunHost,
   row: AgentRunRef
 ): Promise<{ id: string; status: "running" | "waiting" } | null> => {
   if (!row.workflowRunId) return null;
@@ -73,7 +75,7 @@ export const runStateOf = async (
       ? { id: row.workflowRunId, status: "running" }
       : null;
   }
-  if (!(await isRunLive(row.workflowRunId))) return null;
+  if (!(await isRunLive(runs, row.workflowRunId))) return null;
   return {
     id: row.workflowRunId,
     status: row.turn?.running ? "running" : "waiting",
@@ -90,6 +92,8 @@ export const runStateOf = async (
  */
 export const reconcileRunningAgentTurns = async (
   db: DB,
+  runs: AgentRunHost,
+  workflow: WorkflowControlClient,
   userId: string
 ): Promise<number> => {
   const rows = await listRunningAgentRuns(db, {
@@ -98,7 +102,7 @@ export const reconcileRunningAgentTurns = async (
   });
   let closed = 0;
   for (const row of rows) {
-    const state = await runStateOf({
+    const state = await runStateOf(runs, {
       activeRunId: row.id,
       workflowRunId: row.externalRunId,
       startedAt: row.startedAt,
@@ -108,7 +112,7 @@ export const reconcileRunningAgentTurns = async (
     await completeAgentRun(db, row.id, "failed");
     // Like `completeAgentRunStep`: a dead run must not leave its controller parked until its TTL.
     const controller = readAgentAbortControllerRef(row.metadata);
-    if (controller) await signalAgentAbort(controller.id, "run lost");
+    if (controller) await signalAgentAbort(workflow, controller.id, "run lost");
     closed += 1;
   }
   return closed;

@@ -88,11 +88,6 @@ export const restoreFeed: Mock = vi.fn().mockResolvedValue(mockFeeds[0]);
 // Mock functions for @chia/db/repos/feeds/search
 export const getRelatedFeeds: Mock = vi.fn().mockResolvedValue([]);
 
-// Mock functions for @chia/api/resources/search
-export const searchResources: Mock = vi
-  .fn()
-  .mockResolvedValue({ mode: "hybrid", items: [] });
-
 // Helper function to reset all mocks
 export const resetAllDbMocks = () => {
   getInfiniteFeedsByUserId.mockClear();
@@ -110,5 +105,4 @@ export const resetAllDbMocks = () => {
   deleteFeed.mockClear();
   restoreFeed.mockClear();
   getRelatedFeeds.mockClear();
-  searchResources.mockClear();
 };

@@ -9,10 +9,6 @@
       "types": "./src/config.ts",
       "default": "./src/config.ts"
     },
-    "./content-read.port": {
-      "types": "./src/content-read.port.ts",
-      "default": "./src/content-read.port.ts"
-    },
     "./credentials": {
       "types": "./src/credentials.ts",
       "default": "./src/credentials.ts"
@@ -59,7 +55,6 @@
     "@chia/agent-runtime": "workspace:*",
     "@chia/agent-writing": "workspace:*",
     "@chia/ai": "workspace:*",
-    "@chia/api": "workspace:*",
     "@chia/db": "workspace:*",
     "@chia/service-kit": "workspace:*",
     "@chia/utils": "workspace:*",

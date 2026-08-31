@@ -1,8 +1,8 @@
 import { withORPCErrors } from "@chia/service-kit/adapters/orpc";
 
 import { adminGuard } from "../guards/admin.guard";
-import { requireAgentAdminService } from "../services/agent-admin.service";
-import type { AgentAdminCaller } from "../services/agent-admin.service";
+import { requireAgentFactory } from "../services/agent.service";
+import type { AgentAdminCaller } from "../services/agent/admin";
 import { contractOS } from "../utils";
 
 /**
@@ -23,16 +23,18 @@ const callerOf = (opts: {
 export const listAgentKindsAdminRoute = contractOS.agent.admin.kinds.list
   .use(adminGuard())
   .handler((opts) =>
-    withORPCErrors(() =>
-      requireAgentAdminService(opts.context).listKinds(callerOf(opts))
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).listKinds(
+        callerOf(opts)
+      )
     )
   );
 
 export const updateAgentKindAdminRoute = contractOS.agent.admin.kinds.update
   .use(adminGuard())
   .handler((opts) =>
-    withORPCErrors(() =>
-      requireAgentAdminService(opts.context).updateKind(
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).updateKind(
         callerOf(opts),
         opts.input
       )
@@ -42,16 +44,18 @@ export const updateAgentKindAdminRoute = contractOS.agent.admin.kinds.update
 export const listAgentTasksAdminRoute = contractOS.agent.admin.tasks.list
   .use(adminGuard())
   .handler((opts) =>
-    withORPCErrors(() =>
-      requireAgentAdminService(opts.context).listTasks(callerOf(opts))
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).listTasks(
+        callerOf(opts)
+      )
     )
   );
 
 export const updateAgentTaskAdminRoute = contractOS.agent.admin.tasks.update
   .use(adminGuard())
   .handler((opts) =>
-    withORPCErrors(() =>
-      requireAgentAdminService(opts.context).updateTask(
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).updateTask(
         callerOf(opts),
         opts.input
       )
@@ -61,16 +65,18 @@ export const updateAgentTaskAdminRoute = contractOS.agent.admin.tasks.update
 export const getAgentQuotaAdminRoute = contractOS.agent.admin.quota.get
   .use(adminGuard())
   .handler((opts) =>
-    withORPCErrors(() =>
-      requireAgentAdminService(opts.context).getQuota(callerOf(opts))
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).getQuota(
+        callerOf(opts)
+      )
     )
   );
 
 export const updateAgentQuotaAdminRoute = contractOS.agent.admin.quota.update
   .use(adminGuard())
   .handler((opts) =>
-    withORPCErrors(() =>
-      requireAgentAdminService(opts.context).updateQuota(
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).updateQuota(
         callerOf(opts),
         opts.input
       )
@@ -80,7 +86,7 @@ export const updateAgentQuotaAdminRoute = contractOS.agent.admin.quota.update
 export const listAgentTaskModelsAdminRoute = contractOS.agent.admin.tasks.models
   .use(adminGuard())
   .handler((opts) =>
-    withORPCErrors(() =>
-      requireAgentAdminService(opts.context).listTaskModels()
+    withORPCErrors(async () =>
+      (await requireAgentFactory(opts.context).createAdmin()).listTaskModels()
     )
   );

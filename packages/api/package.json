@@ -169,17 +169,17 @@
       "types": "./orpc/services/agent.service.ts",
       "default": "./orpc/services/agent.service.ts"
     },
+    "./orpc/services/agent.factory": {
+      "types": "./orpc/services/agent.factory.ts",
+      "default": "./orpc/services/agent.factory.ts"
+    },
+    "./agents/content-read.port": {
+      "types": "./agents/content-read.port.ts",
+      "default": "./agents/content-read.port.ts"
+    },
     "./orpc/contracts/agent-admin.contract": {
       "types": "./orpc/contracts/agent-admin.contract.ts",
       "default": "./orpc/contracts/agent-admin.contract.ts"
-    },
-    "./orpc/services/agent-admin.service": {
-      "types": "./orpc/services/agent-admin.service.ts",
-      "default": "./orpc/services/agent-admin.service.ts"
-    },
-    "./orpc/services/agent-usage.service": {
-      "types": "./orpc/services/agent-usage.service.ts",
-      "default": "./orpc/services/agent-usage.service.ts"
     },
     "./orpc/services/indexing.service": {
       "types": "./orpc/services/indexing.service.ts",
@@ -203,6 +203,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1118.0",
     "@aws-sdk/s3-request-presigner": "^3.1118.0",
+    "@chia/agent-content": "workspace:*",
+    "@chia/agent-host": "workspace:*",
     "@chia/agent-runtime": "workspace:*",
     "@chia/ai": "workspace:*",
     "@chia/auth": "workspace:*",

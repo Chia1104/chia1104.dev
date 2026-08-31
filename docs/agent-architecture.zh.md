@@ -45,28 +45,31 @@ flowchart TB
 `agent.session.kind` 是 domain discriminator（`writing`、`public`），不是 harness
 discriminator。它選擇：
 
-- `apps/service/src/agents/registry.ts`（`AGENT_KINDS`）中的 `AgentKindDefinition`——request
-  context 上的 `agentKinds[kind]` service 和 durable turn step 都從這裡解析；
+- 每個 process 在 `agents/factory.ts` 註冊的 `AgentKindDefinition`——service 端是 binding map，
+  workflow 端是明確 switch；service 用它建立 oRPC kind service，workflow 則載入綁好 execution
+  ports 的 sibling；
 - `agent.writing_session` 這類 kind-specific extension row，藏在 `definition.state` 後面。
 
 所有 session-scoped request 都從已持久化的 session 取得 kind；client 傳入的值只能交叉
 驗證，不能拿另一個 kind 的 tools 去驅動既有 writing session。
 
-`packages/api/orpc/services/agent.service.ts` 宣告 `AgentKindService`。這個 host port 應保留：
-`packages/api` 不該擁有 workflow handles、DB 或 credentials，因此由 `apps/service` 在
-`createORPCContext` 把每個已註冊 kind 的 service 放到 request context 上。它和已刪除的
-harness abstraction 是不同層次的概念。
+`packages/api/orpc/services/agent.factory.ts` 宣告 typed construction environment，沿用 Hono
+factory 的形狀：host 只需一次提供 per-kind bindings（`AgentKindEntry`——eager 的 `minTier` 加上
+dynamic definition loader）與 credentials handling，factory 就能建立 stateless kind、admin 與
+usage services。沒有 lazy delegate 或 definition cache；dynamic import 本身已經快取 module。
+`BaseOSContext` 只攜帶這個 `agentFactory`，以及 DB 和 workflow control。
 
-Service 本身是 generic 的。`apps/service/src/agents/service.ts`（`createAgentKindService`）
-在一個 `AgentKindDefinition`（`@chia/agent-host/kind`）之上實作整個 port——session rows、durable runs、
-prompt/attach/stream、abort、approvals、compaction 與 rewind——turn step（`runKindTurn`）在 Pi
-那一側解析同一個 definition。一個 kind 就是 `apps/service/src/agents/` 下的一個檔案
+Generic service 與商業邏輯統一放在 `packages/api/orpc/services/agent/`：session rows、durable runs、
+prompt/attach/stream、abort、approvals、compaction、rewind、usage 與 operator configuration。
+`apps/service` 只提供 host bindings；turn step 則透過 `apps/workflow/src/agents/factory.ts` 解析綁好
+execution ports 的 definition。一個 kind 就是 `apps/service/src/agents/` 下的一個檔案
 （`writing.ts`），把 domain package 綁到 host 的 ports 上，只提供會不同的部分：`minTier`、
 `label`/`description`、defaults、replay policy、model allowlist（`assert`/`list`/`resolve`）、
 operator `config` 的 schema、capabilities、1:1 的 `state` row（`create`/`load`/`summary`/`detail`）
 與 `runTurn`。Compaction 與 rewind 不屬於 kind：generic service 直接跑 Pi 自己的操作，模型由
-compaction task 解析（§8）。registry entry 會 eager 地重述 `minTier` 給 guard 用，definition 則用
-dynamic import 載入，讓 domain package 和 provider SDK 留在 boot path 之外。
+compaction task 解析（§8）。Binding 上 eager 地重述 `minTier`（loader 會驗證兩者一致），guard
+因此在 definition——以及它背後的 domain package 和 provider SDK——被載入之前就能拒絕低於門檻的
+呼叫者；dynamic import 則讓這一切留在非 agent route 的 boot path 之外。
 
 `AgentKindService` 是所有 kind 共有的形狀，不會為了某一個 kind 而長大。只有單一 kind 才有的
 procedure 要開自己的 contract namespace（`agent.<kind>.*`）、在 `packages/api` 宣告自己的 port
@@ -78,7 +81,7 @@ interface，實作放在該 kind 的 definition 旁邊——不掛在共用 port
 
 存取權是 kind 的屬性，不是 route 的屬性。每條 agent route 都先跑 `callerGuard()`，它只解析呼叫者的
 `CallerTier`；接著 agent guard（建立與能力列表用 `agentKindGuard`，session-scoped 請求用
-`agentSessionGuard`）把這個 tier 和 kind 的 `AgentKindService.minTier` 比對。低於 `Guest` 的 tier
+`agentSessionGuard`）把這個 tier 和 kind 註冊的 `minTier` 比對。低於 `Guest` 的 tier
 一律先被拒絕——session row 有 owner，匿名或 API-key 呼叫者沒有可以「是」的人。沒帶 kind 的 `list`
 只回傳呼叫者可用的 kind。
 
@@ -119,9 +122,8 @@ guest 之後登入時，plugin 的 `onLinkAccount` 在 guest row 被刪除之前
 他們的 session、approval 與 ledger row 都搬到那個帳號，所以登入永遠不會重置配額。
 
 `agent.usage.me`（`agentUsageStandingSchema`）是任何帶 session 的 tier 自己的處境：額度、花費、
-當週、執行中的 turn 與上限——operator 的上限是 `null`——經由 `agentUsage` port
-（`AgentUsageService`），`apps/service` 把它綁到 `@chia/agent-host/quota` 的
-`readAgentUsageStanding`。
+當週、執行中的 turn 與上限——operator 的上限是 `null`——經由 `agentFactory` 建立的 usage
+service 讀取 `@chia/agent-host/quota` 的 `readAgentUsageStanding`。
 
 ## 3. Policy、session 與資料
 
@@ -213,7 +215,7 @@ lock 之下（`lockAgentUser`，永遠在 session lock 之後、同一個 transa
 的 turn。
 
 Marker 本身不是真相：process 在 step 底下死掉不會清掉它。所以每個讀取端都會問 World 那個 run
-是否還活著（`apps/service/src/services/agent-run-liveness.service.ts` 的 `runStateOf`），而在
+是否還活著（`packages/api/orpc/services/agent/run-liveness.ts` 的 `runStateOf`），而在
 數上限之前——以及 `usage.me` 回報之前——`reconcileRunningAgentTurns` 會把這個使用者 marker
 還在、run 卻已經不在的 row 收掉（標 `failed`、釋放 controller）。Workflow 自己也在 `finally`
 裡收 row（`completeAgentRunStep`，step 丟錯就標 `failed`），所以 stale row 只可能是 World 還沒
@@ -618,7 +620,7 @@ procedure 含唯讀都在 `adminGuard()` 後面：記憶是未發布的研究，
 ### 內容可見性
 
 Read tools 無法擴大自己能看到的範圍：可見性在 host 建 port 時就固定
-（`packages/agent-host/src/content-read.port.ts`）。`author` port 看得到設定作者的草稿；
+（`packages/api/agents/content-read.port.ts`）。`author` port 看得到設定作者的草稿；
 `public` port 把每次 detail read 都限定在 `published: true`，被要求列草稿時回空而不是覆寫
 filter。搜尋不需要分支——chunk index 對所有呼叫者都只含已發佈內容。Writing agent 的 port 是
 `author`；公開 kind 的是 `public`（`apps/workflow/src/agents/public.ts`），而且永遠拿不到 `WebPort`。
@@ -644,9 +646,10 @@ state 都是 durable：
    `ContentToolContext`；
 2. 需要 kind-specific persistence 時新增 extension table；
 3. 在 `apps/service/src/agents/` 新增它的 `AgentKindDefinition`——含它允許的 `minTier`、
-   `label`/`description` 與 operator `config` 的 schema——並註冊到 `AGENT_KINDS`；kind service、
-   turn step 與 admin 工作區都從那裡拿到它；
-4. 讓它的 `runTurn` 呼叫新 domain 的 `run<Kind>Turn`，自己的 task 則註冊到 `AGENT_TASKS`（§13）；
+   `label`/`description` 與 operator `config` schema——並在 service factory 加上它的 binding
+   （`minTier` + loader）；workflow factory 也加入 execution-bound sibling 與 switch branch；
+4. 讓它的 `runTurn` 呼叫新 domain 的 `run<Kind>Turn`，自己的 task definition 加到
+   `AGENT_TASKS`（§13）；
 5. 共用 `runPiTurn`、wire events、approval semantics 與 durable stream plumbing。
 
 在真正出現第二種 execution foundation 且差異已知以前，不新增 engine adapter、engine
@@ -661,7 +664,7 @@ factory、capability plugin system 或 provider-neutral handle。
 | Turn budget                  | `packages/agent-runtime/src/pi/turn-budget.ts`                                                                       |
 | Error classification         | `packages/agent-runtime/src/pi/errors.ts`                                                                            |
 | Details clipping             | `packages/agent-runtime/src/wire/clip.ts`                                                                            |
-| Abort controller             | `apps/workflow/src/workflows/agent-abort.workflow.ts`, `apps/service/src/services/agent-abort-controller.service.ts` |
+| Abort controller             | `apps/workflow/src/workflows/agent-abort.workflow.ts`, `packages/api/orpc/services/agent/abort.ts`                  |
 | Compaction / maintenance     | `packages/agent-runtime/src/pi/compaction.ts`、`pi/maintenance.ts`                                                   |
 | Wire schema / fold / replay  | `packages/agent-runtime/src/wire/`                                                                                   |
 | Live Pi event mapping        | `packages/agent-runtime/src/pi/events.ts`                                                                            |
@@ -670,19 +673,18 @@ factory、capability plugin system 或 provider-neutral handle。
 | Branch projection            | `packages/agent-runtime/src/session/context.ts`                                                                      |
 | Session over Postgres        | `packages/agent-runtime/src/session/pg-storage.ts`, `session/pg-repo.ts`                                             |
 | Tool-authoring helpers       | `packages/agent-runtime/src/tools.ts`                                                                                |
-| Content read tools / port    | `packages/agent-content/src/`、`packages/agent-host/src/content-read.port.ts`                                        |
+| Content read tools / port    | `packages/agent-content/src/`、`packages/api/agents/content-read.port.ts`                               |
 | Memory tools / port          | `packages/agent-writing/src/tools/memory.tool.ts`、`apps/workflow/src/services/agent-memory.port.ts`                 |
 | Memory 寫入 / 索引           | `packages/api/memories/write.ts`、`apps/service/src/services/agent-memory-indexing.service.ts`                       |
 | Writing composition          | `packages/agent-writing/src/runtime.ts`                                                                              |
 | Writing tools/prompts/policy | `packages/agent-writing/src/tools/`、`src/prompts/`、`src/policy.ts`                                                 |
 | Public composition           | `packages/agent-public/src/runtime.ts`、`src/models.ts`、`src/policy.ts`、`src/prompts/system.ts`                    |
-| Host service port            | `packages/api/orpc/services/agent.service.ts`                                                                        |
-| Kind registry / generic host | `apps/service/src/agents/registry.ts`、`agents/service.ts`、`packages/agent-host/src/kind.ts`                        |
+| Agent factory / service      | `packages/api/orpc/services/agent.factory.ts`、`services/agent/`、`packages/agent-host/src/kind.ts`                 |
 | Writing kind binding         | `packages/agent-host/src/writing.ts`, `apps/service/src/agents/writing.ts`, `apps/workflow/src/agents/writing.ts`    |
 | Public kind binding          | `packages/agent-host/src/public.ts`、`apps/service/src/agents/public.ts`、`apps/workflow/src/agents/public.ts`       |
-| Task registry / resolution   | `packages/agent-host/src/tasks.ts`                                                                                   |
-| Operator configuration       | `packages/agent-host/src/config.ts`、`apps/service/src/agents/admin.ts`、`packages/db/src/libs/agent/config.ts`      |
-| Admin contract / port        | `packages/api/orpc/contracts/agent-admin.contract.ts`、`apps/service/src/factories/agent-admin.factory.ts`           |
+| Task definitions / resolution | `packages/agent-host/src/tasks.ts`                                                                                  |
+| Operator configuration       | `packages/agent-host/src/config.ts`、`packages/api/orpc/services/agent/admin.ts`、`packages/db/src/libs/agent/config.ts` |
+| Admin contract / service     | `packages/api/orpc/contracts/agent-admin.contract.ts`、`packages/api/orpc/services/agent/admin.ts`                  |
 | Durable workflow / step      | `apps/workflow/src/workflows/agent-session.workflow.ts`、`src/steps/agent-turn.step.ts`                              |
 | Durable message inbox        | `packages/workflow-control/src/agent.hooks.ts`                                                                       |
 | oRPC contract/routes         | `packages/api/orpc/contracts/agent.contract.ts`、`routes/agent.route.ts`                                             |
@@ -692,13 +694,13 @@ factory、capability plugin system 或 provider-neutral handle。
 
 ## 13. Kind、task 與 operator 設定
 
-兩個 registry，都是 code，都可以由 operator 在 dash 的 agent 工作區覆寫（`agent.admin.*`，
+兩個 code-defined source 都可以由 operator 在 dash 的 agent 工作區覆寫（`agent.admin.*`，
 admin-only）：
 
-| Registry      | 位置                                  | 一個 entry 是                                                                         | Row                 |
-| ------------- | ------------------------------------- | ------------------------------------------------------------------------------------- | ------------------- |
-| `AGENT_KINDS` | `apps/service/src/agents/registry.ts` | 一個對話型 agent——tools、ports、policy、state row、`runTurn`                          | `agent.kind_config` |
-| `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`    | 一個在 session 旁邊跑的一次性模型呼叫——title、compaction、branch summary、lesson 抽取 | `agent.task_config` |
+| Source        | 位置                                      | 一個 entry 是                                                                         | Row                 |
+| ------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- | ------------------- |
+| agent factory | `apps/service/src/agents/factory.ts`      | 一個對話型 agent——tools、ports、policy、state row、`runTurn`                          | `agent.kind_config` |
+| `AGENT_TASKS` | `packages/agent-host/src/tasks.ts`        | 一個在 session 旁邊跑的一次性模型呼叫——title、compaction、branch summary、lesson 抽取 | `agent.task_config` |
 
 第三個 row 不是 registry：`agent.quota_config` 放 operator 對每週額度、其時區與執行中 turn
 上限的覆寫（`agent.admin.quota.*`，workspace 的「Usage quota」卡片）；程式預設是

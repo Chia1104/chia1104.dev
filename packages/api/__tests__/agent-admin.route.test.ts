@@ -6,13 +6,12 @@ import { AppError } from "@chia/service-kit/errors";
 
 import type { AgentKindAdmin } from "../orpc/contracts/agent-admin.contract";
 import type * as adminRouteModule from "../orpc/routes/agent-admin.route";
-import type { AgentAdminService } from "../orpc/services/agent-admin.service";
+import type { AgentFactory } from "../orpc/services/agent.factory";
+import type { AgentAdminService } from "../orpc/services/agent/admin";
 import type { BaseOSContext } from "../orpc/utils";
 
 /**
- * The routes are thin: admin-only, then hand the request to the host's port. What is pinned is
- * that the guard is on every route, that a process without the port answers
- * `SERVICE_UNAVAILABLE`, and that the port's `AppError`s reach the client as oRPC codes.
+ * The routes are admin-only, then resolve their service through the request's factory.
  */
 
 const ADMIN_ID = "admin-user";
@@ -70,10 +69,19 @@ const service = {
   updateQuota: vi.fn(),
 } satisfies AgentAdminService;
 
+const factory = {
+  kinds: ["writing"],
+  minTierOf: vi.fn(() => undefined),
+  load: vi.fn(() => Promise.resolve(undefined)),
+  create: vi.fn(() => Promise.resolve(undefined)),
+  createAdmin: vi.fn(() => Promise.resolve(service)),
+  createUsage: vi.fn(() => Promise.reject(new Error("unused"))),
+} satisfies AgentFactory;
+
 const admin = (extra?: Partial<BaseOSContext>) =>
-  contextOf(sessionOf(ADMIN_ID, "admin"), { agentAdmin: service, ...extra });
+  contextOf(sessionOf(ADMIN_ID, "admin"), { agentFactory: factory, ...extra });
 const member = () =>
-  contextOf(sessionOf("someone-else", "user"), { agentAdmin: service });
+  contextOf(sessionOf("someone-else", "user"), { agentFactory: factory });
 
 type AdminRoutes = typeof adminRouteModule;
 let routes: AdminRoutes;
@@ -150,10 +158,10 @@ describe("agent admin routes", () => {
     expect(service.updateQuota).not.toHaveBeenCalled();
   });
 
-  it("answers SERVICE_UNAVAILABLE when the process has no admin port", async () => {
+  it("answers SERVICE_UNAVAILABLE when the process has no agent factory", async () => {
     await expect(
       call(routes.listAgentKindsAdminRoute, undefined, {
-        context: admin({ agentAdmin: undefined }),
+        context: admin({ agentFactory: undefined }),
       })
     ).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
   });

@@ -1418,9 +1418,6 @@ importers:
       '@chia/ai':
         specifier: workspace:*
         version: link:../ai
-      '@chia/api':
-        specifier: workspace:*
-        version: link:../api
       '@chia/db':
         specifier: workspace:*
         version: link:../db
@@ -1645,6 +1642,12 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.1118.0
         version: 3.1118.0
+      '@chia/agent-content':
+        specifier: workspace:*
+        version: link:../agent-content
+      '@chia/agent-host':
+        specifier: workspace:*
+        version: link:../agent-host
       '@chia/agent-runtime':
         specifier: workspace:*
         version: link:../agent-runtime

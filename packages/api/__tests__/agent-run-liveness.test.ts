@@ -2,6 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as workflowMocks from "./__mocks__/workflow.mock";
 
+const runs = {
+  get: workflowMocks.getRun,
+  hasHook: async (token: string) =>
+    Boolean(await workflowMocks.getHookByToken(token)),
+};
+
 /**
  * A turn marker is only "running" while the World run that would execute it is alive. Pinned:
  * a marker on a dead run is closed as failed and its controller released; a marker on a live
@@ -15,7 +21,7 @@ const repo = vi.hoisted(() => ({
 const abort = vi.hoisted(() => ({ signalAgentAbort: vi.fn() }));
 
 vi.mock("@chia/db/repos/agent", () => repo);
-vi.mock("../src/services/agent-abort-controller.service", () => ({
+vi.mock("../orpc/services/agent/abort", () => ({
   readAgentAbortControllerRef: (metadata: { abortController?: unknown }) =>
     metadata.abortController,
   signalAgentAbort: abort.signalAgentAbort,
@@ -23,6 +29,8 @@ vi.mock("../src/services/agent-abort-controller.service", () => ({
 
 const db =
   /* SAFETY: the repo is mocked; nothing reads the handle. */ {} as never;
+const workflow =
+  /* SAFETY: the abort function is mocked; nothing reads the client. */ {} as never;
 
 const row = (overrides: {
   id: string;
@@ -63,7 +71,7 @@ describe("reconcileRunningAgentTurns", () => {
 
   it("closes a marked run whose World run is gone and releases its controller", async () => {
     const { reconcileRunningAgentTurns } =
-      await import("../src/services/agent-run-liveness.service");
+      await import("../orpc/services/agent/run-liveness");
     liveRuns(["wf-live"]);
     repo.listRunningAgentRuns.mockResolvedValue([
       row({ id: "run-live", externalRunId: "wf-live" }),
@@ -74,7 +82,9 @@ describe("reconcileRunningAgentTurns", () => {
       }),
     ]);
 
-    await expect(reconcileRunningAgentTurns(db, "user-1")).resolves.toBe(1);
+    await expect(
+      reconcileRunningAgentTurns(db, runs, workflow, "user-1")
+    ).resolves.toBe(1);
 
     expect(repo.listRunningAgentRuns).toHaveBeenCalledWith(db, {
       userId: "user-1",
@@ -86,6 +96,7 @@ describe("reconcileRunningAgentTurns", () => {
       "failed"
     );
     expect(abort.signalAgentAbort).toHaveBeenCalledExactlyOnceWith(
+      workflow,
       "abort-dead",
       "run lost"
     );
@@ -93,7 +104,7 @@ describe("reconcileRunningAgentTurns", () => {
 
   it("keeps a young unbound lease and closes an old one", async () => {
     const { RUN_LEASE_TTL_MS, reconcileRunningAgentTurns } =
-      await import("../src/services/agent-run-liveness.service");
+      await import("../orpc/services/agent/run-liveness");
     liveRuns([]);
     repo.listRunningAgentRuns.mockResolvedValue([
       row({ id: "lease-young", externalRunId: "lease-young" }),
@@ -104,7 +115,9 @@ describe("reconcileRunningAgentTurns", () => {
       }),
     ]);
 
-    await expect(reconcileRunningAgentTurns(db, "user-1")).resolves.toBe(1);
+    await expect(
+      reconcileRunningAgentTurns(db, runs, workflow, "user-1")
+    ).resolves.toBe(1);
 
     expect(repo.completeAgentRun).toHaveBeenCalledExactlyOnceWith(
       db,

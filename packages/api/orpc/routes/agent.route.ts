@@ -8,10 +8,11 @@ import {
   canUseAgentKind,
 } from "../guards/agent-session.guard";
 import { callerGuard } from "../guards/caller.guard";
-import { requireAgentUsageService } from "../services/agent-usage.service";
 import {
   availableAgentKinds,
+  requireAgentFactory,
   requireAgentKind,
+  requireAgentKindTier,
 } from "../services/agent.service";
 import type { AgentKindService } from "../services/agent.service";
 import { contractOS } from "../utils";
@@ -49,13 +50,21 @@ export const listAgentSessionsRoute = contractOS.agent.sessions.list
     const agentCaller = agentCallerOf(opts.context, opts.errors);
     let services: AgentKindService[];
     if (opts.input?.kind) {
-      const service = requireAgentKind(opts.context, opts.input.kind);
-      if (!canUseAgentKind(agentCaller, service)) throw opts.errors.FORBIDDEN();
-      services = [service];
+      const tier = requireAgentKindTier(opts.context, opts.input.kind);
+      if (!canUseAgentKind(agentCaller, tier)) throw opts.errors.FORBIDDEN();
+      services = [await requireAgentKind(opts.context, opts.input.kind)];
     } else {
-      services = availableAgentKinds(opts.context)
-        .map((kind) => requireAgentKind(opts.context, kind))
-        .filter((service) => canUseAgentKind(agentCaller, service));
+      // Tier-filter on the eager floor first, so a kind the caller cannot use is never loaded.
+      services = await Promise.all(
+        availableAgentKinds(opts.context)
+          .filter((kind) =>
+            canUseAgentKind(
+              agentCaller,
+              requireAgentKindTier(opts.context, kind)
+            )
+          )
+          .map((kind) => requireAgentKind(opts.context, kind))
+      );
     }
     const pages = await Promise.all(
       services.map((service) => service.listSessions(agentCaller, opts.input))
@@ -260,7 +269,8 @@ export const getAgentUsageRoute = contractOS.agent.usage.me
   .use(resolveCaller)
   .handler(async (opts) => {
     const caller = agentCallerOf(opts.context, opts.errors);
-    return await requireAgentUsageService(opts.context).standing(caller);
+    const usage = await requireAgentFactory(opts.context).createUsage();
+    return await usage.standing(caller);
   });
 
 // ============================================

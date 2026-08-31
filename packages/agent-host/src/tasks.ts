@@ -27,16 +27,15 @@ import type { AgentTaskConfig, AgentTaskParams } from "@chia/db/schema";
 import type { AgentModels } from "./kind";
 
 /**
- * The agent tasks this process runs — the one place a task is registered.
+ * The agent tasks this process runs.
  *
  * A task is a one-shot model call beside a session (title, lesson extraction, compaction): a
  * model slot plus, where the call exposes them, a prompt and sampling parameters. The
  * definition is the code's choice, `agent.task_config` the operator's override, and
  * {@link resolveAgentTask} the only place the two meet.
  *
- * Like `AGENT_KINDS`, a task is code and a row only re-points it: the step that runs it ships
- * with the deployment. This module imports prompt text from the domain packages, so it is
- * loaded on first use — by the steps and the admin service — never at boot.
+ * A task is code and a row only re-points it: the step that runs it ships with the deployment.
+ * This module imports prompt text from the domain packages, so it is loaded on first use.
  */
 
 export interface AgentTaskParamsResolved {
@@ -114,18 +113,16 @@ export const AGENT_TASKS = {
   },
 } satisfies Readonly<Record<AgentTaskId, AgentTaskDefinition>>;
 
-/** `AGENT_TASKS` keyed by id; a `Map` keeps prototype names from matching. */
-const definitions = new Map<string, AgentTaskDefinition>(
-  Object.entries(AGENT_TASKS)
-);
+const definitions: readonly AgentTaskDefinition[] = Object.values(AGENT_TASKS);
 
 export const listAgentTaskDefinitions = (): AgentTaskDefinition[] => [
-  ...definitions.values(),
+  ...definitions,
 ];
 
 export const getAgentTaskDefinition = (
   taskId: string
-): AgentTaskDefinition | undefined => definitions.get(taskId);
+): AgentTaskDefinition | undefined =>
+  definitions.find((definition) => definition.id === taskId);
 
 // ============================================
 // Models a task may be pinned to
@@ -195,7 +192,7 @@ export const resolveAgentTask = async (
   taskId: string,
   options: ResolveAgentTaskOptions = {}
 ): Promise<ResolvedAgentTask> => {
-  const definition = definitions.get(taskId);
+  const definition = getAgentTaskDefinition(taskId);
   if (!definition) throw new Error(`Unknown agent task: ${taskId}`);
   const row = await getAgentTaskConfig(db, taskId);
 
