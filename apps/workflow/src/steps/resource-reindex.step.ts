@@ -1,3 +1,4 @@
+import "zod/compile";
 import { getWorkflowMetadata, RetryableError } from "workflow";
 
 import {

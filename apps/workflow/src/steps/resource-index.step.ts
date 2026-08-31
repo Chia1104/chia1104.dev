@@ -1,3 +1,4 @@
+import "zod/compile";
 import { FatalError, fetch } from "workflow";
 
 import { resolveEmbeddingProvider } from "@chia/ai/embeddings/provider";

@@ -1,3 +1,4 @@
+import "zod/compile";
 import bootstrap from "./bootstrap";
 import { env } from "./env";
 import appFactory from "./factories/app.factory";

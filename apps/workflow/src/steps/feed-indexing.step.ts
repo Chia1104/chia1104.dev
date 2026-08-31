@@ -1,3 +1,4 @@
+import "zod/compile";
 import { connectDatabase } from "@chia/db/client";
 import { getFeedForIndexing } from "@chia/db/repos/feeds";
 import type { Locale } from "@chia/db/types";

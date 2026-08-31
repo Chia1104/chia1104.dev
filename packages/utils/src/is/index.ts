@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const urlSchema = z.union([z.url(), z.instanceof(URL)]);
+export const urlSchema = z.compile(z.union([z.url(), z.instanceof(URL)]));
 
 interface IsUrlOptions<TStrict extends boolean = false> {
   allowedProtocols?: string[];

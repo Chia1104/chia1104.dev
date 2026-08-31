@@ -40,19 +40,18 @@ const propertySchema = z.object({
   enum: z.array(z.json()).optional(),
 });
 
-const objectSchema = z.object({
-  properties: z.record(z.string(), propertySchema).optional(),
-});
+const objectSchema = z.compile(
+  z.object({
+    properties: z.record(z.string(), propertySchema).optional(),
+  })
+);
 
 type Property = z.infer<typeof propertySchema>;
 
 /** One form field's value; see the module note. */
-export const configFieldValueSchema = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-  z.null(),
-]);
+export const configFieldValueSchema = z.compile(
+  z.union([z.string(), z.number(), z.boolean(), z.null()])
+);
 
 export type ConfigFieldValue = z.infer<typeof configFieldValueSchema>;
 export type ConfigFormValue = Record<string, ConfigFieldValue>;

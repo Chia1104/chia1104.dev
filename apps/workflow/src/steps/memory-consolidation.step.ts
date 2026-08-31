@@ -1,3 +1,4 @@
+import "zod/compile";
 import { FatalError } from "workflow";
 
 import { AGENT_TASK_IDS, resolveAgentTask } from "@chia/agent-host/tasks";

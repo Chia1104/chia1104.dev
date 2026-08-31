@@ -11,18 +11,22 @@ import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
 /** Only web URLs reach an `href`; a model-chosen `javascript:` or `file:` never does. */
 const httpUrl = z.url({ protocol: /^https?$/ });
 
-const memorySummary = z.object({
-  id: z.number(),
-  kind: z.string(),
-  title: z.string(),
-  // one bad link drops the link, not the whole list
-  sourceUrl: httpUrl.nullable().optional().catch(null),
-});
+const memorySummary = z.compile(
+  z.object({
+    id: z.number(),
+    kind: z.string(),
+    title: z.string(),
+    // one bad link drops the link, not the whole list
+    sourceUrl: httpUrl.nullable().optional().catch(null),
+  })
+);
 
-const searchDetails = z.object({
-  query: z.string().optional(),
-  hits: z.array(memorySummary.extend({ snippet: z.string().optional() })),
-});
+const searchDetails = z.compile(
+  z.object({
+    query: z.string().optional(),
+    hits: z.array(memorySummary.extend({ snippet: z.string().optional() })),
+  })
+);
 
 const hostOf = (url: string) => {
   try {

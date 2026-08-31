@@ -1,3 +1,4 @@
+import "zod/compile";
 import { readingTime } from "reading-time-estimator";
 
 import { connectDatabase } from "@chia/db/client";

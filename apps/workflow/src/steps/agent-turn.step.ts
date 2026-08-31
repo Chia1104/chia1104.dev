@@ -1,3 +1,4 @@
+import "zod/compile";
 import { FatalError, getWorkflowMetadata, getWritable } from "workflow";
 import { getRun } from "workflow/api";
 

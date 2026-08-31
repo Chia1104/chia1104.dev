@@ -67,6 +67,10 @@ export function UploadAssets({
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const { patterns } = useFormRules();
+  const assetSchema = useMemo(
+    () => z.compile(patterns.asset),
+    [patterns.asset]
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadItems, setUploadItems] = useState<FileUploadItem[]>([]);
   const queryClient = useQueryClient();
@@ -93,7 +97,7 @@ export function UploadAssets({
       const errors: string[] = [];
 
       for (const file of Array.from(files)) {
-        const result = patterns.asset.safeParse(file);
+        const result = assetSchema.safeParse(file);
         if (result.success) {
           validFiles.push(result.data);
         } else {
@@ -108,7 +112,7 @@ export function UploadAssets({
 
       return validFiles;
     },
-    [patterns.asset]
+    [assetSchema]
   );
 
   const uploadSingleFile = useCallback(

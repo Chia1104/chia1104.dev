@@ -11,6 +11,8 @@ export interface JsonObject {
 const jsonValueSchema: z.ZodType<JsonValue> = z.json();
 const jsonObjectSchema = z.record(z.string(), jsonValueSchema);
 const jsonArraySchema = z.array(jsonValueSchema);
+const stringSchema = z.compile(z.string());
+const numberSchema = z.compile(z.number());
 
 export const asJsonValue = <TValue>(value: TValue) =>
   jsonValueSchema.safeParse(value).data;
@@ -22,10 +24,10 @@ export const asJsonArray = <TValue>(value: TValue) =>
   jsonArraySchema.safeParse(value).data;
 
 export const asString = <TValue>(value: TValue) =>
-  z.string().safeParse(value).data;
+  stringSchema.safeParse(value).data;
 
 export const asNumber = <TValue>(value: TValue) =>
-  z.number().safeParse(value).data;
+  numberSchema.safeParse(value).data;
 
 /** JSON serialization with recursively sorted object keys. */
 export const stableStringify = (value: JsonValue): string => {

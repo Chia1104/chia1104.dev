@@ -24,7 +24,7 @@ const hitSchema = z.object({
   headingPath: z.string().optional(),
 });
 
-const searchDetails = z.object({ hits: z.array(hitSchema) });
+const searchDetails = z.compile(z.object({ hits: z.array(hitSchema) }));
 
 const listItemSchema = z.object({
   slug: z.string(),
@@ -34,33 +34,37 @@ const listItemSchema = z.object({
   updatedAt: z.string().optional(),
 });
 
-const listDetails = z.object({ posts: z.array(listItemSchema) });
+const listDetails = z.compile(z.object({ posts: z.array(listItemSchema) }));
 
-const postDetails = z.object({
-  post: z.object({
-    slug: z.string(),
-    published: z.boolean().optional(),
-    tagSlugs: z.array(z.string()).optional(),
-    translations: z.array(
+const postDetails = z.compile(
+  z.object({
+    post: z.object({
+      slug: z.string(),
+      published: z.boolean().optional(),
+      tagSlugs: z.array(z.string()).optional(),
+      translations: z.array(
+        z.object({
+          locale: z.string(),
+          title: z.string(),
+          detail: z.string().optional(),
+          tokenCount: z.number().optional(),
+        })
+      ),
+    }),
+    contextTokens: z.number().optional(),
+  })
+);
+
+const tagsDetails = z.compile(
+  z.object({
+    tags: z.array(
       z.object({
-        locale: z.string(),
-        title: z.string(),
-        detail: z.string().optional(),
-        tokenCount: z.number().optional(),
+        slug: z.string(),
+        names: z.record(z.string(), z.string()).optional(),
       })
     ),
-  }),
-  contextTokens: z.number().optional(),
-});
-
-const tagsDetails = z.object({
-  tags: z.array(
-    z.object({
-      slug: z.string(),
-      names: z.record(z.string(), z.string()).optional(),
-    })
-  ),
-});
+  })
+);
 
 const Row = ({
   children,
