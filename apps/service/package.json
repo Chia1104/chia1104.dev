@@ -51,7 +51,7 @@
     "react": "catalog:react-is",
     "react-dom": "catalog:react-is",
     "reading-time-estimator": "^2.13.0",
-    "resend": "^6.22.1",
+    "resend": "^6.25.0",
     "workflow": "catalog:",
     "zod": "catalog:"
   },

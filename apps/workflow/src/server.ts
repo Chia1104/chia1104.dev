@@ -1,3 +1,4 @@
+import "zod/compile";
 import { Hono } from "hono";
 
 import { env } from "./env";

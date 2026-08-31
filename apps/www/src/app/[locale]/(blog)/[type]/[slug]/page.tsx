@@ -6,7 +6,7 @@ import { Avatar } from "@heroui/react";
 import { safe } from "@orpc/client";
 import { ErrorBoundary } from "@sentry/nextjs";
 import { all } from "better-all";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { Blog, WithContext } from "schema-dts";
 
 import { Content } from "@chia/contents/content.rsc";
@@ -51,7 +51,7 @@ export const generateMetadata = async ({
     slug: string;
   }>;
 }): Promise<Metadata> => {
-  const { slug, locale } = await params;
+  const [{ slug }, locale] = await Promise.all([params, getLocale()]);
   try {
     const feed = await client.feeds["details-by-slug"]({
       slug,
@@ -74,7 +74,7 @@ const Page = async ({
     slug: string;
   }>;
 }) => {
-  const { slug, locale, type } = await params;
+  const [{ slug, type }, locale] = await Promise.all([params, getLocale()]);
   const dbLocale = dbLocaleResolver(locale);
   const { feed, t } = await all({
     feed: async () => {

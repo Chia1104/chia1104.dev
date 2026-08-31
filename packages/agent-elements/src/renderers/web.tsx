@@ -12,22 +12,26 @@ import type { ToolRenderer, ToolRenderers } from "../tool-call.tsx";
 /** Only web URLs reach an `href`; a model-chosen `javascript:` or `file:` never does. */
 const httpUrl = z.url({ protocol: /^https?$/ });
 
-const searchDetails = z.object({
-  query: z.string().optional(),
-  results: z.array(
-    z.object({
-      url: httpUrl,
-      title: z.string().optional(),
-      description: z.string().optional(),
-    })
-  ),
-});
+const searchDetails = z.compile(
+  z.object({
+    query: z.string().optional(),
+    results: z.array(
+      z.object({
+        url: httpUrl,
+        title: z.string().optional(),
+        description: z.string().optional(),
+      })
+    ),
+  })
+);
 
-const pageDetails = z.object({
-  url: httpUrl,
-  title: z.string().optional(),
-  truncated: z.boolean().optional(),
-});
+const pageDetails = z.compile(
+  z.object({
+    url: httpUrl,
+    title: z.string().optional(),
+    truncated: z.boolean().optional(),
+  })
+);
 
 const hostOf = (url: string) => {
   try {

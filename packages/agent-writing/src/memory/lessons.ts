@@ -51,7 +51,7 @@ export const wholeBranch = (
 };
 
 const textOf = (
-  content: string | readonly { type: string; text?: string }[]
+  content: string | { type: string; text?: string }[]
 ): string => {
   if (Array.isArray(content)) {
     return content

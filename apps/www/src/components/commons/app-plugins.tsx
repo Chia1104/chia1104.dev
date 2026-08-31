@@ -14,7 +14,7 @@ import useTheme from "@chia/ui/utils/use-theme";
 
 import { WebVitals } from "@/components/commons/web-vitals";
 import { env } from "@/env";
-import { useRouter } from "@/libs/i18n/routing";
+import { useRouter } from "@/libs/i18n/navigation";
 import { useSettingsStore } from "@/stores/settings/store";
 
 const ContactCMD = () => {

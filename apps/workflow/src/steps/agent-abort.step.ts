@@ -1,3 +1,4 @@
+import "zod/compile";
 import { getWritable } from "workflow";
 
 import type { AgentAbortMessage } from "@chia/agent-host/execution";

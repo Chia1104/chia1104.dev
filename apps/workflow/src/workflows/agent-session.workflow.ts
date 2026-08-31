@@ -1,3 +1,4 @@
+import "zod/compile";
 import * as z from "zod";
 
 import { formatOperatorDecision } from "@chia/agent-runtime/wire/operator-decision";

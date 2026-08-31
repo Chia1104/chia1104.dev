@@ -12,9 +12,11 @@ export type FormSchema = feedsContracts.CreateFeedInput & {
   activeLocale: Locale;
 };
 
-export const formSchema = feedsContracts.createFeedSchema.extend({
-  activeLocale: z.enum(Locale),
-});
+export const formSchema = z.compile(
+  feedsContracts.createFeedSchema.extend({
+    activeLocale: z.enum(Locale),
+  })
+);
 
 /**
  * Content Data Structure

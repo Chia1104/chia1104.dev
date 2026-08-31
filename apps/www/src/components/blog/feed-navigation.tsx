@@ -16,7 +16,7 @@ import {
 import { cn } from "@chia/ui/utils/cn.util";
 
 import ListItem from "@/components/blog/list-item";
-import { useRouter } from "@/libs/i18n/routing";
+import { useRouter } from "@/libs/i18n/navigation";
 import type { RouterOutputs } from "@/libs/orpc/types";
 
 interface Props {

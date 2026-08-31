@@ -1,3 +1,4 @@
+import "zod/compile";
 import * as z from "zod";
 
 import { FEED_TRANSLATION_SOURCE_TYPE } from "@chia/api/resources/registry";

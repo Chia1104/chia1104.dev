@@ -1,3 +1,4 @@
+import "zod/compile";
 import * as z from "zod";
 
 import { consolidateSessionMemoryStep } from "../steps/memory-consolidation.step";

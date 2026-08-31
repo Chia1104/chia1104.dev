@@ -1,3 +1,4 @@
+import "zod/compile";
 import * as z from "zod";
 
 import { isResourceType, resourceTypes } from "@chia/api/resources/registry";

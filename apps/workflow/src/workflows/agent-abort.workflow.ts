@@ -1,3 +1,4 @@
+import "zod/compile";
 import { sleep } from "workflow";
 import * as z from "zod";
 

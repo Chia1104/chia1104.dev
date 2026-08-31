@@ -16,10 +16,10 @@ export const contentType = "image/png";
 export default async function og(
   props: PagePropsWithLocale<{ type: "posts" | "notes" }>
 ) {
-  const { type } = await props.params;
+  const { locale, type } = await props.params;
   const { tFeed, t } = await all({
-    tFeed: () => getTranslations(`blog.${type}`),
-    t: () => getTranslations("home"),
+    tFeed: () => getTranslations({ locale, namespace: `blog.${type}` }),
+    t: () => getTranslations({ locale, namespace: "home" }),
   });
   const workDuration = getWorkDuration(meta.timeline);
   return new ImageResponse(
