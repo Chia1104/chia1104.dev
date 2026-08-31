@@ -1366,6 +1366,9 @@ importers:
       lucide-react:
         specifier: catalog:ui
         version: 1.34.0(react@19.2.8)
+      motion:
+        specifier: catalog:ui
+        version: 13.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: catalog:react-is
         version: 19.2.8

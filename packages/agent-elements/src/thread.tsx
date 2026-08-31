@@ -3,9 +3,16 @@
 import type { ReactNode, UIEvent, WheelEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Button, ScrollShadow, Spinner, Tooltip } from "@heroui/react";
+import {
+  Button,
+  Disclosure,
+  ScrollShadow,
+  Spinner,
+  Tooltip,
+} from "@heroui/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDown } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import type {
   AgentViewItem,
@@ -19,7 +26,12 @@ import { cn } from "@chia/ui/utils/cn.util";
 import { ApprovalCard, isApprovalItem } from "./approval-card.tsx";
 import { useAgentLabels } from "./labels-context.tsx";
 import { MessageActions } from "./message-actions.tsx";
-import { AgentBadge, AssistantMessage, UserMessage } from "./message.tsx";
+import {
+  AgentBadge,
+  AssistantMessage,
+  AssistantThinking,
+  UserMessage,
+} from "./message.tsx";
 import { Notice } from "./notice.tsx";
 import { orbStateOf } from "./orb-state.ts";
 import type { OrbState } from "./orb-state.ts";
@@ -28,11 +40,9 @@ import type { AgentConnection } from "./store.ts";
 import { ToolCall } from "./tool-call.tsx";
 import type { ToolRenderers } from "./tool-call.tsx";
 
-type RowGap = "group" | "item" | "none";
-type AgentItemView =
-  | (TextMessageView & { kind: "assistant" })
-  | NoticeView
-  | ToolCallView;
+type RowGap = "group" | "none";
+type AssistantItemView = TextMessageView & { kind: "assistant" };
+type AgentItemView = AssistantItemView | NoticeView | ToolCallView;
 
 type ThreadRow =
   | {
@@ -46,10 +56,9 @@ type ThreadRow =
   | {
       kind: "agent";
       key: string;
-      item: AgentItemView;
+      items: AgentItemView[];
       gapAfter: RowGap;
-      /** `undefined` marks a continuation row; `null` is a finished group's badge. */
-      badgeState?: OrbState | null;
+      badgeState: OrbState | null;
     }
   | { kind: "pending"; key: "pending"; text: string; gapAfter: RowGap }
   | { kind: "working"; key: "working"; gapAfter: RowGap };
@@ -64,7 +73,12 @@ const itemKey = (item: AgentViewItem, index: number): string =>
 const isAgentItem = (item: AgentViewItem): item is AgentItemView =>
   item.kind !== "user";
 
-/** Flatten logical replies so every potentially expensive item is independently virtualized. */
+const isActivityItem = (
+  item: AgentItemView
+): item is AssistantItemView | ToolCallView =>
+  item.kind === "tool" || (item.kind === "assistant" && Boolean(item.thinking));
+
+/** Consecutive agent-side items form one collapsible, virtualized reply. */
 const buildRows = (
   items: readonly AgentViewItem[],
   pendingPrompt: string | null,
@@ -100,16 +114,13 @@ const buildRows = (
     }
     const badgeState = orbStateOf(group);
 
-    for (const [groupIndex, groupItem] of group.entries()) {
-      const row: Extract<ThreadRow, { kind: "agent" }> = {
-        kind: "agent",
-        key: itemKey(groupItem, groupStart + groupIndex),
-        item: groupItem,
-        gapAfter: groupIndex === group.length - 1 ? "group" : "item",
-      };
-      if (groupIndex === 0) row.badgeState = badgeState;
-      rows.push(row);
-    }
+    rows.push({
+      kind: "agent",
+      key: `a:${groupStart}`,
+      items: group,
+      gapAfter: "group",
+      badgeState,
+    });
   }
 
   if (pendingPrompt) {
@@ -128,20 +139,24 @@ const buildRows = (
   return rows;
 };
 
-const AgentItem = ({
+const ToolItem = ({
   item,
   renderers,
 }: {
-  item: AgentItemView;
+  item: ToolCallView;
   renderers?: ToolRenderers;
+}) =>
+  isApprovalItem(item) ? (
+    <ApprovalCard tool={item} />
+  ) : (
+    <ToolCall renderers={renderers} tool={item} />
+  );
+
+const AgentOutputItem = ({
+  item,
+}: {
+  item: Exclude<AgentItemView, ToolCallView>;
 }) => {
-  if (item.kind === "tool") {
-    return isApprovalItem(item) ? (
-      <ApprovalCard tool={item} />
-    ) : (
-      <ToolCall renderers={renderers} tool={item} />
-    );
-  }
   if (item.kind === "notice") return <Notice notice={item} />;
   return (
     <AssistantMessage
@@ -153,7 +168,37 @@ const AgentItem = ({
         />
       }
       message={item}
+      showThinking={false}
     />
+  );
+};
+
+const ActivityStatusLabel = ({
+  active,
+  label,
+}: {
+  active: boolean;
+  label: string;
+}) => {
+  const reduceMotion = useReducedMotion();
+  const offset = reduceMotion ? 0 : 12;
+
+  return (
+    <span className="grid h-5 overflow-hidden leading-5">
+      <AnimatePresence initial={false}>
+        <motion.span
+          key={label}
+          animate={{ opacity: 1, y: 0 }}
+          className="col-start-1 row-start-1"
+          exit={{ opacity: 0, y: -offset }}
+          initial={{ opacity: 0, y: offset }}
+          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}>
+          <TextShimmer as="span" active={active} duration={2.5}>
+            {label}
+          </TextShimmer>
+        </motion.span>
+      </AnimatePresence>
+    </span>
   );
 };
 
@@ -161,10 +206,12 @@ const ThreadRowContent = ({
   renderers,
   row,
   thinkingLabel,
+  thoughtLabel,
 }: {
   renderers?: ToolRenderers;
   row: ThreadRow;
   thinkingLabel: string;
+  thoughtLabel: string;
 }) => {
   if (row.kind === "user") {
     return (
@@ -184,7 +231,7 @@ const ThreadRowContent = ({
   if (row.kind === "pending") return <UserMessage text={row.text} />;
   if (row.kind === "working") {
     return (
-      <div className="-ml-7.5 flex gap-3">
+      <div className="flex gap-3">
         <AgentBadge className="mt-0.5" state="composing" />
         <TextShimmer
           as="span"
@@ -197,16 +244,62 @@ const ThreadRowContent = ({
     );
   }
 
+  const activityItems = row.items.filter(isActivityItem);
+  const outputItems = row.items.filter(
+    (item): item is Exclude<AgentItemView, ToolCallView> =>
+      item.kind === "notice" ||
+      (item.kind === "assistant" && Boolean(item.text))
+  );
+  const hasActivity = activityItems.length > 0;
+  const activeTool = row.items.findLast(
+    (item): item is ToolCallView =>
+      item.kind === "tool" &&
+      (item.status === "running" || item.status === "awaiting_approval")
+  );
+  const activityLabel =
+    activeTool?.label ??
+    (row.badgeState === null ? thoughtLabel : thinkingLabel);
+
   return (
-    <div className="-ml-7.5 flex gap-3">
-      {row.badgeState === undefined ? (
-        <span aria-hidden className="size-5 shrink-0" />
-      ) : (
-        <AgentBadge className="mt-0.5" state={row.badgeState} />
-      )}
-      <div className="min-w-0 flex-1">
-        <AgentItem item={row.item} renderers={renderers} />
-      </div>
+    <div>
+      {hasActivity ? (
+        <Disclosure>
+          <Disclosure.Heading>
+            <Disclosure.Trigger className="text-muted flex h-8 w-full items-center gap-2 text-xs">
+              <ActivityStatusLabel
+                active={row.badgeState !== null}
+                label={activityLabel}
+              />
+              <Disclosure.Indicator className="ml-auto size-3.5" />
+            </Disclosure.Trigger>
+          </Disclosure.Heading>
+          <Disclosure.Content>
+            <Disclosure.Body className="flex min-w-0 flex-col gap-3">
+              {activityItems.map((item, index) =>
+                item.kind === "tool" ? (
+                  <ToolItem
+                    key={itemKey(item, index)}
+                    item={item}
+                    renderers={renderers}
+                  />
+                ) : (
+                  <AssistantThinking
+                    key={itemKey(item, index)}
+                    message={item}
+                  />
+                )
+              )}
+            </Disclosure.Body>
+          </Disclosure.Content>
+        </Disclosure>
+      ) : null}
+      {outputItems.length > 0 ? (
+        <div className={cn("flex min-w-0 flex-col gap-3")}>
+          {outputItems.map((item, index) => (
+            <AgentOutputItem key={itemKey(item, index)} item={item} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -227,23 +320,27 @@ const isAtBottom = (element: HTMLElement) =>
 
 const estimateRowSize = (row: ThreadRow | undefined) => {
   if (!row) return ASSISTANT_ROW_SIZE_PX;
-  const gap =
-    row.gapAfter === "group"
-      ? GROUP_GAP_PX
-      : row.gapAfter === "item"
-        ? ITEM_GAP_PX
-        : 0;
+  const gap = row.gapAfter === "group" ? GROUP_GAP_PX : 0;
   if (row.kind === "working") return 24 + gap;
   if (row.kind === "user" || row.kind === "pending") {
     return USER_ROW_SIZE_PX + gap;
   }
-  if (row.item.kind === "tool") return TOOL_ROW_SIZE_PX + gap;
-  if (row.item.kind === "notice") return NOTICE_ROW_SIZE_PX + gap;
-  return ASSISTANT_ROW_SIZE_PX + gap;
+  return (
+    32 +
+    row.items.reduce((size, item, index) => {
+      const itemSize =
+        item.kind === "tool"
+          ? TOOL_ROW_SIZE_PX
+          : item.kind === "notice"
+            ? NOTICE_ROW_SIZE_PX
+            : ASSISTANT_ROW_SIZE_PX;
+      return size + itemSize + (index === 0 ? 0 : ITEM_GAP_PX);
+    }, 0) +
+    gap
+  );
 };
 
-const rowGapClassName = (gap: RowGap) =>
-  gap === "group" ? "pb-6" : gap === "item" ? "pb-3" : undefined;
+const rowGapClassName = (gap: RowGap) => (gap === "group" ? "pb-6" : undefined);
 
 const latestPromptIndex = (rows: readonly ThreadRow[]) => {
   for (let index = rows.length - 1; index >= 0; index--) {
@@ -264,6 +361,7 @@ interface ThreadViewportProps {
   renderers?: ToolRenderers;
   rows: readonly ThreadRow[];
   thinkingLabel: string;
+  thoughtLabel: string;
 }
 
 /** Owns transient scroll state so scrolling never rerenders the transcript. */
@@ -278,6 +376,7 @@ const ThreadViewport = ({
   renderers,
   rows,
   thinkingLabel,
+  thoughtLabel,
 }: ThreadViewportProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -412,6 +511,7 @@ const ThreadViewport = ({
                     renderers={renderers}
                     row={row}
                     thinkingLabel={thinkingLabel}
+                    thoughtLabel={thoughtLabel}
                   />
                 </div>
               );
@@ -458,12 +558,9 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
 
   const showEmpty = items.length === 0 && !pendingPrompt;
   const last = items.at(-1);
-  const tailActive =
-    last?.kind === "assistant"
-      ? last.streaming
-      : last?.kind === "tool" && last.status === "running";
-  // Something is happening server-side that no item shows yet (before the first event, between tools).
-  const working = connection === "streaming" && !tailActive;
+  const streamingMessage =
+    last?.kind === "assistant" && last.streaming && Boolean(last.text);
+  const working = connection === "streaming" && !streamingMessage;
 
   const rows = useMemo(
     () => buildRows(items, pendingPrompt, working),
@@ -492,6 +589,7 @@ export const Thread = ({ className, empty, renderers }: ThreadProps) => {
       renderers={renderers}
       rows={rows}
       thinkingLabel={labels.thinking}
+      thoughtLabel={labels.thought}
     />
   );
 };

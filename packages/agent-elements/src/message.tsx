@@ -178,6 +178,22 @@ const ThinkingBlock = ({
   );
 };
 
+export const AssistantThinking = ({
+  message,
+}: {
+  message: TextMessageView;
+}) => {
+  if (!message.thinking) return null;
+  const streaming = message.streaming && !message.text;
+  return (
+    <ThinkingBlock
+      key={streaming ? "live" : "done"}
+      streaming={streaming}
+      text={message.thinking}
+    />
+  );
+};
+
 /**
  * Thinking is shown open while it streams and collapsed once text starts — the model's own text
  * is the answer, the thinking is context. Time and copy appear once the message is complete.
@@ -186,22 +202,17 @@ export const AssistantMessage = ({
   actions,
   className,
   message,
+  showThinking = true,
 }: {
   message: TextMessageView;
   /** Rendered beside copy once the message is complete, e.g. `MessageActions`. */
   actions?: ReactNode;
   className?: string;
+  showThinking?: boolean;
 }) => {
-  const thinkingStreaming = message.streaming && !message.text;
   return (
     <div className={cn("group flex flex-col gap-3", className)}>
-      {message.thinking ? (
-        <ThinkingBlock
-          key={thinkingStreaming ? "live" : "done"}
-          streaming={thinkingStreaming}
-          text={message.thinking}
-        />
-      ) : null}
+      {showThinking ? <AssistantThinking message={message} /> : null}
       {message.text || !message.thinking ? (
         <Markdown streaming={message.streaming} text={message.text} />
       ) : null}
