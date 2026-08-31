@@ -263,7 +263,7 @@ const ThreadRowContent = ({
   return (
     <div>
       {hasActivity ? (
-        <Disclosure>
+        <Disclosure className="mb-3">
           <Disclosure.Heading>
             <Disclosure.Trigger className="text-muted flex h-8 w-full items-center gap-2 text-xs">
               <ActivityStatusLabel
