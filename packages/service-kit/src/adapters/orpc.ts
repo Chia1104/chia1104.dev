@@ -5,10 +5,12 @@ import type { AppError } from "../errors";
 import { isAppError } from "../errors";
 import type { Policy } from "../policies/types";
 
-/** Renders an {@link AppError} as an `ORPCError`. Issues travel in `data.errors`. */
+/**
+ * Renders an {@link AppError} as an `ORPCError`. Issues travel in `data.errors`. The HTTP
+ * status comes from the handler's `errorStatusMap`, keyed by `code`.
+ */
 export const toORPCError = (error: AppError): ORPCError<string, unknown> =>
   new ORPCError(error.code, {
-    status: error.status,
     message: error.message,
     data:
       error.issues || error.data

@@ -104,10 +104,10 @@ catalogs:
     "@next/third-parties": 16.3.3
     next: 16.3.3
   orpc:
-    "@orpc/client": 1.15.0
-    "@orpc/contract": 1.15.0
-    "@orpc/server": 1.15.0
-    "@orpc/tanstack-query": 1.15.0
+    "@orpc/client": 2.0.0-beta.32
+    "@orpc/contract": 2.0.0-beta.32
+    "@orpc/server": 2.0.0-beta.32
+    "@orpc/tanstack-query": 2.0.0-beta.32
   oxc:
     "@oxlint/plugins": 1.80.0
     oxfmt: 0.65.0

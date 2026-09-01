@@ -314,7 +314,7 @@ export const RagMaintenance = () => {
         onCancel={() => setAction(null)}
         onConfirm={() => {
           if (action === "prune") {
-            prune.mutate({});
+            prune.mutate();
           } else if (action) {
             reindex.mutate({ onlyMissing: action === "top-up" });
           }

@@ -1,4 +1,4 @@
-import { eventIterator, oc } from "@orpc/contract";
+import { asyncIteratorObject, oc } from "@orpc/contract";
 import * as z from "zod";
 
 import { agentWireEventSchema } from "@chia/agent-runtime/wire/schema";
@@ -9,8 +9,8 @@ import { withMetaSchema } from "./shared";
 /** Kind-specific fields stay optional; the runtime selected by `agent.session.kind` owns their validation. */
 
 /**
- * Quota refusal is not an oRPC common code, so the status travels here. `resetAt` is when the
- * week turns over.
+ * Quota refusal is not an oRPC common code; the RPC handler's `errorStatusMap` owns its
+ * HTTP status. `resetAt` is when the week turns over.
  */
 export const agentQuotaExceededSchema = z.object({
   limitMicros: z.number(),
@@ -20,7 +20,7 @@ export const agentQuotaExceededSchema = z.object({
 });
 
 export const quotaExceededError = {
-  QUOTA_EXCEEDED: { status: 402, data: agentQuotaExceededSchema },
+  QUOTA_EXCEEDED: { data: agentQuotaExceededSchema },
 } as const;
 
 /** Refuses a new turn while the caller already has their cap of turns executing. */
@@ -296,7 +296,7 @@ export const chatAgentContract = oc
       ]),
     })
   )
-  .output(eventIterator(agentWireEventSchema));
+  .output(asyncIteratorObject(agentWireEventSchema));
 
 export const abortAgentContract = oc
   .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {} })

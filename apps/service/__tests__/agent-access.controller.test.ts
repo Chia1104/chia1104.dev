@@ -1,3 +1,4 @@
+import { safe } from "@orpc/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getAgentSessions } from "@chia/db/repos/agent";
@@ -5,7 +6,7 @@ import { CallerTier } from "@chia/service-kit/policies/caller.policy";
 import * as dbMocks from "@chia/test/mocks/db-feeds";
 
 import { setCallerTier } from "./helpers/guards";
-import { rpc as rpcOf } from "./helpers/rpc";
+import { client, errorCode } from "./helpers/rpc";
 
 /**
  * Kind `minTier` is enforced at the guard, before session lookup or model load.
@@ -17,9 +18,6 @@ vi.mock("@chia/db/repos/agent", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@chia/db/repos/agent")>()),
   getAgentSessions: vi.fn().mockResolvedValue([]),
 }));
-
-const rpc = (procedure: string, input?: Record<string, unknown>) =>
-  rpcOf(`agent/${procedure}`, input);
 
 describe("agent kind access", () => {
   beforeEach(() => {
@@ -38,29 +36,35 @@ describe("agent kind access", () => {
     async (_label, tier) => {
       setCallerTier(tier);
 
-      const res = await rpc("capabilities/list", { kind: "writing" });
+      const { error } = await safe(
+        client.agent.capabilities.list({ kind: "writing" })
+      );
 
-      expect(res.status).toBe(401);
+      expect(errorCode(error)).toBe("UNAUTHORIZED");
     }
   );
 
   it("refuses a non-admin session on the writing kind", async () => {
     setCallerTier(CallerTier.Session);
 
-    const res = await rpc("capabilities/list", { kind: "writing" });
+    const { error } = await safe(
+      client.agent.capabilities.list({ kind: "writing" })
+    );
 
-    expect(res.status).toBe(403);
+    expect(errorCode(error)).toBe("FORBIDDEN");
   });
 
   it("admits a guest to the agent surface but not to the writing kind", async () => {
     setCallerTier(CallerTier.Guest);
 
     // Guests own sessions, so list is 200 with an empty list.
-    const list = await rpc("sessions/list");
-    expect(list.status).toBe(200);
+    const list = await client.agent.sessions.list();
+    expect(list).toEqual({ items: [], nextCursor: null });
 
-    const writing = await rpc("capabilities/list", { kind: "writing" });
-    expect(writing.status).toBe(403);
+    const { error } = await safe(
+      client.agent.capabilities.list({ kind: "writing" })
+    );
+    expect(errorCode(error)).toBe("FORBIDDEN");
   });
 
   it.each([
@@ -71,38 +75,39 @@ describe("agent kind access", () => {
     async (_label, tier) => {
       setCallerTier(tier);
 
-      const res = await rpc("capabilities/list", { kind: "public" });
+      const { error } = await safe(
+        client.agent.capabilities.list({ kind: "public" })
+      );
 
-      expect(res.status).toBe(403);
+      expect(errorCode(error)).toBe("FORBIDDEN");
     }
   );
 
   it("refuses the usage standing to a caller with no user to stand for", async () => {
     setCallerTier(CallerTier.ApiKey);
 
-    const res = await rpc("usage/me");
+    const { error } = await safe(client.agent.usage.me());
 
-    expect(res.status).toBe(401);
+    expect(errorCode(error)).toBe("UNAUTHORIZED");
   });
 
   it("refuses an explicit kind the caller may not use when listing", async () => {
     setCallerTier(CallerTier.Session);
 
-    const res = await rpc("sessions/list", { kind: "writing" });
+    const { error } = await safe(
+      client.agent.sessions.list({ kind: "writing" })
+    );
 
-    expect(res.status).toBe(403);
+    expect(errorCode(error)).toBe("FORBIDDEN");
   });
 
   it("lists only the kinds the caller may use when no kind is given", async () => {
     setCallerTier(CallerTier.Session);
     vi.mocked(getAgentSessions).mockClear();
 
-    const res = await rpc("sessions/list");
+    const data = await client.agent.sessions.list();
 
-    expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual({
-      json: { items: [], nextCursor: null },
-    });
+    expect(data).toEqual({ items: [], nextCursor: null });
     // A signed-in visitor may use neither kind, so the repository is never read.
     expect(vi.mocked(getAgentSessions)).not.toHaveBeenCalled();
   });
@@ -110,8 +115,6 @@ describe("agent kind access", () => {
   it("admits the configured admin", async () => {
     setCallerTier(CallerTier.Root);
 
-    const res = await rpc("capabilities/list", { kind: "writing" });
-
-    expect(res.status).toBe(200);
+    await client.agent.capabilities.list({ kind: "writing" });
   });
 });

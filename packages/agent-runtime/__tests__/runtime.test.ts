@@ -1,3 +1,4 @@
+import type { Context } from "@earendil-works/pi-ai";
 import {
   fauxAssistantMessage,
   fauxToolCall,

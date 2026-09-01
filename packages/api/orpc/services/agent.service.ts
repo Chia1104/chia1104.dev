@@ -114,8 +114,8 @@ export interface AgentKindService {
   ): Promise<AgentStreamCursor | null>;
 
   /**
-   * Returns an async generator so the oRPC handler can hand the iterator to `eventIterator`
-   * without buffering.
+   * Returns an async generator so the oRPC handler can hand the iterator to
+   * `asyncIteratorObject` without buffering.
    */
   stream(
     caller: AgentServiceCaller,
