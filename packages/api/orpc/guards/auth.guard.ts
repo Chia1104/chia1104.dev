@@ -25,7 +25,7 @@ export interface SessionGuardInput {
  * A session is required either way; `rootOnly` only raises the bar.
  *
  * @example
- * .use(sessionGuard, (input) => ({ rootOnly: isOpenAIEmbeddingModel(input.model) }))
+ * .use(sessionGuard.adaptInput((input) => ({ rootOnly: isOpenAIEmbeddingModel(input.model) })))
  */
 export const sessionGuard = baseOS
   .errors({

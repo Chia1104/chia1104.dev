@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { ReactNode, ComponentPropsWithoutRef } from "react";
 import { useState } from "react";
 
-import type { UseQueryResult, UseQueryOptions } from "@tanstack/react-query";
+import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import * as z from "zod";
 
@@ -23,6 +23,8 @@ import type { RouterOutputs } from "@/libs/orpc/types";
 
 type LinkPreviewResponse = RouterOutputs["toolings"]["link-preview"];
 
+const linkPreview = orpc.toolings["link-preview"];
+
 const HOVER_CARD_STYLES = {
   base: "z-20 w-full max-w-80 border-[#FCA5A5]/50 shadow-[0px_0px_15px_4px_rgb(252_165_165_/_0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252_/_0.3)]",
   error:
@@ -31,6 +33,10 @@ const HOVER_CARD_STYLES = {
 
 type InternalLinkProps = NextLinkProps &
   Omit<ComponentPropsWithoutRef<"a">, "href">;
+
+type LinkPreviewQueryOptions = Parameters<
+  typeof linkPreview.queryOptions<LinkPreviewResponse>
+>[0];
 
 export interface PreviewLinkProps extends Omit<
   InternalLinkProps,
@@ -43,10 +49,7 @@ export interface PreviewLinkProps extends Omit<
   previewContent?:
     | ReactNode
     | ((result: UseQueryResult<LinkPreviewResponse, Error>) => ReactNode);
-  queryOptions?: Omit<
-    UseQueryOptions<LinkPreviewResponse, Error>,
-    "queryKey" | "queryFn" | "enabled"
-  >;
+  queryOptions?: LinkPreviewQueryOptions;
   enabled?: boolean;
 }
 
@@ -141,20 +144,17 @@ const PreviewDetail = ({
 const useLinkPreview = (
   href: URL | string,
   isOpen: boolean,
-  queryOptions?: Omit<
-    UseQueryOptions<LinkPreviewResponse, Error>,
-    "queryKey" | "queryFn" | "enabled"
-  >,
+  queryOptions?: LinkPreviewQueryOptions,
   enabled?: boolean
 ) => {
-  return useQuery({
-    ...orpc.toolings["link-preview"].queryOptions({
+  return useQuery(
+    linkPreview.queryOptions({
+      ...queryOptions,
       input: { href: href.toString() },
-    }),
-    enabled: isOpen && isUrl(href) && enabled,
-    retry: 1,
-    ...queryOptions,
-  });
+      enabled: isOpen && isUrl(href) && enabled,
+      retry: 1,
+    })
+  );
 };
 
 const PreviewLink = ({

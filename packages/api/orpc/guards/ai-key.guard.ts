@@ -29,7 +29,7 @@ export interface AiKeyGuardInput {
 /**
  * Resolves the caller's provider API key from cookies into `context.AI_AUTH_TOKEN`.
  * Whether a key is needed depends on the request's input, which a policy never sees, so
- * the procedure maps it in via `.use(guard, mapInput)`.
+ * the procedure maps it in via `.use(guard.adaptInput(mapInput))`.
  */
 export const aiKeyGuard = (defaults?: { provider?: AiProvider }) =>
   baseOS

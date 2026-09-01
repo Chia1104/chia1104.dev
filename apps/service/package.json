@@ -59,6 +59,8 @@
   "devDependencies": {
     "@chia/test": "workspace:*",
     "@chiastack/tsconfig": "catalog:chiastack",
+    "@orpc/client": "catalog:orpc",
+    "@orpc/contract": "catalog:orpc",
     "@types/lodash": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:react-is",

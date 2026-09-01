@@ -9,7 +9,7 @@ export interface CaptchaGuardInput {
 }
 
 /**
- * Verifies the captcha token mapped in via `.use(captchaGuard, (input) => ({ token: input.captchaToken }))`.
+ * Verifies the captcha token mapped in via `.use(captchaGuard.adaptInput((input) => ({ token: input.captchaToken })))`.
  * The verifier is injected because `@chia/service-kit` cannot depend on `@chia/api`.
  */
 export const captchaGuard = baseOS

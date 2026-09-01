@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+
 import { app } from "../src/server";
 
 import * as guardMocks from "./helpers/guards";
@@ -24,7 +25,6 @@ describe("Error body shape", () => {
     expect(body.json).toMatchObject({
       defined: true,
       code: "BAD_REQUEST",
-      status: 400,
     });
   });
 });

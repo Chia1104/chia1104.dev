@@ -1,6 +1,8 @@
 import { fauxAssistantMessage } from "@earendil-works/pi-ai/providers/faux";
 import { describe, expect, it } from "vitest";
 
+import type { AgentUsageReport } from "../src/types.ts";
+
 import {
   assistantUsageOf,
   build,

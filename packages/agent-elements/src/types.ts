@@ -1,4 +1,4 @@
-import type { ContractRouterClient } from "@orpc/contract";
+import type { RouterContractClient } from "@orpc/contract";
 
 import type { AgentWireEvent } from "@chia/agent-runtime/wire/schema";
 import type { agentContracts, routerContract } from "@chia/api/orpc/contracts";
@@ -6,7 +6,7 @@ import type { agentContracts, routerContract } from "@chia/api/orpc/contracts";
 /**
  * The `agent` branch of the host's contract-typed oRPC client. This package never builds one.
  */
-export type AgentClient = ContractRouterClient<typeof routerContract>["agent"];
+export type AgentClient = RouterContractClient<typeof routerContract>["agent"];
 
 type SessionProcedures = AgentClient["sessions"];
 type CapabilityProcedures = AgentClient["capabilities"];
