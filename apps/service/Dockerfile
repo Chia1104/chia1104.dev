@@ -1,6 +1,11 @@
+ARG BUN_VERSION=1.4.0
 ARG NODE_VERSION=26
 
-FROM node:${NODE_VERSION}-alpine AS base
+FROM oven/bun:$BUN_VERSION AS runner-base
+
+WORKDIR /app
+
+FROM node:${NODE_VERSION}-alpine AS builder-base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -14,16 +19,16 @@ RUN apk update && \
     build-base \
     gcc \
     libc6-compat && \
-    npm install -g pnpm@next-11 turbo && \
+    npm install -g pnpm@12.1.0 turbo@2.10.12 && \
     ln -sf /usr/bin/python3 /usr/bin/python
 
-FROM base AS pre-builder
+FROM builder-base AS pre-builder
 
 COPY . .
 
 RUN turbo prune --scope=service --docker
 
-FROM base AS builder
+FROM builder-base AS builder
 
 COPY --from=pre-builder /app/out/json/ .
 COPY --from=pre-builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
@@ -35,13 +40,14 @@ ARG TURBO_TEAM \
 
 ENV TURBO_TEAM=$TURBO_TEAM \
     TURBO_TOKEN=$TURBO_TOKEN \
+    NITRO_PRESET=bun \
     SKIP_ENV_VALIDATION=1
 
-RUN pnpm i
+RUN pnpm install --frozen-lockfile
 
 RUN pnpm turbo run build --filter=service...
 
-FROM base AS runner
+FROM runner-base AS runner
 
 COPY --from=builder /app/apps/service/.output/server ./apps/service
 
@@ -52,4 +58,4 @@ WORKDIR /app/apps/service
 
 EXPOSE 8080
 
-CMD [ "node", "index.mjs" ]
+CMD [ "bun", "index.mjs" ]

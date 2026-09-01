@@ -5,10 +5,14 @@ on:
     types: [opened, labeled, unlabeled, synchronize]
     paths:
       - "apps/service/**"
-      - "packages/db/**"
-      - "packages/utils/**"
+      - "packages/**"
+      - "apps/service/Dockerfile"
+      - "apps/service/Dockerfile.node"
       - ".github/workflows/service-docker-ci.yml"
       - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
 
 permissions:
   contents: read
@@ -41,10 +45,18 @@ env:
 
 jobs:
   build:
-    name: "service docker build"
+    name: "service docker build (${{ matrix.runtime }})"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     if: ${{ (contains(github.event.pull_request.labels.*.name, 'service:docker') || contains(github.event.pull_request.labels.*.name, 'service:enhancement')) && !contains(github.event.head_commit.message, '[skip ci]') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: bun
+            dockerfile: apps/service/Dockerfile
+          - runtime: node
+            dockerfile: apps/service/Dockerfile.node
 
     steps:
       - name: Checkout
@@ -60,10 +72,10 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Dockerfile.node-service
+          file: ${{ matrix.dockerfile }}
           push: false
           load: false
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-service:${{ env.GIT_HASH }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chia1104-service:${{ env.GIT_HASH }}-${{ matrix.runtime }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
