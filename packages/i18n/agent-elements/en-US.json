@@ -19,7 +19,7 @@
   "contextCompactsAutomatically": "Context for {model} compacts automatically when needed.",
   "compactNow": "Compact now",
   "compactDescription": "Summarises the older part of the conversation so the model keeps the gist and context frees up. One model call.",
-  "compactUnavailable": "Nothing to compact yet — the conversation still fits in what a compaction keeps.",
+  "compactUnavailable": "Nothing to compact yet. The conversation still fits in what a compaction keeps.",
   "statusReady": "Ready",
   "statusStreaming": "Streaming",
   "statusAwaitingApproval": "Needs approval",
@@ -101,7 +101,7 @@
     "auth": "The provider rejected the API key",
     "quota": "The provider account is out of quota or credit",
     "rate_limited": "The provider is rate limiting requests",
-    "context_overflow": "The conversation no longer fits the model's context — compact it",
+    "context_overflow": "The conversation no longer fits the model's context. Compact it",
     "budget_exhausted": "The turn ran past its budget and was stopped",
     "provider": "The provider failed",
     "internal": "The agent failed"

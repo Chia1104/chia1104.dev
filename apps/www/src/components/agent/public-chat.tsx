@@ -28,7 +28,7 @@ const PUBLIC_AGENT_KIND = "public";
 const agentLabelsOf = (locale: string) => (locale === Locale.EN ? enUS : zhTW);
 
 const Centered = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+  <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
     {children}
   </div>
 );
@@ -176,7 +176,7 @@ const PublicChatSessions = () => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-border flex min-w-0 items-center gap-3 border-b px-4 py-2">
+      <div className="border-border flex min-w-0 items-center gap-3 px-4 py-2">
         <SessionTabs
           activeId={selectedSessionId}
           className="min-w-0 flex-1"

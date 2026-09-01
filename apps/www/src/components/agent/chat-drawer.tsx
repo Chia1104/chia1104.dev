@@ -45,20 +45,17 @@ export const ChatDrawer = () => {
           "fixed right-6 bottom-6 z-50 size-20 rounded-full",
           isOpen && "invisible"
         )}>
-        <CHBot className="size-20 rounded-full shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]" />
+        <CHBot className="size-16 rounded-full shadow-[0px_0px_15px_4px_rgb(252_165_165/0.3)] transition-all dark:border-purple-400/50 dark:shadow-[0px_0px_15px_4px_RGB(192_132_252/0.3)]" />
       </Drawer.Trigger>
       <Drawer.Backdrop>
         <Drawer.Content placement={isMobile ? "bottom" : "right"}>
           <Drawer.Dialog
             className={cn(
-              "flex flex-col",
+              "flex flex-col p-0",
               isMobile ? "h-[88svh]" : "h-full w-full max-w-xl"
             )}>
             {isMobile ? <Drawer.Handle /> : null}
             <Drawer.CloseTrigger />
-            <Drawer.Header>
-              <Drawer.Heading>{t("title")}</Drawer.Heading>
-            </Drawer.Header>
             <Drawer.Body className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
               {isOpen ? <PublicChat /> : null}
             </Drawer.Body>
